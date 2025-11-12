@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useMemo, memo } from "react"
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+// import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { Button } from "@src/components/ui"
 import { StarIcon, StarFilledIcon, CheckCircledIcon } from "@radix-ui/react-icons"
 
 import type { InviteCodeInfo, ProviderSettings, QuotaInfo } from "@roo-code/types"
@@ -364,9 +365,9 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 		<div className="flex flex-col h-full p-6 bg-vscode-editor-background">
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-xl font-semibold text-vscode-foreground">{t("cloud:title")}</h1>
-				<VSCodeButton appearance="primary" onClick={onDone}>
+				<Button variant="primary" onClick={onDone}>
 					{t("settings:common.done")}
-				</VSCodeButton>
+				</Button>
 			</div>
 			{apiConfiguration?.zgsmAccessToken ? (
 				<>
@@ -437,16 +438,16 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 						</div>
 					)}
 					<div className="flex flex-col gap-2 mt-4">
-						<VSCodeButton appearance="primary" onClick={handleVisitCloudWebsite} className="w-full">
+						<Button variant="primary" onClick={handleVisitCloudWebsite} className="w-full">
 							{t("account:visitCloudWebsite")}
-						</VSCodeButton>
+						</Button>
 						<div className="flex gap-2 mt-4">
-							<VSCodeButton appearance="secondary" onClick={handleLogoutClick} className="w-[50%]">
+							<Button variant="secondary" onClick={handleLogoutClick} className="w-[50%]">
 								{t("cloud:logOut")}
-							</VSCodeButton>
-							<VSCodeButton appearance="secondary" onClick={handleConnectClick} className="w-[50%]">
+							</Button>
+							<Button variant="secondary" onClick={handleConnectClick} className="w-[50%]">
 								{t("settings:providers.getZgsmApiKeyAgain")}
-							</VSCodeButton>
+							</Button>
 						</div>
 					</div>
 				</>
@@ -471,9 +472,9 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<VSCodeButton appearance="primary" onClick={handleConnectClick} className="w-full">
+						<Button variant="primary" onClick={handleConnectClick} className="w-full">
 							{t("account:cloudBenefitsTitle")}
-						</VSCodeButton>
+						</Button>
 					</div>
 				</>
 			)}

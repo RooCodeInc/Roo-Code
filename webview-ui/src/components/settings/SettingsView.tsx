@@ -558,7 +558,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									: t("settings:header.nothingChangedTooltip")
 						}>
 						<Button
-							variant={isSettingValid ? "default" : "secondary"}
+							variant={isSettingValid ? "primary" : "secondary"}
 							className={!isSettingValid ? "!border-vscode-errorForeground" : ""}
 							onClick={handleSubmit}
 							disabled={!isChangeDetected || !isSettingValid}

@@ -95,7 +95,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 									: `${t("history:enterSelectionMode")}`
 							}>
 							<Button
-								variant={isSelectionMode ? "default" : "secondary"}
+								variant={isSelectionMode ? "primary" : "secondary"}
 								onClick={toggleSelectionMode}
 								data-testid="toggle-selection-mode-button">
 								<span
@@ -269,7 +269,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						<Button variant="secondary" onClick={() => setSelectedTaskIds([])}>
 							{t("history:clearSelection")}
 						</Button>
-						<Button variant="default" onClick={handleBatchDelete}>
+						<Button variant="primary" onClick={handleBatchDelete}>
 							{t("history:deleteSelected")}
 						</Button>
 					</div>
