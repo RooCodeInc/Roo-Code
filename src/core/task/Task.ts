@@ -2797,22 +2797,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
+		// Properly type cleaned conversation history to include either standard Anthropic messages
+		// or provider-specific reasoning items (for encrypted continuity).
+		type ReasoningItemForRequest = {
+			type: "reasoning"
+			encrypted_content: string
+			id?: string
+			summary?: any[]
+		}
+		type CleanConversationMessage = Anthropic.Messages.MessageParam | ReasoningItemForRequest
+
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory)
-		let cleanConversationHistory: any[] = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api).map(
-			(msg: any) => {
-				// Pass through reasoning items as-is (including id if present)
-				if (msg.type === "reasoning") {
-					return {
-						type: msg.type,
-						summary: msg.summary,
-						encrypted_content: msg.encrypted_content,
-						...(msg.id ? { id: msg.id } : {}),
-					}
+		const cleanConversationHistory: CleanConversationMessage[] = maybeRemoveImageBlocks(
+			messagesSinceLastSummary,
+			this.api,
+		).map((msg: ApiMessage): CleanConversationMessage => {
+			// Pass through reasoning items as-is (including id if present)
+			if (msg.type === "reasoning") {
+				return {
+					type: "reasoning",
+					summary: msg.summary,
+					encrypted_content: msg.encrypted_content!,
+					...(msg.id ? { id: msg.id } : {}),
 				}
-				// For regular messages, just return role and content
-				return { role: msg.role, content: msg.content }
-			},
-		)
+			}
+			// For regular messages, just return role and content
+			return { role: msg.role!, content: msg.content as Anthropic.Messages.ContentBlockParam[] | string }
+		})
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
@@ -2831,7 +2842,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 		}
 
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory as any, metadata)
+		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
+		const stream = this.api.createMessage(
+			systemPrompt,
+			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
+			metadata,
+		)
 		const iterator = stream[Symbol.asyncIterator]()
 
 		try {
