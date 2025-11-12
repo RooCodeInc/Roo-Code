@@ -3,7 +3,7 @@
 import os from "os"
 import * as path from "path"
 
-import { arePathsEqual, getReadablePath, getWorkspacePath } from "../path"
+import { arePathsEqual, getReadablePath, getWorkspacePath, isUrl, sanitizeFilePath, validateFilePath } from "../path"
 
 // Mock modules
 
@@ -121,6 +121,152 @@ describe("Path Utilities", () => {
 			it("should handle root paths with trailing slashes", () => {
 				expect(arePathsEqual("/", "/")).toBe(true)
 				expect(arePathsEqual("C:\\", "C:\\")).toBe(true)
+			})
+		})
+
+		describe("isUrl", () => {
+			it("should detect HTTP URLs", () => {
+				expect(isUrl("http://example.com")).toBe(true)
+				expect(isUrl("https://example.com")).toBe(true)
+				expect(isUrl("https://www.google.com/search?q=package.json")).toBe(true)
+			})
+
+			it("should detect other protocol URLs", () => {
+				expect(isUrl("ftp://example.com")).toBe(true)
+				expect(isUrl("file://localhost/path")).toBe(true)
+				expect(isUrl("ssh://git@github.com")).toBe(true)
+				expect(isUrl("ws://localhost:8080")).toBe(true)
+				expect(isUrl("wss://secure.example.com")).toBe(true)
+			})
+
+			it("should not detect regular file paths as URLs", () => {
+				expect(isUrl("package.json")).toBe(false)
+				expect(isUrl("/usr/local/bin")).toBe(false)
+				expect(isUrl("C:\\Windows\\System32")).toBe(false)
+				expect(isUrl("./src/index.ts")).toBe(false)
+				expect(isUrl("../parent/file.txt")).toBe(false)
+			})
+
+			it("should handle edge cases", () => {
+				expect(isUrl("")).toBe(false)
+				expect(isUrl(null as any)).toBe(false)
+				expect(isUrl(undefined as any)).toBe(false)
+				expect(isUrl(123 as any)).toBe(false)
+			})
+
+			it("should be case-insensitive for protocols", () => {
+				expect(isUrl("HTTP://example.com")).toBe(true)
+				expect(isUrl("HTTPS://example.com")).toBe(true)
+				expect(isUrl("FTP://example.com")).toBe(true)
+			})
+		})
+
+		describe("sanitizeFilePath", () => {
+			it("should return null for complete URLs", () => {
+				expect(sanitizeFilePath("https://www.google.com/search?q=package.json")).toBe(null)
+				expect(sanitizeFilePath("http://example.com/file.txt")).toBe(null)
+				expect(sanitizeFilePath("ftp://server.com/path")).toBe(null)
+			})
+
+			it("should extract file path from concatenated URL and path", () => {
+				expect(sanitizeFilePath("package.json\nhttps://google.com")).toBe("package.json")
+				expect(sanitizeFilePath("src/file.ts https://example.com")).toBe("src/file.ts")
+				// Note: The comma case returns with the comma because it's checking if there's a URL after it
+				expect(sanitizeFilePath("./config.json,https://api.example.com")).toBe("./config.json")
+				expect(sanitizeFilePath("test.txt;https://example.com")).toBe("test.txt")
+			})
+
+			it("should handle paths with URLs concatenated without separators", () => {
+				expect(sanitizeFilePath("package.jsonhttps://google.com")).toBe("package.json")
+				expect(sanitizeFilePath("src/file.tshttps://example.com/api")).toBe("src/file.ts")
+				expect(sanitizeFilePath("config.yamlftp://server.com")).toBe("config.yaml")
+			})
+
+			it("should return the original path if no URL is present", () => {
+				expect(sanitizeFilePath("package.json")).toBe("package.json")
+				expect(sanitizeFilePath("/usr/local/bin/app")).toBe("/usr/local/bin/app")
+				expect(sanitizeFilePath("C:\\Windows\\System32\\cmd.exe")).toBe("C:\\Windows\\System32\\cmd.exe")
+			})
+
+			it("should trim whitespace", () => {
+				expect(sanitizeFilePath("  package.json  ")).toBe("package.json")
+				expect(sanitizeFilePath("\t./src/index.ts\n")).toBe("./src/index.ts")
+			})
+
+			it("should handle edge cases", () => {
+				expect(sanitizeFilePath("")).toBe(null)
+				expect(sanitizeFilePath(null as any)).toBe(null)
+				expect(sanitizeFilePath(undefined as any)).toBe(null)
+				expect(sanitizeFilePath(123 as any)).toBe(null)
+			})
+
+			it("should handle Windows paths with URLs", () => {
+				// The trailing backslash is removed as it's considered a separator before the URL
+				expect(
+					sanitizeFilePath(
+						"d:\\01_Proyectos\\SUPER-ADMIN\\package.json\\https:\\www.google.com\\search?q=package.json",
+					),
+				).toBe("d:\\01_Proyectos\\SUPER-ADMIN\\package.json")
+				expect(sanitizeFilePath("C:\\Users\\test\\file.txt https://example.com")).toBe(
+					"C:\\Users\\test\\file.txt",
+				)
+			})
+		})
+
+		describe("validateFilePath", () => {
+			it("should validate normal file paths", () => {
+				expect(validateFilePath("package.json")).toEqual({ isValid: true })
+				expect(validateFilePath("./src/index.ts")).toEqual({ isValid: true })
+				expect(validateFilePath("/usr/local/bin/app")).toEqual({ isValid: true })
+				expect(validateFilePath("C:\\Windows\\System32\\cmd.exe")).toEqual({ isValid: true })
+			})
+
+			it("should reject complete URLs", () => {
+				const result = validateFilePath("https://www.google.com/search?q=package.json")
+				expect(result.isValid).toBe(false)
+				expect(result.error).toContain("appears to be a URL")
+			})
+
+			it("should reject paths with URL components and suggest sanitized version", () => {
+				const result = validateFilePath("package.json https://google.com")
+				expect(result.isValid).toBe(false)
+				expect(result.error).toContain("contains URL components")
+				expect(result.error).toContain("package.json")
+			})
+
+			it("should reject paths with concatenated URLs", () => {
+				const result = validateFilePath("package.jsonhttps://google.com")
+				expect(result.isValid).toBe(false)
+				expect(result.error).toContain("contains URL components")
+				expect(result.error).toContain("package.json")
+			})
+
+			it("should handle empty or invalid inputs", () => {
+				expect(validateFilePath("").isValid).toBe(false)
+				expect(validateFilePath("").error).toContain("empty or invalid")
+
+				expect(validateFilePath(null as any).isValid).toBe(false)
+				expect(validateFilePath(undefined as any).isValid).toBe(false)
+				expect(validateFilePath(123 as any).isValid).toBe(false)
+			})
+
+			it("should handle the exact issue case from bug report", () => {
+				const bugPath =
+					"d:\\01_Proyectos\\...\\SUPER-ADMIN\\package.json\\https:\\www.google.com\\search?q=package.json"
+				const result = validateFilePath(bugPath)
+				expect(result.isValid).toBe(false)
+				expect(result.error).toContain("contains URL components")
+			})
+
+			it("should accept paths with spaces", () => {
+				expect(validateFilePath("my folder/my file.txt")).toEqual({ isValid: true })
+				expect(validateFilePath("C:\\Program Files\\app.exe")).toEqual({ isValid: true })
+			})
+
+			it("should accept paths with special characters", () => {
+				expect(validateFilePath("file-name_123.test.ts")).toEqual({ isValid: true })
+				expect(validateFilePath("@types/node/index.d.ts")).toEqual({ isValid: true })
+				expect(validateFilePath("file[1].txt")).toEqual({ isValid: true })
 			})
 		})
 	})

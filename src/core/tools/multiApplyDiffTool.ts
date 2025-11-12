@@ -5,7 +5,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"
-import { getReadablePath } from "../../utils/path"
+import { getReadablePath, validateFilePath, sanitizeFilePath } from "../../utils/path"
 import { Task } from "../task/Task"
 import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
@@ -120,6 +120,19 @@ export async function applyDiffTool(
 
 				const filePath = file.path
 
+				// Validate that the path doesn't contain URLs
+				const pathValidation = validateFilePath(filePath)
+				if (!pathValidation.isValid) {
+					// Try to suggest a sanitized version if possible
+					const sanitized = sanitizeFilePath(filePath)
+					let errorMsg = pathValidation.error || `Invalid file path: ${filePath}`
+					if (sanitized && sanitized !== filePath) {
+						errorMsg += ` Did you mean to use: ${sanitized}?`
+					}
+					filteredOperationErrors.push(errorMsg)
+					continue // Skip this file
+				}
+
 				// Initialize the operation in the map if it doesn't exist
 				if (!operationsMap[filePath]) {
 					operationsMap[filePath] = {
@@ -179,6 +192,27 @@ Original error: ${errorMessage}`
 	} else if (legacyPath && typeof legacyDiffContent === "string") {
 		// Handle legacy parameters (old way)
 		usingLegacyParams = true
+
+		// Validate the legacy path
+		const pathValidation = validateFilePath(legacyPath)
+		if (!pathValidation.isValid) {
+			cline.consecutiveMistakeCount++
+			cline.recordToolError("apply_diff")
+
+			// Try to suggest a sanitized version if possible
+			const sanitized = sanitizeFilePath(legacyPath)
+			let suggestion = ""
+			if (sanitized && sanitized !== legacyPath) {
+				suggestion = `\n\n<suggestion>Did you mean to use this path instead? ${sanitized}</suggestion>`
+			}
+
+			const formattedError = `${pathValidation.error || `Invalid file path: ${legacyPath}`}${suggestion}\n\n<error_details>\nThe file path appears to contain a URL or invalid characters. Please provide a valid relative or absolute file path.\n</error_details>`
+			await cline.say("error", formattedError)
+			pushToolResult(formattedError)
+			cline.processQueuedMessages()
+			return
+		}
+
 		operationsMap[legacyPath] = {
 			path: legacyPath,
 			diff: [
@@ -241,6 +275,16 @@ Original error: ${errorMessage}`
 
 		for (const operation of operations) {
 			const { path: relPath, diff: diffItems } = operation
+
+			// Additional validation before processing (in case path was modified after initial validation)
+			const pathValidation = validateFilePath(relPath)
+			if (!pathValidation.isValid) {
+				updateOperationResult(relPath, {
+					status: "blocked",
+					error: pathValidation.error || `Invalid file path: ${relPath}`,
+				})
+				continue
+			}
 
 			// Verify file access is allowed
 			const accessAllowed = cline.rooIgnoreController?.validateAccess(relPath)

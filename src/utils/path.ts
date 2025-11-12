@@ -130,3 +130,118 @@ export const getWorkspacePathForContext = (contextPath?: string): string => {
 	// Fall back to current behavior
 	return getWorkspacePath()
 }
+
+/**
+ * Checks if a string appears to be a URL rather than a file path
+ * @param path The string to check
+ * @returns true if the string looks like a URL
+ */
+export function isUrl(path: string): boolean {
+	if (!path || typeof path !== "string") {
+		return false
+	}
+
+	// Check for common URL protocols
+	const urlProtocols = /^(https?|ftp|file|data|mailto|tel|ssh|git|ws|wss):\/\//i
+	return urlProtocols.test(path)
+}
+
+/**
+ * Sanitizes a file path by removing any URL components if present
+ * This helps prevent the AI from accidentally including URLs in file paths
+ * @param filePath The file path to sanitize
+ * @returns The sanitized file path, or null if the entire path is a URL
+ */
+export function sanitizeFilePath(filePath: string): string | null {
+	if (!filePath || typeof filePath !== "string") {
+		return null
+	}
+
+	// If the entire path is a URL, return null
+	if (isUrl(filePath)) {
+		return null
+	}
+
+	// First check for paths that have URLs concatenated without separators
+	// This handles cases like "package.jsonhttps://google.com" or Windows paths with backslashes
+	// Also handle the specific bug case: "d:\01_Proyectos\...\package.json\https:\www.google.com\..."
+	// Match URLs with either :// or :\ (for Windows paths like https:\www.google.com)
+	const urlMatch = filePath.match(/(.*?)(https?|ftp|file|data|mailto|tel|ssh|git|ws|wss):[\\\/]/i)
+	if (urlMatch && urlMatch[1]) {
+		// Return the part before the URL, trimming any trailing separators
+		let cleanPath = urlMatch[1]
+		// Remove trailing backslash, forward slash, comma, or semicolon if it's there
+		cleanPath = cleanPath.replace(/[\\\/,;]$/, "")
+		return cleanPath.trim() || null
+	}
+
+	// Check if path contains a URL separated by whitespace or special characters
+	// But be careful not to split on spaces that are part of valid file paths
+	// Only split if we find actual URL protocols after the separator
+	const separators = ["\n", "\r", "\t", "|", ",", ";"]
+	for (const separator of separators) {
+		const separatorIndex = filePath.indexOf(separator)
+		if (separatorIndex !== -1) {
+			// Check if what comes after the separator is a URL
+			const afterSeparator = filePath.substring(separatorIndex + 1).trim()
+			if (isUrl(afterSeparator)) {
+				// Return everything before the separator
+				const result = filePath.substring(0, separatorIndex).trim()
+				return result || null
+			}
+		}
+	}
+
+	// Special handling for space separator - only split if there's a URL after the space
+	if (filePath.includes(" ")) {
+		// Check if any word after a space starts with a URL protocol
+		const words = filePath.split(" ")
+		for (let i = 1; i < words.length; i++) {
+			if (isUrl(words[i])) {
+				// Found a URL after a space, return everything before this point
+				return words.slice(0, i).join(" ").trim()
+			}
+		}
+	}
+
+	// If no URL components found, return the original path
+	return filePath.trim()
+}
+
+/**
+ * Validates that a file path is safe to use and doesn't contain URLs
+ * @param filePath The file path to validate
+ * @returns An object with isValid boolean and an optional error message
+ */
+export function validateFilePath(filePath: string): { isValid: boolean; error?: string } {
+	if (!filePath || typeof filePath !== "string") {
+		return { isValid: false, error: "File path is empty or invalid" }
+	}
+
+	// Check if the entire path is a URL
+	if (isUrl(filePath)) {
+		return {
+			isValid: false,
+			error: `Invalid file path: "${filePath}" appears to be a URL. Please provide a valid file path instead.`,
+		}
+	}
+
+	// Try to sanitize the path
+	const sanitized = sanitizeFilePath(filePath)
+	if (!sanitized) {
+		return {
+			isValid: false,
+			error: `Invalid file path: "${filePath}" could not be sanitized to a valid path.`,
+		}
+	}
+
+	// If sanitization changed the path, it contained URL components
+	if (sanitized !== filePath.trim()) {
+		return {
+			isValid: false,
+			error: `Invalid file path: "${filePath}" contains URL components. Did you mean "${sanitized}"?`,
+		}
+	}
+
+	return { isValid: true }
+}

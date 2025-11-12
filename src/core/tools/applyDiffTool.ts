@@ -5,7 +5,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"
-import { getReadablePath } from "../../utils/path"
+import { getReadablePath, validateFilePath, sanitizeFilePath } from "../../utils/path"
 import { Task } from "../task/Task"
 import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
@@ -66,6 +66,26 @@ export async function applyDiffToolLegacy(
 				cline.consecutiveMistakeCount++
 				cline.recordToolError("apply_diff")
 				pushToolResult(await cline.sayAndCreateMissingParamError("apply_diff", "diff"))
+				return
+			}
+
+			// Validate that the path doesn't contain URLs
+			const pathValidation = validateFilePath(relPath)
+			if (!pathValidation.isValid) {
+				cline.consecutiveMistakeCount++
+				cline.recordToolError("apply_diff")
+				const errorMessage = pathValidation.error || `Invalid file path: ${relPath}`
+
+				// Try to suggest a sanitized version if possible
+				const sanitized = sanitizeFilePath(relPath)
+				let suggestion = ""
+				if (sanitized && sanitized !== relPath) {
+					suggestion = `\n\n<suggestion>Did you mean to use this path instead? ${sanitized}</suggestion>`
+				}
+
+				const formattedError = `${errorMessage}${suggestion}\n\n<error_details>\nThe file path appears to contain a URL or invalid characters. Please provide a valid relative or absolute file path.\n</error_details>`
+				await cline.say("error", formattedError)
+				pushToolResult(formattedError)
 				return
 			}
 
