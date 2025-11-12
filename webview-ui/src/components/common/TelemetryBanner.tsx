@@ -13,7 +13,8 @@ const TelemetryBanner = () => {
 
 	const handleClose = () => {
 		setIsDismissed(true)
-		vscode.postMessage({ type: "telemetrySetting", text: "enabled" satisfies TelemetrySetting })
+		// When user dismisses the banner without making a choice, default to disabled
+		vscode.postMessage({ type: "telemetrySetting", text: "disabled" satisfies TelemetrySetting })
 	}
 
 	const handleOpenSettings = () => {

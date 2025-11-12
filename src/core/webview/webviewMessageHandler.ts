@@ -2367,13 +2367,13 @@ export const webviewMessageHandler = async (
 			const telemetrySetting = message.text as TelemetrySetting
 			const previousSetting = getGlobalState("telemetrySetting") || "unset"
 			const isOptedIn = telemetrySetting !== "disabled"
-			const wasPreviouslyOptedIn = previousSetting !== "disabled"
+			const wasPreviouslyOptedIn = previousSetting !== "disabled" && previousSetting !== "unset"
 
 			// If turning telemetry OFF, fire event BEFORE disabling
 			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
 				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
 			}
-			// Update the telemetry state
+			// Update the telemetry state - always persist the setting
 			await updateGlobalState("telemetrySetting", telemetrySetting)
 			if (TelemetryService.hasInstance()) {
 				TelemetryService.instance.updateTelemetryState(isOptedIn)
