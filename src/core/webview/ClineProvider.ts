@@ -1301,14 +1301,22 @@ export class ClineProvider
 	// Provider Profile Management
 
 	/**
-	 * Updates the current task's API handler if the provider or model has changed.
-	 * Also synchronizes the task.apiConfiguration so subsequent comparisons and logic
-	 * (protocol selection, reasoning display, model metadata) use the latest profile.
+	 * Updates the current task's API handler.
+	 * Rebuilds when:
+	 * - provider or model changes, OR
+	 * - explicitly forced (e.g., user-initiated profile switch/save to apply changed settings like headers/baseUrl/tier).
+	 * Always synchronizes task.apiConfiguration with latest provider settings.
 	 * @param providerSettings The new provider settings to apply
+	 * @param options.forceRebuild Force rebuilding the API handler regardless of provider/model equality
 	 */
-	private updateTaskApiHandlerIfNeeded(providerSettings: ProviderSettings): void {
+	private updateTaskApiHandlerIfNeeded(
+		providerSettings: ProviderSettings,
+		options: { forceRebuild?: boolean } = {},
+	): void {
 		const task = this.getCurrentTask()
 		if (!task) return
+
+		const { forceRebuild = false } = options
 
 		// Determine if we need to rebuild using the previous configuration snapshot
 		const prevConfig = task.apiConfiguration
@@ -1317,7 +1325,7 @@ export class ClineProvider
 		const newProvider = providerSettings.apiProvider
 		const newModelId = getModelId(providerSettings)
 
-		if (prevProvider !== newProvider || prevModelId !== newModelId) {
+		if (forceRebuild || prevProvider !== newProvider || prevModelId !== newModelId) {
 			task.api = buildApiHandler(providerSettings)
 		}
 
@@ -1373,7 +1381,7 @@ export class ClineProvider
 
 				// Change the provider for the current task.
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
-				this.updateTaskApiHandlerIfNeeded(providerSettings)
+				this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 			}
@@ -1428,9 +1436,8 @@ export class ClineProvider
 		if (id) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
 		}
-
 		// Change the provider for the current task.
-		this.updateTaskApiHandlerIfNeeded(providerSettings)
+		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 
 		await this.postStateToWebview()
 
