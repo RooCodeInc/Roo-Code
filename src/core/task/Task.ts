@@ -2427,7 +2427,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
 
-					if (assistantMessage) {
+					if (finalAssistantMessage) {
 						assistantMessageContent.push({
 							type: "text",
 							text: finalAssistantMessage,
