@@ -298,7 +298,7 @@ const PromptsSettings = ({
 										/>
 										<div className="mt-2 flex justify-start items-center gap-2">
 											<Button
-												variant="default"
+												variant="primary"
 												onClick={handleTestEnhancement}
 												disabled={isEnhancing}>
 												{t("prompts:supportPrompts.enhance.previewButton")}
