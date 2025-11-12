@@ -198,7 +198,7 @@ model.owned_by?.toLowerCase().includes(query) ||
 						{error && (
 							<div className="text-center pt-12 space-y-2">
 								<CircleX className="size-8 text-muted-foreground mx-auto mb-4" />
-								<p className="text-l">Oops, couldn&apos;t load the model list.</p>
+								<p className="text-lg">Oops, couldn&apos;t load the model list.</p>
 								<p className="text-muted-foreground">Try again in a bit please.</p>
 							</div>
 						)}
