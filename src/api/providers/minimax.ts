@@ -166,7 +166,7 @@ export class MiniMaxAnthropicHandler extends BaseProvider implements SingleCompl
 							break
 						case "input_json_delta":
 							if (lastStartedToolCall.id && lastStartedToolCall.name && chunk.delta.partial_json) {
-								// wait for native tool calls
+								//for  native tool call logic
 							}
 					}
 
