@@ -95,7 +95,7 @@ export default function ProviderPricingPage() {
 			filtered = models.filter((model) => {
 				return (
 					model.name.toLowerCase().includes(query) ||
-					model.owned_by.toLowerCase().includes(query) ||
+model.owned_by?.toLowerCase().includes(query) ||
 					model.description.toLowerCase().includes(query)
 				)
 			})
