@@ -38,6 +38,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
 	private lastResponseOutput: any[] | undefined
+	// Last top-level response id from Responses API (for troubleshooting)
+	private lastResponseId: string | undefined
 
 	// Event types handled by the shared event processor to avoid duplication
 	private readonly coreHandledEventTypes = new Set<string>([
@@ -146,6 +148,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastServiceTier = undefined
 		// Reset output array to capture current response output items
 		this.lastResponseOutput = undefined
+		// Reset last response id for this request
+		this.lastResponseId = undefined
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -167,7 +171,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		)
 
 		// Temporary debug logging
-		console.log("[OpenAI Native] Request body:", requestBody)
+		// console.log("[OpenAI Native] Request body:", requestBody)
 
 		// Make the request (pass systemPrompt and messages for potential retry)
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
@@ -470,6 +474,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 								this.lastResponseOutput = parsed.response.output
 							}
+							// Capture top-level response id
+							if (parsed.response?.id) {
+								this.lastResponseId = parsed.response.id as string
+							}
 
 							// Delegate standard event types to the shared processor to avoid duplication
 							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
@@ -761,6 +769,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								if (parsed.response?.service_tier) {
 									this.lastServiceTier = parsed.response.service_tier as ServiceTier
 								}
+								// Capture top-level response id
+								if (parsed.response?.id) {
+									this.lastResponseId = parsed.response.id as string
+								}
 								// Capture complete output array (includes reasoning items with encrypted_content)
 								if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 									this.lastResponseOutput = parsed.response.output
@@ -892,6 +904,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Capture complete output array (includes reasoning items with encrypted_content)
 		if (event?.response?.output && Array.isArray(event.response.output)) {
 			this.lastResponseOutput = event.response.output
+		}
+		// Capture top-level response id
+		if (event?.response?.id) {
+			this.lastResponseId = event.response.id as string
 		}
 
 		// Handle known streaming text deltas
@@ -1057,6 +1073,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			encrypted_content: reasoningItem.encrypted_content,
 			...(reasoningItem.id ? { id: reasoningItem.id } : {}),
 		}
+	}
+
+	getResponseId(): string | undefined {
+		return this.lastResponseId
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
