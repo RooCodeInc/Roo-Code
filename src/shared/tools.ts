@@ -86,6 +86,7 @@ export type NativeToolArgs = {
 		follow_up: Array<{ text: string; mode?: string }>
 	}
 	browser_action: BrowserActionParams
+	codebase_search: { query: string; path?: string }
 	// Add more tools as they are migrated to native protocol
 }
 

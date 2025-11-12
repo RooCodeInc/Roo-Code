@@ -148,6 +148,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "codebase_search":
+					if (args.query !== undefined) {
+						nativeArgs = {
+							query: args.query,
+							path: args.path,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

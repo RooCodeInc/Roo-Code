@@ -570,7 +570,12 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "codebase_search":
-					await codebaseSearchTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "list_code_definition_names":
 					await listCodeDefinitionNamesTool(
