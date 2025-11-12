@@ -102,12 +102,10 @@ export function ModelCard({ model }: ModelCardProps) {
 
 						{/* Extra details: only visible on mobile when expanded, always visible on >=sm */}
 						{model.owned_by && (
-							<tr
-								className={[
-									"border-b border-border",
-									"!sm:table-row",
-									expanded ? "table-row" : "hidden sm:table-row",
-								].join(" ")}>
+							className={[
+								"border-b border-border",
+								expanded ? "table-row" : "hidden sm:table-row",
+							].join(" ")}
 								<td className="py-1.5 font-medium text-muted-foreground">Vendor</td>
 								<td className="py-1.5 text-right">{model.owned_by}</td>
 							</tr>
