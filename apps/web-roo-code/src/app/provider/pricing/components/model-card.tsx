@@ -87,10 +87,11 @@ export function ModelCard({ model }: ModelCardProps) {
 						</tr>
 
 						{/* Output Price: always visible */}
-						className={[
-							"border-b border-border",
-							// Add subtle separation from toggle on mobile
-						].join(" ")}
+						<tr
+							className={[
+								"border-b border-border",
+								// Add subtle separation from toggle on mobile
+							].join(" ")}>
 							<td className="py-1.5 font-medium text-muted-foreground">
 								<ArrowLeftToLine className="size-4 inline-block mr-1.5" />
 								Output Price
@@ -102,10 +103,11 @@ export function ModelCard({ model }: ModelCardProps) {
 
 						{/* Extra details: only visible on mobile when expanded, always visible on >=sm */}
 						{model.owned_by && (
-							className={[
-								"border-b border-border",
-								expanded ? "table-row" : "hidden sm:table-row",
-							].join(" ")}
+							<tr
+								className={[
+									"border-b border-border",
+									expanded ? "table-row" : "hidden sm:table-row",
+								].join(" ")}>
 								<td className="py-1.5 font-medium text-muted-foreground">Vendor</td>
 								<td className="py-1.5 text-right">{model.owned_by}</td>
 							</tr>
