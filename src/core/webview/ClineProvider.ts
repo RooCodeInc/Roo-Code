@@ -1307,7 +1307,7 @@ export class ClineProvider
 		if (!task) return
 
 		// Determine if we need to rebuild using the previous configuration snapshot
-		const prevConfig = (task as any).apiConfiguration
+		const prevConfig = task.apiConfiguration
 		const prevProvider = prevConfig?.apiProvider
 		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
 		const newProvider = providerSettings.apiProvider
