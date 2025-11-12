@@ -686,69 +686,6 @@ describe("OpenAiNativeHandler", () => {
 			expect(contentChunks).toHaveLength(0)
 		})
 
-		it("should support previous_response_id for conversation continuity", async () => {
-			// Mock fetch for Responses API
-			const mockFetch = vitest.fn().mockResolvedValue({
-				ok: true,
-				body: new ReadableStream({
-					start(controller) {
-						// Include response ID in the response
-						controller.enqueue(
-							new TextEncoder().encode(
-								'data: {"type":"response.created","response":{"id":"resp_123","status":"in_progress"}}\n\n',
-							),
-						)
-						controller.enqueue(
-							new TextEncoder().encode(
-								'data: {"type":"response.output_item.added","item":{"type":"text","text":"Response with ID"}}\n\n',
-							),
-						)
-						controller.enqueue(
-							new TextEncoder().encode(
-								'data: {"type":"response.done","response":{"id":"resp_123","usage":{"prompt_tokens":10,"completion_tokens":3}}}\n\n',
-							),
-						)
-						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
-						controller.close()
-					},
-				}),
-			})
-			global.fetch = mockFetch as any
-
-			// Mock SDK to fail
-			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
-
-			handler = new OpenAiNativeHandler({
-				...mockOptions,
-				apiModelId: "gpt-5-2025-08-07",
-			})
-
-			// First request - should not have previous_response_id
-			const stream1 = handler.createMessage(systemPrompt, messages)
-			const chunks1: any[] = []
-			for await (const chunk of stream1) {
-				chunks1.push(chunk)
-			}
-
-			// Verify first request doesn't include previous_response_id
-			let firstCallBody = JSON.parse(mockFetch.mock.calls[0][1].body)
-			expect(firstCallBody.previous_response_id).toBeUndefined()
-
-			// Second request with metadata - should include previous_response_id
-			const stream2 = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				previousResponseId: "resp_456",
-			})
-			const chunks2: any[] = []
-			for await (const chunk of stream2) {
-				chunks2.push(chunk)
-			}
-
-			// Verify second request includes the provided previous_response_id
-			let secondCallBody = JSON.parse(mockFetch.mock.calls[1][1].body)
-			expect(secondCallBody.previous_response_id).toBe("resp_456")
-		})
-
 		it("should handle unhandled stream events gracefully", async () => {
 			// Mock fetch for the fallback SSE path
 			const mockFetch = vitest.fn().mockResolvedValue({
@@ -798,7 +735,7 @@ describe("OpenAiNativeHandler", () => {
 			expect(textChunks[0].text).toBe("Hello")
 		})
 
-		it("should use stored response ID when metadata doesn't provide one", async () => {
+		it.skip("should use stored response ID when metadata doesn't provide one - DEPRECATED", async () => {
 			// Mock fetch for Responses API
 			const mockFetch = vitest
 				.fn()
@@ -854,12 +791,10 @@ describe("OpenAiNativeHandler", () => {
 				// consume stream
 			}
 
-			// Verify second request uses the stored response ID from first request
-			let secondCallBody = JSON.parse(mockFetch.mock.calls[1][1].body)
-			expect(secondCallBody.previous_response_id).toBe("resp_789")
+			// DEPRECATED: This test is for old previous_response_id behavior
 		})
 
-		it("should retry with full conversation when previous_response_id fails", async () => {
+		it.skip("should retry with full conversation when previous_response_id fails - DEPRECATED", async () => {
 			// This test verifies the fix for context loss bug when previous_response_id becomes invalid
 			const mockFetch = vitest
 				.fn()
@@ -908,10 +843,9 @@ describe("OpenAiNativeHandler", () => {
 				{ role: "user", content: "And 4+4?" }, // Latest message
 			]
 
-			// Call with a previous_response_id that will fail
+			// Call without previous_response_id
 			const stream = handler.createMessage(systemPrompt, conversationMessages, {
 				taskId: "test-task",
-				previousResponseId: "resp_invalid",
 			})
 
 			const chunks: any[] = []
@@ -966,7 +900,7 @@ describe("OpenAiNativeHandler", () => {
 			])
 		})
 
-		it("should retry with full conversation when SDK returns 400 for invalid previous_response_id", async () => {
+		it.skip("should retry with full conversation when SDK returns 400 for invalid previous_response_id - DEPRECATED", async () => {
 			// Test the SDK path (executeRequest method) for handling invalid previous_response_id
 
 			// Mock SDK to return an async iterable that we can control
@@ -1010,10 +944,9 @@ describe("OpenAiNativeHandler", () => {
 				{ role: "user", content: "What number did I ask you to remember?" },
 			]
 
-			// Call with a previous_response_id that will fail
+			// Call without previous_response_id
 			const stream = handler.createMessage(systemPrompt, conversationMessages, {
 				taskId: "test-task",
-				previousResponseId: "resp_invalid",
 			})
 
 			const chunks: any[] = []
@@ -1061,7 +994,7 @@ describe("OpenAiNativeHandler", () => {
 			])
 		})
 
-		it("should only send latest message when using previous_response_id", async () => {
+		it.skip("should only send latest message when using previous_response_id - DEPRECATED", async () => {
 			// Mock fetch for Responses API
 			const mockFetch = vitest
 				.fn()
@@ -1152,7 +1085,6 @@ describe("OpenAiNativeHandler", () => {
 
 			const stream2 = handler.createMessage(systemPrompt, secondMessages, {
 				taskId: "test-task",
-				previousResponseId: "resp_001",
 			})
 			for await (const chunk of stream2) {
 				// consume stream
@@ -1169,26 +1101,44 @@ describe("OpenAiNativeHandler", () => {
 			expect(secondCallBody.previous_response_id).toBe("resp_001")
 		})
 
-		it("should correctly prepare structured input", () => {
+		it("should format full conversation correctly", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"response.output_item.added","item":{"type":"text","text":"Response"}}\n\n',
+							),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
 			const gpt5Handler = new OpenAiNativeHandler({
 				...mockOptions,
 				apiModelId: "gpt-5-2025-08-07",
 			})
 
-			// Test with metadata that has previousResponseId
-			// @ts-expect-error - private method
-			const { formattedInput, previousResponseId } = gpt5Handler.prepareStructuredInput(systemPrompt, messages, {
+			const stream = gpt5Handler.createMessage(systemPrompt, messages, {
 				taskId: "task1",
-				previousResponseId: "resp_123",
 			})
+			for await (const chunk of stream) {
+				// consume
+			}
 
-			expect(previousResponseId).toBe("resp_123")
-			expect(formattedInput).toEqual([
+			const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(callBody.input).toEqual([
 				{
 					role: "user",
 					content: [{ type: "input_text", text: "Hello!" }],
 				},
 			])
+			expect(callBody.previous_response_id).toBeUndefined()
 		})
 
 		it("should provide helpful error messages for different error codes", async () => {

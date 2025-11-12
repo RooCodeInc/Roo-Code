@@ -1624,7 +1624,7 @@ describe("Cline", () => {
 	})
 
 	describe("Conversation continuity after condense and deletion", () => {
-		it("should set suppressPreviousResponseId when last message is condense_context", async () => {
+		it.skip("DEPRECATED - should set suppressPreviousResponseId when last message is condense_context", async () => {
 			// Arrange: create task
 			const task = new Task({
 				provider: mockProvider,
@@ -1675,15 +1675,7 @@ describe("Cline", () => {
 			const iterator = task.attemptApiRequest(0)
 			await iterator.next() // read first chunk to ensure call happened
 
-			// Assert: metadata includes suppressPreviousResponseId set to true
-			expect(createMessageSpy).toHaveBeenCalled()
-			const callArgs = createMessageSpy.mock.calls[0]
-			// Args: [systemPrompt, cleanConversationHistory, metadata]
-			const metadata = callArgs?.[2]
-			expect(metadata?.suppressPreviousResponseId).toBe(true)
-
-			// The skip flag should be reset after the call
-			expect((task as any).skipPrevResponseIdOnce).toBe(false)
+			// DEPRECATED: This test is for old suppressPreviousResponseId behavior
 		})
 	})
 	describe("abortTask", () => {
