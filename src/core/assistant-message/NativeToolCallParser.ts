@@ -165,6 +165,16 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "generate_image":
+					if (args.prompt !== undefined && args.path !== undefined) {
+						nativeArgs = {
+							prompt: args.prompt,
+							path: args.path,
+							image: args.image,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

@@ -3,6 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "@roo-code/types"
 import type { FileEntry } from "../core/tools/ReadFileTool"
 import type { BrowserActionParams } from "../core/tools/browserActionTool"
+import { GenerateImageParams } from "../core/tools/generateImageTool"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -88,6 +89,7 @@ export type NativeToolArgs = {
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
 	fetch_instructions: { task: string }
+	generate_image: GenerateImageParams
 	// Add more tools as they are migrated to native protocol
 }
 
