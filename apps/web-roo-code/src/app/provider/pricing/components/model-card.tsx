@@ -17,15 +17,13 @@ interface ModelCardProps {
 }
 
 export function ModelCard({ model }: ModelCardProps) {
-	let inputPrice = parseFloat(model.pricing.input)
+	const inputPrice = parseFloat(model.pricing.input)
 	const outputPrice = parseFloat(model.pricing.output)
 	const cacheReadPrice = parseFloat(model.pricing.input_cache_read)
 	const cacheWritePrice = parseFloat(model.pricing.input_cache_write)
 
 	const free = model.tags.includes("free")
 	const usefulTags = model.tags.filter((tag) => tag !== "free")
-
-	inputPrice += 100
 
 	return (
 		<div className="relative cursor-default px-8 pt-7 pb-5 flex flex-col justify-start bg-background border rounded-3xl transition-all hover:shadow-xl">

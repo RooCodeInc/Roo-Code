@@ -129,8 +129,10 @@ export default function ProviderPricingPage() {
 			<section className="relative overflow-hidden py-16">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
-						<h1 className="text-5xl font-bold tracking-tight">Roo Code Cloud Provider Pricing</h1>
-						<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+						<h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+							Roo Code Cloud Provider Pricing
+						</h1>
+						<p className="mx-auto mt-4 max-w-2xl md:text-lg text-muted-foreground">
 							See pricing and features for all models we offer in our selection.
 							<br />
 							You can always bring your own key (
@@ -170,7 +172,7 @@ export default function ProviderPricingPage() {
 										id="sort"
 										value={sortOption}
 										onChange={(e) => setSortOption(e.target.value as SortOption)}
-										className="rounded-full cursor-pointer border border-input bg-background hover:bg-muted pl-4 pr-9 py-2.5 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 relative appearance-none">
+										className="rounded-full cursor-pointer border border-input bg-background hover:bg-muted pl-4 w-full md:w-auto pr-9 py-2.5 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 relative appearance-none">
 										<option value="alphabetical">Alphabetical</option>
 										<option value="price-asc">Price: Low to High</option>
 										<option value="price-desc">Price: High to Low</option>
