@@ -267,11 +267,24 @@ export default function PricingPage() {
 							</p>
 						</div>
 						<div className="rounded-lg border border-border bg-card p-6">
-							<h3 className="font-semibold">How do Cloud Agent credits work?</h3>
+							<h3 className="font-semibold">How do credits work?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Cloud Agents are a version of Roo running in the cloud without depending on your IDE.
-								You can run as many as you want, and bring your own inference provider key.
+								Roo Code Cloud credits can be used in two ways:
 							</p>
+							<ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
+								<li>To pay for Cloud Agents running time (${PRICE_CREDITS}/hour)</li>
+								<li>
+									To pay for AI model inference costs (
+									<a
+										href="https://app.roocode.com/provider/pricing"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="underline">
+										varies by model
+									</a>
+									)
+								</li>
+							</ul>
 							<p className="mt-2 text-sm text-muted-foreground">
 								To cover our infrastructure costs, we charge ${PRICE_CREDITS}/hour while the agent is
 								running (independent of inference costs).
