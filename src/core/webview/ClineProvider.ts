@@ -1392,8 +1392,30 @@ export class ClineProvider
 		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
 		const newProvider = providerSettings.apiProvider
 		const newModelId = getModelId(providerSettings)
+		const customApiConfigChanged = (
+			[
+				"openAiLegacyFormat",
+				"includeMaxTokens",
+				"openAiR1FormatEnabled",
+				"azureApiVersion",
+				"openAiUseAzure",
+				"enableReasoningEffort",
+			] as const
+		).some(
+			(
+				key:
+					| "openAiLegacyFormat"
+					| "includeMaxTokens"
+					| "openAiR1FormatEnabled"
+					| "azureApiVersion"
+					| "openAiUseAzure"
+					| "enableReasoningEffort",
+			) => {
+				return prevConfig?.[key] !== providerSettings?.[key]
+			},
+		)
 
-		if (prevProvider !== newProvider || prevModelId !== newModelId) {
+		if (prevProvider !== newProvider || prevModelId !== newModelId || customApiConfigChanged) {
 			task.api = buildApiHandler(providerSettings)
 		}
 
