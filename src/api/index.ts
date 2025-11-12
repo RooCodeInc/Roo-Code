@@ -40,7 +40,7 @@ import {
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
-	MiniMaxHandler,
+	MiniMaxAnthropicHandler as MiniMaxHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 

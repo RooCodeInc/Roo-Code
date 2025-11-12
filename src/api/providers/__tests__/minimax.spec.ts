@@ -1,337 +1,297 @@
 // npx vitest run src/api/providers/__tests__/minimax.spec.ts
 
-vitest.mock("vscode", () => ({
-	workspace: {
-		getConfiguration: vitest.fn().mockReturnValue({
-			get: vitest.fn().mockReturnValue(600), // Default timeout in seconds
-		}),
-	},
-}))
+import { MiniMaxAnthropicHandler } from "../minimax"
+import { ApiHandlerOptions } from "../../../shared/api"
+import {
+	minimaxDefaultModelId,
+	minimaxModels,
+	MINIMAX_DEFAULT_TEMPERATURE,
+	MINIMAX_DEFAULT_MAX_TOKENS,
+} from "@roo-code/types"
 
-import OpenAI from "openai"
-import { Anthropic } from "@anthropic-ai/sdk"
+const mockCreate = vitest.fn()
 
-import { type MinimaxModelId, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
+vitest.mock("@anthropic-ai/sdk", () => {
+	const mockAnthropicConstructor = vitest.fn().mockImplementation(() => ({
+		messages: {
+			create: mockCreate.mockImplementation(async (options) => {
+				if (!options.stream) {
+					return {
+						id: "test-completion",
+						content: [{ type: "text", text: "Test response from MiniMax" }],
+						role: "assistant",
+						model: options.model,
+						usage: {
+							input_tokens: 10,
+							output_tokens: 5,
+						},
+					}
+				}
+				return {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							type: "message_start",
+							message: {
+								usage: {
+									input_tokens: 100,
+									output_tokens: 50,
+									cache_creation_input_tokens: 20,
+									cache_read_input_tokens: 10,
+								},
+							},
+						}
+						yield {
+							type: "content_block_start",
+							index: 0,
+							content_block: {
+								type: "text",
+								text: "Hello",
+							},
+						}
+						yield {
+							type: "content_block_delta",
+							delta: {
+								type: "text_delta",
+								text: " from MiniMax",
+							},
+						}
+					},
+				}
+			}),
+		},
+	}))
 
-import { MiniMaxHandler } from "../minimax"
-
-vitest.mock("openai", () => {
-	const createMock = vitest.fn()
 	return {
-		default: vitest.fn(() => ({ chat: { completions: { create: createMock } } })),
+		Anthropic: mockAnthropicConstructor,
 	}
 })
 
+// Import after mock
+import { Anthropic } from "@anthropic-ai/sdk"
+
+const mockAnthropicConstructor = vitest.mocked(Anthropic)
+
 describe("MiniMaxHandler", () => {
-	let handler: MiniMaxHandler
-	let mockCreate: any
+	let handler: MiniMaxAnthropicHandler
+	let mockOptions: ApiHandlerOptions
 
 	beforeEach(() => {
 		vitest.clearAllMocks()
-		mockCreate = (OpenAI as unknown as any)().chat.completions.create
+		mockOptions = {
+			minimaxApiKey: "test-minimax-api-key",
+			apiModelId: minimaxDefaultModelId,
+		}
+		handler = new MiniMaxAnthropicHandler(mockOptions)
 	})
 
-	describe("International MiniMax (default)", () => {
-		beforeEach(() => {
-			handler = new MiniMaxHandler({
-				minimaxApiKey: "test-minimax-api-key",
-				minimaxBaseUrl: "https://api.minimax.io/v1",
-			})
+	describe("constructor", () => {
+		it("should initialize with provided options", () => {
+			expect(handler).toBeInstanceOf(MiniMaxAnthropicHandler)
+			expect(handler.getModel().id).toBe(minimaxDefaultModelId)
 		})
 
-		it("should use the correct international MiniMax base URL by default", () => {
-			new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
-			expect(OpenAI).toHaveBeenCalledWith(
+		it("should use default international base URL", () => {
+			new MiniMaxAnthropicHandler(mockOptions)
+			expect(mockAnthropicConstructor).toHaveBeenCalledWith(
 				expect.objectContaining({
-					baseURL: "https://api.minimax.io/v1",
+					baseURL: "https://api.minimax.io/anthropic",
+					apiKey: "test-minimax-api-key",
 				}),
 			)
 		})
 
-		it("should use the provided API key", () => {
-			const minimaxApiKey = "test-minimax-api-key"
-			new MiniMaxHandler({ minimaxApiKey })
-			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: minimaxApiKey }))
-		})
-
-		it("should return default model when no model is specified", () => {
-			const model = handler.getModel()
-			expect(model.id).toBe(minimaxDefaultModelId)
-			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
-		})
-
-		it("should return specified model when valid model is provided", () => {
-			const testModelId: MinimaxModelId = "MiniMax-M2"
-			const handlerWithModel = new MiniMaxHandler({
-				apiModelId: testModelId,
-				minimaxApiKey: "test-minimax-api-key",
+		it("should use custom base URL if provided", () => {
+			const customBaseUrl = "https://api.minimaxi.com/anthropic"
+			new MiniMaxAnthropicHandler({
+				...mockOptions,
+				minimaxBaseUrl: customBaseUrl,
 			})
-			const model = handlerWithModel.getModel()
-			expect(model.id).toBe(testModelId)
-			expect(model.info).toEqual(minimaxModels[testModelId])
-		})
-
-		it("should return MiniMax-M2 model with correct configuration", () => {
-			const testModelId: MinimaxModelId = "MiniMax-M2"
-			const handlerWithModel = new MiniMaxHandler({
-				apiModelId: testModelId,
-				minimaxApiKey: "test-minimax-api-key",
-			})
-			const model = handlerWithModel.getModel()
-			expect(model.id).toBe(testModelId)
-			expect(model.info).toEqual(minimaxModels[testModelId])
-			expect(model.info.contextWindow).toBe(192_000)
-			expect(model.info.maxTokens).toBe(16_384)
-			expect(model.info.supportsPromptCache).toBe(true)
-			expect(model.info.cacheWritesPrice).toBe(0.375)
-			expect(model.info.cacheReadsPrice).toBe(0.03)
-		})
-
-		it("should return MiniMax-M2-Stable model with correct configuration", () => {
-			const testModelId: MinimaxModelId = "MiniMax-M2-Stable"
-			const handlerWithModel = new MiniMaxHandler({
-				apiModelId: testModelId,
-				minimaxApiKey: "test-minimax-api-key",
-			})
-			const model = handlerWithModel.getModel()
-			expect(model.id).toBe(testModelId)
-			expect(model.info).toEqual(minimaxModels[testModelId])
-			expect(model.info.contextWindow).toBe(192_000)
-			expect(model.info.maxTokens).toBe(16_384)
-			expect(model.info.supportsPromptCache).toBe(true)
-			expect(model.info.cacheWritesPrice).toBe(0.375)
-			expect(model.info.cacheReadsPrice).toBe(0.03)
-		})
-	})
-
-	describe("China MiniMax", () => {
-		beforeEach(() => {
-			handler = new MiniMaxHandler({
-				minimaxApiKey: "test-minimax-api-key",
-				minimaxBaseUrl: "https://api.minimaxi.com/v1",
-			})
-		})
-
-		it("should use the correct China MiniMax base URL", () => {
-			new MiniMaxHandler({
-				minimaxApiKey: "test-minimax-api-key",
-				minimaxBaseUrl: "https://api.minimaxi.com/v1",
-			})
-			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: "https://api.minimaxi.com/v1" }))
-		})
-
-		it("should use the provided API key for China", () => {
-			const minimaxApiKey = "test-minimax-api-key"
-			new MiniMaxHandler({ minimaxApiKey, minimaxBaseUrl: "https://api.minimaxi.com/v1" })
-			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: minimaxApiKey }))
-		})
-
-		it("should return default model when no model is specified", () => {
-			const model = handler.getModel()
-			expect(model.id).toBe(minimaxDefaultModelId)
-			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
-		})
-	})
-
-	describe("Default behavior", () => {
-		it("should default to international base URL when none is specified", () => {
-			const handlerDefault = new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
-			expect(OpenAI).toHaveBeenCalledWith(
+			expect(mockAnthropicConstructor).toHaveBeenCalledWith(
 				expect.objectContaining({
-					baseURL: "https://api.minimax.io/v1",
+					baseURL: customBaseUrl,
 				}),
 			)
-
-			const model = handlerDefault.getModel()
-			expect(model.id).toBe(minimaxDefaultModelId)
-			expect(model.info).toEqual(minimaxModels[minimaxDefaultModelId])
 		})
 
-		it("should default to MiniMax-M2 model", () => {
-			const handlerDefault = new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
-			const model = handlerDefault.getModel()
-			expect(model.id).toBe("MiniMax-M2")
+		it("should use China base URL when provided", () => {
+			const chinaBaseUrl = "https://api.minimaxi.com/anthropic"
+			new MiniMaxAnthropicHandler({
+				...mockOptions,
+				minimaxBaseUrl: chinaBaseUrl,
+			})
+			expect(mockAnthropicConstructor).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: chinaBaseUrl,
+					apiKey: "test-minimax-api-key",
+				}),
+			)
+		})
+
+		it("should initialize without API key", () => {
+			const handlerWithoutKey = new MiniMaxAnthropicHandler({
+				...mockOptions,
+				minimaxApiKey: undefined,
+			})
+			expect(handlerWithoutKey).toBeInstanceOf(MiniMaxAnthropicHandler)
 		})
 	})
 
-	describe("API Methods", () => {
-		beforeEach(() => {
-			handler = new MiniMaxHandler({ minimaxApiKey: "test-minimax-api-key" })
-		})
+	describe("createMessage", () => {
+		const systemPrompt = "You are a helpful assistant."
 
-		it("completePrompt method should return text from MiniMax API", async () => {
-			const expectedResponse = "This is a test response from MiniMax"
-			mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })
-			const result = await handler.completePrompt("test prompt")
-			expect(result).toBe(expectedResponse)
-		})
+		it("should stream messages successfully", async () => {
+			const stream = handler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello MiniMax" }],
+				},
+			])
 
-		it("should handle errors in completePrompt", async () => {
-			const errorMessage = "MiniMax API error"
-			mockCreate.mockRejectedValueOnce(new Error(errorMessage))
-			await expect(handler.completePrompt("test prompt")).rejects.toThrow()
-		})
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
 
-		it("createMessage should yield text content from stream", async () => {
-			const testContent = "This is test content from MiniMax stream"
+			// Verify usage information
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk?.inputTokens).toBe(100)
+			expect(usageChunk?.outputTokens).toBe(50)
 
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						next: vitest
-							.fn()
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: [{ delta: { content: testContent } }] },
-							})
-							.mockResolvedValueOnce({ done: true }),
-					}),
-				}
-			})
+			// Verify text content
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks).toHaveLength(2)
+			expect(textChunks[0].text).toBe("Hello")
+			expect(textChunks[1].text).toBe(" from MiniMax")
 
-			const stream = handler.createMessage("system prompt", [])
-			const firstChunk = await stream.next()
-
-			expect(firstChunk.done).toBe(false)
-			expect(firstChunk.value).toEqual({ type: "text", text: testContent })
-		})
-
-		it("createMessage should yield usage data from stream", async () => {
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						next: vitest
-							.fn()
-							.mockResolvedValueOnce({
-								done: false,
-								value: {
-									choices: [{ delta: {} }],
-									usage: { prompt_tokens: 10, completion_tokens: 20 },
-								},
-							})
-							.mockResolvedValueOnce({ done: true }),
-					}),
-				}
-			})
-
-			const stream = handler.createMessage("system prompt", [])
-			const firstChunk = await stream.next()
-
-			expect(firstChunk.done).toBe(false)
-			expect(firstChunk.value).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20 })
-		})
-
-		it("createMessage should pass correct parameters to MiniMax client", async () => {
-			const modelId: MinimaxModelId = "MiniMax-M2"
-			const modelInfo = minimaxModels[modelId]
-			const handlerWithModel = new MiniMaxHandler({
-				apiModelId: modelId,
-				minimaxApiKey: "test-minimax-api-key",
-			})
-
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						async next() {
-							return { done: true }
-						},
-					}),
-				}
-			})
-
-			const systemPrompt = "Test system prompt for MiniMax"
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test message for MiniMax" }]
-
-			const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
-			await messageGenerator.next()
-
+			// Verify API call
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: modelId,
-					max_tokens: Math.min(modelInfo.maxTokens, Math.ceil(modelInfo.contextWindow * 0.2)),
-					temperature: 1,
-					messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
+					model: minimaxDefaultModelId,
+					max_tokens: 16384,
+					temperature: MINIMAX_DEFAULT_TEMPERATURE,
+					system: [{ text: systemPrompt, type: "text" }],
 					stream: true,
-					stream_options: { include_usage: true },
 				}),
-				undefined,
 			)
 		})
 
-		it("should use temperature 1 by default", async () => {
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						async next() {
-							return { done: true }
-						},
-					}),
-				}
+		it("should handle multiple messages", async () => {
+			const stream = handler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "First message" }],
+				},
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Response" }],
+				},
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Second message" }],
+				},
+			])
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks.length).toBeGreaterThan(0)
+			expect(mockCreate).toHaveBeenCalled()
+		})
+	})
+
+	describe("completePrompt", () => {
+		it("should complete prompt successfully", async () => {
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("Test response from MiniMax")
+			expect(mockCreate).toHaveBeenCalledWith({
+				model: minimaxDefaultModelId,
+				messages: [{ role: "user", content: "Test prompt" }],
+				max_tokens: MINIMAX_DEFAULT_MAX_TOKENS,
+				temperature: MINIMAX_DEFAULT_TEMPERATURE,
+				thinking: undefined,
+				stream: false,
 			})
-
-			const messageGenerator = handler.createMessage("test", [])
-			await messageGenerator.next()
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					temperature: 1,
-				}),
-				undefined,
-			)
 		})
 
-		it("should handle streaming chunks with null choices array", async () => {
-			const testContent = "Content after null choices"
+		it("should handle API errors", async () => {
+			mockCreate.mockRejectedValueOnce(new Error("MiniMax API Error"))
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("MiniMax API Error")
+		})
 
-			mockCreate.mockImplementationOnce(() => {
-				return {
-					[Symbol.asyncIterator]: () => ({
-						next: vitest
-							.fn()
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: null },
-							})
-							.mockResolvedValueOnce({
-								done: false,
-								value: { choices: [{ delta: { content: testContent } }] },
-							})
-							.mockResolvedValueOnce({ done: true }),
-					}),
-				}
+		it("should handle non-text content", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				content: [{ type: "image" }],
+			}))
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("")
+		})
+
+		it("should handle empty response", async () => {
+			mockCreate.mockImplementationOnce(async () => ({
+				content: [{ type: "text", text: "" }],
+			}))
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("")
+		})
+	})
+
+	describe("getModel", () => {
+		it("should return default model if no model ID is provided", () => {
+			const handlerWithoutModel = new MiniMaxAnthropicHandler({
+				...mockOptions,
+				apiModelId: undefined,
 			})
+			const model = handlerWithoutModel.getModel()
+			expect(model.id).toBe(minimaxDefaultModelId)
+			expect(model.info).toBeDefined()
+		})
 
-			const stream = handler.createMessage("system prompt", [])
-			const firstChunk = await stream.next()
+		it("should return MiniMax-M2 as default model", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe("MiniMax-M2")
+			expect(model.info).toEqual(minimaxModels["MiniMax-M2"])
+		})
 
-			expect(firstChunk.done).toBe(false)
-			expect(firstChunk.value).toEqual({ type: "text", text: testContent })
+		it("should return correct model configuration for MiniMax-M2", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe("MiniMax-M2")
+			expect(model.info.maxTokens).toBe(16384)
+			expect(model.info.contextWindow).toBe(192_000)
+			expect(model.info.supportsImages).toBe(false)
+			expect(model.info.supportsPromptCache).toBe(true)
+			expect(model.info.inputPrice).toBe(0.3)
+			expect(model.info.outputPrice).toBe(1.2)
+		})
+
+		it("should use correct default max tokens", () => {
+			const model = handler.getModel()
+			expect(model.maxTokens).toBe(16384)
 		})
 	})
 
 	describe("Model Configuration", () => {
-		it("should correctly configure MiniMax-M2 model properties", () => {
-			const model = minimaxModels["MiniMax-M2"]
-			expect(model.maxTokens).toBe(16_384)
-			expect(model.contextWindow).toBe(192_000)
-			expect(model.supportsImages).toBe(false)
-			expect(model.supportsPromptCache).toBe(true)
-			expect(model.inputPrice).toBe(0.3)
-			expect(model.outputPrice).toBe(1.2)
-			expect(model.cacheWritesPrice).toBe(0.375)
-			expect(model.cacheReadsPrice).toBe(0.03)
+		it("should have correct model configuration", () => {
+			expect(minimaxDefaultModelId).toBe("MiniMax-M2")
+			expect(minimaxModels["MiniMax-M2"]).toEqual({
+				maxTokens: 16384,
+				contextWindow: 192_000,
+				supportsImages: false,
+				supportsPromptCache: true,
+				inputPrice: 0.3,
+				outputPrice: 1.2,
+				cacheWritesPrice: 0.375,
+				cacheReadsPrice: 0.03,
+				description:
+					"MiniMax M2, a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
+			})
 		})
 
-		it("should correctly configure MiniMax-M2-Stable model properties", () => {
-			const model = minimaxModels["MiniMax-M2-Stable"]
-			expect(model.maxTokens).toBe(16_384)
-			expect(model.contextWindow).toBe(192_000)
-			expect(model.supportsImages).toBe(false)
-			expect(model.supportsPromptCache).toBe(true)
-			expect(model.inputPrice).toBe(0.3)
-			expect(model.outputPrice).toBe(1.2)
-			expect(model.cacheWritesPrice).toBe(0.375)
-			expect(model.cacheReadsPrice).toBe(0.03)
+		it("should have correct default constants", () => {
+			expect(MINIMAX_DEFAULT_TEMPERATURE).toBe(1.0)
+			expect(MINIMAX_DEFAULT_MAX_TOKENS).toBe(16384)
 		})
 	})
 })

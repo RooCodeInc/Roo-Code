@@ -1985,7 +1985,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser.reset()
-
+				const antThinkingContent = new Array<
+					Anthropic.Messages.RedactedThinkingBlock | Anthropic.Messages.ThinkingBlock
+				>()
 				await this.diffViewProvider.reset()
 
 				// Yields only if the first chunk is successful, otherwise will
@@ -2039,6 +2041,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								if (chunk.sources && chunk.sources.length > 0) {
 									pendingGroundingSources.push(...chunk.sources)
 								}
+								break
+							case "ant_thinking":
+								antThinkingContent.push({
+									type: "thinking",
+									thinking: chunk.thinking,
+									signature: chunk.signature,
+								})
+								break
+							case "ant_redacted_thinking":
+								antThinkingContent.push({
+									type: "redacted_thinking",
+									data: chunk.data,
+								})
 								break
 							case "text": {
 								assistantMessage += chunk.text
@@ -2401,16 +2416,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
+					const assistantMessageContent = new Array<Anthropic.Messages.ContentBlockParam>()
+					assistantMessageContent.push(...antThinkingContent)
+
 					// Check if we should preserve reasoning in the assistant message
 					let finalAssistantMessage = assistantMessage
+
 					if (reasoningMessage && this.api.getModel().info.preserveReasoning) {
 						// Prepend reasoning in XML tags to the assistant message so it's included in API history
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
 
+					if (assistantMessage) {
+						assistantMessageContent.push({
+							type: "text",
+							text: finalAssistantMessage,
+						})
+					}
+
 					await this.addToApiConversationHistory({
 						role: "assistant",
-						content: [{ type: "text", text: finalAssistantMessage }],
+						content: assistantMessageContent,
 					})
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
