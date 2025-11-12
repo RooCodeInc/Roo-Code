@@ -2426,14 +2426,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Prepend reasoning in XML tags to the assistant message so it's included in API history
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
-
-					if (finalAssistantMessage) {
-						assistantMessageContent.push({
-							type: "text",
-							text: finalAssistantMessage,
-						})
-					}
-
+					assistantMessageContent.push({
+						type: "text",
+						text: finalAssistantMessage,
+					})
 					await this.addToApiConversationHistory({
 						role: "assistant",
 						content: assistantMessageContent,
