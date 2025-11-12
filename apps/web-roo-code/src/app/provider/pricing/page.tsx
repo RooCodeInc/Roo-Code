@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AnimatedBackground } from "@/components/homepage"
 import { ModelCard } from "./components/model-card"
 import { Model, ModelWithTotalPrice, ModelsResponse, SortOption } from "@/lib/types/models"
 import Link from "next/link"
@@ -31,6 +30,17 @@ const faqs = [
 					We also often feature 100% free models which labs share with us for the community to use and provide
 					feedback.
 				</p>
+			</>
+		),
+	},
+	{
+		question: "But how much does the Roo Code Cloud service cost?",
+		answer: (
+			<>
+				Our{" "}
+				<Link href="/pricing" className="underline hover:no-underline">
+					service pricing is here.
+				</Link>
 			</>
 		),
 	},
@@ -116,26 +126,25 @@ export default function ProviderPricingPage() {
 
 	return (
 		<>
-			<AnimatedBackground />
-
-			{/* Hero Section */}
-			<section className="relative overflow-hidden pt-16 pb-12">
+			<section className="relative overflow-hidden py-16">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
 						<h1 className="text-5xl font-bold tracking-tight">Roo Code Cloud Provider Pricing</h1>
 						<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-							See pricing and features for all models we support.
+							See pricing and features for all models we offer in our selection.
 							<br />
-							<Link href="/pricing" className="underline hover:no-underline">
-								Looking for general Roo Code Cloud pricing?
+							You can always bring your own key (
+							<Link href="#faq" className="underline hover:no-underline">
+								FAQ
 							</Link>
+							).
 						</p>
 					</div>
 				</div>
 			</section>
 
-			{/* Search and Sort Controls */}
-			<section className="pb-8">
+			<section className="py-10 relative border-t border-b">
+				<div className="absolute inset-0 bg-gradient-to-br from-violet-500/0 via-violet-500/10 to-violet-500/0 dark:from-blue-500/10 dark:via-cyan-500/10 dark:to-purple-500/10" />
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-4xl">
 						<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -174,11 +183,8 @@ export default function ProviderPricingPage() {
 						</div>
 					</div>
 				</div>
-			</section>
 
-			{/* Models Grid */}
-			<section className="pb-16">
-				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
 					<div className="mx-auto max-w-6xl">
 						{loading && (
 							<div className="text-center pt-12 space-y-2 mb-4">
@@ -209,20 +215,19 @@ export default function ProviderPricingPage() {
 						)}
 
 						{!loading && !error && filteredAndSortedModels.length > 0 && (
-							<>
-								<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-									{filteredAndSortedModels.map((model) => (
-										<ModelCard key={model.id} model={model} />
-									))}
-								</div>
-							</>
+							<div className="grid gap-4 pt-8 md:grid-cols-2 lg:grid-cols-3">
+								{filteredAndSortedModels.map((model) => (
+									<ModelCard key={model.id} model={model} />
+								))}
+							</div>
 						)}
 					</div>
 				</div>
 			</section>
 
 			{/* FAQ Section */}
-			<section className="bg-background py-16 my-16 border-t border-b relative z-50">
+			<section className="bg-background my-16 relative z-50">
+				<a id="faq" />
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-3xl text-center">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Frequently Asked Questions</h2>
