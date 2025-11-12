@@ -80,6 +80,10 @@ export type NativeToolArgs = {
 	execute_command: { command: string; cwd?: string }
 	insert_content: { path: string; line: number; content: string }
 	apply_diff: { path: string; diff: string }
+	ask_followup_question: {
+		question: string
+		follow_up: Array<{ text: string; mode?: string }>
+	}
 	// Add more tools as they are migrated to native protocol
 }
 

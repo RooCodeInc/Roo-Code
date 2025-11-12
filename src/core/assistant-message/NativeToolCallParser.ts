@@ -127,6 +127,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "ask_followup_question":
+					if (args.question !== undefined && args.follow_up !== undefined) {
+						nativeArgs = {
+							question: args.question,
+							follow_up: args.follow_up,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

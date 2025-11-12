@@ -1,56 +1,35 @@
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { parseXml } from "../../utils/xml"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function askFollowupQuestionTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const question: string | undefined = block.params.question
-	const follow_up: string | undefined = block.params.follow_up
+interface Suggestion {
+	text: string
+	mode?: string
+}
 
-	try {
-		if (block.partial) {
-			await cline.ask("followup", removeClosingTag("question", question), block.partial).catch(() => {})
-			return
-		} else {
-			if (!question) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("ask_followup_question")
-				pushToolResult(await cline.sayAndCreateMissingParamError("ask_followup_question", "question"))
-				return
-			}
+interface AskFollowupQuestionParams {
+	question: string
+	follow_up: Suggestion[]
+}
 
-			type Suggest = { answer: string; mode?: string }
+export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
+	readonly name = "ask_followup_question" as const
 
-			let follow_up_json = {
-				question,
-				suggest: [] as Suggest[],
-			}
+	parseLegacy(params: Partial<Record<string, string>>): AskFollowupQuestionParams {
+		const question = params.question || ""
+		const follow_up_xml = params.follow_up
 
-			if (follow_up) {
-				// Define the actual structure returned by the XML parser
-				type ParsedSuggestion = string | { "#text": string; "@_mode"?: string }
+		const suggestions: Suggestion[] = []
 
-				let parsedSuggest: {
+		if (follow_up_xml) {
+			// Define the actual structure returned by the XML parser
+			type ParsedSuggestion = string | { "#text": string; "@_mode"?: string }
+
+			try {
+				const parsedSuggest = parseXml(follow_up_xml, ["suggest"]) as {
 					suggest: ParsedSuggestion[] | ParsedSuggestion
-				}
-
-				try {
-					parsedSuggest = parseXml(follow_up, ["suggest"]) as {
-						suggest: ParsedSuggestion[] | ParsedSuggestion
-					}
-				} catch (error) {
-					cline.consecutiveMistakeCount++
-					cline.recordToolError("ask_followup_question")
-					await cline.say("error", `Failed to parse operations: ${error.message}`)
-					pushToolResult(formatResponse.toolError("Invalid operations xml format"))
-					return
 				}
 
 				const rawSuggestions = Array.isArray(parsedSuggest?.suggest)
@@ -58,32 +37,79 @@ export async function askFollowupQuestionTool(
 					: [parsedSuggest?.suggest].filter((sug): sug is ParsedSuggestion => sug !== undefined)
 
 				// Transform parsed XML to our Suggest format
-				const normalizedSuggest: Suggest[] = rawSuggestions.map((sug) => {
+				for (const sug of rawSuggestions) {
 					if (typeof sug === "string") {
 						// Simple string suggestion (no mode attribute)
-						return { answer: sug }
+						suggestions.push({ text: sug })
 					} else {
 						// XML object with text content and optional mode attribute
-						const result: Suggest = { answer: sug["#text"] }
+						const suggestion: Suggestion = { text: sug["#text"] }
 						if (sug["@_mode"]) {
-							result.mode = sug["@_mode"]
+							suggestion.mode = sug["@_mode"]
 						}
-						return result
+						suggestions.push(suggestion)
 					}
-				})
+				}
+			} catch (error) {
+				throw new Error(
+					`Failed to parse follow_up XML: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
 
-				follow_up_json.suggest = normalizedSuggest
+		return {
+			question,
+			follow_up: suggestions,
+		}
+	}
+
+	async execute(params: AskFollowupQuestionParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { question, follow_up } = params
+		const { handleError, pushToolResult } = callbacks
+
+		try {
+			if (!question) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("ask_followup_question")
+				pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", "question"))
+				return
 			}
 
-			cline.consecutiveMistakeCount = 0
-			const { text, images } = await cline.ask("followup", JSON.stringify(follow_up_json), false)
-			await cline.say("user_feedback", text ?? "", images)
-			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
+			// Transform follow_up suggestions to the format expected by task.ask
+			const follow_up_json = {
+				question,
+				suggest: follow_up.map((s) => ({ answer: s.text, mode: s.mode })),
+			}
 
-			return
+			task.consecutiveMistakeCount = 0
+			const { text, images } = await task.ask("followup", JSON.stringify(follow_up_json), false)
+			await task.say("user_feedback", text ?? "", images)
+			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
+		} catch (error) {
+			await handleError("asking question", error as Error)
 		}
-	} catch (error) {
-		await handleError("asking question", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"ask_followup_question">): Promise<void> {
+		const question: string | undefined = block.params.question
+		await task.ask("followup", this.removeClosingTag("question", question), block.partial).catch(() => {})
+	}
+
+	private removeClosingTag(tag: string, text: string | undefined): string {
+		if (!text) {
+			return ""
+		}
+
+		const tagRegex = new RegExp(
+			`\\s?<\/?${tag
+				.split("")
+				.map((char) => `(?:${char})?`)
+				.join("")}$`,
+			"g",
+		)
+
+		return text.replace(tagRegex, "")
 	}
 }
+
+export const askFollowupQuestionTool = new AskFollowupQuestionTool()

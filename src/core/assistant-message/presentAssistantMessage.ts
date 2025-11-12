@@ -612,14 +612,12 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					break
 				case "ask_followup_question":
-					await askFollowupQuestionTool(
-						cline,
-						block,
+					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-					)
+					})
 					break
 				case "switch_mode":
 					await switchModeTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
