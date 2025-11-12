@@ -42,7 +42,7 @@
     <command name="gh_issue_comments">
       <purpose>Get additional context and requirements from issue comments.</purpose>
       <when>Always use after viewing issue to see full discussion</when>
-      <syntax>gh api repos/[owner]/[repo]/issues/[issue-number]/comments --paginate</syntax>
+      <syntax>gh api repos/[owner]/[repo]/issues/[issue-number]/comments --paginate --jq '.[].body'</syntax>
       <example>
         <execute_command>
         <command>gh api repos/octocat/hello-world/issues/123/comments --paginate</command>
