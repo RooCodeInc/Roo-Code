@@ -9,5 +9,5 @@
 
 // Main codelens provider exports
 export * from "./types"
-export { MyCodeLensProvider } from "./CodeLensProvider"
+export { CostrictCodeLensProvider } from "./CodeLensProvider"
 export * from "./CodeLensCallbacks"

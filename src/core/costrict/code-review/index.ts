@@ -11,6 +11,7 @@ import { CodeReviewService } from "./codeReviewService"
 import { CommentService } from "../../../integrations/comment"
 import type { ReviewComment } from "./reviewComment"
 import { supportPrompt } from "../../../shared/support-prompt"
+import { t } from "../../../i18n"
 export function initCodeReview(
 	context: vscode.ExtensionContext,
 	provider: ClineProvider,
@@ -34,6 +35,11 @@ export function initCodeReview(
 			const visibleProvider = await ClineProvider.getInstance()
 			const editor = vscode.window.activeTextEditor
 			if (!visibleProvider || !editor) {
+				return
+			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
 				return
 			}
 			const fileUri = editor.document.uri
@@ -61,6 +67,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			const cwd = visibleProvider.cwd.toPosix()
 			const targets: ReviewTarget[] = await Promise.all(
 				selectedUris.map(async (uri) => {
@@ -79,6 +90,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			reviewInstance.setProvider(visibleProvider)
 			reviewInstance.startReview([
 				{
@@ -92,6 +108,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			reviewInstance.setProvider(visibleProvider)
 			const comments = thread.comments as ReviewComment[]
 			comments.forEach(async (comment) => {
@@ -101,6 +122,11 @@ export function initCodeReview(
 		rejectIssue: async (thread: vscode.CommentThread) => {
 			const visibleProvider = await ClineProvider.getInstance()
 			if (!visibleProvider) {
+				return
+			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
 				return
 			}
 			reviewInstance.setProvider(visibleProvider)
@@ -114,6 +140,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			reviewInstance.setProvider(visibleProvider)
 			const comment = thread.comments[0] as ReviewComment
 			if (comment) {
@@ -123,6 +154,11 @@ export function initCodeReview(
 		codeReviewJetbrains: async (args: any) => {
 			const visibleProvider = await ClineProvider.getInstance()
 			if (!visibleProvider) {
+				return
+			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
 				return
 			}
 			visibleProvider.log(`[CodeReview] start review ${args}`)
@@ -160,6 +196,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			visibleProvider.log(`[CodeReview] start review ${JSON.stringify(args)}`)
 			const data = args?.[0]?.[0]
 			if (!data) {
@@ -184,6 +225,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			reviewInstance.setProvider(visibleProvider)
 			visibleProvider.log(`[CodeReview] accept issue ${JSON.stringify(args)}`)
 			const data = args?.[0]?.[0]
@@ -200,6 +246,11 @@ export function initCodeReview(
 			if (!visibleProvider) {
 				return
 			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			reviewInstance.setProvider(visibleProvider)
 			visibleProvider.log(`[CodeReview] reject issue ${JSON.stringify(args)}`)
 			const data = args?.[0]?.[0]
@@ -214,6 +265,11 @@ export function initCodeReview(
 		askReviewSuggestionWithAIJetbrains: async (args: any) => {
 			const visibleProvider = await ClineProvider.getInstance()
 			if (!visibleProvider) {
+				return
+			}
+			const { apiConfiguration } = await visibleProvider.getState()
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
 				return
 			}
 			visibleProvider.log(`[CodeReview] ask review suggestion with AI ${JSON.stringify(args)}`)

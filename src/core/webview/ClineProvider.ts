@@ -687,8 +687,12 @@ export class ClineProvider
 			return
 		}
 
-		const { customSupportPrompts } = await visibleProvider.getState()
+		const { customSupportPrompts, apiConfiguration } = await visibleProvider.getState()
 		if (promptType === "ZGSM_CODE_REVIEW") {
+			if (apiConfiguration.apiProvider !== "zgsm") {
+				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+				return
+			}
 			const reviewInstance = CodeReviewService.getInstance()
 			reviewInstance.setProvider(visibleProvider)
 			const filePath = toRelativePath(params.filePath as string, visibleProvider.cwd)
@@ -705,6 +709,7 @@ export class ClineProvider
 					line_range: [Number(params.startLine), Number(params.endLine)],
 				},
 			])
+			return
 		}
 
 		// TODO: Improve type safety for promptType.

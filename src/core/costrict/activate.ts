@@ -11,7 +11,7 @@ import type { ClineProvider } from "../webview/ClineProvider"
 // Import from migrated modules
 import { AICompletionProvider, CompletionStatusBar, shortKeyCut } from "./completion"
 
-import { MyCodeLensProvider, codeLensCallBackCommand, codeLensCallBackMoreCommand } from "./codelens"
+import { CostrictCodeLensProvider, codeLensCallBackCommand, codeLensCallBackMoreCommand } from "./codelens"
 
 import {
 	configCompletion,
@@ -170,7 +170,7 @@ export async function activate(
 			codeLensCallBackMoreCommand.callback(context),
 		),
 		// Register function header menu
-		vscode.languages.registerCodeLensProvider("*", new MyCodeLensProvider()),
+		vscode.languages.registerCodeLensProvider("*", new CostrictCodeLensProvider()),
 	)
 
 	// Listen for configuration changes

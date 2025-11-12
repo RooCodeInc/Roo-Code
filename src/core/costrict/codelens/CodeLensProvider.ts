@@ -15,7 +15,7 @@ import { LangSetting, LangSwitch, getLanguageByFilePath } from "../base/common/l
 /**
  * Service provider for codelens (header menu group for symbol definitions)
  */
-export class MyCodeLensProvider implements vscode.CodeLensProvider {
+export class CostrictCodeLensProvider implements vscode.CodeLensProvider {
 	async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken) {
 		const editor = vscode.window.activeTextEditor
 		if (!editor) {

@@ -1,5 +1,20 @@
 # CoStrict Change Log
 
+## [2.0.12]
+
+- Fix codereview (#638)
+
+## [2.0.11]
+
+- Update docs
+- Update error message
+- Updated internationalization
+- Optimize commands parsing
+- Add purchase quota
+- Fix message queue status inconsistency
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/6e6341346e7cf9813bec995134921ee503bf5a2a)
+- Fix known issues
+
 ## [2.0.10]
 
 - Update todolist ui
