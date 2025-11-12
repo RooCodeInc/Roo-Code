@@ -155,6 +155,30 @@
 		},
 		"current": "Actual"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Límite de velocidad establecido en {{rateLimitSeconds}} segundos",
+			"waiting": "Esperando {{seconds}} segundos",
+			"proceeding": "Continuando ahora…",
+			"cancelled": "Solicitud cancelada"
+		},
+		"backoff": {
+			"title": "La solicitud falló",
+			"waiting": "Intentando en {{seconds}} segundos",
+			"waitingWithAttempt": "Intentando en {{seconds}} segundos (intento #{{attempt}})",
+			"waitingWithAttemptMax": "Intentando en {{seconds}} segundos (intento #{{attempt}}/{{maxAttempts}})",
+			"retrying": "Intentando ahora…",
+			"cancelled": "Reintento cancelado"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Límite de tasa activado — por favor, espera.",
+		"waiting": "Reintentando en {{seconds}}s",
+		"waitingWithAttempt": "Reintentando en {{seconds}}s (intento {{attempt}})",
+		"waitingWithAttemptMax": "Reintentando en {{seconds}}s (intento {{attempt}}/{{maxAttempts}})",
+		"retrying": "Reintentando ahora…",
+		"cancelled": "Reintento cancelado"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo quiere obtener instrucciones detalladas para ayudar con la tarea actual"
 	},

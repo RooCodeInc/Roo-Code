@@ -136,6 +136,30 @@
 		"cancelled": "API请求已取消",
 		"streamingFailed": "API流式传输失败"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "速率限制设置为 {{rateLimitSeconds}} 秒",
+			"waiting": "正在等待 {{seconds}} 秒",
+			"proceeding": "正在继续...",
+			"cancelled": "请求已取消"
+		},
+		"backoff": {
+			"title": "请求失败",
+			"waiting": "将在 {{seconds}} 秒后重试",
+			"waitingWithAttempt": "将在 {{seconds}} 秒后重试 (第 #{{attempt}} 次)",
+			"waitingWithAttemptMax": "将在 {{seconds}} 秒后重试 (第 #{{attempt}}/{{maxAttempts}} 次)",
+			"retrying": "正在重试...",
+			"cancelled": "重试已取消"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "API 请求频率限制已触发 — 请稍候。",
+		"waiting": "正在 {{seconds}} 秒后重试",
+		"waitingWithAttempt": "正在 {{seconds}} 秒后重试 (第 {{attempt}} 次尝试)",
+		"waitingWithAttemptMax": "正在 {{seconds}} 秒后重试 (第 {{attempt}}/{{maxAttempts}} 次尝试)",
+		"retrying": "正在立即重试…",
+		"cancelled": "重试已取消"
+	},
 	"checkpoint": {
 		"regular": "检查点",
 		"initializingWarning": "正在初始化检查点...如果耗时过长，你可以在<settingsLink>设置</settingsLink>中禁用检查点并重新启动任务。",

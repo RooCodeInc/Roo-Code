@@ -155,6 +155,30 @@
 		},
 		"current": "Actuel"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Limite de taux fixée à {{rateLimitSeconds}} secondes",
+			"waiting": "En attente de {{seconds}} secondes",
+			"proceeding": "En cours…",
+			"cancelled": "Requête annulée"
+		},
+		"backoff": {
+			"title": "La requête a échoué",
+			"waiting": "Nouvel essai dans {{seconds}} secondes",
+			"waitingWithAttempt": "Nouvel essai dans {{seconds}} secondes (tentative n°{{attempt}})",
+			"waitingWithAttemptMax": "Nouvel essai dans {{seconds}} secondes (tentative n°{{attempt}}/{{maxAttempts}})",
+			"retrying": "Nouvel essai en cours…",
+			"cancelled": "Nouvel essai annulé"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Limite de débit atteinte — veuillez patienter.",
+		"waiting": "Nouvel essai dans {{seconds}}s",
+		"waitingWithAttempt": "Nouvel essai dans {{seconds}}s (tentative {{attempt}})",
+		"waitingWithAttemptMax": "Nouvel essai dans {{seconds}}s (tentative {{attempt}}/{{maxAttempts}})",
+		"retrying": "Nouvel essai en cours…",
+		"cancelled": "Nouvel essai annulé"
+	},
 	"fileOperations": {
 		"wantsToRead": "Roo veut lire ce fichier",
 		"wantsToReadOutsideWorkspace": "Roo veut lire ce fichier en dehors de l'espace de travail",

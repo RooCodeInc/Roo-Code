@@ -371,9 +371,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// Don't want to reset since there could be a "say" after
 					// an "ask" while ask is waiting for response.
 					switch (lastMessage.say) {
-						case "api_req_retry_delayed":
-							setSendingDisabled(true)
+						case "api_req_retry_delayed": {
+							const retryStatus =
+								lastMessage.metadata?.retryStatus || lastMessage.metadata?.rateLimitRetry
+							if (retryStatus?.status === "cancelled") {
+								setSendingDisabled(false)
+							} else {
+								setSendingDisabled(true)
+							}
 							break
+						}
 						case "api_req_started":
 							if (secondLastMessage?.ask === "command_output") {
 								setSendingDisabled(true)

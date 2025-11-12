@@ -131,6 +131,30 @@
 		"cancelled": "API-запрос отменен",
 		"streamingFailed": "Ошибка потокового API-запроса"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Лимит запросов установлен на {{rateLimitSeconds}} секунд",
+			"waiting": "Ожидание {{seconds}} секунд",
+			"proceeding": "Продолжаем...",
+			"cancelled": "Запрос отменен"
+		},
+		"backoff": {
+			"title": "Запрос не удался",
+			"waiting": "Попытка через {{seconds}} секунд",
+			"waitingWithAttempt": "Попытка через {{seconds}} секунд (попытка №{{attempt}})",
+			"waitingWithAttemptMax": "Попытка через {{seconds}} секунд (попытка №{{attempt}}/{{maxAttempts}})",
+			"retrying": "Повторяем...",
+			"cancelled": "Повтор отменен"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Превышен лимит запросов — пожалуйста, подождите.",
+		"waiting": "Повторная попытка через {{seconds}}с",
+		"waitingWithAttempt": "Повторная попытка через {{seconds}}с (попытка {{attempt}})",
+		"waitingWithAttemptMax": "Повторная попытка через {{seconds}}с (попытка {{attempt}}/{{maxAttempts}})",
+		"retrying": "Повторная попытка сейчас…",
+		"cancelled": "Повторная попытка отменена"
+	},
 	"checkpoint": {
 		"regular": "Точка сохранения",
 		"initializingWarning": "Точка сохранения еще инициализируется... Если это занимает слишком много времени, вы можете отключить точки сохранения в <settingsLink>настройках</settingsLink> и перезапустить задачу.",

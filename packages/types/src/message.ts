@@ -207,6 +207,31 @@ export const contextCondenseSchema = z.object({
 export type ContextCondense = z.infer<typeof contextCondenseSchema>
 
 /**
+ * RetryStatusMetadata
+ */
+export const retryStatusSchema = z.object({
+	type: z.literal("retry_status"),
+	status: z.enum(["waiting", "retrying", "cancelled"]),
+	remainingSeconds: z.number().optional(),
+	attempt: z.number().optional(),
+	maxAttempts: z.number().optional(),
+	origin: z.enum(["pre_request", "retry_attempt"]).optional(),
+	detail: z.string().optional(),
+	cause: z.enum(["rate_limit", "backoff"]),
+	rateLimitSeconds: z.number().optional(), // The original rate limit setting (for displaying "Rate limit set to X seconds")
+})
+
+export type RetryStatusMetadata = z.infer<typeof retryStatusSchema>
+
+// Keep legacy type for backward compatibility during migration
+export const rateLimitRetrySchema = retryStatusSchema.extend({
+	type: z.literal("rate_limit_retry"),
+	cause: z.literal("rate_limit").default("rate_limit"),
+})
+
+export type RateLimitRetryMetadata = z.infer<typeof rateLimitRetrySchema>
+
+/**
  * ClineMessage
  */
 
@@ -233,6 +258,8 @@ export const clineMessageSchema = z.object({
 					previous_response_id: z.string().optional(),
 				})
 				.optional(),
+			retryStatus: retryStatusSchema.optional(),
+			rateLimitRetry: rateLimitRetrySchema.optional(), // Legacy field for backward compatibility
 		})
 		.optional(),
 })

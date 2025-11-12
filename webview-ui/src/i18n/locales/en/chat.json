@@ -142,6 +142,30 @@
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Rate limit set to {{rateLimitSeconds}} seconds",
+			"waiting": "Waiting {{seconds}} seconds",
+			"proceeding": "Proceeding now…",
+			"cancelled": "Request cancelled"
+		},
+		"backoff": {
+			"title": "Request failed",
+			"waiting": "Trying in {{seconds}} seconds",
+			"waitingWithAttempt": "Trying in {{seconds}} seconds (attempt #{{attempt}})",
+			"waitingWithAttemptMax": "Trying in {{seconds}} seconds (attempt #{{attempt}}/{{maxAttempts}})",
+			"retrying": "Trying now…",
+			"cancelled": "Retry cancelled"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Rate limit triggered — please wait.",
+		"waiting": "Retrying in {{seconds}}s",
+		"waitingWithAttempt": "Retrying in {{seconds}}s (attempt {{attempt}})",
+		"waitingWithAttemptMax": "Retrying in {{seconds}}s (attempt {{attempt}}/{{maxAttempts}})",
+		"retrying": "Retrying now…",
+		"cancelled": "Retry cancelled"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",

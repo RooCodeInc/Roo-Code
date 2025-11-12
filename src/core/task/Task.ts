@@ -123,6 +123,29 @@ const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
 
+interface RetryStatusPayload {
+	type: "retry_status"
+	status: "waiting" | "retrying" | "cancelled"
+	remainingSeconds?: number
+	attempt?: number
+	maxAttempts?: number
+	origin: "pre_request" | "retry_attempt"
+	detail?: string
+	cause: "rate_limit" | "backoff"
+	rateLimitSeconds?: number
+}
+
+// Legacy interface for backward compatibility
+interface RateLimitRetryPayload {
+	type: "rate_limit_retry"
+	status: "waiting" | "retrying" | "cancelled"
+	remainingSeconds?: number
+	attempt?: number
+	maxAttempts?: number
+	origin: "pre_request" | "retry_attempt"
+	detail?: string
+}
+
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
 	apiConfiguration: ProviderSettings
@@ -1128,8 +1151,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (partial !== undefined) {
 			const lastMessage = this.clineMessages.at(-1)
 
+			const isRateLimitUpdate =
+				type === "api_req_retry_delayed" &&
+				(options.metadata?.retryStatus !== undefined || options.metadata?.rateLimitRetry !== undefined)
 			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
+				lastMessage &&
+				lastMessage.type === "say" &&
+				lastMessage.say === type &&
+				(lastMessage.partial || isRateLimitUpdate)
 
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
@@ -1138,6 +1167,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					lastMessage.images = images
 					lastMessage.partial = partial
 					lastMessage.progressStatus = progressStatus
+					if (options.metadata) {
+						const messageWithMetadata = lastMessage as ClineMessage & ClineMessageWithMetadata
+						if (!messageWithMetadata.metadata) {
+							messageWithMetadata.metadata = {}
+						}
+						Object.assign(messageWithMetadata.metadata, options.metadata)
+					}
 					this.updateClineMessage(lastMessage)
 				} else {
 					// This is a new partial message, so add it with partial state.
@@ -1225,6 +1261,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				images,
 				checkpoint,
 				contextCondense,
+				metadata: options.metadata,
 			})
 		}
 	}
@@ -2738,6 +2775,143 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		let rateLimitDelay = 0
 
+		const sendRetryStatusUpdate = async (payload: RetryStatusPayload, isPartial: boolean): Promise<void> => {
+			await this.say("api_req_retry_delayed", undefined, undefined, isPartial, undefined, undefined, {
+				isNonInteractive: true,
+				metadata: {
+					retryStatus: payload,
+					rateLimitRetry:
+						payload.cause === "rate_limit" ? { ...payload, type: "rate_limit_retry" as const } : undefined,
+				},
+			})
+		}
+
+		const runRateLimitCountdown = async ({
+			seconds,
+			origin,
+			attempt,
+			maxAttempts,
+			detail,
+			rateLimitSeconds,
+		}: {
+			seconds: number
+			origin: RetryStatusPayload["origin"]
+			attempt?: number
+			maxAttempts?: number
+			detail?: string
+			rateLimitSeconds?: number
+		}): Promise<boolean> => {
+			const normalizedSeconds = Math.max(0, Math.ceil(seconds))
+
+			if (normalizedSeconds <= 0) {
+				if (this.abort) {
+					await sendRetryStatusUpdate(
+						{
+							type: "retry_status",
+							status: "cancelled",
+							remainingSeconds: 0,
+							attempt,
+							maxAttempts,
+							origin,
+							detail,
+							cause: "rate_limit",
+							rateLimitSeconds,
+						},
+						false,
+					)
+					return false
+				}
+
+				await sendRetryStatusUpdate(
+					{
+						type: "retry_status",
+						status: "retrying",
+						remainingSeconds: 0,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+						cause: "rate_limit",
+						rateLimitSeconds,
+					},
+					false,
+				)
+				return true
+			}
+
+			for (let i = normalizedSeconds; i > 0; i--) {
+				if (this.abort) {
+					await sendRetryStatusUpdate(
+						{
+							type: "retry_status",
+							status: "cancelled",
+							remainingSeconds: i,
+							attempt,
+							maxAttempts,
+							origin,
+							detail,
+							cause: "rate_limit",
+							rateLimitSeconds,
+						},
+						false,
+					)
+					return false
+				}
+
+				await sendRetryStatusUpdate(
+					{
+						type: "retry_status",
+						status: "waiting",
+						remainingSeconds: i,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+						cause: "rate_limit",
+						rateLimitSeconds,
+					},
+					true,
+				)
+
+				await delay(1000)
+			}
+
+			if (this.abort) {
+				await sendRetryStatusUpdate(
+					{
+						type: "retry_status",
+						status: "cancelled",
+						remainingSeconds: 0,
+						attempt,
+						maxAttempts,
+						origin,
+						detail,
+						cause: "rate_limit",
+						rateLimitSeconds,
+					},
+					false,
+				)
+				return false
+			}
+
+			await sendRetryStatusUpdate(
+				{
+					type: "retry_status",
+					status: "retrying",
+					remainingSeconds: 0,
+					attempt,
+					maxAttempts,
+					origin,
+					detail,
+					cause: "rate_limit",
+					rateLimitSeconds,
+				},
+				false,
+			)
+
+			return true
+		}
+
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
 		if (Task.lastGlobalApiRequestTime) {
@@ -2749,11 +2923,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
 		if (rateLimitDelay > 0 && retryAttempt === 0) {
-			// Show countdown timer
-			for (let i = rateLimitDelay; i > 0; i--) {
-				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
-				await delay(1000)
+			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
+			const countdownCompleted = await runRateLimitCountdown({
+				seconds: rateLimitDelay,
+				origin: "pre_request",
+				attempt: 1,
+				rateLimitSeconds: rateLimit,
+			})
+
+			if (!countdownCompleted) {
+				throw new Error(
+					`[RooCode#attemptApiRequest] task ${this.taskId}.${this.instanceId} aborted during pre-request rate limit wait`,
+				)
 			}
 		}
 
@@ -2905,7 +3086,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled && alwaysApproveResubmit) {
-				let errorMsg
+				let errorMsg: string
 
 				if (error.error?.metadata?.raw) {
 					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
@@ -2996,43 +3177,127 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
 			if (finalDelay <= 0) return
 
-			// Build header text; fall back to error message if none provided
-			let headerText = header
-			if (!headerText) {
+			// Build detail text; fall back to error message if none provided
+			let errorMsg = header
+			if (!errorMsg) {
 				if (error?.error?.metadata?.raw) {
-					headerText = JSON.stringify(error.error.metadata.raw, null, 2)
+					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
 				} else if (error?.message) {
-					headerText = error.message
+					errorMsg = error.message
 				} else {
-					headerText = "Unknown error"
+					errorMsg = "Unknown error"
 				}
 			}
-			headerText = headerText ? `${headerText}\n\n` : ""
 
-			// Show countdown timer with exponential backoff
+			// Sanitize detail for UI display
+			const sanitizedDetail = (() => {
+				if (!errorMsg) {
+					return undefined
+				}
+				const firstLine = errorMsg
+					.split("\n")
+					.map((line) => line.trim())
+					.find((line) => line.length > 0)
+				if (!firstLine) {
+					return undefined
+				}
+				return firstLine.length > 160 ? `${firstLine.slice(0, 157)}…` : firstLine
+			})()
+
+			// Helper to send retry status updates with structured metadata
+			const sendRetryStatusUpdate = async (payload: RetryStatusPayload, isPartial: boolean): Promise<void> => {
+				await this.say("api_req_retry_delayed", undefined, undefined, isPartial, undefined, undefined, {
+					isNonInteractive: true,
+					metadata: {
+						retryStatus: payload,
+						rateLimitRetry:
+							payload.cause === "rate_limit"
+								? { ...payload, type: "rate_limit_retry" as const }
+								: undefined,
+					},
+				})
+			}
+
+			// Determine the cause based on error type
+			const cause: "rate_limit" | "backoff" = error?.status === 429 ? "rate_limit" : "backoff"
+
+			// For rate limit errors, include the rate limit setting
+			const rateLimitSetting = state?.apiConfiguration?.rateLimitSeconds || 0
+			const rateLimitSeconds = cause === "rate_limit" ? rateLimitSetting : undefined
+
+			// Show countdown timer with exponential backoff using structured metadata
 			for (let i = finalDelay; i > 0; i--) {
 				// Check abort flag during countdown to allow early exit
 				if (this.abort) {
+					await sendRetryStatusUpdate(
+						{
+							type: "retry_status",
+							status: "cancelled",
+							remainingSeconds: i,
+							attempt: retryAttempt + 1,
+							origin: "retry_attempt",
+							detail: sanitizedDetail,
+							cause,
+							rateLimitSeconds,
+						},
+						false,
+					)
 					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
 				}
 
-				await this.say(
-					"api_req_retry_delayed",
-					`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
-					undefined,
+				await sendRetryStatusUpdate(
+					{
+						type: "retry_status",
+						status: "waiting",
+						remainingSeconds: i,
+						attempt: retryAttempt + 1,
+						origin: "retry_attempt",
+						detail: sanitizedDetail,
+						cause,
+						rateLimitSeconds,
+					},
 					true,
 				)
 				await delay(1000)
 			}
 
-			await this.say(
-				"api_req_retry_delayed",
-				`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying now...`,
-				undefined,
+			// Final check before retrying
+			if (this.abort) {
+				await sendRetryStatusUpdate(
+					{
+						type: "retry_status",
+						status: "cancelled",
+						remainingSeconds: 0,
+						attempt: retryAttempt + 1,
+						origin: "retry_attempt",
+						detail: sanitizedDetail,
+						cause,
+						rateLimitSeconds,
+					},
+					false,
+				)
+				throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
+			}
+
+			await sendRetryStatusUpdate(
+				{
+					type: "retry_status",
+					status: "retrying",
+					remainingSeconds: 0,
+					attempt: retryAttempt + 1,
+					origin: "retry_attempt",
+					detail: sanitizedDetail,
+					cause,
+					rateLimitSeconds,
+				},
 				false,
 			)
 		} catch (err) {
 			console.error("Exponential backoff failed:", err)
+			// Re-throw if it's an abort error so it propagates correctly
+			if (err instanceof Error && err.message.includes("Aborted during retry countdown")) {
+				throw err
+			}
 		}
 	}
 

@@ -155,6 +155,30 @@
 		},
 		"current": "Mevcut"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Hız limiti {{rateLimitSeconds}} saniyeye ayarlandı",
+			"waiting": "{{seconds}} saniye bekleniyor",
+			"proceeding": "Şimdi devam ediliyor...",
+			"cancelled": "İstek iptal edildi"
+		},
+		"backoff": {
+			"title": "İstek başarısız oldu",
+			"waiting": "{{seconds}} saniye içinde deneniyor",
+			"waitingWithAttempt": "{{seconds}} saniye içinde deneniyor (deneme #{{attempt}})",
+			"waitingWithAttemptMax": "{{seconds}} saniye içinde deneniyor (deneme #{{attempt}}/{{maxAttempts}})",
+			"retrying": "Şimdi deneniyor...",
+			"cancelled": "Yeniden deneme iptal edildi"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Hız limiti tetiklendi — lütfen bekleyin.",
+		"waiting": "{{seconds}}s içinde tekrar deniyor",
+		"waitingWithAttempt": "{{seconds}}s içinde tekrar deniyor (deneme {{attempt}})",
+		"waitingWithAttemptMax": "{{seconds}}s içinde tekrar deniyor (deneme {{attempt}}/{{maxAttempts}})",
+		"retrying": "Şimdi tekrar deniyor…",
+		"cancelled": "Tekrar deneme iptal edildi"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo mevcut göreve yardımcı olmak için ayrıntılı talimatlar almak istiyor"
 	},

@@ -136,6 +136,30 @@
 		"cancelled": "API-Anfrage abgebrochen",
 		"streamingFailed": "API-Streaming fehlgeschlagen"
 	},
+	"retryStatus": {
+		"rateLimit": {
+			"title": "Ratenlimit auf {{rateLimitSeconds}} Sekunden festgelegt",
+			"waiting": "Warte {{seconds}} Sekunden",
+			"proceeding": "Wird jetzt fortgesetzt…",
+			"cancelled": "Anfrage abgebrochen"
+		},
+		"backoff": {
+			"title": "Anfrage fehlgeschlagen",
+			"waiting": "Versuche in {{seconds}} Sekunden",
+			"waitingWithAttempt": "Versuche in {{seconds}} Sekunden (Versuch #{{attempt}})",
+			"waitingWithAttemptMax": "Versuche in {{seconds}} Sekunden (Versuch #{{attempt}}/{{maxAttempts}})",
+			"retrying": "Versuche jetzt…",
+			"cancelled": "Wiederholung abgebrochen"
+		}
+	},
+	"rateLimitRetry": {
+		"title": "Ratenlimit ausgelöst — bitte warten.",
+		"waiting": "Wiederholung in {{seconds}}s",
+		"waitingWithAttempt": "Wiederholung in {{seconds}}s (Versuch {{attempt}})",
+		"waitingWithAttemptMax": "Wiederholung in {{seconds}}s (Versuch {{attempt}}/{{maxAttempts}})",
+		"retrying": "Wiederholung läuft…",
+		"cancelled": "Wiederholung abgebrochen"
+	},
 	"checkpoint": {
 		"regular": "Checkpoint",
 		"initializingWarning": "Checkpoint wird noch initialisiert... Falls dies zu lange dauert, kannst du Checkpoints in den <settingsLink>Einstellungen</settingsLink> deaktivieren und deine Aufgabe neu starten.",
