@@ -225,6 +225,19 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "write_to_file":
+					if (args.path !== undefined && args.content !== undefined && args.line_count !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							content: args.content,
+							line_count:
+								typeof args.line_count === "number"
+									? args.line_count
+									: parseInt(String(args.line_count), 10),
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				case "use_mcp_tool":
 					if (args.server_name !== undefined && args.tool_name !== undefined) {
 						nativeArgs = {

@@ -110,7 +110,15 @@ export abstract class BaseTool<TName extends ToolName> {
 		// Handle partial messages
 		if (block.partial) {
 			console.log(`[NATIVE_TOOL] Block is partial, calling handlePartial`)
-			await this.handlePartial(task, block)
+			try {
+				await this.handlePartial(task, block)
+			} catch (error) {
+				console.error(`[NATIVE_TOOL] Error in handlePartial:`, error)
+				await callbacks.handleError(
+					`handling partial ${this.name}`,
+					error instanceof Error ? error : new Error(String(error)),
+				)
+			}
 			return
 		}
 

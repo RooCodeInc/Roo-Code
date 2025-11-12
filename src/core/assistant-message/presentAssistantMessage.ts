@@ -477,7 +477,12 @@ export async function presentAssistantMessage(cline: Task) {
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
-					await writeToFileTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "update_todo_list":
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {

@@ -2970,7 +2970,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			mode: mode,
 			taskId: this.taskId,
 			// Include tools and tool protocol when using native protocol and model supports it
-			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
+			...(shouldIncludeTools ? { tools: allTools, tool_choice: "required", toolProtocol } : {}),
 		}
 
 		console.log(`[NATIVE_TOOL] API request metadata:`, {
