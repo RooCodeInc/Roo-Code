@@ -41,6 +41,7 @@ import {
 	PopoverContent,
 	Slider,
 	StandardTooltip,
+	Button,
 } from "@src/components/ui"
 import { useRooPortal } from "@src/components/ui/hooks/useRooPortal"
 import { useEscapeKey } from "@src/hooks/useEscapeKey"
@@ -1605,11 +1606,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								{currentSettings.codebaseIndexEnabled &&
 									(indexingStatus.systemStatus === "Error" ||
 										indexingStatus.systemStatus === "Standby") && (
-										<VSCodeButton
+										<Button
 											onClick={() => vscode.postMessage({ type: "startIndexing" })}
 											disabled={saveStatus === "saving" || hasUnsavedChanges}>
 											{t("settings:codeIndex.startIndexingButton")}
-										</VSCodeButton>
+										</Button>
 									)}
 
 								{currentSettings.codebaseIndexEnabled &&
@@ -1617,9 +1618,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										indexingStatus.systemStatus === "Error") && (
 										<AlertDialog>
 											<AlertDialogTrigger asChild>
-												<VSCodeButton appearance="secondary">
+												<Button variant="secondary">
 													{t("settings:codeIndex.clearIndexDataButton")}
-												</VSCodeButton>
+												</Button>
 											</AlertDialogTrigger>
 											<AlertDialogContent>
 												<AlertDialogHeader>
@@ -1644,13 +1645,13 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 									)}
 							</div>
 
-							<VSCodeButton
+							<Button
 								onClick={handleSaveSettings}
 								disabled={!hasUnsavedChanges || saveStatus === "saving"}>
 								{saveStatus === "saving"
 									? t("settings:codeIndex.saving")
 									: t("settings:codeIndex.saveSettings")}
-							</VSCodeButton>
+							</Button>
 						</div>
 
 						{/* Save Status Messages */}

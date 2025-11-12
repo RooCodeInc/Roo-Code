@@ -1298,27 +1298,28 @@ export class ClineProvider
 
 	/**
 	 * Updates the current task's API handler if the provider or model has changed.
-	 * This prevents unnecessary context condensing when only non-model settings change.
+	 * Also synchronizes the task.apiConfiguration so subsequent comparisons and logic
+	 * (protocol selection, reasoning display, model metadata) use the latest profile.
 	 * @param providerSettings The new provider settings to apply
 	 */
 	private updateTaskApiHandlerIfNeeded(providerSettings: ProviderSettings): void {
 		const task = this.getCurrentTask()
+		if (!task) return
 
-		if (task && task.apiConfiguration) {
-			// Only rebuild API handler if provider or model actually changed
-			// to avoid triggering unnecessary context condensing
-			const currentProvider = task.apiConfiguration.apiProvider
-			const newProvider = providerSettings.apiProvider
-			const currentModelId = getModelId(task.apiConfiguration)
-			const newModelId = getModelId(providerSettings)
+		// Determine if we need to rebuild using the previous configuration snapshot
+		const prevConfig = task.apiConfiguration
+		const prevProvider = prevConfig?.apiProvider
+		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
+		const newProvider = providerSettings.apiProvider
+		const newModelId = getModelId(providerSettings)
 
-			if (currentProvider !== newProvider || currentModelId !== newModelId) {
-				task.api = buildApiHandler(providerSettings)
-			}
-		} else if (task) {
-			// Fallback: rebuild if apiConfiguration is not available
+		if (prevProvider !== newProvider || prevModelId !== newModelId) {
 			task.api = buildApiHandler(providerSettings)
 		}
+
+		// Always sync the task's apiConfiguration with the latest provider settings.
+		// Note: Task.apiConfiguration is declared readonly in types, so we cast to any for runtime update.
+		;(task as any).apiConfiguration = providerSettings
 	}
 
 	getProviderProfileEntries(): ProviderSettingsEntry[] {
