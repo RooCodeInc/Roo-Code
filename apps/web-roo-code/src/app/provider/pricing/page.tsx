@@ -5,8 +5,56 @@ import { ModelCard } from "./components/model-card"
 import { Model, ModelWithTotalPrice, ModelsResponse, SortOption } from "@/lib/types/models"
 import Link from "next/link"
 import { ChevronDown, CircleX, Loader, LoaderCircle, Search } from "lucide-react"
+import { ogImageUrl } from "@/lib/og"
+import { SEO } from "@/lib/seo"
+import { Metadata } from "next"
 
 const API_URL = "https://api.roocode.com/proxy/v1/models"
+
+const TITLE = "Roo Code Cloud Provider Pricing"
+const DESCRIPTION = "See pricing and features for all models we offer in our selection."
+const OG_DESCRIPTION = "Pricing for all of models we host"
+const PATH = "/provider/pricing"
+
+export const metadata: Metadata = {
+	title: TITLE,
+	description: DESCRIPTION,
+	alternates: {
+		canonical: `${SEO.url}${PATH}`,
+	},
+	openGraph: {
+		title: TITLE,
+		description: DESCRIPTION,
+		url: `${SEO.url}${PATH}`,
+		siteName: SEO.name,
+		images: [
+			{
+				url: ogImageUrl(TITLE, OG_DESCRIPTION),
+				width: 1200,
+				height: 630,
+				alt: TITLE,
+			},
+		],
+		locale: SEO.locale,
+		type: "website",
+	},
+	twitter: {
+		card: SEO.twitterCard,
+		title: TITLE,
+		description: DESCRIPTION,
+		images: [ogImageUrl(TITLE, OG_DESCRIPTION)],
+	},
+	keywords: [
+		...SEO.keywords,
+		"pricing",
+		"plans",
+		"subscription",
+		"cloud pricing",
+		"AI development pricing",
+		"team pricing",
+		"enterprise pricing",
+	],
+}
 
 const faqs = [
 	{
@@ -15,10 +63,10 @@ const faqs = [
 	},
 	{
 		question: "How is pricing calculated?",
-		answer: "Pricing is based on token usage for input and output, measured per million tokens.",
+		answer: "Pricing is based on token usage for input and output, measured per million tokens, like pretty much any other provider out there.",
 	},
 	{
-		question: "Wehat is the Roo Code Cloud Provider?",
+		question: "What is the Roo Code Cloud Provider?",
 		answer: (
 			<>
 				<p>This is our very own model provider, optimized to work seamlessly with Roo Code Cloud.</p>
