@@ -157,6 +157,14 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "fetch_instructions":
+					if (args.task !== undefined) {
+						nativeArgs = {
+							task: args.task,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

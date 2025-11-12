@@ -2,62 +2,77 @@ import { Task } from "../task/Task"
 import { fetchInstructions } from "../prompts/instructions/instructions"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
-import { ToolUse, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function fetchInstructionsTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-) {
-	const task: string | undefined = block.params.task
-	const sharedMessageProps: ClineSayTool = { tool: "fetchInstructions", content: task }
+interface FetchInstructionsParams {
+	task: string
+}
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({ ...sharedMessageProps, content: undefined } satisfies ClineSayTool)
-			await cline.ask("tool", partialMessage, block.partial).catch(() => {})
-			return
-		} else {
-			if (!task) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("fetch_instructions")
-				pushToolResult(await cline.sayAndCreateMissingParamError("fetch_instructions", "task"))
+export class FetchInstructionsTool extends BaseTool<"fetch_instructions"> {
+	readonly name = "fetch_instructions" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): FetchInstructionsParams {
+		return {
+			task: params.task || "",
+		}
+	}
+
+	async execute(params: FetchInstructionsParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { handleError, pushToolResult, askApproval } = callbacks
+		const { task: taskParam } = params
+
+		try {
+			if (!taskParam) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("fetch_instructions")
+				pushToolResult(await task.sayAndCreateMissingParamError("fetch_instructions", "task"))
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
-			const completeMessage = JSON.stringify({ ...sharedMessageProps, content: task } satisfies ClineSayTool)
+			const completeMessage = JSON.stringify({
+				tool: "fetchInstructions",
+				content: taskParam,
+			} satisfies ClineSayTool)
+
 			const didApprove = await askApproval("tool", completeMessage)
 
 			if (!didApprove) {
 				return
 			}
 
-			// Bow fetch the content and provide it to the agent.
-			const provider = cline.providerRef.deref()
+			// Now fetch the content and provide it to the agent.
+			const provider = task.providerRef.deref()
 			const mcpHub = provider?.getMcpHub()
 
 			if (!mcpHub) {
 				throw new Error("MCP hub not available")
 			}
 
-			const diffStrategy = cline.diffStrategy
+			const diffStrategy = task.diffStrategy
 			const context = provider?.context
-			const content = await fetchInstructions(task, { mcpHub, diffStrategy, context })
+			const content = await fetchInstructions(taskParam, { mcpHub, diffStrategy, context })
 
 			if (!content) {
-				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${task}`))
+				pushToolResult(formatResponse.toolError(`Invalid instructions request: ${taskParam}`))
 				return
 			}
 
 			pushToolResult(content)
-
-			return
+		} catch (error) {
+			await handleError("fetch instructions", error as Error)
 		}
-	} catch (error) {
-		await handleError("fetch instructions", error)
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"fetch_instructions">): Promise<void> {
+		const taskParam: string | undefined = block.params.task
+		const sharedMessageProps: ClineSayTool = { tool: "fetchInstructions", content: taskParam }
+
+		const partialMessage = JSON.stringify({ ...sharedMessageProps, content: undefined } satisfies ClineSayTool)
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 }
+
+export const fetchInstructionsTool = new FetchInstructionsTool()
