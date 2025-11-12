@@ -1,7 +1,6 @@
 import path from "path"
 import fs from "fs/promises"
 
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
@@ -9,59 +8,61 @@ import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { parseSourceCodeForDefinitionsTopLevel, parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function listCodeDefinitionNamesTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const relPath: string | undefined = block.params.path
+interface ListCodeDefinitionNamesParams {
+	path: string
+}
 
-	// Calculate if the path is outside workspace
-	const absolutePath = relPath ? path.resolve(cline.cwd, relPath) : cline.cwd
-	const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+export class ListCodeDefinitionNamesTool extends BaseTool<"list_code_definition_names"> {
+	readonly name = "list_code_definition_names" as const
 
-	const sharedMessageProps: ClineSayTool = {
-		tool: "listCodeDefinitionNames",
-		path: getReadablePath(cline.cwd, removeClosingTag("path", relPath)),
-		isOutsideWorkspace,
+	parseLegacy(params: Partial<Record<string, string>>): ListCodeDefinitionNamesParams {
+		return {
+			path: params.path || "",
+		}
 	}
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({ ...sharedMessageProps, content: "" } satisfies ClineSayTool)
-			await cline.ask("tool", partialMessage, block.partial).catch(() => {})
+	async execute(params: ListCodeDefinitionNamesParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { askApproval, handleError, pushToolResult } = callbacks
+		const { path: relPath } = params
+
+		if (!relPath) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("list_code_definition_names")
+			pushToolResult(await task.sayAndCreateMissingParamError("list_code_definition_names", "path"))
 			return
-		} else {
-			if (!relPath) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("list_code_definition_names")
-				pushToolResult(await cline.sayAndCreateMissingParamError("list_code_definition_names", "path"))
-				return
-			}
+		}
 
-			cline.consecutiveMistakeCount = 0
+		task.consecutiveMistakeCount = 0
 
+		const absolutePath = path.resolve(task.cwd, relPath)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+
+		const sharedMessageProps: ClineSayTool = {
+			tool: "listCodeDefinitionNames",
+			path: getReadablePath(task.cwd, relPath),
+			isOutsideWorkspace,
+		}
+
+		try {
 			let result: string
 
 			try {
 				const stats = await fs.stat(absolutePath)
 
 				if (stats.isFile()) {
-					const fileResult = await parseSourceCodeDefinitionsForFile(absolutePath, cline.rooIgnoreController)
+					const fileResult = await parseSourceCodeDefinitionsForFile(absolutePath, task.rooIgnoreController)
 
-					// Apply truncation based on maxReadFileLine setting
 					if (fileResult) {
-						const { maxReadFileLine = -1 } = (await cline.providerRef.deref()?.getState()) ?? {}
+						const { maxReadFileLine = -1 } = (await task.providerRef.deref()?.getState()) ?? {}
 						result = truncateDefinitionsToLineLimit(fileResult, maxReadFileLine)
 					} else {
 						result = "No source code definitions found in file."
 					}
 				} else if (stats.isDirectory()) {
-					result = await parseSourceCodeForDefinitionsTopLevel(absolutePath, cline.rooIgnoreController)
+					result = await parseSourceCodeForDefinitionsTopLevel(absolutePath, task.rooIgnoreController)
 				} else {
 					result = "The specified path is neither a file nor a directory."
 				}
@@ -77,14 +78,30 @@ export async function listCodeDefinitionNamesTool(
 			}
 
 			if (relPath) {
-				await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+				await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 			}
 
 			pushToolResult(result)
-			return
+		} catch (error) {
+			await handleError("parsing source code definitions", error as Error)
 		}
-	} catch (error) {
-		await handleError("parsing source code definitions", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"list_code_definition_names">): Promise<void> {
+		const relPath: string | undefined = block.params.path
+
+		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : task.cwd
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
+
+		const sharedMessageProps: ClineSayTool = {
+			tool: "listCodeDefinitionNames",
+			path: getReadablePath(task.cwd, relPath || ""),
+			isOutsideWorkspace,
+		}
+
+		const partialMessage = JSON.stringify({ ...sharedMessageProps, content: "" } satisfies ClineSayTool)
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 }
+
+export const listCodeDefinitionNamesTool = new ListCodeDefinitionNamesTool()

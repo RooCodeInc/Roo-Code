@@ -175,6 +175,14 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "list_code_definition_names":
+					if (args.path !== undefined) {
+						nativeArgs = {
+							path: args.path,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

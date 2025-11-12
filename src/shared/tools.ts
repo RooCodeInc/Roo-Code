@@ -90,6 +90,7 @@ export type NativeToolArgs = {
 	codebase_search: { query: string; path?: string }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
+	list_code_definition_names: { path: string }
 	// Add more tools as they are migrated to native protocol
 }
 

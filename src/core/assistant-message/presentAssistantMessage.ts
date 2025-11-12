@@ -583,14 +583,12 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "list_code_definition_names":
-					await listCodeDefinitionNamesTool(
-						cline,
-						block,
+					await listCodeDefinitionNamesTool.handle(cline, block as ToolUse<"list_code_definition_names">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-					)
+					})
 					break
 				case "search_files":
 					await searchFilesTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
