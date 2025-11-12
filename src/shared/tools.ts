@@ -79,6 +79,7 @@ export type NativeToolArgs = {
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	insert_content: { path: string; line: number; content: string }
+	apply_diff: { path: string; diff: string }
 	// Add more tools as they are migrated to native protocol
 }
 

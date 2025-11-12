@@ -35,7 +35,8 @@ import { validateToolUse } from "../tools/validateToolUse"
 import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/codebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
-import { applyDiffToolLegacy } from "../tools/applyDiffTool"
+import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
+import { resolveToolProtocol, isNativeProtocol } from "../prompts/toolProtocolResolver"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -482,6 +483,20 @@ export async function presentAssistantMessage(cline: Task) {
 					await updateTodoListTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "apply_diff": {
+					await checkpointSaveAndMark(cline)
+
+					// Check if native protocol is enabled - if so, always use single-file class-based tool
+					const toolProtocol = resolveToolProtocol()
+					if (isNativeProtocol(toolProtocol)) {
+						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+							askApproval,
+							handleError,
+							pushToolResult,
+							removeClosingTag,
+						})
+						break
+					}
+
 					// Get the provider and state to check experiment settings
 					const provider = cline.providerRef.deref()
 					let isMultiFileApplyDiffEnabled = false
@@ -495,18 +510,14 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					if (isMultiFileApplyDiffEnabled) {
-						await checkpointSaveAndMark(cline)
 						await applyDiffTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					} else {
-						await checkpointSaveAndMark(cline)
-						await applyDiffToolLegacy(
-							cline,
-							block,
+						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
 							pushToolResult,
 							removeClosingTag,
-						)
+						})
 					}
 					break
 				}

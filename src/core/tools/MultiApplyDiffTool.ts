@@ -14,8 +14,9 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
-import { applyDiffToolLegacy } from "./applyDiffTool"
+import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
+import { resolveToolProtocol, isNativeProtocol } from "../prompts/toolProtocolResolver"
 
 interface DiffOperation {
 	path: string
@@ -59,6 +60,17 @@ export async function applyDiffTool(
 	pushToolResult: PushToolResult,
 	removeClosingTag: RemoveClosingTag,
 ) {
+	// Check if native protocol is enabled - if so, always use single-file class-based tool
+	const toolProtocol = resolveToolProtocol()
+	if (isNativeProtocol(toolProtocol)) {
+		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+			askApproval,
+			handleError,
+			pushToolResult,
+			removeClosingTag,
+		})
+	}
+
 	// Check if MULTI_FILE_APPLY_DIFF experiment is enabled
 	const provider = cline.providerRef.deref()
 	if (provider) {
@@ -68,9 +80,14 @@ export async function applyDiffTool(
 			EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
 		)
 
-		// If experiment is disabled, use legacy tool
+		// If experiment is disabled, use single-file class-based tool
 		if (!isMultiFileApplyDiffEnabled) {
-			return applyDiffToolLegacy(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+			return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+				askApproval,
+				handleError,
+				pushToolResult,
+				removeClosingTag,
+			})
 		}
 	}
 

@@ -118,6 +118,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "apply_diff":
+					if (args.path !== undefined && args.diff !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							diff: args.diff,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}
