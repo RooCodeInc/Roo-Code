@@ -1,55 +1,54 @@
 import delay from "delay"
 
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function switchModeTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const mode_slug: string | undefined = block.params.mode_slug
-	const reason: string | undefined = block.params.reason
+interface SwitchModeParams {
+	mode_slug: string
+	reason: string
+}
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({
-				tool: "switchMode",
-				mode: removeClosingTag("mode_slug", mode_slug),
-				reason: removeClosingTag("reason", reason),
-			})
+export class SwitchModeTool extends BaseTool<"switch_mode"> {
+	readonly name = "switch_mode" as const
 
-			await cline.ask("tool", partialMessage, block.partial).catch(() => {})
-			return
-		} else {
+	parseLegacy(params: Partial<Record<string, string>>): SwitchModeParams {
+		return {
+			mode_slug: params.mode_slug || "",
+			reason: params.reason || "",
+		}
+	}
+
+	async execute(params: SwitchModeParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { mode_slug, reason } = params
+		const { askApproval, handleError, pushToolResult } = callbacks
+
+		try {
 			if (!mode_slug) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("switch_mode")
-				pushToolResult(await cline.sayAndCreateMissingParamError("switch_mode", "mode_slug"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("switch_mode")
+				pushToolResult(await task.sayAndCreateMissingParamError("switch_mode", "mode_slug"))
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCount = 0
 
 			// Verify the mode exists
-			const targetMode = getModeBySlug(mode_slug, (await cline.providerRef.deref()?.getState())?.customModes)
+			const targetMode = getModeBySlug(mode_slug, (await task.providerRef.deref()?.getState())?.customModes)
 
 			if (!targetMode) {
-				cline.recordToolError("switch_mode")
+				task.recordToolError("switch_mode")
 				pushToolResult(formatResponse.toolError(`Invalid mode: ${mode_slug}`))
 				return
 			}
 
 			// Check if already in requested mode
-			const currentMode = (await cline.providerRef.deref()?.getState())?.mode ?? defaultModeSlug
+			const currentMode = (await task.providerRef.deref()?.getState())?.mode ?? defaultModeSlug
 
 			if (currentMode === mode_slug) {
-				cline.recordToolError("switch_mode")
+				task.recordToolError("switch_mode")
 				pushToolResult(`Already in ${targetMode.name} mode.`)
 				return
 			}
@@ -62,7 +61,7 @@ export async function switchModeTool(
 			}
 
 			// Switch the mode using shared handler
-			await cline.providerRef.deref()?.handleModeSwitch(mode_slug)
+			await task.providerRef.deref()?.handleModeSwitch(mode_slug)
 
 			pushToolResult(
 				`Successfully switched from ${getModeBySlug(currentMode)?.name ?? currentMode} mode to ${
@@ -71,11 +70,43 @@ export async function switchModeTool(
 			)
 
 			await delay(500) // Delay to allow mode change to take effect before next tool is executed
-
-			return
+		} catch (error) {
+			await handleError("switching mode", error as Error)
 		}
-	} catch (error) {
-		await handleError("switching mode", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"switch_mode">): Promise<void> {
+		const mode_slug: string | undefined = block.params.mode_slug
+		const reason: string | undefined = block.params.reason
+
+		const partialMessage = JSON.stringify({
+			tool: "switchMode",
+			mode: this.removeClosingTag("mode_slug", mode_slug, block.partial),
+			reason: this.removeClosingTag("reason", reason, block.partial),
+		})
+
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
+	}
+
+	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
+		if (!isPartial) {
+			return text || ""
+		}
+
+		if (!text) {
+			return ""
+		}
+
+		const tagRegex = new RegExp(
+			`\\s?<\/?${tag
+				.split("")
+				.map((char) => `(?:${char})?`)
+				.join("")}$`,
+			"g",
+		)
+
+		return text.replace(tagRegex, "")
 	}
 }
+
+export const switchModeTool = new SwitchModeTool()

@@ -93,6 +93,7 @@ export type NativeToolArgs = {
 	list_code_definition_names: { path: string }
 	run_slash_command: { command: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
+	switch_mode: { mode_slug: string; reason: string }
 	// Add more tools as they are migrated to native protocol
 }
 

@@ -202,6 +202,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "switch_mode":
+					if (args.mode_slug !== undefined && args.reason !== undefined) {
+						nativeArgs = {
+							mode_slug: args.mode_slug,
+							reason: args.reason,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

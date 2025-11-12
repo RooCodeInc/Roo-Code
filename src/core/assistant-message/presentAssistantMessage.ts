@@ -638,7 +638,12 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "switch_mode":
-					await switchModeTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await switchModeTool.handle(cline, block as ToolUse<"switch_mode">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "new_task":
 					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
