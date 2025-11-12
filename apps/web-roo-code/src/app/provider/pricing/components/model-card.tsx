@@ -87,12 +87,10 @@ export function ModelCard({ model }: ModelCardProps) {
 						</tr>
 
 						{/* Output Price: always visible */}
-						<tr
-							className={[
-								"border-b border-border",
-								// Add subtle separation from toggle on mobile
-								"sm:border-b border-border",
-							].join(" ")}>
+						className={[
+							"border-b border-border",
+							// Add subtle separation from toggle on mobile
+						].join(" ")}
 							<td className="py-1.5 font-medium text-muted-foreground">
 								<ArrowLeftToLine className="size-4 inline-block mr-1.5" />
 								Output Price
