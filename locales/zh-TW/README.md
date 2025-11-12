@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -166,16 +166,6 @@ pnpm install:vsix [-y] [--editor=<command>]
 我們歡迎社群貢獻！請閱讀我們的 [CONTRIBUTING.md](CONTRIBUTING.md) 開始。
 
 ---
-
-## 貢獻者
-
-感謝所有幫助改進 Roo Code 的貢獻者！
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
 
 ## 授權
 
