@@ -136,6 +136,18 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "browser_action":
+					if (args.action !== undefined) {
+						nativeArgs = {
+							action: args.action,
+							url: args.url,
+							coordinate: args.coordinate,
+							size: args.size,
+							text: args.text,
+						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+					}
+					break
+
 				default:
 					break
 			}

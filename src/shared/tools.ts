@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "@roo-code/types"
 import type { FileEntry } from "../core/tools/ReadFileTool"
+import type { BrowserActionParams } from "../core/tools/browserActionTool"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -84,6 +85,7 @@ export type NativeToolArgs = {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
 	}
+	browser_action: BrowserActionParams
 	// Add more tools as they are migrated to native protocol
 }
 

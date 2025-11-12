@@ -586,7 +586,12 @@ export async function presentAssistantMessage(cline: Task) {
 					await searchFilesTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					break
 				case "browser_action":
-					await browserActionTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+					await browserActionTool.handle(cline, block as ToolUse<"browser_action">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+					})
 					break
 				case "execute_command":
 					console.log(`[NATIVE_TOOL] execute_command case matched, calling executeCommandTool.handle()`)
