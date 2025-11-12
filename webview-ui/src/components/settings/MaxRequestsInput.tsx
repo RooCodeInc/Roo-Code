@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { vscode } from "@/utils/vscode"
 import { useCallback } from "react"
 import { FormattedTextField, unlimitedIntegerFormatter } from "../common/FormattedTextField"
 
@@ -14,7 +13,6 @@ export function MaxRequestsInput({ allowedMaxRequests, onValueChange }: MaxReque
 	const handleValueChange = useCallback(
 		(value: number | undefined) => {
 			onValueChange(value)
-			vscode.postMessage({ type: "allowedMaxRequests", value })
 		},
 		[onValueChange],
 	)
