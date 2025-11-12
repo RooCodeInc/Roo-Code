@@ -119,7 +119,6 @@ const pricingTiers: PricingTier[] = [
 		period: "/mo",
 		creditPrice: `$${PRICE_CREDITS}`,
 		trial: "Free for 14 days, then",
-		cancellation: "Cancel anytime",
 		description: "For AI-forward teams",
 		featuresIntro: "Everything in Pro +",
 		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
