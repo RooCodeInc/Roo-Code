@@ -103,9 +103,6 @@ const TaskHeader = ({
 		for (let i = 0; i < msgs.length; i++) {
 			const m = msgs[i] as any
 			if (m?.ask === "browser_action_launch") return i
-			if (m?.say === "browser_session_status" && typeof m.text === "string" && m.text.includes("opened")) {
-				return i
-			}
 		}
 		return -1
 	}, [clineMessages])
@@ -113,13 +110,13 @@ const TaskHeader = ({
 	const showBrowserGlobe = browserSessionStartIndex !== -1 || !!isBrowserSessionActive
 
 	const condenseButton = (
-			<LucideIconButton
-				title={t("chat:task.condenseContext")}
-				icon={FoldVertical}
-				disabled={buttonsDisabled}
-				onClick={() => currentTaskItem && handleCondenseContext(currentTaskItem.id)}
-			/>
-		)
+		<LucideIconButton
+			title={t("chat:task.condenseContext")}
+			icon={FoldVertical}
+			disabled={buttonsDisabled}
+			onClick={() => currentTaskItem && handleCondenseContext(currentTaskItem.id)}
+		/>
+	)
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 

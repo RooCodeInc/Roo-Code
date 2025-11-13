@@ -441,6 +441,7 @@ export interface ClineSayBrowserAction {
 	coordinate?: string
 	size?: string
 	text?: string
+	executedCoordinate?: string
 }
 
 export type BrowserActionResult = {

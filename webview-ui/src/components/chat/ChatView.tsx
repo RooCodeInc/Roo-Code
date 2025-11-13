@@ -972,10 +972,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (messages[i].ask === "browser_action_launch") {
 				return i
 			}
-			// Also check for browser_session_status as a fallback indicator
-			if (messages[i].say === "browser_session_status" && messages[i].text?.includes("opened")) {
-				return i
-			}
 		}
 		return -1
 	}, [messages])

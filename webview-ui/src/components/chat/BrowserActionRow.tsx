@@ -151,13 +151,13 @@ const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions
 			case "launch":
 				return `Launched browser`
 			case "click":
-				return `Clicked at: ${getViewportCoordinate(browserAction.coordinate)}`
+				return `Clicked at: ${browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate)}`
 			case "type":
 				return `Typed: ${browserAction.text}`
 			case "press":
 				return `Pressed key: ${prettyKey(browserAction.text)}`
 			case "hover":
-				return `Hovered at: ${getViewportCoordinate(browserAction.coordinate)}`
+				return `Hovered at: ${browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate)}`
 			case "scroll_down":
 				return "Scrolled down"
 			case "scroll_up":

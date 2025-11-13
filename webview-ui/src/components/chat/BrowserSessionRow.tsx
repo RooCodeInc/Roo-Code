@@ -73,6 +73,7 @@ const prettyKey = (k?: string): string => {
 
 const getBrowserActionText = (
 	action: BrowserAction,
+	executedCoordinate?: string,
 	coordinate?: string,
 	text?: string,
 	size?: string,
@@ -113,7 +114,7 @@ const getBrowserActionText = (
 		case "launch":
 			return `Launched browser`
 		case "click":
-			return `Clicked at: ${getViewportCoordinate(coordinate)}`
+			return `Clicked at: ${executedCoordinate || getViewportCoordinate(coordinate)}`
 		case "type":
 			return `Typed: ${text}`
 		case "press":
@@ -123,7 +124,7 @@ const getBrowserActionText = (
 		case "scroll_up":
 			return "Scrolled up"
 		case "hover":
-			return `Hovered at: ${getViewportCoordinate(coordinate)}`
+			return `Hovered at: ${executedCoordinate || getViewportCoordinate(coordinate)}`
 		case "resize":
 			return `Resized to: ${size?.split(/[x,]/).join(" x ")}`
 		case "close":
@@ -623,6 +624,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 										<span>
 											{getBrowserActionText(
 												action.action,
+												pages[currentPageIndex]?.mousePosition,
 												action.coordinate,
 												action.text,
 												pageSize,
