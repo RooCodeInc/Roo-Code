@@ -114,10 +114,11 @@ export async function insertContentTool(
 		const state = await provider?.getState()
 		const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 		const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
-		const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-			state?.experiments ?? {},
-			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-		)
+		// Only use background mode editing if both the experiment is enabled AND write auto-approval is enabled
+		// When auto-approval is disabled, fall back to regular editing with diff view (takes focus)
+		const isPreventFocusDisruptionEnabled =
+			experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) &&
+			(state?.alwaysAllowWrite ?? false)
 
 		// Build unified diff for display (normalize EOLs only for diff generation)
 		let unified: string

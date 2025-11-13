@@ -105,10 +105,11 @@ export async function writeToFileTool(
 			// Check if preventFocusDisruption experiment is enabled
 			const provider = cline.providerRef.deref()
 			const state = await provider?.getState()
-			const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-			)
+			// Only use background mode editing if both the experiment is enabled AND write auto-approval is enabled
+			// When auto-approval is disabled, fall back to regular editing with diff view (takes focus)
+			const isPreventFocusDisruptionEnabled =
+				experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) &&
+				(state?.alwaysAllowWrite ?? false)
 
 			if (!isPreventFocusDisruptionEnabled) {
 				// update gui message
@@ -167,10 +168,11 @@ export async function writeToFileTool(
 			const state = await provider?.getState()
 			const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 			const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
-			const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-			)
+			// Only use background mode editing if both the experiment is enabled AND write auto-approval is enabled
+			// When auto-approval is disabled, fall back to regular editing with diff view (takes focus)
+			const isPreventFocusDisruptionEnabled =
+				experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) &&
+				(state?.alwaysAllowWrite ?? false)
 
 			if (isPreventFocusDisruptionEnabled) {
 				// Direct file write without diff view
