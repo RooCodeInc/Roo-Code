@@ -2,6 +2,12 @@ import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
 
 /**
+ * Helper type to extract properly typed native arguments for a given tool.
+ * Returns the type from NativeToolArgs if the tool is defined there, otherwise never.
+ */
+type NativeArgsFor<TName extends ToolName> = TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+
+/**
  * Parser for native tool calls (OpenAI-style function calling).
  * Converts native tool call format to ToolUse format for compatibility
  * with existing tool execution infrastructure.
@@ -13,10 +19,6 @@ import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs }
 export class NativeToolCallParser {
 	/**
 	 * Convert a native tool call chunk to a ToolUse object.
-	 *
-	 * For refactored tools (read_file, etc.), native arguments are properly typed
-	 * based on the NativeToolArgs type map. For tools not yet migrated, nativeArgs
-	 * will be undefined and the tool will use parseLegacy() for backward compatibility.
 	 *
 	 * @param toolCall - The native tool call from the API stream
 	 * @returns A properly typed ToolUse object
@@ -42,11 +44,14 @@ export class NativeToolCallParser {
 			// Parse the arguments JSON string
 			const args = JSON.parse(toolCall.arguments)
 
-			// Convert arguments to params format (for backward-compat/UI), but primary path uses nativeArgs
+			// Build legacy params object for backward compatibility with XML protocol and UI.
+			// Native execution path uses nativeArgs instead, which has proper typing.
 			const params: Partial<Record<ToolParamName, string>> = {}
 
 			for (const [key, value] of Object.entries(args)) {
-				// For read_file native calls, do not synthesize params.files – nativeArgs carries typed data
+				// Skip complex parameters that have been migrated to nativeArgs.
+				// For read_file, the 'files' parameter is a FileEntry[] array that can't be
+				// meaningfully stringified. The properly typed data is in nativeArgs instead.
 				if (toolCall.name === "read_file" && key === "files") {
 					continue
 				}
@@ -58,35 +63,31 @@ export class NativeToolCallParser {
 					continue
 				}
 
-				// Keep legacy string params for compatibility (not used by native execution path)
+				// Convert to string for legacy params format
 				const stringValue = typeof value === "string" ? value : JSON.stringify(value)
 				params[key as ToolParamName] = stringValue
 			}
 
-			// Build typed nativeArgs for tools that support it
-			let nativeArgs: (TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never) | undefined = undefined
+			// Build typed nativeArgs for tools that support it.
+			// This switch statement serves two purposes:
+			// 1. Validation: Ensures required parameters are present before constructing nativeArgs
+			// 2. Transformation: Converts raw JSON to properly typed structures (e.g., handling
+			//
+			// Each case validates the minimum required parameters and constructs a properly typed
+			// nativeArgs object. If validation fails, nativeArgs remains undefined and the tool
+			// will fall back to legacy parameter parsing if supported.
+			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
 
 			switch (toolCall.name) {
 				case "read_file":
-					// Handle both single-file and multi-file formats
 					if (args.files && Array.isArray(args.files)) {
-						// Multi-file format: {"files": [{path: "...", line_ranges: [...]}, ...]}
-						nativeArgs = args.files as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
-					} else if (args.path) {
-						// Single-file format: {"path": "..."} - convert to array format
-						const fileEntry: FileEntry = {
-							path: args.path,
-							lineRanges: [],
-						}
-						nativeArgs = [fileEntry] as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						nativeArgs = args.files as NativeArgsFor<TName>
 					}
 					break
 
 				case "attempt_completion":
 					if (args.result) {
-						nativeArgs = { result: args.result } as TName extends keyof NativeToolArgs
-							? NativeToolArgs[TName]
-							: never
+						nativeArgs = { result: args.result } as NativeArgsFor<TName>
 					}
 					break
 
@@ -95,7 +96,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							cwd: args.cwd,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -105,7 +106,7 @@ export class NativeToolCallParser {
 							path: args.path,
 							line: typeof args.line === "number" ? args.line : parseInt(String(args.line), 10),
 							content: args.content,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -114,7 +115,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -123,7 +124,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							question: args.question,
 							follow_up: args.follow_up,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -135,7 +136,7 @@ export class NativeToolCallParser {
 							coordinate: args.coordinate,
 							size: args.size,
 							text: args.text,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -144,7 +145,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							query: args.query,
 							path: args.path,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -152,7 +153,7 @@ export class NativeToolCallParser {
 					if (args.task !== undefined) {
 						nativeArgs = {
 							task: args.task,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -162,7 +163,7 @@ export class NativeToolCallParser {
 							prompt: args.prompt,
 							path: args.path,
 							image: args.image,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -170,7 +171,7 @@ export class NativeToolCallParser {
 					if (args.path !== undefined) {
 						nativeArgs = {
 							path: args.path,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -179,7 +180,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							args: args.args,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -189,7 +190,7 @@ export class NativeToolCallParser {
 							path: args.path,
 							regex: args.regex,
 							file_pattern: args.file_pattern,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -198,7 +199,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							mode_slug: args.mode_slug,
 							reason: args.reason,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -206,7 +207,7 @@ export class NativeToolCallParser {
 					if (args.todos !== undefined) {
 						nativeArgs = {
 							todos: args.todos,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -219,7 +220,7 @@ export class NativeToolCallParser {
 								typeof args.line_count === "number"
 									? args.line_count
 									: parseInt(String(args.line_count), 10),
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -229,7 +230,7 @@ export class NativeToolCallParser {
 							server_name: args.server_name,
 							tool_name: args.tool_name,
 							arguments: args.arguments,
-						} as TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+						} as NativeArgsFor<TName>
 					}
 					break
 
