@@ -262,17 +262,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
-	/**
-	 * Check if a model ID supports native tool calling.
-	 * This is a fallback for models loaded dynamically that don't have explicit support flags.
-	 */
-	private supportsNativeTools(modelId: string): boolean {
-		// List of model IDs known to support native tools
-		const nativeToolModels = ["openai/gpt-5"]
-
-		return nativeToolModels.some((model) => modelId.includes(model))
-	}
-
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
@@ -281,10 +270,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const modelInfo = models[modelId]
 
 		if (modelInfo) {
-			// If model info exists but doesn't have supportsNativeTools set, check our list
-			if (modelInfo.supportsNativeTools === undefined) {
-				modelInfo.supportsNativeTools = this.supportsNativeTools(modelId)
-			}
 			return { id: modelId, info: modelInfo }
 		}
 
@@ -297,7 +282,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				supportsImages: false,
 				supportsReasoningEffort: false,
 				supportsPromptCache: true,
-				supportsNativeTools: this.supportsNativeTools(modelId),
+				supportsNativeTools: false,
 				inputPrice: 0,
 				outputPrice: 0,
 			},
