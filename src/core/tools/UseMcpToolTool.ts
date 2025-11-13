@@ -337,26 +337,6 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		await task.say("mcp_server_response", toolResultPretty)
 		pushToolResult(formatResponse.toolResult(toolResultPretty))
 	}
-
-	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
-		if (!isPartial) {
-			return text || ""
-		}
-
-		if (!text) {
-			return ""
-		}
-
-		const tagRegex = new RegExp(
-			`\\s?<\/?${tag
-				.split("")
-				.map((char) => `(?:${char})?`)
-				.join("")}$`,
-			"g",
-		)
-
-		return text.replace(tagRegex, "")
-	}
 }
 
 export const useMcpToolTool = new UseMcpToolTool()

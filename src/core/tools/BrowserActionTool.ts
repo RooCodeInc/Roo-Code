@@ -239,26 +239,6 @@ export class BrowserActionTool extends BaseTool<"browser_action"> {
 			)
 		}
 	}
-
-	private removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
-		if (!isPartial) {
-			return text || ""
-		}
-
-		if (!text) {
-			return ""
-		}
-
-		const tagRegex = new RegExp(
-			`\\s?<\/?${tag
-				.split("")
-				.map((char) => `(?:${char})?`)
-				.join("")}$`,
-			"g",
-		)
-
-		return text.replace(tagRegex, "")
-	}
 }
 
 export const browserActionTool = new BrowserActionTool()

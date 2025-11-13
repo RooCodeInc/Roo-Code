@@ -85,6 +85,40 @@ export abstract class BaseTool<TName extends ToolName> {
 	}
 
 	/**
+	 * Remove partial closing XML tags from text during streaming.
+	 *
+	 * This utility helps clean up partial XML tag artifacts that can appear
+	 * at the end of streamed content, preventing them from being displayed to users.
+	 *
+	 * @param tag - The tag name to check for partial closing
+	 * @param text - The text content to clean
+	 * @param isPartial - Whether this is a partial message (if false, returns text as-is)
+	 * @returns Cleaned text with partial closing tags removed
+	 */
+	protected removeClosingTag(tag: string, text: string | undefined, isPartial: boolean): string {
+		if (!isPartial) {
+			return text || ""
+		}
+
+		if (!text) {
+			return ""
+		}
+
+		// This regex dynamically constructs a pattern to match the closing tag:
+		// - Optionally matches whitespace before the tag
+		// - Matches '<' or '</' optionally followed by any subset of characters from the tag name
+		const tagRegex = new RegExp(
+			`\\s?<\/?${tag
+				.split("")
+				.map((char) => `(?:${char})?`)
+				.join("")}$`,
+			"g",
+		)
+
+		return text.replace(tagRegex, "")
+	}
+
+	/**
 	 * Main entry point for tool execution.
 	 *
 	 * Handles the complete flow:

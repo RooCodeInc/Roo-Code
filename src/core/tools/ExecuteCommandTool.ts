@@ -141,23 +141,9 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 	override async handlePartial(task: Task, block: ToolUse<"execute_command">): Promise<void> {
 		const command = block.params.command
-		await task.ask("command", this.removeClosingTag("command", command), block.partial).catch(() => {})
-	}
-
-	private removeClosingTag(tag: string, text: string | undefined): string {
-		if (!text) {
-			return ""
-		}
-
-		const tagRegex = new RegExp(
-			`\\s?<\/?${tag
-				.split("")
-				.map((char) => `(?:${char})?`)
-				.join("")}$`,
-			"g",
-		)
-
-		return text.replace(tagRegex, "")
+		await task
+			.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
+			.catch(() => {})
 	}
 }
 

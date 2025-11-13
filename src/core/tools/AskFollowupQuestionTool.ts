@@ -92,23 +92,9 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 
 	override async handlePartial(task: Task, block: ToolUse<"ask_followup_question">): Promise<void> {
 		const question: string | undefined = block.params.question
-		await task.ask("followup", this.removeClosingTag("question", question), block.partial).catch(() => {})
-	}
-
-	private removeClosingTag(tag: string, text: string | undefined): string {
-		if (!text) {
-			return ""
-		}
-
-		const tagRegex = new RegExp(
-			`\\s?<\/?${tag
-				.split("")
-				.map((char) => `(?:${char})?`)
-				.join("")}$`,
-			"g",
-		)
-
-		return text.replace(tagRegex, "")
+		await task
+			.ask("followup", this.removeClosingTag("question", question, block.partial), block.partial)
+			.catch(() => {})
 	}
 }
 
