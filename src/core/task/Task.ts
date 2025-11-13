@@ -83,7 +83,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { resolveToolProtocol } from "../prompts/toolProtocolResolver"
-import { nativeTools } from "../prompts/tools/native-tools"
+import { nativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -2938,7 +2938,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Build complete tools array: native tools + dynamic MCP tools
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = nativeTools
 		if (shouldIncludeTools) {
-			const { getMcpServerTools } = await import("../prompts/tools/native-tools")
 			const provider = this.providerRef.deref()
 			const mcpHub = provider?.getMcpHub()
 			const mcpTools = getMcpServerTools(mcpHub)
