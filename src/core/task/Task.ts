@@ -34,7 +34,6 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
-	isNonBlockingAsk,
 	QueuedMessage,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -936,13 +935,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.handleWebviewAskResponse("messageResponse", message.text, message.images)
 				}
 			}
-		}
-
-		// Non-blocking asks return immediately without waiting
-		// The ask message is created in the UI, but the task doesn't wait for a response
-		// This prevents blocking in cloud/headless environments
-		if (isNonBlockingAsk(type)) {
-			return { response: "yesButtonClicked" as ClineAskResponse, text: undefined, images: undefined }
 		}
 
 		// Wait for askResponse to be set
