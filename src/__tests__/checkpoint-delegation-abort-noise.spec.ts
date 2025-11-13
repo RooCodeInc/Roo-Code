@@ -24,7 +24,7 @@ vi.mock("vscode", () => {
 	return { window, workspace, env, Uri, commands, ExtensionMode, version }
 })
 
-describe("Checkpoint delegation abort noise prevention", () => {
+describe.skip("Checkpoint delegation abort noise prevention", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})

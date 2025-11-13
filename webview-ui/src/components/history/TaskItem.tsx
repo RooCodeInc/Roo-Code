@@ -4,8 +4,6 @@ import type { HistoryItem } from "@roo-code/types"
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useAppTranslation } from "@/i18n/TranslationContext"
-import { StandardTooltip } from "@/components/ui/standard-tooltip"
 
 import TaskItemFooter from "./TaskItemFooter"
 
@@ -44,14 +42,7 @@ const TaskItem = ({
 		}
 	}
 
-	const { t } = useAppTranslation()
-
 	const isCompact = variant === "compact"
-	const isDelegated = item.status === "delegated"
-	const childLinkId = item.awaitingChildId || item.delegatedToId
-	const awaiting = !!item.awaitingChildId
-	const hasDelegationCompleted = !!item.completedByChildId && !!item.completionResultSummary
-	const summary = (item.completionResultSummary || "").trim()
 
 	return (
 		<div
@@ -95,37 +86,9 @@ const TaskItem = ({
 					</div>
 
 					<div className="mt-1 flex flex-row flex-wrap items-center gap-2 text-xs">
-						{isDelegated && (
-							<span
-								data-testid="delegated-badge"
-								className="px-1.5 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
-								{t("common:tasks.delegated")}
-							</span>
-						)}
-						{childLinkId && (
-							<button
-								type="button"
-								data-testid="open-child-link"
-								className="text-vscode-textLink-foreground hover:underline"
-								onClick={(e) => {
-									e.stopPropagation()
-									vscode.postMessage({ type: "showTaskWithId", text: childLinkId })
-								}}>
-								{awaiting
-									? t("common:tasks.awaiting_child", { childId: childLinkId })
-									: t("common:tasks.delegated_to", { childId: childLinkId })}
-							</button>
-						)}
-						{hasDelegationCompleted && (
-							<StandardTooltip content={summary} side="top">
-								<span
-									data-testid="delegation-completed-indicator"
-									className="flex items-center gap-1 text-vscode-descriptionForeground">
-									<span className="codicon codicon-check" />
-									{t("common:tasks.delegation_completed")}
-								</span>
-							</StandardTooltip>
-						)}
+						{/* UI-neutral PR: hide delegated badge to keep visible UI unchanged */ null}
+						{/* UI-neutral PR: hide delegated child link to keep visual output unchanged */ null}
+						{/* UI-neutral PR: hide delegation completion indicator to avoid new UI affordances */ null}
 					</div>
 
 					<TaskItemFooter
