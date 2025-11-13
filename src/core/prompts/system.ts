@@ -16,7 +16,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
 import { getToolDescriptionsForMode } from "./tools"
-import { getEffectiveProtocol, isNativeProtocol } from "./toolProtocolResolver"
+import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 import {
 	getRulesSection,
 	getSystemInfoSection,
@@ -29,7 +29,6 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 } from "./sections"
-import { TOOL_PROTOCOL } from "@roo-code/types"
 
 // Helper function to get prompt component, filtering out empty objects
 export function getPromptComponent(
@@ -84,7 +83,7 @@ async function generatePrompt(
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
 	// Determine the effective protocol (defaults to 'xml')
-	const effectiveProtocol = getEffectiveProtocol(settings)
+	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
 	const [modesSection, mcpServersSection] = await Promise.all([
 		getModesSection(context),

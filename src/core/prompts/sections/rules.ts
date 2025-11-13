@@ -1,7 +1,7 @@
 import { DiffStrategy } from "../../../shared/tools"
 import { CodeIndexManager } from "../../../services/code-index/manager"
 import type { SystemPromptSettings } from "../types"
-import { getEffectiveProtocol, isNativeProtocol } from "../toolProtocolResolver"
+import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 
 function getEditingInstructions(diffStrategy?: DiffStrategy): string {
 	const instructions: string[] = []
@@ -60,7 +60,7 @@ export function getRulesSection(
 		: ""
 
 	// Determine whether to use XML tool references based on protocol
-	const effectiveProtocol = getEffectiveProtocol(settings)
+	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
 	return `====
 

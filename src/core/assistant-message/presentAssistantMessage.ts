@@ -37,7 +37,8 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
-import { resolveToolProtocol, isNativeProtocol } from "../prompts/toolProtocolResolver"
+import * as vscode from "vscode"
+import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -277,7 +278,9 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const pushToolResult = (content: ToolResponse) => {
 				// Check if we're using native tool protocol
-				const toolProtocol = resolveToolProtocol()
+				const toolProtocol = vscode.workspace
+					.getConfiguration("roo-cline")
+					.get<ToolProtocol>("toolProtocol", "xml")
 				const isNative = isNativeProtocol(toolProtocol)
 
 				// Get the tool call ID if this is a native tool call
@@ -499,7 +502,9 @@ export async function presentAssistantMessage(cline: Task) {
 					await checkpointSaveAndMark(cline)
 
 					// Check if native protocol is enabled - if so, always use single-file class-based tool
-					const toolProtocol = resolveToolProtocol()
+					const toolProtocol = vscode.workspace
+						.getConfiguration("roo-cline")
+						.get<ToolProtocol>("toolProtocol", "xml")
 					if (isNativeProtocol(toolProtocol)) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,

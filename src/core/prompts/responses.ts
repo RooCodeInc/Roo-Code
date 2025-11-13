@@ -3,8 +3,8 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { resolveToolProtocol, isNativeProtocol } from "./toolProtocolResolver"
-import { ToolProtocol } from "@roo-code/types"
+import * as vscode from "vscode"
+import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
 
 export const formatResponse = {
 	toolDenied: () => `The user denied this operation.`,
@@ -249,6 +249,7 @@ Always ensure you provide all required parameters for the tool you wish to use.`
  * @returns The tool use instructions reminder text
  */
 function getToolInstructionsReminder(protocol?: ToolProtocol): string {
-	const effectiveProtocol = protocol ?? resolveToolProtocol()
+	const effectiveProtocol =
+		protocol ?? vscode.workspace.getConfiguration("roo-cline").get<ToolProtocol>("toolProtocol", "xml")
 	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
 }

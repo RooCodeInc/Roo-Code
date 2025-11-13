@@ -1,10 +1,11 @@
 import { EXPERIMENT_IDS } from "../../../shared/experiments"
 import { TOOL_PROTOCOL } from "@roo-code/types"
 
-// Mock the toolProtocolResolver module FIRST (before any imports that use it)
-vi.mock("../../prompts/toolProtocolResolver", () => ({
-	resolveToolProtocol: vi.fn(),
-	isNativeProtocol: vi.fn(),
+// Mock vscode
+vi.mock("vscode", () => ({
+	workspace: {
+		getConfiguration: vi.fn(),
+	},
 }))
 
 // Mock the ApplyDiffTool module
@@ -17,7 +18,6 @@ vi.mock("../ApplyDiffTool", () => ({
 // Import after mocking to get the mocked version
 import { applyDiffTool as multiApplyDiffTool } from "../MultiApplyDiffTool"
 import { applyDiffTool as applyDiffToolClass } from "../ApplyDiffTool"
-import { resolveToolProtocol, isNativeProtocol } from "../../prompts/toolProtocolResolver"
 
 describe("applyDiffTool experiment routing", () => {
 	let mockCline: any
@@ -28,12 +28,14 @@ describe("applyDiffTool experiment routing", () => {
 	let mockRemoveClosingTag: any
 	let mockProvider: any
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 
-		// Reset mocks to default behavior (XML protocol)
-		;(resolveToolProtocol as any).mockReturnValue(TOOL_PROTOCOL.XML)
-		;(isNativeProtocol as any).mockImplementation((protocol: any) => protocol === TOOL_PROTOCOL.NATIVE)
+		// Reset vscode mock to default behavior (XML protocol)
+		const vscode = await import("vscode")
+		vi.mocked(vscode.workspace.getConfiguration).mockReturnValue({
+			get: vi.fn().mockReturnValue(TOOL_PROTOCOL.XML),
+		} as any)
 
 		mockProvider = {
 			getState: vi.fn(),
@@ -144,8 +146,10 @@ describe("applyDiffTool experiment routing", () => {
 
 	it("should use class-based tool when native protocol is enabled regardless of experiment", async () => {
 		// Enable native protocol
-		;(resolveToolProtocol as any).mockReturnValue(TOOL_PROTOCOL.NATIVE)
-		;(isNativeProtocol as any).mockReturnValue(true)
+		const vscode = await import("vscode")
+		vi.mocked(vscode.workspace.getConfiguration).mockReturnValue({
+			get: vi.fn().mockReturnValue(TOOL_PROTOCOL.NATIVE),
+		} as any)
 
 		mockProvider.getState.mockResolvedValue({
 			experiments: {

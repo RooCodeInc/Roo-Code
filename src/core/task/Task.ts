@@ -40,6 +40,7 @@ import {
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	TOOL_PROTOCOL,
+	ToolProtocol,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -82,7 +83,6 @@ import { getWorkspacePath } from "../../utils/path"
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
-import { resolveToolProtocol } from "../prompts/toolProtocolResolver"
 import { nativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 
 // core modules
@@ -2513,7 +2513,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
-					const toolProtocol = resolveToolProtocol()
+					const toolProtocol = vscode.workspace
+						.getConfiguration("roo-cline")
+						.get<ToolProtocol>("toolProtocol", "xml")
 					const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 
 					if (isNativeProtocol && this.apiConversationHistory.length > 0) {
@@ -2697,7 +2699,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration("roo-cline")
 						.get<boolean>("newTaskRequireTodos", false),
-					toolProtocol: resolveToolProtocol(),
+					toolProtocol: vscode.workspace
+						.getConfiguration("roo-cline")
+						.get<ToolProtocol>("toolProtocol", "xml"),
 				},
 				undefined, // todoList
 				this.api.getModel().id,
@@ -2931,7 +2935,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Determine if we should include native tools based on:
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
-		const toolProtocol = resolveToolProtocol()
+		const toolProtocol = vscode.workspace.getConfiguration("roo-cline").get<ToolProtocol>("toolProtocol", "xml")
 		const modelInfo = this.api.getModel().info
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
