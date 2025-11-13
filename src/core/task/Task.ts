@@ -85,6 +85,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { nativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
+import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -2944,13 +2945,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const modelInfo = this.api.getModel().info
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
-		// Build complete tools array: native tools + dynamic MCP tools
-		let allTools: OpenAI.Chat.ChatCompletionTool[] = nativeTools
+		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
+		let allTools: OpenAI.Chat.ChatCompletionTool[] = []
 		if (shouldIncludeTools) {
 			const provider = this.providerRef.deref()
 			const mcpHub = provider?.getMcpHub()
+
+			// Filter native tools based on mode restrictions (similar to XML tool filtering)
+			const filteredNativeTools = filterNativeToolsForMode(
+				nativeTools,
+				mode,
+				state?.customModes,
+				state?.experiments,
+			)
+
+			// Filter MCP tools based on mode restrictions
 			const mcpTools = getMcpServerTools(mcpHub)
-			allTools = [...nativeTools, ...mcpTools]
+			const filteredMcpTools = filterMcpToolsForMode(mcpTools, mode, state?.customModes, state?.experiments)
+
+			allTools = [...filteredNativeTools, ...filteredMcpTools]
 		}
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
