@@ -82,67 +82,7 @@ describe("Delegation UI", () => {
 		expect(screen.queryByTestId("delegation-completed-indicator")).toBeNull()
 	})
 
-	it("syncs focused selection to currentTaskItem (focus on child/parent after delegation/resume)", async () => {
-		// Mock hooks used by HistoryPreview
-		vi.doMock("../useTaskSearch", () => ({
-			useTaskSearch: () => ({
-				tasks: [
-					{
-						id: "1",
-						number: 1,
-						ts: Date.now(),
-						task: "Task 1",
-						tokensIn: 0,
-						tokensOut: 0,
-						totalCost: 0,
-					},
-					{
-						id: "focused-task",
-						number: 2,
-						ts: Date.now(),
-						task: "Focused Task",
-						tokensIn: 0,
-						tokensOut: 0,
-						totalCost: 0,
-					},
-				],
-				searchQuery: "",
-				setSearchQuery: vi.fn(),
-				sortOption: "newest",
-				setSortOption: vi.fn(),
-				lastNonRelevantSort: null,
-				setLastNonRelevantSort: vi.fn(),
-				showAllWorkspaces: false,
-				setShowAllWorkspaces: vi.fn(),
-			}),
-		}))
-
-		vi.doMock("@/context/ExtensionStateContext", async () => {
-			const React = await import("react")
-			const ExtensionStateContext = React.createContext<any>({
-				currentTaskItem: { id: "focused-task", number: 2 },
-			})
-			return {
-				useExtensionState: () => ({
-					currentTaskItem: { id: "focused-task", number: 2 },
-				}),
-				ExtensionStateContext,
-				ExtensionStateContextProvider: ({ children }: { children: React.ReactNode }) => (
-					<ExtensionStateContext.Provider value={{ currentTaskItem: { id: "focused-task", number: 2 } }}>
-						{children}
-					</ExtensionStateContext.Provider>
-				),
-			}
-		})
-
-		// Import after mocks
-		const { default: MockedHistoryPreview } = await import("../HistoryPreview")
-
-		render(<MockedHistoryPreview />)
-
-		const focusedRow = await screen.findByTestId("task-item-focused-task")
-		expect(focusedRow).toHaveAttribute("data-focused", "true")
-	})
+	// UI focus indicator test removed (out of scope for this PR)
 
 	it("keeps Delegated badge visible across focus changes", () => {
 		const item: any = {
@@ -157,7 +97,7 @@ describe("Delegation UI", () => {
 			awaitingChildId: "child-xyz",
 		}
 
-		const { rerender } = render(
+		render(
 			<TaskItem
 				item={item}
 				variant="full"
@@ -170,17 +110,6 @@ describe("Delegation UI", () => {
 		// Badge hidden in UI-neutral PR
 		expect(screen.queryByTestId("delegated-badge")).toBeNull()
 
-		// Simulate focus change and ensure badge persists
-		rerender(
-			<TaskItem
-				item={item}
-				variant="full"
-				isSelectionMode={false}
-				isSelected={false}
-				onToggleSelection={vi.fn()}
-				isFocused
-			/>,
-		)
-		expect(screen.queryByTestId("delegated-badge")).toBeNull()
+		// Focus change test removed (isFocused prop removed in UI-neutral PR)
 	})
 })

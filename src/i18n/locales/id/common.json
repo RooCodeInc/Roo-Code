@@ -165,12 +165,7 @@
 		"canceled": "Error tugas: Dihentikan dan dibatalkan oleh pengguna.",
 		"deleted": "Kegagalan tugas: Dihentikan dan dihapus oleh pengguna.",
 		"incomplete": "Tugas #{{taskNumber}} (Tidak lengkap)",
-		"no_messages": "Tugas #{{taskNumber}} (Tidak ada pesan)",
-
-		"delegated": "Didelegasikan ke subtugas",
-		"delegated_to": "Didelegasikan ke tugas {{childId}}",
-		"delegation_completed": "Subtugas selesai, melanjutkan tugas induk",
-		"awaiting_child": "Menunggu tugas anak {{childId}}"
+		"no_messages": "Tugas #{{taskNumber}} (Tidak ada pesan)"
 	},
 	"interruption": {
 		"responseInterruptedByUser": "Respons diinterupsi oleh pengguna",

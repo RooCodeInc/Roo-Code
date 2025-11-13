@@ -20,7 +20,6 @@ interface TaskItemProps {
 	onToggleSelection?: (taskId: string, isSelected: boolean) => void
 	onDelete?: (taskId: string) => void
 	className?: string
-	isFocused?: boolean
 }
 
 const TaskItem = ({
@@ -32,7 +31,6 @@ const TaskItem = ({
 	onToggleSelection,
 	onDelete,
 	className,
-	isFocused = false,
 }: TaskItemProps) => {
 	const handleClick = () => {
 		if (isSelectionMode && onToggleSelection) {
@@ -48,10 +46,9 @@ const TaskItem = ({
 		<div
 			key={item.id}
 			data-testid={`task-item-${item.id}`}
-			data-focused={isFocused ? "true" : "false"}
 			className={cn(
 				"cursor-pointer group bg-vscode-editor-background rounded-xl relative overflow-hidden border hover:bg-vscode-editor-foreground/10 transition-colors",
-				isFocused ? "border-vscode-focusBorder" : "border-transparent",
+				"border-transparent",
 				className,
 			)}
 			onClick={handleClick}>
