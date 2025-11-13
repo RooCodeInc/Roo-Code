@@ -116,12 +116,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			this.models = models
 			this.endpoints = endpoints
-
-			console.log(`[NATIVE_TOOL_OR] OpenRouterHandler.loadDynamicModels():`, {
-				modelId: this.options.openRouterModelId,
-				hasModels: Object.keys(models).length > 0,
-				hasEndpoints: Object.keys(endpoints).length > 0,
-			})
 		} catch (error) {
 			console.error("[OpenRouterHandler] Error loading dynamic models:", {
 				error: error instanceof Error ? error.message : String(error),
@@ -220,13 +214,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			const delta = chunk.choices[0]?.delta
 			const finishReason = chunk.choices[0]?.finish_reason
 
-			console.log(`[NATIVE_TOOL] OpenRouterHandler chunk:`, {
-				hasChoices: !!chunk.choices?.length,
-				hasDelta: !!delta,
-				finishReason,
-				deltaKeys: delta ? Object.keys(delta) : [],
-			})
-
 			if (delta) {
 				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 					yield { type: "reasoning", text: delta.reasoning }
@@ -234,10 +221,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 				// Check for tool calls in delta
 				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
-					console.log(
-						`[NATIVE_TOOL] OpenRouterHandler: Received tool_calls in delta, count:`,
-						delta.tool_calls.length,
-					)
 					for (const toolCall of delta.tool_calls) {
 						const index = toolCall.index
 						const existing = toolCallAccumulator.get(index)
@@ -245,19 +228,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						if (existing) {
 							// Accumulate arguments for existing tool call
 							if (toolCall.function?.arguments) {
-								console.log(
-									`[NATIVE_TOOL] OpenRouterHandler: Accumulating arguments for index ${index}:`,
-									toolCall.function.arguments,
-								)
 								existing.arguments += toolCall.function.arguments
 							}
 						} else {
 							// Start new tool call accumulation
-							console.log(`[NATIVE_TOOL] OpenRouterHandler: Starting new tool call at index ${index}:`, {
-								id: toolCall.id,
-								name: toolCall.function?.name,
-								hasArguments: !!toolCall.function?.arguments,
-							})
 							toolCallAccumulator.set(index, {
 								id: toolCall.id || "",
 								name: toolCall.function?.name || "",
@@ -265,7 +239,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 							})
 						}
 					}
-					console.log(`[NATIVE_TOOL] OpenRouterHandler: Current accumulator size:`, toolCallAccumulator.size)
 				}
 
 				if (delta.content) {
@@ -275,15 +248,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			// When finish_reason is 'tool_calls', yield all accumulated tool calls
 			if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
-				console.log(
-					`[NATIVE_TOOL] OpenRouterHandler: finish_reason is 'tool_calls', yielding ${toolCallAccumulator.size} tool calls`,
-				)
 				for (const toolCall of toolCallAccumulator.values()) {
-					console.log(`[NATIVE_TOOL] OpenRouterHandler: Yielding tool call:`, {
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
-					})
 					yield {
 						type: "tool_call",
 						id: toolCall.id,
@@ -293,7 +258,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 				// Clear accumulator after yielding
 				toolCallAccumulator.clear()
-				console.log(`[NATIVE_TOOL] OpenRouterHandler: Cleared tool call accumulator`)
 			}
 
 			if (chunk.usage) {
@@ -325,13 +289,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		this.models = models
 		this.endpoints = endpoints
-
-		console.log(`[NATIVE_TOOL_OR] OpenRouterHandler.fetchModel():`, {
-			modelId: this.options.openRouterModelId,
-			hasModels: Object.keys(models).length > 0,
-			hasEndpoints: Object.keys(endpoints).length > 0,
-			modelKeys: Object.keys(models).slice(0, 5),
-		})
 
 		return this.getModel()
 	}

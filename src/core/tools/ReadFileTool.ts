@@ -103,9 +103,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	}
 
 	async execute(fileEntries: FileEntry[], task: Task, callbacks: ToolCallbacks): Promise<void> {
-		console.log(`[NATIVE_TOOL] ReadFileTool.execute() called for task ${task.taskId}`)
-		console.log(`[NATIVE_TOOL] File entries:`, JSON.stringify(fileEntries, null, 2))
-
 		const { handleError, pushToolResult } = callbacks
 
 		if (fileEntries.length === 0) {

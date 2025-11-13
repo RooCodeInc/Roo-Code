@@ -57,73 +57,43 @@ import { resolveToolProtocol, isNativeProtocol } from "../prompts/toolProtocolRe
  */
 
 export async function presentAssistantMessage(cline: Task) {
-	console.log(`[NATIVE_TOOL] presentAssistantMessage called for task ${cline.taskId}.${cline.instanceId}`)
-	console.log(
-		`[NATIVE_TOOL] Current index: ${cline.currentStreamingContentIndex}, Content length: ${cline.assistantMessageContent.length}`,
-	)
-	console.log(
-		`[NATIVE_TOOL] Locked: ${cline.presentAssistantMessageLocked}, HasPending: ${cline.presentAssistantMessageHasPendingUpdates}`,
-	)
-
 	if (cline.abort) {
 		throw new Error(`[Task#presentAssistantMessage] task ${cline.taskId}.${cline.instanceId} aborted`)
 	}
 
 	if (cline.presentAssistantMessageLocked) {
-		console.log(`[NATIVE_TOOL] presentAssistantMessage is locked, setting hasPendingUpdates=true and returning`)
 		cline.presentAssistantMessageHasPendingUpdates = true
 		return
 	}
 
-	console.log(`[NATIVE_TOOL] Acquiring lock on presentAssistantMessage`)
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
-		console.log(
-			`[NATIVE_TOOL] Index ${cline.currentStreamingContentIndex} >= length ${cline.assistantMessageContent.length}`,
-		)
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
 		// bounds then this means we already  presented/executed the last
 		// content block and are ready to continue to next request.
 		if (cline.didCompleteReadingStream) {
-			console.log(`[NATIVE_TOOL] Stream is complete, setting userMessageContentReady=true`)
 			cline.userMessageContentReady = true
 		}
 
-		console.log(`[NATIVE_TOOL] Releasing lock and returning (out of bounds)`)
 		cline.presentAssistantMessageLocked = false
 		return
 	}
 
-	console.log(`[NATIVE_TOOL] About to clone block at index ${cline.currentStreamingContentIndex}`)
-	console.log(
-		`[NATIVE_TOOL] Block exists:`,
-		cline.assistantMessageContent[cline.currentStreamingContentIndex] !== undefined,
-	)
-
 	let block: any
 	try {
 		block = cloneDeep(cline.assistantMessageContent[cline.currentStreamingContentIndex]) // need to create copy bc while stream is updating the array, it could be updating the reference block properties too
-		console.log(`[NATIVE_TOOL] Block cloned successfully`)
 	} catch (error) {
-		console.error(`[NATIVE_TOOL] ERROR cloning block:`, error)
+		console.error(`ERROR cloning block:`, error)
 		console.error(
-			`[NATIVE_TOOL] Block content:`,
+			`Block content:`,
 			JSON.stringify(cline.assistantMessageContent[cline.currentStreamingContentIndex], null, 2),
 		)
 		cline.presentAssistantMessageLocked = false
 		return
 	}
-	console.log(
-		`[NATIVE_TOOL] Processing block at index ${cline.currentStreamingContentIndex}:`,
-		JSON.stringify(
-			{ type: block.type, name: block.type === "tool_use" ? block.name : undefined, partial: block.partial },
-			null,
-			2,
-		),
-	)
 
 	switch (block.type) {
 		case "text": {
@@ -364,8 +334,6 @@ export async function presentAssistantMessage(cline: Task) {
 				progressStatus?: ToolProgressStatus,
 				isProtected?: boolean,
 			) => {
-				console.log(`[NATIVE_TOOL] askApproval called with type: ${type}`)
-				console.log(`[NATIVE_TOOL] Calling cline.ask()...`)
 				const { response, text, images } = await cline.ask(
 					type,
 					partialMessage,
@@ -373,10 +341,8 @@ export async function presentAssistantMessage(cline: Task) {
 					progressStatus,
 					isProtected || false,
 				)
-				console.log(`[NATIVE_TOOL] cline.ask() returned response: ${response}`)
 
 				if (response !== "yesButtonClicked") {
-					console.log(`[NATIVE_TOOL] Tool was denied or user provided feedback`)
 					// Handle both messageResponse and noButtonClicked with text.
 					if (text) {
 						await cline.say("user_feedback", text, images)
@@ -388,7 +354,6 @@ export async function presentAssistantMessage(cline: Task) {
 					return false
 				}
 
-				console.log(`[NATIVE_TOOL] Tool was approved`)
 				// Handle yesButtonClicked with text.
 				if (text) {
 					await cline.say("user_feedback", text, images)
@@ -512,7 +477,6 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			console.log(`[NATIVE_TOOL] About to enter tool switch statement for tool: ${block.name}`)
 			switch (block.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
@@ -580,12 +544,9 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "read_file":
-					console.log(`[NATIVE_TOOL] Processing read_file tool use in presentAssistantMessage`)
-					console.log(`[NATIVE_TOOL] Block details:`, JSON.stringify(block, null, 2))
 					// Check if this model should use the simplified single-file read tool
 					const modelId = cline.api.getModel().id
 					if (shouldUseSingleFileRead(modelId)) {
-						console.log(`[NATIVE_TOOL] Using simpleReadFileTool for model ${modelId}`)
 						await simpleReadFileTool(
 							cline,
 							block,
@@ -595,8 +556,6 @@ export async function presentAssistantMessage(cline: Task) {
 							removeClosingTag,
 						)
 					} else {
-						console.log(`[NATIVE_TOOL] Using readFileTool.handle for model ${modelId}`)
-						console.log(`[NATIVE_TOOL] Calling readFileTool.handle...`)
 						// Type assertion is safe here because we're in the "read_file" case
 						await readFileTool.handle(cline, block as ToolUse<"read_file">, {
 							askApproval,
@@ -604,7 +563,6 @@ export async function presentAssistantMessage(cline: Task) {
 							pushToolResult,
 							removeClosingTag,
 						})
-						console.log(`[NATIVE_TOOL] readFileTool.handle completed`)
 					}
 					break
 				case "fetch_instructions":
@@ -656,14 +614,12 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "execute_command":
-					console.log(`[NATIVE_TOOL] execute_command case matched, calling executeCommandTool.handle()`)
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
 					})
-					console.log(`[NATIVE_TOOL] executeCommandTool.handle() completed`)
 					break
 				case "use_mcp_tool":
 					await useMcpToolTool.handle(cline, block as ToolUse<"use_mcp_tool">, {
@@ -754,7 +710,6 @@ export async function presentAssistantMessage(cline: Task) {
 	// This needs to be placed here, if not then calling
 	// cline.presentAssistantMessage below would fail (sometimes) since it's
 	// locked.
-	console.log(`[NATIVE_TOOL] Releasing lock on presentAssistantMessage`)
 	cline.presentAssistantMessageLocked = false
 
 	// NOTE: When tool is rejected, iterator stream is interrupted and it waits
@@ -763,15 +718,8 @@ export async function presentAssistantMessage(cline: Task) {
 	// set to message length and it sets userMessageContentReady to true itself
 	// (instead of preemptively doing it in iterator).
 	if (!block.partial || cline.didRejectTool || cline.didAlreadyUseTool) {
-		console.log(
-			`[NATIVE_TOOL] Block processing complete (partial=${block.partial}, didRejectTool=${cline.didRejectTool}, didAlreadyUseTool=${cline.didAlreadyUseTool})`,
-		)
-		console.log(
-			`[NATIVE_TOOL] currentStreamingContentIndex: ${cline.currentStreamingContentIndex}, assistantMessageContent.length: ${cline.assistantMessageContent.length}`,
-		)
 		// Block is finished streaming and executing.
 		if (cline.currentStreamingContentIndex === cline.assistantMessageContent.length - 1) {
-			console.log(`[NATIVE_TOOL] Last block (index === length - 1), setting userMessageContentReady=true`)
 			// It's okay that we increment if !didCompleteReadingStream, it'll
 			// just return because out of bounds and as streaming continues it
 			// will call `presentAssitantMessage` if a new block is ready. If
@@ -780,53 +728,31 @@ export async function presentAssistantMessage(cline: Task) {
 			// continue on and all potential content blocks be presented.
 			// Last block is complete and it is finished executing
 			cline.userMessageContentReady = true // Will allow `pWaitFor` to continue.
-		} else {
-			console.log(
-				`[NATIVE_TOOL] Not on last block yet (index ${cline.currentStreamingContentIndex} !== length - 1 ${cline.assistantMessageContent.length - 1})`,
-			)
 		}
 
 		// Call next block if it exists (if not then read stream will call it
 		// when it's ready).
 		// Need to increment regardless, so when read stream calls this function
 		// again it will be streaming the next block.
-		console.log(
-			`[NATIVE_TOOL] Incrementing currentStreamingContentIndex from ${cline.currentStreamingContentIndex} to ${cline.currentStreamingContentIndex + 1}`,
-		)
 		cline.currentStreamingContentIndex++
 
-		console.log(
-			`[NATIVE_TOOL] After increment: index = ${cline.currentStreamingContentIndex}, length = ${cline.assistantMessageContent.length}`,
-		)
 		if (cline.currentStreamingContentIndex < cline.assistantMessageContent.length) {
-			console.log(`[NATIVE_TOOL] More blocks to process, calling presentAssistantMessage recursively`)
 			// There are already more content blocks to stream, so we'll call
 			// this function ourselves.
 			presentAssistantMessage(cline)
 			return
 		} else {
-			console.log(
-				`[NATIVE_TOOL] No more blocks to process (index ${cline.currentStreamingContentIndex} >= length ${cline.assistantMessageContent.length})`,
-			)
-			console.log(`[NATIVE_TOOL] didCompleteReadingStream: ${cline.didCompleteReadingStream}`)
 			// CRITICAL FIX: If we're out of bounds and the stream is complete, set userMessageContentReady
 			// This handles the case where assistantMessageContent is empty or becomes empty after processing
 			if (cline.didCompleteReadingStream) {
-				console.log(`[NATIVE_TOOL] Stream is complete and no more blocks, setting userMessageContentReady=true`)
 				cline.userMessageContentReady = true
-			} else {
-				console.log(`[NATIVE_TOOL] Stream not complete yet, waiting for more blocks`)
 			}
 		}
 	}
 
 	// Block is partial, but the read stream may have finished.
 	if (cline.presentAssistantMessageHasPendingUpdates) {
-		console.log(`[NATIVE_TOOL] Has pending updates, calling presentAssistantMessage recursively`)
 		presentAssistantMessage(cline)
-	} else {
-		console.log(`[NATIVE_TOOL] No pending updates, exiting presentAssistantMessage`)
-		console.log(`[NATIVE_TOOL] Final state: userMessageContentReady=${cline.userMessageContentReady}`)
 	}
 }
 
