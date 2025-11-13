@@ -1867,8 +1867,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// results.
 			const finalUserContent = [...parsedUserContent, { type: "text" as const, text: environmentDetails }]
 
-			await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
-			TelemetryService.instance.captureConversationMessage(this.taskId, "user")
+			// Only add user message to conversation history if this is NOT a retry attempt
+			// On retries, the user message was already added in the previous attempt
+			// This prevents consecutive user messages (including tool->user sequences) which cause 400 errors
+			if ((currentItem.retryAttempt ?? 0) === 0) {
+				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
+				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
+			}
 
 			// Since we sent off a placeholder api_req_started message to update the
 			// webview while waiting to actually start the API request (to load
