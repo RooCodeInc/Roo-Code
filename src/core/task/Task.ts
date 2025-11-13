@@ -1767,6 +1767,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			userContent: Anthropic.Messages.ContentBlockParam[]
 			includeFileDetails: boolean
 			retryAttempt?: number
+			userMessageWasRemoved?: boolean // Track if user message was removed due to empty response
 		}
 
 		const stack: StackItem[] = [{ userContent, includeFileDetails, retryAttempt: 0 }]
@@ -1867,10 +1868,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// results.
 			const finalUserContent = [...parsedUserContent, { type: "text" as const, text: environmentDetails }]
 
-			// Only add user message to conversation history if this is NOT a retry attempt
-			// On retries, the user message was already added in the previous attempt
-			// This prevents consecutive user messages (including tool->user sequences) which cause 400 errors
-			if ((currentItem.retryAttempt ?? 0) === 0) {
+			// Only add user message to conversation history if:
+			// 1. This is the first attempt (retryAttempt === 0), OR
+			// 2. The message was removed in a previous iteration (userMessageWasRemoved === true)
+			// This prevents consecutive user messages while allowing re-add when needed
+			if ((currentItem.retryAttempt ?? 0) === 0 || currentItem.userMessageWasRemoved) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
 			}
@@ -2557,10 +2559,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 
 						// Push the same content back onto the stack to retry, incrementing the retry attempt counter
+						// Mark that user message was removed so it gets re-added on retry
 						stack.push({
 							userContent: currentUserContent,
 							includeFileDetails: false,
 							retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+							userMessageWasRemoved: true,
 						})
 
 						// Continue to retry the request
