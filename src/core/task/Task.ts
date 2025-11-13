@@ -2957,7 +2957,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			mode: mode,
 			taskId: this.taskId,
 			// Include tools and tool protocol when using native protocol and model supports it
-			...(shouldIncludeTools ? { tools: allTools, tool_choice: "required", toolProtocol } : {}),
+			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
 		}
 
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
