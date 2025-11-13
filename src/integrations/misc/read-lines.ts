@@ -61,7 +61,7 @@ export function readLines(filepath: string, endLine?: number, startLine?: number
 				const sampleBuffer = Buffer.alloc(65536)
 				return fileHandle
 					.read(sampleBuffer, 0, sampleBuffer.length, 0)
-					.then(() => sampleBuffer)
+					.then(({ bytesRead }) => sampleBuffer.subarray(0, bytesRead))
 					.finally(() => fileHandle.close())
 			})
 			.then((sampleBuffer) => detectEncoding(sampleBuffer))
