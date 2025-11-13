@@ -17,7 +17,6 @@ export const minimaxModels = {
 		outputPrice: 1.2,
 		cacheWritesPrice: 0.375,
 		cacheReadsPrice: 0.03,
-		preserveReasoning: true,
 		description:
 			"MiniMax M2, a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
 	},
@@ -30,10 +29,10 @@ export const minimaxModels = {
 		outputPrice: 1.2,
 		cacheWritesPrice: 0.375,
 		cacheReadsPrice: 0.03,
-		preserveReasoning: true,
 		description:
 			"MiniMax M2 Stable (High Concurrency, Commercial Use), a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
 export const MINIMAX_DEFAULT_TEMPERATURE = 1.0
+export const MINIMAX_DEFAULT_MAX_TOKENS = 16384
