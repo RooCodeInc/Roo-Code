@@ -406,7 +406,7 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(), { wrapper })
 
 			expect(result.current.provider).toBe("zgsm")
-			expect(result.current.id).toBe("GLM-4.5")
+			expect(result.current.id).toBe("Auto")
 		})
 	})
 

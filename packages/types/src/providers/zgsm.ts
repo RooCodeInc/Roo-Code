@@ -1,6 +1,6 @@
 import { ModelInfo } from "../model.js"
 
-export const zgsmDefaultModelId = "GLM-4.5"
+export const zgsmDefaultModelId = "Auto"
 
 export const zgsmModels = {
 	default: {

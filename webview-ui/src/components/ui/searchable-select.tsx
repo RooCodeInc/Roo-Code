@@ -14,6 +14,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui"
 import { useEscapeKey } from "@/hooks/useEscapeKey"
+import { useTranslation } from "react-i18next"
 
 export interface SearchableSelectOption {
 	value: string
@@ -27,7 +28,8 @@ interface SearchableSelectProps {
 	onValueChange: (value: string) => void
 	options: SearchableSelectOption[]
 	placeholder: string
-	searchPlaceholder: string
+	searchPlaceholder?: string
+	disabledSearch?: boolean
 	emptyMessage: string
 	className?: string
 	disabled?: boolean
@@ -40,11 +42,13 @@ export function SearchableSelect({
 	options,
 	placeholder,
 	searchPlaceholder,
+	disabledSearch = false,
 	emptyMessage,
 	className,
 	disabled,
 	"data-testid": dataTestId,
 }: SearchableSelectProps) {
+	const { t } = useTranslation()
 	const [open, setOpen] = React.useState(false)
 	const [searchValue, setSearchValue] = React.useState("")
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
@@ -130,12 +134,12 @@ export function SearchableSelect({
 			</PopoverTrigger>
 			<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
 				<Command>
-					<div className="relative">
+					<div className={cn("relative", disabledSearch ? "hidden" : "")}>
 						<CommandInput
 							ref={searchInputRef}
 							value={searchValue}
 							onValueChange={setSearchValue}
-							placeholder={searchPlaceholder}
+							placeholder={searchPlaceholder || t("settings:common.select")}
 							className="h-9 mr-4"
 						/>
 						{searchValue.length > 0 && (

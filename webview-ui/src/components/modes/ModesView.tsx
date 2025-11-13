@@ -31,11 +31,11 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Tab, TabContent, TabHeader } from "@src/components/common/Tab"
 import {
 	Button,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+	// Select,
+	// SelectContent,
+	// SelectItem,
+	// SelectTrigger,
+	// SelectValue,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -47,6 +47,7 @@ import {
 	CommandGroup,
 	Input,
 	StandardTooltip,
+	SearchableSelect,
 } from "@src/components/ui"
 import { DeleteModeDialog } from "@src/components/modes/DeleteModeDialog"
 import { useEvent } from "react-use"
@@ -771,25 +772,25 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 							{t("prompts:apiConfiguration.select")}
 						</div>
 						<div className="mb-2">
-							<Select
+							<SearchableSelect
 								value={currentApiConfigName}
 								onValueChange={(value) => {
 									vscode.postMessage({
 										type: "loadApiConfiguration",
 										text: value,
 									})
-								}}>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder={t("settings:common.select")} />
-								</SelectTrigger>
-								<SelectContent>
-									{(listApiConfigMeta || []).map((config) => (
-										<SelectItem key={config.id} value={config.name}>
-											{config.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								}}
+								options={(listApiConfigMeta || []).map(({ name }) => ({
+									label: name,
+									value: name,
+								}))}
+								placeholder={t("settings:common.select")}
+								searchPlaceholder={""}
+								emptyMessage={""}
+								className="w-full"
+								disabledSearch
+								data-testid="provider-select"
+							/>
 						</div>
 					</div>
 				</div>

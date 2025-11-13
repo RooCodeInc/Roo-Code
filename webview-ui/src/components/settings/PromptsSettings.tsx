@@ -9,11 +9,12 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import {
 	Button,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+	SearchableSelect,
+	// Select,
+	// SelectContent,
+	// SelectItem,
+	// SelectTrigger,
+	// SelectValue,
 	StandardTooltip,
 } from "@src/components/ui"
 
@@ -146,20 +147,19 @@ const PromptsSettings = ({
 
 			<Section>
 				<div>
-					<Select
+					<SearchableSelect
 						value={activeSupportOption}
-						onValueChange={(type) => setActiveSupportOption(type as SupportPromptType)}>
-						<SelectTrigger className="w-full" data-testid="support-prompt-select-trigger">
-							<SelectValue placeholder={t("settings:common.select")} />
-						</SelectTrigger>
-						<SelectContent>
-							{Object.keys(supportPrompt.default).map((type) => (
-								<SelectItem key={type} value={type} data-testid={`${type}-option`}>
-									{t(`prompts:supportPrompts.types.${type}.label`)}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						onValueChange={(type) => setActiveSupportOption(type as SupportPromptType)}
+						options={Object.keys(supportPrompt.default).map((type) => ({
+							value: type,
+							label: t(`prompts:supportPrompts.types.${type}.label`),
+						}))}
+						placeholder={t("settings:common.select")}
+						searchPlaceholder={""}
+						emptyMessage={""}
+						className="w-full"
+						data-testid="provider-select"
+					/>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">
 						{t(`prompts:supportPrompts.types.${activeSupportOption}.description`)}
 					</div>
@@ -199,7 +199,7 @@ const PromptsSettings = ({
 										? t("prompts:supportPrompts.enhance.apiConfiguration")
 										: t("prompts:supportPrompts.condense.apiConfiguration")}
 								</label>
-								<Select
+								<SearchableSelect
 									value={
 										activeSupportOption === "ENHANCE"
 											? enhancementApiConfigId || "-"
@@ -220,32 +220,28 @@ const PromptsSettings = ({
 												updatedSettings: { condensingApiConfigId: newConfigId },
 											})
 										}
-									}}>
-									<SelectTrigger data-testid="api-config-select" className="w-full">
-										<SelectValue
-											placeholder={
+									}}
+									options={[
+										{
+											id: "-",
+											name:
 												activeSupportOption === "ENHANCE"
 													? t("prompts:supportPrompts.enhance.useCurrentConfig")
-													: t("prompts:supportPrompts.condense.useCurrentConfig")
-											}
-										/>
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="-">
-											{activeSupportOption === "ENHANCE"
-												? t("prompts:supportPrompts.enhance.useCurrentConfig")
-												: t("prompts:supportPrompts.condense.useCurrentConfig")}
-										</SelectItem>
-										{(listApiConfigMeta || []).map((config) => (
-											<SelectItem
-												key={config.id}
-												value={config.id}
-												data-testid={`${config.id}-option`}>
-												{config.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+													: t("prompts:supportPrompts.condense.useCurrentConfig"),
+										},
+										...(listApiConfigMeta || []),
+									].map(({ id, name }) => ({ value: id, label: name }))}
+									placeholder={
+										activeSupportOption === "ENHANCE"
+											? t("prompts:supportPrompts.enhance.useCurrentConfig")
+											: t("prompts:supportPrompts.condense.useCurrentConfig")
+									}
+									searchPlaceholder={""}
+									emptyMessage={""}
+									disabledSearch
+									className="w-full"
+									data-testid="provider-select"
+								/>
 								<div className="text-sm text-vscode-descriptionForeground mt-1">
 									{activeSupportOption === "ENHANCE"
 										? t("prompts:supportPrompts.enhance.apiConfigDescription")

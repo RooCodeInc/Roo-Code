@@ -7,7 +7,9 @@ import type { Language } from "@roo-code/types"
 import { ZGSM_LANGUAGES as LANGUAGES } from "@roo/language"
 
 import { cn } from "@src/lib/utils"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@src/components/ui"
+import {
+	SearchableSelect /* Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue */,
+} from "@src/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -31,21 +33,17 @@ export const LanguageSettings = ({ language, setCachedStateField, className, ...
 			</SectionHeader>
 
 			<Section>
-				<Select value={language} onValueChange={(value) => setCachedStateField("language", value as Language)}>
-					<SelectTrigger className="w-full">
-						<SelectValue placeholder={t("settings:common.select")} />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							{Object.entries(LANGUAGES).map(([code, name]) => (
-								<SelectItem key={code} value={code}>
-									{name}
-									<span className="text-muted-foreground">({code})</span>
-								</SelectItem>
-							))}
-						</SelectGroup>
-					</SelectContent>
-				</Select>
+				<SearchableSelect
+					value={language}
+					onValueChange={(value) => setCachedStateField("language", value as Language)}
+					options={Object.entries(LANGUAGES).map(([code, name]) => ({ value: code, label: name }))}
+					placeholder={t("settings:common.select")}
+					searchPlaceholder={""}
+					emptyMessage={""}
+					disabledSearch
+					className="w-full"
+					data-testid="provider-select"
+				/>
 			</Section>
 		</div>
 	)

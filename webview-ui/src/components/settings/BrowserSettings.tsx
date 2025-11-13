@@ -4,14 +4,15 @@ import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
 
 import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+	// Select,
+	// SelectContent,
+	// SelectGroup,
+	// SelectItem,
+	// SelectTrigger,
+	// SelectValue,
 	Slider,
 	Button,
+	SearchableSelect,
 } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
@@ -137,22 +138,17 @@ export const BrowserSettings = ({
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						<div>
 							<label className="block font-medium mb-1">{t("settings:browser.viewport.label")}</label>
-							<Select
+							<SearchableSelect
 								value={browserViewportSize}
-								onValueChange={(value) => setCachedStateField("browserViewportSize", value)}>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder={t("settings:common.select")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										{options.map(({ value, label }) => (
-											<SelectItem key={value} value={value}>
-												{label}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								</SelectContent>
-							</Select>
+								onValueChange={(value) => setCachedStateField("browserViewportSize", value)}
+								options={options}
+								placeholder={t("settings:common.select")}
+								searchPlaceholder={""}
+								emptyMessage={""}
+								className="w-full"
+								disabledSearch
+								data-testid="provider-select"
+							/>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:browser.viewport.description")}
 							</div>

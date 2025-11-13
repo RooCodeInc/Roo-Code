@@ -113,8 +113,6 @@ export const BINARY_MAGIC_NUMBERS = [
 	{ magic: Buffer.from([0xff, 0xd8, 0xff]), description: "JPEG image" },
 	// GIF files
 	{ magic: Buffer.from([0x47, 0x49, 0x46, 0x38]), description: "GIF image" },
-	// PDF files
-	{ magic: Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d]), description: "PDF document" },
 	// Mach-O files (macOS)
 	{ magic: Buffer.from([0xfe, 0xed, 0xfa, 0xce]), description: "Mach-O executable (32-bit)" },
 	{ magic: Buffer.from([0xfe, 0xed, 0xfa, 0xcf]), description: "Mach-O executable (64-bit)" },
