@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -166,16 +166,6 @@ Chúng tôi sử dụng [changesets](https://github.com/changesets/changesets) �
 Chúng tôi yêu thích những đóng góp của cộng đồng! Bắt đầu bằng cách đọc [CONTRIBUTING.md](CONTRIBUTING.md) của chúng tôi.
 
 ---
-
-## Những người đóng góp
-
-Cảm ơn tất cả những người đóng góp đã giúp Roo Code trở nên tốt hơn!
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
 
 ## Giấy phép
 

@@ -1062,7 +1062,6 @@ export const ChatRowContent = ({
 							ts={message.ts}
 							isStreaming={isStreaming}
 							isLast={isLast}
-							metadata={message.metadata as any}
 						/>
 					)
 				case "api_req_started":

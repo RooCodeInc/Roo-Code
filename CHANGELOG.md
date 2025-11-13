@@ -1,5 +1,21 @@
 # Roo Code Changelog
 
+## [3.31.3] - 2025-11-13
+
+![3.31.3 Release - Kangaroo Decrypting a Message](/releases/3.31.3-release.png)
+
+- Fix: OpenAI Native encrypted_content handling and remove gpt-5-chat-latest verbosity flag (#9225 by @politsin, PR by @hannesrudolph)
+- Fix: Roo Code Cloud provider Anthropic input token normalization to avoid double-counting (thanks @hannesrudolph!)
+- Refactor: Rename sliding-window to context-management and truncateConversationIfNeeded to manageContext (thanks @hannesrudolph!)
+
+## [3.31.2] - 2025-11-12
+
+- Fix: Apply updated API profile settings when provider/model unchanged (#9208 by @hannesrudolph, PR by @hannesrudolph)
+- Migrate conversation continuity to plugin-side encrypted reasoning items using Responses API for improved reliability (thanks @hannesrudolph!)
+- Fix: Include mcpServers in getState() for auto-approval (#9190 by @bozoweed, PR by @daniel-lxs)
+- Batch settings updates from the webview to the extension host for improved performance (thanks @cte!)
+- Fix: Replace rate-limited badges with badgen.net to improve README reliability (thanks @daniel-lxs!)
+
 ## [3.31.1] - 2025-11-11
 
 ![3.31.1 Release - Kangaroo Stuck in the Clouds](/releases/3.31.1-release.png)

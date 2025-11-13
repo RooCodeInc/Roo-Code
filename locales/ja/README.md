@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -166,16 +166,6 @@ VSIXパッケージを手動でインストールしたい場合：
 私たちはコミュニティからの貢献を歓迎します！[CONTRIBUTING.md](CONTRIBUTING.md)を読んで始めましょう。
 
 ---
-
-## 貢献者
-
-Roo Codeをより良くするために協力してくれたすべての貢献者に感謝します！
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
 
 ## ライセンス
 

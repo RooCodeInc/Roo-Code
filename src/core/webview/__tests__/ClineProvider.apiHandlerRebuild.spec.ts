@@ -250,7 +250,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 	})
 
 	describe("upsertProviderProfile", () => {
-		test("does NOT rebuild API handler when provider and model unchanged, but task.apiConfiguration is synced", async () => {
+		test("rebuilds API handler when provider/model unchanged but profile settings changed (explicit save)", async () => {
 			// Create a task with the current config
 			const mockTask = new Task({
 				...defaultTaskOptions,
@@ -285,10 +285,15 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				true,
 			)
 
-			// Verify buildApiHandler was NOT called since provider/model unchanged
-			expect(buildApiHandlerMock).not.toHaveBeenCalled()
-			// Verify the task's api property was NOT reassigned (still same reference)
-			expect(mockTask.api).toBe(originalApi)
+			// Verify buildApiHandler WAS called because we force rebuild on explicit save/switch
+			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiProvider: "openrouter",
+					openRouterModelId: "openai/gpt-4",
+				}),
+			)
+			// Verify the task's api property was reassigned (new client)
+			expect(mockTask.api).not.toBe(originalApi)
 			// Verify task.apiConfiguration was synchronized with non-model fields
 			expect((mockTask as any).apiConfiguration.openRouterModelId).toBe("openai/gpt-4")
 			expect((mockTask as any).apiConfiguration.rateLimitSeconds).toBe(5)
@@ -390,7 +395,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 	})
 
 	describe("activateProviderProfile", () => {
-		test("does NOT rebuild API handler when provider and model unchanged, but task.apiConfiguration is synced", async () => {
+		test("rebuilds API handler when provider/model unchanged but settings differ (explicit profile switch)", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -423,10 +428,15 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.activateProviderProfile({ name: "test-config" })
 
-			// Verify buildApiHandler was NOT called
-			expect(buildApiHandlerMock).not.toHaveBeenCalled()
-			// Verify the API reference wasn't changed
-			expect(mockTask.api).toBe(originalApi)
+			// Verify buildApiHandler WAS called due to forced rebuild on explicit switch
+			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiProvider: "openrouter",
+					openRouterModelId: "openai/gpt-4",
+				}),
+			)
+			// Verify the API reference changed
+			expect(mockTask.api).not.toBe(originalApi)
 			// Verify task.apiConfiguration was synchronized
 			expect((mockTask as any).apiConfiguration.openRouterModelId).toBe("openai/gpt-4")
 			expect((mockTask as any).apiConfiguration.modelTemperature).toBe(0.9)

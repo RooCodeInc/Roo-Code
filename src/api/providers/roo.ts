@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { rooDefaultModelId } from "@roo-code/types"
+import { rooDefaultModelId, getApiProtocol } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -163,12 +163,25 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				const model = this.getModel()
 				const isFreeModel = model.info.isFree ?? false
 
+				// Normalize input tokens based on protocol expectations:
+				// - OpenAI protocol expects TOTAL input tokens (cached + non-cached)
+				// - Anthropic protocol expects NON-CACHED input tokens (caches passed separately)
+				const modelId = model.id
+				const apiProtocol = getApiProtocol("roo", modelId)
+
+				const promptTokens = lastUsage.prompt_tokens || 0
+				const cacheWrite = lastUsage.cache_creation_input_tokens || 0
+				const cacheRead = lastUsage.prompt_tokens_details?.cached_tokens || 0
+				const nonCached = Math.max(0, promptTokens - cacheWrite - cacheRead)
+
+				const inputTokensForDownstream = apiProtocol === "anthropic" ? nonCached : promptTokens
+
 				yield {
 					type: "usage",
-					inputTokens: lastUsage.prompt_tokens || 0,
+					inputTokens: inputTokensForDownstream,
 					outputTokens: lastUsage.completion_tokens || 0,
-					cacheWriteTokens: lastUsage.cache_creation_input_tokens,
-					cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
+					cacheWriteTokens: cacheWrite,
+					cacheReadTokens: cacheRead,
 					totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 				}
 			}

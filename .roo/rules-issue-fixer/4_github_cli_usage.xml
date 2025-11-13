@@ -29,23 +29,23 @@
 
   <primary_commands>
     <command name="gh_issue_view">
-      <purpose>Retrieve the issue details at the start</purpose>
+      <purpose>Retrieve the issue details at the start using the REST Issues API.</purpose>
       <when>Always use first to get the full issue content</when>
-      <syntax>gh issue view [issue-number] --repo [owner]/[repo] --json number,title,body,state,labels,assignees,milestone,createdAt,updatedAt,closedAt,author</syntax>
+      <syntax>gh api repos/[owner]/[repo]/issues/[issue-number] --jq '{number,title,body,state,labels,assignees,milestone,createdAt:.created_at,updatedAt:.updated_at,closedAt:.closed_at,author:.user.login}'</syntax>
       <example>
         <execute_command>
-        <command>gh issue view 123 --repo octocat/hello-world --json number,title,body,state,labels,assignees,milestone,createdAt,updatedAt,closedAt,author</command>
+        <command>gh api repos/octocat/hello-world/issues/123 --jq '{number,title,body,state,labels,assignees,milestone,createdAt:.created_at,updatedAt:.updated_at,closedAt:.closed_at,author:.user.login}'</command>
         </execute_command>
       </example>
     </command>
     
     <command name="gh_issue_comments">
-      <purpose>Get additional context and requirements from issue comments</purpose>
+      <purpose>Get additional context and requirements from issue comments.</purpose>
       <when>Always use after viewing issue to see full discussion</when>
-      <syntax>gh issue view [issue-number] --repo [owner]/[repo] --comments</syntax>
+      <syntax>gh api repos/[owner]/[repo]/issues/[issue-number]/comments --paginate --jq '.[].body'</syntax>
       <example>
         <execute_command>
-        <command>gh issue view 123 --repo octocat/hello-world --comments</command>
+        <command>gh api repos/octocat/hello-world/issues/123/comments --paginate --jq '.[].body'</command>
         </execute_command>
       </example>
     </command>
@@ -109,6 +109,30 @@
     </command>
   </optional_commands>
   
+  <projects_v2_commands>
+    <command name="gh_projects_v2_for_issue">
+      <purpose>Inspect associations with GitHub Projects (new Projects experience) for a given issue</purpose>
+      <when>Use when project context is relevant to understanding priority, ownership, or workflow</when>
+      <syntax>gh api graphql -f query='
+query($owner:String!, $repo:String!, $number:Int!) {
+ repository(owner:$owner, name:$repo) {
+   issue(number:$number) {
+     projectsV2(first:20) {
+       nodes {
+         title
+         url
+       }
+     }
+   }
+ }
+}
+' -F owner=[owner] -F repo=[repo] -F number=[issue-number]</syntax>
+      <note>
+        This uses the projectsV2 field from the new GitHub Projects experience for issue-level project context.
+      </note>
+    </command>
+  </projects_v2_commands>
+
   <pull_request_commands>
     <command name="gh_pr_create">
       <purpose>Create a pull request</purpose>
