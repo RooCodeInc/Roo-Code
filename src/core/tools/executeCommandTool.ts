@@ -316,18 +316,16 @@ export async function executeCommand(
 		const { text, images } = message
 		await task.say("user_feedback", text, images)
 
-		return [
-			true,
-			formatResponse.toolResult(
-				[
-					`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
-					result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
-					`The user provided the following feedback:`,
-					`<feedback>\n${text}\n</feedback>`,
-				].join("\n"),
-				images,
-			),
+		const parts: string[] = [
+			`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
+			result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
 		]
+		if (text && text.trim().length > 0) {
+			// Append feedback verbatim without prefacing blurb
+			parts.push(text)
+		}
+
+		return [true, formatResponse.toolResult(parts.join("\n"), images)]
 	} else if (completed || exitDetails) {
 		let exitStatus: string = ""
 

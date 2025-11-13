@@ -926,8 +926,9 @@ describe("Cline", () => {
 						fileContextTracker: cline.fileContextTracker,
 					})
 
-					// Regular text should not be processed
-					expect((processedContent[0] as Anthropic.TextBlockParam).text).toBe(
+					// Regular text should be processed
+					expect((processedContent[0] as Anthropic.TextBlockParam).text).toContain("processed:")
+					expect((processedContent[0] as Anthropic.TextBlockParam).text).toContain(
 						"Regular text with 'some/path' (see below for file content)",
 					)
 
@@ -945,10 +946,11 @@ describe("Cline", () => {
 						"<feedback>Check 'some/path' (see below for file content)</feedback>",
 					)
 
-					// Regular tool result should not be processed
+					// Regular tool result should be processed now
 					const toolResult2 = processedContent[3] as Anthropic.ToolResultBlockParam
 					const content2 = Array.isArray(toolResult2.content) ? toolResult2.content[0] : toolResult2.content
-					expect((content2 as Anthropic.TextBlockParam).text).toBe(
+					expect((content2 as Anthropic.TextBlockParam).text).toContain("processed:")
+					expect((content2 as Anthropic.TextBlockParam).text).toContain(
 						"Regular tool result with 'path' (see below for file content)",
 					)
 
