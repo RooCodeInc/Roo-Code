@@ -15,7 +15,7 @@ vi.mock("../ApplyDiffTool", () => ({
 }))
 
 // Import after mocking to get the mocked version
-import { applyDiffTool as multiApplyDiffTool } from "../multiApplyDiffTool"
+import { applyDiffTool as multiApplyDiffTool } from "../MultiApplyDiffTool"
 import { applyDiffTool as applyDiffToolClass } from "../ApplyDiffTool"
 import { resolveToolProtocol, isNativeProtocol } from "../../prompts/toolProtocolResolver"
 
