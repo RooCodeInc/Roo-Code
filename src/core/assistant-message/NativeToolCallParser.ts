@@ -71,7 +71,7 @@ export class NativeToolCallParser {
 			// Build typed nativeArgs for tools that support it.
 			// This switch statement serves two purposes:
 			// 1. Validation: Ensures required parameters are present before constructing nativeArgs
-			// 2. Transformation: Converts raw JSON to properly typed structures (e.g., handling
+			// 2. Transformation: Converts raw JSON to properly typed structures
 			//
 			// Each case validates the minimum required parameters and constructs a properly typed
 			// nativeArgs object. If validation fails, nativeArgs remains undefined and the tool
