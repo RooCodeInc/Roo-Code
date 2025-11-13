@@ -622,15 +622,15 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 									<>
 										{getActionIcon(action.action)}
 										<span>
-											{getBrowserActionText(
-												action.action,
-												pages[currentPageIndex]?.mousePosition,
-												action.coordinate,
-												action.text,
-												pageSize,
-												pageViewportWidth,
-												pageViewportHeight,
-											)}
+									{getBrowserActionText(
+										action.action,
+										action.executedCoordinate,
+										action.coordinate,
+										action.text,
+										pageSize,
+										pageViewportWidth,
+										pageViewportHeight,
+									)}
 										</span>
 									</>
 								)
