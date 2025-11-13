@@ -216,7 +216,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
 			// The official way to set system behavior is the top-level `instructions` field.
 			instructions: systemPrompt,
-			include: ["reasoning.encrypted_content"],
+			// Only include encrypted reasoning content when reasoning effort is set
+			...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			...(reasoningEffort
 				? {
 						reasoning: {
@@ -1098,7 +1099,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				],
 				stream: false, // Non-streaming for completePrompt
 				store: false, // Don't store prompt completions
-				include: ["reasoning.encrypted_content"],
+				// Only include encrypted reasoning content when reasoning effort is set
+				...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			}
 
 			// Include service tier if selected and supported

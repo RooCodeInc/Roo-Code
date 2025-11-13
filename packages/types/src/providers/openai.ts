@@ -16,7 +16,6 @@ export const openAiNativeModels = {
 		outputPrice: 10.0,
 		cacheReadsPrice: 0.13,
 		description: "GPT-5 Chat Latest: Optimized for conversational AI and non-reasoning tasks",
-		supportsVerbosity: true,
 	},
 	"gpt-5-2025-08-07": {
 		maxTokens: 128000,
