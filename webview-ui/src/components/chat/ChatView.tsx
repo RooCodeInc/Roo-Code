@@ -14,7 +14,6 @@ import { appendImages } from "@src/utils/imageUtils"
 import type { ClineAsk, ClineMessage } from "@roo-code/types"
 
 import { ClineSayTool, ExtensionMessage } from "@roo/ExtensionMessage"
-import { McpServer, McpTool } from "@roo/mcp"
 import { findLast } from "@roo/array"
 import { SuggestionItem } from "@roo-code/types"
 import { combineApiRequests } from "@roo/combineApiRequests"
