@@ -71,9 +71,11 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				const didApprove = await askFinishSubTaskApproval()
 
 				if (!didApprove) {
+					pushToolResult(formatResponse.toolDenied())
 					return
 				}
 
+				pushToolResult("")
 				await task.providerRef.deref()?.finishSubTask(result)
 				return
 			}
@@ -86,16 +88,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			}
 
 			await task.say("user_feedback", text ?? "", images)
-			const toolResults: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
 
-			toolResults.push({
-				type: "text",
-				text: `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`,
-			})
-
-			toolResults.push(...formatResponse.imageBlocks(images))
-			task.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
-			task.userMessageContent.push(...toolResults)
+			const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`
+			pushToolResult(formatResponse.toolResult(feedbackText, images))
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}
