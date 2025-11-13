@@ -130,6 +130,109 @@ describe("OpenRouterHandler", () => {
 	})
 
 	describe("createMessage", () => {
+		it("strips XML tags from reasoning content for kimi-k2-thinking model", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "moonshot/kimi-k2-thinking",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [
+							{
+								delta: {
+									reasoning:
+										"<thinking>This is reasoning content with <tag>XML tags</tag></thinking>",
+								},
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									content: "Regular content",
+								},
+							},
+						],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 20,
+						},
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const chunks = []
+			const generator = handler.createMessage("test", [])
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Check that reasoning content has XML tags stripped
+			expect(chunks[0]).toEqual({
+				type: "reasoning",
+				text: "This is reasoning content with XML tags",
+			})
+			expect(chunks[1]).toEqual({
+				type: "text",
+				text: "Regular content",
+			})
+		})
+
+		it("does not strip XML tags from reasoning content for other models", async () => {
+			const handler = new OpenRouterHandler({
+				...mockOptions,
+				openRouterModelId: "openai/gpt-4",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [
+							{
+								delta: {
+									reasoning:
+										"<thinking>This is reasoning content with <tag>XML tags</tag></thinking>",
+								},
+							},
+						],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 20,
+						},
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const chunks = []
+			const generator = handler.createMessage("test", [])
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Check that reasoning content keeps XML tags for non-kimi models
+			expect(chunks[0]).toEqual({
+				type: "reasoning",
+				text: "<thinking>This is reasoning content with <tag>XML tags</tag></thinking>",
+			})
+		})
+
 		it("generates correct stream chunks", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 

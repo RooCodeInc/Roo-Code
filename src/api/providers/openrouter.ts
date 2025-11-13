@@ -98,6 +98,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
 	}
 
+	/**
+	 * Strip XML tags from reasoning content for models that include them
+	 * Some models like kimi-k2-thinking include XML tags in their reasoning output
+	 */
+	private stripXmlTags(text: string): string {
+		// Remove XML tags but preserve the content between them
+		return text.replace(/<[^>]*>/g, "")
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -180,14 +189,21 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
-			const delta = chunk.choices[0]?.delta
+			const delta = chunk.choices?.[0]?.delta
 
-			if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-				yield { type: "reasoning", text: delta.reasoning }
-			}
+			if (delta) {
+				const modelId = this.options.openRouterModelId ?? openRouterDefaultModelId
 
-			if (delta?.content) {
-				yield { type: "text", text: delta.content }
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					// Strip XML tags for kimi-k2-thinking model which includes them in reasoning output
+					const reasoningText =
+						modelId === "moonshot/kimi-k2-thinking" ? this.stripXmlTags(delta.reasoning) : delta.reasoning
+					yield { type: "reasoning", text: reasoningText }
+				}
+
+				if (delta.content) {
+					yield { type: "text", text: delta.content }
+				}
 			}
 
 			if (chunk.usage) {
