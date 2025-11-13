@@ -228,7 +228,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 								if (selection === "Follow cline guide to fix the issue") {
 									vscode.env.openExternal(
 										vscode.Uri.parse(
-											"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%�-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
+											"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
 										),
 									)
 								}
