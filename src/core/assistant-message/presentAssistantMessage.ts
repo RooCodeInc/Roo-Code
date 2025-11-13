@@ -178,8 +178,8 @@ export async function presentAssistantMessage(cline: Task) {
 							return getSimpleReadFileToolDescription(block.name, block.params)
 						} else {
 							// Prefer native typed args when available; fall back to legacy params
-							// Check if nativeArgs exists and is an array (native protocol)
-							if (Array.isArray(block.nativeArgs)) {
+							// Check if nativeArgs exists (native protocol)
+							if (block.nativeArgs) {
 								return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
 							}
 							return readFileTool.getReadFileToolDescription(block.name, block.params)

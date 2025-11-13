@@ -82,7 +82,7 @@ export type ToolProtocol = "xml" | "native"
  * Tools not listed here will fall back to `any` for backward compatibility.
  */
 export type NativeToolArgs = {
-	read_file: FileEntry[]
+	read_file: { files: FileEntry[] }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	insert_content: { path: string; line: number; content: string }

@@ -2450,11 +2450,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Get the tool call ID that was stored during parsing
 						const toolCallId = (toolUse as any).id
 						if (toolCallId) {
+							// nativeArgs is already in the correct API format for all tools
+							const input = toolUse.nativeArgs || toolUse.params
+
 							assistantContent.push({
 								type: "tool_use" as const,
 								id: toolCallId,
 								name: toolUse.name,
-								input: toolUse.nativeArgs || toolUse.params,
+								input,
 							})
 						}
 					}

@@ -43,7 +43,7 @@ interface FileResult {
 export class ReadFileTool extends BaseTool<"read_file"> {
 	readonly name = "read_file" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): FileEntry[] {
+	parseLegacy(params: Partial<Record<string, string>>): { files: FileEntry[] } {
 		const argsXmlTag = params.args
 		const legacyPath = params.path
 		const legacyStartLineStr = params.start_line
@@ -79,7 +79,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				fileEntries.push(fileEntry)
 			}
 
-			return fileEntries
+			return { files: fileEntries }
 		}
 
 		// Legacy single file path
@@ -99,13 +99,14 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			fileEntries.push(fileEntry)
 		}
 
-		return fileEntries
+		return { files: fileEntries }
 	}
 
-	async execute(fileEntries: FileEntry[], task: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(params: { files: FileEntry[] }, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { handleError, pushToolResult } = callbacks
+		const fileEntries = params.files
 
-		if (fileEntries.length === 0) {
+		if (!fileEntries || fileEntries.length === 0) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("read_file")
 			const errorMsg = await task.sayAndCreateMissingParamError("read_file", "args (containing valid file paths)")
@@ -578,11 +579,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	}
 
 	getReadFileToolDescription(blockName: string, blockParams: any): string
-	getReadFileToolDescription(blockName: string, nativeArgs: FileEntry[]): string
+	getReadFileToolDescription(blockName: string, nativeArgs: { files: FileEntry[] }): string
 	getReadFileToolDescription(blockName: string, second: any): string {
-		// If native typed args (FileEntry[]) were provided
-		if (Array.isArray(second)) {
-			const paths = (second as FileEntry[]).map((f) => f?.path).filter(Boolean) as string[]
+		// If native typed args ({ files: FileEntry[] }) were provided
+		if (second && typeof second === "object" && "files" in second && Array.isArray(second.files)) {
+			const paths = (second.files as FileEntry[]).map((f) => f?.path).filter(Boolean) as string[]
 			if (paths.length === 0) {
 				return `[${blockName} with no valid paths]`
 			} else if (paths.length === 1) {

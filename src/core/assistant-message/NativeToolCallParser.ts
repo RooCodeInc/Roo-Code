@@ -81,7 +81,7 @@ export class NativeToolCallParser {
 			switch (toolCall.name) {
 				case "read_file":
 					if (args.files && Array.isArray(args.files)) {
-						nativeArgs = args.files as NativeArgsFor<TName>
+						nativeArgs = { files: args.files } as NativeArgsFor<TName>
 					}
 					break
 
