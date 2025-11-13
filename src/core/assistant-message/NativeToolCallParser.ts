@@ -1,6 +1,5 @@
-import { type ToolName, toolNames } from "@roo-code/types"
+import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
-import type { FileEntry } from "../tools/ReadFileTool"
 
 /**
  * Parser for native tool calls (OpenAI-style function calling).

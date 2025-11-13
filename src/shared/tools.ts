@@ -1,9 +1,14 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "@roo-code/types"
-import type { FileEntry } from "../core/tools/ReadFileTool"
-import type { BrowserActionParams } from "../core/tools/BrowserActionTool"
-import { GenerateImageParams } from "../core/tools/GenerateImageTool"
+import type {
+	ClineAsk,
+	ToolProgressStatus,
+	ToolGroup,
+	ToolName,
+	FileEntry,
+	BrowserActionParams,
+	GenerateImageParams,
+} from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 

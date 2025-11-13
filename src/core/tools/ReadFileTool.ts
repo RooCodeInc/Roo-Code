@@ -1,5 +1,6 @@
 import path from "path"
 import { isBinaryFile } from "isbinaryfile"
+import type { FileEntry, LineRange } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
@@ -25,16 +26,6 @@ import { validateFileTokenBudget, truncateFileContent } from "./helpers/fileToke
 import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
-
-interface LineRange {
-	start: number
-	end: number
-}
-
-export interface FileEntry {
-	path: string
-	lineRanges?: LineRange[]
-}
 
 interface FileResult {
 	path: string

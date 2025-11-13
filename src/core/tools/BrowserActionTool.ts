@@ -1,3 +1,4 @@
+import type { BrowserActionParams, Coordinate, Size } from "@roo-code/types"
 import { Task } from "../task/Task"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
@@ -8,24 +9,6 @@ import {
 	ClineSayBrowserAction,
 } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
-
-export interface Coordinate {
-	x: number
-	y: number
-}
-
-export interface Size {
-	width: number
-	height: number
-}
-
-export interface BrowserActionParams {
-	action: BrowserAction
-	url?: string
-	coordinate?: Coordinate
-	size?: Size
-	text?: string
-}
 
 export class BrowserActionTool extends BaseTool<"browser_action"> {
 	readonly name = "browser_action" as const

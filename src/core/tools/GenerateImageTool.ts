@@ -1,6 +1,7 @@
 import path from "path"
 import fs from "fs/promises"
 import * as vscode from "vscode"
+import type { GenerateImageParams } from "@roo-code/types"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
@@ -12,12 +13,6 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
 const IMAGE_GENERATION_MODELS = ["google/gemini-2.5-flash-image", "openai/gpt-5-image", "openai/gpt-5-image-mini"]
-
-export interface GenerateImageParams {
-	prompt: string
-	path: string
-	image?: string
-}
 
 export class GenerateImageTool extends BaseTool<"generate_image"> {
 	readonly name = "generate_image" as const
