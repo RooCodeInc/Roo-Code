@@ -6,7 +6,7 @@ import { countFileLines } from "../../../integrations/misc/line-counter"
 import { readLines } from "../../../integrations/misc/read-lines"
 import { extractTextFromFile } from "../../../integrations/misc/extract-text"
 import { parseSourceCodeDefinitionsForFile } from "../../../services/tree-sitter"
-import { isBinaryFile } from "isbinaryfile"
+import { isBinaryFileWithEncodingDetection } from "../../../utils/encoding"
 import { ReadFileToolUse, ToolParamName, ToolResponse } from "../../../shared/tools"
 import { readFileTool } from "../readFileTool"
 import { formatResponse } from "../../prompts/responses"
@@ -23,7 +23,9 @@ vi.mock("path", async () => {
 
 // Already mocked above with hoisted fsPromises
 
-vi.mock("isbinaryfile")
+vi.mock("../../../utils/encoding", () => ({
+	isBinaryFileWithEncodingDetection: vi.fn(),
+}))
 
 vi.mock("../../../integrations/misc/line-counter")
 vi.mock("../../../integrations/misc/read-lines")
@@ -238,7 +240,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 	const mockedExtractTextFromFile = vi.mocked(extractTextFromFile)
 	const mockedParseSourceCodeDefinitionsForFile = vi.mocked(parseSourceCodeDefinitionsForFile)
 
-	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedIsBinaryFileWithEncodingDetection = vi.mocked(isBinaryFileWithEncodingDetection)
 	const mockedPathResolve = vi.mocked(path.resolve)
 
 	let mockCline: any
@@ -249,7 +251,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		// Clear specific mocks (not all mocks to preserve shared state)
 		mockedCountFileLines.mockClear()
 		mockedExtractTextFromFile.mockClear()
-		mockedIsBinaryFile.mockClear()
+		mockedIsBinaryFileWithEncodingDetection.mockClear()
 		mockedPathResolve.mockClear()
 		addLineNumbersMock.mockClear()
 		extractTextFromFileMock.mockClear()
@@ -264,7 +266,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		setImageSupport(mockCline, false)
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
-		mockedIsBinaryFile.mockResolvedValue(false)
+		mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(false)
 
 		mockInputContent = fileContent
 
@@ -502,7 +504,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 	describe("when file is binary", () => {
 		it("should always use extractTextFromFile regardless of maxReadFileLine", async () => {
 			// Setup
-			mockedIsBinaryFile.mockResolvedValue(true)
+			mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 			mockedCountFileLines.mockResolvedValue(3)
 			mockedExtractTextFromFile.mockResolvedValue("")
 
@@ -544,7 +546,7 @@ describe("read_file tool XML output structure", () => {
 
 	const mockedCountFileLines = vi.mocked(countFileLines)
 	const mockedExtractTextFromFile = vi.mocked(extractTextFromFile)
-	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedIsBinaryFileWithEncodingDetection = vi.mocked(isBinaryFileWithEncodingDetection)
 	const mockedPathResolve = vi.mocked(path.resolve)
 	const mockedFsReadFile = vi.mocked(fsPromises.readFile)
 	const imageBuffer = Buffer.from(
@@ -560,7 +562,7 @@ describe("read_file tool XML output structure", () => {
 		// Clear specific mocks (not all mocks to preserve shared state)
 		mockedCountFileLines.mockClear()
 		mockedExtractTextFromFile.mockClear()
-		mockedIsBinaryFile.mockClear()
+		mockedIsBinaryFileWithEncodingDetection.mockClear()
 		mockedPathResolve.mockClear()
 		addLineNumbersMock.mockClear()
 		extractTextFromFileMock.mockClear()
@@ -580,7 +582,7 @@ describe("read_file tool XML output structure", () => {
 		setImageSupport(mockCline, true)
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
-		mockedIsBinaryFile.mockResolvedValue(false)
+		mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(false)
 
 		// Set default implementation for extractTextFromFile
 		mockedExtractTextFromFile.mockImplementation((filePath) => {
@@ -617,7 +619,7 @@ describe("read_file tool XML output structure", () => {
 
 		mockProvider.getState.mockResolvedValue({ maxReadFileLine, maxImageFileSize: 20, maxTotalImageSize: 20 })
 		mockedCountFileLines.mockResolvedValue(totalLines)
-		mockedIsBinaryFile.mockResolvedValue(isBinary)
+		mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(isBinary)
 		mockCline.rooIgnoreController.validateAccess = vi.fn().mockReturnValue(validateAccess)
 
 		let argsContent = `<file><path>${testFilePath}</path></file>`
@@ -758,7 +760,7 @@ describe("read_file tool XML output structure", () => {
 
 			it("should allow multiple images under the total memory limit", async () => {
 				// Setup required mocks (don't clear all mocks - preserve API setup)
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -831,7 +833,7 @@ describe("read_file tool XML output structure", () => {
 
 			it("should skip images that would exceed the total memory limit", async () => {
 				// Setup required mocks (don't clear all mocks)
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -917,7 +919,7 @@ describe("read_file tool XML output structure", () => {
 				// Setup mocks (don't clear all mocks)
 
 				// Setup required mocks
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -990,7 +992,7 @@ describe("read_file tool XML output structure", () => {
 				// Setup mocks (don't clear all mocks)
 
 				// Setup required mocks
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -1084,7 +1086,7 @@ describe("read_file tool XML output structure", () => {
 					maxTotalImageSize: 20, // 20MB total
 				})
 
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				mockedFsReadFile.mockResolvedValue(imageBuffer)
 
@@ -1115,7 +1117,7 @@ describe("read_file tool XML output structure", () => {
 				// Setup mocks (don't clear all mocks)
 
 				// Setup required mocks for first batch
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -1161,7 +1163,7 @@ describe("read_file tool XML output structure", () => {
 				await executeReadMultipleImagesTool(firstBatch.map((img) => img.path))
 
 				// Setup second batch (don't clear all mocks)
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
@@ -1203,7 +1205,7 @@ describe("read_file tool XML output structure", () => {
 				// Clear and reset file system mocks for second batch
 				fsPromises.stat.mockClear()
 				fsPromises.readFile.mockClear()
-				mockedIsBinaryFile.mockClear()
+				mockedIsBinaryFileWithEncodingDetection.mockClear()
 				mockedCountFileLines.mockClear()
 
 				// Reset mocks for second batch
@@ -1214,7 +1216,7 @@ describe("read_file tool XML output structure", () => {
 						"base64",
 					),
 				)
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
@@ -1241,7 +1243,7 @@ describe("read_file tool XML output structure", () => {
 				]
 
 				// Setup mocks
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(imageBuffer)
 
@@ -1289,7 +1291,7 @@ describe("read_file tool XML output structure", () => {
 				// starts with fresh memory tracking
 
 				// Setup mocks
-				mockedIsBinaryFile.mockResolvedValue(true)
+				mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 				mockedCountFileLines.mockResolvedValue(0)
 				fsPromises.readFile.mockResolvedValue(imageBuffer)
 
@@ -1394,7 +1396,7 @@ describe("read_file tool with image support", () => {
 	const imageBuffer = Buffer.from(base64ImageData, "base64")
 
 	const mockedCountFileLines = vi.mocked(countFileLines)
-	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedIsBinaryFileWithEncodingDetection = vi.mocked(isBinaryFileWithEncodingDetection)
 	const mockedPathResolve = vi.mocked(path.resolve)
 	const mockedFsReadFile = vi.mocked(fsPromises.readFile)
 	const mockedExtractTextFromFile = vi.mocked(extractTextFromFile)
@@ -1406,7 +1408,7 @@ describe("read_file tool with image support", () => {
 	beforeEach(() => {
 		// Clear specific mocks (not all mocks to preserve shared state)
 		mockedPathResolve.mockClear()
-		mockedIsBinaryFile.mockClear()
+		mockedIsBinaryFileWithEncodingDetection.mockClear()
 		mockedCountFileLines.mockClear()
 		mockedFsReadFile.mockClear()
 		mockedExtractTextFromFile.mockClear()
@@ -1425,7 +1427,7 @@ describe("read_file tool with image support", () => {
 		setImageSupport(localMockCline, true)
 
 		mockedPathResolve.mockReturnValue(absoluteImagePath)
-		mockedIsBinaryFile.mockResolvedValue(true)
+		mockedIsBinaryFileWithEncodingDetection.mockResolvedValue(true)
 		mockedCountFileLines.mockResolvedValue(0)
 		mockedFsReadFile.mockResolvedValue(imageBuffer)
 
