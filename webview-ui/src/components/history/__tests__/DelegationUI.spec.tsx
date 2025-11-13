@@ -1,8 +1,7 @@
 import React from "react"
-import { render, screen, fireEvent } from "@/utils/test-utils"
+import { render, screen } from "@/utils/test-utils"
 
 import TaskItem from "../TaskItem"
-import { vscode } from "@src/utils/vscode"
 
 vi.mock("@src/utils/vscode")
 vi.mock("@/i18n/TranslationContext", () => ({
@@ -49,17 +48,11 @@ describe("Delegation UI", () => {
 			/>,
 		)
 
-		// Badge
-		expect(screen.getByTestId("delegated-badge")).toBeInTheDocument()
+		// Badge hidden for UI-neutral PR (logic-only change)
+		expect(screen.queryByTestId("delegated-badge")).toBeNull()
 
-		// Open child link label comes from i18n key
-		const openChild = screen.getByTestId("open-child-link")
-		expect(openChild).toBeInTheDocument()
-		expect(openChild.textContent).toContain("common:tasks.awaiting_child")
-
-		// Clicking should open referenced child task
-		fireEvent.click(openChild)
-		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "showTaskWithId", text: "child-123" })
+		// Link hidden for UI-neutral PR (logic-only change)
+		expect(screen.queryByTestId("open-child-link")).toBeNull()
 	})
 
 	it("renders Delegation completed indicator with tooltip (summary) when completedByChildId + summary present", () => {
@@ -85,9 +78,8 @@ describe("Delegation UI", () => {
 			/>,
 		)
 
-		const indicator = screen.getByTestId("delegation-completed-indicator")
-		expect(indicator).toBeInTheDocument()
-		expect(indicator.textContent).toContain("common:tasks.delegation_completed")
+		// Completion indicator hidden for UI-neutral PR
+		expect(screen.queryByTestId("delegation-completed-indicator")).toBeNull()
 	})
 
 	it("syncs focused selection to currentTaskItem (focus on child/parent after delegation/resume)", async () => {
@@ -175,8 +167,8 @@ describe("Delegation UI", () => {
 			/>,
 		)
 
-		// Badge present initially
-		expect(screen.getByTestId("delegated-badge")).toBeInTheDocument()
+		// Badge hidden in UI-neutral PR
+		expect(screen.queryByTestId("delegated-badge")).toBeNull()
 
 		// Simulate focus change and ensure badge persists
 		rerender(
@@ -189,6 +181,6 @@ describe("Delegation UI", () => {
 				isFocused
 			/>,
 		)
-		expect(screen.getByTestId("delegated-badge")).toBeInTheDocument()
+		expect(screen.queryByTestId("delegated-badge")).toBeNull()
 	})
 })
