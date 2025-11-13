@@ -9,6 +9,7 @@ import OpenAI from "openai"
 import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
+import { Package } from "../../shared/package"
 
 import {
 	type TaskLike,
@@ -2514,7 +2515,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
 					const toolProtocol = vscode.workspace
-						.getConfiguration("roo-cline")
+						.getConfiguration(Package.name)
 						.get<ToolProtocol>("toolProtocol", "xml")
 					const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 
@@ -2695,12 +2696,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				{
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-					useAgentRules: vscode.workspace.getConfiguration("roo-cline").get<boolean>("useAgentRules") ?? true,
+					useAgentRules:
+						vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
 					newTaskRequireTodos: vscode.workspace
-						.getConfiguration("roo-cline")
+						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
 					toolProtocol: vscode.workspace
-						.getConfiguration("roo-cline")
+						.getConfiguration(Package.name)
 						.get<ToolProtocol>("toolProtocol", "xml"),
 				},
 				undefined, // todoList
@@ -2935,7 +2937,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Determine if we should include native tools based on:
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
-		const toolProtocol = vscode.workspace.getConfiguration("roo-cline").get<ToolProtocol>("toolProtocol", "xml")
+		const toolProtocol = vscode.workspace.getConfiguration(Package.name).get<ToolProtocol>("toolProtocol", "xml")
 		const modelInfo = this.api.getModel().info
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 

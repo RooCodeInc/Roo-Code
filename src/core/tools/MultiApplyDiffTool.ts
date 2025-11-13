@@ -18,6 +18,7 @@ import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import * as vscode from "vscode"
 import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
+import { Package } from "../../shared/package"
 
 interface DiffOperation {
 	path: string
@@ -62,7 +63,7 @@ export async function applyDiffTool(
 	removeClosingTag: RemoveClosingTag,
 ) {
 	// Check if native protocol is enabled - if so, always use single-file class-based tool
-	const toolProtocol = vscode.workspace.getConfiguration("roo-cline").get<ToolProtocol>("toolProtocol", "xml")
+	const toolProtocol = vscode.workspace.getConfiguration(Package.name).get<ToolProtocol>("toolProtocol", "xml")
 	if (isNativeProtocol(toolProtocol)) {
 		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 			askApproval,

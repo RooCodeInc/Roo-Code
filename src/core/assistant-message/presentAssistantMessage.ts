@@ -7,6 +7,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse } from "../../shared/tools"
+import { Package } from "../../shared/package"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
@@ -279,7 +280,7 @@ export async function presentAssistantMessage(cline: Task) {
 			const pushToolResult = (content: ToolResponse) => {
 				// Check if we're using native tool protocol
 				const toolProtocol = vscode.workspace
-					.getConfiguration("roo-cline")
+					.getConfiguration(Package.name)
 					.get<ToolProtocol>("toolProtocol", "xml")
 				const isNative = isNativeProtocol(toolProtocol)
 
@@ -503,7 +504,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 					// Check if native protocol is enabled - if so, always use single-file class-based tool
 					const toolProtocol = vscode.workspace
-						.getConfiguration("roo-cline")
+						.getConfiguration(Package.name)
 						.get<ToolProtocol>("toolProtocol", "xml")
 					if (isNativeProtocol(toolProtocol)) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
