@@ -34,11 +34,12 @@ const GPT5_MODEL_PREFIX = "gpt-5"
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private lastResponseId: string | undefined
-	private responseIdPromise: Promise<string | undefined> | undefined
-	private responseIdResolver: ((value: string | undefined) => void) | undefined
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
+	// Complete response output array (includes reasoning items with encrypted_content)
+	private lastResponseOutput: any[] | undefined
+	// Last top-level response id from Responses API (for troubleshooting)
+	private lastResponseId: string | undefined
 
 	// Event types handled by the shared event processor to avoid duplication
 	private readonly coreHandledEventTypes = new Set<string>([
@@ -126,17 +127,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		return out
 	}
 
-	private resolveResponseId(responseId: string | undefined): void {
-		if (responseId) {
-			this.lastResponseId = responseId
-		}
-		// Resolve the promise so the next request can use this ID
-		if (this.responseIdResolver) {
-			this.responseIdResolver(responseId)
-			this.responseIdResolver = undefined
-		}
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -156,6 +146,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	): ApiStream {
 		// Reset resolved tier for this request; will be set from response if present
 		this.lastServiceTier = undefined
+		// Reset output array to capture current response output items
+		this.lastResponseOutput = undefined
+		// Reset last response id for this request
+		this.lastResponseId = undefined
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -163,59 +157,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Resolve reasoning effort for models that support it
 		const reasoningEffort = this.getReasoningEffort(model)
 
-		// Wait for any pending response ID from a previous request to be available
-		// This handles the race condition with fast nano model responses
-		let effectivePreviousResponseId = metadata?.previousResponseId
-
-		// Check if we should suppress previous response ID (e.g., after condense or message edit)
-		if (metadata?.suppressPreviousResponseId) {
-			// Clear the stored lastResponseId to prevent it from being used in future requests
-			this.lastResponseId = undefined
-			effectivePreviousResponseId = undefined
-		} else {
-			// Only try to get fallback response IDs if not suppressing
-
-			// If we have a pending response ID promise, wait for it to resolve
-			if (!effectivePreviousResponseId && this.responseIdPromise) {
-				try {
-					const resolvedId = await Promise.race([
-						this.responseIdPromise,
-						// Timeout after 100ms to avoid blocking too long
-						new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 100)),
-					])
-					if (resolvedId) {
-						effectivePreviousResponseId = resolvedId
-					}
-				} catch {
-					// Non-fatal if promise fails
-				}
-			}
-
-			// Fall back to the last known response ID if still not available
-			if (!effectivePreviousResponseId && this.lastResponseId) {
-				effectivePreviousResponseId = this.lastResponseId
-			}
-		}
-
-		// Format input and capture continuity id
-		const { formattedInput, previousResponseId } = this.prepareStructuredInput(systemPrompt, messages, metadata)
-		const requestPreviousResponseId = effectivePreviousResponseId || previousResponseId
-
-		// Create a new promise for this request's response ID
-		this.responseIdPromise = new Promise<string | undefined>((resolve) => {
-			this.responseIdResolver = resolve
-		})
+		// Format full conversation (messages already include reasoning items from API history)
+		const formattedInput = this.formatFullConversation(systemPrompt, messages)
 
 		// Build request body
 		const requestBody = this.buildRequestBody(
 			model,
 			formattedInput,
-			requestPreviousResponseId,
 			systemPrompt,
 			verbosity,
 			reasoningEffort,
 			metadata,
 		)
+
+		// Temporary debug logging
+		// console.log("[OpenAI Native] Request body:", requestBody)
 
 		// Make the request (pass systemPrompt and messages for potential retry)
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
@@ -224,27 +180,26 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private buildRequestBody(
 		model: OpenAiNativeModel,
 		formattedInput: any,
-		requestPreviousResponseId: string | undefined,
 		systemPrompt: string,
 		verbosity: any,
 		reasoningEffort: ReasoningEffortWithMinimal | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
-		// Build a request body (also used for fallback)
+		// Build a request body
 		// Ensure we explicitly pass max_output_tokens for GPT‑5 based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
 		interface Gpt5RequestBody {
 			model: string
-			input: Array<{ role: "user" | "assistant"; content: any[] }>
+			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
 			stream: boolean
-			reasoning?: { effort: ReasoningEffortWithMinimal; summary?: "auto" }
+			reasoning?: { effort?: ReasoningEffortWithMinimal; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
 			temperature?: number
 			max_output_tokens?: number
-			previous_response_id?: string
 			store?: boolean
 			instructions?: string
 			service_tier?: ServiceTier
+			include?: string[]
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -255,17 +210,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			model: model.id,
 			input: formattedInput,
 			stream: true,
-			store: metadata?.store !== false, // Default to true unless explicitly set to false
+			// Always use stateless operation with encrypted reasoning
+			store: false,
 			// Always include instructions (system prompt) for Responses API.
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
 			// The official way to set system behavior is the top-level `instructions` field.
 			instructions: systemPrompt,
-			...(reasoningEffort && {
-				reasoning: {
-					effort: reasoningEffort,
-					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
-				},
-			}),
+			include: ["reasoning.encrypted_content"],
+			...(reasoningEffort
+				? {
+						reasoning: {
+							...(reasoningEffort ? { effort: reasoningEffort } : {}),
+							...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+						},
+					}
+				: {}),
 			// Only include temperature if the model supports it
 			...(model.info.supportsTemperature !== false && {
 				temperature:
@@ -277,7 +236,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Explicitly include the calculated max output tokens.
 			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
 			...(model.maxTokens ? { max_output_tokens: model.maxTokens } : {}),
-			...(requestPreviousResponseId && { previous_response_id: requestPreviousResponseId }),
 			// Include tier when selected and supported by the model, or when explicitly "default"
 			...(requestedTier &&
 				(requestedTier === "default" || allowedTierNames.has(requestedTier)) && {
@@ -316,60 +274,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 			}
 		} catch (sdkErr: any) {
-			// Check if this is a 400 error about previous_response_id not found
-			const errorMessage = sdkErr?.message || sdkErr?.error?.message || ""
-			const is400Error = sdkErr?.status === 400 || sdkErr?.response?.status === 400
-			const isPreviousResponseError =
-				errorMessage.includes("Previous response") || errorMessage.includes("not found")
-
-			if (is400Error && requestBody.previous_response_id && isPreviousResponseError) {
-				// Log the error and retry without the previous_response_id
-
-				// Clear the stored lastResponseId to prevent using it again
-				this.lastResponseId = undefined
-
-				// Re-prepare the full conversation without previous_response_id
-				let retryRequestBody = { ...requestBody }
-				delete retryRequestBody.previous_response_id
-
-				// If we have the original messages, re-prepare the full conversation
-				if (systemPrompt && messages) {
-					const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
-					retryRequestBody.input = formattedInput
-				}
-
-				try {
-					// Retry with the SDK
-					const retryStream = (await (this.client as any).responses.create(
-						retryRequestBody,
-					)) as AsyncIterable<any>
-
-					if (typeof (retryStream as any)[Symbol.asyncIterator] !== "function") {
-						// If SDK fails, fall back to SSE
-						yield* this.makeGpt5ResponsesAPIRequest(
-							retryRequestBody,
-							model,
-							metadata,
-							systemPrompt,
-							messages,
-						)
-						return
-					}
-
-					for await (const event of retryStream) {
-						for await (const outChunk of this.processEvent(event, model)) {
-							yield outChunk
-						}
-					}
-					return
-				} catch (retryErr) {
-					// If retry also fails, fall back to SSE
-					yield* this.makeGpt5ResponsesAPIRequest(retryRequestBody, model, metadata, systemPrompt, messages)
-					return
-				}
-			}
-
-			// For other errors, fallback to manual SSE via fetch
+			// For errors, fallback to manual SSE via fetch
 			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
 		}
 	}
@@ -377,6 +282,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private formatFullConversation(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): any {
 		// Format the entire conversation history for the Responses API using structured format
 		// This supports both text and images
+		// Messages already include reasoning items from API history, so we just need to format them
 		const formattedMessages: any[] = []
 
 		// Do NOT embed the system prompt as a developer message in the Responses API input.
@@ -384,6 +290,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Process each message
 		for (const message of messages) {
+			// Check if this is a reasoning item (already formatted in API history)
+			if ((message as any).type === "reasoning") {
+				// Pass through reasoning items as-is
+				formattedMessages.push(message)
+				continue
+			}
+
 			const role = message.role === "user" ? "user" : "assistant"
 			const content: any[] = []
 
@@ -419,40 +332,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 
 		return formattedMessages
-	}
-
-	private formatSingleStructuredMessage(message: Anthropic.Messages.MessageParam): any {
-		// Format a single message for the Responses API when using previous_response_id
-		// When using previous_response_id, we only send the latest user message
-		const role = message.role === "user" ? "user" : "assistant"
-
-		if (typeof message.content === "string") {
-			// For simple string content, return structured format with proper type
-			return {
-				role,
-				content: [{ type: "input_text", text: message.content }],
-			}
-		} else if (Array.isArray(message.content)) {
-			// Extract text and image content from blocks
-			const content: any[] = []
-
-			for (const block of message.content) {
-				if (block.type === "text") {
-					// User messages use input_text
-					content.push({ type: "input_text", text: (block as any).text })
-				} else if (block.type === "image") {
-					const image = block as Anthropic.Messages.ImageBlockParam
-					const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
-					content.push({ type: "input_image", image_url: imageUrl })
-				}
-			}
-
-			if (content.length > 0) {
-				return { role, content }
-			}
-		}
-
-		return null
 	}
 
 	private async *makeGpt5ResponsesAPIRequest(
@@ -496,53 +375,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				} catch {
 					// If not JSON, use the raw text
 					errorDetails = errorText
-				}
-
-				// Check if this is a 400 error about previous_response_id not found
-				const isPreviousResponseError =
-					errorDetails.includes("Previous response") || errorDetails.includes("not found")
-
-				if (response.status === 400 && requestBody.previous_response_id && isPreviousResponseError) {
-					// Log the error and retry without the previous_response_id
-
-					// Clear the stored lastResponseId to prevent using it again
-					this.lastResponseId = undefined
-					// Resolve the promise once to unblock any waiting requests
-					this.resolveResponseId(undefined)
-
-					// Re-prepare the full conversation without previous_response_id
-					let retryRequestBody = { ...requestBody }
-					delete retryRequestBody.previous_response_id
-
-					// If we have the original messages, re-prepare the full conversation
-					if (systemPrompt && messages) {
-						const { formattedInput } = this.prepareStructuredInput(systemPrompt, messages, undefined)
-						retryRequestBody.input = formattedInput
-					}
-
-					// Retry the request with full conversation context
-					const retryResponse = await fetch(url, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${apiKey}`,
-							Accept: "text/event-stream",
-						},
-						body: JSON.stringify(retryRequestBody),
-					})
-
-					if (!retryResponse.ok) {
-						// If retry also fails, throw the original error
-						throw new Error(`Responses API retry failed (${retryResponse.status})`)
-					}
-
-					if (!retryResponse.body) {
-						throw new Error("Responses API error: No response body from retry request")
-					}
-
-					// Handle the successful retry response
-					yield* this.handleStreamResponse(retryResponse.body, model)
-					return
 				}
 
 				// Provide user-friendly error messages based on status code
@@ -601,47 +433,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
-	 * Prepares the input and conversation continuity parameters for a Responses API call.
-	 * Decides whether to send full conversation or just the latest message based on previousResponseId.
-	 *
-	 * - If a `previousResponseId` is available (either from metadata or the handler's state),
-	 *   it formats only the most recent user message for the input and returns the response ID
-	 *   to maintain conversation context.
-	 * - Otherwise, it formats the entire conversation history (system prompt + messages) for the input.
-	 *
-	 * @returns An object containing the formatted input and the previous response ID (if used).
-	 */
-	private prepareStructuredInput(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): { formattedInput: any; previousResponseId?: string } {
-		// Note: suppressPreviousResponseId is handled in handleResponsesApiMessage
-		// This method now only handles formatting based on whether we have a previous response ID
-
-		// Check for previous response ID from metadata or fallback to lastResponseId
-		const isFirstMessage = messages.length === 1 && messages[0].role === "user"
-		const previousResponseId = metadata?.previousResponseId ?? (!isFirstMessage ? this.lastResponseId : undefined)
-
-		if (previousResponseId) {
-			// When using previous_response_id, only send the latest user message
-			const lastUserMessage = [...messages].reverse().find((msg) => msg.role === "user")
-			if (lastUserMessage) {
-				const formattedMessage = this.formatSingleStructuredMessage(lastUserMessage)
-				// formatSingleStructuredMessage now always returns an object with role and content
-				if (formattedMessage) {
-					return { formattedInput: [formattedMessage], previousResponseId }
-				}
-			}
-			return { formattedInput: [], previousResponseId }
-		} else {
-			// Format full conversation history (returns an array of structured messages)
-			const formattedInput = this.formatFullConversation(systemPrompt, messages)
-			return { formattedInput }
-		}
-	}
-
-	/**
 	 * Handles the streaming response from the Responses API.
 	 *
 	 * This function iterates through the Server-Sent Events (SSE) stream, parses each event,
@@ -675,13 +466,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						try {
 							const parsed = JSON.parse(data)
 
-							// Store response ID for conversation continuity
-							if (parsed.response?.id) {
-								this.resolveResponseId(parsed.response.id)
-							}
 							// Capture resolved service tier if present
 							if (parsed.response?.service_tier) {
 								this.lastServiceTier = parsed.response.service_tier as ServiceTier
+							}
+							// Capture complete output array (includes reasoning items with encrypted_content)
+							if (parsed.response?.output && Array.isArray(parsed.response.output)) {
+								this.lastResponseOutput = parsed.response.output
+							}
+							// Capture top-level response id
+							if (parsed.response?.id) {
+								this.lastResponseId = parsed.response.id as string
 							}
 
 							// Delegate standard event types to the shared processor to avoid duplication
@@ -970,13 +765,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 									)
 								}
 							} else if (parsed.type === "response.completed" || parsed.type === "response.done") {
-								// Store response ID for conversation continuity
-								if (parsed.response?.id) {
-									this.resolveResponseId(parsed.response.id)
-								}
 								// Capture resolved service tier if present
 								if (parsed.response?.service_tier) {
 									this.lastServiceTier = parsed.response.service_tier as ServiceTier
+								}
+								// Capture top-level response id
+								if (parsed.response?.id) {
+									this.lastResponseId = parsed.response.id as string
+								}
+								// Capture complete output array (includes reasoning items with encrypted_content)
+								if (parsed.response?.output && Array.isArray(parsed.response.output)) {
+									this.lastResponseOutput = parsed.response.output
 								}
 
 								// Check if the done event contains the complete output (as a fallback)
@@ -1098,13 +897,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * Shared processor for Responses API events.
 	 */
 	private async *processEvent(event: any, model: OpenAiNativeModel): ApiStream {
-		// Persist response id for conversation continuity when available
-		if (event?.response?.id) {
-			this.resolveResponseId(event.response.id)
-		}
 		// Capture resolved service tier when available
 		if (event?.response?.service_tier) {
 			this.lastServiceTier = event.response.service_tier as ServiceTier
+		}
+		// Capture complete output array (includes reasoning items with encrypted_content)
+		if (event?.response?.output && Array.isArray(event.response.output)) {
+			this.lastResponseOutput = event.response.output
+		}
+		// Capture top-level response id
+		if (event?.response?.id) {
+			this.lastResponseId = event.response.id as string
 		}
 
 		// Handle known streaming text deltas
@@ -1251,21 +1054,29 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
-	 * Gets the last response ID captured from the Responses API stream.
-	 * Used for maintaining conversation continuity across requests.
-	 * @returns The response ID, or undefined if not available yet
+	 * Extracts encrypted_content and id from the first reasoning item in the output array.
+	 * This is the minimal data needed for stateless API continuity.
+	 *
+	 * @returns Object with encrypted_content and id, or undefined if not available
 	 */
-	getLastResponseId(): string | undefined {
-		return this.lastResponseId
+	getEncryptedContent(): { encrypted_content: string; id?: string } | undefined {
+		if (!this.lastResponseOutput) return undefined
+
+		// Find the first reasoning item with encrypted_content
+		const reasoningItem = this.lastResponseOutput.find(
+			(item) => item.type === "reasoning" && item.encrypted_content,
+		)
+
+		if (!reasoningItem?.encrypted_content) return undefined
+
+		return {
+			encrypted_content: reasoningItem.encrypted_content,
+			...(reasoningItem.id ? { id: reasoningItem.id } : {}),
+		}
 	}
 
-	/**
-	 * Sets the last response ID for conversation continuity.
-	 * Typically only used in tests or special flows.
-	 * @param responseId The response ID to store
-	 */
-	setResponseId(responseId: string): void {
-		this.lastResponseId = responseId
+	getResponseId(): string | undefined {
+		return this.lastResponseId
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
@@ -1287,6 +1098,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				],
 				stream: false, // Non-streaming for completePrompt
 				store: false, // Don't store prompt completions
+				include: ["reasoning.encrypted_content"],
 			}
 
 			// Include service tier if selected and supported

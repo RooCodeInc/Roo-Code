@@ -86,6 +86,7 @@ export interface ExtensionMessage {
 		| "zgsmCodebaseIndexEnabled"
 		| "zgsmQuotaInfo"
 		| "zgsmInviteCode"
+		| "settingsUpdated"
 		// zgsm
 		| "ollamaModels"
 		| "lmStudioModels"
@@ -247,9 +248,7 @@ export type ExtensionState = Pick<
 	| "zgsmCodebaseIndexEnabled"
 	| "listApiConfigMeta"
 	| "pinnedApiConfigs"
-	// | "lastShownAnnouncementId"
 	| "customInstructions"
-	// | "taskHistory" // Optional in GlobalSettings, required here.
 	| "dismissedUpsells"
 	| "autoApprovalEnabled"
 	| "alwaysAllowReadOnly"
@@ -257,10 +256,8 @@ export type ExtensionState = Pick<
 	| "alwaysAllowWrite"
 	| "alwaysAllowWriteOutsideWorkspace"
 	| "alwaysAllowWriteProtected"
-	// | "writeDelayMs" // Optional in GlobalSettings, required here.
 	| "alwaysAllowBrowser"
 	| "alwaysApproveResubmit"
-	// | "requestDelaySeconds" // Optional in GlobalSettings, required here.
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
@@ -278,16 +275,11 @@ export type ExtensionState = Pick<
 	| "remoteBrowserEnabled"
 	| "cachedChromeHostUrl"
 	| "remoteBrowserHost"
-	// | "enableCheckpoints" // Optional in GlobalSettings, required here.
 	| "ttsEnabled"
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
-	// | "maxOpenTabsContext" // Optional in GlobalSettings, required here.
-	// | "maxWorkspaceFiles" // Optional in GlobalSettings, required here.
-	// | "showRooIgnoredFiles" // Optional in GlobalSettings, required here.
-	// | "maxReadFileLine" // Optional in GlobalSettings, required here.
-	| "maxConcurrentFileReads" // Optional in GlobalSettings, required here.
+	| "maxConcurrentFileReads"
 	| "terminalOutputLineLimit"
 	| "terminalOutputCharacterLimit"
 	| "maxReadCharacterLimit"
@@ -303,14 +295,8 @@ export type ExtensionState = Pick<
 	| "diagnosticsEnabled"
 	| "diffEnabled"
 	| "fuzzyMatchThreshold"
-	// | "experiments" // Optional in GlobalSettings, required here.
 	| "language"
-	// | "telemetrySetting" // Optional in GlobalSettings, required here.
-	// | "mcpEnabled" // Optional in GlobalSettings, required here.
-	// | "enableMcpServerCreation" // Optional in GlobalSettings, required here.
-	// | "mode" // Optional in GlobalSettings, required here.
 	| "modeApiConfigs"
-	// | "customModes" // Optional in GlobalSettings, required here.
 	| "customModePrompts"
 	| "customSupportPrompts"
 	| "enhancementApiConfigId"

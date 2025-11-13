@@ -25,9 +25,15 @@ import {
 	LucideIcon,
 	SquareSlash,
 	Glasses,
+	Loader2,
 } from "lucide-react"
 import { isEqual } from "lodash-es"
-import type { ProviderSettings, ExperimentId, TelemetrySetting } from "@roo-code/types"
+import {
+	type ProviderSettings,
+	type ExperimentId,
+	type TelemetrySetting,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+} from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { cn } from "@src/lib/utils"
@@ -69,6 +75,7 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -112,6 +119,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
+	const [isSaving, setIsSaving] = useState(false)
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
@@ -290,20 +298,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const setOpenRouterImageApiKey = useCallback((apiKey: string) => {
 		setCachedState((prevState) => {
-			// Only set change detected if value actually changed
 			if (prevState.openRouterImageApiKey !== apiKey) {
 				setChangeDetected(true)
 			}
+
 			return { ...prevState, openRouterImageApiKey: apiKey }
 		})
 	}, [])
 
 	const setImageGenerationSelectedModel = useCallback((model: string) => {
 		setCachedState((prevState) => {
-			// Only set change detected if value actually changed
 			if (prevState.openRouterImageGenerationSelectedModel !== model) {
 				setChangeDetected(true)
 			}
+
 			return { ...prevState, openRouterImageGenerationSelectedModel: model }
 		})
 	}, [])
@@ -323,91 +331,98 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const handleSubmit = () => {
 		if (isSettingValid) {
-			vscode.postMessage({ type: "language", text: language })
-			vscode.postMessage({ type: "alwaysAllowReadOnly", bool: alwaysAllowReadOnly })
+			setIsSaving(true)
 			vscode.postMessage({
-				type: "alwaysAllowReadOnlyOutsideWorkspace",
-				bool: alwaysAllowReadOnlyOutsideWorkspace,
+				type: "updateSettings",
+				updatedSettings: {
+					language,
+					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
+					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
+					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
+					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
+					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
+					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
+					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
+					alwaysAllowMcp,
+					alwaysAllowModeSwitch,
+					allowedCommands: allowedCommands ?? [],
+					deniedCommands: deniedCommands ?? [],
+					// Note that we use `null` instead of `undefined` since `JSON.stringify`
+					// will omit `undefined` when serializing the object and passing it to the
+					// extension host. We may need to do the same for other nullable fields.
+					allowedMaxRequests: allowedMaxRequests ?? null,
+					allowedMaxCost: allowedMaxCost ?? null,
+					autoCondenseContext,
+					autoCondenseContextPercent,
+					browserToolEnabled: browserToolEnabled ?? true,
+					soundEnabled: soundEnabled ?? true,
+					soundVolume: soundVolume ?? 0.5,
+					ttsEnabled,
+					ttsSpeed,
+					diffEnabled: diffEnabled ?? true,
+					enableCheckpoints: enableCheckpoints ?? false,
+					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+					browserViewportSize: browserViewportSize ?? "900x600",
+					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
+					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
+					fuzzyMatchThreshold: fuzzyMatchThreshold ?? 1.0,
+					writeDelayMs,
+					screenshotQuality: screenshotQuality ?? 75,
+					terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
+					terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
+					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
+					terminalShellIntegrationDisabled,
+					terminalCommandDelay,
+					terminalPowershellCounter,
+					terminalZshClearEolMark,
+					terminalZshOhMy,
+					terminalZshP10k,
+					terminalZdotdir,
+					terminalCompressProgressBar,
+					mcpEnabled,
+					alwaysApproveResubmit: alwaysApproveResubmit ?? false,
+					requestDelaySeconds: requestDelaySeconds ?? 5,
+					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
+					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
+					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+					maxReadFileLine: maxReadFileLine ?? -1,
+					maxImageFileSize: maxImageFileSize ?? 5,
+					maxTotalImageSize: maxTotalImageSize ?? 20,
+					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
+					includeDiagnosticMessages:
+						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
+					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
+					alwaysAllowSubtasks,
+					alwaysAllowUpdateTodoList,
+					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
+					followupAutoApproveTimeoutMs,
+					condensingApiConfigId: condensingApiConfigId || "",
+					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					includeCurrentTime: includeCurrentTime ?? true,
+					includeCurrentCost: includeCurrentCost ?? true,
+					profileThresholds,
+					openRouterImageApiKey,
+					openRouterImageGenerationSelectedModel,
+					experiments,
+					customSupportPrompts,
+					apiRequestBlockHide,
+					useZgsmCustomConfig: useZgsmCustomConfig ?? false,
+					zgsmCodebaseIndexEnabled: zgsmCodebaseIndexEnabled ?? true,
+					maxReadCharacterLimit: maxReadCharacterLimit ?? 40000,
+				},
 			})
-			vscode.postMessage({ type: "alwaysAllowWrite", bool: alwaysAllowWrite })
-			vscode.postMessage({ type: "alwaysAllowWriteOutsideWorkspace", bool: alwaysAllowWriteOutsideWorkspace })
-			vscode.postMessage({ type: "alwaysAllowWriteProtected", bool: alwaysAllowWriteProtected })
-			vscode.postMessage({ type: "alwaysAllowExecute", bool: alwaysAllowExecute })
-			vscode.postMessage({ type: "alwaysAllowBrowser", bool: alwaysAllowBrowser })
-			vscode.postMessage({ type: "alwaysAllowMcp", bool: alwaysAllowMcp })
-			vscode.postMessage({ type: "allowedCommands", commands: allowedCommands ?? [] })
-			vscode.postMessage({ type: "deniedCommands", commands: deniedCommands ?? [] })
-			vscode.postMessage({ type: "allowedMaxRequests", value: allowedMaxRequests ?? undefined })
-			vscode.postMessage({ type: "allowedMaxCost", value: allowedMaxCost ?? undefined })
-			vscode.postMessage({ type: "autoCondenseContext", bool: autoCondenseContext })
-			vscode.postMessage({ type: "autoCondenseContextPercent", value: autoCondenseContextPercent })
-			vscode.postMessage({ type: "browserToolEnabled", bool: browserToolEnabled })
-			vscode.postMessage({ type: "soundEnabled", bool: soundEnabled })
-			vscode.postMessage({ type: "ttsEnabled", bool: ttsEnabled })
-			vscode.postMessage({ type: "ttsSpeed", value: ttsSpeed })
-			vscode.postMessage({ type: "soundVolume", value: soundVolume })
-			vscode.postMessage({ type: "diffEnabled", bool: diffEnabled })
-			vscode.postMessage({ type: "enableCheckpoints", bool: enableCheckpoints })
-			vscode.postMessage({ type: "useZgsmCustomConfig", bool: useZgsmCustomConfig })
-			vscode.postMessage({ type: "zgsmCodebaseIndexEnabled", bool: zgsmCodebaseIndexEnabled })
-			vscode.postMessage({ type: "checkpointTimeout", value: checkpointTimeout })
-			vscode.postMessage({ type: "browserViewportSize", text: browserViewportSize })
-			vscode.postMessage({ type: "remoteBrowserHost", text: remoteBrowserHost })
-			vscode.postMessage({ type: "remoteBrowserEnabled", bool: remoteBrowserEnabled })
-			vscode.postMessage({ type: "fuzzyMatchThreshold", value: fuzzyMatchThreshold ?? 1.0 })
-			vscode.postMessage({ type: "writeDelayMs", value: writeDelayMs })
-			vscode.postMessage({ type: "screenshotQuality", value: screenshotQuality ?? 75 })
-			vscode.postMessage({ type: "terminalOutputLineLimit", value: terminalOutputLineLimit ?? 500 })
-			vscode.postMessage({ type: "terminalOutputCharacterLimit", value: terminalOutputCharacterLimit ?? 50000 })
-			vscode.postMessage({ type: "maxReadCharacterLimit", value: maxReadCharacterLimit ?? 40000 })
-			vscode.postMessage({ type: "terminalShellIntegrationTimeout", value: terminalShellIntegrationTimeout })
-			vscode.postMessage({ type: "terminalShellIntegrationDisabled", bool: terminalShellIntegrationDisabled })
-			vscode.postMessage({ type: "terminalCommandDelay", value: terminalCommandDelay })
-			vscode.postMessage({ type: "terminalPowershellCounter", bool: terminalPowershellCounter })
-			vscode.postMessage({ type: "terminalZshClearEolMark", bool: terminalZshClearEolMark })
-			vscode.postMessage({ type: "terminalZshOhMy", bool: terminalZshOhMy })
-			vscode.postMessage({ type: "terminalZshP10k", bool: terminalZshP10k })
-			vscode.postMessage({ type: "terminalZdotdir", bool: terminalZdotdir })
-			vscode.postMessage({ type: "terminalCompressProgressBar", bool: terminalCompressProgressBar })
-			vscode.postMessage({ type: "mcpEnabled", bool: mcpEnabled })
-			vscode.postMessage({ type: "alwaysApproveResubmit", bool: alwaysApproveResubmit })
-			vscode.postMessage({ type: "requestDelaySeconds", value: requestDelaySeconds })
-			vscode.postMessage({ type: "maxOpenTabsContext", value: maxOpenTabsContext })
-			vscode.postMessage({ type: "maxWorkspaceFiles", value: maxWorkspaceFiles ?? 300 })
-			vscode.postMessage({ type: "showRooIgnoredFiles", bool: showRooIgnoredFiles })
-			vscode.postMessage({ type: "maxReadFileLine", value: maxReadFileLine ?? 500 })
-			vscode.postMessage({ type: "maxImageFileSize", value: maxImageFileSize ?? 5 })
-			vscode.postMessage({ type: "maxTotalImageSize", value: maxTotalImageSize ?? 20 })
-			vscode.postMessage({ type: "maxConcurrentFileReads", value: cachedState.maxConcurrentFileReads ?? 5 })
-			vscode.postMessage({ type: "includeDiagnosticMessages", bool: includeDiagnosticMessages })
-			vscode.postMessage({ type: "maxDiagnosticMessages", value: maxDiagnosticMessages ?? 50 })
-			vscode.postMessage({ type: "currentApiConfigName", text: currentApiConfigName })
-			vscode.postMessage({ type: "updateExperimental", values: experiments })
-			vscode.postMessage({ type: "alwaysAllowModeSwitch", bool: alwaysAllowModeSwitch })
-			vscode.postMessage({ type: "alwaysAllowSubtasks", bool: alwaysAllowSubtasks })
-			vscode.postMessage({ type: "alwaysAllowFollowupQuestions", bool: alwaysAllowFollowupQuestions })
-			vscode.postMessage({ type: "alwaysAllowUpdateTodoList", bool: alwaysAllowUpdateTodoList })
-			vscode.postMessage({ type: "followupAutoApproveTimeoutMs", value: followupAutoApproveTimeoutMs ?? 60000 })
-			vscode.postMessage({ type: "condensingApiConfigId", text: condensingApiConfigId || "" })
+			// These have more complex logic so they aren't (yet) handled
+			// by the `updateSettings` message.
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
-			vscode.postMessage({ type: "updateSupportPrompt", values: customSupportPrompts || {} })
-			vscode.postMessage({ type: "includeTaskHistoryInEnhance", bool: includeTaskHistoryInEnhance ?? true })
-			vscode.postMessage({ type: "setReasoningBlockCollapsed", bool: reasoningBlockCollapsed ?? true })
-			vscode.postMessage({ type: "setApiRequestBlockHide", bool: apiRequestBlockHide ?? true })
-			vscode.postMessage({ type: "includeCurrentTime", bool: includeCurrentTime ?? true })
-			vscode.postMessage({ type: "includeCurrentCost", bool: includeCurrentCost ?? true })
+			// vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({
 				type: "upsertApiConfiguration",
 				text: currentApiConfigName,
 				apiConfiguration: { ...apiConfiguration, useZgsmCustomConfig, zgsmCodebaseIndexEnabled },
 			})
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
-			vscode.postMessage({ type: "profileThresholds", values: profileThresholds })
-			vscode.postMessage({ type: "openRouterImageApiKey", text: openRouterImageApiKey })
-			vscode.postMessage({
-				type: "openRouterImageGenerationSelectedModel",
-				text: openRouterImageGenerationSelectedModel,
-			})
+
 			setChangeDetected(false)
 		}
 	}
@@ -482,6 +497,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			observer?.disconnect()
 		}
 	}, [])
+
+	const handleMessage = useCallback((event: MessageEvent) => {
+		const message: ExtensionMessage = event.data
+		if (message.type === "settingsUpdated") {
+			setIsSaving(false)
+		}
+	}, [])
+
+	useEffect(() => {
+		window.addEventListener("message", handleMessage)
+		return () => {
+			window.removeEventListener("message", handleMessage)
+		}
+	}, [handleMessage])
 
 	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
 		() => [
@@ -561,13 +590,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							variant={isSettingValid ? "primary" : "secondary"}
 							className={!isSettingValid ? "!border-vscode-errorForeground" : ""}
 							onClick={handleSubmit}
-							disabled={!isChangeDetected || !isSettingValid}
+							disabled={!isChangeDetected || !isSettingValid || isSaving}
 							data-testid="save-button">
-							{t("settings:common.save")}
+							{isSaving ? (
+								<>
+									<Loader2 className="size-3 animate-spin" />
+									{t("settings:common.saving")}
+								</>
+							) : (
+								t("settings:common.save")
+							)}
 						</Button>
 					</StandardTooltip>
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
-						<Button variant="secondary" onClick={() => checkUnsaveChanges(onDone)}>
+						<Button variant="secondary" onClick={() => checkUnsaveChanges(onDone)} disabled={isSaving}>
 							{t("settings:common.done")}
 						</Button>
 					</StandardTooltip>

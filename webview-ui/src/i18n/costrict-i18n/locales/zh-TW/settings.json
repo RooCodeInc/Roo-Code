@@ -173,7 +173,7 @@
 			"noFailedFiles": "暫無失敗檔案資訊",
 			"rebuild": "重新建置",
 			"onlyCostrictProviderSupport": "僅 CoStrict 提供商支援此服務",
-			"codebaseIndexDisabled": "Codebase 索引建置已禁用",
+			"codebaseIndexDisabled": "Codebase 索引建置已禁用: 未找到工作空間資料夾",
 			"title": "語義索引建置",
 			"description": "為提高代碼補全等功能效果，系統會自動將相關語義索引同步建置上傳，方便模型對上下文進行分析理解。"
 		},

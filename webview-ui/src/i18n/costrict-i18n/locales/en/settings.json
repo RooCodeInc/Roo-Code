@@ -173,7 +173,7 @@
 			"noFailedFiles": "No failed files information",
 			"rebuild": "Rebuild",
 			"onlyCostrictProviderSupport": "Only CoStrict provider supports this service",
-			"codebaseIndexDisabled": "Codebase index build is disabled",
+			"codebaseIndexDisabled": "Codebase index build is disabled: No workspace folder found",
 			"title": "Semantic Index Build",
 			"description": "To improve code completion and other features, the system automatically builds and uploads semantic indexes for model context analysis and understanding."
 		},

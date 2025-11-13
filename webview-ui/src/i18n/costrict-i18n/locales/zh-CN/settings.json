@@ -173,7 +173,7 @@
 			"noFailedFiles": "暂无失败文件信息",
 			"rebuild": "重新构建",
 			"onlyCostrictProviderSupport": "仅 CoStrict 提供商支持此服务",
-			"codebaseIndexDisabled": "Codebase 索引构建已禁用",
+			"codebaseIndexDisabled": "Codebase 索引构建已禁用：未找到工作空间文件夹",
 			"title": "语义索引构建",
 			"description": "为提高代码补全等功能效果，系统会自动将相关语义索引同步构建上传，方便模型对上下文进行分析理解。"
 		},

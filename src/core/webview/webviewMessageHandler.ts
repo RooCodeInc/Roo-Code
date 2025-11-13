@@ -11,11 +11,11 @@ import {
 	type GlobalState,
 	type ClineMessage,
 	type TelemetrySetting,
+	type UserSettingsConfig,
 	TelemetryEventName,
 	ModelInfo,
-	UserSettingsConfig,
-	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-	MAX_WORKSPACE_FILES,
+	RooCodeSettings,
+	ExperimentId,
 } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -564,16 +564,10 @@ export const webviewMessageHandler = async (
 				// }
 				await provider.createTask(message.text, message.images)
 				// Task created successfully - notify the UI to reset
-				await provider.postMessageToWebview({
-					type: "invoke",
-					invoke: "newChat",
-				})
+				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
 			} catch (error) {
 				// For all errors, reset the UI and show error
-				await provider.postMessageToWebview({
-					type: "invoke",
-					invoke: "newChat",
-				})
+				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
 				// Show error to user
 				vscode.window.showErrorMessage(
 					`Failed to create task: ${error instanceof Error ? error.message : String(error)}`,
@@ -583,58 +577,7 @@ export const webviewMessageHandler = async (
 		case "customInstructions":
 			await provider.updateCustomInstructions(message.text)
 			break
-		case "alwaysAllowReadOnly":
-			await updateGlobalState("alwaysAllowReadOnly", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowReadOnlyOutsideWorkspace":
-			await updateGlobalState("alwaysAllowReadOnlyOutsideWorkspace", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowWrite":
-			await updateGlobalState("alwaysAllowWrite", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowWriteOutsideWorkspace":
-			await updateGlobalState("alwaysAllowWriteOutsideWorkspace", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowWriteProtected":
-			await updateGlobalState("alwaysAllowWriteProtected", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowExecute":
-			await updateGlobalState("alwaysAllowExecute", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowBrowser":
-			await updateGlobalState("alwaysAllowBrowser", message.bool ?? undefined)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowMcp":
-			await updateGlobalState("alwaysAllowMcp", message.bool)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowModeSwitch":
-			await updateGlobalState("alwaysAllowModeSwitch", message.bool)
-			await provider.postStateToWebview()
-			break
-		case "allowedMaxRequests":
-			await updateGlobalState("allowedMaxRequests", message.value)
-			await provider.postStateToWebview()
-			break
-		case "allowedMaxCost":
-			await updateGlobalState("allowedMaxCost", message.value)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowSubtasks":
-			await updateGlobalState("alwaysAllowSubtasks", message.bool)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowUpdateTodoList":
-			await updateGlobalState("alwaysAllowUpdateTodoList", message.bool)
-			await provider.postStateToWebview()
-			break
+
 		case "askResponse":
 			provider
 				.getCurrentTask()
@@ -645,14 +588,109 @@ export const webviewMessageHandler = async (
 					message?.values?.chatType || "system",
 				)
 			break
-		case "autoCondenseContext":
-			await updateGlobalState("autoCondenseContext", message.bool)
-			await provider.postStateToWebview()
+
+		case "updateSettings":
+			if (message.updatedSettings) {
+				for (const [key, value] of Object.entries(message.updatedSettings)) {
+					let newValue = value
+					provider.log(`${key} 配置开始保存`, "info", "updateSettings")
+					if (key === "language") {
+						newValue = value ?? "en"
+						changeLanguage(newValue as Language)
+					} else if (key === "allowedCommands") {
+						const commands = value ?? []
+
+						newValue = Array.isArray(commands)
+							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+							: []
+
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("allowedCommands", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "deniedCommands") {
+						const commands = value ?? []
+
+						newValue = Array.isArray(commands)
+							? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
+							: []
+
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "ttsEnabled") {
+						newValue = value ?? true
+						setTtsEnabled(newValue as boolean)
+					} else if (key === "ttsSpeed") {
+						newValue = value ?? 1.0
+						setTtsSpeed(newValue as number)
+					} else if (key === "terminalShellIntegrationTimeout") {
+						if (value !== undefined) {
+							Terminal.setShellIntegrationTimeout(value as number)
+						}
+					} else if (key === "terminalShellIntegrationDisabled") {
+						if (value !== undefined) {
+							Terminal.setShellIntegrationDisabled(value as boolean)
+						}
+					} else if (key === "terminalCommandDelay") {
+						if (value !== undefined) {
+							Terminal.setCommandDelay(value as number)
+						}
+					} else if (key === "terminalPowershellCounter") {
+						if (value !== undefined) {
+							Terminal.setPowershellCounter(value as boolean)
+						}
+					} else if (key === "terminalZshClearEolMark") {
+						if (value !== undefined) {
+							Terminal.setTerminalZshClearEolMark(value as boolean)
+						}
+					} else if (key === "terminalZshOhMy") {
+						if (value !== undefined) {
+							Terminal.setTerminalZshOhMy(value as boolean)
+						}
+					} else if (key === "terminalZshP10k") {
+						if (value !== undefined) {
+							Terminal.setTerminalZshP10k(value as boolean)
+						}
+					} else if (key === "terminalZdotdir") {
+						if (value !== undefined) {
+							Terminal.setTerminalZdotdir(value as boolean)
+						}
+					} else if (key === "terminalCompressProgressBar") {
+						if (value !== undefined) {
+							Terminal.setCompressProgressBar(value as boolean)
+						}
+					} else if (key === "mcpEnabled") {
+						newValue = value ?? true
+						const mcpHub = provider.getMcpHub()
+
+						if (mcpHub) {
+							mcpHub.handleMcpEnabledChange(newValue as boolean)
+						}
+					} else if (key === "experiments") {
+						if (!value) {
+							continue
+						}
+
+						newValue = {
+							...(getGlobalState("experiments") ?? experimentDefault),
+							...(value as Record<ExperimentId, boolean>),
+						}
+					} else if (key === "customSupportPrompts") {
+						if (!value) {
+							continue
+						}
+					}
+
+					await provider.contextProxy.setValue(key as keyof RooCodeSettings, newValue)
+					provider.log(`${key} 配置保存完成`, "info", "updateSettings")
+				}
+
+				await provider.postStateToWebview()
+				await provider.postMessageToWebview({ type: "settingsUpdated" })
+			}
+
 			break
-		case "autoCondenseContextPercent":
-			await updateGlobalState("autoCondenseContextPercent", message.value)
-			await provider.postStateToWebview()
-			break
+
 		case "terminalOperation":
 			if (message.terminalOperation) {
 				provider.getCurrentTask()?.handleTerminalOperation(message.terminalOperation, message.terminalPid)
@@ -1145,38 +1183,6 @@ export const webviewMessageHandler = async (
 		case "cancelTask":
 			await provider.cancelTask()
 			break
-		case "allowedCommands": {
-			// Validate and sanitize the commands array
-			const commands = message.commands ?? []
-			const validCommands = Array.isArray(commands)
-				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-				: []
-
-			await updateGlobalState("allowedCommands", validCommands)
-
-			// Also update workspace settings.
-			await vscode.workspace
-				.getConfiguration(Package.name)
-				.update("allowedCommands", validCommands, vscode.ConfigurationTarget.Global)
-
-			break
-		}
-		case "deniedCommands": {
-			// Validate and sanitize the commands array
-			const commands = message.commands ?? []
-			const validCommands = Array.isArray(commands)
-				? commands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
-				: []
-
-			await updateGlobalState("deniedCommands", validCommands)
-
-			// Also update workspace settings.
-			await vscode.workspace
-				.getConfiguration(Package.name)
-				.update("deniedCommands", validCommands, vscode.ConfigurationTarget.Global)
-
-			break
-		}
 		case "openCustomModesSettings": {
 			const customModesFilePath = await provider.customModesManager.getCustomModesFilePath()
 
@@ -1311,46 +1317,37 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "mcpEnabled":
-			const mcpEnabled = message.bool ?? true
-			await updateGlobalState("mcpEnabled", mcpEnabled)
-
-			const mcpHubInstance = provider.getMcpHub()
-
-			if (mcpHubInstance) {
-				await mcpHubInstance.handleMcpEnabledChange(mcpEnabled)
-			}
-
-			await provider.postStateToWebview()
-			break
 		case "enableMcpServerCreation":
 			await updateGlobalState("enableMcpServerCreation", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
-		// case "remoteControlEnabled":
-		// 	try {
-		// 		await CloudService.instance.updateUserSettings({ extensionBridgeEnabled: message.bool ?? false })
-		// 	} catch (error) {
-		// 		provider.log(
-		// 			`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
-		// 		)
-		// 	}
-		// 	break
-		// case "taskSyncEnabled":
-		// 	const enabled = message.bool ?? false
-		// 	const updatedSettings: Partial<UserSettingsConfig> = {
-		// 		taskSyncEnabled: enabled,
-		// 	}
-		// 	// If disabling task sync, also disable remote control
-		// 	if (!enabled) {
-		// 		updatedSettings.extensionBridgeEnabled = false
-		// 	}
-		// 	try {
-		// 		await CloudService.instance.updateUserSettings(updatedSettings)
-		// 	} catch (error) {
-		// 		provider.log(`Failed to update cloud settings for task sync: ${error}`)
-		// 	}
-		// 	break
+		case "remoteControlEnabled":
+			try {
+				await CloudService.instance.updateUserSettings({ extensionBridgeEnabled: message.bool ?? false })
+			} catch (error) {
+				provider.log(
+					`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+
+		case "taskSyncEnabled":
+			const enabled = message.bool ?? false
+			const updatedSettings: Partial<UserSettingsConfig> = { taskSyncEnabled: enabled }
+
+			// If disabling task sync, also disable remote control.
+			if (!enabled) {
+				updatedSettings.extensionBridgeEnabled = false
+			}
+
+			try {
+				await CloudService.instance.updateUserSettings(updatedSettings)
+			} catch (error) {
+				provider.log(`Failed to update cloud settings for task sync: ${error}`)
+			}
+
+			break
+
 		case "refreshAllMcpServers": {
 			const mcpHub = provider.getMcpHub()
 
@@ -1360,16 +1357,7 @@ export const webviewMessageHandler = async (
 
 			break
 		}
-		case "soundEnabled":
-			const soundEnabled = message.bool ?? true
-			await updateGlobalState("soundEnabled", soundEnabled)
-			await provider.postStateToWebview()
-			break
-		case "soundVolume":
-			const soundVolume = message.value ?? 0.5
-			await updateGlobalState("soundVolume", soundVolume)
-			await provider.postStateToWebview()
-			break
+
 		case "ttsEnabled":
 			const ttsEnabled = message.bool ?? true
 			await updateGlobalState("ttsEnabled", ttsEnabled)
@@ -1394,45 +1382,11 @@ export const webviewMessageHandler = async (
 		case "stopTts":
 			stopTts()
 			break
-		case "diffEnabled":
-			const diffEnabled = message.bool ?? true
-			await updateGlobalState("diffEnabled", diffEnabled)
-			await provider.postStateToWebview()
-			break
-		case "enableCheckpoints":
-			const enableCheckpoints = message.bool ?? true
-			await updateGlobalState("enableCheckpoints", enableCheckpoints)
-			await provider.postStateToWebview()
-			break
-		case "useZgsmCustomConfig":
-			const useZgsmCustomConfig = message.bool ?? false
-			await updateGlobalState("useZgsmCustomConfig", useZgsmCustomConfig)
-			await provider.postStateToWebview()
-			break
-		case "checkpointTimeout":
-			const checkpointTimeout = message.value ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS
-			await updateGlobalState("checkpointTimeout", checkpointTimeout)
-			await provider.postStateToWebview()
-			break
-		case "browserViewportSize":
-			const browserViewportSize = message.text ?? "900x600"
-			await updateGlobalState("browserViewportSize", browserViewportSize)
-			await provider.postStateToWebview()
-			break
-		case "remoteBrowserHost":
-			await updateGlobalState("remoteBrowserHost", message.text)
-			await provider.postStateToWebview()
-			break
-		case "remoteBrowserEnabled":
-			// Store the preference in global state
-			// remoteBrowserEnabled now means "enable remote browser connection"
-			await updateGlobalState("remoteBrowserEnabled", message.bool ?? false)
-			// If disabling remote browser connection, clear the remoteBrowserHost
-			if (!message.bool) {
-				await updateGlobalState("remoteBrowserHost", undefined)
-			}
-			await provider.postStateToWebview()
-			break
+		// case "useZgsmCustomConfig":
+		// 	const useZgsmCustomConfig = message.bool ?? false
+		// 	await updateGlobalState("useZgsmCustomConfig", useZgsmCustomConfig)
+		// 	await provider.postStateToWebview()
+		// 	break
 		case "testBrowserConnection":
 			// If no text is provided, try auto-discovery
 			if (!message.text) {
@@ -1469,10 +1423,7 @@ export const webviewMessageHandler = async (
 				})
 			}
 			break
-		case "fuzzyMatchThreshold":
-			await updateGlobalState("fuzzyMatchThreshold", message.value)
-			await provider.postStateToWebview()
-			break
+
 		case "updateVSCodeSetting": {
 			const { setting, value } = message
 
@@ -1509,136 +1460,12 @@ export const webviewMessageHandler = async (
 			}
 
 			break
-		case "alwaysApproveResubmit":
-			await updateGlobalState("alwaysApproveResubmit", message.bool ?? false)
-			await provider.postStateToWebview()
-			break
-		case "requestDelaySeconds":
-			await updateGlobalState("requestDelaySeconds", message.value ?? 5)
-			await provider.postStateToWebview()
-			break
-		case "writeDelayMs":
-			await updateGlobalState("writeDelayMs", message.value)
-			await provider.postStateToWebview()
-			break
-		case "diagnosticsEnabled":
-			await updateGlobalState("diagnosticsEnabled", message.bool ?? true)
-			await provider.postStateToWebview()
-			break
-		case "terminalOutputLineLimit":
-			// Validate that the line limit is a positive number
-			const lineLimit = message.value
-			if (typeof lineLimit === "number" && lineLimit > 0) {
-				await updateGlobalState("terminalOutputLineLimit", lineLimit)
-				await provider.postStateToWebview()
-			} else {
-				vscode.window.showErrorMessage(
-					t("common:errors.invalid_line_limit") || "Terminal output line limit must be a positive number",
-				)
-			}
-			break
-		case "maxReadCharacterLimit":
-		case "terminalOutputCharacterLimit":
-			// Validate that the character limit is a positive number
-			const charLimit = message.value
-			if (typeof charLimit === "number" && charLimit > 0) {
-				await updateGlobalState(
-					message.type as "terminalOutputCharacterLimit" | "maxReadCharacterLimit",
-					charLimit,
-				)
-				await provider.postStateToWebview()
-			} else {
-				vscode.window.showErrorMessage(
-					t("common:errors.invalid_character_limit") || message.type === "terminalOutputCharacterLimit"
-						? "Terminal output character limit must be a positive number"
-						: "File read character limit must be a positive number",
-				)
-			}
-			break
-		case "terminalShellIntegrationTimeout":
-			await updateGlobalState("terminalShellIntegrationTimeout", message.value)
-			await provider.postStateToWebview()
-			if (message.value !== undefined) {
-				Terminal.setShellIntegrationTimeout(message.value)
-			}
-			break
-		case "terminalShellIntegrationDisabled":
-			await updateGlobalState("terminalShellIntegrationDisabled", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setShellIntegrationDisabled(message.bool)
-			}
-			break
-		case "terminalCommandDelay":
-			await updateGlobalState("terminalCommandDelay", message.value)
-			await provider.postStateToWebview()
-			if (message.value !== undefined) {
-				Terminal.setCommandDelay(message.value)
-			}
-			break
-		case "terminalPowershellCounter":
-			await updateGlobalState("terminalPowershellCounter", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setPowershellCounter(message.bool)
-			}
-			break
-		case "terminalZshClearEolMark":
-			await updateGlobalState("terminalZshClearEolMark", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setTerminalZshClearEolMark(message.bool)
-			}
-			break
-		case "terminalZshOhMy":
-			await updateGlobalState("terminalZshOhMy", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setTerminalZshOhMy(message.bool)
-			}
-			break
-		case "terminalZshP10k":
-			await updateGlobalState("terminalZshP10k", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setTerminalZshP10k(message.bool)
-			}
-			break
-		case "terminalZdotdir":
-			await updateGlobalState("terminalZdotdir", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setTerminalZdotdir(message.bool)
-			}
-			break
-		case "terminalCompressProgressBar":
-			await updateGlobalState("terminalCompressProgressBar", message.bool)
-			await provider.postStateToWebview()
-			if (message.bool !== undefined) {
-				Terminal.setCompressProgressBar(message.bool)
-			}
-			break
+
 		case "mode":
 			await provider.handleModeSwitch(message.text as Mode)
 			break
 		case "zgsmCodeMode":
 			await provider.setZgsmCodeMode(message.text as ZgsmCodeMode)
-			break
-		case "updateSupportPrompt":
-			try {
-				if (!message?.values) {
-					return
-				}
-
-				// Replace all prompts with the new values from the cached state
-				await updateGlobalState("customSupportPrompts", message.values)
-				await provider.postStateToWebview()
-			} catch (error) {
-				provider.log(
-					`Error update support prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
-				)
-				vscode.window.showErrorMessage(t("common:errors.update_support_prompt"))
-			}
 			break
 		case "updatePrompt":
 			if (message.promptMode && message.customPrompt !== undefined) {
@@ -1699,99 +1526,9 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "screenshotQuality":
-			await updateGlobalState("screenshotQuality", message.value)
-			await provider.postStateToWebview()
-			break
-		case "maxOpenTabsContext":
-			const tabCount = Math.min(Math.max(0, message.value ?? 20), 500)
-			await updateGlobalState("maxOpenTabsContext", tabCount)
-			await provider.postStateToWebview()
-			break
-		case "maxWorkspaceFiles":
-			const fileCount = Math.min(Math.max(0, message.value ?? MAX_WORKSPACE_FILES), 500)
-			await updateGlobalState("maxWorkspaceFiles", fileCount)
-			await provider.postStateToWebview()
-			break
-		case "alwaysAllowFollowupQuestions":
-			await updateGlobalState("alwaysAllowFollowupQuestions", message.bool ?? false)
-			await provider.postStateToWebview()
-			break
-		case "followupAutoApproveTimeoutMs":
-			await updateGlobalState("followupAutoApproveTimeoutMs", message.value)
-			await provider.postStateToWebview()
-			break
-		case "browserToolEnabled":
-			await updateGlobalState("browserToolEnabled", message.bool ?? true)
-			await provider.postStateToWebview()
-			break
-		case "language":
-			changeLanguage(message.text ?? "en")
-			await updateGlobalState("language", message.text as Language)
-			ErrorCodeManager.getInstance().refreshErrorCodes()
-			await provider.postStateToWebview()
-			break
-		case "openRouterImageApiKey":
-			await provider.contextProxy.setValue("openRouterImageApiKey", message.text)
-			await provider.postStateToWebview()
-			break
-		case "openRouterImageGenerationSelectedModel":
-			await provider.contextProxy.setValue("openRouterImageGenerationSelectedModel", message.text)
-			await provider.postStateToWebview()
-			break
-		case "showRooIgnoredFiles":
-			await updateGlobalState("showRooIgnoredFiles", message.bool ?? false)
-			await provider.postStateToWebview()
-			break
 		case "hasOpenedModeSelector":
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
-			break
-		case "maxReadFileLine":
-			await updateGlobalState("maxReadFileLine", message.value)
-			await provider.postStateToWebview()
-			break
-		case "maxImageFileSize":
-			await updateGlobalState("maxImageFileSize", message.value)
-			await provider.postStateToWebview()
-			break
-		case "maxTotalImageSize":
-			await updateGlobalState("maxTotalImageSize", message.value)
-			await provider.postStateToWebview()
-			break
-		case "maxConcurrentFileReads":
-			const valueToSave = message.value // Capture the value intended for saving
-			await updateGlobalState("maxConcurrentFileReads", valueToSave)
-			await provider.postStateToWebview()
-			break
-		case "includeDiagnosticMessages":
-			// Only apply default if the value is truly undefined (not false)
-			const includeValue = message.bool !== undefined ? message.bool : true
-			await updateGlobalState("includeDiagnosticMessages", includeValue)
-			await provider.postStateToWebview()
-			break
-		case "includeCurrentTime":
-			await updateGlobalState("includeCurrentTime", message.bool ?? true)
-			await provider.postStateToWebview()
-			break
-		case "includeCurrentCost":
-			await updateGlobalState("includeCurrentCost", message.bool ?? true)
-			await provider.postStateToWebview()
-			break
-		case "maxDiagnosticMessages":
-			await updateGlobalState("maxDiagnosticMessages", message.value ?? 50)
-			await provider.postStateToWebview()
-			break
-		case "setHistoryPreviewCollapsed": // Add the new case handler
-			await updateGlobalState("historyPreviewCollapsed", message.bool ?? false)
-			// No need to call postStateToWebview here as the UI already updated optimistically
-			break
-		case "setReasoningBlockCollapsed":
-			await updateGlobalState("reasoningBlockCollapsed", message.bool ?? true)
-			// No need to call postStateToWebview here as the UI already updated optimistically
-			break
-		case "setApiRequestBlockHide":
-			await updateGlobalState("apiRequestBlockHide", message.bool ?? true)
 			break
 		case "toggleApiConfigPin":
 			if (message.text) {
@@ -1812,25 +1549,15 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()
 			break
-		case "includeTaskHistoryInEnhance":
-			await updateGlobalState("includeTaskHistoryInEnhance", message.bool ?? true)
-			await provider.postStateToWebview()
-			break
-		case "condensingApiConfigId":
-			await updateGlobalState("condensingApiConfigId", message.text)
-			await provider.postStateToWebview()
-			break
+
 		case "updateCondensingPrompt":
-			// Store the condensing prompt in customSupportPrompts["CONDENSE"] instead of customCondensingPrompt
+			// Store the condensing prompt in customSupportPrompts["CONDENSE"]
+			// instead of customCondensingPrompt.
 			const currentSupportPrompts = getGlobalState("customSupportPrompts") ?? {}
 			const updatedSupportPrompts = { ...currentSupportPrompts, CONDENSE: message.text }
 			await updateGlobalState("customSupportPrompts", updatedSupportPrompts)
-			// Also update the old field for backward compatibility during migration
+			// Also update the old field for backward compatibility during migration.
 			await updateGlobalState("customCondensingPrompt", message.text)
-			await provider.postStateToWebview()
-			break
-		case "profileThresholds":
-			await updateGlobalState("profileThresholds", message.values)
 			await provider.postStateToWebview()
 			break
 		case "autoApprovalEnabled":
@@ -1866,7 +1593,6 @@ export const webviewMessageHandler = async (
 					})
 
 					if (result.success && result.enhancedText) {
-						// Capture telemetry for prompt enhancement
 						MessageEnhancer.captureTelemetry(currentCline?.taskId, includeTaskHistoryInEnhance)
 						await provider.postMessageToWebview({ type: "enhancedPrompt", text: result.enhancedText })
 					} else {
@@ -2133,21 +1859,7 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(t("common:errors.list_api_config"))
 			}
 			break
-		case "updateExperimental": {
-			if (!message.values) {
-				break
-			}
 
-			const updatedExperiments = {
-				...(getGlobalState("experiments") ?? experimentDefault),
-				...message.values,
-			}
-
-			await updateGlobalState("experiments", updatedExperiments)
-
-			await provider.postStateToWebview()
-			break
-		}
 		case "updateMcpTimeout":
 			if (message.serverName && typeof message.timeout === "number") {
 				try {
@@ -2497,8 +2209,10 @@ export const webviewMessageHandler = async (
 			if (wasPreviouslyOptedIn && !isOptedIn && TelemetryService.hasInstance()) {
 				TelemetryService.instance.captureTelemetrySettingsChanged(previousSetting, telemetrySetting)
 			}
+
 			// Update the telemetry state
 			await updateGlobalState("telemetrySetting", telemetrySetting)
+
 			if (TelemetryService.hasInstance()) {
 				TelemetryService.instance.updateTelemetryState(isOptedIn)
 			}
@@ -3542,6 +3256,7 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+
 		case "dismissUpsell": {
 			if (message.upsellId) {
 				try {
@@ -3606,6 +3321,33 @@ export const webviewMessageHandler = async (
 					values: data,
 				})
 			}
+			break
+		}
+		default: {
+			// console.log(`Unhandled message type: ${message.type}`)
+			//
+			// Currently unhandled:
+			//
+			// "currentApiConfigName" |
+			// "codebaseIndexEnabled" |
+			// "enhancedPrompt" |
+			// "systemPrompt" |
+			// "exportModeResult" |
+			// "importModeResult" |
+			// "checkRulesDirectoryResult" |
+			// "browserConnectionResult" |
+			// "vsCodeSetting" |
+			// "indexingStatusUpdate" |
+			// "indexCleared" |
+			// "marketplaceInstallResult" |
+			// "shareTaskSuccess" |
+			// "playSound" |
+			// "draggedImages" |
+			// "setApiConfigPassword" |
+			// "setopenAiCustomModelInfo" |
+			// "marketplaceButtonClicked" |
+			// "cancelMarketplaceInstall" |
+			// "imageGenerationSettings"
 			break
 		}
 	}

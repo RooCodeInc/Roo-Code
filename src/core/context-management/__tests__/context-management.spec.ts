@@ -1,4 +1,4 @@
-// npx vitest src/core/sliding-window/__tests__/sliding-window.spec.ts
+// cd src && npx vitest run core/context-management/__tests__/context-management.spec.ts
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -9,12 +9,7 @@ import { BaseProvider } from "../../../api/providers/base-provider"
 import { ApiMessage } from "../../task-persistence/apiMessages"
 import * as condenseModule from "../../condense"
 
-import {
-	TOKEN_BUFFER_PERCENTAGE,
-	estimateTokenCount,
-	truncateConversation,
-	truncateConversationIfNeeded,
-} from "../index"
+import { TOKEN_BUFFER_PERCENTAGE, estimateTokenCount, truncateConversation, manageContext } from "../index"
 
 // Create a mock ApiHandler for testing
 class MockApiHandler extends BaseProvider {
@@ -49,7 +44,7 @@ class MockApiHandler extends BaseProvider {
 const mockApiHandler = new MockApiHandler()
 const taskId = "test-task-id"
 
-describe("Sliding Window", () => {
+describe("Context Management", () => {
 	beforeEach(() => {
 		if (!TelemetryService.hasInstance()) {
 			TelemetryService.createInstance([])
@@ -234,9 +229,9 @@ describe("Sliding Window", () => {
 	})
 
 	/**
-	 * Tests for the truncateConversationIfNeeded function
+	 * Tests for the manageContext function
 	 */
-	describe("truncateConversationIfNeeded", () => {
+	describe("manageContext", () => {
 		const createModelInfo = (contextWindow: number, maxTokens?: number): ModelInfo => ({
 			contextWindow,
 			supportsPromptCache: true,
@@ -261,7 +256,7 @@ describe("Sliding Window", () => {
 				{ ...messages[messages.length - 1], content: "" },
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -302,7 +297,7 @@ describe("Sliding Window", () => {
 				messagesWithSmallContent[4],
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -337,7 +332,7 @@ describe("Sliding Window", () => {
 
 			// Test below threshold
 			const belowThreshold = 69999
-			const result1 = await truncateConversationIfNeeded({
+			const result1 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: belowThreshold,
 				contextWindow: modelInfo1.contextWindow,
@@ -351,7 +346,7 @@ describe("Sliding Window", () => {
 				currentProfileId: "default",
 			})
 
-			const result2 = await truncateConversationIfNeeded({
+			const result2 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: belowThreshold,
 				contextWindow: modelInfo2.contextWindow,
@@ -372,7 +367,7 @@ describe("Sliding Window", () => {
 
 			// Test above threshold
 			const aboveThreshold = 70001
-			const result3 = await truncateConversationIfNeeded({
+			const result3 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: aboveThreshold,
 				contextWindow: modelInfo1.contextWindow,
@@ -386,7 +381,7 @@ describe("Sliding Window", () => {
 				currentProfileId: "default",
 			})
 
-			const result4 = await truncateConversationIfNeeded({
+			const result4 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: aboveThreshold,
 				contextWindow: modelInfo2.contextWindow,
@@ -422,7 +417,7 @@ describe("Sliding Window", () => {
 			// Set base tokens so total is well below threshold + buffer even with small content added
 			const dynamicBuffer = modelInfo.contextWindow * TOKEN_BUFFER_PERCENTAGE
 			const baseTokensForSmall = availableTokens - smallContentTokens - dynamicBuffer - 10
-			const resultWithSmall = await truncateConversationIfNeeded({
+			const resultWithSmall = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: baseTokensForSmall,
 				contextWindow: modelInfo.contextWindow,
@@ -457,7 +452,7 @@ describe("Sliding Window", () => {
 
 			// Set base tokens so we're just below threshold without content, but over with content
 			const baseTokensForLarge = availableTokens - Math.floor(largeContentTokens / 2)
-			const resultWithLarge = await truncateConversationIfNeeded({
+			const resultWithLarge = await manageContext({
 				messages: messagesWithLargeContent,
 				totalTokens: baseTokensForLarge,
 				contextWindow: modelInfo.contextWindow,
@@ -485,7 +480,7 @@ describe("Sliding Window", () => {
 
 			// Set base tokens so we're just below threshold without content
 			const baseTokensForVeryLarge = availableTokens - Math.floor(veryLargeContentTokens / 2)
-			const resultWithVeryLarge = await truncateConversationIfNeeded({
+			const resultWithVeryLarge = await manageContext({
 				messages: messagesWithVeryLargeContent,
 				totalTokens: baseTokensForVeryLarge,
 				contextWindow: modelInfo.contextWindow,
@@ -523,7 +518,7 @@ describe("Sliding Window", () => {
 				messagesWithSmallContent[4],
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -570,7 +565,7 @@ describe("Sliding Window", () => {
 				{ ...messages[messages.length - 1], content: "" },
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -637,7 +632,7 @@ describe("Sliding Window", () => {
 				messagesWithSmallContent[4],
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -684,7 +679,7 @@ describe("Sliding Window", () => {
 				messagesWithSmallContent[4],
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow: modelInfo.contextWindow,
@@ -741,7 +736,7 @@ describe("Sliding Window", () => {
 				{ ...messages[messages.length - 1], content: "" },
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow,
@@ -793,7 +788,7 @@ describe("Sliding Window", () => {
 				{ ...messages[messages.length - 1], content: "" },
 			]
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow,
@@ -880,7 +875,7 @@ describe("Sliding Window", () => {
 				.spyOn(condenseModule, "summarizeConversation")
 				.mockResolvedValue(mockSummarizeResponse)
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow,
@@ -946,7 +941,7 @@ describe("Sliding Window", () => {
 				.spyOn(condenseModule, "summarizeConversation")
 				.mockResolvedValue(mockSummarizeResponse)
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow,
@@ -1000,7 +995,7 @@ describe("Sliding Window", () => {
 			vi.clearAllMocks()
 			const summarizeSpy = vi.spyOn(condenseModule, "summarizeConversation")
 
-			const result = await truncateConversationIfNeeded({
+			const result = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens,
 				contextWindow,
@@ -1030,10 +1025,10 @@ describe("Sliding Window", () => {
 	})
 
 	/**
-	 * Tests for the getMaxTokens function (private but tested through truncateConversationIfNeeded)
+	 * Tests for the getMaxTokens function (private but tested through manageContext)
 	 */
 	describe("getMaxTokens", () => {
-		// We'll test this indirectly through truncateConversationIfNeeded
+		// We'll test this indirectly through manageContext
 		const createModelInfo = (contextWindow: number, maxTokens?: number): ModelInfo => ({
 			contextWindow,
 			supportsPromptCache: true, // Not relevant for getMaxTokens
@@ -1061,7 +1056,7 @@ describe("Sliding Window", () => {
 
 			// Account for the dynamic buffer which is 10% of context window (10,000 tokens)
 			// Below max tokens and buffer - no truncation
-			const result1 = await truncateConversationIfNeeded({
+			const result1 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 39999, // Well below threshold + dynamic buffer
 				contextWindow: modelInfo.contextWindow,
@@ -1082,7 +1077,7 @@ describe("Sliding Window", () => {
 			})
 
 			// Above max tokens - truncate
-			const result2 = await truncateConversationIfNeeded({
+			const result2 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 50001, // Above threshold
 				contextWindow: modelInfo.contextWindow,
@@ -1114,7 +1109,7 @@ describe("Sliding Window", () => {
 
 			// Account for the dynamic buffer which is 10% of context window (10,000 tokens)
 			// Below max tokens and buffer - no truncation
-			const result1 = await truncateConversationIfNeeded({
+			const result1 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 81807, // Well below threshold + dynamic buffer (91808 - 10000 = 81808)
 				contextWindow: modelInfo.contextWindow,
@@ -1135,7 +1130,7 @@ describe("Sliding Window", () => {
 			})
 
 			// Above max tokens - truncate
-			const result2 = await truncateConversationIfNeeded({
+			const result2 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 81809, // Above threshold (81808)
 				contextWindow: modelInfo.contextWindow,
@@ -1166,7 +1161,7 @@ describe("Sliding Window", () => {
 			]
 
 			// Below max tokens and buffer - no truncation
-			const result1 = await truncateConversationIfNeeded({
+			const result1 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 34999, // Well below threshold + buffer
 				contextWindow: modelInfo.contextWindow,
@@ -1182,7 +1177,7 @@ describe("Sliding Window", () => {
 			expect(result1.messages).toEqual(messagesWithSmallContent)
 
 			// Above max tokens - truncate
-			const result2 = await truncateConversationIfNeeded({
+			const result2 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 40001, // Above threshold
 				contextWindow: modelInfo.contextWindow,
@@ -1211,7 +1206,7 @@ describe("Sliding Window", () => {
 
 			// Account for the dynamic buffer which is 10% of context window (20,000 tokens for this test)
 			// Below max tokens and buffer - no truncation
-			const result1 = await truncateConversationIfNeeded({
+			const result1 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 149999, // Well below threshold + dynamic buffer
 				contextWindow: modelInfo.contextWindow,
@@ -1227,7 +1222,7 @@ describe("Sliding Window", () => {
 			expect(result1.messages).toEqual(messagesWithSmallContent)
 
 			// Above max tokens - truncate
-			const result2 = await truncateConversationIfNeeded({
+			const result2 = await manageContext({
 				messages: messagesWithSmallContent,
 				totalTokens: 170001, // Above threshold
 				contextWindow: modelInfo.contextWindow,

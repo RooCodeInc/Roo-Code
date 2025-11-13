@@ -1,6 +1,7 @@
 {
 	"common": {
 		"save": "儲存",
+		"saving": "儲存中...",
 		"done": "完成",
 		"cancel": "取消",
 		"reset": "重設",

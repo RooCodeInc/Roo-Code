@@ -51,14 +51,20 @@ export interface SingleCompletionHandler {
 }
 
 export interface ApiHandlerCreateMessageMetadata {
-	mode?: string
+	/**
+	 * Task ID used for tracking and provider-specific features:
+	 * - DeepInfra: Used as prompt_cache_key for caching
+	 * - Roo: Sent as X-Roo-Task-ID header
+	 * - Requesty: Sent as trace_id
+	 * - Unbound: Sent in unbound_metadata
+	 */
 	taskId: string
 	[key: string]: any
 	previousResponseId?: string
 	/**
-	 * When true, the provider must NOT fall back to internal continuity state
-	 * (e.g., lastResponseId) if previousResponseId is absent.
-	 * Used to enforce "skip once" after a condense operation.
+	 * Current mode slug for provider-specific tracking:
+	 * - Requesty: Sent in extra metadata
+	 * - Unbound: Sent in unbound_metadata
 	 */
 	suppressPreviousResponseId?: boolean
 	/**
@@ -70,6 +76,7 @@ export interface ApiHandlerCreateMessageMetadata {
 	 */
 	store?: boolean
 	onRequestHeadersReady?: (headers: Record<string, string>) => void
+	mode?: string
 }
 
 export interface ApiHandler {
