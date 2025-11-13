@@ -2569,6 +2569,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// or tool_use content blocks from API which we should assume is
 					// an error.
 
+					// IMPORTANT: For native tool protocol, we already added the user message to
+					// apiConversationHistory at line 1876. Since the assistant failed to respond,
+					// we need to remove that message before retrying to avoid having two consecutive
+					// user messages (which would cause tool_result validation errors).
+					const toolProtocol = resolveToolProtocol()
+					const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+
+					if (isNativeProtocol && this.apiConversationHistory.length > 0) {
+						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+						if (lastMessage.role === "user") {
+							// Remove the last user message that we added earlier
+							this.apiConversationHistory.pop()
+						}
+					}
+
 					// Check if we should auto-retry or prompt the user
 					const state = await this.providerRef.deref()?.getState()
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
@@ -2619,7 +2634,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// Continue to retry the request
 							continue
 						} else {
-							// User declined to retry - persist error and failure message
+							// User declined to retry
+							// For native protocol, re-add the user message we removed
+							if (isNativeProtocol) {
+								await this.addToApiConversationHistory({
+									role: "user",
+									content: currentUserContent,
+								})
+							}
+
 							await this.say(
 								"error",
 								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
