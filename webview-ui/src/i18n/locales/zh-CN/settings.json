@@ -256,6 +256,8 @@
 		"useReasoning": "启用推理",
 		"useHostHeader": "使用自定义 Host 标头",
 		"useLegacyFormat": "使用传统 OpenAI API 格式",
+		"useResponsesApiFormat": "使用 Responses API 格式",
+		"useResponsesApiFormatDescription": "适用于 Azure OpenAI 上仅支持 Responses API 的模型（如 GPT-5-Codex）",
 		"customHeaders": "自定义标头",
 		"headerName": "标头名称",
 		"headerValue": "标头值",

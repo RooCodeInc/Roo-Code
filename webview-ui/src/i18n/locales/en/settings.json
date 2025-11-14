@@ -261,6 +261,8 @@
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
 		"useLegacyFormat": "Use legacy OpenAI API format",
+		"useResponsesApiFormat": "Use Responses API format",
+		"useResponsesApiFormatDescription": "For models that only support Responses API on Azure OpenAI (e.g., GPT-5-Codex)",
 		"customHeaders": "Custom Headers",
 		"headerName": "Header name",
 		"headerValue": "Header value",

@@ -1,6 +1,44 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
+export function convertToResponsesApiMessages(
+	anthropicMessages: Anthropic.Messages.MessageParam[],
+): Array<{ role: string; content: string }> {
+	const responseMessages: Array<{ role: string; content: string }> = []
+
+	for (const anthropicMessage of anthropicMessages) {
+		if (typeof anthropicMessage.content === "string") {
+			responseMessages.push({ role: anthropicMessage.role, content: anthropicMessage.content })
+		} else {
+			// For Responses API, extract text content and ignore images/tool calls for now
+			const textParts: string[] = []
+			for (const part of anthropicMessage.content) {
+				if (part.type === "text") {
+					textParts.push(part.text)
+				} else if (part.type === "tool_result") {
+					// Handle tool results
+					if (typeof part.content === "string") {
+						textParts.push(part.content)
+					} else if (Array.isArray(part.content)) {
+						for (const subPart of part.content) {
+							if (subPart.type === "text") {
+								textParts.push(subPart.text)
+							}
+						}
+					}
+				}
+				// Images and tool_use are ignored in Responses API simple format
+			}
+
+			if (textParts.length > 0) {
+				responseMessages.push({ role: anthropicMessage.role, content: textParts.join("\n") })
+			}
+		}
+	}
+
+	return responseMessages
+}
+
 export function convertToOpenAiMessages(
 	anthropicMessages: Anthropic.Messages.MessageParam[],
 ): OpenAI.Chat.ChatCompletionMessageParam[] {

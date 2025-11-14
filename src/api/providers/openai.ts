@@ -14,7 +14,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { XmlMatcher } from "../../utils/xml-matcher"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToOpenAiMessages, convertToResponsesApiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
@@ -90,12 +90,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
+		const enabledResponsesApiFormat = this.options.openAiResponsesApiFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages)
+			return
+		}
+
+		if (enabledResponsesApiFormat) {
+			yield* this.handleResponsesApiMessage(modelId, systemPrompt, messages)
 			return
 		}
 
@@ -256,6 +262,101 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			outputTokens: usage?.completion_tokens || 0,
 			cacheWriteTokens: usage?.cache_creation_input_tokens || undefined,
 			cacheReadTokens: usage?.cache_read_input_tokens || undefined,
+		}
+	}
+
+	private async *handleResponsesApiMessage(
+		modelId: string,
+		_systemPrompt: string,
+		_messages: Anthropic.Messages.MessageParam[],
+	): ApiStream {
+		const modelInfo = this.getModel().info
+		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+
+		if (this.options.openAiStreamingEnabled ?? true) {
+			const requestOptions: any = {
+				model: modelId,
+				input: [{ role: "user", content: _systemPrompt }, ...convertToResponsesApiMessages(_messages)],
+				stream: true,
+			}
+
+			// Add max_output_tokens if needed (Responses API uses different parameter name)
+			if (this.options.includeMaxTokens === true) {
+				requestOptions.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+			}
+
+			let stream
+			try {
+				// @ts-ignore - Responses API is available in OpenAI client
+				stream = await this.client.responses.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: "/responses" } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
+
+			for await (const chunk of stream) {
+				// Handle text deltas - use response.output_text.delta for Responses API streaming
+				if (chunk.type === "response.output_text.delta") {
+					yield {
+						type: "text",
+						text: chunk.delta,
+					}
+				}
+
+				// Handle usage at the end
+				if (chunk.type === "response.done") {
+					if (chunk.response?.usage) {
+						yield this.processUsageMetrics(chunk.response.usage, modelInfo)
+					}
+				}
+			}
+		} else {
+			// Non-streaming
+			const requestOptions: any = {
+				model: modelId,
+				input: [{ role: "user", content: _systemPrompt }, ...convertToResponsesApiMessages(_messages)],
+			}
+
+			// Add max_output_tokens if needed
+			if (this.options.includeMaxTokens === true) {
+				requestOptions.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+			}
+
+			let response
+			try {
+				// @ts-ignore - Responses API is available in OpenAI client
+				response = await this.client.responses.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: "/responses" } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
+
+			// Extract text from output array - look for message type output
+			let responseText = ""
+			if (response.output && Array.isArray(response.output)) {
+				for (const outputItem of response.output) {
+					if (outputItem.type === "message" && outputItem.content && Array.isArray(outputItem.content)) {
+						for (const contentItem of outputItem.content) {
+							if (contentItem.type === "output_text" || contentItem.type === "text") {
+								responseText += contentItem.text || ""
+							}
+						}
+					}
+				}
+			}
+
+			yield {
+				type: "text",
+				text: responseText,
+			}
+
+			if (response.usage) {
+				yield this.processUsageMetrics(response.usage, modelInfo)
+			}
 		}
 	}
 

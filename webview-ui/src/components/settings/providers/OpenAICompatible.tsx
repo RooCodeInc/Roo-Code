@@ -40,6 +40,9 @@ export const OpenAICompatible = ({
 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
 	const [openAiLegacyFormatSelected, setOpenAiLegacyFormatSelected] = useState(!!apiConfiguration?.openAiLegacyFormat)
+	const [openAiResponsesApiFormatSelected, setOpenAiResponsesApiFormatSelected] = useState(
+		!!apiConfiguration?.openAiResponsesApiFormat,
+	)
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
@@ -161,6 +164,19 @@ export const OpenAICompatible = ({
 					}}>
 					{t("settings:providers.useLegacyFormat")}
 				</Checkbox>
+			</div>
+			<div>
+				<Checkbox
+					checked={openAiResponsesApiFormatSelected}
+					onChange={(checked: boolean) => {
+						setOpenAiResponsesApiFormatSelected(checked)
+						setApiConfigurationField("openAiResponsesApiFormat", checked)
+					}}>
+					{t("settings:providers.useResponsesApiFormat")}
+				</Checkbox>
+				<div className="text-sm text-vscode-descriptionForeground ml-6">
+					{t("settings:providers.useResponsesApiFormatDescription")}
+				</div>
 			</div>
 			<Checkbox
 				checked={apiConfiguration?.openAiStreamingEnabled ?? true}
