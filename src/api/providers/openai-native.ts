@@ -7,10 +7,9 @@ import {
 	OpenAiNativeModelId,
 	openAiNativeModels,
 	OPENAI_NATIVE_DEFAULT_TEMPERATURE,
-	GPT5_DEFAULT_TEMPERATURE,
 	type ReasoningEffort,
 	type VerbosityLevel,
-	type ReasoningEffortWithMinimal,
+	type ReasoningEffortExtended,
 	type ServiceTier,
 } from "@roo-code/types"
 
@@ -25,11 +24,6 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
-
-// GPT-5 specific types
-
-// Constants for model identification
-const GPT5_MODEL_PREFIX = "gpt-5"
 
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -170,9 +164,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Temporary debug logging
-		// console.log("[OpenAI Native] Request body:", requestBody)
-
 		// Make the request (pass systemPrompt and messages for potential retry)
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
 	}
@@ -182,7 +173,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		formattedInput: any,
 		systemPrompt: string,
 		verbosity: any,
-		reasoningEffort: ReasoningEffortWithMinimal | undefined,
+		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
 		// Build a request body
@@ -192,7 +183,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			model: string
 			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
 			stream: boolean
-			reasoning?: { effort?: ReasoningEffortWithMinimal; summary?: "auto" }
+			reasoning?: { effort?: ReasoningEffortExtended; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
 			temperature?: number
 			max_output_tokens?: number
@@ -228,11 +219,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				: {}),
 			// Only include temperature if the model supports it
 			...(model.info.supportsTemperature !== false && {
-				temperature:
-					this.options.modelTemperature ??
-					(model.id.startsWith(GPT5_MODEL_PREFIX)
-						? GPT5_DEFAULT_TEMPERATURE
-						: OPENAI_NATIVE_DEFAULT_TEMPERATURE),
+				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 			}),
 			// Explicitly include the calculated max output tokens.
 			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
@@ -984,20 +971,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 	}
 
-	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortWithMinimal | undefined {
-		const { reasoning, info } = model
-
-		// Check if reasoning effort is configured
-		if (reasoning && "reasoning_effort" in reasoning) {
-			const effort = reasoning.reasoning_effort as string
-			// Support all effort levels
-			if (effort === "minimal" || effort === "low" || effort === "medium" || effort === "high") {
-				return effort as ReasoningEffortWithMinimal
-			}
-		}
-
-		// Use the model's default from types if available
-		return info.reasoningEffort as ReasoningEffortWithMinimal | undefined
+	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortExtended | undefined {
+		// Single source of truth: user setting overrides, else model default (from types).
+		const selected = (this.options.reasoningEffort as any) ?? (model.info.reasoningEffort as any)
+		return selected && selected !== "disable" ? (selected as any) : undefined
 	}
 
 	/**
@@ -1035,19 +1012,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			modelId: id,
 			model: info,
 			settings: this.options,
-			defaultTemperature: id.startsWith(GPT5_MODEL_PREFIX)
-				? GPT5_DEFAULT_TEMPERATURE
-				: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
+			defaultTemperature: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 		})
 
-		// For models using the Responses API, ensure we support reasoning effort
-		const effort =
-			(this.options.reasoningEffort as ReasoningEffortWithMinimal | undefined) ??
-			(info.reasoningEffort as ReasoningEffortWithMinimal | undefined)
-
-		if (effort) {
-			;(params.reasoning as any) = { reasoning_effort: effort }
-		}
+		// Reasoning effort inclusion is handled by getModelParams/getOpenAiReasoning.
+		// Do not re-compute or filter efforts here.
 
 		// The o3 models are named like "o3-mini-[reasoning-effort]", which are
 		// not valid model ids, so we need to strip the suffix.
@@ -1120,11 +1089,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			// Only include temperature if the model supports it
 			if (model.info.supportsTemperature !== false) {
-				requestBody.temperature =
-					this.options.modelTemperature ??
-					(model.id.startsWith(GPT5_MODEL_PREFIX)
-						? GPT5_DEFAULT_TEMPERATURE
-						: OPENAI_NATIVE_DEFAULT_TEMPERATURE)
+				requestBody.temperature = this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE
 			}
 
 			// Include max_output_tokens if available

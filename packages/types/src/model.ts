@@ -19,6 +19,22 @@ export const reasoningEffortWithMinimalSchema = z.union([reasoningEffortsSchema,
 export type ReasoningEffortWithMinimal = z.infer<typeof reasoningEffortWithMinimalSchema>
 
 /**
+ * Extended Reasoning Effort (includes "none" and "minimal")
+ * Note: "disable" is a UI/control value, not a value sent as effort
+ */
+export const reasoningEffortsExtended = ["none", "minimal", "low", "medium", "high"] as const
+
+export const reasoningEffortExtendedSchema = z.enum(reasoningEffortsExtended)
+
+export type ReasoningEffortExtended = z.infer<typeof reasoningEffortExtendedSchema>
+
+/**
+ * Reasoning Effort user setting (includes "disable")
+ */
+export const reasoningEffortSettingValues = ["disable", "none", "minimal", "low", "medium", "high"] as const
+export const reasoningEffortSettingSchema = z.enum(reasoningEffortSettingValues)
+
+/**
  * Verbosity
  */
 
@@ -67,7 +83,15 @@ export const modelInfoSchema = z.object({
 	supportsTemperature: z.boolean().optional(),
 	defaultTemperature: z.number().optional(),
 	requiredReasoningBudget: z.boolean().optional(),
-	supportsReasoningEffort: z.boolean().optional(),
+	supportsReasoningEffort: z
+		.union([z.boolean(), z.array(z.enum(["disable", "none", "minimal", "low", "medium", "high"]))])
+		.optional(),
+	/**
+	 * When true, the UI/API may present a "none" option to fully disable reasoning
+	 * for models that otherwise support reasoning effort (used by GPT‑5.1 family).
+	 * This is a minimal, backwards‑compatible addition.
+	 */
+	supportsReasoningNone: z.boolean().optional(),
 	requiredReasoningEffort: z.boolean().optional(),
 	preserveReasoning: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),
@@ -76,7 +100,8 @@ export const modelInfoSchema = z.object({
 	cacheWritesPrice: z.number().optional(),
 	cacheReadsPrice: z.number().optional(),
 	description: z.string().optional(),
-	reasoningEffort: reasoningEffortsSchema.optional(),
+	// Default effort value for models that support reasoning effort
+	reasoningEffort: reasoningEffortExtendedSchema.optional(),
 	minTokensPerCachePoint: z.number().optional(),
 	maxCachePoints: z.number().optional(),
 	cachableFields: z.array(z.string()).optional(),

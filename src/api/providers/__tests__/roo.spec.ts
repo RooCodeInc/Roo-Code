@@ -511,16 +511,17 @@ describe("RooHandler", () => {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			const firstCallBody = mockCreate.mock.calls[0][0]
+			expect(firstCallBody).toEqual(
 				expect.objectContaining({
 					model: mockOptions.apiModelId,
 					messages: expect.any(Array),
 					stream: true,
 					stream_options: { include_usage: true },
-					reasoning: { enabled: false },
 				}),
-				undefined,
 			)
+			expect(firstCallBody.reasoning).toBeUndefined()
+			expect(mockCreate.mock.calls[0][1]).toBeUndefined()
 		})
 
 		it("should include reasoning with enabled: false when explicitly disabled", async () => {
@@ -595,7 +596,7 @@ describe("RooHandler", () => {
 			)
 		})
 
-		it("should not include reasoning for minimal (treated as none)", async () => {
+		it("should include reasoning for minimal", async () => {
 			handler = new RooHandler({
 				...mockOptions,
 				reasoningEffort: "minimal",
@@ -605,9 +606,8 @@ describe("RooHandler", () => {
 				// Consume stream
 			}
 
-			// minimal should result in no reasoning parameter
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.reasoning).toBeUndefined()
+			expect(callArgs.reasoning).toEqual({ enabled: true, effort: "minimal" })
 		})
 
 		it("should handle enableReasoningEffort: false overriding reasoningEffort setting", async () => {
