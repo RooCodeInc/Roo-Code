@@ -86,11 +86,6 @@ export const modelInfoSchema = z.object({
 	supportsReasoningEffort: z
 		.union([z.boolean(), z.array(z.enum(["disable", "none", "minimal", "low", "medium", "high"]))])
 		.optional(),
-	/**
-	 * When true, the UI/API may present a "none" option to fully disable reasoning
-	 * for models that otherwise support reasoning effort (used by GPT‑5.1 family).
-	 * This is a minimal, backwards‑compatible addition.
-	 */
 	requiredReasoningEffort: z.boolean().optional(),
 	preserveReasoning: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),
