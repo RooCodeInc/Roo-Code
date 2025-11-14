@@ -276,7 +276,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 				break
 			}
-
+	
 			if (cline.didAlreadyUseTool) {
 				// Ignore any content after a tool has already been used.
 				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
@@ -320,7 +320,6 @@ export async function presentAssistantMessage(cline: Task) {
 						)
 						return
 					}
-
 					// For native protocol, tool_result content must be a string
 					// Images are added as separate blocks in the user message
 					let resultContent: string
@@ -365,11 +364,15 @@ export async function presentAssistantMessage(cline: Task) {
 						cline.userMessageContent.push(...content)
 					}
 				}
-
-				// Once a tool result has been collected, ignore all other tool
-				// uses since we should only ever present one tool result per
-				// message.
-				cline.didAlreadyUseTool = true
+	
+				// For XML protocol: Only one tool per message is allowed
+				// For native protocol: Multiple tools can be executed in sequence
+				if (toolProtocol !== TOOL_PROTOCOL.NATIVE) {
+					// Once a tool result has been collected, ignore all other tool
+					// uses since we should only ever present one tool result per
+					// message (XML protocol only).
+					cline.didAlreadyUseTool = true
+				}
 			}
 
 			const askApproval = async (

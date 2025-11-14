@@ -2359,7 +2359,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Mark that we have new content to process
 								this.userMessageContentReady = false
 
-								// Present the tool call to user
+								// Present the tool call to user - presentAssistantMessage will execute
+								// tools sequentially and accumulate all results in userMessageContent
 								presentAssistantMessage(this)
 								break
 							}
@@ -2704,12 +2705,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.assistantMessageContent = parsedBlocks
 				}
 
-				if (partialBlocks.length > 0) {
+				// Only present partial blocks that were just completed (from XML parsing)
+				// Native tool blocks were already presented during streaming, so don't re-present them
+				if (partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")) {
 					// If there is content to update then it will complete and
 					// update `this.userMessageContentReady` to true, which we
-					// `pWaitFor` before making the next request. All this is really
-					// doing is presenting the last partial message that we just set
-					// to complete.
+					// `pWaitFor` before making the next request.
 					presentAssistantMessage(this)
 				}
 
@@ -3287,6 +3288,38 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Create an AbortController to allow cancelling the request mid-stream
 		this.currentRequestAbortController = new AbortController()
 		const abortSignal = this.currentRequestAbortController.signal
+
+		// Log conversation structure for debugging (omit content)
+		if (shouldIncludeTools) {
+			console.log(`[Task#${this.taskId}] Conversation structure being sent to API:`)
+			cleanConversationHistory.forEach((msg, idx) => {
+				if ("role" in msg) {
+					const contentSummary = Array.isArray(msg.content)
+						? msg.content
+								.map((block) => {
+									if ("type" in block) {
+										if (block.type === "tool_use") {
+											return `tool_use(${block.name}, id:${block.id})`
+										} else if (block.type === "tool_result") {
+											return `tool_result(id:${block.tool_use_id})`
+										} else if (block.type === "text") {
+											return `text(${(block.text as string).substring(0, 50)}...)`
+										} else if (block.type === "image") {
+											return "image"
+										}
+									}
+									return "unknown_block"
+								})
+								.join(", ")
+						: typeof msg.content === "string"
+							? `text(${msg.content.substring(0, 50)}...)`
+							: "unknown_content"
+					console.log(`  [${idx}] ${msg.role}: [${contentSummary}]`)
+				} else if ("type" in msg && msg.type === "reasoning") {
+					console.log(`  [${idx}] reasoning (encrypted)`)
+				}
+			})
+		}
 
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
