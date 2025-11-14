@@ -74,6 +74,10 @@ export const modelInfoSchema = z.object({
 	contextWindow: z.number(),
 	supportsImages: z.boolean().optional(),
 	supportsPromptCache: z.boolean(),
+	// Optional default prompt cache retention policy for providers that support it.
+	// When set to "24h", extended prompt caching will be requested; when omitted
+	// or set to "in_memory", the default in‑memory cache is used.
+	promptCacheRetention: z.enum(["in_memory", "24h"]).optional(),
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),
 	supportsReasoningBudget: z.boolean().optional(),
