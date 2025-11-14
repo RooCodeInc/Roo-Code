@@ -256,6 +256,8 @@
 		"useReasoning": "推論を有効化",
 		"useHostHeader": "カスタムHostヘッダーを使用",
 		"useLegacyFormat": "レガシーOpenAI API形式を使用",
+		"useResponsesApiFormat": "Responses API フォーマットを使用",
+		"useResponsesApiFormatDescription": "Azure OpenAI で Responses API のみをサポートするモデル向け（例: GPT-5-Codex）",
 		"customHeaders": "カスタムヘッダー",
 		"headerName": "ヘッダー名",
 		"headerValue": "ヘッダー値",

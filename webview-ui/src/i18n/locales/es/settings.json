@@ -256,6 +256,8 @@
 		"useReasoning": "Habilitar razonamiento",
 		"useHostHeader": "Usar encabezado Host personalizado",
 		"useLegacyFormat": "Usar formato API de OpenAI heredado",
+		"useResponsesApiFormat": "Usar el formato de la API Responses",
+		"useResponsesApiFormatDescription": "Para modelos que solo admiten la API Responses en Azure OpenAI (p. ej., GPT-5-Codex)",
 		"customHeaders": "Encabezados personalizados",
 		"headerName": "Nombre del encabezado",
 		"headerValue": "Valor del encabezado",

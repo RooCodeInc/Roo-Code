@@ -256,6 +256,8 @@
 		"useReasoning": "Włącz rozumowanie",
 		"useHostHeader": "Użyj niestandardowego nagłówka Host",
 		"useLegacyFormat": "Użyj starszego formatu API OpenAI",
+		"useResponsesApiFormat": "Użyj formatu Responses API",
+		"useResponsesApiFormatDescription": "Dla modeli, które obsługują wyłącznie Responses API w Azure OpenAI (np. GPT-5-Codex)",
 		"customHeaders": "Niestandardowe nagłówki",
 		"headerName": "Nazwa nagłówka",
 		"headerValue": "Wartość nagłówka",

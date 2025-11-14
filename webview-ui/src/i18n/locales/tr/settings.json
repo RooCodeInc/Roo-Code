@@ -256,6 +256,8 @@
 		"useReasoning": "Akıl yürütmeyi etkinleştir",
 		"useHostHeader": "Özel Host başlığı kullan",
 		"useLegacyFormat": "Eski OpenAI API formatını kullan",
+		"useResponsesApiFormat": "Responses API formatını kullan",
+		"useResponsesApiFormatDescription": "Azure OpenAI'de yalnızca Responses API'yi destekleyen modeller için (örn. GPT-5-Codex)",
 		"customHeaders": "Özel Başlıklar",
 		"headerName": "Başlık adı",
 		"headerValue": "Başlık değeri",

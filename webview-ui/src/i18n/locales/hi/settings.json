@@ -256,6 +256,8 @@
 		"useReasoning": "तर्क सक्षम करें",
 		"useHostHeader": "कस्टम होस्ट हेडर का उपयोग करें",
 		"useLegacyFormat": "पुराने OpenAI API प्रारूप का उपयोग करें",
+		"useResponsesApiFormat": "Responses API प्रारूप का उपयोग करें",
+		"useResponsesApiFormatDescription": "उन मॉडलों के लिए जो केवल Azure OpenAI पर Responses API का समर्थन करते हैं (जैसे GPT-5-Codex)",
 		"customHeaders": "कस्टम हेडर्स",
 		"headerName": "हेडर नाम",
 		"headerValue": "हेडर मूल्य",

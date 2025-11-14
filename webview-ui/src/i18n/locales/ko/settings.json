@@ -256,6 +256,8 @@
 		"useReasoning": "추론 활성화",
 		"useHostHeader": "사용자 정의 Host 헤더 사용",
 		"useLegacyFormat": "레거시 OpenAI API 형식 사용",
+		"useResponsesApiFormat": "Responses API 형식 사용",
+		"useResponsesApiFormatDescription": "Azure OpenAI에서 Responses API만 지원하는 모델용(예: GPT-5-Codex)",
 		"customHeaders": "사용자 정의 헤더",
 		"headerName": "헤더 이름",
 		"headerValue": "헤더 값",

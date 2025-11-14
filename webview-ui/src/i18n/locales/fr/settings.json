@@ -256,6 +256,8 @@
 		"useReasoning": "Activer le raisonnement",
 		"useHostHeader": "Utiliser un en-tête Host personnalisé",
 		"useLegacyFormat": "Utiliser le format API OpenAI hérité",
+		"useResponsesApiFormat": "Utiliser le format de l'API Responses",
+		"useResponsesApiFormatDescription": "Pour les modèles qui ne prennent en charge que l'API Responses sur Azure OpenAI (p. ex., GPT-5-Codex)",
 		"customHeaders": "En-têtes personnalisés",
 		"headerName": "Nom de l'en-tête",
 		"headerValue": "Valeur de l'en-tête",

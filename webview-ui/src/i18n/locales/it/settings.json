@@ -256,6 +256,8 @@
 		"useReasoning": "Abilita ragionamento",
 		"useHostHeader": "Usa intestazione Host personalizzata",
 		"useLegacyFormat": "Usa formato API OpenAI legacy",
+		"useResponsesApiFormat": "Usa il formato Responses API",
+		"useResponsesApiFormatDescription": "Per i modelli che supportano solo la Responses API su Azure OpenAI (es. GPT-5-Codex)",
 		"customHeaders": "Intestazioni personalizzate",
 		"headerName": "Nome intestazione",
 		"headerValue": "Valore intestazione",

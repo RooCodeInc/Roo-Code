@@ -258,6 +258,8 @@
 		"useReasoning": "Reasoning aktivieren",
 		"useHostHeader": "Benutzerdefinierten Host-Header verwenden",
 		"useLegacyFormat": "Altes OpenAI API-Format verwenden",
+		"useResponsesApiFormat": "Responses-API-Format verwenden",
+		"useResponsesApiFormatDescription": "Für Modelle, die nur die Responses-API in Azure OpenAI unterstützen (z. B. GPT-5-Codex)",
 		"customHeaders": "Benutzerdefinierte Headers",
 		"headerName": "Header-Name",
 		"headerValue": "Header-Wert",

@@ -260,6 +260,8 @@
 		"useReasoning": "Aktifkan reasoning",
 		"useHostHeader": "Gunakan Host header kustom",
 		"useLegacyFormat": "Gunakan format API OpenAI legacy",
+		"useResponsesApiFormat": "Gunakan format Responses API",
+		"useResponsesApiFormatDescription": "Untuk model yang hanya mendukung Responses API di Azure OpenAI (mis. GPT-5-Codex)",
 		"customHeaders": "Header Kustom",
 		"headerName": "Nama header",
 		"headerValue": "Nilai header",

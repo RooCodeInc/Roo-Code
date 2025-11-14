@@ -256,6 +256,8 @@
 		"useReasoning": "Redenering inschakelen",
 		"useHostHeader": "Aangepaste Host-header gebruiken",
 		"useLegacyFormat": "Verouderd OpenAI API-formaat gebruiken",
+		"useResponsesApiFormat": "Responses API-indeling gebruiken",
+		"useResponsesApiFormatDescription": "Voor modellen die alleen de Responses API op Azure OpenAI ondersteunen (bijv. GPT-5-Codex)",
 		"customHeaders": "Aangepaste headers",
 		"headerName": "Headernaam",
 		"headerValue": "Headerwaarde",

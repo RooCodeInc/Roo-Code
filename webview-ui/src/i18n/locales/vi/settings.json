@@ -256,6 +256,8 @@
 		"useReasoning": "Bật lý luận",
 		"useHostHeader": "Sử dụng tiêu đề Host tùy chỉnh",
 		"useLegacyFormat": "Sử dụng định dạng API OpenAI cũ",
+		"useResponsesApiFormat": "Sử dụng định dạng Responses API",
+		"useResponsesApiFormatDescription": "Dành cho các mô hình chỉ hỗ trợ Responses API trên Azure OpenAI (ví dụ: GPT-5-Codex)",
 		"customHeaders": "Tiêu đề tùy chỉnh",
 		"headerName": "Tên tiêu đề",
 		"headerValue": "Giá trị tiêu đề",
