@@ -44,6 +44,9 @@ export const terminalUnsupportedSyntax = {
 			"Limited access to Windows environment variables",
 			"No native PowerShell object pipeline",
 			"Limited Unicode and emoji rendering on Windows",
+			"Arguments beginning with a single slash (e.g., /F, /IM) may fail in POSIX-style shells due to automatic path conversion",
+			"Using double slashes (e.g., //F, //IM) prevents the shell from rewriting the arguments",
+			"Example: taskkill /F /IM notepad.exe fails, while taskkill //F //IM notepad.exe succeeds because no path conversion occurs",
 		],
 		features: [
 			"Support for && and || operators",

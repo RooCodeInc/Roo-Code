@@ -1,5 +1,23 @@
 # CoStrict Change Log
 
+## [2.0.13]
+
+- Add additional notes on Windows `taskkill` argument behavior in bash
+- Add API provider validation for code review features
+- Optimize settings for batch saving
+- Update branding and improve debounce timing
+- Add notification service with banner
+- Update UI style
+- Updated internationalization
+- Optimized performance
+- Optimize PDF file processing
+- Update default modelID to `Auto`
+- Fix mcp timeout setting
+- Fixed `zgsmAiCustomModelInfo` being overwritten
+- Fix `openAiHeaders` being overwritten
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/4e6cdad052d9526a8d861c6a5fc02443e46646c1)
+- Fix known issues
+
 ## [2.0.12]
 
 - Fix codereview (#638)

@@ -32,6 +32,7 @@ import {
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
+import { NotificationService } from "./costrict/NotificationService"
 import { safeWriteJson } from "../../utils/safeWriteJson"
 
 // Discriminated union for connection states
@@ -150,6 +151,7 @@ export class McpHub {
 	private isDisposed: boolean = false
 	connections: McpConnection[] = []
 	isConnecting: boolean = false
+	readonly costrictNotificationService = new NotificationService()
 	private refCount: number = 0 // Reference counter for active clients
 	private configChangeDebounceTimers: Map<string, NodeJS.Timeout> = new Map()
 	private isProgrammaticUpdate: boolean = false
@@ -843,10 +845,10 @@ export class McpHub {
 			connection.server.error = ""
 			connection.server.instructions = client.getInstructions()
 
+			this.costrictNotificationService.connect(name, connection.client)
+
 			// Initial fetch of tools and resources
-			connection.server.tools = await this.fetchToolsList(name, source)
-			connection.server.resources = await this.fetchResourcesList(name, source)
-			connection.server.resourceTemplates = await this.fetchResourceTemplatesList(name, source)
+			await this.fetchAvailableServerCapabilities(name, source)
 		} catch (error) {
 			// Update status with error
 			const connection = this.findConnection(name, source)
@@ -910,12 +912,39 @@ export class McpHub {
 		)
 	}
 
+	/**
+	 * Helper method to set the supported server capabilities
+	 * @param serverName The name of the server to find
+	 * @param source Optional source to filter by (global or project)
+	 */
+	private async fetchAvailableServerCapabilities(serverName: string, source?: "global" | "project") {
+		// Use the helper method to find the connection
+		const connection = this.findConnection(serverName, source)
+
+		if (!connection || connection.type !== "connected") {
+			return
+		}
+
+		if (connection.client.getServerCapabilities()?.tools) {
+			connection.server.tools = await this.fetchToolsList(serverName, source)
+		}
+		if (connection.client.getServerCapabilities()?.resources) {
+			connection.server.resources = await this.fetchResourcesList(serverName, source)
+			connection.server.resourceTemplates = await this.fetchResourceTemplatesList(serverName, source)
+		}
+	}
+
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
 		try {
 			// Use the helper method to find the connection
 			const connection = this.findConnection(serverName, source)
 
 			if (!connection || connection.type !== "connected") {
+				return []
+			}
+
+			// Only proceed of the server defined the tools capability.
+			if (!connection.client.getServerCapabilities()?.tools) {
 				return []
 			}
 
@@ -973,6 +1002,12 @@ export class McpHub {
 			if (!connection || connection.type !== "connected") {
 				return []
 			}
+
+			// Only proceed of the server defined the resources capability.
+			if (!connection.client.getServerCapabilities()?.resources) {
+				return []
+			}
+
 			const response = await connection.client.request({ method: "resources/list" }, ListResourcesResultSchema)
 			return response?.resources || []
 		} catch (error) {
@@ -990,6 +1025,12 @@ export class McpHub {
 			if (!connection || connection.type !== "connected") {
 				return []
 			}
+
+			// Only proceed of the server defined the resources capability.
+			if (!connection.client.getServerCapabilities()?.resources) {
+				return []
+			}
+
 			const response = await connection.client.request(
 				{ method: "resources/templates/list" },
 				ListResourceTemplatesResultSchema,
@@ -1389,12 +1430,7 @@ export class McpHub {
 						await this.connectToServer(serverName, updatedConfig, serverSource)
 					} else if (connection.server.status === "connected") {
 						// Only refresh capabilities if connected
-						connection.server.tools = await this.fetchToolsList(serverName, serverSource)
-						connection.server.resources = await this.fetchResourcesList(serverName, serverSource)
-						connection.server.resourceTemplates = await this.fetchResourceTemplatesList(
-							serverName,
-							serverSource,
-						)
+						await this.fetchAvailableServerCapabilities(serverName, serverSource)
 					}
 				} catch (error) {
 					console.error(`Failed to refresh capabilities for ${serverName}:`, error)
@@ -1682,7 +1718,7 @@ export class McpHub {
 			timeout = 60 * 1000
 		}
 
-		return (await connection.client.request(
+		return await connection.client.request(
 			{
 				method: "tools/call",
 				params: {
@@ -1694,7 +1730,7 @@ export class McpHub {
 			{
 				timeout,
 			},
-		)) as McpToolCallResponse
+		)
 	}
 
 	/**
