@@ -147,7 +147,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								error: errorMsg,
 								xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 							})
-							await handleError(`reading file ${relPath}`, new Error(errorMsg))
+							await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
 							hasRangeError = true
 							break
 						}
@@ -158,7 +158,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								error: errorMsg,
 								xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 							})
-							await handleError(`reading file ${relPath}`, new Error(errorMsg))
+							await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
 							hasRangeError = true
 							break
 						}
@@ -363,10 +363,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 									error: `Error reading image file: ${errorMsg}`,
 									xmlContent: `<file><path>${relPath}</path><error>Error reading image file: ${errorMsg}</error></file>`,
 								})
-								await handleError(
-									`reading image file ${relPath}`,
-									error instanceof Error ? error : new Error(errorMsg),
-								)
+								await task.say("error", `Error reading image file ${relPath}: ${errorMsg}`)
 								continue
 							}
 						}
@@ -498,7 +495,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						error: `Error reading file: ${errorMsg}`,
 						xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
 					})
-					await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+					await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
 				}
 			}
 
@@ -570,7 +567,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				})
 			}
 
-			await handleError(`reading file ${relPath}`, error instanceof Error ? error : new Error(errorMsg))
+			await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
 
 			const xmlResults = fileResults.filter((result) => result.xmlContent).map((result) => result.xmlContent)
 
