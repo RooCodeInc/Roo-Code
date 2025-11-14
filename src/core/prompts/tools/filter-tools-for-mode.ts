@@ -1,8 +1,9 @@
 import type OpenAI from "openai"
-import type { ModeConfig, ToolName } from "@roo-code/types"
-import { getModeBySlug, getGroupName, isToolAllowedForMode } from "../../../shared/modes"
+import type { ModeConfig, ToolName, ToolGroup } from "@roo-code/types"
+import { getModeBySlug, getToolsForMode, isToolAllowedForMode } from "../../../shared/modes"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
+import type { CodeIndexManager } from "../../../services/code-index/manager"
 
 /**
  * Filters native tools based on mode restrictions.
@@ -12,6 +13,8 @@ import { defaultModeSlug } from "../../../shared/modes"
  * @param mode - Current mode slug
  * @param customModes - Custom mode configurations
  * @param experiments - Experiment flags
+ * @param codeIndexManager - Code index manager for codebase_search feature check
+ * @param settings - Additional settings for tool filtering
  * @returns Filtered array of tools allowed for the mode
  */
 export function filterNativeToolsForMode(
@@ -19,38 +22,57 @@ export function filterNativeToolsForMode(
 	mode: string | undefined,
 	customModes: ModeConfig[] | undefined,
 	experiments: Record<string, boolean> | undefined,
+	codeIndexManager?: CodeIndexManager,
+	settings?: Record<string, any>,
 ): OpenAI.Chat.ChatCompletionTool[] {
-	// Get mode configuration and build set of allowed tools
+	// Get mode configuration and all tools for this mode
 	const modeSlug = mode ?? defaultModeSlug
 	const modeConfig = getModeBySlug(modeSlug, customModes)
-	const allowedToolNames = new Set<string>()
 
-	// Add tools from mode's groups that pass permission checks
-	if (modeConfig) {
-		modeConfig.groups.forEach((groupEntry) => {
-			const groupName = getGroupName(groupEntry)
-			const toolGroup = TOOL_GROUPS[groupName]
-			if (toolGroup) {
-				toolGroup.tools.forEach((tool) => {
-					if (
-						isToolAllowedForMode(
-							tool as ToolName,
-							modeSlug,
-							customModes ?? [],
-							undefined,
-							undefined,
-							experiments ?? {},
-						)
-					) {
-						allowedToolNames.add(tool)
-					}
-				})
-			}
-		})
+	// Get all tools for this mode (including always-available tools)
+	const allToolsForMode = modeConfig ? getToolsForMode(modeConfig.groups) : []
+
+	// Filter to only tools that pass permission checks
+	const allowedToolNames = new Set(
+		allToolsForMode.filter((tool) =>
+			isToolAllowedForMode(
+				tool as ToolName,
+				modeSlug,
+				customModes ?? [],
+				undefined,
+				undefined,
+				experiments ?? {},
+			),
+		),
+	)
+
+	// Conditionally exclude codebase_search if feature is disabled or not configured
+	if (
+		!codeIndexManager ||
+		!(codeIndexManager.isFeatureEnabled && codeIndexManager.isFeatureConfigured && codeIndexManager.isInitialized)
+	) {
+		allowedToolNames.delete("codebase_search")
 	}
 
-	// Add always-available tools
-	ALWAYS_AVAILABLE_TOOLS.forEach((tool) => allowedToolNames.add(tool))
+	// Conditionally exclude update_todo_list if disabled in settings
+	if (settings?.todoListEnabled === false) {
+		allowedToolNames.delete("update_todo_list")
+	}
+
+	// Conditionally exclude generate_image if experiment is not enabled
+	if (!experiments?.imageGeneration) {
+		allowedToolNames.delete("generate_image")
+	}
+
+	// Conditionally exclude run_slash_command if experiment is not enabled
+	if (!experiments?.runSlashCommand) {
+		allowedToolNames.delete("run_slash_command")
+	}
+
+	// Conditionally exclude browser_action if disabled in settings
+	if (settings?.browserToolEnabled === false) {
+		allowedToolNames.delete("browser_action")
+	}
 
 	// Filter native tools based on allowed tool names
 	return nativeTools.filter((tool) => {
@@ -60,6 +82,90 @@ export function filterNativeToolsForMode(
 		}
 		return false
 	})
+}
+
+/**
+ * Checks if a specific tool is allowed in the current mode.
+ * This is useful for dynamically filtering system prompt content.
+ *
+ * @param toolName - Name of the tool to check
+ * @param mode - Current mode slug
+ * @param customModes - Custom mode configurations
+ * @param experiments - Experiment flags
+ * @param codeIndexManager - Code index manager for codebase_search feature check
+ * @param settings - Additional settings for tool filtering
+ * @returns true if the tool is allowed in the mode, false otherwise
+ */
+export function isToolAllowedInMode(
+	toolName: ToolName,
+	mode: string | undefined,
+	customModes: ModeConfig[] | undefined,
+	experiments: Record<string, boolean> | undefined,
+	codeIndexManager?: CodeIndexManager,
+	settings?: Record<string, any>,
+): boolean {
+	const modeSlug = mode ?? defaultModeSlug
+
+	// Check if it's an always-available tool
+	if (ALWAYS_AVAILABLE_TOOLS.includes(toolName)) {
+		// But still check for conditional exclusions
+		if (toolName === "codebase_search") {
+			return !!(
+				codeIndexManager &&
+				codeIndexManager.isFeatureEnabled &&
+				codeIndexManager.isFeatureConfigured &&
+				codeIndexManager.isInitialized
+			)
+		}
+		if (toolName === "update_todo_list") {
+			return settings?.todoListEnabled !== false
+		}
+		if (toolName === "generate_image") {
+			return experiments?.imageGeneration === true
+		}
+		if (toolName === "run_slash_command") {
+			return experiments?.runSlashCommand === true
+		}
+		return true
+	}
+
+	// Check for browser_action being disabled by user settings
+	if (toolName === "browser_action" && settings?.browserToolEnabled === false) {
+		return false
+	}
+
+	// Check if the tool is allowed by the mode's groups
+	return isToolAllowedForMode(toolName, modeSlug, customModes ?? [], undefined, undefined, experiments ?? {})
+}
+
+/**
+ * Gets the list of available tools from a specific tool group for the current mode.
+ * This is useful for dynamically building system prompt content based on available tools.
+ *
+ * @param groupName - Name of the tool group to check
+ * @param mode - Current mode slug
+ * @param customModes - Custom mode configurations
+ * @param experiments - Experiment flags
+ * @param codeIndexManager - Code index manager for codebase_search feature check
+ * @param settings - Additional settings for tool filtering
+ * @returns Array of tool names that are available from the group
+ */
+export function getAvailableToolsInGroup(
+	groupName: ToolGroup,
+	mode: string | undefined,
+	customModes: ModeConfig[] | undefined,
+	experiments: Record<string, boolean> | undefined,
+	codeIndexManager?: CodeIndexManager,
+	settings?: Record<string, any>,
+): ToolName[] {
+	const toolGroup = TOOL_GROUPS[groupName]
+	if (!toolGroup) {
+		return []
+	}
+
+	return toolGroup.tools.filter((tool) =>
+		isToolAllowedInMode(tool as ToolName, mode, customModes, experiments, codeIndexManager, settings),
+	) as ToolName[]
 }
 
 /**

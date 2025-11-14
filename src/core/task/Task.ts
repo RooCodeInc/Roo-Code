@@ -2700,6 +2700,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				{
 					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+					browserToolEnabled: browserToolEnabled ?? true,
 					useAgentRules:
 						vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
 					newTaskRequireTodos: vscode.workspace
@@ -2951,12 +2952,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const provider = this.providerRef.deref()
 			const mcpHub = provider?.getMcpHub()
 
+			// Get CodeIndexManager for feature checking
+			const { CodeIndexManager } = await import("../../services/code-index/manager")
+			const codeIndexManager = CodeIndexManager.getInstance(provider!.context, this.cwd)
+
+			// Build settings object for tool filtering
+			// Include browserToolEnabled to filter browser_action when disabled by user
+			const filterSettings = {
+				todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
+				browserToolEnabled: state?.browserToolEnabled ?? true,
+			}
+
 			// Filter native tools based on mode restrictions (similar to XML tool filtering)
 			const filteredNativeTools = filterNativeToolsForMode(
 				nativeTools,
 				mode,
 				state?.customModes,
 				state?.experiments,
+				codeIndexManager,
+				filterSettings,
 			)
 
 			// Filter MCP tools based on mode restrictions
