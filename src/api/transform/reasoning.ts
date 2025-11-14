@@ -52,9 +52,14 @@ export const getRooReasoning = ({
 	// Check if model supports reasoning effort
 	if (!model.supportsReasoningEffort) return undefined
 
-	// If disabled via toggle or explicit "disable"
-	if (settings.enableReasoningEffort === false || reasoningEffort === "disable") {
+	// If disabled via toggle, send explicit disabled flag for back-compat
+	if (settings.enableReasoningEffort === false) {
 		return { enabled: false }
+	}
+
+	// If the selection is "disable", omit the field entirely (no reasoning param)
+	if (reasoningEffort === "disable") {
+		return undefined
 	}
 
 	// When an effort is provided (including "none" and "minimal"), enable with effort

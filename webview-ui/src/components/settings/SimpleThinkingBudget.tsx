@@ -110,7 +110,7 @@ export const SimpleThinkingBudget = ({
 				value={normalizedCurrent}
 				onValueChange={(value: ReasoningSelectValue) => {
 					if (value === "disable") {
-						setApiConfigurationField("enableReasoningEffort", false, true)
+						// Do not flip enableReasoningEffort; selecting "disable" should omit the reasoning param.
 						setApiConfigurationField("reasoningEffort", "disable" as any, true)
 					} else {
 						setApiConfigurationField("enableReasoningEffort", true, true)
