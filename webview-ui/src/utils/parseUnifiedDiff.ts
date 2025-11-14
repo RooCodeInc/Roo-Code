@@ -1,4 +1,4 @@
-import { parsePatch } from "diff"
+import { parsePatch, type DiffHunk } from "diff"
 
 export interface DiffLine {
 	oldLineNum: number | null
@@ -21,8 +21,8 @@ export function parseUnifiedDiff(source: string, filePath?: string): DiffLine[] 
 		if (!patches || patches.length === 0) return []
 
 		const patch = filePath
-			? (patches.find((p) =>
-					[p.newFileName, p.oldFileName].some(
+			? (patches.find((patchEntry) =>
+					[patchEntry.newFileName, patchEntry.oldFileName].some(
 						(n) => typeof n === "string" && (n === filePath || (n as string).endsWith("/" + filePath)),
 					),
 				) ?? patches[0])
@@ -31,8 +31,8 @@ export function parseUnifiedDiff(source: string, filePath?: string): DiffLine[] 
 		if (!patch) return []
 
 		const lines: DiffLine[] = []
-		let prevHunk: any = null
-		for (const hunk of (patch as any).hunks || []) {
+		let prevHunk: DiffHunk | null = null
+		for (const hunk of patch.hunks ?? []) {
 			// Insert a compact "hidden lines" separator between hunks
 			if (prevHunk) {
 				const gapNew = hunk.newStart - (prevHunk.newStart + prevHunk.newLines)
@@ -53,8 +53,8 @@ export function parseUnifiedDiff(source: string, filePath?: string): DiffLine[] 
 			let newLine = hunk.newStart
 
 			for (const raw of hunk.lines || []) {
-				const firstChar = (raw as string)[0]
-				const content = (raw as string).slice(1)
+				const firstChar = raw[0] ?? ""
+				const content = raw.slice(1)
 
 				if (firstChar === "-") {
 					lines.push({
