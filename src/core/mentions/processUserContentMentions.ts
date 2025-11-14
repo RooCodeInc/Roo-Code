@@ -30,7 +30,7 @@ export async function processUserContentMentions({
 	// Process userContent array, which contains various block types:
 	// TextBlockParam, ImageBlockParam, ToolUseBlockParam, and ToolResultBlockParam.
 	// We need to apply parseMentions() to:
-	// 1. All TextBlockParam's text (first user message with task)
+	// 1. All TextBlockParam's text (first user message with feedback)
 	// 2. ToolResultBlockParam's content/context text arrays if it contains
 	// "<feedback>" (see formatToolDeniedFeedback, attemptCompletion,
 	// executeCommand, and consecutiveMistakeCount >= 3) or "<answer>"
@@ -40,10 +40,7 @@ export async function processUserContentMentions({
 	return Promise.all(
 		userContent.map(async (block) => {
 			const shouldProcessMentions = (text: string) =>
-				text.includes("<task>") ||
-				text.includes("<feedback>") ||
-				text.includes("<answer>") ||
-				text.includes("<user_message>")
+				text.includes("<feedback>") || text.includes("<answer>") || text.includes("<user_message>")
 
 			if (block.type === "text") {
 				if (shouldProcessMentions(block.text)) {
