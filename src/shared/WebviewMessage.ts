@@ -159,6 +159,7 @@ export interface WebviewMessage {
 		| "fetchZgsmQuotaInfo"
 		| "fetchZgsmInviteCode"
 		| "fixCodebase"
+		| "zgsmFollowupClearTimeout"
 		// zgsm
 		| "shareTaskSuccess"
 		| "exportMode"

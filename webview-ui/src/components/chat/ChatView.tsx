@@ -183,8 +183,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			ttl: 1000 * 60 * 5,
 		}),
 	)
-	const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const userRespondedRef = useRef<boolean>(false)
+	// const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const followUpAutoApproveTimeoutRef = useRef<number | undefined>()
+	// const userRespondedRef = useRef<boolean>(false)
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
 
 	const clineAskRef = useRef(clineAsk)
@@ -265,7 +266,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			switch (lastMessage.type) {
 				case "ask":
 					// Reset user response flag when a new ask arrives to allow auto-approval
-					userRespondedRef.current = false
+					// userRespondedRef.current = false
 					const isPartial = lastMessage.partial === true
 					switch (lastMessage.ask) {
 						case "api_req_failed":
@@ -436,12 +437,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// Note: sendingDisabled is not reset here as it's managed by message effects
 
 		// Clear any pending auto-approval timeout from previous task
-		if (autoApproveTimeoutRef.current) {
-			clearTimeout(autoApproveTimeoutRef.current)
-			autoApproveTimeoutRef.current = null
-		}
+		// if (autoApproveTimeoutRef.current) {
+		// 	clearTimeout(autoApproveTimeoutRef.current)
+		// 	autoApproveTimeoutRef.current = null
+		// }
 		// Reset user response flag for new task
-		userRespondedRef.current = false
+		// userRespondedRef.current = false
 	}, [task?.ts])
 
 	useEffect(() => {
@@ -530,12 +531,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const handleChatReset = useCallback(() => {
 		// Clear any pending auto-approval timeout
-		if (autoApproveTimeoutRef.current) {
-			clearTimeout(autoApproveTimeoutRef.current)
-			autoApproveTimeoutRef.current = null
-		}
+		// if (autoApproveTimeoutRef.current) {
+		// 	clearTimeout(autoApproveTimeoutRef.current)
+		// 	autoApproveTimeoutRef.current = null
+		// }
 		// Reset user response flag for new message
-		userRespondedRef.current = false
+		// userRespondedRef.current = false
 
 		// Only reset message-specific state, preserving mode.
 		setInputValue("")
@@ -578,7 +579,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 
 				// Mark that user has responded - this prevents any pending auto-approvals.
-				userRespondedRef.current = true
+				// userRespondedRef.current = true
 
 				if (messagesRef.current.length === 0) {
 					vscode.postMessage({ type: "newTask", text, images, values: { chatType } })
@@ -664,7 +665,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handlePrimaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
-			userRespondedRef.current = true
+			// userRespondedRef.current = true
 
 			const trimmedInput = text?.trim()
 
@@ -714,7 +715,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSecondaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
-			userRespondedRef.current = true
+			// userRespondedRef.current = true
 
 			const trimmedInput = text?.trim()
 
@@ -772,6 +773,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			const message: ExtensionMessage = e.data
 
 			switch (message.type) {
+				case "zgsmFollowupClearTimeout": {
+					followUpAutoApproveTimeoutRef.current = message.value
+					break
+				}
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
@@ -1223,9 +1228,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSuggestionClickInRow = useCallback(
 		(suggestion: SuggestionItem, event?: React.MouseEvent) => {
 			// Mark that user has responded if this is a manual click (not auto-approval)
-			if (event) {
-				userRespondedRef.current = true
-			}
+			// if (event) {
+			// 	userRespondedRef.current = true
+			// }
 
 			// Mark the current follow-up question as answered when a suggestion is clicked
 			if (clineAsk === "followup" && !event?.shiftKey) {
@@ -1267,7 +1272,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// Handler for when FollowUpSuggest component unmounts
 	const handleFollowUpUnmount = useCallback(() => {
 		// Mark that user has responded
-		userRespondedRef.current = true
+		// userRespondedRef.current = true
+		if (Number.isInteger(followUpAutoApproveTimeoutRef.current)) {
+			vscode.postMessage({
+				type: "zgsmFollowupClearTimeout",
+				value: followUpAutoApproveTimeoutRef.current,
+			})
+		}
+		followUpAutoApproveTimeoutRef.current = undefined
 	}, [])
 	const shouldHighlight = useCallback(
 		(messageOrGroup?: ClineMessage, searchResults: SearchResult[] = [], showSearch?: boolean) => {

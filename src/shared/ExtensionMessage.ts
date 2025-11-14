@@ -89,6 +89,7 @@ export interface ExtensionMessage {
 		| "zgsmInviteCode"
 		| "zgsmNotices"
 		| "settingsUpdated"
+		| "zgsmFollowupClearTimeout"
 		// zgsm
 		| "ollamaModels"
 		| "lmStudioModels"

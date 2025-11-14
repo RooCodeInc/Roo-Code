@@ -161,6 +161,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	todoList?: TodoItem[]
 
+	private readonly timeoutMap = new Map<number, NodeJS.Timeout>()
+	private nextTimeoutId = 0
+
 	readonly rootTask: Task | undefined = undefined
 	readonly parentTask: Task | undefined = undefined
 	readonly taskNumber: number
@@ -855,8 +858,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
-		let timeouts: NodeJS.Timeout[] = []
-
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
@@ -867,12 +868,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else if (approval.decision === "deny") {
 			this.denyAsk()
 		} else if (approval.decision === "timeout") {
-			timeouts.push(
-				setTimeout(() => {
-					const { askResponse, text, images } = approval.fn()
-					this.handleWebviewAskResponse(askResponse, text, images)
-				}, approval.timeout),
-			)
+			const timeoutId = this.nextTimeoutId++
+
+			const timer = setTimeout(() => {
+				const { askResponse, text, images } = approval.fn()
+				this.handleWebviewAskResponse(askResponse, text, images)
+				this.timeoutMap.delete(timeoutId)
+			}, approval.timeout)
+
+			this.timeoutMap.set(timeoutId, timer)
+
+			if (approval.askType === "followup") {
+				provider?.postMessageToWebview({
+					type: "zgsmFollowupClearTimeout",
+					value: timeoutId,
+				})
+			}
 		}
 
 		// The state is mutable if the message is complete and the task will
@@ -891,39 +902,45 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const statusMutationTimeout = 2_000
 
 			if (isInteractiveAsk(type)) {
-				timeouts.push(
-					setTimeout(() => {
-						const message = this.findMessageByTimestamp(askTs)
+				const timeoutId = this.nextTimeoutId++
+				const timer = setTimeout(() => {
+					const message = this.findMessageByTimestamp(askTs)
 
-						if (message) {
-							this.interactiveAsk = message
-							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
-							provider?.postMessageToWebview({ type: "interactionRequired" })
-						}
-					}, statusMutationTimeout),
-				)
+					if (message) {
+						this.interactiveAsk = message
+						this.emit(RooCodeEventName.TaskInteractive, this.taskId)
+						provider?.postMessageToWebview({ type: "interactionRequired" })
+					}
+					this.timeoutMap.delete(timeoutId)
+				}, statusMutationTimeout)
+
+				this.timeoutMap.set(timeoutId, timer)
 			} else if (isResumableAsk(type)) {
-				timeouts.push(
-					setTimeout(() => {
-						const message = this.findMessageByTimestamp(askTs)
+				const timeoutId = this.nextTimeoutId++
+				const timer = setTimeout(() => {
+					const message = this.findMessageByTimestamp(askTs)
 
-						if (message) {
-							this.resumableAsk = message
-							this.emit(RooCodeEventName.TaskResumable, this.taskId)
-						}
-					}, statusMutationTimeout),
-				)
+					if (message) {
+						this.resumableAsk = message
+						this.emit(RooCodeEventName.TaskResumable, this.taskId)
+					}
+					this.timeoutMap.delete(timeoutId)
+				}, statusMutationTimeout)
+
+				this.timeoutMap.set(timeoutId, timer)
 			} else if (isIdleAsk(type)) {
-				timeouts.push(
-					setTimeout(() => {
-						const message = this.findMessageByTimestamp(askTs)
+				const timeoutId = this.nextTimeoutId++
+				const timer = setTimeout(() => {
+					const message = this.findMessageByTimestamp(askTs)
 
-						if (message) {
-							this.idleAsk = message
-							this.emit(RooCodeEventName.TaskIdle, this.taskId)
-						}
-					}, statusMutationTimeout),
-				)
+					if (message) {
+						this.idleAsk = message
+						this.emit(RooCodeEventName.TaskIdle, this.taskId)
+					}
+					this.timeoutMap.delete(timeoutId)
+				}, statusMutationTimeout)
+
+				this.timeoutMap.set(timeoutId, timer)
 			}
 		} else if (isMessageQueued) {
 			console.log(`Task#ask: will process message queue -> type: ${type}`)
@@ -931,7 +948,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
-				// Check if this is a tool approval ask that needs to be handled.
+				// Check if this is a tool approval ask Pthat needs to be handled.
 				if (
 					type === "tool" ||
 					type === "command" ||
@@ -971,7 +988,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponseImages = undefined
 
 		// Cancel the timeouts if they are still running.
-		timeouts.forEach((timeout) => clearTimeout(timeout))
+		this.clearAllAutoApprovalTimeouts()
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {
@@ -983,6 +1000,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.emit(RooCodeEventName.TaskAskResponded)
 		return result
+	}
+
+	public clearAutoApprovalTimeout(timeoutId: number): boolean {
+		const timer = this.timeoutMap.get(timeoutId)
+		if (timer) {
+			clearTimeout(timer)
+			this.timeoutMap.delete(timeoutId)
+			return true
+		}
+		return false
+	}
+
+	public clearAllAutoApprovalTimeouts(): void {
+		for (const [timeoutId, timer] of this.timeoutMap) {
+			clearTimeout(timer)
+		}
+		this.timeoutMap.clear()
 	}
 
 	public setMessageResponse(text: string, images?: string[]) {

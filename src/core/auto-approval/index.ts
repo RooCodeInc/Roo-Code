@@ -38,6 +38,7 @@ export type CheckAutoApprovalResult =
 	| {
 			decision: "timeout"
 			timeout: number
+			askType?: string
 			fn: () => { askResponse: ClineAskResponse; text?: string; images?: string[] }
 	  }
 
@@ -73,6 +74,7 @@ export async function checkAutoApproval({
 					return {
 						decision: "timeout",
 						timeout: state.followupAutoApproveTimeoutMs,
+						askType: ask,
 						fn: () => ({ askResponse: "messageResponse", text: suggestion.answer }),
 					}
 				} else {

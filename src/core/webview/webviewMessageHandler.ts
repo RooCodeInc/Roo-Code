@@ -3116,6 +3116,16 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "zgsmFollowupClearTimeout": {
+			const currentTask = provider?.getCurrentTask()
+			if (currentTask && typeof message.value === "number") {
+				const cleared = currentTask.clearAutoApprovalTimeout(message.value)
+				if (!cleared) {
+					provider?.log(`Failed to clear timeout with ID: ${message.value}`, "info")
+				}
+			}
+			break
+		}
 		case "zgsmRebuildCodebaseIndex": {
 			try {
 				const { apiConfiguration } = await provider.getState()
