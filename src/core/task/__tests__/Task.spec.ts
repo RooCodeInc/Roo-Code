@@ -895,7 +895,7 @@ describe("Cline", () => {
 						} as const,
 						{
 							type: "text",
-							text: "<feedback>Text with 'some/path' (see below for file content) in task tags</feedback>",
+							text: "<task>Text with 'some/path' (see below for file content) in task tags</task>",
 						} as const,
 						{
 							type: "tool_result",
@@ -934,7 +934,7 @@ describe("Cline", () => {
 					// Text within task tags should be processed
 					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain("processed:")
 					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain(
-						"<feedback>Text with 'some/path' (see below for file content) in task tags</feedback>",
+						"<task>Text with 'some/path' (see below for file content) in task tags</task>",
 					)
 
 					// Feedback tag content should be processed

@@ -31,7 +31,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Read file with limit</feedback>",
+					text: "<task>Read file with limit</task>",
 				},
 			]
 
@@ -45,7 +45,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
-				"<feedback>Read file with limit</feedback>",
+				"<task>Read file with limit</task>",
 				"/test",
 				mockUrlContentFetcher,
 				mockFileContextTracker,
@@ -61,7 +61,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Read file without limit</feedback>",
+					text: "<task>Read file without limit</task>",
 				},
 			]
 
@@ -74,7 +74,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
-				"<feedback>Read file without limit</feedback>",
+				"<task>Read file without limit</task>",
 				"/test",
 				mockUrlContentFetcher,
 				mockFileContextTracker,
@@ -90,7 +90,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Read unlimited lines</feedback>",
+					text: "<task>Read unlimited lines</task>",
 				},
 			]
 
@@ -104,7 +104,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
-				"<feedback>Read unlimited lines</feedback>",
+				"<task>Read unlimited lines</task>",
 				"/test",
 				mockUrlContentFetcher,
 				mockFileContextTracker,
@@ -118,11 +118,11 @@ describe("processUserContentMentions", () => {
 	})
 
 	describe("content processing", () => {
-		it("should process text blocks with <feedback> tags", async () => {
+		it("should process text blocks with <task> tags", async () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Do something</feedback>",
+					text: "<task>Do something</task>",
 				},
 			]
 
@@ -136,7 +136,7 @@ describe("processUserContentMentions", () => {
 			expect(parseMentions).toHaveBeenCalled()
 			expect(result[0]).toEqual({
 				type: "text",
-				text: "parsed: <feedback>Do something</feedback>",
+				text: "parsed: <task>Do something</task>",
 			})
 		})
 
@@ -213,7 +213,7 @@ describe("processUserContentMentions", () => {
 					content: [
 						{
 							type: "text" as const,
-							text: "<feedback>Array task</feedback>",
+							text: "<task>Array task</task>",
 						},
 						{
 							type: "text" as const,
@@ -237,7 +237,7 @@ describe("processUserContentMentions", () => {
 				content: [
 					{
 						type: "text",
-						text: "parsed: <feedback>Array task</feedback>",
+						text: "parsed: <task>Array task</task>",
 					},
 					{
 						type: "text",
@@ -251,7 +251,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>First task</feedback>",
+					text: "<task>First task</task>",
 				},
 				{
 					type: "image" as const,
@@ -280,7 +280,7 @@ describe("processUserContentMentions", () => {
 			expect(result).toHaveLength(3)
 			expect(result[0]).toEqual({
 				type: "text",
-				text: "parsed: <feedback>First task</feedback>",
+				text: "parsed: <task>First task</task>",
 			})
 			expect(result[1]).toEqual(userContent[1]) // Image block unchanged
 			expect(result[2]).toEqual({
@@ -296,7 +296,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Test default</feedback>",
+					text: "<task>Test default</task>",
 				},
 			]
 
@@ -308,7 +308,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
-				"<feedback>Test default</feedback>",
+				"<task>Test default</task>",
 				"/test",
 				mockUrlContentFetcher,
 				mockFileContextTracker,
@@ -324,7 +324,7 @@ describe("processUserContentMentions", () => {
 			const userContent = [
 				{
 					type: "text" as const,
-					text: "<feedback>Test explicit false</feedback>",
+					text: "<task>Test explicit false</task>",
 				},
 			]
 
@@ -337,7 +337,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledWith(
-				"<feedback>Test explicit false</feedback>",
+				"<task>Test explicit false</task>",
 				"/test",
 				mockUrlContentFetcher,
 				mockFileContextTracker,
