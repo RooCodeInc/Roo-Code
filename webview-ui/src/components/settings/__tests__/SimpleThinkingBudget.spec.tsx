@@ -10,7 +10,6 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			const translations: Record<string, string> = {
 				"settings:providers.reasoningEffort.label": "Model Reasoning Effort",
 				"settings:providers.reasoningEffort.none": "None",
-				"settings:providers.reasoningEffort.minimal": "Minimal",
 				"settings:providers.reasoningEffort.low": "Low",
 				"settings:providers.reasoningEffort.medium": "Medium",
 				"settings:providers.reasoningEffort.high": "High",
@@ -190,7 +189,7 @@ describe("SimpleThinkingBudget", () => {
 			/>,
 		)
 
-		expect(screen.getByText("Select")).toBeInTheDocument()
+		expect(screen.getByText("None")).toBeInTheDocument()
 	})
 
 	it("should use model default reasoning effort when required and available", () => {

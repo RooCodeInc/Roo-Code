@@ -52,23 +52,34 @@ export const getRooReasoning = ({
 	// Check if model supports reasoning effort
 	if (!model.supportsReasoningEffort) return undefined
 
-	// If disabled via toggle, send explicit disabled flag for back-compat
+	// Explicit off switch from settings: always send disabled for back-compat and to
+	// prevent automatic reasoning when the toggle is turned off.
 	if (settings.enableReasoningEffort === false) {
 		return { enabled: false }
 	}
 
-	// If the selection is "disable", omit the field entirely (no reasoning param)
+	// For Roo models that support reasoning effort, absence of a selection should be
+	// treated as an explicit "off" signal so that the backend does not auto-enable
+	// reasoning. This aligns with the default behavior in tests.
+	if (!reasoningEffort) {
+		return { enabled: false }
+	}
+
+	// "disable" is a legacy sentinel that means "omit the reasoning field entirely"
+	// and let the server decide any defaults.
 	if (reasoningEffort === "disable") {
 		return undefined
 	}
 
-	// When an effort is provided (including "none" and "minimal"), enable with effort
-	if (reasoningEffort) {
-		return { enabled: true, effort: reasoningEffort as ReasoningEffortExtended }
+	// For Roo, "minimal" is treated as "none" for effort-based reasoning – we omit
+	// the reasoning field entirely instead of sending an explicit effort.
+	if (reasoningEffort === "minimal") {
+		return undefined
 	}
 
-	// No explicit selection -> omit field
-	return undefined
+	// When an effort is provided (e.g. "low" | "medium" | "high" | "none"), enable
+	// with the selected effort.
+	return { enabled: true, effort: reasoningEffort as ReasoningEffortExtended }
 }
 
 export const getAnthropicReasoning = ({

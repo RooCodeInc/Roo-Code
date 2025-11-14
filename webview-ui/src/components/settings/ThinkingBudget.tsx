@@ -1,3 +1,37 @@
+/*
+Semantics for Reasoning Effort (ThinkingBudget)
+
+Capability surface:
+- modelInfo.supportsReasoningEffort: boolean | Array&lt;"disable" | "none" | "minimal" | "low" | "medium" | "high"&gt;
+  - true  → UI shows ["low","medium","high"]
+  - array → UI shows exactly the provided values
+
+Selection behavior:
+- "disable":
+  - Label: t("settings:providers.reasoningEffort.none")
+  - set enableReasoningEffort = false
+  - persist reasoningEffort = "disable"
+  - request builders omit any reasoning parameter/body sections
+- "none":
+  - Label: t("settings:providers.reasoningEffort.none")
+  - set enableReasoningEffort = true
+  - persist reasoningEffort = "none"
+  - request builders include reasoning with value "none"
+- "minimal" | "low" | "medium" | "high":
+  - set enableReasoningEffort = true
+  - persist the selected value
+  - request builders include reasoning with the selected effort
+
+Required:
+- If modelInfo.requiredReasoningEffort is true, do not synthesize a "None" choice. Only show values from the capability.
+- On mount, if unset and a default exists, set enableReasoningEffort = true and use modelInfo.reasoningEffort.
+
+Notes:
+- Current selection is normalized to the capability: unsupported persisted values are not shown.
+- Both "disable" and "none" display as the "None" label per UX, but are wired differently as above.
+- "minimal" uses t("settings:providers.reasoningEffort.minimal").
+*/
+
 import { useEffect } from "react"
 import { Checkbox } from "vscrui"
 
