@@ -31,6 +31,11 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Tab, TabContent, TabHeader } from "@src/components/common/Tab"
 import {
 	Button,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -65,7 +70,15 @@ function getGroupName(group: GroupEntry): ToolGroup {
 const ModesView = ({ onDone }: ModesViewProps) => {
 	const { t } = useAppTranslation()
 
-	const { customModePrompts, mode, customInstructions, setCustomInstructions, customModes } = useExtensionState()
+	const {
+		customModePrompts,
+		listApiConfigMeta,
+		currentApiConfigName,
+		mode,
+		customInstructions,
+		setCustomInstructions,
+		customModes,
+	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
 	// This prevents flickering when switching modes rapidly by:
@@ -896,6 +909,35 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</StandardTooltip>
 							</>
 						)}
+					</div>
+
+					{/* API Configuration - Moved Here */}
+					<div className="mb-3">
+						<div className="font-bold mb-1">{t("prompts:apiConfiguration.title")}</div>
+						<div className="text-sm text-vscode-descriptionForeground mb-2">
+							{t("prompts:apiConfiguration.select")}
+						</div>
+						<div className="mb-2">
+							<Select
+								value={currentApiConfigName}
+								onValueChange={(value) => {
+									vscode.postMessage({
+										type: "loadApiConfiguration",
+										text: value,
+									})
+								}}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder={t("settings:common.select")} />
+								</SelectTrigger>
+								<SelectContent>
+									{(listApiConfigMeta || []).map((config) => (
+										<SelectItem key={config.id} value={config.name}>
+											{config.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 				</div>
 
