@@ -60,6 +60,7 @@ export const globalSettingsSchema = z.object({
 	customInstructions: z.string().optional(),
 	taskHistory: z.array(historyItemSchema).optional(),
 	dismissedUpsells: z.array(z.string()).optional(),
+	clickedOnceNotices: z.array(z.number()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
 	openRouterImageApiKey: z.string().optional(),

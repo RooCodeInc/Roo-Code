@@ -507,28 +507,30 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 					)
 				: // Only show error UI for non-disabled servers
 					!server.disabled && (
-						<div
-							style={{
-								fontSize: "13px",
-								background: "var(--vscode-textCodeBlock-background)",
-								borderRadius: "0 0 4px 4px",
-								width: "100%",
-							}}>
+						<>
 							<div
 								style={{
-									color: "var(--vscode-testing-iconFailed)",
-									marginBottom: "8px",
-									padding: "0 10px",
-									overflowWrap: "break-word",
-									wordBreak: "break-word",
+									fontSize: "13px",
+									background: "var(--vscode-textCodeBlock-background)",
+									borderRadius: "0 0 4px 4px",
+									width: "100%",
 								}}>
-								{server.error &&
-									server.error.split("\n").map((item, index) => (
-										<React.Fragment key={index}>
-											{index > 0 && <br />}
-											{item}
-										</React.Fragment>
-									))}
+								<div
+									style={{
+										color: "var(--vscode-testing-iconFailed)",
+										marginBottom: "8px",
+										padding: "0 10px",
+										overflowWrap: "break-word",
+										wordBreak: "break-word",
+									}}>
+									{server.error &&
+										server.error.split("\n").map((item, index) => (
+											<React.Fragment key={index}>
+												{index > 0 && <br />}
+												{item}
+											</React.Fragment>
+										))}
+								</div>
 							</div>
 							<Button
 								variant="secondary"
@@ -539,7 +541,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 									? t("mcp:serverStatus.retrying")
 									: t("mcp:serverStatus.retryConnection")}
 							</Button>
-						</div>
+						</>
 					)}
 
 			{/* Delete Confirmation Dialog */}

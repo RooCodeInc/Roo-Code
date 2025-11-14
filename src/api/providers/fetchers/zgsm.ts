@@ -71,7 +71,7 @@ export async function fetchZgsmQuotaInfo(baseUrl?: string, apiKey?: string): Pro
 
 		return response?.data?.data as QuotaInfo
 	} catch (error) {
-		console.warn(`Error fetching zgsmModels from [${baseUrl}/quota-manager/api/v1/quota]:`, error.message)
+		console.warn(`Error fetching ZgsmQuotaInfo from [${baseUrl}/quota-manager/api/v1/quota]:`, error.message)
 		return null
 	}
 }
@@ -104,7 +104,7 @@ export async function fetchZgsmInviteCode(baseUrl?: string, apiKey?: string): Pr
 
 		return response?.data?.data as InviteCodeInfo
 	} catch (error) {
-		console.warn(`Error fetching zgsmModels from [${baseUrl}/quota-manager/api/v1/quota]:`, error.message)
+		console.warn(`Error fetching ZgsmInviteCode from [${baseUrl}/quota-manager/api/v1/quota]:`, error.message)
 		return null
 	}
 }

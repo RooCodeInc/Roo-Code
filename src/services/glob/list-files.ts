@@ -660,7 +660,7 @@ async function execRipgrep(rgPath: string, args: string[], limit: number): Promi
 			rgProcess.kill()
 			console.warn("ripgrep timed out, returning partial results")
 			resolve(results.slice(0, limit))
-		}, 10_000)
+		}, 15_000)
 
 		// Process stdout data as it comes in
 		rgProcess.stdout.on("data", (data) => {

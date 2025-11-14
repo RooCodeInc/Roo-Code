@@ -149,6 +149,21 @@ export class CodeReviewService {
 	}
 
 	/**
+	 * Check if API provider supports code review
+	 *
+	 * @returns boolean - true if provider supports code review, false otherwise
+	 */
+	async checkApiProviderSupport(): Promise<boolean> {
+		const provider = this.getProvider()!
+		const { apiConfiguration } = await provider.getState()
+		if (apiConfiguration.apiProvider !== "zgsm") {
+			vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
+			return false
+		}
+		return true
+	}
+
+	/**
 	 * Set CommentService dependency
 	 *
 	 * @param commentService - CommentService instance or null
@@ -191,11 +206,6 @@ export class CodeReviewService {
 	public async startReview(targets: ReviewTarget[]) {
 		const visibleProvider = this.getProvider()
 		if (visibleProvider) {
-			const { apiConfiguration } = await visibleProvider.getState()
-			if (apiConfiguration.apiProvider !== "zgsm") {
-				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
-				return
-			}
 			const chatMessage = targets
 				.map((item) => {
 					const { type, file_path } = item

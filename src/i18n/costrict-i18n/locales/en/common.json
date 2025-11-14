@@ -202,5 +202,8 @@
 	"history": {
 		"warn": "History task cache exceeds {{size}}, you can manually clean up history to free disk space",
 		"viewAllHistory": "View all tasks"
+	},
+	"notification": {
+		"confirm": "Confirm"
 	}
 }

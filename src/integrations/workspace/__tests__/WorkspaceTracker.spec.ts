@@ -226,7 +226,7 @@ describe("WorkspaceTracker", () => {
 		await registeredTabChangeCallback!()
 
 		// Run the debounce timer for workspaceDidReset
-		vitest.advanceTimersByTime(300)
+		vitest.advanceTimersByTime(400)
 
 		// Should clear file paths and reset workspace
 		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -315,7 +315,7 @@ describe("WorkspaceTracker", () => {
 		await registeredTabChangeCallback!()
 
 		// Advance timer
-		vitest.advanceTimersByTime(300)
+		vitest.advanceTimersByTime(400)
 
 		// Should only have one call to postMessageToWebview
 		expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -339,7 +339,7 @@ describe("WorkspaceTracker", () => {
 		workspaceTracker.dispose()
 
 		// Advance timer
-		vitest.advanceTimersByTime(300)
+		vitest.advanceTimersByTime(400)
 
 		// Should have called dispose on all disposables
 		expect(mockDispose).toHaveBeenCalled()

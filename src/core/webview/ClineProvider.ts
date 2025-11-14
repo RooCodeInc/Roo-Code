@@ -691,14 +691,13 @@ export class ClineProvider
 			return
 		}
 
-		const { customSupportPrompts, apiConfiguration } = await visibleProvider.getState()
+		const { customSupportPrompts } = await visibleProvider.getState()
 		if (promptType === "ZGSM_CODE_REVIEW") {
-			if (apiConfiguration.apiProvider !== "zgsm") {
-				vscode.window.showInformationMessage(t("common:review.tip.api_provider_not_support"))
-				return
-			}
 			const reviewInstance = CodeReviewService.getInstance()
 			reviewInstance.setProvider(visibleProvider)
+			if (!(await reviewInstance.checkApiProviderSupport())) {
+				return
+			}
 			const filePath = toRelativePath(params.filePath as string, visibleProvider.cwd)
 			const chatMessage = supportPrompt.create("ADD_TO_CONTEXT", {
 				filePath,

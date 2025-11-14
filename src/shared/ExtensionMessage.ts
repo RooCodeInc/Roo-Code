@@ -23,6 +23,7 @@ import { GitCommit } from "../utils/git"
 import { McpServer } from "./mcp"
 import { Mode } from "./modes"
 import { ModelRecord, RouterModels } from "./api"
+import { INotice } from "../core/costrict/notification/notificationService"
 
 // Command interface for frontend/backend communication
 export interface Command {
@@ -86,6 +87,7 @@ export interface ExtensionMessage {
 		| "zgsmCodebaseIndexEnabled"
 		| "zgsmQuotaInfo"
 		| "zgsmInviteCode"
+		| "zgsmNotices"
 		| "settingsUpdated"
 		// zgsm
 		| "ollamaModels"
@@ -239,6 +241,7 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	notices?: Array<INotice> // For zgsmNotices, only "always" type notices
 }
 
 export type ExtensionState = Pick<

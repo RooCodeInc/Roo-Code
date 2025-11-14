@@ -298,7 +298,7 @@ export class McpHub {
 		const timer = setTimeout(async () => {
 			this.configChangeDebounceTimers.delete(key)
 			await this.handleConfigFileChange(filePath, source)
-		}, 500) // 500ms debounce
+		}, 600) // 600ms debounce
 
 		this.configChangeDebounceTimers.set(key, timer)
 	}
@@ -650,7 +650,7 @@ export class McpHub {
 		try {
 			const client = new Client(
 				{
-					name: "Roo Code",
+					name: "CoStrict",
 					version: this.providerRef.deref()?.context.extension?.packageJSON?.version ?? "1.0.0",
 				},
 				{
@@ -1364,7 +1364,7 @@ export class McpHub {
 
 			const serverSource = connection.server.source || "global"
 			// Update the server config in the appropriate file
-			await this.updateServerConfig(serverName, { disabled }, serverSource)
+			await this.updateServerConfig(serverName, { disabled }, serverSource, connection)
 
 			// Update the connection object
 			if (connection) {
@@ -1469,6 +1469,7 @@ export class McpHub {
 		serverName: string,
 		configUpdate: Record<string, any>,
 		source: "global" | "project" = "global",
+		connection: McpConnection,
 	): Promise<void> {
 		// Determine which config file to update
 		let configPath: string
@@ -1532,6 +1533,11 @@ export class McpHub {
 		this.isProgrammaticUpdate = true
 		try {
 			await safeWriteJson(configPath, updatedConfig)
+			if (configUpdate.timeout != null && connection?.server?.config) {
+				const config = JSON.parse(connection.server.config)
+				config.timeout = configUpdate.timeout
+				connection.server.config = JSON.stringify(config)
+			}
 		} finally {
 			// Reset flag after watcher debounce period (non-blocking)
 			this.flagResetTimer = setTimeout(() => {
@@ -1554,7 +1560,7 @@ export class McpHub {
 			}
 
 			// Update the server config in the appropriate file
-			await this.updateServerConfig(serverName, { timeout }, connection.server.source || "global")
+			await this.updateServerConfig(serverName, { timeout }, connection.server.source || "global", connection)
 
 			await this.notifyWebviewOfServerChanges()
 		} catch (error) {

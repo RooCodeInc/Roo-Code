@@ -177,6 +177,9 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentTime: (value: boolean) => void
 	includeCurrentCost?: boolean
 	setIncludeCurrentCost: (value: boolean) => void
+	notices?: Array<{ title: string; type: "always" | "once"; content: string; timestamp: number; expired: number }>
+	noticesEnabled: boolean
+	setNoticesEnabled: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -327,6 +330,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
+	const [notices, setNotices] = useState<
+		Array<{ title: string; type: "always" | "once"; content: string; timestamp: number; expired: number }>
+	>([])
+	const [noticesEnabled, setNoticesEnabled] = useState(true)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -480,6 +487,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							},
 						}))
 					}
+					break
+				}
+				case "zgsmNotices": {
+					// Full replacement of notices (全量替换)
+					if (message.notices !== undefined) {
+						setNotices(message.notices)
+					}
+					break
 				}
 			}
 		},
@@ -667,6 +682,9 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentTime,
 		includeCurrentCost,
 		setIncludeCurrentCost,
+		notices,
+		noticesEnabled,
+		setNoticesEnabled,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

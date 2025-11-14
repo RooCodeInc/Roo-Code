@@ -36,6 +36,7 @@ import { StandardTooltip, Button } from "@src/components/ui"
 // import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 // import TelemetryBanner from "../common/TelemetryBanner"
+import NoticesBanner from "../common/NoticesBanner"
 import VersionIndicator from "../common/VersionIndicator"
 import HistoryPreview from "../history/HistoryPreview"
 import type { SearchResult } from "./hooks/useChatSearch"
@@ -1468,6 +1469,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}}
 				/>
 			)} */}
+			{task ? <></> : <NoticesBanner />}
 			{task ? (
 				<>
 					<TaskHeader

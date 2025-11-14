@@ -19,7 +19,7 @@ export const isDockerContainer = () => {
 }
 
 export const resetEvalsRepo = async ({ run, cwd }: { run: Run; cwd: string }) => {
-	await execa({ cwd })`git config user.name "Roo Code"`
+	await execa({ cwd })`git config user.name "CoStrict"`
 	await execa({ cwd })`git config user.email "support@roocode.com"`
 	await execa({ cwd })`git checkout -f`
 	await execa({ cwd })`git clean -fd`

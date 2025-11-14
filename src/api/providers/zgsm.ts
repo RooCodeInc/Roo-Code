@@ -43,7 +43,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	private readonly providerName = "zgsm"
 	private baseURL: string
 	private chatType?: "user" | "system"
-	private headers = {}
 	private modelInfo = {} as ModelInfo
 	private apiResponseRenderModeInfo = renderModes.fast
 	private logger: ILogger
@@ -60,10 +59,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
 
 		this.fetchModel()
-		this.headers = {
-			...COSTRICT_DEFAULT_HEADERS,
-			...(this.options.openAiHeaders || {}),
-		}
 		const timeout = getApiRequestTimeout()
 		this.apiResponseRenderModeInfo = getApiResponseRenderMode()
 		if (isAzureAiInference) {
@@ -73,7 +68,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiKey,
 				timeout,
 				maxRetries: 0,
-				defaultHeaders: this.headers,
+				defaultHeaders: COSTRICT_DEFAULT_HEADERS,
 				defaultQuery: { "api-version": this.options.azureApiVersion || "2024-05-01-preview" },
 			})
 		} else if (isAzureOpenAi) {
@@ -85,7 +80,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				timeout,
 				maxRetries: 0,
 				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
-				defaultHeaders: this.headers,
+				defaultHeaders: COSTRICT_DEFAULT_HEADERS,
 			})
 		} else {
 			this.client = new OpenAI({
@@ -93,7 +88,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiKey,
 				timeout,
 				maxRetries: 0,
-				defaultHeaders: this.headers,
+				defaultHeaders: COSTRICT_DEFAULT_HEADERS,
 			})
 		}
 	}
@@ -275,7 +270,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	): Record<string, string> {
 		return {
 			"Accept-Language": metadata?.language || "en",
-			...this.headers,
+			...COSTRICT_DEFAULT_HEADERS,
+			...(this.options.useZgsmCustomConfig ? (this.options.openAiHeaders ?? {}) : {}),
 			"x-quota-identity": chatType || "system",
 			"X-Request-ID": requestId,
 			"zgsm-task-id": metadata?.taskId || "",

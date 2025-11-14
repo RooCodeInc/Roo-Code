@@ -27,6 +27,7 @@ import { ZgsmAuthApi, ZgsmAuthCommands, ZgsmAuthService, ZgsmAuthStorage } from 
 import { initCodeReview } from "./code-review"
 import { initTelemetry } from "./telemetry"
 import { initErrorCodeManager } from "./error-code"
+import { NotificationService } from "./notification"
 import { Package } from "../../shared/package"
 import { createLogger, ILogger, deactivate as loggerDeactivate } from "../../utils/logger"
 import {
@@ -235,6 +236,9 @@ export async function activate(
 export async function deactivate() {
 	// Stop periodic health checks
 	ZgsmCodebaseIndexManager.getInstance().stopHealthCheck()
+
+	// Stop periodic notice fetching
+	NotificationService.getInstance().stopPeriodicFetch()
 
 	// ZgsmCodebaseIndexManager.getInstance().stopExistingClient()
 	// Clean up IPC connections

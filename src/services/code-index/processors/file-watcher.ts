@@ -37,7 +37,7 @@ export class FileWatcher implements IFileWatcher {
 	private ignoreController: RooIgnoreController
 	private accumulatedEvents: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }> = new Map()
 	private batchProcessDebounceTimer?: NodeJS.Timeout
-	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
+	private readonly BATCH_DEBOUNCE_DELAY_MS = 600
 	private readonly FILE_PROCESSING_CONCURRENCY_LIMIT = 10
 	private readonly batchSegmentThreshold: number
 

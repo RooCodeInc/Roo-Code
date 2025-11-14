@@ -106,7 +106,7 @@ class WorkspaceTracker {
 				this.prevWorkSpacePath = this.cwd
 				this.initializeFilePaths()
 			}
-		}, 300) // Debounce for 300ms
+		}, 400) // Debounce for 400ms
 	}
 
 	private workspaceDidUpdate() {
@@ -125,7 +125,7 @@ class WorkspaceTracker {
 				openedTabs: this.getOpenedTabsInfo(),
 			})
 			this.updateTimer = null
-		}, 300) // Debounce for 300ms
+		}, 400) // Debounce for 400ms
 	}
 
 	private normalizeFilePath(filePath: string): string {

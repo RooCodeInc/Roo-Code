@@ -202,5 +202,8 @@
 	"history": {
 		"warn": "历史任务缓存超过 {{size}}，您可以手动清理历史记录以释放磁盘空间",
 		"viewAllHistory": "查看所有历史记录"
+	},
+	"notification": {
+		"confirm": "确定"
 	}
 }
