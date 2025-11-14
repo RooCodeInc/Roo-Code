@@ -27,10 +27,17 @@ export function filterNativeToolsForMode(
 ): OpenAI.Chat.ChatCompletionTool[] {
 	// Get mode configuration and all tools for this mode
 	const modeSlug = mode ?? defaultModeSlug
-	const modeConfig = getModeBySlug(modeSlug, customModes)
+	let modeConfig = getModeBySlug(modeSlug, customModes)
+
+	// Fallback to default mode if current mode config is not found
+	// This ensures the agent always has functional tools even if a custom mode is deleted
+	// or configuration becomes corrupted
+	if (!modeConfig) {
+		modeConfig = getModeBySlug(defaultModeSlug, customModes)!
+	}
 
 	// Get all tools for this mode (including always-available tools)
-	const allToolsForMode = modeConfig ? getToolsForMode(modeConfig.groups) : []
+	const allToolsForMode = getToolsForMode(modeConfig.groups)
 
 	// Filter to only tools that pass permission checks
 	const allowedToolNames = new Set(
