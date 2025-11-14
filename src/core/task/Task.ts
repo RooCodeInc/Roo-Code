@@ -613,22 +613,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const responseId = handler.getResponseId?.()
 			const reasoningData = handler.getEncryptedContent?.()
 
-			// If we have encrypted_content, add it as a reasoning item before the assistant message
-			if (reasoningData?.encrypted_content) {
-				this.apiConversationHistory.push({
-					type: "reasoning",
-					summary: [],
-					encrypted_content: reasoningData.encrypted_content,
-					...(reasoningData.id ? { id: reasoningData.id } : {}),
-					ts: Date.now(),
-				} as any)
-			}
-
-			const messageWithTs = {
+			// Start from the original assistant message
+			const messageWithTs: any = {
 				...message,
 				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
 			}
+
+			// If we have encrypted_content, embed it as the first content block on the assistant message.
+			// This keeps reasoning + assistant atomic for context management while still allowing providers
+			// to receive a separate reasoning item when we build the request.
+			if (reasoningData?.encrypted_content) {
+				const reasoningBlock = {
+					type: "reasoning",
+					summary: [] as any[],
+					encrypted_content: reasoningData.encrypted_content,
+					...(reasoningData.id ? { id: reasoningData.id } : {}),
+				}
+
+				if (typeof messageWithTs.content === "string") {
+					messageWithTs.content = [
+						reasoningBlock,
+						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+					]
+				} else if (Array.isArray(messageWithTs.content)) {
+					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
+				} else if (!messageWithTs.content) {
+					messageWithTs.content = [reasoningBlock]
+				}
+			}
+
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
 			const messageWithTs = { ...message, ts: Date.now() }
@@ -2919,22 +2933,77 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		type CleanConversationMessage = Anthropic.Messages.MessageParam | ReasoningItemForRequest
 
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory)
-		const cleanConversationHistory: CleanConversationMessage[] = maybeRemoveImageBlocks(
-			messagesSinceLastSummary,
-			this.api,
-		).map((msg: ApiMessage): CleanConversationMessage => {
-			// Pass through reasoning items as-is (including id if present)
-			if (msg.type === "reasoning") {
-				return {
+		const messagesWithoutImages = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api)
+		const cleanConversationHistory: CleanConversationMessage[] = []
+
+		for (const msg of messagesWithoutImages as ApiMessage[]) {
+			// Legacy path: standalone reasoning items stored as separate messages
+			if (msg.type === "reasoning" && msg.encrypted_content) {
+				cleanConversationHistory.push({
 					type: "reasoning",
 					summary: msg.summary,
 					encrypted_content: msg.encrypted_content!,
 					...(msg.id ? { id: msg.id } : {}),
+				})
+				continue
+			}
+
+			// Preferred path: assistant message with embedded reasoning as first content block
+			if (msg.role === "assistant") {
+				const rawContent = msg.content
+
+				const contentArray: Anthropic.Messages.ContentBlockParam[] = Array.isArray(rawContent)
+					? (rawContent as Anthropic.Messages.ContentBlockParam[])
+					: rawContent !== undefined
+						? ([
+								{ type: "text", text: rawContent } satisfies Anthropic.Messages.TextBlockParam,
+							] as Anthropic.Messages.ContentBlockParam[])
+						: []
+
+				const [first, ...rest] = contentArray
+
+				const hasEmbeddedReasoning =
+					first && (first as any).type === "reasoning" && typeof (first as any).encrypted_content === "string"
+
+				if (hasEmbeddedReasoning) {
+					const reasoningBlock = first as any
+
+					// Emit a separate reasoning item for the provider
+					cleanConversationHistory.push({
+						type: "reasoning",
+						summary: reasoningBlock.summary ?? [],
+						encrypted_content: reasoningBlock.encrypted_content,
+						...(reasoningBlock.id ? { id: reasoningBlock.id } : {}),
+					})
+
+					// Build assistant message without the embedded reasoning block
+					let assistantContent: Anthropic.Messages.MessageParam["content"]
+
+					if (rest.length === 0) {
+						assistantContent = ""
+					} else if (rest.length === 1 && rest[0].type === "text") {
+						assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+					} else {
+						assistantContent = rest
+					}
+
+					cleanConversationHistory.push({
+						role: "assistant",
+						content: assistantContent,
+					} satisfies Anthropic.Messages.MessageParam)
+
+					continue
 				}
 			}
-			// For regular messages, just return role and content
-			return { role: msg.role!, content: msg.content as Anthropic.Messages.ContentBlockParam[] | string }
-		})
+
+			// Default path for regular messages (no embedded reasoning)
+			if (msg.role) {
+				cleanConversationHistory.push({
+					role: msg.role,
+					content: msg.content as Anthropic.Messages.ContentBlockParam[] | string,
+				})
+			}
+		}
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(
