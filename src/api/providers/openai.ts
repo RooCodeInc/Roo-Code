@@ -285,13 +285,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				requestOptions.max_output_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
 			}
 
-			let stream
+			let stream: AsyncIterable<any>
 			try {
 				// @ts-ignore - Responses API is available in OpenAI client
-				stream = await this.client.responses.create(
+				stream = (await this.client.responses.create(
 					requestOptions,
 					methodIsAzureAiInference ? { path: "/responses" } : {},
-				)
+				)) as unknown as AsyncIterable<any>
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -341,8 +341,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				for (const outputItem of response.output) {
 					if (outputItem.type === "message" && outputItem.content && Array.isArray(outputItem.content)) {
 						for (const contentItem of outputItem.content) {
-							if (contentItem.type === "output_text" || contentItem.type === "text") {
-								responseText += contentItem.text || ""
+							if ("text" in contentItem && typeof contentItem.text === "string") {
+								responseText += contentItem.text
 							}
 						}
 					}
