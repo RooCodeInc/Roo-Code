@@ -335,6 +335,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "taskHistoryRetention"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

@@ -10,7 +10,7 @@ import { Package } from "@roo/package"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui"
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -21,9 +21,20 @@ type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	setTelemetrySetting: (setting: TelemetrySetting) => void
 	debug?: boolean
 	setDebug?: (debug: boolean) => void
+	taskHistoryRetention: "never" | "90" | "60" | "30" | "7" | "3"
+	setTaskHistoryRetention: (value: "never" | "90" | "60" | "30" | "7" | "3") => void
 }
 
-export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, className, ...props }: AboutProps) => {
+export const About = ({
+	telemetrySetting,
+	setTelemetrySetting,
+	debug,
+	setDebug,
+	taskHistoryRetention,
+	setTaskHistoryRetention,
+	className,
+	...props
+}: AboutProps) => {
 	const { t } = useAppTranslation()
 
 	return (
@@ -132,9 +143,41 @@ export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, 
 
 			<Section className="space-y-0">
 				<SearchableSetting
+					settingId="about-task-history-retention"
+					section="about"
+					label={t("settings:aboutRetention.label")}
+					className="mt-4">
+					<h3>{t("settings:aboutRetention.label")}</h3>
+					<div className="mt-2">
+						<Select
+							value={taskHistoryRetention}
+							onValueChange={(value: "never" | "90" | "60" | "30" | "7" | "3") => {
+								setTaskHistoryRetention(value)
+							}}>
+							<SelectTrigger className="w-64">
+								<SelectValue placeholder={t("settings:common.select")} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="never">{t("settings:aboutRetention.options.never")}</SelectItem>
+								<SelectItem value="90">{t("settings:aboutRetention.options.90")}</SelectItem>
+								<SelectItem value="60">{t("settings:aboutRetention.options.60")}</SelectItem>
+								<SelectItem value="30">{t("settings:aboutRetention.options.30")}</SelectItem>
+								<SelectItem value="7">{t("settings:aboutRetention.options.7")}</SelectItem>
+								<SelectItem value="3">{t("settings:aboutRetention.options.3")}</SelectItem>
+							</SelectContent>
+						</Select>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							{t("settings:aboutRetention.description")}
+						</div>
+						<div className="text-red-500 text-sm mt-1">{t("settings:aboutRetention.warning")}</div>
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
 					settingId="about-manage-settings"
 					section="about"
-					label={t("settings:about.manageSettings")}>
+					label={t("settings:about.manageSettings")}
+					className="mt-4 pt-4 border-t border-vscode-settings-headerBorder">
 					<h3>{t("settings:about.manageSettings")}</h3>
 					<div className="flex flex-wrap items-center gap-2">
 						<Button onClick={() => vscode.postMessage({ type: "exportSettings" })} className="w-28">

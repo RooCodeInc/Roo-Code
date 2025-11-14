@@ -1,6 +1,7 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as path from "path"
+import * as fs from "fs/promises"
 
 // Load environment variables from .env file
 try {
@@ -44,6 +45,7 @@ import {
 } from "./activate"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
+import { purgeOldTasks } from "./utils/task-history-retention"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -163,6 +165,40 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
+	// Initialize the provider *before* the Roo Code Cloud service so we can reuse its task deletion logic.
+	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
+
+	// Task history retention purge (runs only on activation)
+	try {
+		const config = vscode.workspace.getConfiguration(Package.name)
+		const retention = config.get<string>("taskHistoryRetention", "never") ?? "never"
+
+		outputChannel.appendLine(`[Retention] Startup purge: setting=${retention}`)
+
+		const result = await purgeOldTasks(
+			retention as any,
+			contextProxy.globalStorageUri.fsPath,
+			(m) => {
+				outputChannel.appendLine(m)
+				console.log(m)
+			},
+			false,
+			async (taskId: string, _taskDirPath: string) => {
+				// Reuse the same internal deletion logic as the History view so that
+				// checkpoints, shadow repositories, and task state are cleaned up consistently.
+				await provider.deleteTaskWithId(taskId)
+			},
+		)
+
+		outputChannel.appendLine(
+			`[Retention] Startup purge complete: purged=${result.purgedCount}, cutoff=${result.cutoff ?? "none"}`,
+		)
+	} catch (error) {
+		outputChannel.appendLine(
+			`[Retention] Failed during startup purge: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
 	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []
 
@@ -185,9 +221,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}
-
-	// Initialize the provider *before* the Roo Code Cloud service.
-	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
