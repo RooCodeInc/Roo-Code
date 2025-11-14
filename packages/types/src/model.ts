@@ -91,7 +91,6 @@ export const modelInfoSchema = z.object({
 	 * for models that otherwise support reasoning effort (used by GPT‑5.1 family).
 	 * This is a minimal, backwards‑compatible addition.
 	 */
-	supportsReasoningNone: z.boolean().optional(),
 	requiredReasoningEffort: z.boolean().optional(),
 	preserveReasoning: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),
