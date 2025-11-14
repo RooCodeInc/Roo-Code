@@ -1,5 +1,14 @@
 # Roo Code Changelog
 
+## [3.32.0] - 2025-11-14
+
+![3.32.0 Release - GPT-5.1 models and OpenAI prompt caching](/releases/3.32.0-release.png)
+
+- Feature: Add GPT-5.1 models to OpenAI provider (PR #9252 by @hannesrudolph)
+- Feature: Support for OpenAI Responses 24 hour prompt caching (PR #9259 by @hannesrudolph)
+- Fix: Repair the share button in the UI (PR #9253 by @hannesrudolph)
+- Docs: Include PR numbers in the release guide to improve traceability (PR #9236 by @hannesrudolph)
+
 ## [3.31.3] - 2025-11-13
 
 ![3.31.3 Release - Kangaroo Decrypting a Message](/releases/3.31.3-release.png)

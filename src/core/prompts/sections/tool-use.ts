@@ -1,5 +1,4 @@
-import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
-import { isNativeProtocol } from "../toolProtocolResolver"
+import { ToolProtocol, TOOL_PROTOCOL, isNativeProtocol } from "@roo-code/types"
 
 export function getSharedToolUseSection(protocol: ToolProtocol = TOOL_PROTOCOL.XML): string {
 	if (isNativeProtocol(protocol)) {

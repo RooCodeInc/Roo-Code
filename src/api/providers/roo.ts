@@ -100,6 +100,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
+			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		try {
@@ -124,9 +126,12 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			)
 
 			let lastUsage: RooUsage | undefined = undefined
+			// Accumulate tool calls by index - similar to how reasoning accumulates
+			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
 
 				if (delta) {
 					// Check for reasoning content (similar to OpenRouter)
@@ -145,12 +150,48 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 						}
 					}
 
+					// Check for tool calls in delta
+					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+						for (const toolCall of delta.tool_calls) {
+							const index = toolCall.index
+							const existing = toolCallAccumulator.get(index)
+
+							if (existing) {
+								// Accumulate arguments for existing tool call
+								if (toolCall.function?.arguments) {
+									existing.arguments += toolCall.function.arguments
+								}
+							} else {
+								// Start new tool call accumulation
+								toolCallAccumulator.set(index, {
+									id: toolCall.id || "",
+									name: toolCall.function?.name || "",
+									arguments: toolCall.function?.arguments || "",
+								})
+							}
+						}
+					}
+
 					if (delta.content) {
 						yield {
 							type: "text",
 							text: delta.content,
 						}
 					}
+				}
+
+				// When finish_reason is 'tool_calls', yield all accumulated tool calls
+				if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
+					for (const [index, toolCall] of toolCallAccumulator.entries()) {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						}
+					}
+					// Clear accumulator after yielding
+					toolCallAccumulator.clear()
 				}
 
 				if (chunk.usage) {
@@ -241,6 +282,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				supportsImages: false,
 				supportsReasoningEffort: false,
 				supportsPromptCache: true,
+				supportsNativeTools: false,
 				inputPrice: 0,
 				outputPrice: 0,
 			},

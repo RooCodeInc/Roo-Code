@@ -2,38 +2,37 @@ import * as vscode from "vscode"
 
 import { TodoItem } from "@roo-code/types"
 
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
-import { parseMarkdownChecklist } from "./updateTodoListTool"
+import { parseMarkdownChecklist } from "./UpdateTodoListTool"
 import { Package } from "../../shared/package"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function newTaskTool(
-	task: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const mode: string | undefined = block.params.mode
-	const message: string | undefined = block.params.message
-	const todos: string | undefined = block.params.todos
+interface NewTaskParams {
+	mode: string
+	message: string
+	todos?: string
+}
 
-	try {
-		if (block.partial) {
-			const partialMessage = JSON.stringify({
-				tool: "newTask",
-				mode: removeClosingTag("mode", mode),
-				content: removeClosingTag("message", message),
-				todos: removeClosingTag("todos", todos),
-			})
+export class NewTaskTool extends BaseTool<"new_task"> {
+	readonly name = "new_task" as const
 
-			await task.ask("tool", partialMessage, block.partial).catch(() => {})
-			return
-		} else {
+	parseLegacy(params: Partial<Record<string, string>>): NewTaskParams {
+		return {
+			mode: params.mode || "",
+			message: params.message || "",
+			todos: params.todos,
+		}
+	}
+
+	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { mode, message, todos } = params
+		const { askApproval, handleError, pushToolResult } = callbacks
+
+		try {
 			// Validate required parameters.
 			if (!mode) {
 				task.consecutiveMistakeCount++
@@ -135,9 +134,26 @@ export async function newTaskTool(
 			)
 
 			return
+		} catch (error) {
+			await handleError("creating new task", error)
+			return
 		}
-	} catch (error) {
-		await handleError("creating new task", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"new_task">): Promise<void> {
+		const mode: string | undefined = block.params.mode
+		const message: string | undefined = block.params.message
+		const todos: string | undefined = block.params.todos
+
+		const partialMessage = JSON.stringify({
+			tool: "newTask",
+			mode: this.removeClosingTag("mode", mode, block.partial),
+			content: this.removeClosingTag("message", message, block.partial),
+			todos: this.removeClosingTag("todos", todos, block.partial),
+		})
+
+		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 	}
 }
+
+export const newTaskTool = new NewTaskTool()

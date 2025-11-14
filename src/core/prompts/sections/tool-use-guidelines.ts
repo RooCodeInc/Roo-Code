@@ -1,6 +1,6 @@
 import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
 import { CodeIndexManager } from "../../../services/code-index/manager"
-import { isNativeProtocol } from "../toolProtocolResolver"
+import { isNativeProtocol } from "@roo-code/types"
 
 export function getToolUseGuidelinesSection(
 	codeIndexManager?: CodeIndexManager,

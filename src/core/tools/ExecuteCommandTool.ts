@@ -9,7 +9,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
 
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag, ToolResponse } from "../../shared/tools"
+import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
@@ -17,25 +17,30 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 class ShellIntegrationError extends Error {}
 
-export async function executeCommandTool(
-	task: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	let command: string | undefined = block.params.command
-	const customCwd: string | undefined = block.params.cwd
+interface ExecuteCommandParams {
+	command: string
+	cwd?: string
+}
 
-	try {
-		if (block.partial) {
-			await task.ask("command", removeClosingTag("command", command), block.partial).catch(() => {})
-			return
-		} else {
+export class ExecuteCommandTool extends BaseTool<"execute_command"> {
+	readonly name = "execute_command" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): ExecuteCommandParams {
+		return {
+			command: params.command || "",
+			cwd: params.cwd,
+		}
+	}
+
+	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { command, cwd: customCwd } = params
+		const { handleError, pushToolResult, askApproval, removeClosingTag } = callbacks
+
+		try {
 			if (!command) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("execute_command")
@@ -53,8 +58,8 @@ export async function executeCommandTool(
 
 			task.consecutiveMistakeCount = 0
 
-			command = unescapeHtmlEntities(command) // Unescape HTML entities.
-			const didApprove = await askApproval("command", command)
+			const unescapedCommand = unescapeHtmlEntities(command)
+			const didApprove = await askApproval("command", unescapedCommand)
 
 			if (!didApprove) {
 				return
@@ -81,14 +86,16 @@ export async function executeCommandTool(
 				.get<string[]>("commandTimeoutAllowlist", [])
 
 			// Check if command matches any prefix in the allowlist
-			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) => command!.startsWith(prefix.trim()))
+			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) =>
+				unescapedCommand.startsWith(prefix.trim()),
+			)
 
 			// Convert seconds to milliseconds for internal use, but skip timeout if command is allowlisted
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
 
 			const options: ExecuteCommandOptions = {
 				executionId,
-				command,
+				command: unescapedCommand,
 				customCwd,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,
@@ -97,7 +104,7 @@ export async function executeCommandTool(
 			}
 
 			try {
-				const [rejected, result] = await executeCommand(task, options)
+				const [rejected, result] = await executeCommandInTerminal(task, options)
 
 				if (rejected) {
 					task.didRejectTool = true
@@ -110,7 +117,7 @@ export async function executeCommandTool(
 				await task.say("shell_integration_warning")
 
 				if (error instanceof ShellIntegrationError) {
-					const [rejected, result] = await executeCommand(task, {
+					const [rejected, result] = await executeCommandInTerminal(task, {
 						...options,
 						terminalShellIntegrationDisabled: true,
 					})
@@ -126,10 +133,17 @@ export async function executeCommandTool(
 			}
 
 			return
+		} catch (error) {
+			await handleError("executing command", error as Error)
+			return
 		}
-	} catch (error) {
-		await handleError("executing command", error)
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"execute_command">): Promise<void> {
+		const command = block.params.command
+		await task
+			.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
+			.catch(() => {})
 	}
 }
 
@@ -143,7 +157,7 @@ export type ExecuteCommandOptions = {
 	commandExecutionTimeout?: number
 }
 
-export async function executeCommand(
+export async function executeCommandInTerminal(
 	task: Task,
 	{
 		executionId,
@@ -367,3 +381,5 @@ export async function executeCommand(
 		]
 	}
 }
+
+export const executeCommandTool = new ExecuteCommandTool()

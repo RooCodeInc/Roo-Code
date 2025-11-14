@@ -7,84 +7,69 @@ import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
 import { Task } from "../task/Task"
-import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
-export async function applyDiffToolLegacy(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-) {
-	const relPath: string | undefined = block.params.path
-	let diffContent: string | undefined = block.params.diff
+interface ApplyDiffParams {
+	path: string
+	diff: string
+}
 
-	if (diffContent && !cline.api.getModel().id.includes("claude")) {
-		diffContent = unescapeHtmlEntities(diffContent)
+export class ApplyDiffTool extends BaseTool<"apply_diff"> {
+	readonly name = "apply_diff" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): ApplyDiffParams {
+		return {
+			path: params.path || "",
+			diff: params.diff || "",
+		}
 	}
 
-	const sharedMessageProps: ClineSayTool = {
-		tool: "appliedDiff",
-		path: getReadablePath(cline.cwd, removeClosingTag("path", relPath)),
-		diff: diffContent,
-	}
+	async execute(params: ApplyDiffParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { askApproval, handleError, pushToolResult } = callbacks
+		let { path: relPath, diff: diffContent } = params
 
-	try {
-		if (block.partial) {
-			// Update GUI message
-			let toolProgressStatus
+		if (diffContent && !task.api.getModel().id.includes("claude")) {
+			diffContent = unescapeHtmlEntities(diffContent)
+		}
 
-			if (cline.diffStrategy && cline.diffStrategy.getProgressStatus) {
-				toolProgressStatus = cline.diffStrategy.getProgressStatus(block)
-			}
-
-			if (toolProgressStatus && Object.keys(toolProgressStatus).length === 0) {
-				return
-			}
-
-			await cline
-				.ask("tool", JSON.stringify(sharedMessageProps), block.partial, toolProgressStatus)
-				.catch(() => {})
-
-			return
-		} else {
+		try {
 			if (!relPath) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("apply_diff")
-				pushToolResult(await cline.sayAndCreateMissingParamError("apply_diff", "path"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_diff")
+				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "path"))
 				return
 			}
 
 			if (!diffContent) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("apply_diff")
-				pushToolResult(await cline.sayAndCreateMissingParamError("apply_diff", "diff"))
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_diff")
+				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "diff"))
 				return
 			}
 
-			const accessAllowed = cline.rooIgnoreController?.validateAccess(relPath)
+			const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 
 			if (!accessAllowed) {
-				await cline.say("rooignore_error", relPath)
+				await task.say("rooignore_error", relPath)
 				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
 				return
 			}
 
-			const absolutePath = path.resolve(cline.cwd, relPath)
+			const absolutePath = path.resolve(task.cwd, relPath)
 			const fileExists = await fileExistsAtPath(absolutePath)
 
 			if (!fileExists) {
-				cline.consecutiveMistakeCount++
-				cline.recordToolError("apply_diff")
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_diff")
 				const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
-				await cline.say("error", formattedError)
+				await task.say("error", formattedError)
 				pushToolResult(formattedError)
 				return
 			}
@@ -92,21 +77,21 @@ export async function applyDiffToolLegacy(
 			const originalContent: string = await fs.readFile(absolutePath, "utf-8")
 
 			// Apply the diff to the original content
-			const diffResult = (await cline.diffStrategy?.applyDiff(
+			const diffResult = (await task.diffStrategy?.applyDiff(
 				originalContent,
 				diffContent,
-				parseInt(block.params.start_line ?? ""),
+				parseInt(params.diff.match(/:start_line:(\d+)/)?.[1] ?? ""),
 			)) ?? {
 				success: false,
 				error: "No diff strategy available",
 			}
 
 			if (!diffResult.success) {
-				cline.consecutiveMistakeCount++
-				const currentCount = (cline.consecutiveMistakeCountForApplyDiff.get(relPath) || 0) + 1
-				cline.consecutiveMistakeCountForApplyDiff.set(relPath, currentCount)
+				task.consecutiveMistakeCount++
+				const currentCount = (task.consecutiveMistakeCountForApplyDiff.get(relPath) || 0) + 1
+				task.consecutiveMistakeCountForApplyDiff.set(relPath, currentCount)
 				let formattedError = ""
-				TelemetryService.instance.captureDiffApplicationError(cline.taskId, currentCount)
+				TelemetryService.instance.captureDiffApplicationError(task.taskId, currentCount)
 
 				if (diffResult.failParts && diffResult.failParts.length > 0) {
 					for (const failPart of diffResult.failParts) {
@@ -129,17 +114,17 @@ export async function applyDiffToolLegacy(
 				}
 
 				if (currentCount >= 2) {
-					await cline.say("diff_error", formattedError)
+					await task.say("diff_error", formattedError)
 				}
 
-				cline.recordToolError("apply_diff", formattedError)
+				task.recordToolError("apply_diff", formattedError)
 
 				pushToolResult(formattedError)
 				return
 			}
 
-			cline.consecutiveMistakeCount = 0
-			cline.consecutiveMistakeCountForApplyDiff.delete(relPath)
+			task.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
 			// Generate backend-unified diff for display in chat/webview
 			const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, originalContent, diffResult.content)
@@ -147,7 +132,7 @@ export async function applyDiffToolLegacy(
 			const diffStats = computeDiffStats(unifiedPatch) || undefined
 
 			// Check if preventFocusDisruption experiment is enabled
-			const provider = cline.providerRef.deref()
+			const provider = task.providerRef.deref()
 			const state = await provider?.getState()
 			const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 			const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
@@ -157,7 +142,13 @@ export async function applyDiffToolLegacy(
 			)
 
 			// Check if file is write-protected
-			const isWriteProtected = cline.rooProtectedController?.isWriteProtected(relPath) || false
+			const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
+
+			const sharedMessageProps: ClineSayTool = {
+				tool: "appliedDiff",
+				path: getReadablePath(task.cwd, relPath),
+				diff: diffContent,
+			}
 
 			if (isPreventFocusDisruptionEnabled) {
 				// Direct file write without diff view
@@ -171,8 +162,14 @@ export async function applyDiffToolLegacy(
 
 				let toolProgressStatus
 
-				if (cline.diffStrategy && cline.diffStrategy.getProgressStatus) {
-					toolProgressStatus = cline.diffStrategy.getProgressStatus(block, diffResult)
+				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
+					const block: ToolUse<"apply_diff"> = {
+						type: "tool_use",
+						name: "apply_diff",
+						params: { path: relPath, diff: diffContent },
+						partial: false,
+					}
+					toolProgressStatus = task.diffStrategy.getProgressStatus(block, diffResult)
 				}
 
 				const didApprove = await askApproval("tool", completeMessage, toolProgressStatus, isWriteProtected)
@@ -182,9 +179,9 @@ export async function applyDiffToolLegacy(
 				}
 
 				// Save directly without showing diff view or opening the file
-				cline.diffViewProvider.editType = "modify"
-				cline.diffViewProvider.originalContent = originalContent
-				await cline.diffViewProvider.saveDirectly(
+				task.diffViewProvider.editType = "modify"
+				task.diffViewProvider.originalContent = originalContent
+				await task.diffViewProvider.saveDirectly(
 					relPath,
 					diffResult.content,
 					false,
@@ -194,10 +191,10 @@ export async function applyDiffToolLegacy(
 			} else {
 				// Original behavior with diff view
 				// Show diff view before asking for approval
-				cline.diffViewProvider.editType = "modify"
-				await cline.diffViewProvider.open(relPath)
-				await cline.diffViewProvider.update(diffResult.content, true)
-				cline.diffViewProvider.scrollToFirstDiff()
+				task.diffViewProvider.editType = "modify"
+				await task.diffViewProvider.open(relPath)
+				await task.diffViewProvider.update(diffResult.content, true)
+				task.diffViewProvider.scrollToFirstDiff()
 
 				const completeMessage = JSON.stringify({
 					...sharedMessageProps,
@@ -209,29 +206,35 @@ export async function applyDiffToolLegacy(
 
 				let toolProgressStatus
 
-				if (cline.diffStrategy && cline.diffStrategy.getProgressStatus) {
-					toolProgressStatus = cline.diffStrategy.getProgressStatus(block, diffResult)
+				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
+					const block: ToolUse<"apply_diff"> = {
+						type: "tool_use",
+						name: "apply_diff",
+						params: { path: relPath, diff: diffContent },
+						partial: false,
+					}
+					toolProgressStatus = task.diffStrategy.getProgressStatus(block, diffResult)
 				}
 
 				const didApprove = await askApproval("tool", completeMessage, toolProgressStatus, isWriteProtected)
 
 				if (!didApprove) {
-					await cline.diffViewProvider.revertChanges() // Cline likely handles closing the diff view
-					cline.processQueuedMessages()
+					await task.diffViewProvider.revertChanges()
+					task.processQueuedMessages()
 					return
 				}
 
 				// Call saveChanges to update the DiffViewProvider properties
-				await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
+				await task.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 			}
 
 			// Track file edit operation
 			if (relPath) {
-				await cline.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
+				await task.fileContextTracker.trackFileContext(relPath, "roo_edited" as RecordSource)
 			}
 
 			// Used to determine if we should wait for busy terminal to update before sending api request
-			cline.didEditFile = true
+			task.didEditFile = true
 			let partFailHint = ""
 
 			if (diffResult.failParts && diffResult.failParts.length > 0) {
@@ -239,7 +242,7 @@ export async function applyDiffToolLegacy(
 			}
 
 			// Get the formatted response message
-			const message = await cline.diffViewProvider.pushToolWriteResult(cline, cline.cwd, !fileExists)
+			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
 
 			// Check for single SEARCH/REPLACE block warning
 			const searchBlocks = (diffContent.match(/<<<<<<< SEARCH/g) || []).length
@@ -254,17 +257,42 @@ export async function applyDiffToolLegacy(
 				pushToolResult(message + singleBlockNotice)
 			}
 
-			await cline.diffViewProvider.reset()
+			await task.diffViewProvider.reset()
 
 			// Process any queued messages after file edit completes
-			cline.processQueuedMessages()
+			task.processQueuedMessages()
 
 			return
+		} catch (error) {
+			await handleError("applying diff", error as Error)
+			await task.diffViewProvider.reset()
+			task.processQueuedMessages()
+			return
 		}
-	} catch (error) {
-		await handleError("applying diff", error)
-		await cline.diffViewProvider.reset()
-		cline.processQueuedMessages()
-		return
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"apply_diff">): Promise<void> {
+		const relPath: string | undefined = block.params.path
+		const diffContent: string | undefined = block.params.diff
+
+		const sharedMessageProps: ClineSayTool = {
+			tool: "appliedDiff",
+			path: getReadablePath(task.cwd, relPath || ""),
+			diff: diffContent,
+		}
+
+		let toolProgressStatus
+
+		if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
+			toolProgressStatus = task.diffStrategy.getProgressStatus(block)
+		}
+
+		if (toolProgressStatus && Object.keys(toolProgressStatus).length === 0) {
+			return
+		}
+
+		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial, toolProgressStatus).catch(() => {})
 	}
 }
+
+export const applyDiffTool = new ApplyDiffTool()

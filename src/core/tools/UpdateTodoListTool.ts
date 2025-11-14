@@ -1,17 +1,115 @@
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
-
+import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 import cloneDeep from "clone-deep"
 import crypto from "crypto"
 import { TodoItem, TodoStatus, todoStatusSchema } from "@roo-code/types"
 import { getLatestTodo } from "../../shared/todo"
 
+interface UpdateTodoListParams {
+	todos: string
+}
+
 let approvedTodoList: TodoItem[] | undefined = undefined
 
-/**
- * Add a todo item to the task's todoList.
- */
+export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
+	readonly name = "update_todo_list" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): UpdateTodoListParams {
+		return {
+			todos: params.todos || "",
+		}
+	}
+
+	async execute(params: UpdateTodoListParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { pushToolResult, handleError, askApproval } = callbacks
+
+		try {
+			const todosRaw = params.todos
+
+			let todos: TodoItem[]
+			try {
+				todos = parseMarkdownChecklist(todosRaw || "")
+			} catch {
+				task.consecutiveMistakeCount++
+				task.recordToolError("update_todo_list")
+				pushToolResult(formatResponse.toolError("The todos parameter is not valid markdown checklist or JSON"))
+				return
+			}
+
+			const { valid, error } = validateTodos(todos)
+			if (!valid) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("update_todo_list")
+				pushToolResult(formatResponse.toolError(error || "todos parameter validation failed"))
+				return
+			}
+
+			let normalizedTodos: TodoItem[] = todos.map((t) => ({
+				id: t.id,
+				content: t.content,
+				status: normalizeStatus(t.status),
+			}))
+
+			const approvalMsg = JSON.stringify({
+				tool: "updateTodoList",
+				todos: normalizedTodos,
+			})
+
+			approvedTodoList = cloneDeep(normalizedTodos)
+			const didApprove = await askApproval("tool", approvalMsg)
+			if (!didApprove) {
+				pushToolResult("User declined to update the todoList.")
+				return
+			}
+
+			const isTodoListChanged =
+				approvedTodoList !== undefined && JSON.stringify(normalizedTodos) !== JSON.stringify(approvedTodoList)
+			if (isTodoListChanged) {
+				normalizedTodos = approvedTodoList ?? []
+				task.say(
+					"user_edit_todos",
+					JSON.stringify({
+						tool: "updateTodoList",
+						todos: normalizedTodos,
+					}),
+				)
+			}
+
+			await setTodoListForTask(task, normalizedTodos)
+
+			if (isTodoListChanged) {
+				const md = todoListToMarkdown(normalizedTodos)
+				pushToolResult(formatResponse.toolResult("User edits todo:\n\n" + md))
+			} else {
+				pushToolResult(formatResponse.toolResult("Todo list updated successfully."))
+			}
+		} catch (error) {
+			await handleError("update todo list", error as Error)
+		}
+	}
+
+	override async handlePartial(task: Task, block: ToolUse<"update_todo_list">): Promise<void> {
+		const todosRaw = block.params.todos
+
+		// Parse the markdown checklist to maintain consistent format with execute()
+		let todos: TodoItem[]
+		try {
+			todos = parseMarkdownChecklist(todosRaw || "")
+		} catch {
+			// If parsing fails during partial, send empty array
+			todos = []
+		}
+
+		const approvalMsg = JSON.stringify({
+			tool: "updateTodoList",
+			todos: todos,
+		})
+		await task.ask("tool", approvalMsg, block.partial).catch(() => {})
+	}
+}
+
 export function addTodoToTask(cline: Task, content: string, status: TodoStatus = "pending", id?: string): TodoItem {
 	const todo: TodoItem = {
 		id: id ?? crypto.randomUUID(),
@@ -23,9 +121,6 @@ export function addTodoToTask(cline: Task, content: string, status: TodoStatus =
 	return todo
 }
 
-/**
- * Update the status of a todo item by id.
- */
 export function updateTodoStatusForTask(cline: Task, id: string, nextStatus: TodoStatus): boolean {
 	if (!cline.todoList) return false
 	const idx = cline.todoList.findIndex((t) => t.id === id)
@@ -42,9 +137,6 @@ export function updateTodoStatusForTask(cline: Task, id: string, nextStatus: Tod
 	return false
 }
 
-/**
- * Remove a todo item by id.
- */
 export function removeTodoFromTask(cline: Task, id: string): boolean {
 	if (!cline.todoList) return false
 	const idx = cline.todoList.findIndex((t) => t.id === id)
@@ -53,24 +145,15 @@ export function removeTodoFromTask(cline: Task, id: string): boolean {
 	return true
 }
 
-/**
- * Get a copy of the todoList.
- */
 export function getTodoListForTask(cline: Task): TodoItem[] | undefined {
 	return cline.todoList?.slice()
 }
 
-/**
- * Set the todoList for the task.
- */
 export async function setTodoListForTask(cline?: Task, todos?: TodoItem[]) {
 	if (cline === undefined) return
 	cline.todoList = Array.isArray(todos) ? todos : []
 }
 
-/**
- * Restore the todoList from argument or from clineMessages.
- */
 export function restoreTodoListForTask(cline: Task, todoList?: TodoItem[]) {
 	if (todoList) {
 		cline.todoList = Array.isArray(todoList) ? todoList : []
@@ -78,11 +161,7 @@ export function restoreTodoListForTask(cline: Task, todoList?: TodoItem[]) {
 	}
 	cline.todoList = getLatestTodo(cline.clineMessages)
 }
-/**
- * Convert TodoItem[] to markdown checklist string.
- * @param todos TodoItem array
- * @returns markdown checklist string
- */
+
 function todoListToMarkdown(todos: TodoItem[]): string {
 	return todos
 		.map((t) => {
@@ -108,7 +187,6 @@ export function parseMarkdownChecklist(md: string): TodoItem[] {
 		.filter(Boolean)
 	const todos: TodoItem[] = []
 	for (const line of lines) {
-		// Support both "[ ] Task" and "- [ ] Task" formats
 		const match = line.match(/^(?:-\s*)?\[\s*([ xX\-~])\s*\]\s+(.+)$/)
 		if (!match) continue
 		let status: TodoStatus = "pending"
@@ -144,94 +222,4 @@ function validateTodos(todos: any[]): { valid: boolean; error?: string } {
 	return { valid: true }
 }
 
-/**
- * Update the todo list for a task.
- * @param cline Task instance
- * @param block ToolUse block
- * @param askApproval AskApproval function
- * @param handleError HandleError function
- * @param pushToolResult PushToolResult function
- * @param removeClosingTag RemoveClosingTag function
- * @param userEdited If true, only show "User Edit Succeeded" and do nothing else
- */
-export async function updateTodoListTool(
-	cline: Task,
-	block: ToolUse,
-	askApproval: AskApproval,
-	handleError: HandleError,
-	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
-	userEdited?: boolean,
-) {
-	// If userEdited is true, only show "User Edit Succeeded" and do nothing else
-	if (userEdited === true) {
-		pushToolResult("User Edit Succeeded")
-		return
-	}
-	try {
-		const todosRaw = block.params.todos
-
-		let todos: TodoItem[]
-		try {
-			todos = parseMarkdownChecklist(todosRaw || "")
-		} catch {
-			cline.consecutiveMistakeCount++
-			cline.recordToolError("update_todo_list")
-			pushToolResult(formatResponse.toolError("The todos parameter is not valid markdown checklist or JSON"))
-			return
-		}
-
-		const { valid, error } = validateTodos(todos)
-		if (!valid && !block.partial) {
-			cline.consecutiveMistakeCount++
-			cline.recordToolError("update_todo_list")
-			pushToolResult(formatResponse.toolError(error || "todos parameter validation failed"))
-			return
-		}
-
-		let normalizedTodos: TodoItem[] = todos.map((t) => ({
-			id: t.id,
-			content: t.content,
-			status: normalizeStatus(t.status),
-		}))
-
-		const approvalMsg = JSON.stringify({
-			tool: "updateTodoList",
-			todos: normalizedTodos,
-		})
-		if (block.partial) {
-			await cline.ask("tool", approvalMsg, block.partial).catch(() => {})
-			return
-		}
-		approvedTodoList = cloneDeep(normalizedTodos)
-		const didApprove = await askApproval("tool", approvalMsg)
-		if (!didApprove) {
-			pushToolResult("User declined to update the todoList.")
-			return
-		}
-		const isTodoListChanged =
-			approvedTodoList !== undefined && JSON.stringify(normalizedTodos) !== JSON.stringify(approvedTodoList)
-		if (isTodoListChanged) {
-			normalizedTodos = approvedTodoList ?? []
-			cline.say(
-				"user_edit_todos",
-				JSON.stringify({
-					tool: "updateTodoList",
-					todos: normalizedTodos,
-				}),
-			)
-		}
-
-		await setTodoListForTask(cline, normalizedTodos)
-
-		// If todo list changed, output new todo list in markdown format
-		if (isTodoListChanged) {
-			const md = todoListToMarkdown(normalizedTodos)
-			pushToolResult(formatResponse.toolResult("User edits todo:\n\n" + md))
-		} else {
-			pushToolResult(formatResponse.toolResult("Todo list updated successfully."))
-		}
-	} catch (error) {
-		await handleError("update todo list", error)
-	}
-}
+export const updateTodoListTool = new UpdateTodoListTool()

@@ -6,6 +6,7 @@ import { ToolProtocol } from "@roo-code/types"
 export interface SystemPromptSettings {
 	maxConcurrentFileReads: number
 	todoListEnabled: boolean
+	browserToolEnabled?: boolean
 	useAgentRules: boolean
 	newTaskRequireTodos: boolean
 	toolProtocol?: ToolProtocol
