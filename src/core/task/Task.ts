@@ -10,6 +10,7 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 import { Package } from "../../shared/package"
+import { getCurrentToolProtocol, formatToolInvocation, isNativeProtocol } from "../tools/helpers/toolResultFormatting"
 
 import {
 	type TaskLike,
@@ -1383,19 +1384,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		let existingApiConversationHistory: ApiMessage[] = await this.getSavedApiConversationHistory()
 
 		// v2.0 xml tags refactor caveat: since we don't use tools anymore, we need to replace all tool use blocks with a text block since the API disallows conversations with tool uses and no tool schema
+		// Now also protocol-aware: format according to current protocol setting
+		const protocol = getCurrentToolProtocol()
+		const useNative = isNativeProtocol(protocol)
+
 		const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
 			if (Array.isArray(message.content)) {
 				const newContent = message.content.map((block) => {
 					if (block.type === "tool_use") {
-						// It's important we convert to the new tool schema
-						// format so the model doesn't get confused about how to
-						// invoke tools.
-						const inputAsXml = Object.entries(block.input as Record<string, string>)
-							.map(([key, value]) => `<${key}>\n${value}\n</${key}>`)
-							.join("\n")
+						// Format tool invocation based on protocol
+						const params = block.input as Record<string, any>
+						const formattedText = formatToolInvocation(block.name, params, protocol)
+
 						return {
 							type: "text",
-							text: `<${block.name}>\n${inputAsXml}\n</${block.name}>`,
+							text: formattedText,
 						} as Anthropic.Messages.TextBlockParam
 					} else if (block.type === "tool_result") {
 						// Convert block.content to text block array, removing images
