@@ -287,11 +287,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Process each message
 		for (const message of messages) {
-			// Skip null/undefined messages defensively to avoid runtime errors
-			if (!message) {
-				continue
-			}
-
 			// Check if this is a reasoning item (already formatted in API history)
 			if ((message as any).type === "reasoning") {
 				// Pass through reasoning items as-is
@@ -302,23 +297,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			const role = message.role === "user" ? "user" : "assistant"
 			const content: any[] = []
 
-			const msgContent = (message as any).content
-
-			if (typeof msgContent === "string") {
+			if (typeof message.content === "string") {
 				// For user messages, use input_text; for assistant messages, use output_text
 				if (role === "user") {
-					content.push({ type: "input_text", text: msgContent })
+					content.push({ type: "input_text", text: message.content })
 				} else {
-					content.push({ type: "output_text", text: msgContent })
+					content.push({ type: "output_text", text: message.content })
 				}
-			} else if (Array.isArray(msgContent)) {
+			} else if (Array.isArray(message.content)) {
 				// For array content with potential images, format properly
-				for (const block of msgContent) {
-					// Skip malformed or falsy blocks defensively
-					if (!block || typeof (block as any).type !== "string") {
-						continue
-					}
-
+				for (const block of message.content) {
 					if (block.type === "text") {
 						// For user messages, use input_text; for assistant messages, use output_text
 						if (role === "user") {
@@ -335,7 +323,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 			}
 
-			// Only emit messages that have at least one well-formed content block
 			if (content.length > 0) {
 				formattedMessages.push({ role, content })
 			}
