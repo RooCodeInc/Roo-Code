@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import * as vscode from "vscode"
-import { formatToolInvocation, isNativeProtocol, getCurrentToolProtocol } from "../toolResultFormatting"
-import { TOOL_PROTOCOL } from "@roo-code/types"
+import { TOOL_PROTOCOL, isNativeProtocol } from "@roo-code/types"
+import { formatToolInvocation, getCurrentToolProtocol } from "../toolResultFormatting"
 
 vi.mock("vscode", () => ({
 	workspace: {
@@ -36,18 +36,11 @@ describe("toolResultFormatting", () => {
 	})
 
 	describe("isNativeProtocol", () => {
-		it("should return true for native protocol from config", () => {
-			mockGetConfiguration.mockReturnValue(TOOL_PROTOCOL.NATIVE)
-			expect(isNativeProtocol()).toBe(true)
-		})
-
-		it("should return false for XML protocol from config", () => {
-			mockGetConfiguration.mockReturnValue("xml")
-			expect(isNativeProtocol()).toBe(false)
-		})
-
-		it("should accept protocol parameter", () => {
+		it("should return true for native protocol", () => {
 			expect(isNativeProtocol(TOOL_PROTOCOL.NATIVE)).toBe(true)
+		})
+
+		it("should return false for XML protocol", () => {
 			expect(isNativeProtocol("xml")).toBe(false)
 		})
 	})
