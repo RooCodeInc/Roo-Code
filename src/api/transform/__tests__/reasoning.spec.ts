@@ -826,10 +826,10 @@ describe("reasoning.ts", () => {
 			}
 
 			const result = getRooReasoning(options)
-			expect(result).toBeUndefined()
+			expect(result).toEqual({ enabled: false })
 		})
 
-		it("should include reasoning params for minimal effort", () => {
+		it("should omit reasoning params for minimal effort", () => {
 			const modelWithSupported: ModelInfo = {
 				...baseModel,
 				supportsReasoningEffort: true,
@@ -847,7 +847,7 @@ describe("reasoning.ts", () => {
 			}
 
 			const result = getRooReasoning(options)
-			expect(result).toEqual({ enabled: true, effort: "minimal" })
+			expect(result).toBeUndefined()
 		})
 
 		it("should handle all valid reasoning effort values", () => {
@@ -889,7 +889,7 @@ describe("reasoning.ts", () => {
 			}
 
 			const result = getRooReasoning(options)
-			expect(result).toBeUndefined()
+			expect(result).toEqual({ enabled: false })
 		})
 	})
 })
