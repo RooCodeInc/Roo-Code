@@ -191,11 +191,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			instructions?: string
 			service_tier?: ServiceTier
 			include?: string[]
+			/** Prompt cache retention policy: "in_memory" (default) or "24h" for extended caching */
+			prompt_cache_retention?: "in_memory" | "24h"
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
 		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
+
+		// Decide whether to enable extended prompt cache retention for this request
+		const promptCacheRetention = this.getPromptCacheRetention(model)
 
 		const body: Gpt5RequestBody = {
 			model: model.id,
@@ -229,6 +234,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				(requestedTier === "default" || allowedTierNames.has(requestedTier)) && {
 					service_tier: requestedTier,
 				}),
+			// Enable extended prompt cache retention for models that support it.
+			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
+			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
@@ -978,6 +986,28 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
+	 * Returns the appropriate prompt cache retention policy for the given model, if any.
+	 *
+	 * Extended prompt cache retention ("24h") is only available for GPT‑5.1 family models that
+	 * support prompt caching. For other models we omit the parameter so the default in‑memory
+	 * policy is used.
+	 */
+	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
+		if (!model.info.supportsPromptCache) return undefined
+
+		// Extended prompt cache retention is only supported for GPT‑5.1 models:
+		//   - gpt-5.1
+		//   - gpt-5.1-codex
+		//   - gpt-5.1-codex-mini
+		//   - gpt-5.1-chat-latest (future compatibility)
+		if (model.id.startsWith("gpt-5.1")) {
+			return "24h"
+		}
+
+		return undefined
+	}
+
+	/**
 	 * Returns a shallow-cloned ModelInfo with pricing overridden for the given tier, if available.
 	 * If no tier or no overrides exist, the original ModelInfo is returned.
 	 */
@@ -1100,6 +1130,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Include text.verbosity only when the model explicitly supports it
 			if (model.info.supportsVerbosity === true) {
 				requestBody.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+			}
+
+			// Enable extended prompt cache retention for eligible models
+			const promptCacheRetention = this.getPromptCacheRetention(model)
+			if (promptCacheRetention) {
+				requestBody.prompt_cache_retention = promptCacheRetention
 			}
 
 			// Make the non-streaming request
