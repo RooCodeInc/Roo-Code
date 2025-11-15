@@ -7,8 +7,8 @@ import { experiments as experimentsModule, EXPERIMENT_IDS } from "../../shared/e
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
-import { ToolProtocol } from "@roo-code/types"
 import { Package } from "../../shared/package"
+import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
 
 import { ClineProvider } from "./ClineProvider"
 
@@ -93,7 +93,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
-			toolProtocol: vscode.workspace.getConfiguration(Package.name).get<ToolProtocol>("toolProtocol", "xml"),
+			toolProtocol: getToolProtocolFromSettings(),
 		},
 	)
 

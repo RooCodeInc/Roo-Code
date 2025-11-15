@@ -42,10 +42,10 @@ import {
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	TOOL_PROTOCOL,
-	ToolProtocol,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
+import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -408,8 +408,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Initialize the assistant message parser only for XML protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
-		const toolProtocol = vscode.workspace.getConfiguration(Package.name).get<ToolProtocol>("toolProtocol", "xml")
-		this.assistantMessageParser = toolProtocol === "xml" ? new AssistantMessageParser() : undefined
+		this.assistantMessageParser = getToolProtocolFromSettings() === "xml" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -2416,16 +2415,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 
 					// Check if we're using native protocol
-					const toolProtocol = vscode.workspace
-						.getConfiguration(Package.name)
-						.get<ToolProtocol>("toolProtocol", "xml")
-					const isNative = isNativeProtocol(toolProtocol)
+					const isNative = isNativeProtocol(getToolProtocolFromSettings())
 
 					if (isNative) {
 						// For native protocol: Preserve tool_use blocks that were added via tool_call chunks
 						// These are added directly to assistantMessageContent and have an 'id' property
 						const nativeToolBlocks = this.assistantMessageContent.filter(
-							(block): block is ToolUse<any> => block.type === "tool_use" && (block as any).id !== undefined,
+							(block): block is ToolUse<any> =>
+								block.type === "tool_use" && (block as any).id !== undefined,
 						)
 						// Merge: parser blocks (text) + native tool blocks (tools with IDs)
 						this.assistantMessageContent = [...parsedBlocks, ...nativeToolBlocks]
@@ -2580,10 +2577,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
-					const toolProtocol = vscode.workspace
-						.getConfiguration(Package.name)
-						.get<ToolProtocol>("toolProtocol", "xml")
-					const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+					const isNativeProtocol = getToolProtocolFromSettings() === TOOL_PROTOCOL.NATIVE
 
 					if (isNativeProtocol && this.apiConversationHistory.length > 0) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
@@ -2770,9 +2764,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
-					toolProtocol: vscode.workspace
-						.getConfiguration(Package.name)
-						.get<ToolProtocol>("toolProtocol", "xml"),
+					toolProtocol: getToolProtocolFromSettings(),
 				},
 				undefined, // todoList
 				this.api.getModel().id,
@@ -2982,7 +2974,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Determine if we should include native tools based on:
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
-		const toolProtocol = vscode.workspace.getConfiguration(Package.name).get<ToolProtocol>("toolProtocol", "xml")
+		const toolProtocol = getToolProtocolFromSettings()
 		const modelInfo = this.api.getModel().info
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
