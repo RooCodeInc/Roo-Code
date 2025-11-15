@@ -28,7 +28,7 @@ import {
 	type HistoryItem,
 	type CreateTaskOptions,
 	RooCodeEventName,
-	TelemetryEventName,
+	// TelemetryEventName,
 	TaskStatus,
 	TodoItem,
 	getApiProtocol,
