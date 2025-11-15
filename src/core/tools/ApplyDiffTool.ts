@@ -2,8 +2,9 @@ import path from "path"
 import fs from "fs/promises"
 import * as vscode from "vscode"
 
-import { TelemetryService } from "@roo-code/telemetry"
 import { readFileWithEncodingDetection } from "../../utils/encoding"
+
+import { TelemetryService } from "@roo-code/telemetry"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { ClineSayTool } from "../../shared/ExtensionMessage"

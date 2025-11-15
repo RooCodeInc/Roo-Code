@@ -70,6 +70,15 @@ vitest.mock("../../../integrations/terminal/TerminalRegistry", () => ({
 	},
 }))
 
+vitest.mock("../../../integrations/terminal/TerminalRegistry", () => ({
+	TerminalRegistry: {
+		getOrCreateTerminal: vitest.fn().mockResolvedValue({
+			runCommand: vitest.fn().mockResolvedValue(undefined),
+			getCurrentWorkingDirectory: vitest.fn().mockReturnValue("/test/workspace"),
+		}),
+	},
+}))
+
 vitest.mock("../../task/Task")
 vitest.mock("../../prompts/responses")
 
@@ -91,15 +100,7 @@ describe("executeCommandTool", () => {
 		vitest.clearAllMocks()
 
 		// Spy on executeCommandInTerminal and mock its return value
-		vitest.spyOn(executeCommandModule, "executeCommandInTerminal").mockImplementation(async (_task, options) => {
-			const workingDir = options.customCwd || "/test/workspace"
-			// Return success with working directory information
-			return [false, `Command executed in terminal within working directory '${workingDir}'.`]
-		})
-
-		// Mock fs.access to always succeed for custom paths
-		const { default: fsPromises } = await import("fs/promises")
-		vi.mocked(fsPromises.access).mockResolvedValue(undefined)
+		vitest.spyOn(executeCommandModule, "executeCommandInTerminal").mockResolvedValue([false, "Command executed"])
 
 		// Create mock implementations with eslint directives to handle the type issues
 		mockCline = {

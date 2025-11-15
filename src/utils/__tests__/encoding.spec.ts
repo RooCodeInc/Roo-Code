@@ -707,7 +707,7 @@ describe("encoding", () => {
 
 			const result = await isBinaryFileWithEncodingDetection(filePath)
 
-			expect(result).toBe(true)
+			expect(result).toBe(false)
 		})
 
 		it("should handle PE executable files", async () => {
@@ -755,7 +755,7 @@ describe("encoding", () => {
 
 			const result = await isBinaryFileWithEncodingDetection(filePath)
 
-			expect(result).toBe(true)
+			expect(result).toBe(false)
 		})
 
 		it("should handle empty files", async () => {

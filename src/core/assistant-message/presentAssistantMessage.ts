@@ -38,8 +38,8 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
-import * as vscode from "vscode"
-import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
+import { isNativeProtocol } from "@roo-code/types"
+import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
 import { updateCospecMetadata } from "../checkpoints"
 
 /**
@@ -278,17 +278,25 @@ export async function presentAssistantMessage(cline: Task) {
 				break
 			}
 
+			// Track if we've already pushed a tool result for this tool call (native protocol only)
+			let hasToolResult = false
+
 			const pushToolResult = (content: ToolResponse) => {
 				// Check if we're using native tool protocol
-				const toolProtocol = vscode.workspace
-					.getConfiguration(Package.name)
-					.get<ToolProtocol>("toolProtocol", "xml")
-				const isNative = isNativeProtocol(toolProtocol)
+				const isNative = isNativeProtocol(getToolProtocolFromSettings())
 
 				// Get the tool call ID if this is a native tool call
 				const toolCallId = (block as any).id
 
 				if (isNative && toolCallId) {
+					// For native protocol, only allow ONE tool_result per tool call
+					if (hasToolResult) {
+						console.warn(
+							`[presentAssistantMessage] Skipping duplicate tool_result for tool_use_id: ${toolCallId}`,
+						)
+						return
+					}
+
 					// For native protocol, add as tool_result block
 					let resultContent: string
 					if (typeof content === "string") {
@@ -313,6 +321,8 @@ export async function presentAssistantMessage(cline: Task) {
 						tool_use_id: toolCallId,
 						content: resultContent,
 					} as Anthropic.ToolResultBlockParam)
+
+					hasToolResult = true
 					if (
 						["write_to_file", "apply_diff", "insert_content"].includes(block.name) &&
 						block.partial === false
@@ -322,6 +332,7 @@ export async function presentAssistantMessage(cline: Task) {
 				} else {
 					// For XML protocol, add as text blocks (legacy behavior)
 					cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
+
 					if (typeof content === "string") {
 						cline.userMessageContent.push({
 							type: "text",
@@ -515,10 +526,7 @@ export async function presentAssistantMessage(cline: Task) {
 					await checkpointSaveAndMark(cline)
 
 					// Check if native protocol is enabled - if so, always use single-file class-based tool
-					const toolProtocol = vscode.workspace
-						.getConfiguration(Package.name)
-						.get<ToolProtocol>("toolProtocol", "xml")
-					if (isNativeProtocol(toolProtocol)) {
+					if (isNativeProtocol(getToolProtocolFromSettings())) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,

@@ -1606,10 +1606,6 @@ describe("read_file tool with image support", () => {
 			// Setup - simulate read error
 			mockedFsReadFile.mockRejectedValue(new Error("Failed to read image"))
 
-			const mockHandleError = vi.fn().mockImplementation(async (action: string, error: Error) => {
-				await localMockCline.say("error", `Error ${action}: ${error.message}`)
-			})
-
 			// Execute
 			const argsContent = `<file><path>${testImagePath}</path></file>`
 			const toolUse: ReadFileToolUse = {
@@ -1621,7 +1617,7 @@ describe("read_file tool with image support", () => {
 
 			await readFileTool.handle(localMockCline, toolUse, {
 				askApproval: localMockCline.ask,
-				handleError: mockHandleError,
+				handleError: vi.fn(),
 				pushToolResult: (result: ToolResponse) => {
 					toolResult = result
 				},

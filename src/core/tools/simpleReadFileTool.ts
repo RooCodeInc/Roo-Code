@@ -1,5 +1,4 @@
 import path from "path"
-import { isBinaryFile } from "isbinaryfile"
 
 import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"

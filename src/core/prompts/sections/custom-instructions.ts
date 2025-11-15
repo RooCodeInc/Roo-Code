@@ -386,7 +386,8 @@ export async function addCustomInstructions(
 		sections.push(`Rules:\n\n${rules.join("\n\n")}`)
 	}
 	sections.push(...mustRules)
-	const joinedSections = sections.join("\n").trim()
+
+	const joinedSections = sections.join("\n\n")
 
 	const effectiveProtocol = getEffectiveProtocol(options.settings?.toolProtocol)
 
