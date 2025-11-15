@@ -249,6 +249,18 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
+			// Determine whether multi-tool calls are enabled for this task
+			const provider = cline.providerRef.deref()
+			let isMultiToolCallsEnabled = false
+
+			if (provider) {
+				const state = await provider.getState()
+				isMultiToolCallsEnabled = experiments.isEnabled(
+					state.experiments ?? {},
+					EXPERIMENT_IDS.MULTI_TOOL_CALLS,
+				)
+			}
+
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
 				if (!block.partial) {
@@ -267,7 +279,7 @@ export async function presentAssistantMessage(cline: Task) {
 				break
 			}
 
-			if (cline.didAlreadyUseTool) {
+			if (cline.didAlreadyUseTool && !isMultiToolCallsEnabled) {
 				// Ignore any content after a tool has already been used.
 				cline.userMessageContent.push({
 					type: "text",
@@ -338,8 +350,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 				// Once a tool result has been collected, ignore all other tool
 				// uses since we should only ever present one tool result per
-				// message.
-				cline.didAlreadyUseTool = true
+				// message, unless multi-tool calls are enabled.
+				if (!isMultiToolCallsEnabled) {
+					cline.didAlreadyUseTool = true
+				}
 			}
 
 			const askApproval = async (
