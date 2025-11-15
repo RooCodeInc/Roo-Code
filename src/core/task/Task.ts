@@ -10,7 +10,6 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 import { Package } from "../../shared/package"
-import { isNativeProtocol } from "@roo-code/types"
 import { getCurrentToolProtocol, formatToolInvocation } from "../tools/helpers/toolResultFormatting"
 
 import {
