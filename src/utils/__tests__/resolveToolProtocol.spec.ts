@@ -30,7 +30,13 @@ describe("resolveToolProtocol", () => {
 				toolProtocol: "native",
 				apiProvider: "anthropic",
 			}
-			const result = resolveToolProtocol(settings)
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true, // Model supports native tools
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "anthropic")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
@@ -71,7 +77,13 @@ describe("resolveToolProtocol", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "roo",
 			}
-			const result = resolveToolProtocol(settings, undefined, "roo")
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true, // Model supports native tools
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "roo")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins over provider default
 		})
 
@@ -85,6 +97,7 @@ describe("resolveToolProtocol", () => {
 				contextWindow: 128000,
 				supportsPromptCache: false,
 				defaultToolProtocol: "xml", // Model prefers XML
+				supportsNativeTools: true, // But model supports native tools
 			}
 			const result = resolveToolProtocol(settings, modelInfo, "roo")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins
@@ -102,6 +115,7 @@ describe("resolveToolProtocol", () => {
 				contextWindow: 128000,
 				supportsPromptCache: false,
 				defaultToolProtocol: "native",
+				supportsNativeTools: true, // Model must support native tools
 			}
 			const result = resolveToolProtocol(settings, modelInfo, "roo")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Model default wins when global is XML (default)
@@ -179,6 +193,21 @@ describe("resolveToolProtocol", () => {
 			}
 			const result = resolveToolProtocol(settings, modelInfo, "anthropic")
 			expect(result).toBe(TOOL_PROTOCOL.XML) // Falls back to XML due to lack of support
+		})
+
+		it("should fall back to XML when user prefers native but model support is undefined", () => {
+			const settings: ProviderSettings = {
+				toolProtocol: "native", // User wants native
+				apiProvider: "anthropic",
+			}
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				// supportsNativeTools is undefined (not specified)
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "anthropic")
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Falls back to XML - undefined treated as unsupported
 		})
 	})
 
@@ -321,8 +350,14 @@ describe("resolveToolProtocol", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "ollama", // Provider not in native list, defaults to XML
 			}
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true, // Model supports native tools
+			}
 
-			const result = resolveToolProtocol(settings, undefined, "ollama")
+			const result = resolveToolProtocol(settings, modelInfo, "ollama")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins over provider default
 		})
 	})

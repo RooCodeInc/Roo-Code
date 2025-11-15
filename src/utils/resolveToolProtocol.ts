@@ -49,7 +49,8 @@ export function resolveToolProtocol(
 	}
 
 	// Check support: if protocol is native but model doesn't support it, use XML
-	if (protocol === TOOL_PROTOCOL.NATIVE && modelInfo?.supportsNativeTools === false) {
+	// Treat undefined as unsupported (only allow native when explicitly true)
+	if (protocol === TOOL_PROTOCOL.NATIVE && modelInfo?.supportsNativeTools !== true) {
 		return TOOL_PROTOCOL.XML
 	}
 
