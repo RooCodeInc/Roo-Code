@@ -35,6 +35,7 @@ import {
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
+	isNativeProtocol,
 	QueuedMessage,
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -60,7 +61,7 @@ import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/Extension
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
-import { DiffStrategy } from "../../shared/tools"
+import { DiffStrategy, type ToolUse } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
 
@@ -2386,13 +2387,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Now that the stream is complete, finalize any remaining partial content blocks
 				this.assistantMessageParser.finalizeContentBlocks()
 
-				// Preserve tool_use blocks that were added via native protocol (not parsed from text)
-				// These come from tool_call chunks and are added directly to assistantMessageContent
-				const nativeToolBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
 				const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 
-				// Merge: parser blocks + native tool blocks that aren't in parser
-				this.assistantMessageContent = [...parsedBlocks, ...nativeToolBlocks]
+				// Check if we're using native protocol
+				const toolProtocol = vscode.workspace
+					.getConfiguration(Package.name)
+					.get<ToolProtocol>("toolProtocol", "xml")
+				const isNative = isNativeProtocol(toolProtocol)
+
+				if (isNative) {
+					// For native protocol: Preserve tool_use blocks that were added via tool_call chunks
+					// These are added directly to assistantMessageContent and have an 'id' property
+					const nativeToolBlocks = this.assistantMessageContent.filter(
+						(block): block is ToolUse<any> => block.type === "tool_use" && (block as any).id !== undefined,
+					)
+					// Merge: parser blocks (text) + native tool blocks (tools with IDs)
+					this.assistantMessageContent = [...parsedBlocks, ...nativeToolBlocks]
+				} else {
+					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
+					this.assistantMessageContent = parsedBlocks
+				}
 
 				if (partialBlocks.length > 0) {
 					// If there is content to update then it will complete and
