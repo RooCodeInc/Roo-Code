@@ -2577,9 +2577,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
-					const isNativeProtocol = getToolProtocolFromSettings() === TOOL_PROTOCOL.NATIVE
-
-					if (isNativeProtocol && this.apiConversationHistory.length > 0) {
+					if (isNativeProtocol(getToolProtocolFromSettings()) && this.apiConversationHistory.length > 0) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 						if (lastMessage.role === "user") {
 							// Remove the last user message that we added earlier
@@ -2641,7 +2639,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						} else {
 							// User declined to retry
 							// For native protocol, re-add the user message we removed
-							if (isNativeProtocol) {
+							if (isNativeProtocol(getToolProtocolFromSettings())) {
 								await this.addToApiConversationHistory({
 									role: "user",
 									content: currentUserContent,
