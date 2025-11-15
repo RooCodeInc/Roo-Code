@@ -39,7 +39,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isNativeProtocol } from "@roo-code/types"
-import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -282,7 +282,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const pushToolResult = (content: ToolResponse) => {
 				// Check if we're using native tool protocol
-				const isNative = isNativeProtocol(getToolProtocolFromSettings())
+				const toolProtocol = resolveToolProtocol(
+					cline.apiConfiguration,
+					cline.api.getModel().info,
+					cline.apiConfiguration.apiProvider,
+				)
+				const isNative = isNativeProtocol(toolProtocol)
 
 				// Get the tool call ID if this is a native tool call
 				const toolCallId = (block as any).id
@@ -513,7 +518,12 @@ export async function presentAssistantMessage(cline: Task) {
 					await checkpointSaveAndMark(cline)
 
 					// Check if native protocol is enabled - if so, always use single-file class-based tool
-					if (isNativeProtocol(getToolProtocolFromSettings())) {
+					const applyDiffToolProtocol = resolveToolProtocol(
+						cline.apiConfiguration,
+						cline.api.getModel().info,
+						cline.apiConfiguration.apiProvider,
+					)
+					if (isNativeProtocol(applyDiffToolProtocol)) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
