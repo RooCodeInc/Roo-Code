@@ -1602,10 +1602,7 @@ describe("read_file tool with image support", () => {
 			// Setup - simulate read error
 			mockedFsReadFile.mockRejectedValue(new Error("Failed to read image"))
 
-			// Create a spy for handleError
-			const handleErrorSpy = vi.fn()
-
-			// Execute with the spy
+			// Execute
 			const argsContent = `<file><path>${testImagePath}</path></file>`
 			const toolUse: ReadFileToolUse = {
 				type: "tool_use",
@@ -1616,7 +1613,7 @@ describe("read_file tool with image support", () => {
 
 			await readFileTool.handle(localMockCline, toolUse, {
 				askApproval: localMockCline.ask,
-				handleError: handleErrorSpy, // Use our spy here
+				handleError: vi.fn(),
 				pushToolResult: (result: ToolResponse) => {
 					toolResult = result
 				},
@@ -1625,7 +1622,8 @@ describe("read_file tool with image support", () => {
 
 			// Verify error handling
 			expect(toolResult).toContain("<error>Error reading image file: Failed to read image</error>")
-			expect(handleErrorSpy).toHaveBeenCalled()
+			// Verify that say was called to show error to user
+			expect(localMockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Failed to read image"))
 		})
 	})
 

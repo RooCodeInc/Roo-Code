@@ -1,5 +1,15 @@
 # Roo Code Changelog
 
+## [3.32.1] - 2025-11-14
+
+![3.32.1 Release - Bug Fixes](/releases/3.32.1-release.png)
+
+- Fix: Add abort controller for request cancellation in OpenAI native protocol (PR #9276 by @daniel-lxs)
+- Fix: Resolve duplicate tool blocks causing 'tool has already been used' error in native protocol mode (PR #9275 by @daniel-lxs)
+- Fix: Prevent duplicate tool_result blocks in native protocol mode for read_file (PR #9272 by @daniel-lxs)
+- Fix: Correct OpenAI Native handling of encrypted reasoning blocks to prevent errors during condensing (PR #9263 by @hannesrudolph)
+- Fix: Disable XML parser for native tool protocol to prevent parsing conflicts (PR #9277 by @daniel-lxs)
+
 ## [3.32.0] - 2025-11-14
 
 ![3.32.0 Release - GPT-5.1 models and OpenAI prompt caching](/releases/3.32.0-release.png)
