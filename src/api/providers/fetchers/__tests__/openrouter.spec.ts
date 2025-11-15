@@ -29,6 +29,7 @@ describe.skip("OpenRouter API", () => {
 				description: expect.any(String),
 				supportsReasoningBudget: false,
 				supportsReasoningEffort: false,
+				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
 			})
 
@@ -45,6 +46,7 @@ describe.skip("OpenRouter API", () => {
 				supportsReasoningBudget: true,
 				requiredReasoningBudget: true,
 				supportsReasoningEffort: true,
+				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
 			})
 
@@ -97,6 +99,7 @@ describe.skip("OpenRouter API", () => {
 					cacheReadsPrice: 0.31,
 					description: undefined,
 					supportsReasoningEffort: undefined,
+					supportsNativeTools: undefined,
 					supportedParameters: undefined,
 				},
 				"google-ai-studio": {
@@ -111,6 +114,7 @@ describe.skip("OpenRouter API", () => {
 					cacheReadsPrice: 0.31,
 					description: undefined,
 					supportsReasoningEffort: undefined,
+					supportsNativeTools: undefined,
 					supportedParameters: undefined,
 				},
 			})

@@ -76,5 +76,6 @@
 	"settings.commit.useConventionalCommits.description": "Use conventional commit format when generating commit messages",
 	"settings.commit.commitModelId.description": "Set the Model ID for Generate Commit Message (e.g. gpt-4)",
 	"settings.commit.maxLength.description": "Maximum length for commit message subject line (20-300 characters)",
-	"settings.commit.language.description": "Language for commit message generation (auto = use system language)"
+	"settings.commit.language.description": "Language for commit message generation (auto = use system language)",
+	"settings.toolProtocol.description": "Tool protocol to use for AI interactions. XML is the default and recommended protocol. Native is experimental and may not work with all providers."
 }

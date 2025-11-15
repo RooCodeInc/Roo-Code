@@ -7,10 +7,9 @@ import {
 	OpenAiNativeModelId,
 	openAiNativeModels,
 	OPENAI_NATIVE_DEFAULT_TEMPERATURE,
-	GPT5_DEFAULT_TEMPERATURE,
 	type ReasoningEffort,
 	type VerbosityLevel,
-	type ReasoningEffortWithMinimal,
+	type ReasoningEffortExtended,
 	type ServiceTier,
 } from "@roo-code/types"
 
@@ -25,11 +24,6 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
-
-// GPT-5 specific types
-
-// Constants for model identification
-const GPT5_MODEL_PREFIX = "gpt-5"
 
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -58,9 +52,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-		// Default to including reasoning.summary: "auto" for GPT‑5 unless explicitly disabled
-		if (this.options.enableGpt5ReasoningSummary === undefined) {
-			this.options.enableGpt5ReasoningSummary = true
+		// Default to including reasoning.summary: "auto" for models that support Responses API
+		// reasoning summaries unless explicitly disabled.
+		if (this.options.enableResponsesReasoningSummary === undefined) {
+			this.options.enableResponsesReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
@@ -170,9 +165,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Temporary debug logging
-		// console.log("[OpenAI Native] Request body:", requestBody)
-
 		// Make the request (pass systemPrompt and messages for potential retry)
 		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
 	}
@@ -182,17 +174,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		formattedInput: any,
 		systemPrompt: string,
 		verbosity: any,
-		reasoningEffort: ReasoningEffortWithMinimal | undefined,
+		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
-		// Build a request body
-		// Ensure we explicitly pass max_output_tokens for GPT‑5 based on Roo's reserved model response calculation
+		// Build a request body for the OpenAI Responses API.
+		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
-		interface Gpt5RequestBody {
+		interface ResponsesRequestBody {
 			model: string
 			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
 			stream: boolean
-			reasoning?: { effort?: ReasoningEffortWithMinimal; summary?: "auto" }
+			reasoning?: { effort?: ReasoningEffortExtended; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
 			temperature?: number
 			max_output_tokens?: number
@@ -200,13 +192,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			instructions?: string
 			service_tier?: ServiceTier
 			include?: string[]
+			/** Prompt cache retention policy: "in_memory" (default) or "24h" for extended caching */
+			prompt_cache_retention?: "in_memory" | "24h"
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
 		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
 
-		const body: Gpt5RequestBody = {
+		// Decide whether to enable extended prompt cache retention for this request
+		const promptCacheRetention = this.getPromptCacheRetention(model)
+
+		const body: ResponsesRequestBody = {
 			model: model.id,
 			input: formattedInput,
 			stream: true,
@@ -216,22 +213,19 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
 			// The official way to set system behavior is the top-level `instructions` field.
 			instructions: systemPrompt,
-			include: ["reasoning.encrypted_content"],
+			// Only include encrypted reasoning content when reasoning effort is set
+			...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			...(reasoningEffort
 				? {
 						reasoning: {
 							...(reasoningEffort ? { effort: reasoningEffort } : {}),
-							...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+							...(this.options.enableResponsesReasoningSummary ? { summary: "auto" as const } : {}),
 						},
 					}
 				: {}),
 			// Only include temperature if the model supports it
 			...(model.info.supportsTemperature !== false && {
-				temperature:
-					this.options.modelTemperature ??
-					(model.id.startsWith(GPT5_MODEL_PREFIX)
-						? GPT5_DEFAULT_TEMPERATURE
-						: OPENAI_NATIVE_DEFAULT_TEMPERATURE),
+				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 			}),
 			// Explicitly include the calculated max output tokens.
 			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
@@ -241,6 +235,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				(requestedTier === "default" || allowedTierNames.has(requestedTier)) && {
 					service_tier: requestedTier,
 				}),
+			// Enable extended prompt cache retention for models that support it.
+			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
+			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
@@ -275,7 +272,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 		} catch (sdkErr: any) {
 			// For errors, fallback to manual SSE via fetch
-			yield* this.makeGpt5ResponsesAPIRequest(requestBody, model, metadata, systemPrompt, messages)
+			yield* this.makeResponsesApiRequest(requestBody, model, metadata, systemPrompt, messages)
 		}
 	}
 
@@ -334,7 +331,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		return formattedMessages
 	}
 
-	private async *makeGpt5ResponsesAPIRequest(
+	private async *makeResponsesApiRequest(
 		requestBody: any,
 		model: OpenAiNativeModel,
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -359,7 +356,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			if (!response.ok) {
 				const errorText = await response.text()
 
-				let errorMessage = `GPT-5 API request failed (${response.status})`
+				let errorMessage = `OpenAI Responses API request failed (${response.status})`
 				let errorDetails = ""
 
 				// Try to parse error as JSON for better error messages
@@ -815,7 +812,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 									}
 								}
 
-								// Usage for done/completed is already handled by processGpt5Event in SDK path.
+								// Usage for done/completed is already handled by processEvent in the SDK path.
 								// For SSE path, usage often arrives separately; avoid double-emitting here.
 							}
 							// These are structural or status events, we can just log them at a lower level or ignore.
@@ -983,20 +980,27 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 	}
 
-	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortWithMinimal | undefined {
-		const { reasoning, info } = model
+	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortExtended | undefined {
+		// Single source of truth: user setting overrides, else model default (from types).
+		const selected = (this.options.reasoningEffort as any) ?? (model.info.reasoningEffort as any)
+		return selected && selected !== "disable" ? (selected as any) : undefined
+	}
 
-		// Check if reasoning effort is configured
-		if (reasoning && "reasoning_effort" in reasoning) {
-			const effort = reasoning.reasoning_effort as string
-			// Support all effort levels
-			if (effort === "minimal" || effort === "low" || effort === "medium" || effort === "high") {
-				return effort as ReasoningEffortWithMinimal
-			}
+	/**
+	 * Returns the appropriate prompt cache retention policy for the given model, if any.
+	 *
+	 * The policy is driven by ModelInfo.promptCacheRetention so that model-specific details
+	 * live in the shared types layer rather than this provider. When set to "24h" and the
+	 * model supports prompt caching, extended prompt cache retention is requested.
+	 */
+	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
+		if (!model.info.supportsPromptCache) return undefined
+
+		if (model.info.promptCacheRetention === "24h") {
+			return "24h"
 		}
 
-		// Use the model's default from types if available
-		return info.reasoningEffort as ReasoningEffortWithMinimal | undefined
+		return undefined
 	}
 
 	/**
@@ -1034,19 +1038,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			modelId: id,
 			model: info,
 			settings: this.options,
-			defaultTemperature: id.startsWith(GPT5_MODEL_PREFIX)
-				? GPT5_DEFAULT_TEMPERATURE
-				: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
+			defaultTemperature: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 		})
 
-		// For models using the Responses API, ensure we support reasoning effort
-		const effort =
-			(this.options.reasoningEffort as ReasoningEffortWithMinimal | undefined) ??
-			(info.reasoningEffort as ReasoningEffortWithMinimal | undefined)
-
-		if (effort) {
-			;(params.reasoning as any) = { reasoning_effort: effort }
-		}
+		// Reasoning effort inclusion is handled by getModelParams/getOpenAiReasoning.
+		// Do not re-compute or filter efforts here.
 
 		// The o3 models are named like "o3-mini-[reasoning-effort]", which are
 		// not valid model ids, so we need to strip the suffix.
@@ -1098,7 +1094,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				],
 				stream: false, // Non-streaming for completePrompt
 				store: false, // Don't store prompt completions
-				include: ["reasoning.encrypted_content"],
+				// Only include encrypted reasoning content when reasoning effort is set
+				...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			}
 
 			// Include service tier if selected and supported
@@ -1112,17 +1109,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			if (reasoningEffort) {
 				requestBody.reasoning = {
 					effort: reasoningEffort,
-					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+					...(this.options.enableResponsesReasoningSummary ? { summary: "auto" as const } : {}),
 				}
 			}
 
 			// Only include temperature if the model supports it
 			if (model.info.supportsTemperature !== false) {
-				requestBody.temperature =
-					this.options.modelTemperature ??
-					(model.id.startsWith(GPT5_MODEL_PREFIX)
-						? GPT5_DEFAULT_TEMPERATURE
-						: OPENAI_NATIVE_DEFAULT_TEMPERATURE)
+				requestBody.temperature = this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE
 			}
 
 			// Include max_output_tokens if available
@@ -1133,6 +1126,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Include text.verbosity only when the model explicitly supports it
 			if (model.info.supportsVerbosity === true) {
 				requestBody.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+			}
+
+			// Enable extended prompt cache retention for eligible models
+			const promptCacheRetention = this.getPromptCacheRetention(model)
+			if (promptCacheRetention) {
+				requestBody.prompt_cache_retention = promptCacheRetention
 			}
 
 			// Make the non-streaming request

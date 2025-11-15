@@ -35,6 +35,7 @@ export const BINARY_EXTENSIONS = new Set([
 	".webp",
 	".ico",
 	".svg",
+	".avif",
 	// Audio and video files
 	".mp3",
 	".mp4",
@@ -212,7 +213,7 @@ export async function detectFileEncoding(filePath: string): Promise<string> {
  * @param filePath File path
  * @returns Promise<boolean> true if file is binary, false if it's a text file
  */
-export async function isBinaryFileWithEncodingDetection(filePath: string): Promise<boolean> {
+export async function isBinaryFileWithEncodingDetection(filePath: string, size?: number): Promise<boolean> {
 	try {
 		const fileExtension = path.extname(filePath).toLowerCase()
 		// 1. First check file extension
@@ -240,6 +241,7 @@ export async function isBinaryFileWithEncodingDetection(filePath: string): Promi
 		}
 	} catch (error) {
 		// File read error, assume it's binary
+		return false
 		return true
 	}
 }

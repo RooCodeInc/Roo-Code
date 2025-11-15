@@ -106,19 +106,17 @@ export async function extractTextFromFile(
 				// Read only up to maxReadFileLine (endLine is 0-based and inclusive)
 				const content = await readLines(filePath, maxReadFileLine - 1, 0)
 				const numberedContent = addLineNumbers(content)
-				// Apply character limit truncation if specified
 				if (maxReadCharacterLimit && numberedContent.length > maxReadCharacterLimit) {
 					const truncatedContent = truncateOutput(numberedContent, undefined, maxReadCharacterLimit)
 					return (
 						truncatedContent +
 						`\n\n[File truncated: showing ${maxReadFileLine} of ${totalLines} total lines, and content further truncated due to character limit (${maxReadCharacterLimit}). The file is too large and may exhaust the context window if read in full.]`
 					)
-				} else {
-					return (
-						numberedContent +
-						`\n\n[File truncated: showing ${maxReadFileLine} of ${totalLines} total lines. The file is too large and may exhaust the context window if read in full.]`
-					)
 				}
+				return (
+					numberedContent +
+					`\n\n[File truncated: showing ${maxReadFileLine} of ${totalLines} total lines. The file is too large and may exhaust the context window if read in full.]`
+				)
 			}
 		}
 		// Read the entire file if no limit or file is within limit

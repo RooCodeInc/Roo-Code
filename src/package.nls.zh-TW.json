@@ -76,5 +76,6 @@
 	"settings.commit.useConventionalCommits.description": "產生提交訊息時使用常規提交格式",
 	"settings.commit.commitModelId.description": "設定生成提交信息嘅模型ID（例如：gpt-4）",
 	"settings.commit.maxLength.description": "提交訊息主旨行的最大長度（20-300個字元）",
-	"settings.commit.language.description": "提交訊息生成語言（auto = 使用系統語言）"
+	"settings.commit.language.description": "提交訊息生成語言（auto = 使用系統語言）",
+	"settings.toolProtocol.description": "用於 AI 互動的工具協議。XML 是預設且推薦的協議。本機是實驗性的，可能不適用於所有提供商。"
 }

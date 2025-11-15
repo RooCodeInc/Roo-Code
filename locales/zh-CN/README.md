@@ -110,16 +110,6 @@ code --install-extension bin/zgsm-<version>.vsix
 
 ---
 
-## 贡献者
-
-感谢所有帮助改进 Roo Code 的贡献者！
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
-
 ## 许可证
 
 [Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)

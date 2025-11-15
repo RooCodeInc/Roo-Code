@@ -1,6 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
@@ -66,7 +67,9 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * - Requesty: Sent in extra metadata
 	 * - Unbound: Sent in unbound_metadata
 	 */
+	mode?: string
 	suppressPreviousResponseId?: boolean
+	onRequestHeadersReady?: (headers: Record<string, string>) => void
 	/**
 	 * Controls whether the response should be stored for 30 days in OpenAI's Responses API.
 	 * When true (default), responses are stored and can be referenced in future requests
@@ -75,8 +78,21 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * @default true
 	 */
 	store?: boolean
-	onRequestHeadersReady?: (headers: Record<string, string>) => void
-	mode?: string
+	/**
+	 * Optional array of tool definitions to pass to the model.
+	 * For OpenAI-compatible providers, these are ChatCompletionTool definitions.
+	 */
+	tools?: OpenAI.Chat.ChatCompletionTool[]
+	/**
+	 * Controls which (if any) tool is called by the model.
+	 * Can be "none", "auto", "required", or a specific tool choice.
+	 */
+	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
+	/**
+	 * The tool protocol being used (XML or Native).
+	 * Used by providers to determine whether to include native tool definitions.
+	 */
+	toolProtocol?: ToolProtocol
 }
 
 export interface ApiHandler {

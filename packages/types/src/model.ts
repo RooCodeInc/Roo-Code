@@ -19,6 +19,22 @@ export const reasoningEffortWithMinimalSchema = z.union([reasoningEffortsSchema,
 export type ReasoningEffortWithMinimal = z.infer<typeof reasoningEffortWithMinimalSchema>
 
 /**
+ * Extended Reasoning Effort (includes "none" and "minimal")
+ * Note: "disable" is a UI/control value, not a value sent as effort
+ */
+export const reasoningEffortsExtended = ["none", "minimal", "low", "medium", "high"] as const
+
+export const reasoningEffortExtendedSchema = z.enum(reasoningEffortsExtended)
+
+export type ReasoningEffortExtended = z.infer<typeof reasoningEffortExtendedSchema>
+
+/**
+ * Reasoning Effort user setting (includes "disable")
+ */
+export const reasoningEffortSettingValues = ["disable", "none", "minimal", "low", "medium", "high"] as const
+export const reasoningEffortSettingSchema = z.enum(reasoningEffortSettingValues)
+
+/**
  * Verbosity
  */
 
@@ -60,6 +76,10 @@ export const modelInfoSchema = z.object({
 	// `max_completion_tokens`，`max_tokens` ,undefined
 	maxTokensKey: z.string().optional(),
 	supportsPromptCache: z.boolean(),
+	// Optional default prompt cache retention policy for providers that support it.
+	// When set to "24h", extended prompt caching will be requested; when omitted
+	// or set to "in_memory", the default in‑memory cache is used.
+	promptCacheRetention: z.enum(["in_memory", "24h"]).optional(),
 	// Capability flag to indicate whether the model supports an output verbosity parameter
 	supportsVerbosity: z.boolean().optional(),
 	supportsReasoningBudget: z.boolean().optional(),
@@ -69,7 +89,9 @@ export const modelInfoSchema = z.object({
 	supportsTemperature: z.boolean().optional(),
 	defaultTemperature: z.number().optional(),
 	requiredReasoningBudget: z.boolean().optional(),
-	supportsReasoningEffort: z.boolean().optional(),
+	supportsReasoningEffort: z
+		.union([z.boolean(), z.array(z.enum(["disable", "none", "minimal", "low", "medium", "high"]))])
+		.optional(),
 	requiredReasoningEffort: z.boolean().optional(),
 	preserveReasoning: z.boolean().optional(),
 	supportedParameters: z.array(modelParametersSchema).optional(),
@@ -78,7 +100,8 @@ export const modelInfoSchema = z.object({
 	cacheWritesPrice: z.number().optional(),
 	cacheReadsPrice: z.number().optional(),
 	description: z.string().optional(),
-	reasoningEffort: reasoningEffortsSchema.optional(),
+	// Default effort value for models that support reasoning effort
+	reasoningEffort: reasoningEffortExtendedSchema.optional(),
 	minTokensPerCachePoint: z.number().optional(),
 	maxCachePoints: z.number().optional(),
 	cachableFields: z.array(z.string()).optional(),
@@ -89,6 +112,8 @@ export const modelInfoSchema = z.object({
 	// Credit consumption and discount for the model
 	creditConsumption: z.number().optional(),
 	creditDiscount: z.number().optional(),
+	// Flag to indicate if the model supports native tool calling (OpenAI-style function calling)
+	supportsNativeTools: z.boolean().optional(),
 	/**
 	 * Service tiers with pricing information.
 	 * Each tier can have a name (for OpenAI service tiers) and pricing overrides.

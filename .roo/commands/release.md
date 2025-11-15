@@ -16,14 +16,14 @@ argument-hint: patch | minor | major
 [list of changes]
 ```
 
-- Always include contributor attribution using format: (thanks @username!)
-- For PRs that close issues, also include the issue number and reporter: "- Fix: Description (#123 by @reporter, PR by @contributor)"
-- For PRs without linked issues, use the standard format: "- Add support for feature (thanks @contributor!)"
+- Always include contributor attribution and the PR number: use "(PR #<prNumber> by @username)".
+- For PRs that close issues, include both the issue number and the PR number and authors: "- Fix: Description (#123 by @reporter, PR #456 by @contributor)"
+- For PRs without linked issues, include the PR number and author: "- Add support for feature (PR #456 by @contributor)"
 - Provide brief descriptions of each item to explain the change
 - Order the list from most important to least important
 - Example formats:
-    - With issue: "- Fix: Resolve memory leak in extension (#456 by @issueReporter, PR by @prAuthor)"
-    - Without issue: "- Add support for Gemini 2.5 Pro caching (thanks @contributor!)"
+    - With issue: "- Fix: Resolve memory leak in extension (#456 by @issueReporter, PR #789 by @prAuthor)"
+    - Without issue: "- Add support for Gemini 2.5 Pro caching (PR #789 by @contributor)"
 - CRITICAL: Include EVERY SINGLE PR in the changeset - don't assume you know which ones are important. Count the total PRs to verify completeness and cross-reference the list to ensure nothing is missed.
 
 6. If the generate_image tool is available, create a release image at `releases/[version]-release.png`

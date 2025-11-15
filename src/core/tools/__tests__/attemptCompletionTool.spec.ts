@@ -65,7 +65,7 @@ vi.mock("../../../shared/package", () => ({
 	},
 }))
 
-import { attemptCompletionTool } from "../attemptCompletionTool"
+import { attemptCompletionTool, AttemptCompletionCallbacks } from "../AttemptCompletionTool"
 import { Task } from "../../task/Task"
 import * as vscode from "vscode"
 
@@ -116,16 +116,15 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = undefined
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should not call pushToolResult with an error for empty todo list
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
@@ -142,16 +141,15 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = []
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
@@ -172,16 +170,15 @@ describe("attemptCompletionTool", () => {
 
 			mockTask.todoList = completedTodos
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
@@ -212,16 +209,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
@@ -255,16 +251,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
@@ -299,16 +294,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
@@ -342,16 +336,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should not prevent completion when setting is disabled
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
@@ -386,16 +379,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should prevent completion when setting is enabled and there are incomplete todos
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
@@ -430,16 +422,15 @@ describe("attemptCompletionTool", () => {
 				}),
 			})
 
-			await attemptCompletionTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-				mockToolDescription,
-				mockAskFinishSubTaskApproval,
-			)
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
 
 			// Should allow completion when setting is enabled but all todos are completed
 			expect(mockTask.consecutiveMistakeCount).toBe(0)

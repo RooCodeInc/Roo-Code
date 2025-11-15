@@ -115,7 +115,7 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				continue
 			}
 
-			models[id] = parseOpenRouterModel({
+			const parsedModel = parseOpenRouterModel({
 				id,
 				model,
 				inputModality: architecture?.input_modalities,
@@ -123,6 +123,8 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				maxTokens: top_provider?.max_completion_tokens,
 				supportedParameters: supported_parameters,
 			})
+
+			models[id] = parsedModel
 		}
 	} catch (error) {
 		console.warn(`Error fetching OpenRouter models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
@@ -214,6 +216,7 @@ export const parseOpenRouterModel = ({
 		cacheReadsPrice,
 		description: model.description,
 		supportsReasoningEffort: supportedParameters ? supportedParameters.includes("reasoning") : undefined,
+		supportsNativeTools: supportedParameters ? supportedParameters.includes("tools") : undefined,
 		supportedParameters: supportedParameters ? supportedParameters.filter(isModelParameter) : undefined,
 	}
 

@@ -21,6 +21,7 @@ import {
 	processImageFile,
 } from "./helpers/imageHelpers"
 import { DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
+import { isBinaryFileWithEncodingDetection } from "../../utils/encoding"
 
 /**
  * Simplified read file tool for models that only support single file reads
@@ -126,7 +127,10 @@ export async function simpleReadFileTool(
 		}
 
 		// Process the file
-		const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
+		const [totalLines, isBinary] = await Promise.all([
+			countFileLines(fullPath),
+			isBinaryFileWithEncodingDetection(fullPath),
+		])
 
 		// Handle binary files
 		if (isBinary) {

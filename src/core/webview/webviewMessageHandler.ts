@@ -65,7 +65,6 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 // const pendingIndexStatusRequests = new Map<string, Promise<any>>()
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
-import { setPendingTodoList } from "../tools/updateTodoListTool"
 import { ZgsmAuthConfig } from "../costrict/auth"
 import { CodeReviewService } from "../costrict/code-review"
 import { ZgsmCodebaseIndexManager, IndexSwitchRequest, IndexStatusInfo } from "../costrict/codebase-index"
@@ -76,6 +75,7 @@ import { fetchZgsmQuotaInfo, fetchZgsmInviteCode } from "../../api/providers/fet
 import { initNotificationService } from "../costrict/notification"
 import delay from "delay"
 // import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
+import { setPendingTodoList } from "../tools/UpdateTodoListTool"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -666,7 +666,7 @@ export const webviewMessageHandler = async (
 						const mcpHub = provider.getMcpHub()
 
 						if (mcpHub) {
-							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(2000)])
+							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(1500)])
 						}
 					} else if (key === "experiments") {
 						if (!value) {
