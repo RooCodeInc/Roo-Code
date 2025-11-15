@@ -53,8 +53,19 @@ describe("applyDiffTool experiment routing", () => {
 			diffViewProvider: {
 				reset: vi.fn(),
 			},
+			apiConfiguration: {
+				apiProvider: "anthropic",
+			},
 			api: {
-				getModel: vi.fn().mockReturnValue({ id: "test-model" }),
+				getModel: vi.fn().mockReturnValue({
+					id: "test-model",
+					info: {
+						maxTokens: 4096,
+						contextWindow: 128000,
+						supportsPromptCache: false,
+						supportsNativeTools: false,
+					},
+				}),
 			},
 			processQueuedMessages: vi.fn(),
 		} as any
@@ -150,6 +161,17 @@ describe("applyDiffTool experiment routing", () => {
 		vi.mocked(vscode.workspace.getConfiguration).mockReturnValue({
 			get: vi.fn().mockReturnValue(TOOL_PROTOCOL.NATIVE),
 		} as any)
+
+		// Update model to support native tools
+		mockCline.api.getModel = vi.fn().mockReturnValue({
+			id: "test-model",
+			info: {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true, // Enable native tools support
+			},
+		})
 
 		mockProvider.getState.mockResolvedValue({
 			experiments: {
