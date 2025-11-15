@@ -204,10 +204,19 @@ function createMockCline(): any {
 		getTokenUsage: vi.fn().mockReturnValue({
 			contextTokens: 10000,
 		}),
+		apiConfiguration: {
+			apiProvider: "anthropic",
+		},
 		// CRITICAL: Always ensure image support is enabled
 		api: {
 			getModel: vi.fn().mockReturnValue({
-				info: { supportsImages: true, contextWindow: 200000 },
+				info: {
+					supportsImages: true,
+					contextWindow: 200000,
+					maxTokens: 4096,
+					supportsPromptCache: false,
+					supportsNativeTools: false,
+				},
 			}),
 		},
 	}
