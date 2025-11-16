@@ -261,6 +261,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const response = await this.client.models.countTokens({
 				model,
 				contents: convertAnthropicContentToGemini(content),
+				config: {
+					httpOptions: this.options.googleGeminiBaseUrl
+						? { baseUrl: this.options.googleGeminiBaseUrl }
+						: undefined,
+				},
 			})
 
 			if (response.totalTokens === undefined) {
