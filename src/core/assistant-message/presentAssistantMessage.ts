@@ -280,20 +280,18 @@ export async function presentAssistantMessage(cline: Task) {
 			// Track if we've already pushed a tool result for this tool call (native protocol only)
 			let hasToolResult = false
 
-			const pushToolResult = async (content: ToolResponse) => {
-				// Check if we're using native tool protocol
-				const state = await cline.providerRef.deref()?.getState()
-				const toolProtocol = resolveToolProtocol(
-					cline.apiConfiguration,
-					cline.api.getModel().info,
-					cline.apiConfiguration.apiProvider,
-					state?.experiments,
-				)
-				const isNative = isNativeProtocol(toolProtocol)
+			// Check if we're using native tool protocol (do this once before defining pushToolResult)
+			const state = await cline.providerRef.deref()?.getState()
+			const toolProtocol = resolveToolProtocol(
+				cline.apiConfiguration,
+				cline.api.getModel().info,
+				cline.apiConfiguration.apiProvider,
+				state?.experiments,
+			)
+			const isNative = isNativeProtocol(toolProtocol)
+			const toolCallId = (block as any).id
 
-				// Get the tool call ID if this is a native tool call
-				const toolCallId = (block as any).id
-
+			const pushToolResult = (content: ToolResponse) => {
 				if (isNative && toolCallId) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
