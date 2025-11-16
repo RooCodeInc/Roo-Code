@@ -1,4 +1,4 @@
-import { RooModelsResponseSchema } from "@roo-code/types"
+import { RooModelsResponseSchema, rooModelDefaults } from "@roo-code/types"
 
 import type { ModelRecord } from "../../../shared/api"
 import { parseApiPrice } from "../../../shared/cost"
@@ -101,7 +101,8 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				const cacheReadPrice = pricing.input_cache_read ? parseApiPrice(pricing.input_cache_read) : undefined
 				const cacheWritePrice = pricing.input_cache_write ? parseApiPrice(pricing.input_cache_write) : undefined
 
-				models[modelId] = {
+				// Build the base model info from API response
+				const baseModelInfo = {
 					maxTokens,
 					contextWindow,
 					supportsImages,
@@ -117,6 +118,11 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					deprecated: model.deprecated || false,
 					isFree: tags.includes("free"),
 				}
+
+				// Merge with model-specific defaults if they exist
+				// Defaults take precedence over dynamically fetched data for specified fields
+				const modelDefaults = rooModelDefaults[modelId]
+				models[modelId] = modelDefaults ? { ...baseModelInfo, ...modelDefaults } : baseModelInfo
 			}
 
 			return models

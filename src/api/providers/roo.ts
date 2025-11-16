@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { rooDefaultModelId, getApiProtocol } from "@roo-code/types"
+import { rooDefaultModelId, rooModelDefaults, getApiProtocol } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -274,18 +274,26 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
+		// Check if there are model-specific defaults configured
+		const baseModelInfo = {
+			maxTokens: 16_384,
+			contextWindow: 262_144,
+			supportsImages: false,
+			supportsReasoningEffort: false,
+			supportsPromptCache: true,
+			supportsNativeTools: false,
+			inputPrice: 0,
+			outputPrice: 0,
+			isFree: false,
+		}
+
+		// Merge with model-specific defaults if they exist
+		const modelDefaults = rooModelDefaults[modelId]
+		const fallbackInfo = modelDefaults ? { ...baseModelInfo, ...modelDefaults } : baseModelInfo
+
 		return {
 			id: modelId,
-			info: {
-				maxTokens: 16_384,
-				contextWindow: 262_144,
-				supportsImages: false,
-				supportsReasoningEffort: false,
-				supportsPromptCache: true,
-				supportsNativeTools: false,
-				inputPrice: 0,
-				outputPrice: 0,
-			},
+			info: fallbackInfo,
 		}
 	}
 }
