@@ -6,7 +6,7 @@ import { Model, ModelWithTotalPrice, ModelsResponse, SortOption } from "@/lib/ty
 import Link from "next/link"
 import { ChevronDown, CircleX, Loader, LoaderCircle, Search } from "lucide-react"
 
-const API_URL = "https://api.roocode.com/proxy/v1/models"
+const API_URL = "https://api.roocode.com/proxy/v1/models?include_paid=true"
 
 const faqs = [
 	{

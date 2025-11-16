@@ -19,10 +19,11 @@ interface ModelCardProps {
 }
 
 export function ModelCard({ model }: ModelCardProps) {
-	const inputPrice = parseFloat(model.pricing.input)
-	const outputPrice = parseFloat(model.pricing.output)
-	const cacheReadPrice = parseFloat(model.pricing.input_cache_read)
-	const cacheWritePrice = parseFloat(model.pricing.input_cache_write)
+	// Prices are per token, multiply by 1M to get price per million tokens
+	const inputPrice = parseFloat(model.pricing.input) * 1_000_000
+	const outputPrice = parseFloat(model.pricing.output) * 1_000_000
+	const cacheReadPrice = parseFloat(model.pricing.input_cache_read || "0") * 1_000_000
+	const cacheWritePrice = parseFloat(model.pricing.input_cache_write || "0") * 1_000_000
 
 	const free = model.tags.includes("free")
 	// Filter tags to only show vision and reasoning
@@ -125,37 +126,32 @@ export function ModelCard({ model }: ModelCardProps) {
 							</tr>
 						)}
 
-						{(cacheReadPrice > 0 || cacheWritePrice > 0) && (
-							<>
-								<tr
-									className={[
-										"border-b border-border",
-										expanded ? "table-row" : "hidden sm:table-row",
-									].join(" ")}>
-									<td className="py-1.5 font-medium text-muted-foreground">
-										<HardDriveUpload className="size-4 inline-block mr-1.5" />
-										Cache Read
-									</td>
-									<td className="py-1.5 text-right">
-										{cacheReadPrice === 0 ? "Free" : `${formatCurrency(cacheReadPrice)}/1M tokens`}
-									</td>
-								</tr>
-								<tr
-									className={[
-										"border-b border-border",
-										expanded ? "table-row" : "hidden sm:table-row",
-									].join(" ")}>
-									<td className="py-1.5 font-medium text-muted-foreground">
-										<HardDriveDownload className="size-4 inline-block mr-1.5" />
-										Cache Write
-									</td>
-									<td className="py-1.5 text-right">
-										{cacheWritePrice === 0
-											? "Free"
-											: `${formatCurrency(cacheWritePrice)}/1M tokens`}
-									</td>
-								</tr>
-							</>
+						{cacheReadPrice > 0 && (
+							<tr
+								className={[
+									"border-b border-border",
+									expanded ? "table-row" : "hidden sm:table-row",
+								].join(" ")}>
+								<td className="py-1.5 font-medium text-muted-foreground">
+									<HardDriveUpload className="size-4 inline-block mr-1.5" />
+									Cache Read
+								</td>
+								<td className="py-1.5 text-right">{formatCurrency(cacheReadPrice)}/1M tokens</td>
+							</tr>
+						)}
+
+						{cacheWritePrice > 0 && (
+							<tr
+								className={[
+									"border-b border-border",
+									expanded ? "table-row" : "hidden sm:table-row",
+								].join(" ")}>
+								<td className="py-1.5 font-medium text-muted-foreground">
+									<HardDriveDownload className="size-4 inline-block mr-1.5" />
+									Cache Write
+								</td>
+								<td className="py-1.5 text-right">{formatCurrency(cacheWritePrice)}/1M tokens</td>
+							</tr>
 						)}
 
 						{/* Tags row: only show if there are vision or reasoning tags */}
