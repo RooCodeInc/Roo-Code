@@ -3,6 +3,7 @@ import { formatCurrency, formatTokens } from "@/lib/formatters"
 import {
 	ArrowLeftToLine,
 	ArrowRightToLine,
+	Building2,
 	Check,
 	Expand,
 	Gift,
@@ -67,6 +68,17 @@ export function ModelCard({ model }: ModelCardProps) {
 			<div className="overflow-x-auto mt-auto">
 				<table className="w-full text-xs">
 					<tbody>
+						{/* Provider: always visible if present */}
+						{model.owned_by && (
+							<tr className="border-b border-border">
+								<td className="py-1.5 font-medium text-muted-foreground">
+									<Building2 className="size-4 inline-block mr-1.5" />
+									Provider
+								</td>
+								<td className="py-1.5 text-right">{model.owned_by}</td>
+							</tr>
+						)}
+
 						{/* Context Window: always visible */}
 						<tr className="border-b border-border">
 							<td className="py-1.5 font-medium text-muted-foreground">
@@ -114,18 +126,7 @@ export function ModelCard({ model }: ModelCardProps) {
 							</td>
 						</tr>
 
-						{/* Extra details: only visible on mobile when expanded, always visible on >=sm */}
-						{model.owned_by && (
-							<tr
-								className={[
-									"border-b border-border",
-									expanded ? "table-row" : "hidden sm:table-row",
-								].join(" ")}>
-								<td className="py-1.5 font-medium text-muted-foreground">Vendor</td>
-								<td className="py-1.5 text-right">{model.owned_by}</td>
-							</tr>
-						)}
-
+						{/* Cache pricing: only visible on mobile when expanded, always visible on >=sm */}
 						{cacheReadPrice > 0 && (
 							<tr
 								className={[
