@@ -5,6 +5,7 @@ import { isNativeProtocol } from "@roo-code/types"
 export function getToolUseGuidelinesSection(
 	codeIndexManager?: CodeIndexManager,
 	protocol: ToolProtocol = TOOL_PROTOCOL.XML,
+	allowMultiToolCalls: boolean = false,
 ): string {
 	const isCodebaseSearchAvailable =
 		codeIndexManager &&
@@ -36,9 +37,15 @@ export function getToolUseGuidelinesSection(
 	}
 
 	// Remaining guidelines
-	guidelinesList.push(
-		`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
-	)
+	if (allowMultiToolCalls) {
+		guidelinesList.push(
+			`${itemNumber++}. If multiple actions are needed, you may call multiple tools in a single message (including different tool types) when it is efficient and logically grouped. Whenever several actions are independent and low-risk (for example, reading multiple files, listing different directories, or combining a search with a set of follow-up reads), prefer batching them into a single message to reduce round trips and speed up development. When making code changes, you may also batch multiple editing operations (for example, several apply_diff, write_to_file, or insert_content calls that together implement one coherent change set) in a single message, as long as the changes are clearly related and reviewable. For testing or highly stateful operations (such as execute_command, browser_action, use_mcp_tool for remote actions, or any command that changes the system or external state), you should still prefer small, iterative tool calls: run a focused command, wait for the result, then decide the next step based on that output. Avoid batching such stateful actions together in one message. Make sure each tool call is well-formed and that you still think step-by-step about what information each tool provides. Do not assume the outcome of any tool use; your reasoning must be informed by the results of previous tool uses or confirmed context.`,
+		)
+	} else {
+		guidelinesList.push(
+			`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
+		)
+	}
 
 	// Protocol-specific guideline - only add for XML protocol
 	if (!isNativeProtocol(protocol)) {

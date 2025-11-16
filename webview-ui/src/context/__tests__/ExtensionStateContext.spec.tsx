@@ -237,6 +237,7 @@ describe("mergeExtensionState", () => {
 				newTaskRequireTodos: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				multiToolCalls: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
 		}
@@ -258,6 +259,7 @@ describe("mergeExtensionState", () => {
 			newTaskRequireTodos: false,
 			imageGeneration: false,
 			runSlashCommand: false,
+			multiToolCalls: false,
 		})
 	})
 })

@@ -776,6 +776,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
 			"description": "When enabled, Roo can run your slash commands to execute workflows."
+		},
+		"MULTI_TOOL_CALLS": {
+			"name": "Allow multiple tool calls per message",
+			"description": "When enabled, the model is explicitly allowed to call multiple tools (including different tool types) in a single message using XML tool blocks one after another. When disabled, prompts will instruct the model to use only one tool per message even though the runtime can still technically parse multiple tool blocks."
 		}
 	},
 	"promptCaching": {

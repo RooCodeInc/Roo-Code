@@ -12,6 +12,7 @@ import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
@@ -71,6 +72,11 @@ async function generatePrompt(
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
+	// Determine whether multi-tool calls experiment is enabled
+	const multiToolCallsEnabled = experiments
+		? Experiments.isEnabled(experiments as any, EXPERIMENT_IDS.MULTI_TOOL_CALLS)
+		: false
+
 	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
 	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs)
@@ -120,9 +126,9 @@ async function generatePrompt(
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
+${getSharedToolUseSection(effectiveProtocol, multiToolCallsEnabled)}${toolsCatalog}
 
-${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol)}
+${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol, multiToolCallsEnabled)}
 
 ${mcpServersSection}
 
