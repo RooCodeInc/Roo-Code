@@ -1,20 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect } from "vitest"
 import { resolveToolProtocol } from "../resolveToolProtocol"
 import { TOOL_PROTOCOL } from "@roo-code/types"
-import type { ProviderSettings, ModelInfo, ProviderName } from "@roo-code/types"
-import * as toolProtocolModule from "../toolProtocol"
-
-// Mock the getToolProtocolFromSettings function
-vi.mock("../toolProtocol", () => ({
-	getToolProtocolFromSettings: vi.fn(() => "xml"),
-}))
+import type { ProviderSettings, ModelInfo, Experiments } from "@roo-code/types"
 
 describe("resolveToolProtocol", () => {
-	beforeEach(() => {
-		// Reset mock before each test
-		vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("xml")
-	})
-
 	describe("Precedence Level 1: User Profile Setting", () => {
 		it("should use profile toolProtocol when explicitly set to xml", () => {
 			const settings: ProviderSettings = {
@@ -71,9 +60,8 @@ describe("resolveToolProtocol", () => {
 		})
 	})
 
-	describe("Precedence Level 2: Global User Preference (VSCode Setting)", () => {
-		it("should use global setting when no profile setting", () => {
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("native")
+	describe("Precedence Level 2: Experimental Setting (Native Tool Calling)", () => {
+		it("should use experimental setting when enabled and no profile setting", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "roo",
 			}
@@ -83,12 +71,14 @@ describe("resolveToolProtocol", () => {
 				supportsPromptCache: false,
 				supportsNativeTools: true, // Model supports native tools
 			}
-			const result = resolveToolProtocol(settings, modelInfo, "roo")
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins over provider default
+			const experiments: Experiments = {
+				nativeToolCalling: true, // Experimental setting enabled
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "roo", experiments)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Experimental setting wins over provider default
 		})
 
-		it("should use global setting over model default", () => {
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("native")
+		it("should use experimental setting over model default", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "roo",
 			}
@@ -99,14 +89,48 @@ describe("resolveToolProtocol", () => {
 				defaultToolProtocol: "xml", // Model prefers XML
 				supportsNativeTools: true, // But model supports native tools
 			}
-			const result = resolveToolProtocol(settings, modelInfo, "roo")
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins
+			const experiments: Experiments = {
+				nativeToolCalling: true, // Experimental setting enabled
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "roo", experiments)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Experimental setting wins
+		})
+
+		it("should not use experimental setting when disabled", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "roo",
+			}
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true,
+			}
+			const experiments: Experiments = {
+				nativeToolCalling: false, // Experimental setting disabled
+			}
+			const result = resolveToolProtocol(settings, modelInfo, "roo", experiments)
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Falls back to provider default
+		})
+
+		it("should not use experimental setting when undefined", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "roo",
+			}
+			const modelInfo: ModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true,
+			}
+			const experiments: Experiments = {} // nativeToolCalling not defined
+			const result = resolveToolProtocol(settings, modelInfo, "roo", experiments)
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Falls back to provider default
 		})
 	})
 
 	describe("Precedence Level 3: Model Default", () => {
-		it("should use model defaultToolProtocol when no profile or global setting", () => {
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("xml")
+		it("should use model defaultToolProtocol when no profile or experimental setting", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "roo",
 			}
@@ -118,7 +142,7 @@ describe("resolveToolProtocol", () => {
 				supportsNativeTools: true, // Model must support native tools
 			}
 			const result = resolveToolProtocol(settings, modelInfo, "roo")
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Model default wins when global is XML (default)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Model default wins when experiment is disabled
 		})
 
 		it("should override model capability when model default is present", () => {
@@ -271,7 +295,6 @@ describe("resolveToolProtocol", () => {
 
 	describe("Precedence Level 5: XML Fallback", () => {
 		it("should use XML fallback when no provider is specified and no preferences", () => {
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("xml")
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings, undefined, undefined)
 			expect(result).toBe(TOOL_PROTOCOL.XML) // XML fallback
@@ -279,10 +302,8 @@ describe("resolveToolProtocol", () => {
 	})
 
 	describe("Complete Precedence Chain", () => {
-		it("should respect full precedence: Profile > Model Default > Model Capability > Provider > Global", () => {
+		it("should respect full precedence: Profile > Experimental > Model Default > Provider", () => {
 			// Set up a scenario with all levels defined
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("xml")
-
 			const settings: ProviderSettings = {
 				toolProtocol: "native", // Level 1: User profile setting
 				apiProvider: "roo",
@@ -292,14 +313,18 @@ describe("resolveToolProtocol", () => {
 				maxTokens: 4096,
 				contextWindow: 128000,
 				supportsPromptCache: false,
-				defaultToolProtocol: "xml", // Level 2: Model default
-				supportsNativeTools: true, // Level 3: Model capability
+				defaultToolProtocol: "xml", // Level 3: Model default
+				supportsNativeTools: true, // Support check
 			}
 
-			// Level 4: Provider default would be "native" for roo
-			// Level 5: Global setting is "xml"
+			const experiments: Experiments = {
+				nativeToolCalling: false, // Level 2: Experimental setting (disabled)
+			}
 
-			const result = resolveToolProtocol(settings, modelInfo, "roo")
+			// Level 4: Provider default would be XML
+			// Level 5: XML fallback
+
+			const result = resolveToolProtocol(settings, modelInfo, "roo", experiments)
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Profile setting wins
 		})
 
@@ -345,10 +370,9 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.XML) // Provider default wins
 		})
 
-		it("should use global setting over provider default", () => {
-			vi.mocked(toolProtocolModule.getToolProtocolFromSettings).mockReturnValue("native")
+		it("should use experimental setting over provider default", () => {
 			const settings: ProviderSettings = {
-				apiProvider: "ollama", // Provider not in native list, defaults to XML
+				apiProvider: "ollama", // Provider defaults to XML
 			}
 			const modelInfo: ModelInfo = {
 				maxTokens: 4096,
@@ -356,9 +380,12 @@ describe("resolveToolProtocol", () => {
 				supportsPromptCache: false,
 				supportsNativeTools: true, // Model supports native tools
 			}
+			const experiments: Experiments = {
+				nativeToolCalling: true, // Experimental setting enabled
+			}
 
-			const result = resolveToolProtocol(settings, modelInfo, "ollama")
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Global setting wins over provider default
+			const result = resolveToolProtocol(settings, modelInfo, "ollama", experiments)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Experimental setting wins over provider default
 		})
 	})
 
