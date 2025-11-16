@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -166,16 +166,6 @@ Usamos [changesets](https://github.com/changesets/changesets) para el versionado
 ¡Amamos las contribuciones de la comunidad! Comienza leyendo nuestro [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
-
-## Colaboradores
-
-¡Gracias a todos nuestros colaboradores que han ayudado a mejorar Roo Code!
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
 
 ## Licencia
 

@@ -145,6 +145,10 @@ export class ClineProvider
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
+	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
+	private cloudOrganizationsCacheTimestamp: number | null = null
+	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
 	public readonly latestAnnouncementId = "nov-2025-v3.30.0-pr-fixer" // v3.30.0 PR Fixer announcement
@@ -1297,28 +1301,37 @@ export class ClineProvider
 	// Provider Profile Management
 
 	/**
-	 * Updates the current task's API handler if the provider or model has changed.
-	 * This prevents unnecessary context condensing when only non-model settings change.
+	 * Updates the current task's API handler.
+	 * Rebuilds when:
+	 * - provider or model changes, OR
+	 * - explicitly forced (e.g., user-initiated profile switch/save to apply changed settings like headers/baseUrl/tier).
+	 * Always synchronizes task.apiConfiguration with latest provider settings.
 	 * @param providerSettings The new provider settings to apply
+	 * @param options.forceRebuild Force rebuilding the API handler regardless of provider/model equality
 	 */
-	private updateTaskApiHandlerIfNeeded(providerSettings: ProviderSettings): void {
+	private updateTaskApiHandlerIfNeeded(
+		providerSettings: ProviderSettings,
+		options: { forceRebuild?: boolean } = {},
+	): void {
 		const task = this.getCurrentTask()
+		if (!task) return
 
-		if (task && task.apiConfiguration) {
-			// Only rebuild API handler if provider or model actually changed
-			// to avoid triggering unnecessary context condensing
-			const currentProvider = task.apiConfiguration.apiProvider
-			const newProvider = providerSettings.apiProvider
-			const currentModelId = getModelId(task.apiConfiguration)
-			const newModelId = getModelId(providerSettings)
+		const { forceRebuild = false } = options
 
-			if (currentProvider !== newProvider || currentModelId !== newModelId) {
-				task.api = buildApiHandler(providerSettings)
-			}
-		} else if (task) {
-			// Fallback: rebuild if apiConfiguration is not available
+		// Determine if we need to rebuild using the previous configuration snapshot
+		const prevConfig = task.apiConfiguration
+		const prevProvider = prevConfig?.apiProvider
+		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
+		const newProvider = providerSettings.apiProvider
+		const newModelId = getModelId(providerSettings)
+
+		if (forceRebuild || prevProvider !== newProvider || prevModelId !== newModelId) {
 			task.api = buildApiHandler(providerSettings)
 		}
+
+		// Always sync the task's apiConfiguration with the latest provider settings.
+		// Note: Task.apiConfiguration is declared readonly in types, so we cast to any for runtime update.
+		;(task as any).apiConfiguration = providerSettings
 	}
 
 	getProviderProfileEntries(): ProviderSettingsEntry[] {
@@ -1368,7 +1381,7 @@ export class ClineProvider
 
 				// Change the provider for the current task.
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
-				this.updateTaskApiHandlerIfNeeded(providerSettings)
+				this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 			}
@@ -1423,9 +1436,8 @@ export class ClineProvider
 		if (id) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
 		}
-
 		// Change the provider for the current task.
-		this.updateTaskApiHandlerIfNeeded(providerSettings)
+		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 
 		await this.postStateToWebview()
 
@@ -1918,7 +1930,19 @@ export class ClineProvider
 
 		try {
 			if (!CloudService.instance.isCloudAgent) {
-				cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+				const now = Date.now()
+
+				if (
+					this.cloudOrganizationsCache !== null &&
+					this.cloudOrganizationsCacheTimestamp !== null &&
+					now - this.cloudOrganizationsCacheTimestamp < ClineProvider.CLOUD_ORGANIZATIONS_CACHE_DURATION_MS
+				) {
+					cloudOrganizations = this.cloudOrganizationsCache!
+				} else {
+					cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+					this.cloudOrganizationsCache = cloudOrganizations
+					this.cloudOrganizationsCacheTimestamp = now
+				}
 			}
 		} catch (error) {
 			// Ignore this error.
@@ -2219,6 +2243,7 @@ export class ClineProvider
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
 			enableMcpServerCreation: stateValues.enableMcpServerCreation ?? true,
+			mcpServers: this.mcpHub?.getAllServers() ?? [],
 			alwaysApproveResubmit: stateValues.alwaysApproveResubmit ?? false,
 			requestDelaySeconds: Math.max(5, stateValues.requestDelaySeconds ?? 10),
 			currentApiConfigName: stateValues.currentApiConfigName ?? "default",

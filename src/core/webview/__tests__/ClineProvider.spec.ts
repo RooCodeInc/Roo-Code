@@ -1,4 +1,4 @@
-// npx vitest core/webview/__tests__/ClineProvider.spec.ts
+// pnpm --filter roo-cline test core/webview/__tests__/ClineProvider.spec.ts
 
 import Anthropic from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
@@ -786,7 +786,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "writeDelayMs", value: 2000 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { writeDelayMs: 2000 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("writeDelayMs", 2000)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("writeDelayMs", 2000)
@@ -800,24 +800,24 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Simulate setting sound to enabled
-		await messageHandler({ type: "soundEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { soundEnabled: true } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("soundEnabled", true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("soundEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting sound to disabled
-		await messageHandler({ type: "soundEnabled", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { soundEnabled: false } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("soundEnabled", false)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting tts to enabled
-		await messageHandler({ type: "ttsEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { ttsEnabled: true } })
 		expect(setTtsEnabled).toHaveBeenCalledWith(true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("ttsEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting tts to disabled
-		await messageHandler({ type: "ttsEnabled", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { ttsEnabled: false } })
 		expect(setTtsEnabled).toHaveBeenCalledWith(false)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("ttsEnabled", false)
 		expect(mockPostMessage).toHaveBeenCalled()
@@ -856,7 +856,7 @@ describe("ClineProvider", () => {
 	test("handles autoCondenseContext message", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-		await messageHandler({ type: "autoCondenseContext", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { autoCondenseContext: false } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoCondenseContext", false)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoCondenseContext", false)
 		expect(mockPostMessage).toHaveBeenCalled()
@@ -876,7 +876,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "autoCondenseContextPercent", value: 75 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { autoCondenseContextPercent: 75 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
@@ -984,7 +984,7 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Test browserToolEnabled
-		await messageHandler({ type: "browserToolEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { browserToolEnabled: true } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("browserToolEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
@@ -1002,13 +1002,13 @@ describe("ClineProvider", () => {
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
 
 		// Test showRooIgnoredFiles with true
-		await messageHandler({ type: "showRooIgnoredFiles", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { showRooIgnoredFiles: true } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("showRooIgnoredFiles", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(true)
 
 		// Test showRooIgnoredFiles with false
-		await messageHandler({ type: "showRooIgnoredFiles", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { showRooIgnoredFiles: false } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("showRooIgnoredFiles", false)
 		expect(mockPostMessage).toHaveBeenCalled()
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
@@ -1019,13 +1019,13 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Test alwaysApproveResubmit
-		await messageHandler({ type: "alwaysApproveResubmit", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { alwaysApproveResubmit: true } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("alwaysApproveResubmit", true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("alwaysApproveResubmit", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Test requestDelaySeconds
-		await messageHandler({ type: "requestDelaySeconds", value: 10 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { requestDelaySeconds: 10 } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("requestDelaySeconds", 10)
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
@@ -1092,7 +1092,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "maxWorkspaceFiles", value: 300 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { maxWorkspaceFiles: 300 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("maxWorkspaceFiles", 300)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("maxWorkspaceFiles", 300)

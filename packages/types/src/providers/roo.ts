@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import type { ModelInfo } from "../model.js"
+import { TOOL_PROTOCOL } from "../tool.js"
 
 /**
  * Roo Code Cloud is a dynamic provider - models are loaded from the /v1/models API endpoint.
@@ -13,6 +14,38 @@ export const rooDefaultModelId = "xai/grok-code-fast-1"
  * All model data comes dynamically from the API.
  */
 export const rooModels = {} as const satisfies Record<string, ModelInfo>
+
+/**
+ * Model-specific defaults for Roo provider models.
+ * These defaults are merged with dynamically fetched model data.
+ *
+ * Use this to configure model-specific settings like defaultToolProtocol.
+ *
+ * Example usage:
+ * ```typescript
+ * export const rooModelDefaults: Record<string, Partial<ModelInfo>> = {
+ *   "anthropic/claude-3-5-sonnet-20241022": {
+ *     defaultToolProtocol: "xml",
+ *   },
+ *   "openai/gpt-4o": {
+ *     defaultToolProtocol: "native",
+ *   },
+ *   "xai/grok-code-fast-1": {
+ *     defaultToolProtocol: "native",
+ *   },
+ * }
+ * ```
+ */
+export const rooModelDefaults: Record<string, Partial<ModelInfo>> = {
+	// Add model-specific defaults below.
+	// You can configure defaultToolProtocol and other ModelInfo fields for specific model IDs.
+	"anthropic/claude-haiku-4.5": {
+		defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
+	},
+	"minimax/minimax-m2:free": {
+		defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
+	},
+}
 
 /**
  * Roo Code Cloud API response schemas

@@ -63,7 +63,7 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			const toolDefinition: OpenAI.Chat.ChatCompletionTool = {
 				type: "function",
 				function: {
-					name: `${server.name}___${tool.name}`,
+					name: `mcp_${server.name}_${tool.name}`,
 					description: tool.description,
 					parameters: parameters,
 				},

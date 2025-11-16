@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -166,16 +166,6 @@ VSIX 패키지를 수동으로 설치하려면:
 우리는 커뮤니티의 기여를 사랑합니다! [CONTRIBUTING.md](CONTRIBUTING.md)를 읽고 시작하세요.
 
 ---
-
-## 기여자
-
-Roo Code를 더 좋게 만드는 데 도움을 준 모든 기여자들에게 감사합니다!
-
-<!-- START CONTRIBUTORS SECTION - AUTO-GENERATED, DO NOT EDIT MANUALLY -->
-
-[![Contributors](https://contrib.rocks/image?repo=RooCodeInc/roo-code&max=120&columns=12&cacheBust=0000000000)](https://github.com/RooCodeInc/roo-code/graphs/contributors)
-
-<!-- END CONTRIBUTORS SECTION -->
 
 ## 라이선스
 
