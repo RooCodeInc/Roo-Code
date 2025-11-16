@@ -776,6 +776,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
 			"description": "When enabled, Roo can run your slash commands to execute workflows."
+		},
+		"MULTI_TOOL_CALLS": {
+			"name": "Enable multi-tool calls",
+			"description": "When enabled, Roo can issue multiple tool calls in a single message, especially for independent operations like file reads and searches. This reduces round trips and improves efficiency while maintaining safety for stateful operations."
 		}
 	},
 	"promptCaching": {

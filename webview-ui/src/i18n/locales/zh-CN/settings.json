@@ -772,6 +772,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+		},
+		"MULTI_TOOL_CALLS": {
+			"name": "启用多工具调用",
+			"description": "启用后，Roo 可以在单个消息中发出多个工具调用，特别是对于文件读取和搜索等独立操作。这减少了往返次数并提高了效率，同时保持了状态操作的安全性。"
 		}
 	},
 	"promptCaching": {

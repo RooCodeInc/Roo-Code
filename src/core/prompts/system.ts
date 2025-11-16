@@ -120,7 +120,7 @@ async function generatePrompt(
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
+${getSharedToolUseSection(effectiveProtocol, experiments)}${toolsCatalog}
 
 ${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol)}
 
