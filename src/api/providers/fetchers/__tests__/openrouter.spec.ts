@@ -30,6 +30,7 @@ describe("OpenRouter API", () => {
 				supportsReasoningEffort: false,
 				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
+				preserveReasoning: true,
 			})
 
 			expect(models["anthropic/claude-3.7-sonnet:thinking"]).toEqual({
@@ -47,6 +48,7 @@ describe("OpenRouter API", () => {
 				supportsReasoningEffort: true,
 				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
+				preserveReasoning: true,
 			})
 
 			expect(models["google/gemini-2.5-flash-preview-05-20"].maxTokens).toEqual(65535)
@@ -100,6 +102,7 @@ describe("OpenRouter API", () => {
 					supportsReasoningEffort: undefined,
 					supportsNativeTools: undefined,
 					supportedParameters: undefined,
+					preserveReasoning: true,
 				},
 				"google-ai-studio": {
 					maxTokens: 65536,
@@ -115,6 +118,7 @@ describe("OpenRouter API", () => {
 					supportsReasoningEffort: undefined,
 					supportsNativeTools: undefined,
 					supportedParameters: undefined,
+					preserveReasoning: true,
 				},
 			})
 
@@ -239,6 +243,123 @@ describe("OpenRouter API", () => {
 			// Both should parse successfully (filtering happens at a higher level)
 			expect(textResult.maxTokens).toBe(64000)
 			expect(imageResult.maxTokens).toBe(64000)
+		})
+
+		describe("preserveReasoning flag", () => {
+			it("should set preserveReasoning to true for models with reasoning support", () => {
+				const mockModel = {
+					name: "Test Reasoning Model",
+					context_length: 128000,
+					max_completion_tokens: 8192,
+					pricing: {
+						prompt: "0.001",
+						completion: "0.002",
+					},
+				}
+
+				const result = parseOpenRouterModel({
+					id: "test/reasoning-model",
+					model: mockModel,
+					inputModality: ["text"],
+					outputModality: ["text"],
+					maxTokens: 8192,
+					supportedParameters: ["reasoning", "temperature"],
+				})
+
+				expect(result.preserveReasoning).toBe(true)
+			})
+
+			it("should set preserveReasoning to true for models with include_reasoning support", () => {
+				const mockModel = {
+					name: "Test Include Reasoning Model",
+					context_length: 128000,
+					max_completion_tokens: 8192,
+					pricing: {
+						prompt: "0.001",
+						completion: "0.002",
+					},
+				}
+
+				const result = parseOpenRouterModel({
+					id: "test/include-reasoning-model",
+					model: mockModel,
+					inputModality: ["text"],
+					outputModality: ["text"],
+					maxTokens: 8192,
+					supportedParameters: ["include_reasoning", "temperature"],
+				})
+
+				expect(result.preserveReasoning).toBe(true)
+			})
+
+			it("should set preserveReasoning to false for models without reasoning support", () => {
+				const mockModel = {
+					name: "Test Non-Reasoning Model",
+					context_length: 128000,
+					max_completion_tokens: 8192,
+					pricing: {
+						prompt: "0.001",
+						completion: "0.002",
+					},
+				}
+
+				const result = parseOpenRouterModel({
+					id: "test/non-reasoning-model",
+					model: mockModel,
+					inputModality: ["text"],
+					outputModality: ["text"],
+					maxTokens: 8192,
+					supportedParameters: ["temperature", "max_tokens"],
+				})
+
+				expect(result.preserveReasoning).toBe(false)
+			})
+
+			it("should set preserveReasoning to true for claude-3.7-sonnet:thinking", () => {
+				const mockModel = {
+					name: "Claude 3.7 Sonnet Thinking",
+					context_length: 200000,
+					max_completion_tokens: 8192,
+					pricing: {
+						prompt: "0.003",
+						completion: "0.015",
+					},
+				}
+
+				const result = parseOpenRouterModel({
+					id: "anthropic/claude-3.7-sonnet:thinking",
+					model: mockModel,
+					inputModality: ["text"],
+					outputModality: ["text"],
+					maxTokens: 8192,
+					supportedParameters: ["reasoning"],
+				})
+
+				expect(result.preserveReasoning).toBe(true)
+			})
+
+			it("should set preserveReasoning to true for claude-haiku-4.5", () => {
+				const mockModel = {
+					name: "Claude Haiku 4.5",
+					context_length: 200000,
+					max_completion_tokens: 8192,
+					pricing: {
+						prompt: "0.001",
+						completion: "0.005",
+					},
+				}
+
+				const result = parseOpenRouterModel({
+					id: "anthropic/claude-haiku-4.5",
+					model: mockModel,
+					inputModality: ["text"],
+					outputModality: ["text"],
+					maxTokens: 8192,
+					supportedParameters: ["reasoning"],
+				})
+
+				expect(result.preserveReasoning).toBe(true)
+			})
 		})
 	})
 })
