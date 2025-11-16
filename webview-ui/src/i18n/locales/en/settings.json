@@ -779,7 +779,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "Enable native tool calling",
-			"description": "When enabled, Roo will use the provider's native function calling API instead of XML-based tool definitions. This is experimental and only works with providers that support OpenAI-style function calling."
+			"description": "When enabled, Roo will use the provider's native function calling API instead of XML-based tool definitions. This is experimental and does not yet work with all providers."
 		}
 	},
 	"promptCaching": {

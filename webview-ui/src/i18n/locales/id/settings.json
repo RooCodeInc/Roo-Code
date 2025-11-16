@@ -804,7 +804,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "Aktifkan pemanggilan alat asli",
-			"description": "Ketika diaktifkan, Roo akan menggunakan API pemanggilan fungsi asli dari penyedia alih-alih definisi alat berbasis XML. Ini bersifat eksperimental dan hanya berfungsi dengan penyedia yang mendukung pemanggilan fungsi gaya OpenAI."
+			"description": "Ketika diaktifkan, Roo akan menggunakan API pemanggilan fungsi asli dari penyedia alih-alih definisi alat berbasis XML. Ini bersifat eksperimental dan belum berfungsi dengan semua penyedia."
 		}
 	},
 	"promptCaching": {

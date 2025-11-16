@@ -775,7 +775,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "Native tool calling'i etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo XML tabanlı araç tanımları yerine sağlayıcının yerel fonksiyon çağırma API'sını kullanacaktır. Bu deneyseldir ve yalnızca OpenAI tarzı fonksiyon çağırmayı destekleyen sağlayıcılarla çalışır."
+			"description": "Etkinleştirildiğinde, Roo XML tabanlı araç tanımları yerine sağlayıcının yerel fonksiyon çağırma API'sını kullanacaktır. Bu deneyseldir ve henüz tüm sağlayıcılarla çalışmamaktadır."
 		}
 	},
 	"promptCaching": {

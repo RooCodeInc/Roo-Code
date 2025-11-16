@@ -775,7 +775,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "네이티브 도구 호출 활성화",
-			"description": "활성화하면 Roo는 XML 기반 도구 정의 대신 제공자의 네이티브 함수 호출 API를 사용합니다. 이는 실험적이며 OpenAI 스타일 함수 호출을 지원하는 제공자에서만 작동합니다."
+			"description": "활성화하면 Roo는 XML 기반 도구 정의 대신 제공자의 네이티브 함수 호출 API를 사용합니다. 이는 실험적이며 아직 모든 제공자에서 작동하지 않습니다."
 		}
 	},
 	"promptCaching": {

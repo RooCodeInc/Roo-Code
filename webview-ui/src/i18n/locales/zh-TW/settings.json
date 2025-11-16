@@ -775,7 +775,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "啟用原生工具呼叫",
-			"description": "啟用後，Roo 將使用提供商的原生函式呼叫 API，而非基於 XML 的工具定義。這是實驗性功能，僅適用於支援 OpenAI 風格函式呼叫的提供商。"
+			"description": "啟用後，Roo 將使用提供商的原生函式呼叫 API，而非基於 XML 的工具定義。這是實驗性功能，目前尚未支援所有提供商。"
 		}
 	},
 	"promptCaching": {

@@ -775,7 +775,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "Włącz natywne wywoływanie narzędzi",
-			"description": "Gdy włączone, Roo będzie używać natywnego API wywoływania funkcji dostawcy zamiast definicji narzędzi opartych na XML. Jest to funkcja eksperymentalna i działa tylko z dostawcami obsługującymi wywoływanie funkcji w stylu OpenAI."
+			"description": "Gdy włączone, Roo będzie używać natywnego API wywoływania funkcji dostawcy zamiast definicji narzędzi opartych na XML. Jest to funkcja eksperymentalna i nie działa jeszcze ze wszystkimi dostawcami."
 		}
 	},
 	"promptCaching": {

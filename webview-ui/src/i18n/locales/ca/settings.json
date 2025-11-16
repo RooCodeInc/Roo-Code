@@ -774,7 +774,7 @@
 		},
 		"NATIVE_TOOL_CALLING": {
 			"name": "Habilitar crida d'eines nativa",
-			"description": "Quan està activat, Roo utilitzarà l'API de crida de funció nativa del proveïdor en lloc de definicions d'eines basades en XML. Això és experimental i només funciona amb proveïdors que admeten crida de funció a l'estil OpenAI."
+			"description": "Quan està activat, Roo utilitzarà l'API de crida de funció nativa del proveïdor en lloc de definicions d'eines basades en XML. Això és experimental i encara no funciona amb tots els proveïdors."
 		}
 	},
 	"promptCaching": {
