@@ -1,5 +1,6 @@
 import * as path from "path"
 import fs from "fs/promises"
+import * as crypto from "crypto"
 
 import NodeCache from "node-cache"
 
@@ -29,14 +30,42 @@ import { getChutesModels } from "./chutes"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
-async function writeModels(router: RouterName, data: ModelRecord) {
-	const filename = `${router}_models.json`
+/**
+ * Generate a unique cache key for providers that need to differentiate based on configuration.
+ * For providers like LiteLLM, Ollama, LM Studio, etc. that can have different instances,
+ * we need to include the base URL in the cache key.
+ */
+function getCacheKey(options: GetModelsOptions): string {
+	const { provider, baseUrl } = options
+
+	// For providers that can have multiple instances with different base URLs,
+	// include the base URL in the cache key
+	if (baseUrl && ["litellm", "ollama", "lmstudio", "requesty", "deepinfra"].includes(provider)) {
+		// Create a hash of the base URL to keep the key short
+		const urlHash = crypto.createHash("md5").update(baseUrl).digest("hex").substring(0, 8)
+		return `${provider}_${urlHash}`
+	}
+
+	// For other providers, just use the provider name
+	return provider
+}
+
+/**
+ * Generate a filename for the file cache that includes instance-specific information.
+ */
+function getCacheFilename(options: GetModelsOptions): string {
+	const cacheKey = getCacheKey(options)
+	return `${cacheKey}_models.json`
+}
+
+async function writeModels(options: GetModelsOptions, data: ModelRecord) {
+	const filename = getCacheFilename(options)
 	const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
 	await safeWriteJson(path.join(cacheDir, filename), data)
 }
 
-async function readModels(router: RouterName): Promise<ModelRecord | undefined> {
-	const filename = `${router}_models.json`
+async function readModels(options: GetModelsOptions): Promise<ModelRecord | undefined> {
+	const filename = getCacheFilename(options)
 	const cacheDir = await getCacheDirectoryPath(ContextProxy.instance.globalStorageUri.fsPath)
 	const filePath = path.join(cacheDir, filename)
 	const exists = await fileExistsAtPath(filePath)
@@ -56,8 +85,9 @@ async function readModels(router: RouterName): Promise<ModelRecord | undefined> 
  */
 export const getModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 	const { provider } = options
+	const cacheKey = getCacheKey(options)
 
-	let models = getModelsFromCache(provider)
+	let models = getModelsFromCache(cacheKey)
 
 	if (models) {
 		return models
@@ -118,15 +148,15 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			}
 		}
 
-		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
-		memoryCache.set(provider, models)
+		// Cache the fetched models using the unique cache key
+		memoryCache.set(cacheKey, models)
 
-		await writeModels(provider, models).catch((err) =>
+		await writeModels(options, models).catch((err) =>
 			console.error(`[getModels] Error writing ${provider} models to file cache:`, err),
 		)
 
 		try {
-			models = await readModels(provider)
+			models = await readModels(options)
 		} catch (error) {
 			console.error(`[getModels] error reading ${provider} models from file cache`, error)
 		}
@@ -141,13 +171,21 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 
 /**
  * Flush models memory cache for a specific router.
+ * This now needs to flush all possible cache keys for providers with multiple instances.
  *
  * @param router - The router to flush models for.
  */
 export const flushModels = async (router: RouterName) => {
-	memoryCache.del(router)
+	// For providers that can have multiple instances, we need to flush all possible cache keys
+	// Since we don't know all the possible base URLs, we'll flush all keys that start with the provider name
+	const keys = memoryCache.keys()
+	for (const key of keys) {
+		if (key.startsWith(router)) {
+			memoryCache.del(key)
+		}
+	}
 }
 
-export function getModelsFromCache(provider: ProviderName) {
-	return memoryCache.get<ModelRecord>(provider)
+export function getModelsFromCache(cacheKey: string) {
+	return memoryCache.get<ModelRecord>(cacheKey)
 }
