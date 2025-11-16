@@ -659,8 +659,15 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									aria-expanded={open}
 									className="justify-between w-full"
 									data-testid="mode-select-trigger">
-									<div className="truncate">
-										{getCurrentMode()?.name || t("prompts:modes.selectMode")}
+									<div className="flex items-center gap-1.5 truncate">
+										<span className="truncate">
+											{getCurrentMode()?.name || t("prompts:modes.selectMode")}
+										</span>
+										{getCurrentMode() && (
+											<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
+												{getCurrentMode()?.source || "global"}
+											</span>
+										)}
 									</div>
 									<ChevronDown className="opacity-50" />
 								</Button>
@@ -712,16 +719,20 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 														}}
 														data-testid={`mode-option-${modeConfig.slug}`}>
 														<div className="flex items-center justify-between w-full">
-															<span
-																style={{
-																	whiteSpace: "nowrap",
-																	overflow: "hidden",
-																	textOverflow: "ellipsis",
-																	flex: 2,
-																	minWidth: 0,
-																}}>
-																{modeConfig.name}
-															</span>
+															<div className="flex items-center gap-1.5 flex-1 min-w-0">
+																<span
+																	style={{
+																		whiteSpace: "nowrap",
+																		overflow: "hidden",
+																		textOverflow: "ellipsis",
+																		minWidth: 0,
+																	}}>
+																	{modeConfig.name}
+																</span>
+																<span className="text-[10px] px-1 py-0.5 rounded bg-vscode-badge-background text-vscode-badge-foreground">
+																	{modeConfig.source || "global"}
+																</span>
+															</div>
 															<span
 																className="text-foreground"
 																style={{
