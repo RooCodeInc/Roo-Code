@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-chat-backend
+  labels:
+    app: ai-chat-backend
+    component: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ai-chat-backend
+  template:
+    metadata:
+      labels:
+        app: ai-chat-backend
+        component: api
+    spec:
+      serviceAccountName: ai-chat-workload-sa
+      containers:
+      - name: backend
+        image: gcr.io/PROJECT_ID/ai-chat-backend:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: redis-url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: jwt-secret
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-api-keys
+              key: anthropic-api-key
+        - name: GOOGLE_AI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-api-keys
+              key: google-ai-api-key
+        - name: VERTEX_AI_PROJECT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: gcp-project-id
+        - name: GCP_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: gcp-project-id
+        - name: PING_SSO_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: ping-sso-enabled
+        - name: PING_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: sso-secrets
+              key: ping-client-id
+              optional: true
+        - name: PING_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: sso-secrets
+              key: ping-client-secret
+              optional: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-chat-frontend
+  labels:
+    app: ai-chat-frontend
+    component: ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-chat-frontend
+  template:
+    metadata:
+      labels:
+        app: ai-chat-frontend
+        component: ui
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/PROJECT_ID/ai-chat-frontend:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5

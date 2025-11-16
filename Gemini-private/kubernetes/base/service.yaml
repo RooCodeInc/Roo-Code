@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-chat-backend
+  labels:
+    app: ai-chat-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: ai-chat-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-chat-frontend
+  labels:
+    app: ai-chat-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: ai-chat-frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http

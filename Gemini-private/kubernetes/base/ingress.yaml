@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-chat-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "ai-chat-ip"
+    networking.gke.io/managed-certificates: "ai-chat-cert"
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  rules:
+  - host: chat.example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-chat-backend
+            port:
+              number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-chat-frontend
+            port:
+              number: 3000
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: ai-chat-cert
+spec:
+  domains:
+    - chat.example.com
