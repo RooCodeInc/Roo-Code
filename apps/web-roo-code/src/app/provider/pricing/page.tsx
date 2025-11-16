@@ -87,15 +87,16 @@ export default function ProviderPricingPage() {
 	}, [])
 
 	const filteredAndSortedModels = useMemo(() => {
-		let filtered = models
+		// Filter out deprecated models
+		let filtered = models.filter((model) => !model.deprecated)
 
 		// Filter by search query
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase()
-			filtered = models.filter((model) => {
+			filtered = filtered.filter((model) => {
 				return (
 					model.name.toLowerCase().includes(query) ||
-model.owned_by?.toLowerCase().includes(query) ||
+					model.owned_by?.toLowerCase().includes(query) ||
 					model.description.toLowerCase().includes(query)
 				)
 			})
@@ -123,6 +124,9 @@ model.owned_by?.toLowerCase().includes(query) ||
 
 		return sorted
 	}, [models, searchQuery, sortOption])
+
+	// Count non-deprecated models for the display
+	const nonDeprecatedCount = useMemo(() => models.filter((model) => !model.deprecated).length, [models])
 
 	return (
 		<>
@@ -162,7 +166,7 @@ model.owned_by?.toLowerCase().includes(query) ||
 									/>
 
 									<div className="text-sm cursor-default text-muted-foreground absolute bg-background right-0 top-0 m-0.5 px-3 py-2 rounded-full">
-										{filteredAndSortedModels.length} of {models.length} models
+										{filteredAndSortedModels.length} of {nonDeprecatedCount} models
 									</div>
 								</div>
 							</div>

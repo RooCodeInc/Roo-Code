@@ -11,7 +11,7 @@ export const formatTokens = (tokens: number) => {
 	}
 
 	if (tokens < 1000000) {
-		return `${(tokens / 1000).toFixed(1)}k`
+		return `${(tokens / 1000).toFixed(1)}K`
 	}
 
 	if (tokens < 1000000000) {

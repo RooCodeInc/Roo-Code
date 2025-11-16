@@ -8,7 +8,6 @@ import {
 	Gift,
 	HardDriveDownload,
 	HardDriveUpload,
-	ListChecks,
 	RulerDimensionLine,
 	ChevronDown,
 	ChevronUp,
@@ -26,7 +25,8 @@ export function ModelCard({ model }: ModelCardProps) {
 	const cacheWritePrice = parseFloat(model.pricing.input_cache_write)
 
 	const free = model.tags.includes("free")
-	const usefulTags = model.tags.filter((tag) => tag !== "free")
+	// Filter tags to only show vision and reasoning
+	const displayTags = model.tags.filter((tag) => tag === "vision" || tag === "reasoning")
 
 	// Mobile collapsed/expanded state
 	const [expanded, setExpanded] = useState(false)
@@ -62,8 +62,8 @@ export function ModelCard({ model }: ModelCardProps) {
 				</p>
 			</div>
 
-			{/* Content */}
-			<div className="overflow-x-auto">
+			{/* Content - pinned to bottom */}
+			<div className="overflow-x-auto mt-auto">
 				<table className="w-full text-xs">
 					<tbody>
 						{/* Context Window: always visible */}
@@ -73,6 +73,18 @@ export function ModelCard({ model }: ModelCardProps) {
 								Context Window
 							</td>
 							<td className="py-1.5 text-right font-mono">{formatTokens(model.context_window)}</td>
+						</tr>
+
+						{/* Max Output Tokens: always visible on >=sm, expandable on mobile */}
+						<tr
+							className={["border-b border-border", expanded ? "table-row" : "hidden sm:table-row"].join(
+								" ",
+							)}>
+							<td className="py-1.5 font-medium text-muted-foreground">
+								<Expand className="size-4 inline-block mr-1.5" />
+								Max Output Tokens
+							</td>
+							<td className="py-1.5 text-right font-mono">{formatTokens(model.max_tokens)}</td>
 						</tr>
 
 						{/* Input Price: always visible */}
@@ -113,17 +125,6 @@ export function ModelCard({ model }: ModelCardProps) {
 							</tr>
 						)}
 
-						<tr
-							className={["border-b border-border", expanded ? "table-row" : "hidden sm:table-row"].join(
-								" ",
-							)}>
-							<td className="py-1.5 font-medium text-muted-foreground">
-								<Expand className="size-4 inline-block mr-1.5" />
-								Max Output Tokens
-							</td>
-							<td className="py-1.5 text-right font-mono">{formatTokens(model.max_tokens)}</td>
-						</tr>
-
 						{(cacheReadPrice > 0 || cacheWritePrice > 0) && (
 							<>
 								<tr
@@ -157,20 +158,20 @@ export function ModelCard({ model }: ModelCardProps) {
 							</>
 						)}
 
-						<tr className={[expanded ? "table-row" : "hidden sm:table-row"].join(" ")}>
-							<td className="py-1.5 font-medium text-muted-foreground align-top">
-								<ListChecks className="size-4 inline-block mr-1.5" />
-								Features
-							</td>
-							<td className="py-1.5">
-								{usefulTags.map((tag) => (
-									<span key={tag} className="flex justify-end items-center text-xs capitalize">
-										<Check className="size-3 m-1" />
-										{tag}
-									</span>
-								))}
-							</td>
-						</tr>
+						{/* Tags row: only show if there are vision or reasoning tags */}
+						{displayTags.length > 0 && (
+							<tr className={[expanded ? "table-row" : "hidden sm:table-row"].join(" ")}>
+								<td className="py-1.5 font-medium text-muted-foreground align-top">Features</td>
+								<td className="py-1.5">
+									{displayTags.map((tag) => (
+										<span key={tag} className="flex justify-end items-center text-xs capitalize">
+											<Check className="size-3 m-1" />
+											{tag}
+										</span>
+									))}
+								</td>
+							</tr>
+						)}
 
 						{/* Mobile-only toggle row */}
 						<tr className="sm:hidden">

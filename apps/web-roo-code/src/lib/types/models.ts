@@ -17,6 +17,7 @@ export interface Model {
 	type: string
 	tags: string[]
 	pricing: ModelPricing
+	deprecated?: boolean
 }
 
 export interface ModelsResponse {
