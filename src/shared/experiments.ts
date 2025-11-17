@@ -8,6 +8,7 @@ export const EXPERIMENT_IDS = {
 	RUN_SLASH_COMMAND: "runSlashCommand",
 	CHAT_SEARCH: "chatSearch",
 	ALWAYS_INCLUDE_FILE_DETAILS: "alwaysIncludeFileDetails",
+	NATIVE_TOOL_CALLING: "nativeToolCalling",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -26,6 +27,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	RUN_SLASH_COMMAND: { enabled: false },
 	CHAT_SEARCH: { enabled: false },
 	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: undefined },
+	NATIVE_TOOL_CALLING: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

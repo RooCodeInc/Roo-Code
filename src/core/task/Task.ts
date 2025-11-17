@@ -10,7 +10,7 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 import { Package } from "../../shared/package"
-import { getCurrentToolProtocol, formatToolInvocation } from "../tools/helpers/toolResultFormatting"
+import { formatToolInvocation } from "../tools/helpers/toolResultFormatting"
 
 import {
 	type TaskLike,
@@ -46,7 +46,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
-import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -335,6 +335,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		task,
 		images,
 		historyItem,
+		experiments: experimentsConfig,
 		startTask = true,
 		rootTask,
 		parentTask,
@@ -426,7 +427,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Initialize the assistant message parser only for XML protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
-		this.assistantMessageParser = getToolProtocolFromSettings() === "xml" ? new AssistantMessageParser() : undefined
+		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
+		const toolProtocol = resolveToolProtocol(
+			this.apiConfiguration,
+			this.api.getModel().info,
+			this.apiConfiguration.apiProvider,
+			experimentsConfig,
+		)
+		this.assistantMessageParser = toolProtocol === "xml" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -1337,7 +1345,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+		const modelInfo = this.api.getModel().info
+		const state = await this.providerRef.deref()?.getState()
+		const toolProtocol = resolveToolProtocol(
+			this.apiConfiguration,
+			modelInfo,
+			this.apiConfiguration.apiProvider,
+			state?.experiments,
+		)
+		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, toolProtocol))
 	}
 
 	// Lifecycle
@@ -1477,8 +1493,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// v2.0 xml tags refactor caveat: since we don't use tools anymore, we need to replace all tool use blocks with a text block since the API disallows conversations with tool uses and no tool schema
 		// Now also protocol-aware: format according to current protocol setting
-		const protocol = getCurrentToolProtocol()
-		// const useNative = isNativeProtocol(protocol)
+		const state = await this.providerRef.deref()?.getState()
+		const protocol = resolveToolProtocol(
+			this.apiConfiguration,
+			this.api.getModel().info,
+			this.apiConfiguration.apiProvider,
+			state?.experiments,
+		)
+		const useNative = isNativeProtocol(protocol)
 
 		const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
 			if (Array.isArray(message.content)) {
@@ -1829,7 +1851,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the user hits max requests and denies resetting the count.
 				break
 			} else {
-				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed() }]
+				const modelInfo = this.api.getModel().info
+				const state = await this.providerRef.deref()?.getState()
+				const toolProtocol = resolveToolProtocol(
+					this.apiConfiguration,
+					modelInfo,
+					this.apiConfiguration.apiProvider,
+					state?.experiments,
+				)
+				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(toolProtocol) }]
 				this.consecutiveMistakeCount++
 			}
 		}
@@ -2512,7 +2542,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 
 					// Check if we're using native protocol
-					const isNative = isNativeProtocol(getToolProtocolFromSettings())
+					const state = await this.providerRef.deref()?.getState()
+					const isNative = isNativeProtocol(
+						resolveToolProtocol(
+							this.apiConfiguration,
+							this.api.getModel().info,
+							this.apiConfiguration.apiProvider,
+							state?.experiments,
+						),
+					)
 
 					if (isNative) {
 						// For native protocol: Preserve tool_use blocks that were added via tool_call chunks
@@ -2650,7 +2688,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
 
 					if (!didToolUse) {
-						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed() })
+						const modelInfo = this.api.getModel().info
+						const state = await this.providerRef.deref()?.getState()
+						const toolProtocol = resolveToolProtocol(
+							this.apiConfiguration,
+							modelInfo,
+							this.apiConfiguration.apiProvider,
+							state?.experiments,
+						)
+						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
 						this.consecutiveMistakeCount++
 					}
 
@@ -2678,7 +2724,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
-					if (isNativeProtocol(getToolProtocolFromSettings()) && this.apiConversationHistory.length > 0) {
+					let state = await this.providerRef.deref()?.getState()
+					if (
+						isNativeProtocol(
+							resolveToolProtocol(
+								this.apiConfiguration,
+								this.api.getModel().info,
+								this.apiConfiguration.apiProvider,
+								state?.experiments,
+							),
+						) &&
+						this.apiConversationHistory.length > 0
+					) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 						if (lastMessage.role === "user") {
 							// Remove the last user message that we added earlier
@@ -2687,8 +2744,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					// Check if we should auto-retry or prompt the user
-					const state = await this.providerRef.deref()?.getState()
 					let errorMsg = t("common:errors.unexpected_api_response")
+					// Reuse the state variable from above
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						if (requestId) {
@@ -2741,7 +2798,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						} else {
 							// User declined to retry
 							// For native protocol, re-add the user message we removed
-							if (isNativeProtocol(getToolProtocolFromSettings())) {
+							// Reuse the state variable from above
+							if (
+								isNativeProtocol(
+									resolveToolProtocol(
+										this.apiConfiguration,
+										this.api.getModel().info,
+										this.apiConfiguration.apiProvider,
+										state?.experiments,
+									),
+								)
+							) {
 								await this.addToApiConversationHistory({
 									role: "user",
 									content: currentUserContent,
@@ -2836,6 +2903,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
+			// Resolve the tool protocol based on profile, model, and provider settings
+			const toolProtocol = resolveToolProtocol(
+				apiConfiguration ?? this.apiConfiguration,
+				modelInfo,
+				(apiConfiguration ?? this.apiConfiguration)?.apiProvider,
+				experiments,
+			)
+
 			return SYSTEM_PROMPT(
 				provider.context,
 				this.cwd,
@@ -2863,7 +2938,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
-					toolProtocol: getToolProtocolFromSettings(),
+					toolProtocol,
 				},
 				undefined, // todoList
 				this.api.getModel().id,
@@ -3075,8 +3150,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Determine if we should include native tools based on:
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
-		const toolProtocol = getToolProtocolFromSettings()
 		const modelInfo = this.api.getModel().info
+		const toolProtocol = resolveToolProtocol(
+			this.apiConfiguration,
+			modelInfo,
+			this.apiConfiguration.apiProvider,
+			state?.experiments,
+		)
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions

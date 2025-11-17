@@ -783,15 +783,6 @@
 					],
 					"default": "auto",
 					"description": "%settings.commit.language.description%"
-				},
-				"zgsm.toolProtocol": {
-					"type": "string",
-					"enum": [
-						"xml",
-						"native"
-					],
-					"default": "xml",
-					"description": "%settings.toolProtocol.description%"
 				}
 			}
 		}

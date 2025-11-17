@@ -8,7 +8,7 @@ import { SYSTEM_PROMPT } from "../prompts/system"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import { Package } from "../../shared/package"
-import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import { ClineProvider } from "./ClineProvider"
 
@@ -70,6 +70,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	// and browser tools are enabled in settings
 	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
+	// Resolve tool protocol for system prompt generation
+	const toolProtocol = resolveToolProtocol(apiConfiguration, modelInfo, apiConfiguration.apiProvider, experiments)
+
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,
 		cwd,
@@ -95,7 +98,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
-			toolProtocol: getToolProtocolFromSettings(),
+			toolProtocol,
 		},
 	)
 

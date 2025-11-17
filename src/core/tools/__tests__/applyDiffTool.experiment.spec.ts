@@ -79,8 +79,19 @@ describe("applyDiffTool experiment routing", () => {
 			diffViewProvider: {
 				reset: vi.fn(),
 			},
+			apiConfiguration: {
+				apiProvider: "anthropic",
+			},
 			api: {
-				getModel: vi.fn().mockReturnValue({ id: "test-model" }),
+				getModel: vi.fn().mockReturnValue({
+					id: "test-model",
+					info: {
+						maxTokens: 4096,
+						contextWindow: 128000,
+						supportsPromptCache: false,
+						supportsNativeTools: false,
+					},
+				}),
 			},
 			processQueuedMessages: vi.fn(),
 		} as any
@@ -171,15 +182,21 @@ describe("applyDiffTool experiment routing", () => {
 	})
 
 	it("should use class-based tool when native protocol is enabled regardless of experiment", async () => {
-		// Enable native protocol
-		const vscode = await import("vscode")
-		vi.mocked(vscode.workspace.getConfiguration).mockReturnValue({
-			get: vi.fn().mockReturnValue(TOOL_PROTOCOL.NATIVE),
-		} as any)
+		// Update model to support native tools
+		mockCline.api.getModel = vi.fn().mockReturnValue({
+			id: "test-model",
+			info: {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsNativeTools: true, // Enable native tools support
+			},
+		})
 
 		mockProvider.getState.mockResolvedValue({
 			experiments: {
 				[EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF]: true,
+				[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]: true, // Enable native tool calling experiment
 			},
 		})
 		;(applyDiffToolClass.handle as any).mockResolvedValue(undefined)
