@@ -345,6 +345,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	rateLimitSeconds: 0,
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
+	maxGitStatusFiles: 20,
 	showRooIgnoredFiles: true,
 	maxReadFileLine: -1, // -1 to enable full file reading.
 
