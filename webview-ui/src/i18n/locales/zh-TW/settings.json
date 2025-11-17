@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "在上下文中包含目前成本",
 			"description": "啟用後，目前 API 使用成本將包含在系統提示中。如果模型因成本問題停止工作，請停用此選項。"
+		},
+		"maxGitStatusFiles": {
+			"label": "Git 狀態最大檔案數",
+			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
 		}
 	},
 	"terminal": {

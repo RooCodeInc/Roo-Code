@@ -631,6 +631,10 @@
 		"includeCurrentCost": {
 			"label": "Sertakan biaya saat ini dalam konteks",
 			"description": "Ketika diaktifkan, biaya penggunaan API saat ini akan disertakan dalam prompt sistem. Nonaktifkan ini jika model berhenti bekerja karena masalah biaya."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status maks file",
+			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat > 0."
 		}
 	},
 	"terminal": {

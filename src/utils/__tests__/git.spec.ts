@@ -843,10 +843,10 @@ describe("getGitStatus", () => {
 		vitest.clearAllMocks()
 	})
 
-	it("should return git status output", async () => {
+	it("should return git status output with default maxFiles", async () => {
 		const mockOutput = `## main...origin/main [ahead 2, behind 1]
 M  src/staged-file.ts
- M src/unstaged-file.ts
+	M src/unstaged-file.ts
 MM src/both-modified.ts
 ?? src/untracked-file.ts`
 
@@ -867,9 +867,38 @@ MM src/both-modified.ts
 			return {} as any
 		})
 
-		const result = await getGitStatus(cwd)
+		const result = await getGitStatus(cwd, 20)
 
 		expect(result).toBe(mockOutput)
+	})
+
+	it("should show only branch info when maxFiles is 0", async () => {
+		const mockOutput = `## main...origin/main
+M  src/file1.ts
+?? src/file2.ts`
+
+		const responses = new Map([
+			["git --version", { stdout: "git version 2.39.2", stderr: "" }],
+			["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
+			["git status --porcelain=v1 --branch", { stdout: mockOutput, stderr: "" }],
+		])
+
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			for (const [cmd, response] of responses) {
+				if (command === cmd) {
+					callback(null, response)
+					return {} as any
+				}
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd, 0)
+
+		expect(result).toBe("## main...origin/main")
+		expect(result).not.toContain("M  src/file1.ts")
+		expect(result).not.toContain("?? src/file2.ts")
 	})
 
 	it("should return null when git is not installed", async () => {
@@ -909,7 +938,7 @@ MM src/both-modified.ts
 		expect(result).toBeNull()
 	})
 
-	it("should truncate output to 20 lines", async () => {
+	it("should respect maxFiles parameter", async () => {
 		const lines = Array.from({ length: 30 }, (_, i) => {
 			if (i === 0) return "## main"
 			return `M  file${i}.ts`
@@ -933,12 +962,12 @@ MM src/both-modified.ts
 			return {} as any
 		})
 
-		const result = await getGitStatus(cwd)
+		const result = await getGitStatus(cwd, 10)
 
 		expect(result).toContain("## main")
 		expect(result).toContain("M  file1.ts")
-		expect(result).toContain("... 10 more lines")
-		expect(result).not.toContain("file25.ts")
+		expect(result).toContain("... 19 more files")
+		expect(result).not.toContain("file15.ts")
 	})
 
 	it("should return null when status is empty", async () => {

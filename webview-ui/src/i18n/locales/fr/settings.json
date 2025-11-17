@@ -626,6 +626,10 @@
 		"includeCurrentCost": {
 			"label": "Inclure le coût actuel dans le contexte",
 			"description": "Lorsque cette option est activée, le coût d'utilisation actuel de l'API sera inclus dans le prompt système. Désactivez cette option si les modèles cessent de fonctionner en raison de problèmes de coût."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status max fichiers",
+			"description": "Nombre maximum de fichiers à inclure dans le contexte de statut git. Mettre à 0 pour désactiver. Les informations de branche et les commits sont toujours affichés si > 0."
 		}
 	},
 	"terminal": {

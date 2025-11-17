@@ -187,7 +187,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	}
 
 	// Get settings for time and cost display
-	const { includeCurrentTime = true, includeCurrentCost = true } = state ?? {}
+	const { includeCurrentTime = true, includeCurrentCost = true, maxGitStatusFiles = 0 } = state ?? {}
 
 	// Add current time information with timezone (if enabled).
 	if (includeCurrentTime) {
@@ -201,10 +201,12 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details += `\n\n# Current Time\nCurrent time in ISO 8601 UTC format: ${now.toISOString()}\nUser time zone: ${timeZone}, UTC${timeZoneOffsetStr}`
 	}
 
-	// Add git status information
-	const gitStatus = await getGitStatus(cline.cwd)
-	if (gitStatus) {
-		details += `\n\n# Git Status\n${gitStatus}`
+	// Add git status information (if enabled with maxGitStatusFiles > 0).
+	if (maxGitStatusFiles > 0) {
+		const gitStatus = await getGitStatus(cline.cwd, maxGitStatusFiles)
+		if (gitStatus) {
+			details += `\n\n# Git Status\n${gitStatus}`
+		}
 	}
 
 	// Add context tokens information (if enabled).

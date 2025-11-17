@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "Bao gồm chi phí hiện tại trong ngữ cảnh",
 			"description": "Khi được bật, chi phí sử dụng API hiện tại sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về chi phí."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status tệp tối đa",
+			"description": "Số lượng mục tệp tối đa để bao gồm trong ngữ cảnh trạng thái git. Đặt thành 0 để tắt. Thông tin nhánh và các commit luôn được hiển thị khi > 0."
 		}
 	},
 	"terminal": {

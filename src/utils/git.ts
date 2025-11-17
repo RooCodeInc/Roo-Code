@@ -356,14 +356,13 @@ export async function getWorkingState(cwd: string): Promise<string> {
 	}
 }
 
-const GIT_STATUS_LINE_LIMIT = 20
-
 /**
- * Gets git status output with line limit
+ * Gets git status output with configurable file limit
  * @param cwd The working directory to check git status in
+ * @param maxFiles Maximum number of file entries to include (0 = disabled)
  * @returns Git status string or null if not a git repository
  */
-export async function getGitStatus(cwd: string): Promise<string | null> {
+export async function getGitStatus(cwd: string, maxFiles: number = 20): Promise<string | null> {
 	try {
 		const isInstalled = await checkGitInstalled()
 		if (!isInstalled) {
@@ -382,18 +381,26 @@ export async function getGitStatus(cwd: string): Promise<string | null> {
 			return null
 		}
 
-		// Truncate to line limit
 		const lines = stdout.trim().split("\n")
-		const limitedLines = lines.slice(0, GIT_STATUS_LINE_LIMIT)
 
-		let output = limitedLines.join("\n")
+		// First line is always branch info (e.g., "## main...origin/main")
+		const branchLine = lines[0]
+		const fileLines = lines.slice(1)
 
-		// Add truncation notice if needed
-		if (lines.length > GIT_STATUS_LINE_LIMIT) {
-			output += `\n... ${lines.length - GIT_STATUS_LINE_LIMIT} more lines`
+		// Build output with branch info and limited file entries
+		const output: string[] = [branchLine]
+
+		if (maxFiles > 0 && fileLines.length > 0) {
+			const filesToShow = fileLines.slice(0, maxFiles)
+			output.push(...filesToShow)
+
+			// Add truncation notice if needed
+			if (fileLines.length > maxFiles) {
+				output.push(`... ${fileLines.length - maxFiles} more files`)
+			}
 		}
 
-		return output
+		return output.join("\n")
 	} catch (error) {
 		console.error("Error getting git status:", error)
 		return null
