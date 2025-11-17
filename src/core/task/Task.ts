@@ -320,6 +320,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		task,
 		images,
 		historyItem,
+		experiments: experimentsConfig,
 		startTask = true,
 		rootTask,
 		parentTask,
@@ -409,11 +410,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Initialize the assistant message parser only for XML protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
+		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
 		const toolProtocol = resolveToolProtocol(
 			this.apiConfiguration,
 			this.api.getModel().info,
 			this.apiConfiguration.apiProvider,
-			undefined, // experiments not yet available in constructor
+			experimentsConfig,
 		)
 		this.assistantMessageParser = toolProtocol === "xml" ? new AssistantMessageParser() : undefined
 
