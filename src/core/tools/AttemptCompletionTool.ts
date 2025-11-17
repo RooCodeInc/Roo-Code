@@ -83,7 +83,6 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
-				// Task completed successfully - don't push tool result to prevent loop continuation
 				return
 			}
 
