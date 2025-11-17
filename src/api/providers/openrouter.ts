@@ -60,6 +60,8 @@ type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
 	include_reasoning?: boolean
 	// https://openrouter.ai/docs/use-cases/reasoning-tokens
 	reasoning?: OpenRouterReasoningParams
+	// For DeepSeek V3.1 Terminus models that require chat_template_kwargs
+	chat_template_kwargs?: { thinking?: boolean }
 }
 
 // See `OpenAI.Chat.Completions.ChatCompletionChunk["usage"]`
@@ -124,6 +126,32 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 	}
 
+	/**
+	 * Handle DeepSeek V3.1 Terminus specific logic for converting reasoning to chat_template_kwargs
+	 * @param modelId The model identifier
+	 * @param reasoning The reasoning configuration
+	 * @returns Object containing chatTemplateKwargs and finalReasoning
+	 */
+	private handleDeepSeekV31Terminus(
+		modelId: string,
+		reasoning: OpenRouterReasoningParams | undefined,
+	): {
+		chatTemplateKwargs: { thinking?: boolean } | undefined
+		finalReasoning: OpenRouterReasoningParams | undefined
+	} {
+		if (!modelId.includes("deepseek-v3.1-terminus")) {
+			return { chatTemplateKwargs: undefined, finalReasoning: reasoning }
+		}
+
+		// For DeepSeek V3.1 Terminus, convert reasoning to chat_template_kwargs
+		// The reasoning object will be present if reasoning is enabled
+		const hasReasoningEnabled = Boolean(reasoning && !reasoning.exclude)
+		return {
+			chatTemplateKwargs: { thinking: hasReasoningEnabled },
+			finalReasoning: undefined,
+		}
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -168,6 +196,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		const transforms = (this.options.openRouterUseMiddleOutTransform ?? true) ? ["middle-out"] : undefined
 
+		// Handle DeepSeek V3.1 Terminus specific logic
+		const { chatTemplateKwargs, finalReasoning } = this.handleDeepSeekV31Terminus(modelId, reasoning)
+
 		// https://openrouter.ai/docs/transforms
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
@@ -188,7 +219,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}),
 			parallel_tool_calls: false, // Ensure only one tool call at a time
 			...(transforms && { transforms }),
-			...(reasoning && { reasoning }),
+			...(finalReasoning && { reasoning: finalReasoning }),
+			...(chatTemplateKwargs && { chat_template_kwargs: chatTemplateKwargs }),
 			...(metadata?.tools && { tools: metadata.tools }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
@@ -318,6 +350,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	async completePrompt(prompt: string) {
 		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
+		// Handle DeepSeek V3.1 Terminus specific logic
+		const { chatTemplateKwargs, finalReasoning } = this.handleDeepSeekV31Terminus(modelId, reasoning)
+
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
 			max_tokens: maxTokens,
@@ -333,7 +368,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						allow_fallbacks: false,
 					},
 				}),
-			...(reasoning && { reasoning }),
+			...(finalReasoning && { reasoning: finalReasoning }),
+			...(chatTemplateKwargs && { chat_template_kwargs: chatTemplateKwargs }),
 		}
 
 		let response

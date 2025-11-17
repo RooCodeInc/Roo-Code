@@ -52,6 +52,28 @@ vitest.mock("../fetchers/modelCache", () => ({
 				cacheReadsPrice: 0.3,
 				description: "Claude 3.7 Sonnet with thinking",
 			},
+			"deepseek/deepseek-v3.1-terminus": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.3,
+				outputPrice: 1.2,
+				description: "DeepSeek V3.1 Terminus",
+				supportsReasoningEffort: true,
+				supportedReasoningEfforts: ["low", "medium", "high"],
+			},
+			"deepseek/deepseek-v3.1-terminus:exacto": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.3,
+				outputPrice: 1.2,
+				description: "DeepSeek V3.1 Terminus Exacto",
+				supportsReasoningEffort: true,
+				supportedReasoningEfforts: ["low", "medium", "high"],
+			},
 		})
 	}),
 }))
@@ -330,6 +352,184 @@ describe("OpenRouterHandler", () => {
 			} as any
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
+		})
+	})
+
+	describe("DeepSeek V3.1 Terminus handling", () => {
+		it("should use chat_template_kwargs with thinking:true when reasoning is enabled for V3.1 Terminus", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+				reasoningEffort: "medium",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			// Should include chat_template_kwargs with thinking:true and NOT include reasoning parameter
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					chat_template_kwargs: { thinking: true },
+				}),
+			)
+			// Ensure reasoning parameter is NOT included
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
+		})
+
+		it("should use chat_template_kwargs with thinking:false when reasoning is disabled for V3.1 Terminus", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+				// No reasoning effort specified
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			// Should include chat_template_kwargs with thinking:false
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					chat_template_kwargs: { thinking: false },
+				}),
+			)
+			// Ensure reasoning parameter is NOT included
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
+		})
+
+		it("should not use chat_template_kwargs for non-Terminus models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+				reasoningEffort: "medium",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			// Should NOT include chat_template_kwargs for non-Terminus models
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					chat_template_kwargs: expect.anything(),
+				}),
+			)
+		})
+
+		it("should handle chat_template_kwargs in completePrompt for V3.1 Terminus", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus",
+				reasoningEffort: "high",
+			})
+
+			const mockResponse = { choices: [{ message: { content: "test completion" } }] }
+			const mockCreate = vitest.fn().mockResolvedValue(mockResponse)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.completePrompt("test prompt")
+
+			// Should include chat_template_kwargs with thinking:true for non-streaming as well
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus",
+					chat_template_kwargs: { thinking: true },
+					stream: false,
+				}),
+			)
+			// Ensure reasoning parameter is NOT included
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
+		})
+
+		it("should handle DeepSeek V3.1 Terminus exacto variant with chat_template_kwargs", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-v3.1-terminus:exacto",
+				reasoningEffort: "medium",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await handler.createMessage("test", []).next()
+
+			// Should include chat_template_kwargs with thinking:true for exacto variant
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek/deepseek-v3.1-terminus:exacto",
+					chat_template_kwargs: { thinking: true },
+				}),
+			)
+			// Ensure reasoning parameter is NOT included
+			expect(mockCreate).not.toHaveBeenCalledWith(
+				expect.objectContaining({
+					reasoning: expect.anything(),
+				}),
+			)
 		})
 	})
 })

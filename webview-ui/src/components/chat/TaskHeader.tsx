@@ -265,7 +265,7 @@ const TaskHeader = ({
 												{t("chat:task.contextWindow")}
 											</th>
 											<td className="font-light align-top">
-									<div className={`max-w-md -mt-1.5 flex flex-nowrap gap-1`}>
+												<div className={`max-w-md -mt-1.5 flex flex-nowrap gap-1`}>
 													<ContextWindowProgress
 														contextWindow={contextWindow}
 														contextTokens={contextTokens || 0}
