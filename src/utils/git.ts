@@ -355,3 +355,47 @@ export async function getWorkingState(cwd: string): Promise<string> {
 		return `Failed to get working state: ${error instanceof Error ? error.message : String(error)}`
 	}
 }
+
+const GIT_STATUS_LINE_LIMIT = 20
+
+/**
+ * Gets git status output with line limit
+ * @param cwd The working directory to check git status in
+ * @returns Git status string or null if not a git repository
+ */
+export async function getGitStatus(cwd: string): Promise<string | null> {
+	try {
+		const isInstalled = await checkGitInstalled()
+		if (!isInstalled) {
+			return null
+		}
+
+		const isRepo = await checkGitRepo(cwd)
+		if (!isRepo) {
+			return null
+		}
+
+		// Use porcelain v1 format with branch info
+		const { stdout } = await execAsync("git status --porcelain=v1 --branch", { cwd })
+
+		if (!stdout.trim()) {
+			return null
+		}
+
+		// Truncate to line limit
+		const lines = stdout.trim().split("\n")
+		const limitedLines = lines.slice(0, GIT_STATUS_LINE_LIMIT)
+
+		let output = limitedLines.join("\n")
+
+		// Add truncation notice if needed
+		if (lines.length > GIT_STATUS_LINE_LIMIT) {
+			output += `\n... ${lines.length - GIT_STATUS_LINE_LIMIT} more lines`
+		}
+
+		return output
+	} catch (error) {
+		console.error("Error getting git status:", error)
+		return null
+	}
+}

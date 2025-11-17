@@ -143,8 +143,7 @@ describe("getEnvironmentDetails", () => {
 
 		expect(result).toContain("<environment_details>")
 		expect(result).toContain("</environment_details>")
-		expect(result).toContain("# VSCode Visible Files")
-		expect(result).toContain("# VSCode Open Tabs")
+		// Visible Files and Open Tabs headers only appear when there's content
 		expect(result).toContain("# Current Time")
 		expect(result).toContain("# Current Cost")
 		expect(result).toContain("# Current Mode")

@@ -12,6 +12,7 @@ import {
 	extractRepositoryName,
 	getWorkspaceGitInfo,
 	convertGitUrlToHttps,
+	getGitStatus,
 } from "../git"
 import { truncateOutput } from "../../integrations/misc/extract-text"
 
@@ -832,5 +833,133 @@ describe("getWorkspaceGitInfo", () => {
 		// Verify the fs operations were called with the correct workspace path
 		expect(gitSpy).toHaveBeenCalled()
 		expect(readFileSpy).toHaveBeenCalled()
+	})
+})
+
+describe("getGitStatus", () => {
+	const cwd = "/test/path"
+
+	beforeEach(() => {
+		vitest.clearAllMocks()
+	})
+
+	it("should return git status output", async () => {
+		const mockOutput = `## main...origin/main [ahead 2, behind 1]
+M  src/staged-file.ts
+ M src/unstaged-file.ts
+MM src/both-modified.ts
+?? src/untracked-file.ts`
+
+		const responses = new Map([
+			["git --version", { stdout: "git version 2.39.2", stderr: "" }],
+			["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
+			["git status --porcelain=v1 --branch", { stdout: mockOutput, stderr: "" }],
+		])
+
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			for (const [cmd, response] of responses) {
+				if (command === cmd) {
+					callback(null, response)
+					return {} as any
+				}
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd)
+
+		expect(result).toBe(mockOutput)
+	})
+
+	it("should return null when git is not installed", async () => {
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			if (command === "git --version") {
+				callback(new Error("git not found"))
+				return {} as any
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd)
+		expect(result).toBeNull()
+	})
+
+	it("should return null when not in a git repository", async () => {
+		const responses = new Map([
+			["git --version", { stdout: "git version 2.39.2", stderr: "" }],
+			["git rev-parse --git-dir", null],
+		])
+
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			const response = responses.get(command)
+			if (response === null) {
+				callback(new Error("not a git repository"))
+				return {} as any
+			} else if (response) {
+				callback(null, response)
+				return {} as any
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd)
+		expect(result).toBeNull()
+	})
+
+	it("should truncate output to 20 lines", async () => {
+		const lines = Array.from({ length: 30 }, (_, i) => {
+			if (i === 0) return "## main"
+			return `M  file${i}.ts`
+		})
+		const mockOutput = lines.join("\n")
+
+		const responses = new Map([
+			["git --version", { stdout: "git version 2.39.2", stderr: "" }],
+			["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
+			["git status --porcelain=v1 --branch", { stdout: mockOutput, stderr: "" }],
+		])
+
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			for (const [cmd, response] of responses) {
+				if (command === cmd) {
+					callback(null, response)
+					return {} as any
+				}
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd)
+
+		expect(result).toContain("## main")
+		expect(result).toContain("M  file1.ts")
+		expect(result).toContain("... 10 more lines")
+		expect(result).not.toContain("file25.ts")
+	})
+
+	it("should return null when status is empty", async () => {
+		const responses = new Map([
+			["git --version", { stdout: "git version 2.39.2", stderr: "" }],
+			["git rev-parse --git-dir", { stdout: ".git", stderr: "" }],
+			["git status --porcelain=v1 --branch", { stdout: "", stderr: "" }],
+		])
+
+		vitest.mocked(exec).mockImplementation((command: string, options: any, callback: any) => {
+			for (const [cmd, response] of responses) {
+				if (command === cmd) {
+					callback(null, response)
+					return {} as any
+				}
+			}
+			callback(new Error("Unexpected command"))
+			return {} as any
+		})
+
+		const result = await getGitStatus(cwd)
+		expect(result).toBeNull()
 	})
 })
