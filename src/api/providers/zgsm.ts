@@ -170,8 +170,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			if (fromWorkflow) {
 				requestOptions.extra_body.prompt_mode = "strict"
 			}
-			let stream
-			let selectedLlm: string | undefined
+			const isAuto = this.options.zgsmModelId === autoModeModelId
+			let stream: any
+			let selectedLLM: string | undefined = this.options.zgsmModelId
 			let selectReason: string | undefined
 			try {
 				this.logger.info(`[RequestID]:`, requestId)
@@ -190,9 +191,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					)
 					.withResponse()
 				this.logger.info(`[ResponseID]:`, response.headers.get("x-request-id"))
-
-				if (this.options.zgsmModelId === autoModeModelId) {
-					selectedLlm = response.headers.get("x-select-llm") || ""
+				if (isAuto) {
+					selectedLLM = response.headers.get("x-select-llm") || ""
 					selectReason = response.headers.get("x-select-reason") || ""
 					const isDev = process.env.NODE_ENV === "development"
 
@@ -209,7 +209,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// 6. Optimize stream processing - use batch processing and buffer
-			yield* this.handleOptimizedStream(stream, modelInfo, selectedLlm, selectReason)
+			yield* this.handleOptimizedStream(stream, modelInfo, isAuto, selectedLLM, selectReason)
 		} else {
 			// Non-streaming processing
 			const requestOptions = this.buildNonStreamingRequestOptions(
@@ -416,7 +416,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	private async *handleOptimizedStream(
 		stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>,
 		modelInfo: ModelInfo,
-		selectedLlm?: string,
+		isAuto?: boolean,
+		selectedLLM?: string,
 		selectReason?: string,
 	): ApiStream {
 		const matcher = new XmlMatcher(
@@ -437,10 +438,12 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isDev = process.env.NODE_ENV === "development"
 
 		// Yield selected LLM info if available (for Auto model mode)
-		if (selectedLlm && this.options.zgsmModelId === autoModeModelId) {
+		if (isAuto) {
 			yield {
 				type: "text",
-				text: `[Selected LLM: ${selectedLlm}${selectReason ? ` (${selectReason})` : ""}]`,
+				text: `["${selectedLLM}" ${selectReason ? `, "(${selectReason})"` : ""}]`,
+				isAuto,
+				originModelId: this.options.zgsmModelId,
 			}
 		}
 
@@ -455,7 +458,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Cache content for batch processing
 			if (delta.content) {
 				contentBuffer.push(delta.content)
-				if (isDev && !isPrinted && chunk.model && this.options.zgsmModelId === autoModeModelId) {
+				if (isDev && !isPrinted && chunk.model && isAuto) {
 					this.logger.info(`[Current Model]: ${chunk.model}`)
 					isPrinted = true
 				}

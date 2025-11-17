@@ -17,6 +17,8 @@ export interface ApiStreamError {
 export interface ApiStreamTextChunk {
 	type: "text"
 	text: string
+	isAuto?: boolean
+	originModelId?: string
 }
 
 export interface ApiStreamReasoningChunk {

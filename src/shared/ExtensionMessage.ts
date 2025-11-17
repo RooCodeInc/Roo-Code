@@ -496,8 +496,10 @@ export interface ClineApiReqInfo {
 	cancelReason?: ClineApiReqCancelReason
 	streamingFailedMessage?: string
 	apiProtocol?: "anthropic" | "openai"
-	selectedLlm?: string
+	selectedLLM?: string
 	selectReason?: string
+	isAuto?: boolean
+	originModelId?: string
 }
 
 export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"
