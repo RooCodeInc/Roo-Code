@@ -691,7 +691,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protocol de crida d'eines",
-		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML. Per defecte, s'utilitza la lògica basada en el proveïdor (actualment XML per a tots els proveïdors).",
+		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
 		"default": "Per defecte",
 		"xml": "XML",
 		"native": "Natiu",

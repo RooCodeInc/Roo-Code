@@ -692,7 +692,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protocolo de Chamada de Ferramenta",
-		"description": "Escolha como o Roo se comunica com a API. Nativo usa a API de chamada de função do provedor, enquanto XML usa definições de ferramentas formatadas em XML. O padrão usa a lógica baseada no provedor (atualmente XML para todos os provedores).",
+		"description": "Escolha como o Roo se comunica com a API. Nativo usa a API de chamada de função do provedor, enquanto XML usa definições de ferramentas formatadas em XML.",
 		"default": "Padrão",
 		"xml": "XML",
 		"native": "Nativo",

@@ -691,7 +691,7 @@
 	},
 	"toolProtocol": {
 		"label": "Tool-Aufruf-Protokoll",
-		"description": "Wähle, wie Roo mit der API kommuniziert. Nativ verwendet die Funktionsaufruf-API des Anbieters, während XML XML-formatierte Werkzeugdefinitionen verwendet. Standardmäßig wird eine anbieterbasierte Logik verwendet (derzeit XML für alle Anbieter).",
+		"description": "Wähle, wie Roo mit der API kommuniziert. Nativ verwendet die Funktionsaufruf-API des Anbieters, während XML XML-formatierte Werkzeugdefinitionen verwendet.",
 		"default": "Standard",
 		"xml": "XML",
 		"native": "Nativ",

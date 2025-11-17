@@ -692,7 +692,7 @@
 	},
 	"toolProtocol": {
 		"label": "Giao thức gọi công cụ",
-		"description": "Chọn cách Roo giao tiếp với API. Native sử dụng API gọi hàm của nhà cung cấp, trong khi XML sử dụng định nghĩa công cụ định dạng XML. Mặc định sử dụng logic dựa trên nhà cung cấp (hiện tại là XML cho tất cả các nhà cung cấp).",
+		"description": "Chọn cách Roo giao tiếp với API. Native sử dụng API gọi hàm của nhà cung cấp, trong khi XML sử dụng định nghĩa công cụ định dạng XML.",
 		"default": "Mặc định",
 		"xml": "XML",
 		"native": "Native",

@@ -696,7 +696,7 @@
 	},
 	"toolProtocol": {
 		"label": "Tool Call Protocol",
-		"description": "Choose how Roo communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions. Default uses provider-based logic (currently XML for all providers).",
+		"description": "Choose how Roo communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions.",
 		"default": "Default",
 		"xml": "XML",
 		"native": "Native",
