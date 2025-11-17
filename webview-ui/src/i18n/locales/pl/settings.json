@@ -690,6 +690,14 @@
 	"advancedSettings": {
 		"title": "Ustawienia zaawansowane"
 	},
+	"toolProtocol": {
+		"label": "Protokół wywołania narzędzia",
+		"description": "Wybierz, jak Roo komunikuje się z API. Natywny używa API wywołania funkcji dostawcy, podczas gdy XML używa definicji narzędzi w formacie XML. Domyślnie używana jest logika oparta na dostawcy (obecnie XML dla wszystkich dostawców).",
+		"default": "Domyślny",
+		"xml": "XML",
+		"native": "Natywny",
+		"currentDefault": "Domyślny: {{protocol}}"
+	},
 	"advanced": {
 		"diff": {
 			"label": "Włącz edycję przez różnice",
