@@ -62,10 +62,13 @@ export async function applyDiffTool(
 	removeClosingTag: RemoveClosingTag,
 ) {
 	// Check if native protocol is enabled - if so, always use single-file class-based tool
+	const provider = cline.providerRef.deref()
+	const state = await provider?.getState()
 	const toolProtocol = resolveToolProtocol(
 		cline.apiConfiguration,
 		cline.api.getModel().info,
 		cline.apiConfiguration.apiProvider,
+		state?.experiments,
 	)
 	if (isNativeProtocol(toolProtocol)) {
 		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
@@ -77,9 +80,7 @@ export async function applyDiffTool(
 	}
 
 	// Check if MULTI_FILE_APPLY_DIFF experiment is enabled
-	const provider = cline.providerRef.deref()
-	if (provider) {
-		const state = await provider.getState()
+	if (provider && state) {
 		const isMultiFileApplyDiffEnabled = experiments.isEnabled(
 			state.experiments ?? {},
 			EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,

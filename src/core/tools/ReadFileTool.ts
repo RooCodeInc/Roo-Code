@@ -109,7 +109,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		const { handleError, pushToolResult } = callbacks
 		const fileEntries = params.files
 		const modelInfo = task.api.getModel().info
-		const protocol = resolveToolProtocol(task.apiConfiguration, modelInfo, task.apiConfiguration.apiProvider)
+		const state = await task.providerRef.deref()?.getState()
+		const protocol = resolveToolProtocol(
+			task.apiConfiguration,
+			modelInfo,
+			task.apiConfiguration.apiProvider,
+			state?.experiments,
+		)
 		const useNative = isNativeProtocol(protocol)
 
 		if (!fileEntries || fileEntries.length === 0) {

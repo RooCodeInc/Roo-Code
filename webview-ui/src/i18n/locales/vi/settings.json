@@ -772,6 +772,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Bật lệnh slash do mô hình khởi tạo",
 			"description": "Khi được bật, Roo có thể chạy các lệnh slash của bạn để thực hiện các quy trình làm việc."
+		},
+		"NATIVE_TOOL_CALLING": {
+			"name": "Bật gọi công cụ gốc",
+			"description": "Khi được bật, Roo sẽ sử dụng API gọi hàm gốc của nhà cung cấp thay vì định nghĩa công cụ dựa trên XML. Đây là tính năng thử nghiệm và chưa hoạt động với tất cả các nhà cung cấp."
 		}
 	},
 	"promptCaching": {

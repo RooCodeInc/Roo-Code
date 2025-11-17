@@ -1,13 +1,13 @@
-import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
+import { ToolProtocol, TOOL_PROTOCOL, type Experiments } from "@roo-code/types"
 import type { ProviderSettings, ProviderName, ModelInfo } from "@roo-code/types"
-import { getToolProtocolFromSettings } from "./toolProtocol"
+import { EXPERIMENT_IDS, experiments } from "../shared/experiments"
 
 /**
  * Resolve the effective tool protocol based on the precedence hierarchy:
  * Support > Preference > Defaults
  *
  * 1. User Preference - Per-Profile (explicit profile setting)
- * 2. User Preference - Global (VSCode setting)
+ * 2. User Preference - Experimental Setting (nativeToolCalling experiment)
  * 3. Model Default (defaultToolProtocol in ModelInfo)
  * 4. Provider Default (XML by default, native for specific providers)
  * 5. XML Fallback (final fallback)
@@ -17,12 +17,14 @@ import { getToolProtocolFromSettings } from "./toolProtocol"
  * @param providerSettings - The provider settings for the current profile
  * @param modelInfo - Optional model information containing capabilities
  * @param provider - Optional provider name for provider-specific defaults
+ * @param experimentsConfig - Optional experiments configuration
  * @returns The resolved tool protocol (either "xml" or "native")
  */
 export function resolveToolProtocol(
 	providerSettings: ProviderSettings,
 	modelInfo?: ModelInfo,
 	provider?: ProviderName,
+	experimentsConfig?: Experiments,
 ): ToolProtocol {
 	let protocol: ToolProtocol
 
@@ -30,9 +32,9 @@ export function resolveToolProtocol(
 	if (providerSettings.toolProtocol) {
 		protocol = providerSettings.toolProtocol
 	}
-	// 2. User Preference - Global (VSCode global setting)
-	// Only treat as user preference if explicitly set to native (non-default value)
-	else if (getToolProtocolFromSettings() === TOOL_PROTOCOL.NATIVE) {
+	// 2. User Preference - Experimental Setting (nativeToolCalling experiment)
+	// Only treat as user preference if explicitly enabled
+	else if (experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.NATIVE_TOOL_CALLING)) {
 		protocol = TOOL_PROTOCOL.NATIVE
 	}
 	// 3. Model Default - model's preferred protocol

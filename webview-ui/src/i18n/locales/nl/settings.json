@@ -772,6 +772,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model-geïnitieerde slash-commando's inschakelen",
 			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
+		},
+		"NATIVE_TOOL_CALLING": {
+			"name": "Schakel native tool calling in",
+			"description": "Wanneer ingeschakeld, gebruikt Roo de native function calling API van de provider in plaats van XML-gebaseerde tooldefinities. Dit is experimenteel en werkt nog niet met alle providers."
 		}
 	},
 	"promptCaching": {

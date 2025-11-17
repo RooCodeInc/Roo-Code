@@ -772,6 +772,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+		},
+		"NATIVE_TOOL_CALLING": {
+			"name": "启用原生工具调用",
+			"description": "启用后，Roo 将使用提供商的原生函数调用 API，而不是基于 XML 的工具定义。这是实验性功能，目前尚未支持所有提供商。"
 		}
 	},
 	"promptCaching": {

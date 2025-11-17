@@ -771,6 +771,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Modellinitierte Slash-Befehle aktivieren",
 			"description": "Wenn aktiviert, kann Roo deine Slash-Befehle ausführen, um Workflows zu starten."
+		},
+		"NATIVE_TOOL_CALLING": {
+			"name": "Native Tool Calling aktivieren",
+			"description": "Wenn aktiviert, verwendet Roo die native Function-Calling-API des Providers anstelle von XML-basierten Tool-Definitionen. Dies ist experimentell und funktioniert noch nicht mit allen Providern."
 		}
 	},
 	"promptCaching": {

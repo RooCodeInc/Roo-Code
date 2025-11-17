@@ -23,6 +23,15 @@ describe("experiments", () => {
 		})
 	})
 
+	describe("NATIVE_TOOL_CALLING", () => {
+		it("is configured correctly", () => {
+			expect(EXPERIMENT_IDS.NATIVE_TOOL_CALLING).toBe("nativeToolCalling")
+			expect(experimentConfigsMap.NATIVE_TOOL_CALLING).toMatchObject({
+				enabled: false,
+			})
+		})
+	})
+
 	describe("isEnabled", () => {
 		it("returns false when POWER_STEERING experiment is not enabled", () => {
 			const experiments: Record<ExperimentId, boolean> = {
@@ -31,6 +40,7 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				nativeToolCalling: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
@@ -42,6 +52,7 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				nativeToolCalling: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
@@ -53,6 +64,7 @@ describe("experiments", () => {
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
+				nativeToolCalling: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})

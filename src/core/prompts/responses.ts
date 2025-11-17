@@ -3,8 +3,7 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
-import { getToolProtocolFromSettings } from "../../utils/toolProtocol"
+import { ToolProtocol, isNativeProtocol, TOOL_PROTOCOL } from "@roo-code/types"
 
 export const formatResponse = {
 	toolDenied: () => `The user denied this operation.`,
@@ -245,10 +244,10 @@ Always ensure you provide all required parameters for the tool you wish to use.`
 /**
  * Gets the appropriate tool use instructions reminder based on the protocol.
  *
- * @param protocol - Optional tool protocol, falls back to default if not provided
+ * @param protocol - Optional tool protocol, defaults to XML if not provided
  * @returns The tool use instructions reminder text
  */
 function getToolInstructionsReminder(protocol?: ToolProtocol): string {
-	const effectiveProtocol = protocol ?? getToolProtocolFromSettings()
+	const effectiveProtocol = protocol ?? TOOL_PROTOCOL.XML
 	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
 }
