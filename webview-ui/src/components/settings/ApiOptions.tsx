@@ -425,7 +425,8 @@ const ApiOptions = ({
 			if (selectedModelInfo?.supportsNativeTools === true) {
 				return TOOL_PROTOCOL.NATIVE
 			}
-			// If experiment is enabled but model doesn't support it, fall back to XML
+			// If experiment is enabled but model doesn't support it, return XML immediately
+			// This matches resolveToolProtocol.ts behavior (lines 53-57)
 			return TOOL_PROTOCOL.XML
 		}
 
