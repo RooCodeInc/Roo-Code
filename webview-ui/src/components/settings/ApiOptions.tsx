@@ -450,6 +450,19 @@ const ApiOptions = ({
 		return TOOL_PROTOCOL.XML
 	}, [experimentsConfig, selectedModelInfo])
 
+	// Determine whether to show the tool protocol selector
+	// Separate from defaultProtocol calculation to keep concerns separate
+	const showToolProtocolSelector = useMemo(() => {
+		const nativeToolCallingEnabled =
+			experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
+			experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]
+
+		// Only show if experiment is enabled AND model supports native tools
+		// If model doesn't support native tools, showing the selector is confusing
+		// since native protocol won't actually be available
+		return nativeToolCallingEnabled && selectedModelInfo?.supportsNativeTools === true
+	}, [experimentsConfig, selectedModelInfo])
+
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list
@@ -909,8 +922,7 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
-						{(experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
-							experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]) && (
+						{showToolProtocolSelector && (
 							<div>
 								<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
 								<Select
