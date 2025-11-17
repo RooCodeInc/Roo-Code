@@ -1415,8 +1415,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// even if it goes out of sync with cline messages.
 		let existingApiConversationHistory: ApiMessage[] = await this.getSavedApiConversationHistory()
 
-		// v2.0 xml tags refactor caveat: since we don't use tools anymore, we need to replace all tool use blocks with a text block since the API disallows conversations with tool uses and no tool schema
-		// Now also protocol-aware: format according to current protocol setting
+		// v2.0 xml tags refactor caveat: since we don't use tools anymore for XML protocol,
+		// we need to replace all tool use blocks with a text block since the API disallows
+		// conversations with tool uses and no tool schema.
+		// For native protocol, we preserve tool_use and tool_result blocks as they're expected by the API.
 		const state = await this.providerRef.deref()?.getState()
 		const protocol = resolveToolProtocol(
 			this.apiConfiguration,
@@ -1426,37 +1428,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 		const useNative = isNativeProtocol(protocol)
 
-		const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
-			if (Array.isArray(message.content)) {
-				const newContent = message.content.map((block) => {
-					if (block.type === "tool_use") {
-						// Format tool invocation based on protocol
-						const params = block.input as Record<string, any>
-						const formattedText = formatToolInvocation(block.name, params, protocol)
+		// Only convert tool blocks to text for XML protocol
+		// For native protocol, the API expects proper tool_use/tool_result structure
+		if (!useNative) {
+			const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
+				if (Array.isArray(message.content)) {
+					const newContent = message.content.map((block) => {
+						if (block.type === "tool_use") {
+							// Format tool invocation based on protocol
+							const params = block.input as Record<string, any>
+							const formattedText = formatToolInvocation(block.name, params, protocol)
 
-						return {
-							type: "text",
-							text: formattedText,
-						} as Anthropic.Messages.TextBlockParam
-					} else if (block.type === "tool_result") {
-						// Convert block.content to text block array, removing images
-						const contentAsTextBlocks = Array.isArray(block.content)
-							? block.content.filter((item) => item.type === "text")
-							: [{ type: "text", text: block.content }]
-						const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n")
-						const toolName = findToolName(block.tool_use_id, existingApiConversationHistory)
-						return {
-							type: "text",
-							text: `[${toolName} Result]\n\n${textContent}`,
-						} as Anthropic.Messages.TextBlockParam
-					}
-					return block
-				})
-				return { ...message, content: newContent }
-			}
-			return message
-		})
-		existingApiConversationHistory = conversationWithoutToolBlocks
+							return {
+								type: "text",
+								text: formattedText,
+							} as Anthropic.Messages.TextBlockParam
+						} else if (block.type === "tool_result") {
+							// Convert block.content to text block array, removing images
+							const contentAsTextBlocks = Array.isArray(block.content)
+								? block.content.filter((item) => item.type === "text")
+								: [{ type: "text", text: block.content }]
+							const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n")
+							const toolName = findToolName(block.tool_use_id, existingApiConversationHistory)
+							return {
+								type: "text",
+								text: `[${toolName} Result]\n\n${textContent}`,
+							} as Anthropic.Messages.TextBlockParam
+						}
+						return block
+					})
+					return { ...message, content: newContent }
+				}
+				return message
+			})
+			existingApiConversationHistory = conversationWithoutToolBlocks
+		}
 
 		// FIXME: remove tool use blocks altogether
 
