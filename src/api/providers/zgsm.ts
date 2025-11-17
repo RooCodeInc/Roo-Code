@@ -446,6 +446,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		// chunk
 		for await (const chunk of stream) {
+			if (this.abortController?.signal.aborted) {
+				break
+			}
+
 			const delta = chunk.choices?.[0]?.delta ?? {}
 
 			// Cache content for batch processing
@@ -657,6 +661,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
 		for await (const chunk of stream) {
+			if (this.abortController?.signal.aborted) {
+				break
+			}
 			const delta = chunk.choices?.[0]?.delta
 			if (delta?.content) {
 				yield {
