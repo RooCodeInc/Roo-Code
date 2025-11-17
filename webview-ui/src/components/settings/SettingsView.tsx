@@ -201,6 +201,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
+		maxTasksHomeScreen,
 		includeCurrentTime,
 		includeCurrentCost,
 	} = cachedState
@@ -393,6 +394,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					condensingApiConfigId: condensingApiConfigId || "",
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					maxTasksHomeScreen: maxTasksHomeScreen ?? 4,
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					profileThresholds,
@@ -802,6 +804,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+							maxTasksHomeScreen={maxTasksHomeScreen ?? 4}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
