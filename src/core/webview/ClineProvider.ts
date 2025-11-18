@@ -995,8 +995,8 @@ export class ClineProvider
 			checkpointTimeout,
 			fuzzyMatchThreshold,
 			experiments,
-			cloudUserInfo,
-			taskSyncEnabled,
+			// cloudUserInfo,
+			// taskSyncEnabled,
 		} = await this.getState()
 
 		const task = new Task({
@@ -1015,7 +1015,8 @@ export class ClineProvider
 			taskNumber: historyItem.number,
 			workspacePath: historyItem.workspace,
 			onCreated: this.taskCreationCallback,
-			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
+			enableBridge: false,
+			// enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
 		})
 
 		if (isRehydratingCurrentTask) {
@@ -2003,6 +2004,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance,
 			includeCurrentTime,
 			includeCurrentCost,
+			maxGitStatusFiles,
 			taskSyncEnabled,
 			remoteControlEnabled,
 			openRouterImageApiKey,
@@ -2172,6 +2174,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
+			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			remoteControlEnabled,
 			openRouterImageApiKey,
@@ -2395,6 +2398,8 @@ export class ClineProvider
 			taskSyncEnabled: false,
 			includeCurrentTime: stateValues.includeCurrentTime ?? true,
 			includeCurrentCost: stateValues.includeCurrentCost ?? true,
+			maxGitStatusFiles: stateValues.maxGitStatusFiles ?? 0,
+			// taskSyncEnabled,
 			remoteControlEnabled: (() => {
 				return false
 				// try {

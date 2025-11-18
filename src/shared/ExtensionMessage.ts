@@ -318,6 +318,7 @@ export type ExtensionState = Pick<
 	| "errorCode"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
+	| "maxGitStatusFiles"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
