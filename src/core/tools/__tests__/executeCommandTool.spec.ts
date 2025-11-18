@@ -147,6 +147,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -168,6 +169,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify - confirm the command was approved and result was pushed
@@ -190,6 +192,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -211,6 +214,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -238,6 +242,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
