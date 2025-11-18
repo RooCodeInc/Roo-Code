@@ -7,6 +7,7 @@ export * from "./deepseek.js"
 export * from "./doubao.js"
 export * from "./featherless.js"
 export * from "./fireworks.js"
+export * from "./fordllm.js"
 export * from "./gemini.js"
 export * from "./glama.js"
 export * from "./groq.js"
@@ -41,6 +42,7 @@ import { deepSeekDefaultModelId } from "./deepseek.js"
 import { doubaoDefaultModelId } from "./doubao.js"
 import { featherlessDefaultModelId } from "./featherless.js"
 import { fireworksDefaultModelId } from "./fireworks.js"
+import { fordllmDefaultModelId } from "./fordllm.js"
 import { geminiDefaultModelId } from "./gemini.js"
 import { glamaDefaultModelId } from "./glama.js"
 import { groqDefaultModelId } from "./groq.js"
@@ -133,6 +135,8 @@ export function getProviderDefaultModelId(
 			return fireworksDefaultModelId
 		case "featherless":
 			return featherlessDefaultModelId
+		case "fordllm":
+			return fordllmDefaultModelId
 		case "io-intelligence":
 			return ioIntelligenceDefaultModelId
 		case "roo":
