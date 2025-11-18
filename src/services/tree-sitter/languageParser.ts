@@ -28,6 +28,8 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	ablQuery,
+	dfQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -39,13 +41,50 @@ export interface LanguageParser {
 
 async function loadLanguage(langName: string, sourceDirectory?: string) {
 	const baseDir = sourceDirectory || __dirname
+	const { Language } = require("web-tree-sitter")
+
+	// Special handling for ABL and DF - try multiple loading strategies
+	if (langName === "abl" || langName === "df") {
+		// 1. Try loading from dist directory
+		const distWasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
+		try {
+			const language = await Language.load(distWasmPath)
+			console.log(`[tree-sitter] Successfully loaded ${langName} from dist directory`)
+			return language
+		} catch (error) {
+			console.log(
+				`[tree-sitter] Could not load ${langName} from dist: ${error instanceof Error ? error.message : error}`,
+			)
+		}
+
+		// 2. Try loading from npm package
+		try {
+			const packageName = `@usagi-coffee/tree-sitter-${langName}`
+			const wasmPath = require.resolve(`${packageName}/tree-sitter-${langName}.wasm`)
+			const language = await Language.load(wasmPath)
+			console.log(`[tree-sitter] Successfully loaded ${langName} from npm package`)
+			return language
+		} catch (error) {
+			console.error(
+				`[tree-sitter] Failed to load ${langName} parser from npm package: ${
+					error instanceof Error ? error.message : error
+				}`,
+			)
+			return null // leave calling code to handle missing parser
+		}
+	}
+
+	// Standard loading for other languages
 	const wasmPath = path.join(baseDir, `tree-sitter-${langName}.wasm`)
 
 	try {
-		const { Language } = require("web-tree-sitter")
 		return await Language.load(wasmPath)
 	} catch (error) {
-		console.error(`Error loading language: ${wasmPath}: ${error instanceof Error ? error.message : error}`)
+		console.error(
+			`[tree-sitter] Error loading ${langName} from ${wasmPath}: ${
+				error instanceof Error ? error.message : error
+			}`,
+		)
 		throw error
 	}
 }
@@ -94,6 +133,7 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 	for (const ext of extensionsToLoad) {
 		let language: LanguageT
 		let query: QueryT
+		let querystrinfied: string
 		let parserKey = ext // Default to using extension as key
 
 		switch (ext) {
@@ -217,6 +257,17 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "exs":
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
+				break
+			case "p":
+			case "i":
+			case "w":
+			case "cls":
+				language = await loadLanguage("abl", sourceDirectory)
+				query = new Query(language, ablQuery)
+				break
+			case "df":
+				language = await loadLanguage("df", sourceDirectory)
+				query = new Query(language, dfQuery)
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
