@@ -5,6 +5,8 @@ import {
 	type GenerateContentParameters,
 	type GenerateContentConfig,
 	type GroundingMetadata,
+	FunctionCallingConfigMode,
+	Content,
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
 
@@ -101,9 +103,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			return true
 		})
 
-		const contents = geminiMessages.map((message) =>
-			convertAnthropicMessageToGemini(message, { includeThoughtSignatures }),
-		)
+		const contents = geminiMessages
+			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures }))
+			.flat()
 
 		const tools: GenerateContentConfig["tools"] = []
 		if (this.options.enableUrlContext) {
@@ -112,6 +114,16 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 		if (this.options.enableGrounding) {
 			tools.push({ googleSearch: {} })
+		}
+
+		if (metadata?.tools && metadata.tools.length > 0) {
+			tools.push({
+				functionDeclarations: metadata.tools.map((tool) => ({
+					name: (tool as any).function.name,
+					description: (tool as any).function.description,
+					parametersJsonSchema: (tool as any).function.parameters,
+				})),
+			})
 		}
 
 		// Determine temperature respecting model capabilities and defaults:
@@ -131,6 +143,25 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			maxOutputTokens,
 			temperature: temperatureConfig,
 			...(tools.length > 0 ? { tools } : {}),
+		}
+
+		if (metadata?.tool_choice) {
+			config.toolConfig = {
+				functionCallingConfig: {
+					mode:
+						metadata.tool_choice === "auto"
+							? FunctionCallingConfigMode.AUTO
+							: metadata.tool_choice === "required"
+								? FunctionCallingConfigMode.ANY
+								: metadata.tool_choice === "none"
+									? FunctionCallingConfigMode.NONE
+									: FunctionCallingConfigMode.ANY,
+					allowedFunctionNames:
+						typeof metadata.tool_choice === "object" && "function" in metadata.tool_choice
+							? [metadata.tool_choice.function.name]
+							: undefined,
+				},
+			}
 		}
 
 		const params: GenerateContentParameters = { model, contents, config }
@@ -159,6 +190,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							thought?: boolean
 							text?: string
 							thoughtSignature?: string
+							functionCall?: { name: string; args: Record<string, unknown> }
 						}>) {
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
@@ -172,6 +204,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 								// This is a thinking/reasoning part
 								if (part.text) {
 									yield { type: "reasoning", text: part.text }
+								}
+							} else if (part.functionCall) {
+								yield {
+									type: "tool_call",
+									id: part.functionCall.name, // Gemini doesn't provide call IDs, so we use the function name
+									name: part.functionCall.name,
+									arguments: JSON.stringify(part.functionCall.args),
 								}
 							} else {
 								// This is regular content
@@ -350,12 +389,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const countTokensRequest = {
 				model,
 				// Token counting does not need encrypted continuation; always drop thoughtSignature.
-				contents: [
-					{
-						role: "user",
-						parts: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
-					},
-				],
+				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
 			}
 
 			const response = await this.client.models.countTokens(countTokensRequest)

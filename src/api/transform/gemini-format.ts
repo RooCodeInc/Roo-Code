@@ -123,13 +123,57 @@ export function convertAnthropicContentToGemini(
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
 	options?: { includeThoughtSignatures?: boolean },
-): Content {
-	return {
-		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content, {
-			...options,
-			includeThoughtSignatures:
-				message.role === "assistant" ? (options?.includeThoughtSignatures ?? true) : false,
-		}),
+): Content[] {
+	const content: ExtendedContentBlockParam[] = Array.isArray(message.content)
+		? (message.content as ExtendedContentBlockParam[])
+		: [{ type: "text", text: message.content ?? "" }]
+
+	const toolUseParts = content.filter((block) => block.type === "tool_use") as Anthropic.ToolUseBlock[]
+	const toolResultParts = content.filter((block) => block.type === "tool_result") as Anthropic.ToolResultBlockParam[]
+	const otherParts = content.filter((block) => block.type !== "tool_use" && block.type !== "tool_result")
+	const thoughtSignatureBlocks = content.filter((block) => isThoughtSignatureContentBlock(block))
+	const role = message.role === "assistant" ? "model" : "user"
+	const assistantThoughtOptions = {
+		...options,
+		includeThoughtSignatures: message.role === "assistant" ? options?.includeThoughtSignatures ?? true : false,
 	}
+
+	const contents: Content[] = []
+
+	if (otherParts.length > 0) {
+		contents.push({
+			role,
+			parts: convertAnthropicContentToGemini(otherParts, assistantThoughtOptions),
+		})
+	}
+
+	if (toolUseParts.length > 0) {
+		const toolUseWithSignatures =
+			thoughtSignatureBlocks.length > 0 ? [...thoughtSignatureBlocks, ...toolUseParts] : toolUseParts
+		contents.push({
+			role: "model",
+			parts: convertAnthropicContentToGemini(toolUseWithSignatures, {
+				...options,
+				includeThoughtSignatures: options?.includeThoughtSignatures ?? true,
+			}),
+		})
+	}
+
+	if (toolResultParts.length > 0) {
+		contents.push({
+			role: "user",
+			parts: convertAnthropicContentToGemini(toolResultParts, { ...options, includeThoughtSignatures: false }),
+		})
+	}
+
+	if (contents.length === 0) {
+		return [
+			{
+				role,
+				parts: convertAnthropicContentToGemini(message.content ?? "", assistantThoughtOptions),
+			},
+		]
+	}
+
+	return contents
 }
