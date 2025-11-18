@@ -270,7 +270,7 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "df":
 				language = await loadLanguage("df", sourceDirectory)
 				if (!language) {
-					throw new Error(`Failed to load ABL parser - WASM files not found`)
+				throw new Error(`Failed to load DF parser - WASM files not found`)
 				}
 				query = new Query(language, dfQuery)
 				break
