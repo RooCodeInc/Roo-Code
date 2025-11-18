@@ -77,7 +77,22 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// send thoughtSignature parts back to Gemini.
 		const includeThoughtSignatures = Boolean(thinkingConfig?.thinkingLevel)
 
-		const contents = messages.map((message) =>
+		// The message list can include provider-specific meta entries such as
+		// `{ type: "reasoning", ... }` that are intended only for providers like
+		// openai-native. Gemini should never see those; they are not valid
+		// Anthropic.MessageParam values and will cause failures (e.g. missing
+		// `content` for the converter). Filter them out here.
+		type ReasoningMetaLike = { type?: string }
+
+		const geminiMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+			const meta = message as ReasoningMetaLike
+			if (meta.type === "reasoning") {
+				return false
+			}
+			return true
+		})
+
+		const contents = geminiMessages.map((message) =>
 			convertAnthropicMessageToGemini(message, { includeThoughtSignatures }),
 		)
 
@@ -325,11 +340,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		try {
 			const { id: model } = this.getModel()
 
-			const response = await this.client.models.countTokens({
+			const countTokensRequest = {
 				model,
 				// Token counting does not need encrypted continuation; always drop thoughtSignature.
 				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
-			})
+			}
+
+			const response = await this.client.models.countTokens(countTokensRequest)
 
 			if (response.totalTokens === undefined) {
 				console.warn("Gemini token counting returned undefined, using fallback")
