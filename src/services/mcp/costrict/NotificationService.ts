@@ -8,7 +8,7 @@ export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "crit
 export class NotificationService {
 	connect(name: string, client: Client): void {
 		client.setNotificationHandler(LoggingMessageNotificationSchema, async (notification) => {
-			const params = notification.params || ({} as any)
+			const params = (notification.params || {}) as any
 			const level = params.level || "info"
 			const data = params.data || params.message || ""
 			const logger = params.logger || ""

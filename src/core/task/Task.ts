@@ -627,16 +627,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async addToApiConversationHistory(message: Anthropic.MessageParam) {
-		// Capture the encrypted_content from the provider (e.g., OpenAI Responses API) if present.
+		// Capture the encrypted_content / thought signatures from the provider (e.g., OpenAI Responses API, Google GenAI) if present.
 		// We only persist data reported by the current response body.
 		const handler = this.api as ApiHandler & {
 			getResponseId?: () => string | undefined
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
+			getThoughtSignature?: () => string | undefined
 		}
 
 		if (message.role === "assistant") {
 			const responseId = handler.getResponseId?.()
 			const reasoningData = handler.getEncryptedContent?.()
+			const thoughtSignature = handler.getThoughtSignature?.()
 
 			// Start from the original assistant message
 			const messageWithTs: any = {
@@ -665,6 +667,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
 					messageWithTs.content = [reasoningBlock]
+				}
+			}
+
+			// If we have a thought signature, append it as a dedicated content block
+			// so it can be round-tripped in api_history.json and re-sent on subsequent calls.
+			if (thoughtSignature) {
+				const thoughtSignatureBlock = {
+					type: "thoughtSignature",
+					thoughtSignature,
+				}
+
+				if (typeof messageWithTs.content === "string") {
+					messageWithTs.content = [
+						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						thoughtSignatureBlock,
+					]
+				} else if (Array.isArray(messageWithTs.content)) {
+					messageWithTs.content = [...messageWithTs.content, thoughtSignatureBlock]
+				} else if (!messageWithTs.content) {
+					messageWithTs.content = [thoughtSignatureBlock]
 				}
 			}
 

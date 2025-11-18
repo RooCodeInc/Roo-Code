@@ -1,12 +1,44 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Content, Part } from "@google/genai"
 
-export function convertAnthropicContentToGemini(content: string | Anthropic.ContentBlockParam[]): Part[] {
+type ThoughtSignatureContentBlock = {
+	type: "thoughtSignature"
+	thoughtSignature?: string
+}
+
+type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock
+type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
+
+function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
+	return block.type === "thoughtSignature"
+}
+
+export function convertAnthropicContentToGemini(
+	content: ExtendedAnthropicContent,
+	options?: { includeThoughtSignatures?: boolean },
+): Part[] {
+	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
+
 	if (typeof content === "string") {
 		return [{ text: content }]
 	}
 
 	return content.flatMap((block): Part | Part[] => {
+		// Handle thoughtSignature blocks first so that the main switch can continue
+		// to operate on the standard Anthropic content union. This preserves strong
+		// typing for known block types while still allowing provider-specific
+		// extensions when needed.
+		if (isThoughtSignatureContentBlock(block)) {
+			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
+				// The Google GenAI SDK currently exposes thoughtSignature as an
+				// extension field on Part; model it structurally without widening
+				// the upstream type.
+				return { thoughtSignature: block.thoughtSignature } as Part
+			}
+			// Explicitly omit thoughtSignature when not including it.
+			return []
+		}
+
 		switch (block.type) {
 			case "text":
 				return { text: block.text }
@@ -70,9 +102,12 @@ export function convertAnthropicContentToGemini(content: string | Anthropic.Cont
 	})
 }
 
-export function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam): Content {
+export function convertAnthropicMessageToGemini(
+	message: Anthropic.Messages.MessageParam,
+	options?: { includeThoughtSignatures?: boolean },
+): Content {
 	return {
 		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content),
+		parts: convertAnthropicContentToGemini(message.content, options),
 	}
 }

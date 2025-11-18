@@ -21,7 +21,9 @@ export type AnthropicReasoningParams = BetaThinkingConfigParam
 
 export type OpenAiReasoningParams = { reasoning_effort: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"] }
 
-export type GeminiReasoningParams = GenerateContentConfig["thinkingConfig"]
+export type GeminiReasoningParams = GenerateContentConfig["thinkingConfig"] & {
+	thinkingLevel?: "low" | "high"
+}
 
 export type GetModelReasoningOptions = {
 	model: ModelInfo
@@ -98,14 +100,43 @@ export const getOpenAiReasoning = ({
 	if (reasoningEffort === "disable" || !reasoningEffort) return undefined
 
 	// Include "none" | "minimal" | "low" | "medium" | "high" literally
-	return { reasoning_effort: reasoningEffort as any }
+	return {
+		reasoning_effort: reasoningEffort as OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"],
+	}
 }
 
 export const getGeminiReasoning = ({
 	model,
 	reasoningBudget,
+	reasoningEffort,
 	settings,
-}: GetModelReasoningOptions): GeminiReasoningParams | undefined =>
-	shouldUseReasoningBudget({ model, settings })
-		? { thinkingBudget: reasoningBudget!, includeThoughts: true }
-		: undefined
+}: GetModelReasoningOptions): GeminiReasoningParams | undefined => {
+	// Budget-based (2.5) models: use thinkingBudget, not thinkingLevel.
+	if (shouldUseReasoningBudget({ model, settings })) {
+		return { thinkingBudget: reasoningBudget!, includeThoughts: true }
+	}
+
+	// If reasoning effort shouldn't be used (toggle off, unsupported capability, etc.),
+	// do not send a thinkingConfig at all.
+	if (!shouldUseReasoningEffort({ model, settings })) {
+		return undefined
+	}
+
+	// Effort-based models on Google GenAI: only support explicit low/high levels.
+	const selectedEffort = (settings.reasoningEffort ?? model.reasoningEffort) as
+		| ReasoningEffortExtended
+		| "disable"
+		| undefined
+
+	// Respect “off” / unset semantics.
+	if (!selectedEffort || selectedEffort === "disable") {
+		return undefined
+	}
+
+	// Only map "low" and "high" to thinkingLevel; ignore other values.
+	if (selectedEffort !== "low" && selectedEffort !== "high") {
+		return undefined
+	}
+
+	return { thinkingLevel: selectedEffort, includeThoughts: true }
+}

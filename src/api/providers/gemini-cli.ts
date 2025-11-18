@@ -261,7 +261,9 @@ export class GeminiCliHandler extends BaseProvider implements SingleCompletionHa
 		const { id: model, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
 
 		// Convert messages to Gemini format
-		const contents = messages.map(convertAnthropicMessageToGemini)
+		const contents = messages.map((message) =>
+			convertAnthropicMessageToGemini(message, { includeThoughtSignatures: false }),
+		)
 
 		// Prepare request body for Code Assist API - matching Cline's structure
 		const requestBody: any = {
