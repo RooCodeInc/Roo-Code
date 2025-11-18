@@ -6,6 +6,16 @@ export type GeminiModelId = keyof typeof geminiModels
 export const geminiDefaultModelId: GeminiModelId = "gemini-2.5-pro"
 
 export const geminiModels = {
+	"gemini-3-pro-preview": {
+		maxTokens: 65_536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["low", "high"],
+		reasoningEffort: "low",
+		supportsTemperature: true,
+		defaultTemperature: 1,
+	},
 	// 2.5 Pro models
 	"gemini-2.5-pro": {
 		maxTokens: 64_000,
