@@ -1,8 +1,20 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Content, Part } from "@google/genai"
 
+type ThoughtSignatureContentBlock = {
+	type: "thoughtSignature"
+	thoughtSignature?: string
+}
+
+type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock
+type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
+
+function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
+	return block.type === "thoughtSignature"
+}
+
 export function convertAnthropicContentToGemini(
-	content: string | Anthropic.ContentBlockParam[],
+	content: ExtendedAnthropicContent,
 	options?: { includeThoughtSignatures?: boolean },
 ): Part[] {
 	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
@@ -12,21 +24,16 @@ export function convertAnthropicContentToGemini(
 	}
 
 	return content.flatMap((block): Part | Part[] => {
-		// Support custom blocks that are not part of the Anthropic SDK types by
-		// inspecting the runtime shape via `as any`. This lets us carry provider-
-		// specific metadata (like thought signatures from the Google GenAI SDK)
-		// through the Anthropic-style abstraction.
-		const anyBlock = block as any
-
-		// Handle thoughtSignature blocks first, outside the typed switch,
-		// to avoid widening the Anthropic.ContentBlockParam union.
-		// Only forward these when the caller explicitly opts in (e.g. when an
-		// effort-based thinkingLevel is set). For all other cases (including
-		// budget-only configs), drop the block entirely so it never reaches the
-		// default handler.
-		if (anyBlock.type === "thoughtSignature") {
-			if (includeThoughtSignatures && typeof anyBlock.thoughtSignature === "string") {
-				return { thoughtSignature: anyBlock.thoughtSignature } as any
+		// Handle thoughtSignature blocks first so that the main switch can continue
+		// to operate on the standard Anthropic content union. This preserves strong
+		// typing for known block types while still allowing provider-specific
+		// extensions when needed.
+		if (isThoughtSignatureContentBlock(block)) {
+			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
+				// The Google GenAI SDK currently exposes thoughtSignature as an
+				// extension field on Part; model it structurally without widening
+				// the upstream type.
+				return { thoughtSignature: block.thoughtSignature } as Part
 			}
 			// Explicitly omit thoughtSignature when not including it.
 			return []
