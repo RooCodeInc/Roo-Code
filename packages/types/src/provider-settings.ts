@@ -24,7 +24,6 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
-	cloudRuModels,
 } from "./providers/index.js"
 
 /**
@@ -51,6 +50,7 @@ export const dynamicProviders = [
 	"glama",
 	"roo",
 	"chutes",
+	"cloudru",
 ] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
@@ -424,6 +424,21 @@ const rooSchema = apiModelIdProviderModelSchema.extend({
 const cloudRuSchema = apiModelIdProviderModelSchema.extend({
 	cloudRuApiKey: z.string().optional(),
 	cloudRuBaseUrl: z.string().optional(),
+	/**
+	 * When true, use legacy OpenAI chat format (content as string) for GigaChat models.
+	 * Some GigaChat endpoints currently require this older format.
+	 */
+	cloudRuLegacyFormat: z.boolean().optional(),
+	/**
+	 * Enable/disable streaming for Cloud.ru chat completions.
+	 * Defaults to true when undefined.
+	 */
+	cloudRuStreamingEnabled: z.boolean().optional(),
+	/**
+	 * Optional override for the model context window used for Cloud.ru models.
+	 * When set, this value is used instead of the value from /v1/models.
+	 */
+	cloudRuContextWindow: z.number().optional(),
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
@@ -725,7 +740,7 @@ export const MODELS_BY_PROVIDER: Record<
 	},
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Zai", models: Object.keys(internationalZAiModels) },
-	cloudru: { id: "cloudru", label: "Cloud.ru Foundation Models", models: Object.keys(cloudRuModels) },
+	cloudru: { id: "cloudru", label: "Cloud.ru Foundation Models", models: [] },
 
 	// Dynamic providers; models pulled from remote APIs.
 	glama: { id: "glama", label: "Glama", models: [] },

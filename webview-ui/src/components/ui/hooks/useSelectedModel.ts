@@ -26,10 +26,10 @@ import {
 	featherlessModels,
 	ioIntelligenceModels,
 	qwenCodeModels,
-	cloudRuModels,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
+	cloudRuDefaultModelInfo,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -367,9 +367,9 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "cloudru": {
-			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = cloudRuModels[id as keyof typeof cloudRuModels]
-			return { id, info }
+			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels["cloudru"], defaultModelId)
+			const info = routerModels["cloudru"]?.[id]
+			return { id, info: info ?? cloudRuDefaultModelInfo }
 		}
 		// case "anthropic":
 		// case "human-relay":

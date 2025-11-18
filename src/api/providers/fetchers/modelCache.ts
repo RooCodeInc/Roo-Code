@@ -26,6 +26,7 @@ import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
+import { getCloudRuModels } from "./cloudru"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -110,6 +111,13 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 			}
 			case "chutes":
 				models = await getChutesModels(options.apiKey)
+				break
+			case "cloudru":
+				// Cloud.ru Foundation Models requires apiKey and optional baseUrl
+				if (!options.apiKey) {
+					throw new Error("Cloud.ru API key is required to fetch models")
+				}
+				models = await getCloudRuModels(options.apiKey, options.baseUrl)
 				break
 			default: {
 				// Ensures router is exhaustively checked if RouterName is a strict union.
