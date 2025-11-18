@@ -133,19 +133,11 @@ export function getModelParams({
 			| ReasoningEffortExtended
 			| "disable"
 			| undefined
-		// Do not propagate "disable" into model params; treat as omission
+		// Capability and settings checks are handled by shouldUseReasoningEffort.
+		// Here we simply propagate the resolved effort into the params, while
+		// still treating "disable" as an omission.
 		if (effort && effort !== "disable") {
-			const capability = model.supportsReasoningEffort
-			if (capability === true) {
-				// Boolean capability: any supported effort value (UI exposes low/medium/high by default)
-				reasoningEffort = effort
-			} else if (Array.isArray(capability) && capability.includes(effort)) {
-				// Array capability: honor exactly what's defined by the model
-				reasoningEffort = effort
-			} else {
-				// Model does not advertise supportsReasoningEffort; do not apply reasoningEffort
-				reasoningEffort = undefined
-			}
+			reasoningEffort = effort as ReasoningEffortExtended
 		}
 	}
 
