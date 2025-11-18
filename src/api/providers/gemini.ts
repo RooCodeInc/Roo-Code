@@ -146,20 +146,29 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		if (metadata?.tool_choice) {
+			const choice = metadata.tool_choice
+			let mode: FunctionCallingConfigMode
+			let allowedFunctionNames: string[] | undefined
+
+			if (choice === "auto") {
+				mode = FunctionCallingConfigMode.AUTO
+			} else if (choice === "none") {
+				mode = FunctionCallingConfigMode.NONE
+			} else if (choice === "required") {
+				// "required" means the model must call at least one tool; Gemini uses ANY for this.
+				mode = FunctionCallingConfigMode.ANY
+			} else if (typeof choice === "object" && "function" in choice && choice.type === "function") {
+				mode = FunctionCallingConfigMode.ANY
+				allowedFunctionNames = [choice.function.name]
+			} else {
+				// Fall back to AUTO for unknown values to avoid unintentionally broadening tool access.
+				mode = FunctionCallingConfigMode.AUTO
+			}
+
 			config.toolConfig = {
 				functionCallingConfig: {
-					mode:
-						metadata.tool_choice === "auto"
-							? FunctionCallingConfigMode.AUTO
-							: metadata.tool_choice === "required"
-								? FunctionCallingConfigMode.ANY
-								: metadata.tool_choice === "none"
-									? FunctionCallingConfigMode.NONE
-									: FunctionCallingConfigMode.ANY,
-					allowedFunctionNames:
-						typeof metadata.tool_choice === "object" && "function" in metadata.tool_choice
-							? [metadata.tool_choice.function.name]
-							: undefined,
+					mode,
+					...(allowedFunctionNames ? { allowedFunctionNames } : {}),
 				},
 			}
 		}
@@ -171,6 +180,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
 			let finalResponse: { responseId?: string } | undefined
+
+			let toolCallCounter = 0
 
 			for await (const chunk of result) {
 				// Track the final structured response (per SDK pattern: candidate.finishReason)
@@ -206,9 +217,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 									yield { type: "reasoning", text: part.text }
 								}
 							} else if (part.functionCall) {
+								const callId = `${part.functionCall.name}-${toolCallCounter++}`
 								yield {
 									type: "tool_call",
-									id: part.functionCall.name, // Gemini doesn't provide call IDs, so we use the function name
+									id: callId,
 									name: part.functionCall.name,
 									arguments: JSON.stringify(part.functionCall.args),
 								}

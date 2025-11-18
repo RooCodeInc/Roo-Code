@@ -138,6 +138,9 @@ export function convertAnthropicMessageToGemini(
 		includeThoughtSignatures: message.role === "assistant" ? options?.includeThoughtSignatures ?? true : false,
 	}
 
+	// Gemini expects a flat list of Content objects. We group regular message parts,
+	// tool uses, and tool results into separate Content entries while preserving their
+	// relative order within each category.
 	const contents: Content[] = []
 
 	if (otherParts.length > 0) {
