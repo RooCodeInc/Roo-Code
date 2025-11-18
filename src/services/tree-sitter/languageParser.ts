@@ -133,7 +133,6 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 	for (const ext of extensionsToLoad) {
 		let language: LanguageT
 		let query: QueryT
-		let querystrinfied: string
 		let parserKey = ext // Default to using extension as key
 
 		switch (ext) {
@@ -263,10 +262,16 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "w":
 			case "cls":
 				language = await loadLanguage("abl", sourceDirectory)
+				if (!language) {
+					throw new Error(`Failed to load ABL parser - WASM files not found`)
+				}
 				query = new Query(language, ablQuery)
 				break
 			case "df":
 				language = await loadLanguage("df", sourceDirectory)
+				if (!language) {
+					throw new Error(`Failed to load ABL parser - WASM files not found`)
+				}
 				query = new Query(language, dfQuery)
 				break
 			default:
