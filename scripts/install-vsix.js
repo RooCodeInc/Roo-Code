@@ -9,6 +9,9 @@ const autoYes = process.argv.includes("-y")
 const editorArg = process.argv.find((arg) => arg.startsWith("--editor="))
 const defaultEditor = editorArg ? editorArg.split("=")[1] : "code"
 
+// detect skip-uninstall flag
+const skipUninstall = process.argv.includes("--skip-uninstall")
+
 const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout,
@@ -34,8 +37,12 @@ async function main() {
 		console.log("\n🚀 Roo Code VSIX Installer")
 		console.log("========================")
 		console.log("\nThis script will:")
-		console.log("1. Uninstall any existing version of the Roo Code extension")
-		console.log("2. Install the newly built VSIX package")
+		if (!skipUninstall) {
+			console.log("1. Uninstall any existing version of the Roo Code extension")
+			console.log("2. Install the newly built VSIX package")
+		} else {
+			console.log("1. Install the newly built VSIX package (keeping existing extensions)")
+		}
 		console.log(`\nExtension: ${extensionId}`)
 		console.log(`VSIX file: ${vsixFileName}`)
 
@@ -61,10 +68,14 @@ async function main() {
 
 		console.log(`\nProceeding with installation using '${editorCommand}' command...`)
 
-		try {
-			execSync(`${editorCommand} --uninstall-extension ${extensionId}`, { stdio: "inherit" })
-		} catch (e) {
-			console.log("Extension not installed, skipping uninstall step")
+		if (!skipUninstall) {
+			try {
+				execSync(`${editorCommand} --uninstall-extension ${extensionId}`, { stdio: "inherit" })
+			} catch (e) {
+				console.log("Extension not installed, skipping uninstall step")
+			}
+		} else {
+			console.log("\nSkipping uninstall step (--skip-uninstall flag detected)")
 		}
 
 		if (!fs.existsSync(vsixFileName)) {
