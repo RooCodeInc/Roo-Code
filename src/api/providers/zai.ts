@@ -18,10 +18,14 @@ import { getModelMaxOutputTokens } from "../../shared/api"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getApiRequestTimeout } from "./utils/timeout-config"
+import { DEFAULT_HEADERS } from "./constants"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
 export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
+	protected override client: OpenAI
+
 	constructor(options: ApiHandlerOptions) {
 		const isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].isChina
 		const models = (isChina ? mainlandZAiModels : internationalZAiModels) as unknown as Record<string, ModelInfo>
@@ -35,6 +39,19 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			defaultProviderModelId: defaultModelId,
 			providerModels: models,
 			defaultTemperature: ZAI_DEFAULT_TEMPERATURE,
+		})
+
+		// Override the client with proper timeout and retry configuration
+		const timeout = getApiRequestTimeout()
+		const baseURL = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].baseUrl
+		const apiKey = options.zaiApiKey ?? "not-provided"
+
+		this.client = new OpenAI({
+			baseURL,
+			apiKey,
+			defaultHeaders: DEFAULT_HEADERS,
+			timeout,
+			maxRetries: 3, // Add retry logic for transient connection issues
 		})
 	}
 
@@ -75,6 +92,24 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 		try {
 			return this.client.chat.completions.create(params, requestOptions)
 		} catch (error) {
+			// Enhanced error handling for Z AI connection issues
+			if (error instanceof Error) {
+				const errorMessage = error.message.toLowerCase()
+				if (
+					errorMessage.includes("econnreset") ||
+					errorMessage.includes("econnrefused") ||
+					errorMessage.includes("etimedout")
+				) {
+					throw new Error(
+						`Z AI connection error: Unable to connect to Z AI API. Please check your network connection and API endpoint configuration. Original error: ${error.message}`,
+					)
+				}
+				if (errorMessage.includes("certificate") || errorMessage.includes("ssl")) {
+					throw new Error(
+						`Z AI SSL/TLS error: Certificate validation failed. This may be due to network proxy settings or firewall restrictions. Original error: ${error.message}`,
+					)
+				}
+			}
 			throw handleOpenAIError(error, this.providerName)
 		}
 	}
@@ -97,6 +132,24 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			const response = await this.client.chat.completions.create(params)
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
+			// Enhanced error handling for Z AI connection issues
+			if (error instanceof Error) {
+				const errorMessage = error.message.toLowerCase()
+				if (
+					errorMessage.includes("econnreset") ||
+					errorMessage.includes("econnrefused") ||
+					errorMessage.includes("etimedout")
+				) {
+					throw new Error(
+						`Z AI connection error: Unable to connect to Z AI API. Please check your network connection and API endpoint configuration. Original error: ${error.message}`,
+					)
+				}
+				if (errorMessage.includes("certificate") || errorMessage.includes("ssl")) {
+					throw new Error(
+						`Z AI SSL/TLS error: Certificate validation failed. This may be due to network proxy settings or firewall restrictions. Original error: ${error.message}`,
+					)
+				}
+			}
 			throw handleOpenAIError(error, this.providerName)
 		}
 	}
