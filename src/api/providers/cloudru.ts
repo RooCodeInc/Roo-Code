@@ -1,7 +1,7 @@
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk" // Keep for type usage only
 
-import { cloudRuDefaultModelId, cloudRuDefaultModelInfo } from "@roo-code/types"
+import { cloudRuDefaultModelId, cloudRuDefaultModelInfo, ModelInfo } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../shared/api"
 
@@ -39,6 +39,23 @@ export class CloudRuHandler extends RouterProvider implements SingleCompletionHa
 			defaultModelId: cloudRuDefaultModelId,
 			defaultModelInfo: cloudRuDefaultModelInfo,
 		})
+	}
+
+	override getModel(): { id: string; info: ModelInfo } {
+		const model = super.getModel()
+
+		// Allow user to override context window if specified
+		if (this.options.cloudRuContextWindow && this.options.cloudRuContextWindow > 0) {
+			return {
+				...model,
+				info: {
+					...model.info,
+					contextWindow: this.options.cloudRuContextWindow,
+				},
+			}
+		}
+
+		return model
 	}
 
 	override async *createMessage(
