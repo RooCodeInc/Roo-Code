@@ -935,7 +935,13 @@ const ApiOptions = ({
 										<SelectValue placeholder={t("settings:common.select")} />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="default">{t("settings:toolProtocol.default")}</SelectItem>
+										<SelectItem value="default">
+											{t("settings:toolProtocol.default")} (
+											{defaultProtocol === TOOL_PROTOCOL.NATIVE
+												? t("settings:toolProtocol.native")
+												: t("settings:toolProtocol.xml")}
+											)
+										</SelectItem>
 										<SelectItem value={TOOL_PROTOCOL.XML}>
 											{t("settings:toolProtocol.xml")}
 										</SelectItem>
@@ -946,16 +952,6 @@ const ApiOptions = ({
 								</Select>
 								<div className="text-sm text-vscode-descriptionForeground mt-1">
 									{t("settings:toolProtocol.description")}
-									{!apiConfiguration.toolProtocol && (
-										<>
-											{" "}
-											<span className="text-vscode-foreground">
-												{t("settings:toolProtocol.currentDefault", {
-													protocol: defaultProtocol,
-												})}
-											</span>
-										</>
-									)}
 								</div>
 							</div>
 						)}
