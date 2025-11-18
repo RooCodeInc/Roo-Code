@@ -250,6 +250,7 @@ export type ExtensionState = Pick<
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
+	| "accentColor"
 	| "maxConcurrentFileReads"
 	| "terminalOutputLineLimit"
 	| "terminalOutputCharacterLimit"
