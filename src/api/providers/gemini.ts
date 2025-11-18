@@ -72,6 +72,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		this.lastThoughtSignature = undefined
 		this.lastResponseId = undefined
 
+		// For hybrid/budget reasoning models (e.g. Gemini 2.5 Pro), respect user-configured
+		// modelMaxTokens so the ThinkingBudget slider can control the cap. For effort-only or
+		// standard models (like gemini-3-pro-preview), ignore any stale modelMaxTokens and
+		// default to the model's computed maxTokens from getModelMaxOutputTokens.
+		const isHybridReasoningModel = info.supportsReasoningBudget || info.requiredReasoningBudget
+		const maxOutputTokens = isHybridReasoningModel
+			? (this.options.modelMaxTokens ?? maxTokens ?? undefined)
+			: (maxTokens ?? undefined)
+
 		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
 		// using effort-based reasoning (thinkingLevel). Budget-only configs should NOT
 		// send thoughtSignature parts back to Gemini.
@@ -119,13 +128,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			systemInstruction,
 			httpOptions: this.options.googleGeminiBaseUrl ? { baseUrl: this.options.googleGeminiBaseUrl } : undefined,
 			thinkingConfig,
-			maxOutputTokens: this.options.modelMaxTokens ?? maxTokens ?? undefined,
+			maxOutputTokens,
 			temperature: temperatureConfig,
 			...(tools.length > 0 ? { tools } : {}),
 		}
 
 		const params: GenerateContentParameters = { model, contents, config }
-
 		try {
 			const result = await this.client.models.generateContentStream(params)
 
