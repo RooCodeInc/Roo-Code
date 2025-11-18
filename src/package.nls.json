@@ -30,6 +30,7 @@
 	"command.shortKeyCut.title": "CoStrict Code Completion Shortcut",
 	"command.codeReview.title": "Code Review",
 	"command.reviewRepo.title": "Review Repo",
+	"command.reviewCommit.title": "Review Changes",
 	"command.addComment.title": "Add Comments",
 	"command.addTests.title": "Generate Unit Tests",
 	"command.explain.title": "Explain Code",

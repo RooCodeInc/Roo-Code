@@ -196,6 +196,11 @@
 				"title": "%command.reviewRepo.title%"
 			},
 			{
+				"command": "zgsm.reviewCommit",
+				"title": "%command.reviewCommit.title%",
+				"icon": "$(shield)"
+			},
+			{
 				"command": "zgsm.codeReviewJetbrains",
 				"title": "%command.codeReview.title%"
 			},
@@ -489,6 +494,11 @@
 			"scm/title": [
 				{
 					"command": "zgsm.generateCommitMessage",
+					"group": "navigation",
+					"when": "scmProvider == git"
+				},
+				{
+					"command": "zgsm.reviewCommit",
 					"group": "navigation",
 					"when": "scmProvider == git"
 				}
@@ -787,6 +797,9 @@
 			}
 		}
 	},
+	"extensionDependencies": [
+		"vscode.git"
+	],
 	"scripts": {
 		"lint": "eslint . --ext=ts --max-warnings=0",
 		"check-types": "tsc --noEmit",

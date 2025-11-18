@@ -288,14 +288,17 @@ export class CodeReviewService {
 				if (message?.text) {
 					const { issues, review_task_id } = await this.getIssues(message.text, targets)
 					if (issues) {
-						this.updateCachedIssues(
-							issues.filter((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
+						const existsResults = await Promise.all(
+							issues.map((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
 						)
+						const validIssues = issues.filter((_, index) => existsResults[index])
+
+						this.updateCachedIssues(validIssues)
 						this.updateTaskState({
 							taskId: review_task_id,
 							isCompleted: true,
 							progress: 1,
-							total: issues.length,
+							total: validIssues.length,
 							error: undefined,
 						})
 					}

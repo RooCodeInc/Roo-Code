@@ -31,6 +31,7 @@
 	"command.shortKeyCut.title": "CoStrict代码补全快捷键",
 	"command.codeReview.title": "代码审查",
 	"command.reviewRepo.title": "扫描仓库",
+	"command.reviewCommit.title": "审查当前变更",
 	"command.addComment.title": "添加注释",
 	"command.addTests.title": "生成单元测试",
 	"command.explain.title": "解释代码",

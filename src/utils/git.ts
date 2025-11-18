@@ -361,6 +361,37 @@ export async function getWorkingState(cwd: string): Promise<string> {
 	}
 }
 
+/**
+ * Gets list of changed files in git (both staged and unstaged)
+ * @param cwd The working directory
+ * @returns Array of changed file paths relative to cwd
+ */
+export async function getChangedFiles(cwd: string): Promise<string[]> {
+	try {
+		const isInstalled = await checkGitInstalled()
+		if (!isInstalled) {
+			return []
+		}
+
+		const isRepo = await checkGitRepo(cwd)
+		if (!isRepo) {
+			return []
+		}
+
+		// Get list of changed files (both staged and unstaged) relative to repo root
+		const { stdout } = await execAsync("git diff --name-only HEAD", { cwd })
+		const changedFiles = stdout
+			.trim()
+			.split("\n")
+			.filter((file) => file.length > 0)
+
+		return changedFiles
+	} catch (error) {
+		console.error("Error getting changed files:", error)
+		return []
+	}
+}
+
 export const autoCommit: AutoCommit = async (relPath, cwd, option) => {
 	try {
 		const isInstalled = await checkGitInstalled()

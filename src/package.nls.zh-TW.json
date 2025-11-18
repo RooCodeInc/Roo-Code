@@ -31,6 +31,7 @@
 	"command.shortKeyCut.title": "CoStrict程式碼補全快捷鍵",
 	"command.codeReview.title": "程式碼審查",
 	"command.reviewRepo.title": "掃描倉庫",
+	"command.reviewCommit.title": "審查當前變更",
 	"command.addComment.title": "添加註解",
 	"command.addTests.title": "產生單元測試",
 	"command.explain.title": "解釋程式碼",

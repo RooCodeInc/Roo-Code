@@ -172,7 +172,9 @@
 			"login_expired": "登录已过期，请重新登录。",
 			"service_unavailable": "服务不可用，请稍后重试。",
 			"api_provider_not_support": "当前 API 提供商不支持 Code Review功能，请切换到 CoStrict API 提供商。",
-			"task_timeout": "任务执行超时，已自动取消"
+			"task_timeout": "任务执行超时，已自动取消",
+			"no_changed_files": "没有变更文件，请确保当前工作空间是 git 仓库，并且有变更文件。",
+			"new_commit_notification": "你提交了：{{commitMessage}}，是否进行 review ？"
 		},
 		"statusbar": {
 			"login_expired": "获取登录信息失败，请重新登录以使用 Code Review 功能"

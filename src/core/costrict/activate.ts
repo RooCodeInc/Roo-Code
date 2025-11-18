@@ -24,7 +24,7 @@ import {
 	loadLocalLanguageExtensions,
 } from "./base/common"
 import { ZgsmAuthApi, ZgsmAuthCommands, ZgsmAuthService, ZgsmAuthStorage } from "./auth"
-import { initCodeReview } from "./code-review"
+import { initCodeReview, disposeGitCommitListener } from "./code-review"
 import { initTelemetry } from "./telemetry"
 import { initErrorCodeManager } from "./error-code"
 import { NotificationService } from "./notification"
@@ -239,6 +239,9 @@ export async function deactivate() {
 
 	// Stop periodic notice fetching
 	NotificationService.getInstance().stopPeriodicFetch()
+
+	// Dispose git commit listener
+	disposeGitCommitListener()
 
 	// ZgsmCodebaseIndexManager.getInstance().stopExistingClient()
 	// Clean up IPC connections

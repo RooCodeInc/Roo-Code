@@ -1,4 +1,5 @@
 import * as vscode from "vscode"
+import type { GitExtension } from "./git"
 
 import { ClineProvider } from "../../webview/ClineProvider"
 import { getCommand } from "../../../utils/commands"
@@ -11,7 +12,19 @@ import { CodeReviewService } from "./codeReviewService"
 import { CommentService } from "../../../integrations/comment"
 import type { ReviewComment } from "./reviewComment"
 import { supportPrompt } from "../../../shared/support-prompt"
+import { getChangedFiles } from "../../../utils/git"
 import { t } from "../../../i18n"
+import { GitCommitListener } from "./gitCommitListener"
+
+let commitListener: GitCommitListener | undefined
+
+export function disposeGitCommitListener(): void {
+	if (commitListener) {
+		commitListener.getDisposables().forEach((d) => d.dispose())
+		commitListener = undefined
+	}
+}
+
 export function initCodeReview(
 	context: vscode.ExtensionContext,
 	provider: ClineProvider,
@@ -21,6 +34,12 @@ export function initCodeReview(
 	const commentService = CommentService.getInstance()
 	reviewInstance.setProvider(provider)
 	reviewInstance.setCommentService(commentService)
+
+	commitListener = new GitCommitListener(context, reviewInstance)
+	commitListener.startListening().catch((error) => {
+		provider.log(`[GitCommitListener] Failed to start: ${error}`)
+	})
+
 	const commandMap: Partial<Record<CostrictCommandId, any>> = {
 		codeReviewButtonClicked: async () => {
 			let visibleProvider = getVisibleProviderOrLog(outputChannel)
@@ -194,6 +213,37 @@ export function initCodeReview(
 				}),
 			)
 			reviewInstance.startReview(targets)
+		},
+		reviewCommit: async () => {
+			const visibleProvider = await ClineProvider.getInstance()
+			if (!visibleProvider) {
+				return
+			}
+			reviewInstance.setProvider(visibleProvider)
+			if (!(await reviewInstance.checkApiProviderSupport())) {
+				return
+			}
+			visibleProvider.log("[CodeReview] Reviewing git changes")
+
+			// 获取当前 git 变更的文件列表
+			const cwd = visibleProvider.cwd.toPosix()
+			const changedFiles = await getChangedFiles(cwd)
+
+			if (changedFiles.length === 0) {
+				vscode.window.showInformationMessage(t("common:review.tip.no_changed_files"))
+				return
+			}
+
+			visibleProvider.log(`[CodeReview] Found ${changedFiles.length} changed files`)
+
+			// 将变更文件作为 targets 传入，使用相对路径
+			const targets: ReviewTarget[] = changedFiles.map((file_path) => ({
+				type: ReviewTargetType.FILE,
+				file_path,
+			}))
+
+			// 使用 @git-changes 来审查当前的 git 变更
+			reviewInstance.createReviewTask("@git-changes", targets)
 		},
 		acceptIssueJetbrains: async (args: any) => {
 			const visibleProvider = await ClineProvider.getInstance()
