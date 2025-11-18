@@ -108,6 +108,7 @@ describe("applyDiffTool experiment routing", () => {
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
 			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
 		})
 	})
 
@@ -131,6 +132,7 @@ describe("applyDiffTool experiment routing", () => {
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
 			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
 		})
 	})
 
@@ -190,6 +192,7 @@ describe("applyDiffTool experiment routing", () => {
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
 			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "native",
 		})
 	})
 })
