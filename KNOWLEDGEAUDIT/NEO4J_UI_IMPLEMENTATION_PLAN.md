@@ -1,9 +1,39 @@
 # Neo4j UI Implementation Plan
 
-**Document Version:** 1.0  
-**Created:** 2025-11-18  
-**Phase:** Phase 4 - Neo4j Integration  
+**Document Version:** 1.1
+**Created:** 2025-11-18
+**Updated:** 2025-11-18 (Added pattern compliance notes)
+**Phase:** Phase 4 - Neo4j Integration
 **Status:** Planning
+
+---
+
+## ⚠️ CRITICAL: Pattern Compliance
+
+**This implementation MUST follow existing Roo Code UI patterns:**
+
+✅ **DO:**
+- Follow `CodeIndexPopover.tsx` patterns for settings UI
+- Use existing component library from `webview-ui/src/components/ui/`
+- Follow `webviewMessageHandler.ts` patterns for message handling
+- Use `ExtensionStateContext` for state management
+- Match existing styling conventions (Tailwind classes, VSCode theme variables)
+- Follow `config-manager.ts` patterns for configuration storage
+- Use VSCode Secrets API for sensitive data (passwords, API keys)
+
+❌ **DON'T:**
+- Create new UI frameworks or patterns
+- Introduce new state management approaches
+- Create standalone visualization panels (unless following existing tab patterns)
+- Bypass existing message handling infrastructure
+- Ignore existing validation and error handling patterns
+
+**Reference Files:**
+- `webview-ui/src/components/chat/CodeIndexPopover.tsx` - Settings UI pattern
+- `src/core/webview/webviewMessageHandler.ts` - Message handling pattern
+- `src/services/code-index/config-manager.ts` - Configuration pattern
+- `webview-ui/src/components/settings/SettingsView.tsx` - Settings section pattern
+- `webview-ui/src/App.tsx` - Tab system pattern (if adding new views)
 
 ---
 
@@ -44,9 +74,18 @@ This document provides a detailed UI/UX implementation plan for adding Neo4j gra
 
 ## 1. Webview UI Component Design
 
+**Pattern Compliance:** This section extends the existing `CodeIndexPopover.tsx` component following its established patterns.
+
 ### 1.1 UI Layout Structure
 
 Add a new **"Graph Database (Neo4j)"** section to the Code Index Popover, positioned after the "Vector Database (Qdrant)" section.
+
+**Implementation Approach:**
+- ✅ Extend existing `CodeIndexPopover.tsx` (don't create new component)
+- ✅ Use existing state management patterns from the popover
+- ✅ Follow existing validation and error handling patterns
+- ✅ Use existing VSCode UI components (`VSCodeCheckbox`, `VSCodeTextField`, etc.)
+- ✅ Match existing section styling and layout
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -313,6 +352,17 @@ const createValidationSchema = (provider: EmbedderProvider, neo4jEnabled: boolea
 
 ## 2. Message Handler Updates
 
+**Pattern Compliance:** Follow existing message handler patterns in `webviewMessageHandler.ts`.
+
+**Key Patterns to Follow:**
+- ✅ Use existing case statement structure
+- ✅ Follow existing validation patterns (Zod schemas)
+- ✅ Use `getGlobalState()` and `updateGlobalState()` helpers
+- ✅ Use `provider.contextProxy.storeSecret()` for sensitive data
+- ✅ Follow existing error handling patterns
+- ✅ Use `provider.postMessageToWebview()` for responses
+- ✅ Trigger re-initialization via `handleSettingsChange()` pattern
+
 ### 2.1 Update `saveCodeIndexSettingsAtomic` Handler
 
 **File:** `src/core/webview/webviewMessageHandler.ts`
@@ -488,6 +538,16 @@ export interface CodeIndexSecretStatus {
 ---
 
 ## 3. Config Manager Integration
+
+**Pattern Compliance:** Follow existing configuration patterns in `config-manager.ts`.
+
+**Key Patterns to Follow:**
+- ✅ Add private properties with defaults
+- ✅ Create getter methods for configuration access
+- ✅ Follow existing initialization patterns in `initialize()`
+- ✅ Use existing validation patterns
+- ✅ Follow existing secret loading patterns
+- ✅ Maintain backward compatibility (Neo4j disabled by default)
 
 ### 3.1 Extend Configuration Interface
 
