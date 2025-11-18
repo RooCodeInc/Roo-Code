@@ -18,6 +18,7 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 interface WriteToFileParams {
 	path: string
@@ -109,6 +110,8 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				const actualLineCount = newContent.split("\n").length
 				const isNewFile = !fileExists
 				const diffStrategyEnabled = !!task.diffStrategy
+				const modelInfo = task.api.getModel().info
+				const toolProtocol = resolveToolProtocol(task.apiConfiguration, modelInfo)
 
 				await task.say(
 					"error",
@@ -119,7 +122,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 				pushToolResult(
 					formatResponse.toolError(
-						formatResponse.lineCountTruncationError(actualLineCount, isNewFile, diffStrategyEnabled),
+						formatResponse.lineCountTruncationError(
+							actualLineCount,
+							isNewFile,
+							diffStrategyEnabled,
+							toolProtocol,
+						),
 					),
 				)
 				await task.diffViewProvider.revertChanges()
