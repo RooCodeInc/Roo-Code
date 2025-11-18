@@ -209,8 +209,6 @@ export class BrowserSession {
 		const wasActive = !!(this.browser || this.page)
 
 		if (wasActive) {
-			console.log("closing browser...")
-
 			if (this.isUsingRemoteBrowser && this.browser) {
 				await this.browser.disconnect().catch(() => {})
 			} else {
@@ -801,7 +799,7 @@ export class BrowserSession {
 				y,
 			)
 		} catch (error) {
-			console.log("Failed to draw cursor indicator:", error)
+			console.error("Failed to draw cursor indicator:", error)
 		}
 	}
 
@@ -817,7 +815,7 @@ export class BrowserSession {
 				}
 			})
 		} catch (error) {
-			console.log("Failed to remove cursor indicator:", error)
+			console.error("Failed to remove cursor indicator:", error)
 		}
 	}
 
