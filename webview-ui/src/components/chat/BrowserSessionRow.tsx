@@ -9,6 +9,7 @@ import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 
 import CodeBlock from "../common/CodeBlock"
+import { ProgressIndicator } from "./ProgressIndicator"
 import { Button, StandardTooltip } from "@src/components/ui"
 import {
 	Globe,
@@ -459,7 +460,6 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 
 	// Latest non-close browser_action for header summary (fallback)
 
-	// Determine if the overall browser session is still active (spins until 'close')
 	const lastBrowserActionOverall = useMemo(() => {
 		const all = messages.filter((m) => m.say === "browser_action")
 		return all.at(-1)
@@ -468,20 +468,22 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	// Use actual Playwright session state from extension (not message parsing)
 	const isBrowserSessionOpen = isBrowserSessionActive
 
-	// Check if currently performing a browser action (for spinner)
-	const _isSessionActive = useMemo(() => {
-		// Only show active spinner if a session has started
-		const started = messages.some((m) => m.say === "browser_action_result")
-		if (!started) return false
-		// If the last API request got interrupted/cancelled, treat session as inactive
-		if (isLastApiReqInterrupted) return false
-		if (!lastBrowserActionOverall) return true
-		try {
-			const act = JSON.parse(lastBrowserActionOverall.text || "{}") as ClineSayBrowserAction
-			return act.action !== "close"
-		} catch {
+	// Check if a browser action is currently in flight (for spinner)
+	const isActionRunning = useMemo(() => {
+		if (!lastBrowserActionOverall || isLastApiReqInterrupted) {
+			return false
+		}
+
+		// Find the last browser_action_result (including empty text) to detect completion
+		const lastBrowserActionResult = [...messages].reverse().find((m) => m.say === "browser_action_result")
+
+		if (!lastBrowserActionResult) {
+			// We have at least one action, but haven't seen any result yet
 			return true
 		}
+
+		// If the last action happened after the last result, it's still running
+		return lastBrowserActionOverall.ts > lastBrowserActionResult.ts
 	}, [messages, lastBrowserActionOverall, isLastApiReqInterrupted])
 
 	// Browser session drawer never auto-expands - user must manually toggle it
@@ -592,6 +594,11 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						gap: 8,
 					}}>
 					{t("chat:browser.session")}
+					{isActionRunning && (
+						<span className="ml-1 flex items-center" aria-hidden="true">
+							<ProgressIndicator />
+						</span>
+					)}
 					{pages.length > 0 && (
 						<span
 							style={{
@@ -622,15 +629,15 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 									<>
 										{getActionIcon(action.action)}
 										<span>
-									{getBrowserActionText(
-										action.action,
-										action.executedCoordinate,
-										action.coordinate,
-										action.text,
-										pageSize,
-										pageViewportWidth,
-										pageViewportHeight,
-									)}
+											{getBrowserActionText(
+												action.action,
+												action.executedCoordinate,
+												action.coordinate,
+												action.text,
+												pageSize,
+												pageViewportWidth,
+												pageViewportHeight,
+											)}
 										</span>
 									</>
 								)
