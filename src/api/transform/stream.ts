@@ -2,6 +2,7 @@ export type ApiStream = AsyncGenerator<ApiStreamChunk>
 
 export type ApiStreamChunk =
 	| ApiStreamTextChunk
+	| ApiStreamAutoModelChunk
 	| ApiStreamUsageChunk
 	| ApiStreamReasoningChunk
 	| ApiStreamGroundingChunk
@@ -17,8 +18,14 @@ export interface ApiStreamError {
 export interface ApiStreamTextChunk {
 	type: "text"
 	text: string
+}
+
+export interface ApiStreamAutoModelChunk {
+	type: "automodel"
+	text: string
 	isAuto?: boolean
 	originModelId?: string
+	selectedLLM?: string
 }
 
 export interface ApiStreamReasoningChunk {

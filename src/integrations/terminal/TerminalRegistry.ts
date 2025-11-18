@@ -62,7 +62,7 @@ export class TerminalRegistry {
 						terminal.busy = true // Mark terminal as busy when shell execution starts
 					} else {
 						console.error(
-							"[onDidStartTerminalShellExecution] Shell execution started, but not from a Roo-registered terminal:",
+							"[onDidStartTerminalShellExecution] Shell execution started, but not from a CoStrict-registered terminal:",
 							e,
 						)
 					}

@@ -440,10 +440,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Yield selected LLM info if available (for Auto model mode)
 		if (isAuto) {
 			yield {
-				type: "text",
-				text: `["${selectedLLM}" ${selectReason ? `, "(${selectReason})"` : ""}]`,
-				isAuto,
+				type: "automodel",
+				text: selectReason ? ` (${selectReason})` : "",
 				originModelId: this.options.zgsmModelId,
+				selectedLLM,
 			}
 		}
 

@@ -327,7 +327,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		isCodebaseReady: true,
 	})
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
-	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
+	// const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
 	const [notices, setNotices] = useState<
@@ -513,15 +513,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	}, [])
 
 	// Watch for authentication state changes and refresh Roo models
-	useEffect(() => {
-		const currentAuth = state.cloudIsAuthenticated ?? false
-		const currentProvider = state.apiConfiguration?.apiProvider
-		if (!prevCloudIsAuthenticated && currentAuth && currentProvider === "roo") {
-			// User just authenticated and Roo is the active provider - refresh Roo models
-			vscode.postMessage({ type: "requestRooModels" })
-		}
-		setPrevCloudIsAuthenticated(currentAuth)
-	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
+	// useEffect(() => {
+	// 	const currentAuth = state.cloudIsAuthenticated ?? false
+	// 	const currentProvider = state.apiConfiguration?.apiProvider
+	// 	if (!prevCloudIsAuthenticated && currentAuth && currentProvider === "roo") {
+	// 		// User just authenticated and Roo is the active provider - refresh Roo models
+	// 		vscode.postMessage({ type: "requestRooModels" })
+	// 	}
+	// 	setPrevCloudIsAuthenticated(currentAuth)
+	// }, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
 
 	const contextValue: ExtensionStateContextType = {
 		...state,
@@ -541,7 +541,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		writeDelayMs: state.writeDelayMs,
 		screenshotQuality: state.screenshotQuality,
 		routerModels: extensionRouterModels,
-		cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
+		// cloudIsAuthenticated: state.cloudIsAuthenticated ?? false,
 		// cloudOrganizations: state.cloudOrganizations ?? [],
 		organizationSettingsVersion: state.organizationSettingsVersion ?? -1,
 		marketplaceItems,

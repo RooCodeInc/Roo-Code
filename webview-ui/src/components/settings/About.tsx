@@ -63,8 +63,8 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 						components={{
 							zgsmGithubLink: <VSCodeLink href="https://github.com/zgsm-ai/costrict" />,
 							githubLink: <VSCodeLink href="https://github.com/zgsm-ai/costrict" />,
-							redditLink: <VSCodeLink href="https://reddit.com/r/RooCode" />,
-							discordLink: <VSCodeLink href="https://discord.gg/roocode" />,
+							// redditLink: <VSCodeLink href="https://reddit.com/r/RooCode" />,
+							// discordLink: <VSCodeLink href="https://discord.gg/roocode" />,
 						}}
 					/>
 				</div>
