@@ -36,8 +36,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private lastResponseId: string | undefined
 	// Accumulate partial tool calls: call_id -> { name, arguments }
 	private currentToolCalls: Map<string, { name: string; arguments: string }> = new Map()
-	// Track yielded tool calls to avoid duplicates
-	private yieldedCallIds: Set<string> = new Set()
 	// Abort controller for cancelling ongoing requests
 	private abortController?: AbortController
 
@@ -157,7 +155,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseId = undefined
 		// Reset tool call accumulator
 		this.currentToolCalls.clear()
-		this.yieldedCallIds.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -1097,16 +1094,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		) {
 			const callId = event.call_id || event.tool_call_id || event.id
 			if (callId && this.currentToolCalls.has(callId)) {
-				if (!this.yieldedCallIds.has(callId)) {
-					const toolCall = this.currentToolCalls.get(callId)!
-					// Yield the complete tool call with default empty JSON if arguments are missing
-					yield {
-						type: "tool_call",
-						id: callId,
-						name: toolCall.name,
-						arguments: toolCall.arguments || "{}",
-					}
-					this.yieldedCallIds.add(callId)
+				const toolCall = this.currentToolCalls.get(callId)!
+				// Yield the complete tool call
+				yield {
+					type: "tool_call",
+					id: callId,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
 				}
 				// Remove from accumulator
 				this.currentToolCalls.delete(callId)
@@ -1135,7 +1129,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				) {
 					// Handle complete tool/function call item
 					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId && !this.yieldedCallIds.has(callId)) {
+					if (callId && !this.currentToolCalls.has(callId)) {
 						const args = item.arguments || item.function?.arguments || item.function_arguments
 						yield {
 							type: "tool_call",
@@ -1143,7 +1137,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							name: item.name || item.function?.name || item.function_name || "",
 							arguments: typeof args === "string" ? args : "{}",
 						}
-						this.yieldedCallIds.add(callId)
 					}
 				}
 			}
@@ -1152,17 +1145,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Completion events that may carry usage
 		if (event?.type === "response.done" || event?.type === "response.completed") {
-			// Yield any pending tool calls that didn't get a 'done' event
+			// Yield any pending tool calls that didn't get a 'done' event (fallback)
 			if (this.currentToolCalls.size > 0) {
 				for (const [callId, toolCall] of this.currentToolCalls) {
-					if (!this.yieldedCallIds.has(callId)) {
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: toolCall.name,
-							arguments: toolCall.arguments || "{}",
-						}
-						this.yieldedCallIds.add(callId)
+					yield {
+						type: "tool_call",
+						id: callId,
+						name: toolCall.name,
+						arguments: toolCall.arguments || "{}",
 					}
 				}
 				this.currentToolCalls.clear()
