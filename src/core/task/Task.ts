@@ -2228,7 +2228,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								if (shouldUseXmlParser && this.assistantMessageParser) {
 									// XML protocol: Parse raw assistant message chunk into content blocks
 									const prevLength = this.assistantMessageContent.length
-									this.assistantMessageContent = this.assistantMessageParser!.processChunk(chunk.text)
+									this.assistantMessageContent = this.assistantMessageParser.processChunk(chunk.text)
 
 									if (this.assistantMessageContent.length > prevLength) {
 										// New content we need to present, reset to
@@ -2553,8 +2553,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Now that the stream is complete, finalize any remaining partial content blocks (XML protocol only)
 				// Use the protocol determined at the start of streaming
 				if (shouldUseXmlParser && this.assistantMessageParser) {
-					this.assistantMessageParser!.finalizeContentBlocks()
-					const parsedBlocks = this.assistantMessageParser!.getContentBlocks()
+					this.assistantMessageParser.finalizeContentBlocks()
+					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
 					this.assistantMessageContent = parsedBlocks
 				}
