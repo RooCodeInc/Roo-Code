@@ -1,6 +1,6 @@
 {
-	"name": "roo-cline",
-	"displayName": "%extension.displayName%",
+	"name": "roofordllm",
+	"displayName": "RooFordLLM",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
 	"version": "3.32.1",
