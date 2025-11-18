@@ -7,14 +7,13 @@ import type { Keys, Equals, AssertEqual } from "./type-fu.js"
  */
 
 export const experimentIds = [
+	"chatSearch",
+	"alwaysIncludeFileDetails",
 	"powerSteering",
 	"multiFileApplyDiff",
 	"preventFocusDisruption",
 	"imageGeneration",
 	"runSlashCommand",
-	"chatSearch",
-	"alwaysIncludeFileDetails",
-	"nativeToolCalling",
 ] as const
 
 export const experimentIdsSchema = z.enum(experimentIds)
@@ -26,14 +25,13 @@ export type ExperimentId = z.infer<typeof experimentIdsSchema>
  */
 
 export const experimentsSchema = z.object({
+	chatSearch: z.boolean().optional(),
+	alwaysIncludeFileDetails: z.boolean().optional(),
 	powerSteering: z.boolean().optional(),
 	multiFileApplyDiff: z.boolean().optional(),
 	preventFocusDisruption: z.boolean().optional(),
 	imageGeneration: z.boolean().optional(),
 	runSlashCommand: z.boolean().optional(),
-	chatSearch: z.boolean().optional(),
-	alwaysIncludeFileDetails: z.boolean().optional(),
-	nativeToolCalling: z.boolean().optional(),
 })
 
 export type Experiments = z.infer<typeof experimentsSchema>

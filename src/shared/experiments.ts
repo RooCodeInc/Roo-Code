@@ -1,17 +1,16 @@
 import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } from "@roo-code/types"
 
 export const EXPERIMENT_IDS = {
+	CHAT_SEARCH: "chatSearch",
+	ALWAYS_INCLUDE_FILE_DETAILS: "alwaysIncludeFileDetails",
 	MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",
 	POWER_STEERING: "powerSteering",
 	PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
 	IMAGE_GENERATION: "imageGeneration",
 	RUN_SLASH_COMMAND: "runSlashCommand",
-	CHAT_SEARCH: "chatSearch",
-	ALWAYS_INCLUDE_FILE_DETAILS: "alwaysIncludeFileDetails",
-	NATIVE_TOOL_CALLING: "nativeToolCalling",
 } as const satisfies Record<string, ExperimentId>
 
-type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
+// type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
 
 type ExperimentKey = Keys<typeof EXPERIMENT_IDS>
 
@@ -20,14 +19,13 @@ interface ExperimentConfig {
 }
 
 export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
+	CHAT_SEARCH: { enabled: false },
+	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: undefined },
 	MULTI_FILE_APPLY_DIFF: { enabled: false },
 	POWER_STEERING: { enabled: false },
 	PREVENT_FOCUS_DISRUPTION: { enabled: false },
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },
-	CHAT_SEARCH: { enabled: false },
-	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: undefined },
-	NATIVE_TOOL_CALLING: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

@@ -428,12 +428,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Initialize the assistant message parser only for XML protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
 		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
-		const toolProtocol = resolveToolProtocol(
-			this.apiConfiguration,
-			this.api.getModel().info,
-			this.apiConfiguration.apiProvider,
-			experimentsConfig,
-		)
+		const toolProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
 		this.assistantMessageParser = toolProtocol === "xml" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
@@ -1347,12 +1342,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 		const modelInfo = this.api.getModel().info
 		const state = await this.providerRef.deref()?.getState()
-		const toolProtocol = resolveToolProtocol(
-			this.apiConfiguration,
-			modelInfo,
-			this.apiConfiguration.apiProvider,
-			state?.experiments,
-		)
+		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, toolProtocol))
 	}
 
@@ -1496,12 +1486,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// conversations with tool uses and no tool schema.
 		// For native protocol, we preserve tool_use and tool_result blocks as they're expected by the API.
 		const state = await this.providerRef.deref()?.getState()
-		const protocol = resolveToolProtocol(
-			this.apiConfiguration,
-			this.api.getModel().info,
-			this.apiConfiguration.apiProvider,
-			state?.experiments,
-		)
+		const protocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
 		const useNative = isNativeProtocol(protocol)
 
 		// Only convert tool blocks to text for XML protocol
@@ -1859,12 +1844,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} else {
 				const modelInfo = this.api.getModel().info
 				const state = await this.providerRef.deref()?.getState()
-				const toolProtocol = resolveToolProtocol(
-					this.apiConfiguration,
-					modelInfo,
-					this.apiConfiguration.apiProvider,
-					state?.experiments,
-				)
+				const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(toolProtocol) }]
 				this.consecutiveMistakeCount++
 			}
@@ -2549,12 +2529,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Check if we're using native protocol
 					const state = await this.providerRef.deref()?.getState()
 					const isNative = isNativeProtocol(
-						resolveToolProtocol(
-							this.apiConfiguration,
-							this.api.getModel().info,
-							this.apiConfiguration.apiProvider,
-							state?.experiments,
-						),
+						resolveToolProtocol(this.apiConfiguration, this.api.getModel().info),
 					)
 
 					if (isNative) {
@@ -2695,12 +2670,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (!didToolUse) {
 						const modelInfo = this.api.getModel().info
 						const state = await this.providerRef.deref()?.getState()
-						const toolProtocol = resolveToolProtocol(
-							this.apiConfiguration,
-							modelInfo,
-							this.apiConfiguration.apiProvider,
-							state?.experiments,
-						)
+						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
 						this.consecutiveMistakeCount++
 					}
@@ -2731,14 +2701,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// user messages (which would cause tool_result validation errors).
 					let state = await this.providerRef.deref()?.getState()
 					if (
-						isNativeProtocol(
-							resolveToolProtocol(
-								this.apiConfiguration,
-								this.api.getModel().info,
-								this.apiConfiguration.apiProvider,
-								state?.experiments,
-							),
-						) &&
+						isNativeProtocol(resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)) &&
 						this.apiConversationHistory.length > 0
 					) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
@@ -2805,14 +2768,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// For native protocol, re-add the user message we removed
 							// Reuse the state variable from above
 							if (
-								isNativeProtocol(
-									resolveToolProtocol(
-										this.apiConfiguration,
-										this.api.getModel().info,
-										this.apiConfiguration.apiProvider,
-										state?.experiments,
-									),
-								)
+								isNativeProtocol(resolveToolProtocol(this.apiConfiguration, this.api.getModel().info))
 							) {
 								await this.addToApiConversationHistory({
 									role: "user",
@@ -2909,12 +2865,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 			// Resolve the tool protocol based on profile, model, and provider settings
-			const toolProtocol = resolveToolProtocol(
-				apiConfiguration ?? this.apiConfiguration,
-				modelInfo,
-				(apiConfiguration ?? this.apiConfiguration)?.apiProvider,
-				experiments,
-			)
+			const toolProtocol = resolveToolProtocol(apiConfiguration ?? this.apiConfiguration, modelInfo)
 
 			return SYSTEM_PROMPT(
 				provider.context,
@@ -3156,12 +3107,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
 		const modelInfo = this.api.getModel().info
-		const toolProtocol = resolveToolProtocol(
-			this.apiConfiguration,
-			modelInfo,
-			this.apiConfiguration.apiProvider,
-			state?.experiments,
-		)
+		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions

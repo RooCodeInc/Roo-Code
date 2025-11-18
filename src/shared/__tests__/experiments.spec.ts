@@ -23,24 +23,6 @@ describe("experiments", () => {
 		})
 	})
 
-	describe("CHAT_SEARCH", () => {
-		it("is configured correctly", () => {
-			expect(EXPERIMENT_IDS.CHAT_SEARCH).toBe("chatSearch")
-			expect(experimentConfigsMap.CHAT_SEARCH).toMatchObject({
-				enabled: false,
-			})
-		})
-	})
-
-	describe("NATIVE_TOOL_CALLING", () => {
-		it("is configured correctly", () => {
-			expect(EXPERIMENT_IDS.NATIVE_TOOL_CALLING).toBe("nativeToolCalling")
-			expect(experimentConfigsMap.NATIVE_TOOL_CALLING).toMatchObject({
-				enabled: false,
-			})
-		})
-	})
-
 	describe("isEnabled", () => {
 		it("returns false when POWER_STEERING experiment is not enabled", () => {
 			const experiments: Record<ExperimentId, boolean> = {
@@ -48,10 +30,9 @@ describe("experiments", () => {
 				multiFileApplyDiff: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
-				runSlashCommand: false,
 				chatSearch: false,
 				alwaysIncludeFileDetails: false,
-				nativeToolCalling: false,
+				runSlashCommand: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
@@ -60,12 +41,11 @@ describe("experiments", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: true,
 				multiFileApplyDiff: false,
+				chatSearch: false,
+				alwaysIncludeFileDetails: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
-				chatSearch: false,
-				alwaysIncludeFileDetails: false,
-				nativeToolCalling: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
@@ -74,12 +54,11 @@ describe("experiments", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: false,
 				multiFileApplyDiff: false,
+				chatSearch: false,
+				alwaysIncludeFileDetails: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
-				chatSearch: false,
-				alwaysIncludeFileDetails: false,
-				nativeToolCalling: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
