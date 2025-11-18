@@ -1463,7 +1463,11 @@ git commit -m "Rollback: Revert BM25 integration"
 
 Add Neo4j graph database for structural code relationships. Enable queries like "find all callers of function X" and "show dependency chain".
 
-**Note:** This phase is detailed in `NEO4J_INTEGRATION_PLAN.md`. Here's the implementation checklist.
+**Note:** This phase is detailed in two companion documents:
+- **`NEO4J_INTEGRATION_PLAN.md`** - Technical integration details (backend, graph schema, queries)
+- **`NEO4J_UI_IMPLEMENTATION_PLAN.md`** - UI/UX implementation details (webview, settings, user flows) ⭐ NEW
+
+Below is the implementation checklist.
 
 ### Tasks
 

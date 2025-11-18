@@ -1,0 +1,2 @@
+// This file will be appended to large-file.ts to make it >1000 lines
+// Generating repetitive code patterns for performance testing
