@@ -44,9 +44,12 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1">
-							<li>{t("chat:announcement.release.openRouterEmbeddings")}</li>
-							<li>{t("chat:announcement.release.chutesDynamic")}</li>
-							<li>{t("chat:announcement.release.queuedMessagesFix")}</li>
+							<li>Gemini 3 available in Gemini, Vertex, Roo Code Cloud, OpenRouter, and more!</li>
+							<li>Automatically add git status information to the agent context from Context settings</li>
+							<li>
+								Experimental support for native tool calling in Roo Code Cloud, OpenRouter, and OpenAI -
+								enable in Provider advanced settings
+							</li>
 						</ul>
 					</div>
 
@@ -57,17 +60,14 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div>
 						<p className="mb-3">{t("chat:announcement.cloudAgents.heading")}</p>
 
-						<div className="mb-3">
-							<Trans
-								i18nKey="chat:announcement.cloudAgents.prFixer"
-								components={{
-									bold: <b />,
-								}}
-							/>
-						</div>
+						<p className="mb-3">
+							Introducing <b>Explainer</b>, <b>Planner</b>, and <b>Coder</b> - three specialized cloud
+							agents to let you do more outside of your editor.
+						</p>
 
 						<p className="mb-3 text-sm text-vscode-descriptionForeground">
-							{t("chat:announcement.cloudAgents.prFixerDescription")}
+							The agents can be triggered from the web or through Slack, with more integrations coming
+							soon.
 						</p>
 
 						<div className="mt-4">
@@ -75,13 +75,13 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 								onClick={() => {
 									vscode.postMessage({
 										type: "openExternal",
-										url: "https://roocode.com/pr-fixer?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
+										url: "https://app.roocode.com/cloud-agents/create?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
 									})
 									setOpen(false)
 									hideAnnouncement()
 								}}
 								className="w-full">
-								{t("chat:announcement.cloudAgents.tryPrFixerButton")}
+								Try Cloud Agents
 							</Button>
 						</div>
 					</div>
