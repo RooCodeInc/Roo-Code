@@ -30,7 +30,7 @@ export const read_file = {
 								},
 							},
 						},
-						required: ["path", "line_ranges"],
+						required: ["path"],
 						additionalProperties: false,
 					},
 					minItems: 1,
