@@ -105,9 +105,37 @@ export function convertAnthropicContentToGemini(
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
 	options?: { includeThoughtSignatures?: boolean },
-): Content {
-	return {
-		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content, options),
+): Content | Content[] {
+	const content = Array.isArray(message.content) ? message.content : [{ type: "text", text: message.content ?? "" }]
+	const toolUseParts = content.filter((block) => block.type === "tool_use") as Anthropic.ToolUseBlock[]
+	const toolResultParts = content.filter((block) => block.type === "tool_result") as Anthropic.ToolResultBlockParam[]
+	const otherParts = content.filter((block) => block.type !== "tool_use" && block.type !== "tool_result") as (
+		| Anthropic.TextBlockParam
+		| Anthropic.ImageBlockParam
+	)[]
+
+	const contents: Content[] = []
+
+	if (otherParts.length > 0) {
+		contents.push({
+			role: message.role === "assistant" ? "model" : "user",
+			parts: convertAnthropicContentToGemini(otherParts, options),
+		})
 	}
+
+	if (toolUseParts.length > 0) {
+		contents.push({
+			role: "model",
+			parts: convertAnthropicContentToGemini(toolUseParts, options),
+		})
+	}
+
+	if (toolResultParts.length > 0) {
+		contents.push({
+			role: "user",
+			parts: convertAnthropicContentToGemini(toolResultParts, options),
+		})
+	}
+
+	return contents
 }
