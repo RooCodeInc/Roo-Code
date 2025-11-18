@@ -75,7 +75,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 								onClick={() => {
 									vscode.postMessage({
 										type: "openExternal",
-										url: "https://app.roocode.com/cloud-agents/create?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
+										url: "https://app.roocode.com/cloud-agents/setup?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
 									})
 									setOpen(false)
 									hideAnnouncement()
