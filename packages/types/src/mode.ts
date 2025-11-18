@@ -71,6 +71,7 @@ export const modeConfigSchema = z.object({
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
 	workflow: z.boolean().optional(),
+	apiProvider: z.string().optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
@@ -145,6 +146,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: [],
 		source: "project",
 		workflow: true,
+		apiProvider: "zgsm",
 	},
 	{
 		slug: "requirements",
@@ -160,6 +162,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: ["read", "edit"],
 		source: "project",
 		workflow: true,
+		apiProvider: "zgsm",
 	},
 	{
 		slug: "task",
@@ -175,6 +178,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: ["read", "edit"],
 		source: "project",
 		workflow: true,
+		apiProvider: "zgsm",
 	},
 	{
 		slug: "test",
@@ -189,6 +193,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: ["read", "edit", "command"],
 		source: "project",
 		workflow: true,
+		apiProvider: "zgsm",
 	},
 	{
 		slug: "testguide",
@@ -199,6 +204,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: ["read", "edit", "command"],
 		source: "project",
 		workflow: true,
+		apiProvider: "zgsm",
 	},
 	{
 		slug: "review",
@@ -211,6 +217,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		groups: ["read", "mcp", "browser"],
 		source: "project",
 		workflow: false,
+		apiProvider: "zgsm",
 	},
 ]
 

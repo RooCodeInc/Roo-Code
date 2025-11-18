@@ -131,6 +131,10 @@
 		"ALWAYS_INCLUDE_FILE_DETAILS": {
 			"name": "目录详情增强",
 			"description": "启用后，CoStrict 将始终包含项目目录详细信息。"
+		},
+		"COMMIT_REVIEW": {
+			"name": "Commit 审查",
+			"description": "启用后，CoStrict 可以在提交时提供代码审查建议。"
 		}
 	},
 	"modelPicker": {

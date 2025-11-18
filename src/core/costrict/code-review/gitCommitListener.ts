@@ -2,6 +2,7 @@ import * as vscode from "vscode"
 import { API as GitAPI, Repository, GitExtension } from "./git"
 import type { CodeReviewService } from "./codeReviewService"
 import { t } from "../../../i18n"
+import { EXPERIMENT_IDS, experiments as Experiments } from "../../../shared/experiments"
 
 export class GitCommitListener {
 	private lastSeenCommitHash: string | undefined
@@ -53,7 +54,15 @@ export class GitCommitListener {
 	}
 
 	private setupRepositoryListener(repo: Repository): void {
-		const disposable = repo.onDidCommit(() => {
+		const disposable = repo.onDidCommit(async () => {
+			const provider = this.reviewService.getProvider()
+
+			if (!provider) return
+
+			const { experiments = {} } = await provider.getState()
+
+			if (!Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.COMMIT_REVIEW)) return
+
 			this.handleNewCommit(repo)
 		})
 		this.disposables.push(disposable)

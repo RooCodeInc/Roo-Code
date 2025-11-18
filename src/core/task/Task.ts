@@ -1956,7 +1956,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine = -1,
 				maxReadCharacterLimit = 20000,
 				apiRequestBlockHide = true,
-				apiConfiguration,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
 			await this.say(
@@ -1967,7 +1966,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						: currentUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") +
 							"\n\nLoading...",
 					apiProtocol,
-					originModelId: apiConfiguration?.zgsmModelId,
+					originModelId:
+						this.apiConfiguration?.apiProvider === "zgsm"
+							? this.apiConfiguration?.zgsmModelId
+							: this.apiConfiguration?.apiModelId,
 				}),
 			)
 
@@ -2010,7 +2012,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					? undefined
 					: finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
 				apiProtocol,
-				originModelId: apiConfiguration?.zgsmModelId,
+				originModelId:
+					this.apiConfiguration?.apiProvider === "zgsm"
+						? this.apiConfiguration?.zgsmModelId
+						: this.apiConfiguration?.apiModelId,
 			} satisfies ClineApiReqInfo)
 
 			await this.saveClineMessages()
@@ -2067,6 +2072,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						cost: totalCost ?? costResult.totalCost,
 						cancelReason,
 						streamingFailedMessage,
+						originModelId:
+							this.apiConfiguration?.apiProvider === "zgsm"
+								? this.apiConfiguration?.zgsmModelId
+								: this.apiConfiguration?.apiModelId,
 					} satisfies ClineApiReqInfo)
 				}
 
@@ -2195,7 +2204,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "automodel": {
 								// Check if it is Selected LLM information (only in Auto model mode).
 								if (
-									this.apiConfiguration.apiProvider === "zgsm" &&
+									this.apiConfiguration?.apiProvider === "zgsm" &&
 									lastApiReqIndex >= 0 &&
 									this.clineMessages[lastApiReqIndex]
 								) {
@@ -3169,6 +3178,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			zgsmCodeMode,
+			provider: this.apiConfiguration.apiProvider,
 			zgsmWorkflowMode: this.zgsmWorkflowMode,
 			rooTaskMode: this?.rootTask?._taskMode,
 			parentTaskMode: this?.parentTask?._taskMode,
@@ -3199,7 +3209,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			yield firstChunk.value
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
-			const isZgsm = apiConfiguration?.apiProvider === "zgsm"
+			const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
 			let errorMsg = ""
 			if (isZgsm) {
 				const errorCodeManager = ErrorCodeManager.getInstance()

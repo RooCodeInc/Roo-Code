@@ -1,5 +1,21 @@
 # CoStrict Change Log
 
+## [2.0.14]
+
+- Add api provider filtering for modes and workflow features
+- Add commit review
+- Add abort signal handling for streaming responses
+- Optimize model display information calculation
+- Optimize codereview
+- Optimize UI identification for all models
+- Optimize performance
+- Update mcp dependencies
+- Refactor follow-up auto-approval
+- Remove unused TelemetryEventName import
+- Update disclaimer section
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/f7c2e8d164eb53a4d13b6b7d672be473785d76eb)
+- Fix known issues
+
 ## [2.0.13]
 
 - Add additional notes on Windows `taskkill` argument behavior in bash

@@ -14,7 +14,8 @@ import { Button } from "@/components/ui"
 const RooTips = () => {
 	const { t } = useTranslation("chat")
 	const { t: tWelcome } = useTranslation("welcome")
-	const { zgsmCodeMode, setZgsmCodeMode } = useExtensionState()
+	const { t: tSettings } = useTranslation("settings")
+	const { zgsmCodeMode, setZgsmCodeMode, apiConfiguration } = useExtensionState()
 	const switchMode = useCallback(
 		(slug: ZgsmCodeMode, forceMode?: string) => {
 			setZgsmCodeMode(slug)
@@ -29,12 +30,33 @@ const RooTips = () => {
 		},
 		[setZgsmCodeMode],
 	)
+	const apiProviderCheck = useCallback(
+		(apiProvider: string) => {
+			if (apiConfiguration.apiProvider === apiProvider) {
+				return true
+			}
+
+			vscode.postMessage({
+				type: "zgsmProviderTip",
+				values: {
+					tipType: "info",
+					msg: tSettings("codebase.general.onlyCostrictProviderSupport"),
+				},
+			})
+
+			return false
+		},
+		[apiConfiguration.apiProvider, tSettings],
+	)
 
 	const tips = [
 		{
 			icon: "codicon-book",
 			click: (e: any) => {
 				e.preventDefault()
+				if (!apiProviderCheck("zgsm")) {
+					return
+				}
 				vscode.postMessage({
 					type: "mode",
 					text: "code",
@@ -56,6 +78,9 @@ const RooTips = () => {
 			icon: "codicon-book",
 			click: (e: any) => {
 				e.preventDefault()
+				if (!apiProviderCheck("zgsm")) {
+					return
+				}
 				switchMode("strict", "testguide")
 				delay(() => {
 					vscode.postMessage({
@@ -108,6 +133,9 @@ const RooTips = () => {
 			description: tWelcome("strict.description"),
 			switchMode: (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 				e.stopPropagation()
+				if (!apiProviderCheck("zgsm")) {
+					return
+				}
 				switchMode("strict")
 			},
 		},

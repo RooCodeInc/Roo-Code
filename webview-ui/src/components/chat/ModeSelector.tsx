@@ -47,7 +47,8 @@ export const ModeSelector = ({
 	const selectedItemRef = React.useRef<HTMLDivElement>(null)
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 	const portalContainer = useRooPortal("roo-portal")
-	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, setZgsmCodeMode } = useExtensionState()
+	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, setZgsmCodeMode, apiConfiguration } =
+		useExtensionState()
 	const { t } = useAppTranslation()
 	const switchMode = useCallback(
 		(slug: ZgsmCodeMode) => {
@@ -64,8 +65,18 @@ export const ModeSelector = ({
 		[setZgsmCodeMode],
 	)
 	const handleCodeModeToggle = React.useCallback(() => {
+		if (apiConfiguration.apiProvider !== "zgsm") {
+			vscode.postMessage({
+				type: "zgsmProviderTip",
+				values: {
+					tipType: "info",
+					msg: t("settings:codebase.general.onlyCostrictProviderSupport"),
+				},
+			})
+			return
+		}
 		switchMode(zgsmCodeMode === "vibe" ? "strict" : "vibe")
-	}, [switchMode, zgsmCodeMode])
+	}, [apiConfiguration?.apiProvider, switchMode, t, zgsmCodeMode])
 	const trackModeSelectorOpened = React.useCallback(() => {
 		// Track telemetry every time the mode selector is opened.
 		telemetryClient.capture(TelemetryEventName.MODE_SELECTOR_OPENED)
@@ -79,7 +90,11 @@ export const ModeSelector = ({
 
 	// Get all modes including custom modes and merge custom prompt descriptions.
 	const modes = React.useMemo(() => {
-		const allModes = filterModesByZgsmCodeMode(getAllModes(customModes), zgsmCodeMode)
+		const allModes = filterModesByZgsmCodeMode(
+			getAllModes(customModes),
+			zgsmCodeMode,
+			apiConfiguration?.apiProvider,
+		)
 		return allModes.map((mode) => ({
 			...mode,
 			description:
@@ -87,7 +102,7 @@ export const ModeSelector = ({
 					defaultValue: customModePrompts?.[mode.slug]?.description,
 				}) ?? mode.description,
 		}))
-	}, [customModes, zgsmCodeMode, t, customModePrompts])
+	}, [customModes, zgsmCodeMode, apiConfiguration?.apiProvider, t, customModePrompts])
 
 	// Find the selected mode.
 	const selectedMode = React.useMemo(() => modes.find((mode) => mode.slug === value), [modes, value])

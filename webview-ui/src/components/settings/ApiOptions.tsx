@@ -149,7 +149,7 @@ const ApiOptions = ({
 	setCachedStateField,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList /* cloudIsAuthenticated */ } = useExtensionState()
+	const { setZgsmCodeMode, organizationAllowList /* cloudIsAuthenticated */ } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -428,10 +428,19 @@ const ApiOptions = ({
 	const handleProviderChangeConfirm = useCallback(() => {
 		if (pendingProviderChange) {
 			onProviderChange(pendingProviderChange)
+			setZgsmCodeMode("vibe")
+			vscode.postMessage({
+				type: "zgsmCodeMode",
+				text: "vibe",
+			})
+			vscode.postMessage({
+				type: "mode",
+				text: "code",
+			})
 			setPendingProviderChange(null)
 			setShowProviderChangeWarning(false)
 		}
-	}, [pendingProviderChange, onProviderChange])
+	}, [pendingProviderChange, onProviderChange, setZgsmCodeMode])
 
 	const modelValidationError = useMemo(() => {
 		return getModelValidationError(apiConfiguration, routerModels, organizationAllowList)

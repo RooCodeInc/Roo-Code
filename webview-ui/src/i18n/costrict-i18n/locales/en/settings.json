@@ -131,6 +131,10 @@
 		"ALWAYS_INCLUDE_FILE_DETAILS": {
 			"name": "Enable Directory Details",
 			"description": "When enabled, CoStrict will include directory details in the context window."
+		},
+		"COMMIT_REVIEW": {
+			"name": "Commit Review",
+			"description": "Enable after committing to provide code review suggestions."
 		}
 	},
 	"modelPicker": {

@@ -28,6 +28,7 @@ describe("experiments", () => {
 			const experiments: Record<ExperimentId, boolean> = {
 				powerSteering: false,
 				multiFileApplyDiff: false,
+				commitReview: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				chatSearch: false,
@@ -43,6 +44,7 @@ describe("experiments", () => {
 				multiFileApplyDiff: false,
 				chatSearch: false,
 				alwaysIncludeFileDetails: false,
+				commitReview: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
@@ -56,6 +58,7 @@ describe("experiments", () => {
 				multiFileApplyDiff: false,
 				chatSearch: false,
 				alwaysIncludeFileDetails: false,
+				commitReview: false,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,

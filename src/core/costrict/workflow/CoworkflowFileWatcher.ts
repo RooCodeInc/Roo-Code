@@ -248,7 +248,7 @@ export class CoworkflowFileWatcher implements ICoworkflowFileWatcher {
 			this.config.watchPatterns.forEach((pattern) => {
 				try {
 					const filePath = path.join(coworkflowPath, pattern)
-					const fileUri = vscode.Uri.file(filePath)
+					// const fileUri = vscode.Uri.file(filePath)
 					const globPattern = new vscode.RelativePattern(coworkflowPath, pattern)
 
 					const watcher = vscode.workspace.createFileSystemWatcher(globPattern)

@@ -71,6 +71,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	const { t } = useAppTranslation()
 
 	const {
+		apiConfiguration,
 		customModePrompts,
 		listApiConfigMeta,
 		currentApiConfigName,
@@ -125,7 +126,14 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	// Optimistic rename map so search reflects new names immediately
 	const [localRenames, setLocalRenames] = useState<Record<string, string>>({})
 	// Display list that overlays optimistic names
-	const displayModes = (modes || []).map((m) => (localRenames[m.slug] ? { ...m, name: localRenames[m.slug] } : m))
+	const displayModes = (modes || [])
+		.map((m) => (localRenames[m.slug] ? { ...m, name: localRenames[m.slug] } : m))
+		.filter((m) => {
+			if (m.apiProvider != null && apiConfiguration?.apiProvider !== "zgsm") {
+				return false
+			}
+			return true
+		})
 
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
@@ -920,6 +928,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						<div className="mb-2">
 							<Select
 								value={currentApiConfigName}
+								disabled={true}
 								onValueChange={(value) => {
 									vscode.postMessage({
 										type: "loadApiConfiguration",

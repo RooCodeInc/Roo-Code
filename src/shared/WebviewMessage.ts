@@ -157,6 +157,7 @@ export interface WebviewMessage {
 		| "useZgsmCustomConfig"
 		| "showZgsmCodebaseDisableConfirmDialog"
 		| "fetchZgsmQuotaInfo"
+		| "zgsmProviderTip"
 		| "fetchZgsmInviteCode"
 		| "fixCodebase"
 		| "zgsmFollowupClearTimeout"

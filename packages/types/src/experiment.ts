@@ -8,6 +8,7 @@ import type { Keys, Equals, AssertEqual } from "./type-fu.js"
 
 export const experimentIds = [
 	"chatSearch",
+	"commitReview",
 	"alwaysIncludeFileDetails",
 	"powerSteering",
 	"multiFileApplyDiff",
@@ -27,6 +28,7 @@ export type ExperimentId = z.infer<typeof experimentIdsSchema>
 export const experimentsSchema = z.object({
 	chatSearch: z.boolean().optional(),
 	alwaysIncludeFileDetails: z.boolean().optional(),
+	commitReview: z.boolean().optional(),
 	powerSteering: z.boolean().optional(),
 	multiFileApplyDiff: z.boolean().optional(),
 	preventFocusDisruption: z.boolean().optional(),

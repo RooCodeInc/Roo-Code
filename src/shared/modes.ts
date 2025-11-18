@@ -111,14 +111,16 @@ export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
 }
 
 // Filter modes based on zgsmCodeMode setting
-export function filterModesByZgsmCodeMode(modes: ModeConfig[], zgsmCodeMode?: ZgsmCodeMode): ModeConfig[] {
+export function filterModesByZgsmCodeMode(
+	modes: ModeConfig[],
+	zgsmCodeMode?: ZgsmCodeMode,
+	apiProvider?: string,
+): ModeConfig[] {
 	return modes.filter((mode) => {
-		// 如果模式标记了 workflow: true，只有在 zgsmCodeMode === "strict" 时才显示
-		if (zgsmCodeMode === "strict") {
-			return true
-		}
+		if (mode.apiProvider != null && mode.apiProvider !== apiProvider) return false
 
-		// 其他模式正常显示
+		if (zgsmCodeMode === "strict") return true
+
 		return !mode.workflow
 	})
 }

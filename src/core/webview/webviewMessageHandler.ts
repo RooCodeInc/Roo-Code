@@ -442,6 +442,21 @@ export const webviewMessageHandler = async (
 	}
 
 	switch (message.type) {
+		case "zgsmProviderTip": {
+			const { tipType = "", msg = "" } = message.values || {}
+
+			if (!tipType || !msg) break
+
+			if (tipType === "info") {
+				vscode.window.showInformationMessage(msg)
+			} else if (tipType === "warning") {
+				vscode.window.showWarningMessage(msg)
+			} else if (tipType === "error") {
+				vscode.window.showErrorMessage(msg)
+			}
+
+			break
+		}
 		case "zgsmLogin": {
 			try {
 				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
@@ -666,7 +681,9 @@ export const webviewMessageHandler = async (
 						const mcpHub = provider.getMcpHub()
 
 						if (mcpHub) {
-							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(1500)])
+							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(500)]).catch(
+								() => {},
+							)
 						}
 					} else if (key === "experiments") {
 						if (!value) {

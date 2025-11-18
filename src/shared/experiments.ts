@@ -3,6 +3,7 @@ import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } fro
 export const EXPERIMENT_IDS = {
 	CHAT_SEARCH: "chatSearch",
 	ALWAYS_INCLUDE_FILE_DETAILS: "alwaysIncludeFileDetails",
+	COMMIT_REVIEW: "commitReview",
 	MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",
 	POWER_STEERING: "powerSteering",
 	PREVENT_FOCUS_DISRUPTION: "preventFocusDisruption",
@@ -21,6 +22,7 @@ interface ExperimentConfig {
 export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	CHAT_SEARCH: { enabled: false },
 	ALWAYS_INCLUDE_FILE_DETAILS: { enabled: undefined },
+	COMMIT_REVIEW: { enabled: undefined },
 	MULTI_FILE_APPLY_DIFF: { enabled: false },
 	POWER_STEERING: { enabled: false },
 	PREVENT_FOCUS_DISRUPTION: { enabled: false },

@@ -277,6 +277,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			"zgsm-task-id": metadata?.taskId || "",
 			"zgsm-request-id": requestId,
 			"zgsm-client-id": clientId,
+			"zgsm-provider": metadata?.provider,
 			"zgsm-project-path": encodeURI(workspacePath),
 			"x-caller": metadata?.mode === "review" ? "review-checker" : "chat",
 		}
@@ -563,7 +564,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
 					headers: {
 						...this.buildHeaders(
-							{ language: metadata?.language, taskId: requestId },
+							{ language: metadata?.language, taskId: requestId, provider: metadata?.provider },
 							requestId,
 							cachedClientId,
 							cachedWorkspacePath,
