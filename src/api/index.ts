@@ -39,6 +39,7 @@ import {
 	FireworksHandler,
 	RooHandler,
 	FeatherlessHandler,
+	FordLlmHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
 	MiniMaxHandler,
@@ -186,6 +187,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new RooHandler(options)
 		case "featherless":
 			return new FeatherlessHandler(options)
+		case "fordllm":
+			return new FordLlmHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "minimax":
