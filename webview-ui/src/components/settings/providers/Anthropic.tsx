@@ -7,6 +7,7 @@ import type { ProviderSettings } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform, noTransform } from "../transforms"
 
@@ -38,14 +39,12 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.apiKey || ""}
-				type="password"
-				onInput={handleInputChange("apiKey")}
+				onChange={handleInputChange("apiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.anthropicApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.anthropicApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>

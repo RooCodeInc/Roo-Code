@@ -1,5 +1,4 @@
 import { useCallback } from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type ProviderSettings, type OrganizationAllowList, vercelAiGatewayDefaultModelId } from "@roo-code/types"
 
@@ -7,6 +6,7 @@ import type { RouterModels } from "@roo/api"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
+import { PasswordInputField } from "@src/components/ui/password-input"
 
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
@@ -41,14 +41,12 @@ export const VercelAiGateway = ({
 
 	return (
 		<>
-			<VSCodeTextField
+			<PasswordInputField
 				value={apiConfiguration?.vercelAiGatewayApiKey || ""}
-				type="password"
-				onInput={handleInputChange("vercelAiGatewayApiKey")}
+				onChange={handleInputChange("vercelAiGatewayApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.vercelAiGatewayApiKey")}</label>
-			</VSCodeTextField>
+				label={t("settings:providers.vercelAiGatewayApiKey")}
+				className="w-full"></PasswordInputField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
