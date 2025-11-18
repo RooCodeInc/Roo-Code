@@ -430,7 +430,10 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (!block.partial) {
 				cline.recordToolUsage(block.name)
-				TelemetryService.instance.captureToolUsage(cline.taskId, block.name)
+				// Determine protocol: native if tool has an ID, otherwise XML
+				const toolCallId = (block as any).id
+				const toolProtocol = toolCallId ? "native" : "xml"
+				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
 			}
 
 			// Validate tool use before execution.
