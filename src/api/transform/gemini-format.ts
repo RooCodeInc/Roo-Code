@@ -105,7 +105,7 @@ export function convertAnthropicContentToGemini(
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
 	options?: { includeThoughtSignatures?: boolean },
-): Content | Content[] {
+): Content[] {
 	const content = Array.isArray(message.content) ? message.content : [{ type: "text", text: message.content ?? "" }]
 	const toolUseParts = content.filter((block) => block.type === "tool_use") as Anthropic.ToolUseBlock[]
 	const toolResultParts = content.filter((block) => block.type === "tool_result") as Anthropic.ToolResultBlockParam[]
@@ -114,6 +114,9 @@ export function convertAnthropicMessageToGemini(
 		| Anthropic.ImageBlockParam
 	)[]
 
+	// Gemini expects a flat list of Content objects. We group regular message parts,
+	// tool uses, and tool results into separate Content entries while preserving their
+	// relative order within each category.
 	const contents: Content[] = []
 
 	if (otherParts.length > 0) {
