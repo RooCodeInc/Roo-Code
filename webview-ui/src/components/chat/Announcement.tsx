@@ -44,12 +44,9 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1">
-							<li>Gemini 3 available in Gemini, Vertex, Roo Code Cloud, OpenRouter, and more!</li>
-							<li>Automatically add git status information to the agent context from Context settings</li>
-							<li>
-								Experimental support for native tool calling in Roo Code Cloud, OpenRouter, and OpenAI -
-								enable in Provider advanced settings
-							</li>
+							<li>{t("chat:announcement.release.gemini3")}</li>
+							<li>{t("chat:announcement.release.gitStatus")}</li>
+							<li>{t("chat:announcement.release.nativeToolCalling")}</li>
 						</ul>
 					</div>
 
@@ -60,14 +57,17 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div>
 						<p className="mb-3">{t("chat:announcement.cloudAgents.heading")}</p>
 
-						<p className="mb-3">
-							Introducing <b>Explainer</b>, <b>Planner</b>, and <b>Coder</b> - three specialized cloud
-							agents to let you do more outside of your editor.
-						</p>
+						<div className="mb-3">
+							<Trans
+								i18nKey="chat:announcement.cloudAgents.specialized"
+								components={{
+									bold: <b />,
+								}}
+							/>
+						</div>
 
 						<p className="mb-3 text-sm text-vscode-descriptionForeground">
-							The agents can be triggered from the web or through Slack, with more integrations coming
-							soon.
+							{t("chat:announcement.cloudAgents.description")}
 						</p>
 
 						<div className="mt-4">
@@ -81,7 +81,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 									hideAnnouncement()
 								}}
 								className="w-full">
-								Try Cloud Agents
+								{t("chat:announcement.cloudAgents.tryButton")}
 							</Button>
 						</div>
 					</div>

@@ -277,15 +277,15 @@
 		},
 		"release": {
 			"heading": "Nieuw in de extensie:",
-			"openRouterEmbeddings": "Ondersteuning voor OpenRouter embedding-modellen",
-			"chutesDynamic": "Chutes laadt nu dynamisch de nieuwste modellen",
-			"queuedMessagesFix": "Oplossingen voor berichten in de wachtrij die verloren gaan"
+			"gemini3": "Gemini 3 beschikbaar in Gemini, Vertex, Roo Code Cloud, OpenRouter en meer",
+			"gitStatus": "Je kunt git-statusinformatie aan de omgeving toevoegen vanuit Context-instellingen",
+			"nativeToolCalling": "Experimentele ondersteuning voor native tool calling in Roo Code Cloud, OpenRouter en OpenAI (meer binnenkort) - schakel in via geavanceerde provider-instellingen"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
-			"prFixer": "Introductie van de <bold>PR Fixer</bold> cloud-agent als aanvulling op de PR Reviewer.",
-			"prFixerDescription": "De PR Fixer van Roo Code past hoogwaardige wijzigingen toe op je PR's, direct vanuit GitHub. Roep het aan via een PR-opmerking en het leest de volledige opmerkingengeschiedenis om context, afspraken en afwegingen te begrijpen - en implementeert vervolgens de juiste oplossing.",
-			"tryPrFixerButton": "Probeer PR Fixer"
+			"specialized": "Introductie van <bold>Explainer</bold>, <bold>Planner</bold> en <bold>Coder</bold> - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
+			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
+			"tryButton": "Probeer Cloud-agents"
 		},
 		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
 		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo wil een slash commando uitvoeren",
 		"didRun": "Roo heeft een slash commando uitgevoerd"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} van {{total}} to-do's voltooid",
 		"complete": "{{total}} to-do's voltooid",

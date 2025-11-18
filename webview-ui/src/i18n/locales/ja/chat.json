@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "拡張機能の新機能:",
-			"openRouterEmbeddings": "OpenRouter埋め込みモデルのサポート",
-			"chutesDynamic": "Chutesが最新モデルを動的にロード",
-			"queuedMessagesFix": "キューメッセージが失われる問題の修正"
+			"gemini3": "Gemini 3 が Gemini、Vertex、Roo Code Cloud、OpenRouter などで利用可能になりました",
+			"gitStatus": "Context 設定から環境に git ステータス情報を追加できます",
+			"nativeToolCalling": "Roo Code Cloud、OpenRouter、OpenAI でのネイティブツール呼び出しの実験的サポート（さらに追加予定）- プロバイダーの詳細設定で有効にしてください"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
-			"prFixer": "PRレビューアを補完するクラウドエージェント<bold>PR Fixer</bold>を導入します。",
-			"prFixerDescription": "Roo CodeのPR FixerはGitHubから直接、高品質な変更をPRに適用します。PRコメントから呼び出すと、コメント履歴全体を読んでコンテキスト、合意、トレードオフを理解し、適切な修正を実装します。",
-			"tryPrFixerButton": "PR Fixerを試す"
+			"specialized": "<bold>Explainer</bold>、<bold>Planner</bold>、<bold>Coder</bold> の 3 つの専門クラウドエージェントを紹介します。ワークフローを強化します。",
+			"description": "エージェントはクラウドで連携して動作し、Web または Slack からトリガーできます。",
+			"tryButton": "クラウドエージェントを試す"
 		},
 		"careers": "また、<careersLink>採用中です！</careersLink>",
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
 		"didRun": "Rooはスラッシュコマンドを実行しました"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{total}}件中{{completed}}件のTo-Doが完了",
 		"complete": "{{total}}件のTo-Doが完了",

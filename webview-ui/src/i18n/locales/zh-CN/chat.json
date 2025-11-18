@@ -293,15 +293,15 @@
 		},
 		"release": {
 			"heading": "扩展新功能：",
-			"openRouterEmbeddings": "支持 OpenRouter 嵌入模型",
-			"chutesDynamic": "Chutes 现在动态加载最新模型",
-			"queuedMessagesFix": "修复队列消息丢失问题"
+			"gemini3": "Gemini 3 现已在 Gemini、Vertex、Roo Code Cloud、OpenRouter 等平台推出",
+			"gitStatus": "你可以从 Context 设置将 git 状态信息添加到环境",
+			"nativeToolCalling": "Roo Code Cloud、OpenRouter 和 OpenAI 的原生工具调用实验性支持（更多即将推出）- 在提供商高级设置中启用"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
-			"prFixer": "推出 <bold>PR Fixer</bold> 云端 Agent 以补充 PR 审查员。",
-			"prFixerDescription": "Roo Code 的 PR Fixer 直接在 GitHub 上为你的 PR 应用高质量更改。通过 PR 评论调用，它会读取整个评论历史以理解上下文、协议和权衡 - 然后实施正确的修复。",
-			"tryPrFixerButton": "试用 PR Fixer"
+			"specialized": "推出 <bold>Explainer</bold>、<bold>Planner</bold> 和 <bold>Coder</bold> - 三个专业云代理来增强你的工作流程。",
+			"description": "代理在云端协同工作，可从网页或通过 Slack 触发。",
+			"tryButton": "试用云代理"
 		},
 		"careers": "此外，<careersLink>我们正在招聘！</careersLink>",
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
@@ -424,7 +424,6 @@
 		"wantsToRun": "Roo 想要运行斜杠命令",
 		"didRun": "Roo 运行了斜杠命令"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "已完成 {{completed}} / {{total}} 个待办事项",
 		"complete": "已完成 {{total}} 个待办事项",

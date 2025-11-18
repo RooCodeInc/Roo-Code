@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Novetats a l'extensió:",
-			"openRouterEmbeddings": "Suport per a models d'incrustació d'OpenRouter",
-			"chutesDynamic": "Chutes ara carrega els últims models de forma dinàmica",
-			"queuedMessagesFix": "Correccions per a missatges en cua que es perden"
+			"gemini3": "Gemini 3 disponible a Gemini, Vertex, Roo Code Cloud, OpenRouter i més",
+			"gitStatus": "Pots afegir informació de l'estat de git a l'entorn des de la configuració de Context",
+			"nativeToolCalling": "Suport experimental per a crides natives d'eines a Roo Code Cloud, OpenRouter i OpenAI (més aviat) - activa-ho a la configuració avançada del proveïdor"
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
-			"prFixer": "Presentem l'agent al núvol <bold>PR Fixer</bold> per complementar el Revisor de PR.",
-			"prFixerDescription": "El PR Fixer de Roo Code aplica canvis d'alta qualitat a les teves PR directament des de GitHub. Invoca'l mitjançant un comentari a la PR i llegirà tot l'historial de comentaris per entendre el context, els acords i els compromisos, i després implementarà la solució correcta.",
-			"tryPrFixerButton": "Prova el PR Fixer"
+			"specialized": "Presentem <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - tres agents al núvol especialitzats per millorar els teus fluxos de treball.",
+			"description": "Els agents treballen junts al núvol i es poden activar des del web o mitjançant Slack.",
+			"tryButton": "Prova els Agents al Núvol"
 		},
 		"careers": "A més, <careersLink>estem contractant!</careersLink>",
 		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} de {{total}} tasques pendents fetes",
 		"complete": "{{total}} tasques pendents fetes",

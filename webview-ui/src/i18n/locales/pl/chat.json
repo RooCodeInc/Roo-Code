@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Nowości w rozszerzeniu:",
-			"openRouterEmbeddings": "Wsparcie dla modeli osadzania OpenRouter",
-			"chutesDynamic": "Chutes teraz dynamicznie ładuje najnowsze modele",
-			"queuedMessagesFix": "Poprawki dla gubienia się wiadomości w kolejce"
+			"gemini3": "Gemini 3 dostępny w Gemini, Vertex, Roo Code Cloud, OpenRouter i więcej",
+			"gitStatus": "Możesz dodać informacje o statusie git do środowiska z ustawień Context",
+			"nativeToolCalling": "Eksperymentalne wsparcie dla natywnych wywołań narzędzi w Roo Code Cloud, OpenRouter i OpenAI (więcej wkrótce) - włącz w zaawansowanych ustawieniach dostawcy"
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
-			"prFixer": "Przedstawiamy agenta chmurowego <bold>PR Fixer</bold> uzupełniającego PR Reviewer.",
-			"prFixerDescription": "PR Fixer Roo Code stosuje wysokiej jakości zmiany do Twoich PR, bezpośrednio z GitHub. Wywołaj go przez komentarz PR, a on przeczyta całą historię komentarzy, aby zrozumieć kontekst, uzgodnienia i kompromisy - następnie wdroży właściwą poprawkę.",
-			"tryPrFixerButton": "Wypróbuj PR Fixer"
+			"specialized": "Przedstawiamy <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - trzech wyspecjalizowanych agentów chmurowych, aby ulepszyć Twoje przepływy pracy.",
+			"description": "Agenci pracują razem w chmurze i mogą być uruchamiani z sieci lub przez Slack.",
+			"tryButton": "Wypróbuj agentów chmurowych"
 		},
 		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>",
 		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo chce uruchomić komendę slash",
 		"didRun": "Roo uruchomił komendę slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "Ukończono {{completed}} z {{total}} zadań do wykonania",
 		"complete": "Ukończono {{total}} zadań do wykonania",

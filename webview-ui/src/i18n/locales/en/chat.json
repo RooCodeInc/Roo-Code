@@ -298,15 +298,15 @@
 		},
 		"release": {
 			"heading": "New in the Extension:",
-			"openRouterEmbeddings": "Support for OpenRouter embedding models",
-			"chutesDynamic": "Chutes now loads the latest models dynamically",
-			"queuedMessagesFix": "Fixes for queued messages getting lost"
+			"gemini3": "Gemini 3 available in Gemini, Vertex, Roo Code Cloud, OpenRouter, and more",
+			"gitStatus": "You can add git status information to the environment from Context settings",
+			"nativeToolCalling": "Experimental support for native tool calling in Roo Code Cloud, OpenRouter, and OpenAI (more coming soon) - enable in Provider advanced settings"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
-			"prFixer": "Introducing the <bold>PR Fixer</bold> cloud agent to complement the PR Reviewer.",
-			"prFixerDescription": "The PR Fixer applies high-quality changes to your PRs, right from GitHub. Invoke via a PR comment and it will read the entire comment history to understand context, agreements, and tradeoffs - then implement the right fix.",
-			"tryPrFixerButton": "Try PR Fixer"
+			"specialized": "Introducing <bold>Explainer</bold>, <bold>Planner</bold>, and <bold>Coder</bold> - three specialized cloud agents to enhance your workflows.",
+			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
+			"tryButton": "Try Cloud Agents"
 		},
 		"careers": "Also, <careersLink>we're hiring!</careersLink>",
 		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
