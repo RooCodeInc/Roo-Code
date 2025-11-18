@@ -48,7 +48,6 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { EXPERIMENT_IDS, experimentDefault } from "@roo/experiments"
 import {
 	useOpenRouterModelProviders,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
@@ -140,7 +139,7 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, experiments: experimentsConfig } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -413,55 +412,14 @@ const ApiOptions = ({
 	}, [selectedProvider])
 
 	// Calculate the default protocol that would be used if toolProtocol is not set
-	// This mirrors the logic in resolveToolProtocol.ts (steps 2-5, skipping step 1 which is the user preference)
-	const defaultProtocol = useMemo((): ToolProtocol => {
-		// 2. Experimental Setting (nativeToolCalling experiment)
-		const nativeToolCallingEnabled =
-			experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
-			experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]
+	// Mirrors the simplified logic in resolveToolProtocol.ts:
+	// 1. User preference (toolProtocol) - handled by the select value binding
+	// 2. Model default - use if available
+	// 3. XML fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
 
-		if (nativeToolCallingEnabled) {
-			// Check if model supports native tools
-			if (selectedModelInfo?.supportsNativeTools === true) {
-				return TOOL_PROTOCOL.NATIVE
-			}
-			// If experiment is enabled but model doesn't support it, return XML immediately
-			// This matches resolveToolProtocol.ts behavior (lines 53-57)
-			return TOOL_PROTOCOL.XML
-		}
-
-		// 3. Model Default
-		if (selectedModelInfo?.defaultToolProtocol) {
-			// Still need to check support even for model defaults
-			if (
-				selectedModelInfo.defaultToolProtocol === TOOL_PROTOCOL.NATIVE &&
-				selectedModelInfo.supportsNativeTools !== true
-			) {
-				return TOOL_PROTOCOL.XML
-			}
-			return selectedModelInfo.defaultToolProtocol
-		}
-
-		// 4. Provider Default (currently all providers default to XML)
-		// The nativePreferredProviders list in resolveToolProtocol.ts is currently empty
-		// If you update it there, update this logic as well
-
-		// 5. XML Fallback
-		return TOOL_PROTOCOL.XML
-	}, [experimentsConfig, selectedModelInfo])
-
-	// Determine whether to show the tool protocol selector
-	// Separate from defaultProtocol calculation to keep concerns separate
-	const showToolProtocolSelector = useMemo(() => {
-		const nativeToolCallingEnabled =
-			experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
-			experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]
-
-		// Only show if experiment is enabled AND model supports native tools
-		// If model doesn't support native tools, showing the selector is confusing
-		// since native protocol won't actually be available
-		return nativeToolCallingEnabled && selectedModelInfo?.supportsNativeTools === true
-	}, [experimentsConfig, selectedModelInfo])
+	// Show the tool protocol selector when model supports native tools
+	const showToolProtocolSelector = selectedModelInfo?.supportsNativeTools === true
 
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {

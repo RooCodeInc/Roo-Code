@@ -784,10 +784,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
 			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
-		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "Włącz natywne wywoływanie narzędzi",
-			"description": "Gdy włączone, Roo będzie używać natywnego API wywoływania funkcji dostawcy zamiast definicji narzędzi opartych na XML. Jest to funkcja eksperymentalna i nie działa jeszcze ze wszystkimi dostawcami."
 		}
 	},
 	"promptCaching": {

@@ -813,10 +813,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
 			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
-		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "Aktifkan pemanggilan alat asli",
-			"description": "Ketika diaktifkan, Roo akan menggunakan API pemanggilan fungsi asli dari penyedia alih-alih definisi alat berbasis XML. Ini bersifat eksperimental dan belum berfungsi dengan semua penyedia."
 		}
 	},
 	"promptCaching": {

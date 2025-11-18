@@ -281,13 +281,7 @@ export async function presentAssistantMessage(cline: Task) {
 			let hasToolResult = false
 
 			// Check if we're using native tool protocol (do this once before defining pushToolResult)
-			const state = await cline.providerRef.deref()?.getState()
-			const toolProtocol = resolveToolProtocol(
-				cline.apiConfiguration,
-				cline.api.getModel().info,
-				cline.apiConfiguration.apiProvider,
-				state?.experiments,
-			)
+			const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
 			const isNative = isNativeProtocol(toolProtocol)
 			const toolCallId = (block as any).id
 
@@ -518,13 +512,7 @@ export async function presentAssistantMessage(cline: Task) {
 					await checkpointSaveAndMark(cline)
 
 					// Check if native protocol is enabled - if so, always use single-file class-based tool
-					const state = await cline.providerRef.deref()?.getState()
-					const applyDiffToolProtocol = resolveToolProtocol(
-						cline.apiConfiguration,
-						cline.api.getModel().info,
-						cline.apiConfiguration.apiProvider,
-						state?.experiments,
-					)
+					const applyDiffToolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
 					if (isNativeProtocol(applyDiffToolProtocol)) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,

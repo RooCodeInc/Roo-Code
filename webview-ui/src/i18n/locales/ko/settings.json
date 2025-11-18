@@ -784,10 +784,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "모델 시작 슬래시 명령 활성화",
 			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
-		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "네이티브 도구 호출 활성화",
-			"description": "활성화하면 Roo는 XML 기반 도구 정의 대신 제공자의 네이티브 함수 호출 API를 사용합니다. 이는 실험적이며 아직 모든 제공자에서 작동하지 않습니다."
 		}
 	},
 	"promptCaching": {

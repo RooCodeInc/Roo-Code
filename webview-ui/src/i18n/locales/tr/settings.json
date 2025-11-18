@@ -784,10 +784,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
-		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "Native tool calling'i etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo XML tabanlı araç tanımları yerine sağlayıcının yerel fonksiyon çağırma API'sını kullanacaktır. Bu deneyseldir ve henüz tüm sağlayıcılarla çalışmamaktadır."
 		}
 	},
 	"promptCaching": {

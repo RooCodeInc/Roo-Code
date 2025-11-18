@@ -783,10 +783,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
-		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "Habilitar crida d'eines nativa",
-			"description": "Quan està activat, Roo utilitzarà l'API de crida de funció nativa del proveïdor en lloc de definicions d'eines basades en XML. Això és experimental i encara no funciona amb tots els proveïdors."
 		}
 	},
 	"promptCaching": {
