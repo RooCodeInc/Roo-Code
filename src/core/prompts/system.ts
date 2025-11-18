@@ -86,7 +86,7 @@ async function generatePrompt(
 	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
 	const [modesSection, mcpServersSection] = await Promise.all([
-		getModesSection(context, isNativeProtocol(effectiveProtocol)),
+		getModesSection(context),
 		shouldIncludeMcp
 			? getMcpServersSection(
 					mcpHub,

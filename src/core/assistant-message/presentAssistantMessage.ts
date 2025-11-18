@@ -13,7 +13,7 @@ import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/simpleReadFileTool"
-import { shouldUseSingleFileRead } from "@roo-code/types"
+import { shouldUseSingleFileRead, TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
 import { insertContentTool } from "../tools/InsertContentTool"
@@ -284,10 +284,10 @@ export async function presentAssistantMessage(cline: Task) {
 			// Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks).
 			// XML protocol tool calls NEVER have an ID (parsed from XML text).
 			const toolCallId = (block as any).id
-			const isNative = !!toolCallId
+			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
 			const pushToolResult = (content: ToolResponse) => {
-				if (isNative && toolCallId) {
+				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
 						console.warn(
@@ -524,7 +524,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 					// Check if this tool call came from native protocol by checking for ID
 					// Native calls always have IDs, XML calls never do
-					if (isNative) {
+					if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
