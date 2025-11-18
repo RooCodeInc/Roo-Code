@@ -230,7 +230,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private pauseInterval: NodeJS.Timeout | undefined
 
 	// API
-	readonly apiConfiguration: ProviderSettings
+	apiConfiguration: ProviderSettings
 	api: ApiHandler
 	private static lastGlobalApiRequestTime?: number
 	private autoApprovalHandler: AutoApprovalHandler
@@ -303,6 +303,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didAlreadyUseTool = false
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
+	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
 
 	// Token Usage Cache
 	private tokenUsageSnapshot?: TokenUsage
@@ -423,6 +424,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.messageQueueService.on("stateChanged", this.messageQueueStateChangedHandler)
 
+		// Listen for provider profile changes to update parser state
+		this.setupProviderProfileChangeListener(provider)
+
 		// Only set up diff strategy if diff is enabled.
 		if (this.diffEnabled) {
 			// Default to old strategy, will be updated if experiment is enabled.
@@ -493,6 +497,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const errorMessage = `Failed to initialize task mode: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
 		}
+	}
+
+	/**
+	 * Sets up a listener for provider profile changes to automatically update the parser state.
+	 * This ensures the XML/native protocol parser stays synchronized with the current model.
+	 *
+	 * @private
+	 * @param provider - The ClineProvider instance to listen to
+	 */
+	private setupProviderProfileChangeListener(provider: ClineProvider): void {
+		// Only set up listener if provider has the on method (may not exist in test mocks)
+		if (typeof provider.on !== "function") {
+			return
+		}
+
+		this.providerProfileChangeListener = async () => {
+			try {
+				const newState = await provider.getState()
+				if (newState?.apiConfiguration) {
+					await this.updateApiConfiguration(newState.apiConfiguration)
+				}
+			} catch (error) {
+				console.error(
+					`[Task#${this.taskId}.${this.instanceId}] Failed to update API configuration on profile change:`,
+					error,
+				)
+			}
+		}
+
+		provider.on(RooCodeEventName.ProviderProfileChanged, this.providerProfileChangeListener)
 	}
 
 	/**
@@ -1051,6 +1085,47 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.handleWebviewAskResponse("noButtonClicked", text, images)
 	}
 
+	/**
+	 * Updates the API configuration and reinitializes the parser based on the new tool protocol.
+	 * This should be called when switching between models/profiles with different tool protocols
+	 * to prevent the parser from being left in an inconsistent state.
+	 *
+	 * @param newApiConfiguration - The new API configuration to use
+	 */
+	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
+		// Determine the previous protocol before updating
+		const previousProtocol = this.apiConfiguration
+			? resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+			: undefined
+
+		this.apiConfiguration = newApiConfiguration
+		this.api = buildApiHandler(newApiConfiguration)
+
+		// Determine the new tool protocol
+		const newProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+		const shouldUseXmlParser = newProtocol === "xml"
+
+		// Only make changes if the protocol actually changed
+		if (previousProtocol === newProtocol) {
+			console.log(
+				`[Task#${this.taskId}.${this.instanceId}] Tool protocol unchanged (${newProtocol}), no parser update needed`,
+			)
+			return
+		}
+
+		// Handle protocol transitions
+		if (shouldUseXmlParser && !this.assistantMessageParser) {
+			// Switching from native → XML: create parser
+			this.assistantMessageParser = new AssistantMessageParser()
+			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
+		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
+			// Switching from XML → native: remove parser
+			this.assistantMessageParser.reset()
+			this.assistantMessageParser = undefined
+			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched xml → native: removed XML parser`)
+		}
+	}
+
 	public async submitUserMessage(
 		text: string,
 		images?: string[],
@@ -1074,6 +1149,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				if (providerProfile) {
 					await provider.setProviderProfile(providerProfile)
+
+					// Update this task's API configuration to match the new profile
+					// This ensures the parser state is synchronized with the selected model
+					const newState = await provider.getState()
+					if (newState?.apiConfiguration) {
+						await this.updateApiConfiguration(newState.apiConfiguration)
+					}
 				}
 
 				this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
@@ -1629,6 +1711,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
+
+		// Remove provider profile change listener
+		try {
+			if (this.providerProfileChangeListener) {
+				const provider = this.providerRef.deref()
+				if (provider) {
+					provider.off(RooCodeEventName.ProviderProfileChanged, this.providerProfileChangeListener)
+				}
+				this.providerProfileChangeListener = undefined
+			}
+		} catch (error) {
+			console.error("Error removing provider profile change listener:", error)
+		}
 
 		// Dispose message queue and remove event listeners.
 		try {
