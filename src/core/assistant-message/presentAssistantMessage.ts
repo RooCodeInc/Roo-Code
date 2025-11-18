@@ -280,10 +280,12 @@ export async function presentAssistantMessage(cline: Task) {
 			// Track if we've already pushed a tool result for this tool call (native protocol only)
 			let hasToolResult = false
 
-			// Check if we're using native tool protocol (do this once before defining pushToolResult)
-			const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
-			const isNative = isNativeProtocol(toolProtocol)
+			// Determine protocol by checking if this tool call has an ID.
+			// Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks).
+			// XML protocol tool calls NEVER have an ID (parsed from XML text).
+			// This is the definitive indicator and prevents race conditions from re-resolving the protocol.
 			const toolCallId = (block as any).id
+			const isNative = !!toolCallId
 
 			const pushToolResult = (content: ToolResponse) => {
 				if (isNative && toolCallId) {
@@ -511,9 +513,9 @@ export async function presentAssistantMessage(cline: Task) {
 				case "apply_diff": {
 					await checkpointSaveAndMark(cline)
 
-					// Check if native protocol is enabled - if so, always use single-file class-based tool
-					const applyDiffToolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
-					if (isNativeProtocol(applyDiffToolProtocol)) {
+					// Check if this tool call came from native protocol by checking for ID
+					// Native calls always have IDs, XML calls never do
+					if (isNative) {
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
