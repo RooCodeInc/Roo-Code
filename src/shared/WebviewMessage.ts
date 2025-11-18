@@ -165,6 +165,8 @@ export interface WebviewMessage {
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "updateSettings"
+		| "requestBackgroundServices"
+		| "stopService"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -242,6 +244,7 @@ export interface WebviewMessage {
 		codebaseIndexOpenRouterApiKey?: string
 	}
 	updatedSettings?: RooCodeSettings
+	serviceId?: string
 }
 
 export const checkoutDiffPayloadSchema = z.object({

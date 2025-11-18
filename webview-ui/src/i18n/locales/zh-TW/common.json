@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "初始化存檔點已等待 {{timeout}} 秒。如果你不需要存檔點功能，請在<settingsLink>存檔點設定</settingsLink>中關閉。",
 		"init_checkpoint_fail_long_time": "存檔點初始化已超過 {{timeout}} 秒，因此此工作已停用存檔點。你可以關閉存檔點或在<settingsLink>存檔點設定</settingsLink>中延長等待時間。"
+	},
+	"backgroundTasks": {
+		"title": "後台執行的任務",
+		"ariaLabel": "後台任務",
+		"tooltip": "{{count}} 個後台任務正在執行",
+		"stopService": "停止服務",
+		"status": {
+			"starting": "啟動中",
+			"ready": "就緒",
+			"running": "執行中",
+			"stopping": "停止中",
+			"failed": "失敗"
+		}
 	}
 }

@@ -122,7 +122,7 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	/**
 	 * Aborts the process via a SIGINT.
 	 */
-	abstract abort(): void
+	abstract abort(): Promise<void>
 
 	/**
 	 * Checks if this process has unretrieved output.

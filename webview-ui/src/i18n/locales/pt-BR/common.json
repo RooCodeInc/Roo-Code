@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "Você esperou {{timeout}} segundos para inicializar o checkpoint. Se não precisa dessa função, desative nas <settingsLink>configurações do checkpoint</settingsLink>.",
 		"init_checkpoint_fail_long_time": "A inicialização do checkpoint levou mais de {{timeout}} segundos, então os checkpoints foram desativados para esta tarefa. Você pode desativar os checkpoints ou aumentar o tempo de espera nas <settingsLink>configurações do checkpoint</settingsLink>."
+	},
+	"backgroundTasks": {
+		"title": "Tarefas em segundo plano",
+		"ariaLabel": "Tarefas em segundo plano",
+		"tooltip": "{{count}} tarefa(s) em segundo plano em execução",
+		"stopService": "Parar serviço",
+		"status": {
+			"starting": "Iniciando",
+			"ready": "Pronto",
+			"running": "Em execução",
+			"stopping": "Parando",
+			"failed": "Falhou"
+		}
 	}
 }

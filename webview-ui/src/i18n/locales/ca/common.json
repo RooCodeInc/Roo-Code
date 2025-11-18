@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "Has esperat {{timeout}} segons per inicialitzar el punt de control. Si no necessites aquesta funció, desactiva-la a <settingsLink>la configuració del punt de control</settingsLink>.",
 		"init_checkpoint_fail_long_time": "La inicialització del punt de control ha trigat més de {{timeout}} segons, per això els punts de control estan desactivats per a aquesta tasca. Pots desactivar els punts de control o augmentar el temps d'espera a <settingsLink>la configuració del punt de control</settingsLink>."
+	},
+	"backgroundTasks": {
+		"title": "Tasques en segon pla",
+		"ariaLabel": "Tasques en segon pla",
+		"tooltip": "{{count}} tasca(s) en segon pla en execució",
+		"stopService": "Aturar servei",
+		"status": {
+			"starting": "Iniciant",
+			"ready": "Llest",
+			"running": "En execució",
+			"stopping": "Aturant",
+			"failed": "Fallat"
+		}
 	}
 }

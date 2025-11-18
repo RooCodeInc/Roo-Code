@@ -264,7 +264,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		this.emit("continue")
 	}
 
-	public override abort() {
+	public override async abort(): Promise<void> {
 		if (this.isListening) {
 			// Send SIGINT using CTRL+C
 			this.terminal.terminal.sendText("\x03")

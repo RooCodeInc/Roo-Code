@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "{{timeout}}초 동안 체크포인트 초기화를 기다렸어. 체크포인트 기능이 필요 없다면 <settingsLink>체크포인트 설정</settingsLink>에서 꺼 줘.",
 		"init_checkpoint_fail_long_time": "체크포인트 초기화가 {{timeout}}초 이상 걸려서 이 작업에 대해 체크포인트가 꺼졌어. 체크포인트를 끄거나 <settingsLink>체크포인트 설정</settingsLink>에서 대기 시간을 늘릴 수 있어."
+	},
+	"backgroundTasks": {
+		"title": "백그라운드에서 실행 중인 작업",
+		"ariaLabel": "백그라운드 작업",
+		"tooltip": "{{count}}개의 백그라운드 작업이 실행 중",
+		"stopService": "서비스 중지",
+		"status": {
+			"starting": "시작 중",
+			"ready": "준비됨",
+			"running": "실행 중",
+			"stopping": "중지 중",
+			"failed": "실패"
+		}
 	}
 }

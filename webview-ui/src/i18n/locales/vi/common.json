@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "Bạn đã chờ {{timeout}} giây để khởi tạo điểm kiểm tra. Nếu không cần chức năng này, hãy tắt nó trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>.",
 		"init_checkpoint_fail_long_time": "Khởi tạo điểm kiểm tra mất hơn {{timeout}} giây, vì vậy các điểm kiểm tra đã bị vô hiệu hóa cho tác vụ này. Bạn có thể tắt các điểm kiểm tra hoặc tăng thời gian chờ trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>."
+	},
+	"backgroundTasks": {
+		"title": "Tác vụ chạy nền",
+		"ariaLabel": "Tác vụ chạy nền",
+		"tooltip": "{{count}} tác vụ chạy nền đang hoạt động",
+		"stopService": "Dừng dịch vụ",
+		"status": {
+			"starting": "Đang khởi động",
+			"ready": "Sẵn sàng",
+			"running": "Đang chạy",
+			"stopping": "Đang dừng",
+			"failed": "Thất bại"
+		}
 	}
 }

@@ -2690,6 +2690,67 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestBackgroundServices": {
+			try {
+				const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+				const services = ServiceManager.listServices()
+
+				// Convert to the format expected by the frontend
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			} catch (error) {
+				provider.log(
+					`Error fetching background services: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+				// Send empty array on error
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: [],
+				})
+			}
+			break
+		}
+		case "stopService": {
+			try {
+				const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+				if (!message.serviceId) {
+					provider.log("Error: stopService message missing serviceId")
+					return
+				}
+
+				await ServiceManager.stopService(message.serviceId)
+
+				// Send updated service list
+				const services = ServiceManager.listServices()
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			} catch (error) {
+				provider.log(`Error stopping service: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
 		case "openCommandFile": {
 			try {
 				if (message.text) {
