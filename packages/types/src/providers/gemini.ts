@@ -17,16 +17,19 @@ export const geminiModels = {
 		defaultTemperature: 1,
 		inputPrice: 4.0,
 		outputPrice: 18.0,
+		cacheReadsPrice: 0.4,
 		tiers: [
 			{
 				contextWindow: 200_000,
 				inputPrice: 2.0,
 				outputPrice: 12.0,
+				cacheReadsPrice: 0.2,
 			},
 			{
 				contextWindow: Infinity,
 				inputPrice: 4.0,
 				outputPrice: 18.0,
+				cacheReadsPrice: 0.4,
 			},
 		],
 	},
