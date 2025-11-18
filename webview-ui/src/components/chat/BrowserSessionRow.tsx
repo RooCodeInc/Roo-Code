@@ -532,6 +532,613 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		}
 	}, [])
 
+	const BrowserSessionHeader: React.FC = () => (
+		<div
+			style={{
+				display: "flex",
+				alignItems: "center",
+				gap: 8,
+				marginBottom: 0,
+				userSelect: "none",
+			}}>
+			{/* Globe icon - green when browser session is open */}
+			<Globe
+				className="w-4 h-4 shrink-0"
+				style={{
+					opacity: 0.7,
+					color: isBrowserSessionOpen ? "#4ade80" : undefined, // green-400 when session is open
+					cursor: fullScreen ? "default" : "pointer",
+				}}
+				aria-label="Browser interaction"
+				{...(fullScreen
+					? {}
+					: {
+							onClick: () =>
+								setNextActionsExpanded((v) => {
+									const nv = !v
+									onExpandChange?.(nv)
+									return nv
+								}),
+						})}
+			/>
+
+			{/* Simple text: "Browser Session" with step counter */}
+			<span
+				{...(fullScreen
+					? {}
+					: {
+							onClick: () =>
+								setNextActionsExpanded((v) => {
+									const nv = !v
+									onExpandChange?.(nv)
+									return nv
+								}),
+						})}
+				style={{
+					flex: 1,
+					fontSize: 13,
+					fontWeight: 500,
+					lineHeight: "22px",
+					color: "var(--vscode-editor-foreground)",
+					cursor: fullScreen ? "default" : "pointer",
+					display: "flex",
+					alignItems: "center",
+					gap: 8,
+				}}>
+				{t("chat:browser.session")}
+				{isActionRunning && (
+					<span className="ml-1 flex items-center" aria-hidden="true">
+						<ProgressIndicator />
+					</span>
+				)}
+				{pages.length > 0 && (
+					<span
+						style={{
+							fontSize: 11,
+							opacity: 0.6,
+							fontWeight: 400,
+						}}>
+						{currentPageIndex + 1}/{pages.length}
+					</span>
+				)}
+				{/* Inline action summary to the right, similar to ChatView */}
+				<span
+					style={{
+						display: "inline-flex",
+						alignItems: "center",
+						gap: 6,
+						fontSize: 12,
+						color: "var(--vscode-descriptionForeground)",
+						fontWeight: 400,
+					}}>
+					{(() => {
+						const action = currentPageAction
+						const pageSize = pages[currentPageIndex]?.size
+						const pageViewportWidth = pages[currentPageIndex]?.viewportWidth
+						const pageViewportHeight = pages[currentPageIndex]?.viewportHeight
+						if (action) {
+							return (
+								<>
+									{getActionIcon(action.action)}
+									<span>
+										{getBrowserActionText(
+											action.action,
+											action.executedCoordinate,
+											action.coordinate,
+											action.text,
+											pageSize,
+											pageViewportWidth,
+											pageViewportHeight,
+										)}
+									</span>
+								</>
+							)
+						} else if (initialUrl) {
+							return (
+								<>
+									{getActionIcon("launch" as any)}
+									<span>{getBrowserActionText("launch", undefined, initialUrl, undefined)}</span>
+								</>
+							)
+						}
+						return null
+					})()}
+				</span>
+			</span>
+
+			{/* Right side: cost badge and chevron */}
+			{totalApiCost > 0 && (
+				<div
+					className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+					style={{
+						opacity: 0.4,
+						height: "22px",
+						display: "flex",
+						alignItems: "center",
+					}}>
+					${totalApiCost.toFixed(4)}
+				</div>
+			)}
+
+			{/* Chevron toggle hidden in fullScreen */}
+			{!fullScreen && (
+				<span
+					onClick={() =>
+						setNextActionsExpanded((v) => {
+							const nv = !v
+							onExpandChange?.(nv)
+							return nv
+						})
+					}
+					className={`codicon ${nextActionsExpanded ? "codicon-chevron-up" : "codicon-chevron-down"}`}
+					style={{
+						fontSize: 13,
+						fontWeight: 500,
+						lineHeight: "22px",
+						color: "var(--vscode-editor-foreground)",
+						cursor: "pointer",
+						display: "inline-block",
+						transition: "transform 150ms ease",
+					}}
+				/>
+			)}
+
+			{/* Kill browser button hidden from header in fullScreen; kept in toolbar */}
+			{isBrowserSessionOpen && !fullScreen && (
+				<StandardTooltip content="Disconnect session">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={(e) => {
+							e.stopPropagation()
+							vscode.postMessage({ type: "killBrowserSession" })
+						}}
+						aria-label="Disconnect session">
+						<OctagonX className="size-4" />
+					</Button>
+				</StandardTooltip>
+			)}
+		</div>
+	)
+
+	const BrowserSessionDrawer: React.FC = () => {
+		if (!nextActionsExpanded) return null
+
+		return (
+			<div
+				style={{
+					marginTop: fullScreen ? 0 : 6,
+					background: "var(--vscode-editor-background)",
+					border: "1px solid var(--vscode-panel-border)",
+					borderRadius: fullScreen ? 0 : 6,
+					overflow: "hidden",
+					height: fullScreen ? "100%" : undefined,
+					display: fullScreen ? "flex" : undefined,
+					flexDirection: fullScreen ? "column" : undefined,
+				}}>
+				{/* Browser-like Toolbar */}
+				<div
+					style={{
+						padding: "6px 8px",
+						display: "flex",
+						alignItems: "center",
+						gap: "8px",
+						borderBottom: "1px solid var(--vscode-panel-border)",
+						background: "var(--vscode-editor-background)",
+					}}>
+					{/* Go to beginning */}
+					<StandardTooltip content="Go to beginning">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								hasUserNavigatedRef.current = true
+								setCurrentPageIndex(0)
+							}}
+							disabled={currentPageIndex === 0 || isBrowsing}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: currentPageIndex === 0 || isBrowsing ? "not-allowed" : "pointer",
+								opacity: currentPageIndex === 0 || isBrowsing ? 0.4 : 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Go to beginning">
+							<ChevronsLeft className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Back */}
+					<StandardTooltip content="Back">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								hasUserNavigatedRef.current = true
+								setCurrentPageIndex((i) => Math.max(0, i - 1))
+							}}
+							disabled={currentPageIndex === 0 || isBrowsing}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: currentPageIndex === 0 || isBrowsing ? "not-allowed" : "pointer",
+								opacity: currentPageIndex === 0 || isBrowsing ? 0.4 : 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Back">
+							<ArrowLeft className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Forward */}
+					<StandardTooltip content="Forward">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								const nextIndex = Math.min(pages.length - 1, currentPageIndex + 1)
+								// Reset user navigation flag if going to the last page
+								hasUserNavigatedRef.current = nextIndex !== pages.length - 1
+								setCurrentPageIndex(nextIndex)
+							}}
+							disabled={currentPageIndex === pages.length - 1 || isBrowsing}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: currentPageIndex === pages.length - 1 || isBrowsing ? "not-allowed" : "pointer",
+								opacity: currentPageIndex === pages.length - 1 || isBrowsing ? 0.4 : 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Forward">
+							<ArrowRight className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Go to end */}
+					<StandardTooltip content="Go to end">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								// Reset user navigation flag since we're going to the most recent page
+								hasUserNavigatedRef.current = false
+								setCurrentPageIndex(pages.length - 1)
+							}}
+							disabled={currentPageIndex === pages.length - 1 || isBrowsing}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: currentPageIndex === pages.length - 1 || isBrowsing ? "not-allowed" : "pointer",
+								opacity: currentPageIndex === pages.length - 1 || isBrowsing ? 0.4 : 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Go to end">
+							<ChevronsRight className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Address Bar */}
+					<div
+						role="group"
+						aria-label="Address bar"
+						style={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							gap: 8,
+							border: "1px solid var(--vscode-panel-border)",
+							borderRadius: 999,
+							padding: "4px 10px",
+							background: "var(--vscode-input-background)",
+							color: "var(--vscode-descriptionForeground)",
+							minHeight: 26,
+							overflow: "hidden",
+						}}>
+						<Globe className="w-3 h-3 shrink-0 opacity-60" />
+						<span
+							style={{
+								fontSize: 12,
+								lineHeight: "18px",
+								textOverflow: "ellipsis",
+								overflow: "hidden",
+								whiteSpace: "nowrap",
+								color: "var(--vscode-foreground)",
+							}}>
+							{displayState.url || "about:blank"}
+						</span>
+						{/* Step counter removed */}
+					</div>
+
+					{/* Kill (Disconnect) replaces Reload */}
+					<StandardTooltip content="Disconnect session">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								vscode.postMessage({ type: "killBrowserSession" })
+							}}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: "pointer",
+								opacity: 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Disconnect session">
+							<OctagonX className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Open External */}
+					<StandardTooltip content="Open in external browser">
+						<button
+							onClick={(e) => {
+								e.stopPropagation()
+								if (displayState.url) {
+									vscode.postMessage({ type: "openExternal", url: displayState.url })
+								}
+							}}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: displayState.url ? "pointer" : "not-allowed",
+								opacity: displayState.url ? 0.85 : 0.4,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Open external"
+							disabled={!displayState.url}>
+							<ExternalLink className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+
+					{/* Copy URL */}
+					<StandardTooltip content="Copy URL">
+						<button
+							onClick={async (e) => {
+								e.stopPropagation()
+								try {
+									await navigator.clipboard.writeText(displayState.url || "")
+								} catch {
+									// ignore
+								}
+							}}
+							style={{
+								background: "none",
+								border: "1px solid var(--vscode-panel-border)",
+								borderRadius: 4,
+								cursor: "pointer",
+								opacity: 0.85,
+								padding: "4px",
+								display: "flex",
+								alignItems: "center",
+								color: "var(--vscode-foreground)",
+							}}
+							aria-label="Copy URL">
+							<Copy className="w-4 h-4" />
+						</button>
+					</StandardTooltip>
+				</div>
+				{/* Screenshot Area */}
+				<div
+					data-testid="screenshot-container"
+					ref={screenshotRef}
+					style={{
+						width: "100%",
+						position: "relative",
+						backgroundColor: "var(--vscode-input-background)",
+						borderBottom: "1px solid var(--vscode-panel-border)",
+						...(fullScreen
+							? { flex: 1, minHeight: 0 }
+							: { paddingBottom: `${drawerAspectRatio.toFixed(2)}%` }),
+					}}>
+					{displayState.screenshot ? (
+						<img
+							src={displayState.screenshot}
+							alt={t("chat:browser.screenshot")}
+							style={{
+								position: "absolute",
+								top: 0,
+								left: 0,
+								width: "100%",
+								height: "100%",
+								objectFit: "contain",
+								objectPosition: "top center",
+								cursor: "pointer",
+							}}
+							onClick={() =>
+								vscode.postMessage({
+									type: "openImage",
+									text: displayState.screenshot,
+								})
+							}
+						/>
+					) : (
+						<div
+							style={{
+								position: "absolute",
+								top: "50%",
+								left: "50%",
+								transform: "translate(-50%, -50%)",
+							}}>
+							<span
+								className="codicon codicon-globe"
+								style={{ fontSize: "80px", color: "var(--vscode-descriptionForeground)" }}
+							/>
+						</div>
+					)}
+					{displayState.mousePosition &&
+						(() => {
+							// Use measured size if available; otherwise fall back to current client size so cursor remains visible
+							const containerW = sW || (screenshotRef.current?.clientWidth ?? 0)
+							const containerH = sH || (screenshotRef.current?.clientHeight ?? 0)
+							if (containerW <= 0 || containerH <= 0) {
+								// Minimal fallback to keep cursor visible before first measurement
+								return (
+									<BrowserCursor
+										style={{
+											position: "absolute",
+											top: `0px`,
+											left: `0px`,
+											zIndex: 2,
+											pointerEvents: "none",
+										}}
+									/>
+								)
+							}
+
+							// Compute displayed image box within the container for object-fit: contain; objectPosition: top center
+							const imgAspect = cursorViewportWidth / cursorViewportHeight
+							const containerAspect = containerW / containerH
+							let displayW = containerW
+							let displayH = containerH
+							let offsetX = 0
+							let offsetY = 0
+							if (containerAspect > imgAspect) {
+								// Full height, letterboxed left/right; top aligned
+								displayH = containerH
+								displayW = containerH * imgAspect
+								offsetX = (containerW - displayW) / 2
+								offsetY = 0
+							} else {
+								// Full width, potential space below; top aligned
+								displayW = containerW
+								displayH = containerW / imgAspect
+								offsetX = 0
+								offsetY = 0
+							}
+
+							// Parse "x,y" or "x,y@widthxheight" for original basis
+							const m = /^\s*(\d+)\s*,\s*(\d+)(?:\s*@\s*(\d+)\s*[x,]\s*(\d+))?\s*$/.exec(
+								displayState.mousePosition || "",
+							)
+							const mx = parseInt(m?.[1] || "0", 10)
+							const my = parseInt(m?.[2] || "0", 10)
+							const baseW = m?.[3] ? parseInt(m[3], 10) : cursorViewportWidth
+							const baseH = m?.[4] ? parseInt(m[4], 10) : cursorViewportHeight
+
+							const leftPx = offsetX + (baseW > 0 ? (mx / baseW) * displayW : 0)
+							const topPx = offsetY + (baseH > 0 ? (my / baseH) * displayH : 0)
+
+							return (
+								<BrowserCursor
+									style={{
+										position: "absolute",
+										top: `${topPx}px`,
+										left: `${leftPx}px`,
+										zIndex: 2,
+										pointerEvents: "none",
+										transition: "top 0.15s ease-out, left 0.15s ease-out",
+									}}
+								/>
+							)
+						})()}
+				</div>
+
+				{/* Browser Action summary moved inline to header; row removed */}
+
+				{/* Console Logs Section (collapsible, default collapsed) */}
+				<div
+					style={{
+						padding: "8px 10px",
+						// Pin logs to bottom of the fullscreen drawer
+						marginTop: fullScreen ? "auto" : undefined,
+					}}>
+					<div
+						onClick={(e) => {
+							e.stopPropagation()
+							setConsoleLogsExpanded((v) => !v)
+						}}
+						className="text-vscode-editor-foreground/70 hover:text-vscode-editor-foreground transition-colors"
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "8px",
+							marginBottom: consoleLogsExpanded ? "6px" : 0,
+							cursor: "pointer",
+						}}>
+						<SquareTerminal className="w-3" />
+						<span className="text-xs" style={{ fontWeight: 500 }}>
+							{t("chat:browser.consoleLogs")}
+						</span>
+
+						{/* Log type indicators */}
+						<div
+							onClick={(e) => e.stopPropagation()}
+							style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+							{logTypeMeta.map(({ key, label }) => {
+								const isAll = key === "all"
+								const count = isAll
+									? (Object.values(parsedLogs.counts) as number[]).reduce((a, b) => a + b, 0)
+									: parsedLogs.counts[key as "debug" | "info" | "warn" | "error" | "log"]
+								const isActive = logFilter === (key as any)
+								const disabled = count === 0
+								return (
+									<button
+										key={key}
+										onClick={() => {
+											setConsoleLogsExpanded(true)
+											setLogFilter(
+												isAll
+													? "all"
+													: (prev) => (prev === (key as any) ? "all" : (key as any)),
+											)
+										}}
+										disabled={disabled}
+										title={`${label}: ${count}`}
+										style={{
+											border: "1px solid var(--vscode-panel-border)",
+											borderRadius: 999,
+											padding: "0 6px",
+											height: 18,
+											lineHeight: "16px",
+											fontSize: 10,
+											color: "var(--vscode-foreground)",
+											background: isActive
+												? "var(--vscode-editor-selectionBackground)"
+												: "transparent",
+											opacity: disabled ? 0.35 : 0.85,
+											cursor: disabled ? "not-allowed" : "pointer",
+										}}>
+										{label}: {count}
+									</button>
+								)
+							})}
+							<span
+								onClick={() => setConsoleLogsExpanded((v) => !v)}
+								className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}
+								style={{ marginLeft: 6 }}
+							/>
+						</div>
+					</div>
+					{consoleLogsExpanded && (
+						<div style={{ marginTop: "6px" }}>
+							<CodeBlock source={logsToShow} language="shell" />
+						</div>
+					)}
+				</div>
+			</div>
+		)
+	}
+
 	const browserSessionRow = (
 		<div
 			ref={containerRef}
@@ -540,610 +1147,10 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 				background: "var(--vscode-editor-background,transparent)",
 				height: "100%",
 			}}>
-			{/* Main header - clickable to expand/collapse, mimics TodoList style */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: 8,
-					marginBottom: 0,
-					userSelect: "none",
-				}}>
-				{/* Globe icon - green when browser session is open */}
-				<Globe
-					className="w-4 h-4 shrink-0"
-					style={{
-						opacity: 0.7,
-						color: isBrowserSessionOpen ? "#4ade80" : undefined, // green-400 when session is open
-						cursor: fullScreen ? "default" : "pointer",
-					}}
-					aria-label="Browser interaction"
-					{...(fullScreen
-						? {}
-						: {
-								onClick: () =>
-									setNextActionsExpanded((v) => {
-										const nv = !v
-										onExpandChange?.(nv)
-										return nv
-									}),
-							})}
-				/>
-
-				{/* Simple text: "Browser Session" with step counter */}
-				<span
-					{...(fullScreen
-						? {}
-						: {
-								onClick: () =>
-									setNextActionsExpanded((v) => {
-										const nv = !v
-										onExpandChange?.(nv)
-										return nv
-									}),
-							})}
-					style={{
-						flex: 1,
-						fontSize: 13,
-						fontWeight: 500,
-						lineHeight: "22px",
-						color: "var(--vscode-editor-foreground)",
-						cursor: fullScreen ? "default" : "pointer",
-						display: "flex",
-						alignItems: "center",
-						gap: 8,
-					}}>
-					{t("chat:browser.session")}
-					{isActionRunning && (
-						<span className="ml-1 flex items-center" aria-hidden="true">
-							<ProgressIndicator />
-						</span>
-					)}
-					{pages.length > 0 && (
-						<span
-							style={{
-								fontSize: 11,
-								opacity: 0.6,
-								fontWeight: 400,
-							}}>
-							{currentPageIndex + 1}/{pages.length}
-						</span>
-					)}
-					{/* Inline action summary to the right, similar to ChatView */}
-					<span
-						style={{
-							display: "inline-flex",
-							alignItems: "center",
-							gap: 6,
-							fontSize: 12,
-							color: "var(--vscode-descriptionForeground)",
-							fontWeight: 400,
-						}}>
-						{(() => {
-							const action = currentPageAction
-							const pageSize = pages[currentPageIndex]?.size
-							const pageViewportWidth = pages[currentPageIndex]?.viewportWidth
-							const pageViewportHeight = pages[currentPageIndex]?.viewportHeight
-							if (action) {
-								return (
-									<>
-										{getActionIcon(action.action)}
-										<span>
-											{getBrowserActionText(
-												action.action,
-												action.executedCoordinate,
-												action.coordinate,
-												action.text,
-												pageSize,
-												pageViewportWidth,
-												pageViewportHeight,
-											)}
-										</span>
-									</>
-								)
-							} else if (initialUrl) {
-								return (
-									<>
-										{getActionIcon("launch" as any)}
-										<span>{getBrowserActionText("launch", undefined, initialUrl, undefined)}</span>
-									</>
-								)
-							}
-							return null
-						})()}
-					</span>
-				</span>
-
-				{/* Right side: cost badge and chevron */}
-				{totalApiCost > 0 && (
-					<div
-						className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
-						style={{
-							opacity: 0.4,
-							height: "22px",
-							display: "flex",
-							alignItems: "center",
-						}}>
-						${totalApiCost.toFixed(4)}
-					</div>
-				)}
-
-				{/* Chevron toggle hidden in fullScreen */}
-				{!fullScreen && (
-					<span
-						onClick={() =>
-							setNextActionsExpanded((v) => {
-								const nv = !v
-								onExpandChange?.(nv)
-								return nv
-							})
-						}
-						className={`codicon ${nextActionsExpanded ? "codicon-chevron-up" : "codicon-chevron-down"}`}
-						style={{
-							fontSize: 13,
-							fontWeight: 500,
-							lineHeight: "22px",
-							color: "var(--vscode-editor-foreground)",
-							cursor: "pointer",
-							display: "inline-block",
-							transition: "transform 150ms ease",
-						}}
-					/>
-				)}
-
-				{/* Kill browser button hidden from header in fullScreen; kept in toolbar */}
-				{isBrowserSessionOpen && !fullScreen && (
-					<StandardTooltip content="Disconnect session">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={(e) => {
-								e.stopPropagation()
-								vscode.postMessage({ type: "killBrowserSession" })
-							}}
-							aria-label="Disconnect session">
-							<OctagonX className="size-4" />
-						</Button>
-					</StandardTooltip>
-				)}
-			</div>
+			<BrowserSessionHeader />
 
 			{/* Expanded drawer content - inline/fullscreen */}
-			{nextActionsExpanded && (
-				<div
-					style={{
-						marginTop: fullScreen ? 0 : 6,
-						background: "var(--vscode-editor-background)",
-						border: "1px solid var(--vscode-panel-border)",
-						borderRadius: fullScreen ? 0 : 6,
-						overflow: "hidden",
-						height: fullScreen ? "100%" : undefined,
-						display: fullScreen ? "flex" : undefined,
-						flexDirection: fullScreen ? "column" : undefined,
-					}}>
-					{/* Browser-like Toolbar */}
-					<div
-						style={{
-							padding: "6px 8px",
-							display: "flex",
-							alignItems: "center",
-							gap: "8px",
-							borderBottom: "1px solid var(--vscode-panel-border)",
-							background: "var(--vscode-editor-background)",
-						}}>
-						{/* Go to beginning */}
-						<StandardTooltip content="Go to beginning">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									hasUserNavigatedRef.current = true
-									setCurrentPageIndex(0)
-								}}
-								disabled={currentPageIndex === 0 || isBrowsing}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor: currentPageIndex === 0 || isBrowsing ? "not-allowed" : "pointer",
-									opacity: currentPageIndex === 0 || isBrowsing ? 0.4 : 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Go to beginning">
-								<ChevronsLeft className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Back */}
-						<StandardTooltip content="Back">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									hasUserNavigatedRef.current = true
-									setCurrentPageIndex((i) => Math.max(0, i - 1))
-								}}
-								disabled={currentPageIndex === 0 || isBrowsing}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor: currentPageIndex === 0 || isBrowsing ? "not-allowed" : "pointer",
-									opacity: currentPageIndex === 0 || isBrowsing ? 0.4 : 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Back">
-								<ArrowLeft className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Forward */}
-						<StandardTooltip content="Forward">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									const nextIndex = Math.min(pages.length - 1, currentPageIndex + 1)
-									// Reset user navigation flag if going to the last page
-									hasUserNavigatedRef.current = nextIndex !== pages.length - 1
-									setCurrentPageIndex(nextIndex)
-								}}
-								disabled={currentPageIndex === pages.length - 1 || isBrowsing}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor:
-										currentPageIndex === pages.length - 1 || isBrowsing ? "not-allowed" : "pointer",
-									opacity: currentPageIndex === pages.length - 1 || isBrowsing ? 0.4 : 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Forward">
-								<ArrowRight className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Go to end */}
-						<StandardTooltip content="Go to end">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									// Reset user navigation flag since we're going to the most recent page
-									hasUserNavigatedRef.current = false
-									setCurrentPageIndex(pages.length - 1)
-								}}
-								disabled={currentPageIndex === pages.length - 1 || isBrowsing}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor:
-										currentPageIndex === pages.length - 1 || isBrowsing ? "not-allowed" : "pointer",
-									opacity: currentPageIndex === pages.length - 1 || isBrowsing ? 0.4 : 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Go to end">
-								<ChevronsRight className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Address Bar */}
-						<div
-							role="group"
-							aria-label="Address bar"
-							style={{
-								flex: 1,
-								display: "flex",
-								alignItems: "center",
-								gap: 8,
-								border: "1px solid var(--vscode-panel-border)",
-								borderRadius: 999,
-								padding: "4px 10px",
-								background: "var(--vscode-input-background)",
-								color: "var(--vscode-descriptionForeground)",
-								minHeight: 26,
-								overflow: "hidden",
-							}}>
-							<Globe className="w-3 h-3 shrink-0 opacity-60" />
-							<span
-								style={{
-									fontSize: 12,
-									lineHeight: "18px",
-									textOverflow: "ellipsis",
-									overflow: "hidden",
-									whiteSpace: "nowrap",
-									color: "var(--vscode-foreground)",
-								}}>
-								{displayState.url || "about:blank"}
-							</span>
-							{/* Step counter removed */}
-						</div>
-
-						{/* Kill (Disconnect) replaces Reload */}
-						<StandardTooltip content="Disconnect session">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									vscode.postMessage({ type: "killBrowserSession" })
-								}}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor: "pointer",
-									opacity: 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Disconnect session">
-								<OctagonX className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Open External */}
-						<StandardTooltip content="Open in external browser">
-							<button
-								onClick={(e) => {
-									e.stopPropagation()
-									if (displayState.url) {
-										vscode.postMessage({ type: "openExternal", url: displayState.url })
-									}
-								}}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor: displayState.url ? "pointer" : "not-allowed",
-									opacity: displayState.url ? 0.85 : 0.4,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Open external"
-								disabled={!displayState.url}>
-								<ExternalLink className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-
-						{/* Copy URL */}
-						<StandardTooltip content="Copy URL">
-							<button
-								onClick={async (e) => {
-									e.stopPropagation()
-									try {
-										await navigator.clipboard.writeText(displayState.url || "")
-									} catch {
-										// ignore
-									}
-								}}
-								style={{
-									background: "none",
-									border: "1px solid var(--vscode-panel-border)",
-									borderRadius: 4,
-									cursor: "pointer",
-									opacity: 0.85,
-									padding: "4px",
-									display: "flex",
-									alignItems: "center",
-									color: "var(--vscode-foreground)",
-								}}
-								aria-label="Copy URL">
-								<Copy className="w-4 h-4" />
-							</button>
-						</StandardTooltip>
-					</div>
-					{/* Screenshot Area */}
-					<div
-						data-testid="screenshot-container"
-						ref={screenshotRef}
-						style={{
-							width: "100%",
-							position: "relative",
-							backgroundColor: "var(--vscode-input-background)",
-							borderBottom: "1px solid var(--vscode-panel-border)",
-							...(fullScreen
-								? { flex: 1, minHeight: 0 }
-								: { paddingBottom: `${drawerAspectRatio.toFixed(2)}%` }),
-						}}>
-						{displayState.screenshot ? (
-							<img
-								src={displayState.screenshot}
-								alt={t("chat:browser.screenshot")}
-								style={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									width: "100%",
-									height: "100%",
-									objectFit: "contain",
-									objectPosition: "top center",
-									cursor: "pointer",
-								}}
-								onClick={() =>
-									vscode.postMessage({
-										type: "openImage",
-										text: displayState.screenshot,
-									})
-								}
-							/>
-						) : (
-							<div
-								style={{
-									position: "absolute",
-									top: "50%",
-									left: "50%",
-									transform: "translate(-50%, -50%)",
-								}}>
-								<span
-									className="codicon codicon-globe"
-									style={{ fontSize: "80px", color: "var(--vscode-descriptionForeground)" }}
-								/>
-							</div>
-						)}
-						{displayState.mousePosition &&
-							(() => {
-								// Use measured size if available; otherwise fall back to current client size so cursor remains visible
-								const containerW = sW || (screenshotRef.current?.clientWidth ?? 0)
-								const containerH = sH || (screenshotRef.current?.clientHeight ?? 0)
-								if (containerW <= 0 || containerH <= 0) {
-									// Minimal fallback to keep cursor visible before first measurement
-									return (
-										<BrowserCursor
-											style={{
-												position: "absolute",
-												top: `0px`,
-												left: `0px`,
-												zIndex: 2,
-												pointerEvents: "none",
-											}}
-										/>
-									)
-								}
-
-								// Compute displayed image box within the container for object-fit: contain; objectPosition: top center
-								const imgAspect = cursorViewportWidth / cursorViewportHeight
-								const containerAspect = containerW / containerH
-								let displayW = containerW
-								let displayH = containerH
-								let offsetX = 0
-								let offsetY = 0
-								if (containerAspect > imgAspect) {
-									// Full height, letterboxed left/right; top aligned
-									displayH = containerH
-									displayW = containerH * imgAspect
-									offsetX = (containerW - displayW) / 2
-									offsetY = 0
-								} else {
-									// Full width, potential space below; top aligned
-									displayW = containerW
-									displayH = containerW / imgAspect
-									offsetX = 0
-									offsetY = 0
-								}
-
-								// Parse "x,y" or "x,y@widthxheight" for original basis
-								const m = /^\s*(\d+)\s*,\s*(\d+)(?:\s*@\s*(\d+)\s*[x,]\s*(\d+))?\s*$/.exec(
-									displayState.mousePosition || "",
-								)
-								const mx = parseInt(m?.[1] || "0", 10)
-								const my = parseInt(m?.[2] || "0", 10)
-								const baseW = m?.[3] ? parseInt(m[3], 10) : cursorViewportWidth
-								const baseH = m?.[4] ? parseInt(m[4], 10) : cursorViewportHeight
-
-								const leftPx = offsetX + (baseW > 0 ? (mx / baseW) * displayW : 0)
-								const topPx = offsetY + (baseH > 0 ? (my / baseH) * displayH : 0)
-
-								return (
-									<BrowserCursor
-										style={{
-											position: "absolute",
-											top: `${topPx}px`,
-											left: `${leftPx}px`,
-											zIndex: 2,
-											pointerEvents: "none",
-											transition: "top 0.15s ease-out, left 0.15s ease-out",
-										}}
-									/>
-								)
-							})()}
-					</div>
-
-					{/* Browser Action summary moved inline to header; row removed */}
-
-					{/* Console Logs Section (collapsible, default collapsed) */}
-					<div
-						style={{
-							padding: "8px 10px",
-							// Pin logs to bottom of the fullscreen drawer
-							marginTop: fullScreen ? "auto" : undefined,
-						}}>
-						<div
-							onClick={(e) => {
-								e.stopPropagation()
-								setConsoleLogsExpanded((v) => !v)
-							}}
-							className="text-vscode-editor-foreground/70 hover:text-vscode-editor-foreground transition-colors"
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "8px",
-								marginBottom: consoleLogsExpanded ? "6px" : 0,
-								cursor: "pointer",
-							}}>
-							<SquareTerminal className="w-3" />
-							<span className="text-xs" style={{ fontWeight: 500 }}>
-								{t("chat:browser.consoleLogs")}
-							</span>
-
-							{/* Log type indicators */}
-							<div
-								onClick={(e) => e.stopPropagation()}
-								style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-								{logTypeMeta.map(({ key, label }) => {
-									const isAll = key === "all"
-									const count = isAll
-										? (Object.values(parsedLogs.counts) as number[]).reduce((a, b) => a + b, 0)
-										: parsedLogs.counts[key as "debug" | "info" | "warn" | "error" | "log"]
-									const isActive = logFilter === (key as any)
-									const disabled = count === 0
-									return (
-										<button
-											key={key}
-											onClick={() => {
-												setConsoleLogsExpanded(true)
-												setLogFilter(
-													isAll
-														? "all"
-														: (prev) => (prev === (key as any) ? "all" : (key as any)),
-												)
-											}}
-											disabled={disabled}
-											title={`${label}: ${count}`}
-											style={{
-												border: "1px solid var(--vscode-panel-border)",
-												borderRadius: 999,
-												padding: "0 6px",
-												height: 18,
-												lineHeight: "16px",
-												fontSize: 10,
-												color: "var(--vscode-foreground)",
-												background: isActive
-													? "var(--vscode-editor-selectionBackground)"
-													: "transparent",
-												opacity: disabled ? 0.35 : 0.85,
-												cursor: disabled ? "not-allowed" : "pointer",
-											}}>
-											{label}: {count}
-										</button>
-									)
-								})}
-								<span
-									onClick={() => setConsoleLogsExpanded((v) => !v)}
-									className={`codicon codicon-chevron-${consoleLogsExpanded ? "down" : "right"}`}
-									style={{ marginLeft: 6 }}
-								/>
-							</div>
-						</div>
-						{consoleLogsExpanded && (
-							<div style={{ marginTop: "6px" }}>
-								<CodeBlock source={logsToShow} language="shell" />
-							</div>
-						)}
-					</div>
-				</div>
-			)}
+			<BrowserSessionDrawer />
 		</div>
 	)
 
