@@ -69,6 +69,7 @@ import {
 	Cerebras,
 	Chutes,
 	ClaudeCode,
+	CloudRu,
 	DeepSeek,
 	Doubao,
 	Gemini,
@@ -239,9 +240,17 @@ const ApiOptions = ({
 			} else if (
 				selectedProvider === "litellm" ||
 				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
+				selectedProvider === "roo" ||
+				selectedProvider === "cloudru"
 			) {
-				vscode.postMessage({ type: "requestRouterModels" })
+				vscode.postMessage({
+					type: "requestRouterModels",
+					values: {
+						provider: selectedProvider,
+						cloudRuApiKey: apiConfiguration?.cloudRuApiKey,
+						cloudRuBaseUrl: apiConfiguration?.cloudRuBaseUrl,
+					},
+				})
 			}
 		},
 		250,
@@ -256,6 +265,8 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.cloudRuApiKey,
+			apiConfiguration?.cloudRuBaseUrl,
 			customHeaders,
 		],
 	)
@@ -394,6 +405,18 @@ const ApiOptions = ({
 
 		if (!name) {
 			return undefined
+		}
+
+		// External documentation URLs (not on docs.roocode.com)
+		const externalDocs: Record<string, string> = {
+			cloudru: "https://cloud.ru/docs/foundation-models/ug/topics/quickstart",
+		}
+
+		if (externalDocs[selectedProvider]) {
+			return {
+				url: externalDocs[selectedProvider],
+				name,
+			}
 		}
 
 		// Get the URL slug - use custom mapping if available, otherwise use the provider key.
@@ -630,6 +653,16 @@ const ApiOptions = ({
 
 			{selectedProvider === "chutes" && (
 				<Chutes
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "cloudru" && (
+				<CloudRu
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}

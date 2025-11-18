@@ -815,6 +815,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						cloudru: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -867,6 +868,22 @@ export const webviewMessageHandler = async (
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
 				},
 			]
+
+			const messageCloudRuApiKey = message?.values?.cloudRuApiKey as string | undefined
+			const messageCloudRuBaseUrl = message?.values?.cloudRuBaseUrl as string | undefined
+
+			// Cloud.ru is conditional on api key
+			const cloudruApiKey = messageCloudRuApiKey || apiConfiguration.cloudRuApiKey || apiConfiguration.apiKey
+			if (cloudruApiKey) {
+				candidates.push({
+					key: "cloudru",
+					options: {
+						provider: "cloudru",
+						apiKey: cloudruApiKey,
+						baseUrl: messageCloudRuBaseUrl || apiConfiguration.cloudRuBaseUrl,
+					},
+				})
+			}
 
 			// IO Intelligence is conditional on api key
 			if (apiConfiguration.ioIntelligenceApiKey) {
