@@ -83,7 +83,7 @@ describe("GeminiHandler", () => {
 				expect.objectContaining({
 					model: GEMINI_20_FLASH_THINKING_NAME,
 					config: expect.objectContaining({
-						temperature: 0,
+						temperature: 1,
 						systemInstruction: systemPrompt,
 					}),
 				}),
@@ -120,7 +120,7 @@ describe("GeminiHandler", () => {
 				contents: [{ role: "user", parts: [{ text: "Test prompt" }] }],
 				config: {
 					httpOptions: undefined,
-					temperature: 0,
+					temperature: 1,
 				},
 			})
 		})

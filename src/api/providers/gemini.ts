@@ -29,6 +29,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 
 	private client: GoogleGenAI
+	private lastThoughtSignature?: string
+	private lastResponseId?: string
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
 		super()
@@ -66,8 +68,18 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: model, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
+		// Reset per-request metadata that we persist into apiConversationHistory.
+		this.lastThoughtSignature = undefined
+		this.lastResponseId = undefined
 
-		const contents = messages.map(convertAnthropicMessageToGemini)
+		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
+		// using effort-based reasoning (thinkingLevel). Budget-only configs should NOT
+		// send thoughtSignature parts back to Gemini.
+		const includeThoughtSignatures = Boolean((thinkingConfig as any)?.thinkingLevel)
+
+		const contents = messages.map((message) =>
+			convertAnthropicMessageToGemini(message, { includeThoughtSignatures }),
+		)
 
 		const tools: GenerateContentConfig["tools"] = []
 		if (this.options.enableUrlContext) {
@@ -78,12 +90,22 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			tools.push({ googleSearch: {} })
 		}
 
+		// Determine temperature respecting model capabilities and defaults:
+		// - If supportsTemperature is explicitly false, ignore user overrides
+		//   and pin to the model's defaultTemperature (or omit if undefined).
+		// - Otherwise, allow the user setting to override, falling back to model default,
+		//   then to 1 for Gemini provider default.
+		const supportsTemperature = info.supportsTemperature !== false
+		const temperatureConfig: number | undefined = supportsTemperature
+			? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
+			: info.defaultTemperature
+
 		const config: GenerateContentConfig = {
 			systemInstruction,
 			httpOptions: this.options.googleGeminiBaseUrl ? { baseUrl: this.options.googleGeminiBaseUrl } : undefined,
 			thinkingConfig,
 			maxOutputTokens: this.options.modelMaxTokens ?? maxTokens ?? undefined,
-			temperature: this.options.modelTemperature ?? 0,
+			temperature: temperatureConfig,
 			...(tools.length > 0 ? { tools } : {}),
 		}
 
@@ -94,8 +116,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
+			let finalResponse: any
 
 			for await (const chunk of result) {
+				// Track the final structured response (per SDK pattern: candidate.finishReason)
+				if (chunk.candidates && chunk.candidates[0]?.finishReason) {
+					finalResponse = chunk
+				}
 				// Process candidates and their parts to separate thoughts from content
 				if (chunk.candidates && chunk.candidates.length > 0) {
 					const candidate = chunk.candidates[0]
@@ -106,6 +133,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 					if (candidate.content && candidate.content.parts) {
 						for (const part of candidate.content.parts) {
+							// Capture thought signatures so they can be persisted into API history.
+							const thoughtSignature = (part as any).thoughtSignature as string | undefined
+							// Only persist encrypted reasoning when an effort-based thinking level is set
+							// (i.e. thinkingConfig.thinkingLevel is present). Budget-based configs that only
+							// set thinkingBudget should NOT trigger encrypted continuation.
+							if ((thinkingConfig as any)?.thinkingLevel && thoughtSignature) {
+								this.lastThoughtSignature = thoughtSignature
+							}
+
 							if (part.thought) {
 								// This is a thinking/reasoning part
 								if (part.text) {
@@ -131,6 +167,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
+			if (finalResponse) {
+				// Capture responseId so Task.addToApiConversationHistory can store it
+				// alongside the assistant message in api_history.json.
+				if ((finalResponse as any).responseId) {
+					this.lastResponseId = (finalResponse as any).responseId as string
+				}
+			}
+
 			if (pendingGroundingMetadata) {
 				const sources = this.extractGroundingSources(pendingGroundingMetadata)
 				if (sources.length > 0) {
@@ -150,7 +194,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					outputTokens,
 					cacheReadTokens,
 					reasoningTokens,
-					totalCost: this.calculateCost({ info, inputTokens, outputTokens, cacheReadTokens }),
+					totalCost: this.calculateCost({
+						info,
+						inputTokens,
+						outputTokens,
+						cacheReadTokens,
+						reasoningTokens,
+					}),
 				}
 			}
 		} catch (error) {
@@ -166,7 +216,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in geminiModels ? (modelId as GeminiModelId) : geminiDefaultModelId
 		let info: ModelInfo = geminiModels[id]
-		const params = getModelParams({ format: "gemini", modelId: id, model: info, settings: this.options })
+
+		const params = getModelParams({
+			format: "gemini",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: info.defaultTemperature ?? 1,
+		})
 
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.
@@ -211,7 +268,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
-			const { id: model } = this.getModel()
+			const { id: model, info } = this.getModel()
 
 			const tools: GenerateContentConfig["tools"] = []
 			if (this.options.enableUrlContext) {
@@ -220,19 +277,27 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			if (this.options.enableGrounding) {
 				tools.push({ googleSearch: {} })
 			}
+
+			const supportsTemperature = info.supportsTemperature !== false
+			const temperatureConfig: number | undefined = supportsTemperature
+				? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
+				: info.defaultTemperature
+
 			const promptConfig: GenerateContentConfig = {
 				httpOptions: this.options.googleGeminiBaseUrl
 					? { baseUrl: this.options.googleGeminiBaseUrl }
 					: undefined,
-				temperature: this.options.modelTemperature ?? 0,
+				temperature: temperatureConfig,
 				...(tools.length > 0 ? { tools } : {}),
 			}
 
-			const result = await this.client.models.generateContent({
+			const request = {
 				model,
 				contents: [{ role: "user", parts: [{ text: prompt }] }],
 				config: promptConfig,
-			})
+			}
+
+			const result = await this.client.models.generateContent(request)
 
 			let text = result.text ?? ""
 
@@ -260,7 +325,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const response = await this.client.models.countTokens({
 				model,
-				contents: convertAnthropicContentToGemini(content),
+				// Token counting does not need encrypted continuation; always drop thoughtSignature.
+				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
 			})
 
 			if (response.totalTokens === undefined) {
@@ -275,16 +341,26 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
+	public getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
+	}
+
+	public getResponseId(): string | undefined {
+		return this.lastResponseId
+	}
+
 	public calculateCost({
 		info,
 		inputTokens,
 		outputTokens,
 		cacheReadTokens = 0,
+		reasoningTokens = 0,
 	}: {
 		info: ModelInfo
 		inputTokens: number
 		outputTokens: number
 		cacheReadTokens?: number
+		reasoningTokens?: number
 	}) {
 		// For models with tiered pricing, prices might only be defined in tiers
 		let inputPrice = info.inputPrice
@@ -316,22 +392,23 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Subtract the cached input tokens from the total input tokens.
 		const uncachedInputTokens = inputTokens - cacheReadTokens
 
+		// Bill both completion and reasoning ("thoughts") tokens as output.
+		const billedOutputTokens = outputTokens + reasoningTokens
+
 		let cacheReadCost = cacheReadTokens > 0 ? cacheReadsPrice * (cacheReadTokens / 1_000_000) : 0
 
 		const inputTokensCost = inputPrice * (uncachedInputTokens / 1_000_000)
-		const outputTokensCost = outputPrice * (outputTokens / 1_000_000)
+		const outputTokensCost = outputPrice * (billedOutputTokens / 1_000_000)
 		const totalCost = inputTokensCost + outputTokensCost + cacheReadCost
 
 		const trace: Record<string, { price: number; tokens: number; cost: number }> = {
 			input: { price: inputPrice, tokens: uncachedInputTokens, cost: inputTokensCost },
-			output: { price: outputPrice, tokens: outputTokens, cost: outputTokensCost },
+			output: { price: outputPrice, tokens: billedOutputTokens, cost: outputTokensCost },
 		}
 
 		if (cacheReadTokens > 0) {
 			trace.cacheRead = { price: cacheReadsPrice, tokens: cacheReadTokens, cost: cacheReadCost }
 		}
-
-		// console.log(`[GeminiHandler] calculateCost -> ${totalCost}`, trace)
 
 		return totalCost
 	}

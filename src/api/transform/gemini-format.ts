@@ -1,12 +1,37 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Content, Part } from "@google/genai"
 
-export function convertAnthropicContentToGemini(content: string | Anthropic.ContentBlockParam[]): Part[] {
+export function convertAnthropicContentToGemini(
+	content: string | Anthropic.ContentBlockParam[],
+	options?: { includeThoughtSignatures?: boolean },
+): Part[] {
+	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
+
 	if (typeof content === "string") {
 		return [{ text: content }]
 	}
 
 	return content.flatMap((block): Part | Part[] => {
+		// Support custom blocks that are not part of the Anthropic SDK types by
+		// inspecting the runtime shape via `as any`. This lets us carry provider-
+		// specific metadata (like thought signatures from the Google GenAI SDK)
+		// through the Anthropic-style abstraction.
+		const anyBlock = block as any
+
+		// Handle thoughtSignature blocks first, outside the typed switch,
+		// to avoid widening the Anthropic.ContentBlockParam union.
+		// Only forward these when the caller explicitly opts in (e.g. when an
+		// effort-based thinkingLevel is set). For all other cases (including
+		// budget-only configs), drop the block entirely so it never reaches the
+		// default handler.
+		if (anyBlock.type === "thoughtSignature") {
+			if (includeThoughtSignatures && typeof anyBlock.thoughtSignature === "string") {
+				return { thoughtSignature: anyBlock.thoughtSignature } as any
+			}
+			// Explicitly omit thoughtSignature when not including it.
+			return []
+		}
+
 		switch (block.type) {
 			case "text":
 				return { text: block.text }
@@ -70,9 +95,12 @@ export function convertAnthropicContentToGemini(content: string | Anthropic.Cont
 	})
 }
 
-export function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam): Content {
+export function convertAnthropicMessageToGemini(
+	message: Anthropic.Messages.MessageParam,
+	options?: { includeThoughtSignatures?: boolean },
+): Content {
 	return {
 		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content),
+		parts: convertAnthropicContentToGemini(message.content, options),
 	}
 }

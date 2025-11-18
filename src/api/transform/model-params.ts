@@ -129,15 +129,22 @@ export function getModelParams({
 		temperature = 1.0
 	} else if (shouldUseReasoningEffort({ model, settings })) {
 		// "Traditional" reasoning models use the `reasoningEffort` parameter.
-		const effort = (customReasoningEffort ?? model.reasoningEffort) as any
+		const effort = (customReasoningEffort ?? model.reasoningEffort) as
+			| ReasoningEffortExtended
+			| "disable"
+			| undefined
 		// Do not propagate "disable" into model params; treat as omission
 		if (effort && effort !== "disable") {
-			if (model.supportsReasoningEffort === true) {
-				// Boolean capability: accept extended efforts; UI still exposes low/medium/high by default
-				reasoningEffort = effort as ReasoningEffortExtended
-			} else {
+			const capability = model.supportsReasoningEffort
+			if (capability === true) {
+				// Boolean capability: any supported effort value (UI exposes low/medium/high by default)
+				reasoningEffort = effort
+			} else if (Array.isArray(capability) && capability.includes(effort)) {
 				// Array capability: honor exactly what's defined by the model
-				reasoningEffort = effort as ReasoningEffortExtended
+				reasoningEffort = effort
+			} else {
+				// Model does not advertise supportsReasoningEffort; do not apply reasoningEffort
+				reasoningEffort = undefined
 			}
 		}
 	}
