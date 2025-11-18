@@ -3025,7 +3025,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			apiConfiguration,
 			autoApprovalEnabled,
 			alwaysApproveResubmit,
-			requestDelaySeconds,
+			// requestDelaySeconds,
 			mode,
 			zgsmCodeMode,
 			autoCondenseContext = true,

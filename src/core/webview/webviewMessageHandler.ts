@@ -3192,7 +3192,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "copyError": {
-			const { message: errorMessage } = message.values ?? {}
+			const { message: errorMessage, originModelId, selectedLLM } = message.values ?? {}
 			const { apiConfiguration } = await provider.getState()
 			const httpProxy = process.env.http_proxy || process.env.HTTP_PROXY
 			const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY
@@ -3226,7 +3226,7 @@ export const webviewMessageHandler = async (
 				await vscode.env.clipboard.writeText(dedent`
 					message: ${errorMessage}
 					provider: ${apiConfiguration.apiProvider}
-					Model: ${apiConfiguration.apiProvider === "zgsm" ? apiConfiguration.zgsmModelId : apiConfiguration.apiModelId}
+					Model: ${apiConfiguration.apiProvider === "zgsm" ? selectedLLM || originModelId || apiConfiguration.zgsmModelId : apiConfiguration.apiModelId}
 					${apiConfiguration.apiProvider === "zgsm" ? `BaseUrl: ${apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}` : ""}
 					vscodeVersion: ${vscode.version}
 					pluginVersion: ${Package.version}

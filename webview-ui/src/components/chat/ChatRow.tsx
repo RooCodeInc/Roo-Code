@@ -459,14 +459,19 @@ export const ChatRowContent = ({
 		return null
 	}, [message.type, message.ask, message.partial, message.text])
 
-	const handleCopyErrorDetail = useCallback((message: string) => {
-		vscode.postMessage({
-			type: "copyError",
-			values: {
-				message,
-			},
-		})
-	}, [])
+	const handleCopyErrorDetail = useCallback(
+		(message: string) => {
+			vscode.postMessage({
+				type: "copyError",
+				values: {
+					message,
+					originModelId,
+					selectedLLM,
+				},
+			})
+		},
+		[originModelId, selectedLLM],
+	)
 
 	if (tool) {
 		const toolIcon = (name: string) => (

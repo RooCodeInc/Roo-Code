@@ -40,6 +40,8 @@ import {
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
 	minimaxDefaultModelId,
+	type ToolProtocol,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -48,6 +50,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { EXPERIMENT_IDS, experimentDefault } from "@roo/experiments"
 import {
 	useOpenRouterModelProviders,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
@@ -147,7 +150,7 @@ const ApiOptions = ({
 	setCachedStateField,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList /* cloudIsAuthenticated */ } = useExtensionState()
+	const { organizationAllowList, /* cloudIsAuthenticated,*/ experiments: experimentsConfig } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -455,6 +458,57 @@ const ApiOptions = ({
 	// 		name,
 	// 	}
 	// }, [selectedProvider])
+
+	// Calculate the default protocol that would be used if toolProtocol is not set
+	// This mirrors the logic in resolveToolProtocol.ts (steps 2-5, skipping step 1 which is the user preference)
+	const defaultProtocol = useMemo((): ToolProtocol => {
+		// 2. Experimental Setting (nativeToolCalling experiment)
+		const nativeToolCallingEnabled =
+			experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
+			experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]
+
+		if (nativeToolCallingEnabled) {
+			// Check if model supports native tools
+			if (selectedModelInfo?.supportsNativeTools === true) {
+				return TOOL_PROTOCOL.NATIVE
+			}
+			// If experiment is enabled but model doesn't support it, return XML immediately
+			// This matches resolveToolProtocol.ts behavior (lines 53-57)
+			return TOOL_PROTOCOL.XML
+		}
+
+		// 3. Model Default
+		if (selectedModelInfo?.defaultToolProtocol) {
+			// Still need to check support even for model defaults
+			if (
+				selectedModelInfo.defaultToolProtocol === TOOL_PROTOCOL.NATIVE &&
+				selectedModelInfo.supportsNativeTools !== true
+			) {
+				return TOOL_PROTOCOL.XML
+			}
+			return selectedModelInfo.defaultToolProtocol
+		}
+
+		// 4. Provider Default (currently all providers default to XML)
+		// The nativePreferredProviders list in resolveToolProtocol.ts is currently empty
+		// If you update it there, update this logic as well
+
+		// 5. XML Fallback
+		return TOOL_PROTOCOL.XML
+	}, [experimentsConfig, selectedModelInfo])
+
+	// Determine whether to show the tool protocol selector
+	// Separate from defaultProtocol calculation to keep concerns separate
+	const showToolProtocolSelector = useMemo(() => {
+		const nativeToolCallingEnabled =
+			experimentsConfig?.[EXPERIMENT_IDS.NATIVE_TOOL_CALLING] ??
+			experimentDefault[EXPERIMENT_IDS.NATIVE_TOOL_CALLING]
+
+		// Only show if experiment is enabled AND model supports native tools
+		// If model doesn't support native tools, showing the selector is confusing
+		// since native protocol won't actually be available
+		return nativeToolCallingEnabled && selectedModelInfo?.supportsNativeTools === true
+	}, [experimentsConfig, selectedModelInfo])
 
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
@@ -935,6 +989,39 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
+						{showToolProtocolSelector && (
+							<div>
+								<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+								<Select
+									value={apiConfiguration.toolProtocol || "default"}
+									onValueChange={(value) => {
+										const newValue = value === "default" ? undefined : (value as ToolProtocol)
+										setApiConfigurationField("toolProtocol", newValue)
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder={t("settings:common.select")} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="default">
+											{t("settings:toolProtocol.default")} (
+											{defaultProtocol === TOOL_PROTOCOL.NATIVE
+												? t("settings:toolProtocol.native")
+												: t("settings:toolProtocol.xml")}
+											)
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.XML}>
+											{t("settings:toolProtocol.xml")}
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.NATIVE}>
+											{t("settings:toolProtocol.native")}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<div className="text-sm text-vscode-descriptionForeground mt-1">
+									{t("settings:toolProtocol.description")}
+								</div>
+							</div>
+						)}
 					</CollapsibleContent>
 				</Collapsible>
 			)}
