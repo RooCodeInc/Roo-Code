@@ -100,7 +100,9 @@ export const getOpenAiReasoning = ({
 	if (reasoningEffort === "disable" || !reasoningEffort) return undefined
 
 	// Include "none" | "minimal" | "low" | "medium" | "high" literally
-	return { reasoning_effort: reasoningEffort as any }
+	return {
+		reasoning_effort: reasoningEffort as OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"],
+	}
 }
 
 export const getGeminiReasoning = ({
@@ -121,7 +123,7 @@ export const getGeminiReasoning = ({
 	}
 
 	// Effort-based models on Google GenAI: only support explicit low/high levels.
-	const selectedEffort = (settings.reasoningEffort ?? (model as any).reasoningEffort) as
+	const selectedEffort = (settings.reasoningEffort ?? model.reasoningEffort) as
 		| ReasoningEffortExtended
 		| "disable"
 		| undefined

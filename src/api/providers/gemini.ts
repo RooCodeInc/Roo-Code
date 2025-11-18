@@ -75,7 +75,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
 		// using effort-based reasoning (thinkingLevel). Budget-only configs should NOT
 		// send thoughtSignature parts back to Gemini.
-		const includeThoughtSignatures = Boolean((thinkingConfig as any)?.thinkingLevel)
+		const includeThoughtSignatures = Boolean(thinkingConfig?.thinkingLevel)
 
 		const contents = messages.map((message) =>
 			convertAnthropicMessageToGemini(message, { includeThoughtSignatures }),
@@ -116,12 +116,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
-			let finalResponse: any
+			let finalResponse: { responseId?: string } | undefined
 
 			for await (const chunk of result) {
 				// Track the final structured response (per SDK pattern: candidate.finishReason)
 				if (chunk.candidates && chunk.candidates[0]?.finishReason) {
-					finalResponse = chunk
+					finalResponse = chunk as { responseId?: string }
 				}
 				// Process candidates and their parts to separate thoughts from content
 				if (chunk.candidates && chunk.candidates.length > 0) {
@@ -132,13 +132,17 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 
 					if (candidate.content && candidate.content.parts) {
-						for (const part of candidate.content.parts) {
+						for (const part of candidate.content.parts as Array<{
+							thought?: boolean
+							text?: string
+							thoughtSignature?: string
+						}>) {
 							// Capture thought signatures so they can be persisted into API history.
-							const thoughtSignature = (part as any).thoughtSignature as string | undefined
+							const thoughtSignature = part.thoughtSignature
 							// Only persist encrypted reasoning when an effort-based thinking level is set
 							// (i.e. thinkingConfig.thinkingLevel is present). Budget-based configs that only
 							// set thinkingBudget should NOT trigger encrypted continuation.
-							if ((thinkingConfig as any)?.thinkingLevel && thoughtSignature) {
+							if (thinkingConfig?.thinkingLevel && thoughtSignature) {
 								this.lastThoughtSignature = thoughtSignature
 							}
 
@@ -167,12 +171,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
-			if (finalResponse) {
+			if (finalResponse?.responseId) {
 				// Capture responseId so Task.addToApiConversationHistory can store it
 				// alongside the assistant message in api_history.json.
-				if ((finalResponse as any).responseId) {
-					this.lastResponseId = (finalResponse as any).responseId as string
-				}
+				this.lastResponseId = finalResponse.responseId
 			}
 
 			if (pendingGroundingMetadata) {
