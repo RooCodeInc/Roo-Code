@@ -594,12 +594,12 @@ describe("reasoning.ts", () => {
 			const geminiModel: ModelInfo = {
 				...baseModel,
 				// Effort-only reasoning model (no budget fields)
-				supportsReasoningEffort: ["low", "high"] as any,
+				supportsReasoningEffort: ["low", "high"] as ModelInfo["supportsReasoningEffort"],
 				reasoningEffort: "low",
 			}
 
 			const settings: ProviderSettings = {
-				apiProvider: "gemini" as any,
+				apiProvider: "gemini",
 				enableReasoningEffort: true,
 				reasoningEffort: "high",
 			}
@@ -621,12 +621,12 @@ describe("reasoning.ts", () => {
 			const geminiModel: ModelInfo = {
 				...baseModel,
 				// Effort-only reasoning model
-				supportsReasoningEffort: ["low", "high"] as any,
+				supportsReasoningEffort: ["low", "high"] as ModelInfo["supportsReasoningEffort"],
 				reasoningEffort: "low",
 			}
 
 			const settings: ProviderSettings = {
-				apiProvider: "gemini" as any,
+				apiProvider: "gemini",
 				// Even with this flag false, an explicit effort selection should win
 				enableReasoningEffort: false,
 				reasoningEffort: "high",
