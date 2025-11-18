@@ -157,6 +157,55 @@ describe("OpenAiHandler", () => {
 			expect(usageChunk?.outputTokens).toBe(5)
 		})
 
+		it("should handle tool calls in non-streaming mode", async () => {
+			mockCreate.mockResolvedValueOnce({
+				choices: [
+					{
+						message: {
+							role: "assistant",
+							content: null,
+							tool_calls: [
+								{
+									id: "call_1",
+									type: "function",
+									function: {
+										name: "test_tool",
+										arguments: '{"arg":"value"}',
+									},
+								},
+							],
+						},
+						finish_reason: "tool_calls",
+					},
+				],
+				usage: {
+					prompt_tokens: 10,
+					completion_tokens: 5,
+					total_tokens: 15,
+				},
+			})
+
+			const handler = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_1",
+				name: "test_tool",
+				arguments: '{"arg":"value"}',
+			})
+		})
+
 		it("should handle streaming responses", async () => {
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -168,6 +217,66 @@ describe("OpenAiHandler", () => {
 			const textChunks = chunks.filter((chunk) => chunk.type === "text")
 			expect(textChunks).toHaveLength(1)
 			expect(textChunks[0].text).toBe("Test response")
+		})
+
+		it("should handle tool calls in streaming responses", async () => {
+			mockCreate.mockImplementation(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_1",
+												function: { name: "test_tool", arguments: "" },
+											},
+										],
+									},
+									finish_reason: null,
+								},
+							],
+						}
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [{ index: 0, function: { arguments: '{"arg":' } }],
+									},
+									finish_reason: null,
+								},
+							],
+						}
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [{ index: 0, function: { arguments: '"value"}' } }],
+									},
+									finish_reason: "tool_calls",
+								},
+							],
+						}
+					},
+				}
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_1",
+				name: "test_tool",
+				arguments: '{"arg":"value"}',
+			})
 		})
 
 		it("should include reasoning_effort when reasoning effort is enabled", async () => {
@@ -618,6 +727,58 @@ describe("OpenAiHandler", () => {
 			)
 		})
 
+		it("should handle tool calls with O3 model in streaming mode", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
+
+			mockCreate.mockImplementation(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_1",
+												function: { name: "test_tool", arguments: "" },
+											},
+										],
+									},
+									finish_reason: null,
+								},
+							],
+						}
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [{ index: 0, function: { arguments: "{}" } }],
+									},
+									finish_reason: "tool_calls",
+								},
+							],
+						}
+					},
+				}
+			})
+
+			const stream = o3Handler.createMessage("system", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_1",
+				name: "test_tool",
+				arguments: "{}",
+			})
+		})
+
 		it("should handle O3 model with streaming and exclude max_tokens when includeMaxTokens is false", async () => {
 			const o3Handler = new OpenAiHandler({
 				...o3Options,
@@ -703,6 +864,55 @@ describe("OpenAiHandler", () => {
 			// Verify stream is not set
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs).not.toHaveProperty("stream")
+		})
+
+		it("should handle tool calls with O3 model in non-streaming mode", async () => {
+			const o3Handler = new OpenAiHandler({
+				...o3Options,
+				openAiStreamingEnabled: false,
+			})
+
+			mockCreate.mockResolvedValueOnce({
+				choices: [
+					{
+						message: {
+							role: "assistant",
+							content: null,
+							tool_calls: [
+								{
+									id: "call_1",
+									type: "function",
+									function: {
+										name: "test_tool",
+										arguments: "{}",
+									},
+								},
+							],
+						},
+						finish_reason: "tool_calls",
+					},
+				],
+				usage: {
+					prompt_tokens: 10,
+					completion_tokens: 5,
+					total_tokens: 15,
+				},
+			})
+
+			const stream = o3Handler.createMessage("system", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_1",
+				name: "test_tool",
+				arguments: "{}",
+			})
 		})
 
 		it("should use default temperature of 0 when not specified for O3 models", async () => {

@@ -42,6 +42,7 @@ type BaseModelParams = {
 	reasoningEffort: ReasoningEffortExtended | undefined
 	reasoningBudget: number | undefined
 	verbosity: VerbosityLevel | undefined
+	tools?: boolean
 }
 
 type AnthropicModelParams = {
@@ -160,6 +161,7 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getOpenAiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
+			tools: model.supportsNativeTools,
 		}
 	} else if (format === "gemini") {
 		return {
