@@ -15,6 +15,20 @@ export const geminiModels = {
 		reasoningEffort: "low",
 		supportsTemperature: true,
 		defaultTemperature: 1,
+		inputPrice: 4.0,
+		outputPrice: 18.0,
+		tiers: [
+			{
+				contextWindow: 200_000,
+				inputPrice: 2.0,
+				outputPrice: 12.0,
+			},
+			{
+				contextWindow: Infinity,
+				inputPrice: 4.0,
+				outputPrice: 18.0,
+			},
+		],
 	},
 	// 2.5 Pro models
 	"gemini-2.5-pro": {
