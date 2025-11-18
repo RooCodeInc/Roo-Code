@@ -190,57 +190,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
-		// Helper to transform tool definitions to be compatible with OpenAI Structured Outputs (strict: true)
-		// This ensures all properties are required (with nullable types if needed) and additionalProperties: false
-		const transformToolParams = (params: any): any => {
-			if (!params || typeof params !== "object" || params.type !== "object") {
-				return params
-			}
-
-			const newParams = { ...params }
-			newParams.additionalProperties = false
-			newParams.required = [...(newParams.required || [])]
-
-			if (newParams.properties) {
-				const newProps = { ...newParams.properties }
-
-				for (const key of Object.keys(newProps)) {
-					// Recursively transform nested objects
-					if (newProps[key].type === "object") {
-						newProps[key] = transformToolParams(newProps[key])
-					} else if (newProps[key].type === "array" && newProps[key].items) {
-						if (newProps[key].items.type === "object") {
-							newProps[key] = {
-								...newProps[key],
-								items: transformToolParams(newProps[key].items),
-							}
-						}
-					}
-
-					// Ensure property is in required list for strict mode
-					if (!newParams.required.includes(key)) {
-						newParams.required.push(key)
-
-						// Make optional properties nullable
-						const prop = newProps[key]
-						if (prop.type) {
-							if (Array.isArray(prop.type)) {
-								if (!prop.type.includes("null")) {
-									newProps[key] = { ...prop, type: [...prop.type, "null"] }
-								}
-							} else if (prop.type !== "null") {
-								newProps[key] = { ...prop, type: [prop.type, "null"] }
-							}
-						} else if (prop.anyOf || prop.oneOf) {
-							// Handle complex types if necessary, but keeping simple for now
-						}
-					}
-				}
-				newParams.properties = newProps
-			}
-			return newParams
-		}
-
 		// Build a request body for the OpenAI Responses API.
 		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
@@ -317,8 +266,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						type: "function",
 						name: tool.function.name,
 						description: tool.function.description,
-						parameters: transformToolParams(tool.function.parameters),
-						strict: true, // Now safe to enforce strict mode
+						parameters: tool.function.parameters,
+						strict: true,
 					})),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
