@@ -283,7 +283,6 @@ export async function presentAssistantMessage(cline: Task) {
 			// Determine protocol by checking if this tool call has an ID.
 			// Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks).
 			// XML protocol tool calls NEVER have an ID (parsed from XML text).
-			// This is the definitive indicator and prevents race conditions from re-resolving the protocol.
 			const toolCallId = (block as any).id
 			const isNative = !!toolCallId
 
