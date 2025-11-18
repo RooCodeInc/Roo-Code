@@ -38,7 +38,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { command, cwd: customCwd } = params
-		const { handleError, pushToolResult, askApproval, removeClosingTag } = callbacks
+		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol } = callbacks
 
 		try {
 			if (!command) {

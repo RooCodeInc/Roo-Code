@@ -27,7 +27,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 	async execute(params: GenerateImageParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { prompt, path: relPath, image: inputImagePath } = params
-		const { handleError, pushToolResult, askApproval, removeClosingTag } = callbacks
+		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol } = callbacks
 
 		const provider = task.providerRef.deref()
 		const state = await provider?.getState()

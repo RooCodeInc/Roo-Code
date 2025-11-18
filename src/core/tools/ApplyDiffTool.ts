@@ -32,7 +32,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 	}
 
 	async execute(params: ApplyDiffParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { askApproval, handleError, pushToolResult } = callbacks
+		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 		let { path: relPath, diff: diffContent } = params
 
 		if (diffContent && !task.api.getModel().id.includes("claude")) {

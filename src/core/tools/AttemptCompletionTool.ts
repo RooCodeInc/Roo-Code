@@ -32,7 +32,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 	async execute(params: AttemptCompletionParams, task: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
 		const { result } = params
-		const { handleError, pushToolResult, askFinishSubTaskApproval, toolDescription } = callbacks
+		const { handleError, pushToolResult, askFinishSubTaskApproval, toolDescription, toolProtocol } = callbacks
 
 		const preventCompletionWithOpenTodos = vscode.workspace
 			.getConfiguration(Package.name)

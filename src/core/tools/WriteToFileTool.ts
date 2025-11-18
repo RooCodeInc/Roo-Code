@@ -38,7 +38,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	}
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { pushToolResult, handleError, askApproval, removeClosingTag } = callbacks
+		const { pushToolResult, handleError, askApproval, removeClosingTag, toolProtocol } = callbacks
 		const relPath = params.path
 		let newContent = params.content
 		const predictedLineCount = params.line_count
@@ -63,7 +63,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (!accessAllowed) {
 			await task.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath, toolProtocol), toolProtocol))
 			return
 		}
 

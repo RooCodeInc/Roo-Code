@@ -69,6 +69,7 @@ export async function applyDiffTool(
 			handleError,
 			pushToolResult,
 			removeClosingTag,
+			toolProtocol,
 		})
 	}
 
@@ -88,6 +89,7 @@ export async function applyDiffTool(
 				handleError,
 				pushToolResult,
 				removeClosingTag,
+				toolProtocol,
 			})
 		}
 	}
@@ -266,7 +268,7 @@ Original error: ${errorMessage}`
 				await cline.say("rooignore_error", relPath)
 				updateOperationResult(relPath, {
 					status: "blocked",
-					error: formatResponse.rooIgnoreError(relPath),
+					error: formatResponse.rooIgnoreError(relPath, undefined),
 				})
 				continue
 			}
@@ -734,9 +736,16 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 			}
 		}
 
+		// Check protocol for notice formatting
+		const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
 		const singleBlockNotice =
 			totalSearchBlocks === 1
-				? "\n<notice>Making multiple related changes in a single apply_diff is more efficient. If other changes are needed in this file, please include them as additional SEARCH/REPLACE blocks.</notice>"
+				? isNativeProtocol(toolProtocol)
+					? "\n" +
+						JSON.stringify({
+							notice: "Making multiple related changes in a single apply_diff is more efficient. If other changes are needed in this file, please include them as additional SEARCH/REPLACE blocks.",
+						})
+					: "\n<notice>Making multiple related changes in a single apply_diff is more efficient. If other changes are needed in this file, please include them as additional SEARCH/REPLACE blocks.</notice>"
 				: ""
 
 		// Push the final result combining all operation results

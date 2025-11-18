@@ -23,7 +23,7 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 
 	async execute(params: SwitchModeParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { mode_slug, reason } = params
-		const { askApproval, handleError, pushToolResult } = callbacks
+		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
 			if (!mode_slug) {
