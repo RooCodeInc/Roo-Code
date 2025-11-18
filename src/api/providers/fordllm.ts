@@ -227,9 +227,16 @@ export class FordLlmHandler extends BaseProvider implements SingleCompletionHand
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			yield {
 				type: "error",
-				error: new Error(errorMessage),
+				error: errorMessage,
+				message: errorMessage,
 			}
 		}
+	}
+
+	async completePrompt(prompt: string): Promise<string> {
+		// Simple implementation for single completion - call the Ford API with a simple user message
+		const response = await this.callFordAi("", [{ role: "user", content: prompt }])
+		return response.choices?.[0]?.message?.content || ""
 	}
 
 	override getModel(): { id: string; info: ModelInfo } {
