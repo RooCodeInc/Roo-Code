@@ -63,6 +63,11 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "dial":
+			if (!apiConfiguration.dialBaseUrl || !apiConfiguration.dialApiKey || !apiConfiguration.dialModelId) {
+				return i18next.t("settings:validation.openAi")
+			}
+			break
 		case "litellm":
 			if (!apiConfiguration.litellmApiKey) {
 				return i18next.t("settings:validation.apiKey")

@@ -5,6 +5,7 @@ export * from "./chutes.js"
 export * from "./claude-code.js"
 export * from "./deepseek.js"
 export * from "./doubao.js"
+export * from "./dial.js"
 export * from "./featherless.js"
 export * from "./fireworks.js"
 export * from "./gemini.js"
@@ -60,6 +61,7 @@ import { xaiDefaultModelId } from "./xai.js"
 import { vercelAiGatewayDefaultModelId } from "./vercel-ai-gateway.js"
 import { internationalZAiDefaultModelId, mainlandZAiDefaultModelId } from "./zai.js"
 import { deepInfraDefaultModelId } from "./deepinfra.js"
+import { dialDefaultModelId } from "./dial.js"
 import { minimaxDefaultModelId } from "./minimax.js"
 
 // Import the ProviderName type from provider-settings to avoid duplication
@@ -121,6 +123,8 @@ export function getProviderDefaultModelId(
 			return "" // LMStudio uses dynamic model selection
 		case "deepinfra":
 			return deepInfraDefaultModelId
+		case "dial":
+			return dialDefaultModelId
 		case "vscode-lm":
 			return vscodeLlmDefaultModelId
 		case "claude-code":

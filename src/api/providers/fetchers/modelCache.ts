@@ -26,6 +26,7 @@ import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
+import { getDialModels } from "./dial"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -91,6 +92,12 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				break
 			case "deepinfra":
 				models = await getDeepInfraModels(options.apiKey, options.baseUrl)
+				break
+			case "dial":
+				if (!options.apiKey) {
+					throw new Error("DIAL API key is required to fetch models")
+				}
+				models = await getDialModels(options.apiKey, options.baseUrl)
 				break
 			case "io-intelligence":
 				models = await getIOIntelligenceModels(options.apiKey)

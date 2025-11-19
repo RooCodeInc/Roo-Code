@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
+import { dialDefaultApiVersion, dialDefaultBaseUrl, dialDefaultModelId, dialDefaultModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
@@ -164,6 +165,36 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new GroqHandler(options)
 		case "deepinfra":
 			return new DeepInfraHandler(options)
+		case "dial": {
+			const normalizeBaseUrl = (value?: string) => {
+				const trimmed = (value ?? dialDefaultBaseUrl).trim()
+				if (!trimmed) return dialDefaultBaseUrl
+
+				const withoutTrailingSlash = trimmed.replace(/\/$/, "")
+				return withoutTrailingSlash.replace(/\/openai$/, "")
+			}
+
+			const baseUrl = normalizeBaseUrl(options.dialBaseUrl)
+			const apiKey = options.dialApiKey ?? ""
+			const modelId = options.dialModelId ?? dialDefaultModelId
+			const apiVersion = options.dialAzureApiVersion || dialDefaultApiVersion
+
+			const headers = apiKey ? { "Api-Key": apiKey } : undefined
+
+			return new OpenAiHandler(
+				{
+					...options,
+					openAiBaseUrl: baseUrl,
+					openAiApiKey: apiKey || "not-provided",
+					openAiModelId: modelId,
+					openAiCustomModelInfo: dialDefaultModelInfo,
+					openAiHeaders: headers,
+					openAiUseAzure: true,
+					azureApiVersion: apiVersion,
+				},
+				"DIAL",
+			)
+		}
 		case "huggingface":
 			return new HuggingFaceHandler(options)
 		case "chutes":

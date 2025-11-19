@@ -807,6 +807,7 @@ export const webviewMessageHandler = async (
 						huggingface: {},
 						litellm: {},
 						deepinfra: {},
+						dial: {},
 						"io-intelligence": {},
 						requesty: {},
 						unbound: {},
@@ -852,6 +853,18 @@ export const webviewMessageHandler = async (
 						baseUrl: apiConfiguration.deepInfraBaseUrl,
 					},
 				},
+				...(apiConfiguration.dialApiKey
+					? [
+							{
+								key: "dial" as const,
+								options: {
+									provider: "dial" as const,
+									apiKey: apiConfiguration.dialApiKey,
+									baseUrl: apiConfiguration.dialBaseUrl,
+								},
+							},
+						]
+					: []),
 				{
 					key: "roo",
 					options: {

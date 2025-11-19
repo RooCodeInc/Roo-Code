@@ -32,11 +32,12 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "OpenAI"
+	private readonly providerName: string
 
-	constructor(options: ApiHandlerOptions) {
+	constructor(options: ApiHandlerOptions, providerName = "OpenAI") {
 		super()
 		this.options = options
+		this.providerName = providerName
 
 		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"

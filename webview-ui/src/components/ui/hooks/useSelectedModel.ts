@@ -26,6 +26,7 @@ import {
 	featherlessModels,
 	ioIntelligenceModels,
 	qwenCodeModels,
+	dialDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
@@ -300,6 +301,11 @@ function getSelectedModel({
 		case "deepinfra": {
 			const id = getValidatedModelId(apiConfiguration.deepInfraModelId, routerModels.deepinfra, defaultModelId)
 			const info = routerModels.deepinfra?.[id]
+			return { id, info }
+		}
+		case "dial": {
+			const id = getValidatedModelId(apiConfiguration.dialModelId, routerModels.dial, defaultModelId)
+			const info = routerModels.dial?.[id] ?? dialDefaultModelInfo
 			return { id, info }
 		}
 		case "vscode-lm": {
