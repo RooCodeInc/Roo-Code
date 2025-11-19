@@ -17,7 +17,8 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
-import { extractSymbolMetadata } from "./metadata-extractor"
+import { extractSymbolMetadata, extractImportInfo } from "./metadata-extractor"
+import { ImportInfo } from "../types/metadata"
 
 /**
  * Implementation of the code parser interface
@@ -653,6 +654,33 @@ export class CodeParser implements ICodeParser {
 			content,
 			startLine: commentStartLine + 1, // Convert to 1-based
 		}
+	}
+
+	/**
+	 * Extracts all import statements from a file
+	 * Returns import metadata to be included in all chunks from this file
+	 */
+	private extractFileImports(tree: any): ImportInfo[] {
+		const imports: ImportInfo[] = []
+
+		// Query for import statements
+		const importQuery = `(import_statement) @import`
+
+		try {
+			const matches = tree.rootNode.descendantsOfType("import_statement")
+
+			for (const importNode of matches) {
+				const importInfo = extractImportInfo(importNode)
+				if (importInfo) {
+					imports.push(importInfo)
+				}
+			}
+		} catch (error) {
+			// Silently fail - import extraction is optional
+			console.debug("Failed to extract imports:", error)
+		}
+
+		return imports
 	}
 }
 
