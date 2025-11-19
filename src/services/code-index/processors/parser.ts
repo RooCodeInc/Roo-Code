@@ -178,6 +178,9 @@ export class CodeParser implements ICodeParser {
 
 		const results: CodeBlock[] = []
 
+		// Phase 3: Extract file-level imports once
+		const fileImports = this.extractFileImports(tree)
+
 		// Process captures if not empty
 		const queue: Node[] = Array.from(captures).map((capture) => capture.node)
 
@@ -187,34 +190,75 @@ export class CodeParser implements ICodeParser {
 
 			// Check if the node meets the minimum character requirement
 			if (currentNode.text.length >= MIN_BLOCK_CHARS) {
-				// If it also exceeds the maximum character limit, try to break it down
-				if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
-					if (currentNode.children.filter((child) => child !== null).length > 0) {
-						// If it has children, process them instead
-						queue.push(...currentNode.children.filter((child) => child !== null))
+				// Phase 3: Smart chunking based on semantic boundaries
+				const isSemanticUnit = this.isSemanticUnit(currentNode)
+
+				// If it's a semantic unit (function/class), apply special rules
+				if (isSemanticUnit) {
+					// Rule 1 & 2: Never split functions/methods, keep classes together when possible
+					if (currentNode.text.length <= SEMANTIC_MAX_CHARS) {
+						// Keep entire semantic unit (even if >MAX_BLOCK_CHARS)
+						// This is the key change: we allow larger chunks for semantic completeness
+						// Will be handled in the "create a block" section below
+					} else if (currentNode.text.length <= ABSOLUTE_MAX_CHARS) {
+						// Between SEMANTIC_MAX and ABSOLUTE_MAX: still keep together
+						// Will be handled in the "create a block" section below
 					} else {
-						// If it's a leaf node, chunk it
-						const chunkedBlocks = this._chunkLeafNodeByLines(
-							currentNode,
-							filePath,
-							fileHash,
-							seenSegmentHashes,
-						)
-						results.push(...chunkedBlocks)
+						// >ABSOLUTE_MAX_CHARS: Need to split, but intelligently
+						// For now, fall back to processing children
+						// TODO: Implement splitAtLogicalBoundaries() for very large functions
+						if (currentNode.children.filter((child) => child !== null).length > 0) {
+							queue.push(...currentNode.children.filter((child) => child !== null))
+						} else {
+							const chunkedBlocks = this._chunkLeafNodeByLines(
+								currentNode,
+								filePath,
+								fileHash,
+								seenSegmentHashes,
+							)
+							results.push(...chunkedBlocks)
+						}
+						continue // Skip the "create a block" section
 					}
 				} else {
-					// Node meets min chars and is within max chars, create a block
+					// Not a semantic unit: apply standard size limits
+					if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
+						if (currentNode.children.filter((child) => child !== null).length > 0) {
+							// If it has children, process them instead
+							queue.push(...currentNode.children.filter((child) => child !== null))
+						} else {
+							// If it's a leaf node, chunk it
+							const chunkedBlocks = this._chunkLeafNodeByLines(
+								currentNode,
+								filePath,
+								fileHash,
+								seenSegmentHashes,
+							)
+							results.push(...chunkedBlocks)
+						}
+						continue // Skip the "create a block" section
+					}
+				}
+
+				// Create a block (for nodes that passed the size checks above)
+				{
+					// Phase 3: Include comments with code (Rule 3)
+					const { content: contentWithComments, startLine: adjustedStartLine } = this.includeComments(
+						currentNode,
+						content,
+					)
+
 					const identifier =
 						currentNode.childForFieldName("name")?.text ||
 						currentNode.children.find((c) => c?.type === "identifier")?.text ||
 						null
 					const type = currentNode.type
-					const start_line = currentNode.startPosition.row + 1
+					const start_line = adjustedStartLine // Use adjusted start line (includes comments)
 					const end_line = currentNode.endPosition.row + 1
-					const content = currentNode.text
-					const contentPreview = content.slice(0, 100)
+					const contentToUse = contentWithComments // Use content with comments
+					const contentPreview = contentToUse.slice(0, 100)
 					const segmentHash = createHash("sha256")
-						.update(`${filePath}-${start_line}-${end_line}-${content.length}-${contentPreview}`)
+						.update(`${filePath}-${start_line}-${end_line}-${contentToUse.length}-${contentPreview}`)
 						.digest("hex")
 
 					if (!seenSegmentHashes.has(segmentHash)) {
@@ -225,7 +269,7 @@ export class CodeParser implements ICodeParser {
 						let documentation = undefined
 						if (ext === "ts" || ext === "tsx" || ext === "js" || ext === "jsx") {
 							try {
-								symbolMetadata = extractSymbolMetadata(currentNode, content) || undefined
+								symbolMetadata = extractSymbolMetadata(currentNode, currentNode.text) || undefined
 								documentation = symbolMetadata?.documentation
 							} catch (error) {
 								// Silently fail metadata extraction - don't break indexing
@@ -239,11 +283,12 @@ export class CodeParser implements ICodeParser {
 							type,
 							start_line,
 							end_line,
-							content,
+							content: contentToUse, // Content with comments
 							segmentHash,
 							fileHash,
 							symbolMetadata,
 							documentation,
+							imports: fileImports.length > 0 ? fileImports : undefined, // Phase 3: Include imports (Rule 4)
 						})
 					}
 				}
