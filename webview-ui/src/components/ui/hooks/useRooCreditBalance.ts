@@ -20,6 +20,7 @@ export const useRooCreditBalance = () => {
 
 			if (message.type === "rooCreditBalance" && message.requestId === requestId) {
 				window.removeEventListener("message", handleMessage)
+				clearTimeout(timeout)
 
 				if (message.values?.balance !== undefined) {
 					setBalance(message.values.balance)
@@ -33,17 +34,15 @@ export const useRooCreditBalance = () => {
 			}
 		}
 
-		window.addEventListener("message", handleMessage)
-
-		// Request the balance from the extension
-		vscode.postMessage({ type: "requestRooCreditBalance", requestId })
-
-		// Cleanup timeout
 		const timeout = setTimeout(() => {
 			window.removeEventListener("message", handleMessage)
 			setIsLoading(false)
 			setError("Request timed out")
-		}, 10000) // 10 second timeout
+		}, 10000)
+
+		window.addEventListener("message", handleMessage)
+
+		vscode.postMessage({ type: "requestRooCreditBalance", requestId })
 
 		return () => {
 			window.removeEventListener("message", handleMessage)
