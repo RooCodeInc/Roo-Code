@@ -148,7 +148,20 @@ export interface FileMetadata {
 	exports: ExportInfo[]
 
 	/** All imports in file */
+	imports: ImportInfo[]
 
+	/** All symbols defined in file */
+	symbols: SymbolMetadata[]
+
+	/** Total lines in file */
+	lineCount: number
+
+	/** Cyclomatic complexity score */
+	complexity?: number
+
+	/** Last modified timestamp */
+	lastModified: Date
+}
 
 /**
  * Enhanced code segment with rich metadata
@@ -289,9 +302,7 @@ export function buildEmbeddingContext(segment: EnhancedCodeSegment): string {
 		}
 
 		if (segment.symbolMetadata.parameters && segment.symbolMetadata.parameters.length > 0) {
-			const params = segment.symbolMetadata.parameters
-				.map((p) => `${p.name} (${p.type || "any"})`)
-				.join(", ")
+			const params = segment.symbolMetadata.parameters.map((p) => `${p.name} (${p.type || "any"})`).join(", ")
 			parts.push(`Parameters: ${params}`)
 		}
 
@@ -312,4 +323,3 @@ export function buildEmbeddingContext(segment: EnhancedCodeSegment): string {
 
 	return parts.join("\n")
 }
-
