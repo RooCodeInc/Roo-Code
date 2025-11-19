@@ -15,9 +15,10 @@ function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block
 
 export function convertAnthropicContentToGemini(
 	content: ExtendedAnthropicContent,
-	options?: { includeThoughtSignatures?: boolean },
+	options?: { includeThoughtSignatures?: boolean; toolIdToName?: Map<string, string> },
 ): Part[] {
 	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
+	const toolIdToName = options?.toolIdToName
 
 	// First pass: find thoughtSignature if it exists in the content blocks
 	let activeThoughtSignature: string | undefined
@@ -78,9 +79,15 @@ export function convertAnthropicContentToGemini(
 					return []
 				}
 
-				// Extract tool name from tool_use_id (e.g., "calculator-123" -> "calculator")
-				const lastHyphenIndex = block.tool_use_id.lastIndexOf("-")
-				const toolName = lastHyphenIndex >= 0 ? block.tool_use_id.slice(0, lastHyphenIndex) : block.tool_use_id
+				// Extract tool name from tool_use_id
+				// 1. Try to look up the name from the provided map (reliable source)
+				// 2. Fallback: Extract from ID if it follows "name-counter" format (heuristic)
+				// 3. Fallback: Use ID as name (likely to fail validation but better than crashing)
+				let toolName = toolIdToName?.get(block.tool_use_id)
+				if (!toolName) {
+					const lastHyphenIndex = block.tool_use_id.lastIndexOf("-")
+					toolName = lastHyphenIndex >= 0 ? block.tool_use_id.slice(0, lastHyphenIndex) : block.tool_use_id
+				}
 
 				if (typeof block.content === "string") {
 					return {
@@ -123,7 +130,7 @@ export function convertAnthropicContentToGemini(
 
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
-	options?: { includeThoughtSignatures?: boolean },
+	options?: { includeThoughtSignatures?: boolean; toolIdToName?: Map<string, string> },
 ): Content[] {
 	const parts = convertAnthropicContentToGemini(message.content, options)
 

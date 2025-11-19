@@ -103,8 +103,22 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			return true
 		})
 
+		// Build a map of tool IDs to names from previous messages
+		// This is needed because Anthropic's tool_result blocks only contain the ID,
+		// but Gemini requires the name in functionResponse
+		const toolIdToName = new Map<string, string>()
+		for (const message of messages) {
+			if (Array.isArray(message.content)) {
+				for (const block of message.content) {
+					if (block.type === "tool_use") {
+						toolIdToName.set(block.id, block.name)
+					}
+				}
+			}
+		}
+
 		const contents = geminiMessages
-			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures }))
+			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures, toolIdToName }))
 			.flat()
 
 		const tools: GenerateContentConfig["tools"] = []
