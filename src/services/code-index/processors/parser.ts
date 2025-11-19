@@ -610,6 +610,50 @@ export class CodeParser implements ICodeParser {
 		]
 		return classTypes.includes(node.type)
 	}
+
+	/**
+	 * Includes preceding comments with a node's content
+	 * Looks backwards from the node to find JSDoc, single-line, and multi-line comments
+	 */
+	private includeComments(node: Node, fileContent: string): { content: string; startLine: number } {
+		const nodeStartLine = node.startPosition.row
+		const nodeEndLine = node.endPosition.row
+		const lines = fileContent.split("\n")
+
+		// Look backwards for comments
+		let commentStartLine = nodeStartLine
+		for (let i = nodeStartLine - 1; i >= 0; i--) {
+			const line = lines[i].trim()
+
+			// Empty line - continue looking
+			if (line === "") {
+				continue
+			}
+
+			// Comment line - include it
+			if (
+				line.startsWith("//") ||
+				line.startsWith("/*") ||
+				line.startsWith("*") ||
+				line.endsWith("*/") ||
+				line.startsWith("/**")
+			) {
+				commentStartLine = i
+			} else {
+				// Non-comment, non-empty line - stop looking
+				break
+			}
+		}
+
+		// Extract content from comment start to node end
+		const contentLines = lines.slice(commentStartLine, nodeEndLine + 1)
+		const content = contentLines.join("\n")
+
+		return {
+			content,
+			startLine: commentStartLine + 1, // Convert to 1-based
+		}
+	}
 }
 
 // Export a singleton instance for convenience
