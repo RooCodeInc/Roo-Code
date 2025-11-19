@@ -108,10 +108,25 @@ export class ToolRepetitionDetector {
 			}
 		}
 
-		// Create the object with the tool name and sorted parameters
+		// For native protocol tools, also include nativeArgs if present
+		// This ensures tools with array parameters (like read_file with files array)
+		// are properly differentiated instead of all appearing identical
+		const sortedNativeArgs: Record<string, unknown> = {}
+		if (toolUse.nativeArgs && typeof toolUse.nativeArgs === "object") {
+			const nativeKeys = Object.keys(toolUse.nativeArgs).sort()
+			for (const key of nativeKeys) {
+				if (Object.prototype.hasOwnProperty.call(toolUse.nativeArgs, key)) {
+					sortedNativeArgs[key] = (toolUse.nativeArgs as Record<string, unknown>)[key]
+				}
+			}
+		}
+
+		// Create the object with the tool name, sorted parameters, and sorted native args
 		const toolObject = {
 			name: toolUse.name,
 			parameters: sortedParams,
+			// Only include nativeArgs if it has content
+			...(Object.keys(sortedNativeArgs).length > 0 ? { nativeArgs: sortedNativeArgs } : {}),
 		}
 
 		// Convert to a canonical JSON string
