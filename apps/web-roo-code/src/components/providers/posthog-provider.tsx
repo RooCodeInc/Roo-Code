@@ -55,7 +55,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
 			// Initialize PostHog with appropriate persistence based on consent
 			posthog.init(posthogKey, {
-				api_host: posthogHost || "https://us.i.posthog.com",
+				api_host: posthogHost || "https://ph.roocode.com",
 				capture_pageview: false, // We handle pageview tracking manually
 				loaded: (posthogInstance) => {
 					if (process.env.NODE_ENV === "development") {
