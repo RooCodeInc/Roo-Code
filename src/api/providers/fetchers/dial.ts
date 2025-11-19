@@ -2,9 +2,10 @@ import axios from "axios"
 import { z } from "zod"
 
 import type { ModelInfo } from "@roo-code/types"
-import { dialDefaultBaseUrl, dialDefaultModelInfo } from "@roo-code/types"
+import { dialDefaultModelInfo } from "@roo-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
+import { normalizeDialBaseUrl } from "../utils/normalize-dial-base-url"
 
 const DialModelSchema = z.object({
 	id: z.string(),
@@ -50,16 +51,6 @@ const DialModelSchema = z.object({
 
 const DialModelsResponseSchema = z.object({ data: z.array(DialModelSchema) })
 
-const normalizeBaseUrl = (baseUrl?: string): string => {
-	const trimmed = (baseUrl || dialDefaultBaseUrl).trim()
-	if (!trimmed) {
-		return dialDefaultBaseUrl
-	}
-
-	const withoutTrailingSlash = trimmed.replace(/\/$/, "")
-	return withoutTrailingSlash.replace(/\/openai$/, "")
-}
-
 export async function getDialModels(apiKey: string, baseUrl?: string): Promise<Record<string, ModelInfo>> {
 	if (!apiKey) {
 		throw new Error("DIAL API key is required to fetch models")
@@ -70,7 +61,7 @@ export async function getDialModels(apiKey: string, baseUrl?: string): Promise<R
 		"Api-Key": apiKey,
 	}
 
-	const normalizedBase = normalizeBaseUrl(baseUrl)
+	const normalizedBase = normalizeDialBaseUrl(baseUrl)
 	const url = `${normalizedBase}/openai/models`
 
 	const response = await axios.get(url, { headers })
