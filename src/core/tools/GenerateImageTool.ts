@@ -62,7 +62,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 		if (!accessAllowed) {
 			await task.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+			pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 			return
 		}
 
@@ -82,7 +82,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			const inputImageAccessAllowed = task.rooIgnoreController?.validateAccess(inputImagePath)
 			if (!inputImageAccessAllowed) {
 				await task.say("rooignore_error", inputImagePath)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(inputImagePath)))
+				pushToolResult(formatResponse.rooIgnoreError(inputImagePath, toolProtocol))
 				return
 			}
 

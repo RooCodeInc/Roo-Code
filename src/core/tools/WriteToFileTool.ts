@@ -63,7 +63,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (!accessAllowed) {
 			await task.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath, toolProtocol), toolProtocol))
+			pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 			return
 		}
 

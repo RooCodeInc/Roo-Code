@@ -58,7 +58,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 			if (!accessAllowed) {
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+				pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 				return
 			}
 

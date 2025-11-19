@@ -68,7 +68,7 @@ export class InsertContentTool extends BaseTool<"insert_content"> {
 
 			if (!accessAllowed) {
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+				pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 				return
 			}
 
