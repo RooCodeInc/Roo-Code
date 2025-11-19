@@ -37,6 +37,7 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	dialDefaultModelId,
 	minimaxDefaultModelId,
 } from "@roo-code/types"
 
@@ -98,6 +99,7 @@ import {
 	VercelAiGateway,
 	DeepInfra,
 	MiniMax,
+	Dial,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -239,7 +241,8 @@ const ApiOptions = ({
 			} else if (
 				selectedProvider === "litellm" ||
 				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
+				selectedProvider === "roo" ||
+				selectedProvider === "dial"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}
@@ -256,6 +259,8 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.dialApiKey,
+			apiConfiguration?.dialBaseUrl,
 			customHeaders,
 		],
 	)
@@ -352,6 +357,7 @@ const ApiOptions = ({
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
 				groq: { field: "apiModelId", default: groqDefaultModelId },
 				chutes: { field: "apiModelId", default: chutesDefaultModelId },
+				dial: { field: "dialModelId", default: dialDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
@@ -400,6 +406,7 @@ const ApiOptions = ({
 		const slugs: Record<string, string> = {
 			"openai-native": "openai",
 			openai: "openai-compatible",
+			dial: "dial",
 		}
 
 		const slug = slugs[selectedProvider] || selectedProvider
@@ -518,6 +525,17 @@ const ApiOptions = ({
 
 			{selectedProvider === "deepinfra" && (
 				<DeepInfra
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{selectedProvider === "dial" && (
+				<Dial
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}

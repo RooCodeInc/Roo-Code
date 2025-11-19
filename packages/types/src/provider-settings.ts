@@ -44,6 +44,7 @@ export const dynamicProviders = [
 	"huggingface",
 	"litellm",
 	"deepinfra",
+	"dial",
 	"io-intelligence",
 	"requesty",
 	"unbound",
@@ -317,6 +318,13 @@ const deepInfraSchema = apiModelIdProviderModelSchema.extend({
 	deepInfraModelId: z.string().optional(),
 })
 
+const dialSchema = baseProviderSettingsSchema.extend({
+	dialBaseUrl: z.string().optional(),
+	dialApiKey: z.string().optional(),
+	dialModelId: z.string().optional(),
+	dialAzureApiVersion: z.string().optional(),
+})
+
 const doubaoSchema = apiModelIdProviderModelSchema.extend({
 	doubaoBaseUrl: z.string().optional(),
 	doubaoApiKey: z.string().optional(),
@@ -442,6 +450,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
 	deepInfraSchema.merge(z.object({ apiProvider: z.literal("deepinfra") })),
+	dialSchema.merge(z.object({ apiProvider: z.literal("dial") })),
 	doubaoSchema.merge(z.object({ apiProvider: z.literal("doubao") })),
 	moonshotSchema.merge(z.object({ apiProvider: z.literal("moonshot") })),
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
@@ -484,6 +493,7 @@ export const providerSettingsSchema = z.object({
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
 	...deepInfraSchema.shape,
+	...dialSchema.shape,
 	...doubaoSchema.shape,
 	...moonshotSchema.shape,
 	...minimaxSchema.shape,
@@ -539,6 +549,7 @@ export const modelIdKeys = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
+	"dialModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -581,6 +592,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	xai: "apiModelId",
 	groq: "apiModelId",
 	chutes: "apiModelId",
+	dial: "dialModelId",
 	litellm: "litellmModelId",
 	huggingface: "huggingFaceModelId",
 	cerebras: "apiModelId",
@@ -721,6 +733,7 @@ export const MODELS_BY_PROVIDER: Record<
 	requesty: { id: "requesty", label: "Requesty", models: [] },
 	unbound: { id: "unbound", label: "Unbound", models: [] },
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
+	dial: { id: "dial", label: "EPAM DIAL", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 	chutes: { id: "chutes", label: "Chutes AI", models: [] },
 
