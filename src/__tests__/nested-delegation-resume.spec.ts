@@ -3,6 +3,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
 
+// Mock safe-stable-stringify to avoid runtime error
+vi.mock("safe-stable-stringify", () => ({
+	default: (obj: any) => JSON.stringify(obj),
+}))
+
 // vscode mock for Task/Provider imports
 vi.mock("vscode", () => {
 	const window = {
@@ -35,7 +40,7 @@ vi.mock("../core/task-persistence", () => ({
 	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
 }))
 
-import { attemptCompletionTool } from "../core/tools/attemptCompletionTool"
+import { attemptCompletionTool } from "../core/tools/AttemptCompletionTool"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import type { Task } from "../core/task/Task"
 import { readTaskMessages } from "../core/task-persistence/taskMessages"
@@ -163,16 +168,15 @@ describe("Nested delegation resume (A → B → C)", () => {
 
 		const askFinishSubTaskApproval = vi.fn(async () => true)
 
-		await attemptCompletionTool(
-			clineC,
-			blockC,
-			vi.fn(),
-			vi.fn(),
-			vi.fn(),
-			vi.fn((_, v?: string) => v ?? ""),
-			() => "desc",
+		await attemptCompletionTool.handle(clineC, blockC, {
+			askApproval: vi.fn(),
+			handleError: vi.fn(),
+			pushToolResult: vi.fn(),
+			removeClosingTag: vi.fn((_, v?: string) => v ?? ""),
 			askFinishSubTaskApproval,
-		)
+			toolProtocol: "xml",
+			toolDescription: () => "desc",
+		} as any)
 
 		// After C completes, B must be current
 		expect(currentActiveId).toBe("B")
@@ -205,16 +209,15 @@ describe("Nested delegation resume (A → B → C)", () => {
 			partial: false,
 		} as any
 
-		await attemptCompletionTool(
-			clineB,
-			blockB,
-			vi.fn(),
-			vi.fn(),
-			vi.fn(),
-			vi.fn((_, v?: string) => v ?? ""),
-			() => "desc",
+		await attemptCompletionTool.handle(clineB, blockB, {
+			askApproval: vi.fn(),
+			handleError: vi.fn(),
+			pushToolResult: vi.fn(),
+			removeClosingTag: vi.fn((_, v?: string) => v ?? ""),
 			askFinishSubTaskApproval,
-		)
+			toolProtocol: "xml",
+			toolDescription: () => "desc",
+		} as any)
 
 		// After B completes, A must be current
 		expect(currentActiveId).toBe("A")
