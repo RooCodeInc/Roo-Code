@@ -154,11 +154,30 @@ export class CodeIndexManager {
 		// 5. Handle Indexing Start/Restart
 		// The enhanced vectorStore.initialize() in startIndexing() now handles dimension changes automatically
 		// by detecting incompatible collections and recreating them, so we rely on that for dimension changes
-		const shouldStartOrRestartIndexing =
-			requiresRestart ||
-			(needsServiceRecreation && (!this._orchestrator || this._orchestrator.state !== "Indexing"))
+
+		// Determine if we should start or restart indexing
+		// We need to be careful here to avoid unnecessary re-indexing on window reload
+		let shouldStartOrRestartIndexing = false
+
+		if (requiresRestart) {
+			// Configuration changed in a way that requires restart (e.g., model change)
+			shouldStartOrRestartIndexing = true
+		} else if (needsServiceRecreation && this._orchestrator) {
+			// Services were recreated but orchestrator exists
+			// Only restart if not currently indexing
+			shouldStartOrRestartIndexing =
+				this._orchestrator.state !== "Indexing" && this._orchestrator.state !== "Indexed"
+		} else if (needsServiceRecreation && !this._orchestrator) {
+			// Services were recreated and orchestrator doesn't exist (e.g., after window reload)
+			// This is the common case that was causing unnecessary re-indexing
+			// The orchestrator's startIndexing() will check for existing data and do incremental scan if needed
+			shouldStartOrRestartIndexing = true
+		}
 
 		if (shouldStartOrRestartIndexing) {
+			// Note: startIndexing() internally checks for existing indexed data via hasIndexedData()
+			// and will perform an incremental scan instead of a full rebuild when data exists
+			// This prevents unnecessary re-indexing when the window is reloaded
 			this._orchestrator?.startIndexing() // This method is async, but we don't await it here
 		}
 
