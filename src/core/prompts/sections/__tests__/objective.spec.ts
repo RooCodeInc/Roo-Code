@@ -21,11 +21,13 @@ describe("getObjectiveSection", () => {
 			const objective = getObjectiveSection(mockCodeIndexManagerEnabled)
 
 			// Check that the objective includes the codebase_search enforcement
+			expect(objective).toContain("CRITICAL: CODEBASE SEARCH REQUIREMENT")
 			expect(objective).toContain(
-				"for ANY exploration of code you haven't examined yet in this conversation, you MUST use the `codebase_search` tool",
+				"For ANY exploration of code you haven't examined yet in this conversation, you MUST use the `codebase_search` tool FIRST",
 			)
-			expect(objective).toContain("BEFORE using any other search or file exploration tools")
-			expect(objective).toContain("This applies throughout the entire task, not just at the beginning")
+			expect(objective).toContain("BEFORE using any other file exploration tools")
+			expect(objective).toContain("This is NOT optional")
+			expect(objective).toContain("Throughout the entire task, not just at the beginning")
 		})
 	})
 
