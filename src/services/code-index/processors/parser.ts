@@ -10,6 +10,7 @@ import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
+import { extractSymbolMetadata } from "./metadata-extractor"
 
 /**
  * Implementation of the code parser interface
@@ -210,6 +211,20 @@ export class CodeParser implements ICodeParser {
 
 					if (!seenSegmentHashes.has(segmentHash)) {
 						seenSegmentHashes.add(segmentHash)
+
+						// Phase 2: Extract enhanced metadata for TypeScript/JavaScript
+						let symbolMetadata = undefined
+						let documentation = undefined
+						if (ext === "ts" || ext === "tsx" || ext === "js" || ext === "jsx") {
+							try {
+								symbolMetadata = extractSymbolMetadata(currentNode, content) || undefined
+								documentation = symbolMetadata?.documentation
+							} catch (error) {
+								// Silently fail metadata extraction - don't break indexing
+								console.debug(`Failed to extract metadata for ${filePath}:${start_line}`, error)
+							}
+						}
+
 						results.push({
 							file_path: filePath,
 							identifier,
@@ -219,6 +234,8 @@ export class CodeParser implements ICodeParser {
 							content,
 							segmentHash,
 							fileHash,
+							symbolMetadata,
+							documentation,
 						})
 					}
 				}

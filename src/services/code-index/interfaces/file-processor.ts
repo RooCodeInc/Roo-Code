@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { PointStruct } from "./vector-store"
+import { SymbolMetadata, ImportInfo, ExportInfo } from "../types/metadata"
 
 /**
  * Interface for code file parser
@@ -113,4 +114,9 @@ export interface CodeBlock {
 	content: string
 	fileHash: string
 	segmentHash: string
+	// Phase 2: Enhanced metadata (optional for backward compatibility)
+	symbolMetadata?: SymbolMetadata
+	imports?: ImportInfo[]
+	exports?: ExportInfo[]
+	documentation?: string
 }
