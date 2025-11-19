@@ -12,10 +12,11 @@
 | 0 | Foundation & Setup | ✅ Complete | 4/4 | 1 week | 🔴 Critical |
 | 1 | System Prompt Improvements | ✅ Complete | 6/6 | 1 week | 🔥 Highest ROI |
 | 2 | Enhanced Metadata | ✅ Complete | 5/5 | 2 weeks | 🔴 Critical |
-| 3 | BM25 Keyword Search | ⬜ Not Started | 0/5 | 1-2 weeks | 🔥 High Impact |
-| 4 | Neo4j Integration | ⬜ Not Started | 0/5 | 2-3 weeks | 🔥 High Impact |
-| 5 | LSP Integration | ⬜ Not Started | 0/3 | 1-2 weeks | 🔥 High Impact |
-| 6 | Hybrid Search & Routing | ⬜ Not Started | 0/3 | 2 weeks | 🔥 Very High |
+| 3 | Intelligent Chunking Strategy | ⬜ Not Started | 0/4 | 1.5 weeks | 🔴 Critical |
+| 4 | BM25 Keyword Search | ⬜ Not Started | 0/5 | 1-2 weeks | 🔥 High Impact |
+| 5 | Neo4j Integration | ⬜ Not Started | 0/5 | 2-3 weeks | 🔥 High Impact |
+| 6 | LSP Integration | ⬜ Not Started | 0/3 | 1-2 weeks | 🔥 High Impact |
+| 7 | Hybrid Search & Routing | ⬜ Not Started | 0/3 | 2 weeks | 🔥 Very High |
 | 7 | Advanced Features | ⬜ Not Started | 0/4 | 2-3 weeks | 🟡 Medium |
 | 8 | Performance & Polish | ⬜ Not Started | 0/3 | 1-2 weeks | 🟡 Medium |
 
@@ -78,73 +79,89 @@
 
 ---
 
-## Phase 3: BM25 Keyword Search
+## Phase 3: Intelligent Chunking Strategy
 
-**Status:** ⬜ Not Started  
-**Progress:** 0/5 tasks complete
+**Status:** ⬜ Not Started
+**Progress:** 0/4 tasks complete
 
-- [ ] Task 3.1: Install BM25 Library
-- [ ] Task 3.2: Create BM25 Index Service
-- [ ] Task 3.3: Create Hybrid Search Service
-- [ ] Task 3.4: Integrate BM25 into Indexing Pipeline
-- [ ] Task 3.5: Update Search Service
+- [ ] Task 3.1: Analyze Current Chunking Behavior
+- [ ] Task 3.2: Design Intelligent Chunking Rules
+- [ ] Task 3.3: Implement Smart Chunking Logic
+- [ ] Task 3.4: Validate Chunking Improvements
 
-**Blockers:** Requires Phase 2 complete  
-**Expected Impact:** 40% better exact symbol finding  
-**Notes:** Complements vector search perfectly
+**Blockers:** None (Phase 2 complete)
+**Expected Impact:** 25% better context preservation
+**Rationale for Phase Insertion:** Intelligent chunking is a foundational improvement that benefits all search methods (vector, BM25, graph). Implementing it before BM25 avoids the need to rebuild indexes later and maximizes the value of Phase 2's metadata enhancements. Better chunks = better embeddings = better search quality across all methods.
 
 ---
 
-## Phase 4: Neo4j Integration
+## Phase 4: BM25 Keyword Search
 
-**Status:** ⬜ Not Started  
+**Status:** ⬜ Not Started
 **Progress:** 0/5 tasks complete
 
-- [ ] Task 4.1: Set Up Neo4j Configuration
-- [ ] Task 4.2: Install Neo4j Driver
-- [ ] Task 4.3: Create Neo4j Service
-- [ ] Task 4.4: Create Graph Indexer
-- [ ] Task 4.5: Integrate Neo4j into Pipeline
+- [ ] Task 4.1: Install BM25 Library
+- [ ] Task 4.2: Create BM25 Index Service
+- [ ] Task 4.3: Create Hybrid Search Service
+- [ ] Task 4.4: Integrate BM25 into Indexing Pipeline
+- [ ] Task 4.5: Update Search Service
+
+**Blockers:** Requires Phase 3 complete (chunking fixes)
+**Expected Impact:** 40% better exact symbol finding
+**Notes:** Complements vector search perfectly. Benefits from Phase 3's improved chunking.
+
+---
+
+## Phase 5: Neo4j Integration
+
+**Status:** ⬜ Not Started
+**Progress:** 0/5 tasks complete
+
+- [ ] Task 5.1: Set Up Neo4j Configuration
+- [ ] Task 5.2: Install Neo4j Driver
+- [ ] Task 5.3: Create Neo4j Service
+- [ ] Task 5.4: Create Graph Indexer
+- [ ] Task 5.5: Integrate Neo4j into Pipeline
 
 **Blockers:** Requires Phase 2 complete
 **Expected Impact:** 100% better structural queries
-**Notes:** Can run parallel to Phase 3. See `NEO4J_UI_IMPLEMENTATION_PLAN.md` for detailed UI/UX implementation guide.
+**Notes:** Can run parallel to Phases 3-4. See `NEO4J_UI_IMPLEMENTATION_PLAN.md` for detailed UI/UX implementation guide.
 
 ---
 
-## Phase 5: LSP Integration
+## Phase 6: LSP Integration
 
-**Status:** ⬜ Not Started  
+**Status:** ⬜ Not Started
 **Progress:** 0/3 tasks complete
 
-- [ ] Task 5.1: Create LSP Service Wrapper
-- [ ] Task 5.2: Enrich Code Segments with LSP Data
-- [ ] Task 5.3: Create LSP Search Backend
+- [ ] Task 6.1: Create LSP Service Wrapper
+- [ ] Task 6.2: Enrich Code Segments with LSP Data
+- [ ] Task 6.3: Create LSP Search Backend
 
-**Blockers:** Requires Phase 0 complete  
-**Expected Impact:** 100% accurate type info  
-**Notes:** Can run parallel to Phases 3, 4
+**Blockers:** Requires Phase 0 complete
+**Expected Impact:** 100% accurate type info
+**Notes:** Can run parallel to Phases 3, 4, 5
 
 ---
 
-## Phase 6: Hybrid Search & Routing
+## Phase 7: Hybrid Search & Routing
 
-**Status:** ⬜ Not Started  
+**Status:** ⬜ Not Started
 **Progress:** 0/3 tasks complete
 
-- [ ] Task 6.1: Create Query Analyzer
-- [ ] Task 6.2: Create Unified Search Orchestrator
-- [ ] Task 6.3: Update Search Service
+- [ ] Task 7.1: Create Query Analyzer
+- [ ] Task 7.2: Create Unified Search Orchestrator
+- [ ] Task 7.3: Update Search Service
 
-**Blockers:** Requires Phases 3, 4, 5 complete  
-**Expected Impact:** 60% better search relevance  
+**Blockers:** Requires Phases 4, 5, 6 complete
+**Expected Impact:** 60% better search relevance
 **Notes:** Brings everything together!
 
 ---
 
-## Phase 7: Advanced Features
+## Phase 8: Advanced Features
 
-**Status:** ⬜ Not Started  
+**Status:** ⬜ Not Started
 **Progress:** 0/4 tasks complete
 
 - [ ] Test-to-Code Mapping
@@ -152,23 +169,23 @@
 - [ ] Query Expansion
 - [ ] Search Analytics
 
-**Blockers:** Requires Phase 6 complete  
-**Expected Impact:** 20% better overall experience  
+**Blockers:** Requires Phase 7 complete
+**Expected Impact:** 20% better overall experience
 **Notes:** See ADDITIONAL_ENHANCEMENTS.md for details
 
 ---
 
-## Phase 8: Performance & Polish
+## Phase 9: Performance & Polish
 
-**Status:** ⬜ Not Started  
+**Status:** ⬜ Not Started
 **Progress:** 0/3 tasks complete
 
 - [ ] Caching Layer
 - [ ] Parallel Indexing
 - [ ] Performance Monitoring
 
-**Blockers:** Requires Phase 7 complete  
-**Expected Impact:** 30% faster search  
+**Blockers:** Requires Phase 8 complete
+**Expected Impact:** 30% faster search
 **Notes:** Final polish before release
 
 ---

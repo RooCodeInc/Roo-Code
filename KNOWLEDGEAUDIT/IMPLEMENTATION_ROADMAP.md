@@ -956,11 +956,98 @@ git commit -m "Rollback: Revert enhanced metadata"
 
 ---
 
-## Phase 3: BM25 Keyword Search
+## Phase 3: Intelligent Chunking Strategy
+
+**Duration:** 1.5 weeks
+**Complexity:** Medium
+**Prerequisites:** Phase 2 (Enhanced Metadata)
+**Expected Impact:** 🔥🔥 (High - 25% better context preservation)
+
+**Rationale for Phase Insertion:** Intelligent chunking is a foundational improvement that benefits all search methods (vector, BM25, graph). Implementing it before BM25 avoids the need to rebuild indexes later and maximizes the value of Phase 2's metadata enhancements. Better chunks = better embeddings = better search quality across all methods.
+
+### Overview
+
+Improve code chunking to preserve semantic boundaries and context. Current tree-sitter chunking may split functions mid-way, orphan comments, or lose important context like imports. This phase implements intelligent chunking rules that keep related code together.
+
+### Tasks
+
+#### Task 3.1: Analyze Current Chunking Behavior
+- [ ] **Document current chunking issues**
+  - **File to create:** `KNOWLEDGEAUDIT/CHUNKING_ANALYSIS.md`
+  - **Complexity:** Low
+  - **Analysis:**
+    - Test parser against fixture files
+    - Identify split functions/classes
+    - Find orphaned comments
+    - Document broken context
+  - **Acceptance Criteria:**
+    - Current behavior documented
+    - Issues identified with examples
+    - Test cases created
+  - **Deliverable:** Chunking analysis document
+
+#### Task 3.2: Design Intelligent Chunking Rules
+- [ ] **Define semantic boundary rules**
+  - **File to create:** `KNOWLEDGEAUDIT/CHUNKING_STRATEGY.md`
+  - **Complexity:** Medium
+  - **Rules to define:**
+    - Function boundaries (never split functions)
+    - Class boundaries (keep classes together when possible)
+    - Comment preservation (include related comments)
+    - Import context (preserve imports for chunks)
+    - Chunk size optimization (balance context vs limits)
+  - **Acceptance Criteria:**
+    - Clear rules documented
+    - Edge cases handled
+    - Examples provided
+  - **Deliverable:** Chunking strategy document
+
+#### Task 3.3: Implement Smart Chunking Logic
+- [ ] **Update parser with intelligent chunking**
+  - **File to modify:** `src/services/code-index/processors/parser.ts`
+  - **Complexity:** Medium-High
+  - **Implementation:**
+    - Detect semantic boundaries
+    - Preserve context (comments, imports)
+    - Optimize chunk sizes
+    - Handle edge cases (very large functions)
+  - **Acceptance Criteria:**
+    - Functions not split mid-way
+    - Comments included with code
+    - Imports preserved when needed
+    - Backward compatible
+  - **Deliverable:** Enhanced parser
+
+#### Task 3.4: Validate Chunking Improvements
+- [ ] **Test and measure improvements**
+  - **Complexity:** Medium
+  - **Validation:**
+    - Test on fixture files
+    - Verify semantic boundaries preserved
+    - Measure context preservation improvement
+    - Compare before/after chunking
+  - **Acceptance Criteria:**
+    - 25% improvement in context preservation
+    - No regressions
+    - All tests pass
+  - **Deliverable:** Validation report
+
+### Testing
+- Test parser on all fixture files
+- Verify chunks preserve semantic boundaries
+- Measure context preservation metrics
+
+### Rollback
+- Revert parser.ts changes if issues found
+- Keep analysis documents for future reference
+
+---
+
+## Phase 4: BM25 Keyword Search
 
 **Duration:** 1-2 weeks
 **Complexity:** Medium
-**Prerequisites:** Phase 2 (Enhanced Metadata)
+**Prerequisites:** Phase 3 (Intelligent Chunking)
 **Expected Impact:** 🔥🔥🔥 (Very High)
 
 ### Overview
@@ -1452,7 +1539,7 @@ git commit -m "Rollback: Revert BM25 integration"
 
 ---
 
-## Phase 4: Neo4j Integration
+## Phase 5: Neo4j Integration
 
 **Duration:** 2-3 weeks
 **Complexity:** High
@@ -1745,7 +1832,7 @@ git commit -m "Rollback: Revert Neo4j integration"
 
 ---
 
-## Phase 5: LSP Integration
+## Phase 6: LSP Integration
 
 **Duration:** 1-2 weeks
 **Complexity:** Medium
@@ -2050,11 +2137,11 @@ git commit -m "Rollback: Revert LSP integration"
 
 ---
 
-## Phase 6: Hybrid Search & Intelligent Query Routing
+## Phase 7: Hybrid Search & Intelligent Query Routing
 
 **Duration:** 2 weeks
 **Complexity:** High
-**Prerequisites:** Phases 3, 4, 5 (BM25, Neo4j, LSP)
+**Prerequisites:** Phases 4, 5, 6 (BM25, Neo4j, LSP)
 **Expected Impact:** 🔥🔥🔥 (Very High - brings everything together)
 
 ### Overview
