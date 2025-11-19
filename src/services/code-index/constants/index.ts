@@ -4,7 +4,11 @@ import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
 export const MAX_BLOCK_CHARS = 1000
 export const MIN_BLOCK_CHARS = 50
 export const MIN_CHUNK_REMAINDER_CHARS = 200 // Minimum characters for the *next* chunk after a split
-export const MAX_CHARS_TOLERANCE_FACTOR = 1.15 // 15% tolerance for max chars
+export const MAX_CHARS_TOLERANCE_FACTOR = 1.5 // 50% tolerance for max chars (increased from 1.15 for Phase 3)
+
+// Phase 3: Intelligent Chunking - Semantic boundary limits
+export const SEMANTIC_MAX_CHARS = 3000 // Maximum size for complete semantic units (functions, classes)
+export const ABSOLUTE_MAX_CHARS = 5000 // Hard limit before forced split at logical boundaries
 
 /**Search */
 export const DEFAULT_SEARCH_MIN_SCORE = CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE
