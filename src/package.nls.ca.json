@@ -45,5 +45,6 @@
 	"settings.debug.description": "Activa el mode de depuració per mostrar botons addicionals per veure l'historial de conversa de l'API i els missatges de la interfície d'usuari com a JSON embellert en fitxers temporals.",
 	"settings.debugProxy.enabled.description": "**Habilita el Debug Proxy** — Redirigeix totes les sol·licituds de xarxa sortints a través d'un proxy per a debugging MITM. Només està actiu quan s'executa en mode debug (F5).",
 	"settings.debugProxy.serverUrl.description": "URL del proxy (p. ex., `http://127.0.0.1:8888`). Només s'utilitza quan el **Debug Proxy** està habilitat.",
-	"settings.debugProxy.tlsInsecure.description": "Accepta certificats auto-signats del proxy. **Requerit per a la inspecció MITM.** ⚠️ Insegur — utilitza-ho només per a debugging local."
+	"settings.debugProxy.tlsInsecure.description": "Accepta certificats auto-signats del proxy. **Requerit per a la inspecció MITM.** ⚠️ Insegur — utilitza-ho només per a debugging local.",
+	"settings.taskHistoryRetention.description": "Eliminar automàticament l'historial de tasques en recarregar l'extensió. Elimina les tasques més antigues que el període seleccionat. Opcions: Mai (per defecte), 90 dies, 60 dies, 30 dies, 7 dies o 3 dies. Advertència: Això no es pot desfer i només s'executa en recarregar el connector."
 }

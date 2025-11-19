@@ -45,5 +45,6 @@
 	"settings.debug.description": "デバッグモードを有効にして、API会話履歴とUIメッセージをフォーマットされたJSONとして一時ファイルで表示するための追加ボタンを表示します。",
 	"settings.debugProxy.enabled.description": "**Debug Proxy を有効化** — すべての送信ネットワーク要求を MITM デバッグのためにプロキシ経由でルーティングします。デバッグモード (F5) で実行しているときだけ有効です。",
 	"settings.debugProxy.serverUrl.description": "プロキシ URL（例: `http://127.0.0.1:8888`）。**Debug Proxy** が有効なときにだけ使用されます。",
-	"settings.debugProxy.tlsInsecure.description": "プロキシからの自己署名証明書を許可します。**MITM インスペクションに必須です。** ⚠️ 危険な設定なので、ローカルでのデバッグにだけ使用してください。"
+	"settings.debugProxy.tlsInsecure.description": "プロキシからの自己署名証明書を許可します。**MITM インスペクションに必須です。** ⚠️ 危険な設定なので、ローカルでのデバッグにだけ使用してください。",
+	"settings.taskHistoryRetention.description": "拡張機能の再読み込み時にタスク履歴を自動削除します。選択した期間より古いタスクを削除します。オプション：なし（デフォルト）、90日、60日、30日、7日、または3日。警告：この操作は元に戻せず、プラグインの再読み込み時にのみ実行されます。"
 }

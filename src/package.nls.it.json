@@ -45,5 +45,6 @@
 	"settings.debug.description": "Abilita la modalità debug per mostrare pulsanti aggiuntivi per visualizzare la cronologia delle conversazioni API e i messaggi dell'interfaccia utente come JSON formattato in file temporanei.",
 	"settings.debugProxy.enabled.description": "**Abilita Debug Proxy** — Instrada tutte le richieste di rete in uscita tramite un proxy per il debugging MITM. Attivo solo quando esegui in modalità debug (F5).",
 	"settings.debugProxy.serverUrl.description": "URL del proxy (ad es. `http://127.0.0.1:8888`). Usato solo quando **Debug Proxy** è abilitato.",
-	"settings.debugProxy.tlsInsecure.description": "Accetta certificati autofirmati dal proxy. **Necessario per l'ispezione MITM.** ⚠️ Non sicuro — usalo solo per il debugging locale."
+	"settings.debugProxy.tlsInsecure.description": "Accetta certificati autofirmati dal proxy. **Necessario per l'ispezione MITM.** ⚠️ Non sicuro — usalo solo per il debugging locale.",
+	"settings.taskHistoryRetention.description": "Elimina automaticamente la cronologia delle attività al ricaricamento dell'estensione. Elimina le attività più vecchie del periodo selezionato. Opzioni: Mai (predefinito), 90 giorni, 60 giorni, 30 giorni, 7 giorni o 3 giorni. Attenzione: Questa operazione non può essere annullata e viene eseguita solo al ricaricamento del plugin."
 }
