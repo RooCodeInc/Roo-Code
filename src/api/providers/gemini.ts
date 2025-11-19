@@ -82,9 +82,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			: (maxTokens ?? undefined)
 
 		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
-		// using effort-based reasoning (thinkingLevel). Budget-only configs should NOT
-		// send thoughtSignature parts back to Gemini.
-		const includeThoughtSignatures = Boolean(thinkingConfig?.thinkingLevel)
+		// using reasoning (thinkingConfig is present). Both effort-based (thinkingLevel)
+		// and budget-based (thinkingBudget) models require this for active loops.
+		const includeThoughtSignatures = Boolean(thinkingConfig)
 
 		// The message list can include provider-specific meta entries such as
 		// `{ type: "reasoning", ... }` that are intended only for providers like
@@ -134,6 +134,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		const params: GenerateContentParameters = { model, contents, config }
+		console.log("Gemini request body:", params)
 		try {
 			const result = await this.client.models.generateContentStream(params)
 
@@ -162,10 +163,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 						}>) {
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
-							// Only persist encrypted reasoning when an effort-based thinking level is set
-							// (i.e. thinkingConfig.thinkingLevel is present). Budget-based configs that only
-							// set thinkingBudget should NOT trigger encrypted continuation.
-							if (thinkingConfig?.thinkingLevel && thoughtSignature) {
+							// Persist encrypted reasoning when using reasoning. Both effort-based
+							// and budget-based models require this for active loops.
+							if (thinkingConfig && thoughtSignature) {
 								this.lastThoughtSignature = thoughtSignature
 							}
 
@@ -351,7 +351,12 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const countTokensRequest = {
 				model,
 				// Token counting does not need encrypted continuation; always drop thoughtSignature.
-				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
+				contents: [
+					{
+						role: "user",
+						parts: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
+					},
+				],
 			}
 
 			const response = await this.client.models.countTokens(countTokensRequest)

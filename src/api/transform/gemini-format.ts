@@ -19,15 +19,30 @@ export function convertAnthropicContentToGemini(
 ): Part[] {
 	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
 
+	// First pass: find thoughtSignature if it exists in the content blocks
+	let activeThoughtSignature: string | undefined
+	if (Array.isArray(content)) {
+		const sigBlock = content.find((block) => isThoughtSignatureContentBlock(block)) as ThoughtSignatureContentBlock
+		if (sigBlock?.thoughtSignature) {
+			activeThoughtSignature = sigBlock.thoughtSignature
+		}
+	}
+
+	// Determine the signature to attach to function calls.
+	// If we're in a mode that expects signatures (includeThoughtSignatures is true):
+	// 1. Use the actual signature if we found one in the history/content.
+	// 2. Fallback to "skip_thought_signature_validator" if missing (e.g. cross-model history).
+	let functionCallSignature: string | undefined
+	if (includeThoughtSignatures) {
+		functionCallSignature = activeThoughtSignature || "skip_thought_signature_validator"
+	}
+
 	if (typeof content === "string") {
 		return [{ text: content }]
 	}
 
 	return content.flatMap((block): Part | Part[] => {
-		// Handle thoughtSignature blocks first so that the main switch can continue
-		// to operate on the standard Anthropic content union. This preserves strong
-		// typing for known block types while still allowing provider-specific
-		// extensions when needed.
+		// Handle thoughtSignature blocks first
 		if (isThoughtSignatureContentBlock(block)) {
 			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
 				// The Google GenAI SDK currently exposes thoughtSignature as an
@@ -54,7 +69,10 @@ export function convertAnthropicContentToGemini(
 						name: block.name,
 						args: block.input as Record<string, unknown>,
 					},
-				}
+					// Inject the thoughtSignature into the functionCall part if required.
+					// This is necessary for Gemini 2.5/3+ thinking models to validate the tool call.
+					...(functionCallSignature ? { thoughtSignature: functionCallSignature } : {}),
+				} as Part
 			case "tool_result": {
 				if (!block.content) {
 					return []
@@ -108,6 +126,10 @@ export function convertAnthropicMessageToGemini(
 ): Content {
 	return {
 		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content, options),
+		parts: convertAnthropicContentToGemini(message.content, {
+			...options,
+			includeThoughtSignatures:
+				message.role === "assistant" ? (options?.includeThoughtSignatures ?? true) : false,
+		}),
 	}
 }
