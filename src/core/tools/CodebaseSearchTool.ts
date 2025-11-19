@@ -8,6 +8,7 @@ import { formatResponse } from "../prompts/responses"
 import { VectorStoreSearchResult } from "../../services/code-index/interfaces"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { SymbolMetadata, ParameterInfo } from "../../services/code-index/types/metadata"
 
 interface CodebaseSearchParams {
 	query: string
@@ -103,6 +104,24 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 					identifier: string | null
 					type: string | null
 					language: string | null
+					// Phase 2: Enhanced metadata
+					symbolMetadata?: {
+						name: string
+						type: string
+						visibility?: string
+						isExported?: boolean
+						parameters?: Array<{
+							name: string
+							type?: string
+							optional: boolean
+							defaultValue?: string
+						}>
+						returnType?: string
+						decorators?: string[]
+						extends?: string
+						implements?: string[]
+					}
+					documentation?: string
 				}>
 			}
 
@@ -138,7 +157,8 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 				}
 				const language = languageMap[fileExt] || null
 
-				jsonResult.results.push({
+				// Phase 2: Build enhanced result with metadata
+				const enhancedResult: any = {
 					filePath: relativePath,
 					score: result.score,
 					startLine: result.payload.startLine,
@@ -147,7 +167,37 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 					identifier: result.payload.identifier || null,
 					type: result.payload.type || null,
 					language: language,
-				})
+				}
+
+				// Add symbolMetadata if available
+				if (result.payload.symbolMetadata) {
+					const metadata = result.payload.symbolMetadata
+					enhancedResult.symbolMetadata = {
+						name: metadata.name,
+						type: metadata.type,
+						...(metadata.visibility && { visibility: metadata.visibility }),
+						...(metadata.isExported !== undefined && { isExported: metadata.isExported }),
+						...(metadata.parameters && {
+							parameters: metadata.parameters.map((p) => ({
+								name: p.name,
+								...(p.type && { type: p.type }),
+								optional: p.optional,
+								...(p.defaultValue && { defaultValue: p.defaultValue }),
+							})),
+						}),
+						...(metadata.returnType && { returnType: metadata.returnType }),
+						...(metadata.decorators && { decorators: metadata.decorators }),
+						...(metadata.extends && { extends: metadata.extends }),
+						...(metadata.implements && { implements: metadata.implements }),
+					}
+				}
+
+				// Add documentation if available
+				if (result.payload.documentation) {
+					enhancedResult.documentation = result.payload.documentation
+				}
+
+				jsonResult.results.push(enhancedResult)
 			})
 
 			const payload = { tool: "codebaseSearch", content: jsonResult }
