@@ -297,22 +297,29 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					// For native protocol, add as tool_result block
-					let resultContent: string
+					// Preserve image blocks in the content array instead of converting to strings
+					let resultContent: string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 					if (typeof content === "string") {
 						resultContent = content || "(tool did not return anything)"
 					} else {
-						// Convert array of content blocks to string for tool result
-						// Tool results in OpenAI format only support strings
-						resultContent = content
-							.map((item) => {
-								if (item.type === "text") {
-									return item.text
-								} else if (item.type === "image") {
-									return "(image content)"
-								}
-								return ""
-							})
-							.join("\n")
+						// Preserve both text and image blocks in the content array
+						// This allows images sent by the user to be included in tool results
+						const hasImages = content.some((item) => item.type === "image")
+						if (hasImages) {
+							// Keep as array to preserve image blocks
+							resultContent = content
+						} else {
+							// If no images, convert to string for simpler representation
+							resultContent =
+								content
+									.map((item) => {
+										if (item.type === "text") {
+											return item.text
+										}
+										return ""
+									})
+									.join("\n") || "(tool did not return anything)"
+						}
 					}
 
 					cline.userMessageContent.push({
