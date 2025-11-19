@@ -122,14 +122,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			.flat()
 
 		const tools: GenerateContentConfig["tools"] = []
-		if (this.options.enableUrlContext) {
-			tools.push({ urlContext: {} })
-		}
 
-		if (this.options.enableGrounding) {
-			tools.push({ googleSearch: {} })
-		}
-
+		// Google built-in tools (Grounding, URL Context) are currently mutually exclusive
+		// with function declarations in the Gemini API. If native function calling is
+		// used (Agent tools), we must prioritize it and skip built-in tools to avoid
+		// "Tool use with function calling is unsupported" (HTTP 400) errors.
 		if (metadata?.tools && metadata.tools.length > 0) {
 			tools.push({
 				functionDeclarations: metadata.tools.map((tool) => ({
@@ -138,6 +135,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					parametersJsonSchema: (tool as any).function.parameters,
 				})),
 			})
+		} else {
+			if (this.options.enableUrlContext) {
+				tools.push({ urlContext: {} })
+			}
+
+			if (this.options.enableGrounding) {
+				tools.push({ googleSearch: {} })
+			}
 		}
 
 		// Determine temperature respecting model capabilities and defaults:
