@@ -142,107 +142,110 @@ export async function purgeOldTasks(
 		return !(await pathExists(dir))
 	}
 
-	const results = await Promise.all(
-		taskDirs.map(async (d) => {
-			const taskDir = path.join(tasksDir, d.name)
-			const metadataPath = path.join(taskDir, GlobalFileNames.taskMetadata)
+	const results: number[] = []
 
-			let ts: number | null = null
+	for (const d of taskDirs) {
+		const taskDir = path.join(tasksDir, d.name)
+		const metadataPath = path.join(taskDir, GlobalFileNames.taskMetadata)
 
-			// First try to get a timestamp from task_metadata.json (if present)
-			try {
-				const raw = await fs.readFile(metadataPath, "utf8")
-				const meta = JSON.parse(raw)
-				const maybeTs = Number((meta as any)?.ts)
-				if (Number.isFinite(maybeTs)) {
-					ts = maybeTs
-				}
-			} catch {
-				// Missing or invalid metadata; we'll fall back to directory mtime.
+		let ts: number | null = null
+
+		// First try to get a timestamp from task_metadata.json (if present)
+		try {
+			const raw = await fs.readFile(metadataPath, "utf8")
+			const meta = JSON.parse(raw)
+			const maybeTs = Number((meta as any)?.ts)
+			if (Number.isFinite(maybeTs)) {
+				ts = maybeTs
 			}
+		} catch {
+			// Missing or invalid metadata; we'll fall back to directory mtime.
+		}
 
-			let shouldDelete = false
-			let reason = ""
+		let shouldDelete = false
+		let reason = ""
 
-			// Check for checkpoint-only orphan directories (delete regardless of age)
-			try {
-				const childEntries = await fs.readdir(taskDir, { withFileTypes: true })
-				const visibleNames = childEntries.map((e) => e.name).filter((n) => !n.startsWith("."))
-				const hasCheckpointsDir = childEntries.some((e) => e.isDirectory() && e.name === "checkpoints")
-				const nonCheckpointVisible = visibleNames.filter((n) => n !== "checkpoints")
-				const hasMetadataFile = visibleNames.includes(GlobalFileNames.taskMetadata)
-				if (hasCheckpointsDir && nonCheckpointVisible.length === 0 && !hasMetadataFile) {
-					shouldDelete = true
-					reason = "orphan checkpoints_only"
-				}
-			} catch {
-				// Ignore errors while scanning children; proceed with normal logic
-			}
-
-			if (!shouldDelete && ts !== null && ts < cutoff) {
-				// Normal case: metadata has a valid ts older than cutoff
+		// Check for checkpoint-only orphan directories (delete regardless of age)
+		try {
+			const childEntries = await fs.readdir(taskDir, { withFileTypes: true })
+			const visibleNames = childEntries.map((e) => e.name).filter((n) => !n.startsWith("."))
+			const hasCheckpointsDir = childEntries.some((e) => e.isDirectory() && e.name === "checkpoints")
+			const nonCheckpointVisible = visibleNames.filter((n) => n !== "checkpoints")
+			const hasMetadataFile = visibleNames.includes(GlobalFileNames.taskMetadata)
+			if (hasCheckpointsDir && nonCheckpointVisible.length === 0 && !hasMetadataFile) {
 				shouldDelete = true
-				reason = `ts=${ts}`
-			} else if (!shouldDelete) {
-				// Orphan/legacy case: no valid ts; fall back to directory mtime
-				try {
-					const stat = await fs.stat(taskDir)
-					const mtimeMs = stat.mtime.getTime()
-					if (mtimeMs < cutoff) {
-						shouldDelete = true
-						reason = `no valid ts, mtime=${stat.mtime.toISOString()}`
-					}
-				} catch {
-					// If we can't stat the directory, skip it.
-				}
+				reason = "orphan checkpoints_only"
 			}
+		} catch {
+			// Ignore errors while scanning children; proceed with normal logic
+		}
 
-			if (!shouldDelete) {
-				return 0
-			}
-
-			if (dryRun) {
-				logv(`[Retention][DRY RUN] Would delete task ${d.name} (${reason}) @ ${taskDir}`)
-				return 1
-			}
-
-			// Attempt deletion using provider callback (for full cleanup) or direct rm
-			let deletionError: unknown | null = null
+		if (!shouldDelete && ts !== null && ts < cutoff) {
+			// Normal case: metadata has a valid ts older than cutoff
+			shouldDelete = true
+			reason = `ts=${ts}`
+		} else if (!shouldDelete) {
+			// Orphan/legacy case: no valid ts; fall back to directory mtime
 			try {
-				if (deleteTaskById) {
-					logv(`[Retention] Deleting task ${d.name} via provider @ ${taskDir} (${reason})`)
-					await deleteTaskById(d.name, taskDir)
-				} else {
-					logv(`[Retention] Deleting task ${d.name} via fs.rm @ ${taskDir} (${reason})`)
-					await fs.rm(taskDir, { recursive: true, force: true })
+				const stat = await fs.stat(taskDir)
+				const mtimeMs = stat.mtime.getTime()
+				if (mtimeMs < cutoff) {
+					shouldDelete = true
+					reason = `no valid ts, mtime=${stat.mtime.toISOString()}`
 				}
-			} catch (e) {
-				deletionError = e
+			} catch {
+				// If we can't stat the directory, skip it.
 			}
+		}
 
-			// Verify deletion; if still exists, attempt aggressive cleanup with retries
-			let deleted = await removeDirAggressive(taskDir)
+		if (!shouldDelete) {
+			results.push(0)
+			continue
+		}
 
-			if (!deleted) {
-				// Did not actually remove; report the most relevant error
-				if (deletionError) {
-					log?.(
-						`[Retention] Failed to delete task ${d.name} @ ${taskDir}: ${
-							deletionError instanceof Error ? deletionError.message : String(deletionError)
-						} (directory still present)`,
-					)
-				} else {
-					log?.(
-						`[Retention] Failed to delete task ${d.name} @ ${taskDir}: directory still present after cleanup attempts`,
-					)
-				}
-				return 0
+		if (dryRun) {
+			logv(`[Retention][DRY RUN] Would delete task ${d.name} (${reason}) @ ${taskDir}`)
+			results.push(1)
+			continue
+		}
+
+		// Attempt deletion using provider callback (for full cleanup) or direct rm
+		let deletionError: unknown | null = null
+		try {
+			if (deleteTaskById) {
+				logv(`[Retention] Deleting task ${d.name} via provider @ ${taskDir} (${reason})`)
+				await deleteTaskById(d.name, taskDir)
+			} else {
+				logv(`[Retention] Deleting task ${d.name} via fs.rm @ ${taskDir} (${reason})`)
+				await fs.rm(taskDir, { recursive: true, force: true })
 			}
+		} catch (e) {
+			deletionError = e
+		}
 
-			logv(`[Retention] Deleted task ${d.name} (${reason}) @ ${taskDir}`)
-			return 1
-		}),
-	)
+		// Verify deletion; if still exists, attempt aggressive cleanup with retries
+		let deleted = await removeDirAggressive(taskDir)
+
+		if (!deleted) {
+			// Did not actually remove; report the most relevant error
+			if (deletionError) {
+				log?.(
+					`[Retention] Failed to delete task ${d.name} @ ${taskDir}: ${
+						deletionError instanceof Error ? deletionError.message : String(deletionError)
+					} (directory still present)`,
+				)
+			} else {
+				log?.(
+					`[Retention] Failed to delete task ${d.name} @ ${taskDir}: directory still present after cleanup attempts`,
+				)
+			}
+			results.push(0)
+			continue
+		}
+
+		logv(`[Retention] Deleted task ${d.name} (${reason}) @ ${taskDir}`)
+		results.push(1)
+	}
 
 	const purged = results.reduce<number>((sum, n) => sum + n, 0)
 
