@@ -14,7 +14,7 @@ class TelemetryClient {
 
 			posthog.init(apiKey, {
 				api_host: "https://ph.roocode.com",
-				ui_host: "https://ph.roocode.com",
+				ui_host: "https://us.posthog.com",
 				persistence: "localStorage",
 				loaded: () => posthog.identify(distinctId),
 				capture_pageview: false,
