@@ -296,37 +296,35 @@ export async function presentAssistantMessage(cline: Task) {
 						return
 					}
 
-					// For native protocol, add as tool_result block
-					// Preserve image blocks in the content array instead of converting to strings
-					let resultContent: string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
+					// For native protocol, tool_result content must be a string
+					// Images are added as separate blocks in the user message
+					let resultContent: string
+					let imageBlocks: Anthropic.ImageBlockParam[] = []
+
 					if (typeof content === "string") {
 						resultContent = content || "(tool did not return anything)"
 					} else {
-						// Preserve both text and image blocks in the content array
-						// This allows images sent by the user to be included in tool results
-						const hasImages = content.some((item) => item.type === "image")
-						if (hasImages) {
-							// Keep as array to preserve image blocks
-							resultContent = content
-						} else {
-							// If no images, convert to string for simpler representation
-							resultContent =
-								content
-									.map((item) => {
-										if (item.type === "text") {
-											return item.text
-										}
-										return ""
-									})
-									.join("\n") || "(tool did not return anything)"
-						}
+						// Separate text and image blocks
+						const textBlocks = content.filter((item) => item.type === "text")
+						imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+
+						// Convert text blocks to string for tool_result
+						resultContent =
+							textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
+							"(tool did not return anything)"
 					}
 
+					// Add tool_result with text content only
 					cline.userMessageContent.push({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: resultContent,
 					} as Anthropic.ToolResultBlockParam)
+
+					// Add image blocks separately after tool_result
+					if (imageBlocks.length > 0) {
+						cline.userMessageContent.push(...imageBlocks)
+					}
 
 					hasToolResult = true
 				} else {

@@ -104,17 +104,14 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calls", () => 
 		expect(toolResult).toBeDefined()
 		expect(toolResult.tool_use_id).toBe(toolCallId)
 
-		// Check if content is an array (images should be preserved as array)
-		// When images are present, content should be an array containing image blocks
-		if (Array.isArray(toolResult.content)) {
-			// Images were preserved!
-			const hasImageBlock = toolResult.content.some((block: any) => block.type === "image")
-			expect(hasImageBlock).toBe(true)
-		} else {
-			// If it's a string, images were NOT preserved (this is the bug we're fixing)
-			// This test should PASS after the fix
-			expect(Array.isArray(toolResult.content)).toBe(true)
-		}
+		// For native protocol, tool_result content should be a string (text only)
+		expect(typeof toolResult.content).toBe("string")
+		expect(toolResult.content).toContain("I see a cat")
+
+		// Images should be added as separate blocks AFTER the tool_result
+		const imageBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "image")
+		expect(imageBlocks.length).toBeGreaterThan(0)
+		expect(imageBlocks[0].source.data).toBe("base64ImageData")
 	})
 
 	it("should convert to string when no images are present (native protocol)", async () => {
