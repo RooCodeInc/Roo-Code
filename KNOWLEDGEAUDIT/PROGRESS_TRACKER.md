@@ -1,7 +1,7 @@
 # Roo Code Index: Implementation Progress Tracker
 
 **Last Updated:** 2025-11-19
-**Overall Progress:** 15% (Phase 0: 4/4 ✅ | Phase 1: 6/6 ✅ | Phase 2: 3/5 🔄)
+**Overall Progress:** 16% (Phase 0: 4/4 ✅ | Phase 1: 6/6 ✅ | Phase 2: 4/5 🔄)
 
 ---
 
@@ -11,7 +11,7 @@
 |-------|------|--------|----------|----------|----------|
 | 0 | Foundation & Setup | ✅ Complete | 4/4 | 1 week | 🔴 Critical |
 | 1 | System Prompt Improvements | ✅ Complete | 6/6 | 1 week | 🔥 Highest ROI |
-| 2 | Enhanced Metadata | 🔄 In Progress | 3/5 | 2 weeks | 🔴 Critical |
+| 2 | Enhanced Metadata | 🔄 In Progress | 4/5 | 2 weeks | 🔴 Critical |
 | 3 | BM25 Keyword Search | ⬜ Not Started | 0/5 | 1-2 weeks | 🔥 High Impact |
 | 4 | Neo4j Integration | ⬜ Not Started | 0/5 | 2-3 weeks | 🔥 High Impact |
 | 5 | LSP Integration | ⬜ Not Started | 0/3 | 1-2 weeks | 🔥 High Impact |
@@ -64,17 +64,17 @@
 ## Phase 2: Enhanced Metadata
 
 **Status:** 🔄 In Progress
-**Progress:** 3/5 tasks complete (60%)
+**Progress:** 4/5 tasks complete (80%)
 
 - [x] Task 2.1: Define Enhanced Metadata Schema ✅ **COMPLETE** (schema documented, TypeScript types created)
 - [x] Task 2.2: Enhance Tree-Sitter Parser ✅ **COMPLETE** (metadata extraction implemented)
 - [x] Task 2.3: Update Vector Store Payload ✅ **COMPLETE** (enhanced metadata stored in Qdrant)
-- [ ] Task 2.4: Update Embedding Strategy
+- [x] Task 2.4: Update Embedding Strategy ✅ **COMPLETE** (metadata-enriched embeddings implemented)
 - [ ] Task 2.5: Update Search Results
 
 **Blockers:** None
 **Expected Impact:** 30% better relevance through richer metadata
-**Notes:** Task 2.3 complete! Updated Payload interface with enhanced metadata fields (identifier, type, language, symbolMetadata, imports, exports, documentation, segmentHash). Updated scanner.ts and file-watcher.ts to include all metadata in Qdrant payload. Added language detection map for 15+ languages. All metadata now properly stored and retrievable from vector database.
+**Notes:** Task 2.4 complete! Implemented metadata-enriched embeddings using buildEmbeddingContext() helper. Updated scanner.ts and file-watcher.ts to create embeddings from enriched context that includes: symbol name, type, parameters, return type, documentation. Embeddings now capture semantic meaning from both code content AND metadata. Graceful fallback to plain content for blocks without metadata. This significantly improves semantic search quality by embedding richer context.
 
 ---
 

@@ -23,6 +23,7 @@ import { codeParser } from "./parser"
 import { CacheManager } from "../cache-manager"
 import { generateNormalizedAbsolutePath, generateRelativeFilePath } from "../shared/get-relative-path"
 import { isPathInIgnoredDirectory } from "../../glob/ignore-utils"
+import { buildEmbeddingContext, EnhancedCodeSegment } from "../types/metadata"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
@@ -562,8 +563,30 @@ export class FileWatcher implements IFileWatcher {
 			// Prepare points for batch processing
 			let pointsToUpsert: PointStruct[] = []
 			if (this.embedder && blocks.length > 0) {
-				const texts = blocks.map((block) => block.content)
-				const { embeddings } = await this.embedder.createEmbeddings(texts)
+				// Phase 2: Create metadata-enriched embeddings
+				const enrichedTexts = blocks.map((block) => {
+					// If block has enhanced metadata, use buildEmbeddingContext
+					if (block.symbolMetadata || block.documentation) {
+						const segment: EnhancedCodeSegment = {
+							segmentHash: block.segmentHash,
+							filePath: block.file_path,
+							content: block.content,
+							startLine: block.start_line,
+							endLine: block.end_line,
+							fileHash: block.fileHash,
+							identifier: block.identifier,
+							type: block.type,
+							language: path.extname(block.file_path).slice(1).toLowerCase(),
+							symbolMetadata: block.symbolMetadata,
+							documentation: block.documentation,
+						}
+						return buildEmbeddingContext(segment)
+					}
+					// Fallback to plain content for blocks without metadata
+					return block.content
+				})
+
+				const { embeddings } = await this.embedder.createEmbeddings(enrichedTexts)
 
 				pointsToUpsert = blocks.map((block, index) => {
 					const normalizedAbsolutePath = generateNormalizedAbsolutePath(block.file_path, this.workspacePath)

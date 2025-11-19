@@ -14,6 +14,7 @@ import pLimit from "p-limit"
 import { Mutex } from "async-mutex"
 import { CacheManager } from "../cache-manager"
 import { t } from "../../../i18n"
+import { buildEmbeddingContext, EnhancedCodeSegment } from "../types/metadata"
 import {
 	QDRANT_CODE_BLOCK_NAMESPACE,
 	MAX_FILE_SIZE_BYTES,
@@ -404,8 +405,30 @@ export class DirectoryScanner implements IDirectoryScanner {
 				}
 				// --- End Deletion Step ---
 
-				// Create embeddings for batch
-				const { embeddings } = await this.embedder.createEmbeddings(batchTexts)
+				// Phase 2: Create metadata-enriched embeddings for batch
+				const enrichedTexts = batchBlocks.map((block) => {
+					// If block has enhanced metadata, use buildEmbeddingContext
+					if (block.symbolMetadata || block.documentation) {
+						const segment: EnhancedCodeSegment = {
+							segmentHash: block.segmentHash,
+							filePath: block.file_path,
+							content: block.content,
+							startLine: block.start_line,
+							endLine: block.end_line,
+							fileHash: block.fileHash,
+							identifier: block.identifier,
+							type: block.type,
+							language: path.extname(block.file_path).slice(1).toLowerCase(),
+							symbolMetadata: block.symbolMetadata,
+							documentation: block.documentation,
+						}
+						return buildEmbeddingContext(segment)
+					}
+					// Fallback to plain content for blocks without metadata
+					return block.content
+				})
+
+				const { embeddings } = await this.embedder.createEmbeddings(enrichedTexts)
 
 				// Prepare points for Qdrant
 				const points = batchBlocks.map((block, index) => {
