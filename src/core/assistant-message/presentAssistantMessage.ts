@@ -285,7 +285,7 @@ export async function presentAssistantMessage(cline: Task) {
 			// XML protocol tool calls NEVER have an ID (parsed from XML text).
 			const toolCallId = (block as any).id
 			const isNative = !!toolCallId
-			const toolProtocol = toolCallId ? "native" : "xml"
+			const toolProtocol = isNative ? "native" : "xml"
 
 			const pushToolResult = (content: ToolResponse) => {
 				if (isNative && toolCallId) {
