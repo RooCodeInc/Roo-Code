@@ -7,7 +7,6 @@ import { vscode } from "@src/utils/vscode"
 import { Button } from "@src/components/ui"
 
 import { ModelPicker } from "../ModelPicker"
-import { RooBalanceDisplay } from "./RooBalanceDisplay"
 
 type RooProps = {
 	apiConfiguration: ProviderSettings
@@ -35,7 +34,6 @@ export const Roo = ({
 					<div className="text-sm text-vscode-descriptionForeground">
 						{t("settings:providers.roo.authenticatedMessage")}
 					</div>
-					<RooBalanceDisplay />
 				</div>
 			) : (
 				<div className="flex flex-col gap-2">
