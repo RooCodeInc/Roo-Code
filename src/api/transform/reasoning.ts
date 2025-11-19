@@ -116,24 +116,21 @@ export const getGeminiReasoning = ({
 		return { thinkingBudget: reasoningBudget!, includeThoughts: true }
 	}
 
-	// If reasoning effort shouldn't be used (toggle off, unsupported capability, etc.),
-	// do not send a thinkingConfig at all.
-	if (!shouldUseReasoningEffort({ model, settings })) {
-		return undefined
-	}
-
-	// Effort-based models on Google GenAI: only support explicit low/high levels.
+	// For effort-based Gemini models, rely directly on the selected effort value.
+	// We intentionally ignore enableReasoningEffort here so that explicitly chosen
+	// efforts in the UI (e.g. "High" for gemini-3-pro-preview) always translate
+	// into a thinkingConfig, regardless of legacy boolean flags.
 	const selectedEffort = (settings.reasoningEffort ?? model.reasoningEffort) as
 		| ReasoningEffortExtended
 		| "disable"
 		| undefined
 
-	// Respect “off” / unset semantics.
+	// Respect “off” / unset semantics from the effort selector itself.
 	if (!selectedEffort || selectedEffort === "disable") {
 		return undefined
 	}
 
-	// Only map "low" and "high" to thinkingLevel; ignore other values.
+	// Effort-based models on Google GenAI currently support only explicit low/high levels.
 	if (selectedEffort !== "low" && selectedEffort !== "high") {
 		return undefined
 	}

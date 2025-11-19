@@ -22,7 +22,7 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 
 	async execute(params: RunSlashCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { command: commandName, args } = params
-		const { askApproval, handleError, pushToolResult } = callbacks
+		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		// Check if run slash command experiment is enabled
 		const provider = task.providerRef.deref()

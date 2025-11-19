@@ -192,6 +192,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -213,6 +214,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify - confirm the command was approved and result was pushed
@@ -235,6 +237,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -256,6 +259,7 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -275,7 +279,6 @@ describe("executeCommandTool", () => {
 
 			const mockRooIgnoreError = "RooIgnore error"
 			;(formatResponse.rooIgnoreError as any).mockReturnValue(mockRooIgnoreError)
-			;(formatResponse.toolError as any).mockReturnValue("Tool error")
 
 			// Execute
 			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
@@ -283,16 +286,16 @@ describe("executeCommandTool", () => {
 				handleError: mockHandleError as unknown as HandleError,
 				pushToolResult: mockPushToolResult as unknown as PushToolResult,
 				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
 			})
 
 			// Verify
 			expect(validateCommandMock).toHaveBeenCalledWith("cat .env")
 			expect(mockCline.say).toHaveBeenCalledWith("rooignore_error", ".env")
-			expect(formatResponse.rooIgnoreError).toHaveBeenCalledWith(".env")
-			expect(formatResponse.toolError).toHaveBeenCalledWith(mockRooIgnoreError)
-			expect(mockPushToolResult).toHaveBeenCalled()
+			expect(formatResponse.rooIgnoreError).toHaveBeenCalledWith(".env", "xml")
+			expect(mockPushToolResult).toHaveBeenCalledWith(mockRooIgnoreError)
 			expect(mockAskApproval).not.toHaveBeenCalled()
-			// executeCommandInTerminal should not be called since param was missing
+			// executeCommandInTerminal should not be called since rooignore blocked it
 		})
 	})
 

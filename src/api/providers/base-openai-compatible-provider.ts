@@ -90,6 +90,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		try {
@@ -115,6 +117,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}) as const,
 		)
 
+		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+
 		for await (const chunk of stream) {
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const chunkAny = chunk as any
@@ -125,6 +129,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			}
 
 			const delta = chunk.choices?.[0]?.delta
+			const finishReason = chunk.choices?.[0]?.finish_reason
 
 			if (delta?.content) {
 				for (const processedChunk of matcher.update(delta.content)) {
@@ -137,6 +142,37 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				if (reasoning_content?.trim()) {
 					yield { type: "reasoning", text: reasoning_content }
 				}
+			}
+
+			if (delta?.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					const index = toolCall.index
+					const existing = toolCallAccumulator.get(index)
+
+					if (existing) {
+						if (toolCall.function?.arguments) {
+							existing.arguments += toolCall.function.arguments
+						}
+					} else {
+						toolCallAccumulator.set(index, {
+							id: toolCall.id || "",
+							name: toolCall.function?.name || "",
+							arguments: toolCall.function?.arguments || "",
+						})
+					}
+				}
+			}
+
+			if (finishReason === "tool_calls") {
+				for (const toolCall of toolCallAccumulator.values()) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				toolCallAccumulator.clear()
 			}
 
 			if (chunk.usage) {

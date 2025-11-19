@@ -34,6 +34,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private lastResponseOutput: any[] | undefined
 	// Last top-level response id from Responses API (for troubleshooting)
 	private lastResponseId: string | undefined
+	// Accumulate partial tool calls: call_id -> { name, arguments }
+	private currentToolCalls: Map<string, { name: string; arguments: string }> = new Map()
 	// Abort controller for cancelling ongoing requests
 	private abortController?: AbortController
 
@@ -49,6 +51,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		"response.output_item.added",
 		"response.done",
 		"response.completed",
+		"response.tool_call_arguments.delta",
+		"response.function_call_arguments.delta",
+		"response.tool_call_arguments.done",
+		"response.function_call_arguments.done",
 	])
 
 	constructor(options: ApiHandlerOptions) {
@@ -147,6 +153,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseOutput = undefined
 		// Reset last response id for this request
 		this.lastResponseId = undefined
+		// Reset tool call accumulator
+		this.currentToolCalls.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -179,6 +187,38 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
+		// Ensure all properties are in the required array for OpenAI's strict mode
+		// This recursively processes nested objects and array items
+		const ensureAllRequired = (schema: any): any => {
+			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+				return schema
+			}
+
+			const result = { ...schema }
+
+			if (result.properties) {
+				const allKeys = Object.keys(result.properties)
+				result.required = allKeys
+
+				// Recursively process nested objects
+				const newProps = { ...result.properties }
+				for (const key of allKeys) {
+					const prop = newProps[key]
+					if (prop.type === "object") {
+						newProps[key] = ensureAllRequired(prop)
+					} else if (prop.type === "array" && prop.items?.type === "object") {
+						newProps[key] = {
+							...prop,
+							items: ensureAllRequired(prop.items),
+						}
+					}
+				}
+				result.properties = newProps
+			}
+
+			return result
+		}
+
 		// Build a request body for the OpenAI Responses API.
 		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
@@ -196,6 +236,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			include?: string[]
 			/** Prompt cache retention policy: "in_memory" (default) or "24h" for extended caching */
 			prompt_cache_retention?: "in_memory" | "24h"
+			tools?: Array<{
+				type: "function"
+				name: string
+				description?: string
+				parameters?: any
+				strict?: boolean
+			}>
+			tool_choice?: any
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -240,6 +288,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Enable extended prompt cache retention for models that support it.
 			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
 			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
+			...(metadata?.tools && {
+				tools: metadata.tools
+					.filter((tool) => tool.type === "function")
+					.map((tool) => ({
+						type: "function",
+						name: tool.function.name,
+						description: tool.function.description,
+						parameters: ensureAllRequired(tool.function.parameters),
+						strict: true,
+					})),
+			}),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
@@ -292,9 +352,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 	private formatFullConversation(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): any {
 		// Format the entire conversation history for the Responses API using structured format
-		// This supports both text and images
-		// Messages already include reasoning items from API history, so we just need to format them
-		const formattedMessages: any[] = []
+		// The Responses API (like Realtime API) accepts a list of items, which can be messages, function calls, or function call outputs.
+		const formattedInput: any[] = []
 
 		// Do NOT embed the system prompt as a developer message in the Responses API input.
 		// The Responses API treats roles as free-form; use the top-level `instructions` field instead.
@@ -304,45 +363,83 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Check if this is a reasoning item (already formatted in API history)
 			if ((message as any).type === "reasoning") {
 				// Pass through reasoning items as-is
-				formattedMessages.push(message)
+				formattedInput.push(message)
 				continue
 			}
 
-			const role = message.role === "user" ? "user" : "assistant"
-			const content: any[] = []
+			if (message.role === "user") {
+				const content: any[] = []
+				const toolResults: any[] = []
 
-			if (typeof message.content === "string") {
-				// For user messages, use input_text; for assistant messages, use output_text
-				if (role === "user") {
+				if (typeof message.content === "string") {
 					content.push({ type: "input_text", text: message.content })
-				} else {
-					content.push({ type: "output_text", text: message.content })
-				}
-			} else if (Array.isArray(message.content)) {
-				// For array content with potential images, format properly
-				for (const block of message.content) {
-					if (block.type === "text") {
-						// For user messages, use input_text; for assistant messages, use output_text
-						if (role === "user") {
-							content.push({ type: "input_text", text: (block as any).text })
-						} else {
-							content.push({ type: "output_text", text: (block as any).text })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "input_text", text: block.text })
+						} else if (block.type === "image") {
+							const image = block as Anthropic.Messages.ImageBlockParam
+							const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
+							content.push({ type: "input_image", image_url: imageUrl })
+						} else if (block.type === "tool_result") {
+							// Map Anthropic tool_result to Responses API function_call_output item
+							const result =
+								typeof block.content === "string"
+									? block.content
+									: block.content?.map((c) => (c.type === "text" ? c.text : "")).join("") || ""
+							toolResults.push({
+								type: "function_call_output",
+								call_id: block.tool_use_id,
+								output: result,
+							})
 						}
-					} else if (block.type === "image") {
-						const image = block as Anthropic.Messages.ImageBlockParam
-						// Format image with proper data URL - images are always input_image
-						const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
-						content.push({ type: "input_image", image_url: imageUrl })
 					}
 				}
-			}
 
-			if (content.length > 0) {
-				formattedMessages.push({ role, content })
+				// Add user message first
+				if (content.length > 0) {
+					formattedInput.push({ role: "user", content })
+				}
+
+				// Add tool results as separate items
+				if (toolResults.length > 0) {
+					formattedInput.push(...toolResults)
+				}
+			} else if (message.role === "assistant") {
+				const content: any[] = []
+				const toolCalls: any[] = []
+
+				if (typeof message.content === "string") {
+					content.push({ type: "output_text", text: message.content })
+				} else if (Array.isArray(message.content)) {
+					for (const block of message.content) {
+						if (block.type === "text") {
+							content.push({ type: "output_text", text: block.text })
+						} else if (block.type === "tool_use") {
+							// Map Anthropic tool_use to Responses API function_call item
+							toolCalls.push({
+								type: "function_call",
+								call_id: block.id,
+								name: block.name,
+								arguments: JSON.stringify(block.input),
+							})
+						}
+					}
+				}
+
+				// Add assistant message if it has content
+				if (content.length > 0) {
+					formattedInput.push({ role: "assistant", content })
+				}
+
+				// Add tool calls as separate items
+				if (toolCalls.length > 0) {
+					formattedInput.push(...toolCalls)
+				}
 			}
 		}
 
-		return formattedMessages
+		return formattedInput
 	}
 
 	private async *makeResponsesApiRequest(
@@ -676,11 +773,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								// Output item completed
 							}
 							// Handle function/tool call events
-							else if (parsed.type === "response.function_call_arguments.delta") {
-								// Function call arguments streaming
-								// We could yield this as a special type if needed for tool usage
-							} else if (parsed.type === "response.function_call_arguments.done") {
-								// Function call completed
+							else if (
+								parsed.type === "response.function_call_arguments.delta" ||
+								parsed.type === "response.tool_call_arguments.delta" ||
+								parsed.type === "response.function_call_arguments.done" ||
+								parsed.type === "response.tool_call_arguments.done"
+							) {
+								// Delegated to processEvent (handles accumulation and completion)
+								for await (const outChunk of this.processEvent(parsed, model)) {
+									yield outChunk
+								}
 							}
 							// Handle MCP (Model Context Protocol) tool events
 							else if (parsed.type === "response.mcp_call_arguments.delta") {
@@ -961,8 +1063,53 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			return
 		}
 
-		// Handle output item additions (SDK or Responses API alternative format)
-		if (event?.type === "response.output_item.added") {
+		// Handle tool/function call deltas and completion
+		if (
+			event?.type === "response.tool_call_arguments.delta" ||
+			event?.type === "response.function_call_arguments.delta"
+		) {
+			const callId = event.call_id || event.tool_call_id || event.id
+			if (callId) {
+				if (!this.currentToolCalls.has(callId)) {
+					this.currentToolCalls.set(callId, { name: "", arguments: "" })
+				}
+				const toolCall = this.currentToolCalls.get(callId)!
+
+				// Update name if present (usually in the first delta)
+				if (event.name || event.function_name) {
+					toolCall.name = event.name || event.function_name
+				}
+
+				// Append arguments delta
+				if (event.delta || event.arguments) {
+					toolCall.arguments += event.delta || event.arguments
+				}
+			}
+			return
+		}
+
+		if (
+			event?.type === "response.tool_call_arguments.done" ||
+			event?.type === "response.function_call_arguments.done"
+		) {
+			const callId = event.call_id || event.tool_call_id || event.id
+			if (callId && this.currentToolCalls.has(callId)) {
+				const toolCall = this.currentToolCalls.get(callId)!
+				// Yield the complete tool call
+				yield {
+					type: "tool_call",
+					id: callId,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
+				}
+				// Remove from accumulator
+				this.currentToolCalls.delete(callId)
+			}
+			return
+		}
+
+		// Handle output item additions/completions (SDK or Responses API alternative format)
+		if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
 			const item = event?.item
 			if (item) {
 				if (item.type === "text" && item.text) {
@@ -976,6 +1123,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							yield { type: "text", text: content.text }
 						}
 					}
+				} else if (
+					(item.type === "function_call" || item.type === "tool_call") &&
+					event.type === "response.output_item.done" // Only handle done events for tool calls to ensure arguments are complete
+				) {
+					// Handle complete tool/function call item
+					const callId = item.call_id || item.tool_call_id || item.id
+					if (callId && !this.currentToolCalls.has(callId)) {
+						const args = item.arguments || item.function?.arguments || item.function_arguments
+						yield {
+							type: "tool_call",
+							id: callId,
+							name: item.name || item.function?.name || item.function_name || "",
+							arguments: typeof args === "string" ? args : "{}",
+						}
+					}
 				}
 			}
 			return
@@ -983,6 +1145,19 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Completion events that may carry usage
 		if (event?.type === "response.done" || event?.type === "response.completed") {
+			// Yield any pending tool calls that didn't get a 'done' event (fallback)
+			if (this.currentToolCalls.size > 0) {
+				for (const [callId, toolCall] of this.currentToolCalls) {
+					yield {
+						type: "tool_call",
+						id: callId,
+						name: toolCall.name,
+						arguments: toolCall.arguments || "{}",
+					}
+				}
+				this.currentToolCalls.clear()
+			}
+
 			const usage = event?.response?.usage || event?.usage || undefined
 			const usageData = this.normalizeUsage(usage, model)
 			if (usageData) {

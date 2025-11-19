@@ -430,7 +430,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// For native protocol, tool calls come as tool_call chunks, not XML.
 		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
 		const toolProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
-		this.assistantMessageParser = toolProtocol === "xml" ? new AssistantMessageParser() : undefined
+		this.assistantMessageParser = toolProtocol !== "native" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -2216,6 +2216,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.diffViewProvider.reset()
 
+				// Determine protocol once per API request to avoid repeated calls in the streaming loop
+				const streamProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+				const shouldUseXmlParser = streamProtocol === "xml"
+
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
 				// limit error, which gets thrown on the first chunk).
@@ -2321,7 +2325,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "text": {
 								assistantMessage += chunk.text
 
-								if (this.assistantMessageParser) {
+								// Use the protocol determined at the start of streaming
+								// Don't rely solely on parser existence - parser might exist from previous state
+								if (shouldUseXmlParser && this.assistantMessageParser) {
 									// XML protocol: Parse raw assistant message chunk into content blocks
 									const prevLength = this.assistantMessageContent.length
 									this.assistantMessageContent = this.assistantMessageParser.processChunk(chunk.text)
@@ -2647,30 +2653,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// this.assistantMessageContent.forEach((e) => (e.partial = false))
 
 				// Now that the stream is complete, finalize any remaining partial content blocks (XML protocol only)
-				if (this.assistantMessageParser) {
+				// Use the protocol determined at the start of streaming
+				if (shouldUseXmlParser && this.assistantMessageParser) {
 					this.assistantMessageParser.finalizeContentBlocks()
-
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
-
-					// Check if we're using native protocol
-					const state = await this.providerRef.deref()?.getState()
-					const isNative = isNativeProtocol(
-						resolveToolProtocol(this.apiConfiguration, this.api.getModel().info),
-					)
-
-					if (isNative) {
-						// For native protocol: Preserve tool_use blocks that were added via tool_call chunks
-						// These are added directly to assistantMessageContent and have an 'id' property
-						const nativeToolBlocks = this.assistantMessageContent.filter(
-							(block): block is ToolUse<any> =>
-								block.type === "tool_use" && (block as any).id !== undefined,
-						)
-						// Merge: parser blocks (text) + native tool blocks (tools with IDs)
-						this.assistantMessageContent = [...parsedBlocks, ...nativeToolBlocks]
-					} else {
-						// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
-						this.assistantMessageContent = parsedBlocks
-					}
+					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
+					this.assistantMessageContent = parsedBlocks
 				}
 
 				if (partialBlocks.length > 0) {

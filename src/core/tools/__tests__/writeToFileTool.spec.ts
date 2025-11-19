@@ -248,6 +248,7 @@ describe("writeToFileTool", () => {
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
 			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
 		})
 
 		return toolResult

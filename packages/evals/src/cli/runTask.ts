@@ -217,10 +217,22 @@ export const runTask = async ({ run, task, publish, logger }: RunTaskOptions) =>
 		"diff_error",
 		"condense_context",
 		"condense_context_error",
+		"api_req_retry_delayed",
+		"api_req_retried",
 	]
+
+	let isApiUnstable = false
 
 	client.on(IpcMessageType.TaskEvent, async (taskEvent) => {
 		const { eventName, payload } = taskEvent
+
+		if (
+			eventName === RooCodeEventName.Message &&
+			payload[0].message.say &&
+			["api_req_retry_delayed", "api_req_retried"].includes(payload[0].message.say)
+		) {
+			isApiUnstable = true
+		}
 
 		// Publish all events except for these to Redis.
 		if (!ignoreEvents.broadcast.includes(eventName)) {
@@ -388,4 +400,8 @@ export const runTask = async ({ run, task, publish, logger }: RunTaskOptions) =>
 	}
 
 	logger.close()
+
+	if (isApiUnstable) {
+		throw new Error("API is unstable, throwing to trigger a retry.")
+	}
 }

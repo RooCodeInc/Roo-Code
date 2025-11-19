@@ -124,6 +124,7 @@ describe("convertAnthropicMessageToGemini", () => {
 						name: "calculator",
 						args: { operation: "add", numbers: [2, 3] },
 					},
+					thoughtSignature: "skip_thought_signature_validator",
 				},
 			],
 		})
