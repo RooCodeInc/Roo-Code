@@ -79,14 +79,16 @@ export function convertAnthropicContentToGemini(
 					return []
 				}
 
-				// Extract tool name from tool_use_id
-				// 1. Try to look up the name from the provided map (reliable source)
-				// 2. Fallback: Extract from ID if it follows "name-counter" format (heuristic)
-				// 3. Fallback: Use ID as name (likely to fail validation but better than crashing)
-				let toolName = toolIdToName?.get(block.tool_use_id)
+				// Get tool name from the map (built from tool_use blocks in message history).
+				// The map must contain the tool name - if it doesn't, this indicates a bug
+				// where the conversation history is incomplete or tool_use blocks are missing.
+				const toolName = toolIdToName?.get(block.tool_use_id)
 				if (!toolName) {
-					const lastHyphenIndex = block.tool_use_id.lastIndexOf("-")
-					toolName = lastHyphenIndex >= 0 ? block.tool_use_id.slice(0, lastHyphenIndex) : block.tool_use_id
+					throw new Error(
+						`Unable to find tool name for tool_use_id "${block.tool_use_id}". ` +
+							`This indicates the conversation history is missing the corresponding tool_use block. ` +
+							`Available tool IDs: ${Array.from(toolIdToName?.keys() ?? []).join(", ") || "none"}`,
+					)
 				}
 
 				if (typeof block.content === "string") {

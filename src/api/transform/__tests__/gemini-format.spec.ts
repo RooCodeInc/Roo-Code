@@ -141,6 +141,9 @@ describe("convertAnthropicMessageToGemini", () => {
 	})
 
 	it("should convert a message with tool result as string", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("calculator-123", "calculator")
+
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -153,7 +156,7 @@ describe("convertAnthropicMessageToGemini", () => {
 			],
 		}
 
-		const result = convertAnthropicMessageToGemini(anthropicMessage)
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
 
 		expect(result).toEqual([
 			{
@@ -193,6 +196,9 @@ describe("convertAnthropicMessageToGemini", () => {
 	})
 
 	it("should convert a message with tool result as array with text only", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("search-123", "search")
+
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -207,7 +213,7 @@ describe("convertAnthropicMessageToGemini", () => {
 			],
 		}
 
-		const result = convertAnthropicMessageToGemini(anthropicMessage)
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
 
 		expect(result).toEqual([
 			{
@@ -228,6 +234,9 @@ describe("convertAnthropicMessageToGemini", () => {
 	})
 
 	it("should convert a message with tool result as array with text and images", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("search-123", "search")
+
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -257,7 +266,7 @@ describe("convertAnthropicMessageToGemini", () => {
 			],
 		}
 
-		const result = convertAnthropicMessageToGemini(anthropicMessage)
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
 
 		expect(result).toEqual([
 			{
@@ -290,6 +299,9 @@ describe("convertAnthropicMessageToGemini", () => {
 	})
 
 	it("should convert a message with tool result containing only images", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("imagesearch-123", "imagesearch")
+
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -310,7 +322,7 @@ describe("convertAnthropicMessageToGemini", () => {
 			],
 		}
 
-		const result = convertAnthropicMessageToGemini(anthropicMessage)
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
 
 		expect(result).toEqual([
 			{
@@ -336,7 +348,10 @@ describe("convertAnthropicMessageToGemini", () => {
 		])
 	})
 
-	it("should handle tool names with hyphens", () => {
+	it("should handle tool names with hyphens using toolIdToName map", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("search-files-123", "search-files")
+
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -348,7 +363,7 @@ describe("convertAnthropicMessageToGemini", () => {
 			],
 		}
 
-		const result = convertAnthropicMessageToGemini(anthropicMessage)
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
 
 		expect(result).toEqual([
 			{
@@ -366,6 +381,43 @@ describe("convertAnthropicMessageToGemini", () => {
 				],
 			},
 		])
+	})
+
+	it("should throw error when toolIdToName map is not provided", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "tool_result",
+					tool_use_id: "calculator-123",
+					content: "result is 5",
+				},
+			],
+		}
+
+		expect(() => convertAnthropicMessageToGemini(anthropicMessage)).toThrow(
+			'Unable to find tool name for tool_use_id "calculator-123"',
+		)
+	})
+
+	it("should throw error when tool_use_id is not in the map", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("other-tool-456", "other-tool")
+
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "tool_result",
+					tool_use_id: "calculator-123",
+					content: "result is 5",
+				},
+			],
+		}
+
+		expect(() => convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })).toThrow(
+			'Unable to find tool name for tool_use_id "calculator-123"',
+		)
 	})
 
 	it("should throw an error for unsupported content block type", () => {
