@@ -14,6 +14,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { getProviderModelsSync } from "./model-lookup"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -249,8 +250,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
+		const models = getProviderModelsSync("anthropic", anthropicModels as Record<string, ModelInfo>)
+		let id = modelId && modelId in models ? (modelId as AnthropicModelId) : anthropicDefaultModelId
+		let info: ModelInfo = models[id]
 
 		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
 		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {

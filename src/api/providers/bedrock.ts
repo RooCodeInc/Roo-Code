@@ -27,6 +27,7 @@ import {
 
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
+import { getProviderModelsSync } from "./model-lookup"
 import { logger } from "../../utils/logging"
 import { Package } from "../../shared/package"
 import { MultiPointStrategy } from "../transform/cache-strategy/multi-point-strategy"
@@ -899,19 +900,22 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	//Prompt Router responses come back in a different sequence and the model used is in the response and must be fetched by name
 	getModelById(modelId: string, modelType?: string): { id: BedrockModelId | string; info: ModelInfo } {
-		// Try to find the model in bedrockModels
+		// Get merged models (static + custom)
+		const models = getProviderModelsSync("bedrock", bedrockModels as Record<string, ModelInfo>)
+
+		// Try to find the model in merged models
 		const baseModelId = this.parseBaseModelId(modelId) as BedrockModelId
 
 		let model
-		if (baseModelId in bedrockModels) {
+		if (baseModelId in models) {
 			//Do a deep copy of the model info so that later in the code the model id and maxTokens can be set.
-			// The bedrockModels array is a constant and updating the model ID from the returned invokedModelID value
+			// The models array is a constant and updating the model ID from the returned invokedModelID value
 			// in a prompt router response isn't possible on the constant.
-			model = { id: baseModelId, info: JSON.parse(JSON.stringify(bedrockModels[baseModelId])) }
+			model = { id: baseModelId, info: JSON.parse(JSON.stringify(models[baseModelId])) }
 		} else if (modelType && modelType.includes("router")) {
 			model = {
 				id: bedrockDefaultPromptRouterModelId,
-				info: JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultPromptRouterModelId])),
+				info: JSON.parse(JSON.stringify(models[bedrockDefaultPromptRouterModelId])),
 			}
 		} else {
 			// Use heuristics for model info, then allow overrides from ProviderSettings
@@ -919,7 +923,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			model = {
 				id: bedrockDefaultModelId,
 				info: {
-					...JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultModelId])),
+					...JSON.parse(JSON.stringify(models[bedrockDefaultModelId])),
 					...guessed,
 				},
 			}

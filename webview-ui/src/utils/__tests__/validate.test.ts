@@ -45,6 +45,27 @@ describe("Model Validation Functions", () => {
 		huggingface: {},
 		roo: {},
 		chutes: {},
+		// Static providers with custom models support
+		anthropic: {},
+		bedrock: {},
+		vertex: {},
+		gemini: {},
+		"openai-native": {},
+		mistral: {},
+		deepseek: {},
+		doubao: {},
+		moonshot: {},
+		minimax: {},
+		xai: {},
+		groq: {},
+		cerebras: {},
+		sambanova: {},
+		fireworks: {},
+		featherless: {},
+		"qwen-code": {},
+		"claude-code": {},
+		zai: {},
+		"vscode-lm": {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {

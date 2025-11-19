@@ -272,7 +272,8 @@ const ApiOptions = ({
 	}, [apiConfiguration, routerModels, organizationAllowList, setErrorMessage])
 
 	const selectedProviderModels = useMemo(() => {
-		const models = MODELS_BY_PROVIDER[selectedProvider]
+		// Prefer routerModels (includes custom models) over static MODELS_BY_PROVIDER
+		const models = (routerModels as any)?.[selectedProvider] ?? MODELS_BY_PROVIDER[selectedProvider]
 		if (!models) return []
 
 		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
@@ -294,7 +295,7 @@ const ApiOptions = ({
 			: []
 
 		return availableModels
-	}, [selectedProvider, organizationAllowList, selectedModelId])
+	}, [selectedProvider, organizationAllowList, selectedModelId, routerModels])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {
@@ -434,17 +435,17 @@ const ApiOptions = ({
 				return true
 			}
 
-			// Check if this is a static provider (has models in MODELS_BY_PROVIDER)
-			const staticModels = MODELS_BY_PROVIDER[value as ProviderName]
+			// Check if this provider has models (prefer routerModels for custom model support)
+			const models = (routerModels as any)?.[value] ?? MODELS_BY_PROVIDER[value as ProviderName]
 
 			// If it's a static provider, check if it has any models after filtering
-			if (staticModels) {
-				const filteredModels = filterModels(staticModels, value as ProviderName, organizationAllowList)
+			if (models) {
+				const filteredModels = filterModels(models, value as ProviderName, organizationAllowList)
 				// Hide the provider if it has no models after filtering
 				return filteredModels && Object.keys(filteredModels).length > 0
 			}
 
-			// If it's a dynamic provider (not in MODELS_BY_PROVIDER), always show it
+			// If provider has no models yet (dynamic provider not yet fetched), always show it
 			// to avoid race conditions with async model fetching
 			return true
 		})
@@ -453,7 +454,7 @@ const ApiOptions = ({
 			value,
 			label,
 		}))
-	}, [organizationAllowList, apiConfiguration.apiProvider])
+	}, [organizationAllowList, apiConfiguration.apiProvider, routerModels])
 
 	return (
 		<div className="flex flex-col gap-3">

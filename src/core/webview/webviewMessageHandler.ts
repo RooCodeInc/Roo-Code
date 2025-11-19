@@ -26,8 +26,9 @@ import { ClineProvider } from "./ClineProvider"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
-import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
+import { type RouterName, type ModelRecord, toRouterName, staticProvidersWithCustomModels } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
+import { getModelsForStaticProvider } from "../../services/custom-models/static-providers"
 
 import {
 	type WebviewMessage,
@@ -802,6 +803,7 @@ export const webviewMessageHandler = async (
 			const routerModels: Record<RouterName, ModelRecord> = providerFilter
 				? ({} as Record<RouterName, ModelRecord>)
 				: {
+						// Dynamic providers
 						openrouter: {},
 						"vercel-ai-gateway": {},
 						huggingface: {},
@@ -811,10 +813,32 @@ export const webviewMessageHandler = async (
 						requesty: {},
 						unbound: {},
 						glama: {},
-						ollama: {},
-						lmstudio: {},
 						roo: {},
 						chutes: {},
+						// Local providers
+						ollama: {},
+						lmstudio: {},
+						// Static providers (for custom models support)
+						anthropic: {},
+						bedrock: {},
+						vertex: {},
+						gemini: {},
+						"openai-native": {},
+						mistral: {},
+						deepseek: {},
+						doubao: {},
+						moonshot: {},
+						minimax: {},
+						xai: {},
+						groq: {},
+						cerebras: {},
+						sambanova: {},
+						fireworks: {},
+						featherless: {},
+						"qwen-code": {},
+						"claude-code": {},
+						zai: {},
+						"vscode-lm": {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -919,6 +943,25 @@ export const webviewMessageHandler = async (
 						error: errorMessage,
 						values: { provider: routerName },
 					})
+				}
+			})
+
+			// Fetch static provider models (includes custom models from .roo/models/)
+			const cwd = getCurrentCwd()
+			const staticProviderPromises = staticProvidersWithCustomModels.map(async (staticProvider) => {
+				try {
+					const models = await getModelsForStaticProvider(staticProvider, cwd)
+					return { provider: staticProvider, models }
+				} catch (error) {
+					console.error(`Error fetching static provider models for ${staticProvider}:`, error)
+					return { provider: staticProvider, models: {} as ModelRecord }
+				}
+			})
+
+			const staticResults = await Promise.allSettled(staticProviderPromises)
+			staticResults.forEach((result) => {
+				if (result.status === "fulfilled") {
+					routerModels[result.value.provider] = result.value.models
 				}
 			})
 

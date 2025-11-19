@@ -32,6 +32,7 @@ import {
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
+import { isStaticProviderWithCustomModels } from "@roo/api"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -56,8 +57,8 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const lmStudioModelId = provider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
 	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
-	// Only fetch router models for dynamic providers
-	const shouldFetchRouterModels = isDynamicProvider(provider)
+	// Fetch router models for dynamic providers and static providers with custom models
+	const shouldFetchRouterModels = isDynamicProvider(provider) || isStaticProviderWithCustomModels(provider)
 	const routerModels = useRouterModels({
 		provider: shouldFetchRouterModels ? provider : undefined,
 		enabled: shouldFetchRouterModels,
@@ -173,12 +174,14 @@ function getSelectedModel({
 		}
 		case "xai": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = xaiModels[id as keyof typeof xaiModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.xai?.[id] ?? xaiModels[id as keyof typeof xaiModels]
 			return info ? { id, info } : { id, info: undefined }
 		}
 		case "groq": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = groqModels[id as keyof typeof groqModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.groq?.[id] ?? groqModels[id as keyof typeof groqModels]
 			return { id, info }
 		}
 		case "huggingface": {
@@ -198,7 +201,8 @@ function getSelectedModel({
 		}
 		case "bedrock": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const baseInfo = bedrockModels[id as keyof typeof bedrockModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const baseInfo = routerModels.bedrock?.[id] ?? bedrockModels[id as keyof typeof bedrockModels]
 
 			// Special case for custom ARN.
 			if (id === "custom-arn") {
@@ -222,32 +226,38 @@ function getSelectedModel({
 		}
 		case "vertex": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = vertexModels[id as keyof typeof vertexModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.vertex?.[id] ?? vertexModels[id as keyof typeof vertexModels]
 			return { id, info }
 		}
 		case "gemini": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = geminiModels[id as keyof typeof geminiModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.gemini?.[id] ?? geminiModels[id as keyof typeof geminiModels]
 			return { id, info }
 		}
 		case "deepseek": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = deepSeekModels[id as keyof typeof deepSeekModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.deepseek?.[id] ?? deepSeekModels[id as keyof typeof deepSeekModels]
 			return { id, info }
 		}
 		case "doubao": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = doubaoModels[id as keyof typeof doubaoModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.doubao?.[id] ?? doubaoModels[id as keyof typeof doubaoModels]
 			return { id, info }
 		}
 		case "moonshot": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = moonshotModels[id as keyof typeof moonshotModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.moonshot?.[id] ?? moonshotModels[id as keyof typeof moonshotModels]
 			return { id, info }
 		}
 		case "minimax": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = minimaxModels[id as keyof typeof minimaxModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.minimax?.[id] ?? minimaxModels[id as keyof typeof minimaxModels]
 			return { id, info }
 		}
 		case "zai": {
@@ -260,12 +270,15 @@ function getSelectedModel({
 		}
 		case "openai-native": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = openAiNativeModels[id as keyof typeof openAiNativeModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info =
+				routerModels["openai-native"]?.[id] ?? openAiNativeModels[id as keyof typeof openAiNativeModels]
 			return { id, info }
 		}
 		case "mistral": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = mistralModels[id as keyof typeof mistralModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.mistral?.[id] ?? mistralModels[id as keyof typeof mistralModels]
 			return { id, info }
 		}
 		case "openai": {
@@ -313,27 +326,32 @@ function getSelectedModel({
 		case "claude-code": {
 			// Claude Code models extend anthropic models but with images and prompt caching disabled
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = claudeCodeModels[id as keyof typeof claudeCodeModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels["claude-code"]?.[id] ?? claudeCodeModels[id as keyof typeof claudeCodeModels]
 			return { id, info: { ...openAiModelInfoSaneDefaults, ...info } }
 		}
 		case "cerebras": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = cerebrasModels[id as keyof typeof cerebrasModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.cerebras?.[id] ?? cerebrasModels[id as keyof typeof cerebrasModels]
 			return { id, info }
 		}
 		case "sambanova": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = sambaNovaModels[id as keyof typeof sambaNovaModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.sambanova?.[id] ?? sambaNovaModels[id as keyof typeof sambaNovaModels]
 			return { id, info }
 		}
 		case "fireworks": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = fireworksModels[id as keyof typeof fireworksModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.fireworks?.[id] ?? fireworksModels[id as keyof typeof fireworksModels]
 			return { id, info }
 		}
 		case "featherless": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = featherlessModels[id as keyof typeof featherlessModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels.featherless?.[id] ?? featherlessModels[id as keyof typeof featherlessModels]
 			return { id, info }
 		}
 		case "io-intelligence": {
@@ -353,7 +371,8 @@ function getSelectedModel({
 		}
 		case "qwen-code": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const info = routerModels["qwen-code"]?.[id] ?? qwenCodeModels[id as keyof typeof qwenCodeModels]
 			return { id, info }
 		}
 		case "vercel-ai-gateway": {
@@ -371,7 +390,8 @@ function getSelectedModel({
 		default: {
 			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
+			// Check routerModels first (for custom models), then fall back to hard-coded models
+			const baseInfo = routerModels.anthropic?.[id] ?? anthropicModels[id as keyof typeof anthropicModels]
 
 			// Apply 1M context beta tier pricing for Claude Sonnet 4
 			if (

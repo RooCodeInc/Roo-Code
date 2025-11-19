@@ -1,8 +1,8 @@
 import OpenAI from "openai"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo, DynamicProvider, LocalProvider } from "@roo-code/types"
 
-import { ApiHandlerOptions, RouterName, ModelRecord } from "../../shared/api"
+import { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
 import { BaseProvider } from "./base-provider"
 import { getModels } from "./fetchers/modelCache"
@@ -10,7 +10,7 @@ import { getModels } from "./fetchers/modelCache"
 import { DEFAULT_HEADERS } from "./constants"
 
 type RouterProviderOptions = {
-	name: RouterName
+	name: DynamicProvider | LocalProvider
 	baseURL: string
 	apiKey?: string
 	modelId?: string
@@ -21,7 +21,7 @@ type RouterProviderOptions = {
 
 export abstract class RouterProvider extends BaseProvider {
 	protected readonly options: ApiHandlerOptions
-	protected readonly name: RouterName
+	protected readonly name: DynamicProvider | LocalProvider
 	protected models: ModelRecord = {}
 	protected readonly modelId?: string
 	protected readonly defaultModelId: string

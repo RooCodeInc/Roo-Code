@@ -16,6 +16,7 @@ import { safeJsonParse } from "../../shared/safeJsonParse"
 import { ApiStream } from "../transform/stream"
 import { addCacheBreakpoints } from "../transform/caching/vertex"
 import { getModelParams } from "../transform/model-params"
+import { getProviderModelsSync } from "./model-lookup"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -164,8 +165,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		const info: ModelInfo = vertexModels[id]
+		const models = getProviderModelsSync("vertex", vertexModels as Record<string, ModelInfo>)
+		let id = modelId && modelId in models ? (modelId as VertexModelId) : vertexDefaultModelId
+		const info: ModelInfo = models[id]
 		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
 
 		// The `:thinking` suffix indicates that the model is a "Hybrid"

@@ -19,6 +19,7 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { getProviderModelsSync } from "./model-lookup"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -1227,11 +1228,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 	override getModel() {
 		const modelId = this.options.apiModelId
+		const models = getProviderModelsSync("openai-native", openAiNativeModels as Record<string, ModelInfo>)
 
-		let id =
-			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
+		let id = modelId && modelId in models ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
 
-		const info: ModelInfo = openAiNativeModels[id]
+		const info: ModelInfo = models[id]
 
 		const params = getModelParams({
 			format: "openai",

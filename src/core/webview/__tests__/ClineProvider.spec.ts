@@ -2703,26 +2703,49 @@ describe("ClineProvider - Router Models", () => {
 		})
 		expect(getModels).toHaveBeenCalledWith({ provider: "chutes" })
 
-		// Verify response was sent
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: mockModels,
-				glama: mockModels,
-				unbound: mockModels,
-				roo: mockModels,
-				chutes: mockModels,
-				litellm: mockModels,
-				ollama: {},
-				lmstudio: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-			values: undefined,
-		})
+		// Verify response was sent with static providers containing their actual model dictionaries
+		expect(mockPostMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "routerModels",
+				routerModels: expect.objectContaining({
+					deepinfra: mockModels,
+					openrouter: mockModels,
+					requesty: mockModels,
+					glama: mockModels,
+					unbound: mockModels,
+					roo: mockModels,
+					chutes: mockModels,
+					litellm: mockModels,
+					ollama: {},
+					lmstudio: {},
+					"vercel-ai-gateway": mockModels,
+					huggingface: {},
+					"io-intelligence": {},
+					// Static providers will have their actual model dictionaries
+					anthropic: expect.any(Object),
+					bedrock: expect.any(Object),
+					cerebras: expect.any(Object),
+					"claude-code": expect.any(Object),
+					deepseek: expect.any(Object),
+					doubao: expect.any(Object),
+					featherless: expect.any(Object),
+					fireworks: expect.any(Object),
+					gemini: expect.any(Object),
+					groq: expect.any(Object),
+					minimax: expect.any(Object),
+					mistral: expect.any(Object),
+					moonshot: expect.any(Object),
+					"openai-native": expect.any(Object),
+					"qwen-code": expect.any(Object),
+					sambanova: expect.any(Object),
+					vertex: expect.any(Object),
+					"vscode-lm": expect.any(Object),
+					xai: expect.any(Object),
+					zai: expect.any(Object),
+				}),
+				values: undefined,
+			}),
+		)
 	})
 
 	test("handles requestRouterModels with individual provider failures", async () => {
@@ -2760,25 +2783,48 @@ describe("ClineProvider - Router Models", () => {
 		await messageHandler({ type: "requestRouterModels" })
 
 		// Verify main response includes successful providers and empty objects for failed ones
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: {},
-				glama: mockModels,
-				unbound: {},
-				roo: mockModels,
-				chutes: {},
-				ollama: {},
-				lmstudio: {},
-				litellm: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-			values: undefined,
-		})
+		expect(mockPostMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "routerModels",
+				routerModels: expect.objectContaining({
+					deepinfra: mockModels,
+					openrouter: mockModels,
+					requesty: {},
+					glama: mockModels,
+					unbound: {},
+					roo: mockModels,
+					chutes: {},
+					ollama: {},
+					lmstudio: {},
+					litellm: {},
+					"vercel-ai-gateway": mockModels,
+					huggingface: {},
+					"io-intelligence": {},
+					// Static providers will have their actual model dictionaries
+					anthropic: expect.any(Object),
+					bedrock: expect.any(Object),
+					cerebras: expect.any(Object),
+					"claude-code": expect.any(Object),
+					deepseek: expect.any(Object),
+					doubao: expect.any(Object),
+					featherless: expect.any(Object),
+					fireworks: expect.any(Object),
+					gemini: expect.any(Object),
+					groq: expect.any(Object),
+					minimax: expect.any(Object),
+					mistral: expect.any(Object),
+					moonshot: expect.any(Object),
+					"openai-native": expect.any(Object),
+					"qwen-code": expect.any(Object),
+					sambanova: expect.any(Object),
+					vertex: expect.any(Object),
+					"vscode-lm": expect.any(Object),
+					xai: expect.any(Object),
+					zai: expect.any(Object),
+				}),
+				values: undefined,
+			}),
+		)
 
 		// Verify error messages were sent for failed providers
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2884,25 +2930,48 @@ describe("ClineProvider - Router Models", () => {
 		)
 
 		// Verify response includes empty object for LiteLLM
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: mockModels,
-				glama: mockModels,
-				unbound: mockModels,
-				roo: mockModels,
-				chutes: mockModels,
-				litellm: {},
-				ollama: {},
-				lmstudio: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-			values: undefined,
-		})
+		expect(mockPostMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "routerModels",
+				routerModels: expect.objectContaining({
+					deepinfra: mockModels,
+					openrouter: mockModels,
+					requesty: mockModels,
+					glama: mockModels,
+					unbound: mockModels,
+					roo: mockModels,
+					chutes: mockModels,
+					litellm: {},
+					ollama: {},
+					lmstudio: {},
+					"vercel-ai-gateway": mockModels,
+					huggingface: {},
+					"io-intelligence": {},
+					// Static providers will have their actual model dictionaries
+					anthropic: expect.any(Object),
+					bedrock: expect.any(Object),
+					cerebras: expect.any(Object),
+					"claude-code": expect.any(Object),
+					deepseek: expect.any(Object),
+					doubao: expect.any(Object),
+					featherless: expect.any(Object),
+					fireworks: expect.any(Object),
+					gemini: expect.any(Object),
+					groq: expect.any(Object),
+					minimax: expect.any(Object),
+					mistral: expect.any(Object),
+					moonshot: expect.any(Object),
+					"openai-native": expect.any(Object),
+					"qwen-code": expect.any(Object),
+					sambanova: expect.any(Object),
+					vertex: expect.any(Object),
+					"vscode-lm": expect.any(Object),
+					xai: expect.any(Object),
+					zai: expect.any(Object),
+				}),
+				values: undefined,
+			}),
+		)
 	})
 
 	test("handles requestLmStudioModels with proper response", async () => {

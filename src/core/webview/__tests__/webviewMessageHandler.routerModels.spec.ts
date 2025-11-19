@@ -56,6 +56,8 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 			// Only methods used by this code path
 			postMessageToWebview: vi.fn(),
 			getState: vi.fn().mockResolvedValue({ apiConfiguration: {} }),
+			getCurrentTask: vi.fn().mockReturnValue({ cwd: "/mock/workspace" }),
+			cwd: "/mock/workspace",
 			contextProxy: {
 				getValue: vi.fn(),
 				setValue: vi.fn(),
@@ -112,14 +114,18 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 		const payload = call[0]
 		const routerModels = payload.routerModels as Record<string, Record<string, any>>
 
-		// Only "roo" key should be present
-		const keys = Object.keys(routerModels)
-		expect(keys).toEqual(["roo"])
+		// Verify "roo" is present with its models
 		expect(Object.keys(routerModels.roo || {})).toContain("roo/sonnet")
 
-		// getModels should have been called exactly once for roo
+		// getModels should have been called exactly once for roo (dynamic provider)
 		const providersCalled = getModelsMock.mock.calls.map((c: any[]) => c[0]?.provider)
 		expect(providersCalled).toEqual(["roo"])
+
+		// Static providers should also be present (they're always loaded)
+		const keys = Object.keys(routerModels)
+		expect(keys).toContain("roo") // The requested provider
+		expect(keys).toContain("anthropic") // Static providers are always included
+		expect(keys.length).toBeGreaterThan(1) // More than just the requested provider
 	})
 
 	it("defaults to aggregate fetching when no provider filter is sent", async () => {
@@ -156,12 +162,18 @@ describe("webviewMessageHandler - requestRouterModels provider filter", () => {
 		)
 		expect(call).toBeTruthy()
 		const routerModels = call[0].routerModels as Record<string, Record<string, any>>
-		const keys = Object.keys(routerModels)
 
-		expect(keys).toEqual(["openrouter"])
+		// Verify "openrouter" is present with its models
 		expect(Object.keys(routerModels.openrouter || {})).toContain("openrouter/qwen2.5")
 
+		// getModels should have been called exactly once for openrouter (dynamic provider)
 		const providersCalled = getModelsMock.mock.calls.map((c: any[]) => c[0]?.provider)
 		expect(providersCalled).toEqual(["openrouter"])
+
+		// Static providers should also be present (they're always loaded)
+		const keys = Object.keys(routerModels)
+		expect(keys).toContain("openrouter") // The requested provider
+		expect(keys).toContain("anthropic") // Static providers are always included
+		expect(keys.length).toBeGreaterThan(1) // More than just the requested provider
 	})
 })

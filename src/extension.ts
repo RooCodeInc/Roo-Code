@@ -30,6 +30,9 @@ import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
+import { setupCustomModelsWatcher } from "./services/custom-models/watcher"
+import { preloadStaticProviderModels } from "./api/providers/model-lookup"
+import { getWorkspacePath } from "./utils/path"
 import { API } from "./extension/api"
 
 import {
@@ -251,6 +254,27 @@ export async function activate(context: vscode.ExtensionContext) {
 	} catch (error) {
 		outputChannel.appendLine(
 			`[AutoImport] Error during auto-import: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
+	// Preload custom models for static providers
+	try {
+		await preloadStaticProviderModels(getWorkspacePath())
+		outputChannel.appendLine("[CustomModels] Static provider models preloaded")
+	} catch (error) {
+		outputChannel.appendLine(
+			`[CustomModels] Failed to preload static provider models: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
+	// Setup custom models file watcher for hot-reloading
+	try {
+		const customModelsWatcher = setupCustomModelsWatcher(getWorkspacePath())
+		context.subscriptions.push(customModelsWatcher)
+		outputChannel.appendLine("[CustomModels] File watcher initialized")
+	} catch (error) {
+		outputChannel.appendLine(
+			`[CustomModels] Failed to setup file watcher: ${error instanceof Error ? error.message : String(error)}`,
 		)
 	}
 

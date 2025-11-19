@@ -238,26 +238,49 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		// Note: huggingface is not fetched in requestRouterModels - it has its own handler
 		// Note: io-intelligence is not fetched because no API key is provided in the mock state
 
-		// Verify response was sent
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: mockModels,
-				glama: mockModels,
-				unbound: mockModels,
-				litellm: mockModels,
-				roo: mockModels,
-				chutes: mockModels,
-				ollama: {},
-				lmstudio: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-			values: undefined,
-		})
+		// Verify response was sent with static providers containing their actual model dictionaries
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "routerModels",
+				routerModels: expect.objectContaining({
+					deepinfra: mockModels,
+					openrouter: mockModels,
+					requesty: mockModels,
+					glama: mockModels,
+					unbound: mockModels,
+					litellm: mockModels,
+					roo: mockModels,
+					chutes: mockModels,
+					ollama: {},
+					lmstudio: {},
+					"vercel-ai-gateway": mockModels,
+					huggingface: {},
+					"io-intelligence": {},
+					// Static providers will have their actual model dictionaries
+					anthropic: expect.any(Object),
+					bedrock: expect.any(Object),
+					cerebras: expect.any(Object),
+					"claude-code": expect.any(Object),
+					deepseek: expect.any(Object),
+					doubao: expect.any(Object),
+					featherless: expect.any(Object),
+					fireworks: expect.any(Object),
+					gemini: expect.any(Object),
+					groq: expect.any(Object),
+					minimax: expect.any(Object),
+					mistral: expect.any(Object),
+					moonshot: expect.any(Object),
+					"openai-native": expect.any(Object),
+					"qwen-code": expect.any(Object),
+					sambanova: expect.any(Object),
+					vertex: expect.any(Object),
+					"vscode-lm": expect.any(Object),
+					xai: expect.any(Object),
+					zai: expect.any(Object),
+				}),
+				values: undefined,
+			}),
+		)
 	})
 
 	it("handles LiteLLM models with values from message when config is missing", async () => {
@@ -333,25 +356,48 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		)
 
 		// Verify response includes empty object for LiteLLM
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "routerModels",
-			routerModels: {
-				deepinfra: mockModels,
-				openrouter: mockModels,
-				requesty: mockModels,
-				glama: mockModels,
-				unbound: mockModels,
-				roo: mockModels,
-				chutes: mockModels,
-				litellm: {},
-				ollama: {},
-				lmstudio: {},
-				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
-			},
-			values: undefined,
-		})
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "routerModels",
+				routerModels: expect.objectContaining({
+					deepinfra: mockModels,
+					openrouter: mockModels,
+					requesty: mockModels,
+					glama: mockModels,
+					unbound: mockModels,
+					roo: mockModels,
+					chutes: mockModels,
+					litellm: {},
+					ollama: {},
+					lmstudio: {},
+					"vercel-ai-gateway": mockModels,
+					huggingface: {},
+					"io-intelligence": {},
+					// Static providers will have their actual model dictionaries
+					anthropic: expect.any(Object),
+					bedrock: expect.any(Object),
+					cerebras: expect.any(Object),
+					"claude-code": expect.any(Object),
+					deepseek: expect.any(Object),
+					doubao: expect.any(Object),
+					featherless: expect.any(Object),
+					fireworks: expect.any(Object),
+					gemini: expect.any(Object),
+					groq: expect.any(Object),
+					minimax: expect.any(Object),
+					mistral: expect.any(Object),
+					moonshot: expect.any(Object),
+					"openai-native": expect.any(Object),
+					"qwen-code": expect.any(Object),
+					sambanova: expect.any(Object),
+					vertex: expect.any(Object),
+					"vscode-lm": expect.any(Object),
+					xai: expect.any(Object),
+					zai: expect.any(Object),
+				}),
+				values: undefined,
+			}),
+		)
 	})
 
 	it("handles individual provider failures gracefully", async () => {
@@ -426,6 +472,27 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
+				// Static providers
+				anthropic: {},
+				bedrock: {},
+				cerebras: {},
+				"claude-code": {},
+				deepseek: {},
+				doubao: {},
+				featherless: {},
+				fireworks: {},
+				gemini: {},
+				groq: {},
+				minimax: {},
+				mistral: {},
+				moonshot: {},
+				"openai-native": {},
+				"qwen-code": {},
+				sambanova: {},
+				vertex: {},
+				"vscode-lm": {},
+				xai: {},
+				zai: {},
 			},
 			values: undefined,
 		})

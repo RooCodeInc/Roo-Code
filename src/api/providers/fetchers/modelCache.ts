@@ -11,6 +11,8 @@ import { ContextProxy } from "../../../core/config/ContextProxy"
 import { getCacheDirectoryPath } from "../../../utils/storage"
 import type { RouterName, ModelRecord } from "../../../shared/api"
 import { fileExistsAtPath } from "../../../utils/fs"
+import { getCustomModelsForProvider } from "../../../services/custom-models"
+import { getWorkspacePath } from "../../../utils/path"
 
 import { getOpenRouterModels } from "./openrouter"
 import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
@@ -117,6 +119,10 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 				throw new Error(`Unknown provider: ${exhaustiveCheck}`)
 			}
 		}
+
+		// Load and merge custom models
+		const customModels = await getCustomModelsForProvider(provider, getWorkspacePath())
+		models = { ...models, ...customModels }
 
 		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
 		memoryCache.set(provider, models)

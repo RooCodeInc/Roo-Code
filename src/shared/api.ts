@@ -3,11 +3,14 @@ import {
 	type ProviderSettings,
 	type DynamicProvider,
 	type LocalProvider,
+	type ProviderName,
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 	CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS,
 	isDynamicProvider,
 	isLocalProvider,
 } from "@roo-code/types"
+
+import { staticProviderNames } from "../services/custom-models/static-providers"
 
 // ApiHandlerOptions
 // Extend ProviderSettings (minus apiProvider) with handler-specific toggles.
@@ -26,11 +29,22 @@ export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 	ollamaNumCtx?: number
 }
 
-// RouterName
+// StaticProvider - providers with hard-coded model definitions that support custom models
+// Imported from the single source of truth in static-providers.ts
 
-export type RouterName = DynamicProvider | LocalProvider
+export const staticProvidersWithCustomModels = staticProviderNames
 
-export const isRouterName = (value: string): value is RouterName => isDynamicProvider(value) || isLocalProvider(value)
+export type StaticProviderWithCustomModels = (typeof staticProvidersWithCustomModels)[number]
+
+export const isStaticProviderWithCustomModels = (key: string): key is StaticProviderWithCustomModels =>
+	(staticProvidersWithCustomModels as readonly string[]).includes(key)
+
+// RouterName - includes dynamic, local, and static providers that support custom models
+
+export type RouterName = DynamicProvider | LocalProvider | StaticProviderWithCustomModels
+
+export const isRouterName = (value: string): value is RouterName =>
+	isDynamicProvider(value) || isLocalProvider(value) || isStaticProviderWithCustomModels(value)
 
 export function toRouterName(value?: string): RouterName {
 	if (value && isRouterName(value)) {
@@ -177,9 +191,8 @@ type CommonFetchParams = {
 	baseUrl?: string
 }
 
-// Exhaustive, value-level map for all dynamic providers.
-// If a new dynamic provider is added in packages/types, this will fail to compile
-// until a corresponding entry is added here.
+// Exhaustive, value-level map for dynamic and local providers that can be fetched.
+// Static providers don't need entries here as they're loaded differently.
 const dynamicProviderExtras = {
 	openrouter: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	"vercel-ai-gateway": {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
@@ -194,10 +207,10 @@ const dynamicProviderExtras = {
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	roo: {} as { apiKey?: string; baseUrl?: string },
 	chutes: {} as { apiKey?: string },
-} as const satisfies Record<RouterName, object>
+} as const satisfies Record<DynamicProvider | LocalProvider, object>
 
 // Build the dynamic options union from the map, intersected with CommonFetchParams
 // so extra fields are always allowed while required ones are enforced.
 export type GetModelsOptions = {
 	[P in keyof typeof dynamicProviderExtras]: ({ provider: P } & (typeof dynamicProviderExtras)[P]) & CommonFetchParams
-}[RouterName]
+}[DynamicProvider | LocalProvider]
