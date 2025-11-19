@@ -79,7 +79,8 @@ export function convertAnthropicContentToGemini(
 				}
 
 				// Extract tool name from tool_use_id (e.g., "calculator-123" -> "calculator")
-				const toolName = block.tool_use_id.split("-")[0]
+				const lastHyphenIndex = block.tool_use_id.lastIndexOf("-")
+				const toolName = lastHyphenIndex >= 0 ? block.tool_use_id.slice(0, lastHyphenIndex) : block.tool_use_id
 
 				if (typeof block.content === "string") {
 					return {
@@ -124,59 +125,16 @@ export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
 	options?: { includeThoughtSignatures?: boolean },
 ): Content[] {
-	const content: ExtendedContentBlockParam[] = Array.isArray(message.content)
-		? (message.content as ExtendedContentBlockParam[])
-		: [{ type: "text", text: message.content ?? "" }]
+	const parts = convertAnthropicContentToGemini(message.content, options)
 
-	const toolUseParts = content.filter((block) => block.type === "tool_use") as Anthropic.ToolUseBlock[]
-	const toolResultParts = content.filter((block) => block.type === "tool_result") as Anthropic.ToolResultBlockParam[]
-	const otherParts = content.filter((block) => block.type !== "tool_use" && block.type !== "tool_result")
-	const thoughtSignatureBlocks = content.filter((block) => isThoughtSignatureContentBlock(block))
-	const role = message.role === "assistant" ? "model" : "user"
-	const assistantThoughtOptions = {
-		...options,
-		includeThoughtSignatures: message.role === "assistant" ? options?.includeThoughtSignatures ?? true : false,
+	if (parts.length === 0) {
+		return []
 	}
 
-	// Gemini expects a flat list of Content objects. We group regular message parts,
-	// tool uses, and tool results into separate Content entries while preserving their
-	// relative order within each category.
-	const contents: Content[] = []
-
-	if (otherParts.length > 0) {
-		contents.push({
-			role,
-			parts: convertAnthropicContentToGemini(otherParts, assistantThoughtOptions),
-		})
-	}
-
-	if (toolUseParts.length > 0) {
-		const toolUseWithSignatures =
-			thoughtSignatureBlocks.length > 0 ? [...thoughtSignatureBlocks, ...toolUseParts] : toolUseParts
-		contents.push({
-			role: "model",
-			parts: convertAnthropicContentToGemini(toolUseWithSignatures, {
-				...options,
-				includeThoughtSignatures: options?.includeThoughtSignatures ?? true,
-			}),
-		})
-	}
-
-	if (toolResultParts.length > 0) {
-		contents.push({
-			role: "user",
-			parts: convertAnthropicContentToGemini(toolResultParts, { ...options, includeThoughtSignatures: false }),
-		})
-	}
-
-	if (contents.length === 0) {
-		return [
-			{
-				role,
-				parts: convertAnthropicContentToGemini(message.content ?? "", assistantThoughtOptions),
-			},
-		]
-	}
-
-	return contents
+	return [
+		{
+			role: message.role === "assistant" ? "model" : "user",
+			parts,
+		},
+	]
 }

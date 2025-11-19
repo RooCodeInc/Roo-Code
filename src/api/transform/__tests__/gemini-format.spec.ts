@@ -126,11 +126,8 @@ describe("convertAnthropicMessageToGemini", () => {
 		expect(result).toEqual([
 			{
 				role: "model",
-				parts: [{ text: "Let me calculate that for you." }],
-			},
-			{
-				role: "model",
 				parts: [
+					{ text: "Let me calculate that for you." },
 					{
 						functionCall: {
 							name: "calculator",
@@ -161,11 +158,8 @@ describe("convertAnthropicMessageToGemini", () => {
 		expect(result).toEqual([
 			{
 				role: "user",
-				parts: [{ text: "Here's the result:" }],
-			},
-			{
-				role: "user",
 				parts: [
+					{ text: "Here's the result:" },
 					{
 						functionResponse: {
 							name: "calculator",
@@ -195,12 +189,7 @@ describe("convertAnthropicMessageToGemini", () => {
 		const result = convertAnthropicMessageToGemini(anthropicMessage)
 
 		// Should skip the empty tool result
-		expect(result).toEqual([
-			{
-				role: "user",
-				parts: [],
-			},
-		])
+		expect(result).toEqual([])
 	})
 
 	it("should convert a message with tool result as array with text only", () => {
@@ -340,6 +329,38 @@ describe("convertAnthropicMessageToGemini", () => {
 						inlineData: {
 							data: "onlyimagedata",
 							mimeType: "image/png",
+						},
+					},
+				],
+			},
+		])
+	})
+
+	it("should handle tool names with hyphens", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "tool_result",
+					tool_use_id: "search-files-123",
+					content: "found files",
+				},
+			],
+		}
+
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([
+			{
+				role: "user",
+				parts: [
+					{
+						functionResponse: {
+							name: "search-files",
+							response: {
+								name: "search-files",
+								content: "found files",
+							},
 						},
 					},
 				],

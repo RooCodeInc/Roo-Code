@@ -10,6 +10,7 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
+		supportsNativeTools: true,
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["low", "high"],
 		reasoningEffort: "low",
