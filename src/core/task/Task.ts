@@ -217,6 +217,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private readonly globalStoragePath: string
 	abort: boolean = false
 	currentRequestAbortController?: AbortController
+	skipPrevResponseIdOnce: boolean = false
 
 	// TaskStatus
 	idleAsk?: ClineMessage
@@ -3437,6 +3438,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
+			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
 			// Include tools and tool protocol when using native protocol and model supports it
 			...(shouldIncludeTools
 				? { tools: allTools, tool_choice: "auto", toolProtocol, parallelToolCalls: parallelToolCallsEnabled }
@@ -3446,6 +3448,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Create an AbortController to allow cancelling the request mid-stream
 		this.currentRequestAbortController = new AbortController()
 		const abortSignal = this.currentRequestAbortController.signal
+		// Reset the flag after using it
+		this.skipPrevResponseIdOnce = false
 
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(

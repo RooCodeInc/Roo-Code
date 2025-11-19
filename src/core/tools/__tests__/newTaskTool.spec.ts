@@ -668,14 +668,13 @@ describe("newTaskTool delegation flow", () => {
 		}
 
 		// Act
-		await newTaskTool(
-			localCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(localCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		// Assert: provider method called with correct params
 		expect(providerSpy.delegateParentAndOpenChild).toHaveBeenCalledWith({
