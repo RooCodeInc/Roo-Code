@@ -1,3 +1,5 @@
+import { SymbolMetadata, ImportInfo, ExportInfo } from "../types/metadata"
+
 /**
  * Interface for vector database clients
  */
@@ -93,5 +95,14 @@ export interface Payload {
 	codeChunk: string
 	startLine: number
 	endLine: number
+	// Phase 2: Enhanced metadata (optional for backward compatibility)
+	identifier?: string | null
+	type?: string | null
+	language?: string
+	symbolMetadata?: SymbolMetadata
+	imports?: ImportInfo[]
+	exports?: ExportInfo[]
+	documentation?: string
+	segmentHash?: string
 	[key: string]: any
 }

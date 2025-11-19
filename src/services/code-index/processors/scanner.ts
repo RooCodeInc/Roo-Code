@@ -414,6 +414,28 @@ export class DirectoryScanner implements IDirectoryScanner {
 					// Use segmentHash for unique ID generation to handle multiple segments from same line
 					const pointId = uuidv5(block.segmentHash, QDRANT_CODE_BLOCK_NAMESPACE)
 
+					// Get file extension for language detection
+					const ext = path.extname(block.file_path).slice(1).toLowerCase()
+					const languageMap: Record<string, string> = {
+						ts: "TypeScript",
+						tsx: "TypeScript",
+						js: "JavaScript",
+						jsx: "JavaScript",
+						py: "Python",
+						java: "Java",
+						cpp: "C++",
+						c: "C",
+						cs: "C#",
+						go: "Go",
+						rs: "Rust",
+						rb: "Ruby",
+						php: "PHP",
+						swift: "Swift",
+						kt: "Kotlin",
+						scala: "Scala",
+					}
+					const language = languageMap[ext] || ext
+
 					return {
 						id: pointId,
 						vector: embeddings[index],
@@ -423,6 +445,14 @@ export class DirectoryScanner implements IDirectoryScanner {
 							startLine: block.start_line,
 							endLine: block.end_line,
 							segmentHash: block.segmentHash,
+							// Phase 2: Enhanced metadata
+							identifier: block.identifier,
+							type: block.type,
+							language,
+							symbolMetadata: block.symbolMetadata,
+							imports: block.imports,
+							exports: block.exports,
+							documentation: block.documentation,
 						},
 					}
 				})
