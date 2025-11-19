@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "在上下文中包含当前成本",
 			"description": "启用后，当前 API 使用成本将包含在系统提示中。如果模型因成本问题停止工作，请禁用此选项。"
+		},
+		"maxGitStatusFiles": {
+			"label": "Git 状态最大文件数",
+			"description": "git状态上下文中包含的最大文件条目数。设为0禁用。分支信息和提交在>0时始终显示。"
 		}
 	},
 	"terminal": {
@@ -689,6 +693,14 @@
 	},
 	"advancedSettings": {
 		"title": "高级设置"
+	},
+	"toolProtocol": {
+		"label": "工具调用协议",
+		"description": "选择 Roo 如何与 API 通信。原生使用提供商的函数调用 API，而 XML 使用 XML 格式的工具定义。",
+		"default": "默认",
+		"xml": "XML",
+		"native": "原生",
+		"currentDefault": "默认: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

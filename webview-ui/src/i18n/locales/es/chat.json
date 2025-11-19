@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Novedades en la Extensión:",
-			"openRouterEmbeddings": "Soporte para modelos de embeddings de OpenRouter",
-			"chutesDynamic": "Chutes ahora carga los modelos más recientes dinámicamente",
-			"queuedMessagesFix": "Correcciones para mensajes en cola que se perdían"
+			"gemini3": "Gemini 3 disponible en Gemini, Vertex, Roo Code Cloud, OpenRouter y más",
+			"gitStatus": "Puedes agregar información del estado de git al entorno desde la configuración de Context",
+			"nativeToolCalling": "Soporte experimental para llamadas nativas de herramientas en Roo Code Cloud, OpenRouter y OpenAI (más próximamente) - actívalo en la configuración avanzada del proveedor"
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
-			"prFixer": "Presentamos el agente en la nube <bold>PR Fixer</bold> para complementar el PR Reviewer.",
-			"prFixerDescription": "El PR Fixer de Roo Code aplica cambios de alta calidad a tus PRs, directamente desde GitHub. Invócalo mediante un comentario en el PR y leerá todo el historial de comentarios para entender el contexto, los acuerdos y las compensaciones — luego implementará la solución correcta.",
-			"tryPrFixerButton": "Probar PR Fixer"
+			"specialized": "Presentamos <bold>Explainer</bold>, <bold>Planner</bold> y <bold>Coder</bold> - tres agentes en la nube especializados para mejorar tus flujos de trabajo.",
+			"description": "Los agentes trabajan juntos en la nube y se pueden activar desde la web o mediante Slack.",
+			"tryButton": "Prueba los Agentes en la Nube"
 		},
 		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo quiere ejecutar un comando slash",
 		"didRun": "Roo ejecutó un comando slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} de {{total}} tareas pendientes realizadas",
 		"complete": "{{total}} tareas pendientes realizadas",

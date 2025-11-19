@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Novità nell'Estensione:",
-			"openRouterEmbeddings": "Supporto per i modelli di embedding di OpenRouter",
-			"chutesDynamic": "Chutes ora carica i modelli più recenti dinamicamente",
-			"queuedMessagesFix": "Correzioni per i messaggi in coda che si perdono"
+			"gemini3": "Gemini 3 disponibile in Gemini, Vertex, Roo Code Cloud, OpenRouter e altro",
+			"gitStatus": "Puoi aggiungere informazioni sullo stato di git all'ambiente dalle impostazioni Context",
+			"nativeToolCalling": "Supporto sperimentale per chiamate native degli strumenti in Roo Code Cloud, OpenRouter e OpenAI (di più in arrivo) - attivalo nelle impostazioni avanzate del provider"
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",
-			"prFixer": "Presentazione dell'agente cloud <bold>PR Fixer</bold> per completare il PR Reviewer.",
-			"prFixerDescription": "Il PR Fixer di Roo Code applica modifiche di alta qualità alle tue PR, direttamente da GitHub. Invocalo tramite un commento PR e leggerà l'intera cronologia dei commenti per comprendere il contesto, gli accordi e i compromessi - quindi implementerà la correzione giusta.",
-			"tryPrFixerButton": "Prova PR Fixer"
+			"specialized": "Presentazione di <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
+			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
+			"tryButton": "Prova gli Agenti Cloud"
 		},
 		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>",
 		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo vuole eseguire un comando slash",
 		"didRun": "Roo ha eseguito un comando slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} di {{total}} cose da fare completate",
 		"complete": "{{total}} cose da fare completate",

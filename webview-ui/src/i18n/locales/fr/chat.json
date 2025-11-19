@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Nouveautés dans l'Extension :",
-			"openRouterEmbeddings": "Prise en charge des modèles d'embeddings OpenRouter",
-			"chutesDynamic": "Chutes charge maintenant les derniers modèles dynamiquement",
-			"queuedMessagesFix": "Corrections pour les messages en file d'attente qui se perdent"
+			"gemini3": "Gemini 3 disponible dans Gemini, Vertex, Roo Code Cloud, OpenRouter et plus encore",
+			"gitStatus": "Tu peux ajouter des informations sur le statut git à l'environnement depuis les paramètres Context",
+			"nativeToolCalling": "Support expérimental pour les appels d'outils natifs dans Roo Code Cloud, OpenRouter et OpenAI (d'autres à venir) - active-le dans les paramètres avancés du fournisseur"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
-			"prFixer": "Présentation de l'agent cloud <bold>PR Fixer</bold> pour compléter le Réviseur de PR.",
-			"prFixerDescription": "Le PR Fixer de Roo Code applique des modifications de haute qualité à vos PR, directement depuis GitHub. Invoquez-le via un commentaire de PR et il lira tout l'historique des commentaires pour comprendre le contexte, les accords et les compromis - puis implémentera la bonne correction.",
-			"tryPrFixerButton": "Essayer le PR Fixer"
+			"specialized": "Présentation d'<bold>Explainer</bold>, <bold>Planner</bold> et <bold>Coder</bold> - trois agents cloud spécialisés pour améliorer tes workflows.",
+			"description": "Les agents travaillent ensemble dans le cloud et peuvent être déclenchés depuis le web ou via Slack.",
+			"tryButton": "Essayer les Agents Cloud"
 		},
 		"careers": "Aussi, <careersLink>on recrute !</careersLink>",
 		"socialLinks": "Rejoins-nous sur <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo veut exécuter une commande slash",
 		"didRun": "Roo a exécuté une commande slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} sur {{total}} tâches terminées",
 		"complete": "{{total}} tâches terminées",

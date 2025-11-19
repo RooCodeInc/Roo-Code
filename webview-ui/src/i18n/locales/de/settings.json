@@ -626,6 +626,10 @@
 		"includeCurrentCost": {
 			"label": "Aktuelle Kosten in den Kontext einbeziehen",
 			"description": "Wenn aktiviert, werden die aktuellen API-Nutzungskosten in den System-Prompt aufgenommen. Deaktiviere diese Option, wenn Modelle aufgrund von Kostenbedenken die Arbeit einstellen."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git-Status max. Dateien",
+			"description": "Maximale Anzahl von Dateieinträgen, die in den Git-Status-Kontext aufgenommen werden sollen. Auf 0 setzen, um zu deaktivieren. Branch-Informationen und Commits werden immer angezeigt, wenn > 0."
 		}
 	},
 	"terminal": {
@@ -688,6 +692,14 @@
 	},
 	"advancedSettings": {
 		"title": "Erweiterte Einstellungen"
+	},
+	"toolProtocol": {
+		"label": "Tool-Aufruf-Protokoll",
+		"description": "Wähle, wie Roo mit der API kommuniziert. Nativ verwendet die Funktionsaufruf-API des Anbieters, während XML XML-formatierte Werkzeugdefinitionen verwendet.",
+		"default": "Standard",
+		"xml": "XML",
+		"native": "Nativ",
+		"currentDefault": "Standard: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

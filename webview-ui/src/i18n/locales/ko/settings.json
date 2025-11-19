@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "컨텍스트에 현재 비용 포함",
 			"description": "활성화하면 현재 API 사용 비용이 시스템 프롬프트에 포함됩니다. 비용 문제로 모델이 작동을 멈추면 비활성화하세요."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git 상태 최대 파일",
+			"description": "git 상태 컨텍스트에 포함할 최대 파일 항목 수입니다. 비활성화하려면 0으로 설정하세요. 분기 정보와 커밋은 > 0일 때 항상 표시됩니다."
 		}
 	},
 	"terminal": {
@@ -689,6 +693,14 @@
 	},
 	"advancedSettings": {
 		"title": "고급 설정"
+	},
+	"toolProtocol": {
+		"label": "도구 호출 프로토콜",
+		"description": "Roo가 API와 통신하는 방법을 선택합니다. 네이티브는 공급자의 함수 호출 API를 사용하고 XML은 XML 형식의 도구 정의를 사용합니다.",
+		"default": "기본값",
+		"xml": "XML",
+		"native": "네이티브",
+		"currentDefault": "기본값: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

@@ -1,12 +1,59 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Content, Part } from "@google/genai"
 
-export function convertAnthropicContentToGemini(content: string | Anthropic.ContentBlockParam[]): Part[] {
+type ThoughtSignatureContentBlock = {
+	type: "thoughtSignature"
+	thoughtSignature?: string
+}
+
+type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock
+type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
+
+function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
+	return block.type === "thoughtSignature"
+}
+
+export function convertAnthropicContentToGemini(
+	content: ExtendedAnthropicContent,
+	options?: { includeThoughtSignatures?: boolean },
+): Part[] {
+	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
+
+	// First pass: find thoughtSignature if it exists in the content blocks
+	let activeThoughtSignature: string | undefined
+	if (Array.isArray(content)) {
+		const sigBlock = content.find((block) => isThoughtSignatureContentBlock(block)) as ThoughtSignatureContentBlock
+		if (sigBlock?.thoughtSignature) {
+			activeThoughtSignature = sigBlock.thoughtSignature
+		}
+	}
+
+	// Determine the signature to attach to function calls.
+	// If we're in a mode that expects signatures (includeThoughtSignatures is true):
+	// 1. Use the actual signature if we found one in the history/content.
+	// 2. Fallback to "skip_thought_signature_validator" if missing (e.g. cross-model history).
+	let functionCallSignature: string | undefined
+	if (includeThoughtSignatures) {
+		functionCallSignature = activeThoughtSignature || "skip_thought_signature_validator"
+	}
+
 	if (typeof content === "string") {
 		return [{ text: content }]
 	}
 
 	return content.flatMap((block): Part | Part[] => {
+		// Handle thoughtSignature blocks first
+		if (isThoughtSignatureContentBlock(block)) {
+			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
+				// The Google GenAI SDK currently exposes thoughtSignature as an
+				// extension field on Part; model it structurally without widening
+				// the upstream type.
+				return { thoughtSignature: block.thoughtSignature } as Part
+			}
+			// Explicitly omit thoughtSignature when not including it.
+			return []
+		}
+
 		switch (block.type) {
 			case "text":
 				return { text: block.text }
@@ -22,7 +69,10 @@ export function convertAnthropicContentToGemini(content: string | Anthropic.Cont
 						name: block.name,
 						args: block.input as Record<string, unknown>,
 					},
-				}
+					// Inject the thoughtSignature into the functionCall part if required.
+					// This is necessary for Gemini 2.5/3+ thinking models to validate the tool call.
+					...(functionCallSignature ? { thoughtSignature: functionCallSignature } : {}),
+				} as Part
 			case "tool_result": {
 				if (!block.content) {
 					return []
@@ -70,9 +120,16 @@ export function convertAnthropicContentToGemini(content: string | Anthropic.Cont
 	})
 }
 
-export function convertAnthropicMessageToGemini(message: Anthropic.Messages.MessageParam): Content {
+export function convertAnthropicMessageToGemini(
+	message: Anthropic.Messages.MessageParam,
+	options?: { includeThoughtSignatures?: boolean },
+): Content {
 	return {
 		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content),
+		parts: convertAnthropicContentToGemini(message.content, {
+			...options,
+			includeThoughtSignatures:
+				message.role === "assistant" ? (options?.includeThoughtSignatures ?? true) : false,
+		}),
 	}
 }

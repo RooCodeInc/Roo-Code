@@ -39,7 +39,7 @@ export class InsertContentTool extends BaseTool<"insert_content"> {
 
 	async execute(params: InsertContentParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { path: relPath, line: lineNumber, content } = params
-		const { askApproval, handleError, pushToolResult } = callbacks
+		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
 			// Validate required parameters
@@ -68,7 +68,7 @@ export class InsertContentTool extends BaseTool<"insert_content"> {
 
 			if (!accessAllowed) {
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+				pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 				return
 			}
 

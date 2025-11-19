@@ -44,9 +44,9 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1">
-							<li>{t("chat:announcement.release.openRouterEmbeddings")}</li>
-							<li>{t("chat:announcement.release.chutesDynamic")}</li>
-							<li>{t("chat:announcement.release.queuedMessagesFix")}</li>
+							<li>{t("chat:announcement.release.gemini3")}</li>
+							<li>{t("chat:announcement.release.gitStatus")}</li>
+							<li>{t("chat:announcement.release.nativeToolCalling")}</li>
 						</ul>
 					</div>
 
@@ -59,7 +59,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 
 						<div className="mb-3">
 							<Trans
-								i18nKey="chat:announcement.cloudAgents.prFixer"
+								i18nKey="chat:announcement.cloudAgents.specialized"
 								components={{
 									bold: <b />,
 								}}
@@ -67,7 +67,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 						</div>
 
 						<p className="mb-3 text-sm text-vscode-descriptionForeground">
-							{t("chat:announcement.cloudAgents.prFixerDescription")}
+							{t("chat:announcement.cloudAgents.description")}
 						</p>
 
 						<div className="mt-4">
@@ -75,13 +75,13 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 								onClick={() => {
 									vscode.postMessage({
 										type: "openExternal",
-										url: "https://roocode.com/pr-fixer?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
+										url: "https://app.roocode.com/cloud-agents/setup?utm_source=roocode&utm_medium=extension&utm_campaign=announcement",
 									})
 									setOpen(false)
 									hideAnnouncement()
 								}}
 								className="w-full">
-								{t("chat:announcement.cloudAgents.tryPrFixerButton")}
+								{t("chat:announcement.cloudAgents.tryButton")}
 							</Button>
 						</div>
 					</div>

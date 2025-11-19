@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "Includi il costo corrente nel contesto",
 			"description": "Se abilitato, il costo di utilizzo corrente dell'API verrà incluso nel prompt di sistema. Disabilita questa opzione se i modelli smettono di funzionare a causa di problemi di costo."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status max file",
+			"description": "Numero massimo di voci di file da includere nel contesto dello stato di git. Imposta a 0 per disabilitare. Le informazioni sul ramo e sui commit vengono sempre mostrate quando > 0."
 		}
 	},
 	"terminal": {
@@ -689,6 +693,14 @@
 	},
 	"advancedSettings": {
 		"title": "Impostazioni avanzate"
+	},
+	"toolProtocol": {
+		"label": "Protocollo di chiamata dello strumento",
+		"description": "Scegli come Roo comunica con l'API. Nativo utilizza l'API di chiamata di funzione del provider, mentre XML utilizza definizioni di strumenti in formato XML.",
+		"default": "Predefinito",
+		"xml": "XML",
+		"native": "Nativo",
+		"currentDefault": "Predefinito: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

@@ -17,6 +17,7 @@ import { ApiHandler } from "../../../api/index"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { RooIgnoreController } from "../../ignore/RooIgnoreController"
 import { formatResponse } from "../../prompts/responses"
+import { getGitStatus } from "../../../utils/git"
 import { Task } from "../../task/Task"
 
 vi.mock("vscode", () => ({
@@ -48,6 +49,7 @@ vi.mock("../../../services/glob/list-files")
 vi.mock("../../../integrations/terminal/TerminalRegistry")
 vi.mock("../../../integrations/terminal/Terminal")
 vi.mock("../../../utils/path")
+vi.mock("../../../utils/git")
 vi.mock("../../prompts/responses")
 
 describe("getEnvironmentDetails", () => {
@@ -134,6 +136,7 @@ describe("getEnvironmentDetails", () => {
 		;(TerminalRegistry.getBackgroundTerminals as Mock).mockReturnValue([])
 		;(TerminalRegistry.isProcessHot as Mock).mockReturnValue(false)
 		;(TerminalRegistry.getUnretrievedOutput as Mock).mockReturnValue("")
+		;(getGitStatus as Mock).mockResolvedValue("## main")
 		vi.mocked(pWaitFor).mockResolvedValue(undefined)
 		vi.mocked(delay).mockResolvedValue(undefined)
 	})
@@ -143,9 +146,9 @@ describe("getEnvironmentDetails", () => {
 
 		expect(result).toContain("<environment_details>")
 		expect(result).toContain("</environment_details>")
-		expect(result).toContain("# VSCode Visible Files")
-		expect(result).toContain("# VSCode Open Tabs")
+		// Visible Files and Open Tabs headers only appear when there's content
 		expect(result).toContain("# Current Time")
+		expect(result).not.toContain("# Git Status") // Git status is disabled by default (maxGitStatusFiles = 0)
 		expect(result).toContain("# Current Cost")
 		expect(result).toContain("# Current Mode")
 		expect(result).toContain("<model>test-model</model>")
@@ -389,5 +392,68 @@ describe("getEnvironmentDetails", () => {
 		const cline = { ...mockCline, todoList: [{ content: "test", status: "pending" }] }
 		const result = await getEnvironmentDetails(cline as Task)
 		expect(result).toContain("REMINDERS")
+	})
+
+	it("should include git status when maxGitStatusFiles > 0", async () => {
+		;(getGitStatus as Mock).mockResolvedValue("## main\nM  file1.ts")
+		mockProvider.getState.mockResolvedValue({
+			...mockState,
+			maxGitStatusFiles: 10,
+		})
+
+		const result = await getEnvironmentDetails(mockCline as Task)
+
+		expect(result).toContain("# Git Status")
+		expect(result).toContain("## main")
+		expect(getGitStatus).toHaveBeenCalledWith(mockCwd, 10)
+	})
+
+	it("should NOT include git status when maxGitStatusFiles is 0", async () => {
+		mockProvider.getState.mockResolvedValue({
+			...mockState,
+			maxGitStatusFiles: 0,
+		})
+
+		const result = await getEnvironmentDetails(mockCline as Task)
+
+		expect(result).not.toContain("# Git Status")
+		expect(getGitStatus).not.toHaveBeenCalled()
+	})
+
+	it("should NOT include git status when maxGitStatusFiles is undefined (defaults to 0)", async () => {
+		mockProvider.getState.mockResolvedValue({
+			...mockState,
+			maxGitStatusFiles: undefined,
+		})
+
+		const result = await getEnvironmentDetails(mockCline as Task)
+
+		expect(result).not.toContain("# Git Status")
+		expect(getGitStatus).not.toHaveBeenCalled()
+	})
+
+	it("should handle git status returning null gracefully when enabled", async () => {
+		;(getGitStatus as Mock).mockResolvedValue(null)
+		mockProvider.getState.mockResolvedValue({
+			...mockState,
+			maxGitStatusFiles: 10,
+		})
+
+		const result = await getEnvironmentDetails(mockCline as Task)
+
+		expect(result).not.toContain("# Git Status")
+		expect(getGitStatus).toHaveBeenCalledWith(mockCwd, 10)
+	})
+
+	it("should pass maxFiles parameter to getGitStatus", async () => {
+		;(getGitStatus as Mock).mockResolvedValue("## main")
+		mockProvider.getState.mockResolvedValue({
+			...mockState,
+			maxGitStatusFiles: 5,
+		})
+
+		await getEnvironmentDetails(mockCline as Task)
+
+		expect(getGitStatus).toHaveBeenCalledWith(mockCwd, 5)
 	})
 })

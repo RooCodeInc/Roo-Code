@@ -274,18 +274,21 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
+		const fallbackInfo = {
+			maxTokens: 16_384,
+			contextWindow: 262_144,
+			supportsImages: false,
+			supportsReasoningEffort: false,
+			supportsPromptCache: true,
+			supportsNativeTools: false,
+			inputPrice: 0,
+			outputPrice: 0,
+			isFree: false,
+		}
+
 		return {
 			id: modelId,
-			info: {
-				maxTokens: 16_384,
-				contextWindow: 262_144,
-				supportsImages: false,
-				supportsReasoningEffort: false,
-				supportsPromptCache: true,
-				supportsNativeTools: false,
-				inputPrice: 0,
-				outputPrice: 0,
-			},
+			info: fallbackInfo,
 		}
 	}
 }

@@ -65,7 +65,7 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 
 	async execute(params: AskFollowupQuestionParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { question, follow_up } = params
-		const { handleError, pushToolResult } = callbacks
+		const { handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
 			if (!question) {

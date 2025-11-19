@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "現在のコストをコンテキストに含める",
 			"description": "有効にすると、現在のAPI使用コストがシステムプロンプトに含まれます。モデルがコストに関する懸念で動作を停止する場合は無効にしてください。"
+		},
+		"maxGitStatusFiles": {
+			"label": "Gitステータス最大ファイル数",
+			"description": "gitステータスコンテキストに含めるファイルエントリの最大数。無効にするには0に設定します。ブランチ情報とコミットは、> 0の場合に常に表示されます。"
 		}
 	},
 	"terminal": {
@@ -689,6 +693,14 @@
 	},
 	"advancedSettings": {
 		"title": "詳細設定"
+	},
+	"toolProtocol": {
+		"label": "ツールコールプロトコル",
+		"description": "Roo が API と通信する方法を選択します。ネイティブはプロバイダーの関数呼び出し API を使用し、XML は XML 形式のツール定義を使用します。",
+		"default": "デフォルト",
+		"xml": "XML",
+		"native": "ネイティブ",
+		"currentDefault": "デフォルト: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

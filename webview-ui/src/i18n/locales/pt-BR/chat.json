@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Novidades na Extensão:",
-			"openRouterEmbeddings": "Suporte para modelos de embedding do OpenRouter",
-			"chutesDynamic": "Chutes agora carrega os modelos mais recentes dinamicamente",
-			"queuedMessagesFix": "Correções para mensagens enfileiradas que se perdiam"
+			"gemini3": "Gemini 3 disponível em Gemini, Vertex, Roo Code Cloud, OpenRouter e mais",
+			"gitStatus": "Você pode adicionar informações de status do git ao ambiente a partir das configurações de Context",
+			"nativeToolCalling": "Suporte experimental para chamadas de ferramentas nativas no Roo Code Cloud, OpenRouter e OpenAI (mais em breve) - ative nas configurações avançadas do provedor"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
-			"prFixer": "Apresentando o agente em nuvem <bold>PR Fixer</bold> para complementar o Revisor de PR.",
-			"prFixerDescription": "O PR Fixer do Roo Code aplica alterações de alta qualidade aos seus PRs, diretamente do GitHub. Invoque via comentário de PR e ele lerá todo o histórico de comentários para entender contexto, acordos e compromissos - depois implementa a correção certa.",
-			"tryPrFixerButton": "Experimentar PR Fixer"
+			"specialized": "Apresentando <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - três agentes em nuvem especializados para aprimorar seus fluxos de trabalho.",
+			"description": "Os agentes trabalham juntos na nuvem e podem ser acionados a partir da web ou por meio do Slack.",
+			"tryButton": "Experimentar Agentes em Nuvem"
 		},
 		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>",
 		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo quer executar um comando slash",
 		"didRun": "Roo executou um comando slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} de {{total}} tarefas concluídas",
 		"complete": "{{total}} tarefas concluídas",

@@ -304,15 +304,15 @@
 		},
 		"release": {
 			"heading": "Baru di Ekstensi:",
-			"openRouterEmbeddings": "Dukungan untuk model embedding OpenRouter",
-			"chutesDynamic": "Chutes sekarang memuat model terbaru secara dinamis",
-			"queuedMessagesFix": "Perbaikan untuk pesan antrian yang hilang"
+			"gemini3": "Gemini 3 tersedia di Gemini, Vertex, Roo Code Cloud, OpenRouter, dan lainnya",
+			"gitStatus": "Kamu dapat menambahkan informasi status git ke environment dari pengaturan Context",
+			"nativeToolCalling": "Dukungan eksperimental untuk native tool calling di Roo Code Cloud, OpenRouter, dan OpenAI (lebih banyak segera hadir) - aktifkan di pengaturan lanjutan provider"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
-			"prFixer": "Memperkenalkan agen cloud <bold>PR Fixer</bold> untuk melengkapi PR Reviewer.",
-			"prFixerDescription": "PR Fixer dari Roo Code menerapkan perubahan berkualitas tinggi ke PR Anda, langsung dari GitHub. Panggil melalui komentar PR dan ia akan membaca seluruh riwayat komentar untuk memahami konteks, kesepakatan, dan trade-off - kemudian menerapkan perbaikan yang tepat.",
-			"tryPrFixerButton": "Coba PR Fixer"
+			"specialized": "Memperkenalkan <bold>Explainer</bold>, <bold>Planner</bold>, dan <bold>Coder</bold> - tiga agen cloud khusus untuk meningkatkan alur kerja Anda.",
+			"description": "Agen bekerja bersama di cloud dan dapat dipicu dari web atau melalui Slack.",
+			"tryButton": "Coba Agen Cloud"
 		},
 		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
 		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
@@ -429,7 +429,6 @@
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} dari {{total}} to-do selesai",
 		"complete": "{{total}} to-do selesai",

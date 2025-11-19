@@ -204,10 +204,19 @@ function createMockCline(): any {
 		getTokenUsage: vi.fn().mockReturnValue({
 			contextTokens: 10000,
 		}),
+		apiConfiguration: {
+			apiProvider: "anthropic",
+		},
 		// CRITICAL: Always ensure image support is enabled
 		api: {
 			getModel: vi.fn().mockReturnValue({
-				info: { supportsImages: true, contextWindow: 200000 },
+				info: {
+					supportsImages: true,
+					contextWindow: 200000,
+					maxTokens: 4096,
+					supportsPromptCache: false,
+					supportsNativeTools: false,
+				},
 			}),
 		},
 	}
@@ -327,6 +336,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 				toolResult = result
 			},
 			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -636,6 +646,7 @@ describe("read_file tool XML output structure", () => {
 				toolResult = result
 			},
 			removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -740,6 +751,7 @@ describe("read_file tool XML output structure", () => {
 						localResult = result
 					},
 					removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+					toolProtocol: "xml",
 				})
 				// In multi-image scenarios, the result is pushed to pushToolResult, not returned directly.
 				// We need to check the mock's calls to get the result.
@@ -1360,6 +1372,7 @@ describe("read_file tool XML output structure", () => {
 					toolResult = result
 				},
 				removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -1447,6 +1460,7 @@ describe("read_file tool with image support", () => {
 				toolResult = result
 			},
 			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		console.log("Result type:", Array.isArray(toolResult) ? "array" : typeof toolResult)
@@ -1602,10 +1616,7 @@ describe("read_file tool with image support", () => {
 			// Setup - simulate read error
 			mockedFsReadFile.mockRejectedValue(new Error("Failed to read image"))
 
-			// Create a spy for handleError
-			const handleErrorSpy = vi.fn()
-
-			// Execute with the spy
+			// Execute
 			const argsContent = `<file><path>${testImagePath}</path></file>`
 			const toolUse: ReadFileToolUse = {
 				type: "tool_use",
@@ -1616,16 +1627,18 @@ describe("read_file tool with image support", () => {
 
 			await readFileTool.handle(localMockCline, toolUse, {
 				askApproval: localMockCline.ask,
-				handleError: handleErrorSpy, // Use our spy here
+				handleError: vi.fn(),
 				pushToolResult: (result: ToolResponse) => {
 					toolResult = result
 				},
 				removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+				toolProtocol: "xml",
 			})
 
 			// Verify error handling
 			expect(toolResult).toContain("<error>Error reading image file: Failed to read image</error>")
-			expect(handleErrorSpy).toHaveBeenCalled()
+			// Verify that say was called to show error to user
+			expect(localMockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Failed to read image"))
 		})
 	})
 

@@ -292,15 +292,15 @@
 		},
 		"release": {
 			"heading": "Neu in der Extension:",
-			"openRouterEmbeddings": "Unterstützung für OpenRouter-Embedding-Modelle",
-			"chutesDynamic": "Chutes lädt die neuesten Modelle jetzt dynamisch",
-			"queuedMessagesFix": "Behebungen für verlorene Nachrichten in der Warteschlange"
+			"gemini3": "Gemini 3 verfügbar in Gemini, Vertex, Roo Code Cloud, OpenRouter und mehr",
+			"gitStatus": "Du kannst git-Statusinformationen aus den Context-Einstellungen zur Umgebung hinzufügen",
+			"nativeToolCalling": "Experimentelle Unterstützung für native Tool Calls in Roo Code Cloud, OpenRouter und OpenAI (weitere folgen) - aktiviere es in den erweiterten Einstellungen des Anbieters"
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
-			"prFixer": "Wir stellen den <bold>PR Fixer</bold> Cloud-Agent vor, der den PR Reviewer ergänzt.",
-			"prFixerDescription": "Roo Codes PR Fixer wendet hochwertige Änderungen direkt auf deine PRs in GitHub an. Rufe ihn über einen PR-Kommentar auf und er liest den gesamten Kommentarverlauf, um Kontext, Vereinbarungen und Kompromisse zu verstehen — dann setzt er die richtige Lösung um.",
-			"tryPrFixerButton": "PR Fixer ausprobieren"
+			"specialized": "Wir stellen <bold>Explainer</bold>, <bold>Planner</bold> und <bold>Coder</bold> vor - drei spezialisierte Cloud-Agenten zur Verbesserung deiner Workflows.",
+			"description": "Die Agenten arbeiten zusammen in der Cloud und können vom Web oder über Slack ausgelöst werden.",
+			"tryButton": "Probiere Cloud-Agenten aus"
 		},
 		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>",
 		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink> 🚀"
@@ -423,7 +423,6 @@
 		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen",
 		"didRun": "Roo hat einen Slash-Befehl ausgeführt"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} von {{total}} To-Dos erledigt",
 		"complete": "{{total}} To-Dos erledigt",

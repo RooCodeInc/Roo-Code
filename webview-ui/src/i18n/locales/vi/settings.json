@@ -627,6 +627,10 @@
 		"includeCurrentCost": {
 			"label": "Bao gồm chi phí hiện tại trong ngữ cảnh",
 			"description": "Khi được bật, chi phí sử dụng API hiện tại sẽ được bao gồm trong lời nhắc hệ thống. Tắt nếu các mô hình ngừng hoạt động do lo ngại về chi phí."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status tệp tối đa",
+			"description": "Số lượng mục tệp tối đa để bao gồm trong ngữ cảnh trạng thái git. Đặt thành 0 để tắt. Thông tin nhánh và các commit luôn được hiển thị khi > 0."
 		}
 	},
 	"terminal": {
@@ -689,6 +693,14 @@
 	},
 	"advancedSettings": {
 		"title": "Cài đặt nâng cao"
+	},
+	"toolProtocol": {
+		"label": "Giao thức gọi công cụ",
+		"description": "Chọn cách Roo giao tiếp với API. Native sử dụng API gọi hàm của nhà cung cấp, trong khi XML sử dụng định nghĩa công cụ định dạng XML.",
+		"default": "Mặc định",
+		"xml": "XML",
+		"native": "Native",
+		"currentDefault": "Mặc định: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

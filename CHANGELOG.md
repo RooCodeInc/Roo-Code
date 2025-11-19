@@ -1,5 +1,54 @@
 # Roo Code Changelog
 
+## [3.33.1] - 2025-11-18
+
+![3.33.1 Release - Native Tool Protocol Fixes](/releases/3.33.1-release.png)
+
+- Add native tool calling support to OpenAI-compatible (PR #9369 by @mrubens)
+- Fix: Resolve native tool protocol race condition causing 400 errors (PR #9363 by @daniel-lxs)
+- Fix: Update tools to return structured JSON for native protocol (PR #9373 by @daniel-lxs)
+- Fix: Include nativeArgs in tool repetition detection (PR #9377 by @daniel-lxs)
+- Fix: Ensure no XML parsing when protocol is native (PR #9371 by @daniel-lxs)
+- Fix: Gemini maxOutputTokens and reasoning config (PR #9375 by @hannesrudolph)
+- Fix: Gemini thought signature validation and token counting errors (PR #9380 by @hannesrudolph)
+- Fix: Exclude XML tool examples from MODES section when native protocol enabled (PR #9367 by @daniel-lxs)
+- Retry eval tasks if API instability detected (PR #9365 by @cte)
+- Add toolProtocol property to PostHog tool usage telemetry (PR #9374 by @app/roomote)
+
+## [3.33.0] - 2025-11-18
+
+![v3.33.0 Release - Twin Kangaroos and the Gemini Constellation](/releases/v3.33.0-release.png)
+
+- Add Gemini 3 Pro Preview model (PR #9357 by @hannesrudolph)
+- Improve Google Gemini defaults with better temperature and cost reporting (PR #9327 by @hannesrudolph)
+- Enable native tool calling for openai-native provider (PR #9348 by @hannesrudolph)
+- Add git status information to environment details (PR #9310 by @daniel-lxs)
+- Add tool protocol selector to advanced settings (PR #9324 by @daniel-lxs)
+- Implement dynamic tool protocol resolution with proper precedence hierarchy (PR #9286 by @daniel-lxs)
+- Move Import/Export functionality to Modes view toolbar and cleanup Mode Edit view (PR #9077 by @hannesrudolph)
+- Update cloud agent CTA to point to setup page (PR #9338 by @app/roomote)
+- Fix: Prevent duplicate tool_result blocks in native tool protocol (PR #9248 by @daniel-lxs)
+- Fix: Format tool responses properly for native protocol (PR #9270 by @daniel-lxs)
+- Fix: Centralize toolProtocol configuration checks (PR #9279 by @daniel-lxs)
+- Fix: Preserve tool blocks for native protocol in conversation history (PR #9319 by @daniel-lxs)
+- Fix: Prevent infinite loop when task_done succeeds (PR #9325 by @daniel-lxs)
+- Fix: Sync parser state with profile/model changes (PR #9355 by @daniel-lxs)
+- Fix: Pass tool protocol parameter to lineCountTruncationError (PR #9358 by @daniel-lxs)
+- Use VSCode theme color for outline button borders (PR #9336 by @app/roomote)
+- Replace broken badgen.net badges with shields.io (PR #9318 by @app/roomote)
+- Add max git status files setting to evals (PR #9322 by @mrubens)
+- Roo Code Cloud Provider pricing page and changes elsewhere (PR #9195 by @brunobergher)
+
+## [3.32.1] - 2025-11-14
+
+![3.32.1 Release - Bug Fixes](/releases/3.32.1-release.png)
+
+- Fix: Add abort controller for request cancellation in OpenAI native protocol (PR #9276 by @daniel-lxs)
+- Fix: Resolve duplicate tool blocks causing 'tool has already been used' error in native protocol mode (PR #9275 by @daniel-lxs)
+- Fix: Prevent duplicate tool_result blocks in native protocol mode for read_file (PR #9272 by @daniel-lxs)
+- Fix: Correct OpenAI Native handling of encrypted reasoning blocks to prevent errors during condensing (PR #9263 by @hannesrudolph)
+- Fix: Disable XML parser for native tool protocol to prevent parsing conflicts (PR #9277 by @daniel-lxs)
+
 ## [3.32.0] - 2025-11-14
 
 ![3.32.0 Release - GPT-5.1 models and OpenAI prompt caching](/releases/3.32.0-release.png)

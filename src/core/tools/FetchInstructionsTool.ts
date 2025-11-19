@@ -19,7 +19,7 @@ export class FetchInstructionsTool extends BaseTool<"fetch_instructions"> {
 	}
 
 	async execute(params: FetchInstructionsParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { handleError, pushToolResult, askApproval } = callbacks
+		const { handleError, pushToolResult, askApproval, toolProtocol } = callbacks
 		const { task: taskParam } = params
 
 		try {
