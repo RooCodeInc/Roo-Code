@@ -46,6 +46,7 @@ import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
 import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
+import { maybeRemoveReasoningDetails, ReasoningDetail } from "../../api/transform/openrouter-reasoning"
 
 // shared
 import { findLastIndex } from "../../shared/array"
@@ -1993,8 +1994,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// limit error, which gets thrown on the first chunk).
 				const stream = this.attemptApiRequest()
 				let assistantMessage = ""
+				const reasoningDetails: ReasoningDetail[] = []
 				let reasoningMessage = ""
-				const reasoningDetails = []
 				let pendingGroundingSources: GroundingSource[] = []
 				this.isStreaming = true
 
@@ -2417,6 +2418,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
 
+					// Build the assistant message content array
+					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
+
+					// Add text content if present
+					if (finalAssistantMessage || reasoningDetails.length > 0) {
+						assistantContent.push({
+							type: "text" as const,
+							text: finalAssistantMessage,
+							// @ts-ignore-next-line OpenRouter-specific property
+							reasoning_details: reasoningDetails.length > 0 ? reasoningDetails : undefined,
+						})
+					}
+
+					// Add tool_use blocks with their IDs for native protocol
+					const toolUseBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
+					for (const toolUse of toolUseBlocks) {
+						// Get the tool call ID that was stored during parsing
+						const toolCallId = (toolUse as any).id
+						if (toolCallId) {
+							// nativeArgs is already in the correct API format for all tools
+							// @ts-ignore-next-line
+							const input = toolUse.nativeArgs || toolUse.params
+
+							assistantContent.push({
+								type: "tool_use" as const,
+								id: toolCallId,
+								name: toolUse.name,
+								input,
+							})
+						}
+					}
 					await this.addToApiConversationHistory({
 						role: "assistant",
 						content: [
@@ -2836,9 +2868,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory)
-		let cleanConversationHistory = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api).map(
-			({ role, content }) => ({ role, content }),
+		const messagesWithoutImages = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api)
+		const messagesWithoutReasoningDetails = maybeRemoveReasoningDetails(
+			messagesWithoutImages as ApiMessage[],
+			apiConfiguration?.apiProvider,
 		)
+		// Since buildCleanConversationHistory was likely part of the stashed changes but seems to be missing or not imported,
+		// I'll revert to the upstream behavior of mapping but using the cleaned messages.
+		// However, looking at the stashed change, it implies a helper method was added.
+		// Let's assume for now we want the stashed logic but need to make sure buildCleanConversationHistory exists.
+		// If buildCleanConversationHistory is missing from the file, I should probably implement it or use the upstream logic adapted.
+		// Given the conflict, I will use the upstream logic but apply the reasoning details removal from stashed changes.
+
+		let cleanConversationHistory = messagesWithoutReasoningDetails.map(({ role, content }) => ({ role, content }))
 
 		// Check auto-approval limits
 		const approvalResult = await this.autoApprovalHandler.checkAutoApprovalLimits(

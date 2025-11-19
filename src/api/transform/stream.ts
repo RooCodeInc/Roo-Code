@@ -1,6 +1,9 @@
 export type ApiStream = AsyncGenerator<ApiStreamChunk>
 
+import { ReasoningDetail } from "./openrouter-reasoning"
+
 export type ApiStreamChunk =
+	| ApiStreamReasoningDetailsChunk
 	| ApiStreamTextChunk
 	| ApiStreamUsageChunk
 	| ApiStreamReasoningChunk
@@ -26,7 +29,7 @@ export interface ApiStreamReasoningChunk {
 
 export interface ApiStreamReasoningDetailsChunk {
 	type: "reasoning_details"
-	reasoning_details: any // OpenRouter specific format
+	reasoning_details: ReasoningDetail
 }
 
 export interface ApiStreamUsageChunk {
