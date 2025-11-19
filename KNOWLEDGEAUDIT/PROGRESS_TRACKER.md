@@ -1,7 +1,7 @@
 # Roo Code Index: Implementation Progress Tracker
 
 **Last Updated:** 2025-11-19
-**Overall Progress:** 19% (Phase 0: 4/4 ✅ | Phase 1: 6/6 ✅ | Phase 2: 5/5 ✅ | Phase 3: 2/4 🔄)
+**Overall Progress:** 20% (Phase 0: 4/4 ✅ | Phase 1: 6/6 ✅ | Phase 2: 5/5 ✅ | Phase 3: 3/4 🔄)
 
 ---
 
@@ -12,7 +12,7 @@
 | 0 | Foundation & Setup | ✅ Complete | 4/4 | 1 week | 🔴 Critical |
 | 1 | System Prompt Improvements | ✅ Complete | 6/6 | 1 week | 🔥 Highest ROI |
 | 2 | Enhanced Metadata | ✅ Complete | 5/5 | 2 weeks | 🔴 Critical |
-| 3 | Intelligent Chunking Strategy | 🔄 In Progress | 2/4 | 1.5 weeks | 🔴 Critical |
+| 3 | Intelligent Chunking Strategy | 🔄 In Progress | 3/4 | 1.5 weeks | 🔴 Critical |
 | 4 | BM25 Keyword Search | ⬜ Not Started | 0/5 | 1-2 weeks | 🔥 High Impact |
 | 5 | Neo4j Integration | ⬜ Not Started | 0/5 | 2-3 weeks | 🔥 High Impact |
 | 6 | LSP Integration | ⬜ Not Started | 0/3 | 1-2 weeks | 🔥 High Impact |
@@ -82,18 +82,18 @@
 ## Phase 3: Intelligent Chunking Strategy
 
 **Status:** 🔄 In Progress
-**Progress:** 2/4 tasks complete (50%)
+**Progress:** 3/4 tasks complete (75%)
 
 - [x] Task 3.1: Analyze Current Chunking Behavior ✅ **COMPLETE** (analysis documented)
 - [x] Task 3.2: Design Intelligent Chunking Rules ✅ **COMPLETE** (strategy documented)
-- [ ] Task 3.3: Implement Smart Chunking Logic
+- [x] Task 3.3: Implement Smart Chunking Logic ✅ **COMPLETE** (parser enhanced with 5 sub-tasks)
 - [ ] Task 3.4: Validate Chunking Improvements
 
 **Blockers:** None (Phase 2 complete)
 **Expected Impact:** 25% better context preservation
 **Rationale for Phase Insertion:** Intelligent chunking is a foundational improvement that benefits all search methods (vector, BM25, graph). Implementing it before BM25 avoids the need to rebuild indexes later and maximizes the value of Phase 2's metadata enhancements. Better chunks = better embeddings = better search quality across all methods.
 
-**Notes:** Task 3.2 complete! Designed comprehensive intelligent chunking strategy with 5 core rules: (1) Never split functions/methods (keep entire function even if >1150 chars, split at logical boundaries if >5000 chars), (2) Keep classes together when possible (split between methods if >3000 chars), (3) Always include comments with code (JSDoc, inline, trailing), (4) Preserve import context as metadata, (5) Include decorators with targets. New constants: SEMANTIC_MAX_CHARS=3000, ABSOLUTE_MAX_CHARS=5000. Documented in CHUNKING_STRATEGY.md with implementation plan, edge cases, and success metrics.
+**Notes:** Task 3.3 complete! Implemented smart chunking logic in 5 incremental sub-tasks: (3.3.1) Updated constants (SEMANTIC_MAX_CHARS=3000, ABSOLUTE_MAX_CHARS=5000, MAX_CHARS_TOLERANCE_FACTOR=1.5), (3.3.2) Added semantic boundary detection (isSemanticUnit, isFunctionNode, isClassNode), (3.3.3) Implemented comment inclusion (includeComments), (3.3.4) Added import metadata extraction (extractFileImports), (3.3.5) Implemented smart chunking logic (semantic units up to 3000 chars stay intact, comments always included, imports in metadata). Functions/classes no longer split mid-way. All chunks include comments and import context.
 
 ---
 
