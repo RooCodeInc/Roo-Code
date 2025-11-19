@@ -11,7 +11,24 @@ export function getObjectiveSection(
 		codeIndexManager.isInitialized
 
 	const codebaseSearchInstruction = isCodebaseSearchAvailable
-		? "First, for ANY exploration of code you haven't examined yet in this conversation, you MUST use the `codebase_search` tool to search for relevant code based on the task's intent BEFORE using any other search or file exploration tools. This applies throughout the entire task, not just at the beginning - whenever you need to explore a new area of code, codebase_search must come first. Then, "
+		? `First, for ANY exploration of code you haven't examined yet in this conversation, you MUST use the \`codebase_search\` tool to search for relevant code based on the task's intent BEFORE using any other search or file exploration tools. This applies throughout the entire task, not just at the beginning - whenever you need to explore a new area of code, codebase_search must come first.
+
+**Code Exploration Workflow:**
+1. **Search**: Use codebase_search with natural language queries to find relevant code
+2. **Review**: Examine search results and their relevance scores (>0.8 = highly relevant)
+3. **Read**: Use read_file to view full context of the most relevant files
+4. **Refine**: If needed, search again with more specific queries based on what you learned
+5. **Proceed**: Use other tools (search_files for regex, list_files, etc.) for detailed work
+
+**Example Workflow:**
+- Task: "Add email validation to user registration"
+- Step 1: codebase_search "user registration logic" → finds UserService.ts (score: 0.87)
+- Step 2: read_file UserService.ts → understand current implementation
+- Step 3: codebase_search "email validation examples" → finds validation utilities (score: 0.82)
+- Step 4: read_file validation/email.ts → see existing patterns
+- Step 5: Implement changes using appropriate editing tools
+
+Then, `
 		: "First, "
 
 	return `====

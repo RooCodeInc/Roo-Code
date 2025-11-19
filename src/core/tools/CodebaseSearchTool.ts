@@ -100,6 +100,9 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 					startLine: number
 					endLine: number
 					codeChunk: string
+					identifier: string | null
+					type: string | null
+					language: string | null
 				}>
 			}
 
@@ -109,12 +112,41 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 
 				const relativePath = vscode.workspace.asRelativePath(result.payload.filePath, false)
 
+				// Extract language from file extension
+				const fileExt = path.extname(result.payload.filePath).toLowerCase()
+				const languageMap: Record<string, string> = {
+					'.ts': 'TypeScript',
+					'.tsx': 'TypeScript React',
+					'.js': 'JavaScript',
+					'.jsx': 'JavaScript React',
+					'.py': 'Python',
+					'.java': 'Java',
+					'.cpp': 'C++',
+					'.c': 'C',
+					'.cs': 'C#',
+					'.go': 'Go',
+					'.rs': 'Rust',
+					'.rb': 'Ruby',
+					'.php': 'PHP',
+					'.swift': 'Swift',
+					'.kt': 'Kotlin',
+					'.scala': 'Scala',
+					'.md': 'Markdown',
+					'.json': 'JSON',
+					'.yaml': 'YAML',
+					'.yml': 'YAML',
+				}
+				const language = languageMap[fileExt] || null
+
 				jsonResult.results.push({
 					filePath: relativePath,
 					score: result.score,
 					startLine: result.payload.startLine,
 					endLine: result.payload.endLine,
 					codeChunk: result.payload.codeChunk.trim(),
+					identifier: result.payload.identifier || null,
+					type: result.payload.type || null,
+					language: language,
 				})
 			})
 
@@ -126,13 +158,24 @@ Results:
 
 ${jsonResult.results
 	.map(
-		(result) => `File path: ${result.filePath}
-Score: ${result.score}
-Lines: ${result.startLine}-${result.endLine}
-Code Chunk: ${result.codeChunk}
-`,
+		(result) => {
+			const parts = [`File path: ${result.filePath}`]
+			if (result.identifier) {
+				parts.push(`Symbol: ${result.identifier}`)
+			}
+			if (result.type) {
+				parts.push(`Type: ${result.type}`)
+			}
+			if (result.language) {
+				parts.push(`Language: ${result.language}`)
+			}
+			parts.push(`Score: ${result.score}`)
+			parts.push(`Lines: ${result.startLine}-${result.endLine}`)
+			parts.push(`Code Chunk: ${result.codeChunk}`)
+			return parts.join("\n")
+		},
 	)
-	.join("\n")}`
+	.join("\n\n")}`
 
 			pushToolResult(output)
 		} catch (error: any) {

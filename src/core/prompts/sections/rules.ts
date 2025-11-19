@@ -93,7 +93,22 @@ export function getRulesSection(
 		codeIndexManager.isInitialized
 
 	const codebaseSearchRule = isCodebaseSearchAvailable
-		? "- **CRITICAL: For ANY exploration of code you haven't examined yet in this conversation, you MUST use the `codebase_search` tool FIRST before using search_files or other file exploration tools.** This requirement applies throughout the entire conversation, not just when starting a task. The codebase_search tool uses semantic search to find relevant code based on meaning, not just keywords, making it much more effective for understanding how features are implemented. Even if you've already explored some parts of the codebase, any new area or functionality you need to understand requires using codebase_search first.\n"
+		? `- **CRITICAL: For ANY exploration of code you haven't examined yet in this conversation, you MUST use the \`codebase_search\` tool FIRST before using search_files or other file exploration tools.** This requirement applies throughout the entire conversation, not just when starting a task. The codebase_search tool uses semantic search to find relevant code based on meaning, not just keywords, making it much more effective for understanding how features are implemented. Even if you've already explored some parts of the codebase, any new area or functionality you need to understand requires using codebase_search first.
+- **Codebase Search Best Practices:**
+  * Use natural language queries that describe what you're looking for: "user authentication logic", "email validation", "database connection setup"
+  * Avoid regex patterns or exact text matching - use search_files for that instead
+  * Avoid file-name-only queries - use list_files for that instead
+  * Start with broader queries, then refine based on results: "authentication" → "JWT token generation"
+  * Pay attention to relevance scores: >0.8 is highly relevant, 0.6-0.8 is relevant, <0.6 may be tangential
+  * If you get no results or low scores, try rephrasing with synonyms or broader terms
+  * Use the path parameter to narrow searches to specific directories when you know the general area
+  * Multiple high-scoring results mean the concept is implemented in multiple places - review all of them
+- **When to Use Each Search Tool:**
+  * Use \`codebase_search\` for: finding implementations, understanding concepts, discovering patterns, locating symbols
+  * Use \`search_files\` for: exact text matching, regex patterns, finding specific strings or comments
+  * Use \`list_files\` for: exploring directory structure, finding files by name or extension
+  * Use \`read_file\` for: viewing full file contents after codebase_search identifies relevant files
+`
 		: ""
 
 	// Get available tools from relevant groups
