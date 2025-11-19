@@ -6,7 +6,14 @@ import { LanguageParser, loadRequiredLanguageParsers } from "../../tree-sitter/l
 import { parseMarkdown } from "../../tree-sitter/markdownParser"
 import { ICodeParser, CodeBlock } from "../interfaces"
 import { scannerExtensions, shouldUseFallbackChunking } from "../shared/supported-extensions"
-import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_TOLERANCE_FACTOR } from "../constants"
+import {
+	MAX_BLOCK_CHARS,
+	MIN_BLOCK_CHARS,
+	MIN_CHUNK_REMAINDER_CHARS,
+	MAX_CHARS_TOLERANCE_FACTOR,
+	SEMANTIC_MAX_CHARS,
+	ABSOLUTE_MAX_CHARS,
+} from "../constants"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
@@ -564,6 +571,44 @@ export class CodeParser implements ICodeParser {
 		}
 
 		return results
+	}
+
+	/**
+	 * Phase 3: Semantic boundary detection helpers
+	 */
+
+	/**
+	 * Checks if a node is a semantic unit that should not be split mid-way
+	 */
+	private isSemanticUnit(node: Node): boolean {
+		return this.isFunctionNode(node) || this.isClassNode(node)
+	}
+
+	/**
+	 * Checks if a node is a function or method
+	 */
+	private isFunctionNode(node: Node): boolean {
+		const functionTypes = [
+			"function_declaration",
+			"method_definition",
+			"arrow_function",
+			"function_expression",
+			"function", // Generic function type
+		]
+		return functionTypes.includes(node.type)
+	}
+
+	/**
+	 * Checks if a node is a class, interface, or type declaration
+	 */
+	private isClassNode(node: Node): boolean {
+		const classTypes = [
+			"class_declaration",
+			"interface_declaration",
+			"type_alias_declaration",
+			"class", // Generic class type
+		]
+		return classTypes.includes(node.type)
 	}
 }
 
