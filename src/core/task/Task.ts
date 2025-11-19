@@ -409,11 +409,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
-		// Initialize the assistant message parser only for XML protocol.
-		// For native protocol, tool calls come as tool_call chunks, not XML.
-		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
-		const toolProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
-		this.assistantMessageParser = toolProtocol !== "native" ? new AssistantMessageParser() : undefined
+		// DO NOT initialize the assistant message parser in the constructor!
+		// For router providers (Unbound, OpenRouter), model info is loaded asynchronously
+		// and may not be available yet. Calling getModel().info here returns incomplete data.
+		// Parser initialization is deferred until streaming starts (where protocol is re-checked)
+		// to ensure model info is fully loaded and protocol resolution is accurate.
+		this.assistantMessageParser = undefined
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] Constructor - parser initialization deferred until streaming, modelId: ${this.api.getModel().id}`,
+		)
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -1093,37 +1097,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
 	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
-		// Determine the previous protocol before updating
-		const previousProtocol = this.apiConfiguration
-			? resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
-			: undefined
-
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
-		// Determine the new tool protocol
-		const newProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
-		const shouldUseXmlParser = newProtocol === "xml"
-
-		// Only make changes if the protocol actually changed
-		if (previousProtocol === newProtocol) {
-			console.log(
-				`[Task#${this.taskId}.${this.instanceId}] Tool protocol unchanged (${newProtocol}), no parser update needed`,
-			)
-			return
-		}
-
-		// Handle protocol transitions
-		if (shouldUseXmlParser && !this.assistantMessageParser) {
-			// Switching from native → XML: create parser
-			this.assistantMessageParser = new AssistantMessageParser()
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
-		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
-			// Switching from XML → native: remove parser
-			this.assistantMessageParser.reset()
-			this.assistantMessageParser = undefined
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched xml → native: removed XML parser`)
-		}
+		// Parser initialization is deferred until streaming starts to ensure model info is fully loaded
+		// This is especially important for router providers (Unbound, OpenRouter) that load model
+		// info asynchronously. We don't update the parser here - it will be properly initialized
+		// at stream start when protocol is re-checked with fully-loaded model info.
+		console.log(
+			`[Task#${this.taskId}.${this.instanceId}] API configuration updated, parser will be initialized at stream start, modelId: ${this.api.getModel().id}`,
+		)
 	}
 
 	public async submitUserMessage(
@@ -2133,13 +2116,40 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didAlreadyUseTool = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
-				this.assistantMessageParser?.reset()
 
 				await this.diffViewProvider.reset()
 
 				// Determine protocol once per API request to avoid repeated calls in the streaming loop
+				// At this point, router providers have had time to load model info asynchronously
 				const streamProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
 				const shouldUseXmlParser = streamProtocol === "xml"
+
+				// Initialize or cleanup parser based on the protocol for this stream
+				// This is where we properly initialize the parser now that model info is loaded
+				if (shouldUseXmlParser) {
+					if (!this.assistantMessageParser) {
+						this.assistantMessageParser = new AssistantMessageParser()
+						console.log(
+							`[Task#${this.taskId}.${this.instanceId}] Stream start - created XML parser (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
+						)
+					} else {
+						this.assistantMessageParser.reset()
+						console.log(
+							`[Task#${this.taskId}.${this.instanceId}] Stream start - reset existing XML parser (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
+						)
+					}
+				} else {
+					if (this.assistantMessageParser) {
+						this.assistantMessageParser = undefined
+						console.log(
+							`[Task#${this.taskId}.${this.instanceId}] Stream start - removed XML parser for native protocol (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
+						)
+					} else {
+						console.log(
+							`[Task#${this.taskId}.${this.instanceId}] Stream start - using native protocol, no parser needed (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
+						)
+					}
+				}
 
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
@@ -2239,6 +2249,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									// Present content to user.
 									presentAssistantMessage(this)
 								} else {
+									// [DIAGNOSTIC] Log when we're in native mode or have a mismatch
+									if (!shouldUseXmlParser) {
+										// This is expected for native protocol
+									} else if (!this.assistantMessageParser) {
+										// This is the bug - we should use XML parser but it's undefined
+										console.error(
+											`[Task#${this.taskId}.${this.instanceId}] RACE CONDITION DETECTED: shouldUseXmlParser=${shouldUseXmlParser} but parser is undefined!`,
+										)
+									}
 									// Native protocol: Text chunks are plain text, not XML tool calls
 									// Create or update a text content block directly
 									const lastBlock =
