@@ -409,15 +409,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 		}
 
-		// DO NOT initialize the assistant message parser in the constructor!
-		// For router providers (Unbound, OpenRouter), model info is loaded asynchronously
-		// and may not be available yet. Calling getModel().info here returns incomplete data.
-		// Parser initialization is deferred until streaming starts (where protocol is re-checked)
-		// to ensure model info is fully loaded and protocol resolution is accurate.
+		// Parser initialization deferred until streaming starts when model info is fully loaded
 		this.assistantMessageParser = undefined
-		console.log(
-			`[Task#${this.taskId}.${this.instanceId}] Constructor - parser initialization deferred until streaming, modelId: ${this.api.getModel().id}`,
-		)
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -1100,13 +1093,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
-		// Parser initialization is deferred until streaming starts to ensure model info is fully loaded
-		// This is especially important for router providers (Unbound, OpenRouter) that load model
-		// info asynchronously. We don't update the parser here - it will be properly initialized
-		// at stream start when protocol is re-checked with fully-loaded model info.
-		console.log(
-			`[Task#${this.taskId}.${this.instanceId}] API configuration updated, parser will be initialized at stream start, modelId: ${this.api.getModel().id}`,
-		)
+		// Parser will be initialized at stream start when model info is fully loaded
 	}
 
 	public async submitUserMessage(
@@ -2119,35 +2106,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.diffViewProvider.reset()
 
-				// Determine protocol once per API request to avoid repeated calls in the streaming loop
-				// At this point, router providers have had time to load model info asynchronously
-				const streamProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+				// Determine protocol once per API request with fully-loaded model info
+				const modelInfo = this.api.getModel().info
+				const streamProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 				const shouldUseXmlParser = streamProtocol === "xml"
 
 				// Initialize or cleanup parser based on the protocol for this stream
-				// This is where we properly initialize the parser now that model info is loaded
 				if (shouldUseXmlParser) {
 					if (!this.assistantMessageParser) {
 						this.assistantMessageParser = new AssistantMessageParser()
-						console.log(
-							`[Task#${this.taskId}.${this.instanceId}] Stream start - created XML parser (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
-						)
 					} else {
 						this.assistantMessageParser.reset()
-						console.log(
-							`[Task#${this.taskId}.${this.instanceId}] Stream start - reset existing XML parser (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
-						)
 					}
 				} else {
+					// Native protocol - parser should not exist
 					if (this.assistantMessageParser) {
+						// Unexpected state: parser exists but we're using native protocol
+						// Capture telemetry to investigate protocol mismatch issues
+						TelemetryService.instance.captureProtocolMismatch(this.taskId, {
+							expectedProtocol: streamProtocol,
+							parserExists: true,
+							supportsNativeTools: modelInfo.supportsNativeTools,
+							defaultToolProtocol: modelInfo.defaultToolProtocol,
+							userToolProtocol: this.apiConfiguration.toolProtocol,
+							apiProvider: this.apiConfiguration.apiProvider,
+							modelId: this.api.getModel().id,
+						})
 						this.assistantMessageParser = undefined
-						console.log(
-							`[Task#${this.taskId}.${this.instanceId}] Stream start - removed XML parser for native protocol (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
-						)
-					} else {
-						console.log(
-							`[Task#${this.taskId}.${this.instanceId}] Stream start - using native protocol, no parser needed (protocol: ${streamProtocol}, modelId: ${this.api.getModel().id})`,
-						)
 					}
 				}
 
@@ -2249,17 +2234,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									// Present content to user.
 									presentAssistantMessage(this)
 								} else {
-									// [DIAGNOSTIC] Log when we're in native mode or have a mismatch
-									if (!shouldUseXmlParser) {
-										// This is expected for native protocol
-									} else if (!this.assistantMessageParser) {
-										// This is the bug - we should use XML parser but it's undefined
-										console.error(
-											`[Task#${this.taskId}.${this.instanceId}] RACE CONDITION DETECTED: shouldUseXmlParser=${shouldUseXmlParser} but parser is undefined!`,
-										)
-									}
 									// Native protocol: Text chunks are plain text, not XML tool calls
-									// Create or update a text content block directly
 									const lastBlock =
 										this.assistantMessageContent[this.assistantMessageContent.length - 1]
 

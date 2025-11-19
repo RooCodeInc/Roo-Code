@@ -158,6 +158,26 @@ export class TelemetryService {
 	}
 
 	/**
+	 * Captures protocol mismatch when XML parser exists but native protocol is expected
+	 * @param taskId The task ID
+	 * @param properties Protocol mismatch diagnostic information (no sensitive data)
+	 */
+	public captureProtocolMismatch(
+		taskId: string,
+		properties: {
+			expectedProtocol: string
+			parserExists: boolean
+			supportsNativeTools?: boolean
+			defaultToolProtocol?: string
+			userToolProtocol?: string
+			apiProvider?: string
+			modelId: string
+		},
+	): void {
+		this.captureEvent(TelemetryEventName.PROTOCOL_MISMATCH, { taskId, ...properties })
+	}
+
+	/**
 	 * Captures when a tab is shown due to user action
 	 * @param tab The tab that was shown
 	 */
