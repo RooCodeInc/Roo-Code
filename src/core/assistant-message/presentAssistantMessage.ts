@@ -669,13 +669,14 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "browser_action":
-					await browserActionTool.handle(cline, block as ToolUse<"browser_action">, {
+					await browserActionTool(
+						cline,
+						block as ToolUse<"browser_action">,
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-						toolProtocol,
-					})
+					)
 					break
 				case "execute_command":
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
