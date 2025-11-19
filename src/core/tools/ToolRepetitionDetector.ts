@@ -1,3 +1,4 @@
+import stringify from "safe-stable-stringify"
 import { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
 
@@ -95,41 +96,16 @@ export class ToolRepetitionDetector {
 	 * @returns JSON string representation of the tool use with sorted parameter keys
 	 */
 	private serializeToolUse(toolUse: ToolUse): string {
-		// Create a new parameters object with alphabetically sorted keys
-		const sortedParams: Record<string, unknown> = {}
-
-		// Get parameter keys and sort them alphabetically
-		const sortedKeys = Object.keys(toolUse.params).sort()
-
-		// Populate the sorted parameters object in a type-safe way
-		for (const key of sortedKeys) {
-			if (Object.prototype.hasOwnProperty.call(toolUse.params, key)) {
-				sortedParams[key] = toolUse.params[key as keyof typeof toolUse.params]
-			}
-		}
-
-		// For native protocol tools, also include nativeArgs if present
-		// This ensures tools with array parameters (like read_file with files array)
-		// are properly differentiated instead of all appearing identical
-		const sortedNativeArgs: Record<string, unknown> = {}
-		if (toolUse.nativeArgs && typeof toolUse.nativeArgs === "object") {
-			const nativeKeys = Object.keys(toolUse.nativeArgs).sort()
-			for (const key of nativeKeys) {
-				if (Object.prototype.hasOwnProperty.call(toolUse.nativeArgs, key)) {
-					sortedNativeArgs[key] = (toolUse.nativeArgs as Record<string, unknown>)[key]
-				}
-			}
-		}
-
-		// Create the object with the tool name, sorted parameters, and sorted native args
-		const toolObject = {
+		const toolObject: Record<string, any> = {
 			name: toolUse.name,
-			parameters: sortedParams,
-			// Only include nativeArgs if it has content
-			...(Object.keys(sortedNativeArgs).length > 0 ? { nativeArgs: sortedNativeArgs } : {}),
+			params: toolUse.params,
 		}
 
-		// Convert to a canonical JSON string
-		return JSON.stringify(toolObject)
+		// Only include nativeArgs if it has content
+		if (toolUse.nativeArgs && Object.keys(toolUse.nativeArgs).length > 0) {
+			toolObject.nativeArgs = toolUse.nativeArgs
+		}
+
+		return stringify(toolObject)
 	}
 }
