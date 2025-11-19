@@ -428,13 +428,16 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const handleError = async (action: string, error: Error) => {
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
-
+	
 				await cline.say(
 					"error",
 					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
 				)
-
+	
 				pushToolResult(formatResponse.toolError(errorString, toolProtocol))
+	
+				// Mark that a tool failed in this turn to prevent attempt_completion
+				cline.didToolFailInCurrentTurn = true
 			}
 
 			// If block is partial, remove partial closing tag so its not
@@ -510,6 +513,7 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 			} catch (error) {
 				cline.consecutiveMistakeCount++
+				cline.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(error.message, toolProtocol))
 				break
 			}
@@ -544,7 +548,10 @@ export async function presentAssistantMessage(cline: Task) {
 						// Track tool repetition in telemetry.
 						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
 					}
-
+		
+					// Mark that a tool failed in this turn to prevent attempt_completion
+					cline.didToolFailInCurrentTurn = true
+		
 					// Return tool result message about the repetition
 					pushToolResult(
 						formatResponse.toolError(
@@ -761,6 +768,17 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "attempt_completion": {
+					// Prevent attempt_completion if any tool failed in the current assistant message (turn).
+					// This only applies to tools called within the same message, not across different turns.
+					// For example, this blocks: read_file (fails) + attempt_completion in same message
+					// But allows: read_file (fails) → user message → attempt_completion in next turn
+					if (cline.didToolFailInCurrentTurn) {
+						const errorMsg = `Cannot execute attempt_completion because a previous tool call failed in this turn. Please address the tool failure before attempting completion.`
+						await cline.say("error", errorMsg)
+						pushToolResult(formatResponse.toolError(errorMsg))
+						break
+					}
+		
 					const completionCallbacks: AttemptCompletionCallbacks = {
 						askApproval,
 						handleError,

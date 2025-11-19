@@ -30,6 +30,7 @@ export async function browserActionTool(
 			// if the block is complete and we don't have a valid action cline is a mistake
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("browser_action")
+			cline.didToolFailInCurrentTurn = true
 			pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "action"))
 			// Do not close the browser on parameter validation errors
 		}
@@ -63,6 +64,7 @@ export async function browserActionTool(
 				if (!url) {
 					cline.consecutiveMistakeCount++
 					cline.recordToolError("browser_action")
+					cline.didToolFailInCurrentTurn = true
 					pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "url"))
 					// Do not close the browser on parameter validation errors
 					return
@@ -102,22 +104,24 @@ export async function browserActionTool(
 					if (!coordinate) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "coordinate"))
 						// Do not close the browser on parameter validation errors
 						return // can't be within an inner switch
 					}
-
+	
 					// Get viewport dimensions from the browser session
 					const viewportSize = cline.browserSession.getViewportSize()
 					const viewportWidth = viewportSize.width || 900 // default to 900 if not available
 					const viewportHeight = viewportSize.height || 600 // default to 600 if not available
-
+	
 					// Scale coordinate from image dimensions to viewport dimensions
 					try {
 						processedCoordinate = scaleCoordinate(coordinate, viewportWidth, viewportHeight)
 					} catch (error) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(
 							await cline.sayAndCreateMissingParamError(
 								"browser_action",
@@ -133,16 +137,18 @@ export async function browserActionTool(
 					if (!text) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "text"))
 						// Do not close the browser on parameter validation errors
 						return
 					}
 				}
-
+	
 				if (action === "resize") {
 					if (!size) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "size"))
 						// Do not close the browser on parameter validation errors
 						return

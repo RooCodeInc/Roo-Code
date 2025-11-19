@@ -302,6 +302,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContentReady = false
 	didRejectTool = false
 	didAlreadyUseTool = false
+	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
@@ -2246,6 +2247,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
+				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
+				// only prevent attempt_completion within the same assistant message, not across turns
+				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")
+				this.didToolFailInCurrentTurn = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser?.reset()
