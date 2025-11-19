@@ -277,7 +277,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: model } = this.getModel()
 
 		// Prepare request body for non-streaming completion
@@ -296,6 +296,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					Authorization: `Bearer ${this.apiKey}`,
 				},
 				body: JSON.stringify(requestBody),
+				signal: metadata?.signal,
 			})
 
 			if (!response.ok) {

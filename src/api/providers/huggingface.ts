@@ -93,14 +93,17 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-			})
+			const response = await this.client.chat.completions.create(
+				{
+					model: modelId,
+					messages: [{ role: "user", content: prompt }],
+				},
+				{ signal: metadata?.signal },
+			)
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {

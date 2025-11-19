@@ -106,7 +106,7 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		await this.fetchModel()
 		const { id: modelId, info } = this.getModel()
 
@@ -121,7 +121,7 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			;(requestOptions as any).max_completion_tokens = this.options.modelMaxTokens || info.maxTokens
 		}
 
-		const resp = await this.client.chat.completions.create(requestOptions)
+		const resp = await this.client.chat.completions.create(requestOptions, { signal: metadata?.signal })
 		return resp.choices[0]?.message?.content || ""
 	}
 

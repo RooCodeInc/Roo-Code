@@ -79,7 +79,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
-	override async completePrompt(prompt: string): Promise<string> {
+	override async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: modelId } = this.getModel()
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
@@ -94,7 +94,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		try {
-			const response = await this.client.chat.completions.create(params)
+			const response = await this.client.chat.completions.create(params, { signal: metadata?.signal })
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)

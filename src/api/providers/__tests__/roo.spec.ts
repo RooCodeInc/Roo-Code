@@ -299,10 +299,13 @@ describe("RooHandler", () => {
 		it("should complete prompt successfully", async () => {
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.apiModelId,
+					messages: [{ role: "user", content: "Test prompt" }],
+				},
+				{ signal: undefined },
+			)
 		})
 
 		it("should update API key before making request", async () => {

@@ -81,7 +81,7 @@ export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
 	 * Implementation of a single prompt
 	 * @param prompt Prompt content
 	 */
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		// Copy to clipboard
 		await vscode.env.clipboard.writeText(prompt)
 

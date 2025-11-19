@@ -310,6 +310,7 @@ describe("VercelAiGatewayHandler", () => {
 					temperature: VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
 					max_completion_tokens: 64000,
 				}),
+				{ signal: undefined },
 			)
 		})
 
@@ -326,6 +327,7 @@ describe("VercelAiGatewayHandler", () => {
 				expect.objectContaining({
 					temperature: customTemp,
 				}),
+				{ signal: undefined },
 			)
 		})
 
@@ -374,6 +376,7 @@ describe("VercelAiGatewayHandler", () => {
 				expect.objectContaining({
 					temperature: 0.9,
 				}),
+				{ signal: undefined },
 			)
 		})
 	})

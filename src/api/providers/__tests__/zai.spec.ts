@@ -410,6 +410,7 @@ describe("ZAiHandler", () => {
 					expect.objectContaining({
 						thinking: { type: "enabled" },
 					}),
+					{ signal: undefined },
 				)
 			})
 
@@ -430,6 +431,7 @@ describe("ZAiHandler", () => {
 					expect.not.objectContaining({
 						thinking: expect.anything(),
 					}),
+					{ signal: undefined },
 				)
 			})
 		})

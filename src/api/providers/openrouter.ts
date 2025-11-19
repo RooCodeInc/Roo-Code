@@ -316,7 +316,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		return { id, info, topP: isDeepSeekR1 ? 0.95 : undefined, ...params }
 	}
 
-	async completePrompt(prompt: string) {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any) {
 		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
 		const completionParams: OpenRouterChatCompletionParams = {
@@ -339,7 +339,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		let response
 		try {
-			response = await this.client.chat.completions.create(completionParams)
+			response = await this.client.chat.completions.create(completionParams, { signal: metadata?.signal })
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

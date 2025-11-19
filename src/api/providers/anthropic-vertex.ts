@@ -96,7 +96,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			stream: true,
 		}
 
-		const stream = await this.client.messages.create(params)
+		const stream = await this.client.messages.create(params, { signal: metadata?.signal })
 
 		for await (const chunk of stream) {
 			switch (chunk.type) {
@@ -175,7 +175,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		return { id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id, info, ...params }
 	}
 
-	async completePrompt(prompt: string) {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any) {
 		try {
 			let {
 				id,
@@ -201,7 +201,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				stream: false,
 			}
 
-			const response = await this.client.messages.create(params)
+			const response = await this.client.messages.create(params, { signal: metadata?.signal })
 			const content = response.content[0]
 
 			if (content.type === "text") {

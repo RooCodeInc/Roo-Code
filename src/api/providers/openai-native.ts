@@ -1100,7 +1100,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		return this.lastResponseId
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
@@ -1164,7 +1164,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			// Make the non-streaming request
 			const response = await (this.client as any).responses.create(requestBody, {
-				signal: this.abortController.signal,
+				signal: metadata?.signal || this.abortController.signal,
 			})
 
 			// Extract text from the response

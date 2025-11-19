@@ -159,35 +159,38 @@ describe("VertexHandler", () => {
 				outputTokens: 5,
 			})
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: "claude-3-5-sonnet-v2@20241022",
-				max_tokens: 8192,
-				temperature: 0,
-				system: [
-					{
-						type: "text",
-						text: "You are a helpful assistant",
-						cache_control: { type: "ephemeral" },
-					},
-				],
-				messages: [
-					{
-						role: "user",
-						content: [
-							{
-								type: "text",
-								text: "Hello",
-								cache_control: { type: "ephemeral" },
-							},
-						],
-					},
-					{
-						role: "assistant",
-						content: "Hi there!",
-					},
-				],
-				stream: true,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: "claude-3-5-sonnet-v2@20241022",
+					max_tokens: 8192,
+					temperature: 0,
+					system: [
+						{
+							type: "text",
+							text: "You are a helpful assistant",
+							cache_control: { type: "ephemeral" },
+						},
+					],
+					messages: [
+						{
+							role: "user",
+							content: [
+								{
+									type: "text",
+									text: "Hello",
+									cache_control: { type: "ephemeral" },
+								},
+							],
+						},
+						{
+							role: "assistant",
+							content: "Hi there!",
+						},
+					],
+					stream: true,
+				},
+				{},
+			)
 		})
 
 		it("should handle multiple content blocks with line breaks for Claude", async () => {
@@ -401,6 +404,7 @@ describe("VertexHandler", () => {
 						}),
 					],
 				}),
+				{ signal: undefined },
 			)
 		})
 
@@ -613,18 +617,21 @@ describe("VertexHandler", () => {
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(handler["client"].messages.create).toHaveBeenCalledWith({
-				model: "claude-3-5-sonnet-v2@20241022",
-				max_tokens: 8192,
-				temperature: 0,
-				messages: [
-					{
-						role: "user",
-						content: [{ type: "text", text: "Test prompt", cache_control: { type: "ephemeral" } }],
-					},
-				],
-				stream: false,
-			})
+			expect(handler["client"].messages.create).toHaveBeenCalledWith(
+				{
+					model: "claude-3-5-sonnet-v2@20241022",
+					max_tokens: 8192,
+					temperature: 0,
+					messages: [
+						{
+							role: "user",
+							content: [{ type: "text", text: "Test prompt", cache_control: { type: "ephemeral" } }],
+						},
+					],
+					stream: false,
+				},
+				{},
+			)
 		})
 
 		it("should handle API errors for Claude", async () => {
@@ -806,6 +813,7 @@ describe("VertexHandler", () => {
 					thinking: { type: "enabled", budget_tokens: 4096 },
 					temperature: 1.0, // Thinking requires temperature 1.0
 				}),
+				{},
 			)
 		})
 	})

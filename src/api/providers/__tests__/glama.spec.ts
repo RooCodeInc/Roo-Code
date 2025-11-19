@@ -174,6 +174,7 @@ describe("GlamaHandler", () => {
 					temperature: 0,
 					max_tokens: 8192,
 				}),
+				{ signal: undefined },
 			)
 		})
 
@@ -208,6 +209,7 @@ describe("GlamaHandler", () => {
 					messages: [{ role: "user", content: "Test prompt" }],
 					temperature: 0,
 				}),
+				{ signal: undefined },
 			)
 			expect(mockCreate.mock.calls[0][0]).not.toHaveProperty("max_tokens")
 		})

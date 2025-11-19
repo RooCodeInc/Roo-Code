@@ -104,15 +104,20 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		return { id, info, maxTokens, temperature }
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		try {
 			const { id: model, temperature } = this.getModel()
 
-			const response = await this.client.chat.complete({
-				model,
-				messages: [{ role: "user", content: prompt }],
-				temperature,
-			})
+			const response = await this.client.chat.complete(
+				{
+					model,
+					messages: [{ role: "user", content: prompt }],
+					temperature,
+				},
+				{
+					fetchOptions: { signal: metadata?.signal },
+				},
+			)
 
 			const content = response.choices?.[0]?.message.content
 

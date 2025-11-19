@@ -154,14 +154,17 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: modelId } = this.getModel()
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-			})
+			const response = await this.client.chat.completions.create(
+				{
+					model: modelId,
+					messages: [{ role: "user", content: prompt }],
+				},
+				{ signal: metadata?.signal },
+			)
 
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const responseAny = response as any

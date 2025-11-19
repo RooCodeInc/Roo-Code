@@ -109,15 +109,18 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: modelId, reasoning } = this.getModel()
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-				...(reasoning && reasoning),
-			})
+			const response = await this.client.chat.completions.create(
+				{
+					model: modelId,
+					messages: [{ role: "user", content: prompt }],
+					...(reasoning && reasoning),
+				},
+				{ signal: metadata?.signal },
+			)
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {

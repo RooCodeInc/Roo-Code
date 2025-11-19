@@ -175,7 +175,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: model, maxTokens: max_tokens, temperature } = await this.fetchModel()
 
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: "system", content: prompt }]
@@ -189,7 +189,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		let response: OpenAI.Chat.ChatCompletion
 		try {
-			response = await this.client.chat.completions.create(completionParams)
+			response = await this.client.chat.completions.create(completionParams, { signal: metadata?.signal })
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

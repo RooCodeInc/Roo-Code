@@ -571,7 +571,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 							"user",
 						),
 					},
-					timeout: 20000,
+					timeout: 15000,
+					signal: metadata?.signal,
 				}),
 			)
 			return response.choices?.[0]?.message?.content || ""

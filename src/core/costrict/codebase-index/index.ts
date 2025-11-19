@@ -165,7 +165,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		}
 	}
 	public async stopExistingClient() {
-		await this.ensureClientInited()
+		await this.ensureClientInited("stopExistingClient")
 		return await this.client!.stopExistingClient()
 	}
 
@@ -174,7 +174,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	 */
 	public async restartClient(): Promise<void> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("restartClient")
 			this.isInitialized = false
 			await this.initialize()
 		} catch (error) {
@@ -225,7 +225,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 				}
 			}
 
-			await this.ensureClientInited()
+			await this.ensureClientInited("checkAndUpgradeClient")
 			// Get latest version information
 			const latestVersionInfo = await this.client!.getLatestVersion()
 			localVersionInfo = await this.getLocalVersion()
@@ -261,13 +261,13 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		}
 	}
 
-	private async ensureClientInited() {
+	private async ensureClientInited(src: string) {
 		if (!this.client) {
-			throw new Error("Client not initialized")
+			throw new Error(`${src ? `[${src}] ` : ""}Client not initialized`)
 		}
 
 		if (!this.clineProvider) {
-			throw new Error("clineProvider not initialized")
+			throw new Error(`${src ? `[${src}] ` : ""}clineProvider not initialized`)
 		}
 
 		const { apiConfiguration } = await this.clineProvider.getState()
@@ -448,7 +448,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	 */
 	public async publishWorkspaceEvents(request: WorkspaceEventRequest): Promise<ApiResponse<number>> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("publishWorkspaceEvents")
 			// this.log(`Publish workspace events: ${request.workspace}`, "info", "ZgsmCodebaseIndexManager")
 			// Read access token
 			const token = await this.readAccessToken()
@@ -471,7 +471,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		this.preBuildInfo.type = request.type
 		this.preBuildInfo.time = Date.now()
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("triggerIndexBuild")
 			this.log(`Trigger index build: ${request.workspace} - ${request.type}`, "info", "ZgsmCodebaseIndexManager")
 
 			// Read access token
@@ -548,7 +548,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	}> {
 		const url = `http://localhost:${this.client!.getCostrictServerPort(9527)}/healthz`
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("healthCheck")
 			// this.log("Performing health check", "info", "CostrictHealthCheck")
 
 			// Read access token
@@ -564,7 +564,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	// Token passing interface
 	public async syncToken(): Promise<ApiResponse<number>> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("syncToken")
 			this.log("Token update", "info", "ZgsmCodebaseIndexManager")
 
 			// Read access token
@@ -583,7 +583,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	 */
 	public async checkIgnoreFiles(request: IgnoreFilesRequest): Promise<ApiResponse<boolean>> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("checkIgnoreFiles")
 			this.log(`Checking ignore files: ${request.workspacePath}`, "info", "ZgsmCodebaseIndexManager")
 
 			// Read access token
@@ -651,7 +651,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	 */
 	private async _getIndexStatusInternal(workspace: string): Promise<ApiResponse<IndexStatusResponse>> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("_getIndexStatusInternal")
 
 			// Add call stack information to trace call source
 			this.log(`Querying index status: ${workspace}`, "info", "ZgsmCodebaseIndexManager")
@@ -673,7 +673,7 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 	 */
 	public async toggleIndexSwitch(request: IndexSwitchRequest): Promise<ApiResponse<boolean>> {
 		try {
-			await this.ensureClientInited()
+			await this.ensureClientInited("toggleIndexSwitch")
 			this.log(
 				`Toggle index function: ${request.workspace} - ${request.switch}`,
 				"info",

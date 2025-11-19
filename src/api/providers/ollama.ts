@@ -109,20 +109,23 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		try {
 			const modelId = this.getModel().id
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 			let response
 			try {
-				response = await this.client.chat.completions.create({
-					model: this.getModel().id,
-					messages: useR1Format
-						? convertToR1Format([{ role: "user", content: prompt }])
-						: [{ role: "user", content: prompt }],
-					temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
-					stream: false,
-				})
+				response = await this.client.chat.completions.create(
+					{
+						model: this.getModel().id,
+						messages: useR1Format
+							? convertToR1Format([{ role: "user", content: prompt }])
+							: [{ role: "user", content: prompt }],
+						temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+						stream: false,
+					},
+					{ signal: metadata?.signal },
+				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}

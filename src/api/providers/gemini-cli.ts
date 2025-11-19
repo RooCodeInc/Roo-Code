@@ -387,7 +387,7 @@ export class GeminiCliHandler extends BaseProvider implements SingleCompletionHa
 		return { id, info, ...params }
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		await this.ensureAuthenticated()
 		const projectId = await this.discoverProjectId()
 
@@ -412,6 +412,7 @@ export class GeminiCliHandler extends BaseProvider implements SingleCompletionHa
 					"Content-Type": "application/json",
 				},
 				data: JSON.stringify(requestBody),
+				signal: metadata?.signal,
 			})
 
 			const rawData = response.data as any

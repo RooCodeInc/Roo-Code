@@ -116,7 +116,7 @@ export class GlamaHandler extends RouterProvider implements SingleCompletionHand
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
 
 		try {
@@ -133,7 +133,7 @@ export class GlamaHandler extends RouterProvider implements SingleCompletionHand
 				requestOptions.max_tokens = info.maxTokens
 			}
 
-			const response = await this.client.chat.completions.create(requestOptions)
+			const response = await this.client.chat.completions.create(requestOptions, { signal: metadata?.signal })
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {

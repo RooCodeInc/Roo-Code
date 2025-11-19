@@ -19,7 +19,7 @@ const GIT_OUTPUT_CHAR_LIMIT = 50_000
 export class CommitMessageGenerator {
 	private workspaceRoot: string
 	private provider: ClineProvider | undefined
-
+	private abortController?: AbortController
 	constructor(workspaceRoot: string, provider?: ClineProvider) {
 		this.workspaceRoot = workspaceRoot
 		this.provider = provider
@@ -196,7 +196,7 @@ export class CommitMessageGenerator {
 				lang = state.language || lang
 			}
 		}
-
+		this.abortController = new AbortController()
 		// Prepare prompt for AI
 		const systemPrompt =
 			"You are an expert at generating concise, meaningful commit messages based on git diff information. Follow conventional commit format when appropriate."
@@ -208,6 +208,7 @@ export class CommitMessageGenerator {
 				language: lang,
 				maxLength: options.maxLength,
 				modelId: options.commitModelId,
+				signal: this.abortController?.signal,
 			},
 		)
 
@@ -220,6 +221,7 @@ export class CommitMessageGenerator {
 			throw new Error(t("commit:commit.error.aiFailed"))
 		}
 
+		this.abortController = undefined
 		// Parse AI response into structured format
 		return this.parseAIResponse(aiMessage, diffInfo)
 	}
@@ -618,5 +620,10 @@ export class CommitMessageGenerator {
 
 		// Fallback to VSCode environment language
 		return vscode.env.language || "en"
+	}
+
+	stopGenerateCommitMessage() {
+		this.abortController?.abort()
+		this.abortController = undefined
 	}
 }

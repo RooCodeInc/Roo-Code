@@ -287,17 +287,20 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 	}
 
-	async completePrompt(prompt: string) {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any) {
 		let { id: model, temperature } = this.getModel()
 
-		const message = await this.client.messages.create({
-			model,
-			max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
-			thinking: undefined,
-			temperature,
-			messages: [{ role: "user", content: prompt }],
-			stream: false,
-		})
+		const message = await this.client.messages.create(
+			{
+				model,
+				max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+				thinking: undefined,
+				temperature,
+				messages: [{ role: "user", content: prompt }],
+				stream: false,
+			},
+			{ signal: metadata?.signal },
+		)
 
 		const content = message.content.find(({ type }) => type === "text")
 		return content?.type === "text" ? content.text : ""

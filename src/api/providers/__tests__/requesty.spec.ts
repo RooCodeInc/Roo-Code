@@ -213,12 +213,15 @@ describe("RequestyHandler", () => {
 
 			expect(result).toBe("test completion")
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.requestyModelId,
-				max_tokens: 8192,
-				messages: [{ role: "system", content: "test prompt" }],
-				temperature: 0,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.requestyModelId,
+					max_tokens: 8192,
+					messages: [{ role: "system", content: "test prompt" }],
+					temperature: 0,
+				},
+				{ signal: undefined },
+			)
 		})
 
 		it("handles API errors", async () => {

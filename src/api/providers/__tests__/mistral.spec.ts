@@ -228,11 +228,18 @@ describe("MistralHandler", () => {
 			const prompt = "Test prompt"
 			const result = await handler.completePrompt(prompt)
 
-			expect(mockComplete).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: [{ role: "user", content: prompt }],
-				temperature: 0,
-			})
+			expect(mockComplete).toHaveBeenCalledWith(
+				{
+					model: mockOptions.apiModelId,
+					messages: [{ role: "user", content: prompt }],
+					temperature: 0,
+				},
+				{
+					fetchOptions: {
+						signal: undefined,
+					},
+				},
+			)
 
 			expect(result).toBe("Test response")
 		})

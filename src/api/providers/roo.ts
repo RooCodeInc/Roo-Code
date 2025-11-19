@@ -237,10 +237,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			throw error
 		}
 	}
-	override async completePrompt(prompt: string): Promise<string> {
+	override async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		// Update API key before making request to ensure we use the latest session token
 		this.client.apiKey = getSessionToken()
-		return super.completePrompt(prompt)
+		return super.completePrompt(prompt, systemPrompt, metadata)
 	}
 
 	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {

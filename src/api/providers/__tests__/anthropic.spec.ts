@@ -184,14 +184,17 @@ describe("AnthropicHandler", () => {
 		it("should complete prompt successfully", async () => {
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-				max_tokens: 8192,
-				temperature: 0,
-				thinking: undefined,
-				stream: false,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.apiModelId,
+					messages: [{ role: "user", content: "Test prompt" }],
+					max_tokens: 8192,
+					temperature: 0,
+					thinking: undefined,
+					stream: false,
+				},
+				{},
+			)
 		})
 
 		it("should handle API errors", async () => {

@@ -126,7 +126,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const model = await this.fetchModel()
 		const { id: modelId, info } = model
 
@@ -153,7 +153,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 				requestParams.temperature = this.options.modelTemperature ?? defaultTemperature
 			}
 
-			const response = await this.client.chat.completions.create(requestParams)
+			const response = await this.client.chat.completions.create(requestParams, { signal: metadata?.signal })
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
 			if (error instanceof Error) {

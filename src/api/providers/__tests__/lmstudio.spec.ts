@@ -131,12 +131,15 @@ describe("LmStudioHandler", () => {
 		it("should complete prompt successfully", async () => {
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.lmStudioModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-				temperature: 0,
-				stream: false,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.lmStudioModelId,
+					messages: [{ role: "user", content: "Test prompt" }],
+					temperature: 0,
+					stream: false,
+				},
+				{ signal: undefined },
+			)
 		})
 
 		it("should handle API errors", async () => {

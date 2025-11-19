@@ -333,14 +333,17 @@ describe("OpenRouterHandler", () => {
 
 			expect(result).toBe("test completion")
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.openRouterModelId,
-				max_tokens: 8192,
-				thinking: undefined,
-				temperature: 0,
-				messages: [{ role: "user", content: "test prompt" }],
-				stream: false,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.openRouterModelId,
+					max_tokens: 8192,
+					thinking: undefined,
+					temperature: 0,
+					messages: [{ role: "user", content: "test prompt" }],
+					stream: false,
+				},
+				{ signal: undefined },
+			)
 		})
 
 		it("handles API errors", async () => {

@@ -33,16 +33,21 @@ export class CommitService {
 		if (!this.generator) {
 			throw new Error(t("commit:commit.error.notInitialized"))
 		}
-
+		let aborted = false
 		try {
 			// Show progress indicator
 			await vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
 					title: t("commit:commit.progress.generating"),
-					cancellable: false,
+					cancellable: true,
 				},
-				async (progress) => {
+				async (progress, token) => {
+					token.onCancellationRequested(() => {
+						this.generator?.stopGenerateCommitMessage()
+						aborted = true
+					})
+
 					progress.report({ increment: 80 })
 
 					// Get configuration from VSCode settings
@@ -51,7 +56,6 @@ export class CommitService {
 					const commitModelId = config.get<string>("commitModelId", "")
 					const maxLength = config.get<number>("maxLength", 150)
 					const language = config.get<string>("language", "auto")
-
 					// Generate commit message
 					const suggestion = await this.generator!.generateCommitMessage({
 						useConventionalCommits,
@@ -71,6 +75,10 @@ export class CommitService {
 			)
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
+			if (aborted) {
+				console.log("generateAndPopulateCommitMessage", errorMessage)
+				return
+			}
 			vscode.window.showErrorMessage(errorMessage)
 		}
 	}
