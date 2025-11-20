@@ -46,6 +46,37 @@ export type ModelRecord = Record<string, ModelInfo>
 
 export type RouterModels = Record<RouterName, ModelRecord>
 
+// Context Window Selection
+
+/**
+ * Determines whether to use 1M context window based on actual context size.
+ * When dynamic context switching is enabled, this function decides whether to use
+ * the standard 200K context window or switch to the 1M context window based on
+ * the projected token count.
+ *
+ * @param options Configuration for context window selection
+ * @returns true if 1M context should be used, false for standard 200K
+ */
+export function shouldUse1MContext(options: {
+	baseModel: string
+	dynamicEnabled: boolean
+	contextTokens: number
+	threshold?: number
+}): boolean {
+	if (!options.dynamicEnabled) return false
+
+	// Check if this is a Claude Sonnet 4.x model that supports 1M context
+	// The Sonnet 4 models are:
+	// - claude-sonnet-4-20250514
+	// - claude-sonnet-4-5
+	const isSonnet4x = options.baseModel === "claude-sonnet-4-20250514" || options.baseModel === "claude-sonnet-4-5"
+	if (!isSonnet4x) return false
+
+	// Use 1M when context exceeds threshold (default 190K - leaves 10K buffer before 200K limit)
+	const threshold = options.threshold ?? 190_000
+	return options.contextTokens > threshold
+}
+
 // Reasoning
 
 export const shouldUseReasoningBudget = ({

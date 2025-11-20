@@ -5,7 +5,7 @@ import {
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 } from "@roo-code/types"
 
-import { getModelMaxOutputTokens, shouldUseReasoningBudget, shouldUseReasoningEffort } from "../api"
+import { getModelMaxOutputTokens, shouldUseReasoningBudget, shouldUseReasoningEffort, shouldUse1MContext } from "../api"
 
 describe("getModelMaxOutputTokens", () => {
 	const mockModel: ModelInfo = {
@@ -513,5 +513,155 @@ describe("shouldUseReasoningEffort", () => {
 		}
 		expect(shouldUseReasoningEffort({ model, settings: { reasoningEffort: "none" as any } })).toBe(true)
 		expect(shouldUseReasoningEffort({ model, settings: { reasoningEffort: "minimal" as any } })).toBe(true)
+	})
+})
+
+describe("shouldUse1MContext", () => {
+	test("should return false when dynamicEnabled is false", () => {
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: false, contextTokens: 50000 }),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: false, contextTokens: 250000 }),
+		).toBe(false)
+	})
+
+	test("should return false for non-Sonnet 4 models", () => {
+		// Non-Sonnet models
+		expect(
+			shouldUse1MContext({ baseModel: "claude-3-opus-20240229", dynamicEnabled: true, contextTokens: 250000 }),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-3-5-haiku-20241022", dynamicEnabled: true, contextTokens: 250000 }),
+		).toBe(false)
+
+		// Sonnet models that aren't 4.x series
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-3-5-sonnet-20241022",
+				dynamicEnabled: true,
+				contextTokens: 250000,
+			}),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-3-sonnet-20240229", dynamicEnabled: true, contextTokens: 250000 }),
+		).toBe(false)
+	})
+
+	test("should return true for Sonnet 4 models above default threshold", () => {
+		// Default threshold is 190,000 tokens
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: 190001 }),
+		).toBe(true)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: true, contextTokens: 200000 }),
+		).toBe(true)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: 250000 }),
+		).toBe(true)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: true, contextTokens: 190001 }),
+		).toBe(true)
+	})
+
+	test("should return false for Sonnet 4 models below default threshold", () => {
+		// Default threshold is 190,000 tokens
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: 189999 }),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: true, contextTokens: 100000 }),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: 50000 }),
+		).toBe(false)
+		expect(shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: true, contextTokens: 0 })).toBe(
+			false,
+		)
+	})
+
+	test("should respect custom threshold parameter", () => {
+		const customThreshold = 150000
+
+		// Above custom threshold
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-20250514",
+				dynamicEnabled: true,
+				contextTokens: 150001,
+				threshold: customThreshold,
+			}),
+		).toBe(true)
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-5",
+				dynamicEnabled: true,
+				contextTokens: 160000,
+				threshold: customThreshold,
+			}),
+		).toBe(true)
+
+		// Below custom threshold
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-20250514",
+				dynamicEnabled: true,
+				contextTokens: 149999,
+				threshold: customThreshold,
+			}),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-5",
+				dynamicEnabled: true,
+				contextTokens: 140000,
+				threshold: customThreshold,
+			}),
+		).toBe(false)
+	})
+
+	test("should handle edge cases at exact threshold", () => {
+		// At exact default threshold
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: 190000 }),
+		).toBe(false)
+
+		// At exact custom threshold
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-5",
+				dynamicEnabled: true,
+				contextTokens: 100000,
+				threshold: 100000,
+			}),
+		).toBe(false)
+	})
+
+	test("should handle undefined and null contextTokens gracefully", () => {
+		// Should treat undefined/0/null as below threshold
+		expect(
+			shouldUse1MContext({
+				baseModel: "claude-sonnet-4-20250514",
+				dynamicEnabled: true,
+				contextTokens: undefined as any,
+			}),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-5", dynamicEnabled: true, contextTokens: null as any }),
+		).toBe(false)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-sonnet-4-20250514", dynamicEnabled: true, contextTokens: NaN }),
+		).toBe(false)
+	})
+
+	test("should not crash with invalid model IDs", () => {
+		expect(shouldUse1MContext({ baseModel: "", dynamicEnabled: true, contextTokens: 250000 })).toBe(false)
+		expect(shouldUse1MContext({ baseModel: "   ", dynamicEnabled: true, contextTokens: 250000 })).toBe(false)
+		expect(shouldUse1MContext({ baseModel: "invalid-model", dynamicEnabled: true, contextTokens: 250000 })).toBe(
+			false,
+		)
+		expect(
+			shouldUse1MContext({ baseModel: "claude-3-6-opus-20250219", dynamicEnabled: true, contextTokens: 250000 }),
+		).toBe(false) // opus not sonnet
 	})
 })

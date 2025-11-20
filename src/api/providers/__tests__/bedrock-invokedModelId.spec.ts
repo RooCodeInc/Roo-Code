@@ -317,9 +317,10 @@ describe("AwsBedrockHandler with invokedModelId", () => {
 			}
 		})
 
-		// Mock getModel to throw an error when called with the model name
-		vitest.spyOn(handler, "getModel").mockImplementation((modelName?: string) => {
-			if (modelName === "anthropic.claude-3-sonnet-20240229-v1:0") {
+		// Mock getModel to throw an error when called with context tokens
+		vitest.spyOn(handler, "getModel").mockImplementation((contextTokens?: number) => {
+			// Throw error on second call (when it tries to get the invoked model)
+			if (contextTokens !== undefined) {
 				throw new Error("Test error during model lookup")
 			}
 

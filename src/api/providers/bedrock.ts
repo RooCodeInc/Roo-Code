@@ -33,7 +33,7 @@ import { MultiPointStrategy } from "../transform/cache-strategy/multi-point-stra
 import { ModelInfo as CacheModelInfo } from "../transform/cache-strategy/types"
 import { convertToBedrockConverseMessages as sharedConverter } from "../transform/bedrock-converse-format"
 import { getModelParams } from "../transform/model-params"
-import { shouldUseReasoningBudget } from "../../shared/api"
+import { shouldUseReasoningBudget, shouldUse1MContext } from "../../shared/api"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 /************************************************************************************
@@ -322,9 +322,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				maxTokens?: number
 				maxThinkingTokens?: number
 			}
+			contextTokens?: number
 		},
 	): ApiStream {
-		const modelConfig = this.getModel()
+		// Pass context tokens to getModel for dynamic context window selection
+		const contextTokens = metadata?.contextTokens ?? 0
+		const modelConfig = this.getModel(contextTokens)
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
 		const conversationId =
@@ -376,11 +379,22 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 		}
 
-		// Check if 1M context is enabled for Claude Sonnet 4
+		// Check if dynamic 1M context should be used based on actual context size
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
 		const is1MContextEnabled =
-			BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext
+			BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) &&
+			(baseModelId === "anthropic.claude-sonnet-4-20250514" || baseModelId === "anthropic.claude-sonnet-4-5"
+				? shouldUse1MContext({
+						baseModel:
+							baseModelId === "anthropic.claude-sonnet-4-20250514"
+								? "claude-sonnet-4-20250514"
+								: "claude-sonnet-4-5",
+						dynamicEnabled: this.options.awsBedrock1MContext ?? false,
+						contextTokens,
+					})
+				: // For non-Sonnet 4.x models, use static flag behavior
+					this.options.awsBedrock1MContext)
 
 		// Add anthropic_beta for 1M context to additionalModelRequestFields
 		if (is1MContextEnabled) {
@@ -936,7 +950,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		return model
 	}
 
-	override getModel(): {
+	override getModel(contextTokens?: number): {
 		id: BedrockModelId | string
 		info: ModelInfo
 		maxTokens?: number
@@ -987,14 +1001,34 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// Check if 1M context is enabled for Claude Sonnet 4 / 4.5
+		// Check if dynamic 1M context should be used based on actual context size
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
-		if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext) {
-			// Update context window to 1M tokens when 1M context beta is enabled
-			modelConfig.info = {
-				...modelConfig.info,
-				contextWindow: 1_000_000,
+		if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any)) {
+			// For Claude Sonnet 4.x models, use dynamic switching
+			if (baseModelId === "anthropic.claude-sonnet-4-20250514" || baseModelId === "anthropic.claude-sonnet-4-5") {
+				if (
+					shouldUse1MContext({
+						baseModel:
+							baseModelId === "anthropic.claude-sonnet-4-20250514"
+								? "claude-sonnet-4-20250514"
+								: "claude-sonnet-4-5",
+						dynamicEnabled: this.options.awsBedrock1MContext ?? false,
+						contextTokens: contextTokens ?? 0,
+					})
+				) {
+					// Update context window to 1M tokens when dynamic switching warrants it
+					modelConfig.info = {
+						...modelConfig.info,
+						contextWindow: 1_000_000,
+					}
+				}
+			} else if (this.options.awsBedrock1MContext) {
+				// For non-Sonnet 4.x models, use static flag behavior (backward compatibility)
+				modelConfig.info = {
+					...modelConfig.info,
+					contextWindow: 1_000_000,
+				}
 			}
 		}
 

@@ -11,6 +11,7 @@ import {
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { shouldUse1MContext } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -39,16 +40,23 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
+		metadata?: ApiHandlerCreateMessageMetadata & { contextTokens?: number },
 	): ApiStream {
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
-		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
-		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
+		// Pass context tokens to getModel for dynamic context window selection
+		const contextTokens = metadata?.contextTokens ?? 0
+		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel(contextTokens)
+
+		// Add 1M context beta flag if dynamic mode is enabled and context size warrants it
 		if (
 			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
-			this.options.anthropicBeta1MContext
+			shouldUse1MContext({
+				baseModel: modelId,
+				dynamicEnabled: this.options.anthropicBeta1MContext ?? false,
+				contextTokens,
+			})
 		) {
 			betas.push("context-1m-2025-08-07")
 		}
@@ -247,13 +255,20 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 	}
 
-	getModel() {
+	getModel(contextTokens?: number) {
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
 		let info: ModelInfo = anthropicModels[id]
 
-		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
-		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
+		// If dynamic context switching is enabled and context warrants 1M, update the model info
+		if (
+			(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
+			shouldUse1MContext({
+				baseModel: id,
+				dynamicEnabled: this.options.anthropicBeta1MContext ?? false,
+				contextTokens: contextTokens ?? 0,
+			})
+		) {
 			// Use the tier pricing for 1M context
 			const tier = info.tiers?.[0]
 			if (tier) {
