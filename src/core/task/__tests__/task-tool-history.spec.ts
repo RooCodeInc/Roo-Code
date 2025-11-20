@@ -196,5 +196,126 @@ describe("Task Tool History Handling", () => {
 				content: '{"setting": "value"}',
 			})
 		})
+
+		describe("environment details deduplication", () => {
+			it("should filter out existing environment_details blocks before adding new ones", () => {
+				// Simulate user content that already contains environment details from a previous session
+				const userContentWithOldEnvDetails = [
+					{
+						type: "text" as const,
+						text: "Some user message",
+					},
+					{
+						type: "text" as const,
+						text: "<environment_details>\n# Old Environment Details\nCurrent time: 2024-01-01\n</environment_details>",
+					},
+				]
+
+				// Filter out existing environment_details blocks using the same logic as Task.ts
+				const contentWithoutEnvDetails = userContentWithOldEnvDetails.filter((block) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						// Check if this text block is a complete environment_details block
+						const isEnvironmentDetailsBlock =
+							block.text.trim().startsWith("<environment_details>") &&
+							block.text.trim().endsWith("</environment_details>")
+						return !isEnvironmentDetailsBlock
+					}
+					return true
+				})
+
+				// Verify old environment details were removed
+				expect(contentWithoutEnvDetails).toHaveLength(1)
+				expect(contentWithoutEnvDetails[0].text).toBe("Some user message")
+
+				// Simulate adding fresh environment details
+				const newEnvironmentDetails =
+					"<environment_details>\n# Fresh Environment Details\nCurrent time: 2024-01-02\n</environment_details>"
+				const finalUserContent = [
+					...contentWithoutEnvDetails,
+					{ type: "text" as const, text: newEnvironmentDetails },
+				]
+
+				// Verify we have exactly one environment_details block (the new one)
+				const envDetailsBlocks = finalUserContent.filter((block) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						return (
+							block.text.trim().startsWith("<environment_details>") &&
+							block.text.trim().endsWith("</environment_details>")
+						)
+					}
+					return false
+				})
+				expect(envDetailsBlocks).toHaveLength(1)
+				expect(envDetailsBlocks[0].text).toContain("2024-01-02")
+				expect(envDetailsBlocks[0].text).not.toContain("2024-01-01")
+			})
+
+			it("should not filter out text that mentions environment_details tags in content", () => {
+				// User content that mentions the tags but isn't an environment_details block
+				const userContent = [
+					{
+						type: "text" as const,
+						text: "Let me explain how <environment_details> work in this system",
+					},
+					{
+						type: "text" as const,
+						text: "The closing tag is </environment_details>",
+					},
+					{
+						type: "text" as const,
+						text: "Regular message",
+					},
+				]
+
+				// Filter using the same logic as Task.ts
+				const contentWithoutEnvDetails = userContent.filter((block) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						const isEnvironmentDetailsBlock =
+							block.text.trim().startsWith("<environment_details>") &&
+							block.text.trim().endsWith("</environment_details>")
+						return !isEnvironmentDetailsBlock
+					}
+					return true
+				})
+
+				// All blocks should be preserved since none are complete environment_details blocks
+				expect(contentWithoutEnvDetails).toHaveLength(3)
+				expect(contentWithoutEnvDetails).toEqual(userContent)
+			})
+
+			it("should not filter out regular text blocks", () => {
+				// User content with various blocks but no environment details
+				const userContent = [
+					{
+						type: "text" as const,
+						text: "Regular message",
+					},
+					{
+						type: "text" as const,
+						text: "Another message with <task> tags",
+					},
+					{
+						type: "tool_result" as const,
+						tool_use_id: "tool_123",
+						content: "Tool result",
+					},
+				]
+
+				// Filter using the same logic as Task.ts
+				const contentWithoutEnvDetails = userContent.filter((block) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						const isEnvironmentDetailsBlock =
+							block.text.trim().startsWith("<environment_details>") &&
+							block.text.trim().endsWith("</environment_details>")
+						return !isEnvironmentDetailsBlock
+					}
+					return true
+				})
+
+				// All blocks should be preserved
+				expect(contentWithoutEnvDetails).toHaveLength(3)
+				expect(contentWithoutEnvDetails).toEqual(userContent)
+			})
+		})
 	})
 })

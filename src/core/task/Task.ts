@@ -2024,9 +2024,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
 
+			// Remove any existing environment_details blocks before adding fresh ones.
+			// This prevents duplicate environment details when resuming tasks with XML tool calls,
+			// where the old user message content may already contain environment details from the previous session.
+			// We check for both opening and closing tags to ensure we're matching complete environment detail blocks,
+			// not just mentions of the tag in regular content.
+			const contentWithoutEnvDetails = parsedUserContent.filter((block) => {
+				if (block.type === "text" && typeof block.text === "string") {
+					// Check if this text block is a complete environment_details block
+					// by verifying it starts with the opening tag and ends with the closing tag
+					const isEnvironmentDetailsBlock =
+						block.text.trim().startsWith("<environment_details>") &&
+						block.text.trim().endsWith("</environment_details>")
+					return !isEnvironmentDetailsBlock
+				}
+				return true
+			})
+
 			// Add environment details as its own text block, separate from tool
 			// results.
-			const finalUserContent = [...parsedUserContent, { type: "text" as const, text: environmentDetails }]
+			const finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
 
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), OR
