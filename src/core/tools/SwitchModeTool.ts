@@ -35,8 +35,11 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 
 			task.consecutiveMistakeCount = 0
 
-			// Verify the mode exists
-			const targetMode = getModeBySlug(mode_slug, (await task.providerRef.deref()?.getState())?.customModes)
+			const state = await task.providerRef.deref()?.getState()
+			const customModes = state?.customModes
+
+			// Verify the mode exists (including hidden modes)
+			const targetMode = getModeBySlug(mode_slug, customModes)
 
 			if (!targetMode) {
 				task.recordToolError("switch_mode")
@@ -45,7 +48,22 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 			}
 
 			// Check if already in requested mode
-			const currentMode = (await task.providerRef.deref()?.getState())?.mode ?? defaultModeSlug
+			const currentMode = state?.mode ?? defaultModeSlug
+			const currentModeConfig = getModeBySlug(currentMode, customModes)
+
+			// Check if the target mode is hidden
+			if (targetMode.hidden) {
+				// Hidden modes can only be accessed by their parent mode
+				if (!targetMode.parent || targetMode.parent !== currentMode) {
+					task.recordToolError("switch_mode")
+					pushToolResult(
+						formatResponse.toolError(
+							`Mode '${mode_slug}' is not accessible from the current mode '${currentMode}'.`,
+						),
+					)
+					return
+				}
+			}
 
 			if (currentMode === mode_slug) {
 				task.recordToolError("switch_mode")
@@ -64,7 +82,7 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 			await task.providerRef.deref()?.handleModeSwitch(mode_slug)
 
 			pushToolResult(
-				`Successfully switched from ${getModeBySlug(currentMode)?.name ?? currentMode} mode to ${
+				`Successfully switched from ${currentModeConfig?.name ?? currentMode} mode to ${
 					targetMode.name
 				} mode${reason ? ` because: ${reason}` : ""}.`,
 			)
