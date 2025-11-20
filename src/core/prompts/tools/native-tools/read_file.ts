@@ -5,7 +5,13 @@ export const read_file = {
 	function: {
 		name: "read_file",
 		description:
-			"Read one or more files and return their contents with line numbers for diffing or discussion. Use line ranges when available to keep reads efficient and combine related files when possible.",
+			"Read one or more files and return their contents with line numbers for diffing or discussion. " +
+			"Structure: { files: [{ path: 'relative/path.ts', line_ranges: ['1-50', '100-150'] }] }. " +
+			"The 'path' is required and relative to workspace. " +
+			"The 'line_ranges' is optional for reading specific sections (format: 'start-end', 1-based inclusive). " +
+			"Example single file: { files: [{ path: 'src/app.ts' }] }. " +
+			"Example with line ranges: { files: [{ path: 'src/app.ts', line_ranges: ['1-50', '100-150'] }] }. " +
+			"Example multiple files: { files: [{ path: 'file1.ts', line_ranges: ['1-50'] }, { path: 'file2.ts' }] }",
 		strict: true,
 		parameters: {
 			type: "object",
