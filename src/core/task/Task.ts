@@ -2660,21 +2660,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						})
 					}
 
-					// Check if we should preserve reasoning in the assistant message
-					let finalAssistantMessage = assistantMessage
-					if (reasoningMessage && streamModelInfo.preserveReasoning) {
-						// Prepend reasoning in XML tags to the assistant message so it's included in API history
-						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
-					}
-
 					// Build the assistant message content array
 					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
 
 					// Add text content if present
-					if (finalAssistantMessage) {
+					if (assistantMessage) {
 						assistantContent.push({
 							type: "text" as const,
-							text: finalAssistantMessage,
+							text: assistantMessage,
 						})
 					}
 
@@ -3439,15 +3432,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					continue
 				} else if (hasPlainTextReasoning) {
-					// Strip plain text reasoning, send assistant message only
+					const reasoningBlock = first as any
+
+					// Check if the model's preserveReasoning flag is set
+					// If true, include the reasoning block in API requests
+					// If false/undefined, strip it out (stored for history only, not sent back to API)
+					const modelInfo = this.cachedStreamingModel?.info ?? this.api.getModel().info
+					const shouldPreserveForApi = modelInfo.preserveReasoning === true
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 
-					if (rest.length === 0) {
-						assistantContent = ""
-					} else if (rest.length === 1 && rest[0].type === "text") {
-						assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+					if (shouldPreserveForApi) {
+						// Include reasoning block in the content sent to API
+						assistantContent = contentArray
 					} else {
-						assistantContent = rest
+						// Strip reasoning out - stored for history only, not sent back to API
+						if (rest.length === 0) {
+							assistantContent = ""
+						} else if (rest.length === 1 && rest[0].type === "text") {
+							assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+						} else {
+							assistantContent = rest
+						}
 					}
 
 					cleanConversationHistory.push({
