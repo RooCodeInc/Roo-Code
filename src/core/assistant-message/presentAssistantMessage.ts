@@ -71,8 +71,6 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
-	const cachedModelId = cline.api.getModel().id
-
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
@@ -176,7 +174,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.command}']`
 					case "read_file":
 						// Check if this model should use the simplified description
-						if (shouldUseSingleFileRead(cachedModelId)) {
+						const modelId = cline.api.getModel().id
+						if (shouldUseSingleFileRead(modelId)) {
 							return getSimpleReadFileToolDescription(block.name, block.params)
 						} else {
 							// Prefer native typed args when available; fall back to legacy params
@@ -252,52 +251,28 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
-				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
-				const toolCallId = block.id
-				const errorMessage = !block.partial
-					? `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`
-					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
-
-				if (toolCallId) {
-					// Native protocol: MUST send tool_result for every tool_use
-					cline.userMessageContent.push({
-						type: "tool_result",
-						tool_use_id: toolCallId,
-						content: errorMessage,
-						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
-				} else {
-					// XML protocol: send as text
+				if (!block.partial) {
 					cline.userMessageContent.push({
 						type: "text",
-						text: errorMessage,
+						text: `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`,
+					})
+				} else {
+					// Partial tool after user rejected a previous tool.
+					cline.userMessageContent.push({
+						type: "text",
+						text: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`,
 					})
 				}
 
 				break
 			}
-	
+
 			if (cline.didAlreadyUseTool) {
 				// Ignore any content after a tool has already been used.
-				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
-				const toolCallId = block.id
-				const errorMessage = `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`
-
-				if (toolCallId) {
-					// Native protocol: MUST send tool_result for every tool_use
-					cline.userMessageContent.push({
-						type: "tool_result",
-						tool_use_id: toolCallId,
-						content: errorMessage,
-						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
-				} else {
-					// XML protocol: send as text
-					cline.userMessageContent.push({
-						type: "text",
-						text: errorMessage,
-					})
-				}
+				cline.userMessageContent.push({
+					type: "text",
+					text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
+				})
 
 				break
 			}
@@ -320,35 +295,31 @@ export async function presentAssistantMessage(cline: Task) {
 						)
 						return
 					}
-					// For native protocol, tool_result content must be a string
-					// Images are added as separate blocks in the user message
-					let resultContent: string
-					let imageBlocks: Anthropic.ImageBlockParam[] = []
 
+					// For native protocol, add as tool_result block
+					let resultContent: string
 					if (typeof content === "string") {
 						resultContent = content || "(tool did not return anything)"
 					} else {
-						// Separate text and image blocks
-						const textBlocks = content.filter((item) => item.type === "text")
-						imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
-
-						// Convert text blocks to string for tool_result
-						resultContent =
-							textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
-							"(tool did not return anything)"
+						// Convert array of content blocks to string for tool result
+						// Tool results in OpenAI format only support strings
+						resultContent = content
+							.map((item) => {
+								if (item.type === "text") {
+									return item.text
+								} else if (item.type === "image") {
+									return "(image content)"
+								}
+								return ""
+							})
+							.join("\n")
 					}
 
-					// Add tool_result with text content only
 					cline.userMessageContent.push({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: resultContent,
 					} as Anthropic.ToolResultBlockParam)
-
-					// Add image blocks separately after tool_result
-					if (imageBlocks.length > 0) {
-						cline.userMessageContent.push(...imageBlocks)
-					}
 
 					hasToolResult = true
 				} else {
@@ -364,10 +335,10 @@ export async function presentAssistantMessage(cline: Task) {
 						cline.userMessageContent.push(...content)
 					}
 				}
-	
+
 				// For XML protocol: Only one tool per message is allowed
 				// For native protocol: Multiple tools can be executed in sequence
-				if (toolProtocol !== TOOL_PROTOCOL.NATIVE) {
+				if (toolProtocol === TOOL_PROTOCOL.XML) {
 					// Once a tool result has been collected, ignore all other tool
 					// uses since we should only ever present one tool result per
 					// message (XML protocol only).
@@ -428,14 +399,14 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const handleError = async (action: string, error: Error) => {
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
-	
+
 				await cline.say(
 					"error",
 					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
 				)
-	
+
 				pushToolResult(formatResponse.toolError(errorString, toolProtocol))
-	
+
 				// Mark that a tool failed in this turn to prevent attempt_completion
 				cline.didToolFailInCurrentTurn = true
 			}
@@ -548,10 +519,10 @@ export async function presentAssistantMessage(cline: Task) {
 						// Track tool repetition in telemetry.
 						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
 					}
-		
+
 					// Mark that a tool failed in this turn to prevent attempt_completion
 					cline.didToolFailInCurrentTurn = true
-		
+
 					// Return tool result message about the repetition
 					pushToolResult(
 						formatResponse.toolError(
@@ -636,7 +607,8 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_file":
 					// Check if this model should use the simplified single-file read tool
-					if (shouldUseSingleFileRead(cachedModelId)) {
+					const modelId = cline.api.getModel().id
+					if (shouldUseSingleFileRead(modelId)) {
 						await simpleReadFileTool(
 							cline,
 							block,
@@ -768,17 +740,6 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "attempt_completion": {
-					// Prevent attempt_completion if any tool failed in the current assistant message (turn).
-					// This only applies to tools called within the same message, not across different turns.
-					// For example, this blocks: read_file (fails) + attempt_completion in same message
-					// But allows: read_file (fails) → user message → attempt_completion in next turn
-					if (cline.didToolFailInCurrentTurn) {
-						const errorMsg = `Cannot execute attempt_completion because a previous tool call failed in this turn. Please address the tool failure before attempting completion.`
-						await cline.say("error", errorMsg)
-						pushToolResult(formatResponse.toolError(errorMsg))
-						break
-					}
-		
 					const completionCallbacks: AttemptCompletionCallbacks = {
 						askApproval,
 						handleError,
