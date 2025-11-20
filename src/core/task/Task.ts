@@ -3390,6 +3390,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				continue
 			}
 
+			// Skip standalone reasoning items with plain text (stored for history, not for API requests)
+			if (msg.type === "reasoning") {
+				continue
+			}
+
 			// Preferred path: assistant message with embedded reasoning as first content block
 			if (msg.role === "assistant") {
 				const rawContent = msg.content
