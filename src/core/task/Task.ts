@@ -87,8 +87,7 @@ import { getWorkspacePath } from "../../utils/path"
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
-import { nativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
-import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
+import { buildNativeToolsArray } from "./build-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -3239,34 +3238,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = []
 		if (shouldIncludeTools) {
 			const provider = this.providerRef.deref()
-			const mcpHub = provider?.getMcpHub()
-
-			// Get CodeIndexManager for feature checking
-			const { CodeIndexManager } = await import("../../services/code-index/manager")
-			const codeIndexManager = CodeIndexManager.getInstance(provider!.context, this.cwd)
-
-			// Build settings object for tool filtering
-			// Include browserToolEnabled to filter browser_action when disabled by user
-			const filterSettings = {
-				todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
-				browserToolEnabled: state?.browserToolEnabled ?? true,
+			if (!provider) {
+				throw new Error("Provider reference lost during tool building")
 			}
 
-			// Filter native tools based on mode restrictions (similar to XML tool filtering)
-			const filteredNativeTools = filterNativeToolsForMode(
-				nativeTools,
+			allTools = await buildNativeToolsArray({
+				provider,
+				cwd: this.cwd,
 				mode,
-				state?.customModes,
-				state?.experiments,
-				codeIndexManager,
-				filterSettings,
-			)
-
-			// Filter MCP tools based on mode restrictions
-			const mcpTools = getMcpServerTools(mcpHub)
-			const filteredMcpTools = filterMcpToolsForMode(mcpTools, mode, state?.customModes, state?.experiments)
-
-			allTools = [...filteredNativeTools, ...filteredMcpTools]
+				customModes: state?.customModes,
+				experiments: state?.experiments,
+				apiConfiguration,
+				maxReadFileLine: state?.maxReadFileLine ?? -1,
+				browserToolEnabled: state?.browserToolEnabled ?? true,
+			})
 		}
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
