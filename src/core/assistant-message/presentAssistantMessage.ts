@@ -71,8 +71,6 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
-	// Cache model ID once at function start to avoid repeated getModel() calls
-	// This reduces ~59 calls per streaming session to just 1
 	const cachedModelId = cline.api.getModel().id
 
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
