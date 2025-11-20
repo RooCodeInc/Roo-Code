@@ -344,6 +344,24 @@ export class QdrantVectorStore implements IVectorStore {
 	): Promise<void> {
 		try {
 			const processedPoints = points.map((point) => {
+				// Validate and sanitize vector - replace null/undefined with 0
+				const sanitizedVector = point.vector.map((value) => {
+					if (value === null || value === undefined || isNaN(value)) {
+						console.warn(
+							`[QdrantVectorStore] Found invalid value in vector for point ${point.id}, replacing with 0`,
+						)
+						return 0
+					}
+					return value
+				})
+
+				// Validate vector length matches expected dimension
+				if (sanitizedVector.length !== this.vectorSize) {
+					throw new Error(
+						`Vector dimension mismatch for point ${point.id}: expected ${this.vectorSize}, got ${sanitizedVector.length}`,
+					)
+				}
+
 				if (point.payload?.filePath) {
 					const segments = point.payload.filePath.split(path.sep).filter(Boolean)
 					const pathSegments = segments.reduce(
@@ -355,13 +373,17 @@ export class QdrantVectorStore implements IVectorStore {
 					)
 					return {
 						...point,
+						vector: sanitizedVector,
 						payload: {
 							...point.payload,
 							pathSegments,
 						},
 					}
 				}
-				return point
+				return {
+					...point,
+					vector: sanitizedVector,
+				}
 			})
 
 			await this.client.upsert(this.collectionName, {
