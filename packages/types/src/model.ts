@@ -73,8 +73,13 @@ export const modelInfoSchema = z.object({
 	maxThinkingTokens: z.number().nullish(),
 	contextWindow: z.number(),
 	supportsImages: z.boolean().optional(),
-	// `max_completion_tokens`，`max_tokens` ,undefined
-	maxTokensKey: z.string().optional(),
+	// costrict start
+	id: z.string().optional(),
+	maxTokensKey: z.string().optional(), // `max_completion_tokens`，`max_tokens` ,undefined
+	// Credit consumption and discount for the model
+	creditConsumption: z.number().optional(),
+	creditDiscount: z.number().optional(),
+	//costrict end
 	supportsPromptCache: z.boolean(),
 	// Optional default prompt cache retention policy for providers that support it.
 	// When set to "24h", extended prompt caching will be requested; when omitted
@@ -109,9 +114,6 @@ export const modelInfoSchema = z.object({
 	deprecated: z.boolean().optional(),
 	// Flag to indicate if the model is free (no cost)
 	isFree: z.boolean().optional(),
-	// Credit consumption and discount for the model
-	creditConsumption: z.number().optional(),
-	creditDiscount: z.number().optional(),
 	// Flag to indicate if the model supports native tool calling (OpenAI-style function calling)
 	supportsNativeTools: z.boolean().optional(),
 	// Default tool protocol preferred by this model (if not specified, falls back to capability/provider defaults)

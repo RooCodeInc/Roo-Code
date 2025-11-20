@@ -254,9 +254,11 @@ export class CompletionClient {
 		const client_id = getClientId()
 		const requestId = uuidv7()
 		Logger.log(`[RequestID ${requestId}] Completion [${cp.id}]: Sending API request`)
+		const { id } = (await ZgsmAuthService.getInstance()?.getUserInfo()) || {}
 		const headers = {
 			...COSTRICT_DEFAULT_HEADERS,
 			"X-Request-ID": requestId,
+			"x-user-id": id,
 			"zgsm-client-id": client_id,
 		}
 		const repo = workspace?.name?.split(" ")[0] ?? ""

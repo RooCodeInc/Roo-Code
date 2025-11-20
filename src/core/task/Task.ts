@@ -3254,6 +3254,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		}
 
+		const { id } = (await ZgsmAuthService.getInstance()?.getUserInfo()) ?? {}
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			zgsmCodeMode,
@@ -3264,6 +3265,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			language: state?.language,
 			instanceId: this.instanceId,
+			userId: id,
 			// Include tools and tool protocol when using native protocol and model supports it
 			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
 		}

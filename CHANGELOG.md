@@ -1,5 +1,19 @@
 # CoStrict Change Log
 
+## [2.0.15]
+
+- Add user ID tracking to API requests
+- Restore previous mode after review completion
+- Add signal parameter support to provider completePrompt methods and improve request cancellation
+- Enhance condition checks and error handling
+- Enhance model info schema and update model fetching logic
+- Update jetBrains code review config
+- Update Gemini tool config
+- Optimize modes defaultSelect
+- Optimize build size
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/4ae0fc5f02dcac44204bd72fb09579e25a01e0dc)
+- Fix codereview (#638)
+
 ## [2.0.14]
 
 - Add api provider filtering for modes and workflow features

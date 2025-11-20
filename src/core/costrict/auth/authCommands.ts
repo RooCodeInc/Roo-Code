@@ -64,7 +64,7 @@ export class ZgsmAuthCommands {
 	 */
 	public async handleLogin(): Promise<void> {
 		try {
-			const loginState = await ZgsmAuthService.getInstance().startLogin()
+			const loginState = await ZgsmAuthService.getInstance()?.startLogin()
 			console.info(
 				`Login process has started, please complete login in the browser.\nState: ${loginState.state}\nMachineId: ${loginState.machineId}`,
 			)
@@ -78,7 +78,7 @@ export class ZgsmAuthCommands {
 	 */
 	public async handleLogout(): Promise<void> {
 		try {
-			await ZgsmAuthService.getInstance().logout()
+			await ZgsmAuthService.getInstance()?.logout()
 			vscode.window.showInformationMessage("Successfully logged out")
 		} catch (error) {
 			vscode.window.showErrorMessage(`Logout failed: ${error}`)
@@ -90,7 +90,7 @@ export class ZgsmAuthCommands {
 	 */
 	private async handleCheckLoginStatus(): Promise<void> {
 		try {
-			const token = await ZgsmAuthService.getInstance().getCurrentAccessToken()
+			const token = await ZgsmAuthService.getInstance()?.getCurrentAccessToken()
 
 			if (token) {
 				vscode.window.showInformationMessage("Currently logged in")

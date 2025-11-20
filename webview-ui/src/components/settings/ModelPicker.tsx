@@ -247,7 +247,7 @@ export const ModelPicker = ({
 									className={cn("w-full", "justify-between", triggerClassName)}
 									data-testid={`model-picker-button${modelPickerId}`}>
 									<div className={`truncate ${PopoverTriggerContentClassName}`}>
-										<Brain className="inline-block mr-[4px]" />
+										<Brain className="inline-block mr-1" />
 										{selectedModelId ?? t("settings:common.select")}
 									</div>
 								</Button>
@@ -270,7 +270,7 @@ export const ModelPicker = ({
 					<PopoverContent
 						className={cn(
 							"p-0",
-							"w-[var(--radix-popover-trigger-width)]",
+							"w-(--radix-popover-trigger-width)",
 							!open && "invisible",
 							popoverContentClassName,
 						)}

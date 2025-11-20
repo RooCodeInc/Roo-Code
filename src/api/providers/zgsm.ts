@@ -58,7 +58,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const urlHost = this._getUrlHost(this.baseURL)
 		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
 
-		this.fetchModel()
+		this.updateModelInfo()
 		const timeout = getApiRequestTimeout()
 		this.apiResponseRenderModeInfo = getApiResponseRenderMode()
 		if (isAzureAiInference) {
@@ -101,7 +101,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Performance monitoring log
 		this.abortController = new AbortController()
 		const requestId = uuidv7()
-		await this.fetchModel()
+		await this.updateModelInfo()
 		const fromWorkflow =
 			metadata?.zgsmWorkflowMode ||
 			metadata?.mode === "strict" ||
@@ -139,7 +139,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		try {
-			const tokens = await ZgsmAuthService.getInstance().getTokens()
+			const tokens = await ZgsmAuthService.getInstance()?.getTokens()
 			this.client.apiKey = tokens?.access_token || "not-provided"
 		} catch (error) {
 			this.logger.info(
@@ -274,6 +274,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			...(this.options.useZgsmCustomConfig ? (this.options.openAiHeaders ?? {}) : {}),
 			"x-quota-identity": chatType || "system",
 			"X-Request-ID": requestId,
+			"x-user-id": metadata?.userId || "",
 			"zgsm-task-id": metadata?.taskId || "",
 			"zgsm-request-id": requestId,
 			"zgsm-client-id": clientId,
@@ -511,17 +512,24 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	async fetchModel() {
+	async updateModelInfo() {
 		const id = this.options.zgsmModelId ?? zgsmDefaultModelId
-
-		this.modelInfo =
+		const info =
 			(
 				await getModels({
 					provider: "zgsm",
 					baseUrl: `${this.options.zgsmBaseUrl?.trim() || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}`,
 					apiKey: this.options.zgsmAccessToken,
 				})
-			)[id] || zgsmModels.default
+			)[id] ?? zgsmModels.default
+
+		if (id.toLowerCase().includes("gemini")) {
+			Object.assign(info, {
+				supportsNativeTools: false,
+			})
+		}
+
+		this.modelInfo = info
 	}
 
 	override getModel() {
@@ -536,7 +544,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
 		const isAzureAiInference = this._isAzureAiInference(this.baseURL)
-		await this.fetchModel()
+		await this.updateModelInfo()
 		const model = this.getModel()
 		const modelInfo = model?.info
 		const requestId = uuidv7()
@@ -586,7 +594,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 	): ApiStream {
-		await this.fetchModel()
+		await this.updateModelInfo()
 		const modelInfo = this.getModel()
 		const methodIsAzureAiInference = this._isAzureAiInference(this.baseURL)
 

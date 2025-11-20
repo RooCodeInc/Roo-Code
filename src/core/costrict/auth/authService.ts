@@ -401,7 +401,7 @@ export class ZgsmAuthService {
 		const jwt = jwtDecode(token) as any
 
 		this.userInfo = {
-			id: jwt.id,
+			id: jwt.universal_id,
 			name: jwt?.properties?.oauth_GitHub_username || jwt.id,
 			picture: jwt.avatar,
 			email: jwt.email,

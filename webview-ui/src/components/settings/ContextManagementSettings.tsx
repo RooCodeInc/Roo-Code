@@ -5,7 +5,8 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { Database, FoldVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
+import { Input, Slider, Button } from "@/components/ui"
+// import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -78,7 +79,7 @@ export const ContextManagementSettings = ({
 	...props
 }: ContextManagementSettingsProps) => {
 	const { t } = useAppTranslation()
-	const [selectedThresholdProfile, setSelectedThresholdProfile] = React.useState<string>("default")
+	const [selectedThresholdProfile] = React.useState<string>("default")
 
 	// Helper function to get the current threshold value based on selected profile
 	const getCurrentThresholdValue = () => {
@@ -448,7 +449,7 @@ export const ContextManagementSettings = ({
 							<FoldVertical size={16} />
 							<div>{t("settings:contextManagement.condensingThreshold.label")}</div>
 						</div>
-						<div>
+						{/* <div>
 							<Select
 								value={selectedThresholdProfile || "default"}
 								onValueChange={(value) => {
@@ -490,7 +491,7 @@ export const ContextManagementSettings = ({
 									})}
 								</SelectContent>
 							</Select>
-						</div>
+						</div> */}
 
 						{/* Threshold Slider */}
 						<div>

@@ -31,11 +31,11 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Tab, TabContent, TabHeader } from "@src/components/common/Tab"
 import {
 	Button,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+	// Select,
+	// SelectContent,
+	// SelectItem,
+	// SelectTrigger,
+	// SelectValue,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -73,8 +73,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	const {
 		apiConfiguration,
 		customModePrompts,
-		listApiConfigMeta,
-		currentApiConfigName,
+		// listApiConfigMeta,
+		// currentApiConfigName,
 		mode,
 		customInstructions,
 		setCustomInstructions,
@@ -920,7 +920,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 					</div>
 
 					{/* API Configuration - Moved Here */}
-					<div className="mb-3">
+					{/* <div className="mb-3">
 						<div className="font-bold mb-1">{t("prompts:apiConfiguration.title")}</div>
 						<div className="text-sm text-vscode-descriptionForeground mb-2">
 							{t("prompts:apiConfiguration.select")}
@@ -947,7 +947,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 								</SelectContent>
 							</Select>
 						</div>
-					</div>
+					</div> */}
 				</div>
 
 				{/* Role Definition section */}

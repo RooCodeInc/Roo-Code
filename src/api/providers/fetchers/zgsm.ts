@@ -3,6 +3,7 @@ import { v7 as uuidv7 } from "uuid"
 import { COSTRICT_DEFAULT_HEADERS } from "../../../shared/headers"
 import type { InviteCodeInfo, IZgsmModelResponseData, QuotaInfo } from "@roo-code/types"
 import { readModels } from "./modelCache"
+import { ZgsmAuthService } from "../../../core/costrict/auth"
 
 export async function getZgsmModels(baseUrl?: string, apiKey?: string, openAiHeaders?: Record<string, string>) {
 	try {
@@ -16,12 +17,14 @@ export async function getZgsmModels(baseUrl?: string, apiKey?: string, openAiHea
 		if (!URL.canParse(trimmedBaseUrl)) {
 			return []
 		}
+		const { id } = (await ZgsmAuthService.getInstance()?.getUserInfo()) || {}
 
 		const config: Record<string, any> = {}
 		const headers: Record<string, string> = {
 			...COSTRICT_DEFAULT_HEADERS,
 			...(openAiHeaders || {}),
 			"X-Request-ID": uuidv7(),
+			"x-user-id": id || "",
 		}
 
 		if (apiKey) {

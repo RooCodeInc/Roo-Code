@@ -36,11 +36,11 @@ const PromptsSettings = ({
 }: PromptsSettingsProps) => {
 	const { t } = useAppTranslation()
 	const {
-		listApiConfigMeta,
-		enhancementApiConfigId,
-		setEnhancementApiConfigId,
-		condensingApiConfigId,
-		setCondensingApiConfigId,
+		// listApiConfigMeta,
+		// enhancementApiConfigId,
+		// setEnhancementApiConfigId,
+		// condensingApiConfigId,
+		// setCondensingApiConfigId,
 		customCondensingPrompt,
 		setCustomCondensingPrompt,
 		includeTaskHistoryInEnhance: contextIncludeTaskHistoryInEnhance,
@@ -193,7 +193,7 @@ const PromptsSettings = ({
 
 					{(activeSupportOption === "ENHANCE" || activeSupportOption === "CONDENSE") && (
 						<div className="mt-4 flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-							<div>
+							{/* <div>
 								<label className="block font-medium mb-1">
 									{activeSupportOption === "ENHANCE"
 										? t("prompts:supportPrompts.enhance.apiConfiguration")
@@ -247,7 +247,7 @@ const PromptsSettings = ({
 										? t("prompts:supportPrompts.enhance.apiConfigDescription")
 										: t("prompts:supportPrompts.condense.apiConfigDescription")}
 								</div>
-							</div>
+							</div> */}
 
 							{activeSupportOption === "ENHANCE" && (
 								<>

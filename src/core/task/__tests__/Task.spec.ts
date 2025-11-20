@@ -969,10 +969,14 @@ describe("Cline", () => {
 			let mockApiConfig: any
 			let mockDelay: ReturnType<typeof vi.fn>
 
-			beforeEach(() => {
+			beforeEach(async () => {
 				vi.clearAllMocks()
 				// Reset the global timestamp before each test
 				Task.resetGlobalApiRequestTime()
+
+				// Import and reset ZgsmAuthService instance for testing
+				const { ZgsmAuthService } = await import("../../costrict/auth")
+				ZgsmAuthService._resetForTesting()
 
 				mockApiConfig = {
 					apiProvider: "anthropic",
@@ -993,6 +997,9 @@ describe("Cline", () => {
 					postMessageToWebview: vi.fn().mockResolvedValue(undefined),
 					updateTaskHistory: vi.fn().mockResolvedValue(undefined),
 				}
+
+				// Initialize ZgsmAuthService with mock provider
+				ZgsmAuthService.setProvider(mockProvider)
 
 				// Get the mocked delay function
 				mockDelay = delay as ReturnType<typeof vi.fn>

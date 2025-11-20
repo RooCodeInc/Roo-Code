@@ -234,7 +234,7 @@ export class CodeReviewService {
 			progress: 0.001, // use 0.001 to indicate running
 			total: 0,
 		})
-
+		const prevMode = await provider.getMode()
 		const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
 		provider.postMessageToWebview({
 			type: "action",
@@ -313,6 +313,7 @@ export class CodeReviewService {
 				clearTimeout(timeoutId)
 				await provider.removeClineFromStack()
 				await provider.refreshWorkspace()
+				await provider.handleModeSwitch(prevMode)
 			}
 		})
 
