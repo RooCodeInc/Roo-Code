@@ -636,7 +636,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "tool":
 				case "browser_action_launch":
 				case "use_mcp_server":
-				case "resume_task":
 				case "mistake_limit_reached":
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
@@ -652,6 +651,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					} else {
 						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
 					}
+					break
+				case "resume_task":
+					// For resume_task, we don't send the text/images, just the button click
+					// and we preserve the input text as per user requirement
+					vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
+					// Don't clear input state - preserve what user typed
 					break
 				case "completion_result":
 				case "resume_completed_task":
