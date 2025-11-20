@@ -196,53 +196,93 @@ const TaskHeader = ({
 				</div>
 				{!isTaskExpanded && contextWindow > 0 && (
 					<div
-						className="flex items-center gap-2 text-sm text-muted-foreground/70"
+						className="flex items-center justify-between text-sm text-muted-foreground/70"
 						onClick={(e) => e.stopPropagation()}>
-						<Coins className="size-3 shrink-0" />
-						<StandardTooltip
-							content={
-								<div className="space-y-1">
-									<div>
-										{t("chat:tokenProgress.tokensUsed", {
-											used: formatLargeNumber(contextTokens || 0),
-											total: formatLargeNumber(contextWindow),
-										})}
-									</div>
-									{(() => {
-										const maxTokens = model
-											? getModelMaxOutputTokens({ modelId, model, settings: apiConfiguration })
-											: 0
-										const reservedForOutput = maxTokens || 0
-										const availableSpace = contextWindow - (contextTokens || 0) - reservedForOutput
+						<div className="flex items-center gap-2">
+							<Coins className="size-3 shrink-0" />
+							<StandardTooltip
+								content={
+									<div className="space-y-1">
+										<div>
+											{t("chat:tokenProgress.tokensUsed", {
+												used: formatLargeNumber(contextTokens || 0),
+												total: formatLargeNumber(contextWindow),
+											})}
+										</div>
+										{(() => {
+											const maxTokens = model
+												? getModelMaxOutputTokens({
+														modelId,
+														model,
+														settings: apiConfiguration,
+													})
+												: 0
+											const reservedForOutput = maxTokens || 0
+											const availableSpace =
+												contextWindow - (contextTokens || 0) - reservedForOutput
 
-										return (
-											<>
-												{reservedForOutput > 0 && (
-													<div>
-														{t("chat:tokenProgress.reservedForResponse", {
-															amount: formatLargeNumber(reservedForOutput),
-														})}
-													</div>
-												)}
-												{availableSpace > 0 && (
-													<div>
-														{t("chat:tokenProgress.availableSpace", {
-															amount: formatLargeNumber(availableSpace),
-														})}
-													</div>
-												)}
-											</>
-										)
-									})()}
-								</div>
-							}
-							side="top"
-							sideOffset={8}>
-							<span className="mr-1">
-								{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
-							</span>
-						</StandardTooltip>
-						{!!totalCost && <span>${totalCost.toFixed(2)}</span>}
+											return (
+												<>
+													{reservedForOutput > 0 && (
+														<div>
+															{t("chat:tokenProgress.reservedForResponse", {
+																amount: formatLargeNumber(reservedForOutput),
+															})}
+														</div>
+													)}
+													{availableSpace > 0 && (
+														<div>
+															{t("chat:tokenProgress.availableSpace", {
+																amount: formatLargeNumber(availableSpace),
+															})}
+														</div>
+													)}
+												</>
+											)
+										})()}
+									</div>
+								}
+								side="top"
+								sideOffset={8}>
+								<span className="mr-1">
+									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
+								</span>
+							</StandardTooltip>
+							{!!totalCost && <span>${totalCost.toFixed(2)}</span>}
+						</div>
+						{showBrowserGlobe && (
+							<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+								<StandardTooltip content={t("chat:browser.session")}>
+									<Button
+										variant="ghost"
+										size="sm"
+										aria-label={t("chat:browser.session")}
+										onClick={() => vscode.postMessage({ type: "openBrowserSessionPanel" } as any)}
+										className={cn(
+											"relative h-5 w-5 p-0",
+											"text-vscode-foreground opacity-85",
+											"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
+											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+										)}>
+										<Globe
+											className="w-4 h-4"
+											style={{
+												color: isBrowserSessionActive
+													? "#4ade80"
+													: "var(--vscode-descriptionForeground)",
+											}}
+										/>
+									</Button>
+								</StandardTooltip>
+								{isBrowserSessionActive && (
+									<span
+										className="text-sm font-medium"
+										style={{ color: "var(--vscode-testing-iconPassed)" }}>
+										Active
+									</span>
+								)}
+							</div>
+						)}
 					</div>
 				)}
 				{/* Expanded state: Show task text and images */}
@@ -369,41 +409,6 @@ const TaskHeader = ({
 				)}
 				{/* Todo list - always shown at bottom when todos exist */}
 				{hasTodos && <TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />}
-
-				{/* Browser session status moved from bottom bar to header (bottom-right) */}
-				{showBrowserGlobe && (
-					<div
-						className="absolute bottom-2 right-3 flex items-center gap-1"
-						onClick={(e) => e.stopPropagation()}>
-						<StandardTooltip content={t("chat:browser.session")}>
-							<Button
-								variant="ghost"
-								size="sm"
-								aria-label={t("chat:browser.session")}
-								onClick={() => vscode.postMessage({ type: "openBrowserSessionPanel" } as any)}
-								className={cn(
-									"relative h-5 w-5 p-0",
-									"text-vscode-foreground opacity-85",
-									"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)]",
-									"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-								)}>
-								<Globe
-									className="w-4 h-4"
-									style={{
-										color: isBrowserSessionActive
-											? "#4ade80"
-											: "var(--vscode-descriptionForeground)",
-									}}
-								/>
-							</Button>
-						</StandardTooltip>
-						{isBrowserSessionActive && (
-							<span className="text-sm font-medium" style={{ color: "var(--vscode-testing-iconPassed)" }}>
-								Active
-							</span>
-						)}
-					</div>
-				)}
 			</div>
 			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>
