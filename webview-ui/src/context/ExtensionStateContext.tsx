@@ -448,6 +448,20 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setPrevCloudIsAuthenticated(currentAuth)
 	}, [state.cloudIsAuthenticated, prevCloudIsAuthenticated, state.apiConfiguration?.apiProvider])
 
+	// Apply accent color to CSS custom properties
+	useEffect(() => {
+		const accentColor = state.accentColor
+		if (accentColor && accentColor.trim() !== "") {
+			// Apply the custom accent color to CSS custom properties
+			document.documentElement.style.setProperty("--accent", accentColor)
+			document.documentElement.style.setProperty("--accent-foreground", "#ffffff")
+		} else {
+			// Remove custom properties to use default theme colors
+			document.documentElement.style.removeProperty("--accent")
+			document.documentElement.style.removeProperty("--accent-foreground")
+		}
+	}, [state.accentColor])
+
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
