@@ -34,7 +34,7 @@
 		"@vscode/vsce": "3.3.2",
 		"esbuild": "^0.25.0",
 		"eslint": "^9.27.0",
-		"glob": "^11.0.3",
+		"glob": "^11.1.0",
 		"husky": "^9.1.7",
 		"knip": "^5.44.4",
 		"lint-staged": "^16.0.0",
@@ -59,7 +59,8 @@
 			"undici": ">=5.29.0",
 			"brace-expansion": ">=2.0.2",
 			"form-data": ">=4.0.4",
-			"bluebird": ">=3.7.2"
+			"bluebird": ">=3.7.2",
+			"glob": ">=11.1.0"
 		}
 	}
 }
