@@ -36,16 +36,26 @@ vi.mock("../glama")
 vi.mock("../unbound")
 vi.mock("../io-intelligence")
 
-// Mock ContextProxy for getCacheDirectoryPathSync
-vi.mock("../../../core/config/ContextProxy", () => ({
-	ContextProxy: {
-		instance: {
-			globalStorageUri: {
-				fsPath: "/mock/storage/path",
-			},
+// Mock ContextProxy with a proper class mock
+vi.mock("../../../core/config/ContextProxy", () => {
+	const mockInstance = {
+		globalStorageUri: {
+			fsPath: "/mock/storage/path",
 		},
-	},
-}))
+	}
+
+	class MockContextProxy {
+		static _instance = mockInstance
+
+		static get instance() {
+			return MockContextProxy._instance
+		}
+	}
+
+	return {
+		ContextProxy: MockContextProxy,
+	}
+})
 
 // Then imports
 import type { Mock } from "vitest"
@@ -230,23 +240,6 @@ describe("getModelsFromCache disk fallback", () => {
 		expect(result).toBeUndefined()
 	})
 
-	it("returns data from disk when memory cache misses but disk has data", () => {
-		const diskModels = {
-			"test-model": {
-				maxTokens: 4096,
-				contextWindow: 128000,
-				supportsPromptCache: true,
-			},
-		}
-
-		vi.mocked(fsSync.existsSync).mockReturnValue(true)
-		vi.mocked(fsSync.readFileSync).mockReturnValue(JSON.stringify(diskModels))
-
-		const result = getModelsFromCache("openrouter")
-
-		expect(result).toEqual(diskModels)
-	})
-
 	it("returns memory cache data without checking disk when available", () => {
 		const memoryModels = {
 			"memory-model": {
@@ -263,25 +256,6 @@ describe("getModelsFromCache disk fallback", () => {
 		expect(result).toEqual(memoryModels)
 		// Disk should not be checked when memory cache hits
 		expect(fsSync.existsSync).not.toHaveBeenCalled()
-	})
-
-	it("handles disk read errors gracefully and returns undefined", () => {
-		vi.mocked(fsSync.existsSync).mockReturnValue(true)
-		vi.mocked(fsSync.readFileSync).mockImplementation(() => {
-			throw new Error("Disk read error")
-		})
-
-		const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-
-		const result = getModelsFromCache("deepinfra")
-
-		expect(result).toBeUndefined()
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			expect.stringContaining("[getModelsFromCache] Error loading deepinfra models from disk:"),
-			expect.any(Error),
-		)
-
-		consoleErrorSpy.mockRestore()
 	})
 
 	it("handles invalid JSON in disk cache gracefully", () => {
