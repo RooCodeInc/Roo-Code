@@ -72,6 +72,8 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
+	const cachedModelId = cline.api.getModel().id
+
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
@@ -175,8 +177,7 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.command}']`
 					case "read_file":
 						// Check if this model should use the simplified description
-						const modelId = cline.api.getModel().id
-						if (shouldUseSingleFileRead(modelId)) {
+						if (shouldUseSingleFileRead(cachedModelId)) {
 							return getSimpleReadFileToolDescription(block.name, block.params)
 						} else {
 							// Prefer native typed args when available; fall back to legacy params
@@ -590,8 +591,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_file":
 					// Check if this model should use the simplified single-file read tool
-					const modelId = cline.api.getModel().id
-					if (shouldUseSingleFileRead(modelId)) {
+					if (shouldUseSingleFileRead(cachedModelId)) {
 						await simpleReadFileTool(
 							cline,
 							block,
