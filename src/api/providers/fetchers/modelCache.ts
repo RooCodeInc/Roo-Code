@@ -3,8 +3,10 @@ import fs from "fs/promises"
 import * as fsSync from "fs"
 
 import NodeCache from "node-cache"
+import { z } from "zod"
 
 import type { ProviderName } from "@roo-code/types"
+import { modelInfoSchema } from "@roo-code/types"
 
 import { safeWriteJson } from "../../../utils/safeWriteJson"
 
@@ -29,6 +31,9 @@ import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
+
+// Zod schema for validating ModelRecord structure from disk cache
+const modelRecordSchema = z.record(z.string(), modelInfoSchema)
 
 async function writeModels(router: RouterName, data: ModelRecord) {
 	const filename = `${router}_models.json`
@@ -180,10 +185,21 @@ export function getModelsFromCache(provider: ProviderName): ModelRecord | undefi
 			const data = fsSync.readFileSync(filePath, "utf8")
 			const models = JSON.parse(data)
 
-			// Populate memory cache for future fast access
-			memoryCache.set(provider, models)
+			// Validate the disk cache data structure using Zod schema
+			// This ensures the data conforms to ModelRecord = Record<string, ModelInfo>
+			const validation = modelRecordSchema.safeParse(models)
+			if (!validation.success) {
+				console.error(
+					`[MODEL_CACHE] Invalid disk cache data structure for ${provider}:`,
+					validation.error.format(),
+				)
+				return undefined
+			}
 
-			return models
+			// Populate memory cache for future fast access
+			memoryCache.set(provider, validation.data)
+
+			return validation.data
 		}
 	} catch (error) {
 		console.error(`[MODEL_CACHE] Error loading ${provider} models from disk:`, error)

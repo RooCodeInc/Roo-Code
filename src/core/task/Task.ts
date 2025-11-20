@@ -419,9 +419,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
 		const modelInfo = this.api.getModel().info
 		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		console.log(
-			`[TOOL_PROTOCOL] Constructor - Protocol: ${toolProtocol}, Model: ${this.api.getModel().id}, Native Support: ${modelInfo.supportsNativeTools}, Provider: ${this.apiConfiguration.apiProvider}`,
-		)
 		this.assistantMessageParser = toolProtocol !== "native" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
@@ -1114,9 +1111,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Determine the new tool protocol
 		const newModelInfo = this.api.getModel().info
 		const newProtocol = resolveToolProtocol(this.apiConfiguration, newModelInfo)
-		console.log(
-			`[TOOL_PROTOCOL] updateApiConfiguration - New Protocol: ${newProtocol}, Previous: ${previousProtocol}, Model: ${this.api.getModel().id}, Native Support: ${newModelInfo.supportsNativeTools}`,
-		)
 		const shouldUseXmlParser = newProtocol === "xml"
 
 		// Only make changes if the protocol actually changed
@@ -2157,9 +2151,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const streamModelInfo = this.cachedStreamingModel.info
 				const cachedModelId = this.cachedStreamingModel.id
 				const streamProtocol = resolveToolProtocol(this.apiConfiguration, streamModelInfo)
-				console.log(
-					`[TOOL_PROTOCOL] Streaming - Protocol: ${streamProtocol}, Model: ${cachedModelId}, Native Support: ${streamModelInfo.supportsNativeTools}`,
-				)
 				const shouldUseXmlParser = streamProtocol === "xml"
 
 				// Yields only if the first chunk is successful, otherwise will
@@ -3136,9 +3127,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const modelInfo = this.api.getModel().info
 		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
-		console.log(
-			`[TOOL_PROTOCOL] attemptApiRequest - Protocol: ${toolProtocol}, Model: ${this.api.getModel().id}, Native Support: ${modelInfo.supportsNativeTools}, Include Tools: ${shouldIncludeTools}`,
-		)
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = []
