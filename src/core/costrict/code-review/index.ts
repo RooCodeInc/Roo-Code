@@ -35,15 +35,15 @@ export function initCodeReview(
 	const commentService = CommentService.getInstance()
 	reviewInstance.setProvider(provider)
 	reviewInstance.setCommentService(commentService)
+	const isJetbrains = isJetbrainsPlatform()
 
-	if (isJetbrainsPlatform()) {
-		console.log("Running on JetBrains platform, Git extension dependency not required")
-		return
-	} else {
+	if (!isJetbrains) {
 		commitListener = new GitCommitListener(context, reviewInstance)
 		commitListener.startListening().catch((error) => {
 			provider.log(`[GitCommitListener] Failed to start: ${error}`)
 		})
+	} else {
+		console.log("Running on JetBrains platform, Git extension dependency not required")
 	}
 
 	const commandMap: Partial<Record<CostrictCommandId, any>> = {
@@ -155,71 +155,6 @@ export function initCodeReview(
 				reviewInstance.askWithAI(comment.id)
 			}
 		},
-		codeReviewJetbrains: async (args: any) => {
-			const visibleProvider = await ClineProvider.getInstance()
-			if (!visibleProvider) {
-				return
-			}
-			reviewInstance.setProvider(visibleProvider)
-			if (!(await reviewInstance.checkApiProviderSupport())) {
-				return
-			}
-			visibleProvider.log(`[CodeReview] start review ${args}`)
-
-			const data = args?.[0]?.[0]
-			if (!data) {
-				visibleProvider.log("[CodeReview] Invalid args structure")
-				return
-			}
-
-			const { startLine, endLine, filePath, selectedText } = data
-			visibleProvider.log(
-				`[CodeReview] extracted data: filePath=${filePath}, startLine=${startLine}, endLine=${endLine}`,
-			)
-
-			const cwd = visibleProvider.cwd.toPosix()
-			const params = {
-				filePath,
-				endLine: endLine + "",
-				startLine: startLine + "",
-				selectedText: selectedText,
-			}
-			const prompt = supportPrompt.create("ADD_TO_CONTEXT", params)
-			reviewInstance.createReviewTask(prompt, [
-				{
-					type: ReviewTargetType.CODE,
-					file_path: toRelativePath(filePath.toPosix(), cwd),
-					line_range: [startLine, endLine],
-				},
-			])
-		},
-		reviewFilesAndFoldersJetbrains: async (args: any) => {
-			const visibleProvider = await ClineProvider.getInstance()
-			if (!visibleProvider) {
-				return
-			}
-			reviewInstance.setProvider(visibleProvider)
-			if (!(await reviewInstance.checkApiProviderSupport())) {
-				return
-			}
-			visibleProvider.log(`[CodeReview] start review ${JSON.stringify(args)}`)
-			const data = args?.[0]?.[0]
-			if (!data) {
-				visibleProvider.log("[CodeReview] Invalid args structure")
-				return
-			}
-			const cwd = visibleProvider.cwd.toPosix()
-			const { filePaths } = data
-			const targets: ReviewTarget[] = await Promise.all(
-				filePaths.map(async (filePath: string) => {
-					return {
-						type: ReviewTargetType.FILE,
-						file_path: toRelativePath(filePath.toPosix(), cwd),
-					}
-				}),
-			)
-			reviewInstance.startReview(targets)
-		},
 		reviewCommit: async () => {
 			const visibleProvider = await ClineProvider.getInstance()
 			if (!visibleProvider) {
@@ -251,56 +186,125 @@ export function initCodeReview(
 			// 使用 @git-changes 来审查当前的 git 变更
 			reviewInstance.createReviewTask("@git-changes", targets)
 		},
-		acceptIssueJetbrains: async (args: any) => {
-			const visibleProvider = await ClineProvider.getInstance()
-			if (!visibleProvider) {
-				return
-			}
-			reviewInstance.setProvider(visibleProvider)
-			visibleProvider.log(`[CodeReview] accept issue ${JSON.stringify(args)}`)
-			const data = args?.[0]?.[0]
-			if (!data) {
-				visibleProvider.log("[CodeReview] Invalid args structure")
-				return
-			}
+		...(!isJetbrains
+			? {}
+			: {
+					codeReviewJetbrains: async (args: any) => {
+						const visibleProvider = await ClineProvider.getInstance()
+						if (!visibleProvider) {
+							return
+						}
+						reviewInstance.setProvider(visibleProvider)
+						if (!(await reviewInstance.checkApiProviderSupport())) {
+							return
+						}
+						visibleProvider.log(`[CodeReview] start review ${args}`)
 
-			const { id } = data
-			reviewInstance.updateIssueStatus(id, IssueStatus.ACCEPT)
-		},
-		rejectIssueJetbrains: async (args: any) => {
-			const visibleProvider = await ClineProvider.getInstance()
-			if (!visibleProvider) {
-				return
-			}
-			reviewInstance.setProvider(visibleProvider)
-			visibleProvider.log(`[CodeReview] reject issue ${JSON.stringify(args)}`)
-			const data = args?.[0]?.[0]
-			if (!data) {
-				visibleProvider.log("[CodeReview] Invalid args structure")
-				return
-			}
+						const data = args?.[0]?.[0]
+						if (!data) {
+							visibleProvider.log("[CodeReview] Invalid args structure")
+							return
+						}
 
-			const { id } = data
-			reviewInstance.updateIssueStatus(id, IssueStatus.REJECT)
-		},
-		askReviewSuggestionWithAIJetbrains: async (args: any) => {
-			const visibleProvider = await ClineProvider.getInstance()
-			if (!visibleProvider) {
-				return
-			}
-			visibleProvider.log(`[CodeReview] ask review suggestion with AI ${JSON.stringify(args)}`)
-			reviewInstance.setProvider(visibleProvider)
-			const data = args?.[0]?.[0]
-			if (!data) {
-				visibleProvider.log("[CodeReview] Invalid args structure")
-				return
-			}
+						const { startLine, endLine, filePath, selectedText } = data
+						visibleProvider.log(
+							`[CodeReview] extracted data: filePath=${filePath}, startLine=${startLine}, endLine=${endLine}`,
+						)
 
-			const { id } = data
-			if (id) {
-				reviewInstance.askWithAI(id)
-			}
-		},
+						const cwd = visibleProvider.cwd.toPosix()
+						const params = {
+							filePath,
+							endLine: endLine + "",
+							startLine: startLine + "",
+							selectedText: selectedText,
+						}
+						const prompt = supportPrompt.create("ADD_TO_CONTEXT", params)
+						reviewInstance.createReviewTask(prompt, [
+							{
+								type: ReviewTargetType.CODE,
+								file_path: toRelativePath(filePath.toPosix(), cwd),
+								line_range: [startLine, endLine],
+							},
+						])
+					},
+					reviewFilesAndFoldersJetbrains: async (args: any) => {
+						const visibleProvider = await ClineProvider.getInstance()
+						if (!visibleProvider) {
+							return
+						}
+						reviewInstance.setProvider(visibleProvider)
+						if (!(await reviewInstance.checkApiProviderSupport())) {
+							return
+						}
+						visibleProvider.log(`[CodeReview] start review ${JSON.stringify(args)}`)
+						const data = args?.[0]?.[0]
+						if (!data) {
+							visibleProvider.log("[CodeReview] Invalid args structure")
+							return
+						}
+						const cwd = visibleProvider.cwd.toPosix()
+						const { filePaths } = data
+						const targets: ReviewTarget[] = await Promise.all(
+							filePaths.map(async (filePath: string) => {
+								return {
+									type: ReviewTargetType.FILE,
+									file_path: toRelativePath(filePath.toPosix(), cwd),
+								}
+							}),
+						)
+						reviewInstance.startReview(targets)
+					},
+					acceptIssueJetbrains: async (args: any) => {
+						const visibleProvider = await ClineProvider.getInstance()
+						if (!visibleProvider) {
+							return
+						}
+						reviewInstance.setProvider(visibleProvider)
+						visibleProvider.log(`[CodeReview] accept issue ${JSON.stringify(args)}`)
+						const data = args?.[0]?.[0]
+						if (!data) {
+							visibleProvider.log("[CodeReview] Invalid args structure")
+							return
+						}
+
+						const { id } = data
+						reviewInstance.updateIssueStatus(id, IssueStatus.ACCEPT)
+					},
+					rejectIssueJetbrains: async (args: any) => {
+						const visibleProvider = await ClineProvider.getInstance()
+						if (!visibleProvider) {
+							return
+						}
+						reviewInstance.setProvider(visibleProvider)
+						visibleProvider.log(`[CodeReview] reject issue ${JSON.stringify(args)}`)
+						const data = args?.[0]?.[0]
+						if (!data) {
+							visibleProvider.log("[CodeReview] Invalid args structure")
+							return
+						}
+
+						const { id } = data
+						reviewInstance.updateIssueStatus(id, IssueStatus.REJECT)
+					},
+					askReviewSuggestionWithAIJetbrains: async (args: any) => {
+						const visibleProvider = await ClineProvider.getInstance()
+						if (!visibleProvider) {
+							return
+						}
+						visibleProvider.log(`[CodeReview] ask review suggestion with AI ${JSON.stringify(args)}`)
+						reviewInstance.setProvider(visibleProvider)
+						const data = args?.[0]?.[0]
+						if (!data) {
+							visibleProvider.log("[CodeReview] Invalid args structure")
+							return
+						}
+
+						const { id } = data
+						if (id) {
+							reviewInstance.askWithAI(id)
+						}
+					},
+				}),
 	}
 	for (const [id, callback] of Object.entries(commandMap)) {
 		const command = getCommand(id as CostrictCommandId)
