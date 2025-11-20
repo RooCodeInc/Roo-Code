@@ -2728,6 +2728,10 @@ export class ClineProvider
 		// Capture the current instance to detect if rehydrate already occurred elsewhere
 		const originalInstanceId = task.instanceId
 
+		// Immediately cancel the underlying HTTP request if one is in progress
+		// This ensures the stream fails quickly rather than waiting for network timeout
+		task.cancelCurrentRequest()
+
 		// Begin abort (non-blocking)
 		task.abortTask()
 

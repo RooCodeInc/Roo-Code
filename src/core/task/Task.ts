@@ -215,6 +215,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	providerRef: WeakRef<ClineProvider>
 	private readonly globalStoragePath: string
 	abort: boolean = false
+	currentRequestAbortController?: AbortController
 
 	// TaskStatus
 	idleAsk?: ClineMessage
@@ -1690,6 +1691,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.initiateTaskLoop(newUserContent)
 	}
 
+	/**
+	 * Cancels the current HTTP request if one is in progress.
+	 * This immediately aborts the underlying stream rather than waiting for the next chunk.
+	 */
+	public cancelCurrentRequest(): void {
+		if (this.currentRequestAbortController) {
+			console.log(`[Task#${this.taskId}.${this.instanceId}] Aborting current HTTP request`)
+			this.currentRequestAbortController.abort()
+			this.currentRequestAbortController = undefined
+		}
+	}
+
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
 
@@ -1718,6 +1731,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public dispose(): void {
 		console.log(`[Task#dispose] disposing task ${this.taskId}.${this.instanceId}`)
+
+		// Cancel any in-progress HTTP request
+		try {
+			this.cancelCurrentRequest()
+		} catch (error) {
+			console.error("Error cancelling current request:", error)
+		}
 
 		// Remove provider profile change listener
 		try {
@@ -2163,10 +2183,34 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				try {
 					const iterator = stream[Symbol.asyncIterator]()
-					let item = await iterator.next()
+
+					// Helper to race iterator.next() with abort signal
+					const nextChunkWithAbort = async () => {
+						const nextPromise = iterator.next()
+
+						// If we have an abort controller, race it with the next chunk
+						if (this.currentRequestAbortController) {
+							const abortPromise = new Promise<never>((_, reject) => {
+								const signal = this.currentRequestAbortController!.signal
+								if (signal.aborted) {
+									reject(new Error("Request cancelled by user"))
+								} else {
+									signal.addEventListener("abort", () => {
+										reject(new Error("Request cancelled by user"))
+									})
+								}
+							})
+							return await Promise.race([nextPromise, abortPromise])
+						}
+
+						// No abort controller, just return the next chunk normally
+						return await nextPromise
+					}
+
+					let item = await nextChunkWithAbort()
 					while (!item.done) {
 						const chunk = item.value
-						item = await iterator.next()
+						item = await nextChunkWithAbort()
 						if (!chunk) {
 							// Sometimes chunk is undefined, no idea that can cause
 							// it, but this workaround seems to fix it.
@@ -2537,6 +2581,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				} finally {
 					this.isStreaming = false
+					// Clean up the abort controller when streaming completes
+					this.currentRequestAbortController = undefined
 				}
 
 				// Need to call here in case the stream was aborted.
@@ -3154,6 +3200,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
 		}
 
+		// Create an AbortController to allow cancelling the request mid-stream
+		this.currentRequestAbortController = new AbortController()
+		const abortSignal = this.currentRequestAbortController.signal
+
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,
@@ -3162,14 +3212,34 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 		const iterator = stream[Symbol.asyncIterator]()
 
+		// Set up abort handling - when the signal is aborted, clean up the controller reference
+		abortSignal.addEventListener("abort", () => {
+			console.log(`[Task#${this.taskId}.${this.instanceId}] AbortSignal triggered for current request`)
+			this.currentRequestAbortController = undefined
+		})
+
 		try {
 			// Awaiting first chunk to see if it will throw an error.
 			this.isWaitingForFirstChunk = true
-			const firstChunk = await iterator.next()
+
+			// Race between the first chunk and the abort signal
+			const firstChunkPromise = iterator.next()
+			const abortPromise = new Promise<never>((_, reject) => {
+				if (abortSignal.aborted) {
+					reject(new Error("Request cancelled by user"))
+				} else {
+					abortSignal.addEventListener("abort", () => {
+						reject(new Error("Request cancelled by user"))
+					})
+				}
+			})
+
+			const firstChunk = await Promise.race([firstChunkPromise, abortPromise])
 			yield firstChunk.value
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
 			this.isWaitingForFirstChunk = false
+			this.currentRequestAbortController = undefined
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
 
 			// If it's a context window error and we haven't exceeded max retries for this error type
