@@ -31,6 +31,7 @@ import {
 	ChutesHandler,
 	LiteLLMHandler,
 	ClaudeCodeHandler,
+	CloudRuHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
 	IOIntelligenceHandler,
@@ -118,6 +119,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new AnthropicHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
+		case "cloudru":
+			return new CloudRuHandler(options)
 		case "glama":
 			return new GlamaHandler(options)
 		case "openrouter":

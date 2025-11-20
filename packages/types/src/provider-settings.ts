@@ -24,6 +24,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
+	cloudRuModels,
 } from "./providers/index.js"
 
 /**
@@ -139,6 +140,7 @@ export const providerNames = [
 	"vertex",
 	"xai",
 	"zai",
+	"cloudru",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -419,6 +421,11 @@ const rooSchema = apiModelIdProviderModelSchema.extend({
 	// No additional fields needed - uses cloud authentication.
 })
 
+const cloudRuSchema = apiModelIdProviderModelSchema.extend({
+	cloudRuApiKey: z.string().optional(),
+	cloudRuBaseUrl: z.string().optional(),
+})
+
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayApiKey: z.string().optional(),
 	vercelAiGatewayModelId: z.string().optional(),
@@ -466,6 +473,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	cloudRuSchema.merge(z.object({ apiProvider: z.literal("cloudru") })),
 	defaultSchema,
 ])
 
@@ -508,6 +516,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...cloudRuSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -594,6 +603,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
+	cloudru: "apiModelId",
 }
 
 /**
@@ -715,6 +725,7 @@ export const MODELS_BY_PROVIDER: Record<
 	},
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Zai", models: Object.keys(internationalZAiModels) },
+	cloudru: { id: "cloudru", label: "Cloud.ru Foundation Models", models: Object.keys(cloudRuModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
 	glama: { id: "glama", label: "Glama", models: [] },

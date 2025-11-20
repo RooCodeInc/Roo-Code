@@ -26,6 +26,7 @@ import {
 	featherlessModels,
 	ioIntelligenceModels,
 	qwenCodeModels,
+	cloudRuModels,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
@@ -365,11 +366,16 @@ function getSelectedModel({
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
+		case "cloudru": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = cloudRuModels[id as keyof typeof cloudRuModels]
+			return { id, info }
+		}
 		// case "anthropic":
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 

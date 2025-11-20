@@ -3,6 +3,7 @@ export * from "./bedrock.js"
 export * from "./cerebras.js"
 export * from "./chutes.js"
 export * from "./claude-code.js"
+export * from "./cloudru.js"
 export * from "./deepseek.js"
 export * from "./doubao.js"
 export * from "./featherless.js"
@@ -61,6 +62,7 @@ import { vercelAiGatewayDefaultModelId } from "./vercel-ai-gateway.js"
 import { internationalZAiDefaultModelId, mainlandZAiDefaultModelId } from "./zai.js"
 import { deepInfraDefaultModelId } from "./deepinfra.js"
 import { minimaxDefaultModelId } from "./minimax.js"
+import { cloudRuDefaultModelId } from "./cloudru.js"
 
 // Import the ProviderName type from provider-settings to avoid duplication
 import type { ProviderName } from "../provider-settings.js"
@@ -141,6 +143,8 @@ export function getProviderDefaultModelId(
 			return qwenCodeDefaultModelId
 		case "vercel-ai-gateway":
 			return vercelAiGatewayDefaultModelId
+		case "cloudru":
+			return cloudRuDefaultModelId
 		case "anthropic":
 		case "gemini-cli":
 		case "human-relay":
