@@ -244,6 +244,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				strict?: boolean
 			}>
 			tool_choice?: any
+			parallel_tool_calls?: boolean
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -300,6 +301,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					})),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+		}
+
+		// For native tool protocol, explicitly disable parallel tool calls.
+		// For XML or when protocol is unset, omit the field entirely so the API default applies.
+		if (metadata?.toolProtocol === "native") {
+			body.parallel_tool_calls = false
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
