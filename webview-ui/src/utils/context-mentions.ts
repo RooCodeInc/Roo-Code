@@ -58,19 +58,28 @@ export function insertMention(
 	let mentionIndex: number
 
 	if (lastAtIndex !== -1) {
-		// If there's an '@' symbol, replace everything after it with the new mention
-		const beforeMention = text.slice(0, lastAtIndex)
+		// If there's an '@' symbol, check if we need to add a space before it
+		const beforeAt = text.slice(0, lastAtIndex)
+		const needsSpaceBefore = beforeAt.length > 0 && !beforeAt.endsWith(" ") && !beforeAt.endsWith("\n")
+
+		// If we need a space before @, add it
+		const beforeMention = needsSpaceBefore ? beforeAt + " " : beforeAt
+
 		// Only replace if afterCursor is all alphanumerical
 		// This is required to handle languages that don't use space as a word separator (chinese, japanese, korean, etc)
 		const afterCursorContent = /^[a-zA-Z0-9\s]*$/.test(afterCursor)
 			? afterCursor.replace(/^[^\s]*/, "")
 			: afterCursor
 		newValue = beforeMention + "@" + processedValue + " " + afterCursorContent
-		mentionIndex = lastAtIndex
+		mentionIndex = needsSpaceBefore ? lastAtIndex + 1 : lastAtIndex
 	} else {
 		// If there's no '@' symbol, insert the mention at the cursor position
-		newValue = beforeCursor + "@" + processedValue + " " + afterCursor
-		mentionIndex = position
+		// Check if we need to add a space before the mention
+		const needsSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(" ") && !beforeCursor.endsWith("\n")
+		const prefix = needsSpaceBefore ? " " : ""
+
+		newValue = beforeCursor + prefix + "@" + processedValue + " " + afterCursor
+		mentionIndex = position + (needsSpaceBefore ? 1 : 0)
 	}
 
 	return { newValue, mentionIndex }
