@@ -11,6 +11,7 @@ import {
 	doubaoModels,
 	featherlessModels,
 	fireworksModels,
+	fordllmModels,
 	geminiModels,
 	groqModels,
 	ioIntelligenceModels,
@@ -126,6 +127,7 @@ export const providerNames = [
 	"deepseek",
 	"featherless",
 	"fireworks",
+	"fordllm",
 	"gemini",
 	"gemini-cli",
 	"groq",
@@ -406,6 +408,15 @@ const featherlessSchema = apiModelIdProviderModelSchema.extend({
 	featherlessApiKey: z.string().optional(),
 })
 
+const fordllmSchema = baseProviderSettingsSchema.extend({
+	fordAiClientId: z.string().optional(),
+	fordAiClientSecret: z.string().optional(),
+	fordAiTokenUrl: z.string().optional(),
+	fordAiChatUrl: z.string().optional(),
+	fordAiScope: z.string().optional(),
+	fordAiModel: z.string().optional(),
+})
+
 const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 	ioIntelligenceModelId: z.string().optional(),
 	ioIntelligenceApiKey: z.string().optional(),
@@ -462,6 +473,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
+	fordllmSchema.merge(z.object({ apiProvider: z.literal("fordllm") })),
 	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
@@ -504,6 +516,7 @@ export const providerSettingsSchema = z.object({
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
 	...featherlessSchema.shape,
+	...fordllmSchema.shape,
 	...ioIntelligenceSchema.shape,
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
@@ -542,6 +555,7 @@ export const modelIdKeys = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
+	"fordAiModel",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -591,6 +605,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	zai: "apiModelId",
 	fireworks: "apiModelId",
 	featherless: "apiModelId",
+	fordllm: "apiModelId",
 	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
@@ -664,6 +679,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "fireworks",
 		label: "Fireworks",
 		models: Object.keys(fireworksModels),
+	},
+	fordllm: {
+		id: "fordllm",
+		label: "Ford LLM",
+		models: Object.keys(fordllmModels),
 	},
 	gemini: {
 		id: "gemini",
