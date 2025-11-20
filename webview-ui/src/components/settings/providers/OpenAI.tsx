@@ -69,7 +69,16 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
-			{!apiConfiguration?.openAiNativeApiKey && (
+			{apiConfiguration?.openAiNativeApiKey ? (
+				<div className="flex items-center justify-between">
+					<div className="text-sm text-vscode-notificationsInfoIcon-foreground">
+						✓ {t("settings:providers.openAi.authenticated")}
+					</div>
+					<VSCodeButtonLink href="https://platform.openai.com/api-keys" appearance="secondary">
+						{t("settings:providers.openAi.updateKey")}
+					</VSCodeButtonLink>
+				</div>
+			) : (
 				<VSCodeButtonLink href="https://platform.openai.com/api-keys" appearance="secondary">
 					{t("settings:providers.getOpenAiApiKey")}
 				</VSCodeButtonLink>

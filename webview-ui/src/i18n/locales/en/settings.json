@@ -332,6 +332,10 @@
 		"apiKey": "API Key",
 		"openAiBaseUrl": "Base URL",
 		"getOpenAiApiKey": "Get OpenAI API Key",
+		"openAi": {
+			"authenticated": "Authenticated with OpenAI",
+			"updateKey": "Update API Key"
+		},
 		"mistralApiKey": "Mistral API Key",
 		"getMistralApiKey": "Get Mistral / Codestral API Key",
 		"codestralBaseUrl": "Codestral Base URL (Optional)",
@@ -488,9 +492,12 @@
 		},
 		"setReasoningLevel": "Enable Reasoning Effort",
 		"claudeCode": {
-			"pathLabel": "Claude Code Path",
+			"pathLabel": "Claude Code API Key",
 			"description": "Optional path to your Claude Code CLI. Defaults to 'claude' if not set.",
-			"placeholder": "Default: claude",
+			"placeholder": "Enter your Claude Code API key",
+			"getApiKey": "Get API Key",
+			"updateKey": "Update Key",
+			"authenticated": "Authenticated with Claude Code",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
 		}

@@ -1,5 +1,5 @@
-import React from "react"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import React, { useState } from "react"
+import { VSCodeTextField, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { type ProviderSettings } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Slider } from "@src/components/ui"
@@ -7,29 +7,54 @@ import { Slider } from "@src/components/ui"
 interface ClaudeCodeProps {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	vscode?: any
 }
 
-export const ClaudeCode: React.FC<ClaudeCodeProps> = ({ apiConfiguration, setApiConfigurationField }) => {
+export const ClaudeCode: React.FC<ClaudeCodeProps> = ({ apiConfiguration, setApiConfigurationField, vscode }) => {
 	const { t } = useAppTranslation()
+	const [isAuthenticating, setIsAuthenticating] = useState(false)
 
 	const handleInputChange = (e: Event | React.FormEvent<HTMLElement>) => {
 		const element = e.target as HTMLInputElement
 		setApiConfigurationField("claudeCodePath", element.value)
 	}
 
+	const handleGetApiKey = () => {
+		setIsAuthenticating(true)
+		// Open Claude's website to get API key
+		vscode?.postMessage({
+			type: "openExternal",
+			url: "https://console.anthropic.com/settings/keys",
+		})
+		// Show instructions
+		vscode?.postMessage({
+			type: "showInformationMessage",
+			text: "Please create an API key on the Anthropic Console and paste it in the field above",
+		})
+		setIsAuthenticating(false)
+	}
+
 	const maxOutputTokens = apiConfiguration?.claudeCodeMaxOutputTokens || 8000
+	const hasPath = !!apiConfiguration?.claudeCodePath
 
 	return (
 		<div className="flex flex-col gap-4">
 			<div>
-				<VSCodeTextField
-					value={apiConfiguration?.claudeCodePath || ""}
-					style={{ width: "100%", marginTop: 3 }}
-					type="text"
-					onInput={handleInputChange}
-					placeholder={t("settings:providers.claudeCode.placeholder")}>
-					{t("settings:providers.claudeCode.pathLabel")}
-				</VSCodeTextField>
+				<div className="flex gap-2 items-end mb-2">
+					<VSCodeTextField
+						value={apiConfiguration?.claudeCodePath || ""}
+						style={{ width: "100%", marginTop: 3 }}
+						type="password"
+						onInput={handleInputChange}
+						placeholder={hasPath ? "••••••••••••••••" : t("settings:providers.claudeCode.placeholder")}>
+						{t("settings:providers.claudeCode.pathLabel")}
+					</VSCodeTextField>
+					<VSCodeButton onClick={handleGetApiKey} disabled={isAuthenticating} appearance="secondary">
+						{hasPath
+							? t("settings:providers.claudeCode.updateKey")
+							: t("settings:providers.claudeCode.getApiKey")}
+					</VSCodeButton>
+				</div>
 
 				<p
 					style={{
@@ -39,6 +64,17 @@ export const ClaudeCode: React.FC<ClaudeCodeProps> = ({ apiConfiguration, setApi
 					}}>
 					{t("settings:providers.claudeCode.description")}
 				</p>
+
+				{hasPath && (
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: 3,
+							color: "var(--vscode-notificationsInfoIcon-foreground)",
+						}}>
+						✓ {t("settings:providers.claudeCode.authenticated")}
+					</p>
+				)}
 			</div>
 
 			<div className="flex flex-col gap-1">
