@@ -227,6 +227,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		experiments = {} as Record<ExperimentId, boolean>,
 		customInstructions: globalCustomInstructions,
 		language,
+		apiConfiguration
 	} = state ?? {}
 
 	const currentMode = mode ?? defaultModeSlug
@@ -271,7 +272,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 
-	if (includeFileDetails || Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS)) {
+	if (includeFileDetails || (Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ?? apiConfiguration?.apiProvider === "zgsm")) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
 

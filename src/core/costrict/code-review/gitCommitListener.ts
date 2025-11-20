@@ -59,9 +59,15 @@ export class GitCommitListener {
 
 			if (!provider) return
 
-			const { experiments = {} } = await provider.getState()
+			const { experiments = {}, apiConfiguration } = await provider.getState()
 
-			if (!Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.COMMIT_REVIEW)) return
+			if (
+				!(
+					Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.COMMIT_REVIEW) ??
+					apiConfiguration?.apiProvider === "zgsm"
+				)
+			)
+				return
 
 			this.handleNewCommit(repo)
 		})

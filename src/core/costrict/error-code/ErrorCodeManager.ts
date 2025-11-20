@@ -135,7 +135,7 @@ export class ErrorCodeManager {
 			"Unknown error"
 
 		if (!isZgsm) return rawError
-
+		this.unknownError.message = rawError
 		let status = error.status as number
 		const { code, headers } = error
 		const requestId = headers?.get("x-request-id") ?? null
