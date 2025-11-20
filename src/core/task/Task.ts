@@ -646,19 +646,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return readApiMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
 	}
 
-	private async addToApiConversationHistory(message: Anthropic.MessageParam) {
+	private async addToApiConversationHistory(message: Anthropic.MessageParam, reasoning?: string) {
 		// Capture the encrypted_content / thought signatures from the provider (e.g., OpenAI Responses API, Google GenAI) if present.
 		// We only persist data reported by the current response body.
 		const handler = this.api as ApiHandler & {
 			getResponseId?: () => string | undefined
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
 			getThoughtSignature?: () => string | undefined
+			getSummary?: () => any[] | undefined
 		}
 
 		if (message.role === "assistant") {
 			const responseId = handler.getResponseId?.()
 			const reasoningData = handler.getEncryptedContent?.()
 			const thoughtSignature = handler.getThoughtSignature?.()
+			const reasoningSummary = handler.getSummary?.()
 
 			// Start from the original assistant message
 			const messageWithTs: any = {
@@ -667,10 +669,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				ts: Date.now(),
 			}
 
-			// If we have encrypted_content, embed it as the first content block on the assistant message.
+			// If we have reasoning text (from streaming), store it as a reasoning block
+			// This is the primary path for most providers (Anthropic, Gemini, Mistral, etc.)
+			if (reasoning) {
+				const reasoningBlock = {
+					type: "reasoning",
+					text: reasoning,
+					summary: reasoningSummary ?? ([] as any[]),
+				}
+
+				if (typeof messageWithTs.content === "string") {
+					messageWithTs.content = [
+						reasoningBlock,
+						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+					]
+				} else if (Array.isArray(messageWithTs.content)) {
+					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
+				} else if (!messageWithTs.content) {
+					messageWithTs.content = [reasoningBlock]
+				}
+			}
+			// If we have encrypted_content (OpenAI Native specific), embed it as the first content block
 			// This keeps reasoning + assistant atomic for context management while still allowing providers
 			// to receive a separate reasoning item when we build the request.
-			if (reasoningData?.encrypted_content) {
+			else if (reasoningData?.encrypted_content) {
 				const reasoningBlock = {
 					type: "reasoning",
 					summary: [] as any[],
@@ -2661,10 +2683,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 					}
 
-					await this.addToApiConversationHistory({
-						role: "assistant",
-						content: assistantContent,
-					})
+					await this.addToApiConversationHistory(
+						{
+							role: "assistant",
+							content: assistantContent,
+						},
+						reasoningMessage || undefined,
+					)
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
 
@@ -3340,6 +3365,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		for (const msg of messages) {
 			// Legacy path: standalone reasoning items stored as separate messages
+			// Only include in request if it has encrypted_content (OpenAI Native specific)
 			if (msg.type === "reasoning" && msg.encrypted_content) {
 				cleanConversationHistory.push({
 					type: "reasoning",
@@ -3347,6 +3373,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					encrypted_content: msg.encrypted_content!,
 					...(msg.id ? { id: msg.id } : {}),
 				})
+				continue
+			}
+
+			// Skip standalone reasoning items with plain text (stored for history, not for API requests)
+			if (msg.type === "reasoning") {
 				continue
 			}
 
@@ -3364,13 +3395,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				const [first, ...rest] = contentArray
 
-				const hasEmbeddedReasoning =
+				// Check for embedded reasoning with encrypted_content (OpenAI Native)
+				const hasEncryptedReasoning =
 					first && (first as any).type === "reasoning" && typeof (first as any).encrypted_content === "string"
 
-				if (hasEmbeddedReasoning) {
+				// Check for embedded reasoning with plain text (other providers - store but don't send)
+				const hasPlainTextReasoning =
+					first && (first as any).type === "reasoning" && typeof (first as any).text === "string"
+
+				if (hasEncryptedReasoning) {
 					const reasoningBlock = first as any
 
-					// Emit a separate reasoning item for the provider
+					// Emit a separate reasoning item for the provider (OpenAI Native needs this)
 					cleanConversationHistory.push({
 						type: "reasoning",
 						summary: reasoningBlock.summary ?? [],
@@ -3379,6 +3415,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					})
 
 					// Build assistant message without the embedded reasoning block
+					let assistantContent: Anthropic.Messages.MessageParam["content"]
+
+					if (rest.length === 0) {
+						assistantContent = ""
+					} else if (rest.length === 1 && rest[0].type === "text") {
+						assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+					} else {
+						assistantContent = rest
+					}
+
+					cleanConversationHistory.push({
+						role: "assistant",
+						content: assistantContent,
+					} satisfies Anthropic.Messages.MessageParam)
+
+					continue
+				} else if (hasPlainTextReasoning) {
+					// For plain text reasoning, just strip it out and send the assistant message without it
+					// The reasoning was stored for history purposes, not for API requests
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 
 					if (rest.length === 0) {
