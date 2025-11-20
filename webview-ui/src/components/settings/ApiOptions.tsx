@@ -122,6 +122,8 @@ import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
 // import { buildDocLink } from "@src/utils/docLinks"
 import { SetCachedStateField } from "./types"
+// import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
+// import { buildDocLink } from "@src/utils/docLinks"
 
 export interface ApiOptionsProps {
 	uriScheme: string | undefined

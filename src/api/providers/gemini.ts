@@ -5,6 +5,8 @@ import {
 	type GenerateContentParameters,
 	type GenerateContentConfig,
 	type GroundingMetadata,
+	FunctionCallingConfigMode,
+	Content,
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
 
@@ -101,17 +103,46 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			return true
 		})
 
-		const contents = geminiMessages.map((message) =>
-			convertAnthropicMessageToGemini(message, { includeThoughtSignatures }),
-		)
-
-		const tools: GenerateContentConfig["tools"] = []
-		if (this.options.enableUrlContext) {
-			tools.push({ urlContext: {} })
+		// Build a map of tool IDs to names from previous messages
+		// This is needed because Anthropic's tool_result blocks only contain the ID,
+		// but Gemini requires the name in functionResponse
+		const toolIdToName = new Map<string, string>()
+		for (const message of messages) {
+			if (Array.isArray(message.content)) {
+				for (const block of message.content) {
+					if (block.type === "tool_use") {
+						toolIdToName.set(block.id, block.name)
+					}
+				}
+			}
 		}
 
-		if (this.options.enableGrounding) {
-			tools.push({ googleSearch: {} })
+		const contents = geminiMessages
+			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures, toolIdToName }))
+			.flat()
+
+		const tools: GenerateContentConfig["tools"] = []
+
+		// Google built-in tools (Grounding, URL Context) are currently mutually exclusive
+		// with function declarations in the Gemini API. If native function calling is
+		// used (Agent tools), we must prioritize it and skip built-in tools to avoid
+		// "Tool use with function calling is unsupported" (HTTP 400) errors.
+		if (metadata?.tools && metadata.tools.length > 0) {
+			tools.push({
+				functionDeclarations: metadata.tools.map((tool) => ({
+					name: (tool as any).function.name,
+					description: (tool as any).function.description,
+					parametersJsonSchema: (tool as any).function.parameters,
+				})),
+			})
+		} else {
+			if (this.options.enableUrlContext) {
+				tools.push({ urlContext: {} })
+			}
+
+			if (this.options.enableGrounding) {
+				tools.push({ googleSearch: {} })
+			}
 		}
 
 		// Determine temperature respecting model capabilities and defaults:
@@ -133,6 +164,34 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			...(tools.length > 0 ? { tools } : {}),
 		}
 
+		if (metadata?.tool_choice) {
+			const choice = metadata.tool_choice
+			let mode: FunctionCallingConfigMode
+			let allowedFunctionNames: string[] | undefined
+
+			if (choice === "auto") {
+				mode = FunctionCallingConfigMode.AUTO
+			} else if (choice === "none") {
+				mode = FunctionCallingConfigMode.NONE
+			} else if (choice === "required") {
+				// "required" means the model must call at least one tool; Gemini uses ANY for this.
+				mode = FunctionCallingConfigMode.ANY
+			} else if (typeof choice === "object" && "function" in choice && choice.type === "function") {
+				mode = FunctionCallingConfigMode.ANY
+				allowedFunctionNames = [choice.function.name]
+			} else {
+				// Fall back to AUTO for unknown values to avoid unintentionally broadening tool access.
+				mode = FunctionCallingConfigMode.AUTO
+			}
+
+			config.toolConfig = {
+				functionCallingConfig: {
+					mode,
+					...(allowedFunctionNames ? { allowedFunctionNames } : {}),
+				},
+			}
+		}
+
 		const params: GenerateContentParameters = { model, contents, config }
 		try {
 			const result = await this.client.models.generateContentStream(params)
@@ -140,6 +199,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
 			let finalResponse: { responseId?: string } | undefined
+
+			let toolCallCounter = 0
 
 			for await (const chunk of result) {
 				// Track the final structured response (per SDK pattern: candidate.finishReason)
@@ -159,6 +220,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							thought?: boolean
 							text?: string
 							thoughtSignature?: string
+							functionCall?: { name: string; args: Record<string, unknown> }
 						}>) {
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
@@ -172,6 +234,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 								// This is a thinking/reasoning part
 								if (part.text) {
 									yield { type: "reasoning", text: part.text }
+								}
+							} else if (part.functionCall) {
+								const callId = `${part.functionCall.name}-${toolCallCounter++}`
+								yield {
+									type: "tool_call",
+									id: callId,
+									name: part.functionCall.name,
+									arguments: JSON.stringify(part.functionCall.args),
 								}
 							} else {
 								// This is regular content
@@ -350,12 +420,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			const countTokensRequest = {
 				model,
 				// Token counting does not need encrypted continuation; always drop thoughtSignature.
-				contents: [
-					{
-						role: "user",
-						parts: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
-					},
-				],
+				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
 			}
 
 			const response = await this.client.models.countTokens(countTokensRequest)

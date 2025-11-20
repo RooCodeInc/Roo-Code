@@ -15,9 +15,10 @@ function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block
 
 export function convertAnthropicContentToGemini(
 	content: ExtendedAnthropicContent,
-	options?: { includeThoughtSignatures?: boolean },
+	options?: { includeThoughtSignatures?: boolean; toolIdToName?: Map<string, string> },
 ): Part[] {
 	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
+	const toolIdToName = options?.toolIdToName
 
 	// First pass: find thoughtSignature if it exists in the content blocks
 	let activeThoughtSignature: string | undefined
@@ -78,8 +79,17 @@ export function convertAnthropicContentToGemini(
 					return []
 				}
 
-				// Extract tool name from tool_use_id (e.g., "calculator-123" -> "calculator")
-				const toolName = block.tool_use_id.split("-")[0]
+				// Get tool name from the map (built from tool_use blocks in message history).
+				// The map must contain the tool name - if it doesn't, this indicates a bug
+				// where the conversation history is incomplete or tool_use blocks are missing.
+				const toolName = toolIdToName?.get(block.tool_use_id)
+				if (!toolName) {
+					throw new Error(
+						`Unable to find tool name for tool_use_id "${block.tool_use_id}". ` +
+							`This indicates the conversation history is missing the corresponding tool_use block. ` +
+							`Available tool IDs: ${Array.from(toolIdToName?.keys() ?? []).join(", ") || "none"}`,
+					)
+				}
 
 				if (typeof block.content === "string") {
 					return {
@@ -122,14 +132,18 @@ export function convertAnthropicContentToGemini(
 
 export function convertAnthropicMessageToGemini(
 	message: Anthropic.Messages.MessageParam,
-	options?: { includeThoughtSignatures?: boolean },
-): Content {
-	return {
-		role: message.role === "assistant" ? "model" : "user",
-		parts: convertAnthropicContentToGemini(message.content, {
-			...options,
-			includeThoughtSignatures:
-				message.role === "assistant" ? (options?.includeThoughtSignatures ?? true) : false,
-		}),
+	options?: { includeThoughtSignatures?: boolean; toolIdToName?: Map<string, string> },
+): Content[] {
+	const parts = convertAnthropicContentToGemini(message.content, options)
+
+	if (parts.length === 0) {
+		return []
 	}
+
+	return [
+		{
+			role: message.role === "assistant" ? "model" : "user",
+			parts,
+		},
+	]
 }
