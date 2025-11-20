@@ -75,6 +75,9 @@ export async function handleCheckpointRestoreOperation(config: CheckpointRestore
 			// Get the updated history item and reinitialize
 			const { historyItem } = await provider.getTaskWithId(currentCline.taskId)
 			await provider.createTaskWithHistoryItem(historyItem)
+
+			// Update the webview to show the restored messages
+			await provider.postStateToWebview()
 		}
 		// For edit operations, the task cancellation in checkpointRestore
 		// will trigger reinitialization, which will process pendingEditAfterRestore
