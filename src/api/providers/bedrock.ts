@@ -219,6 +219,14 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		this.costModelConfig = this.getModel()
 
+		// Initialize the client
+		this.client = this.createClient()
+	}
+
+	/**
+	 * Creates a new BedrockRuntimeClient with fresh credentials
+	 */
+	private createClient(): BedrockRuntimeClient {
 		const clientConfig: BedrockRuntimeClientConfig = {
 			userAgentAppId: `RooCode#${Package.version}`,
 			region: this.options.awsRegion,
@@ -238,6 +246,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		} else if (this.options.awsUseProfile && this.options.awsProfile) {
 			// Use profile-based credentials if enabled and profile is set
+			// Force fresh credentials every time to handle credential rotation
 			clientConfig.credentials = fromIni({
 				profile: this.options.awsProfile,
 				ignoreCache: true,
@@ -251,7 +260,19 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		this.client = new BedrockRuntimeClient(clientConfig)
+		return new BedrockRuntimeClient(clientConfig)
+	}
+
+	/**
+	 * Refreshes the client with new credentials
+	 */
+	private refreshClient(): void {
+		logger.info("Refreshing BedrockRuntimeClient with new credentials", {
+			ctx: "bedrock",
+			useProfile: this.options.awsUseProfile,
+			profile: this.options.awsProfile,
+		})
+		this.client = this.createClient()
 	}
 
 	// Helper to guess model info from custom modelId string if not in bedrockModels
@@ -413,11 +434,36 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			)
 
 			const command = new ConverseStreamCommand(payload)
-			const response = await this.client.send(command, {
-				abortSignal: controller.signal,
-			})
+			let response
+			let retryCount = 0
+			const maxRetries = 1
 
-			if (!response.stream) {
+			// Try to send command with retry on credential expiration
+			while (retryCount <= maxRetries) {
+				try {
+					response = await this.client.send(command, {
+						abortSignal: controller.signal,
+					})
+					break // Success, exit retry loop
+				} catch (sendError: unknown) {
+					// Check if this is an expired credential error
+					if (this.isExpiredCredentialError(sendError)) {
+						if (retryCount < maxRetries && (this.options.awsUseProfile || this.options.awsUseApiKey)) {
+							logger.info("Detected expired credentials, refreshing and retrying", {
+								ctx: "bedrock",
+								retryCount: retryCount + 1,
+							})
+							this.refreshClient()
+							retryCount++
+							continue // Retry with fresh credentials
+						}
+					}
+					// Not a credential error or max retries reached
+					throw sendError
+				}
+			}
+
+			if (!response || !response.stream) {
 				clearTimeout(timeoutId)
 				throw new Error("No stream available in the response")
 			}
@@ -669,7 +715,32 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 
 			const command = new ConverseCommand(payload)
-			const response = await this.client.send(command)
+			let response
+			let retryCount = 0
+			const maxRetries = 1
+
+			// Try to send command with retry on credential expiration
+			while (retryCount <= maxRetries) {
+				try {
+					response = await this.client.send(command)
+					break // Success, exit retry loop
+				} catch (sendError: unknown) {
+					// Check if this is an expired credential error
+					if (this.isExpiredCredentialError(sendError)) {
+						if (retryCount < maxRetries && (this.options.awsUseProfile || this.options.awsUseApiKey)) {
+							logger.info("Detected expired credentials in completePrompt, refreshing and retrying", {
+								ctx: "bedrock",
+								retryCount: retryCount + 1,
+							})
+							this.refreshClient()
+							retryCount++
+							continue // Retry with fresh credentials
+						}
+					}
+					// Not a credential error or max retries reached
+					throw sendError
+				}
+			}
 
 			if (
 				response?.output?.message?.content &&
@@ -1089,6 +1160,33 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 *************************************************************************************/
 
 	/**
+	 * Checks if an error is due to expired credentials
+	 */
+	private isExpiredCredentialError(error: unknown): boolean {
+		if (!(error instanceof Error)) {
+			return false
+		}
+
+		const errorMessage = error.message.toLowerCase()
+		const errorName = error.name.toLowerCase()
+
+		// Common patterns for expired credential errors
+		const expiredPatterns = [
+			"the security token included in the request is expired",
+			"expired token",
+			"token has expired",
+			"expiredsignature",
+			"expiredtoken",
+			"security token expired",
+			"invalid security token",
+			"credential expired",
+		]
+
+		// Check for expired credential patterns
+		return expiredPatterns.some((pattern) => errorMessage.includes(pattern) || errorName.includes(pattern))
+	}
+
+	/**
 	 * Error type definitions for Bedrock API errors
 	 */
 	private static readonly ERROR_TYPES: Record<
@@ -1118,6 +1216,27 @@ Please verify:
 1. The ARN format is correct (arn:aws:bedrock:region:account-id:resource-type/resource-name)
 2. The model exists in the specified region
 3. The account ID in the ARN is correct`,
+			logLevel: "error",
+		},
+		EXPIRED_CREDENTIALS: {
+			patterns: [
+				"the security token included in the request is expired",
+				"expired token",
+				"token has expired",
+				"expiredsignature",
+				"expiredtoken",
+				"security token expired",
+				"invalid security token",
+				"credential expired",
+			],
+			messageTemplate: `AWS credentials have expired.
+
+For profile-based authentication:
+- The system will attempt to refresh credentials automatically
+- If using temporary credentials, ensure they are being refreshed externally
+
+For direct credentials:
+- Update your AWS access key, secret key, and session token in settings`,
 			logLevel: "error",
 		},
 		THROTTLING: {
@@ -1275,6 +1394,7 @@ Please check:
 
 		// Check each error type's patterns in order of specificity (most specific first)
 		const errorTypeOrder = [
+			"EXPIRED_CREDENTIALS", // Check first to handle and retry appropriately
 			"SERVICE_QUOTA_EXCEEDED", // Most specific - check before THROTTLING
 			"MODEL_NOT_READY",
 			"TOO_MANY_TOKENS",
