@@ -105,7 +105,10 @@ export const ModeSelector = ({
 	}, [customModes, zgsmCodeMode, apiConfiguration?.apiProvider, t, customModePrompts])
 
 	// Find the selected mode.
-	const selectedMode = React.useMemo(() => modes.find((mode) => mode.slug === value), [modes, value])
+	const selectedMode = React.useMemo(() => {
+		const mode = modes.find((mode) => mode.slug === value)
+		return mode || modes[0]
+	}, [modes, value])
 
 	// Memoize searchable items for fuzzy search with separate name and
 	// description search.

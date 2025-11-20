@@ -41,7 +41,7 @@ import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 // import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+import { /* CondenseContextErrorRow, */ CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -1468,7 +1468,8 @@ export const ChatRowContent = ({
 					}
 					return message.contextCondense ? <ContextCondenseRow {...message.contextCondense} /> : null
 				case "condense_context_error":
-					return <CondenseContextErrorRow errorText={message.text} />
+					// return <CondenseContextErrorRow errorText={message.text} />
+					return null
 				case "codebase_search_result":
 					let parsed: {
 						content: {

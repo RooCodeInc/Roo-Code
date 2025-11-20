@@ -99,7 +99,7 @@ export default defineConfig(({ mode }) => {
 			emptyOutDir: true,
 			reportCompressedSize: false,
 			// Generate complete source maps with original TypeScript sources
-			sourcemap: true,
+			sourcemap: mode !== "production",
 			// Ensure source maps are properly included in the build
 			minify: mode === "production" ? "esbuild" : false,
 			rollupOptions: {

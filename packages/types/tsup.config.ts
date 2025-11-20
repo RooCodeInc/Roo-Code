@@ -5,7 +5,7 @@ export default defineConfig({
 	format: ["cjs", "esm"],
 	dts: true,
 	splitting: false,
-	sourcemap: true,
+	sourcemap: process.env.NODE_ENV !== "production",
 	clean: true,
 	outDir: "dist",
 })

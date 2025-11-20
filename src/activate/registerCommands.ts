@@ -19,6 +19,7 @@ import { t } from "../i18n"
 import { EditorContext, EditorUtils } from "../integrations/editor/EditorUtils"
 import * as path from "path"
 import { handleGenerateCommitMessage } from "../core/costrict/commit"
+import { isJetbrainsPlatform } from "../utils/platform"
 
 interface UriSource {
 	path: string
@@ -81,6 +82,10 @@ export const registerCommands = (options: RegisterCommandOptions) => {
 	const { context } = options
 
 	for (const [id, callback] of Object.entries(getCommandsMap(options))) {
+		if (id === "generateCommitMessage" && isJetbrainsPlatform()) {
+			console.log("Running on JetBrains platform, Git extension dependency not required")
+			continue
+		}
 		const command = getCommand(id as CommandId)
 		context.subscriptions.push(vscode.commands.registerCommand(command, callback))
 	}

@@ -636,7 +636,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 									<div
 										onClick={(e) => e.stopPropagation()}
 										onMouseDown={(e) => e.stopPropagation()}
-										className="absolute top-full right-0 w-[200px] mt-1 bg-vscode-editor-background border border-vscode-input-border rounded shadow-md z-[1000]">
+										className="absolute top-full right-0 w-[200px] mt-1 bg-vscode-editor-background border border-vscode-input-border rounded shadow-md z-1000">
 										<div
 											className="p-2 cursor-pointer text-vscode-foreground text-sm"
 											onMouseDown={(e) => {
@@ -765,7 +765,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 											<ChevronDown className="opacity-50" />
 										</Button>
 									</PopoverTrigger>
-									<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+									<PopoverContent className="p-0 w-(--radix-popover-trigger-width)">
 										<Command>
 											<div className="relative">
 												<CommandInput
@@ -1474,7 +1474,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 			</TabContent>
 
 			{isCreateModeDialogOpen && (
-				<div className="fixed inset-0 flex justify-end bg-black/50 z-[1000]">
+				<div className="fixed inset-0 flex justify-end bg-black/50 z-1000">
 					<div className="w-[calc(100vw-100px)] h-full bg-vscode-editor-background shadow-md flex flex-col relative">
 						<div className="flex-1 p-5 overflow-y-auto min-h-0">
 							<Button
@@ -1664,7 +1664,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 			)}
 
 			{isDialogOpen && (
-				<div className="fixed inset-0 flex justify-end bg-black/50 z-[1000]">
+				<div className="fixed inset-0 flex justify-end bg-black/50 z-1000">
 					<div className="w-[calc(100vw-100px)] h-full bg-vscode-editor-background shadow-md flex flex-col relative">
 						<div className="flex-1 p-5 overflow-y-auto min-h-0">
 							<Button
@@ -1680,7 +1680,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 										modeName: getCurrentMode()?.name || "Code",
 									})}
 							</h2>
-							<pre className="p-2 whitespace-pre-wrap break-words font-mono text-vscode-editor-font-size text-vscode-editor-foreground bg-vscode-editor-background border border-vscode-editor-lineHighlightBorder rounded overflow-y-auto">
+							<pre className="p-2 whitespace-pre-wrap wrap-break-word font-mono text-vscode-editor-font-size text-vscode-editor-foreground bg-vscode-editor-background border border-vscode-editor-lineHighlightBorder rounded overflow-y-auto">
 								{selectedPromptContent}
 							</pre>
 						</div>
@@ -1695,7 +1695,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 
 			{/* Import Mode Dialog */}
 			{showImportDialog && (
-				<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[1000]">
+				<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-1000">
 					<div className="bg-vscode-editor-background border border-vscode-editor-lineHighlightBorder rounded-lg shadow-lg p-6 max-w-md w-full">
 						<h3 className="text-lg font-semibold mb-4">{t("prompts:modes.importMode")}</h3>
 						<p className="text-sm text-vscode-descriptionForeground mb-4">

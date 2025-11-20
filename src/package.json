@@ -797,9 +797,6 @@
 			}
 		}
 	},
-	"extensionDependencies": [
-		"vscode.git"
-	],
 	"scripts": {
 		"lint": "eslint . --ext=ts --max-warnings=0",
 		"check-types": "tsc --noEmit",
