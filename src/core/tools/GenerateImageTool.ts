@@ -12,7 +12,12 @@ import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
-const IMAGE_GENERATION_MODELS = ["google/gemini-2.5-flash-image", "openai/gpt-5-image", "openai/gpt-5-image-mini"]
+const IMAGE_GENERATION_MODELS = [
+	"google/gemini-2.5-flash-image",
+	"google/gemini-3-pro-image-preview",
+	"openai/gpt-5-image",
+	"openai/gpt-5-image-mini",
+]
 
 export class GenerateImageTool extends BaseTool<"generate_image"> {
 	readonly name = "generate_image" as const
