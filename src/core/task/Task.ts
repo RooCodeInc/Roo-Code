@@ -27,6 +27,7 @@ import {
 	type ToolProgressStatus,
 	type HistoryItem,
 	type CreateTaskOptions,
+	type ModelInfo,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -305,6 +306,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	assistantMessageParser?: AssistantMessageParser
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
 
+	// Cached model info for current streaming session (set at start of each API request)
+	// This prevents excessive getModel() calls during tool execution
+	cachedStreamingModel?: { id: string; info: ModelInfo }
+
 	// Token Usage Cache
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
@@ -412,7 +417,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Initialize the assistant message parser only for XML protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
 		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
-		const toolProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+		const modelInfo = this.api.getModel().info
+		console.log(
+			`[TOOL_PROTOCOL] Constructor - Model: ${this.api.getModel().id}, supportsNativeTools: ${modelInfo.supportsNativeTools}, Provider: ${this.apiConfiguration.apiProvider}`,
+		)
+		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		console.log(`[TOOL_PROTOCOL] Constructor - Resolved protocol: ${toolProtocol}`)
 		this.assistantMessageParser = toolProtocol !== "native" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
@@ -1094,15 +1104,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 */
 	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
 		// Determine the previous protocol before updating
+		const prevModelInfo = this.api.getModel().info
 		const previousProtocol = this.apiConfiguration
-			? resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+			? resolveToolProtocol(this.apiConfiguration, prevModelInfo)
 			: undefined
 
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
 		// Determine the new tool protocol
-		const newProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+		const newModelInfo = this.api.getModel().info
+		console.log(
+			`[TOOL_PROTOCOL] updateApiConfiguration - Model: ${this.api.getModel().id}, supportsNativeTools: ${newModelInfo.supportsNativeTools}, Provider: ${this.apiConfiguration.apiProvider}`,
+		)
+		const newProtocol = resolveToolProtocol(this.apiConfiguration, newModelInfo)
+		console.log(`[TOOL_PROTOCOL] updateApiConfiguration - Previous: ${previousProtocol}, New: ${newProtocol}`)
 		const shouldUseXmlParser = newProtocol === "xml"
 
 		// Only make changes if the protocol actually changed
@@ -2071,14 +2087,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const costResult =
 						apiProtocol === "anthropic"
 							? calculateApiCostAnthropic(
-									this.api.getModel().info,
+									streamModelInfo,
 									inputTokens,
 									outputTokens,
 									cacheWriteTokens,
 									cacheReadTokens,
 								)
 							: calculateApiCostOpenAI(
-									this.api.getModel().info,
+									streamModelInfo,
 									inputTokens,
 									outputTokens,
 									cacheWriteTokens,
@@ -2137,8 +2153,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.diffViewProvider.reset()
 
-				// Determine protocol once per API request to avoid repeated calls in the streaming loop
-				const streamProtocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+				// Cache model info once per API request to avoid repeated calls during streaming
+				// This is especially important for tools and background usage collection
+				this.cachedStreamingModel = this.api.getModel()
+				const streamModelInfo = this.cachedStreamingModel.info
+				const cachedModelId = this.cachedStreamingModel.id
+				console.log(
+					`[TOOL_PROTOCOL] Streaming - Model: ${cachedModelId}, supportsNativeTools: ${streamModelInfo.supportsNativeTools}, Provider: ${this.apiConfiguration.apiProvider}`,
+				)
+				const streamProtocol = resolveToolProtocol(this.apiConfiguration, streamModelInfo)
+				console.log(`[TOOL_PROTOCOL] Streaming - Resolved protocol: ${streamProtocol}`)
 				const shouldUseXmlParser = streamProtocol === "xml"
 
 				// Yields only if the first chunk is successful, otherwise will
@@ -2359,14 +2383,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								const costResult =
 									apiProtocol === "anthropic"
 										? calculateApiCostAnthropic(
-												this.api.getModel().info,
+												streamModelInfo,
 												tokens.input,
 												tokens.output,
 												tokens.cacheWrite,
 												tokens.cacheRead,
 											)
 										: calculateApiCostOpenAI(
-												this.api.getModel().info,
+												streamModelInfo,
 												tokens.input,
 												tokens.output,
 												tokens.cacheWrite,
@@ -2616,7 +2640,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should preserve reasoning in the assistant message
 					let finalAssistantMessage = assistantMessage
-					if (reasoningMessage && this.api.getModel().info.preserveReasoning) {
+					if (reasoningMessage && streamModelInfo.preserveReasoning) {
 						// Prepend reasoning in XML tags to the assistant message so it's included in API history
 						finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
 					}
@@ -3113,7 +3137,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// 1. Tool protocol is set to NATIVE
 		// 2. Model supports native tools
 		const modelInfo = this.api.getModel().info
+		console.log(
+			`[TOOL_PROTOCOL] attemptApiRequest - Model: ${this.api.getModel().id}, supportsNativeTools: ${modelInfo.supportsNativeTools}, Provider: ${this.apiConfiguration.apiProvider}`,
+		)
 		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		console.log(
+			`[TOOL_PROTOCOL] attemptApiRequest - Resolved protocol: ${toolProtocol}, shouldIncludeTools will be: ${toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)}`,
+		)
 		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
