@@ -37,14 +37,48 @@ export class GroqHandler extends BaseOpenAiCompatibleProvider<GroqModelId> {
 	): ApiStream {
 		const stream = await this.createStream(systemPrompt, messages, metadata)
 
+		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta?.content) {
 				yield {
 					type: "text",
 					text: delta.content,
 				}
+			}
+
+			if (delta?.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					const index = toolCall.index
+					const existing = toolCallAccumulator.get(index)
+
+					if (existing) {
+						if (toolCall.function?.arguments) {
+							existing.arguments += toolCall.function.arguments
+						}
+					} else {
+						toolCallAccumulator.set(index, {
+							id: toolCall.id || "",
+							name: toolCall.function?.name || "",
+							arguments: toolCall.function?.arguments || "",
+						})
+					}
+				}
+			}
+
+			if (finishReason === "tool_calls") {
+				for (const toolCall of toolCallAccumulator.values()) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				toolCallAccumulator.clear()
 			}
 
 			if (chunk.usage) {

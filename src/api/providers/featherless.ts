@@ -31,6 +31,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 	private getCompletionParams(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: any,
 	): OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming {
 		const {
 			id: model,
@@ -46,15 +47,21 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: any,
+	): ApiStream {
 		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
 			const stream = await this.client.chat.completions.create({
-				...this.getCompletionParams(systemPrompt, messages),
+				...this.getCompletionParams(systemPrompt, messages, metadata),
 				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
 			})
 
@@ -67,13 +74,47 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 					}) as const,
 			)
 
+			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
 
 				if (delta?.content) {
 					for (const processedChunk of matcher.update(delta.content)) {
 						yield processedChunk
 					}
+				}
+
+				if (delta?.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						const index = toolCall.index
+						const existing = toolCallAccumulator.get(index)
+
+						if (existing) {
+							if (toolCall.function?.arguments) {
+								existing.arguments += toolCall.function.arguments
+							}
+						} else {
+							toolCallAccumulator.set(index, {
+								id: toolCall.id || "",
+								name: toolCall.function?.name || "",
+								arguments: toolCall.function?.arguments || "",
+							})
+						}
+					}
+				}
+
+				if (finishReason === "tool_calls") {
+					for (const toolCall of toolCallAccumulator.values()) {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						}
+					}
+					toolCallAccumulator.clear()
 				}
 
 				if (chunk.usage) {
@@ -90,7 +131,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 				yield processedChunk
 			}
 		} else {
-			yield* super.createMessage(systemPrompt, messages)
+			yield* super.createMessage(systemPrompt, messages, metadata)
 		}
 	}
 

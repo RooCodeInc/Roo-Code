@@ -64,6 +64,8 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it
