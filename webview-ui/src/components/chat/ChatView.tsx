@@ -148,7 +148,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
 	const prevExpandedRowsRef = useRef<Record<number, boolean>>()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const disableAutoScrollRef = useRef(false)
+	const stickyFollowRef = useRef<boolean>(false)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
 	const lastTtsRef = useRef<string>("")
@@ -452,9 +452,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
+		// Expanding a row indicates the user is browsing; disable sticky follow
 		if (wasAnyRowExpandedByUser) {
-			disableAutoScrollRef.current = true
+			stickyFollowRef.current = false
 		}
+
 		prevExpandedRowsRef.current = expandedRows // Store current state for next comparison
 	}, [expandedRows])
 
@@ -527,7 +529,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// Do not reset mode here as it should persist.
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
-		disableAutoScrollRef.current = false
 	}, [])
 
 	/**
@@ -1104,7 +1105,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const handleRowHeightChange = useCallback(
 		(isTaller: boolean) => {
-			if (!disableAutoScrollRef.current) {
+			if (isAtBottom) {
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
@@ -1112,33 +1113,34 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			}
 		},
-		[scrollToBottomSmooth, scrollToBottomAuto],
+		[scrollToBottomSmooth, scrollToBottomAuto, isAtBottom],
 	)
 
-	useEffect(() => {
-		let timer: ReturnType<typeof setTimeout> | undefined
-		if (!disableAutoScrollRef.current) {
-			timer = setTimeout(() => scrollToBottomSmooth(), 50)
-		}
-		return () => {
-			if (timer) {
-				clearTimeout(timer)
-			}
-		}
-	}, [groupedMessages.length, scrollToBottomSmooth])
-
+	// Disable sticky follow when user scrolls up inside the chat container
 	const handleWheel = useCallback((event: Event) => {
 		const wheelEvent = event as WheelEvent
-
-		if (wheelEvent.deltaY && wheelEvent.deltaY < 0) {
-			if (scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
-				// User scrolled up
-				disableAutoScrollRef.current = true
-			}
+		if (wheelEvent.deltaY < 0 && scrollContainerRef.current?.contains(wheelEvent.target as Node)) {
+			stickyFollowRef.current = false
 		}
 	}, [])
+	useEvent("wheel", handleWheel, window, { passive: true })
 
-	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
+	// Also disable sticky follow when the chat container is scrolled away from bottom
+	useEffect(() => {
+		const el = scrollContainerRef.current
+		if (!el) return
+		const onScroll = () => {
+			// Consider near-bottom within a small threshold consistent with Virtuoso settings
+			const nearBottom = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) < 10
+			if (!nearBottom) {
+				stickyFollowRef.current = false
+			}
+			// Keep UI button state in sync with scroll position
+			setShowScrollToBottom(!nearBottom)
+		}
+		el.addEventListener("scroll", onScroll, { passive: true })
+		return () => el.removeEventListener("scroll", onScroll)
+	}, [])
 
 	// Effect to clear checkpoint warning when messages appear or task changes
 	useEffect(() => {
@@ -1442,12 +1444,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
 							data={groupedMessages}
 							itemContent={itemContent}
+							followOutput={(isAtBottom: boolean) => isAtBottom || stickyFollowRef.current}
 							atBottomStateChange={(isAtBottom: boolean) => {
 								setIsAtBottom(isAtBottom)
-								if (isAtBottom) {
-									disableAutoScrollRef.current = false
-								}
-								setShowScrollToBottom(disableAutoScrollRef.current && !isAtBottom)
+								// Only show the scroll-to-bottom button if not at bottom
+								setShowScrollToBottom(!isAtBottom)
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
@@ -1468,8 +1469,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										variant="secondary"
 										className="flex-[2]"
 										onClick={() => {
-											scrollToBottomSmooth()
-											disableAutoScrollRef.current = false
+											// Engage sticky follow until user scrolls up
+											stickyFollowRef.current = true
+											// Pin immediately to avoid lag during fast streaming
+											scrollToBottomAuto()
+											// Hide button immediately to prevent flash
+											setShowScrollToBottom(false)
 										}}>
 										<span className="codicon codicon-chevron-down"></span>
 									</Button>
