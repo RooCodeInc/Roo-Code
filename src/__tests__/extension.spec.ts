@@ -109,6 +109,8 @@ vi.mock("../core/config/ContextProxy", () => ({
 			setValue: vi.fn(),
 			getValues: vi.fn().mockReturnValue({}),
 			getProviderSettings: vi.fn().mockReturnValue({}),
+			// Needed by retention purge on activation
+			globalStorageUri: { fsPath: "/tmp/roo-retention-test" },
 		}),
 	},
 }))
@@ -150,6 +152,16 @@ vi.mock("../utils/migrateSettings", () => ({
 
 vi.mock("../utils/autoImportSettings", () => ({
 	autoImportSettings: vi.fn().mockResolvedValue(undefined),
+}))
+
+// Avoid filesystem access during activation by stubbing purge
+vi.mock("../utils/task-history-retention", () => ({
+	purgeOldTasks: vi.fn().mockResolvedValue({ purgedCount: 0, cutoff: null }),
+}))
+
+// Ensure storage base path resolves to provided path to avoid touching VS Code config
+vi.mock("../utils/storage", () => ({
+	getStorageBasePath: (p: string) => Promise.resolve(p),
 }))
 
 vi.mock("../extension/api", () => ({

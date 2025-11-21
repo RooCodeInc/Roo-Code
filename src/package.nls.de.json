@@ -43,5 +43,6 @@
 	"settings.useAgentRules.description": "Aktiviert das Laden von AGENTS.md-Dateien für agentenspezifische Regeln (siehe https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximale Wartezeit in Sekunden auf API-Antworten (0 = kein Timeout, 1-3600s, Standard: 600s). Höhere Werte werden für lokale Anbieter wie LM Studio und Ollama empfohlen, die möglicherweise mehr Verarbeitungszeit benötigen.",
 	"settings.newTaskRequireTodos.description": "Todos-Parameter beim Erstellen neuer Aufgaben mit dem new_task-Tool erfordern",
-	"settings.codeIndex.embeddingBatchSize.description": "Die Batch-Größe für Embedding-Operationen während der Code-Indexierung. Passe dies an die Limits deines API-Anbieters an. Standard ist 60."
+	"settings.codeIndex.embeddingBatchSize.description": "Die Batch-Größe für Embedding-Operationen während der Code-Indexierung. Passe dies an die Limits deines API-Anbieters an. Standard ist 60.",
+	"settings.taskHistoryRetention.description": "Aufgabenverlauf beim Neuladen der Erweiterung automatisch löschen. Löscht Aufgaben, die älter als der ausgewählte Zeitraum sind. Optionen: Niemals (Standard), 90 Tage, 60 Tage, 30 Tage, 7 Tage oder 3 Tage. Warnung: Dies kann nicht rückgängig gemacht werden und wird nur beim Plugin-Neustart ausgeführt."
 }

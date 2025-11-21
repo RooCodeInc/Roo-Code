@@ -43,5 +43,6 @@
 	"settings.useAgentRules.description": "Abilita il caricamento dei file AGENTS.md per regole specifiche dell'agente (vedi https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Tempo massimo in secondi di attesa per le risposte API (0 = nessun timeout, 1-3600s, predefinito: 600s). Valori più alti sono consigliati per provider locali come LM Studio e Ollama che potrebbero richiedere più tempo di elaborazione.",
 	"settings.newTaskRequireTodos.description": "Richiedere il parametro todos quando si creano nuove attività con lo strumento new_task",
-	"settings.codeIndex.embeddingBatchSize.description": "La dimensione del batch per le operazioni di embedding durante l'indicizzazione del codice. Regola questo in base ai limiti del tuo provider API. Il valore predefinito è 60."
+	"settings.codeIndex.embeddingBatchSize.description": "La dimensione del batch per le operazioni di embedding durante l'indicizzazione del codice. Regola questo in base ai limiti del tuo provider API. Il valore predefinito è 60.",
+	"settings.taskHistoryRetention.description": "Elimina automaticamente la cronologia delle attività al ricaricamento dell'estensione. Elimina le attività più vecchie del periodo selezionato. Opzioni: Mai (predefinito), 90 giorni, 60 giorni, 30 giorni, 7 giorni o 3 giorni. Attenzione: Questa operazione non può essere annullata e viene eseguita solo al ricaricamento del plugin."
 }

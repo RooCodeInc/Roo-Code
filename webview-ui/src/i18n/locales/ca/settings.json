@@ -823,6 +823,19 @@
 		"noMatchFound": "No s'ha trobat cap coincidència",
 		"useCustomModel": "Utilitzar personalitzat: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Eliminar automàticament l'historial de tasques",
+		"description": "Elimina les tasques anteriors al període seleccionat en recarregar l'extensió.",
+		"warning": "Advertència: Aquesta acció elimina permanentment les tasques i només s'executa en recarregar el complement.",
+		"options": {
+			"never": "Mai",
+			"90": "90 dies",
+			"60": "60 dies",
+			"30": "30 dies",
+			"7": "7 dies",
+			"3": "3 dies"
+		}
+	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
