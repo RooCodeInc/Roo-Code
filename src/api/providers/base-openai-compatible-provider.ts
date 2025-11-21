@@ -5,13 +5,14 @@ import type { ModelInfo } from "@roo-code/types"
 
 import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/api"
 import { XmlMatcher } from "../../utils/xml-matcher"
-import { ApiStream } from "../transform/stream"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { calculateApiCostOpenAI } from "../../shared/cost"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -119,6 +120,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
+		let lastUsage: OpenAI.CompletionUsage | undefined
+
 		for await (const chunk of stream) {
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const chunkAny = chunk as any
@@ -176,17 +179,37 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			}
 
 			if (chunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: chunk.usage.prompt_tokens || 0,
-					outputTokens: chunk.usage.completion_tokens || 0,
-				}
+				lastUsage = chunk.usage
 			}
+		}
+
+		if (lastUsage) {
+			yield this.processUsageMetrics(lastUsage, this.getModel().info)
 		}
 
 		// Process any remaining content
 		for (const processedChunk of matcher.final()) {
 			yield processedChunk
+		}
+	}
+
+	protected processUsageMetrics(usage: any, modelInfo?: any): ApiStreamUsageChunk {
+		const inputTokens = usage?.prompt_tokens || 0
+		const outputTokens = usage?.completion_tokens || 0
+		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens || 0
+		const cacheReadTokens = usage?.prompt_tokens_details?.cached_tokens || 0
+
+		const { totalCost } = modelInfo
+			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
+			: { totalCost: 0 }
+
+		return {
+			type: "usage",
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens: cacheWriteTokens || undefined,
+			cacheReadTokens: cacheReadTokens || undefined,
+			totalCost,
 		}
 	}
 
