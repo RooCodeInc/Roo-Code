@@ -66,7 +66,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		if (baseURL.endsWith("/v1")) {
 			baseURL = baseURL.replace(/\/v1$/, "/anthropic")
 		} else if (!baseURL.endsWith("/anthropic")) {
-			baseURL = `${baseURL}/anthropic`
+			baseURL = `${baseURL.replace(/\/$/, "")}/anthropic`
 		}
 
 		this.client = new Anthropic({
@@ -100,7 +100,8 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		}
 
 		// Add tool support if provided - convert OpenAI format to Anthropic format
-		if (metadata?.tools && metadata.tools.length > 0) {
+		// Only include native tools when toolProtocol is not 'xml'
+		if (metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml") {
 			requestParams.tools = convertOpenAIToolsToAnthropic(metadata.tools)
 
 			// Only add tool_choice if tools are present
@@ -178,15 +179,19 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 
 							yield { type: "text", text: chunk.content_block.text }
 							break
-						case "tool_use":
+						case "tool_use": {
 							// Tool use block started - store initial data
-							// The input might be streamed via input_json_delta chunks
+							// If input is empty ({}), start with empty string as deltas will build it
+							// Otherwise, stringify the initial input as a base for potential deltas
+							const initialInput = chunk.content_block.input || {}
+							const hasInitialContent = Object.keys(initialInput).length > 0
 							toolCallAccumulator.set(chunk.index, {
 								id: chunk.content_block.id,
 								name: chunk.content_block.name,
-								input: JSON.stringify(chunk.content_block.input || {}),
+								input: hasInitialContent ? JSON.stringify(initialInput) : "",
 							})
 							break
+						}
 					}
 					break
 				case "content_block_delta":
@@ -201,10 +206,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 							// Accumulate tool input JSON as it streams
 							const existingToolCall = toolCallAccumulator.get(chunk.index)
 							if (existingToolCall) {
-								// Parse existing accumulated input, append new delta, re-stringify
-								// The delta contains partial JSON string chunks that need to be concatenated
-								const currentInput = existingToolCall.input === "{}" ? "" : existingToolCall.input
-								existingToolCall.input = currentInput + chunk.delta.partial_json
+								existingToolCall.input += chunk.delta.partial_json
 							}
 							break
 						}
