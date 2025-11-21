@@ -83,7 +83,7 @@ const App = () => {
 		mdmCompliant,
 	} = useExtensionState()
 
-const [useProviderSignupView, setUseProviderSignupView] = useState(false)
+	const [useProviderSignupView, setUseProviderSignupView] = useState(false)
 
 	// Check PostHog feature flag for provider signup view
 	useEffect(() => {
