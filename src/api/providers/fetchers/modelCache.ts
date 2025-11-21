@@ -146,12 +146,126 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 }
 
 /**
+ * Force-refresh models from API, bypassing cache.
+ * Uses atomic writes so cache remains available during refresh.
+ *
+ * @param options - Provider options for fetching models
+ * @returns Fresh models from API
+ */
+export const refreshModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
+	const { provider } = options
+
+	let models: ModelRecord
+
+	try {
+		// Force fresh API fetch - skip getModelsFromCache() check
+		switch (provider) {
+			case "openrouter":
+				models = await getOpenRouterModels()
+				break
+			case "requesty":
+				models = await getRequestyModels(options.baseUrl, options.apiKey)
+				break
+			case "glama":
+				models = await getGlamaModels()
+				break
+			case "unbound":
+				models = await getUnboundModels(options.apiKey)
+				break
+			case "litellm":
+				models = await getLiteLLMModels(options.apiKey, options.baseUrl)
+				break
+			case "ollama":
+				models = await getOllamaModels(options.baseUrl, options.apiKey)
+				break
+			case "lmstudio":
+				models = await getLMStudioModels(options.baseUrl)
+				break
+			case "deepinfra":
+				models = await getDeepInfraModels(options.apiKey, options.baseUrl)
+				break
+			case "io-intelligence":
+				models = await getIOIntelligenceModels(options.apiKey)
+				break
+			case "vercel-ai-gateway":
+				models = await getVercelAiGatewayModels()
+				break
+			case "huggingface":
+				models = await getHuggingFaceModels()
+				break
+			case "roo": {
+				const rooBaseUrl =
+					options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+				models = await getRooModels(rooBaseUrl, options.apiKey)
+				break
+			}
+			case "chutes":
+				models = await getChutesModels(options.apiKey)
+				break
+			default: {
+				const exhaustiveCheck: never = provider
+				throw new Error(`Unknown provider: ${exhaustiveCheck}`)
+			}
+		}
+
+		// Update memory cache first
+		memoryCache.set(provider, models)
+
+		// Atomically write to disk (safeWriteJson handles atomic writes)
+		await writeModels(provider, models).catch((err) =>
+			console.error(`[refreshModels] Error writing ${provider} models to disk:`, err),
+		)
+
+		return models
+	} catch (error) {
+		console.debug(`[refreshModels] Failed to refresh ${provider}:`, error)
+		// On error, return existing cache if available (graceful degradation)
+		return getModelsFromCache(provider) || {}
+	}
+}
+
+/**
+ * Initialize background model cache refresh.
+ * Refreshes public provider caches without blocking or requiring auth.
+ * Should be called once during extension activation.
+ */
+export async function initializeModelCacheRefresh(): Promise<void> {
+	// Wait for extension to fully activate before refreshing
+	setTimeout(async () => {
+		// Providers that work without API keys
+		const publicProviders: Array<{ provider: RouterName; options: GetModelsOptions }> = [
+			{ provider: "openrouter", options: { provider: "openrouter" } },
+			{ provider: "glama", options: { provider: "glama" } },
+			{ provider: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
+		]
+
+		// Refresh each provider in background (fire and forget)
+		for (const { options } of publicProviders) {
+			refreshModels(options).catch(() => {
+				// Silent fail - old cache remains available
+			})
+
+			// Small delay between refreshes to avoid API rate limits
+			await new Promise((resolve) => setTimeout(resolve, 500))
+		}
+	}, 2000)
+}
+
+/**
  * Flush models memory cache for a specific router.
  *
  * @param router - The router to flush models for.
+ * @param refresh - If true, immediately fetch fresh data from API
  */
-export const flushModels = async (router: RouterName) => {
+export const flushModels = async (router: RouterName, refresh: boolean = false): Promise<void> => {
 	memoryCache.del(router)
+
+	if (refresh) {
+		// Trigger background refresh - don't await to avoid blocking
+		refreshModels({ provider: router } as GetModelsOptions).catch((error) => {
+			console.error(`[flushModels] Refresh failed for ${router}:`, error)
+		})
+	}
 }
 
 /**

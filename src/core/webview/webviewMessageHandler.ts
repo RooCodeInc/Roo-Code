@@ -790,7 +790,7 @@ export const webviewMessageHandler = async (
 			break
 		case "flushRouterModels":
 			const routerNameFlush: RouterName = toRouterName(message.text)
-			await flushModels(routerNameFlush)
+			await flushModels(routerNameFlush, true)
 			break
 		case "requestRouterModels":
 			const { apiConfiguration } = await provider.getState()
@@ -932,8 +932,8 @@ export const webviewMessageHandler = async (
 			// Specific handler for Ollama models only.
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			try {
-				// Flush cache first to ensure fresh models.
-				await flushModels("ollama")
+				// Flush cache and refresh to ensure fresh models.
+				await flushModels("ollama", true)
 
 				const ollamaModels = await getModels({
 					provider: "ollama",
@@ -954,8 +954,8 @@ export const webviewMessageHandler = async (
 			// Specific handler for LM Studio models only.
 			const { apiConfiguration: lmStudioApiConfig } = await provider.getState()
 			try {
-				// Flush cache first to ensure fresh models.
-				await flushModels("lmstudio")
+				// Flush cache and refresh to ensure fresh models.
+				await flushModels("lmstudio", true)
 
 				const lmStudioModels = await getModels({
 					provider: "lmstudio",
@@ -977,8 +977,8 @@ export const webviewMessageHandler = async (
 		case "requestRooModels": {
 			// Specific handler for Roo models only - flushes cache to ensure fresh auth token is used
 			try {
-				// Flush cache first to ensure fresh models with current auth state
-				await flushModels("roo")
+				// Flush cache and refresh to ensure fresh models with current auth state
+				await flushModels("roo", true)
 
 				const rooModels = await getModels({
 					provider: "roo",
