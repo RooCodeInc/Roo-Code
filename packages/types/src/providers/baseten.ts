@@ -10,7 +10,6 @@ export const basetenModels = {
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.6,
 		outputPrice: 2.5,
 		cacheWritesPrice: 0,
@@ -124,4 +123,4 @@ export const basetenModels = {
 
 export type BasetenModelId = keyof typeof basetenModels
 
-export const basetenDefaultModelId = "moonshotai/Kimi-K2-Thinking" satisfies BasetenModelId
+export const basetenDefaultModelId = "zai-org/GLM-4.6" satisfies BasetenModelId
