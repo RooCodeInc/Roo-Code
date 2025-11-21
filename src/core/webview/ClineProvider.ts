@@ -2126,13 +2126,10 @@ export class ClineProvider
 			providerSettings.apiProvider = apiProvider
 		}
 
-		const cloudService = CloudService.hasInstance() ? CloudService.instance : undefined
 		let organizationAllowList = ORGANIZATION_ALLOW_ALL
 
 		try {
-			if (cloudService) {
-				organizationAllowList = await cloudService.getAllowList()
-			}
+			organizationAllowList = await CloudService.instance.getAllowList()
 		} catch (error) {
 			console.error(
 				`[getState] failed to get organization allow list: ${error instanceof Error ? error.message : String(error)}`,
@@ -2142,9 +2139,7 @@ export class ClineProvider
 		let cloudUserInfo: CloudUserInfo | null = null
 
 		try {
-			if (cloudService) {
-				cloudUserInfo = cloudService.getUserInfo()
-			}
+			cloudUserInfo = CloudService.instance.getUserInfo()
 		} catch (error) {
 			console.error(
 				`[getState] failed to get cloud user info: ${error instanceof Error ? error.message : String(error)}`,
@@ -2154,9 +2149,7 @@ export class ClineProvider
 		let cloudIsAuthenticated: boolean = false
 
 		try {
-			if (cloudService) {
-				cloudIsAuthenticated = cloudService.isAuthenticated()
-			}
+			cloudIsAuthenticated = CloudService.instance.isAuthenticated()
 		} catch (error) {
 			console.error(
 				`[getState] failed to get cloud authentication state: ${error instanceof Error ? error.message : String(error)}`,
@@ -2166,9 +2159,7 @@ export class ClineProvider
 		let sharingEnabled: boolean = false
 
 		try {
-			if (cloudService) {
-				sharingEnabled = await cloudService.canShareTask()
-			}
+			sharingEnabled = await CloudService.instance.canShareTask()
 		} catch (error) {
 			console.error(
 				`[getState] failed to get sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
@@ -2178,8 +2169,8 @@ export class ClineProvider
 		let organizationSettingsVersion: number = -1
 
 		try {
-			if (cloudService) {
-				const settings = cloudService.getOrganizationSettings()
+			if (CloudService.hasInstance()) {
+				const settings = CloudService.instance.getOrganizationSettings()
 				organizationSettingsVersion = settings?.version ?? -1
 			}
 		} catch (error) {
@@ -2191,9 +2182,7 @@ export class ClineProvider
 		let taskSyncEnabled: boolean = false
 
 		try {
-			if (cloudService) {
-				taskSyncEnabled = cloudService.isTaskSyncEnabled()
-			}
+			taskSyncEnabled = CloudService.instance.isTaskSyncEnabled()
 		} catch (error) {
 			console.error(
 				`[getState] failed to get task sync enabled state: ${error instanceof Error ? error.message : String(error)}`,
