@@ -95,6 +95,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
+		// Add thinking parameter if reasoning is enabled and model supports it
+		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
+			;(params as any).thinking = { type: "enabled" }
+		}
+
 		try {
 			return this.client.chat.completions.create(params, requestOptions)
 		} catch (error) {
@@ -219,13 +224,20 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId } = this.getModel()
+		const { id: modelId, info: modelInfo } = this.getModel()
+
+		const params: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
+			model: modelId,
+			messages: [{ role: "user", content: prompt }],
+		}
+
+		// Add thinking parameter if reasoning is enabled and model supports it
+		if (this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
+			;(params as any).thinking = { type: "enabled" }
+		}
 
 		try {
-			const response = await this.client.chat.completions.create({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-			})
+			const response = await this.client.chat.completions.create(params)
 
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const responseAny = response as any
