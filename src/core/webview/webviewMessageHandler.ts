@@ -1520,7 +1520,12 @@ export const webviewMessageHandler = async (
 
 					if (result.success && result.enhancedText) {
 						MessageEnhancer.captureTelemetry(currentCline?.taskId, includeTaskHistoryInEnhance)
-						await provider.postMessageToWebview({ type: "enhancedPrompt", text: result.enhancedText })
+						// Include the context from the original request in the response
+						await provider.postMessageToWebview({
+							type: "enhancedPrompt",
+							text: result.enhancedText,
+							context: message.context,
+						})
 					} else {
 						throw new Error(result.error || "Unknown error")
 					}
@@ -1530,7 +1535,11 @@ export const webviewMessageHandler = async (
 					)
 
 					vscode.window.showErrorMessage(t("common:errors.enhance_prompt"))
-					await provider.postMessageToWebview({ type: "enhancedPrompt" })
+					// Include context even in error response
+					await provider.postMessageToWebview({
+						type: "enhancedPrompt",
+						context: message.context,
+					})
 				}
 			}
 			break
