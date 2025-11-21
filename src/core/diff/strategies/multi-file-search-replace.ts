@@ -359,7 +359,7 @@ Each file requires its own path, start_line, and diff elements.
 					break
 
 				case State.AFTER_SEARCH:
-					if (SEARCH_PATTERN.test(marker)) return reportInvalidDiffError(SEARCH_PATTERN.source, SEP)
+					if (SEARCH_PATTERN.test(marker)) return reportInvalidDiffError(SEARCH, SEP)
 					if (SEARCH_PREFIX_PATTERN.test(marker)) return reportMergeConflictError(marker, SEARCH)
 					if (REPLACE_PATTERN.test(marker)) return reportInvalidDiffError(REPLACE, SEP)
 					if (REPLACE_PREFIX_PATTERN.test(marker)) return reportMergeConflictError(marker, SEARCH)
@@ -367,7 +367,7 @@ Each file requires its own path, start_line, and diff elements.
 					break
 
 				case State.AFTER_SEPARATOR:
-					if (SEARCH_PATTERN.test(marker)) return reportInvalidDiffError(SEARCH_PATTERN.source, REPLACE)
+					if (SEARCH_PATTERN.test(marker)) return reportInvalidDiffError(SEARCH, REPLACE)
 					if (SEARCH_PREFIX_PATTERN.test(marker)) return reportMergeConflictError(marker, REPLACE)
 					if (marker === SEP)
 						return likelyBadStructure
