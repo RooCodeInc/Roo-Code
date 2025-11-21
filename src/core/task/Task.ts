@@ -10,7 +10,6 @@ import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
 import { Package } from "../../shared/package"
-import { isNativeProtocol } from "@roo-code/types"
 import { getCurrentToolProtocol, formatToolInvocation } from "../tools/helpers/toolResultFormatting"
 
 import {
@@ -302,6 +301,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContentReady = false
 	didRejectTool = false
 	didAlreadyUseTool = false
+	multiToolCallsEnabledForCurrentMessage?: boolean
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
 
@@ -1999,6 +1999,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
+				this.multiToolCallsEnabledForCurrentMessage = undefined
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser?.reset()

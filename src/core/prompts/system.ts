@@ -1,7 +1,13 @@
 import * as vscode from "vscode"
 import * as os from "os"
 
-import type { ModeConfig, PromptComponent, CustomModePrompts, TodoItem } from "@roo-code/types"
+import type {
+	ModeConfig,
+	PromptComponent,
+	CustomModePrompts,
+	TodoItem,
+	Experiments as ExperimentsConfig,
+} from "@roo-code/types"
 
 import type { SystemPromptSettings } from "./types"
 
@@ -12,7 +18,7 @@ import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
-import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
+import { EXPERIMENT_IDS, experiments as experimentRegistry } from "../../shared/experiments"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
@@ -56,7 +62,7 @@ async function generatePrompt(
 	customModeConfigs?: ModeConfig[],
 	globalCustomInstructions?: string,
 	diffEnabled?: boolean,
-	experiments?: Record<string, boolean>,
+	experiments?: ExperimentsConfig,
 	enableMcpServerCreation?: boolean,
 	language?: string,
 	rooIgnoreInstructions?: string,
@@ -73,9 +79,7 @@ async function generatePrompt(
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
 	// Determine whether multi-tool calls experiment is enabled
-	const multiToolCallsEnabled = experiments
-		? Experiments.isEnabled(experiments as any, EXPERIMENT_IDS.MULTI_TOOL_CALLS)
-		: false
+	const multiToolCallsEnabled = experimentRegistry.isEnabled(experiments, EXPERIMENT_IDS.MULTI_TOOL_CALLS)
 
 	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
@@ -163,7 +167,7 @@ export const SYSTEM_PROMPT = async (
 	customModes?: ModeConfig[],
 	globalCustomInstructions?: string,
 	diffEnabled?: boolean,
-	experiments?: Record<string, boolean>,
+	experiments?: ExperimentsConfig,
 	enableMcpServerCreation?: boolean,
 	language?: string,
 	rooIgnoreInstructions?: string,

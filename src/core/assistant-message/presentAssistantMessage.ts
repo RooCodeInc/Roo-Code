@@ -249,17 +249,20 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			// Determine whether multi-tool calls are enabled for this task
-			const provider = cline.providerRef.deref()
-			let isMultiToolCallsEnabled = false
+			// Determine whether multi-tool calls are enabled for this task (cache per message)
+			if (cline.multiToolCallsEnabledForCurrentMessage === undefined) {
+				const provider = cline.providerRef.deref()
+				let isEnabled = false
 
-			if (provider) {
-				const state = await provider.getState()
-				isMultiToolCallsEnabled = experiments.isEnabled(
-					state.experiments ?? {},
-					EXPERIMENT_IDS.MULTI_TOOL_CALLS,
-				)
+				if (provider) {
+					const state = await provider.getState()
+					isEnabled = experiments.isEnabled(state.experiments, EXPERIMENT_IDS.MULTI_TOOL_CALLS)
+				}
+
+				cline.multiToolCallsEnabledForCurrentMessage = isEnabled
 			}
+
+			const isMultiToolCallsEnabled = cline.multiToolCallsEnabledForCurrentMessage
 
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
