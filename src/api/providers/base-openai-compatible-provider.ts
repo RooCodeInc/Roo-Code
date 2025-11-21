@@ -184,6 +184,20 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			}
 		}
 
+		// Fallback: If stream ends with accumulated tool calls that weren't yielded
+		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+		if (toolCallAccumulator.size > 0) {
+			for (const toolCall of toolCallAccumulator.values()) {
+				yield {
+					type: "tool_call",
+					id: toolCall.id,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
+				}
+			}
+			toolCallAccumulator.clear()
+		}
+
 		// Process any remaining content
 		for (const processedChunk of matcher.final()) {
 			yield processedChunk
