@@ -1,5 +1,5 @@
-import { getApiProtocol } from "../provider-settings.js"
-import { azureModels, azureDefaultModelId } from "../providers/azure.js"
+import { getApiProtocol, providerSettingsSchema } from "../provider-settings.js"
+import { azureModels, azureDefaultModelId, AZURE_1M_CONTEXT_MODEL_IDS } from "../providers/azure.js"
 
 describe("Azure Provider", () => {
 	describe("getApiProtocol for Azure provider", () => {
@@ -232,6 +232,164 @@ describe("Azure Provider", () => {
 				expect(azureModels["gpt-5-chat"].supportsImages).toBe(true)
 				expect(azureModels["gpt-5-mini"].supportsImages).toBe(true)
 				expect(azureModels["gpt-5-nano"].supportsImages).toBe(true)
+			})
+		})
+
+		describe("1M Context Window Beta Feature", () => {
+			describe("AZURE_1M_CONTEXT_MODEL_IDS", () => {
+				it("should contain claude-sonnet-4-5", () => {
+					expect(AZURE_1M_CONTEXT_MODEL_IDS).toContain("claude-sonnet-4-5")
+				})
+
+				it("should be an array with exactly one model", () => {
+					expect(Array.isArray(AZURE_1M_CONTEXT_MODEL_IDS)).toBe(true)
+					expect(AZURE_1M_CONTEXT_MODEL_IDS).toHaveLength(1)
+				})
+
+				it("should only contain valid Azure model IDs", () => {
+					AZURE_1M_CONTEXT_MODEL_IDS.forEach((modelId) => {
+						expect(azureModels).toHaveProperty(modelId)
+					})
+				})
+			})
+
+			describe("claude-sonnet-4-5 tiers", () => {
+				it("should have a tiers array defined", () => {
+					const model = azureModels["claude-sonnet-4-5"]
+					expect(model.tiers).toBeDefined()
+					expect(Array.isArray(model.tiers)).toBe(true)
+				})
+
+				it("should have exactly one tier configuration", () => {
+					const model = azureModels["claude-sonnet-4-5"]
+					expect(model.tiers).toHaveLength(1)
+				})
+
+				it("should have 1M context window in tier 0", () => {
+					const model = azureModels["claude-sonnet-4-5"]
+					const tier = model.tiers?.[0]
+					expect(tier).toBeDefined()
+					expect(tier?.contextWindow).toBe(1_000_000)
+				})
+
+				it("should have higher pricing for 1M context tier", () => {
+					const model = azureModels["claude-sonnet-4-5"]
+					const tier = model.tiers?.[0]
+
+					// Tier pricing should be higher than base model
+					expect(tier?.inputPrice).toBeGreaterThan(model.inputPrice)
+					expect(tier?.outputPrice).toBeGreaterThan(model.outputPrice)
+					expect(tier?.cacheWritesPrice).toBeGreaterThan(model.cacheWritesPrice!)
+					expect(tier?.cacheReadsPrice).toBeGreaterThan(model.cacheReadsPrice!)
+				})
+
+				it("should have correct tier pricing values", () => {
+					const model = azureModels["claude-sonnet-4-5"]
+					const tier = model.tiers?.[0]
+
+					expect(tier?.inputPrice).toBe(6.0)
+					expect(tier?.outputPrice).toBe(22.5)
+					expect(tier?.cacheWritesPrice).toBe(7.5)
+					expect(tier?.cacheReadsPrice).toBe(0.6)
+				})
+			})
+
+			describe("Other models should not have tiers", () => {
+				it("claude-haiku-4-5 should not have tiers", () => {
+					const model = azureModels["claude-haiku-4-5"]
+					expect("tiers" in model).toBe(false)
+				})
+
+				it("claude-opus-4-1 should not have tiers", () => {
+					const model = azureModels["claude-opus-4-1"]
+					expect("tiers" in model).toBe(false)
+				})
+
+				it("gpt models should not have tiers", () => {
+					expect("tiers" in azureModels["gpt-5-pro"]).toBe(false)
+					expect("tiers" in azureModels["gpt-5.1"]).toBe(false)
+					expect("tiers" in azureModels["gpt-5-chat"]).toBe(false)
+				})
+			})
+		})
+	})
+
+	describe("Azure provider settings schema", () => {
+		describe("azureBeta1MContext setting", () => {
+			it("should accept valid Azure settings with azureBeta1MContext", () => {
+				const validSettings = {
+					apiProvider: "azure" as const,
+					azureBeta1MContext: true,
+					azureApiKey: "test-key",
+					apiModelId: "claude-sonnet-4-5",
+				}
+
+				const result = providerSettingsSchema.safeParse(validSettings)
+				expect(result.success).toBe(true)
+			})
+
+			it("should accept boolean true value", () => {
+				const settings = {
+					apiProvider: "azure" as const,
+					azureBeta1MContext: true,
+				}
+
+				const result = providerSettingsSchema.safeParse(settings)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.data.azureBeta1MContext).toBe(true)
+				}
+			})
+
+			it("should accept boolean false value", () => {
+				const settings = {
+					apiProvider: "azure" as const,
+					azureBeta1MContext: false,
+				}
+
+				const result = providerSettingsSchema.safeParse(settings)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.data.azureBeta1MContext).toBe(false)
+				}
+			})
+
+			it("should be optional and allow undefined", () => {
+				const settings = {
+					apiProvider: "azure" as const,
+					azureApiKey: "test-key",
+				}
+
+				const result = providerSettingsSchema.safeParse(settings)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.data.azureBeta1MContext).toBeUndefined()
+				}
+			})
+
+			it("should reject non-boolean values", () => {
+				const settings = {
+					apiProvider: "azure" as const,
+					azureBeta1MContext: "true" as unknown, // string instead of boolean
+				}
+
+				const result = providerSettingsSchema.safeParse(settings)
+				expect(result.success).toBe(false)
+			})
+
+			it("should work with other Azure settings", () => {
+				const settings = {
+					apiProvider: "azure" as const,
+					azureBeta1MContext: true,
+					azureApiKey: "test-key",
+					azureBaseUrl: "https://test.azure.com",
+					azureDeploymentName: "test-deployment",
+					apiModelId: "claude-sonnet-4-5",
+					modelTemperature: 0.7,
+				}
+
+				const result = providerSettingsSchema.safeParse(settings)
+				expect(result.success).toBe(true)
 			})
 		})
 	})

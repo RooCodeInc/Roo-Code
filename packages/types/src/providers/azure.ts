@@ -1,5 +1,7 @@
 import type { ModelInfo } from "../model.js"
 
+export const AZURE_1M_CONTEXT_MODEL_IDS = ["claude-sonnet-4-5"] as const
+
 // Azure AI models deployed via Azure AI Foundry and Azure OpenAI
 export type AzureModelId = keyof typeof azureModels
 
@@ -18,6 +20,15 @@ export const azureModels = {
 		cacheReadsPrice: 0.3,
 		supportsTemperature: true,
 		description: "Claude Sonnet 4.5 on Azure AI Foundry - Extended thinking and vision capabilities",
+		tiers: [
+			{
+				contextWindow: 1_000_000,
+				inputPrice: 6.0,
+				outputPrice: 22.5,
+				cacheWritesPrice: 7.5,
+				cacheReadsPrice: 0.6,
+			},
+		],
 	},
 	"gpt-5-pro": {
 		maxTokens: 128_000,

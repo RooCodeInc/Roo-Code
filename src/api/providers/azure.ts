@@ -4,7 +4,13 @@ import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
 import { AzureOpenAI } from "openai"
 import type OpenAI from "openai"
 
-import { type ModelInfo, type AzureModelId, azureDefaultModelId, azureModels } from "@roo-code/types"
+import {
+	type ModelInfo,
+	type AzureModelId,
+	azureDefaultModelId,
+	azureModels,
+	AZURE_1M_CONTEXT_MODEL_IDS,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -87,6 +93,17 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		const deploymentName = this.options.azureDeploymentName || modelId
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 
+		// Prepare beta flags array
+		const betas: string[] = []
+
+		// Add 1M context beta flag if enabled for Claude Sonnet 4.5
+		if (AZURE_1M_CONTEXT_MODEL_IDS.includes(modelId as any) && this.options.azureBeta1MContext) {
+			betas.push("context-1m-2025-08-07")
+		}
+
+		// Add prompt caching beta
+		betas.push("prompt-caching-2024-07-31")
+
 		// Apply prompt caching to system and last two user messages
 		const userMsgIndices = messages.reduce(
 			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
@@ -96,29 +113,36 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
 		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-		const stream: AnthropicStream<any> = await this.claudeClient.messages.create({
-			model: deploymentName,
-			max_tokens: maxTokens ?? 64_000,
-			temperature,
-			system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-			messages: messages.map((message, index) => {
-				if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-					return {
-						...message,
-						content:
-							typeof message.content === "string"
-								? [{ type: "text", text: message.content, cache_control: cacheControl }]
-								: message.content.map((content, contentIndex) =>
-										contentIndex === message.content.length - 1
-											? { ...content, cache_control: cacheControl }
-											: content,
-									),
+		const stream: AnthropicStream<any> = await this.claudeClient.messages.create(
+			{
+				model: deploymentName,
+				max_tokens: maxTokens ?? 64_000,
+				temperature,
+				system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+				messages: messages.map((message, index) => {
+					if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+						return {
+							...message,
+							content:
+								typeof message.content === "string"
+									? [{ type: "text", text: message.content, cache_control: cacheControl }]
+									: message.content.map((content, contentIndex) =>
+											contentIndex === message.content.length - 1
+												? { ...content, cache_control: cacheControl }
+												: content,
+										),
+						}
 					}
-				}
-				return message
-			}),
-			stream: true,
-		})
+					return message
+				}),
+				stream: true,
+			},
+			{
+				headers: {
+					"anthropic-beta": betas.join(","),
+				},
+			},
+		)
 
 		let inputTokens = 0
 		let outputTokens = 0
@@ -303,10 +327,26 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 	override getModel() {
 		const modelId = this.options.apiModelId
 		const id = modelId && modelId in azureModels ? (modelId as AzureModelId) : azureDefaultModelId
-		const info: ModelInfo = azureModels[id]
+		let info: ModelInfo = azureModels[id]
 
 		// Handle Claude and GPT models separately to maintain type safety
 		if (this.isClaudeModel(id)) {
+			// If 1M context beta is enabled for Claude Sonnet 4.5, update the model info
+			if (AZURE_1M_CONTEXT_MODEL_IDS.includes(id as any) && this.options.azureBeta1MContext) {
+				// Use the tier pricing for 1M context
+				const tier = info.tiers?.[0]
+				if (tier) {
+					info = {
+						...info,
+						contextWindow: tier.contextWindow,
+						inputPrice: tier.inputPrice,
+						outputPrice: tier.outputPrice,
+						cacheWritesPrice: tier.cacheWritesPrice,
+						cacheReadsPrice: tier.cacheReadsPrice,
+					}
+				}
+			}
+
 			const params = getModelParams({
 				format: "anthropic",
 				modelId: id,
