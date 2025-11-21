@@ -140,10 +140,15 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}
 			}
 
-			if (delta && "reasoning_content" in delta) {
-				const reasoning_content = (delta.reasoning_content as string | undefined) || ""
-				if (reasoning_content?.trim()) {
-					yield { type: "reasoning", text: reasoning_content }
+			if (delta) {
+				for (const key of ["reasoning_content", "reasoning"] as const) {
+					if (key in delta) {
+						const reasoning_content = ((delta as any)[key] as string | undefined) || ""
+						if (reasoning_content?.trim()) {
+							yield { type: "reasoning", text: reasoning_content }
+						}
+						break
+					}
 				}
 			}
 
