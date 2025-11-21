@@ -31,8 +31,8 @@ export const mistralModels = {
 		outputPrice: 2.0,
 	},
 	"codestral-latest": {
-		maxTokens: 256_000,
-		contextWindow: 256_000,
+		maxTokens: 131_000,
+		contextWindow: 131_000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		inputPrice: 0.3,
