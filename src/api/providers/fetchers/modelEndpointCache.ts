@@ -64,10 +64,13 @@ export const getModelEndpoints = async ({
 
 		if (parentModel) {
 			// Copy model-level capabilities to all endpoints
+			// Clone arrays to avoid shared mutable references
 			for (const endpointKey of Object.keys(modelProviders)) {
 				modelProviders[endpointKey].supportsNativeTools = parentModel.supportsNativeTools
 				modelProviders[endpointKey].supportsReasoningEffort = parentModel.supportsReasoningEffort
 				modelProviders[endpointKey].supportedParameters = parentModel.supportedParameters
+					? [...parentModel.supportedParameters]
+					: undefined
 			}
 		}
 	}
