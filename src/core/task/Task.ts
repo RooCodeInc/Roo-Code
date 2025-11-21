@@ -3437,8 +3437,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Check if the model's preserveReasoning flag is set
 					// If true, include the reasoning block in API requests
 					// If false/undefined, strip it out (stored for history only, not sent back to API)
-					const modelInfo = this.cachedStreamingModel?.info ?? this.api.getModel().info
-					const shouldPreserveForApi = modelInfo.preserveReasoning === true
+					// Note: Use api.getModel() directly instead of cachedStreamingModel since
+					// buildCleanConversationHistory is called before streaming starts
+					const shouldPreserveForApi = this.api.getModel().info.preserveReasoning === true
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 
 					if (shouldPreserveForApi) {
