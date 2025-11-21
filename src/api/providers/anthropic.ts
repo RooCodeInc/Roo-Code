@@ -43,7 +43,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	): ApiStream {
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
-		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
+		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking, info } = this.getModel()
 
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
 		if (
@@ -53,98 +53,144 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas.push("context-1m-2025-08-07")
 		}
 
-		switch (modelId) {
-			case "claude-sonnet-4-5":
-			case "claude-sonnet-4-20250514":
-			case "claude-opus-4-1-20250805":
-			case "claude-opus-4-20250514":
-			case "claude-3-7-sonnet-20250219":
-			case "claude-3-5-sonnet-20241022":
-			case "claude-3-5-haiku-20241022":
-			case "claude-3-opus-20240229":
-			case "claude-haiku-4-5-20251001":
-			case "claude-3-haiku-20240307": {
-				/**
-				 * The latest message will be the new user message, one before
-				 * will be the assistant message from a previous request, and
-				 * the user message before that will be a previously cached user
-				 * message. So we need to mark the latest user message as
-				 * ephemeral to cache it for the next request, and mark the
-				 * second to last user message as ephemeral to let the server
-				 * know the last message to retrieve from the cache for the
-				 * current request.
-				 */
-				const userMsgIndices = messages.reduce(
-					(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-					[] as number[],
-				)
+		// Check if this is a known model that supports prompt caching
+		const supportsPromptCache = info.supportsPromptCache ?? false
 
-				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+		// For custom models, check if they support prompt caching
+		if (supportsPromptCache) {
+			switch (modelId) {
+				case "claude-sonnet-4-5":
+				case "claude-sonnet-4-20250514":
+				case "claude-opus-4-1-20250805":
+				case "claude-opus-4-20250514":
+				case "claude-3-7-sonnet-20250219":
+				case "claude-3-5-sonnet-20241022":
+				case "claude-3-5-haiku-20241022":
+				case "claude-3-opus-20240229":
+				case "claude-haiku-4-5-20251001":
+				case "claude-3-haiku-20240307": {
+					/**
+					 * The latest message will be the new user message, one before
+					 * will be the assistant message from a previous request, and
+					 * the user message before that will be a previously cached user
+					 * message. So we need to mark the latest user message as
+					 * ephemeral to cache it for the next request, and mark the
+					 * second to last user message as ephemeral to let the server
+					 * know the last message to retrieve from the cache for the
+					 * current request.
+					 */
+					const userMsgIndices = messages.reduce(
+						(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+						[] as number[],
+					)
 
-				stream = await this.client.messages.create(
-					{
-						model: modelId,
-						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-						temperature,
-						thinking,
-						// Setting cache breakpoint for system prompt so new tasks can reuse it.
-						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: messages.map((message, index) => {
-							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-								return {
-									...message,
-									content:
-										typeof message.content === "string"
-											? [{ type: "text", text: message.content, cache_control: cacheControl }]
-											: message.content.map((content, contentIndex) =>
-													contentIndex === message.content.length - 1
-														? { ...content, cache_control: cacheControl }
-														: content,
-												),
+					const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+					const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+
+					stream = await this.client.messages.create(
+						{
+							model: modelId,
+							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+							temperature,
+							thinking,
+							// Setting cache breakpoint for system prompt so new tasks can reuse it.
+							system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+							messages: messages.map((message, index) => {
+								if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+									return {
+										...message,
+										content:
+											typeof message.content === "string"
+												? [{ type: "text", text: message.content, cache_control: cacheControl }]
+												: message.content.map((content, contentIndex) =>
+														contentIndex === message.content.length - 1
+															? { ...content, cache_control: cacheControl }
+															: content,
+													),
+									}
 								}
-							}
-							return message
-						}),
-						stream: true,
-					},
-					(() => {
-						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-						// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
+								return message
+							}),
+							stream: true,
+						},
+						(() => {
+							// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
+							// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
+							// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
 
-						// Then check for models that support prompt caching
-						switch (modelId) {
-							case "claude-sonnet-4-5":
-							case "claude-sonnet-4-20250514":
-							case "claude-opus-4-1-20250805":
-							case "claude-opus-4-20250514":
-							case "claude-3-7-sonnet-20250219":
-							case "claude-3-5-sonnet-20241022":
-							case "claude-3-5-haiku-20241022":
-							case "claude-3-opus-20240229":
-							case "claude-haiku-4-5-20251001":
-							case "claude-3-haiku-20240307":
-								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
-							default:
-								return undefined
-						}
-					})(),
-				)
-				break
+							// Then check for models that support prompt caching
+							switch (modelId) {
+								case "claude-sonnet-4-5":
+								case "claude-sonnet-4-20250514":
+								case "claude-opus-4-1-20250805":
+								case "claude-opus-4-20250514":
+								case "claude-3-7-sonnet-20250219":
+								case "claude-3-5-sonnet-20241022":
+								case "claude-3-5-haiku-20241022":
+								case "claude-3-opus-20240229":
+								case "claude-haiku-4-5-20251001":
+								case "claude-3-haiku-20240307":
+									betas.push("prompt-caching-2024-07-31")
+									return { headers: { "anthropic-beta": betas.join(",") } }
+								default:
+									return undefined
+							}
+						})(),
+					)
+					break
+				}
+				default: {
+					// Custom model with prompt caching support
+					const userMsgIndices = messages.reduce(
+						(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+						[] as number[],
+					)
+
+					const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+					const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+
+					stream = await this.client.messages.create(
+						{
+							model: modelId,
+							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+							temperature,
+							thinking,
+							// Setting cache breakpoint for system prompt so new tasks can reuse it.
+							system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+							messages: messages.map((message, index) => {
+								if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+									return {
+										...message,
+										content:
+											typeof message.content === "string"
+												? [{ type: "text", text: message.content, cache_control: cacheControl }]
+												: message.content.map((content, contentIndex) =>
+														contentIndex === message.content.length - 1
+															? { ...content, cache_control: cacheControl }
+															: content,
+													),
+									}
+								}
+								return message
+							}),
+							stream: true,
+						},
+						{ headers: { "anthropic-beta": "prompt-caching-2024-07-31" } },
+					)
+					break
+				}
 			}
-			default: {
-				stream = (await this.client.messages.create({
-					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages,
-					stream: true,
-				})) as any
-				break
-			}
+		} else {
+			// Models without prompt caching support (or unknown custom models without the flag)
+			stream = (await this.client.messages.create({
+				model: modelId,
+				max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+				temperature,
+				thinking,
+				system: [{ text: systemPrompt, type: "text" }],
+				messages,
+				stream: true,
+			})) as any
 		}
 
 		let inputTokens = 0
@@ -249,23 +295,45 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
+		let id: string
+		let info: ModelInfo
 
-		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
-		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
-			// Use the tier pricing for 1M context
-			const tier = info.tiers?.[0]
-			if (tier) {
-				info = {
-					...info,
-					contextWindow: tier.contextWindow,
-					inputPrice: tier.inputPrice,
-					outputPrice: tier.outputPrice,
-					cacheWritesPrice: tier.cacheWritesPrice,
-					cacheReadsPrice: tier.cacheReadsPrice,
+		// Check if modelId is a known model
+		if (modelId && modelId in anthropicModels) {
+			id = modelId as AnthropicModelId
+			info = anthropicModels[id as keyof typeof anthropicModels]
+
+			// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
+			if (
+				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
+				this.options.anthropicBeta1MContext
+			) {
+				// Use the tier pricing for 1M context
+				const tier = info.tiers?.[0]
+				if (tier) {
+					info = {
+						...info,
+						contextWindow: tier.contextWindow,
+						inputPrice: tier.inputPrice,
+						outputPrice: tier.outputPrice,
+						cacheWritesPrice: tier.cacheWritesPrice,
+						cacheReadsPrice: tier.cacheReadsPrice,
+					}
 				}
 			}
+		} else if (modelId) {
+			// Custom model - use sensible defaults
+			id = modelId
+			info = {
+				maxTokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+				contextWindow: 200_000, // Default Anthropic context window
+				supportsImages: true, // Assume modern capabilities
+				supportsPromptCache: true, // Most Anthropic-compatible APIs support caching
+			}
+		} else {
+			// No model specified - use default
+			id = anthropicDefaultModelId
+			info = anthropicModels[anthropicDefaultModelId]
 		}
 
 		const params = getModelParams({
