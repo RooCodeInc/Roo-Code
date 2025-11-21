@@ -258,13 +258,16 @@ export async function initializeModelCacheRefresh(): Promise<void> {
  * @param refresh - If true, immediately fetch fresh data from API
  */
 export const flushModels = async (router: RouterName, refresh: boolean = false): Promise<void> => {
-	memoryCache.del(router)
-
 	if (refresh) {
-		// Trigger background refresh - don't await to avoid blocking
+		// Don't delete memory cache - let refreshModels atomically replace it
+		// This prevents a race condition where getModels() might be called
+		// before refresh completes, avoiding a gap in cache availability
 		refreshModels({ provider: router } as GetModelsOptions).catch((error) => {
 			console.error(`[flushModels] Refresh failed for ${router}:`, error)
 		})
+	} else {
+		// Only delete memory cache when not refreshing
+		memoryCache.del(router)
 	}
 }
 
