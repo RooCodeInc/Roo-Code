@@ -36,11 +36,18 @@ export class OllamaHandler extends BaseProvider implements SingleCompletionHandl
 			headers["Authorization"] = `Bearer ${this.options.ollamaApiKey}`
 		}
 
+		const baseUrl = this.options.ollamaBaseUrl || "http://localhost:11434"
+
+		// For localhost connections, we may encounter certificate issues on Windows
+		// The error handler will catch and provide helpful messages for these cases
+
 		this.client = new OpenAI({
-			baseURL: (this.options.ollamaBaseUrl || "http://localhost:11434") + "/v1",
+			baseURL: baseUrl + "/v1",
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 			defaultHeaders: headers,
+			dangerouslyAllowBrowser: false,
+			maxRetries: 0, // Disable automatic retries to get clearer error messages
 		})
 	}
 

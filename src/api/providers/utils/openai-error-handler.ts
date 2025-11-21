@@ -27,6 +27,21 @@ export function handleOpenAIError(error: unknown, providerName: string): Error {
 			return new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
 		}
 
+		// X509 to PEM conversion error - typically certificate validation issues on Windows
+		if (msg.includes("X509 to PEM conversion") || msg.includes("X509_to_PEM")) {
+			return new Error(i18n.t("common:errors.api.certificateError"))
+		}
+
+		// Certificate validation errors
+		if (
+			msg.includes("certificate") ||
+			msg.includes("CERT_") ||
+			msg.includes("self signed") ||
+			msg.includes("self-signed")
+		) {
+			return new Error(i18n.t("common:errors.api.certificateValidation"))
+		}
+
 		// For other Error instances, wrap with provider-specific prefix
 		return new Error(`${providerName} completion error: ${msg}`)
 	}
