@@ -529,7 +529,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
-	const handleChatReset = useCallback(() => {
+	const handleChatReset = useCallback((isCommandInput = false) => {
 		// Clear any pending auto-approval timeout
 		// if (autoApproveTimeoutRef.current) {
 		// 	clearTimeout(autoApproveTimeoutRef.current)
@@ -540,10 +540,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 		// Only reset message-specific state, preserving mode.
 		setInputValue("")
-		setSendingDisabled(true)
+		setSendingDisabled(!isCommandInput)
 		setSelectedImages([])
-		setClineAsk(undefined)
-		setEnableButtons(false)
+		setClineAsk(isCommandInput ? "command_output" : undefined)
+		setEnableButtons(isCommandInput ?? false)
 		// Do not reset mode here as it should persist.
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
@@ -558,7 +558,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSendMessage = useCallback(
 		(text: string, images: string[], chatType = "system") => {
 			text = text.trim()
-
+			debugger
 			if (text || images.length > 0) {
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
@@ -580,7 +580,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 				// Mark that user has responded - this prevents any pending auto-approvals.
 				// userRespondedRef.current = true
-
+				const isCommandInput = clineAskRef.current === "command_output"
 				if (messagesRef.current.length === 0) {
 					vscode.postMessage({ type: "newTask", text, images, values: { chatType } })
 				} else if (clineAskRef.current) {
@@ -607,7 +607,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								askResponse: "messageResponse",
 								text,
 								images,
-								values: { chatType },
+								values: { chatType, isCommandInput },
 							})
 							break
 						// There is no other case that a textfield should be enabled.
@@ -617,7 +617,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text, images })
 				}
 
-				handleChatReset()
+				handleChatReset(isCommandInput)
 			}
 		},
 		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
@@ -666,7 +666,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
 			// userRespondedRef.current = true
-
+			debugger
 			const trimmedInput = text?.trim()
 
 			switch (clineAsk) {

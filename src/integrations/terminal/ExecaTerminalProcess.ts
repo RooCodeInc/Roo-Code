@@ -207,6 +207,10 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		this.emit("continue")
 	}
 
+	public userInput (input: string) {
+		this.emit("line", `${input ? `${input}\n`: "" }`)
+	}
+	
 	public override abort() {
 		this.aborted = true
 

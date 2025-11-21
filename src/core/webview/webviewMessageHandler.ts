@@ -604,6 +604,7 @@ export const webviewMessageHandler = async (
 					message.text,
 					message.images,
 					message?.values?.chatType || "system",
+					message?.values?.isCommandInput ?? false,
 				)
 			break
 

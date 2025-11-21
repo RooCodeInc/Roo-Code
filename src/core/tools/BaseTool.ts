@@ -6,6 +6,7 @@ import type {
 	RemoveClosingTag,
 	AskApproval,
 	NativeToolArgs,
+	InlineShellIntegrationCallback,
 } from "../../shared/tools"
 import type { ToolName, ToolProtocol } from "@roo-code/types"
 
@@ -17,6 +18,7 @@ export interface ToolCallbacks {
 	handleError: HandleError
 	pushToolResult: PushToolResult
 	removeClosingTag: RemoveClosingTag
+	inlineShellIntegrationCallback?: InlineShellIntegrationCallback
 	toolProtocol: ToolProtocol
 }
 

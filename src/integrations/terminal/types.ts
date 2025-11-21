@@ -34,6 +34,7 @@ export interface RooTerminalProcess extends EventEmitter<RooTerminalProcessEvent
 	run: (command: string) => Promise<void>
 	continue: () => void
 	abort: () => void
+	userInput: (string: string) => void
 	hasUnretrievedOutput: () => boolean
 	getUnretrievedOutput: () => string
 }

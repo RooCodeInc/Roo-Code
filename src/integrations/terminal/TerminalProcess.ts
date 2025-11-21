@@ -273,6 +273,9 @@ export class TerminalProcess extends BaseTerminalProcess {
 		this.removeAllListeners("line")
 		this.emit("continue")
 	}
+	public userInput (input: string) {
+		this.terminal.terminal.sendText(input)
+	}
 
 	public override abort() {
 		if (this.isListening) {

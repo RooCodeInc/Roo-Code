@@ -25,6 +25,8 @@ export type PushToolResult = (content: ToolResponse) => void
 
 export type RemoveClosingTag = (tag: ToolParamName, content?: string) => string
 
+export type InlineShellIntegrationCallback = (p: any) => void
+
 export type AskFinishSubTaskApproval = () => Promise<boolean>
 
 export type ToolDescription = () => string

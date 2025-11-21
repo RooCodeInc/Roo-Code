@@ -132,7 +132,7 @@ const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
-
+let saveClineMessagesIndex = 0
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
 	apiConfiguration: ProviderSettings
@@ -819,6 +819,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async saveClineMessages() {
+		const provider = this.providerRef
+				.deref()
+		saveClineMessagesIndex++
+		const _saveClineMessagesIndex = saveClineMessagesIndex
+		provider?.log(`${this.taskId}`, 'info', `saveClineMessages ${_saveClineMessagesIndex} start`)
 		try {
 			await saveTaskMessages({
 				messages: this.clineMessages,
@@ -846,6 +851,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
 		} catch (error) {
 			console.error("Failed to save CoStrict messages:", error)
+		} finally {
+			// saveClineMessagesEnd = true
+			provider?.log(`${this.taskId}`, 'info', `saveClineMessages ${_saveClineMessagesIndex} end`)
 		}
 	}
 
@@ -1138,7 +1146,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		text?: string,
 		images?: string[],
 		chatType?: "system" | "user",
+		isCommandInput?: boolean,
 	) {
+		const provider = this.providerRef.deref()
+
+		if (isCommandInput && provider) {
+			const task = provider.getCurrentTask()
+			if (task) {
+				task.terminalProcess?.userInput(text ?? "")
+			}
+			return
+		}
 		this.askResponse = askResponse
 		this.askResponseText = text
 		this.askResponseImages = images

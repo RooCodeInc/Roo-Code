@@ -48,6 +48,10 @@ export class TerminalRegistry {
 		try {
 			const startDisposable = vscode.window.onDidStartTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionStartEvent) => {
+					
+					if (e?.terminal?.name !== "CoStrict") {
+						return
+					}
 					// Get a handle to the stream as early as possible:
 					const stream = e.execution.read()
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
@@ -75,6 +79,10 @@ export class TerminalRegistry {
 
 			const endDisposable = vscode.window.onDidEndTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionEndEvent) => {
+					
+					if (e.terminal.name !== "CoStrict") {
+						return
+					}
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
 					const process = terminal?.process
 					const exitDetails = TerminalProcess.interpretExitCode(e.exitCode)

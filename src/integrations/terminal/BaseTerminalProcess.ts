@@ -154,6 +154,7 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 
 		this.isHot = false
 	}
+	abstract userInput(input: string) : void
 
 	// These markers indicate the command is some kind of local dev
 	// server recompiling the app, which we want to wait for output
