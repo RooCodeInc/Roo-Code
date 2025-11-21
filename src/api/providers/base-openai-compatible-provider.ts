@@ -211,10 +211,6 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			yield this.processUsageMetrics(lastUsage, this.getModel().info)
 		}
 
-		if (lastUsage) {
-			yield this.processUsageMetrics(lastUsage, this.getModel().info)
-		}
-
 		// Process any remaining content
 		for (const processedChunk of matcher.final()) {
 			yield processedChunk
