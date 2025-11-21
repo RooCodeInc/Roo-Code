@@ -828,11 +828,34 @@ export class BrowserSession {
 
 	/**
 	 * Returns the last known viewport size (if any)
+	 *
+	 * Prefer the live page viewport when available so we stay accurate after:
+	 * - browser_action resize
+	 * - manual window resizes (especially with remote browsers)
+	 *
+	 * Falls back to the configured default viewport when no prior information exists.
 	 */
 	getViewportSize(): { width?: number; height?: number } {
-		return {
-			width: this.lastViewportWidth,
-			height: this.lastViewportHeight,
+		// If we have an active page, ask Puppeteer for the current viewport.
+		// This keeps us in sync with any resizes that happen outside of our own
+		// browser_action lifecycle (e.g. user dragging the window).
+		if (this.page) {
+			const vp = this.page.viewport()
+			if (vp?.width) this.lastViewportWidth = vp.width
+			if (vp?.height) this.lastViewportHeight = vp.height
 		}
+
+		// If we've ever observed a viewport, use that.
+		if (this.lastViewportWidth && this.lastViewportHeight) {
+			return {
+				width: this.lastViewportWidth,
+				height: this.lastViewportHeight,
+			}
+		}
+
+		// Otherwise fall back to the configured default so the tool can still
+		// operate before the first screenshot-based action has run.
+		const { width, height } = this.getViewport()
+		return { width, height }
 	}
 }

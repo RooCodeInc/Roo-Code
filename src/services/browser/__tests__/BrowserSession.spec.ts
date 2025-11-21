@@ -394,4 +394,61 @@ describe("cursor visualization", () => {
 		// Verify no cursor position in result
 		expect(result.currentMousePosition).toBeUndefined()
 	})
+
+	describe("getViewportSize", () => {
+		it("falls back to configured viewport when no page or last viewport is available", () => {
+			const localCtx: any = {
+				globalState: {
+					get: vi.fn((key: string) => {
+						if (key === "browserViewportSize") return "1024x768"
+						return undefined
+					}),
+					update: vi.fn(),
+				},
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+
+			const session = new BrowserSession(localCtx)
+			const vp = (session as any).getViewportSize()
+			expect(vp).toEqual({ width: 1024, height: 768 })
+		})
+
+		it("returns live page viewport when available and updates lastViewport cache", () => {
+			const localCtx: any = {
+				globalState: {
+					get: vi.fn(),
+					update: vi.fn(),
+				},
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(localCtx)
+			;(session as any).page = {
+				viewport: vi.fn().mockReturnValue({ width: 1111, height: 555 }),
+			}
+
+			const vp = (session as any).getViewportSize()
+			expect(vp).toEqual({ width: 1111, height: 555 })
+			expect((session as any).lastViewportWidth).toBe(1111)
+			expect((session as any).lastViewportHeight).toBe(555)
+		})
+
+		it("returns cached last viewport when page no longer exists", () => {
+			const localCtx: any = {
+				globalState: {
+					get: vi.fn(),
+					update: vi.fn(),
+				},
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(localCtx)
+			;(session as any).lastViewportWidth = 800
+			;(session as any).lastViewportHeight = 600
+
+			const vp = (session as any).getViewportSize()
+			expect(vp).toEqual({ width: 800, height: 600 })
+		})
+	})
 })
