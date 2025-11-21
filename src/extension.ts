@@ -168,6 +168,31 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		if (data.state === "active-session" || data.state === "logged-out") {
 			await handleRooModelsCache()
+
+			// Apply stored provider model to API configuration if present
+			if (data.state === "active-session") {
+				try {
+					const storedModel = context.globalState.get<string>("roo-provider-model")
+					if (storedModel) {
+						cloudLogger(`[authStateChangedHandler] Applying stored provider model: ${storedModel}`)
+						// Get the current API configuration name
+						const currentConfigName =
+							provider.contextProxy.getGlobalState("currentApiConfigName") || "default"
+						// Update it with the stored model using upsertProviderProfile
+						await provider.upsertProviderProfile(currentConfigName, {
+							apiProvider: "roo",
+							apiModelId: storedModel,
+						})
+						// Clear the stored model after applying
+						await context.globalState.update("roo-provider-model", undefined)
+						cloudLogger(`[authStateChangedHandler] Applied and cleared stored provider model`)
+					}
+				} catch (error) {
+					cloudLogger(
+						`[authStateChangedHandler] Failed to apply stored provider model: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}
 		}
 	}
 

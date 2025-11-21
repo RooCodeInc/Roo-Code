@@ -16,7 +16,15 @@
 			"incentive": "Rooを無料で試す"
 		}
 	},
-	"chooseProvider": "Rooが機能するには、APIキーが必要です。",
+	"chooseProvider": "開始するには、LLMプロバイダーが必要です：",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloudプロバイダー",
+		"rooCloudDescription": "Rooを使用する最も簡単な方法。低コストで厳選された無料および有料モデルの組み合わせ",
+		"learnMore": "詳細を見る",
+		"useAnotherProvider": "別のプロバイダーを使用",
+		"useAnotherProviderDescription": "APIキーを入力して始める。",
+		"getStarted": "始める"
+	},
 	"startRouter": "LLMルーターの使用をお勧めします：",
 	"startCustom": "または、あなた自身のAPIキーを使用できます：",
 	"telemetry": {

@@ -2146,7 +2146,8 @@ export const webviewMessageHandler = async (
 		case "rooCloudSignIn": {
 			try {
 				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
-				await CloudService.instance.login()
+				// Use provider signup flow if useProviderSignup is explicitly true
+				await CloudService.instance.login(undefined, message.useProviderSignup ?? false)
 			} catch (error) {
 				provider.log(`AuthService#login failed: ${error}`)
 				vscode.window.showErrorMessage("Sign in failed.")

@@ -16,7 +16,15 @@
 			"incentive": "Roo'yu ücretsiz dene"
 		}
 	},
-	"chooseProvider": "Sihirini yapabilmesi için Roo'nun bir API anahtarına ihtiyacı var.",
+	"chooseProvider": "Başlamak için bir LLM sağlayıcısına ihtiyacın var:",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloud Sağlayıcısı",
+		"rooCloudDescription": "Roo'yu kullanmanın en basit yolu. Düşük maliyetle seçilmiş ücretsiz ve ücretli modellerin karışımı",
+		"learnMore": "daha fazla bilgi",
+		"useAnotherProvider": "Başka bir sağlayıcı kullan",
+		"useAnotherProviderDescription": "Bir API anahtarı gir ve başla.",
+		"getStarted": "Başla"
+	},
 	"startRouter": "Bir LLM yönlendiricisi kullanmanı öneririz:",
 	"startCustom": "Veya kendi API anahtarını kullanabilirsin:",
 	"telemetry": {

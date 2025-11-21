@@ -16,7 +16,15 @@
 			"incentive": "Dùng thử Roo miễn phí"
 		}
 	},
-	"chooseProvider": "Để thực hiện phép màu của mình, Roo cần một khóa API.",
+	"chooseProvider": "Để bắt đầu, bạn cần một nhà cung cấp LLM:",
+	"providerSignup": {
+		"rooCloudProvider": "Nhà cung cấp Roo Code Cloud",
+		"rooCloudDescription": "Cách đơn giản nhất để sử dụng Roo. Sự kết hợp được tuyển chọn của các mô hình miễn phí và trả phí với chi phí thấp",
+		"learnMore": "tìm hiểu thêm",
+		"useAnotherProvider": "Sử dụng nhà cung cấp khác",
+		"useAnotherProviderDescription": "Nhập khóa API và bắt đầu.",
+		"getStarted": "Bắt đầu"
+	},
 	"startRouter": "Chúng tôi khuyên bạn nên sử dụng bộ định tuyến LLM:",
 	"startCustom": "Hoặc bạn có thể sử dụng khóa API của riêng mình:",
 	"telemetry": {
