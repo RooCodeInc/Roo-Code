@@ -106,6 +106,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			if (predictedLineCount === undefined || predictedLineCount === 0) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("write_to_file")
+				task.didToolFailInCurrentTurn = true
 
 				const actualLineCount = newContent.split("\n").length
 				const isNewFile = !fileExists

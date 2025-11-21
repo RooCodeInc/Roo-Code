@@ -366,10 +366,14 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 				}
 
-				// Once a tool result has been collected, ignore all other tool
-				// uses since we should only ever present one tool result per
-				// message.
-				cline.didAlreadyUseTool = true
+				// For XML protocol: Only one tool per message is allowed
+				// For native protocol: Multiple tools can be executed in sequence
+				if (toolProtocol === TOOL_PROTOCOL.XML) {
+					// Once a tool result has been collected, ignore all other tool
+					// uses since we should only ever present one tool result per
+					// message (XML protocol only).
+					cline.didAlreadyUseTool = true
+				}
 			}
 
 			const askApproval = async (
@@ -432,6 +436,9 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 
 				pushToolResult(formatResponse.toolError(errorString, toolProtocol))
+
+				// Mark that a tool failed in this turn to prevent attempt_completion
+				cline.didToolFailInCurrentTurn = true
 			}
 
 			// If block is partial, remove partial closing tag so its not
@@ -483,6 +490,7 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 			} catch (error) {
 				cline.consecutiveMistakeCount++
+				cline.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(error.message, toolProtocol))
 				break
 			}
@@ -517,6 +525,9 @@ export async function presentAssistantMessage(cline: Task) {
 						// Track tool repetition in telemetry.
 						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
 					}
+
+					// Mark that a tool failed in this turn to prevent attempt_completion
+					cline.didToolFailInCurrentTurn = true
 
 					// Return tool result message about the repetition
 					pushToolResult(

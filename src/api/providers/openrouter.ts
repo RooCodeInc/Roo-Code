@@ -186,7 +186,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						allow_fallbacks: false,
 					},
 				}),
-			parallel_tool_calls: false, // Ensure only one tool call at a time
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
 			...(metadata?.tools && { tools: metadata.tools }),

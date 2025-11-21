@@ -543,6 +543,12 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				}
 			}
 
+			// Check if any files had errors or were blocked and mark the turn as failed
+			const hasErrors = fileResults.some((result) => result.status === "error" || result.status === "blocked")
+			if (hasErrors) {
+				task.didToolFailInCurrentTurn = true
+			}
+
 			// Build final result based on protocol
 			let finalResult: string
 			if (useNative) {
@@ -622,6 +628,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			}
 
 			await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+
+			// Mark that a tool failed in this turn
+			task.didToolFailInCurrentTurn = true
 
 			// Build final error result based on protocol
 			let errorResult: string
