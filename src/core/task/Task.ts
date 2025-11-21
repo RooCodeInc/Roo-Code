@@ -3432,8 +3432,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					continue
 				} else if (hasPlainTextReasoning) {
-					const reasoningBlock = first as any
-
 					// Check if the model's preserveReasoning flag is set
 					// If true, include the reasoning block in API requests
 					// If false/undefined, strip it out (stored for history only, not sent back to API)
