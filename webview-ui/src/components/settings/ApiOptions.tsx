@@ -450,11 +450,22 @@ const ApiOptions = ({
 			return true
 		})
 
-		return providersWithModels.map(({ value, label }) => ({
+		const options = providersWithModels.map(({ value, label }) => ({
 			value,
 			label,
 		}))
-	}, [organizationAllowList, apiConfiguration.apiProvider])
+
+		// Pin "roo" to the top if not on welcome screen
+		if (!fromWelcomeView) {
+			const rooIndex = options.findIndex((opt) => opt.value === "roo")
+			if (rooIndex > 0) {
+				const [rooOption] = options.splice(rooIndex, 1)
+				options.unshift(rooOption)
+			}
+		}
+
+		return options
+	}, [organizationAllowList, apiConfiguration.apiProvider, fromWelcomeView])
 
 	return (
 		<div className="flex flex-col gap-3">

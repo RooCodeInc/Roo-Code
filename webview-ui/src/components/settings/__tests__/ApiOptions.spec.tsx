@@ -611,5 +611,67 @@ describe("ApiOptions", () => {
 
 			expect(screen.queryByTestId("roo-balance-display")).not.toBeInTheDocument()
 		})
+
+		it("pins roo provider to the top when not on welcome screen", () => {
+			// Mock useExtensionState to ensure no filtering
+			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
+			useExtensionStateMock.mockReturnValue({
+				cloudIsAuthenticated: false,
+				organizationAllowList: { providers: {} },
+			} as any)
+
+			renderApiOptions({
+				apiConfiguration: {},
+				fromWelcomeView: false,
+			})
+
+			const providerSelectContainer = screen.getByTestId("provider-select")
+			const providerSelect = providerSelectContainer.querySelector("select") as HTMLSelectElement
+			const options = Array.from(providerSelect.querySelectorAll("option"))
+
+			// Filter out the placeholder option (empty value)
+			const providerOptions = options.filter((opt) => opt.value !== "")
+
+			// Find the roo option
+			const rooOption = providerOptions.find((opt) => opt.value === "roo")
+
+			// If roo is available, verify it's pinned to the top
+			if (rooOption) {
+				expect(providerOptions[0].value).toBe("roo")
+			}
+
+			useExtensionStateMock.mockRestore()
+		})
+
+		it("does not pin roo provider to the top on welcome screen", () => {
+			// Mock useExtensionState to ensure no filtering
+			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
+			useExtensionStateMock.mockReturnValue({
+				cloudIsAuthenticated: false,
+				organizationAllowList: { providers: {} },
+			} as any)
+
+			renderApiOptions({
+				apiConfiguration: {},
+				fromWelcomeView: true,
+			})
+
+			const providerSelectContainer = screen.getByTestId("provider-select")
+			const providerSelect = providerSelectContainer.querySelector("select") as HTMLSelectElement
+			const options = Array.from(providerSelect.querySelectorAll("option"))
+
+			// Filter out the placeholder option (empty value)
+			const providerOptions = options.filter((opt) => opt.value !== "")
+
+			// Check that roo is in the list
+			const rooOption = providerOptions.find((opt) => opt.value === "roo")
+
+			if (rooOption) {
+				// If roo exists, verify it's NOT at the top (should be in alphabetical order)
+				expect(providerOptions[0].value).not.toBe("roo")
+			}
+
+			useExtensionStateMock.mockRestore()
+		})
 	})
 })
