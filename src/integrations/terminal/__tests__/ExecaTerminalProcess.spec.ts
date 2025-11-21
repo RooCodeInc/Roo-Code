@@ -116,7 +116,7 @@ describe("ExecaTerminalProcess", () => {
 		it("should set and clear active stream", async () => {
 			await terminalProcess.run("echo test")
 			expect(mockTerminal.setActiveStream).toHaveBeenCalledWith(expect.any(Object), mockPid)
-			expect(mockTerminal.setActiveStream).toHaveBeenLastCalledWith(undefined)
+			expect(mockTerminal.setActiveStream).toHaveBeenLastCalledWith(undefined, mockPid)
 		})
 	})
 })

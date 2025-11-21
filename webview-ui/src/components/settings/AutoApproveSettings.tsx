@@ -254,7 +254,7 @@ export const AutoApproveSettings = ({
 						<div>
 							<div className="flex items-center gap-2">
 								<Slider
-									min={5}
+									min={3}
 									max={100}
 									step={1}
 									value={[requestDelaySeconds]}

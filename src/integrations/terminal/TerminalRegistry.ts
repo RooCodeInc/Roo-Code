@@ -58,7 +58,7 @@ export class TerminalRegistry {
 					})
 
 					if (terminal) {
-						terminal.setActiveStream(stream)
+						terminal.setActiveStream(stream, (await e?.terminal?.processId) ?? undefined)
 						terminal.busy = true // Mark terminal as busy when shell execution starts
 					} else {
 						console.error(

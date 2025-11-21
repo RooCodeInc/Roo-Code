@@ -382,7 +382,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalCompressProgressBar,
 					mcpEnabled,
 					alwaysApproveResubmit: alwaysApproveResubmit ?? false,
-					requestDelaySeconds: requestDelaySeconds ?? 5,
+					requestDelaySeconds: requestDelaySeconds ?? 3,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
@@ -590,7 +590,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						}>
 						<Button
 							variant={isSettingValid ? "primary" : "secondary"}
-							className={!isSettingValid ? "!border-vscode-errorForeground" : ""}
+							className={!isSettingValid ? "border-vscode-errorForeground!" : ""}
 							onClick={handleSubmit}
 							disabled={!isChangeDetected || !isSettingValid || isSaving}
 							data-testid="save-button">

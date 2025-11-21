@@ -193,7 +193,7 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			this.subprocess = undefined
 		}
 
-		this.terminal.setActiveStream(undefined)
+		this.terminal.setActiveStream(undefined, this.pid)
 		this.emitRemainingBufferIfListening()
 		this.stopHotTimer()
 		this.emit("completed", this.fullOutput)

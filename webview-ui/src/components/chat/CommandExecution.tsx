@@ -180,6 +180,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 												type: "terminalOperation",
 												terminalOperation: "abort",
 												terminalPid: status.pid,
+												terminalCommand: status.command,
 											})
 										}>
 										<OctagonX className="size-4" />
@@ -226,7 +227,7 @@ const OutputContainerInternal = ({ isExpanded, output }: { isExpanded: boolean; 
 	<div
 		className={cn("overflow-hidden", {
 			"max-h-0": !isExpanded,
-			"max-h-[100%] mt-1 pt-1 border-t border-border/25": isExpanded,
+			"max-h-full mt-1 pt-1 border-t border-border/25": isExpanded,
 		})}>
 		{output.length > 0 && <CodeBlock source={output} language="log" />}
 	</div>

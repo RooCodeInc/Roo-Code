@@ -352,10 +352,7 @@ const App = () => {
 			)}
 			<div className={`${isChatTab ? "fixed inset-0 flex flex-col" : "hidden"}`}>
 				<div className={`header flex items-center justify-between px-5 ${isChatTab ? "" : "hidden"}`}>
-					<TabList
-						value={tab}
-						onValueChange={(val) => switchTab(val as Tab)}
-						className="header-left h-[28px]">
+					<TabList value={tab} onValueChange={(val) => switchTab(val as Tab)} className="header-left h-7">
 						{tabs.map(({ label, value }) => {
 							const isSelected = tab === value
 							const activeTabClass = isSelected ? "border-b border-gray-200" : ""
@@ -365,7 +362,7 @@ const App = () => {
 									key={value}
 									value={value}
 									isSelected={isSelected}
-									className={cn(activeTabClass, "mr-[16px]", "cursor-pointer")}
+									className={cn(activeTabClass, "mr-4", "cursor-pointer")}
 									focusNeedRing={false}>
 									{label}
 								</TabTrigger>
@@ -374,15 +371,15 @@ const App = () => {
 					</TabList>
 
 					{tab === "chat" && (
-						<div className="header-right flex absolute right-[12px]">
+						<div className="header-right flex absolute right-3">
 							<StandardTooltip content={t("chat:startNewTask.title")}>
 								<i
-									className="codicon codicon-add mr-[4px] cursor-pointer p-[2px]"
+									className="codicon codicon-add mr-1 cursor-pointer p-0.5"
 									onClick={() => resetTabs()}></i>
 							</StandardTooltip>
 							<StandardTooltip content={t("history:history")}>
 								<i
-									className="codicon codicon-history cursor-pointer p-[2px]"
+									className="codicon codicon-history cursor-pointer p-0.5"
 									onClick={() => switchTab("history")}></i>
 							</StandardTooltip>
 						</div>

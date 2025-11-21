@@ -145,7 +145,7 @@ const ChatRow = memo(
 				<></>
 			) : (
 				<div
-					className={`px-[15px] py-[10px] transition-all duration-300 ease-in-out ${
+					className={`px-[15px] py-2.5 transition-all duration-300 ease-in-out ${
 						props.shouldHighlight
 							? "bg-vscode-editor-findMatchHighlightBackground border-l-4 border-vscode-editor-findMatchBorder shadow-sm"
 							: ""
@@ -1251,7 +1251,7 @@ export const ChatRowContent = ({
 												<br />
 												<Button
 													size="sm"
-													className="ml-[24px]"
+													className="ml-6"
 													onClick={() =>
 														handleCopyErrorDetail(
 															apiRequestFailedMessage ||
@@ -1360,7 +1360,7 @@ export const ChatRowContent = ({
 								) : (
 									<div className="flex justify-between cursor-pointer">
 										<div
-											className="flex-grow px-2 py-1 wrap-anywhere rounded-lg transition-colors"
+											className="grow px-2 py-1 wrap-anywhere rounded-lg transition-colors"
 											onClick={(e) => {
 												e.stopPropagation()
 												if (!isStreaming) {
@@ -1515,7 +1515,7 @@ export const ChatRowContent = ({
 										<br />
 										<Button
 											size="sm"
-											className="ml-[24px]"
+											className="ml-6"
 											onClick={() => handleCopyErrorDetail(message.text || "")}>
 											{t("chat:copy.errorDetail")}
 										</Button>

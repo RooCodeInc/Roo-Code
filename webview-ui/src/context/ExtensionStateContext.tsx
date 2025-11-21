@@ -238,7 +238,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,
 		alwaysApproveResubmit: false,
-		requestDelaySeconds: 5,
+		requestDelaySeconds: 3,
 		currentApiConfigName: "default",
 		listApiConfigMeta: [],
 		mode: defaultModeSlug,

@@ -17,6 +17,7 @@ export type ApiMessage = Anthropic.MessageParam & {
 	type?: "reasoning"
 	summary?: any[]
 	encrypted_content?: string
+	text?: string
 }
 
 export async function readApiMessages({

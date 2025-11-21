@@ -1,7 +1,7 @@
 import path from "path"
 import fs from "fs/promises"
 import * as vscode from "vscode"
-import type { GenerateImageParams } from "@roo-code/types"
+import { GenerateImageParams, IMAGE_GENERATION_MODEL_IDS } from "@roo-code/types"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
@@ -11,8 +11,6 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
-
-const IMAGE_GENERATION_MODELS = ["google/gemini-2.5-flash-image", "openai/gpt-5-image", "openai/gpt-5-image-mini"]
 
 export class GenerateImageTool extends BaseTool<"generate_image"> {
 	readonly name = "generate_image" as const
@@ -137,7 +135,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			return
 		}
 
-		const selectedModel = state?.openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0]
+		const selectedModel = state?.openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODEL_IDS[0]
 
 		const fullPath = path.resolve(task.cwd, removeClosingTag("path", relPath))
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
