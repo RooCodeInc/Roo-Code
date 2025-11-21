@@ -286,6 +286,14 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
+			// Check experimental setting for multiple native tool calls
+			const provider = cline.providerRef.deref()
+			const state = await provider?.getState()
+			const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
+				state?.experiments ?? {},
+				EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
+			)
+
 			const pushToolResult = (content: ToolResponse) => {
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
@@ -337,13 +345,19 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				// For XML protocol: Only one tool per message is allowed
-				// For native protocol: Multiple tools can be executed in sequence
+				// For native protocol with experimental flag enabled: Multiple tools can be executed in sequence
+				// For native protocol with experimental flag disabled: Single tool per message (default safe behavior)
 				if (toolProtocol === TOOL_PROTOCOL.XML) {
 					// Once a tool result has been collected, ignore all other tool
 					// uses since we should only ever present one tool result per
 					// message (XML protocol only).
 					cline.didAlreadyUseTool = true
+				} else if (toolProtocol === TOOL_PROTOCOL.NATIVE && !isMultipleNativeToolCallsEnabled) {
+					// For native protocol with experimental flag disabled, enforce single tool per message
+					cline.didAlreadyUseTool = true
 				}
+				// If toolProtocol is NATIVE and isMultipleNativeToolCallsEnabled is true,
+				// allow multiple tool calls in sequence (don't set didAlreadyUseTool)
 			}
 
 			const askApproval = async (
