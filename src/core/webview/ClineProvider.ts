@@ -1925,6 +1925,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			isBrowserSessionActive,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -1974,7 +1975,7 @@ export class ClineProvider
 			alwaysAllowModeSwitch: alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: alwaysAllowSubtasks ?? false,
 			alwaysAllowUpdateTodoList: alwaysAllowUpdateTodoList ?? false,
-			isBrowserSessionActive: this.getCurrentTask()?.browserSession?.isSessionActive() ?? false,
+			isBrowserSessionActive,
 			allowedMaxRequests,
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
@@ -2125,10 +2126,13 @@ export class ClineProvider
 			providerSettings.apiProvider = apiProvider
 		}
 
+		const cloudService = CloudService.hasInstance() ? CloudService.instance : undefined
 		let organizationAllowList = ORGANIZATION_ALLOW_ALL
 
 		try {
-			organizationAllowList = await CloudService.instance.getAllowList()
+			if (cloudService) {
+				organizationAllowList = await cloudService.getAllowList()
+			}
 		} catch (error) {
 			console.error(
 				`[getState] failed to get organization allow list: ${error instanceof Error ? error.message : String(error)}`,
@@ -2138,7 +2142,9 @@ export class ClineProvider
 		let cloudUserInfo: CloudUserInfo | null = null
 
 		try {
-			cloudUserInfo = CloudService.instance.getUserInfo()
+			if (cloudService) {
+				cloudUserInfo = cloudService.getUserInfo()
+			}
 		} catch (error) {
 			console.error(
 				`[getState] failed to get cloud user info: ${error instanceof Error ? error.message : String(error)}`,
@@ -2148,7 +2154,9 @@ export class ClineProvider
 		let cloudIsAuthenticated: boolean = false
 
 		try {
-			cloudIsAuthenticated = CloudService.instance.isAuthenticated()
+			if (cloudService) {
+				cloudIsAuthenticated = cloudService.isAuthenticated()
+			}
 		} catch (error) {
 			console.error(
 				`[getState] failed to get cloud authentication state: ${error instanceof Error ? error.message : String(error)}`,
@@ -2158,7 +2166,9 @@ export class ClineProvider
 		let sharingEnabled: boolean = false
 
 		try {
-			sharingEnabled = await CloudService.instance.canShareTask()
+			if (cloudService) {
+				sharingEnabled = await cloudService.canShareTask()
+			}
 		} catch (error) {
 			console.error(
 				`[getState] failed to get sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
@@ -2168,8 +2178,8 @@ export class ClineProvider
 		let organizationSettingsVersion: number = -1
 
 		try {
-			if (CloudService.hasInstance()) {
-				const settings = CloudService.instance.getOrganizationSettings()
+			if (cloudService) {
+				const settings = cloudService.getOrganizationSettings()
 				organizationSettingsVersion = settings?.version ?? -1
 			}
 		} catch (error) {
@@ -2181,7 +2191,9 @@ export class ClineProvider
 		let taskSyncEnabled: boolean = false
 
 		try {
-			taskSyncEnabled = CloudService.instance.isTaskSyncEnabled()
+			if (cloudService) {
+				taskSyncEnabled = cloudService.isTaskSyncEnabled()
+			}
 		} catch (error) {
 			console.error(
 				`[getState] failed to get task sync enabled state: ${error instanceof Error ? error.message : String(error)}`,

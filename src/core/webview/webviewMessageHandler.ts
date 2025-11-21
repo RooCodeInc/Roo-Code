@@ -2139,8 +2139,7 @@ export const webviewMessageHandler = async (
 						provider.postMessageToWebview({
 							type: "importModeResult",
 							success: true,
-							// Cast to any to support older ImportResult types that may not declare slug
-							slug: (result as any)?.slug,
+							slug: result.slug,
 						})
 
 						// Show success message

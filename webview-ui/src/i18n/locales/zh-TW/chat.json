@@ -338,7 +338,7 @@
 		},
 		"sessionStarted": "瀏覽器工作階段已啟動",
 		"actions": {
-			"title": "瀏覽器動作",
+			"title": "瀏覽器動作：",
 			"launch": "在 {{url}} 啟動瀏覽器",
 			"click": "點選 ({{coordinate}})",
 			"type": "輸入「{{text}}」",

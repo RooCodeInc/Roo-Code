@@ -2,6 +2,7 @@ import { memo, useMemo, useEffect, useRef } from "react"
 import { ClineMessage } from "@roo-code/types"
 import { ClineSayBrowserAction } from "@roo/ExtensionMessage"
 import { vscode } from "@src/utils/vscode"
+import { getViewportCoordinate as getViewportCoordinateShared, prettyKey } from "@roo/browserUtils"
 import {
 	MousePointer as MousePointerIcon,
 	Keyboard,
@@ -13,47 +14,7 @@ import {
 	Maximize2,
 } from "lucide-react"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-
-const prettyKey = (k?: string): string => {
-	if (!k) return ""
-	return k
-		.split("+")
-		.map((part) => {
-			const p = part.trim()
-			const lower = p.toLowerCase()
-			const map: Record<string, string> = {
-				enter: "Enter",
-				tab: "Tab",
-				escape: "Esc",
-				esc: "Esc",
-				backspace: "Backspace",
-				space: "Space",
-				shift: "Shift",
-				control: "Ctrl",
-				ctrl: "Ctrl",
-				alt: "Alt",
-				meta: "Meta",
-				command: "Cmd",
-				cmd: "Cmd",
-				arrowup: "Arrow Up",
-				arrowdown: "Arrow Down",
-				arrowleft: "Arrow Left",
-				arrowright: "Arrow Right",
-				pageup: "Page Up",
-				pagedown: "Page Down",
-				home: "Home",
-				end: "End",
-			}
-			if (map[lower]) return map[lower]
-			const keyMatch = /^Key([A-Z])$/.exec(p)
-			if (keyMatch) return keyMatch[1].toUpperCase()
-			const digitMatch = /^Digit([0-9])$/.exec(p)
-			if (digitMatch) return digitMatch[1]
-			const spaced = p.replace(/([a-z])([A-Z])/g, "$1 $2")
-			return spaced.charAt(0).toUpperCase() + spaced.slice(1)
-		})
-		.join(" + ")
-}
+import { useTranslation } from "react-i18next"
 
 interface BrowserActionRowProps {
 	message: ClineMessage
@@ -87,6 +48,7 @@ const getActionIcon = (action: string) => {
 }
 
 const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions }: BrowserActionRowProps) => {
+	const { t } = useTranslation()
 	const { isBrowserSessionActive } = useExtensionState()
 	const hasHandledAutoOpenRef = useRef(false)
 
@@ -119,33 +81,8 @@ const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions
 
 		// Helper to scale coordinates from screenshot dimensions to viewport dimensions
 		// Matches the backend's scaleCoordinate function logic
-		const getViewportCoordinate = (coord?: string): string => {
-			if (!coord) return ""
-
-			// Parse "x,y@widthxheight" format
-			const match = /^\s*(\d+)\s*,\s*(\d+)\s*@\s*(\d+)\s*[x,]\s*(\d+)\s*$/.exec(coord)
-			if (!match) {
-				// If no @dimensions, return as-is (might be plain x,y format)
-				const simpleMatch = /^\s*(\d+)\s*,\s*(\d+)/.exec(coord)
-				return simpleMatch ? `${simpleMatch[1]},${simpleMatch[2]}` : coord
-			}
-
-			const x = parseInt(match[1], 10)
-			const y = parseInt(match[2], 10)
-			const imgWidth = parseInt(match[3], 10)
-			const imgHeight = parseInt(match[4], 10)
-
-			// If we don't have viewport dimensions, just return the screenshot coordinates
-			if (!viewportDimensions?.width || !viewportDimensions?.height) {
-				return `${x},${y}`
-			}
-
-			// Scale coordinates from image dimensions to viewport dimensions (same as backend)
-			const scaledX = Math.round((x / imgWidth) * viewportDimensions.width)
-			const scaledY = Math.round((y / imgHeight) * viewportDimensions.height)
-
-			return `${scaledX},${scaledY}`
-		}
+		const getViewportCoordinate = (coord?: string): string =>
+			getViewportCoordinateShared(coord, viewportDimensions?.width ?? 0, viewportDimensions?.height ?? 0)
 
 		switch (browserAction.action) {
 			case "launch":
@@ -224,7 +161,7 @@ const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions
 					className="codicon codicon-globe text-vscode-testing-iconPassed shrink-0"
 					style={{ marginBottom: "-1.5px" }}
 				/>
-				<span style={{ fontWeight: "bold" }}>Browser Action</span>
+				<span style={{ fontWeight: "bold" }}>{t("chat:browser.actions.title")}</span>
 				{actionIndex !== undefined && totalActions !== undefined && (
 					<span style={{ fontWeight: "bold" }}>
 						{" "}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState } from "react"
 import { type ClineMessage } from "@roo-code/types"
 import BrowserSessionRow from "../chat/BrowserSessionRow"
 import { TooltipProvider } from "@src/components/ui/tooltip"
@@ -51,32 +51,25 @@ const BrowserSessionPanelContent: React.FC = () => {
 		}
 	}, [])
 
-	const handleHeightChange = useCallback(() => {
-		// No-op for panel - no scrolling needed
-	}, [])
-
 	return (
 		<div className="fixed top-0 left-0 right-0 bottom-0 flex flex-col overflow-hidden bg-vscode-editor-background">
-			<div className="grow flex flex-col min-h-0 p-3">
-				<BrowserSessionRow
-					messages={state.messages}
-					isLast={true}
-					lastModifiedMessage={state.messages.at(-1)}
-					onHeightChange={handleHeightChange}
-					isStreaming={false}
-					isExpanded={(messageTs: number) => expandedRows[messageTs] ?? false}
-					onToggleExpand={(messageTs: number) => {
-						setExpandedRows((prev: Record<number, boolean>) => ({
-							...prev,
-							[messageTs]: !prev[messageTs],
-						}))
-					}}
-					fullScreen={true}
-					browserViewportSizeProp={browserViewportSize}
-					isBrowserSessionActiveProp={isBrowserSessionActive}
-					navigateToPageIndex={navigateToStepIndex}
-				/>
-			</div>
+			<BrowserSessionRow
+				messages={state.messages}
+				isLast={true}
+				lastModifiedMessage={state.messages.at(-1)}
+				isStreaming={false}
+				isExpanded={(messageTs: number) => expandedRows[messageTs] ?? false}
+				onToggleExpand={(messageTs: number) => {
+					setExpandedRows((prev: Record<number, boolean>) => ({
+						...prev,
+						[messageTs]: !prev[messageTs],
+					}))
+				}}
+				fullScreen={true}
+				browserViewportSizeProp={browserViewportSize}
+				isBrowserSessionActiveProp={isBrowserSessionActive}
+				navigateToPageIndex={navigateToStepIndex}
+			/>
 		</div>
 	)
 }

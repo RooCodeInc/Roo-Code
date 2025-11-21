@@ -11,6 +11,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import CodeBlock from "../common/CodeBlock"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Button, StandardTooltip } from "@src/components/ui"
+import { getViewportCoordinate as getViewportCoordinateShared, prettyKey } from "@roo/browserUtils"
 import {
 	Globe,
 	Pointer,
@@ -31,47 +32,6 @@ import {
 	Copy,
 } from "lucide-react"
 
-const prettyKey = (k?: string): string => {
-	if (!k) return ""
-	return k
-		.split("+")
-		.map((part) => {
-			const p = part.trim()
-			const lower = p.toLowerCase()
-			const map: Record<string, string> = {
-				enter: "Enter",
-				tab: "Tab",
-				escape: "Esc",
-				esc: "Esc",
-				backspace: "Backspace",
-				space: "Space",
-				shift: "Shift",
-				control: "Ctrl",
-				ctrl: "Ctrl",
-				alt: "Alt",
-				meta: "Meta",
-				command: "Cmd",
-				cmd: "Cmd",
-				arrowup: "Arrow Up",
-				arrowdown: "Arrow Down",
-				arrowleft: "Arrow Left",
-				arrowright: "Arrow Right",
-				pageup: "Page Up",
-				pagedown: "Page Down",
-				home: "Home",
-				end: "End",
-			}
-			if (map[lower]) return map[lower]
-			const keyMatch = /^Key([A-Z])$/.exec(p)
-			if (keyMatch) return keyMatch[1].toUpperCase()
-			const digitMatch = /^Digit([0-9])$/.exec(p)
-			if (digitMatch) return digitMatch[1]
-			const spaced = p.replace(/([a-z])([A-Z])/g, "$1 $2")
-			return spaced.charAt(0).toUpperCase() + spaced.slice(1)
-		})
-		.join(" + ")
-}
-
 const getBrowserActionText = (
 	action: BrowserAction,
 	executedCoordinate?: string,
@@ -83,33 +43,8 @@ const getBrowserActionText = (
 ) => {
 	// Helper to scale coordinates from screenshot dimensions to viewport dimensions
 	// Matches the backend's scaleCoordinate function logic
-	const getViewportCoordinate = (coord?: string): string => {
-		if (!coord) return ""
-
-		// Parse "x,y@widthxheight" format
-		const match = /^\s*(\d+)\s*,\s*(\d+)\s*@\s*(\d+)\s*[x,]\s*(\d+)\s*$/.exec(coord)
-		if (!match) {
-			// If no @dimensions, return as-is (might be plain x,y format)
-			const simpleMatch = /^\s*(\d+)\s*,\s*(\d+)/.exec(coord)
-			return simpleMatch ? `${simpleMatch[1]},${simpleMatch[2]}` : coord
-		}
-
-		const x = parseInt(match[1], 10)
-		const y = parseInt(match[2], 10)
-		const imgWidth = parseInt(match[3], 10)
-		const imgHeight = parseInt(match[4], 10)
-
-		// If we don't have viewport dimensions, just return the screenshot coordinates
-		if (!viewportWidth || !viewportHeight) {
-			return `${x},${y}`
-		}
-
-		// Scale coordinates from image dimensions to viewport dimensions (same as backend)
-		const scaledX = Math.round((x / imgWidth) * viewportWidth)
-		const scaledY = Math.round((y / imgHeight) * viewportHeight)
-
-		return `${scaledX},${scaledY}`
-	}
+	const getViewportCoordinate = (coord?: string): string =>
+		getViewportCoordinateShared(coord, viewportWidth ?? 0, viewportHeight ?? 0)
 
 	switch (action) {
 		case "launch":
@@ -164,7 +99,7 @@ interface BrowserSessionRowProps {
 	onToggleExpand: (messageTs: number) => void
 	lastModifiedMessage?: ClineMessage
 	isLast: boolean
-	onHeightChange: (isTaller: boolean) => void
+	onHeightChange?: (isTaller: boolean) => void
 	isStreaming: boolean
 	onExpandChange?: (expanded: boolean) => void
 	fullScreen?: boolean
@@ -1159,7 +1094,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 		const isInitialRender = prevHeightRef.current === 0
 		if (isLast && rowHeight !== 0 && rowHeight !== Infinity && rowHeight !== prevHeightRef.current) {
 			if (!isInitialRender) {
-				onHeightChange(rowHeight > prevHeightRef.current)
+				onHeightChange?.(rowHeight > prevHeightRef.current)
 			}
 			prevHeightRef.current = rowHeight
 		}

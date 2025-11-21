@@ -120,6 +120,7 @@ describe("getEnvironmentDetails", () => {
 			} as unknown as WeakRef<ClineProvider>,
 			browserSession: {
 				isSessionActive: vi.fn().mockReturnValue(false),
+				getViewportSize: vi.fn().mockReturnValue({ width: 900, height: 600 }),
 			} as any,
 		}
 
@@ -459,10 +460,9 @@ describe("getEnvironmentDetails", () => {
 		expect(getGitStatus).toHaveBeenCalledWith(mockCwd, 5)
 	})
 
-	it("should include Browser Session Status when inactive", async () => {
+	it("should NOT include Browser Session Status when inactive", async () => {
 		const result = await getEnvironmentDetails(mockCline as Task)
-		expect(result).toContain("# Browser Session Status")
-		expect(result).toContain("Inactive - Browser is not launched")
+		expect(result).not.toContain("# Browser Session Status")
 	})
 
 	it("should include Browser Session Status with current viewport when active", async () => {

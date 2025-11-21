@@ -334,6 +334,7 @@
 		},
 		"sessionStarted": "Browser Session Started",
 		"actions": {
+			"title": "Browser Action: ",
 			"launch": "Launch browser at {{url}}",
 			"click": "Click ({{coordinate}})",
 			"type": "Type \"{{text}}\"",

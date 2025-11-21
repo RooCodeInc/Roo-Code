@@ -319,7 +319,7 @@
 		},
 		"sessionStarted": "Browsersessie gestart",
 		"actions": {
-			"title": "Browse-actie: ",
+			"title": "Browseractie: ",
 			"launch": "Browser starten op {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Typ \"{{text}}\"",

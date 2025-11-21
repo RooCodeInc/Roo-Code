@@ -8,39 +8,7 @@ import {
 } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { Anthropic } from "@anthropic-ai/sdk"
-
-/**
- * Parses coordinate string and scales from image dimensions to viewport dimensions
- * The LLM examines the screenshot it receives (which may be downscaled by the API)
- * and reports coordinates in format: "x,y@widthxheight" where widthxheight is what the LLM observed
- *
- * Format: "x,y@widthxheight" (required)
- * Returns: scaled coordinate string "x,y" in viewport coordinates
- * Throws: Error if format is invalid or missing image dimensions
- */
-function scaleCoordinate(coordinate: string, viewportWidth: number, viewportHeight: number): string {
-	// Parse coordinate with required image dimensions (accepts both 'x' and ',' as dimension separators)
-	const match = coordinate.match(/^\s*(\d+)\s*,\s*(\d+)\s*@\s*(\d+)\s*[x,]\s*(\d+)\s*$/)
-
-	if (!match) {
-		throw new Error(
-			`Invalid coordinate format: "${coordinate}". ` +
-				`Expected format: "x,y@widthxheight" (e.g., "450,300@1024x768")`,
-		)
-	}
-
-	const [, xStr, yStr, imgWidthStr, imgHeightStr] = match
-	const x = parseInt(xStr, 10)
-	const y = parseInt(yStr, 10)
-	const imgWidth = parseInt(imgWidthStr, 10)
-	const imgHeight = parseInt(imgHeightStr, 10)
-
-	// Scale coordinates from image dimensions to viewport dimensions
-	const scaledX = Math.round((x / imgWidth) * viewportWidth)
-	const scaledY = Math.round((y / imgHeight) * viewportHeight)
-
-	return `${scaledX},${scaledY}`
-}
+import { scaleCoordinate } from "../../shared/browserUtils"
 
 export async function browserActionTool(
 	cline: Task,
