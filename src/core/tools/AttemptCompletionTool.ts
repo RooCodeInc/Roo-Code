@@ -1,23 +1,17 @@
-import Anthropic from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
-
-import { RooCodeEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-
 import { Task } from "../task/Task"
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
-import type { ToolUse } from "../../shared/tools"
 
-interface AttemptCompletionParams {
+export interface AttemptCompletionParams {
 	result: string
 	command?: string
 }
 
 export interface AttemptCompletionCallbacks extends ToolCallbacks {
-	askFinishSubTaskApproval: () => Promise<boolean>
-	toolDescription: () => string
+	askFinishSubTaskApproval: (message: string) => Promise<boolean>
+	toolDescription?: (toolName: string, json: string) => string
 }
 
 export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
@@ -31,27 +25,8 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 	}
 
 	async execute(params: AttemptCompletionParams, task: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
-		const { result } = params
-		const { handleError, pushToolResult, askFinishSubTaskApproval, toolDescription, toolProtocol } = callbacks
-
-		const preventCompletionWithOpenTodos = vscode.workspace
-			.getConfiguration(Package.name)
-			.get<boolean>("preventCompletionWithOpenTodos", false)
-
-		const hasIncompleteTodos = task.todoList && task.todoList.some((todo) => todo.status !== "completed")
-
-		if (preventCompletionWithOpenTodos && hasIncompleteTodos) {
-			task.consecutiveMistakeCount++
-			task.recordToolError("attempt_completion")
-
-			pushToolResult(
-				formatResponse.toolError(
-					"Cannot complete task while there are incomplete todos. Please finish all todos before attempting completion.",
-				),
-			)
-
-			return
-		}
+		const { result, command } = params
+		const { askApproval, handleError, pushToolResult, askFinishSubTaskApproval } = callbacks
 
 		try {
 			if (!result) {
@@ -61,74 +36,90 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				return
 			}
 
+			// Check for open todos if setting enabled
+			const preventCompletionWithOpenTodos = vscode.workspace
+				.getConfiguration(Package.name)
+				.get<boolean>("preventCompletionWithOpenTodos", false)
+
+			if (preventCompletionWithOpenTodos && task.todoList) {
+				const incompleteTodos = task.todoList.filter((todo) => todo.status !== "completed")
+				if (incompleteTodos.length > 0) {
+					task.consecutiveMistakeCount++
+					task.recordToolError("attempt_completion")
+					pushToolResult(
+						formatResponse.toolError(
+							"Cannot complete task while there are incomplete todos. Please complete or cancel them first.",
+						),
+					)
+					return
+				}
+			}
+
 			task.consecutiveMistakeCount = 0
 
-			await task.say("completion_result", result, undefined, false)
-			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+			// If it's a subtask (has parentTaskId), we need special handling
+			if (task.parentTaskId) {
+				const toolMessage = JSON.stringify({
+					tool: "attemptCompletion",
+					content: result,
+					command,
+				})
 
-			if (task.parentTask) {
-				const didApprove = await askFinishSubTaskApproval()
-
+				const didApprove = await askFinishSubTaskApproval(toolMessage)
 				if (!didApprove) {
-					pushToolResult(formatResponse.toolDenied())
 					return
 				}
 
-				pushToolResult("")
-				await task.providerRef.deref()?.finishSubTask(result)
+				const provider = task.providerRef.deref()
+				if (provider) {
+					await (provider as any).reopenParentFromDelegation({
+						parentTaskId: task.parentTaskId,
+						childTaskId: task.taskId,
+						completionResultSummary: result,
+					})
+				}
+
+				pushToolResult(result)
 				return
 			}
 
-			const { response, text, images } = await task.ask("completion_result", "", false)
+			// Root task completion
+			const toolMessage = JSON.stringify({
+				tool: "attemptCompletion",
+				content: result,
+				command,
+			})
 
-			if (response === "yesButtonClicked") {
+			const didApprove = await askApproval("tool", toolMessage)
+			if (!didApprove) {
 				return
 			}
 
-			// User provided feedback - push tool result to continue the conversation
-			await task.say("user_feedback", text ?? "", images)
+			if (command) {
+				await task.say("text", `Executing command: ${command}`)
+				// We don't await the command execution here because we're completing the task
+			}
 
-			const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`
-			pushToolResult(formatResponse.toolResult(feedbackText, images))
+			pushToolResult(result)
+			return
 		} catch (error) {
-			await handleError("inspecting site", error as Error)
+			await handleError("attempting completion", error)
+			return
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {
-		const result: string | undefined = block.params.result
-		const command: string | undefined = block.params.command
-
-		const lastMessage = task.clineMessages.at(-1)
-
-		if (command) {
-			if (lastMessage && lastMessage.ask === "command") {
-				await task
-					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
-					.catch(() => {})
-			} else {
-				await task.say(
-					"completion_result",
-					this.removeClosingTag("result", result, block.partial),
-					undefined,
-					false,
-				)
-
-				TelemetryService.instance.captureTaskCompleted(task.taskId)
-				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
-
-				await task
-					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
-					.catch(() => {})
-			}
-		} else {
-			await task.say(
-				"completion_result",
-				this.removeClosingTag("result", result, block.partial),
-				undefined,
-				block.partial,
-			)
+	override async handlePartial(task: Task, block: any): Promise<void> {
+		// No partial handling needed for attempt_completion as it's usually final
+		// But we can implement it if needed for consistent UI
+		const result = block.params.result
+		const command = block.params.command
+		if (result || command) {
+			const partialMessage = JSON.stringify({
+				tool: "attemptCompletion",
+				content: this.removeClosingTag("result", result, block.partial),
+				command: this.removeClosingTag("command", command, block.partial),
+			})
+			await task.ask("tool", partialMessage, block.partial).catch(() => {})
 		}
 	}
 }

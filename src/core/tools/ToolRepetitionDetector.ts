@@ -1,3 +1,4 @@
+// @ts-ignore
 import stringify from "safe-stable-stringify"
 import { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"

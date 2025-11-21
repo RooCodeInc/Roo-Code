@@ -436,6 +436,11 @@ export enum ExtensionBridgeEventName {
 	TaskUnpaused = RooCodeEventName.TaskUnpaused,
 	TaskSpawned = RooCodeEventName.TaskSpawned,
 
+	// NEW: Delegation events
+	TaskDelegated = RooCodeEventName.TaskDelegated,
+	TaskDelegationCompleted = RooCodeEventName.TaskDelegationCompleted,
+	TaskDelegationResumed = RooCodeEventName.TaskDelegationResumed,
+
 	TaskUserMessage = RooCodeEventName.TaskUserMessage,
 
 	TaskTokenUsageUpdated = RooCodeEventName.TaskTokenUsageUpdated,
@@ -512,6 +517,23 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskSpawned),
+		instance: extensionInstanceSchema,
+		timestamp: z.number(),
+	}),
+
+	// NEW: Delegation events
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.TaskDelegated),
+		instance: extensionInstanceSchema,
+		timestamp: z.number(),
+	}),
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.TaskDelegationCompleted),
+		instance: extensionInstanceSchema,
+		timestamp: z.number(),
+	}),
+	z.object({
+		type: z.literal(ExtensionBridgeEventName.TaskDelegationResumed),
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),

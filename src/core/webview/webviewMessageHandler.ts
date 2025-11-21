@@ -634,19 +634,10 @@ export const webviewMessageHandler = async (
 			}
 			break
 		case "clearTask":
-			// Clear task resets the current session and allows for a new task
-			// to be started, if this session is a subtask - it allows the
-			// parent task to be resumed.
-			// Check if the current task actually has a parent task.
-			const currentTask = provider.getCurrentTask()
-
-			if (currentTask && currentTask.parentTask) {
-				await provider.finishSubTask(t("common:tasks.canceled"))
-			} else {
-				// Regular task - just clear it
-				await provider.clearTask()
-			}
-
+			// Clear task resets the current session. Delegation flows are
+			// handled via metadata; parent resumption occurs through
+			// reopenParentFromDelegation, not via finishSubTask.
+			await provider.clearTask()
 			await provider.postStateToWebview()
 			break
 		case "didShowAnnouncement":

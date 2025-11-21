@@ -47,7 +47,8 @@ const TaskItem = ({
 			key={item.id}
 			data-testid={`task-item-${item.id}`}
 			className={cn(
-				"cursor-pointer group bg-vscode-editor-background rounded-xl relative overflow-hidden border border-transparent hover:bg-vscode-editor-foreground/10 transition-colors",
+				"cursor-pointer group bg-vscode-editor-background rounded-xl relative overflow-hidden border hover:bg-vscode-editor-foreground/10 transition-colors",
+				"border-transparent",
 				className,
 			)}
 			onClick={handleClick}>
@@ -80,6 +81,13 @@ const TaskItem = ({
 						{...(item.highlight ? { dangerouslySetInnerHTML: { __html: item.highlight } } : {})}>
 						{item.highlight ? undefined : item.task}
 					</div>
+
+					<div className="mt-1 flex flex-row flex-wrap items-center gap-2 text-xs">
+						{/* UI-neutral PR: hide delegated badge to keep visible UI unchanged */ null}
+						{/* UI-neutral PR: hide delegated child link to keep visual output unchanged */ null}
+						{/* UI-neutral PR: hide delegation completion indicator to avoid new UI affordances */ null}
+					</div>
+
 					<TaskItemFooter
 						item={item}
 						variant={variant}
