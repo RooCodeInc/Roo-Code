@@ -375,12 +375,99 @@ export class ProviderSettingsManager {
 			return await this.lock(async () => {
 				const providerProfiles = await this.load()
 				// Preserve the existing ID if this is an update to an existing config.
-				const existingId = providerProfiles.apiConfigs[name]?.id
+				const existingConfig = providerProfiles.apiConfigs[name]
+				const existingId = existingConfig?.id
 				const id = config.id || existingId || this.generateId()
 
 				// Filter out settings from other providers.
 				const filteredConfig = discriminatedProviderSettingsWithIdSchema.parse(config)
-				providerProfiles.apiConfigs[name] = { ...filteredConfig, id }
+
+				// Preserve credentials and sensitive fields from the existing config
+				// This prevents losing credentials when switching providers
+				let mergedConfig: ProviderSettingsWithId = { ...filteredConfig, id }
+				if (existingConfig) {
+					// Cast to any to allow dynamic property access
+					const existingAny = existingConfig as any
+					const mergedAny = mergedConfig as any
+
+					// List of fields to preserve when switching providers
+					// These are credential and configuration fields that should persist
+					const fieldsToPreserve = [
+						// Vertex AI credentials
+						"vertexJsonCredentials",
+						"vertexKeyFile",
+						"vertexProjectId",
+						"vertexRegion",
+						// AWS credentials
+						"awsAccessKey",
+						"awsSecretKey",
+						"awsSessionToken",
+						"awsRegion",
+						"awsProfile",
+						// Other API keys and credentials
+						"apiKey",
+						"openAiApiKey",
+						"anthropicApiKey",
+						"geminiApiKey",
+						"claudeCodePath",
+						"openRouterApiKey",
+						"glamaApiKey",
+						"mistralApiKey",
+						"deepSeekApiKey",
+						"doubaoApiKey",
+						"moonshotApiKey",
+						"minimaxApiKey",
+						"unboundApiKey",
+						"requestyApiKey",
+						"xaiApiKey",
+						"groqApiKey",
+						"huggingFaceApiKey",
+						"chutesApiKey",
+						"litellmApiKey",
+						"cerebrasApiKey",
+						"sambaNovaApiKey",
+						"zaiApiKey",
+						"fireworksApiKey",
+						"featherlessApiKey",
+						"ioIntelligenceApiKey",
+						"qwenCodeOauthPath",
+						"vercelAiGatewayApiKey",
+						"deepInfraApiKey",
+						"ollamaApiKey",
+						"openAiNativeApiKey",
+						// Base URLs and endpoints
+						"lmStudioBaseUrl",
+						"ollamaBaseUrl",
+						"openAiBaseUrl",
+						"openAiNativeBaseUrl",
+						"deepInfraBaseUrl",
+						"deepSeekBaseUrl",
+						"anthropicBaseUrl",
+						"moonshotBaseUrl",
+						"minimaxBaseUrl",
+						"googleGeminiBaseUrl",
+						"mistralCodestralUrl",
+						"requestyBaseUrl",
+						"litellmBaseUrl",
+						"doubaoBaseUrl",
+					]
+
+					// Preserve these fields if they exist in the existing config
+					for (const field of fieldsToPreserve) {
+						if (existingAny[field] !== undefined && mergedAny[field] === undefined) {
+							mergedAny[field] = existingAny[field]
+						}
+					}
+
+					// Preserve any field that isSecretStateKey identifies as a secret
+					for (const [key, value] of Object.entries(existingConfig)) {
+						if (isSecretStateKey(key) && value !== undefined && mergedAny[key] === undefined) {
+							mergedAny[key] = value
+						}
+					}
+				}
+
+				providerProfiles.apiConfigs[name] = mergedConfig
 				await this.store(providerProfiles)
 				return id
 			})
