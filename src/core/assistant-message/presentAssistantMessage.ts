@@ -252,16 +252,25 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
-				if (!block.partial) {
+				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
+				const toolCallId = block.id
+				const errorMessage = !block.partial
+					? `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`
+					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
+
+				if (toolCallId) {
+					// Native protocol: MUST send tool_result for every tool_use
 					cline.userMessageContent.push({
-						type: "text",
-						text: `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`,
-					})
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
 				} else {
-					// Partial tool after user rejected a previous tool.
+					// XML protocol: send as text
 					cline.userMessageContent.push({
 						type: "text",
-						text: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`,
+						text: errorMessage,
 					})
 				}
 
@@ -270,10 +279,25 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (cline.didAlreadyUseTool) {
 				// Ignore any content after a tool has already been used.
-				cline.userMessageContent.push({
-					type: "text",
-					text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
-				})
+				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
+				const toolCallId = block.id
+				const errorMessage = `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`
+
+				if (toolCallId) {
+					// Native protocol: MUST send tool_result for every tool_use
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
+				} else {
+					// XML protocol: send as text
+					cline.userMessageContent.push({
+						type: "text",
+						text: errorMessage,
+					})
+				}
 
 				break
 			}
