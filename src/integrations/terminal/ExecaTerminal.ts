@@ -2,6 +2,7 @@ import type { RooTerminalCallbacks, RooTerminalProcessResultPromise } from "./ty
 import { BaseTerminal } from "./BaseTerminal"
 import { ExecaTerminalProcess } from "./ExecaTerminalProcess"
 import { mergePromise } from "./mergePromise"
+import delay from "delay"
 
 export class ExecaTerminal extends BaseTerminal {
 	constructor(id: number, cwd: string) {
@@ -21,8 +22,11 @@ export class ExecaTerminal extends BaseTerminal {
 		const process = new ExecaTerminalProcess(this)
 		process.command = command
 		this.process = process
-
-		process.on("line", (line) => callbacks.onLine(line, process))
+		let isOutputFirstLine = true
+		process.on("line", (line) => {
+			isOutputFirstLine = false
+			callbacks.onLine(line, process)
+		})
 		process.once("completed", (output) => callbacks.onCompleted(output, process))
 		process.once("shell_execution_started", (pid) => callbacks.onShellExecutionStarted(pid, process))
 		process.once("shell_execution_complete", (details) => callbacks.onShellExecutionComplete(details, process))
@@ -31,6 +35,10 @@ export class ExecaTerminal extends BaseTerminal {
 			process.once("continue", () => resolve())
 			process.once("error", (error) => reject(error))
 			process.run(command)
+			delay(300).then(() => {
+				if (!isOutputFirstLine) return
+				callbacks?.triggerUIToProceed?.("", process)
+			})
 		})
 
 		return mergePromise(process, promise)

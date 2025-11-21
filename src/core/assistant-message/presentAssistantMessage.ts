@@ -482,7 +482,8 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			// Validate tool use before execution.
-			const { mode, customModes, terminalShellIntegrationDisabled } = (await cline.providerRef.deref()?.getState()) ?? {}
+			const { mode, customModes, terminalShellIntegrationDisabled } =
+				(await cline.providerRef.deref()?.getState()) ?? {}
 
 			try {
 				validateToolUse(
@@ -695,11 +696,6 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 						removeClosingTag,
 						toolProtocol,
-						inlineShellIntegrationCallback: (terminalProcess: any) => {
-							if (terminalShellIntegrationDisabled) {
-								terminalProcess?.userInput("")
-							}
-						}
 					})
 					break
 				case "use_mcp_tool":

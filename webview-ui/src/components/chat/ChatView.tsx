@@ -529,24 +529,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
-	const handleChatReset = useCallback((isCommandInput = false) => {
-		// Clear any pending auto-approval timeout
-		// if (autoApproveTimeoutRef.current) {
-		// 	clearTimeout(autoApproveTimeoutRef.current)
-		// 	autoApproveTimeoutRef.current = null
-		// }
-		// Reset user response flag for new message
-		// userRespondedRef.current = false
-
+	const handleChatReset = useCallback((isCommandInput = false, askType?: ClineAsk) => {
 		// Only reset message-specific state, preserving mode.
 		setInputValue("")
 		setSendingDisabled(!isCommandInput)
 		setSelectedImages([])
-		setClineAsk(isCommandInput ? "command_output" : undefined)
+		setClineAsk(isCommandInput ? askType : undefined)
 		setEnableButtons(isCommandInput ?? false)
 		// Do not reset mode here as it should persist.
-		// setPrimaryButtonText(undefined)
-		// setSecondaryButtonText(undefined)
 		disableAutoScrollRef.current = false
 	}, [])
 
@@ -558,7 +548,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSendMessage = useCallback(
 		(text: string, images: string[], chatType = "system") => {
 			text = text.trim()
-			debugger
+
 			if (text || images.length > 0) {
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
@@ -617,7 +607,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					vscode.postMessage({ type: "askResponse", askResponse: "messageResponse", text, images })
 				}
 
-				handleChatReset(isCommandInput)
+				handleChatReset(isCommandInput, clineAskRef.current)
 			}
 		},
 		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
@@ -666,7 +656,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
 			// userRespondedRef.current = true
-			debugger
+
 			const trimmedInput = text?.trim()
 
 			switch (clineAsk) {

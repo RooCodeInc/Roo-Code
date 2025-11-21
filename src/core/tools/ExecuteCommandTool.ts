@@ -9,7 +9,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
 
-import { ToolUse, ToolResponse, InlineShellIntegrationCallback } from "../../shared/tools"
+import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
@@ -38,7 +38,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { command, cwd: customCwd } = params
-		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol, inlineShellIntegrationCallback } = callbacks
+		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol } = callbacks
 
 		try {
 			if (!command) {
@@ -101,7 +101,6 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				terminalOutputLineLimit,
 				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
-				inlineShellIntegrationCallback
 			}
 
 			try {
@@ -156,7 +155,6 @@ export type ExecuteCommandOptions = {
 	terminalOutputLineLimit?: number
 	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
-	inlineShellIntegrationCallback?: InlineShellIntegrationCallback
 }
 
 export async function executeCommandInTerminal(
@@ -169,7 +167,6 @@ export async function executeCommandInTerminal(
 		terminalOutputLineLimit = 500,
 		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
-		inlineShellIntegrationCallback = () => {},
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
 	// Convert milliseconds back to seconds for display purposes.
@@ -251,6 +248,13 @@ export async function executeCommandInTerminal(
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 			exitDetails = details
 		},
+		triggerUIToProceed: (lines: string, process: RooTerminalProcess) => {
+			const status: CommandExecutionStatus = { executionId, status: "output", output: "" }
+			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+			task.ask("command_output", "").catch(() => {
+				// Silently handle ask errors (e.g., "Current ask promise was ignored")
+			})
+		},
 	}
 
 	if (terminalProvider === "vscode") {
@@ -312,7 +316,6 @@ export async function executeCommandInTerminal(
 	} else {
 		// No timeout - just wait for the process to complete.
 		try {
-			inlineShellIntegrationCallback(process)
 			await process
 		} finally {
 			task.terminalProcess = undefined
