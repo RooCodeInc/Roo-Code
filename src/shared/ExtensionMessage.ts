@@ -129,6 +129,7 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "interactionRequired"
+		| "backgroundServicesUpdate"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -213,6 +214,14 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	services?: Array<{
+		serviceId: string
+		command: string
+		status: string
+		pid?: number
+		startedAt: number
+		readyAt?: number
+	}> // For backgroundServicesUpdate
 }
 
 export type ExtensionState = Pick<
@@ -350,6 +359,14 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	services?: Array<{
+		serviceId: string
+		command: string
+		status: string
+		pid?: number
+		startedAt: number
+		readyAt?: number
+	}>
 }
 
 export interface ClineSayTool {

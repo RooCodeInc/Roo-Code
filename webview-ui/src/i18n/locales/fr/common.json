@@ -99,5 +99,18 @@
 	"errors": {
 		"wait_checkpoint_long_time": "Tu as attendu {{timeout}} secondes pour l'initialisation du checkpoint. Si tu n'as pas besoin de cette fonction, désactive-la dans <settingsLink>les paramètres du checkpoint</settingsLink>.",
 		"init_checkpoint_fail_long_time": "L'initialisation du checkpoint a pris plus de {{timeout}} secondes, donc les checkpoints sont désactivés pour cette tâche. Tu peux désactiver les checkpoints ou prolonger le délai dans <settingsLink>les paramètres du checkpoint</settingsLink>."
+	},
+	"backgroundTasks": {
+		"title": "Tâches en arrière-plan",
+		"ariaLabel": "Tâches en arrière-plan",
+		"tooltip": "{{count}} tâche(s) en arrière-plan en cours",
+		"stopService": "Arrêter le service",
+		"status": {
+			"starting": "Démarrage",
+			"ready": "Prêt",
+			"running": "En cours",
+			"stopping": "Arrêt",
+			"failed": "Échec"
+		}
 	}
 }

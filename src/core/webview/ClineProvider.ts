@@ -291,6 +291,42 @@ export class ClineProvider
 		} else {
 			this.log("CloudService not ready, deferring cloud profile sync")
 		}
+
+		// Initialize service status update mechanism
+		this.initializeServiceStatusUpdates()
+	}
+
+	/**
+	 * Initialize service status update mechanism
+	 */
+	private async initializeServiceStatusUpdates() {
+		try {
+			const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+			const unsubscribe = ServiceManager.onServiceStatusChange((serviceHandle) => {
+				// When service status changes, send update message to frontend
+				const services = ServiceManager.listServices()
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				this.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			})
+
+			// Add unsubscribe function to disposables for cleanup
+			this.disposables.push({
+				dispose: unsubscribe,
+			})
+		} catch (error) {
+			this.log(`Failed to initialize service status updates: ${error}`)
+		}
 	}
 
 	/**
