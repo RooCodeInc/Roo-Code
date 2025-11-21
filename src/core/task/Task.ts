@@ -669,8 +669,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				ts: Date.now(),
 			}
 
-			// If we have reasoning text (from streaming), store it as a reasoning block
-			// This is the primary path for most providers (Anthropic, Gemini, Mistral, etc.)
+			// Store reasoning as plain text (most providers) or encrypted (OpenAI Native)
 			if (reasoning) {
 				const reasoningBlock = {
 					type: "reasoning",
@@ -688,11 +687,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				} else if (!messageWithTs.content) {
 					messageWithTs.content = [reasoningBlock]
 				}
-			}
-			// If we have encrypted_content (OpenAI Native specific), embed it as the first content block
-			// This keeps reasoning + assistant atomic for context management while still allowing providers
-			// to receive a separate reasoning item when we build the request.
-			else if (reasoningData?.encrypted_content) {
+			} else if (reasoningData?.encrypted_content) {
+				// OpenAI Native encrypted reasoning (for API continuity)
 				const reasoningBlock = {
 					type: "reasoning",
 					summary: [] as any[],
@@ -3364,20 +3360,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const cleanConversationHistory: (Anthropic.Messages.MessageParam | ReasoningItemForRequest)[] = []
 
 		for (const msg of messages) {
-			// Legacy path: standalone reasoning items stored as separate messages
-			// Only include in request if it has encrypted_content (OpenAI Native specific)
-			if (msg.type === "reasoning" && msg.encrypted_content) {
-				cleanConversationHistory.push({
-					type: "reasoning",
-					summary: msg.summary,
-					encrypted_content: msg.encrypted_content!,
-					...(msg.id ? { id: msg.id } : {}),
-				})
-				continue
-			}
-
-			// Skip standalone reasoning items with plain text (stored for history, not for API requests)
+			// Handle standalone reasoning items stored as separate messages
 			if (msg.type === "reasoning") {
+				// Only include in request if it has encrypted_content (OpenAI Native specific)
+				// Skip plain text reasoning (stored for history, not for API requests)
+				if (msg.encrypted_content) {
+					cleanConversationHistory.push({
+						type: "reasoning",
+						summary: msg.summary,
+						encrypted_content: msg.encrypted_content!,
+						...(msg.id ? { id: msg.id } : {}),
+					})
+				}
 				continue
 			}
 
