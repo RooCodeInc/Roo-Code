@@ -58,6 +58,42 @@ vi.mock("../fetchers/io-intelligence", () => ({
 	})),
 }))
 
+// Mock the model cache
+vi.mock("../fetchers/modelCache", () => ({
+	getModels: vi.fn().mockImplementation(() => {
+		return Promise.resolve({
+			"meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": {
+				maxTokens: 8192,
+				contextWindow: 430000,
+				description: "Llama 4 Maverick 17B model",
+				supportsImages: true,
+				supportsPromptCache: false,
+			},
+			"deepseek-ai/DeepSeek-R1-0528": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				description: "DeepSeek R1 reasoning model",
+			},
+			"Intel/Qwen3-Coder-480B-A35B-Instruct-int4-mixed-ar": {
+				maxTokens: 4096,
+				contextWindow: 106000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				description: "Qwen3 Coder 480B specialized for coding",
+			},
+			"openai/gpt-oss-120b": {
+				maxTokens: 8192,
+				contextWindow: 131072,
+				supportsImages: false,
+				supportsPromptCache: false,
+				description: "OpenAI GPT-OSS 120B model",
+			},
+		})
+	}),
+}))
+
 // Mock constants
 vi.mock("../constants", () => ({
 	DEFAULT_HEADERS: { "User-Agent": "roo-cline" },
@@ -72,11 +108,11 @@ describe("IOIntelligenceHandler", () => {
 	let handler: IOIntelligenceHandler
 	let mockOptions: ApiHandlerOptions
 
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks()
 		mockOptions = {
 			ioIntelligenceApiKey: "test-api-key",
-			apiModelId: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+			ioIntelligenceModelId: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
 			modelTemperature: 0.7,
 			includeMaxTokens: false,
 			modelMaxTokens: undefined,
@@ -129,17 +165,19 @@ describe("IOIntelligenceHandler", () => {
 	it("should initialize with correct configuration", () => {
 		expect(handler).toBeInstanceOf(IOIntelligenceHandler)
 		expect(handler["client"]).toBeDefined()
-		expect(handler["options"]).toEqual({
-			...mockOptions,
-			apiKey: mockOptions.ioIntelligenceApiKey,
-		})
+		expect(handler["options"]).toEqual(mockOptions)
 	})
 
-	it("should throw error when API key is missing", () => {
+	it("should allow handler creation without API key for model fetching", () => {
 		const optionsWithoutKey = { ...mockOptions }
 		delete optionsWithoutKey.ioIntelligenceApiKey
 
-		expect(() => new IOIntelligenceHandler(optionsWithoutKey)).toThrow("IO Intelligence API key is required")
+		// Handler can be created without API key (validation happens at UI level)
+		const handlerWithoutKey = new IOIntelligenceHandler(optionsWithoutKey)
+		expect(handlerWithoutKey).toBeInstanceOf(IOIntelligenceHandler)
+		expect(handlerWithoutKey["client"]).toBeDefined()
+		// Client should have a placeholder API key
+		expect(handlerWithoutKey["client"].apiKey).toBe("not-provided")
 	})
 
 	it("should handle streaming response correctly", async () => {
