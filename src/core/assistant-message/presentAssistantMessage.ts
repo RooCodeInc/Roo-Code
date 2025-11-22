@@ -304,6 +304,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Track if we've already pushed a tool result for this tool call (native protocol only)
 			let hasToolResult = false
+			let lastToolResponse: string | undefined
 
 			// Determine protocol by checking if this tool call has an ID.
 			// Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks).
@@ -339,6 +340,11 @@ export async function presentAssistantMessage(cline: Task) {
 							"(tool did not return anything)"
 					}
 
+					// Track the response for progress detection
+					lastToolResponse = resultContent
+					// Update the detector with this response for future checks
+					cline.toolRepetitionDetector.updateLastResponse(resultContent)
+
 					// Add tool_result with text content only
 					cline.userMessageContent.push({
 						type: "tool_result",
@@ -357,11 +363,26 @@ export async function presentAssistantMessage(cline: Task) {
 					cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
 
 					if (typeof content === "string") {
+						// Track the response for progress detection
+						lastToolResponse = content || "(tool did not return anything)"
+						// Update the detector with this response for future checks
+						cline.toolRepetitionDetector.updateLastResponse(lastToolResponse)
+
 						cline.userMessageContent.push({
 							type: "text",
 							text: content || "(tool did not return anything)",
 						})
 					} else {
+						// For array responses, track text content
+						const textContent = content
+							.filter((item) => item.type === "text")
+							.map((item) => (item as Anthropic.TextBlockParam).text)
+							.join("\n")
+						if (textContent) {
+							lastToolResponse = textContent
+							// Update the detector with this response for future checks
+							cline.toolRepetitionDetector.updateLastResponse(textContent)
+						}
 						cline.userMessageContent.push(...content)
 					}
 				}
@@ -514,7 +535,8 @@ export async function presentAssistantMessage(cline: Task) {
 			// Check for identical consecutive tool calls.
 			if (!block.partial) {
 				// Use the detector to check for repetition, passing the ToolUse
-				// block directly.
+				// block directly and the last tool response for progress detection.
+				// The lastToolResponse from previous execution is already tracked in the detector
 				const repetitionCheck = cline.toolRepetitionDetector.check(block)
 
 				// If execution is not allowed, notify user and break.

@@ -697,4 +697,186 @@ describe("ToolRepetitionDetector", () => {
 			expect(result.askUser).toBeDefined()
 		})
 	})
+
+	describe("Progress Detection for MCP Tools", () => {
+		it("should reset counter when MCP tool shows progress through different responses", () => {
+			const detector = new ToolRepetitionDetector(3)
+
+			const mcpTool = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test-server",
+					tool_name: "read_output",
+				},
+			} as ToolUse
+
+			// First call
+			expect(detector.check(mcpTool).allowExecution).toBe(true)
+			detector.updateLastResponse("Output chunk 1: data...")
+
+			// Second call with different response - should reset counter
+			detector.updateLastResponse("Output chunk 2: more data...")
+			expect(detector.check(mcpTool).allowExecution).toBe(true)
+
+			// Third call with another different response - should still allow
+			detector.updateLastResponse("Output chunk 3: even more data...")
+			expect(detector.check(mcpTool).allowExecution).toBe(true)
+
+			// Fourth call with yet another different response - should still allow
+			detector.updateLastResponse("Output chunk 4: final data...")
+			expect(detector.check(mcpTool).allowExecution).toBe(true)
+		})
+
+		it("should allow higher limits for MCP tools by default", () => {
+			const detector = new ToolRepetitionDetector(3) // Default limit is 3
+
+			const mcpTool = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test-server",
+					tool_name: "read_output",
+				},
+			} as ToolUse
+
+			// MCP tools should have a much higher limit (50 by default)
+			// Let's test up to 10 calls to verify it's not using the default 3
+			for (let i = 1; i <= 10; i++) {
+				const result = detector.check(mcpTool)
+				expect(result.allowExecution).toBe(true) // Should allow all 10 calls
+			}
+		})
+
+		it("should block MCP tools when reaching their higher limit without progress", () => {
+			const detector = new ToolRepetitionDetector(3, {
+				toolLimits: {
+					use_mcp_tool: 5, // Override default to a lower number for testing
+				},
+			})
+
+			const mcpTool = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test-server",
+					tool_name: "read_output",
+				},
+			} as ToolUse
+
+			// First 5 calls should be allowed
+			for (let i = 1; i <= 5; i++) {
+				expect(detector.check(mcpTool).allowExecution).toBe(true)
+			}
+
+			// 6th call should be blocked
+			const result = detector.check(mcpTool)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser?.messageDetail).toContain("use_mcp_tool")
+			expect(result.askUser?.messageDetail).toContain("false positive")
+		})
+
+		it("should exclude tools from repetition detection when configured", () => {
+			const detector = new ToolRepetitionDetector(2, {
+				excludedTools: ["execute_command"],
+			})
+
+			const excludedTool = {
+				type: "tool_use",
+				name: "execute_command",
+				params: {
+					command: "ls -la",
+				},
+			} as ToolUse
+
+			// Should always allow execution for excluded tools
+			for (let i = 1; i <= 10; i++) {
+				expect(detector.check(excludedTool).allowExecution).toBe(true)
+			}
+		})
+
+		it("should track response history and detect progress patterns", () => {
+			const detector = new ToolRepetitionDetector(3)
+
+			const tool = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test-server",
+				},
+			} as ToolUse
+
+			// Same response multiple times - no progress
+			detector.updateLastResponse("Same output")
+			expect(detector.check(tool).allowExecution).toBe(true)
+
+			detector.updateLastResponse("Same output")
+			expect(detector.check(tool).allowExecution).toBe(true)
+
+			detector.updateLastResponse("Same output")
+			expect(detector.check(tool).allowExecution).toBe(true)
+
+			// Now a different response - shows progress
+			detector.updateLastResponse("Different output")
+			expect(detector.check(tool).allowExecution).toBe(true) // Counter should reset
+		})
+
+		it("should use custom tool limits when provided", () => {
+			const detector = new ToolRepetitionDetector(3, {
+				toolLimits: {
+					read_file: 10,
+					write_to_file: 1,
+				},
+			})
+
+			const readTool = {
+				type: "tool_use",
+				name: "read_file",
+				params: { path: "test.txt" },
+			} as ToolUse
+
+			const writeTool = {
+				type: "tool_use",
+				name: "write_to_file",
+				params: { path: "test.txt", content: "data" },
+			} as ToolUse
+
+			// read_file should allow up to 10 calls
+			for (let i = 1; i <= 10; i++) {
+				expect(detector.check(readTool).allowExecution).toBe(true)
+			}
+			expect(detector.check(readTool).allowExecution).toBe(false) // 11th call blocked
+
+			// write_to_file should allow only 1 call
+			expect(detector.check(writeTool).allowExecution).toBe(true)
+			expect(detector.check(writeTool).allowExecution).toBe(false) // 2nd call blocked
+		})
+
+		it("should clear response history when switching tools", () => {
+			const detector = new ToolRepetitionDetector(3)
+
+			const tool1 = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: { server_name: "server1" },
+			} as ToolUse
+
+			const tool2 = {
+				type: "tool_use",
+				name: "list_files",
+				params: { path: "/" },
+			} as ToolUse
+
+			// Set up response history for tool1
+			detector.updateLastResponse("Response 1")
+			detector.updateLastResponse("Response 2")
+			expect(detector.check(tool1).allowExecution).toBe(true)
+
+			// Switch to tool2 - should clear response history
+			expect(detector.check(tool2).allowExecution).toBe(true)
+
+			// Back to tool1 - should start fresh without previous response history
+			expect(detector.check(tool1).allowExecution).toBe(true)
+		})
+	})
 })
