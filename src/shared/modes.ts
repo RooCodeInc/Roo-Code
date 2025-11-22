@@ -63,8 +63,40 @@ export function getToolsForMode(groups: readonly GroupEntry[]): string[] {
 // Main modes configuration as an ordered array
 export const modes = DEFAULT_MODES
 
-// Export the default mode slug
-export const defaultModeSlug = modes[0].slug
+/**
+ * Feature flag key for default mode experiment
+ * This feature flag controls whether new users see 'code' or 'architect' as their default mode
+ */
+export const DEFAULT_MODE_FEATURE_FLAG = "default-mode-experiment"
+
+/**
+ * Gets the default mode slug based on PostHog feature flag
+ * @param featureFlagValue The value returned from PostHog feature flag check
+ * @returns The mode slug to use as default
+ */
+export function getDefaultModeFromFeatureFlag(featureFlagValue: string | boolean | undefined): Mode {
+	// If feature flag is not available or telemetry is disabled, use 'code' mode (index 1)
+	if (featureFlagValue === undefined || featureFlagValue === null) {
+		return modes[1].slug as Mode // 'code' mode
+	}
+
+	// If feature flag is a string, compare it
+	if (typeof featureFlagValue === "string") {
+		const normalizedValue = featureFlagValue.toLowerCase()
+		if (normalizedValue === "architect") {
+			return modes[0].slug as Mode // 'architect' mode
+		}
+		// Default to 'code' for any other string value
+		return modes[1].slug as Mode
+	}
+
+	// If feature flag is a boolean
+	// true = architect (experiment variant), false = code (control variant)
+	return featureFlagValue ? (modes[0].slug as Mode) : (modes[1].slug as Mode)
+}
+
+// Export the default mode slug (defaults to 'code' mode which is at index 1)
+export const defaultModeSlug = modes[1].slug
 
 // Helper functions
 export function getModeBySlug(slug: string, customModes?: ModeConfig[]): ModeConfig | undefined {

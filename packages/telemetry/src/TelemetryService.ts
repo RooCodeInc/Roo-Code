@@ -6,6 +6,7 @@ import {
 	TelemetryEventName,
 	type TelemetrySetting,
 } from "@roo-code/types"
+import type { FeatureFlagValue } from "./PostHogTelemetryClient"
 
 /**
  * TelemetryService wrapper class that defers initialization.
@@ -241,6 +242,27 @@ export class TelemetryService {
 			previousSetting,
 			newSetting,
 		})
+	}
+
+	/**
+	 * Checks a PostHog feature flag value
+	 * @param flagKey The feature flag key to check
+	 * @returns The feature flag value or undefined if not available
+	 */
+	public async getFeatureFlag(flagKey: string): Promise<FeatureFlagValue> {
+		if (!this.isReady) {
+			return undefined
+		}
+
+		// Only check PostHog client since it supports feature flags
+		const posthogClient = this.clients.find((client) => "getFeatureFlag" in client)
+
+		if (posthogClient && "getFeatureFlag" in posthogClient) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			return await (posthogClient as any).getFeatureFlag(flagKey)
+		}
+
+		return undefined
 	}
 
 	/**

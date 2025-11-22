@@ -52,7 +52,13 @@ import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
-import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import {
+	Mode,
+	defaultModeSlug,
+	getModeBySlug,
+	DEFAULT_MODE_FEATURE_FLAG,
+	getDefaultModeFromFeatureFlag,
+} from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
@@ -169,6 +175,9 @@ export class ClineProvider
 
 		this.mdmService = mdmService
 		this.updateGlobalState("codebaseIndexModels", EMBEDDING_MODEL_PROFILES)
+
+		// Initialize default mode based on feature flag for new users
+		this.initializeDefaultModeForNewUsers()
 
 		// Start configuration loading (which might trigger indexing) in the background.
 		// Don't await, allowing activation to continue immediately.
@@ -290,6 +299,47 @@ export class ClineProvider
 			})
 		} else {
 			this.log("CloudService not ready, deferring cloud profile sync")
+		}
+	}
+
+	/**
+	 * Initialize default mode for new users based on PostHog feature flag
+	 * This is called once during provider construction
+	 */
+	private async initializeDefaultModeForNewUsers(): Promise<void> {
+		try {
+			// Only check if mode has never been set (new user)
+			const currentMode = this.getGlobalState("mode")
+			if (currentMode !== undefined) {
+				// User has already set a mode, don't override it
+				return
+			}
+
+			// Check the feature flag
+			const featureFlagValue = await TelemetryService.instance.getFeatureFlag(DEFAULT_MODE_FEATURE_FLAG)
+
+			// Get the mode based on the feature flag
+			const modeToSet = getDefaultModeFromFeatureFlag(featureFlagValue)
+
+			// Set the mode in global state
+			await this.updateGlobalState("mode", modeToSet)
+
+			this.log(
+				`[initializeDefaultModeForNewUsers] Set default mode to '${modeToSet}' based on feature flag value: ${featureFlagValue}`,
+			)
+		} catch (error) {
+			// If anything fails, fallback to the default mode slug
+			this.log(
+				`[initializeDefaultModeForNewUsers] Error checking feature flag: ${
+					error instanceof Error ? error.message : String(error)
+				}. Using default mode: ${defaultModeSlug}`,
+			)
+
+			// Only set if mode is still undefined
+			const currentMode = this.getGlobalState("mode")
+			if (currentMode === undefined) {
+				await this.updateGlobalState("mode", defaultModeSlug)
+			}
 		}
 	}
 
