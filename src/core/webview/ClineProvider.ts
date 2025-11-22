@@ -2744,44 +2744,66 @@ export class ClineProvider
 		// Immediately mark the original instance as abandoned to prevent any residual activity
 		task.abandoned = true
 
-		await pWaitFor(
-			() =>
-				this.getCurrentTask()! === undefined ||
-				this.getCurrentTask()!.isStreaming === false ||
-				this.getCurrentTask()!.didFinishAbortingStream ||
-				// If only the first chunk is processed, then there's no
-				// need to wait for graceful abort (closes edits, browser,
-				// etc).
-				this.getCurrentTask()!.isWaitingForFirstChunk,
-			{
-				timeout: 3_000,
-			},
-		).catch(() => {
-			console.error("Failed to abort task")
-		})
+		// Don't block the UI - handle the abort completion and rehydration asynchronously
+		// This allows the UI to respond immediately to the cancel button click
+		const handleAbortAndRehydrate = async () => {
+			try {
+				// Wait for abort to complete (with a shorter timeout to be more responsive)
+				await pWaitFor(
+					() =>
+						this.getCurrentTask()! === undefined ||
+						this.getCurrentTask()!.isStreaming === false ||
+						this.getCurrentTask()!.didFinishAbortingStream ||
+						// If only the first chunk is processed, then there's no
+						// need to wait for graceful abort (closes edits, browser,
+						// etc).
+						this.getCurrentTask()!.isWaitingForFirstChunk,
+					{
+						timeout: 1_000, // Reduced from 3 seconds to 1 second for better responsiveness
+					},
+				).catch(() => {
+					console.error("Abort wait timed out, proceeding with rehydration")
+				})
+			} catch (error) {
+				console.error("Error waiting for abort:", error)
+			}
 
-		// Defensive safeguard: if current instance already changed, skip rehydrate
-		const current = this.getCurrentTask()
-		if (current && current.instanceId !== originalInstanceId) {
-			this.log(
-				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
-			)
-			return
-		}
-
-		// Final race check before rehydrate to avoid duplicate rehydration
-		{
-			const currentAfterCheck = this.getCurrentTask()
-			if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+			// Defensive safeguard: if current instance already changed, skip rehydrate
+			const current = this.getCurrentTask()
+			if (current && current.instanceId !== originalInstanceId) {
 				this.log(
-					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 				)
 				return
 			}
+
+			// Final race check before rehydrate to avoid duplicate rehydration
+			{
+				const currentAfterCheck = this.getCurrentTask()
+				if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+					this.log(
+						`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					)
+					return
+				}
+			}
+
+			try {
+				// Rehydrate the task with the history item
+				await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+			} catch (error) {
+				this.log(`[cancelTask] Failed to rehydrate task: ${error}`)
+			}
 		}
 
-		// Clears task again, so we need to abortTask manually above.
-		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+		// Start the abort and rehydration process in the background
+		// This returns immediately so the UI is not blocked
+		handleAbortAndRehydrate().catch((error) => {
+			this.log(`[cancelTask] Background abort/rehydration failed: ${error}`)
+		})
+
+		// Immediately update the UI to show the task is being cancelled
+		await this.postStateToWebview()
 	}
 
 	// Clear the current task without treating it as a subtask.
