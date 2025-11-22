@@ -256,4 +256,113 @@ describe("ChutesHandler", () => {
 		// The default model is DeepSeek-R1, so it returns DEEP_SEEK_DEFAULT_TEMPERATURE
 		expect(model.info.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
 	})
+
+	it("should handle Kimi K2 tool call format", async () => {
+		// Mock Kimi K2 model response with tool call format
+		mockCreate.mockImplementationOnce(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: {
+								content:
+									'I\'ll help you with that. <|tool_calls_section_begin|> <|tool_call_begin|> functions.codebase_search:12 <|tool_call_argument_begin|> {"query": "TeamSelect scene", "path": "ouroboros"} <|tool_call_end|> <|tool_calls_section_end|>',
+							},
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: { content: " Let me search for that." },
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: {},
+							index: 0,
+						},
+					],
+					usage: { prompt_tokens: 15, completion_tokens: 25 },
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Find TeamSelect scene" }]
+		mockFetchModel.mockResolvedValueOnce({
+			id: "moonshotai/Kimi-K2-Instruct-75k",
+			info: { maxTokens: 32768, temperature: 0.5 },
+		})
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		// Should parse the Kimi K2 tool call format correctly
+		expect(chunks).toEqual([
+			{ type: "text", text: "I'll help you with that. " },
+			{
+				type: "tool_call",
+				id: "tool_call_12",
+				name: "codebase_search",
+				arguments: '{"query":"TeamSelect scene","path":"ouroboros"}',
+			},
+			{ type: "text", text: " Let me search for that." },
+			{ type: "usage", inputTokens: 15, outputTokens: 25 },
+		])
+	})
+
+	it("should handle Kimi K2 model without tool calls", async () => {
+		// Mock Kimi K2 model response without tool calls
+		mockCreate.mockImplementationOnce(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: { content: "This is a regular response without tool calls." },
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: {},
+							index: 0,
+						},
+					],
+					usage: { prompt_tokens: 10, completion_tokens: 8 },
+				}
+			},
+		}))
+
+		const systemPrompt = "You are a helpful assistant."
+		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+		mockFetchModel.mockResolvedValueOnce({
+			id: "moonshotai/Kimi-K2-Instruct-0905",
+			info: { maxTokens: 32768, temperature: 0.5 },
+		})
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		// Should handle regular text without tool calls
+		expect(chunks).toEqual([
+			{ type: "text", text: "This is a regular response without tool calls." },
+			{ type: "usage", inputTokens: 10, outputTokens: 8 },
+		])
+	})
 })
