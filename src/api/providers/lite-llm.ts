@@ -123,6 +123,9 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			stream_options: {
 				include_usage: true,
 			},
+			parallel_tool_calls: false, // Ensure only one tool call at a time
+			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter
@@ -140,13 +143,51 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			const { data: completion } = await this.client.chat.completions.create(requestOptions).withResponse()
 
 			let lastUsage
+			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 			for await (const chunk of completion) {
 				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
 				const usage = chunk.usage as LiteLLMUsage
 
 				if (delta?.content) {
 					yield { type: "text", text: delta.content }
+				}
+
+				// Check for tool calls in delta
+				if (delta?.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						const index = toolCall.index
+						const existing = toolCallAccumulator.get(index)
+
+						if (existing) {
+							// Accumulate arguments for existing tool call
+							if (toolCall.function?.arguments) {
+								existing.arguments += toolCall.function.arguments
+							}
+						} else {
+							// Start new tool call accumulation
+							toolCallAccumulator.set(index, {
+								id: toolCall.id || "",
+								name: toolCall.function?.name || "",
+								arguments: toolCall.function?.arguments || "",
+							})
+						}
+					}
+				}
+
+				// When finish_reason is 'tool_calls', yield all accumulated tool calls
+				if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
+					for (const toolCall of toolCallAccumulator.values()) {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						}
+					}
+					// Clear accumulator after yielding
+					toolCallAccumulator.clear()
 				}
 
 				if (usage) {
@@ -192,7 +233,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		}
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	async completePrompt(prompt: string, metadata?: ApiHandlerCreateMessageMetadata): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
 
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
@@ -202,6 +243,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
+				...(metadata?.tools && { tools: metadata.tools }),
+				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			if (this.supportsTemperature(modelId)) {
