@@ -1161,10 +1161,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Handle protocol transitions
-		if (shouldUseXmlParser && !this.assistantMessageParser) {
-			// Switching from native → XML: create parser
-			this.assistantMessageParser = new AssistantMessageParser()
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
+		if (shouldUseXmlParser) {
+			// Switching to XML protocol
+			if (!this.assistantMessageParser) {
+				this.assistantMessageParser = new AssistantMessageParser()
+				console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
+			}
+
+			// When switching to XML protocol, we must convert any existing native tool calls in history
+			// to text format. This is because XML-mode providers (like Gemini) typically don't accept
+			// native tool_use blocks when they are not configured with tools (which they aren't in XML mode).
+			if (this.apiConversationHistory.length > 0) {
+				this.apiConversationHistory = this.convertHistoryToText(this.apiConversationHistory, newProtocol)
+				await this.saveApiConversationHistory()
+			}
 		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
 			// Switching from XML → native: remove parser
 			this.assistantMessageParser.reset()
@@ -1572,37 +1582,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Only convert tool blocks to text for XML protocol
 		// For native protocol, the API expects proper tool_use/tool_result structure
 		if (!useNative) {
-			const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
-				if (Array.isArray(message.content)) {
-					const newContent = message.content.map((block) => {
-						if (block.type === "tool_use") {
-							// Format tool invocation based on protocol
-							const params = block.input as Record<string, any>
-							const formattedText = formatToolInvocation(block.name, params, protocol)
-
-							return {
-								type: "text",
-								text: formattedText,
-							} as Anthropic.Messages.TextBlockParam
-						} else if (block.type === "tool_result") {
-							// Convert block.content to text block array, removing images
-							const contentAsTextBlocks = Array.isArray(block.content)
-								? block.content.filter((item) => item.type === "text")
-								: [{ type: "text", text: block.content }]
-							const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n")
-							const toolName = findToolName(block.tool_use_id, existingApiConversationHistory)
-							return {
-								type: "text",
-								text: `[${toolName} Result]\n\n${textContent}`,
-							} as Anthropic.Messages.TextBlockParam
-						}
-						return block
-					})
-					return { ...message, content: newContent }
-				}
-				return message
-			})
-			existingApiConversationHistory = conversationWithoutToolBlocks
+			existingApiConversationHistory = this.convertHistoryToText(existingApiConversationHistory, protocol)
 		}
 
 		// FIXME: remove tool use blocks altogether
@@ -3584,6 +3564,39 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public async checkpointDiff(options: CheckpointDiffOptions) {
 		return checkpointDiff(this, options)
+	}
+
+	private convertHistoryToText(history: ApiMessage[], protocol: string): ApiMessage[] {
+		return history.map((message) => {
+			if (Array.isArray(message.content)) {
+				const newContent = message.content.map((block) => {
+					if (block.type === "tool_use") {
+						// Format tool invocation based on protocol
+						const params = block.input as Record<string, any>
+						const formattedText = formatToolInvocation(block.name, params, protocol as any)
+
+						return {
+							type: "text",
+							text: formattedText,
+						} as Anthropic.Messages.TextBlockParam
+					} else if (block.type === "tool_result") {
+						// Convert block.content to text block array, removing images
+						const contentAsTextBlocks = Array.isArray(block.content)
+							? block.content.filter((item) => item.type === "text")
+							: [{ type: "text", text: block.content }]
+						const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n")
+						const toolName = findToolName(block.tool_use_id, history)
+						return {
+							type: "text",
+							text: `[${toolName} Result]\n\n${textContent}`,
+						} as Anthropic.Messages.TextBlockParam
+					}
+					return block
+				})
+				return { ...message, content: newContent }
+			}
+			return message
+		})
 	}
 
 	// Metrics
