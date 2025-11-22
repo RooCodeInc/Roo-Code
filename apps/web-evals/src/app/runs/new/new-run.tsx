@@ -261,7 +261,7 @@ export function NewRun() {
 											<Checkbox
 												id="native"
 												checked={useNativeToolProtocol}
-												onCheckedChange={(checked?: boolean) =>
+												onCheckedChange={(checked) =>
 													setUseNativeToolProtocol(checked === true)
 												}
 											/>
