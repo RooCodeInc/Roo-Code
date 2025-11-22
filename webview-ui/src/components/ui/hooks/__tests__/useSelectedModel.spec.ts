@@ -107,7 +107,7 @@ describe("useSelectedModel", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: {
 					openrouter: {
-						"anthropic/claude-sonnet-4.5": {
+						"anthropic/claude-sonnet-4-5-20250929": {
 							maxTokens: 8192,
 							contextWindow: 200_000,
 							supportsImages: true,
@@ -146,7 +146,7 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
 			// Should fall back to provider default since "test-model" doesn't exist
-			expect(result.current.id).toBe("anthropic/claude-sonnet-4.5")
+			expect(result.current.id).toBe("anthropic/claude-sonnet-4-5-20250929")
 			// Should still use specific provider info for the default model if specified
 			expect(result.current.info).toEqual({
 				...{
@@ -273,7 +273,7 @@ describe("useSelectedModel", () => {
 			mockUseRouterModels.mockReturnValue({
 				data: {
 					openrouter: {
-						"anthropic/claude-sonnet-4.5": {
+						"anthropic/claude-sonnet-4-5-20250929": {
 							// Default model - using correct default model name
 							maxTokens: 8192,
 							contextWindow: 200_000,
@@ -311,7 +311,7 @@ describe("useSelectedModel", () => {
 			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
 
 			// Should fall back to provider default since "non-existent-model" doesn't exist
-			expect(result.current.id).toBe("anthropic/claude-sonnet-4.5")
+			expect(result.current.id).toBe("anthropic/claude-sonnet-4-5-20250929")
 			// Should use base model info since provider doesn't exist
 			expect(result.current.info).toEqual({
 				maxTokens: 8192,
