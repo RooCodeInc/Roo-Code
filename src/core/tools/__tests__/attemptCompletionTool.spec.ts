@@ -6,6 +6,12 @@ import { AttemptCompletionToolUse } from "../../../shared/tools"
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
 		toolError: vi.fn((msg: string) => `Error: ${msg}`),
+		toolResult: vi.fn((text: string, images?: string[]) => {
+			if (images && images.length > 0) {
+				return `${text}\n[Images: ${images.join(", ")}]`
+			}
+			return text
+		}),
 	},
 }))
 
@@ -25,6 +31,22 @@ vi.mock("../../../shared/package", () => ({
 	},
 }))
 
+// Mock TelemetryService
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureTaskCompleted: vi.fn(),
+		},
+	},
+}))
+
+// Mock RooCodeEventName
+vi.mock("@roo-code/types", () => ({
+	RooCodeEventName: {
+		TaskCompleted: "TaskCompleted",
+	},
+}))
+
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../AttemptCompletionTool"
 import { Task } from "../../task/Task"
 import * as vscode from "vscode"
@@ -38,6 +60,7 @@ describe("attemptCompletionTool", () => {
 	let mockToolDescription: ReturnType<typeof vi.fn>
 	let mockAskFinishSubTaskApproval: ReturnType<typeof vi.fn>
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
+	let mockMessageQueueService: any
 
 	beforeEach(() => {
 		mockPushToolResult = vi.fn()
@@ -58,10 +81,33 @@ describe("attemptCompletionTool", () => {
 		// Setup vscode mock
 		vi.mocked(vscode.workspace.getConfiguration).mockImplementation(mockGetConfiguration)
 
+		// Setup message queue service mock
+		mockMessageQueueService = {
+			isEmpty: vi.fn(() => true),
+			dequeueMessage: vi.fn(),
+		}
+
 		mockTask = {
 			consecutiveMistakeCount: 0,
 			recordToolError: vi.fn(),
 			todoList: undefined,
+			messageQueueService: mockMessageQueueService,
+			say: vi.fn().mockResolvedValue(undefined),
+			processQueuedMessages: vi.fn(),
+			ask: vi.fn().mockResolvedValue({
+				response: "yesButtonClicked",
+				text: undefined,
+				images: undefined,
+			}),
+			sayAndCreateMissingParamError: vi.fn(),
+			emit: vi.fn(),
+			taskId: "test-task-id",
+			getTokenUsage: vi.fn().mockReturnValue({}),
+			toolUsage: {},
+			parentTask: undefined,
+			providerRef: {
+				deref: vi.fn().mockReturnValue(null),
+			} as any,
 		}
 	})
 
@@ -407,6 +453,125 @@ describe("attemptCompletionTool", () => {
 			expect(mockPushToolResult).not.toHaveBeenCalledWith(
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
+		})
+	})
+
+	describe("queued messages handling", () => {
+		it("should process queued messages before asking for completion approval", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed successfully" },
+				partial: false,
+			}
+
+			// Mock queued message
+			const queuedMessage = {
+				id: "msg-1",
+				text: "Wait, I need to add one more thing",
+				images: ["image1.png"],
+				timestamp: Date.now(),
+			}
+
+			mockMessageQueueService.isEmpty.mockReturnValue(false)
+			mockMessageQueueService.dequeueMessage.mockReturnValue(queuedMessage)
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// Verify queued message was processed
+			expect(mockMessageQueueService.isEmpty).toHaveBeenCalled()
+			expect(mockMessageQueueService.dequeueMessage).toHaveBeenCalled()
+			expect(mockTask.say).toHaveBeenCalledWith("user_feedback", queuedMessage.text, queuedMessage.images)
+			expect(mockTask.processQueuedMessages).toHaveBeenCalled()
+
+			// Verify completion was not auto-accepted
+			expect(mockPushToolResult).toHaveBeenCalled()
+			// The tool result should contain the feedback
+			const toolResultCall = mockPushToolResult.mock.calls[0]
+			expect(toolResultCall[0]).toContain("The user has provided feedback")
+			expect(toolResultCall[0]).toContain(queuedMessage.text)
+		})
+
+		it("should proceed with normal completion flow when no messages are queued", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed successfully" },
+				partial: false,
+			}
+
+			mockMessageQueueService.isEmpty.mockReturnValue(true)
+
+			// Mock the ask method to simulate user approval
+			mockTask.ask = vi.fn().mockResolvedValue({
+				response: "yesButtonClicked",
+				text: undefined,
+				images: undefined,
+			})
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// Verify normal flow was followed
+			expect(mockMessageQueueService.isEmpty).toHaveBeenCalled()
+			expect(mockMessageQueueService.dequeueMessage).not.toHaveBeenCalled()
+			expect(mockTask.ask).toHaveBeenCalledWith("completion_result", "", false)
+			expect(mockPushToolResult).toHaveBeenCalledWith("")
+		})
+
+		it("should handle multiple queued messages by processing the first one", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed successfully" },
+				partial: false,
+			}
+
+			// Mock first queued message
+			const firstQueuedMessage = {
+				id: "msg-1",
+				text: "First feedback",
+				images: undefined,
+				timestamp: Date.now(),
+			}
+
+			mockMessageQueueService.isEmpty.mockReturnValue(false)
+			mockMessageQueueService.dequeueMessage.mockReturnValue(firstQueuedMessage)
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// Verify first message was processed
+			expect(mockMessageQueueService.dequeueMessage).toHaveBeenCalledTimes(1)
+			expect(mockTask.say).toHaveBeenCalledWith("user_feedback", firstQueuedMessage.text, undefined)
+
+			// Verify processQueuedMessages was called to handle remaining messages
+			expect(mockTask.processQueuedMessages).toHaveBeenCalled()
 		})
 	})
 })

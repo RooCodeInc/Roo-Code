@@ -80,6 +80,27 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				return
 			}
 
+			// Check if there are queued messages before auto-accepting
+			const hasQueuedMessages = !task.messageQueueService.isEmpty()
+
+			// If there are queued messages, don't auto-accept the completion
+			// Instead, process the queued messages first
+			if (hasQueuedMessages) {
+				// Get the first queued message
+				const queuedMessage = task.messageQueueService.dequeueMessage()
+				if (queuedMessage) {
+					// Add the queued message as user feedback
+					await task.say("user_feedback", queuedMessage.text ?? "", queuedMessage.images)
+
+					const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${queuedMessage.text}\n</feedback>`
+					pushToolResult(formatResponse.toolResult(feedbackText, queuedMessage.images))
+
+					// Process any remaining queued messages
+					task.processQueuedMessages()
+					return
+				}
+			}
+
 			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
