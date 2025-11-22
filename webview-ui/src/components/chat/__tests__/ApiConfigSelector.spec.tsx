@@ -131,7 +131,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)
@@ -165,7 +165,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)
@@ -195,7 +195,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)
@@ -221,7 +221,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)
@@ -357,7 +357,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)
@@ -414,7 +414,7 @@ describe("ApiConfigSelector", () => {
 				{ id: "config4", name: "Config 4", modelId: "gpt-3.5-turbo" },
 				{ id: "config5", name: "Config 5", modelId: "claude-3-haiku-20240307" },
 				{ id: "config6", name: "Config 6", modelId: "gpt-4-turbo" },
-				{ id: "config7", name: "Config 7", modelId: "claude-2.1" },
+				{ id: "config7", name: "Config 7", modelId: "anthropic.claude-sonnet-4-5-20250929-v1:0" },
 			],
 		}
 		render(<ApiConfigSelector {...props} />)

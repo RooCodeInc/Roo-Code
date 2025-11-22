@@ -62,7 +62,7 @@ describe("getApiProtocol", () => {
 		it("should return 'openai' for non-anthropic providers regardless of model", () => {
 			expect(getApiProtocol("openrouter", "claude-3-opus")).toBe("openai")
 			expect(getApiProtocol("openai", "claude-3-sonnet")).toBe("openai")
-			expect(getApiProtocol("litellm", "claude-instant")).toBe("openai")
+			expect(getApiProtocol("litellm", "anthropic.claude-sonnet-4-5-20250929-v1:0")).toBe("openai")
 			expect(getApiProtocol("ollama", "claude-model")).toBe("openai")
 		})
 	})
@@ -80,7 +80,7 @@ describe("getApiProtocol", () => {
 		it("should be case-insensitive for claude detection", () => {
 			expect(getApiProtocol("vertex", "CLAUDE-3-OPUS")).toBe("anthropic")
 			expect(getApiProtocol("vertex", "claude-3-opus")).toBe("anthropic")
-			expect(getApiProtocol("vertex", "ClAuDe-InStAnT")).toBe("anthropic")
+			expect(getApiProtocol("vertex", "ClAuDe-SoNnEt-4-5")).toBe("anthropic")
 		})
 	})
 })
