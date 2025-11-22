@@ -292,10 +292,9 @@
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
 		"release": {
-			"heading": "Mới trong Extension:",
-			"gemini3": "Gemini 3 có sẵn trong Gemini, Vertex, Roo Code Cloud, OpenRouter và nhiều hơn nữa",
-			"gitStatus": "Bạn có thể thêm thông tin trạng thái git vào môi trường từ cài đặt Context",
-			"nativeToolCalling": "Hỗ trợ thử nghiệm cho gọi công cụ gốc trong Roo Code Cloud, OpenRouter và OpenAI (sắp có thêm) - bật trong cài đặt nâng cao của nhà cung cấp"
+			"heading": "Mới trong phiên bản này:",
+			"browserUse": "Browser Use 2.0 nâng cấp trải nghiệm duyệt web trong trò chuyện với các phiên bản liên tục, phản hồi rõ ràng hơn, bảng điều khiển trình duyệt chuyên dụng và mô tả hành động tự nhiên hơn",
+			"cloudPaid": "Nhà cung cấp Roo Code Cloud hiện cung cấp các mô hình trả phí: mua tín dụng và sử dụng chúng cho cả các tác nhân đám mây và suy luận"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

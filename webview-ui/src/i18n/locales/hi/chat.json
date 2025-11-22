@@ -291,10 +291,9 @@
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
 		"release": {
-			"heading": "एक्सटेंशन में नया:",
-			"gemini3": "Gemini 3 Gemini, Vertex, Roo Code Cloud, OpenRouter और अधिक में उपलब्ध है",
-			"gitStatus": "आप Context सेटिंग से environment में git स्थिति जानकारी जोड़ सकते हैं",
-			"nativeToolCalling": "Roo Code Cloud, OpenRouter और OpenAI में native tool calling के लिए प्रायोगिक समर्थन (और अधिक आ रहा है) - प्रदाता उन्नत सेटिंग्स में सक्षम करें"
+			"heading": "नया:",
+			"browserUse": "Browser Use 2.0 चैट में ब्राउज़िंग अनुभव को अपग्रेड करता है स्थायी सत्रों, स्पष्ट फीडबैक, समर्पित ब्राउज़र पैनल और अधिक प्राकृतिक क्रिया विवरण के साथ",
+			"cloudPaid": "Roo Code Cloud प्रदाता अब भुगतान मॉडल प्रदान करता है: क्रेडिट खरीदें और उन्हें क्लाउड एजेंट और इन्फरेंस दोनों के लिए उपयोग करें"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

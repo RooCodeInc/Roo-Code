@@ -301,10 +301,9 @@
 			"goToSettingsButton": "前往設定"
 		},
 		"release": {
-			"heading": "擴充功能的新功能：",
-			"gemini3": "Gemini 3 現已在 Gemini、Vertex、Roo Code Cloud、OpenRouter 等平台推出",
-			"gitStatus": "你可以從 Context 設定將 git 狀態資訊加入環境",
-			"nativeToolCalling": "Roo Code Cloud、OpenRouter 和 OpenAI 的原生工具呼叫實驗性支援（即將推出更多）- 在提供商進階設定中啟用"
+			"heading": "最新功能：",
+			"browserUse": "Browser Use 2.0 升級了聊天內瀏覽體驗，支援持久會話、更清晰的回饋、專用瀏覽器面板以及更自然的動作描述",
+			"cloudPaid": "Roo Code Cloud 現已提供付費模型：購買點數即可同時用於雲端代理和推理服務"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

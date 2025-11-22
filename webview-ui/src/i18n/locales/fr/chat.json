@@ -291,10 +291,9 @@
 			"goToSettingsButton": "Aller aux Paramètres"
 		},
 		"release": {
-			"heading": "Nouveautés dans l'Extension :",
-			"gemini3": "Gemini 3 disponible dans Gemini, Vertex, Roo Code Cloud, OpenRouter et plus encore",
-			"gitStatus": "Tu peux ajouter des informations sur le statut git à l'environnement depuis les paramètres Context",
-			"nativeToolCalling": "Support expérimental pour les appels d'outils natifs dans Roo Code Cloud, OpenRouter et OpenAI (d'autres à venir) - active-le dans les paramètres avancés du fournisseur"
+			"heading": "Nouveautés dans cette version :",
+			"browserUse": "Browser Use 2.0 améliore l'expérience de navigation en chat avec des sessions persistantes, des retours plus clairs, un panneau de navigateur dédié et des descriptions d'actions plus naturelles",
+			"cloudPaid": "Le fournisseur Roo Code Cloud propose désormais des modèles payants : achète des crédits et utilise-les pour les agents cloud et l'inférence"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

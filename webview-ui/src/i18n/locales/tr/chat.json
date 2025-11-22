@@ -292,10 +292,9 @@
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
 		"release": {
-			"heading": "Uzantıdaki yenilikler:",
-			"gemini3": "Gemini 3, Gemini, Vertex, Roo Code Cloud, OpenRouter ve daha fazlasında mevcut",
-			"gitStatus": "Context ayarlarından ortama git durum bilgisi ekleyebilirsin",
-			"nativeToolCalling": "Roo Code Cloud, OpenRouter ve OpenAI'de yerel araç çağrıları için deneysel destek (daha fazlası yakında) - sağlayıcı gelişmiş ayarlarında etkinleştir"
+			"heading": "Bu sürümdeki yenilikler:",
+			"browserUse": "Browser Use 2.0, kalıcı oturumlar, daha net geri bildirim, özel tarayıcı paneli ve daha doğal eylem açıklamalarıyla sohbet içi tarayıcı deneyimini yükseltir",
+			"cloudPaid": "Roo Code Cloud sağlayıcısı artık ücretli modeller sunuyor: kredi satın alın ve bunları hem bulut ajanları hem de çıkarım için kullanın"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
