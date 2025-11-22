@@ -86,7 +86,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
 		// using reasoning (thinkingConfig is present). Both effort-based (thinkingLevel)
 		// and budget-based (thinkingBudget) models require this for active loops.
-		const includeThoughtSignatures = Boolean(thinkingConfig)
+		// EXCEPTION: Gemini 3.0-pro requires thought signatures for ALL native tool calls,
+		// even when reasoning is not enabled.
+		const isGemini3Pro = model.includes("gemini-3-pro")
+		const hasNativeTools = metadata?.tools && metadata.tools.length > 0
+		const includeThoughtSignatures = Boolean(thinkingConfig) || (isGemini3Pro && hasNativeTools)
 
 		// The message list can include provider-specific meta entries such as
 		// `{ type: "reasoning", ... }` that are intended only for providers like
