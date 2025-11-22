@@ -238,7 +238,25 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			let partFailHint = ""
 
 			if (diffResult.failParts && diffResult.failParts.length > 0) {
-				partFailHint = `But unable to apply all diff parts to file: ${absolutePath}, silently use <read_file> tool to check newest file version and re-apply diffs\n`
+				// Enhanced error reporting for partial failures
+				const totalDiffs = (diffContent.match(/<<<<<<< SEARCH/g) || []).length
+				const failedDiffs = diffResult.failParts.filter((part) => !part.success).length
+				const successfulDiffs = totalDiffs - failedDiffs
+
+				partFailHint = `⚠️ Partial diff application: ${successfulDiffs}/${totalDiffs} diffs applied successfully to ${getReadablePath(task.cwd, relPath)}\n`
+				partFailHint += `Failed to apply ${failedDiffs} diff(s). Please review the file and retry failed changes.\n`
+
+				// Report the partial failure prominently with enhanced visibility
+				const partialFailureMessage =
+					`⚠️ PARTIAL DIFF APPLICATION\n` +
+					`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+					`File: ${getReadablePath(task.cwd, relPath)}\n` +
+					`Status: ${successfulDiffs}/${totalDiffs} diffs applied successfully\n` +
+					`Failed: ${failedDiffs} diff(s) could not be applied\n` +
+					`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+					`Action Required: Review the file and retry failed changes`
+
+				await task.say("error", partialFailureMessage)
 			}
 
 			// Get the formatted response message
