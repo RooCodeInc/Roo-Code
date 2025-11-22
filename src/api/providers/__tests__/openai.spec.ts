@@ -12,61 +12,77 @@ const mockCreate = vitest.fn()
 
 vitest.mock("openai", () => {
 	const mockConstructor = vitest.fn()
+	const azureMockConstructor = vitest.fn()
+
+	const mockImplementation = () => ({
+		chat: {
+			completions: {
+				create: mockCreate,
+			},
+		},
+	})
+
+	mockConstructor.mockImplementation(mockImplementation)
+	azureMockConstructor.mockImplementation(mockImplementation)
+
+	// Store reference for later use in tests
+	;(globalThis as any).__mockAzureOpenAI = azureMockConstructor
+
 	return {
 		__esModule: true,
-		default: mockConstructor.mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
-								choices: [
-									{
-										message: { role: "assistant", content: "Test response", refusal: null },
-										finish_reason: "stop",
-										index: 0,
-									},
-								],
-								usage: {
-									prompt_tokens: 10,
-									completion_tokens: 5,
-									total_tokens: 15,
-								},
-							}
-						}
-
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								yield {
-									choices: [
-										{
-											delta: { content: "Test response" },
-											index: 0,
-										},
-									],
-									usage: null,
-								}
-								yield {
-									choices: [
-										{
-											delta: {},
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 5,
-										total_tokens: 15,
-									},
-								}
-							},
-						}
-					}),
-				},
-			},
-		})),
+		default: mockConstructor,
+		AzureOpenAI: azureMockConstructor,
 	}
+})
+
+// Setup mockCreate default implementation
+beforeEach(() => {
+	mockCreate.mockImplementation(async (options) => {
+		if (!options.stream) {
+			return {
+				id: "test-completion",
+				choices: [
+					{
+						message: { role: "assistant", content: "Test response", refusal: null },
+						finish_reason: "stop",
+						index: 0,
+					},
+				],
+				usage: {
+					prompt_tokens: 10,
+					completion_tokens: 5,
+					total_tokens: 15,
+				},
+			}
+		}
+
+		return {
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: { content: "Test response" },
+							index: 0,
+						},
+					],
+					usage: null,
+				}
+				yield {
+					choices: [
+						{
+							delta: {},
+							index: 0,
+						},
+					],
+					usage: {
+						prompt_tokens: 10,
+						completion_tokens: 5,
+						total_tokens: 15,
+					},
+				}
+			},
+		}
+	})
 })
 
 // Mock axios for getOpenAiModels tests
@@ -103,6 +119,84 @@ describe("OpenAiHandler", () => {
 				openAiBaseUrl: customBaseUrl,
 			})
 			expect(handlerWithCustomUrl).toBeInstanceOf(OpenAiHandler)
+		})
+
+		it("should normalize base URLs without /v1 suffix", () => {
+			const customBaseUrl = "https://custom.openai.com"
+			const handlerWithCustomUrl = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: customBaseUrl,
+			})
+			expect(handlerWithCustomUrl).toBeInstanceOf(OpenAiHandler)
+			// Verify the OpenAI client was created with normalized URL (with /v1)
+			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://custom.openai.com/v1",
+				}),
+			)
+		})
+
+		it("should preserve base URLs with /v1 suffix", () => {
+			const customBaseUrl = "https://custom.openai.com/v1"
+			const handlerWithCustomUrl = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: customBaseUrl,
+			})
+			expect(handlerWithCustomUrl).toBeInstanceOf(OpenAiHandler)
+			// Verify the OpenAI client was created with the same URL
+			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://custom.openai.com/v1",
+				}),
+			)
+		})
+
+		it("should handle URLs with trailing slash and no /v1", () => {
+			const customBaseUrl = "https://custom.openai.com/"
+			const handlerWithCustomUrl = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: customBaseUrl,
+			})
+			expect(handlerWithCustomUrl).toBeInstanceOf(OpenAiHandler)
+			// Verify the OpenAI client was created with normalized URL
+			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://custom.openai.com/v1",
+				}),
+			)
+		})
+
+		it("should not add /v1 to Azure endpoints", () => {
+			const azureBaseUrl = "https://test.services.ai.azure.com"
+			const handlerWithAzureUrl = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: azureBaseUrl,
+			})
+			expect(handlerWithAzureUrl).toBeInstanceOf(OpenAiHandler)
+			// Verify the OpenAI client was created without /v1 added
+			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://test.services.ai.azure.com",
+				}),
+			)
+		})
+
+		it("should not add /v1 to Azure OpenAI endpoints", () => {
+			const azureOpenAiBaseUrl = "https://myorg.openai.azure.com/openai"
+			const handlerWithAzureOpenAi = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: azureOpenAiBaseUrl,
+				openAiUseAzure: true,
+			})
+			expect(handlerWithAzureOpenAi).toBeInstanceOf(OpenAiHandler)
+			// Verify that the URL was not modified (no /v1 added)
+			// AzureOpenAI constructor should have been called
+			const mockAzure = (globalThis as any).__mockAzureOpenAI
+			expect(mockAzure).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://myorg.openai.azure.com/openai",
+				}),
+			)
 		})
 
 		it("should set default headers correctly", () => {
@@ -1153,6 +1247,51 @@ describe("getOpenAiModels", () => {
 
 		const result = await getOpenAiModels(" https://api.example.com/v1", "test-key")
 
+		expect(axios.get).toHaveBeenCalledWith("https://api.example.com/v1/models", expect.any(Object))
+		expect(result).toEqual(["model-1"])
+	})
+
+	it("should normalize base URLs without /v1 suffix in getOpenAiModels", async () => {
+		const mockResponse = {
+			data: {
+				data: [{ id: "model-1" }],
+			},
+		}
+		vi.mocked(axios.get).mockResolvedValueOnce(mockResponse)
+
+		const result = await getOpenAiModels("https://api.example.com", "test-key")
+
+		// Should add /v1 suffix to the URL
+		expect(axios.get).toHaveBeenCalledWith("https://api.example.com/v1/models", expect.any(Object))
+		expect(result).toEqual(["model-1"])
+	})
+
+	it("should handle base URLs with /v1 suffix in getOpenAiModels", async () => {
+		const mockResponse = {
+			data: {
+				data: [{ id: "model-1" }],
+			},
+		}
+		vi.mocked(axios.get).mockResolvedValueOnce(mockResponse)
+
+		const result = await getOpenAiModels("https://api.example.com/v1", "test-key")
+
+		// Should not add another /v1 suffix
+		expect(axios.get).toHaveBeenCalledWith("https://api.example.com/v1/models", expect.any(Object))
+		expect(result).toEqual(["model-1"])
+	})
+
+	it("should handle base URLs with trailing slash in getOpenAiModels", async () => {
+		const mockResponse = {
+			data: {
+				data: [{ id: "model-1" }],
+			},
+		}
+		vi.mocked(axios.get).mockResolvedValueOnce(mockResponse)
+
+		const result = await getOpenAiModels("https://api.example.com/", "test-key")
+
+		// Should handle trailing slash and add /v1
 		expect(axios.get).toHaveBeenCalledWith("https://api.example.com/v1/models", expect.any(Object))
 		expect(result).toEqual(["model-1"])
 	})
