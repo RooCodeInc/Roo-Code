@@ -106,7 +106,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 		try {
 			this.client.apiKey = getSessionToken()
-			return this.client.chat.completions.create(rooParams, requestOptions)
+			// Merge AbortSignal into request options so Cancel can terminate SSE
+			const effectiveRequestOptions: OpenAI.RequestOptions | undefined = (() => {
+				const base: OpenAI.RequestOptions = requestOptions ? { ...requestOptions } : {}
+				if (metadata?.abortSignal) {
+					;(base as any).signal = metadata.abortSignal
+				}
+				return Object.keys(base).length > 0 ? base : undefined
+			})()
+			return this.client.chat.completions.create(rooParams, effectiveRequestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

@@ -3271,11 +3271,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.currentRequestAbortController = new AbortController()
 		const abortSignal = this.currentRequestAbortController.signal
 
+		// Include abort signal so providers can terminate the underlying HTTP/SSE stream immediately
+		const metadataWithSignal: ApiHandlerCreateMessageMetadata = { ...metadata, abortSignal }
+
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,
 			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
-			metadata,
+			metadataWithSignal,
 		)
 		const iterator = stream[Symbol.asyncIterator]()
 

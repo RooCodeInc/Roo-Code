@@ -195,7 +195,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		let stream
 		try {
-			stream = await this.client.chat.completions.create(completionParams)
+			// Forward AbortSignal so Cancel terminates SSE immediately
+			const effectiveOptions = metadata?.abortSignal ? ({ signal: metadata.abortSignal } as any) : undefined
+			// Preserve tests that expect single-arg invocation when no options are provided
+			if (effectiveOptions) {
+				stream = await this.client.chat.completions.create(completionParams, effectiveOptions)
+			} else {
+				stream = await this.client.chat.completions.create(completionParams)
+			}
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

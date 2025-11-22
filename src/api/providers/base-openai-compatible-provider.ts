@@ -101,7 +101,21 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		}
 
 		try {
-			return this.client.chat.completions.create(params, requestOptions)
+			// Merge any caller-provided requestOptions with an AbortSignal from metadata (if present)
+			const effectiveRequestOptions: OpenAI.RequestOptions | undefined = (() => {
+				const base: OpenAI.RequestOptions = requestOptions ? { ...requestOptions } : {}
+				if (metadata?.abortSignal) {
+					;(base as any).signal = metadata.abortSignal
+				}
+				return Object.keys(base).length > 0 ? base : undefined
+			})()
+
+			// IMPORTANT: Only pass a second argument when options are actually defined
+			// to preserve test expectations that assert single-arg invocation.
+			if (effectiveRequestOptions) {
+				return this.client.chat.completions.create(params, effectiveRequestOptions)
+			}
+			return this.client.chat.completions.create(params)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

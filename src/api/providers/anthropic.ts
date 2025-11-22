@@ -126,23 +126,29 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							case "claude-haiku-4-5-20251001":
 							case "claude-3-haiku-20240307":
 								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
+								return {
+									headers: { "anthropic-beta": betas.join(",") },
+									...(metadata?.abortSignal ? { signal: metadata.abortSignal } : {}),
+								}
 							default:
-								return undefined
+								return metadata?.abortSignal ? { signal: metadata.abortSignal } : undefined
 						}
 					})(),
 				)
 				break
 			}
 			default: {
-				stream = (await this.client.messages.create({
-					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages,
-					stream: true,
-				})) as any
+				stream = (await this.client.messages.create(
+					{
+						model: modelId,
+						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+						temperature,
+						system: [{ text: systemPrompt, type: "text" }],
+						messages,
+						stream: true,
+					},
+					metadata?.abortSignal ? { signal: metadata.abortSignal } : undefined,
+				)) as any
 				break
 			}
 		}
