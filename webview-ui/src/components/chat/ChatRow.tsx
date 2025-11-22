@@ -1004,13 +1004,10 @@ export const ChatRowContent = ({
 						</div>
 						{message.type === "ask" && (
 							<div className="pl-6">
-								<CodeAccordian
-									path={tool.path}
-									code={tool.content}
-									language="text"
-									isExpanded={isExpanded}
-									onToggleExpand={handleToggleExpand}
-								/>
+								<div className="px-3 py-2 bg-vscode-editor-background border border-vscode-editorGroup-border rounded">
+									<div className="mb-2 break-words">{tool.content}</div>
+									<div className="text-xs text-vscode-descriptionForeground">{tool.path}</div>
+								</div>
 							</div>
 						)}
 					</>
