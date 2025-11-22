@@ -115,6 +115,28 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return Kimi K2 Thinking model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-thinking"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(expect.objectContaining(fireworksModels[testModelId]))
+		expect(model.info.maxTokens).toBe(16000)
+		expect(model.info.contextWindow).toBe(262144)
+		expect(model.info.supportsImages).toBe(false)
+		expect(model.info.supportsPromptCache).toBe(true)
+		expect(model.info.inputPrice).toBe(0.6)
+		expect(model.info.outputPrice).toBe(2.5)
+		expect(model.info.cacheReadsPrice).toBe(0.15)
+		expect(model.info.supportsTemperature).toBe(true)
+		expect(model.info.preserveReasoning).toBe(true)
+		expect(model.info.defaultTemperature).toBe(1.0)
+		expect(model.info.description).toContain("general-purpose agentic reasoning model")
+	})
+
 	it("should return MiniMax M2 model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/minimax-m2"
 		const handlerWithModel = new FireworksHandler({
