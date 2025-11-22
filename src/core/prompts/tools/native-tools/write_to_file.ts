@@ -5,7 +5,7 @@ export default {
 	function: {
 		name: "write_to_file",
 		description:
-			"Create a new file or completely overwrite an existing file with the exact content provided. Use only when a full rewrite is intended; the tool will create missing directories automatically.",
+			"Create a new file or completely overwrite an existing file with the exact content provided. Use only when a full rewrite is intended; the tool will create missing directories automatically. Can create task-scoped markdown files that exist only within the current task.",
 		strict: true,
 		parameters: {
 			type: "object",
@@ -21,6 +21,11 @@ export default {
 				line_count: {
 					type: "integer",
 					description: "Total number of lines in the written file, counting blank lines",
+				},
+				task_scoped: {
+					type: "boolean",
+					description:
+						"If true, creates a task-scoped markdown file that exists only within the current task (only works for .md and .markdown files)",
 				},
 			},
 			required: ["path", "content", "line_count"],

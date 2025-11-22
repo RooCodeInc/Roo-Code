@@ -71,6 +71,7 @@ export const toolParamNames = [
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
+	"task_scoped", // Parameter to mark files as task-scoped
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -101,7 +102,7 @@ export type NativeToolArgs = {
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
-	write_to_file: { path: string; content: string; line_count: number }
+	write_to_file: { path: string; content: string; line_count: number; task_scoped?: boolean }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -139,7 +140,7 @@ export interface FetchInstructionsToolUse extends ToolUse<"fetch_instructions"> 
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
 	name: "write_to_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "line_count">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "line_count" | "task_scoped">>
 }
 
 export interface InsertCodeBlockToolUse extends ToolUse<"insert_content"> {

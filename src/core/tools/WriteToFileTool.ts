@@ -19,11 +19,13 @@ import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } fr
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { writeTaskScopedFile } from "../task-persistence/taskScopedFiles"
 
 interface WriteToFileParams {
 	path: string
 	content: string
 	line_count: number
+	task_scoped?: boolean
 }
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
@@ -34,6 +36,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			path: params.path || "",
 			content: params.content || "",
 			line_count: parseInt(params.line_count ?? "0", 10),
+			task_scoped: params.task_scoped === "true",
 		}
 	}
 
@@ -42,6 +45,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath = params.path
 		let newContent = params.content
 		const predictedLineCount = params.line_count
+		const isTaskScoped = params.task_scoped || false
 
 		if (!relPath) {
 			task.consecutiveMistakeCount++
@@ -57,6 +61,45 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			pushToolResult(await task.sayAndCreateMissingParamError("write_to_file", "content"))
 			await task.diffViewProvider.reset()
 			return
+		}
+
+		// Handle task-scoped files specially
+		if (isTaskScoped) {
+			try {
+				// For task-scoped files, only allow markdown files
+				if (!relPath.endsWith(".md") && !relPath.endsWith(".markdown")) {
+					pushToolResult(
+						formatResponse.toolError("Task-scoped files must be markdown files (.md or .markdown)"),
+					)
+					return
+				}
+
+				const provider = task.providerRef.deref()
+				if (!provider) {
+					pushToolResult(formatResponse.toolError("Unable to access provider for task-scoped file"))
+					return
+				}
+
+				const globalStoragePath = provider.context.globalStorageUri.fsPath
+				const filePath = await writeTaskScopedFile(globalStoragePath, task.taskId, relPath, newContent)
+
+				// Notify that we created a task-scoped file
+				await task.say(
+					"text",
+					`📝 Created task-scoped markdown file: ${relPath}\nThis file exists only within this task and won't appear in your project directory.`,
+				)
+
+				pushToolResult(
+					formatResponse.toolResult(
+						`Task-scoped file created: ${relPath}\n\nThis markdown file is stored within the task context and won't appear in your project directory.`,
+					),
+				)
+				task.consecutiveMistakeCount = 0
+				return
+			} catch (error) {
+				await handleError("writing task-scoped file", error as Error)
+				return
+			}
 		}
 
 		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)

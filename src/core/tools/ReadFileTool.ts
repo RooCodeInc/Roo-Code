@@ -28,6 +28,7 @@ import { validateFileTokenBudget, truncateFileContent } from "./helpers/fileToke
 import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { readTaskScopedFile } from "../task-persistence/taskScopedFiles"
 
 interface FileResult {
 	path: string
@@ -141,7 +142,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			for (const fileResult of fileResults) {
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
+				let fullPath: string
+				let isTaskScopedFile = false
+
+				// Check if this is a task-scoped file
+				if (relPath.startsWith("[task-scoped]/")) {
+					isTaskScopedFile = true
+					// Extract the actual file path
+					const actualPath = relPath.substring("[task-scoped]/".length)
+					fullPath = actualPath // For task-scoped files, we'll use the relative path
+				} else {
+					fullPath = path.resolve(task.cwd, relPath)
+				}
 
 				if (fileResult.lineRanges) {
 					let hasRangeError = false
@@ -175,17 +187,20 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				}
 
 				if (fileResult.status === "pending") {
-					const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
-					if (!accessAllowed) {
-						await task.say("rooignore_error", relPath)
-						const errorMsg = formatResponse.rooIgnoreError(relPath)
-						updateFileResult(relPath, {
-							status: "blocked",
-							error: errorMsg,
-							xmlContent: `<file><path>${relPath}</path><error>${errorMsg}</error></file>`,
-							nativeContent: `File: ${relPath}\nError: ${errorMsg}`,
-						})
-						continue
+					// Skip access checks for task-scoped files
+					if (!isTaskScopedFile) {
+						const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
+						if (!accessAllowed) {
+							await task.say("rooignore_error", relPath)
+							const errorMsg = formatResponse.rooIgnoreError(relPath)
+							updateFileResult(relPath, {
+								status: "blocked",
+								error: errorMsg,
+								xmlContent: `<file><path>${relPath}</path><error>${errorMsg}</error></file>`,
+								nativeContent: `File: ${relPath}\nError: ${errorMsg}`,
+							})
+							continue
+						}
 					}
 
 					filesToApprove.push(fileResult)
@@ -333,7 +348,75 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				if (fileResult.status !== "approved") continue
 
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
+				let fullPath: string
+				let isTaskScopedFile = false
+
+				// Check if this is a task-scoped file
+				if (relPath.startsWith("[task-scoped]/")) {
+					isTaskScopedFile = true
+					// Extract the actual file path
+					const actualPath = relPath.substring("[task-scoped]/".length)
+					fullPath = actualPath // For task-scoped files, we'll use the relative path
+
+					// Read the task-scoped file
+					const provider = task.providerRef.deref()
+					if (!provider) {
+						updateFileResult(relPath, {
+							status: "error",
+							error: "Unable to access provider for task-scoped file",
+							xmlContent: `<file><path>${relPath}</path><error>Unable to access provider for task-scoped file</error></file>`,
+							nativeContent: `File: ${relPath}\nError: Unable to access provider for task-scoped file`,
+						})
+						continue
+					}
+
+					const globalStoragePath = provider.context.globalStorageUri.fsPath
+					const content = await readTaskScopedFile(globalStoragePath, task.taskId, actualPath)
+
+					if (content === null) {
+						updateFileResult(relPath, {
+							status: "error",
+							error: "Task-scoped file not found",
+							xmlContent: `<file><path>${relPath}</path><error>Task-scoped file not found</error></file>`,
+							nativeContent: `File: ${relPath}\nError: Task-scoped file not found`,
+						})
+						continue
+					}
+
+					// Process the task-scoped file content
+					const lines = content.split("\n")
+					const totalLines = lines.length
+
+					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
+						const rangeResults: string[] = []
+						const nativeRangeResults: string[] = []
+
+						for (const range of fileResult.lineRanges) {
+							const contentLines = lines.slice(range.start - 1, range.end)
+							const numberedContent = addLineNumbers(contentLines.join("\n"), range.start)
+							const lineRangeAttr = ` lines="${range.start}-${range.end}"`
+							rangeResults.push(`<content${lineRangeAttr}>\n${numberedContent}</content>`)
+							nativeRangeResults.push(`Lines ${range.start}-${range.end}:\n${numberedContent}`)
+						}
+
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n${rangeResults.join("\n")}\n<notice>This is a task-scoped markdown file stored within the task context.</notice>\n</file>`,
+							nativeContent: `File: ${relPath}\n${nativeRangeResults.join("\n\n")}\n\nNote: This is a task-scoped markdown file stored within the task context.`,
+						})
+					} else {
+						const numberedContent = addLineNumbers(content, 1)
+						const lineRangeAttr = ` lines="1-${totalLines}"`
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n<content${lineRangeAttr}>\n${numberedContent}</content>\n<notice>This is a task-scoped markdown file stored within the task context.</notice>\n</file>`,
+							nativeContent: `File: ${relPath}\nLines 1-${totalLines}:\n${numberedContent}\n\nNote: This is a task-scoped markdown file stored within the task context.`,
+						})
+					}
+
+					await task.fileContextTracker.trackFileContext(actualPath, "read_tool" as RecordSource)
+					continue
+				}
+
+				fullPath = path.resolve(task.cwd, relPath)
 
 				try {
 					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
