@@ -258,6 +258,20 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	private guessModelInfoFromId(modelId: string): Partial<ModelInfo> {
 		// Define a mapping for model ID patterns and their configurations
 		const modelConfigMap: Record<string, Partial<ModelInfo>> = {
+			"claude-sonnet-4-5": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
+			"claude-sonnet-4": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
 			"claude-4": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
@@ -276,6 +290,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				supportsImages: true,
 				supportsPromptCache: true,
 			},
+			"claude-opus-4": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
+			},
 			"claude-4-opus": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
@@ -287,6 +308,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+			},
+			"claude-haiku-4-5": {
+				maxTokens: 8192,
+				contextWindow: 200_000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsReasoningBudget: true,
 			},
 			"claude-3-haiku": {
 				maxTokens: 4096,
@@ -914,10 +942,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				info: JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultPromptRouterModelId])),
 			}
 		} else {
-			// Use heuristics for model info, then allow overrides from ProviderSettings
-			const guessed = this.guessModelInfoFromId(modelId)
+			// Use heuristics for model info based on the base model ID (without prefix)
+			const guessed = this.guessModelInfoFromId(baseModelId)
 			model = {
-				id: bedrockDefaultModelId,
+				id: baseModelId,
 				info: {
 					...JSON.parse(JSON.stringify(bedrockModels[bedrockDefaultModelId])),
 					...guessed,
