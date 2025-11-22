@@ -526,6 +526,7 @@ describe("ClineProvider", () => {
 
 		const mockState: ExtensionState = {
 			version: "1.0.0",
+			isBrowserSessionActive: false,
 			clineMessages: [],
 			taskHistory: [],
 			shouldShowAnnouncement: false,

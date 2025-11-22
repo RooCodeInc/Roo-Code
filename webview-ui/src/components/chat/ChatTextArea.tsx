@@ -59,6 +59,9 @@ interface ChatTextAreaProps {
 	// Edit mode props
 	isEditMode?: boolean
 	onCancel?: () => void
+	// Browser session status
+	isBrowserSessionActive?: boolean
+	showBrowserDockToggle?: boolean
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -80,6 +83,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			hoverPreviewMap,
 			isEditMode = false,
 			onCancel,
+			isBrowserSessionActive = false,
+			showBrowserDockToggle = false,
 		},
 		ref,
 	) => {
@@ -1252,6 +1257,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
+								<div
+									className="hidden"
+									data-browser-session-active={isBrowserSessionActive}
+									data-show-browser-dock-toggle={showBrowserDockToggle}
+								/>
 								<StandardTooltip content={t("chat:addImages")}>
 									<button
 										aria-label={t("chat:addImages")}

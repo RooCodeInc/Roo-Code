@@ -5,13 +5,14 @@ import type { ModelInfo } from "@roo-code/types"
 
 import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/api"
 import { XmlMatcher } from "../../utils/xml-matcher"
-import { ApiStream } from "../transform/stream"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { calculateApiCostOpenAI } from "../../shared/cost"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -94,6 +95,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
+		// Add thinking parameter if reasoning is enabled and model supports it
+		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
+			;(params as any).thinking = { type: "enabled" }
+		}
+
 		try {
 			return this.client.chat.completions.create(params, requestOptions)
 		} catch (error) {
@@ -119,6 +125,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
+		let lastUsage: OpenAI.CompletionUsage | undefined
+
 		for await (const chunk of stream) {
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const chunkAny = chunk as any
@@ -137,10 +145,15 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}
 			}
 
-			if (delta && "reasoning_content" in delta) {
-				const reasoning_content = (delta.reasoning_content as string | undefined) || ""
-				if (reasoning_content?.trim()) {
-					yield { type: "reasoning", text: reasoning_content }
+			if (delta) {
+				for (const key of ["reasoning_content", "reasoning"] as const) {
+					if (key in delta) {
+						const reasoning_content = ((delta as any)[key] as string | undefined) || ""
+						if (reasoning_content?.trim()) {
+							yield { type: "reasoning", text: reasoning_content }
+						}
+						break
+					}
 				}
 			}
 
@@ -176,12 +189,26 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			}
 
 			if (chunk.usage) {
+				lastUsage = chunk.usage
+			}
+		}
+
+		// Fallback: If stream ends with accumulated tool calls that weren't yielded
+		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+		if (toolCallAccumulator.size > 0) {
+			for (const toolCall of toolCallAccumulator.values()) {
 				yield {
-					type: "usage",
-					inputTokens: chunk.usage.prompt_tokens || 0,
-					outputTokens: chunk.usage.completion_tokens || 0,
+					type: "tool_call",
+					id: toolCall.id,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
 				}
 			}
+			toolCallAccumulator.clear()
+		}
+
+		if (lastUsage) {
+			yield this.processUsageMetrics(lastUsage, this.getModel().info)
 		}
 
 		// Process any remaining content
@@ -190,17 +217,41 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		}
 	}
 
+	protected processUsageMetrics(usage: any, modelInfo?: any): ApiStreamUsageChunk {
+		const inputTokens = usage?.prompt_tokens || 0
+		const outputTokens = usage?.completion_tokens || 0
+		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens || 0
+		const cacheReadTokens = usage?.prompt_tokens_details?.cached_tokens || 0
+
+		const { totalCost } = modelInfo
+			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
+			: { totalCost: 0 }
+
+		return {
+			type: "usage",
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens: cacheWriteTokens || undefined,
+			cacheReadTokens: cacheReadTokens || undefined,
+			totalCost,
+		}
+	}
+
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
-		const { id: modelId } = this.getModel()
+		const { id: modelId, info: modelInfo } = this.getModel()
+
+		const params: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
+			model: modelId,
+			messages: [{ role: "user", content: prompt }],
+		}
+
+		// Add thinking parameter if reasoning is enabled and model supports it
+		if (this.options.enableReasoningEffort && modelInfo.supportsReasoningBinary) {
+			;(params as any).thinking = { type: "enabled" }
+		}
 
 		try {
-			const response = await this.client.chat.completions.create(
-				{
-					model: modelId,
-					messages: [{ role: "user", content: prompt }],
-				},
-				{ signal: metadata?.signal },
-			)
+			const response = await this.client.chat.completions.create(params, { signal: metadata?.signal })
 
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const responseAny = response as any

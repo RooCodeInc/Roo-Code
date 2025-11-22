@@ -26,6 +26,7 @@ import {
 	groqDefaultModelId,
 	cerebrasDefaultModelId,
 	chutesDefaultModelId,
+	basetenDefaultModelId,
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
 	zgsmDefaultModelId,
@@ -70,6 +71,7 @@ import { ProviderChangeWarningDialog } from "./ProviderChangeWarningDialog"
 
 import {
 	Anthropic,
+	Baseten,
 	Bedrock,
 	Cerebras,
 	Chutes,
@@ -297,6 +299,7 @@ const ApiOptions = ({
 
 	const selectedProviderModels = useMemo(() => {
 		const models = MODELS_BY_PROVIDER[selectedProvider]
+
 		if (!models) return []
 
 		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
@@ -379,6 +382,7 @@ const ApiOptions = ({
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
 				groq: { field: "apiModelId", default: groqDefaultModelId },
 				chutes: { field: "apiModelId", default: chutesDefaultModelId },
+				baseten: { field: "apiModelId", default: basetenDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
@@ -507,11 +511,22 @@ const ApiOptions = ({
 			return true
 		})
 
-		return providersWithModels.map(({ value, label }) => ({
+		const options = providersWithModels.map(({ value, label }) => ({
 			value,
 			label,
 		}))
-	}, [organizationAllowList, apiConfiguration.apiProvider])
+
+		// Pin "roo" to the top if not on welcome screen
+		if (!fromWelcomeView) {
+			const rooIndex = options.findIndex((opt) => opt.value === "roo")
+			if (rooIndex > 0) {
+				const [rooOption] = options.splice(rooIndex, 1)
+				options.unshift(rooOption)
+			}
+		}
+
+		return options
+	}, [organizationAllowList, apiConfiguration.apiProvider, fromWelcomeView])
 
 	return (
 		<div className="flex flex-col gap-3">
@@ -626,6 +641,10 @@ const ApiOptions = ({
 
 			{selectedProvider === "mistral" && (
 				<Mistral apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			)}
+
+			{selectedProvider === "baseten" && (
+				<Baseten apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "bedrock" && (

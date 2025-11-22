@@ -10,7 +10,7 @@ import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT, MAX_WORKSPACE_FILES } from "@r
 
 import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
-import { defaultModeSlug, getFullModeDetails, getModeBySlug, isToolAllowedForMode } from "../../shared/modes"
+import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
 import { getApiMetrics } from "../../shared/getApiMetrics"
 import { listFiles } from "../../services/glob/list-files"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
@@ -227,7 +227,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		experiments = {} as Record<ExperimentId, boolean>,
 		customInstructions: globalCustomInstructions,
 		language,
-		apiConfiguration
+		apiConfiguration,
 	} = state ?? {}
 
 	const currentMode = mode ?? defaultModeSlug
@@ -272,7 +272,40 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 
-	if (includeFileDetails || (Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ?? apiConfiguration?.apiProvider === "zgsm")) {
+	// Add browser session status - Only show when active to prevent cluttering context
+	const isBrowserActive = cline.browserSession.isSessionActive()
+
+	if (isBrowserActive) {
+		// Build viewport info for status (prefer actual viewport if available, else fallback to configured setting)
+		const configuredViewport = (state?.browserViewportSize as string | undefined) ?? "900x600"
+		let configuredWidth: number | undefined
+		let configuredHeight: number | undefined
+		if (configuredViewport.includes("x")) {
+			const parts = configuredViewport.split("x").map((v) => Number(v))
+			configuredWidth = parts[0]
+			configuredHeight = parts[1]
+		}
+
+		let actualWidth: number | undefined
+		let actualHeight: number | undefined
+		const vp = cline.browserSession.getViewportSize?.()
+		if (vp) {
+			actualWidth = vp.width
+			actualHeight = vp.height
+		}
+
+		const width = actualWidth ?? configuredWidth
+		const height = actualHeight ?? configuredHeight
+		const viewportInfo = width && height ? `\nCurrent viewport size: ${width}x${height} pixels.` : ""
+
+		details += `\n# Browser Session Status\nActive - A browser session is currently open and ready for browser_action commands${viewportInfo}\n`
+	}
+
+	if (
+		includeFileDetails ||
+		(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ??
+			apiConfiguration?.apiProvider === "zgsm")
+	) {
 		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
 

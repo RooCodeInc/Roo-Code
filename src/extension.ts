@@ -46,7 +46,7 @@ import { getCommand } from "./utils/commands"
 import { activateCoworkflowIntegration, deactivateCoworkflowIntegration } from "./core/costrict/workflow"
 import { defaultLang } from "./utils/language"
 import { createLogger } from "./utils/logger"
-// import { flushModels, getModels } from "./api/providers/fetchers/modelCache"
+// import { flushModels, getModels, initializeModelCacheRefresh } from "./api/providers/fetchers/modelCache"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -383,6 +383,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	}
 
 	ZgsmCore.activate(context, provider, outputChannel)
+	// // Initialize background model cache refresh
+	// initializeModelCacheRefresh()
 
 	return new API(outputChannel, provider, socketPath, enableLogging)
 }

@@ -253,14 +253,15 @@ Each file requires its own path, start_line, and diff elements.
 
 		// Pattern allows optional extra '<' or '>' for SEARCH to handle AI-generated diffs
 		// (e.g., Sonnet 4 sometimes adds extra markers)
-		const SEARCH_PATTERN = /^<{7,8} SEARCH>?$/
+		// Using explicit alternation instead of quantifiers to avoid regex backtracking
+		const SEARCH_PATTERN = /^(?:<<<<<<< |<<<<<<<< )SEARCH>?$/
 		const SEARCH = "<<<<<<< SEARCH" // Simplified for display
 		const SEP = "======="
 		// Pattern allows optional extra '>' or '<' for REPLACE
-		const REPLACE_PATTERN = /^>{7,8} REPLACE<?$/
+		const REPLACE_PATTERN = /^(?:>>>>>>> |>>>>>>>> )REPLACE<?$/
 		const REPLACE = ">>>>>>> REPLACE" // Simplified for display
-		const SEARCH_PREFIX_PATTERN = /^<{7,8} /
-		const REPLACE_PREFIX_PATTERN = /^>{7,8} /
+		const SEARCH_PREFIX_PATTERN = /^(?:<<<<<<< |<<<<<<<< )/
+		const REPLACE_PREFIX_PATTERN = /^(?:>>>>>>> |>>>>>>>> )/
 
 		const reportMergeConflictError = (found: string, _expected: string) => ({
 			success: false,
@@ -453,18 +454,18 @@ Each file requires its own path, start_line, and diff elements.
 
 		/* Regex parts:
 		1. (?:^|\n)   Ensures the first marker starts at the beginning of the file or right after a newline.
-		2. (?<!\\)<{7,8} SEARCH>?\s*\n   Matches "<<<<<<< SEARCH" or "<<<<<<< SEARCH>" or "<<<<<<<<" with 7-8 '<' chars (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped.
+		2. (?<!\\)(?:<<<<<<< |<<<<<<<< )SEARCH>?\s*\n   Matches "<<<<<<< SEARCH" or "<<<<<<< SEARCH>" or "<<<<<<<< SEARCH" (7 or 8 '<' chars) (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped. Uses explicit alternation to avoid backtracking.
 		3. ((?:\:start_line:\s*(\d+)\s*\n))?   Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
 		4. ((?:\:end_line:\s*(\d+)\s*\n))?   Optionally matches a ":end_line:" line. Group 3 is the whole match and group 4 is the digits.
 		5. ((?<!\\)-------\s*\n)?   Optionally matches the "-------" marker line (group 5).
 		6. ([\s\S]*?)(?:\n)?   Non‐greedy match for the "search content" (group 6) up to the next marker.
 		7. (?:(?<=\n)(?<!\\)=======\s*\n)   Matches the "=======" marker on its own line.
 		8. ([\s\S]*?)(?:\n)?   Non‐greedy match for the "replace content" (group 7).
-		9. (?:(?<=\n)(?<!\\)>{7,8} REPLACE<?)(?=\n|$)   Matches ">>>>>>> REPLACE" or ">>>>>>> REPLACE<" or ">>>>>>>>" with 7-8 '>' chars on its own line (and requires a following newline or the end of file).
+		9. (?:(?<=\n)(?<!\\)(?:>>>>>>> |>>>>>>>> )REPLACE<?)(?=\n|$)   Matches ">>>>>>> REPLACE" or ">>>>>>> REPLACE<" or ">>>>>>>> REPLACE" (7 or 8 '>' chars) on its own line (and requires a following newline or the end of file). Uses explicit alternation to avoid backtracking.
 		*/
 		let matches = [
 			...diffContent.matchAll(
-				/(?:^|\n)(?<!\\)<{7,8} SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>{7,8} REPLACE<?)(?=\n|$)/g,
+				/(?:^|\n)(?<!\\)(?:<<<<<<< |<<<<<<<< )SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)(?:>>>>>>> |>>>>>>>> )REPLACE<?)(?=\n|$)/g,
 			),
 		]
 

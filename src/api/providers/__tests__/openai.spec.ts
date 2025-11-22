@@ -279,6 +279,56 @@ describe("OpenAiHandler", () => {
 			})
 		})
 
+		it("should yield tool calls even when finish_reason is not set (fallback behavior)", async () => {
+			mockCreate.mockImplementation(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_fallback",
+												function: { name: "fallback_tool", arguments: '{"test":"fallback"}' },
+											},
+										],
+									},
+									finish_reason: null,
+								},
+							],
+						}
+						// Stream ends without finish_reason being set to "tool_calls"
+						yield {
+							choices: [
+								{
+									delta: {},
+									finish_reason: "stop", // Different finish reason
+								},
+							],
+						}
+					},
+				}
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Tool calls should still be yielded via the fallback mechanism
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_fallback",
+				name: "fallback_tool",
+				arguments: '{"test":"fallback"}',
+			})
+		})
+
 		it("should include reasoning_effort when reasoning effort is enabled", async () => {
 			const reasoningOptions: ApiHandlerOptions = {
 				...mockOptions,
@@ -776,6 +826,58 @@ describe("OpenAiHandler", () => {
 				id: "call_1",
 				name: "test_tool",
 				arguments: "{}",
+			})
+		})
+
+		it("should yield tool calls for O3 model even when finish_reason is not set (fallback behavior)", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
+
+			mockCreate.mockImplementation(async (options) => {
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_o3_fallback",
+												function: { name: "o3_fallback_tool", arguments: '{"o3":"test"}' },
+											},
+										],
+									},
+									finish_reason: null,
+								},
+							],
+						}
+						// Stream ends with different finish reason
+						yield {
+							choices: [
+								{
+									delta: {},
+									finish_reason: "length", // Different finish reason
+								},
+							],
+						}
+					},
+				}
+			})
+
+			const stream = o3Handler.createMessage("system", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Tool calls should still be yielded via the fallback mechanism
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call",
+				id: "call_o3_fallback",
+				name: "o3_fallback_tool",
+				arguments: '{"o3":"test"}',
 			})
 		})
 

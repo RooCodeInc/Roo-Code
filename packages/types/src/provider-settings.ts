@@ -4,6 +4,7 @@ import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, s
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
+	basetenModels,
 	bedrockModels,
 	cerebrasModels,
 	claudeCodeModels,
@@ -121,6 +122,7 @@ export const providerNames = [
 	...fauxProviders,
 	"anthropic",
 	"bedrock",
+	"baseten",
 	"cerebras",
 	"claude-code",
 	"doubao",
@@ -439,6 +441,10 @@ const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
 	vercelAiGatewayModelId: z.string().optional(),
 })
 
+const basetenSchema = apiModelIdProviderModelSchema.extend({
+	basetenApiKey: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -470,6 +476,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
+	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
 	huggingFaceSchema.merge(z.object({ apiProvider: z.literal("huggingface") })),
 	chutesSchema.merge(z.object({ apiProvider: z.literal("chutes") })),
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
@@ -513,6 +520,7 @@ export const providerSettingsSchema = z.object({
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
+	...basetenSchema.shape,
 	...huggingFaceSchema.shape,
 	...chutesSchema.shape,
 	...litellmSchema.shape,
@@ -611,6 +619,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	requesty: "requestyModelId",
 	xai: "apiModelId",
 	groq: "apiModelId",
+	baseten: "apiModelId",
 	chutes: "apiModelId",
 	litellm: "litellmModelId",
 	huggingface: "huggingFaceModelId",
@@ -759,6 +768,7 @@ export const MODELS_BY_PROVIDER: Record<
 	},
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Zai", models: Object.keys(internationalZAiModels) },
+	baseten: { id: "baseten", label: "BaseTen", models: Object.keys(basetenModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
 	glama: { id: "glama", label: "Glama", models: [] },

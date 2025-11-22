@@ -5,6 +5,14 @@ import { render, screen, act, cleanup } from "@/utils/test-utils"
 
 import AppWithProviders from "../App"
 
+// Mock posthog
+vi.mock("posthog-js", () => ({
+	default: {
+		onFeatureFlags: vi.fn(),
+		getFeatureFlag: vi.fn(),
+	},
+}))
+
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
 		postMessage: vi.fn(),
@@ -189,6 +197,7 @@ describe("App", () => {
 			shouldShowAnnouncement: false,
 			experiments: {},
 			language: "en",
+			telemetrySetting: "enabled",
 		})
 	})
 

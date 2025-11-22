@@ -89,7 +89,7 @@ const WelcomeView = () => {
 				<RooHero />
 				{/* <h2 className="mt-0 mb-4 text-xl">{t("welcome:greeting")}</h2> */}
 
-				<div className="text-base text-vscode-foreground py-2 px-2 mb-4">
+				<div className="text-base text-vscode-foreground py-2 mb-4">
 					<p className="mb-3 leading-relaxed">
 						<Trans i18nKey="welcome:introduction" />
 					</p>

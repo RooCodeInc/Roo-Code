@@ -472,8 +472,32 @@ export async function presentAssistantMessage(cline: Task) {
 				return text.replace(tagRegex, "")
 			}
 
-			if (block.name !== "browser_action") {
-				await cline.browserSession.closeBrowser()
+			// Keep browser open during an active session so other tools can run.
+			// Session is active if we've seen any browser_action_result and the last browser_action is not "close".
+			try {
+				const messages = cline.clineMessages || []
+				const hasStarted = messages.some((m: any) => m.say === "browser_action_result")
+				let isClosed = false
+				for (let i = messages.length - 1; i >= 0; i--) {
+					const m = messages[i]
+					if (m.say === "browser_action") {
+						try {
+							const act = JSON.parse(m.text || "{}")
+							isClosed = act.action === "close"
+						} catch {}
+						break
+					}
+				}
+				const sessionActive = hasStarted && !isClosed
+				// Only auto-close when no active browser session is present, and this isn't a browser_action
+				if (!sessionActive && block.name !== "browser_action") {
+					await cline.browserSession.closeBrowser()
+				}
+			} catch {
+				// On any unexpected error, fall back to conservative behavior
+				if (block.name !== "browser_action") {
+					await cline.browserSession.closeBrowser()
+				}
 			}
 
 			if (!block.partial) {
@@ -681,13 +705,14 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "browser_action":
-					await browserActionTool.handle(cline, block as ToolUse<"browser_action">, {
+					await browserActionTool(
+						cline,
+						block as ToolUse<"browser_action">,
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-						toolProtocol,
-					})
+					)
 					break
 				case "execute_command":
 					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {

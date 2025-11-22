@@ -753,12 +753,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	cancelChat(reason?: ClineApiReqCancelReason): void {
 		try {
+			if (!this.abortController) return
 			if (reason === "user_cancelled") {
 				this.logger.info(`[cancelChat] User Cancelled chat request: ${reason}`)
 			} else {
 				this.logger.info(`[cancelChat] AI Cancelled chat request: ${reason}`)
 			}
 			this.abortController?.abort(reason)
+			this.abortController = undefined
 		} catch (error) {
 			this.logger.info(`Error while cancelling message ${error}`)
 		}

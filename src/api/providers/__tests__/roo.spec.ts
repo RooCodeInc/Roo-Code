@@ -633,4 +633,280 @@ describe("RooHandler", () => {
 			)
 		})
 	})
+
+	describe("tool calls handling", () => {
+		beforeEach(() => {
+			handler = new RooHandler(mockOptions)
+		})
+
+		it("should yield tool calls when finish_reason is tool_calls", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_123",
+											function: { name: "read_file", arguments: '{"path":"' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: 'test.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0].id).toBe("call_123")
+			expect(toolCallChunks[0].name).toBe("read_file")
+			expect(toolCallChunks[0].arguments).toBe('{"path":"test.ts"}')
+		})
+
+		it("should yield tool calls even when finish_reason is not set (fallback behavior)", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_456",
+											function: {
+												name: "write_to_file",
+												arguments: '{"path":"test.ts","content":"hello"}',
+											},
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					// Stream ends without finish_reason being set to "tool_calls"
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "stop", // Different finish reason
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Tool calls should still be yielded via the fallback mechanism
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0].id).toBe("call_456")
+			expect(toolCallChunks[0].name).toBe("write_to_file")
+			expect(toolCallChunks[0].arguments).toBe('{"path":"test.ts","content":"hello"}')
+		})
+
+		it("should handle multiple tool calls", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_1",
+											function: { name: "read_file", arguments: '{"path":"file1.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 1,
+											id: "call_2",
+											function: { name: "read_file", arguments: '{"path":"file2.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(2)
+			expect(toolCallChunks[0].id).toBe("call_1")
+			expect(toolCallChunks[0].name).toBe("read_file")
+			expect(toolCallChunks[1].id).toBe("call_2")
+			expect(toolCallChunks[1].name).toBe("read_file")
+		})
+
+		it("should accumulate tool call arguments across multiple chunks", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_789",
+											function: { name: "execute_command", arguments: '{"command":"' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: "npm install" },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											function: { arguments: '"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0].id).toBe("call_789")
+			expect(toolCallChunks[0].name).toBe("execute_command")
+			expect(toolCallChunks[0].arguments).toBe('{"command":"npm install"}')
+		})
+
+		it("should not yield empty tool calls when no tool calls present", async () => {
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [{ delta: { content: "Regular text response" }, index: 0 }],
+					}
+					yield {
+						choices: [{ delta: {}, finish_reason: "stop", index: 0 }],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
+			expect(toolCallChunks).toHaveLength(0)
+		})
+	})
 })

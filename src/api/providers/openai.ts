@@ -246,6 +246,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
+			// Fallback: If stream ends with accumulated tool calls that weren't yielded
+			// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+			if (toolCallAccumulator.size > 0) {
+				for (const toolCall of toolCallAccumulator.values()) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				toolCallAccumulator.clear()
+			}
+
 			for (const chunk of matcher.final()) {
 				yield chunk
 			}
@@ -507,6 +521,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
 			}
+		}
+
+		// Fallback: If stream ends with accumulated tool calls that weren't yielded
+		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+		if (toolCallAccumulator.size > 0) {
+			for (const toolCall of toolCallAccumulator.values()) {
+				yield {
+					type: "tool_call",
+					id: toolCall.id,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
+				}
+			}
+			toolCallAccumulator.clear()
 		}
 	}
 
