@@ -88,7 +88,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	const [visualMode, setVisualMode] = useState(mode)
 
 	// Build modes fresh each render so search reflects inline rename updates immediately
-	const modes = getAllModes(customModes)
+	// Include hidden modes in the settings view so they can be managed
+	const modes = getAllModes(customModes, true)
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const [selectedPromptContent, setSelectedPromptContent] = useState("")
@@ -537,8 +538,8 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 				if (message.success) {
 					const { slug } = message as ImportModeResult
 					if (slug) {
-						// Try switching using the freshest mode list available
-						const all = getAllModes(customModesRef.current)
+						// Try switching using the freshest mode list available (include hidden modes)
+						const all = getAllModes(customModesRef.current, true)
 						const importedMode = all.find((m) => m.slug === slug)
 						if (importedMode) {
 							handleModeSwitchRef.current(importedMode)

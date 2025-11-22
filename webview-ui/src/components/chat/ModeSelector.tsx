@@ -63,7 +63,8 @@ export const ModeSelector = ({
 
 	// Get all modes including custom modes and merge custom prompt descriptions.
 	const modes = React.useMemo(() => {
-		const allModes = getAllModes(customModes)
+		// Don't include hidden modes in the selector dropdown
+		const allModes = getAllModes(customModes, false)
 
 		return allModes.map((mode) => ({
 			...mode,

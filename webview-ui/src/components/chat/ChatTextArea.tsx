@@ -250,7 +250,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [inputValue, setInputValue, t])
 
-		const allModes = useMemo(() => getAllModes(customModes), [customModes])
+		const allModes = useMemo(() => getAllModes(customModes, false), [customModes])
 
 		// Memoized check for whether the input has content (text or images)
 		const hasInputContent = useMemo(() => {

@@ -86,7 +86,7 @@ export function getModeConfig(slug: string, customModes?: ModeConfig[]): ModeCon
 }
 
 // Get all available modes, with custom modes overriding built-in modes
-export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
+export function getAllModes(customModes?: ModeConfig[], includeHidden: boolean = false): ModeConfig[] {
 	if (!customModes?.length) {
 		return [...modes]
 	}
@@ -105,6 +105,11 @@ export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
 			allModes.push(customMode)
 		}
 	})
+
+	// Filter out hidden modes unless explicitly requested
+	if (!includeHidden) {
+		return allModes.filter((mode) => !mode.hidden)
+	}
 
 	return allModes
 }
@@ -284,11 +289,14 @@ export const defaultPrompts: Readonly<CustomModePrompts> = Object.freeze(
 )
 
 // Helper function to get all modes with their prompt overrides from extension state
-export async function getAllModesWithPrompts(context: vscode.ExtensionContext): Promise<ModeConfig[]> {
+export async function getAllModesWithPrompts(
+	context: vscode.ExtensionContext,
+	includeHidden: boolean = false,
+): Promise<ModeConfig[]> {
 	const customModes = (await context.globalState.get<ModeConfig[]>("customModes")) || []
 	const customModePrompts = (await context.globalState.get<CustomModePrompts>("customModePrompts")) || {}
 
-	const allModes = getAllModes(customModes)
+	const allModes = getAllModes(customModes, includeHidden)
 	return allModes.map((mode) => ({
 		...mode,
 		roleDefinition: customModePrompts[mode.slug]?.roleDefinition ?? mode.roleDefinition,
