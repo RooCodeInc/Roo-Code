@@ -46,6 +46,22 @@ export type ModelRecord = Record<string, ModelInfo>
 
 export type RouterModels = Record<RouterName, ModelRecord>
 
+// Provider Metadata
+
+export interface ProviderMessageMetadata {
+	// OpenAI Native
+	openAiEncryptedContent?: string
+	openAiReasoningSummary?: any[]
+	openAiResponseId?: string
+
+	// Google Gemini
+	geminiThoughtSignature?: string
+	geminiResponseId?: string
+
+	// OpenRouter
+	openRouterReasoningDetails?: any[] // Kept generic to match OpenRouter spec
+}
+
 // Reasoning
 
 export const shouldUseReasoningBudget = ({

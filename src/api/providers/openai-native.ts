@@ -13,7 +13,7 @@ import {
 	type ServiceTier,
 } from "@roo-code/types"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions, ProviderMessageMetadata } from "../../shared/api"
 
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
@@ -367,7 +367,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Process each message
 		for (const message of messages) {
-			// Check if this is a reasoning item (already formatted in API history)
+			// Check if this is a reasoning item (already formatted in API history - legacy support)
 			if ((message as any).type === "reasoning") {
 				// Pass through reasoning items as-is
 				formattedInput.push(message)
@@ -421,6 +421,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				} else if (Array.isArray(message.content)) {
 					for (const block of message.content) {
 						if (block.type === "text") {
+							// Extract encrypted content from provider metadata if present
+							const metadata = (block as any).providerMetadata as ProviderMessageMetadata | undefined
+							if (metadata?.openAiEncryptedContent) {
+								formattedInput.push({
+									type: "reasoning",
+									encrypted_content: metadata.openAiEncryptedContent,
+									summary: metadata.openAiReasoningSummary || [],
+									...(metadata.openAiResponseId ? { id: metadata.openAiResponseId } : {}),
+								})
+							}
 							content.push({ type: "output_text", text: block.text })
 						} else if (block.type === "tool_use") {
 							// Map Anthropic tool_use to Responses API function_call item
@@ -1256,30 +1266,41 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		return { id: id.startsWith("o3-mini") ? "o3-mini" : id, info, ...params, verbosity: params.verbosity }
 	}
 
-	/**
-	 * Extracts encrypted_content and id from the first reasoning item in the output array.
-	 * This is the minimal data needed for stateless API continuity.
-	 *
-	 * @returns Object with encrypted_content and id, or undefined if not available
-	 */
-	getEncryptedContent(): { encrypted_content: string; id?: string } | undefined {
-		if (!this.lastResponseOutput) return undefined
+	getGenerationMetadata(): ProviderMessageMetadata | undefined {
+		if (!this.lastResponseOutput && !this.lastResponseId) return undefined
 
-		// Find the first reasoning item with encrypted_content
-		const reasoningItem = this.lastResponseOutput.find(
-			(item) => item.type === "reasoning" && item.encrypted_content,
-		)
+		let openAiEncryptedContent: string | undefined
+		let openAiReasoningSummary: any[] | undefined
+		let openAiResponseId: string | undefined
 
-		if (!reasoningItem?.encrypted_content) return undefined
+		if (this.lastResponseOutput) {
+			// Find the first reasoning item with encrypted_content
+			const reasoningItem = this.lastResponseOutput.find(
+				(item) => item.type === "reasoning" && item.encrypted_content,
+			)
+			if (reasoningItem?.encrypted_content) {
+				openAiEncryptedContent = reasoningItem.encrypted_content
+				// Prefer specific reasoning item ID if available, though top-level response ID is usually sufficient
+				if (reasoningItem.id) {
+					openAiResponseId = reasoningItem.id
+				}
+				// Capture summary if present
+				if (reasoningItem.summary) {
+					openAiReasoningSummary = reasoningItem.summary
+				}
+			}
+		}
+
+		// Fallback to top-level response ID if not found in reasoning item
+		if (!openAiResponseId) {
+			openAiResponseId = this.lastResponseId
+		}
 
 		return {
-			encrypted_content: reasoningItem.encrypted_content,
-			...(reasoningItem.id ? { id: reasoningItem.id } : {}),
+			openAiEncryptedContent,
+			openAiReasoningSummary,
+			openAiResponseId,
 		}
-	}
-
-	getResponseId(): string | undefined {
-		return this.lastResponseId
 	}
 
 	async completePrompt(prompt: string): Promise<string> {

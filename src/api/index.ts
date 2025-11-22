@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
+import type { ProviderMessageMetadata } from "../shared/api"
 
 import { ApiStream } from "./transform/stream"
 
@@ -99,6 +100,13 @@ export interface ApiHandler {
 	): ApiStream
 
 	getModel(): { id: string; info: ModelInfo }
+
+	/**
+	 * Retrieves metadata for the last generated response.
+	 * This includes provider-specific reasoning data, thought signatures, and response IDs
+	 * that need to be persisted for conversation continuity.
+	 */
+	getGenerationMetadata?(): ProviderMessageMetadata | undefined
 
 	/**
 	 * Counts tokens for content blocks

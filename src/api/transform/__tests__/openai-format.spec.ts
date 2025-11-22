@@ -128,4 +128,125 @@ describe("convertToOpenAiMessages", () => {
 		expect(toolMessage.tool_call_id).toBe("weather-123")
 		expect(toolMessage.content).toBe("Current temperature in London: 20°C")
 	})
+	it("should handle assistant messages with reasoning details and preserve index field", () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "text",
+						text: "I will now reason about this.",
+						// @ts-ignore
+						reasoning_details: [
+							{
+								type: "reasoning.text",
+								text: "This is the first part",
+								index: 0,
+								signature: "sig1",
+								format: "format1",
+							},
+							{
+								type: "reasoning.text",
+								text: " of the reasoning.",
+								index: 0,
+								signature: "sig1",
+								format: "format1",
+							},
+						],
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const assistantMessage = openAiMessages[0] as any
+		expect(assistantMessage.role).toBe("assistant")
+		expect(assistantMessage.content).toBe("I will now reason about this.")
+		expect(assistantMessage.reasoning_details).toHaveLength(1)
+		expect(assistantMessage.reasoning_details[0]).toEqual({
+			type: "reasoning.text",
+			text: "This is the first part of the reasoning.",
+			signature: "sig1",
+			format: "format1",
+			index: 0,
+		})
+		expect(assistantMessage.reasoning_details[0]).toHaveProperty("index")
+	})
+	it("should not include reasoning_details if they consolidate to empty array", () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "text",
+						text: "Response.",
+						// @ts-ignore
+						reasoning_details: [
+							{
+								index: 0,
+								// No text, no data
+							},
+						],
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const assistantMessage = openAiMessages[0] as any
+		expect(assistantMessage.role).toBe("assistant")
+		expect(assistantMessage.reasoning_details).toBeUndefined()
+	})
+	it("should re-index reasoning details sequentially", () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "text",
+						text: "Response.",
+						// @ts-ignore
+						reasoning_details: [
+							{
+								type: "reasoning.text",
+								text: "Part 1",
+								index: 0,
+								format: "fmt",
+							},
+							{
+								type: "reasoning.encrypted",
+								data: "data1",
+								index: 0,
+								format: "fmt",
+							},
+							{
+								type: "reasoning.text",
+								text: "Part 2",
+								index: 5, // Gap in index
+								format: "fmt",
+							},
+						],
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		const assistantMessage = openAiMessages[0] as any
+		const reasoning = assistantMessage.reasoning_details
+
+		expect(reasoning).toHaveLength(3)
+		expect(reasoning[0].index).toBe(0)
+		expect(reasoning[0].text).toBe("Part 1")
+
+		expect(reasoning[1].index).toBe(1)
+		expect(reasoning[1].data).toBe("data1")
+
+		expect(reasoning[2].index).toBe(2)
+		expect(reasoning[2].text).toBe("Part 2")
+	})
 })

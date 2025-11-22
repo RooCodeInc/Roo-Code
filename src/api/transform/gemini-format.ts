@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Content, Part } from "@google/genai"
+import type { ProviderMessageMetadata } from "../../shared/api"
 
 type ThoughtSignatureContentBlock = {
 	type: "thoughtSignature"
@@ -26,6 +27,17 @@ export function convertAnthropicContentToGemini(
 		const sigBlock = content.find((block) => isThoughtSignatureContentBlock(block)) as ThoughtSignatureContentBlock
 		if (sigBlock?.thoughtSignature) {
 			activeThoughtSignature = sigBlock.thoughtSignature
+		} else {
+			// Check for providerMetadata on text blocks
+			const textBlock = content.find(
+				(block) =>
+					block.type === "text" &&
+					((block as any).providerMetadata as ProviderMessageMetadata)?.geminiThoughtSignature,
+			)
+			if (textBlock) {
+				activeThoughtSignature = ((textBlock as any).providerMetadata as ProviderMessageMetadata)
+					.geminiThoughtSignature
+			}
 		}
 	}
 

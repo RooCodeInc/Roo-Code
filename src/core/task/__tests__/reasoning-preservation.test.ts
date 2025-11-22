@@ -326,7 +326,7 @@ describe("Task reasoning preservation", () => {
 		expect(task.apiConversationHistory[0].content[0].text).not.toContain("<think>")
 	})
 
-	it("should embed encrypted reasoning as first assistant content block", async () => {
+	it("should attach generation metadata to assistant text block", async () => {
 		const task = new Task({
 			provider: mockProvider as ClineProvider,
 			apiConfiguration: mockApiConfiguration,
@@ -337,13 +337,12 @@ describe("Task reasoning preservation", () => {
 		// Avoid disk writes in this test
 		;(task as any).saveApiConversationHistory = vi.fn().mockResolvedValue(undefined)
 
-		// Mock API handler to provide encrypted reasoning data and response id
+		// Mock API handler to provide generation metadata
 		task.api = {
-			getEncryptedContent: vi.fn().mockReturnValue({
-				encrypted_content: "encrypted_payload",
-				id: "rs_test",
+			getGenerationMetadata: vi.fn().mockReturnValue({
+				openAiEncryptedContent: "encrypted_payload",
+				openAiResponseId: "resp_test",
 			}),
-			getResponseId: vi.fn().mockReturnValue("resp_test"),
 		} as any
 
 		await (task as any).addToApiConversationHistory({
@@ -358,17 +357,17 @@ describe("Task reasoning preservation", () => {
 		expect(Array.isArray(stored.content)).toBe(true)
 		expect(stored.id).toBe("resp_test")
 
-		const [reasoningBlock, textBlock] = stored.content
-
-		expect(reasoningBlock).toMatchObject({
-			type: "reasoning",
-			encrypted_content: "encrypted_payload",
-			id: "rs_test",
-		})
+		// Expect a single text block with metadata
+		expect(stored.content).toHaveLength(1)
+		const textBlock = stored.content[0]
 
 		expect(textBlock).toMatchObject({
 			type: "text",
 			text: "Here is my response.",
+			providerMetadata: {
+				openAiEncryptedContent: "encrypted_payload",
+				openAiResponseId: "resp_test",
+			},
 		})
 	})
 

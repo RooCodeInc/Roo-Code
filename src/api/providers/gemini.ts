@@ -12,7 +12,7 @@ import type { JWTInput } from "google-auth-library"
 
 import { type ModelInfo, type GeminiModelId, geminiDefaultModelId, geminiModels } from "@roo-code/types"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions, ProviderMessageMetadata } from "../../shared/api"
 import { safeJsonParse } from "../../shared/safeJsonParse"
 
 import { convertAnthropicContentToGemini, convertAnthropicMessageToGemini } from "../transform/gemini-format"
@@ -437,12 +437,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	public getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
+	getGenerationMetadata(): ProviderMessageMetadata | undefined {
+		if (!this.lastThoughtSignature && !this.lastResponseId) return undefined
 
-	public getResponseId(): string | undefined {
-		return this.lastResponseId
+		return {
+			geminiThoughtSignature: this.lastThoughtSignature,
+			geminiResponseId: this.lastResponseId,
+		}
 	}
 
 	public calculateCost({

@@ -9,7 +9,7 @@ import {
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ApiHandlerOptions, ModelRecord, ProviderMessageMetadata } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStreamChunk } from "../transform/stream"
@@ -87,6 +87,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
+	private lastReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -193,6 +194,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
+		// Reset last reasoning details for this request
+		this.lastReasoningDetails = []
+
 		let stream
 		try {
 			stream = await this.client.chat.completions.create(completionParams)
@@ -258,6 +262,22 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 				// Clear accumulator after yielding
 				toolCallAccumulator.clear()
+			}
+
+			// OpenRouter passes reasoning details that we can pass back unmodified in api requests to preserve reasoning traces for model
+			// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+			if (delta && "reasoning_details" in delta && delta.reasoning_details) {
+				// Capture for getGenerationMetadata
+				if (Array.isArray(delta.reasoning_details)) {
+					this.lastReasoningDetails.push(...delta.reasoning_details)
+				} else {
+					this.lastReasoningDetails.push(delta.reasoning_details)
+				}
+
+				yield {
+					type: "reasoning_details",
+					reasoning_details: delta.reasoning_details,
+				}
 			}
 
 			if (chunk.usage) {
@@ -327,6 +347,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		})
 
 		return { id, info, topP: isDeepSeekR1 ? 0.95 : undefined, ...params }
+	}
+
+	getGenerationMetadata(): ProviderMessageMetadata | undefined {
+		if (this.lastReasoningDetails.length === 0) return undefined
+
+		return {
+			openRouterReasoningDetails: this.lastReasoningDetails,
+		}
 	}
 
 	async completePrompt(prompt: string) {
