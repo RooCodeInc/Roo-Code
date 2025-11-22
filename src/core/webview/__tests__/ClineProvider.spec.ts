@@ -824,7 +824,7 @@ describe("ClineProvider", () => {
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
 
-	test("requestDelaySeconds defaults to 10 seconds", async () => {
+	test("requestDelaySeconds defaults to 2 seconds", async () => {
 		// Mock globalState.get to return undefined for requestDelaySeconds
 		;(mockContext.globalState.get as any).mockImplementation((key: string) => {
 			if (key === "requestDelaySeconds") {
@@ -834,7 +834,7 @@ describe("ClineProvider", () => {
 		})
 
 		const state = await provider.getState()
-		expect(state.requestDelaySeconds).toBe(10)
+		expect(state.requestDelaySeconds).toBe(2)
 	})
 
 	test("alwaysApproveResubmit defaults to false", async () => {
