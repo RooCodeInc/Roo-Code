@@ -129,10 +129,28 @@ export async function applyDiffTool(
 	if (argsXmlTag) {
 		// Parse file entries from XML (new way)
 		try {
+			// Check if this might be from an x-ai model and contains reasoning artifacts
+			const isXAIModel = cline.api.getModel().id.includes("x-ai/") || cline.api.getModel().id.includes("grok")
+			let cleanedXml = argsXmlTag
+
+			if (isXAIModel) {
+				// Clean up common reasoning artifacts that might have leaked into the XML
+				// Remove thinking tags that might interfere with parsing
+				cleanedXml = cleanedXml
+					.replace(/<think>.*?<\/think>/gs, "")
+					.replace(/<reasoning>.*?<\/reasoning>/gs, "")
+
+				// Check for corrupted XML structure due to reasoning blocks
+				if (cleanedXml.includes("</think>") && !cleanedXml.includes("<think>")) {
+					console.warn("[MultiApplyDiffTool] Detected orphaned reasoning closing tag in x-ai model response")
+					cleanedXml = cleanedXml.replace(/<\/think>/g, "")
+				}
+			}
+
 			// IMPORTANT: We use parseXmlForDiff here instead of parseXml to prevent HTML entity decoding
 			// This ensures exact character matching when comparing parsed content against original file content
 			// Without this, special characters like & would be decoded to &amp; causing diff mismatches
-			const parsed = parseXmlForDiff(argsXmlTag, ["file.diff.content"]) as ParsedXmlResult
+			const parsed = parseXmlForDiff(cleanedXml, ["file.diff.content"]) as ParsedXmlResult
 			const files = Array.isArray(parsed.file) ? parsed.file : [parsed.file].filter(Boolean)
 
 			for (const file of files) {
@@ -159,6 +177,18 @@ export async function applyDiffTool(
 					// Ensure content is a string before storing it
 					diffContent = typeof diff.content === "string" ? diff.content : ""
 					startLine = diff.start_line ? parseInt(diff.start_line) : undefined
+
+					// For x-ai models, validate diff content doesn't contain reasoning artifacts
+					if (isXAIModel && diffContent) {
+						// Check for reasoning block markers that shouldn't be in diff content
+						if (diffContent.includes("<think>") || diffContent.includes("</think>")) {
+							console.warn(
+								"[MultiApplyDiffTool] Cleaning reasoning artifacts from x-ai model diff content",
+							)
+							// Remove thinking blocks but preserve the actual diff markers
+							diffContent = diffContent.replace(/<think>.*?<\/think>/gs, "")
+						}
+					}
 
 					// Only add to operations if we have valid content
 					if (diffContent) {
