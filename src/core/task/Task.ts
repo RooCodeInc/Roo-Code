@@ -2240,8 +2240,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.cachedStreamingModel = this.api.getModel()
 				const streamModelInfo = this.cachedStreamingModel.info
 				const cachedModelId = this.cachedStreamingModel.id
-				const streamProtocol = resolveToolProtocol(this.apiConfiguration, streamModelInfo)
-				const shouldUseXmlParser = streamProtocol === "xml"
 
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
@@ -2349,8 +2347,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							case "text": {
 								assistantMessage += chunk.text
 
-								// Use the protocol determined at the start of streaming
-								// Don't rely solely on parser existence - parser might exist from previous state
+								// Dynamically check the current protocol on each chunk to handle mid-task profile switches
+								// This ensures XML parsing activates immediately when switching from Native to XML
+								const currentModelInfo = this.api.getModel().info
+								const currentProtocol = resolveToolProtocol(this.apiConfiguration, currentModelInfo)
+								const shouldUseXmlParser = currentProtocol === "xml"
+
 								if (shouldUseXmlParser && this.assistantMessageParser) {
 									// XML protocol: Parse raw assistant message chunk into content blocks
 									const prevLength = this.assistantMessageContent.length
@@ -2679,8 +2681,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// this.assistantMessageContent.forEach((e) => (e.partial = false))
 
 				// Now that the stream is complete, finalize any remaining partial content blocks (XML protocol only)
-				// Use the protocol determined at the start of streaming
-				if (shouldUseXmlParser && this.assistantMessageParser) {
+				// Check the current protocol (not cached) to handle mid-stream profile switches
+				const finalModelInfo = this.api.getModel().info
+				const finalProtocol = resolveToolProtocol(this.apiConfiguration, finalModelInfo)
+				if (finalProtocol === "xml" && this.assistantMessageParser) {
 					this.assistantMessageParser.finalizeContentBlocks()
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
