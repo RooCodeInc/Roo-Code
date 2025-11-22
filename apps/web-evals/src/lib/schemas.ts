@@ -23,7 +23,7 @@ export const createRunSchema = z
 		settings: rooCodeSettingsSchema.optional(),
 		concurrency: z.number().int().min(CONCURRENCY_MIN).max(CONCURRENCY_MAX),
 		timeout: z.number().int().min(TIMEOUT_MIN).max(TIMEOUT_MAX),
-		systemPrompt: z.string().optional(),
+		jobToken: z.string().nullish(),
 	})
 	.refine((data) => data.suite === "full" || (data.exercises || []).length > 0, {
 		message: "Exercises are required when running a partial suite.",
