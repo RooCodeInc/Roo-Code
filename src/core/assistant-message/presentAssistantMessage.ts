@@ -125,8 +125,15 @@ export async function presentAssistantMessage(cline: Task) {
 				content = content.replace(/<thinking>\s?/g, "")
 				content = content.replace(/\s?<\/thinking>/g, "")
 
+				// Remove all instances of <environment_details>...</environment_details> blocks
+				// This prevents internal system messages from being exposed in model responses
+				// Use regex to match the entire block including content between tags
+				content = content.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "")
+				// Also remove orphaned closing tags that might appear without opening tags
+				content = content.replace(/\s?<\/environment_details>/g, "")
+
 				// Remove partial XML tag at the very end of the content (for
-				// tool use and thinking tags), Prevents scrollview from
+				// tool use, thinking tags, and environment_details tags), Prevents scrollview from
 				// jumping when tags are automatically removed.
 				const lastOpenBracketIndex = content.lastIndexOf("<")
 
@@ -134,7 +141,7 @@ export async function presentAssistantMessage(cline: Task) {
 					const possibleTag = content.slice(lastOpenBracketIndex)
 
 					// Check if there's a '>' after the last '<' (i.e., if the
-					// tag is complete) (complete thinking and tool tags will
+					// tag is complete) (complete thinking, environment_details, and tool tags will
 					// have been removed by now.)
 					const hasCloseBracket = possibleTag.includes(">")
 
@@ -152,14 +159,20 @@ export async function presentAssistantMessage(cline: Task) {
 						// (letters and underscores only).
 						const isLikelyTagName = /^[a-zA-Z_]+$/.test(tagContent)
 
+						// Check if it's a partial environment_details tag
+						const isPartialEnvironmentDetails =
+							"environment_details".startsWith(tagContent.toLowerCase()) ||
+							(tagContent.toLowerCase().startsWith("e") &&
+								"environment_details".includes(tagContent.toLowerCase()))
+
 						// Preemptively remove < or </ to keep from these
 						// artifacts showing up in chat (also handles closing
-						// thinking tags).
+						// thinking and environment_details tags).
 						const isOpeningOrClosing = possibleTag === "<" || possibleTag === "</"
 
 						// If the tag is incomplete and at the end, remove it
 						// from the content.
-						if (isOpeningOrClosing || isLikelyTagName) {
+						if (isOpeningOrClosing || isLikelyTagName || isPartialEnvironmentDetails) {
 							content = content.slice(0, lastOpenBracketIndex).trim()
 						}
 					}
