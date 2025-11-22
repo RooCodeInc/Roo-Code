@@ -40,11 +40,26 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground max-lg:hidden">
 						Extension
 					</ScrollButton>
-					<Link
-						href="/cloud"
-						className="text-muted-foreground px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-						Cloud
-					</Link>
+					{/* Cloud Dropdown */}
+					<div className="relative group">
+						<button className="flex items-center px-4 py-6 gap-1 text-muted-foreground transition-transform duration-200 hover:scale-105 hover:text-foreground">
+							Cloud
+							<ChevronDown className="size-3" />
+						</button>
+						{/* Dropdown Menu */}
+						<div className="absolute left-0 top-12 mt-2 w-48 rounded-md border border-border bg-background py-1 shadow-lg opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200">
+							<Link
+								href="/cloud-agents"
+								className="block px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+								Cloud Agents
+							</Link>
+							<Link
+								href="/cloud"
+								className="block px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+								Roomote Control
+							</Link>
+						</div>
+					</div>
 					<a
 						href={EXTERNAL_LINKS.DOCUMENTATION}
 						target="_blank"
@@ -147,12 +162,26 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							onClick={() => setIsMenuOpen(false)}>
 							Extension
 						</ScrollButton>
-						<Link
-							href="/cloud"
-							className="block w-full p-5 text-left text-foreground active:opacity-50"
-							onClick={() => setIsMenuOpen(false)}>
-							Cloud
-						</Link>
+
+						{/* Cloud Section */}
+						<div className="mt-4 w-full">
+							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+								Cloud
+							</div>
+							<Link
+								href="/cloud-agents"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								Cloud Agents
+							</Link>
+							<Link
+								href="/cloud"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								Roomote Control
+							</Link>
+						</div>
+
 						<a
 							href={EXTERNAL_LINKS.DOCUMENTATION}
 							target="_blank"
