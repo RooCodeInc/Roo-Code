@@ -17,8 +17,14 @@
 		{
 			"label": "watch:webview",
 			"type": "shell",
-			"command": "pnpm --filter @roo-code/vscode-webview dev",
+			"command": "bash -l -c 'pnpm --filter @roo-code/vscode-webview dev'",
 			"group": "build",
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": ["-l", "-c"]
+				}
+			},
 			"problemMatcher": {
 				"owner": "vite",
 				"pattern": {
@@ -39,8 +45,14 @@
 		{
 			"label": "watch:bundle",
 			"type": "shell",
-			"command": "npx turbo watch:bundle",
+			"command": "bash -l -c 'npx turbo watch:bundle'",
 			"group": "build",
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": ["-l", "-c"]
+				}
+			},
 			"problemMatcher": {
 				"owner": "esbuild",
 				"pattern": {
@@ -61,8 +73,14 @@
 		{
 			"label": "watch:tsc",
 			"type": "shell",
-			"command": "npx turbo watch:tsc",
+			"command": "bash -l -c 'npx turbo watch:tsc'",
 			"group": "build",
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": ["-l", "-c"]
+				}
+			},
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
