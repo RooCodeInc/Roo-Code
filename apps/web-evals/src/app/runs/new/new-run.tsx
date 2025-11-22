@@ -1,12 +1,11 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import fuzzysort from "fuzzysort"
 import { toast } from "sonner"
 import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, CircleCheck } from "lucide-react"
 
@@ -17,7 +16,6 @@ import { getExercises } from "@/actions/exercises"
 import {
 	createRunSchema,
 	type CreateRun,
-	MODEL_DEFAULT,
 	CONCURRENCY_MIN,
 	CONCURRENCY_MAX,
 	CONCURRENCY_DEFAULT,
@@ -27,6 +25,7 @@ import {
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 import { useOpenRouterModels } from "@/hooks/use-open-router-models"
+import { useRooCodeCloudModels } from "@/hooks/use-roo-code-cloud-models"
 import {
 	Button,
 	FormControl,
@@ -58,20 +57,25 @@ import { SettingsDiff } from "./settings-diff"
 export function NewRun() {
 	const router = useRouter()
 
-	const [mode, setMode] = useState<"openrouter" | "settings">("openrouter")
-	const [modelSearchValue, setModelSearchValue] = useState("")
+	const [modelSource, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
 
-	const modelSearchResultsRef = useRef<Map<string, number>>(new Map())
-	const modelSearchValueRef = useRef("")
+	const openRouterModels = useOpenRouterModels()
 
-	const models = useOpenRouterModels()
+	const rooCodeCloudModels = useRooCodeCloudModels()
+
 	const exercises = useQuery({ queryKey: ["getExercises"], queryFn: () => getExercises() })
+
+	const models = modelSource === "openrouter" ? openRouterModels.data : rooCodeCloudModels.data
+	const searchValue = modelSource === "openrouter" ? openRouterModels.searchValue : rooCodeCloudModels.searchValue
+	const setSearchValue =
+		modelSource === "openrouter" ? openRouterModels.setSearchValue : rooCodeCloudModels.setSearchValue
+	const onFilter = modelSource === "openrouter" ? openRouterModels.onFilter : rooCodeCloudModels.onFilter
 
 	const form = useForm<CreateRun>({
 		resolver: zodResolver(createRunSchema),
 		defaultValues: {
-			model: MODEL_DEFAULT,
+			model: "",
 			description: "",
 			suite: "full",
 			exercises: [],
@@ -93,8 +97,12 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
-				if (mode === "openrouter") {
-					values.settings = { ...(values.settings || {}), openRouterModelId: model }
+				if (modelSource !== "other") {
+					if (modelSource === "openrouter") {
+						values.settings = { ...(values.settings || {}), openRouterModelId: model }
+					} else if (modelSource === "roo") {
+						values.settings = { ...(values.settings || {}), apiModelId: model }
+					}
 				}
 
 				const { id } = await createRun(values)
@@ -103,28 +111,7 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[mode, model, router],
-	)
-
-	const onFilterModels = useCallback(
-		(value: string, search: string) => {
-			if (modelSearchValueRef.current !== search) {
-				modelSearchValueRef.current = search
-				modelSearchResultsRef.current.clear()
-
-				for (const {
-					obj: { id },
-					score,
-				} of fuzzysort.go(search, models.data || [], {
-					key: "name",
-				})) {
-					modelSearchResultsRef.current.set(id, score)
-				}
-			}
-
-			return modelSearchResultsRef.current.get(value) ?? 0
-		},
-		[models.data],
+		[modelSource, model, router],
 	)
 
 	const onSelectModel = useCallback(
@@ -132,7 +119,7 @@ export function NewRun() {
 			setValue("model", model)
 			setModelPopoverOpen(false)
 		},
-		[setValue],
+		[setValue, setModelPopoverOpen],
 	)
 
 	const onImportSettings = useCallback(
@@ -160,7 +147,6 @@ export function NewRun() {
 
 				setValue("model", getModelId(providerSettings) ?? "")
 				setValue("settings", { ...EVALS_SETTINGS, ...providerSettings, ...globalSettings })
-				setMode("settings")
 
 				event.target.value = ""
 			} catch (e) {
@@ -177,97 +163,101 @@ export function NewRun() {
 				<form
 					onSubmit={form.handleSubmit(onSubmit)}
 					className="flex flex-col justify-center divide-y divide-primary *:py-5">
-					<div className="flex flex-row justify-between gap-4">
-						{mode === "openrouter" && (
-							<FormField
-								control={form.control}
-								name="model"
-								render={() => (
-									<FormItem className="flex-1">
-										<Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
-											<PopoverTrigger asChild>
-												<Button
-													variant="input"
-													role="combobox"
-													aria-expanded={modelPopoverOpen}
-													className="flex items-center justify-between">
-													<div>
-														{models.data?.find(({ id }) => id === model)?.name ||
-															model ||
-															"Select OpenRouter Model"}
-													</div>
-													<ChevronsUpDown className="opacity-50" />
-												</Button>
-											</PopoverTrigger>
-											<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-												<Command filter={onFilterModels}>
-													<CommandInput
-														placeholder="Search"
-														value={modelSearchValue}
-														onValueChange={setModelSearchValue}
-														className="h-9"
-													/>
-													<CommandList>
-														<CommandEmpty>No model found.</CommandEmpty>
-														<CommandGroup>
-															{models.data?.map(({ id, name }) => (
-																<CommandItem
-																	key={id}
-																	value={id}
-																	onSelect={onSelectModel}>
-																	{name}
-																	<Check
-																		className={cn(
-																			"ml-auto text-accent group-data-[selected=true]:text-accent-foreground size-4",
-																			id === model ? "opacity-100" : "opacity-0",
-																		)}
-																	/>
-																</CommandItem>
-															))}
-														</CommandGroup>
-													</CommandList>
-												</Command>
-											</PopoverContent>
-										</Popover>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						)}
+					<FormField
+						control={form.control}
+						name="model"
+						render={() => (
+							<FormItem>
+								<Tabs
+									value={modelSource}
+									onValueChange={(value) => setModelSource(value as "roo" | "openrouter" | "other")}>
+									<TabsList className="mb-2">
+										<TabsTrigger value="roo">Roo Code Cloud</TabsTrigger>
+										<TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
+										<TabsTrigger value="other">Other</TabsTrigger>
+									</TabsList>
+								</Tabs>
 
-						<FormItem className="flex-1">
-							<Button
-								type="button"
-								variant="secondary"
-								onClick={() => document.getElementById("json-upload")?.click()}>
-								<SlidersHorizontal />
-								Import Settings
-							</Button>
-							<input
-								id="json-upload"
-								type="file"
-								accept="application/json"
-								className="hidden"
-								onChange={onImportSettings}
-							/>
-							{settings && (
-								<ScrollArea className="max-h-64 border rounded-sm">
-									<>
-										<div className="flex items-center gap-1 p-2 border-b">
-											<CircleCheck className="size-4 text-ring" />
-											<div className="text-sm">
-												Imported valid Roo Code settings. Showing differences from default
-												settings.
-											</div>
-										</div>
-										<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
-									</>
-									<ScrollBar orientation="horizontal" />
-								</ScrollArea>
-							)}
-							<FormMessage />
-						</FormItem>
-					</div>
+								{modelSource === "other" ? (
+									<div className="space-y-2">
+										<Button
+											type="button"
+											variant="secondary"
+											onClick={() => document.getElementById("json-upload")?.click()}
+											className="w-full">
+											<SlidersHorizontal />
+											Import Settings
+										</Button>
+										<input
+											id="json-upload"
+											type="file"
+											accept="application/json"
+											className="hidden"
+											onChange={onImportSettings}
+										/>
+										{settings && (
+											<ScrollArea className="max-h-64 border rounded-sm">
+												<>
+													<div className="flex items-center gap-1 p-2 border-b">
+														<CircleCheck className="size-4 text-ring" />
+														<div className="text-sm">
+															Imported valid Roo Code settings. Showing differences from
+															default settings.
+														</div>
+													</div>
+													<SettingsDiff
+														defaultSettings={EVALS_SETTINGS}
+														customSettings={settings}
+													/>
+												</>
+												<ScrollBar orientation="horizontal" />
+											</ScrollArea>
+										)}
+									</div>
+								) : (
+									<Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
+										<PopoverTrigger asChild>
+											<Button
+												variant="input"
+												role="combobox"
+												aria-expanded={modelPopoverOpen}
+												className="flex items-center justify-between">
+												<div>{models?.find(({ id }) => id === model)?.name || `Select`}</div>
+												<ChevronsUpDown className="opacity-50" />
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+											<Command filter={onFilter}>
+												<CommandInput
+													placeholder="Search"
+													value={searchValue}
+													onValueChange={setSearchValue}
+													className="h-9"
+												/>
+												<CommandList>
+													<CommandEmpty>No model found.</CommandEmpty>
+													<CommandGroup>
+														{models?.map(({ id, name }) => (
+															<CommandItem key={id} value={id} onSelect={onSelectModel}>
+																{name}
+																<Check
+																	className={cn(
+																		"ml-auto text-accent group-data-[selected=true]:text-accent-foreground size-4",
+																		id === model ? "opacity-100" : "opacity-0",
+																	)}
+																/>
+															</CommandItem>
+														))}
+													</CommandGroup>
+												</CommandList>
+											</Command>
+										</PopoverContent>
+									</Popover>
+								)}
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
 					<FormField
 						control={form.control}
