@@ -6,7 +6,6 @@ import {
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
-	OPEN_ROUTER_REASONING_DETAILS_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
@@ -230,39 +229,37 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					yield { type: "reasoning", text: delta.reasoning }
 				}
 
-				// Handle reasoning_details array format for models that use it (Gemini 3, etc.)
+				// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
 				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
-				if (OPEN_ROUTER_REASONING_DETAILS_MODELS.has(modelId)) {
-					const deltaWithReasoning = delta as typeof delta & {
-						reasoning_details?: Array<{
-							type: string
-							text?: string
-							summary?: string
-							data?: string
-							id?: string | null
-							format?: string
-							index?: number
-						}>
-					}
+				const deltaWithReasoning = delta as typeof delta & {
+					reasoning_details?: Array<{
+						type: string
+						text?: string
+						summary?: string
+						data?: string
+						id?: string | null
+						format?: string
+						index?: number
+					}>
+				}
 
-					if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
-						for (const detail of deltaWithReasoning.reasoning_details) {
-							// Store the full reasoning detail object for later use
-							this.currentReasoningDetails.push(detail)
+				if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
+					for (const detail of deltaWithReasoning.reasoning_details) {
+						// Store the full reasoning detail object for later use
+						this.currentReasoningDetails.push(detail)
 
-							let reasoningText: string | undefined
+						let reasoningText: string | undefined
 
-							// Extract text based on reasoning detail type for display
-							if (detail.type === "reasoning.text" && typeof detail.text === "string") {
-								reasoningText = detail.text
-							} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
-								reasoningText = detail.summary
-							}
-							// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
+						// Extract text based on reasoning detail type for display
+						if (detail.type === "reasoning.text" && typeof detail.text === "string") {
+							reasoningText = detail.text
+						} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
+							reasoningText = detail.summary
+						}
+						// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
 
-							if (reasoningText) {
-								yield { type: "reasoning", text: reasoningText }
-							}
+						if (reasoningText) {
+							yield { type: "reasoning", text: reasoningText }
 						}
 					}
 				}

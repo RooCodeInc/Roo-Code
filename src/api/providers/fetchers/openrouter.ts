@@ -6,7 +6,6 @@ import {
 	isModelParameter,
 	OPEN_ROUTER_REASONING_BUDGET_MODELS,
 	OPEN_ROUTER_REQUIRED_REASONING_BUDGET_MODELS,
-	OPEN_ROUTER_REASONING_DETAILS_MODELS,
 	anthropicModels,
 } from "@roo-code/types"
 
@@ -265,12 +264,6 @@ export const parseOpenRouterModel = ({
 	// Set horizon-beta model to 32k max tokens
 	if (id === "openrouter/horizon-beta") {
 		modelInfo.maxTokens = 32768
-	}
-
-	// Enable preserveReasoning for models that use reasoning_details array format
-	// This ensures reasoning_details are stored and sent back in multi-turn conversations
-	if (OPEN_ROUTER_REASONING_DETAILS_MODELS.has(id)) {
-		modelInfo.preserveReasoning = true
 	}
 
 	return modelInfo
