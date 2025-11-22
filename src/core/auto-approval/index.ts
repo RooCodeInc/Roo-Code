@@ -6,6 +6,7 @@ import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
 import { getCommandDecision } from "./commands"
+import { isPathInAllowedDirectories } from "../../utils/pathUtils"
 
 // We have 10 different actions that can be auto-approved.
 export type AutoApprovalState =
@@ -24,7 +25,9 @@ export type AutoApprovalState =
 export type AutoApprovalStateOptions =
 	| "autoApprovalEnabled"
 	| "alwaysAllowReadOnlyOutsideWorkspace" // For `alwaysAllowReadOnly`.
+	| "allowedReadDirectories" // For directory-specific read approval.
 	| "alwaysAllowWriteOutsideWorkspace" // For `alwaysAllowWrite`.
+	| "allowedWriteDirectories" // For directory-specific write approval.
 	| "alwaysAllowWriteProtected"
 	| "followupAutoApproveTimeoutMs" // For `alwaysAllowFollowupQuestions`.
 	| "mcpServers" // For `alwaysAllowMcp`.
@@ -166,20 +169,59 @@ export async function checkAutoApproval({
 		}
 
 		const isOutsideWorkspace = !!tool.isOutsideWorkspace
+		const filePath = tool.path
 
 		if (isReadOnlyToolAction(tool)) {
-			return state.alwaysAllowReadOnly === true &&
-				(!isOutsideWorkspace || state.alwaysAllowReadOnlyOutsideWorkspace === true)
-				? { decision: "approve" }
-				: { decision: "ask" }
+			// Check if read is allowed
+			if (state.alwaysAllowReadOnly !== true) {
+				return { decision: "ask" }
+			}
+
+			// If file is inside workspace, approve
+			if (!isOutsideWorkspace) {
+				return { decision: "approve" }
+			}
+
+			// File is outside workspace - check if it's in allowed directories
+			if (
+				filePath &&
+				state.allowedReadDirectories &&
+				isPathInAllowedDirectories(filePath, state.allowedReadDirectories)
+			) {
+				return { decision: "approve" }
+			}
+
+			// Otherwise check the general outside workspace setting
+			return state.alwaysAllowReadOnlyOutsideWorkspace === true ? { decision: "approve" } : { decision: "ask" }
 		}
 
 		if (isWriteToolAction(tool)) {
-			return state.alwaysAllowWrite === true &&
-				(!isOutsideWorkspace || state.alwaysAllowWriteOutsideWorkspace === true) &&
-				(!isProtected || state.alwaysAllowWriteProtected === true)
-				? { decision: "approve" }
-				: { decision: "ask" }
+			// Check if write is allowed
+			if (state.alwaysAllowWrite !== true) {
+				return { decision: "ask" }
+			}
+
+			// Check if protected files are allowed
+			if (isProtected && state.alwaysAllowWriteProtected !== true) {
+				return { decision: "ask" }
+			}
+
+			// If file is inside workspace, approve
+			if (!isOutsideWorkspace) {
+				return { decision: "approve" }
+			}
+
+			// File is outside workspace - check if it's in allowed directories
+			if (
+				filePath &&
+				state.allowedWriteDirectories &&
+				isPathInAllowedDirectories(filePath, state.allowedWriteDirectories)
+			) {
+				return { decision: "approve" }
+			}
+
+			// Otherwise check the general outside workspace setting
+			return state.alwaysAllowWriteOutsideWorkspace === true ? { decision: "approve" } : { decision: "ask" }
 		}
 	}
 

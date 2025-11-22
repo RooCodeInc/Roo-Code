@@ -154,6 +154,11 @@
 			"outsideWorkspace": {
 				"label": "Include files outside workspace",
 				"description": "Allow Roo to read files outside the current workspace without requiring approval."
+			},
+			"allowedDirectories": {
+				"label": "Allowed directories",
+				"description": "Specify directories outside the workspace that can be read automatically. Uses gitignore-style patterns (same as .rooignore).",
+				"placeholder": "Enter directory path (e.g., ~/projects/*, /usr/include/Qt*, /tmp/*)"
 			}
 		},
 		"write": {
@@ -167,6 +172,11 @@
 			"protected": {
 				"label": "Include protected files",
 				"description": "Allow Roo to create and edit protected files (like .rooignore and .roo/ configuration files) without requiring approval."
+			},
+			"allowedDirectories": {
+				"label": "Allowed directories",
+				"description": "Specify directories outside the workspace that can be written to automatically. Uses gitignore-style patterns (same as .rooignore).",
+				"placeholder": "Enter directory path (e.g., ~/output/*, /tmp/build*, /var/log/*)"
 			}
 		},
 		"browser": {
