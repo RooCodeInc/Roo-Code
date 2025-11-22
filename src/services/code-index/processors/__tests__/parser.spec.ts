@@ -3,7 +3,7 @@
 import { CodeParser, codeParser } from "../parser"
 import { loadRequiredLanguageParsers } from "../../../tree-sitter/languageParser"
 import { parseMarkdown } from "../../../tree-sitter/markdownParser"
-import { readFile } from "fs/promises"
+import { readFile, stat } from "fs/promises"
 import { Node } from "web-tree-sitter"
 
 // Mock TelemetryService
@@ -23,6 +23,7 @@ vi.mock("fs/promises", () => ({
 		mkdir: vi.fn(),
 		access: vi.fn(),
 		rename: vi.fn(),
+		stat: vi.fn(),
 		constants: {},
 	},
 	readFile: vi.fn(),
@@ -30,6 +31,7 @@ vi.mock("fs/promises", () => ({
 	mkdir: vi.fn(),
 	access: vi.fn(),
 	rename: vi.fn(),
+	stat: vi.fn(),
 }))
 
 vi.mock("../../../tree-sitter/languageParser")
@@ -63,6 +65,8 @@ describe("CodeParser", () => {
 		;(loadRequiredLanguageParsers as any).mockResolvedValue(mockLanguageParser as any)
 		// Set up default fs.readFile mock return value
 		vi.mocked(readFile).mockResolvedValue("// default test content")
+		// Set up default fs.stat mock return value (small file size)
+		vi.mocked(stat).mockResolvedValue({ size: 1024 } as any)
 	})
 
 	describe("parseFile", () => {

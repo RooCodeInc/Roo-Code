@@ -27,6 +27,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 import { Package } from "../../../shared/package"
+import { streamReadFile } from "./stream-reader"
 
 /**
  * Implementation of the file watcher interface
@@ -540,12 +541,26 @@ export class FileWatcher implements IFileWatcher {
 				}
 			}
 
-			// Read file content
-			const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
-			const content = fileContent.toString()
+			// Read file content with streaming for large files
+			const STREAM_THRESHOLD = 10 * 1024 * 1024 // 10MB
+			let content: string
+			let newHash: string
 
-			// Calculate hash
-			const newHash = createHash("sha256").update(content).digest("hex")
+			if (fileStat.size > STREAM_THRESHOLD) {
+				console.log(
+					`[FileWatcher] Using streaming for large file: ${filePath} (${(fileStat.size / 1024 / 1024).toFixed(2)}MB)`,
+				)
+				const streamResult = await streamReadFile(filePath, 10000, 50)
+				content = streamResult.lines.join("\n")
+				newHash = streamResult.hash
+				if (streamResult.truncated) {
+					console.warn(`[FileWatcher] File truncated for processing: ${filePath}`)
+				}
+			} else {
+				const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
+				content = fileContent.toString()
+				newHash = createHash("sha256").update(content).digest("hex")
+			}
 
 			// Check if file has changed
 			if (this.cacheManager.getHash(filePath) === newHash) {
