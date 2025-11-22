@@ -7,15 +7,16 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, CircleCheck } from "lucide-react"
+import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal } from "lucide-react"
 
 import { globalSettingsSchema, providerSettingsSchema, EVALS_SETTINGS, getModelId } from "@roo-code/types"
 
 import { createRun } from "@/actions/runs"
 import { getExercises } from "@/actions/exercises"
+
 import {
-	createRunSchema,
 	type CreateRun,
+	createRunSchema,
 	CONCURRENCY_MIN,
 	CONCURRENCY_MAX,
 	CONCURRENCY_DEFAULT,
@@ -24,10 +25,13 @@ import {
 	TIMEOUT_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
+
 import { useOpenRouterModels } from "@/hooks/use-open-router-models"
 import { useRooCodeCloudModels } from "@/hooks/use-roo-code-cloud-models"
+
 import {
 	Button,
+	Checkbox,
 	FormControl,
 	FormField,
 	FormItem,
@@ -47,9 +51,8 @@ import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-	ScrollArea,
-	ScrollBar,
 	Slider,
+	Label,
 } from "@/components/ui"
 
 import { SettingsDiff } from "./settings-diff"
@@ -57,20 +60,18 @@ import { SettingsDiff } from "./settings-diff"
 export function NewRun() {
 	const router = useRouter()
 
-	const [modelSource, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
+	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
+	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
 
-	const openRouterModels = useOpenRouterModels()
-
-	const rooCodeCloudModels = useRooCodeCloudModels()
+	const openRouter = useOpenRouterModels()
+	const rooCodeCloud = useRooCodeCloudModels()
+	const models = provider === "openrouter" ? openRouter.data : rooCodeCloud.data
+	const searchValue = provider === "openrouter" ? openRouter.searchValue : rooCodeCloud.searchValue
+	const setSearchValue = provider === "openrouter" ? openRouter.setSearchValue : rooCodeCloud.setSearchValue
+	const onFilter = provider === "openrouter" ? openRouter.onFilter : rooCodeCloud.onFilter
 
 	const exercises = useQuery({ queryKey: ["getExercises"], queryFn: () => getExercises() })
-
-	const models = modelSource === "openrouter" ? openRouterModels.data : rooCodeCloudModels.data
-	const searchValue = modelSource === "openrouter" ? openRouterModels.searchValue : rooCodeCloudModels.searchValue
-	const setSearchValue =
-		modelSource === "openrouter" ? openRouterModels.setSearchValue : rooCodeCloudModels.setSearchValue
-	const onFilter = modelSource === "openrouter" ? openRouterModels.onFilter : rooCodeCloudModels.onFilter
 
 	const form = useForm<CreateRun>({
 		resolver: zodResolver(createRunSchema),
@@ -97,11 +98,19 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
-				if (modelSource !== "other") {
-					if (modelSource === "openrouter") {
-						values.settings = { ...(values.settings || {}), openRouterModelId: model }
-					} else if (modelSource === "roo") {
-						values.settings = { ...(values.settings || {}), apiModelId: model }
+				if (provider === "openrouter") {
+					values.settings = {
+						...(values.settings || {}),
+						apiProvider: "openrouter",
+						openRouterModelId: model,
+						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+					}
+				} else if (provider === "roo") {
+					values.settings = {
+						...(values.settings || {}),
+						apiProvider: "roo",
+						apiModelId: model,
+						toolProtocol: useNativeToolProtocol ? "native" : "xml",
 					}
 				}
 
@@ -111,7 +120,7 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[modelSource, model, router],
+		[provider, model, router, useNativeToolProtocol],
 	)
 
 	const onSelectModel = useCallback(
@@ -169,7 +178,7 @@ export function NewRun() {
 						render={() => (
 							<FormItem>
 								<Tabs
-									value={modelSource}
+									value={provider}
 									onValueChange={(value) => setModelSource(value as "roo" | "openrouter" | "other")}>
 									<TabsList className="mb-2">
 										<TabsTrigger value="roo">Roo Code Cloud</TabsTrigger>
@@ -178,8 +187,8 @@ export function NewRun() {
 									</TabsList>
 								</Tabs>
 
-								{modelSource === "other" ? (
-									<div className="space-y-2">
+								{provider === "other" ? (
+									<div className="space-y-2 overflow-auto">
 										<Button
 											type="button"
 											variant="secondary"
@@ -196,64 +205,68 @@ export function NewRun() {
 											onChange={onImportSettings}
 										/>
 										{settings && (
-											<ScrollArea className="max-h-64 border rounded-sm">
-												<>
-													<div className="flex items-center gap-1 p-2 border-b">
-														<CircleCheck className="size-4 text-ring" />
-														<div className="text-sm">
-															Imported valid Roo Code settings. Showing differences from
-															default settings.
-														</div>
-													</div>
-													<SettingsDiff
-														defaultSettings={EVALS_SETTINGS}
-														customSettings={settings}
-													/>
-												</>
-												<ScrollBar orientation="horizontal" />
-											</ScrollArea>
+											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
 										)}
 									</div>
 								) : (
-									<Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
-										<PopoverTrigger asChild>
-											<Button
-												variant="input"
-												role="combobox"
-												aria-expanded={modelPopoverOpen}
-												className="flex items-center justify-between">
-												<div>{models?.find(({ id }) => id === model)?.name || `Select`}</div>
-												<ChevronsUpDown className="opacity-50" />
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-											<Command filter={onFilter}>
-												<CommandInput
-													placeholder="Search"
-													value={searchValue}
-													onValueChange={setSearchValue}
-													className="h-9"
-												/>
-												<CommandList>
-													<CommandEmpty>No model found.</CommandEmpty>
-													<CommandGroup>
-														{models?.map(({ id, name }) => (
-															<CommandItem key={id} value={id} onSelect={onSelectModel}>
-																{name}
-																<Check
-																	className={cn(
-																		"ml-auto text-accent group-data-[selected=true]:text-accent-foreground size-4",
-																		id === model ? "opacity-100" : "opacity-0",
-																	)}
-																/>
-															</CommandItem>
-														))}
-													</CommandGroup>
-												</CommandList>
-											</Command>
-										</PopoverContent>
-									</Popover>
+									<>
+										<Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
+											<PopoverTrigger asChild>
+												<Button
+													variant="input"
+													role="combobox"
+													aria-expanded={modelPopoverOpen}
+													className="flex items-center justify-between">
+													<div>
+														{models?.find(({ id }) => id === model)?.name || `Select`}
+													</div>
+													<ChevronsUpDown className="opacity-50" />
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+												<Command filter={onFilter}>
+													<CommandInput
+														placeholder="Search"
+														value={searchValue}
+														onValueChange={setSearchValue}
+														className="h-9"
+													/>
+													<CommandList>
+														<CommandEmpty>No model found.</CommandEmpty>
+														<CommandGroup>
+															{models?.map(({ id, name }) => (
+																<CommandItem
+																	key={id}
+																	value={id}
+																	onSelect={onSelectModel}>
+																	{name}
+																	<Check
+																		className={cn(
+																			"ml-auto text-accent group-data-[selected=true]:text-accent-foreground size-4",
+																			id === model ? "opacity-100" : "opacity-0",
+																		)}
+																	/>
+																</CommandItem>
+															))}
+														</CommandGroup>
+													</CommandList>
+												</Command>
+											</PopoverContent>
+										</Popover>
+
+										<div className="flex items-center gap-1.5">
+											<Checkbox
+												id="native"
+												checked={useNativeToolProtocol}
+												onCheckedChange={(checked) =>
+													setUseNativeToolProtocol(checked === true)
+												}
+											/>
+											<Label htmlFor="native">Use Native Tool Calls</Label>
+										</div>
+									</>
 								)}
+
 								<FormMessage />
 							</FormItem>
 						)}
