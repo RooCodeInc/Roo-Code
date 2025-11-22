@@ -18,6 +18,8 @@ export type ApiMessage = Anthropic.MessageParam & {
 	summary?: any[]
 	encrypted_content?: string
 	text?: string
+	// For OpenRouter reasoning_details array format (used by Gemini 3, etc.)
+	reasoning_details?: any[]
 }
 
 export async function readApiMessages({
