@@ -6,6 +6,7 @@ import {
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
+	OPEN_ROUTER_REASONING_DETAILS_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
@@ -87,6 +88,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
+	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -124,6 +126,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 	}
 
+	getReasoningDetails(): any[] | undefined {
+		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -133,11 +139,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
 
-		// OpenRouter sends reasoning tokens by default for Gemini 2.5 Pro
-		// Preview even if you don't request them. This is not the default for
+		// Reset reasoning_details accumulator for this request
+		this.currentReasoningDetails = []
+
+		// OpenRouter sends reasoning tokens by default for Gemini 2.5 Pro models
+		// even if you don't request them. This is not the default for
 		// other providers (including Gemini), so we need to explicitly disable
-		// i We should generalize this using the logic in `getModelParams`, but
-		// this is easier for now.
+		// them unless the user has explicitly configured reasoning.
+		// Note: Gemini 3 models use reasoning_details format and should not be excluded.
 		if (
 			(modelId === "google/gemini-2.5-pro-preview" || modelId === "google/gemini-2.5-pro") &&
 			typeof reasoning === "undefined"
@@ -215,8 +224,47 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta) {
+				// Handle reasoning tokens - supports both legacy string format and new reasoning_details array format
+				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens
 				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 					yield { type: "reasoning", text: delta.reasoning }
+				}
+
+				// Handle reasoning_details array format for models that use it (Gemini 3, etc.)
+				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+				if (OPEN_ROUTER_REASONING_DETAILS_MODELS.has(modelId)) {
+					const deltaWithReasoning = delta as typeof delta & {
+						reasoning_details?: Array<{
+							type: string
+							text?: string
+							summary?: string
+							data?: string
+							id?: string | null
+							format?: string
+							index?: number
+						}>
+					}
+
+					if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
+						for (const detail of deltaWithReasoning.reasoning_details) {
+							// Store the full reasoning detail object for later use
+							this.currentReasoningDetails.push(detail)
+
+							let reasoningText: string | undefined
+
+							// Extract text based on reasoning detail type for display
+							if (detail.type === "reasoning.text" && typeof detail.text === "string") {
+								reasoningText = detail.text
+							} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
+								reasoningText = detail.summary
+							}
+							// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
+
+							if (reasoningText) {
+								yield { type: "reasoning", text: reasoningText }
+							}
+						}
+					}
 				}
 
 				// Check for tool calls in delta

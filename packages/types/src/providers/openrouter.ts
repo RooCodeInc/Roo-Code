@@ -83,3 +83,8 @@ export const OPEN_ROUTER_REASONING_BUDGET_MODELS = new Set([
 	"anthropic/claude-3.7-sonnet:thinking",
 	"google/gemini-2.5-flash-preview-05-20:thinking",
 ])
+
+// Models that use the reasoning_details array format instead of the legacy reasoning string format
+// These models return reasoning in delta.reasoning_details[] structure
+// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+export const OPEN_ROUTER_REASONING_DETAILS_MODELS = new Set(["google/gemini-3-pro-preview"])

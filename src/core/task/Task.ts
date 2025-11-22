@@ -676,6 +676,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			getEncryptedContent?: () => { encrypted_content: string; id?: string } | undefined
 			getThoughtSignature?: () => string | undefined
 			getSummary?: () => any[] | undefined
+			getReasoningDetails?: () => any[] | undefined
 		}
 
 		if (message.role === "assistant") {
@@ -683,12 +684,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const reasoningData = handler.getEncryptedContent?.()
 			const thoughtSignature = handler.getThoughtSignature?.()
 			const reasoningSummary = handler.getSummary?.()
+			const reasoningDetails = handler.getReasoningDetails?.()
 
 			// Start from the original assistant message
 			const messageWithTs: any = {
 				...message,
 				...(responseId ? { id: responseId } : {}),
 				ts: Date.now(),
+			}
+
+			// Store reasoning_details array if present (for models like Gemini 3)
+			if (reasoningDetails) {
+				messageWithTs.reasoning_details = reasoningDetails
 			}
 
 			// Store reasoning: plain text (most providers) or encrypted (OpenAI Native)
@@ -3502,6 +3509,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						: []
 
 				const [first, ...rest] = contentArray
+
+				// Check if this message has reasoning_details (OpenRouter format for Gemini 3, etc.)
+				const msgWithDetails = msg
+				if (msgWithDetails.reasoning_details && Array.isArray(msgWithDetails.reasoning_details)) {
+					// Build the assistant message with reasoning_details
+					let assistantContent: Anthropic.Messages.MessageParam["content"]
+
+					if (contentArray.length === 0) {
+						assistantContent = ""
+					} else if (contentArray.length === 1 && contentArray[0].type === "text") {
+						assistantContent = (contentArray[0] as Anthropic.Messages.TextBlockParam).text
+					} else {
+						assistantContent = contentArray
+					}
+
+					// Create message with reasoning_details property
+					cleanConversationHistory.push({
+						role: "assistant",
+						content: assistantContent,
+						reasoning_details: msgWithDetails.reasoning_details,
+					} as any)
+
+					continue
+				}
 
 				// Embedded reasoning: encrypted (send) or plain text (skip)
 				const hasEncryptedReasoning =
