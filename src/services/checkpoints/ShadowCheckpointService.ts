@@ -11,6 +11,8 @@ import * as vscode from "vscode"
 import { fileExistsAtPath } from "../../utils/fs"
 import { executeRipgrep } from "../../services/search/file-search"
 import { t } from "../../i18n"
+import { safeWriteJson } from "../../utils/safeWriteJson"
+import { type ApiMessage } from "../../core/task-persistence"
 
 import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
 import { getExcludePatterns } from "./excludes"
@@ -331,6 +333,39 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.emit("error", { type: "error", error })
 			throw error
 		}
+	}
+
+	/**
+	 * Save API conversation history snapshot for a checkpoint
+	 * @param commitHash The checkpoint commit hash to associate with this snapshot
+	 * @param apiHistory The API conversation history to save
+	 */
+	public async saveApiHistorySnapshot(commitHash: string, apiHistory: ApiMessage[]): Promise<void> {
+		const snapshotPath = path.join(this.checkpointsDir, "api_snapshots", `${commitHash}.json`)
+		await safeWriteJson(snapshotPath, apiHistory)
+	}
+
+	/**
+	 * Restore API conversation history snapshot for a checkpoint
+	 * @param commitHash The checkpoint commit hash to restore from
+	 * @returns The restored API conversation history, or null if not found
+	 */
+	public async restoreApiHistorySnapshot(commitHash: string): Promise<ApiMessage[] | null> {
+		const snapshotPath = path.join(this.checkpointsDir, "api_snapshots", `${commitHash}.json`)
+
+		if (await fileExistsAtPath(snapshotPath)) {
+			try {
+				const content = await fs.readFile(snapshotPath, "utf8")
+				return JSON.parse(content) as ApiMessage[]
+			} catch (error) {
+				this.log(
+					`[${this.constructor.name}#restoreApiHistorySnapshot] Failed to restore snapshot: ${error.message}`,
+				)
+				return null
+			}
+		}
+
+		return null
 	}
 
 	public async restoreCheckpoint(commitHash: string) {

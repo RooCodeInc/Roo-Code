@@ -70,6 +70,8 @@ describe("Checkpoint functionality", () => {
 			saveCheckpoint: vi.fn().mockResolvedValue({ commit: "test-commit-hash" }),
 			restoreCheckpoint: vi.fn().mockResolvedValue(undefined),
 			getDiff: vi.fn().mockResolvedValue([]),
+			saveApiHistorySnapshot: vi.fn().mockResolvedValue(undefined),
+			restoreApiHistorySnapshot: vi.fn().mockResolvedValue(null), // Return null to test fallback behavior
 			on: vi.fn(),
 			initShadowGit: vi.fn().mockResolvedValue(undefined),
 		}
