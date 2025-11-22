@@ -28,6 +28,7 @@ import {
 	embeddedTemplateQuery,
 	elispQuery,
 	elixirQuery,
+	bashQuery,
 } from "./queries"
 
 export interface LanguageParser {
@@ -217,6 +218,11 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "exs":
 				language = await loadLanguage("elixir", sourceDirectory)
 				query = new Query(language, elixirQuery)
+				break
+			case "sh":
+			case "bash":
+				language = await loadLanguage("bash", sourceDirectory)
+				query = new Query(language, bashQuery)
 				break
 			default:
 				throw new Error(`Unsupported language: ${ext}`)
