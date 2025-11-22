@@ -202,6 +202,7 @@ export const ChatRowContent = ({
 		apiConfiguration,
 		clineMessages,
 		apiRequestBlockHide,
+		alwaysAllowUpdateTodoList,
 	} = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -635,16 +636,18 @@ export const ChatRowContent = ({
 				return (
 					<>
 						<TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
-						<UpdateTodoListToolBlock
-							todos={todos}
-							content={(tool as any).content}
-							onChange={(updatedTodos) => {
-								if (typeof vscode !== "undefined" && vscode?.postMessage) {
-									vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
-								}
-							}}
-							editable={!!(editable && isLast)}
-						/>
+						{!alwaysAllowUpdateTodoList && isLast && (
+							<UpdateTodoListToolBlock
+								todos={todos}
+								content={(tool as any).content}
+								onChange={(updatedTodos) => {
+									if (typeof vscode !== "undefined" && vscode?.postMessage) {
+										vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
+									}
+								}}
+								editable={!!(editable && isLast)}
+							/>
+						)}
 					</>
 				)
 			}
