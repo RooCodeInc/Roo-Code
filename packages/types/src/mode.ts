@@ -70,6 +70,9 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	// Support for hidden submodes
+	hidden: z.boolean().optional(),
+	parent: z.string().optional(), // The parent mode slug if this is a submode
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
