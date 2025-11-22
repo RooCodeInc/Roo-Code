@@ -197,9 +197,6 @@ export class InsertContentTool extends BaseTool<"insert_content"> {
 			pushToolResult(message)
 
 			await task.diffViewProvider.reset()
-
-			// Process any queued messages after file edit completes
-			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("insert content", error as Error)
 			await task.diffViewProvider.reset()
