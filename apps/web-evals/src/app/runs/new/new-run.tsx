@@ -37,6 +37,7 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
+	Input,
 	Textarea,
 	Tabs,
 	TabsList,
@@ -53,6 +54,7 @@ import {
 	PopoverTrigger,
 	Slider,
 	Label,
+	FormDescription,
 } from "@/components/ui"
 
 import { SettingsDiff } from "./settings-diff"
@@ -83,6 +85,7 @@ export function NewRun() {
 			settings: undefined,
 			concurrency: CONCURRENCY_DEFAULT,
 			timeout: TIMEOUT_DEFAULT,
+			jobToken: "",
 		},
 	})
 
@@ -271,6 +274,31 @@ export function NewRun() {
 							</FormItem>
 						)}
 					/>
+
+					{provider === "roo" && (
+						<FormField
+							control={form.control}
+							name="jobToken"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Roo Code Cloud Token</FormLabel>
+									<FormControl>
+										<Input type="password" {...field} />
+									</FormControl>
+									<FormMessage />
+									<FormDescription>
+										If you have access to the Roo Code Cloud repository then you can generate a
+										token with:
+										<br />
+										<code className="text-xs">
+											pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
+											[timeout]
+										</code>
+									</FormDescription>
+								</FormItem>
+							)}
+						/>
+					)}
 
 					<FormField
 						control={form.control}
