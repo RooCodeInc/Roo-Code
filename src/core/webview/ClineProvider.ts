@@ -52,7 +52,15 @@ import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
-import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import {
+	Mode,
+	defaultModeSlug,
+	getModeBySlug,
+	getCompoundSlug,
+	parseCompoundSlug,
+	getModeByCompoundSlug,
+	getAllModesForConfiguration,
+} from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
@@ -1268,8 +1276,13 @@ export class ClineProvider
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
+		// For submodes, use compound slug for configuration
+		const customModes = await this.customModesManager.getCustomModes()
+		const modeConfig = getModeBySlug(newMode, customModes)
+		const configKey = modeConfig?.parent ? getCompoundSlug(modeConfig) : newMode
+
 		// Load the saved API config for the new mode if it exists.
-		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
+		const savedConfigId = await this.providerSettingsManager.getModeConfigId(configKey)
 		const listApiConfig = await this.providerSettingsManager.listConfig()
 
 		// Update listApiConfigMeta first to ensure UI has latest data.
@@ -1290,7 +1303,7 @@ export class ClineProvider
 				const config = listApiConfig.find((c) => c.name === currentApiConfigName)
 
 				if (config?.id) {
-					await this.providerSettingsManager.setModeConfig(newMode, config.id)
+					await this.providerSettingsManager.setModeConfig(configKey, config.id)
 				}
 			}
 		}
@@ -1433,8 +1446,13 @@ export class ClineProvider
 
 		const { mode } = await this.getState()
 
+		// For submodes, use compound slug for configuration
+		const customModes = await this.customModesManager.getCustomModes()
+		const modeConfig = getModeBySlug(mode, customModes)
+		const configKey = modeConfig?.parent ? getCompoundSlug(modeConfig) : mode
+
 		if (id) {
-			await this.providerSettingsManager.setModeConfig(mode, id)
+			await this.providerSettingsManager.setModeConfig(configKey, id)
 		}
 		// Change the provider for the current task.
 		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
@@ -2807,7 +2825,9 @@ export class ClineProvider
 	public async getModes(): Promise<{ slug: string; name: string }[]> {
 		try {
 			const customModes = await this.customModesManager.getCustomModes()
-			return [...DEFAULT_MODES, ...customModes].map(({ slug, name }) => ({ slug, name }))
+			// Get all modes for configuration (includes submodes with compound slugs)
+			const allModes = getAllModesForConfiguration(customModes)
+			return allModes.map(({ slug, name }) => ({ slug, name }))
 		} catch (error) {
 			return DEFAULT_MODES.map(({ slug, name }) => ({ slug, name }))
 		}

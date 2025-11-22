@@ -14,7 +14,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { Mode, modes } from "../../shared/modes"
+import { Mode, modes, parseCompoundSlug, getCompoundSlug } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
 
 // Type-safe model migrations mapping
@@ -488,6 +488,7 @@ export class ProviderSettingsManager {
 
 	/**
 	 * Set the API config for a specific mode.
+	 * Supports compound slugs for submodes (e.g., "parent/child")
 	 */
 	public async setModeConfig(mode: Mode, configId: string) {
 		try {
@@ -498,6 +499,7 @@ export class ProviderSettingsManager {
 					providerProfiles.modeApiConfigs = {}
 				}
 				// Assign the chosen config ID to this mode
+				// Mode can be a compound slug like "parent/child" for submodes
 				providerProfiles.modeApiConfigs[mode] = configId
 				await this.store(providerProfiles)
 			})
@@ -508,12 +510,27 @@ export class ProviderSettingsManager {
 
 	/**
 	 * Get the API config ID for a specific mode.
+	 * Supports compound slugs for submodes (e.g., "parent/child")
+	 * Falls back to parent mode config if submode has no specific config
 	 */
 	public async getModeConfigId(mode: Mode) {
 		try {
 			return await this.lock(async () => {
 				const { modeApiConfigs } = await this.load()
-				return modeApiConfigs?.[mode]
+				if (!modeApiConfigs) return undefined
+
+				// First try to get config for the exact mode (could be compound slug)
+				const directConfig = modeApiConfigs[mode]
+				if (directConfig) return directConfig
+
+				// If mode contains a slash, it's a compound slug for a submode
+				// Try to fall back to parent mode config
+				const { parent } = parseCompoundSlug(mode)
+				if (parent) {
+					return modeApiConfigs[parent]
+				}
+
+				return undefined
 			})
 		} catch (error) {
 			throw new Error(`Failed to get mode config: ${error}`)

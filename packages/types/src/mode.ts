@@ -62,7 +62,7 @@ const groupEntryArraySchema = z.array(groupEntrySchema).refine(
 )
 
 export const modeConfigSchema = z.object({
-	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),
+	slug: z.string().regex(/^[a-zA-Z0-9-/]+$/, "Slug must contain only letters, numbers, dashes, and forward slashes"),
 	name: z.string().min(1, "Name is required"),
 	roleDefinition: z.string().min(1, "Role definition is required"),
 	whenToUse: z.string().optional(),
@@ -70,6 +70,8 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	hidden: z.boolean().optional(),
+	parent: z.string().optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
