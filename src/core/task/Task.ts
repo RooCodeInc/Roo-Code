@@ -329,6 +329,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
 
+	// Cloud Sync Tracking
+	private cloudSyncedMessageTimestamps: Set<number> = new Set()
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -816,6 +819,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// 		event: TelemetryEventName.TASK_MESSAGE,
 		// 		properties: { taskId: this.taskId, message },
 		// 	})
+		// 	// Track that this message has been synced to cloud
+		// 	this.cloudSyncedMessageTimestamps.add(message.ts)
 		// }
 	}
 
@@ -823,6 +828,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.clineMessages = newMessages
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
+
+		// When overwriting messages (e.g., during task resume), repopulate the cloud sync tracking Set
+		// with timestamps from all non-partial messages to prevent re-syncing previously synced messages
+		this.cloudSyncedMessageTimestamps.clear()
+		for (const msg of newMessages) {
+			if (msg.partial !== true) {
+				this.cloudSyncedMessageTimestamps.add(msg.ts)
+			}
+		}
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
@@ -830,13 +844,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
 
+		// // Check if we should sync to cloud and haven't already synced this message
 		// const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
+		// const hasNotBeenSynced = !this.cloudSyncedMessageTimestamps.has(message.ts)
 
-		// if (shouldCaptureMessage) {
+		// if (shouldCaptureMessage && hasNotBeenSynced) {
 		// 	CloudService.instance.captureEvent({
 		// 		event: TelemetryEventName.TASK_MESSAGE,
 		// 		properties: { taskId: this.taskId, message },
 		// 	})
+		// 	// Track that this message has been synced to cloud
+		// 	this.cloudSyncedMessageTimestamps.add(message.ts)
 		// }
 	}
 
