@@ -135,5 +135,8 @@ export const getGeminiReasoning = ({
 		return undefined
 	}
 
-	return { thinkingLevel: selectedEffort, includeThoughts: true }
+	return {
+		includeThoughts: true,
+		...(selectedEffort === "low" || selectedEffort === "high" ? { thinkingLevel: selectedEffort } : {}),
+	} as GeminiReasoningParams
 }

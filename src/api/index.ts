@@ -8,6 +8,7 @@ import { ApiStream } from "./transform/stream"
 import {
 	GlamaHandler,
 	AnthropicHandler,
+	AzureHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
 	OpenRouterHandler,
@@ -117,6 +118,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
+		case "azure":
+			return new AzureHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
 		case "glama":
