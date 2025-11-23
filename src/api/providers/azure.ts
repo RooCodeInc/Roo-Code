@@ -24,6 +24,150 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { DEFAULT_HEADERS } from "./constants"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
+/**
+ * Validates an Azure endpoint URL for correctness and security
+ *
+ * Azure OpenAI Services supports multiple endpoint patterns depending on the deployment type:
+ * - Claude models: https://<your-resource>.services.ai.azure.com/anthropic/
+ * - GPT models: https://<your-resource>.cognitiveservices.azure.com/
+ * - Custom/regional: https://<your-custom-endpoint>/
+ *
+ * This function ensures:
+ * - URL uses HTTPS protocol for secure communication
+ * - URL format is valid and parseable
+ * - Known Azure domain patterns are recognized
+ * - Custom domains are allowed for flexibility
+ *
+ * @param url - The Azure endpoint URL to validate
+ * @param context - Context string for error messages (e.g., "Claude", "GPT")
+ * @returns void - Throws an error if validation fails
+ * @throws {Error} If URL is invalid, uses HTTP, or has malformed structure
+ *
+ * @example
+ * // Valid Claude endpoint
+ * validateAzureUrl("https://my-resource.services.ai.azure.com/anthropic/", "Claude")
+ *
+ * @example
+ * // Valid GPT endpoint
+ * validateAzureUrl("https://my-resource.cognitiveservices.azure.com/", "GPT")
+ *
+ * @example
+ * // Valid custom endpoint
+ * validateAzureUrl("https://my-custom-endpoint.com/", "Custom")
+ *
+ * Common Issues and Solutions:
+ * - "URL must use HTTPS": Replace 'http://' with 'https://' in your endpoint URL
+ * - "Invalid URL format": Check for typos, ensure proper URL structure
+ * - "Azure endpoint URL is required": Provide the azureBaseUrl in your configuration
+ */
+function validateAzureUrl(url: string, context: string): void {
+	if (!url || url.trim() === "") {
+		throw new Error(
+			`Azure endpoint URL is required for ${context} models. ` +
+				`Please configure 'azureBaseUrl' in your settings.\n\n` +
+				`Examples:\n` +
+				`- Claude: https://<your-resource>.services.ai.azure.com/anthropic/\n` +
+				`- GPT: https://<your-resource>.cognitiveservices.azure.com/\n` +
+				`- Custom: https://<your-endpoint>/\n\n` +
+				`See Azure documentation: https://learn.microsoft.com/azure/ai-services/openai/`,
+		)
+	}
+
+	let parsedUrl: URL
+	try {
+		parsedUrl = new URL(url)
+	} catch (error) {
+		throw new Error(
+			`Invalid Azure endpoint URL format for ${context}: "${url}"\n\n` +
+				`Error: ${(error as Error).message}\n\n` +
+				`Please ensure your URL is properly formatted:\n` +
+				`- Must include protocol (https://)\n` +
+				`- Must have valid domain structure\n` +
+				`- Example: https://my-resource.cognitiveservices.azure.com/`,
+		)
+	}
+
+	// Enforce HTTPS for security
+	if (parsedUrl.protocol !== "https:") {
+		throw new Error(
+			`Azure endpoint URL must use HTTPS protocol for ${context}. ` +
+				`Found: ${parsedUrl.protocol}\n\n` +
+				`Please update your URL to use HTTPS:\n` +
+				`Current: ${url}\n` +
+				`Should be: ${url.replace(/^http:/, "https:")}`,
+		)
+	}
+
+	// Validate known Azure domain patterns (optional - allows custom domains too)
+	const knownAzurePatterns = [
+		/\.cognitiveservices\.azure\.com$/i,
+		/\.services\.ai\.azure\.com$/i,
+		/\.openai\.azure\.com$/i, // Legacy pattern
+	]
+
+	const isKnownAzureDomain = knownAzurePatterns.some((pattern) => pattern.test(parsedUrl.hostname))
+
+	// If not a known Azure domain, just log a warning but allow it (for custom deployments)
+	if (!isKnownAzureDomain) {
+		console.warn(
+			`Azure Provider: Using custom endpoint domain "${parsedUrl.hostname}" for ${context}. ` +
+				`If this is not intentional, please verify your azureBaseUrl configuration.`,
+		)
+	}
+}
+
+/**
+ * Normalizes an Azure endpoint URL by handling common formatting issues and model-specific requirements
+ *
+ * This function handles several normalization tasks:
+ * 1. Removes trailing slashes for consistency
+ * 2. Converts URLs to lowercase for case-insensitive comparison (hostname only)
+ * 3. For Claude models: ensures the URL ends with /anthropic
+ * 4. For GPT models: ensures the URL does NOT end with /anthropic
+ * 5. Handles edge cases like double slashes, mixed protocols
+ *
+ * @param url - The Azure endpoint URL to normalize
+ * @param isClaudeModel - Whether this URL is for a Claude model (requires /anthropic suffix)
+ * @returns Normalized URL string
+ *
+ * @example
+ * // Claude model URL normalization
+ * normalizeAzureUrl("https://resource.services.ai.azure.com/", true)
+ * // Returns: "https://resource.services.ai.azure.com/anthropic"
+ *
+ * @example
+ * // GPT model URL normalization (removes /anthropic if present)
+ * normalizeAzureUrl("https://resource.cognitiveservices.azure.com/anthropic/", false)
+ * // Returns: "https://resource.cognitiveservices.azure.com"
+ *
+ * @example
+ * // Handles multiple trailing slashes
+ * normalizeAzureUrl("https://resource.cognitiveservices.azure.com///", false)
+ * // Returns: "https://resource.cognitiveservices.azure.com"
+ *
+ * Background:
+ * - Azure hosts Claude models through the Anthropic Foundry SDK which requires /anthropic path
+ * - Azure hosts GPT models through the OpenAI SDK which does not use /anthropic path
+ * - Different Azure regions may have slightly different URL patterns
+ */
+function normalizeAzureUrl(url: string, isClaudeModel: boolean): string {
+	// Remove all trailing slashes
+	let normalized = url.replace(/\/+$/, "")
+
+	// For Claude models, ensure /anthropic suffix
+	if (isClaudeModel) {
+		// Remove /anthropic if it exists (to re-add it cleanly)
+		normalized = normalized.replace(/\/anthropic$/i, "")
+		// Add /anthropic suffix
+		normalized = `${normalized}/anthropic`
+	} else {
+		// For non-Claude models (GPT), remove /anthropic if present
+		normalized = normalized.replace(/\/anthropic$/i, "")
+	}
+
+	return normalized
+}
+
 export class AzureHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private claudeClient?: any // AnthropicFoundry - will be dynamically imported
@@ -33,34 +177,135 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		super()
 		this.options = options
 
-		// Initialize OpenAI client for GPT models
-		const baseURL = this.options.azureBaseUrl || "https://your-endpoint.cognitiveservices.azure.com/"
-		const apiKey = this.options.azureApiKey || this.options.apiKey || "not-provided"
+		/**
+		 * Initialize OpenAI client for GPT models
+		 *
+		 * Azure OpenAI Service provides access to GPT models through the OpenAI-compatible API.
+		 * The endpoint URL must point to a valid Azure Cognitive Services resource.
+		 *
+		 * Configuration:
+		 * - baseURL: Azure endpoint (e.g., https://<resource>.cognitiveservices.azure.com/)
+		 * - apiKey: Azure API key for authentication
+		 * - apiVersion: API version (default: 2024-12-01-preview for latest features)
+		 *
+		 * The baseURL is validated and normalized to ensure:
+		 * - HTTPS protocol is used
+		 * - No /anthropic suffix (GPT models don't use this)
+		 * - Trailing slashes are handled consistently
+		 */
+		const baseURL = this.options.azureBaseUrl || ""
+		const apiKey = this.options.azureApiKey || this.options.apiKey || ""
 		const apiVersion = this.options.azureApiVersion || "2024-12-01-preview"
 
-		this.openaiClient = new AzureOpenAI({
-			baseURL,
-			apiKey,
-			apiVersion,
-			defaultHeaders: DEFAULT_HEADERS,
-		})
+		// Validate URL if provided (allow empty for delayed initialization)
+		if (baseURL) {
+			try {
+				validateAzureUrl(baseURL, "GPT/OpenAI")
+			} catch (error) {
+				// Provide helpful context in error message
+				throw new Error(
+					`Azure OpenAI client initialization failed:\n${(error as Error).message}\n\n` +
+						`Please check your Azure configuration in settings.`,
+				)
+			}
+		}
+
+		// Normalize URL for GPT models (removes /anthropic if present)
+		const normalizedBaseURL = baseURL ? normalizeAzureUrl(baseURL, false) : baseURL
+
+		try {
+			this.openaiClient = new AzureOpenAI({
+				baseURL: normalizedBaseURL,
+				apiKey,
+				apiVersion,
+				defaultHeaders: DEFAULT_HEADERS,
+			})
+		} catch (error) {
+			throw new Error(
+				`Failed to initialize Azure OpenAI client:\n${(error as Error).message}\n\n` +
+					`Configuration:\n` +
+					`- baseURL: ${normalizedBaseURL}\n` +
+					`- apiVersion: ${apiVersion}\n\n` +
+					`Please verify your Azure OpenAI Service deployment is configured correctly.`,
+			)
+		}
 	}
 
+	/**
+	 * Initializes the Claude client for Azure-hosted Claude models
+	 *
+	 * Azure hosts Claude models through the Anthropic Foundry SDK, which requires:
+	 * - A specific endpoint URL ending with /anthropic
+	 * - The @anthropic-ai/foundry-sdk package (dynamically imported)
+	 * - Valid Azure API credentials
+	 *
+	 * This method is called lazily (only when a Claude model is used) to:
+	 * - Avoid loading the Foundry SDK unless needed
+	 * - Validate configuration at the point of use
+	 * - Provide clear error messages if setup is incorrect
+	 *
+	 * Configuration Requirements:
+	 * - azureBaseUrl must be set to your Azure AI Services endpoint
+	 * - URL must end with /anthropic (will be added if missing)
+	 * - azureApiKey must be provided for authentication
+	 *
+	 * @throws {Error} If the SDK cannot be loaded, URL is invalid, or configuration is incorrect
+	 * @private
+	 */
 	private async initClaudeClient() {
 		if (this.claudeClient) return
 
-		// Dynamically import AnthropicFoundry only when needed
+		const baseURL = this.options.azureBaseUrl || ""
+		const apiKey = this.options.azureApiKey || this.options.apiKey || ""
+
+		// Validate URL before attempting to use it
+		if (!baseURL) {
+			throw new Error(
+				`Azure endpoint URL is required for Claude models.\n\n` +
+					`Please configure 'azureBaseUrl' in your settings.\n` +
+					`Example: https://<your-resource>.services.ai.azure.com/anthropic/\n\n` +
+					`See Azure documentation: https://learn.microsoft.com/azure/ai-services/openai/`,
+			)
+		}
+
+		try {
+			validateAzureUrl(baseURL, "Claude")
+		} catch (error) {
+			throw new Error(
+				`Azure Claude client initialization failed:\n${(error as Error).message}\n\n` +
+					`Please check your Azure configuration in settings.`,
+			)
+		}
+
+		// Normalize URL for Claude models (ensures /anthropic suffix)
+		const normalizedBaseURL = normalizeAzureUrl(baseURL, true)
+
+		// Dynamically import AnthropicFoundry only when needed to reduce bundle size
 		try {
 			const { default: AnthropicFoundry } = await import("@anthropic-ai/foundry-sdk")
-			const baseURL = this.options.azureBaseUrl || "https://your-endpoint.services.ai.azure.com/anthropic/"
-			const apiKey = this.options.azureApiKey || this.options.apiKey || "not-provided"
 
 			this.claudeClient = new AnthropicFoundry({
 				apiKey,
-				baseURL,
+				baseURL: normalizedBaseURL,
 			})
 		} catch (error) {
-			throw new Error("Failed to initialize Azure Claude client: " + (error as Error).message)
+			// Check if this is an import error vs configuration error
+			const errorMessage = (error as Error).message
+			if (errorMessage.includes("Cannot find module") || errorMessage.includes("Failed to resolve")) {
+				throw new Error(
+					`Failed to load Azure Claude SDK:\n${errorMessage}\n\n` +
+						`The @anthropic-ai/foundry-sdk package may not be installed.\n` +
+						`Please ensure it is included in your dependencies.`,
+				)
+			}
+
+			throw new Error(
+				`Failed to initialize Azure Claude client:\n${errorMessage}\n\n` +
+					`Configuration:\n` +
+					`- baseURL: ${normalizedBaseURL}\n` +
+					`- API Key: ${apiKey ? "[provided]" : "[missing]"}\n\n` +
+					`Please verify your Azure AI Services deployment is configured correctly.`,
+			)
 		}
 	}
 

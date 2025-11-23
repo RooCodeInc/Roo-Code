@@ -495,15 +495,15 @@
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Kunci API Azure",
+		"getAzureApiKey": "Dapatkan Kunci API Azure",
+		"azureBaseUrl": "URL Dasar Azure",
+		"azureBaseUrlHint": "Untuk Claude: https://<azure-anda>.services.ai.azure.com/anthropic/ | Untuk GPT: https://<azure-anda>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Tampilkan Pengaturan Lanjutan",
+		"azureDeploymentName": "Nama Deployment (Opsional)",
+		"azureDeploymentNameHint": "Menimpa nama deployment default. Biarkan kosong untuk menggunakan ID model.",
+		"azureApiVersion": "Versi API (Opsional)",
+		"azureApiVersionHint": "Penimpaan versi API opsional. Default: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

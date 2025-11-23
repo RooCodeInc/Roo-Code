@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Ключ API Azure",
+		"getAzureApiKey": "Получить ключ API Azure",
+		"azureBaseUrl": "Базовый URL Azure",
+		"azureBaseUrlHint": "Для Claude: https://<ваш-azure>.services.ai.azure.com/anthropic/ | Для GPT: https://<ваш-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Показать дополнительные настройки",
+		"azureDeploymentName": "Имя развертывания (необязательно)",
+		"azureDeploymentNameHint": "Переопределить имя развертывания по умолчанию. Оставь пустым, чтобы использовать ID модели.",
+		"azureApiVersion": "Версия API (необязательно)",
+		"azureApiVersionHint": "Необязательное переопределение версии API. По умолчанию: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

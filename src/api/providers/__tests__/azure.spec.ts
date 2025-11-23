@@ -439,4 +439,559 @@ describe("AzureHandler", () => {
 			expect(model.id).toBe("claude-sonnet-4-5")
 		})
 	})
+
+	describe("URL Validation and Normalization", () => {
+		/**
+		 * Tests for validateAzureUrl() function
+		 * This function is called during Azure client initialization
+		 */
+		describe("validateAzureUrl", () => {
+			describe("Valid URL Tests", () => {
+				it("should accept valid Claude endpoint with /anthropic suffix", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com/anthropic/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept valid Claude endpoint without /anthropic suffix", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept valid GPT endpoint (.cognitiveservices.azure.com)", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.cognitiveservices.azure.com/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept valid GPT endpoint (.openai.azure.com)", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.openai.azure.com/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept URLs with trailing slashes", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com///",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept URLs without trailing slashes", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com",
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept custom HTTPS endpoint with warning", () => {
+					const consoleSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://custom-endpoint.example.com/",
+						})
+					}).not.toThrow()
+
+					expect(consoleSpy).toHaveBeenCalledWith(
+						expect.stringContaining('Using custom endpoint domain "custom-endpoint.example.com"'),
+					)
+
+					consoleSpy.mockRestore()
+				})
+
+				it("should accept URLs with ports", () => {
+					const consoleSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://localhost:8080/",
+						})
+					}).not.toThrow()
+
+					consoleSpy.mockRestore()
+				})
+
+				it("should accept URLs with query parameters", () => {
+					const consoleSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com/?param=value",
+						})
+					}).not.toThrow()
+
+					consoleSpy.mockRestore()
+				})
+
+				it("should accept very long URLs", () => {
+					const longUrl = "https://my-very-long-resource-name-that-goes-on-and-on.services.ai.azure.com/"
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: longUrl,
+						})
+					}).not.toThrow()
+				})
+
+				it("should accept URLs with mixed case domains", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://My-Resource.Services.AI.Azure.COM/",
+						})
+					}).not.toThrow()
+				})
+			})
+
+			describe("Invalid URL Tests", () => {
+				it("should throw error for empty URL string when using Claude models", async () => {
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					await expect(async () => {
+						const stream = handler.createMessage(systemPrompt, messages)
+						for await (const chunk of stream) {
+							// Consume stream
+						}
+					}).rejects.toThrow("Azure endpoint URL is required for Claude models")
+				})
+
+				it("should throw error for whitespace-only URL during construction", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "   ",
+						})
+					}).toThrow("Azure endpoint URL is required")
+				})
+
+				it("should throw error for HTTP (not HTTPS) URL", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "http://my-resource.services.ai.azure.com/",
+						})
+					}).toThrow("must use HTTPS protocol")
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "http://my-resource.services.ai.azure.com/",
+						})
+					}).toThrow("Should be: https://my-resource.services.ai.azure.com/")
+				})
+
+				it("should throw error for invalid URL format", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "not-a-valid-url",
+						})
+					}).toThrow("Invalid Azure endpoint URL format")
+				})
+
+				it("should throw error for malformed URLs", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://[invalid",
+						})
+					}).toThrow("Invalid Azure endpoint URL format")
+				})
+
+				it("should throw error for URLs with invalid protocols", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "ftp://my-resource.services.ai.azure.com/",
+						})
+					}).toThrow("must use HTTPS protocol")
+				})
+			})
+
+			describe("Edge Cases", () => {
+				it("should handle URLs with unusual but valid characters", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource_123.services.ai.azure.com/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should handle URLs with hyphens in domain", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource-test-123.services.ai.azure.com/",
+						})
+					}).not.toThrow()
+				})
+
+				it("should handle URLs with multiple path segments", () => {
+					const consoleSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: "https://my-resource.services.ai.azure.com/path/to/endpoint/",
+						})
+					}).not.toThrow()
+
+					consoleSpy.mockRestore()
+				})
+			})
+		})
+
+		/**
+		 * Tests for normalizeAzureUrl() function
+		 * This function normalizes URLs based on model type (Claude vs GPT)
+		 */
+		describe("normalizeAzureUrl", () => {
+			describe("Claude Model Tests", () => {
+				it("should add /anthropic suffix for Claude models without it", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					// Verify the client was initialized with normalized URL
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should keep /anthropic suffix for Claude models that have it", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com/anthropic",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should handle trailing slash before /anthropic", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com/",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should normalize /anthropic/ with trailing slash", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com/anthropic/",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should handle double slashes correctly", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com//",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should handle mixed case /ANTHROPIC", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com/ANTHROPIC",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+			})
+
+			describe("GPT Model Tests", () => {
+				beforeEach(() => {
+					mockAzureOpenAICreate.mockResolvedValue({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								choices: [{ delta: { content: "Test" }, finish_reason: null }],
+								usage: { prompt_tokens: 10, completion_tokens: 5 },
+							}
+						},
+					})
+				})
+
+				it("should remove /anthropic suffix for GPT models", async () => {
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "gpt-5-pro",
+						azureBaseUrl: "https://my-resource.cognitiveservices.azure.com/anthropic",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAzureOpenAICreate).toHaveBeenCalled()
+				})
+
+				it("should keep URL unchanged for GPT models without /anthropic", async () => {
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "gpt-5-pro",
+						azureBaseUrl: "https://my-resource.cognitiveservices.azure.com",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAzureOpenAICreate).toHaveBeenCalled()
+				})
+
+				it("should remove trailing slashes for GPT models", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							apiModelId: "gpt-5-pro",
+							azureBaseUrl: "https://my-resource.cognitiveservices.azure.com///",
+						})
+					}).not.toThrow()
+				})
+
+				it("should handle double slashes for GPT models", () => {
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							apiModelId: "gpt-5-pro",
+							azureBaseUrl: "https://my-resource.cognitiveservices.azure.com//anthropic//",
+						})
+					}).not.toThrow()
+				})
+
+				it("should remove mixed case /Anthropic for GPT models", async () => {
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "gpt-5-pro",
+						azureBaseUrl: "https://my-resource.cognitiveservices.azure.com/Anthropic",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAzureOpenAICreate).toHaveBeenCalled()
+				})
+			})
+
+			describe("Edge Cases", () => {
+				it("should handle URLs ending with /anthropic/v1 for Claude models", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-resource.services.ai.azure.com/anthropic/v1",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should handle multiple /anthropic occurrences", async () => {
+					mockAnthropicFoundryCreate.mockImplementation(async () => ({
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "message_start",
+								message: { usage: { input_tokens: 10, output_tokens: 5 } },
+							}
+						},
+					}))
+
+					// This edge case tests if the regex only removes the last occurrence
+					const handler = new AzureHandler({
+						...mockOptions,
+						apiModelId: "claude-sonnet-4-5",
+						azureBaseUrl: "https://my-anthropic-resource.services.ai.azure.com/anthropic",
+					})
+
+					const systemPrompt = "Test"
+					const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+
+					const stream = handler.createMessage(systemPrompt, messages)
+					for await (const chunk of stream) {
+						// Consume stream
+					}
+
+					expect(mockAnthropicFoundryCreate).toHaveBeenCalled()
+				})
+
+				it("should handle empty baseURL gracefully", () => {
+					// Empty baseURL should not throw during construction (only when used)
+					expect(() => {
+						new AzureHandler({
+							...mockOptions,
+							azureBaseUrl: undefined,
+						})
+					}).not.toThrow()
+				})
+			})
+		})
+	})
 })

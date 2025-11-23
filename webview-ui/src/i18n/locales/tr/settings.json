@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Azure API Anahtarı",
+		"getAzureApiKey": "Azure API Anahtarı Al",
+		"azureBaseUrl": "Azure Temel URL",
+		"azureBaseUrlHint": "Claude için: https://<senin-azure>.services.ai.azure.com/anthropic/ | GPT için: https://<senin-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Gelişmiş Ayarları Göster",
+		"azureDeploymentName": "Dağıtım Adı (İsteğe Bağlı)",
+		"azureDeploymentNameHint": "Varsayılan dağıtım adını geçersiz kıl. Model kimliğini kullanmak için boş bırak.",
+		"azureApiVersion": "API Sürümü (İsteğe Bağlı)",
+		"azureApiVersionHint": "İsteğe bağlı API sürüm geçersiz kılma. Varsayılan: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

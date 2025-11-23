@@ -491,15 +491,15 @@
 			"maxTokensLabel": "最大輸出 Token",
 			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Azure API 金鑰",
+		"getAzureApiKey": "取得 Azure API 金鑰",
+		"azureBaseUrl": "Azure 基礎 URL",
+		"azureBaseUrlHint": "Claude 使用: https://<your-azure>.services.ai.azure.com/anthropic/ | GPT 使用: https://<your-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "顯示進階設定",
+		"azureDeploymentName": "部署名稱（選用）",
+		"azureDeploymentNameHint": "覆寫預設部署名稱。留空則使用模型 ID。",
+		"azureApiVersion": "API 版本（選用）",
+		"azureApiVersionHint": "選用的 API 版本覆寫。預設值: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Azure API-sleutel",
+		"getAzureApiKey": "Verkrijg Azure API-sleutel",
+		"azureBaseUrl": "Azure basis-URL",
+		"azureBaseUrlHint": "Voor Claude: https://<jouw-azure>.services.ai.azure.com/anthropic/ | Voor GPT: https://<jouw-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Toon geavanceerde instellingen",
+		"azureDeploymentName": "Implementatienaam (optioneel)",
+		"azureDeploymentNameHint": "Overschrijf de standaard implementatienaam. Laat leeg om model-ID te gebruiken.",
+		"azureApiVersion": "API-versie (optioneel)",
+		"azureApiVersionHint": "Optionele API-versie overschrijving. Standaard: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

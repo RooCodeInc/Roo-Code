@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
 			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Klucz API Azure",
+		"getAzureApiKey": "Pobierz klucz API Azure",
+		"azureBaseUrl": "Bazowy URL Azure",
+		"azureBaseUrlHint": "Dla Claude: https://<twoj-azure>.services.ai.azure.com/anthropic/ | Dla GPT: https://<twoj-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Pokaż ustawienia zaawansowane",
+		"azureDeploymentName": "Nazwa wdrożenia (opcjonalnie)",
+		"azureDeploymentNameHint": "Nadpisz domyślną nazwę wdrożenia. Zostaw puste, aby użyć ID modelu.",
+		"azureApiVersion": "Wersja API (opcjonalnie)",
+		"azureApiVersionHint": "Opcjonalne nadpisanie wersji API. Domyślnie: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

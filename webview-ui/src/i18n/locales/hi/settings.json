@@ -492,14 +492,14 @@
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
 		},
 		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"getAzureApiKey": "Azure API Key प्राप्त करें",
+		"azureBaseUrl": "Azure बेस URL",
+		"azureBaseUrlHint": "Claude के लिए: https://<your-azure>.services.ai.azure.com/anthropic/ | GPT के लिए: https://<your-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "उन्नत सेटिंग्स दिखाएं",
+		"azureDeploymentName": "डिप्लॉयमेंट नाम (वैकल्पिक)",
+		"azureDeploymentNameHint": "डिफ़ॉल्ट डिप्लॉयमेंट नाम को ओवरराइड करें। मॉडल ID का उपयोग करने के लिए खाली छोड़ें।",
+		"azureApiVersion": "API संस्करण (वैकल्पिक)",
+		"azureApiVersionHint": "वैकल्पिक API संस्करण ओवरराइड। डिफ़ॉल्ट: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

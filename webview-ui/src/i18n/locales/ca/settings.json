@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Clau API d'Azure",
+		"getAzureApiKey": "Obtén la clau API d'Azure",
+		"azureBaseUrl": "URL base d'Azure",
+		"azureBaseUrlHint": "Per a Claude: https://<el-teu-azure>.services.ai.azure.com/anthropic/ | Per a GPT: https://<el-teu-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Mostra la configuració avançada",
+		"azureDeploymentName": "Nom del desplegament (opcional)",
+		"azureDeploymentNameHint": "Substitueix el nom de desplegament per defecte. Deixa-ho buit per utilitzar l'ID del model.",
+		"azureApiVersion": "Versió de l'API (opcional)",
+		"azureApiVersionHint": "Substitució opcional de la versió de l'API. Per defecte: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

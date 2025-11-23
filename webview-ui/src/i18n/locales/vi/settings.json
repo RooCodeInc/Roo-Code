@@ -491,15 +491,15 @@
 			"maxTokensLabel": "Số token đầu ra tối đa",
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
 		},
-		"azureApiKey": "Azure API Key",
-		"getAzureApiKey": "Get Azure API Key",
-		"azureBaseUrl": "Azure Base URL",
-		"azureBaseUrlHint": "For Claude: https://<your-azure>.services.ai.azure.com/anthropic/ | For GPT: https://<your-azure>.cognitiveservices.azure.com/",
-		"azureShowAdvanced": "Show Advanced Settings",
-		"azureDeploymentName": "Deployment Name (Optional)",
-		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
-		"azureApiVersion": "API Version (Optional)",
-		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview"
+		"azureApiKey": "Khóa API Azure",
+		"getAzureApiKey": "Lấy khóa API Azure",
+		"azureBaseUrl": "URL cơ sở Azure",
+		"azureBaseUrlHint": "Cho Claude: https://<azure-cua-ban>.services.ai.azure.com/anthropic/ | Cho GPT: https://<azure-cua-ban>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Hiển thị cài đặt nâng cao",
+		"azureDeploymentName": "Tên triển khai (tùy chọn)",
+		"azureDeploymentNameHint": "Ghi đè tên triển khai mặc định. Để trống để sử dụng ID mô hình.",
+		"azureApiVersion": "Phiên bản API (tùy chọn)",
+		"azureApiVersionHint": "Ghi đè phiên bản API tùy chọn. Mặc định: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {
