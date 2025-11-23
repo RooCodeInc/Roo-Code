@@ -151,8 +151,16 @@ function validateAzureUrl(url: string, context: string): void {
  * - Different Azure regions may have slightly different URL patterns
  */
 function normalizeAzureUrl(url: string, isClaudeModel: boolean): string {
-	// Remove all trailing slashes
-	let normalized = url.replace(/\/+$/, "")
+	// Remove all trailing slashes using safe string manipulation instead of regex
+	// to prevent ReDoS (Regular Expression Denial of Service) attacks.
+	// This iterative approach has O(n) time complexity and is immune to
+	// polynomial backtracking issues that regex quantifiers can cause.
+	let normalized = url
+	let endIdx = normalized.length
+	while (endIdx > 0 && normalized[endIdx - 1] === "/") {
+		endIdx--
+	}
+	normalized = normalized.slice(0, endIdx)
 
 	// For Claude models, ensure /anthropic suffix
 	if (isClaudeModel) {
