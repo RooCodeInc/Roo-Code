@@ -12,6 +12,8 @@ import {
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { TOOL_PROTOCOL } from "@roo-code/types"
 import { ApiStreamChunk } from "../transform/stream"
 import { convertToR1Format } from "../transform/r1-format"
 import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transform/caching/anthropic"
@@ -164,6 +166,43 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 		}
 
+		// Process reasoning_details when switching models to Gemini for native tool call compatibility
+		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+		const isGemini = modelId.startsWith("google/gemini")
+
+		// For Gemini with native protocol: inject fake reasoning.encrypted blocks for tool calls
+		// This is required when switching from other models to Gemini to satisfy API validation
+		if (isNativeProtocol && isGemini) {
+			openAiMessages = openAiMessages.map((msg) => {
+				if (msg.role === "assistant") {
+					const toolCalls = (msg as any).tool_calls as any[] | undefined
+					const existingDetails = (msg as any).reasoning_details as any[] | undefined
+
+					// Only inject if there are tool calls and no existing encrypted reasoning
+					if (toolCalls && toolCalls.length > 0) {
+						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
+
+						if (!hasEncrypted) {
+							const fakeEncrypted = toolCalls.map((tc, idx) => ({
+								id: tc.id,
+								type: "reasoning.encrypted",
+								data: "skip_thought_signature_validator",
+								format: "google-gemini-v1",
+								index: (existingDetails?.length ?? 0) + idx,
+							}))
+
+							return {
+								...msg,
+								reasoning_details: [...(existingDetails ?? []), ...fakeEncrypted],
+							}
+						}
+					}
+				}
+				return msg
+			})
+		}
+
 		// https://openrouter.ai/docs/features/prompt-caching
 		// TODO: Add a `promptCacheStratey` field to `ModelInfo`.
 		if (OPEN_ROUTER_PROMPT_CACHING_MODELS.has(modelId)) {
@@ -210,6 +249,20 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		let lastUsage: CompletionUsage | undefined = undefined
 		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+		// Accumulator for reasoning_details: accumulate text by type-index key
+		const reasoningDetailsAccumulator = new Map<
+			string,
+			{
+				type: string
+				text?: string
+				summary?: string
+				data?: string
+				id?: string | null
+				format?: string
+				signature?: string
+				index: number
+			}
+		>()
 
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
@@ -223,14 +276,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta) {
-				// Handle reasoning tokens - supports both legacy string format and new reasoning_details array format
-				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens
-				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-					yield { type: "reasoning", text: delta.reasoning }
-				}
-
 				// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
 				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+				// Priority: Check for reasoning_details first, as it's the newer format
 				const deltaWithReasoning = delta as typeof delta & {
 					reasoning_details?: Array<{
 						type: string
@@ -239,18 +287,48 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						data?: string
 						id?: string | null
 						format?: string
+						signature?: string
 						index?: number
 					}>
 				}
 
 				if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
 					for (const detail of deltaWithReasoning.reasoning_details) {
-						// Store the full reasoning detail object for later use
-						this.currentReasoningDetails.push(detail)
+						const index = detail.index ?? 0
+						const key = `${detail.type}-${index}`
+						const existing = reasoningDetailsAccumulator.get(key)
 
+						if (existing) {
+							// Accumulate text/summary/data for existing reasoning detail
+							if (detail.text !== undefined) {
+								existing.text = (existing.text || "") + detail.text
+							}
+							if (detail.summary !== undefined) {
+								existing.summary = (existing.summary || "") + detail.summary
+							}
+							if (detail.data !== undefined) {
+								existing.data = (existing.data || "") + detail.data
+							}
+							// Update other fields if provided
+							if (detail.id !== undefined) existing.id = detail.id
+							if (detail.format !== undefined) existing.format = detail.format
+							if (detail.signature !== undefined) existing.signature = detail.signature
+						} else {
+							// Start new reasoning detail accumulation
+							reasoningDetailsAccumulator.set(key, {
+								type: detail.type,
+								text: detail.text,
+								summary: detail.summary,
+								data: detail.data,
+								id: detail.id,
+								format: detail.format,
+								signature: detail.signature,
+								index,
+							})
+						}
+
+						// Yield text for display (still fragmented for live streaming)
 						let reasoningText: string | undefined
-
-						// Extract text based on reasoning detail type for display
 						if (detail.type === "reasoning.text" && typeof detail.text === "string") {
 							reasoningText = detail.text
 						} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
@@ -262,6 +340,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 							yield { type: "reasoning", text: reasoningText }
 						}
 					}
+				} else if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					// Handle legacy reasoning format - only if reasoning_details is not present
+					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens
+					yield { type: "reasoning", text: delta.reasoning }
 				}
 
 				// Check for tool calls in delta
@@ -322,6 +404,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 			}
 			toolCallAccumulator.clear()
+		}
+
+		// After streaming completes, store the accumulated reasoning_details
+		if (reasoningDetailsAccumulator.size > 0) {
+			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
 		}
 
 		if (lastUsage) {

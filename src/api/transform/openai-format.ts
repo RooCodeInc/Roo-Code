@@ -141,7 +141,7 @@ export function convertToOpenAiMessages(
 					tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
 				}
 
-				// Preserve reasoning_details if present
+				// Preserve reasoning_details if present (will be processed by provider if needed)
 				if (messageWithDetails.reasoning_details && Array.isArray(messageWithDetails.reasoning_details)) {
 					;(baseMessage as any).reasoning_details = messageWithDetails.reasoning_details
 				}

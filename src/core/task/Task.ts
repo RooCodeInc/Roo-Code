@@ -699,7 +699,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			// Store reasoning: plain text (most providers) or encrypted (OpenAI Native)
-			if (reasoning) {
+			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
+			if (reasoning && !reasoningDetails) {
 				const reasoningBlock = {
 					type: "reasoning",
 					text: reasoning,
