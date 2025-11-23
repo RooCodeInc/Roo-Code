@@ -160,7 +160,6 @@ export const ChatRowContent = ({
 	onSuggestionClick,
 	onFollowUpUnmount,
 	onBatchFileResponse,
-	editable,
 	isFollowUpAnswered,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
@@ -540,21 +539,7 @@ export const ChatRowContent = ({
 				// Get previous todos from the latest todos in the task context
 				const previousTodos = getPreviousTodos(clineMessages, message.ts)
 
-				return (
-					<>
-						<TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
-						<UpdateTodoListToolBlock
-							todos={todos}
-							content={(tool as any).content}
-							onChange={(updatedTodos) => {
-								if (typeof vscode !== "undefined" && vscode?.postMessage) {
-									vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
-								}
-							}}
-							editable={!!(editable && isLast)}
-						/>
-					</>
-				)
+				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
 			}
 			case "newFileCreated":
 				return (
