@@ -10,4 +10,5 @@ export interface SystemPromptSettings {
 	useAgentRules: boolean
 	newTaskRequireTodos: boolean
 	toolProtocol?: ToolProtocol
+	liteMode?: boolean
 }

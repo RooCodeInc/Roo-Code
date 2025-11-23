@@ -30,6 +30,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
+	liteMode?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
@@ -47,6 +48,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
+		| "liteMode"
 	>
 }
 
@@ -69,6 +71,7 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
+	liteMode,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -409,6 +412,20 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.includeCurrentCost.description")}
+					</div>
+				</div>
+
+				<div>
+					<VSCodeCheckbox
+						checked={liteMode}
+						onChange={(e: any) => setCachedStateField("liteMode", e.target.checked)}
+						data-testid="lite-mode-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.liteMode.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.liteMode.description")}
 					</div>
 				</div>
 			</Section>

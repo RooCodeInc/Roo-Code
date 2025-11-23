@@ -204,6 +204,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		liteMode,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -767,6 +768,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							includeCurrentTime={includeCurrentTime}
 							includeCurrentCost={includeCurrentCost}
 							maxGitStatusFiles={maxGitStatusFiles}
+							liteMode={liteMode}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

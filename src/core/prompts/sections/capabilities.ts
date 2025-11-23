@@ -16,6 +16,18 @@ export function getCapabilitiesSection(
 	codeIndexManager?: CodeIndexManager,
 	settings?: SystemPromptSettings,
 ): string {
+	// Return simplified capabilities for lite mode
+	if (settings?.liteMode) {
+		return `====
+
+CAPABILITIES
+
+- CLI commands, file operations (list/read/write), search, definitions
+- Project structure in environment_details
+- Each command runs in new terminal
+${mcpHub ? "- MCP servers provide additional tools\n" : ""}`
+	}
+
 	// Get available tools from relevant groups
 	const availableEditTools = getAvailableToolsInGroup(
 		"edit",
