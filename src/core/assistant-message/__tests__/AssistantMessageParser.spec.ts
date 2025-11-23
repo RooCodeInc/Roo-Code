@@ -442,7 +442,7 @@ Some suffix text
 				const toolUse = result[0] as ToolUse
 				expect(toolUse.type).toBe("tool_use")
 				expect(toolUse.name).toBe("attempt_completion")
-				expect(toolUse.params.result).toBeUndefined()
+				expect(toolUse.params.result).toBe("")
 				expect(toolUse.partial).toBe(false)
 			})
 

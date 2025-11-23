@@ -1391,6 +1391,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		progressStatus?: ToolProgressStatus,
 		options: {
 			isNonInteractive?: boolean
+			subtaskId?: string
+			[key: string]: any
 		} = {},
 		contextCondense?: ContextCondense,
 	): Promise<undefined> {
@@ -1409,6 +1411,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (isUpdatingPreviousPartial) {
 					// Existing partial message, so update it.
 					lastMessage.text = text
+					lastMessage.subtaskId = options.subtaskId
 					lastMessage.images = images
 					lastMessage.partial = partial
 					lastMessage.progressStatus = progressStatus
@@ -1426,6 +1429,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						type: "say",
 						say: type,
 						text,
+						subtaskId: options.subtaskId,
 						images,
 						partial,
 						contextCondense,
@@ -1443,6 +1447,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					lastMessage.text = text
 					lastMessage.images = images
+					lastMessage.subtaskId = options.subtaskId
 					lastMessage.partial = false
 					lastMessage.progressStatus = progressStatus
 
@@ -1465,6 +1470,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						type: "say",
 						say: type,
 						text,
+						subtaskId: options.subtaskId,
 						images,
 						contextCondense,
 					})
@@ -1487,6 +1493,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				type: "say",
 				say: type,
 				text,
+				subtaskId: options.subtaskId,
 				images,
 				checkpoint,
 				contextCondense,
@@ -1995,7 +2002,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		})
 	}
 
-	public async completeSubtask(lastMessage: string) {
+	public async completeSubtask(lastMessage: string, subtaskId?: string) {
 		this.isPaused = false
 		this.childTaskId = undefined
 
@@ -2005,7 +2012,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// this is the result of what it has done add the message to the chat
 		// history and to the webview ui.
 		try {
-			await this.say("subtask_result", lastMessage)
+			await this.say(
+				"subtask_result",
+				lastMessage,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{ subtaskId },
+				undefined,
+			)
 
 			await this.addToApiConversationHistory({
 				role: "user",

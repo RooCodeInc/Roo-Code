@@ -76,7 +76,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				}
 
 				pushToolResult("")
-				await task.providerRef.deref()?.finishSubTask(result)
+				await task.providerRef.deref()?.finishSubTask(result, task.taskId)
 				return
 			}
 

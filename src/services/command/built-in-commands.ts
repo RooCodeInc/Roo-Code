@@ -303,13 +303,44 @@ description: "测试驱动开发"
 	"project-wiki": {
 		name: "project-wiki",
 		description: "Perform an in-depth analysis of the project and create a comprehensive project wiki.",
-		content: PROJECT_WIKI_TEMPLATE("${workspaceFolder}/"),
+		content: PROJECT_WIKI_TEMPLATE("${workspaceFolder}/.cospec"),
 	},
-  "generate-rules": {
-    name: "generate-rules",
-    description: "Extract project-specific coding rules to improve code generation accuracy",
-    content: RULES_GENERATION_TEMPLATE("${workspaceFolder}"),
-  }
+	"openspec-init": {
+		name: "openspec-init",
+		description: "Openspec slash command init.",
+		content: `<task>
+# Strictly follow the following steps:
+
+1.First, check if the \`openspec\` command is available in the system.
+
+2.If \`openspec\` is not installed, prompt the user with a message asking if they want to install it. Provide the install command:
+ \`npm install -g @fission-ai/openspec@latest\`
+
+3.If \`openspec\` is already installed, run the following command to initialize or overwrite the current setup:
+\`openspec init --tools costrict\`
+
+4.After all above steps finish successfully, print the following usage guide:
+\`\`\`
+Next steps - Copy these prompts to CoStrict:
+────────────────────────────────────────────────────────────
+1. Populate your project context:
+   "Please read openspec/project.md and help me fill it out
+    with details about my project, tech stack, and conventions"
+
+2. Create your first change proposal:
+   "I want to add [YOUR FEATURE HERE]. Please create an
+    OpenSpec change proposal for this feature"
+
+3. Learn the OpenSpec workflow:
+   "Please explain the OpenSpec workflow from openspec/AGENTS.md
+    and how I should work with you on this project"
+\`\`\`</task>`,
+	},
+	"generate-rules": {
+		name: "generate-rules",
+		description: "Extract project-specific coding rules to improve code generation accuracy",
+		content: RULES_GENERATION_TEMPLATE("${workspaceFolder}"),
+	},
 }
 
 /**

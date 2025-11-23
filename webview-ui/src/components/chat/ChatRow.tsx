@@ -39,9 +39,9 @@ import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
-// import { CommandExecutionError } from "./CommandExecutionError"
+import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { /* CondenseContextErrorRow, */ CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -304,7 +304,18 @@ export const ChatRowContent = ({
 	const errorColor = "var(--vscode-errorForeground)"
 	const successColor = "var(--vscode-charts-green)"
 	const cancelledColor = "var(--vscode-descriptionForeground)"
-
+	const getIconSpan = (iconName: string, color: string) => (
+		<div
+			style={{
+				width: 16,
+				height: 16,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+			}}>
+			<span className={`codicon codicon-${iconName}`} style={{ color, fontSize: 16, marginBottom: "-1.5px" }} />
+		</div>
+	)
 	const [icon, title] = useMemo(() => {
 		switch (type) {
 			case "error":
@@ -350,21 +361,6 @@ export const ChatRowContent = ({
 			case "api_req_retry_delayed":
 				return []
 			case "api_req_started":
-				const getIconSpan = (iconName: string, color: string) => (
-					<div
-						style={{
-							width: 16,
-							height: 16,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-						}}>
-						<span
-							className={`codicon codicon-${iconName}`}
-							style={{ color, fontSize: 16, marginBottom: "-1.5px" }}
-						/>
-					</div>
-				)
 				return [
 					apiReqCancelReason !== null && apiReqCancelReason !== undefined ? (
 						apiReqCancelReason === "user_cancelled" ? (
@@ -1009,6 +1005,20 @@ export const ChatRowContent = ({
 								}}>
 								<span className="codicon codicon-check"></span>
 								{t("chat:subtasks.completionContent")}
+								{tool.parentTaskId && (
+									<a
+										href="javascript:void(0)"
+										onClick={(e) => {
+											e.stopPropagation()
+											vscode.postMessage({
+												type: "showTaskWithIdInNewTab",
+												text: tool.parentTaskId,
+											})
+										}}
+										style={{ color: "inherit", textDecoration: "underline" }}>
+										{t("chat:task.viewParentTask")}
+									</a>
+								)}
 							</div>
 							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
 								<MarkdownBlock markdown={t("chat:subtasks.completionInstructions")} />
@@ -1167,6 +1177,20 @@ export const ChatRowContent = ({
 									}}>
 									<span className="codicon codicon-arrow-left"></span>
 									{t("chat:subtasks.resultContent")}
+									{message.subtaskId && (
+										<a
+											href="javascript:void(0)"
+											onClick={(e) => {
+												e.stopPropagation()
+												vscode.postMessage({
+													type: "showTaskWithIdInNewTab",
+													text: message.subtaskId,
+												})
+											}}
+											style={{ color: "inherit", textDecoration: "underline" }}>
+											{t("chat:subtasks.viewSubtask")}
+										</a>
+									)}
 								</div>
 								<div
 									style={{
@@ -1220,8 +1244,21 @@ export const ChatRowContent = ({
 									!apiRequestBlockHide && apiReqStartedRequestText ? handleToggleExpand : () => {}
 								}>
 								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
-									{icon}
+									{!apiRequestBlockHide && apiReqStartedRequestText ? (
+										icon
+									) : isLast ? (
+										<ProgressIndicator />
+									) : (
+										getIconSpan("arrow-swap", normalColor)
+									)}
 									{title}
+									{(selectedLLM || originModelId) && !selectReason && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title="Selected Model">
+											{isAuto ? t("chat:autoMode.selectedLLM", { selectedLLM }) : originModelId}
+										</div>
+									)}
 								</div>
 								<div
 									className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
@@ -1229,22 +1266,24 @@ export const ChatRowContent = ({
 									${Number(cost || 0)?.toFixed(4)}
 								</div>
 							</div>
-							<div className="mt-2 flex items-center flex-wrap gap-2">
-								{(selectedLLM || originModelId) && (
-									<div
-										className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
-										title="Selected Model">
-										{isAuto ? t("chat:autoMode.selectedLLM", { selectedLLM }) : originModelId}
-									</div>
-								)}
-								{selectReason && (
-									<div
-										className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
-										title="Selection Reason">
-										{t("chat:autoMode.selectReason", { selectReason })}
-									</div>
-								)}
-							</div>
+							{selectReason && (
+								<div className="mt-2 flex items-center flex-wrap gap-2">
+									{(selectedLLM || originModelId) && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title="Selected Model">
+											{isAuto ? t("chat:autoMode.selectedLLM", { selectedLLM }) : originModelId}
+										</div>
+									)}
+									{selectReason && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title="Selection Reason">
+											{t("chat:autoMode.selectReason", { selectReason })}
+										</div>
+									)}
+								</div>
+							)}
 							{(((cost === null || cost === undefined) && apiRequestFailedMessage) ||
 								apiReqStreamingFailedMessage) && (
 								<ErrorRow
@@ -1468,10 +1507,7 @@ export const ChatRowContent = ({
 						</>
 					)
 				case "shell_integration_warning":
-					// console.log(t("chat:shellIntegration.title"), t("chat:shellIntegration.description"))
-
-					return null
-				// return <CommandExecutionError />
+					return <CommandExecutionError />
 				case "checkpoint_saved":
 					return (
 						<CheckpointSaved
@@ -1487,8 +1523,7 @@ export const ChatRowContent = ({
 					}
 					return message.contextCondense ? <ContextCondenseRow {...message.contextCondense} /> : null
 				case "condense_context_error":
-					// return <CondenseContextErrorRow errorText={message.text} />
-					return null
+					return <CondenseContextErrorRow errorText={message.text} />
 				case "codebase_search_result":
 					let parsed: {
 						content: {

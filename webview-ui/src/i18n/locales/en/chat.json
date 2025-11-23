@@ -1,6 +1,7 @@
 {
 	"greeting": "Welcome to Roo Code!",
 	"task": {
+		"viewParentTask": "View Parent Task",
 		"title": "Task",
 		"expand": "Expand task",
 		"collapse": "Collapse task",
@@ -258,6 +259,7 @@
 		"newTaskContent": "Subtask Instructions",
 		"completionContent": "Subtask Completed",
 		"resultContent": "Subtask Results",
+		"viewSubtask": "View Subtask",
 		"defaultResult": "Please continue to the next task.",
 		"completionInstructions": "Subtask completed! You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
 	},

@@ -16,7 +16,7 @@ export class CoIgnoreController {
 	protected ignoreInstance: Ignore
 	protected disposables: vscode.Disposable[] = []
 	coignoreContentInitialized: boolean
-	ignoreFilenames = [".coignore", ".gitignore"]
+	ignoreFilenames = [".coignore", ".gitignore", ".rooignore"]
 
 	constructor(cwd: string) {
 		this.cwd = cwd

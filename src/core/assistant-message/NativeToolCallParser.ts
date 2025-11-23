@@ -1,5 +1,6 @@
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
+import { fixBrowserLaunchAction } from "../../utils/fixbrowserLaunchAction"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -131,7 +132,7 @@ export class NativeToolCallParser {
 				case "browser_action":
 					if (args.action !== undefined) {
 						nativeArgs = {
-							action: args.action,
+							action: fixBrowserLaunchAction(args),
 							url: args.url,
 							coordinate: args.coordinate,
 							size: args.size,

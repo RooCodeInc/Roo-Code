@@ -102,35 +102,7 @@ export class AssistantMessageParser {
 
 					// Special handling for attempt_completion tool without result tag
 					if (this.currentToolUse.name === "attempt_completion") {
-						const resultStartTag = "<result>"
-						const resultEndTag = "</result>"
-
-						// Check if result tags are present
-						const hasResultStartTag = currentToolValue.includes(resultStartTag)
-						const hasResultEndTag = currentToolValue.includes(resultEndTag)
-
-						if (!hasResultStartTag && !hasResultEndTag) {
-							// No result tags found, treat entire content as result
-							// Remove the opening and closing attempt_completion tags
-							const openingTag = "<attempt_completion>"
-							const cleanedContent = currentToolValue
-								.replace(new RegExp(`^${openingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), "")
-								.replace(new RegExp(`${toolUseClosingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "")
-								.trim()
-							if (cleanedContent) {
-								this.currentToolUse.params.result = cleanedContent
-							}
-						} else if (hasResultStartTag && hasResultEndTag) {
-							// Both tags present, extract content between them
-							const resultStartIndex = currentToolValue.indexOf(resultStartTag) + resultStartTag.length
-							const resultEndIndex = currentToolValue.indexOf(resultEndTag)
-
-							if (resultStartIndex !== -1 && resultEndIndex !== -1 && resultEndIndex > resultStartIndex) {
-								this.currentToolUse.params.result = currentToolValue
-									.slice(resultStartIndex, resultEndIndex)
-									.trim()
-							}
-						}
+						this.currentToolUse.params.result = currentToolValueExtract(currentToolValue.trim())
 					}
 
 					this.currentToolUse.partial = false
@@ -282,4 +254,64 @@ export class AssistantMessageParser {
 			}
 		}
 	}
+}
+
+function currentToolValueExtract(currentToolValue: string = "") {
+	currentToolValue = currentToolValue.trim()
+	const resultStartTag = "<result>"
+	const resultEndTag = "</result>"
+	const toolUseClosingTag = "</attempt_completion>"
+
+	// Check if result tags are present
+	const hasResultStartTag = currentToolValue.includes(resultStartTag)
+	const hasResultEndTag = currentToolValue.includes(resultEndTag)
+
+	let result = ""
+
+	if (!hasResultStartTag && !hasResultEndTag) {
+		// No result tags found, treat entire content as result
+		const openingTag = "<attempt_completion>"
+		const cleanedContent = currentToolValue
+			.replace(new RegExp(`^${openingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), "")
+			.replace(new RegExp(`${toolUseClosingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "")
+			.trim()
+		if (cleanedContent) {
+			result = cleanedContent
+		}
+	} else if (hasResultStartTag && hasResultEndTag) {
+		// Both tags present, extract content between them
+		const resultStartIndex = currentToolValue.indexOf(resultStartTag) + resultStartTag.length
+		const resultEndIndex = currentToolValue.indexOf(resultEndTag)
+
+		if (resultStartIndex !== -1 && resultEndIndex !== -1 && resultEndIndex > resultStartIndex) {
+			result = currentToolValue.slice(resultStartIndex, resultEndIndex).trim()
+		}
+	} else if (!hasResultStartTag && hasResultEndTag) {
+		// Only end tag present, treat content before end tag as result
+		const resultEndIndex = currentToolValue.indexOf(resultEndTag)
+		if (resultEndIndex !== -1) {
+			const openingTag = "<attempt_completion>"
+			const cleanedContent = currentToolValue
+				.slice(0, resultEndIndex)
+				.replace(new RegExp(`^${openingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`), "")
+				.trim()
+			if (cleanedContent) {
+				result = cleanedContent
+			}
+		}
+	} else if (hasResultStartTag && !hasResultEndTag) {
+		// Only start tag present, treat content after start tag as result
+		const resultStartIndex = currentToolValue.indexOf(resultStartTag) + resultStartTag.length
+		if (resultStartIndex !== -1) {
+			const cleanedContent = currentToolValue
+				.slice(resultStartIndex)
+				.replace(new RegExp(`${toolUseClosingTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`), "")
+				.trim()
+			if (cleanedContent) {
+				result = cleanedContent
+			}
+		}
+	}
+
+	return result
 }

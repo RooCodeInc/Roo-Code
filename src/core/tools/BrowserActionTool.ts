@@ -9,6 +9,7 @@ import {
 import { formatResponse } from "../prompts/responses"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { scaleCoordinate } from "../../shared/browserUtils"
+import { fixBrowserLaunchAction } from "../../utils/fixbrowserLaunchAction"
 
 export async function browserActionTool(
 	cline: Task,
@@ -18,7 +19,7 @@ export async function browserActionTool(
 	pushToolResult: PushToolResult,
 	removeClosingTag: RemoveClosingTag,
 ) {
-	const action: BrowserAction | undefined = block.params.action as BrowserAction
+	const action: BrowserAction | undefined = fixBrowserLaunchAction(block.params)
 	const url: string | undefined = block.params.url
 	const coordinate: string | undefined = block.params.coordinate
 	const text: string | undefined = block.params.text

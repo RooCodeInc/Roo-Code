@@ -416,6 +416,7 @@ export interface ClineSayTool {
 		| "imageGenerated"
 		| "runSlashCommand"
 		| "updateTodoList"
+	parentTaskId?: string
 	path?: string
 	diff?: string
 	content?: string

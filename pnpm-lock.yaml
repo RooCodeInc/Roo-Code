@@ -761,7 +761,7 @@ importers:
         specifier: ^7.0.3
         version: 7.0.5
       isbinaryfile:
-        specifier: ^5.0.2
+        specifier: ^5.0.7
         version: 5.0.7
       jschardet:
         specifier: ^3.1.4

@@ -76,6 +76,7 @@ export type RegisterCommandOptions = {
 	context: vscode.ExtensionContext
 	outputChannel: vscode.OutputChannel
 	provider: ClineProvider
+	taskId?: string
 }
 
 export const registerCommands = (options: RegisterCommandOptions) => {
@@ -142,12 +143,12 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 
 		visibleProvider.postMessageToWebview({ type: "action", action: "promptsButtonClicked" })
 	},
-	popoutButtonClicked: () => {
+	popoutButtonClicked: (taskId?: string) => {
 		TelemetryService.instance.captureTitleButtonClicked("popout")
 
-		return openClineInNewTab({ context, outputChannel })
+		return openClineInNewTab({ context, outputChannel, taskId })
 	},
-	openInNewTab: () => openClineInNewTab({ context, outputChannel }),
+	openInNewTab: (taskId?: string) => openClineInNewTab({ context, outputChannel, taskId }),
 	settingsButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 
@@ -378,13 +379,17 @@ async function createAliasedPath(resourceUri: vscode.Uri): Promise<ProcessedReso
 	return { type: "path", content: `@${relativePath}` }
 }
 
-export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {
+export const openClineInNewTab = async ({
+	context,
+	outputChannel,
+	taskId,
+}: Omit<RegisterCommandOptions, "provider">) => {
 	// (This example uses webviewProvider activation event which is necessary to
 	// deserialize cached webview, but since we use retainContextWhenHidden, we
 	// don't need to use that event).
 	// https://github.com/microsoft/vscode-extension-samples/blob/main/webview-sample/src/extension.ts
 	const contextProxy = await ContextProxy.getInstance(context)
-	const codeIndexManager = CodeIndexManager.getInstance(context)
+	// const codeIndexManager = CodeIndexManager.getInstance(context)
 
 	// Get the existing MDM service instance to ensure consistent policy enforcement
 	let mdmService: MdmService | undefined
@@ -408,11 +413,16 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 
 	const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
-	const newPanel = vscode.window.createWebviewPanel(ClineProvider.tabPanelId, "CoStrict", targetCol, {
-		enableScripts: true,
-		retainContextWhenHidden: true,
-		localResourceRoots: [context.extensionUri],
-	})
+	const newPanel = vscode.window.createWebviewPanel(
+		taskId ? `zgsm.task-${taskId}` : ClineProvider.tabPanelId,
+		taskId ? `Task-${taskId}` : "CoStrict",
+		targetCol,
+		{
+			enableScripts: true,
+			retainContextWhenHidden: true,
+			localResourceRoots: [context.extensionUri],
+		},
+	)
 
 	// Save as tab type panel.
 	setPanel(newPanel, "tab")
@@ -450,6 +460,12 @@ export const openClineInNewTab = async ({ context, outputChannel }: Omit<Registe
 	// Lock the editor group so clicking on files doesn't open them over the panel.
 	await delay(100)
 	await vscode.commands.executeCommand("workbench.action.lockEditorGroup")
+
+	if (taskId) {
+		setTimeout(() => {
+			tabProvider.showTaskWithId(taskId)
+		}, 300)
+	}
 
 	return tabProvider
 }

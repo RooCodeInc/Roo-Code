@@ -1243,6 +1243,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	)
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
+			if (messageOrGroup.type === "say" && messageOrGroup.say === "reasoning" && !messageOrGroup.text?.trim()) {
+				return null
+			}
+
+			if (
+				messageOrGroup.type === "say" &&
+				messageOrGroup.say === "api_req_retry_delayed" &&
+				messageOrGroup?.metadata?.isRateLimitRetry
+			) {
+				return null
+			}
+
+			if (
+				messageOrGroup.type === "say" &&
+				["condense_context_error", "shell_integration_warning"].includes(messageOrGroup.say!)
+			) {
+				return null
+			}
+
 			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
 
 			// Check if this is a browser action message

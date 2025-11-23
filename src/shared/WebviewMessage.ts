@@ -162,6 +162,7 @@ export interface WebviewMessage {
 		| "fetchZgsmInviteCode"
 		| "fixCodebase"
 		| "zgsmFollowupClearTimeout"
+		| "showTaskWithIdInNewTab"
 		// zgsm
 		| "shareTaskSuccess"
 		| "exportMode"

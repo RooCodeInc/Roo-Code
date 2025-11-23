@@ -107,6 +107,7 @@ import { defaultLang } from "../../utils/language"
 import ZgsmCodebaseIndexManager from "../costrict/codebase-index"
 import { sendZgsmCloseWindow } from "../costrict/auth/ipc"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
+import { isJetbrainsPlatform } from "../../utils/platform"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -499,13 +500,13 @@ export class ClineProvider
 	// exists).
 	// This is used when a subtask is finished and the parent task needs to be
 	// resumed.
-	async finishSubTask(lastMessage: string) {
+	async finishSubTask(lastMessage: string, subtaskId?: string) {
 		// Remove the last cline instance from the stack (this is the finished
 		// subtask).
 		await this.removeClineFromStack()
 		// Resume the last cline instance in the stack (if it exists - this is
 		// the 'parent' calling task).
-		await this.getCurrentTask()?.completeSubtask(lastMessage)
+		await this.getCurrentTask()?.completeSubtask(lastMessage, subtaskId)
 	}
 	// Pending Edit Operations Management
 
@@ -1704,6 +1705,14 @@ export class ClineProvider
 		}
 
 		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+	}
+
+	async showTaskWithIdInNewTab(id: string) {
+		if (isJetbrainsPlatform()) {
+			return this.showTaskWithId(id)
+		}
+
+		await vscode.commands.executeCommand("zgsm.openInNewTab", id)
 	}
 
 	async exportTaskWithId(id: string) {

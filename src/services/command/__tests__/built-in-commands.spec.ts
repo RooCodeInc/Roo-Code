@@ -5,8 +5,10 @@ describe("Built-in Commands", () => {
 		it("should return all built-in commands", async () => {
 			const commands = await getBuiltInCommands()
 
-			expect(commands).toHaveLength(4)
-			expect(commands.map((cmd) => cmd.name)).toEqual(expect.arrayContaining(["init", "project-wiki", "tdd", "generate-rules"]))
+			expect(commands).toHaveLength(5)
+			expect(commands.map((cmd) => cmd.name)).toEqual(
+				expect.arrayContaining(["init", "project-wiki", "tdd", "generate-rules"]),
+			)
 
 			// Verify all commands have required properties
 			commands.forEach((command) => {
@@ -63,10 +65,12 @@ describe("Built-in Commands", () => {
 		it("should return all built-in command names", async () => {
 			const names = await getBuiltInCommandNames()
 
-			expect(names).toHaveLength(4)
-			expect(names).toEqual(expect.arrayContaining(["init", "project-wiki", "tdd", "generate-rules"]))
+			expect(names).toHaveLength(5)
+			expect(names).toEqual(
+				expect.arrayContaining(["generate-rules", "init", "openspec-init", "project-wiki", "tdd"]),
+			)
 			// Order doesn't matter since it's based on filesystem order
-			expect(names.sort()).toEqual(["generate-rules", "init", "project-wiki", "tdd"])
+			expect(names.sort()).toEqual(["generate-rules", "init", "openspec-init", "project-wiki", "tdd"])
 		})
 
 		it("should return array of strings", async () => {

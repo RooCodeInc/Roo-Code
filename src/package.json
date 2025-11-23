@@ -383,16 +383,21 @@
 			"view/title": [
 				{
 					"command": "zgsm.marketplaceButtonClicked",
-					"group": "navigation@2",
+					"group": "navigation@1",
 					"when": "false"
 				},
 				{
 					"command": "zgsm.settingsButtonClicked",
-					"group": "navigation@3",
+					"group": "navigation@2",
 					"when": "view == zgsm.SidebarProvider"
 				},
 				{
 					"command": "zgsm.cloudButtonClicked",
+					"group": "navigation@3",
+					"when": "view == zgsm.SidebarProvider"
+				},
+				{
+					"command": "zgsm.mcpButtonClicked",
 					"group": "navigation@4",
 					"when": "view == zgsm.SidebarProvider"
 				},
@@ -402,23 +407,18 @@
 					"when": "view == zgsm.SidebarProvider"
 				},
 				{
-					"command": "zgsm.mcpButtonClicked",
+					"command": "zgsm.view.userHelperDoc",
 					"group": "overflow@2",
 					"when": "view == zgsm.SidebarProvider"
 				},
 				{
-					"command": "zgsm.view.userHelperDoc",
-					"group": "overflow@4",
-					"when": "view == zgsm.SidebarProvider"
-				},
-				{
 					"command": "zgsm.view.issue",
-					"group": "overflow@5",
+					"group": "overflow@3",
 					"when": "view == zgsm.SidebarProvider"
 				},
 				{
 					"command": "zgsm.popoutButtonClicked",
-					"group": "overflow@6",
+					"group": "overflow@4",
 					"when": "view == zgsm.SidebarProvider"
 				}
 			],
@@ -441,7 +441,7 @@
 				{
 					"command": "zgsm.cloudButtonClicked",
 					"group": "navigation@4",
-					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
+					"when": "false"
 				},
 				{
 					"command": "zgsm.historyButtonClicked",
@@ -851,7 +851,7 @@
 		"i18next": "^25.0.0",
 		"iconv-lite": "^0.7.0",
 		"ignore": "^7.0.3",
-		"isbinaryfile": "^5.0.2",
+		"isbinaryfile": "^5.0.7",
 		"jschardet": "^3.1.4",
 		"jwt-decode": "^4.0.0",
 		"lodash.debounce": "^4.0.8",

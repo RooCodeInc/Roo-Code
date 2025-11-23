@@ -516,11 +516,11 @@ const ApiOptions = ({
 			label,
 		}))
 
-		// Pin "roo" to the top if not on welcome screen
+		// Pin "costrict" to the top if not on welcome screen
 		if (!fromWelcomeView) {
-			const rooIndex = options.findIndex((opt) => opt.value === "roo")
-			if (rooIndex > 0) {
-				const [rooOption] = options.splice(rooIndex, 1)
+			const costrictIndex = options.findIndex((opt) => opt.value === "zgsm")
+			if (costrictIndex > 0) {
+				const [rooOption] = options.splice(costrictIndex, 1)
 				options.unshift(rooOption)
 			}
 		}

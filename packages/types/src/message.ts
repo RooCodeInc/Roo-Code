@@ -217,6 +217,7 @@ export const clineMessageSchema = z.object({
 	ask: clineAskSchema.optional(),
 	say: clineSaySchema.optional(),
 	text: z.string().optional(),
+	subtaskId: z.string().optional(),
 	images: z.array(z.string()).optional(),
 	partial: z.boolean().optional(),
 	reasoning: z.string().optional(),
