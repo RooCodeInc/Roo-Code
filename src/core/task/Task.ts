@@ -809,6 +809,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.clineMessages = newMessages
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
+
+		// When overwriting messages (e.g., during task resume), repopulate the cloud sync tracking Set
+		// with timestamps from all non-partial messages to prevent re-syncing previously synced messages
+		this.cloudSyncedMessageTimestamps.clear()
+		for (const msg of newMessages) {
+			if (msg.partial !== true) {
+				this.cloudSyncedMessageTimestamps.add(msg.ts)
+			}
+		}
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
