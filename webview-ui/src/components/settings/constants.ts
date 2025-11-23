@@ -21,6 +21,7 @@ import {
 	featherlessModels,
 	minimaxModels,
 	basetenModels,
+	poeModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -44,6 +45,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	featherless: featherlessModels,
 	minimax: minimaxModels,
 	baseten: basetenModels,
+	poe: poeModels,
 }
 
 export const PROVIDERS = [
@@ -83,4 +85,5 @@ export const PROVIDERS = [
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway" },
 	{ value: "minimax", label: "MiniMax" },
 	{ value: "baseten", label: "Baseten" },
+	{ value: "poe", label: "Poe" },
 ].sort((a, b) => a.label.localeCompare(b.label))

@@ -307,6 +307,8 @@
 		"minimaxApiKey": "MiniMax API Key",
 		"getMiniMaxApiKey": "Get MiniMax API Key",
 		"minimaxBaseUrl": "MiniMax Entrypoint",
+		"poeApiKey": "Poe API Key",
+		"getPoeApiKey": "Get Poe API Key",
 		"zaiApiKey": "Z AI API Key",
 		"getZaiApiKey": "Get Z AI API Key",
 		"zaiEntrypoint": "Z AI Entrypoint",

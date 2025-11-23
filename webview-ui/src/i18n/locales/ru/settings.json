@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Moonshot API-ключ",
 		"getMoonshotApiKey": "Получить Moonshot API-ключ",
 		"moonshotBaseUrl": "Точка входа Moonshot",
+		"poeApiKey": "Poe API-ключ",
+		"getPoeApiKey": "Получить Poe API-ключ",
 		"zaiApiKey": "Z AI API-ключ",
 		"getZaiApiKey": "Получить Z AI API-ключ",
 		"zaiEntrypoint": "Точка входа Z AI",

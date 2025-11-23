@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Moonshot APIキー",
 		"getMoonshotApiKey": "Moonshot APIキーを取得",
 		"moonshotBaseUrl": "Moonshot エントリーポイント",
+		"poeApiKey": "Poe APIキー",
+		"getPoeApiKey": "Poe APIキーを取得",
 		"zaiApiKey": "Z AI APIキー",
 		"getZaiApiKey": "Z AI APIキーを取得",
 		"zaiEntrypoint": "Z AI エントリーポイント",

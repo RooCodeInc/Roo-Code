@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Moonshot API Anahtarı",
 		"getMoonshotApiKey": "Moonshot API Anahtarı Al",
 		"moonshotBaseUrl": "Moonshot Giriş Noktası",
+		"poeApiKey": "Poe API Anahtarı",
+		"getPoeApiKey": "Poe API Anahtarı Al",
 		"zaiApiKey": "Z AI API Anahtarı",
 		"getZaiApiKey": "Z AI API Anahtarı Al",
 		"zaiEntrypoint": "Z AI Giriş Noktası",

@@ -26,6 +26,7 @@ import {
 	featherlessModels,
 	ioIntelligenceModels,
 	basetenModels,
+	poeModels,
 	qwenCodeModels,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
@@ -225,6 +226,11 @@ function getSelectedModel({
 			}
 
 			return { id, info: baseInfo }
+		}
+		case "poe": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = poeModels[id as keyof typeof poeModels]
+			return { id, info }
 		}
 		case "vertex": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId

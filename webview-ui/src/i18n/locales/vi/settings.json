@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Khóa API Moonshot",
 		"getMoonshotApiKey": "Lấy khóa API Moonshot",
 		"moonshotBaseUrl": "Điểm vào Moonshot",
+		"poeApiKey": "Khóa API Poe",
+		"getPoeApiKey": "Lấy khóa API Poe",
 		"zaiApiKey": "Khóa API Z AI",
 		"getZaiApiKey": "Lấy khóa API Z AI",
 		"zaiEntrypoint": "Điểm vào Z AI",

@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Klucz API Moonshot",
 		"getMoonshotApiKey": "Uzyskaj klucz API Moonshot",
 		"moonshotBaseUrl": "Punkt wejścia Moonshot",
+		"poeApiKey": "Klucz API Poe",
+		"getPoeApiKey": "Uzyskaj klucz API Poe",
 		"zaiApiKey": "Klucz API Z AI",
 		"getZaiApiKey": "Uzyskaj klucz API Z AI",
 		"zaiEntrypoint": "Punkt wejścia Z AI",

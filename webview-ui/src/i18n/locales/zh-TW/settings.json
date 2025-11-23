@@ -299,6 +299,8 @@
 		"moonshotApiKey": "Moonshot API 金鑰",
 		"getMoonshotApiKey": "取得 Moonshot API 金鑰",
 		"moonshotBaseUrl": "Moonshot 服務端點",
+		"poeApiKey": "Poe API 金鑰",
+		"getPoeApiKey": "取得 Poe API 金鑰",
 		"zaiApiKey": "Z AI API 金鑰",
 		"getZaiApiKey": "取得 Z AI API 金鑰",
 		"zaiEntrypoint": "Z AI 服務端點",
