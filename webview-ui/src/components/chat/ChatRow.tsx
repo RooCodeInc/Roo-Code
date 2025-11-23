@@ -187,8 +187,6 @@ export const ChatRowContent = ({
 	onSuggestionClick,
 	onFollowUpUnmount,
 	onBatchFileResponse,
-	// isFollowUpAnswered,
-	editable,
 	isFollowUpAnswered,
 	// editable,
 	searchQuery,
@@ -202,7 +200,6 @@ export const ChatRowContent = ({
 		apiConfiguration,
 		clineMessages,
 		apiRequestBlockHide,
-		alwaysAllowUpdateTodoList,
 	} = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -629,23 +626,7 @@ export const ChatRowContent = ({
 				// Get previous todos from the latest todos in the task context
 				const previousTodos = getPreviousTodos(clineMessages, message.ts)
 
-				return (
-					<>
-						<TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
-						{!alwaysAllowUpdateTodoList && isLast && (
-							<UpdateTodoListToolBlock
-								todos={todos}
-								content={(tool as any).content}
-								onChange={(updatedTodos) => {
-									if (typeof vscode !== "undefined" && vscode?.postMessage) {
-										vscode.postMessage({ type: "updateTodoList", payload: { todos: updatedTodos } })
-									}
-								}}
-								editable={!!(editable && isLast)}
-							/>
-						)}
-					</>
-				)
+				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
 			}
 			case "newFileCreated":
 				return (
