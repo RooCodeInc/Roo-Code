@@ -136,7 +136,8 @@ export function getVisibleModes(customModes?: ModeConfig[]): ModeConfig[] {
 
 // Get submodes for a parent mode
 export function getSubmodes(parentSlug: string, customModes?: ModeConfig[]): ModeConfig[] {
-	const allModes = getAllModes(customModes)
+	// Include hidden modes because submodes are commonly hidden from the selector
+	const allModes = getAllModes(customModes, true)
 	// Return modes that have this parent or compound slugs starting with parent/
 	return allModes.filter(
 		(mode) => mode.parent === parentSlug || (mode.slug.includes("/") && mode.slug.startsWith(`${parentSlug}/`)),
