@@ -285,7 +285,7 @@ export const ModeSelector = ({
 					</div>
 
 					{/* Bottom bar with buttons on left and title on right */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
+					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border rounded-b-xs">
 						<div className="flex flex-row gap-1">
 							<IconButton
 								iconClass="codicon-extensions"
