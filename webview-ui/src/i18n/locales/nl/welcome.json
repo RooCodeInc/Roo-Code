@@ -16,7 +16,15 @@
 			"incentive": "Probeer Roo gratis uit"
 		}
 	},
-	"chooseProvider": "Om zijn magie te doen, heeft Roo een API-sleutel nodig.",
+	"chooseProvider": "Om te beginnen heb je een LLM-provider nodig:",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloud Provider",
+		"rooCloudDescription": "De eenvoudigste manier om Roo te gebruiken. Een samengestelde mix van gratis en betaalde modellen tegen lage kosten",
+		"learnMore": "meer informatie",
+		"useAnotherProvider": "Gebruik een andere provider",
+		"useAnotherProviderDescription": "Voer een API-sleutel in en ga aan de slag.",
+		"getStarted": "Beginnen"
+	},
 	"startRouter": "We raden aan om een LLM-router te gebruiken:",
 	"startCustom": "Of je kunt je eigen API-sleutel gebruiken:",
 	"telemetry": {

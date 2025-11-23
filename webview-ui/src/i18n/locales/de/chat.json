@@ -291,10 +291,9 @@
 			"goToSettingsButton": "Zu den Einstellungen"
 		},
 		"release": {
-			"heading": "Neu in der Extension:",
-			"gemini3": "Gemini 3 verfügbar in Gemini, Vertex, Roo Code Cloud, OpenRouter und mehr",
-			"gitStatus": "Du kannst git-Statusinformationen aus den Context-Einstellungen zur Umgebung hinzufügen",
-			"nativeToolCalling": "Experimentelle Unterstützung für native Tool Calls in Roo Code Cloud, OpenRouter und OpenAI (weitere folgen) - aktiviere es in den erweiterten Einstellungen des Anbieters"
+			"heading": "Neu in dieser Version:",
+			"browserUse": "Browser Use 2.0 verbessert das In-Chat-Browsing-Erlebnis mit persistenten Sitzungen, klareren Rückmeldungen, einem dedizierten Browser-Panel und natürlicheren Aktionsbeschreibungen",
+			"cloudPaid": "Der Roo Code Cloud-Provider bietet jetzt bezahlte Modelle: Kaufe Credits und nutze sie sowohl für Cloud-Agenten als auch für Inferenz"
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
@@ -306,6 +305,7 @@
 		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Browser-Sitzung",
 		"rooWantsToUse": "Roo möchte den Browser verwenden",
 		"consoleLogs": "Konsolenprotokolle",
 		"noNewLogs": "(Keine neuen Protokolle)",
@@ -322,8 +322,10 @@
 			"launch": "Browser starten auf {{url}}",
 			"click": "Klicken ({{coordinate}})",
 			"type": "Eingeben \"{{text}}\"",
+			"press": "{{key}} drücken",
 			"scrollDown": "Nach unten scrollen",
 			"scrollUp": "Nach oben scrollen",
+			"hover": "Hover ({{coordinate}})",
 			"close": "Browser schließen"
 		}
 	},

@@ -288,6 +288,8 @@
 		"azureDeploymentNameHint": "覆盖默认部署名称。留空则使用模型 ID。",
 		"azureApiVersion": "API 版本（可选）",
 		"azureApiVersionHint": "可选的 API 版本覆盖。默认值：Claude=2023-06-01，GPT=2024-12-01-preview",
+		"basetenApiKey": "Baseten API 密钥",
+		"getBasetenApiKey": "获取 Baseten API 密钥",
 		"cerebrasApiKey": "Cerebras API 密钥",
 		"getCerebrasApiKey": "获取 Cerebras API 密钥",
 		"chutesApiKey": "Chutes API 密钥",

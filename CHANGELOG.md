@@ -1,5 +1,38 @@
 # Roo Code Changelog
 
+## [3.34.0] - 2025-11-21
+
+![3.34.0 Release - Browser Use 2.0](/releases/3.34.0-release.png)
+
+- Add Browser Use 2.0 with enhanced browser interaction capabilities (PR #8941 by @hannesrudolph)
+- Add support for Baseten as a new AI provider (PR #9461 by @AlexKer)
+- Improve base OpenAI compatible provider with better error handling and configuration (PR #9462 by @mrubens)
+- Add provider-oriented welcome screen to improve onboarding experience (PR #9484 by @mrubens)
+- Pin Roo provider to the top of the provider list for better discoverability (PR #9485 by @mrubens)
+- Enhance native tool descriptions with examples and clarifications for better AI understanding (PR #9486 by @daniel-lxs)
+- Fix: Make cancel button immediately responsive during streaming (#9435 by @jwadow, PR #9448 by @daniel-lxs)
+- Fix: Resolve apply_diff performance regression from earlier changes (PR #9474 by @daniel-lxs)
+- Fix: Implement model cache refresh to prevent stale disk cache issues (PR #9478 by @daniel-lxs)
+- Fix: Copy model-level capabilities to OpenRouter endpoint models correctly (PR #9483 by @daniel-lxs)
+- Fix: Add fallback to yield tool calls regardless of finish_reason (PR #9476 by @daniel-lxs)
+
+## [3.33.3] - 2025-11-20
+
+![3.33.3 Release - Gemini 3 Pro Image Preview](/releases/3.33.3-release.png)
+
+- Add Google Gemini 3 Pro Image Preview to image generation models (PR #9440 by @app/roomote)
+- Add support for Minimax as Anthropic-compatible provider (PR #9455 by @daniel-lxs)
+- Store reasoning in conversation history for all providers (PR #9451 by @daniel-lxs)
+- Fix: Improve preserveReasoning flag to control API reasoning inclusion (PR #9453 by @daniel-lxs)
+- Fix: Prevent OpenAI Native parallel tool calls for native tool calling (PR #9433 by @hannesrudolph)
+- Fix: Improve search and replace symbol parsing (PR #9456 by @daniel-lxs)
+- Fix: Send tool_result blocks for skipped tools in native protocol (PR #9457 by @daniel-lxs)
+- Fix: Improve markdown formatting and add reasoning support (PR #9458 by @daniel-lxs)
+- Fix: Prevent duplicate environment_details when resuming cancelled tasks (PR #9442 by @daniel-lxs)
+- Improve read_file tool description with examples (PR #9422 by @daniel-lxs)
+- Update glob dependency to ^11.1.0 (PR #9449 by @jr)
+- Update tar-fs to 3.1.1 via pnpm override (PR #9450 by @app/roomote)
+
 ## [3.33.2] - 2025-11-19
 
 - Enable native tool calling for Gemini provider (PR #9343 by @hannesrudolph)

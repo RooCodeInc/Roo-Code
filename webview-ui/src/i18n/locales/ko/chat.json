@@ -291,10 +291,9 @@
 			"goToSettingsButton": "설정으로 이동"
 		},
 		"release": {
-			"heading": "확장 프로그램의 새로운 기능:",
-			"gemini3": "Gemini 3가 Gemini, Vertex, Roo Code Cloud, OpenRouter 등에서 사용 가능합니다",
-			"gitStatus": "Context 설정에서 환경에 git 상태 정보를 추가할 수 있습니다",
-			"nativeToolCalling": "Roo Code Cloud, OpenRouter, OpenAI에서 네이티브 도구 호출의 실험적 지원(더 많은 지원 예정) - 공급자 고급 설정에서 활성화하세요"
+			"heading": "이 버전의 새로운 기능:",
+			"browserUse": "Browser Use 2.0은 지속적인 세션, 더 명확한 피드백, 전용 브라우저 패널, 더 자연스러운 작업 설명을 통해 채팅 내 브라우징 경험을 업그레이드합니다",
+			"cloudPaid": "Roo Code Cloud 제공업체는 이제 클라우드 에이전트와 추론 모두에 사용할 수 있는 크레딧을 구매할 수 있도록 지원합니다"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -306,6 +305,7 @@
 		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
 	},
 	"browser": {
+		"session": "브라우저 세션",
 		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
 		"consoleLogs": "콘솔 로그",
 		"noNewLogs": "(새 로그 없음)",
@@ -322,8 +322,10 @@
 			"launch": "{{url}}에서 브라우저 실행",
 			"click": "클릭 ({{coordinate}})",
 			"type": "입력 \"{{text}}\"",
+			"press": "{{key}} 누르기",
 			"scrollDown": "아래로 스크롤",
 			"scrollUp": "위로 스크롤",
+			"hover": "가리키기 ({{coordinate}})",
 			"close": "브라우저 닫기"
 		}
 	},

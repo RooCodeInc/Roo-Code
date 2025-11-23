@@ -288,6 +288,8 @@
 		"azureDeploymentNameHint": "Override the default deployment name. Leave empty to use model ID.",
 		"azureApiVersion": "API Version (Optional)",
 		"azureApiVersionHint": "Optional API version override. Defaults: Claude=2023-06-01, GPT=2024-12-01-preview",
+		"basetenApiKey": "Baseten APIキー",
+		"getBasetenApiKey": "Baseten APIキーを取得",
 		"cerebrasApiKey": "Cerebras APIキー",
 		"getCerebrasApiKey": "Cerebras APIキーを取得",
 		"chutesApiKey": "Chutes APIキー",

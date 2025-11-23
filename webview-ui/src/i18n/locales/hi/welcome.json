@@ -16,7 +16,15 @@
 			"incentive": "Roo को निःशुल्क आज़माएं"
 		}
 	},
-	"chooseProvider": "अपना जादू दिखाने के लिए, Roo को एक API कुंजी की आवश्यकता है।",
+	"chooseProvider": "शुरू करने के लिए, आपको एक LLM प्रदाता की आवश्यकता है:",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloud प्रदाता",
+		"rooCloudDescription": "Roo का उपयोग करने का सबसे आसान तरीका। कम लागत पर मुफ्त और भुगतान मॉडल का एक चयनित मिश्रण",
+		"learnMore": "और जानें",
+		"useAnotherProvider": "दूसरे प्रदाता का उपयोग करें",
+		"useAnotherProviderDescription": "एक API कुंजी दर्ज करें और शुरू करें।",
+		"getStarted": "शुरू करें"
+	},
 	"startRouter": "हम एक LLM राउटर का उपयोग करने की सलाह देते हैं:",
 	"startCustom": "या आप अपनी खुद की API कुंजी ला सकते हैं:",
 	"telemetry": {

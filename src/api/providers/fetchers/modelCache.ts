@@ -50,6 +50,74 @@ async function readModels(router: RouterName): Promise<ModelRecord | undefined> 
 }
 
 /**
+ * Fetch models from the provider API.
+ * Extracted to avoid duplication between getModels() and refreshModels().
+ *
+ * @param options - Provider options for fetching models
+ * @returns Fresh models from the provider API
+ */
+async function fetchModelsFromProvider(options: GetModelsOptions): Promise<ModelRecord> {
+	const { provider } = options
+
+	let models: ModelRecord
+
+	switch (provider) {
+		case "openrouter":
+			models = await getOpenRouterModels()
+			break
+		case "requesty":
+			// Requesty models endpoint requires an API key for per-user custom policies.
+			models = await getRequestyModels(options.baseUrl, options.apiKey)
+			break
+		case "glama":
+			models = await getGlamaModels()
+			break
+		case "unbound":
+			// Unbound models endpoint requires an API key to fetch application specific models.
+			models = await getUnboundModels(options.apiKey)
+			break
+		case "litellm":
+			// Type safety ensures apiKey and baseUrl are always provided for LiteLLM.
+			models = await getLiteLLMModels(options.apiKey, options.baseUrl)
+			break
+		case "ollama":
+			models = await getOllamaModels(options.baseUrl, options.apiKey)
+			break
+		case "lmstudio":
+			models = await getLMStudioModels(options.baseUrl)
+			break
+		case "deepinfra":
+			models = await getDeepInfraModels(options.apiKey, options.baseUrl)
+			break
+		case "io-intelligence":
+			models = await getIOIntelligenceModels(options.apiKey)
+			break
+		case "vercel-ai-gateway":
+			models = await getVercelAiGatewayModels()
+			break
+		case "huggingface":
+			models = await getHuggingFaceModels()
+			break
+		case "roo": {
+			// Roo Code Cloud provider requires baseUrl and optional apiKey
+			const rooBaseUrl = options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+			models = await getRooModels(rooBaseUrl, options.apiKey)
+			break
+		}
+		case "chutes":
+			models = await getChutesModels(options.apiKey)
+			break
+		default: {
+			// Ensures router is exhaustively checked if RouterName is a strict union.
+			const exhaustiveCheck: never = provider
+			throw new Error(`Unknown provider: ${exhaustiveCheck}`)
+		}
+	}
+
+	return models
+}
+
+/**
  * Get models from the cache or fetch them from the provider and cache them.
  * There are two caches:
  * 1. Memory cache - This is a simple in-memory cache that is used to store models for a short period of time.
@@ -70,59 +138,7 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 	}
 
 	try {
-		switch (provider) {
-			case "openrouter":
-				models = await getOpenRouterModels()
-				break
-			case "requesty":
-				// Requesty models endpoint requires an API key for per-user custom policies.
-				models = await getRequestyModels(options.baseUrl, options.apiKey)
-				break
-			case "glama":
-				models = await getGlamaModels()
-				break
-			case "unbound":
-				// Unbound models endpoint requires an API key to fetch application specific models.
-				models = await getUnboundModels(options.apiKey)
-				break
-			case "litellm":
-				// Type safety ensures apiKey and baseUrl are always provided for LiteLLM.
-				models = await getLiteLLMModels(options.apiKey, options.baseUrl)
-				break
-			case "ollama":
-				models = await getOllamaModels(options.baseUrl, options.apiKey)
-				break
-			case "lmstudio":
-				models = await getLMStudioModels(options.baseUrl)
-				break
-			case "deepinfra":
-				models = await getDeepInfraModels(options.apiKey, options.baseUrl)
-				break
-			case "io-intelligence":
-				models = await getIOIntelligenceModels(options.apiKey)
-				break
-			case "vercel-ai-gateway":
-				models = await getVercelAiGatewayModels()
-				break
-			case "huggingface":
-				models = await getHuggingFaceModels()
-				break
-			case "roo": {
-				// Roo Code Cloud provider requires baseUrl and optional apiKey
-				const rooBaseUrl =
-					options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
-				models = await getRooModels(rooBaseUrl, options.apiKey)
-				break
-			}
-			case "chutes":
-				models = await getChutesModels(options.apiKey)
-				break
-			default: {
-				// Ensures router is exhaustively checked if RouterName is a strict union.
-				const exhaustiveCheck: never = provider
-				throw new Error(`Unknown provider: ${exhaustiveCheck}`)
-			}
-		}
+		models = await fetchModelsFromProvider(options)
 
 		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
 		memoryCache.set(provider, models)
@@ -146,12 +162,80 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 }
 
 /**
+ * Force-refresh models from API, bypassing cache.
+ * Uses atomic writes so cache remains available during refresh.
+ *
+ * @param options - Provider options for fetching models
+ * @returns Fresh models from API
+ */
+export const refreshModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
+	const { provider } = options
+
+	try {
+		// Force fresh API fetch - skip getModelsFromCache() check
+		const models = await fetchModelsFromProvider(options)
+
+		// Update memory cache first
+		memoryCache.set(provider, models)
+
+		// Atomically write to disk (safeWriteJson handles atomic writes)
+		await writeModels(provider, models).catch((err) =>
+			console.error(`[refreshModels] Error writing ${provider} models to disk:`, err),
+		)
+
+		return models
+	} catch (error) {
+		console.debug(`[refreshModels] Failed to refresh ${provider}:`, error)
+		// On error, return existing cache if available (graceful degradation)
+		return getModelsFromCache(provider) || {}
+	}
+}
+
+/**
+ * Initialize background model cache refresh.
+ * Refreshes public provider caches without blocking or requiring auth.
+ * Should be called once during extension activation.
+ */
+export async function initializeModelCacheRefresh(): Promise<void> {
+	// Wait for extension to fully activate before refreshing
+	setTimeout(async () => {
+		// Providers that work without API keys
+		const publicProviders: Array<{ provider: RouterName; options: GetModelsOptions }> = [
+			{ provider: "openrouter", options: { provider: "openrouter" } },
+			{ provider: "glama", options: { provider: "glama" } },
+			{ provider: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
+		]
+
+		// Refresh each provider in background (fire and forget)
+		for (const { options } of publicProviders) {
+			refreshModels(options).catch(() => {
+				// Silent fail - old cache remains available
+			})
+
+			// Small delay between refreshes to avoid API rate limits
+			await new Promise((resolve) => setTimeout(resolve, 500))
+		}
+	}, 2000)
+}
+
+/**
  * Flush models memory cache for a specific router.
  *
  * @param router - The router to flush models for.
+ * @param refresh - If true, immediately fetch fresh data from API
  */
-export const flushModels = async (router: RouterName) => {
-	memoryCache.del(router)
+export const flushModels = async (router: RouterName, refresh: boolean = false): Promise<void> => {
+	if (refresh) {
+		// Don't delete memory cache - let refreshModels atomically replace it
+		// This prevents a race condition where getModels() might be called
+		// before refresh completes, avoiding a gap in cache availability
+		refreshModels({ provider: router } as GetModelsOptions).catch((error) => {
+			console.error(`[flushModels] Refresh failed for ${router}:`, error)
+		})
+	} else {
+		// Only delete memory cache when not refreshing
+		memoryCache.del(router)
+	}
 }
 
 /**

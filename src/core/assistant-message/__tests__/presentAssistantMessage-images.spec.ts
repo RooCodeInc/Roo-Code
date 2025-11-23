@@ -202,4 +202,159 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calls", () => 
 		// Should have fallback text
 		expect(toolResult.content).toBeTruthy()
 	})
+
+	describe("Multiple tool calls handling", () => {
+		it("should send tool_result with is_error for skipped tools in native protocol when didRejectTool is true", async () => {
+			// Simulate multiple tool calls with native protocol (all have IDs)
+			const toolCallId1 = "tool_call_001"
+			const toolCallId2 = "tool_call_002"
+
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					id: toolCallId1,
+					name: "read_file",
+					params: { path: "test.txt" },
+				},
+				{
+					type: "tool_use",
+					id: toolCallId2,
+					name: "write_to_file",
+					params: { path: "output.txt", content: "test" },
+				},
+			]
+
+			// First tool is rejected
+			mockTask.didRejectTool = true
+
+			// Process the second tool (should be skipped)
+			mockTask.currentStreamingContentIndex = 1
+			await presentAssistantMessage(mockTask)
+
+			// Find the tool_result for the second tool
+			const toolResult = mockTask.userMessageContent.find(
+				(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId2,
+			)
+
+			// Verify that a tool_result block was created (not a text block)
+			expect(toolResult).toBeDefined()
+			expect(toolResult.tool_use_id).toBe(toolCallId2)
+			expect(toolResult.is_error).toBe(true)
+			expect(toolResult.content).toContain("due to user rejecting a previous tool")
+
+			// Ensure no text blocks were added for this rejection
+			const textBlocks = mockTask.userMessageContent.filter(
+				(item: any) => item.type === "text" && item.text.includes("due to user rejecting"),
+			)
+			expect(textBlocks.length).toBe(0)
+		})
+
+		it("should send tool_result with is_error for skipped tools in native protocol when didAlreadyUseTool is true", async () => {
+			// Simulate multiple tool calls with native protocol
+			const toolCallId1 = "tool_call_003"
+			const toolCallId2 = "tool_call_004"
+
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					id: toolCallId1,
+					name: "read_file",
+					params: { path: "test.txt" },
+				},
+				{
+					type: "tool_use",
+					id: toolCallId2,
+					name: "write_to_file",
+					params: { path: "output.txt", content: "test" },
+				},
+			]
+
+			// First tool was already used
+			mockTask.didAlreadyUseTool = true
+
+			// Process the second tool (should be skipped)
+			mockTask.currentStreamingContentIndex = 1
+			await presentAssistantMessage(mockTask)
+
+			// Find the tool_result for the second tool
+			const toolResult = mockTask.userMessageContent.find(
+				(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId2,
+			)
+
+			// Verify that a tool_result block was created (not a text block)
+			expect(toolResult).toBeDefined()
+			expect(toolResult.tool_use_id).toBe(toolCallId2)
+			expect(toolResult.is_error).toBe(true)
+			expect(toolResult.content).toContain("was not executed because a tool has already been used")
+
+			// Ensure no text blocks were added for this rejection
+			const textBlocks = mockTask.userMessageContent.filter(
+				(item: any) => item.type === "text" && item.text.includes("was not executed because"),
+			)
+			expect(textBlocks.length).toBe(0)
+		})
+
+		it("should send text blocks for skipped tools in XML protocol (no tool IDs)", async () => {
+			// Simulate multiple tool calls with XML protocol (no IDs)
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					// No ID = XML protocol
+					name: "read_file",
+					params: { path: "test.txt" },
+				},
+				{
+					type: "tool_use",
+					// No ID = XML protocol
+					name: "write_to_file",
+					params: { path: "output.txt", content: "test" },
+				},
+			]
+
+			// First tool is rejected
+			mockTask.didRejectTool = true
+
+			// Process the second tool (should be skipped)
+			mockTask.currentStreamingContentIndex = 1
+			await presentAssistantMessage(mockTask)
+
+			// For XML protocol, should add text block (not tool_result)
+			const textBlocks = mockTask.userMessageContent.filter(
+				(item: any) => item.type === "text" && item.text.includes("due to user rejecting"),
+			)
+			expect(textBlocks.length).toBeGreaterThan(0)
+
+			// Ensure no tool_result blocks were added
+			const toolResults = mockTask.userMessageContent.filter((item: any) => item.type === "tool_result")
+			expect(toolResults.length).toBe(0)
+		})
+
+		it("should handle partial tool blocks when didRejectTool is true in native protocol", async () => {
+			const toolCallId = "tool_call_005"
+
+			mockTask.assistantMessageContent = [
+				{
+					type: "tool_use",
+					id: toolCallId,
+					name: "write_to_file",
+					params: { path: "output.txt", content: "test" },
+					partial: true, // Partial tool block
+				},
+			]
+
+			mockTask.didRejectTool = true
+
+			await presentAssistantMessage(mockTask)
+
+			// Find the tool_result
+			const toolResult = mockTask.userMessageContent.find(
+				(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
+			)
+
+			// Verify tool_result was created for partial block
+			expect(toolResult).toBeDefined()
+			expect(toolResult.is_error).toBe(true)
+			expect(toolResult.content).toContain("was interrupted and not executed")
+		})
+	})
 })

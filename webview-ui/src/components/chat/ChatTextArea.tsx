@@ -51,6 +51,9 @@ interface ChatTextAreaProps {
 	// Edit mode props
 	isEditMode?: boolean
 	onCancel?: () => void
+	// Browser session status
+	isBrowserSessionActive?: boolean
+	showBrowserDockToggle?: boolean
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -71,6 +74,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			modeShortcutText,
 			isEditMode = false,
 			onCancel,
+			isBrowserSessionActive = false,
+			showBrowserDockToggle = false,
 		},
 		ref,
 	) => {
@@ -1236,7 +1241,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					</div>
 					<div
 						className={cn(
-							"flex flex-shrink-0 items-center gap-0.5",
+							"flex flex-shrink-0 items-center gap-0.5 h-5 leading-none",
 							!isEditMode && cloudUserInfo ? "" : "pr-2",
 						)}>
 						{isTtsPlaying && (
@@ -1261,6 +1266,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
+						{/* keep props referenced after moving browser button */}
+						<div
+							className="hidden"
+							data-browser-session-active={isBrowserSessionActive}
+							data-show-browser-dock-toggle={showBrowserDockToggle}
+						/>
 					</div>
 				</div>
 			</div>

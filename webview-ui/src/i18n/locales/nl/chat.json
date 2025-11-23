@@ -276,10 +276,9 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
-			"heading": "Nieuw in de extensie:",
-			"gemini3": "Gemini 3 beschikbaar in Gemini, Vertex, Roo Code Cloud, OpenRouter en meer",
-			"gitStatus": "Je kunt git-statusinformatie aan de omgeving toevoegen vanuit Context-instellingen",
-			"nativeToolCalling": "Experimentele ondersteuning voor native tool calling in Roo Code Cloud, OpenRouter en OpenAI (meer binnenkort) - schakel in via geavanceerde provider-instellingen"
+			"heading": "Nieuw:",
+			"browserUse": "Browser Use 2.0 verbetert de browse-ervaring in chat met persistente sessies, duidelijkere feedback, een toegewijd browserpaneel en natuurlijkere actiebeschrijvingen",
+			"cloudPaid": "De Roo Code Cloud provider biedt nu betaalde modellen: koop credits en gebruik ze voor zowel cloud agents als inference"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -306,6 +305,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
+		"session": "Browsersessie",
 		"rooWantsToUse": "Roo wil de browser gebruiken",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",
@@ -318,12 +318,14 @@
 		},
 		"sessionStarted": "Browsersessie gestart",
 		"actions": {
-			"title": "Browse-actie: ",
+			"title": "Browseractie: ",
 			"launch": "Browser starten op {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Typ \"{{text}}\"",
+			"press": "Druk op {{key}}",
 			"scrollDown": "Scroll naar beneden",
 			"scrollUp": "Scroll naar boven",
+			"hover": "Zweven ({{coordinate}})",
 			"close": "Browser sluiten"
 		}
 	},

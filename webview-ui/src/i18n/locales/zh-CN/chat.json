@@ -292,10 +292,9 @@
 			"goToSettingsButton": "前往设置"
 		},
 		"release": {
-			"heading": "扩展新功能：",
-			"gemini3": "Gemini 3 现已在 Gemini、Vertex、Roo Code Cloud、OpenRouter 等平台推出",
-			"gitStatus": "你可以从 Context 设置将 git 状态信息添加到环境",
-			"nativeToolCalling": "Roo Code Cloud、OpenRouter 和 OpenAI 的原生工具调用实验性支持（更多即将推出）- 在提供商高级设置中启用"
+			"heading": "最新功能：",
+			"browserUse": "Browser Use 2.0 升级了聊天内浏览体验，支持持久会话、更清晰的反馈、专用浏览器面板以及更自然的操作描述",
+			"cloudPaid": "Roo Code Cloud 现已提供付费模型：购买积分即可同时用于云端智能体和推理服务"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -307,6 +306,7 @@
 		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
 	},
 	"browser": {
+		"session": "浏览器会话",
 		"rooWantsToUse": "Roo想使用浏览器",
 		"consoleLogs": "控制台日志",
 		"noNewLogs": "(没有新日志)",
@@ -323,8 +323,10 @@
 			"launch": "访问 {{url}}",
 			"click": "点击 ({{coordinate}})",
 			"type": "输入 \"{{text}}\"",
+			"press": "按 {{key}}",
 			"scrollDown": "向下滚动",
 			"scrollUp": "向上滚动",
+			"hover": "悬停 ({{coordinate}})",
 			"close": "关闭浏览器"
 		}
 	},

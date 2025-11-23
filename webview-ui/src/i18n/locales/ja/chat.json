@@ -291,10 +291,9 @@
 			"goToSettingsButton": "設定に移動"
 		},
 		"release": {
-			"heading": "拡張機能の新機能:",
-			"gemini3": "Gemini 3 が Gemini、Vertex、Roo Code Cloud、OpenRouter などで利用可能になりました",
-			"gitStatus": "Context 設定から環境に git ステータス情報を追加できます",
-			"nativeToolCalling": "Roo Code Cloud、OpenRouter、OpenAI でのネイティブツール呼び出しの実験的サポート（さらに追加予定）- プロバイダーの詳細設定で有効にしてください"
+			"heading": "このバージョンの新機能:",
+			"browserUse": "Browser Use 2.0 は、永続的なセッション、より明確なフィードバック、専用ブラウザパネル、より自然なアクション説明を備えた、チャット内ブラウジング体験をアップグレードします",
+			"cloudPaid": "Roo Code Cloud プロバイダーは、クラウドエージェントと推論の両方に使用できるクレジットを購入できるようになりました"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
@@ -306,6 +305,7 @@
 		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
 	},
 	"browser": {
+		"session": "ブラウザセッション",
 		"rooWantsToUse": "Rooはブラウザを使用したい",
 		"consoleLogs": "コンソールログ",
 		"noNewLogs": "(新しいログはありません)",
@@ -318,12 +318,14 @@
 		},
 		"sessionStarted": "ブラウザセッション開始",
 		"actions": {
-			"title": "ブラウザアクション: ",
+			"title": "ブラウザ操作: ",
 			"launch": "{{url}} でブラウザを起動",
 			"click": "クリック ({{coordinate}})",
 			"type": "入力 \"{{text}}\"",
+			"press": "{{key}}を押す",
 			"scrollDown": "下にスクロール",
 			"scrollUp": "上にスクロール",
+			"hover": "ホバー ({{coordinate}})",
 			"close": "ブラウザを閉じる"
 		}
 	},

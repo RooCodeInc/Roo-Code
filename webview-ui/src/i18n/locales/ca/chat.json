@@ -291,10 +291,9 @@
 			"goToSettingsButton": "Anar a Configuració"
 		},
 		"release": {
-			"heading": "Novetats a l'extensió:",
-			"gemini3": "Gemini 3 disponible a Gemini, Vertex, Roo Code Cloud, OpenRouter i més",
-			"gitStatus": "Pots afegir informació de l'estat de git a l'entorn des de la configuració de Context",
-			"nativeToolCalling": "Suport experimental per a crides natives d'eines a Roo Code Cloud, OpenRouter i OpenAI (més aviat) - activa-ho a la configuració avançada del proveïdor"
+			"heading": "Novetats:",
+			"browserUse": "Browser Use 2.0 millora l'experiència de navegació dins del xat amb sessions persistents, comentaris més clars, un panell de navegador dedicat i descripcions d'accions més naturals",
+			"cloudPaid": "El proveïdor de Roo Code Cloud ara ofereix models de pagament: compra crèdits i utilitza'ls tant per a agents al núvol com per a inferència"
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -306,6 +305,7 @@
 		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sessió del navegador",
 		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",
@@ -318,12 +318,14 @@
 		},
 		"sessionStarted": "Sessió de navegador iniciada",
 		"actions": {
-			"title": "Acció de navegació: ",
+			"title": "Acció del navegador: ",
 			"launch": "Iniciar navegador a {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Escriure \"{{text}}\"",
+			"press": "Prem {{key}}",
 			"scrollDown": "Desplaçar avall",
 			"scrollUp": "Desplaçar amunt",
+			"hover": "Plana sobre ({{coordinate}})",
 			"close": "Tancar navegador"
 		}
 	},

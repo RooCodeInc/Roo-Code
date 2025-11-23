@@ -291,10 +291,9 @@
 			"goToSettingsButton": "Ir a Configuración"
 		},
 		"release": {
-			"heading": "Novedades en la Extensión:",
-			"gemini3": "Gemini 3 disponible en Gemini, Vertex, Roo Code Cloud, OpenRouter y más",
-			"gitStatus": "Puedes agregar información del estado de git al entorno desde la configuración de Context",
-			"nativeToolCalling": "Soporte experimental para llamadas nativas de herramientas en Roo Code Cloud, OpenRouter y OpenAI (más próximamente) - actívalo en la configuración avanzada del proveedor"
+			"heading": "Novedades en esta versión:",
+			"browserUse": "Browser Use 2.0 mejora la experiencia de navegación en el chat con sesiones persistentes, retroalimentación más clara, un panel de navegador dedicado y descripciones de acciones más naturales",
+			"cloudPaid": "El proveedor de Roo Code Cloud ahora ofrece modelos pagos: compra créditos y úsalos tanto para agentes en la nube como para inferencia"
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
@@ -306,6 +305,7 @@
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sesión del navegador",
 		"rooWantsToUse": "Roo quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
@@ -318,12 +318,14 @@
 		},
 		"sessionStarted": "Sesión de navegador iniciada",
 		"actions": {
-			"title": "Acción de navegación: ",
+			"title": "Acción del navegador: ",
 			"launch": "Iniciar navegador en {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Escribir \"{{text}}\"",
+			"press": "Pulsar {{key}}",
 			"scrollDown": "Desplazar hacia abajo",
 			"scrollUp": "Desplazar hacia arriba",
+			"hover": "Flotar ({{coordinate}})",
 			"close": "Cerrar navegador"
 		}
 	},

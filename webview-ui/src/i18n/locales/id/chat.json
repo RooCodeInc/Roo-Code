@@ -303,10 +303,9 @@
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"release": {
-			"heading": "Baru di Ekstensi:",
-			"gemini3": "Gemini 3 tersedia di Gemini, Vertex, Roo Code Cloud, OpenRouter, dan lainnya",
-			"gitStatus": "Kamu dapat menambahkan informasi status git ke environment dari pengaturan Context",
-			"nativeToolCalling": "Dukungan eksperimental untuk native tool calling di Roo Code Cloud, OpenRouter, dan OpenAI (lebih banyak segera hadir) - aktifkan di pengaturan lanjutan provider"
+			"heading": "Terbaru:",
+			"browserUse": "Browser Use 2.0 meningkatkan pengalaman browsing dalam chat dengan sesi persisten, feedback yang lebih jelas, panel browser khusus, dan deskripsi aksi yang lebih alami",
+			"cloudPaid": "Provider Roo Code Cloud sekarang menawarkan model berbayar: beli kredit dan gunakan untuk cloud agents dan inference"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -327,6 +326,7 @@
 		"countdownDisplay": "{{count}}dtk"
 	},
 	"browser": {
+		"session": "Sesi Browser",
 		"rooWantsToUse": "Roo ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
@@ -339,12 +339,14 @@
 		},
 		"sessionStarted": "Sesi Browser Dimulai",
 		"actions": {
-			"title": "Aksi Browse: ",
+			"title": "Aksi Browser: ",
 			"launch": "Luncurkan browser di {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Ketik \"{{text}}\"",
+			"press": "Tekan {{key}}",
 			"scrollDown": "Gulir ke bawah",
 			"scrollUp": "Gulir ke atas",
+			"hover": "Arahkan ({{coordinate}})",
 			"close": "Tutup browser"
 		}
 	},
