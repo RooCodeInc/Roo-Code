@@ -57,12 +57,13 @@ function loadModes(srcPath) {
 	return data.customModes
 }
 
-function sanitizeFilename(slug) {
-	return slug.replace(/[^a-zA-Z0-9_-]/g, "_") + ".yaml"
+function sanitizeFilename(slug, format) {
+	const ext = format === "json" ? ".json" : ".yaml"
+	return slug.replace(/[^a-zA-Z0-9_-]/g, "_") + ext
 }
 
 function writeMode(outdir, mode, format) {
-	const filename = sanitizeFilename(mode.slug)
+	const filename = sanitizeFilename(mode.slug, format)
 	const full = path.join(outdir, filename)
 	const contentObj = { customModes: [mode] }
 	const body = format === "json" ? JSON.stringify(contentObj, null, 2) : yaml.stringify(contentObj)
