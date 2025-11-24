@@ -501,6 +501,7 @@
 		"os-name": "^6.0.0",
 		"p-limit": "^6.2.0",
 		"p-wait-for": "^5.0.2",
+		"partial-json": "^0.1.7",
 		"pdf-parse": "^1.1.1",
 		"pkce-challenge": "^5.0.0",
 		"pretty-bytes": "^7.0.0",
