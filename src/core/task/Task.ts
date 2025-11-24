@@ -1164,38 +1164,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
 	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
-		// Determine the previous protocol before updating
-		const prevModelInfo = this.api.getModel().info
-		const previousProtocol = this.apiConfiguration
-			? resolveToolProtocol(this.apiConfiguration, prevModelInfo)
-			: undefined
-
+		// Update the configuration and rebuild the API handler
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
-		// Determine the new tool protocol
-		const newModelInfo = this.api.getModel().info
-		const newProtocol = resolveToolProtocol(this.apiConfiguration, newModelInfo)
-		const shouldUseXmlParser = newProtocol === "xml"
+		// Determine what the tool protocol should be
+		const modelInfo = this.api.getModel().info
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const shouldUseXmlParser = protocol === "xml"
 
-		// Only make changes if the protocol actually changed
-		if (previousProtocol === newProtocol) {
-			console.log(
-				`[Task#${this.taskId}.${this.instanceId}] Tool protocol unchanged (${newProtocol}), no parser update needed`,
-			)
+		// Ensure parser state matches protocol requirement
+		const parserStateCorrect =
+			(shouldUseXmlParser && this.assistantMessageParser) || (!shouldUseXmlParser && !this.assistantMessageParser)
+
+		if (parserStateCorrect) {
 			return
 		}
 
-		// Handle protocol transitions
+		// Fix parser state
 		if (shouldUseXmlParser && !this.assistantMessageParser) {
-			// Switching from native → XML: create parser
 			this.assistantMessageParser = new AssistantMessageParser()
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
 		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
-			// Switching from XML → native: remove parser
 			this.assistantMessageParser.reset()
 			this.assistantMessageParser = undefined
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched xml → native: removed XML parser`)
 		}
 	}
 
