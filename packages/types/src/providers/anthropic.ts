@@ -2,8 +2,9 @@ import type { ModelInfo } from "../model.js"
 
 // https://docs.anthropic.com/en/docs/about-claude/models
 
-export type AnthropicModelId = keyof typeof anthropicModels
-export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5"
+// Allow custom model IDs in addition to known models
+export type AnthropicModelId = keyof typeof anthropicModels | string
+export const anthropicDefaultModelId = "claude-sonnet-4-5" as const
 
 export const anthropicModels = {
 	"claude-sonnet-4-5": {

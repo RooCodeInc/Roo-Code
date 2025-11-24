@@ -288,5 +288,105 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
+
+		it("should handle custom model ID not in predefined list", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "custom-claude-model",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("custom-claude-model")
+			expect(model.info).toBeDefined()
+			// Should have sensible defaults
+			expect(model.info.maxTokens).toBe(8192)
+			expect(model.info.contextWindow).toBe(200000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it("should handle third-party Anthropic-compatible models", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "MinMax-M2",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("MinMax-M2")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(8192)
+			expect(model.info.contextWindow).toBe(200000)
+		})
+
+		it("should handle custom Claude model with hyphen format", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-haiku-4-5",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-haiku-4-5")
+			expect(model.info).toBeDefined()
+			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it("should handle custom Claude model with date suffix", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-5-20250929",
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-sonnet-4-5-20250929")
+			expect(model.info).toBeDefined()
+			expect(model.info.supportsImages).toBe(true)
+		})
+	})
+
+	describe("createMessage with custom models", () => {
+		const systemPrompt = "You are a helpful assistant."
+
+		it("should handle custom model with prompt caching", async () => {
+			const customHandler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "custom-anthropic-model",
+			})
+
+			const stream = customHandler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Test message" }],
+				},
+			])
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should still process the stream correctly
+			expect(chunks.length).toBeGreaterThan(0)
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "custom-anthropic-model",
+					stream: true,
+				}),
+				expect.objectContaining({
+					headers: { "anthropic-beta": "prompt-caching-2024-07-31" },
+				}),
+			)
+		})
+
+		it("should use appropriate defaults for unknown model", async () => {
+			const customHandler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "third-party-claude-compatible",
+			})
+
+			await customHandler.completePrompt("Test prompt")
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "third-party-claude-compatible",
+					max_tokens: 8192,
+				}),
+			)
+		})
 	})
 })
