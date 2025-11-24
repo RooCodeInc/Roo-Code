@@ -28,7 +28,7 @@ vitest.mock("../fetchers/modelCache", () => ({
 				description: "Claude 3.7 Sonnet",
 				thinking: false,
 			},
-			"anthropic/claude-sonnet-4.5": {
+			"anthropic/claude-sonnet-4-5-20250929": {
 				maxTokens: 8192,
 				contextWindow: 200000,
 				supportsImages: true,
@@ -96,7 +96,7 @@ describe("OpenRouterHandler", () => {
 		it("returns default model info when options are not provided", async () => {
 			const handler = new OpenRouterHandler({})
 			const result = await handler.fetchModel()
-			expect(result.id).toBe("anthropic/claude-sonnet-4.5")
+			expect(result.id).toBe("anthropic/claude-sonnet-4-5-20250929")
 			expect(result.info.supportsPromptCache).toBe(true)
 			expect(result.info.supportsNativeTools).toBe(true)
 		})
