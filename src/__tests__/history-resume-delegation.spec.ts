@@ -203,6 +203,92 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(apiCall.messages).toHaveLength(2) // 1 original + 1 injected
 	})
 
+	it("reopenParentFromDelegation injects tool_result when new_task tool_use exists in API history", async () => {
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "p-tool",
+					status: "delegated",
+					awaitingChildId: "c-tool",
+					childIds: [],
+					ts: 100,
+					task: "Parent with tool_use",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "c-tool" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "p-tool",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		// Include an assistant message with new_task tool_use to exercise the tool_result path
+		const existingUiMessages = [{ type: "ask", ask: "tool", text: "new_task request", ts: 50 }]
+		const existingApiMessages = [
+			{ role: "user", content: [{ type: "text", text: "Create a subtask" }], ts: 40 },
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						name: "new_task",
+						id: "toolu_abc123",
+						input: { mode: "code", message: "Do something" },
+					},
+				],
+				ts: 50,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
+		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "p-tool",
+			childTaskId: "c-tool",
+			completionResultSummary: "Subtask completed via tool_result",
+		})
+
+		// Verify API history injection uses tool_result (not text fallback)
+		expect(saveApiMessages).toHaveBeenCalledWith(
+			expect.objectContaining({
+				messages: expect.arrayContaining([
+					expect.objectContaining({
+						role: "user",
+						content: expect.arrayContaining([
+							expect.objectContaining({
+								type: "tool_result",
+								tool_use_id: "toolu_abc123",
+								content: expect.stringContaining("Subtask c-tool completed"),
+							}),
+						]),
+					}),
+				]),
+				taskId: "p-tool",
+				globalStoragePath: "/storage",
+			}),
+		)
+
+		// Verify total message count: 2 original + 1 injected user message with tool_result
+		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		expect(apiCall.messages).toHaveLength(3)
+
+		// Verify the injected message is a user message with tool_result type
+		const injectedMsg = apiCall.messages[2]
+		expect(injectedMsg.role).toBe("user")
+		expect((injectedMsg.content[0] as any).type).toBe("tool_result")
+		expect((injectedMsg.content[0] as any).tool_use_id).toBe("toolu_abc123")
+	})
+
 	it("reopenParentFromDelegation sets skipPrevResponseIdOnce via resumeAfterDelegation", async () => {
 		const parentInstance: any = {
 			skipPrevResponseIdOnce: false,
