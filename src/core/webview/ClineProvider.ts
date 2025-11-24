@@ -3083,7 +3083,7 @@ export class ClineProvider
 			parentApiMessages = []
 		}
 
-		// 2) Inject synthetic records: UI subtask_result and API user message
+		// 2) Inject synthetic records: UI subtask_result and update API tool_result
 		const ts = Date.now()
 
 		// Defensive: ensure arrays
@@ -3099,16 +3099,69 @@ export class ClineProvider
 		parentClineMessages.push(subtaskUiMessage)
 		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
 
-		parentApiMessages.push({
-			role: "user",
-			content: [
-				{
-					type: "text",
-					text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-				},
-			],
-			ts,
-		})
+		// Find the tool_use_id from the last assistant message's new_task tool_use
+		let toolUseId: string | undefined
+		for (let i = parentApiMessages.length - 1; i >= 0; i--) {
+			const msg = parentApiMessages[i]
+			if (msg.role === "assistant" && Array.isArray(msg.content)) {
+				for (const block of msg.content) {
+					if (block.type === "tool_use" && block.name === "new_task") {
+						toolUseId = block.id
+						break
+					}
+				}
+				if (toolUseId) break
+			}
+		}
+
+		// The API expects: user → assistant (with tool_use) → user (with tool_result)
+		// We need to add a NEW user message with the tool_result AFTER the assistant's tool_use
+		// NOT add it to an existing user message
+		if (toolUseId) {
+			// Check if the last message is already a user message with a tool_result for this tool_use_id
+			// (in case this is a retry or the history was already updated)
+			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
+			let alreadyHasToolResult = false
+			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
+				for (const block of lastMsg.content) {
+					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
+						// Update the existing tool_result content
+						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+						alreadyHasToolResult = true
+						break
+					}
+				}
+			}
+
+			// If no existing tool_result found, create a NEW user message with the tool_result
+			if (!alreadyHasToolResult) {
+				parentApiMessages.push({
+					role: "user",
+					content: [
+						{
+							type: "tool_result" as const,
+							tool_use_id: toolUseId,
+							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+						},
+					],
+					ts,
+				})
+			}
+		} else {
+			// Fallback for XML protocol or when toolUseId couldn't be found:
+			// Add a text block (not ideal but maintains backward compatibility)
+			parentApiMessages.push({
+				role: "user",
+				content: [
+					{
+						type: "text",
+						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+					},
+				],
+				ts,
+			})
+		}
+
 		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
 
 		// 3) Update parent metadata and persist BEFORE emitting completion event

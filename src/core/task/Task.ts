@@ -1969,13 +1969,42 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.apiConversationHistory = await this.getSavedApiConversationHistory()
 		}
 
-		// Continue task loop with minimal resume content
-		await this.initiateTaskLoop([
-			{
-				type: "text",
-				text: "[DELEGATION RESUMED] Continuing after subtask completion...",
-			},
-		])
+		// Add environment details to the existing last user message (which contains the tool_result)
+		// This avoids creating a new user message which would cause consecutive user messages
+		const environmentDetails = await getEnvironmentDetails(this, true)
+		let lastUserMsgIndex = -1
+		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
+			if (this.apiConversationHistory[i].role === "user") {
+				lastUserMsgIndex = i
+				break
+			}
+		}
+		if (lastUserMsgIndex >= 0) {
+			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
+			if (Array.isArray(lastUserMsg.content)) {
+				// Remove any existing environment_details blocks before adding fresh ones
+				const contentWithoutEnvDetails = lastUserMsg.content.filter(
+					(block: Anthropic.Messages.ContentBlockParam) => {
+						if (block.type === "text" && typeof block.text === "string") {
+							const isEnvironmentDetailsBlock =
+								block.text.trim().startsWith("<environment_details>") &&
+								block.text.trim().endsWith("</environment_details>")
+							return !isEnvironmentDetailsBlock
+						}
+						return true
+					},
+				)
+				// Add fresh environment details
+				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			}
+		}
+
+		// Save the updated history
+		await this.saveApiConversationHistory()
+
+		// Continue task loop - pass empty array to signal no new user content needed
+		// The initiateTaskLoop will handle this by skipping user message addition
+		await this.initiateTaskLoop([])
 	}
 
 	// Task Loop
@@ -2122,10 +2151,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
 
 			// Only add user message to conversation history if:
-			// 1. This is the first attempt (retryAttempt === 0), OR
-			// 2. The message was removed in a previous iteration (userMessageWasRemoved === true)
+			// 1. This is the first attempt (retryAttempt === 0), AND
+			// 2. The original userContent was not empty (empty signals delegation resume where
+			//    the user message with tool_result and env details is already in history), OR
+			// 3. The message was removed in a previous iteration (userMessageWasRemoved === true)
 			// This prevents consecutive user messages while allowing re-add when needed
-			if ((currentItem.retryAttempt ?? 0) === 0 || currentItem.userMessageWasRemoved) {
+			const isEmptyUserContent = currentUserContent.length === 0
+			const shouldAddUserMessage =
+				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
+			if (shouldAddUserMessage) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
 			}
