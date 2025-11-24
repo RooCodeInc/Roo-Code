@@ -35,8 +35,36 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 		let { path: relPath, diff: diffContent } = params
 
-		if (diffContent && !task.api.getModel().id.includes("claude")) {
+		// Check if this is an x-ai model that might have reasoning artifacts
+		const modelId = task.api.getModel().id
+		const isXAIModel = modelId.includes("x-ai/") || modelId.includes("grok")
+
+		if (diffContent && !modelId.includes("claude")) {
 			diffContent = unescapeHtmlEntities(diffContent)
+		}
+
+		// Clean up reasoning artifacts from x-ai models
+		if (isXAIModel && diffContent) {
+			// Check for reasoning block markers that shouldn't be in diff content
+			if (
+				diffContent.includes("<think>") ||
+				diffContent.includes("</think>") ||
+				diffContent.includes("<reasoning>") ||
+				diffContent.includes("</reasoning>")
+			) {
+				console.warn("[ApplyDiffTool] Cleaning reasoning artifacts from x-ai model diff content", {
+					modelId,
+					hasThinkTags: diffContent.includes("<think>"),
+					hasReasoningTags: diffContent.includes("<reasoning>"),
+				})
+				// Remove thinking/reasoning blocks but preserve the actual diff markers
+				diffContent = diffContent
+					.replace(/<think>.*?<\/think>/gs, "")
+					.replace(/<reasoning>.*?<\/reasoning>/gs, "")
+					// Also clean up orphaned closing tags that might interfere
+					.replace(/<\/think>/g, "")
+					.replace(/<\/reasoning>/g, "")
+			}
 		}
 
 		try {

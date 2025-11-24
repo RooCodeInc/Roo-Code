@@ -128,6 +128,12 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			let lastUsage: RooUsage | undefined = undefined
 			// Accumulate tool calls by index - similar to how reasoning accumulates
 			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+			// Track if we're currently processing reasoning to prevent interference with tool parsing
+			let isProcessingReasoning = false
+
+			// Check if this is an x-ai model that might have malformed reasoning blocks
+			const modelId = this.options.apiModelId || ""
+			const isXAIModel = modelId.includes("x-ai/") || modelId.includes("grok")
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
@@ -136,22 +142,49 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				if (delta) {
 					// Check for reasoning content (similar to OpenRouter)
 					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+						// For x-ai models, sanitize reasoning text to prevent XML-like content from interfering
+						let reasoningText = delta.reasoning
+						if (isXAIModel) {
+							// Remove any XML-like tags that might interfere with tool parsing
+							reasoningText = reasoningText
+								.replace(/<\/?apply_diff[^>]*>/g, "")
+								.replace(/<\/?SEARCH[^>]*>/g, "")
+								.replace(/<\/?REPLACE[^>]*>/g, "")
+								.replace(/<<<<<<< SEARCH/g, "[SEARCH]")
+								.replace(/=======/g, "[SEPARATOR]")
+								.replace(/>>>>>>> REPLACE/g, "[REPLACE]")
+						}
+						isProcessingReasoning = true
 						yield {
 							type: "reasoning",
-							text: delta.reasoning,
+							text: reasoningText,
 						}
+						isProcessingReasoning = false
 					}
 
 					// Also check for reasoning_content for backward compatibility
 					if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
+						// Apply same sanitization for x-ai models
+						let reasoningText = delta.reasoning_content
+						if (isXAIModel) {
+							reasoningText = reasoningText
+								.replace(/<\/?apply_diff[^>]*>/g, "")
+								.replace(/<\/?SEARCH[^>]*>/g, "")
+								.replace(/<\/?REPLACE[^>]*>/g, "")
+								.replace(/<<<<<<< SEARCH/g, "[SEARCH]")
+								.replace(/=======/g, "[SEPARATOR]")
+								.replace(/>>>>>>> REPLACE/g, "[REPLACE]")
+						}
+						isProcessingReasoning = true
 						yield {
 							type: "reasoning",
-							text: delta.reasoning_content,
+							text: reasoningText,
 						}
+						isProcessingReasoning = false
 					}
 
-					// Check for tool calls in delta
-					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+					// Check for tool calls in delta - but skip if we're processing reasoning to avoid interference
+					if (!isProcessingReasoning && "tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 						for (const toolCall of delta.tool_calls) {
 							const index = toolCall.index
 							const existing = toolCallAccumulator.get(index)
@@ -159,23 +192,78 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 							if (existing) {
 								// Accumulate arguments for existing tool call
 								if (toolCall.function?.arguments) {
-									existing.arguments += toolCall.function.arguments
+									// For x-ai models, validate the arguments don't contain reasoning artifacts
+									let args = toolCall.function.arguments
+									if (isXAIModel && args) {
+										// Check if the arguments contain reasoning block artifacts
+										if (
+											args.includes("<think>") ||
+											args.includes("</think>") ||
+											args.includes("<reasoning>") ||
+											args.includes("</reasoning>")
+										) {
+											// Skip this chunk as it's likely corrupted reasoning content
+											console.warn(
+												"[RooHandler] Skipping corrupted tool call arguments from x-ai model",
+												{
+													modelId,
+													corruptedContent: args.substring(0, 100),
+												},
+											)
+											continue
+										}
+									}
+									existing.arguments += args
 								}
 							} else {
 								// Start new tool call accumulation
+								const toolName = toolCall.function?.name || ""
+								const toolArgs = toolCall.function?.arguments || ""
+
+								// Validate tool name isn't corrupted by reasoning content
+								if (isXAIModel && (toolName.includes("think") || toolName.includes("reasoning"))) {
+									console.warn("[RooHandler] Skipping corrupted tool call from x-ai model", {
+										modelId,
+										corruptedName: toolName,
+									})
+									continue
+								}
+
 								toolCallAccumulator.set(index, {
 									id: toolCall.id || "",
-									name: toolCall.function?.name || "",
-									arguments: toolCall.function?.arguments || "",
+									name: toolName,
+									arguments: toolArgs,
 								})
 							}
 						}
 					}
 
 					if (delta.content) {
-						yield {
-							type: "text",
-							text: delta.content,
+						// For x-ai models, check if content contains interleaved reasoning markers
+						let textContent = delta.content
+						if (isXAIModel) {
+							// Check for common reasoning block markers that shouldn't be in regular content
+							if (textContent.includes("<think>") || textContent.includes("</think>")) {
+								// Extract and handle the reasoning part separately
+								const thinkMatch = textContent.match(/<think>(.*?)<\/think>/s)
+								if (thinkMatch) {
+									// Emit the reasoning part
+									yield {
+										type: "reasoning",
+										text: thinkMatch[1],
+									}
+									// Remove the thinking block from the text
+									textContent = textContent.replace(/<think>.*?<\/think>/s, "")
+								}
+							}
+						}
+
+						// Only yield text if there's content after cleaning
+						if (textContent.trim()) {
+							yield {
+								type: "text",
+								text: textContent,
+							}
 						}
 					}
 				}
