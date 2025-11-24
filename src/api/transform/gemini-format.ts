@@ -128,14 +128,11 @@ export function convertAnthropicContentToGemini(
 					...imageParts,
 				]
 			}
-			case "reasoning":
-				// Reasoning blocks represent thinking/reasoning content from previous turns
-				// (e.g., from other providers or from Gemini's own reasoning output).
-				// These are metadata that should be filtered out when converting to Gemini format.
-				return []
 			default:
-				// Currently unsupported: "thinking" | "redacted_thinking" | "document"
-				throw new Error(`Unsupported content block type: ${block.type}`)
+				// Skip unsupported content block types (e.g., "reasoning", "thinking", "redacted_thinking", "document")
+				// These are typically metadata from other providers that don't need to be sent to Gemini
+				console.warn(`Skipping unsupported content block type: ${block.type}`)
+				return []
 		}
 	})
 }

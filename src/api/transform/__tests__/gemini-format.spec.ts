@@ -420,7 +420,7 @@ describe("convertAnthropicMessageToGemini", () => {
 		)
 	})
 
-	it("should throw an error for unsupported content block type", () => {
+	it("should skip unsupported content block types", () => {
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "user",
 			content: [
@@ -428,15 +428,21 @@ describe("convertAnthropicMessageToGemini", () => {
 					type: "unknown_type", // Unsupported type
 					data: "some data",
 				} as any,
+				{ type: "text", text: "Valid content" },
 			],
 		}
 
-		expect(() => convertAnthropicMessageToGemini(anthropicMessage)).toThrow(
-			"Unsupported content block type: unknown_type",
-		)
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([
+			{
+				role: "user",
+				parts: [{ text: "Valid content" }],
+			},
+		])
 	})
 
-	it("should filter out reasoning content blocks", () => {
+	it("should skip reasoning content blocks", () => {
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "assistant",
 			content: [
