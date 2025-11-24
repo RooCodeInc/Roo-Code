@@ -21,10 +21,9 @@ export function parseUnifiedDiff(source: string, filePath?: string): DiffLine[] 
 		if (!patches || patches.length === 0) return []
 
 		const patch = filePath
-			? (patches.find((p: any) =>
+			? (patches.find((p) =>
 					[p.newFileName, p.oldFileName].some(
-						(n: string | undefined) =>
-							typeof n === "string" && (n === filePath || (n as string).endsWith("/" + filePath)),
+						(n) => typeof n === "string" && (n === filePath || (n as string).endsWith("/" + filePath)),
 					),
 				) ?? patches[0])
 			: patches[0]
