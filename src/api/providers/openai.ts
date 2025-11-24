@@ -343,7 +343,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				model: model.id,
 				messages: [{ role: "user", content: prompt }],
 			}
-
+			if (systemPrompt) {
+				requestOptions.messages.unshift({ role: "system", content: systemPrompt })
+			}
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 

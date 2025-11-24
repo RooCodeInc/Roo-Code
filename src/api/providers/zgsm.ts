@@ -239,9 +239,24 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
+			const message = response.choices?.[0]?.message
+
+			if (message?.tool_calls) {
+				for (const toolCall of message.tool_calls) {
+					if (toolCall.type === "function") {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.function.name,
+							arguments: toolCall.function.arguments,
+						}
+					}
+				}
+			}
+
 			yield {
 				type: "text",
-				text: response.choices?.[0]?.message.content || "",
+				text: message.content || "",
 			}
 
 			yield this.processUsageMetrics(response.usage, modelInfo)
@@ -373,6 +388,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			stream: true as const,
 			...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 			...(reasoning && reasoning),
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			extra_body: {
 				mode: metadata?.mode,
 			},
@@ -406,6 +423,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				: isLegacyFormat
 					? [systemMessage, ...convertToSimpleMessages(messages)]
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
@@ -449,6 +468,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		}
 
+		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+
 		// chunk
 		for await (const chunk of stream) {
 			if (this.abortController?.signal.aborted) {
@@ -456,6 +477,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			const delta = chunk.choices?.[0]?.delta ?? {}
+			const finishReason = chunk.choices?.[0]?.finish_reason
 
 			// Cache content for batch processing
 			if (delta.content) {
@@ -487,6 +509,37 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
+			if (delta.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					const index = toolCall.index
+					const existing = toolCallAccumulator.get(index)
+
+					if (existing) {
+						if (toolCall.function?.arguments) {
+							existing.arguments += toolCall.function.arguments
+						}
+					} else {
+						toolCallAccumulator.set(index, {
+							id: toolCall.id || "",
+							name: toolCall.function?.name || "",
+							arguments: toolCall.function?.arguments || "",
+						})
+					}
+				}
+			}
+
+			if (finishReason === "tool_calls") {
+				for (const toolCall of toolCallAccumulator.values()) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				toolCallAccumulator.clear()
+			}
+
 			// Cache usage information
 			if (chunk.usage) {
 				lastUsage = chunk.usage
@@ -499,6 +552,20 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			for (const processedChunk of matcher.update(remainingContent)) {
 				yield processedChunk
 			}
+		}
+
+		// Fallback: If stream ends with accumulated tool calls that weren't yielded
+		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+		if (toolCallAccumulator.size > 0) {
+			for (const toolCall of toolCallAccumulator.values()) {
+				yield {
+					type: "tool_call",
+					id: toolCall.id,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
+				}
+			}
+			toolCallAccumulator.clear()
 		}
 
 		// Output final results
@@ -593,9 +660,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		modelId: string,
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.updateModelInfo()
-		const modelInfo = this.getModel()
+		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.baseURL)
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -614,12 +682,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
+				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
 			// but they do support max_completion_tokens (the modern OpenAI parameter)
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
-			this.addMaxTokensIfNeeded(requestOptions, modelInfo.info)
+			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 			let stream
 			try {
 				stream = await this.client.chat.completions.create(
@@ -645,12 +715,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
+				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
 			// but they do support max_completion_tokens (the modern OpenAI parameter)
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
-			this.addMaxTokensIfNeeded(requestOptions, modelInfo.info)
+			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
 			let response
 			try {
@@ -664,25 +736,76 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
+			const message = response.choices?.[0]?.message
+			if (message?.tool_calls) {
+				for (const toolCall of message.tool_calls) {
+					if (toolCall.type === "function") {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.function.name,
+							arguments: toolCall.function.arguments,
+						}
+					}
+				}
+			}
+
 			yield {
 				type: "text",
-				text: response.choices?.[0]?.message.content || "",
+				text: message?.content || "",
 			}
 			yield this.processUsageMetrics(response.usage)
 		}
 	}
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
+		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+
 		for await (const chunk of stream) {
 			if (this.abortController?.signal.aborted) {
 				break
 			}
 			const delta = chunk.choices?.[0]?.delta
-			if (delta?.content) {
-				yield {
-					type: "text",
-					text: delta.content,
+			const finishReason = chunk.choices?.[0]?.finish_reason
+
+			if (delta) {
+				if (delta.content) {
+					yield {
+						type: "text",
+						text: delta.content,
+					}
 				}
+
+				if (delta.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						const index = toolCall.index
+						const existing = toolCallAccumulator.get(index)
+
+						if (existing) {
+							if (toolCall.function?.arguments) {
+								existing.arguments += toolCall.function.arguments
+							}
+						} else {
+							toolCallAccumulator.set(index, {
+								id: toolCall.id || "",
+								name: toolCall.function?.name || "",
+								arguments: toolCall.function?.arguments || "",
+							})
+						}
+					}
+				}
+			}
+
+			if (finishReason === "tool_calls") {
+				for (const toolCall of toolCallAccumulator.values()) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
+				toolCallAccumulator.clear()
 			}
 
 			if (chunk.usage) {
@@ -692,6 +815,20 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
 			}
+		}
+
+		// Fallback: If stream ends with accumulated tool calls that weren't yielded
+		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
+		if (toolCallAccumulator.size > 0) {
+			for (const toolCall of toolCallAccumulator.values()) {
+				yield {
+					type: "tool_call",
+					id: toolCall.id,
+					name: toolCall.name,
+					arguments: toolCall.arguments,
+				}
+			}
+			toolCallAccumulator.clear()
 		}
 	}
 
@@ -724,8 +861,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 		modelInfo: ModelInfo,
 	): void {
-		const _m = requestOptions.model.toLocaleLowerCase()
-
 		// Only add max_completion_tokens if includeMaxTokens is true
 		if (this.options.useZgsmCustomConfig) {
 			const maxTokens = this.options.modelMaxTokens || modelInfo.maxTokens
