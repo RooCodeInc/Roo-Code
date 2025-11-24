@@ -39,7 +39,8 @@
 		"invalidModel": "Nieprawidłowy model. Sprawdź konfigurację modelu.",
 		"invalidResponse": "Nieprawidłowa odpowiedź z usługi embedder. Sprawdź swoją konfigurację.",
 		"apiKeyRequired": "Klucz API jest wymagany dla tego embeddera",
-		"baseUrlRequired": "Podstawowy adres URL jest wymagany dla tego embeddera"
+		"baseUrlRequired": "Podstawowy adres URL jest wymagany dla tego embeddera",
+		"rooAuthenticationRequired": "Wymagana jest autentykacja Roo Code Cloud. Zaloguj się, aby używać dostawcy embeddings Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Brak konfiguracji OpenAI do utworzenia embeddera",

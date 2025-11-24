@@ -39,7 +39,8 @@
 		"invalidModel": "Geçersiz model. Lütfen model yapılandırmanızı kontrol edin.",
 		"invalidResponse": "Embedder hizmetinden geçersiz yanıt. Lütfen yapılandırmanızı kontrol edin.",
 		"apiKeyRequired": "Bu gömücü için API anahtarı gereklidir",
-		"baseUrlRequired": "Bu gömücü için temel URL gereklidir"
+		"baseUrlRequired": "Bu gömücü için temel URL gereklidir",
+		"rooAuthenticationRequired": "Roo Code Cloud kimlik doğrulaması gerekli. Roo embeddings sağlayıcısını kullanmak için lütfen giriş yap."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Gömücü oluşturmak için OpenAI yapılandırması eksik",

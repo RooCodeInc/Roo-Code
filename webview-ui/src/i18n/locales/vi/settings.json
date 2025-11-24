@@ -61,6 +61,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Khóa API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloud sử dụng xác thực tài khoản của bạn. Đăng nhập vào Roo Code Cloud để sử dụng nhà cung cấp này.",
 		"openaiCompatibleProvider": "Tương thích OpenAI",
 		"openAiKeyLabel": "Khóa API OpenAI",
 		"openAiKeyPlaceholder": "Nhập khóa API OpenAI của bạn",

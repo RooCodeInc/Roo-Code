@@ -58,6 +58,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter APIキー",
 		"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloudはアカウント認証を使用します。このプロバイダーを使用するにはRoo Code Cloudにサインインしてください。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "APIキー:",
 		"mistralApiKeyPlaceholder": "Mistral APIキーを入力してください",

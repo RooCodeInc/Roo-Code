@@ -58,6 +58,8 @@
 		"openRouterProvider": "ओपनराउटर",
 		"openRouterApiKeyLabel": "ओपनराउटर एपीआई कुंजी",
 		"openRouterApiKeyPlaceholder": "अपनी ओपनराउटर एपीआई कुंजी दर्ज करें",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloud आपके खाते के प्रमाणीकरण का उपयोग करता है। इस प्रदाता का उपयोग करने के लिए Roo Code Cloud में साइन इन करें।",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API कुंजी:",
 		"mistralApiKeyPlaceholder": "अपनी मिस्ट्रल एपीआई कुंजी दर्ज करें",

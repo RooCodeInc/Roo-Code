@@ -58,6 +58,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Kunci API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloud menggunakan autentikasi akun Anda. Masuk ke Roo Code Cloud untuk menggunakan penyedia ini.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Kunci API:",
 		"mistralApiKeyPlaceholder": "Masukkan kunci API Mistral Anda",

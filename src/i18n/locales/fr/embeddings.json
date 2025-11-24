@@ -39,7 +39,8 @@
 		"invalidModel": "Modèle invalide. Veuillez vérifier votre configuration de modèle.",
 		"invalidResponse": "Réponse invalide du service d'embedder. Veuillez vérifier votre configuration.",
 		"apiKeyRequired": "Une clé API est requise pour cet embedder.",
-		"baseUrlRequired": "Une URL de base est requise pour cet embedder"
+		"baseUrlRequired": "Une URL de base est requise pour cet embedder",
+		"rooAuthenticationRequired": "Authentification Roo Code Cloud requise. Connecte-toi pour utiliser le fournisseur d'embeddings Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Configuration OpenAI manquante pour la création de l'embedder",

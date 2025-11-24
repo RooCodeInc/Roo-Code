@@ -39,7 +39,8 @@
 		"invalidModel": "Model no vàlid. Comproveu la vostra configuració de model.",
 		"invalidResponse": "Resposta no vàlida del servei d'incrustació. Comproveu la vostra configuració.",
 		"apiKeyRequired": "Es requereix una clau d'API per a aquest incrustador",
-		"baseUrlRequired": "Es requereix una URL base per a aquest incrustador"
+		"baseUrlRequired": "Es requereix una URL base per a aquest incrustador",
+		"rooAuthenticationRequired": "Es requereix autenticació de Roo Code Cloud. Si us plau, inicieu sessió per utilitzar el proveïdor d'incrustacions Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Falta la configuració d'OpenAI per crear l'embedder",

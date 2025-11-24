@@ -39,7 +39,8 @@
 		"invalidModel": "잘못된 모델입니다. 모델 구성을 확인하세요.",
 		"invalidResponse": "임베더 서비스에서 잘못된 응답이 왔습니다. 구성을 확인하세요.",
 		"apiKeyRequired": "이 임베더에는 API 키가 필요합니다",
-		"baseUrlRequired": "이 임베더에는 기본 URL이 필요합니다"
+		"baseUrlRequired": "이 임베더에는 기본 URL이 필요합니다",
+		"rooAuthenticationRequired": "Roo Code Cloud 인증이 필요합니다. Roo 임베딩 제공업체를 사용하려면 로그인하세요."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "임베더 생성을 위한 OpenAI 구성이 누락되었습니다",

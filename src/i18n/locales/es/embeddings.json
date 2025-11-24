@@ -39,7 +39,8 @@
 		"invalidModel": "Modelo no válido. Comprueba la configuración de tu modelo.",
 		"invalidResponse": "Respuesta no válida del servicio de embedder. Comprueba tu configuración.",
 		"apiKeyRequired": "Se requiere una clave de API para este embedder",
-		"baseUrlRequired": "Se requiere una URL base para este embedder"
+		"baseUrlRequired": "Se requiere una URL base para este embedder",
+		"rooAuthenticationRequired": "Se requiere autenticación de Roo Code Cloud. Inicia sesión para usar el proveedor de embeddings de Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Falta la configuración de OpenAI para crear el incrustador",

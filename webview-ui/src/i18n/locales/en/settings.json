@@ -72,6 +72,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API Key",
 		"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloud uses your account authentication. Sign in to Roo Code Cloud to use this provider.",
 		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "OpenAI API Key",
 		"openAiKeyPlaceholder": "Enter your OpenAI API key",

@@ -237,6 +237,7 @@ export interface WebviewMessage {
 			| "mistral"
 			| "vercel-ai-gateway"
 			| "openrouter"
+			| "roo"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers

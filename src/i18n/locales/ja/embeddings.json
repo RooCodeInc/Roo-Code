@@ -39,7 +39,8 @@
 		"invalidModel": "無効なモデルです。モデル構成を確認してください。",
 		"invalidResponse": "エンベッダーサービスからの無効な応答です。設定を確認してください。",
 		"apiKeyRequired": "このエンベッダーにはAPIキーが必要です。",
-		"baseUrlRequired": "このエンベッダーにはベースURLが必要です"
+		"baseUrlRequired": "このエンベッダーにはベースURLが必要です",
+		"rooAuthenticationRequired": "Roo Code Cloud認証が必要です。Roo埋め込みプロバイダーを使用するにはサインインしてください。"
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "エンベッダー作成のためのOpenAI設定がありません",

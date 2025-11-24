@@ -39,7 +39,8 @@
 		"invalidModel": "Неверная модель. Проверьте конфигурацию модели.",
 		"invalidResponse": "Неверный ответ от службы embedder. Проверьте вашу конфигурацию.",
 		"apiKeyRequired": "Для этого встраивателя требуется ключ API",
-		"baseUrlRequired": "Для этого встраивателя требуется базовый URL"
+		"baseUrlRequired": "Для этого встраивателя требуется базовый URL",
+		"rooAuthenticationRequired": "Требуется аутентификация Roo Code Cloud. Войдите в систему, чтобы использовать провайдер embeddings Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Отсутствует конфигурация OpenAI для создания эмбеддера",

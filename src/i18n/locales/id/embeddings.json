@@ -39,7 +39,8 @@
 		"invalidModel": "Model tidak valid. Silakan periksa konfigurasi model Anda.",
 		"invalidResponse": "Respons tidak valid dari layanan embedder. Silakan periksa konfigurasi Anda.",
 		"apiKeyRequired": "Kunci API diperlukan untuk embedder ini",
-		"baseUrlRequired": "URL dasar diperlukan untuk embedder ini"
+		"baseUrlRequired": "URL dasar diperlukan untuk embedder ini",
+		"rooAuthenticationRequired": "Autentikasi Roo Code Cloud diperlukan. Silakan masuk untuk menggunakan penyedia embeddings Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Konfigurasi OpenAI tidak ada untuk membuat embedder",

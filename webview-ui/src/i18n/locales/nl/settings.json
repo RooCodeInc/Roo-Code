@@ -58,6 +58,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API-sleutel",
 		"openRouterApiKeyPlaceholder": "Voer uw OpenRouter API-sleutel in",
+		"rooProvider": "Roo Code Cloud",
+		"rooCloudAuthNote": "Roo Code Cloud gebruikt je accountauthenticatie. Meld je aan bij Roo Code Cloud om deze provider te gebruiken.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-sleutel:",
 		"mistralApiKeyPlaceholder": "Voer uw Mistral API-sleutel in",

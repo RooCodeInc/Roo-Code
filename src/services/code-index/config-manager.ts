@@ -4,6 +4,7 @@ import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
 import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
+import { CloudService } from "@roo-code/cloud"
 
 /**
  * Manages configuration state and validation for the code indexing feature.
@@ -11,7 +12,7 @@ import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "..
  */
 export class CodeIndexConfigManager {
 	private codebaseIndexEnabled: boolean = true
-	private embedderProvider: EmbedderProvider = "openai"
+	private embedderProvider: EmbedderProvider = "roo"
 	private modelId?: string
 	private modelDimension?: number
 	private openAiOptions?: ApiHandlerOptions
@@ -47,7 +48,7 @@ export class CodeIndexConfigManager {
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: true,
 			codebaseIndexQdrantUrl: "http://localhost:6333",
-			codebaseIndexEmbedderProvider: "openai",
+			codebaseIndexEmbedderProvider: "roo",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
 			codebaseIndexSearchMinScore: undefined,
@@ -100,7 +101,9 @@ export class CodeIndexConfigManager {
 		this.openAiOptions = { openAiNativeApiKey: openAiKey }
 
 		// Set embedder provider with support for openai-compatible
-		if (codebaseIndexEmbedderProvider === "ollama") {
+		if (codebaseIndexEmbedderProvider === "openai") {
+			this.embedderProvider = "openai"
+		} else if (codebaseIndexEmbedderProvider === "ollama") {
 			this.embedderProvider = "ollama"
 		} else if (codebaseIndexEmbedderProvider === "openai-compatible") {
 			this.embedderProvider = "openai-compatible"
@@ -112,8 +115,10 @@ export class CodeIndexConfigManager {
 			this.embedderProvider = "vercel-ai-gateway"
 		} else if (codebaseIndexEmbedderProvider === "openrouter") {
 			this.embedderProvider = "openrouter"
+		} else if (codebaseIndexEmbedderProvider === "roo") {
+			this.embedderProvider = "roo"
 		} else {
-			this.embedderProvider = "openai"
+			this.embedderProvider = "roo"
 		}
 
 		this.modelId = codebaseIndexEmbedderModelId || undefined
@@ -247,6 +252,15 @@ export class CodeIndexConfigManager {
 			const qdrantUrl = this.qdrantUrl
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
+		} else if (this.embedderProvider === "roo") {
+			// Roo Code Cloud uses CloudService session token, so we need to check authentication
+			const qdrantUrl = this.qdrantUrl
+			const sessionToken = CloudService.hasInstance()
+				? CloudService.instance.authService?.getSessionToken()
+				: undefined
+			const isAuthenticated = sessionToken && sessionToken !== "unauthenticated"
+			const isConfigured = !!(qdrantUrl && isAuthenticated)
+			return isConfigured
 		}
 		return false // Should not happen if embedderProvider is always set correctly
 	}
@@ -273,7 +287,7 @@ export class CodeIndexConfigManager {
 		// Handle null/undefined values safely
 		const prevEnabled = prev?.enabled ?? false
 		const prevConfigured = prev?.configured ?? false
-		const prevProvider = prev?.embedderProvider ?? "openai"
+		const prevProvider = prev?.embedderProvider ?? "roo"
 		const prevOpenAiKey = prev?.openAiKey ?? ""
 		const prevOllamaBaseUrl = prev?.ollamaBaseUrl ?? ""
 		const prevOpenAiCompatibleBaseUrl = prev?.openAiCompatibleBaseUrl ?? ""
