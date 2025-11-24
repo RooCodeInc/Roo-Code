@@ -370,6 +370,11 @@ export async function presentAssistantMessage(cline: Task) {
 				// uses since we should only ever present one tool result per
 				// message.
 				cline.didAlreadyUseTool = true
+
+				// Process any queued messages immediately after tool completion
+				// This ensures queued messages are injected ASAP rather than waiting
+				// for approval-related actions
+				cline.processQueuedMessages()
 			}
 
 			const askApproval = async (

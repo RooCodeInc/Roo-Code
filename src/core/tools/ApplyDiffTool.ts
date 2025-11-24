@@ -220,7 +220,6 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 				if (!didApprove) {
 					await task.diffViewProvider.revertChanges()
-					task.processQueuedMessages()
 					return
 				}
 
@@ -259,14 +258,10 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 			await task.diffViewProvider.reset()
 
-			// Process any queued messages after file edit completes
-			task.processQueuedMessages()
-
 			return
 		} catch (error) {
 			await handleError("applying diff", error as Error)
 			await task.diffViewProvider.reset()
-			task.processQueuedMessages()
 			return
 		}
 	}
