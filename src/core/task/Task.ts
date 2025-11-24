@@ -314,6 +314,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
 
+	// Cloud Sync Tracking
+	private cloudSyncedMessageTimestamps: Set<number> = new Set()
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -805,6 +808,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
 			})
+			// Track that this message has been synced to cloud
+			this.cloudSyncedMessageTimestamps.add(message.ts)
 		}
 	}
 
@@ -812,6 +817,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.clineMessages = newMessages
 		restoreTodoListForTask(this)
 		await this.saveClineMessages()
+
+		// When overwriting messages (e.g., during task resume), repopulate the cloud sync tracking Set
+		// with timestamps from all non-partial messages to prevent re-syncing previously synced messages
+		this.cloudSyncedMessageTimestamps.clear()
+		for (const msg of newMessages) {
+			if (msg.partial !== true) {
+				this.cloudSyncedMessageTimestamps.add(msg.ts)
+			}
+		}
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
@@ -819,13 +833,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
 		this.emit(RooCodeEventName.Message, { action: "updated", message })
 
+		// Check if we should sync to cloud and haven't already synced this message
 		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
+		const hasNotBeenSynced = !this.cloudSyncedMessageTimestamps.has(message.ts)
 
-		if (shouldCaptureMessage) {
+		if (shouldCaptureMessage && hasNotBeenSynced) {
 			CloudService.instance.captureEvent({
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
 			})
+			// Track that this message has been synced to cloud
+			this.cloudSyncedMessageTimestamps.add(message.ts)
 		}
 	}
 
@@ -1146,38 +1164,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
 	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
-		// Determine the previous protocol before updating
-		const prevModelInfo = this.api.getModel().info
-		const previousProtocol = this.apiConfiguration
-			? resolveToolProtocol(this.apiConfiguration, prevModelInfo)
-			: undefined
-
+		// Update the configuration and rebuild the API handler
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
-		// Determine the new tool protocol
-		const newModelInfo = this.api.getModel().info
-		const newProtocol = resolveToolProtocol(this.apiConfiguration, newModelInfo)
-		const shouldUseXmlParser = newProtocol === "xml"
+		// Determine what the tool protocol should be
+		const modelInfo = this.api.getModel().info
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const shouldUseXmlParser = protocol === "xml"
 
-		// Only make changes if the protocol actually changed
-		if (previousProtocol === newProtocol) {
-			console.log(
-				`[Task#${this.taskId}.${this.instanceId}] Tool protocol unchanged (${newProtocol}), no parser update needed`,
-			)
+		// Ensure parser state matches protocol requirement
+		const parserStateCorrect =
+			(shouldUseXmlParser && this.assistantMessageParser) || (!shouldUseXmlParser && !this.assistantMessageParser)
+
+		if (parserStateCorrect) {
 			return
 		}
 
-		// Handle protocol transitions
+		// Fix parser state
 		if (shouldUseXmlParser && !this.assistantMessageParser) {
-			// Switching from native → XML: create parser
 			this.assistantMessageParser = new AssistantMessageParser()
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched native → xml: initialized XML parser`)
 		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
-			// Switching from XML → native: remove parser
 			this.assistantMessageParser.reset()
 			this.assistantMessageParser = undefined
-			console.log(`[Task#${this.taskId}.${this.instanceId}] Switched xml → native: removed XML parser`)
 		}
 	}
 
