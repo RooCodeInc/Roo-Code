@@ -683,7 +683,7 @@ export const webviewMessageHandler = async (
 						const mcpHub = provider.getMcpHub()
 
 						if (mcpHub) {
-							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(500)]).catch(
+							await Promise.race([mcpHub.handleMcpEnabledChange(newValue as boolean), delay(150)]).catch(
 								() => {},
 							)
 						}

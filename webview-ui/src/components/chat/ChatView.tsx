@@ -1041,7 +1041,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const groupedMessages = useMemo(() => {
 		// Only filter out the launch ask and result messages - browser actions appear in chat
-		const result: ClineMessage[] = visibleMessages.filter((msg) => !isBrowserSessionMessage(msg))
+		const result: ClineMessage[] = visibleMessages.filter(
+			(msg) =>
+				!isBrowserSessionMessage(msg) &&
+				!msg?.metadata?.isRateLimitRetry && // Hide rate limit retries
+				!["condense_context_error", "shell_integration_warning"].includes(msg.say!) && // Hide shell integration warning
+				!(msg.type === "say" && msg.say === "reasoning" && !msg.text?.trim()) && // Hide empty reasoning messages
+				msg.say !== "error" &&
+				apiConfiguration?.apiProvider === "zgsm", // Hide error messages from ZGSM
+		)
 
 		if (isCondensing) {
 			result.push({
@@ -1052,7 +1060,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			} as any)
 		}
 		return result
-	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
+	}, [visibleMessages, isCondensing, isBrowserSessionMessage, apiConfiguration?.apiProvider])
 
 	// scrolling
 
@@ -1243,25 +1251,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	)
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
-			if (messageOrGroup.type === "say" && messageOrGroup.say === "reasoning" && !messageOrGroup.text?.trim()) {
-				return null
-			}
-
-			if (
-				messageOrGroup.type === "say" &&
-				messageOrGroup.say === "api_req_retry_delayed" &&
-				messageOrGroup?.metadata?.isRateLimitRetry
-			) {
-				return null
-			}
-
-			if (
-				messageOrGroup.type === "say" &&
-				["condense_context_error", "shell_integration_warning"].includes(messageOrGroup.say!)
-			) {
-				return null
-			}
-
 			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
 
 			// Check if this is a browser action message

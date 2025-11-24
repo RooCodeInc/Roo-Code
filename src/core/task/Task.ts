@@ -1525,15 +1525,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
-		await this.say(
-			"error",
-			`CoStrict tried to use ${toolName}${
-				relPath ? ` for '${relPath.toPosix()}'` : ""
-			} without value for required parameter '${paramName}'. Retrying...`,
-		)
+		const errorMsg = `CoStrict tried to use ${toolName}${
+			relPath ? ` for '${relPath.toPosix()}'` : ""
+		} without value for required parameter '${paramName}'. Retrying...`
+		await this.say("error", errorMsg)
 		const modelInfo = this.api.getModel().info
-		const state = await this.providerRef.deref()?.getState()
+		// const state = await this.providerRef.deref()?.getState()
 		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		this.providerRef.deref()?.log(errorMsg, "error")
 		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, toolProtocol))
 	}
 
@@ -1676,7 +1675,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// we need to replace all tool use blocks with a text block since the API disallows
 		// conversations with tool uses and no tool schema.
 		// For native protocol, we preserve tool_use and tool_result blocks as they're expected by the API.
-		const state = await this.providerRef.deref()?.getState()
+		// const state = await this.providerRef.deref()?.getState()
 		const protocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
 		const useNative = isNativeProtocol(protocol)
 
@@ -2086,7 +2085,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				break
 			} else {
 				const modelInfo = this.api.getModel().info
-				const state = await this.providerRef.deref()?.getState()
+				// const state = await this.providerRef.deref()?.getState()
 				const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(toolProtocol) }]
 				this.consecutiveMistakeCount++
@@ -2952,7 +2951,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					if (!didToolUse) {
 						const modelInfo = this.api.getModel().info
-						const state = await this.providerRef.deref()?.getState()
+						// const state = await this.providerRef.deref()?.getState()
 						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
 						this.consecutiveMistakeCount++
@@ -3060,7 +3059,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							}
 
 							await this.say("error", errorMsg)
-
+							this.providerRef.deref()?.log(errorMsg, "error")
 							await this.addToApiConversationHistory({
 								role: "assistant",
 								content: [{ type: "text", text: "Failure: I did not provide a response." }],
@@ -3307,7 +3306,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Show countdown timer
 			for (let i = rateLimitDelay; i > 0; i--) {
 				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
+				this.providerRef?.deref()?.log(`"api_req_retry_delayed" ${delayMessage}`)
 				await delay(1000)
 			}
 		}

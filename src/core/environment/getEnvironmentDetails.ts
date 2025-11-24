@@ -1,5 +1,6 @@
 import path from "path"
 import os from "os"
+import fs from "fs/promises"
 
 import * as vscode from "vscode"
 import pWaitFor from "p-wait-for"
@@ -58,13 +59,32 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 	const { maxOpenTabsContext } = state ?? {}
 	const maxTabs = maxOpenTabsContext ?? 20
-	const openTabPaths = vscode.window.tabGroups.all
+
+	// 获取所有文本编辑器标签的文件路径
+	const tabUris = vscode.window.tabGroups.all
 		.flatMap((group) => group.tabs)
 		.filter((tab) => tab.input instanceof vscode.TabInputText)
-		.map((tab) => (tab.input as vscode.TabInputText).uri.fsPath)
+		.map((tab) => (tab.input as vscode.TabInputText).uri)
 		.filter(Boolean)
-		.map((absolutePath) => path.relative(cline.cwd, absolutePath).toPosix())
-		.slice(0, maxTabs)
+
+	// 使用 Promise.all 并行检查文件是否存在
+	const existingTabPaths = await Promise.all(
+		tabUris.map(async (uri) => {
+			try {
+				// 检查文件是否存在
+				await fs.stat(uri.fsPath)
+				// 文件存在，返回相对路径
+				const absolutePath = uri.fsPath
+				return path.relative(cline.cwd, absolutePath).toPosix()
+			} catch (error) {
+				// 文件不存在或无法访问，返回 null
+				return null
+			}
+		}),
+	)
+
+	// 过滤掉 null 值（不存在的文件）并限制数量
+	const openTabPaths = existingTabPaths.filter((path) => path !== null).slice(0, maxTabs)
 
 	// Filter paths through rooIgnoreController
 	const allowedOpenTabs = cline.rooIgnoreController

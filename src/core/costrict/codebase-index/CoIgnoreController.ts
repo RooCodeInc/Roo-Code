@@ -39,24 +39,28 @@ export class CoIgnoreController {
 	 */
 	protected setupFileWatcher(): void {
 		this.ignoreFilenames.forEach((filename) => {
-			const rooignorePattern = new vscode.RelativePattern(this.cwd, filename)
-			const fileWatcher = vscode.workspace.createFileSystemWatcher(rooignorePattern)
+			try {
+				const rooignorePattern = new vscode.RelativePattern(this.cwd, filename)
+				const fileWatcher = vscode.workspace.createFileSystemWatcher(rooignorePattern)
 
-			// Watch for changes and updates
-			this.disposables.push(
-				fileWatcher.onDidChange(() => {
-					this.loadRooIgnore()
-				}),
-				fileWatcher.onDidCreate(() => {
-					this.loadRooIgnore()
-				}),
-				fileWatcher.onDidDelete(() => {
-					this.loadRooIgnore()
-				}),
-			)
+				// Watch for changes and updates
+				this.disposables.push(
+					fileWatcher.onDidChange(() => {
+						this.loadRooIgnore()
+					}),
+					fileWatcher.onDidCreate(() => {
+						this.loadRooIgnore()
+					}),
+					fileWatcher.onDidDelete(() => {
+						this.loadRooIgnore()
+					}),
+				)
 
-			// Add fileWatcher itself to disposables
-			this.disposables.push(fileWatcher)
+				// Add fileWatcher itself to disposables
+				this.disposables.push(fileWatcher)
+			} catch (error) {
+				// ".coignore", ".gitignore", ".rooignore" doesn't exist at this level, continue
+			}
 		})
 	}
 
