@@ -48,6 +48,17 @@ export const anthropicModels = {
 			},
 		],
 	},
+	"claude-opus-4-5-20251101": {
+		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 15.0, // $15 per million input tokens
+		outputPrice: 75.0, // $75 per million output tokens
+		cacheWritesPrice: 18.75, // $18.75 per million tokens
+		cacheReadsPrice: 1.5, // $1.50 per million tokens
+		supportsReasoningBudget: true,
+	},
 	"claude-opus-4-1-20250805": {
 		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
