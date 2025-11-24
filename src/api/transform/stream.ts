@@ -6,6 +6,9 @@ export type ApiStreamChunk =
 	| ApiStreamReasoningChunk
 	| ApiStreamGroundingChunk
 	| ApiStreamToolCallChunk
+	| ApiStreamToolCallStartChunk
+	| ApiStreamToolCallDeltaChunk
+	| ApiStreamToolCallEndChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -44,6 +47,23 @@ export interface ApiStreamToolCallChunk {
 	id: string
 	name: string
 	arguments: string
+}
+
+export interface ApiStreamToolCallStartChunk {
+	type: "tool_call_start"
+	id: string
+	name: string
+}
+
+export interface ApiStreamToolCallDeltaChunk {
+	type: "tool_call_delta"
+	id: string
+	delta: string
+}
+
+export interface ApiStreamToolCallEndChunk {
+	type: "tool_call_end"
+	id: string
 }
 
 export interface GroundingSource {

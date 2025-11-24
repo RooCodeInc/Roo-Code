@@ -719,6 +719,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			filePath = legacyPath
 		}
 
+		if (!filePath && block.nativeArgs && "files" in block.nativeArgs && Array.isArray(block.nativeArgs.files)) {
+			const files = block.nativeArgs.files
+			if (files.length > 0 && files[0]?.path) {
+				filePath = files[0].path
+			}
+		}
+
 		const fullPath = filePath ? path.resolve(task.cwd, filePath) : ""
 		const sharedMessageProps: ClineSayTool = {
 			tool: "readFile",

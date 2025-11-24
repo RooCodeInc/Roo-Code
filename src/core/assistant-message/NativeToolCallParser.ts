@@ -1,5 +1,6 @@
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
+import { parseJSON } from "partial-json"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -17,6 +18,180 @@ type NativeArgsFor<TName extends ToolName> = TName extends keyof NativeToolArgs 
  * nativeArgs directly rather than relying on synthesized legacy params.
  */
 export class NativeToolCallParser {
+	// Streaming state management
+	private static streamingToolCalls = new Map<
+		string,
+		{
+			id: string
+			name: ToolName
+			argumentsAccumulator: string
+		}
+	>()
+
+	/**
+	 * Start streaming a new tool call.
+	 * Initializes tracking for incremental argument parsing.
+	 */
+	public static startStreamingToolCall(id: string, name: ToolName): void {
+		this.streamingToolCalls.set(id, {
+			id,
+			name,
+			argumentsAccumulator: "",
+		})
+	}
+
+	/**
+	 * Process a chunk of JSON arguments for a streaming tool call.
+	 * Uses partial-json-parser to extract values from incomplete JSON immediately.
+	 * Returns a partial ToolUse with currently parsed parameters.
+	 */
+	public static processStreamingChunk(id: string, chunk: string): ToolUse | null {
+		const toolCall = this.streamingToolCalls.get(id)
+		if (!toolCall) {
+			console.warn(`[NativeToolCallParser] Received chunk for unknown tool call: ${id}`)
+			return null
+		}
+
+		// Accumulate the JSON string
+		toolCall.argumentsAccumulator += chunk
+
+		// Parse whatever we can from the incomplete JSON!
+		// partial-json-parser extracts partial values (strings, arrays, objects) immediately
+		try {
+			const partialArgs = parseJSON(toolCall.argumentsAccumulator)
+
+			// Create partial ToolUse with extracted values
+			return this.createPartialToolUse(
+				toolCall.id,
+				toolCall.name,
+				partialArgs || {},
+				true, // partial
+			)
+		} catch {
+			// Even partial-json-parser can fail on severely malformed JSON
+			// Return null and wait for next chunk
+			return null
+		}
+	}
+
+	/**
+	 * Finalize a streaming tool call.
+	 * Parses the complete JSON and returns the final ToolUse.
+	 */
+	public static finalizeStreamingToolCall(id: string): ToolUse | null {
+		const toolCall = this.streamingToolCalls.get(id)
+		if (!toolCall) {
+			console.warn(`[NativeToolCallParser] Attempting to finalize unknown tool call: ${id}`)
+			return null
+		}
+
+		// Parse the complete accumulated JSON
+		const finalToolUse = this.parseToolCall({
+			id: toolCall.id,
+			name: toolCall.name,
+			arguments: toolCall.argumentsAccumulator,
+		})
+
+		// Clean up streaming state
+		this.streamingToolCalls.delete(id)
+
+		return finalToolUse
+	}
+
+	/**
+	 * Create a partial ToolUse from currently parsed arguments.
+	 * Used during streaming to show progress.
+	 */
+	private static createPartialToolUse(
+		id: string,
+		name: ToolName,
+		partialArgs: Record<string, any>,
+		partial: boolean,
+	): ToolUse | null {
+		// Build legacy params for display
+		// NOTE: For streaming partial updates, we MUST populate params even for complex types
+		// because tool.handlePartial() methods rely on params to show UI updates
+		const params: Partial<Record<ToolParamName, string>> = {}
+
+		for (const [key, value] of Object.entries(partialArgs)) {
+			if (toolParamNames.includes(key as ToolParamName)) {
+				params[key as ToolParamName] = typeof value === "string" ? value : JSON.stringify(value)
+			}
+		}
+
+		// Build partial nativeArgs based on what we have so far
+		let nativeArgs: any = undefined
+
+		switch (name) {
+			case "read_file":
+				if (partialArgs.files && Array.isArray(partialArgs.files)) {
+					nativeArgs = { files: partialArgs.files }
+				}
+				break
+
+			case "attempt_completion":
+				if (partialArgs.result) {
+					nativeArgs = { result: partialArgs.result }
+				}
+				break
+
+			case "execute_command":
+				if (partialArgs.command) {
+					nativeArgs = {
+						command: partialArgs.command,
+						cwd: partialArgs.cwd,
+					}
+				}
+				break
+
+			case "insert_content":
+				if (
+					partialArgs.path !== undefined ||
+					partialArgs.line !== undefined ||
+					partialArgs.content !== undefined
+				) {
+					nativeArgs = {
+						path: partialArgs.path,
+						line:
+							typeof partialArgs.line === "number"
+								? partialArgs.line
+								: partialArgs.line
+									? parseInt(String(partialArgs.line), 10)
+									: undefined,
+						content: partialArgs.content,
+					}
+				}
+				break
+
+			case "write_to_file":
+				if (partialArgs.path || partialArgs.content || partialArgs.line_count !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						content: partialArgs.content,
+						line_count:
+							typeof partialArgs.line_count === "number"
+								? partialArgs.line_count
+								: partialArgs.line_count
+									? parseInt(String(partialArgs.line_count), 10)
+									: undefined,
+					}
+				}
+				break
+
+			// Add other tools as needed
+			default:
+				break
+		}
+
+		return {
+			type: "tool_use" as const,
+			name,
+			params,
+			partial,
+			nativeArgs,
+		}
+	}
+
 	/**
 	 * Convert a native tool call chunk to a ToolUse object.
 	 *

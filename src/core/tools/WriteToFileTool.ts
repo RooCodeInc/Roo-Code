@@ -290,7 +290,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		if (!relPath || newContent === undefined) {
+		if (!relPath) {
 			return
 		}
 
@@ -321,7 +321,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const sharedMessageProps: ClineSayTool = {
 			tool: fileExists ? "editedExistingFile" : "newFileCreated",
 			path: getReadablePath(task.cwd, relPath),
-			content: newContent,
+			content: newContent || "",
 			isOutsideWorkspace,
 			isProtected: isWriteProtected,
 		}
@@ -329,14 +329,16 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const partialMessage = JSON.stringify(sharedMessageProps)
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 
-		if (!task.diffViewProvider.isEditing) {
-			await task.diffViewProvider.open(relPath)
-		}
+		if (newContent) {
+			if (!task.diffViewProvider.isEditing) {
+				await task.diffViewProvider.open(relPath)
+			}
 
-		await task.diffViewProvider.update(
-			everyLineHasLineNumbers(newContent) ? stripLineNumbers(newContent) : newContent,
-			false,
-		)
+			await task.diffViewProvider.update(
+				everyLineHasLineNumbers(newContent) ? stripLineNumbers(newContent) : newContent,
+				false,
+			)
+		}
 	}
 }
 

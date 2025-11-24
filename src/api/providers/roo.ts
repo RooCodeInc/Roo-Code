@@ -126,8 +126,17 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			)
 
 			let lastUsage: RooUsage | undefined = undefined
-			// Accumulate tool calls by index - similar to how reasoning accumulates
-			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
+			// Track tool calls by index to emit streaming chunks
+			const toolCallTracker = new Map<
+				number,
+				{
+					id: string
+					name: string
+					argumentsAccumulator: string
+					hasStarted: boolean
+					deltaBuffer: string[]
+				}
+			>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
@@ -150,24 +159,66 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 						}
 					}
 
-					// Check for tool calls in delta
+					// Check for tool calls in delta - emit streaming chunks
 					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 						for (const toolCall of delta.tool_calls) {
 							const index = toolCall.index
-							const existing = toolCallAccumulator.get(index)
+							let tracked = toolCallTracker.get(index)
 
-							if (existing) {
-								// Accumulate arguments for existing tool call
-								if (toolCall.function?.arguments) {
-									existing.arguments += toolCall.function.arguments
-								}
-							} else {
-								// Start new tool call accumulation
-								toolCallAccumulator.set(index, {
-									id: toolCall.id || "",
+							// Initialize new tool call tracking
+							if (toolCall.id && !tracked) {
+								tracked = {
+									id: toolCall.id,
 									name: toolCall.function?.name || "",
-									arguments: toolCall.function?.arguments || "",
-								})
+									argumentsAccumulator: "",
+									hasStarted: false,
+									deltaBuffer: [],
+								}
+								toolCallTracker.set(index, tracked)
+							}
+
+							if (!tracked) continue
+
+							// Update name if present in delta and not yet set
+							if (toolCall.function?.name) {
+								tracked.name = toolCall.function.name
+							}
+
+							// Emit start event when we have the name
+							if (!tracked.hasStarted && tracked.name) {
+								yield {
+									type: "tool_call_start",
+									id: tracked.id,
+									name: tracked.name,
+								}
+								tracked.hasStarted = true
+
+								// Flush buffered deltas
+								if (tracked.deltaBuffer.length > 0) {
+									for (const delta of tracked.deltaBuffer) {
+										yield {
+											type: "tool_call_delta",
+											id: tracked.id,
+											delta,
+										}
+									}
+									tracked.deltaBuffer = []
+								}
+							}
+
+							// Emit delta event for argument chunks
+							if (toolCall.function?.arguments) {
+								tracked.argumentsAccumulator += toolCall.function.arguments
+
+								if (tracked.hasStarted) {
+									yield {
+										type: "tool_call_delta",
+										id: tracked.id,
+										delta: toolCall.function.arguments,
+									}
+								} else {
+									tracked.deltaBuffer.push(toolCall.function.arguments)
+								}
 							}
 						}
 					}
@@ -180,18 +231,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					}
 				}
 
-				// When finish_reason is 'tool_calls', yield all accumulated tool calls
-				if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
-					for (const [index, toolCall] of toolCallAccumulator.entries()) {
+				// When finish_reason is 'tool_calls', emit end events
+				if (finishReason === "tool_calls" && toolCallTracker.size > 0) {
+					for (const [, tracked] of toolCallTracker.entries()) {
 						yield {
-							type: "tool_call",
-							id: toolCall.id,
-							name: toolCall.name,
-							arguments: toolCall.arguments,
+							type: "tool_call_end",
+							id: tracked.id,
 						}
 					}
-					// Clear accumulator after yielding
-					toolCallAccumulator.clear()
+					toolCallTracker.clear()
 				}
 
 				if (chunk.usage) {
@@ -199,18 +247,18 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				}
 			}
 
-			// Fallback: If stream ends with accumulated tool calls that weren't yielded
+			// Fallback: If stream ends with tracked tool calls that weren't finalized
 			// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-			if (toolCallAccumulator.size > 0) {
-				for (const [index, toolCall] of toolCallAccumulator.entries()) {
-					yield {
-						type: "tool_call",
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
+			if (toolCallTracker.size > 0) {
+				for (const [, tracked] of toolCallTracker.entries()) {
+					if (tracked.hasStarted) {
+						yield {
+							type: "tool_call_end",
+							id: tracked.id,
+						}
 					}
 				}
-				toolCallAccumulator.clear()
+				toolCallTracker.clear()
 			}
 
 			if (lastUsage) {
