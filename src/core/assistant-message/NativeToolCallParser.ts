@@ -41,6 +41,23 @@ export class NativeToolCallParser {
 	}
 
 	/**
+	 * Clear all streaming tool call state.
+	 * Should be called when a new API request starts to prevent memory leaks
+	 * from interrupted streams.
+	 */
+	public static clearAllStreamingToolCalls(): void {
+		this.streamingToolCalls.clear()
+	}
+
+	/**
+	 * Check if there are any active streaming tool calls.
+	 * Useful for debugging and testing.
+	 */
+	public static hasActiveStreamingToolCalls(): boolean {
+		return this.streamingToolCalls.size > 0
+	}
+
+	/**
 	 * Process a chunk of JSON arguments for a streaming tool call.
 	 * Uses partial-json-parser to extract values from incomplete JSON immediately.
 	 * Returns a partial ToolUse with currently parsed parameters.
@@ -145,6 +162,9 @@ export class NativeToolCallParser {
 				break
 
 			case "insert_content":
+				// For partial tool calls, we build nativeArgs incrementally as fields arrive.
+				// Unlike parseToolCall which validates all required fields, partial parsing
+				// needs to show progress as each field streams in.
 				if (
 					partialArgs.path !== undefined ||
 					partialArgs.line !== undefined ||
@@ -155,7 +175,7 @@ export class NativeToolCallParser {
 						line:
 							typeof partialArgs.line === "number"
 								? partialArgs.line
-								: partialArgs.line
+								: partialArgs.line !== undefined
 									? parseInt(String(partialArgs.line), 10)
 									: undefined,
 						content: partialArgs.content,

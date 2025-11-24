@@ -2253,6 +2253,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser?.reset()
 				this.streamingToolCallIndices.clear()
+				// Clear any leftover streaming tool call state from previous interrupted streams
+				NativeToolCallParser.clearAllStreamingToolCalls()
 
 				await this.diffViewProvider.reset()
 
