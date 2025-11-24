@@ -18,8 +18,8 @@ export async function accessMcpResourceTool(
 		if (block.partial) {
 			const partialMessage = JSON.stringify({
 				type: "access_mcp_resource",
-				serverName: removeClosingTag("server_name", server_name),
-				uri: removeClosingTag("uri", uri),
+				serverName: server_name || "",
+				uri: uri || "",
 			} satisfies ClineAskUseMcpServer)
 
 			await cline.ask("use_mcp_server", partialMessage, block.partial).catch(() => {})

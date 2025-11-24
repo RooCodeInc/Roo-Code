@@ -91,12 +91,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			newContent = unescapeHtmlEntities(newContent)
 		}
 
-		const fullPath = relPath ? path.resolve(task.cwd, removeClosingTag("path", relPath)) : ""
+		const fullPath = relPath ? path.resolve(task.cwd, relPath) : ""
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: fileExists ? "editedExistingFile" : "newFileCreated",
-			path: getReadablePath(task.cwd, removeClosingTag("path", relPath)),
+			path: getReadablePath(task.cwd, relPath),
 			content: newContent,
 			isOutsideWorkspace,
 			isProtected: isWriteProtected,
