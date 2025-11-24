@@ -773,6 +773,8 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Habilitar generació d'imatges amb IA",
+			"providerLabel": "Proveïdor",
+			"providerDescription": "Selecciona el proveïdor per a la generació d'imatges.",
 			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
 			"openRouterApiKeyLabel": "Clau API d'OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introdueix la teva clau API d'OpenRouter",

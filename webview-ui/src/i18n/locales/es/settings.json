@@ -773,6 +773,8 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Habilitar generación de imágenes con IA",
+			"providerLabel": "Proveedor",
+			"providerDescription": "Selecciona el proveedor para la generación de imágenes.",
 			"description": "Cuando esté habilitado, Roo puede generar imágenes a partir de prompts de texto usando los modelos de generación de imágenes de OpenRouter. Requiere que se configure una clave de API de OpenRouter.",
 			"openRouterApiKeyLabel": "Clave API de OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introduce tu clave API de OpenRouter",

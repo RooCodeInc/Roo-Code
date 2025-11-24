@@ -773,6 +773,8 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Activer la génération d'images IA",
+			"providerLabel": "Fournisseur",
+			"providerDescription": "Sélectionnez le fournisseur pour la génération d'images.",
 			"description": "Lorsqu'activé, Roo peut générer des images à partir de prompts textuels en utilisant les modèles de génération d'images d'OpenRouter. Nécessite qu'une clé API OpenRouter soit configurée.",
 			"openRouterApiKeyLabel": "Clé API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Entrez votre clé API OpenRouter",

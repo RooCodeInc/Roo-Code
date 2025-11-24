@@ -10,6 +10,7 @@ vi.mock("@/i18n/TranslationContext", () => ({
 }))
 
 describe("ImageGenerationSettings", () => {
+	const mockSetImageGenerationProvider = vi.fn()
 	const mockSetOpenRouterImageApiKey = vi.fn()
 	const mockSetImageGenerationSelectedModel = vi.fn()
 	const mockOnChange = vi.fn()
@@ -17,8 +18,10 @@ describe("ImageGenerationSettings", () => {
 	const defaultProps = {
 		enabled: false,
 		onChange: mockOnChange,
+		imageGenerationProvider: undefined,
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,
+		setImageGenerationProvider: mockSetImageGenerationProvider,
 		setOpenRouterImageApiKey: mockSetOpenRouterImageApiKey,
 		setImageGenerationSelectedModel: mockSetImageGenerationSelectedModel,
 	}
@@ -32,6 +35,7 @@ describe("ImageGenerationSettings", () => {
 			render(<ImageGenerationSettings {...defaultProps} />)
 
 			// Should NOT call setter functions on initial mount to prevent dirty state
+			expect(mockSetImageGenerationProvider).not.toHaveBeenCalled()
 			expect(mockSetOpenRouterImageApiKey).not.toHaveBeenCalled()
 			expect(mockSetImageGenerationSelectedModel).not.toHaveBeenCalled()
 		})
@@ -46,6 +50,7 @@ describe("ImageGenerationSettings", () => {
 			)
 
 			// Should NOT call setter functions on initial mount to prevent dirty state
+			expect(mockSetImageGenerationProvider).not.toHaveBeenCalled()
 			expect(mockSetOpenRouterImageApiKey).not.toHaveBeenCalled()
 			expect(mockSetImageGenerationSelectedModel).not.toHaveBeenCalled()
 		})

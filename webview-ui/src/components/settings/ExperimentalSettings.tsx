@@ -1,7 +1,7 @@
 import { HTMLAttributes } from "react"
 import { FlaskConical } from "lucide-react"
 
-import type { Experiments } from "@roo-code/types"
+import type { Experiments, ImageGenerationProvider } from "@roo-code/types"
 
 import { EXPERIMENT_IDS, experimentConfigsMap } from "@roo/experiments"
 
@@ -19,8 +19,10 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setExperimentEnabled: SetExperimentEnabled
 	apiConfiguration?: any
 	setApiConfigurationField?: any
+	imageGenerationProvider?: ImageGenerationProvider
 	openRouterImageApiKey?: string
 	openRouterImageGenerationSelectedModel?: string
+	setImageGenerationProvider?: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey?: (apiKey: string) => void
 	setImageGenerationSelectedModel?: (model: string) => void
 }
@@ -30,8 +32,10 @@ export const ExperimentalSettings = ({
 	setExperimentEnabled,
 	apiConfiguration,
 	setApiConfigurationField,
+	imageGenerationProvider,
 	openRouterImageApiKey,
 	openRouterImageGenerationSelectedModel,
+	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
 	className,
@@ -66,6 +70,7 @@ export const ExperimentalSettings = ({
 						}
 						if (
 							config[0] === "IMAGE_GENERATION" &&
+							setImageGenerationProvider &&
 							setOpenRouterImageApiKey &&
 							setImageGenerationSelectedModel
 						) {
@@ -76,8 +81,10 @@ export const ExperimentalSettings = ({
 									onChange={(enabled) =>
 										setExperimentEnabled(EXPERIMENT_IDS.IMAGE_GENERATION, enabled)
 									}
+									imageGenerationProvider={imageGenerationProvider}
 									openRouterImageApiKey={openRouterImageApiKey}
 									openRouterImageGenerationSelectedModel={openRouterImageGenerationSelectedModel}
+									setImageGenerationProvider={setImageGenerationProvider}
 									setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 									setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 								/>
