@@ -53,10 +53,10 @@ export const anthropicModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		inputPrice: 15.0, // $15 per million input tokens
-		outputPrice: 75.0, // $75 per million output tokens
-		cacheWritesPrice: 18.75, // $18.75 per million tokens
-		cacheReadsPrice: 1.5, // $1.50 per million tokens
+		inputPrice: 5.0, // $5 per million input tokens
+		outputPrice: 25.0, // $25 per million output tokens
+		cacheWritesPrice: 6.25, // $6.25 per million tokens
+		cacheReadsPrice: 0.5, // $0.50 per million tokens
 		supportsReasoningBudget: true,
 	},
 	"claude-opus-4-1-20250805": {
