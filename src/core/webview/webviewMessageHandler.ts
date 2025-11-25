@@ -2362,11 +2362,6 @@ export const webviewMessageHandler = async (
 
 			const settings = message.codeIndexSettings
 
-			// DEBUG: Log received settings
-			provider.log(
-				`[DEBUG] Received settings to save: provider=${settings.codebaseIndexEmbedderProvider}, bedrockRegion=${settings.codebaseIndexBedrockRegion}, bedrockProfile=${settings.codebaseIndexBedrockProfile}`,
-			)
-
 			try {
 				// Check if embedder provider has changed
 				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
@@ -2388,11 +2383,6 @@ export const webviewMessageHandler = async (
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 				}
-
-				// DEBUG: Log what we're saving to global state
-				provider.log(
-					`[DEBUG] Saving to global state: bedrockRegion=${globalStateConfig.codebaseIndexBedrockRegion}, bedrockProfile=${globalStateConfig.codebaseIndexBedrockProfile}`,
-				)
 
 				// Save global state first
 				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
@@ -2434,11 +2424,6 @@ export const webviewMessageHandler = async (
 						settings.codebaseIndexOpenRouterApiKey,
 					)
 				}
-
-				// DEBUG: Log what we're sending back to webview
-				provider.log(
-					`[DEBUG] Sending success response to webview: bedrockRegion=${globalStateConfig.codebaseIndexBedrockRegion}, bedrockProfile=${globalStateConfig.codebaseIndexBedrockProfile}`,
-				)
 
 				// Send success response first - settings are saved regardless of validation
 				await provider.postMessageToWebview({

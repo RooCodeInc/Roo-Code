@@ -248,14 +248,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Initialize settings from global state
 	useEffect(() => {
 		if (codebaseIndexConfig) {
-			// DEBUG: Log what we're loading from config
-			console.log("[CodeIndexPopover] Loading settings from codebaseIndexConfig:", {
-				bedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion,
-				bedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile,
-				provider: codebaseIndexConfig.codebaseIndexEmbedderProvider,
-				fullConfig: codebaseIndexConfig,
-			})
-
 			const settings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
@@ -279,12 +271,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexVercelAiGatewayApiKey: "",
 				codebaseIndexOpenRouterApiKey: "",
 			}
-
-			console.log("[CodeIndexPopover] Setting initial/current settings to:", {
-				bedrockRegion: settings.codebaseIndexBedrockRegion,
-				bedrockProfile: settings.codebaseIndexBedrockProfile,
-			})
-
 			setInitialSettings(settings)
 			setCurrentSettings(settings)
 
@@ -333,14 +319,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			} else if (event.data.type === "codeIndexSettingsSaved") {
 				if (event.data.success) {
 					setSaveStatus("saved")
-
-					// DEBUG: Log what backend returned
-					console.log("[CodeIndexPopover] Received save success from backend:", {
-						bedrockRegion: event.data.settings?.codebaseIndexBedrockRegion,
-						bedrockProfile: event.data.settings?.codebaseIndexBedrockProfile,
-						allSettings: event.data.settings,
-					})
-
 					// Use the settings returned from the backend to update both initial and current settings
 					// This ensures we have the exact values that were saved
 					if (event.data.settings) {
@@ -373,20 +351,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								currentSettingsRef.current.codebaseIndexVercelAiGatewayApiKey,
 						}
 
-						console.log("[CodeIndexPopover] Updated settings after save:", {
-							bedrockRegion: savedSettings.codebaseIndexBedrockRegion,
-							bedrockProfile: savedSettings.codebaseIndexBedrockProfile,
-						})
-
-						console.log("[CodeIndexPopover] About to update state with saved settings:", {
-							bedrockRegion: savedSettings.codebaseIndexBedrockRegion,
-							bedrockProfile: savedSettings.codebaseIndexBedrockProfile,
-						})
-
 						setInitialSettings(savedSettings)
 						setCurrentSettings(savedSettings)
-
-						console.log("[CodeIndexPopover] State updated with saved settings")
 					}
 
 					// Request secret status to ensure we have the latest state
@@ -553,7 +519,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 						errors[err.path[0] as string] = err.message
 					}
 				})
-				console.log("[CodeIndexPopover] Validation errors:", errors)
 				setFormErrors(errors)
 			}
 			return false
@@ -597,8 +562,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	useEscapeKey(open, handlePopoverClose)
 
 	const handleSaveSettings = () => {
-		console.log("[CodeIndexPopover] handleSaveSettings called")
-
 		// Validate settings before saving
 		if (!validateSettings()) {
 			return
@@ -626,14 +589,6 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 		// Always include codebaseIndexEnabled to ensure it's persisted
 		settingsToSave.codebaseIndexEnabled = currentSettings.codebaseIndexEnabled
-
-		// DEBUG: Log Bedrock settings being saved
-		console.log("[CodeIndexPopover] Saving settings:", {
-			provider: settingsToSave.codebaseIndexEmbedderProvider,
-			bedrockRegion: settingsToSave.codebaseIndexBedrockRegion,
-			bedrockProfile: settingsToSave.codebaseIndexBedrockProfile,
-			allSettings: settingsToSave,
-		})
 
 		// Save settings to backend
 		vscode.postMessage({
