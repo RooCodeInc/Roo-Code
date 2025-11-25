@@ -73,7 +73,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 	/**
 	 * Detects if the configured base URL points to Azure OpenAI.
-	 * Azure OpenAI URLs typically contain '.openai.azure.com' or '.azure.com'.
+	 * Azure OpenAI URLs typically end with '.openai.azure.com' or '.azure.com'.
 	 */
 	private isAzureOpenAI(): boolean {
 		const baseUrl = this.options.openAiNativeBaseUrl
@@ -81,7 +81,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		try {
 			const url = new URL(baseUrl)
 			const host = url.host.toLowerCase()
-			return host.includes(".openai.azure.com") || host.includes(".azure.com")
+			// Use endsWith() for secure URL validation to prevent subdomain attacks
+			return host.endsWith(".openai.azure.com") || host.endsWith(".azure.com")
 		} catch {
 			return false
 		}
