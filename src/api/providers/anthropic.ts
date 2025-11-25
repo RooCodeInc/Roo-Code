@@ -23,6 +23,7 @@ import { calculateApiCostAnthropic } from "../../shared/cost"
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
+	private lastThoughtSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -42,115 +43,102 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Reset signature tracking at start of each message
+		this.lastThoughtSignature = undefined
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
-		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
+		let { id: modelId, info: modelInfo, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
+
+		// Determine effective max_tokens
+		// When thinking is enabled, max_tokens MUST be greater than thinking.budget_tokens
+		// Use 64000 - budget_tokens as the effective max tokens for output
+		let effectiveMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		if (thinking && typeof thinking === "object" && "budget_tokens" in thinking) {
+			const budgetTokens = thinking.budget_tokens
+			effectiveMaxTokens = 64000 - budgetTokens
+		}
+
+		// Check if prompt caching is supported (use model info, which can be overridden for custom models)
+		const supportsPromptCache = modelInfo.supportsPromptCache
 
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
 		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
+		// Only apply if not using a custom model name (custom models handle their own betas)
 		if (
+			!this.options.anthropicCustomModelName &&
 			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
 			this.options.anthropicBeta1MContext
 		) {
 			betas.push("context-1m-2025-08-07")
 		}
 
-		switch (modelId) {
-			case "claude-sonnet-4-5":
-			case "claude-sonnet-4-20250514":
-			case "claude-opus-4-5-20251101":
-			case "claude-opus-4-1-20250805":
-			case "claude-opus-4-20250514":
-			case "claude-3-7-sonnet-20250219":
-			case "claude-3-5-sonnet-20241022":
-			case "claude-3-5-haiku-20241022":
-			case "claude-3-opus-20240229":
-			case "claude-haiku-4-5-20251001":
-			case "claude-3-haiku-20240307": {
-				/**
-				 * The latest message will be the new user message, one before
-				 * will be the assistant message from a previous request, and
-				 * the user message before that will be a previously cached user
-				 * message. So we need to mark the latest user message as
-				 * ephemeral to cache it for the next request, and mark the
-				 * second to last user message as ephemeral to let the server
-				 * know the last message to retrieve from the cache for the
-				 * current request.
-				 */
-				const userMsgIndices = sanitizedMessages.reduce(
-					(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-					[] as number[],
-				)
+		if (supportsPromptCache) {
+			/**
+			 * The latest message will be the new user message, one before
+			 * will be the assistant message from a previous request, and
+			 * the user message before that will be a previously cached user
+			 * message. So we need to mark the latest user message as
+			 * ephemeral to cache it for the next request, and mark the
+			 * second to last user message as ephemeral to let the server
+			 * know the last message to retrieve from the cache for the
+			 * current request.
+			 */
+			const userMsgIndices = sanitizedMessages.reduce(
+				(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+				[] as number[],
+			)
 
-				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+			const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+			const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-				stream = await this.client.messages.create(
-					{
-						model: modelId,
-						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-						temperature,
-						thinking,
-						// Setting cache breakpoint for system prompt so new tasks can reuse it.
-						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: sanitizedMessages.map((message, index) => {
-							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-								return {
-									...message,
-									content:
-										typeof message.content === "string"
-											? [{ type: "text", text: message.content, cache_control: cacheControl }]
-											: message.content.map((content, contentIndex) =>
-													contentIndex === message.content.length - 1
-														? { ...content, cache_control: cacheControl }
-														: content,
-												),
-								}
-							}
-							return message
-						}),
-						stream: true,
-					},
-					(() => {
-						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-						// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
+			// Add prompt caching beta header
+			betas.push("prompt-caching-2024-07-31")
 
-						// Then check for models that support prompt caching
-						switch (modelId) {
-							case "claude-sonnet-4-5":
-							case "claude-sonnet-4-20250514":
-							case "claude-opus-4-5-20251101":
-							case "claude-opus-4-1-20250805":
-							case "claude-opus-4-20250514":
-							case "claude-3-7-sonnet-20250219":
-							case "claude-3-5-sonnet-20241022":
-							case "claude-3-5-haiku-20241022":
-							case "claude-3-opus-20240229":
-							case "claude-haiku-4-5-20251001":
-							case "claude-3-haiku-20240307":
-								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
-							default:
-								return undefined
-						}
-					})(),
-				)
-				break
-			}
-			default: {
-				stream = (await this.client.messages.create({
+			stream = await this.client.messages.create(
+				{
 					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
-					system: [{ text: systemPrompt, type: "text" }],
-					messages: sanitizedMessages,
+					max_tokens: effectiveMaxTokens,
+					// Temperature cannot be used with extended thinking (must be omitted or set to 1)
+					...(thinking ? {} : { temperature }),
+					// Only include thinking if it's defined with proper structure
+					...(thinking ? { thinking } : {}),
+					// Setting cache breakpoint for system prompt so new tasks can reuse it.
+					system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+					messages: sanitizedMessages.map((message, index) => {
+						if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+							return {
+								...message,
+								content:
+									typeof message.content === "string"
+										? [{ type: "text", text: message.content, cache_control: cacheControl }]
+										: message.content.map((content, contentIndex) =>
+												contentIndex === message.content.length - 1
+													? { ...content, cache_control: cacheControl }
+													: content,
+											),
+							}
+						}
+						return message
+					}),
 					stream: true,
-				})) as any
-				break
-			}
+				},
+				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
+			)
+		} else {
+			// No prompt caching - simpler request
+			stream = (await this.client.messages.create({
+				model: modelId,
+				max_tokens: effectiveMaxTokens,
+				// Temperature cannot be used with extended thinking (must be omitted or set to 1)
+				...(thinking ? {} : { temperature }),
+				// Only include thinking if explicitly enabled (for custom models that support it)
+				...(thinking ? { thinking } : {}),
+				system: [{ text: systemPrompt, type: "text" }],
+				messages: sanitizedMessages,
+				stream: true,
+			})) as any
 		}
 
 		let inputTokens = 0
@@ -224,6 +212,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						case "thinking_delta":
 							yield { type: "reasoning", text: chunk.delta.thinking }
 							break
+						case "signature_delta":
+							// Capture the signature for multi-turn extended thinking
+							this.lastThoughtSignature = (chunk.delta as any).signature
+							break
 						case "text_delta":
 							yield { type: "text", text: chunk.delta.text }
 							break
@@ -258,8 +250,29 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
+		const customModelName = this.options.anthropicCustomModelName
+		const customModelInfo = this.options.anthropicCustomModelInfo
+
+		// If a custom model name is provided (for custom base URLs), use it
+		// but fall back to default model info for parameters
 		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
+
+		// Determine base model info:
+		// 1. If anthropicCustomModelInfo is provided, use it as the base
+		// 2. Otherwise, use the preset model info
+		let info: ModelInfo
+
+		if (customModelName && customModelInfo) {
+			// Use unified custom model info when provided
+			info = { ...customModelInfo }
+		} else {
+			// Use preset model info
+			info = { ...anthropicModels[id] }
+		}
+
+		// If using a custom model name, we use that as the actual model ID sent to the API
+		// but still use the selected model's info for context limits, pricing, etc.
+		const effectiveModelId = customModelName || id
 
 		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
 		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
@@ -288,11 +301,41 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
 		// suffix.
+		// Enable thinking for:
+		// 1. The :thinking model variant
+		// 2. Custom models with supportsReasoningBudget in anthropicCustomModelInfo
+		const enableThinking =
+			id === "claude-3-7-sonnet-20250219:thinking" || (customModelName && info.supportsReasoningBudget)
+
+		let finalModelId = effectiveModelId
+		if (id === "claude-3-7-sonnet-20250219:thinking") {
+			// Only strip the :thinking suffix if we're not using a custom model name
+			finalModelId = customModelName || "claude-3-7-sonnet-20250219"
+		}
+
+		// For extended thinking:
+		// - budget_tokens minimum is 1024
+		// - budget_tokens maximum is 16384
+		// - budget_tokens must be less than max_tokens
+		const THINKING_BUDGET_MIN = 1024
+		const THINKING_BUDGET_MAX = 16384
+		const configuredBudget =
+			params.reasoning && params.reasoning.type === "enabled"
+				? params.reasoning.budget_tokens
+				: THINKING_BUDGET_MIN
+		const thinkingBudget = Math.min(THINKING_BUDGET_MAX, Math.max(THINKING_BUDGET_MIN, configuredBudget))
+
 		return {
-			id: id === "claude-3-7-sonnet-20250219:thinking" ? "claude-3-7-sonnet-20250219" : id,
+			id: finalModelId,
 			info,
-			betas: id === "claude-3-7-sonnet-20250219:thinking" ? ["output-128k-2025-02-19"] : undefined,
+			betas: enableThinking ? ["output-128k-2025-02-19"] : undefined,
 			...params,
+			// Override reasoning if custom thinking is enabled (via anthropicCustomModelInfo)
+			// Use budget_tokens (snake_case) as required by Anthropic API
+			// Note: max_tokens must be greater than budget_tokens
+			...(enableThinking && !params.reasoning
+				? { reasoning: { type: "enabled" as const, budget_tokens: thinkingBudget } }
+				: {}),
 		}
 	}
 
@@ -310,6 +353,14 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		const content = message.content.find(({ type }) => type === "text")
 		return content?.type === "text" ? content.text : ""
+	}
+
+	/**
+	 * Returns the signature from the last thinking block for multi-turn extended thinking.
+	 * This signature is required when sending thinking blocks back to the API.
+	 */
+	public getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
 	}
 
 	/**

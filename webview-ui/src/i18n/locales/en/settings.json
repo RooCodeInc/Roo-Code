@@ -287,6 +287,7 @@
 		"glamaApiKey": "Glama API Key",
 		"getGlamaApiKey": "Get Glama API Key",
 		"useCustomBaseUrl": "Use custom base URL",
+		"useCustomModelName": "Use custom model name",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
 		"useLegacyFormat": "Use legacy OpenAI API format",
@@ -311,6 +312,14 @@
 		"anthropicUseAuthToken": "Pass Anthropic API Key as Authorization header instead of X-Api-Key",
 		"anthropic1MContextBetaLabel": "Enable 1M context window (Beta)",
 		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
+		"anthropic": {
+			"capabilityOverrides": "Model Capability Overrides:",
+			"supportsImages": "Supports images/vision",
+			"supportsPromptCache": "Supports prompt caching",
+			"supportsThinking": "Supports extended thinking",
+			"contextWindow": "Context window:",
+			"maxOutputTokens": "Max output tokens:"
+		},
 		"awsBedrock1MContextBetaLabel": "Enable 1M context window (Beta)",
 		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
 		"basetenApiKey": "Baseten API Key",
@@ -363,6 +372,16 @@
 		"apiKey": "API Key",
 		"openAiBaseUrl": "Base URL",
 		"getOpenAiApiKey": "Get OpenAI API Key",
+		"openAiNative": {
+			"modelOverrides": "Model Overrides",
+			"modelOverridesTooltip": "Override default model behavior for custom deployments like Azure OpenAI",
+			"disablePromptCache": "Disable prompt caching",
+			"disablePromptCacheDescription": "Disables extended prompt cache retention even if the model supports it. Useful for Azure OpenAI deployments that don't support caching.",
+			"enableTemperature": "Enable temperature",
+			"enableTemperatureDescription": "Enables temperature control (0-2). GPT-5 models default to 1.0.",
+			"enableVerbosity": "Enable verbosity",
+			"enableVerbosityDescription": "Enables verbosity control for output length. Controls how concise or detailed the model's responses are."
+		},
 		"mistralApiKey": "Mistral API Key",
 		"getMistralApiKey": "Get Mistral / Codestral API Key",
 		"codestralBaseUrl": "Codestral Base URL (Optional)",
@@ -908,6 +927,7 @@
 		"keyFilePath": "Enter Key File Path...",
 		"projectId": "Enter Project ID...",
 		"customArn": "Enter ARN (e.g. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
+		"customModelName": "e.g. claude-3-opus-20240229",
 		"baseUrl": "Enter base URL...",
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",

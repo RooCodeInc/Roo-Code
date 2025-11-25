@@ -199,6 +199,10 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+	anthropicCustomModelName: z.string().optional(), // Custom model name for custom base URLs.
+	// Unified custom model info object for custom models
+	anthropicCustomModelInfo: modelInfoSchema.nullish(),
+	anthropicUseLegacyFormat: z.boolean().optional(), // Use legacy/simplified API format for compatibility
 })
 
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
@@ -304,6 +308,16 @@ const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	// OpenAI Responses API service tier for openai-native provider only.
 	// UI should only expose this when the selected model supports flex/priority.
 	openAiNativeServiceTier: serviceTierSchema.optional(),
+	// Override to disable prompt caching even if model supports it.
+	openAiNativeDisablePromptCache: z.boolean().optional(),
+	// Override to enable temperature even if model doesn't normally support it.
+	openAiNativeEnableTemperature: z.boolean().optional(),
+	// Temperature value when override is enabled (0-2, default 1 for GPT-5 models)
+	openAiNativeTemperature: z.number().min(0).max(2).optional(),
+	// Override to enable verbosity control even if model doesn't normally support it.
+	openAiNativeEnableVerbosity: z.boolean().optional(),
+	// Verbosity level when override is enabled (low, medium, high)
+	openAiNativeVerbosity: verbosityLevelsSchema.optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({

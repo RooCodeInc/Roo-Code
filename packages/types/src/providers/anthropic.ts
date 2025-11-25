@@ -49,7 +49,7 @@ export const anthropicModels = {
 		],
 	},
 	"claude-opus-4-5-20251101": {
-		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
@@ -60,7 +60,7 @@ export const anthropicModels = {
 		supportsReasoningBudget: true,
 	},
 	"claude-opus-4-1-20250805": {
-		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
@@ -71,7 +71,7 @@ export const anthropicModels = {
 		supportsReasoningBudget: true,
 	},
 	"claude-opus-4-20250514": {
-		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,

@@ -25,6 +25,9 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
+// Azure OpenAI has a 1024 character limit for tool/function descriptions
+const AZURE_TOOL_DESCRIPTION_LIMIT = 1024
+
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
@@ -65,6 +68,31 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+	}
+
+	/**
+	 * Detects if the configured base URL points to Azure OpenAI.
+	 * Azure OpenAI URLs typically contain '.openai.azure.com' or '.azure.com'.
+	 */
+	private isAzureOpenAI(): boolean {
+		const baseUrl = this.options.openAiNativeBaseUrl
+		if (!baseUrl) return false
+		try {
+			const url = new URL(baseUrl)
+			const host = url.host.toLowerCase()
+			return host.includes(".openai.azure.com") || host.includes(".azure.com")
+		} catch {
+			return false
+		}
+	}
+
+	/**
+	 * Truncates a string to the specified limit, adding "..." if truncated.
+	 */
+	private truncateDescription(description: string | undefined, limit: number): string | undefined {
+		if (!description) return description
+		if (description.length <= limit) return description
+		return description.slice(0, limit - 3) + "..."
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -250,6 +278,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Decide whether to enable extended prompt cache retention for this request
 		const promptCacheRetention = this.getPromptCacheRetention(model)
 
+		// Check if using Azure OpenAI for Azure-specific handling
+		const isAzure = this.isAzureOpenAI()
+
 		const body: ResponsesRequestBody = {
 			model: model.id,
 			input: formattedInput,
@@ -270,28 +301,36 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						},
 					}
 				: {}),
-			// Only include temperature if the model supports it
-			...(model.info.supportsTemperature !== false && {
-				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
+			// Only include temperature if the model supports it or user explicitly enabled it via override
+			...((model.info.supportsTemperature !== false || this.options.openAiNativeEnableTemperature) && {
+				// Use provider-specific temperature if override is enabled, otherwise use global setting
+				temperature: this.options.openAiNativeEnableTemperature
+					? (this.options.openAiNativeTemperature ?? 1) // GPT-5 default is 1
+					: (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE),
 			}),
 			// Explicitly include the calculated max output tokens.
 			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
 			...(model.maxTokens ? { max_output_tokens: model.maxTokens } : {}),
 			// Include tier when selected and supported by the model, or when explicitly "default"
+			// Note: Service tier is supported on Azure OpenAI as well
 			...(requestedTier &&
 				(requestedTier === "default" || allowedTierNames.has(requestedTier)) && {
 					service_tier: requestedTier,
 				}),
 			// Enable extended prompt cache retention for models that support it.
 			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
-			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
+			// Note: Azure OpenAI does not support prompt_cache_retention, so we skip it for Azure.
+			...(!isAzure && promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
 			...(metadata?.tools && {
 				tools: metadata.tools
 					.filter((tool) => tool.type === "function")
 					.map((tool) => ({
 						type: "function",
 						name: tool.function.name,
-						description: tool.function.description,
+						// Azure OpenAI has a 1024 character limit for tool descriptions
+						description: isAzure
+							? this.truncateDescription(tool.function.description, AZURE_TOOL_DESCRIPTION_LIMIT)
+							: tool.function.description,
 						parameters: ensureAllRequired(tool.function.parameters),
 						strict: true,
 					})),
@@ -307,9 +346,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
 		}
 
-		// Include text.verbosity only when the model explicitly supports it
-		if (model.info.supportsVerbosity === true) {
-			body.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+		// Include text.verbosity when the model explicitly supports it or user enabled override
+		if (model.info.supportsVerbosity === true || this.options.openAiNativeEnableVerbosity) {
+			// Use provider-specific verbosity if override is enabled, otherwise use global setting or default
+			const verbosityValue = this.options.openAiNativeEnableVerbosity
+				? this.options.openAiNativeVerbosity || "medium"
+				: verbosity || "medium"
+			body.text = { verbosity: verbosityValue as VerbosityLevel }
 		}
 
 		return body
@@ -447,6 +490,40 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		return formattedInput
 	}
 
+	/**
+	 * Builds the correct Responses API URL for OpenAI or Azure OpenAI.
+	 *
+	 * For OpenAI: https://api.openai.com/v1/responses
+	 * For Azure OpenAI: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses?api-version=preview
+	 *
+	 * Azure OpenAI users should provide base URL as:
+	 *   https://YOUR_RESOURCE.openai.azure.com/openai/v1/
+	 * This method normalizes the URL and appends the correct path.
+	 */
+	private buildResponsesApiUrl(): { url: string; isAzure: boolean } {
+		let baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
+		const isAzure = this.isAzureOpenAI()
+
+		// Remove trailing slashes and /v1 suffix for consistent handling
+		baseUrl = baseUrl.replace(/\/+$/, "").replace(/\/v1$/, "")
+
+		if (isAzure) {
+			// Azure OpenAI endpoint
+			// Expected input: https://YOUR_RESOURCE.openai.azure.com/openai/v1/ or https://YOUR_RESOURCE.openai.azure.com/openai/
+			// Expected output: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses?api-version=preview
+			return {
+				url: `${baseUrl}/v1/responses?api-version=preview`,
+				isAzure: true,
+			}
+		}
+
+		// Standard OpenAI
+		return {
+			url: `${baseUrl}/v1/responses`,
+			isAzure: false,
+		}
+	}
+
 	private async *makeResponsesApiRequest(
 		requestBody: any,
 		model: OpenAiNativeModel,
@@ -455,20 +532,27 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
-		const url = `${baseUrl}/v1/responses`
+		const { url, isAzure } = this.buildResponsesApiUrl()
 
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
+		// Build headers - Azure uses api-key header instead of Authorization Bearer
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			Accept: "text/event-stream",
+		}
+
+		if (isAzure) {
+			headers["api-key"] = apiKey
+		} else {
+			headers["Authorization"] = `Bearer ${apiKey}`
+		}
+
 		try {
 			const response = await fetch(url, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-					Accept: "text/event-stream",
-				},
+				headers,
 				body: JSON.stringify(requestBody),
 				signal: this.abortController.signal,
 			})
@@ -1169,8 +1253,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * The policy is driven by ModelInfo.promptCacheRetention so that model-specific details
 	 * live in the shared types layer rather than this provider. When set to "24h" and the
 	 * model supports prompt caching, extended prompt cache retention is requested.
+	 *
+	 * Users can override this by enabling openAiNativeDisablePromptCache to disable caching.
 	 */
 	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
+		// Allow user to disable prompt caching via settings
+		if (this.options.openAiNativeDisablePromptCache) return undefined
+
+		// Azure OpenAI doesn't support prompt_cache_retention
+		if (this.isAzureOpenAI()) return undefined
+
 		if (!model.info.supportsPromptCache) return undefined
 
 		if (model.info.promptCacheRetention === "24h") {
@@ -1293,9 +1385,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 			}
 
-			// Only include temperature if the model supports it
-			if (model.info.supportsTemperature !== false) {
-				requestBody.temperature = this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE
+			// Only include temperature if the model supports it or user explicitly enabled it via override
+			if (model.info.supportsTemperature !== false || this.options.openAiNativeEnableTemperature) {
+				// Use provider-specific temperature if override is enabled, otherwise use global setting
+				requestBody.temperature = this.options.openAiNativeEnableTemperature
+					? (this.options.openAiNativeTemperature ?? 1) // GPT-5 default is 1
+					: (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE)
 			}
 
 			// Include max_output_tokens if available
@@ -1303,9 +1398,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				requestBody.max_output_tokens = model.maxTokens
 			}
 
-			// Include text.verbosity only when the model explicitly supports it
-			if (model.info.supportsVerbosity === true) {
-				requestBody.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+			// Include text.verbosity when the model explicitly supports it or user enabled override
+			if (model.info.supportsVerbosity === true || this.options.openAiNativeEnableVerbosity) {
+				// Use provider-specific verbosity if override is enabled, otherwise use global setting or default
+				const verbosityValue = this.options.openAiNativeEnableVerbosity
+					? this.options.openAiNativeVerbosity || "medium"
+					: verbosity || "medium"
+				requestBody.text = { verbosity: verbosityValue as VerbosityLevel }
 			}
 
 			// Enable extended prompt cache retention for eligible models

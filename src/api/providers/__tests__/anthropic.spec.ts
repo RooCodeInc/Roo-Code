@@ -288,6 +288,86 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
+
+		it("should use anthropicCustomModelInfo when provided with custom model name", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				anthropicBaseUrl: "https://custom.proxy.com",
+				anthropicCustomModelName: "custom-opus-4.5",
+				anthropicCustomModelInfo: {
+					maxTokens: 64000,
+					contextWindow: 200000,
+					supportsImages: true,
+					supportsPromptCache: true,
+					supportsReasoningBudget: true,
+					inputPrice: 5.0,
+					outputPrice: 25.0,
+				},
+			})
+			const model = handler.getModel()
+			expect(model.id).toBe("custom-opus-4.5")
+			expect(model.info.maxTokens).toBe(64000)
+			expect(model.info.contextWindow).toBe(200000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
+			expect(model.info.supportsReasoningBudget).toBe(true)
+			expect(model.info.inputPrice).toBe(5.0)
+			expect(model.info.outputPrice).toBe(25.0)
+		})
+
+		it("should enable thinking for custom models with supportsReasoningBudget in anthropicCustomModelInfo", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				anthropicCustomModelName: "custom-thinking-model",
+				anthropicCustomModelInfo: {
+					contextWindow: 200000,
+					supportsPromptCache: true,
+					supportsReasoningBudget: true,
+				},
+			})
+			const model = handler.getModel()
+			expect(model.betas).toContain("output-128k-2025-02-19")
+			expect(model.reasoning).toBeDefined()
+			expect(model.reasoning?.type).toBe("enabled")
+		})
+
+		it("should not enable thinking for custom models without supportsReasoningBudget", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				anthropicCustomModelName: "custom-no-thinking-model",
+				anthropicCustomModelInfo: {
+					contextWindow: 200000,
+					supportsPromptCache: true,
+					supportsReasoningBudget: false,
+				},
+			})
+			const model = handler.getModel()
+			expect(model.betas).toBeUndefined()
+		})
+
+		it("should fall back to preset model info when anthropicCustomModelInfo is not provided", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-5",
+			})
+			const model = handler.getModel()
+			expect(model.info.maxTokens).toBe(64000)
+			expect(model.info.contextWindow).toBe(200000)
+			expect(model.info.supportsReasoningBudget).toBe(true)
+		})
+
+		it("should require both customModelName and customModelInfo to use custom model info", () => {
+			// Only customModelName without customModelInfo should fall back to preset
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-5-sonnet-20241022",
+				anthropicCustomModelName: "custom-model",
+			})
+			const model = handler.getModel()
+			// Should use the preset model info for claude-3-5-sonnet-20241022
+			expect(model.info.maxTokens).toBe(8192)
+			expect(model.info.supportsReasoningBudget).toBeUndefined()
+		})
 	})
 
 	describe("reasoning block filtering", () => {

@@ -2,13 +2,23 @@ import { useCallback, useState } from "react"
 import { Checkbox } from "vscrui"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import type { ModelInfo, ProviderSettings } from "@roo-code/types"
+import type { ModelInfo, ProviderSettings, VerbosityLevel } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, StandardTooltip } from "@src/components/ui"
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	StandardTooltip,
+	Slider,
+} from "@src/components/ui"
 
-import { inputEventTransform } from "../transforms"
+import { inputEventTransform, noTransform } from "../transforms"
+
+const VERBOSITY_OPTIONS: VerbosityLevel[] = ["low", "medium", "high"]
 
 type OpenAIProps = {
 	apiConfiguration: ProviderSettings
@@ -112,6 +122,98 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 					</div>
 				)
 			})()}
+
+			{/* Model Overrides Section */}
+			<div className="flex flex-col gap-2 mt-2">
+				<div className="flex items-center gap-1">
+					<label className="block font-medium">{t("settings:providers.openAiNative.modelOverrides")}</label>
+					<StandardTooltip content={t("settings:providers.openAiNative.modelOverridesTooltip")}>
+						<i className="codicon codicon-info text-vscode-descriptionForeground text-xs" />
+					</StandardTooltip>
+				</div>
+
+				<div>
+					<Checkbox
+						checked={apiConfiguration?.openAiNativeDisablePromptCache ?? false}
+						onChange={handleInputChange("openAiNativeDisablePromptCache", noTransform)}>
+						{t("settings:providers.openAiNative.disablePromptCache")}
+					</Checkbox>
+					<div className="text-sm text-vscode-descriptionForeground ml-6">
+						{t("settings:providers.openAiNative.disablePromptCacheDescription")}
+					</div>
+				</div>
+
+				{/* Temperature Control with Slider */}
+				<div>
+					<Checkbox
+						checked={apiConfiguration?.openAiNativeEnableTemperature ?? false}
+						onChange={(checked: boolean) => {
+							setApiConfigurationField("openAiNativeEnableTemperature", checked)
+							// Set default temperature to 1 when enabling (GPT-5 default)
+							if (checked && apiConfiguration?.openAiNativeTemperature === undefined) {
+								setApiConfigurationField("openAiNativeTemperature", 1)
+							}
+						}}>
+						{t("settings:providers.openAiNative.enableTemperature")}
+					</Checkbox>
+					<div className="text-sm text-vscode-descriptionForeground ml-6">
+						{t("settings:providers.openAiNative.enableTemperatureDescription")}
+					</div>
+					{apiConfiguration?.openAiNativeEnableTemperature && (
+						<div className="flex items-center gap-2 mt-2 ml-6">
+							<Slider
+								min={0}
+								max={2}
+								step={0.01}
+								value={[apiConfiguration?.openAiNativeTemperature ?? 1]}
+								onValueChange={([value]) => setApiConfigurationField("openAiNativeTemperature", value)}
+								className="flex-1"
+							/>
+							<span className="w-10 text-sm">
+								{(apiConfiguration?.openAiNativeTemperature ?? 1).toFixed(2)}
+							</span>
+						</div>
+					)}
+				</div>
+
+				{/* Verbosity Control */}
+				<div>
+					<Checkbox
+						checked={apiConfiguration?.openAiNativeEnableVerbosity ?? false}
+						onChange={(checked: boolean) => {
+							setApiConfigurationField("openAiNativeEnableVerbosity", checked)
+							// Set default verbosity to medium when enabling
+							if (checked && apiConfiguration?.openAiNativeVerbosity === undefined) {
+								setApiConfigurationField("openAiNativeVerbosity", "medium")
+							}
+						}}>
+						{t("settings:providers.openAiNative.enableVerbosity")}
+					</Checkbox>
+					<div className="text-sm text-vscode-descriptionForeground ml-6">
+						{t("settings:providers.openAiNative.enableVerbosityDescription")}
+					</div>
+					{apiConfiguration?.openAiNativeEnableVerbosity && (
+						<div className="mt-2 ml-6">
+							<Select
+								value={apiConfiguration?.openAiNativeVerbosity || "medium"}
+								onValueChange={(value) =>
+									setApiConfigurationField("openAiNativeVerbosity", value as VerbosityLevel)
+								}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder={t("settings:common.select")} />
+								</SelectTrigger>
+								<SelectContent>
+									{VERBOSITY_OPTIONS.map((value) => (
+										<SelectItem key={value} value={value}>
+											{t(`settings:providers.verbosity.${value}`)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+				</div>
+			</div>
 		</>
 	)
 }
