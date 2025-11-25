@@ -764,6 +764,26 @@ export async function presentAssistantMessage(cline: Task) {
 					// Check if this tool call came from native protocol by checking for ID
 					// Native calls always have IDs, XML calls never do
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
+						// Check if this is the new operations-based format (search_and_replace logic)
+						const nativeArgs = (block as ToolUse<"apply_diff">).nativeArgs
+						if (nativeArgs && "operations" in nativeArgs && Array.isArray(nativeArgs.operations)) {
+							// Route to searchAndReplaceTool for operations-based apply_diff
+							// Convert the block to look like a search_and_replace tool call
+							const sarBlock = {
+								...block,
+								name: "search_and_replace" as const,
+								nativeArgs: { path: nativeArgs.path, operations: nativeArgs.operations },
+							}
+							await searchAndReplaceTool.handle(cline, sarBlock as ToolUse<"search_and_replace">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						}
+						// Legacy diff format - use original apply_diff handler
 						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,

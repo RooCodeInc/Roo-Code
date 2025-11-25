@@ -1,12 +1,12 @@
 import type OpenAI from "openai"
 
-const SEARCH_AND_REPLACE_DESCRIPTION = `Perform one or more text replacements in a file. This tool finds and replaces exact text matches. Use this for straightforward replacements where you know the exact text to find and replace. You can perform multiple replacements in a single call by providing an array of operations. For complex multi-line changes or when you need line number precision, use apply_diff instead.`
+const APPLY_DIFF_DESCRIPTION = `Apply precise, targeted modifications to an existing file using search and replace operations. This tool is for surgical edits only; provide an array of operations where each operation specifies the exact text to search for and what to replace it with. The search text must exactly match the existing content, including whitespace and indentation.`
 
 const search_and_replace = {
 	type: "function",
 	function: {
-		name: "search_and_replace",
-		description: SEARCH_AND_REPLACE_DESCRIPTION,
+		name: "apply_diff",
+		description: APPLY_DIFF_DESCRIPTION,
 		parameters: {
 			type: "object",
 			properties: {
