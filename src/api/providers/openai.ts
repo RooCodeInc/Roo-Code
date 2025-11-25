@@ -25,6 +25,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { KimiK2ToolCallParser } from "./utils/kimi-k2-tool-parser"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -193,13 +194,40 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let lastUsage
 			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
+			// Initialize Kimi K2 parser if needed
+			const isKimiK2 = KimiK2ToolCallParser.isKimiK2Model(modelId)
+			const kimiK2Parser = isKimiK2 ? new KimiK2ToolCallParser() : null
+
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
 				const finishReason = chunk.choices?.[0]?.finish_reason
 
 				if (delta.content) {
-					for (const chunk of matcher.update(delta.content)) {
-						yield chunk
+					// For Kimi K2 models, parse special tool call tokens from content
+					if (kimiK2Parser) {
+						const parsed = kimiK2Parser.processChunk(delta.content)
+
+						// Yield any extracted tool calls
+						for (const toolCall of parsed.toolCalls) {
+							yield {
+								type: "tool_call",
+								id: toolCall.id,
+								name: toolCall.name,
+								arguments: toolCall.arguments,
+							}
+						}
+
+						// Process remaining content through think matcher
+						if (parsed.content) {
+							for (const chunk of matcher.update(parsed.content)) {
+								yield chunk
+							}
+						}
+					} else {
+						// Regular processing for non-Kimi K2 models
+						for (const chunk of matcher.update(delta.content)) {
+							yield chunk
+						}
 					}
 				}
 
@@ -258,6 +286,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 				toolCallAccumulator.clear()
+			}
+
+			// Flush any pending Kimi K2 tool calls
+			if (kimiK2Parser) {
+				const flushed = kimiK2Parser.flush()
+				for (const toolCall of flushed.toolCalls) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments,
+					}
+				}
 			}
 
 			for (const chunk of matcher.final()) {
