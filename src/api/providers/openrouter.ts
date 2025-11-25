@@ -254,7 +254,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			{
 				id: string
 				name: string
-				argumentsAccumulator: string
 				hasStarted: boolean
 				deltaBuffer: string[]
 			}
@@ -367,7 +366,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 							tracked = {
 								id: toolCall.id,
 								name: toolCall.function?.name || "",
-								argumentsAccumulator: "",
 								hasStarted: false,
 								deltaBuffer: [],
 							}
@@ -405,8 +403,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 						// Emit delta event for argument chunks
 						if (toolCall.function?.arguments) {
-							tracked.argumentsAccumulator += toolCall.function.arguments
-
 							if (tracked.hasStarted) {
 								yield {
 									type: "tool_call_delta",

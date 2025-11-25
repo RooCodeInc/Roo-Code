@@ -132,7 +132,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				{
 					id: string
 					name: string
-					argumentsAccumulator: string
 					hasStarted: boolean
 					deltaBuffer: string[]
 				}
@@ -170,7 +169,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 								tracked = {
 									id: toolCall.id,
 									name: toolCall.function?.name || "",
-									argumentsAccumulator: "",
 									hasStarted: false,
 									deltaBuffer: [],
 								}
@@ -208,8 +206,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 							// Emit delta event for argument chunks
 							if (toolCall.function?.arguments) {
-								tracked.argumentsAccumulator += toolCall.function.arguments
-
 								if (tracked.hasStarted) {
 									yield {
 										type: "tool_call_delta",
