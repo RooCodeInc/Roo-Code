@@ -68,8 +68,15 @@ export function Run({ run }: { run: Run }) {
 
 		const passed = tasks.filter((t) => t.passed === true).length
 		const failed = tasks.filter((t) => t.passed === false).length
-		const running = tasks.filter((t) => t.startedAt && !t.finishedAt).length
-		const pending = tasks.filter((t) => !t.startedAt && !t.finishedAt).length
+		// Count running tasks exactly like TaskStatus shows spinner:
+		// - passed is not true and not false (null/undefined)
+		// - AND has activity (startedAt or tokenUsage)
+		const running = tasks.filter(
+			(t) => t.passed !== true && t.passed !== false && (t.startedAt || tokenUsage.get(t.id)),
+		).length
+		const pending = tasks.filter(
+			(t) => t.passed !== true && t.passed !== false && !t.startedAt && !tokenUsage.get(t.id),
+		).length
 		const total = tasks.length
 		const completed = passed + failed
 
@@ -117,7 +124,8 @@ export function Run({ run }: { run: Run }) {
 			totalDuration,
 			toolUsage,
 		}
-	}, [tasks, taskMetrics])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [tasks, taskMetrics, tokenUsage, usageUpdatedAt])
 
 	return (
 		<>
