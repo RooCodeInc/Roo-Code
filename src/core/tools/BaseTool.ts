@@ -8,6 +8,7 @@ import type {
 	NativeToolArgs,
 } from "../../shared/tools"
 import type { ToolName, ToolProtocol } from "@roo-code/types"
+import { logger } from "../../utils/logging"
 
 /**
  * Callbacks passed to tool execution
@@ -132,11 +133,24 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * @param callbacks - Tool execution callbacks
 	 */
 	async handle(task: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
+		const log = logger.child({ ctx: `BaseTool.${this.name}`, taskId: task.taskId })
+
+		log.debug("Tool handler invoked", {
+			isPartial: block.partial,
+			hasNativeArgs: !!block.nativeArgs,
+			protocol: callbacks.toolProtocol,
+			blockId: (block as any).id,
+		})
+
 		// Handle partial messages
 		if (block.partial) {
 			try {
+				log.debug("Handling partial tool message")
 				await this.handlePartial(task, block)
 			} catch (error) {
+				log.error("Error in handlePartial", {
+					error: error instanceof Error ? error.message : String(error),
+				})
 				console.error(`Error in handlePartial:`, error)
 				await callbacks.handleError(
 					`handling partial ${this.name}`,
@@ -152,12 +166,23 @@ export abstract class BaseTool<TName extends ToolName> {
 			if (block.nativeArgs !== undefined) {
 				// Native protocol: typed args provided by NativeToolCallParser
 				// TypeScript knows nativeArgs is properly typed based on TName
+				log.debug("Using native args (native protocol)", {
+					argKeys: typeof block.nativeArgs === "object" ? Object.keys(block.nativeArgs) : [],
+				})
 				params = block.nativeArgs as ToolParams<TName>
 			} else {
 				// XML/legacy protocol: parse string params into typed params
+				log.debug("Parsing legacy params (XML protocol)", {
+					paramKeys: Object.keys(block.params),
+				})
 				params = this.parseLegacy(block.params)
 			}
 		} catch (error) {
+			log.error("Failed to parse tool parameters", {
+				error: error instanceof Error ? error.message : String(error),
+				hasNativeArgs: !!block.nativeArgs,
+				params: block.params,
+			})
 			console.error(`Error parsing parameters:`, error)
 			const errorMessage = `Failed to parse ${this.name} parameters: ${error instanceof Error ? error.message : String(error)}`
 			await callbacks.handleError(`parsing ${this.name} args`, new Error(errorMessage))
@@ -166,6 +191,15 @@ export abstract class BaseTool<TName extends ToolName> {
 		}
 
 		// Execute with typed parameters
-		await this.execute(params, task, callbacks)
+		log.debug("Executing tool with parsed parameters")
+		try {
+			await this.execute(params, task, callbacks)
+			log.debug("Tool execution completed successfully")
+		} catch (error) {
+			log.error("Tool execution failed", {
+				error: error instanceof Error ? error.message : String(error),
+			})
+			throw error
+		}
 	}
 }

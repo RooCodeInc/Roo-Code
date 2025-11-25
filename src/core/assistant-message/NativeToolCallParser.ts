@@ -1,5 +1,6 @@
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
+import { logger } from "../../utils/logging"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -28,13 +29,25 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | null {
+		const log = logger.child({ ctx: "NativeToolCallParser" })
+
+		log.debug(`Parsing native tool call`, {
+			id: toolCall.id,
+			name: toolCall.name,
+			argumentsLength: toolCall.arguments?.length || 0,
+		})
+
 		// Check if this is a dynamic MCP tool (mcp_serverName_toolName)
 		if (typeof toolCall.name === "string" && toolCall.name.startsWith("mcp_")) {
+			log.debug(`Detected dynamic MCP tool: ${toolCall.name}`)
 			return this.parseDynamicMcpTool(toolCall) as ToolUse<TName> | null
 		}
 
 		// Validate tool name
 		if (!toolNames.includes(toolCall.name as ToolName)) {
+			log.error(`Invalid tool name: ${toolCall.name}`, {
+				validToolNames: toolNames,
+			})
 			console.error(`Invalid tool name: ${toolCall.name}`)
 			console.error(`Valid tool names:`, toolNames)
 			return null
@@ -43,6 +56,31 @@ export class NativeToolCallParser {
 		try {
 			// Parse the arguments JSON string
 			const args = JSON.parse(toolCall.arguments)
+
+			log.debug(`Parsed arguments for ${toolCall.name}`, {
+				argKeys: Object.keys(args),
+				hasNativeSupport:
+					toolCall.name in
+					[
+						"read_file",
+						"attempt_completion",
+						"execute_command",
+						"insert_content",
+						"apply_diff",
+						"ask_followup_question",
+						"browser_action",
+						"codebase_search",
+						"fetch_instructions",
+						"generate_image",
+						"list_code_definition_names",
+						"run_slash_command",
+						"search_files",
+						"switch_mode",
+						"update_todo_list",
+						"write_to_file",
+						"use_mcp_tool",
+					],
+			})
 
 			// Build legacy params object for backward compatibility with XML protocol and UI.
 			// Native execution path uses nativeArgs instead, which has proper typing.
@@ -58,6 +96,9 @@ export class NativeToolCallParser {
 
 				// Validate parameter name
 				if (!toolParamNames.includes(key as ToolParamName)) {
+					log.warn(`Unknown parameter '${key}' for tool '${toolCall.name}'`, {
+						validParamNames: toolParamNames,
+					})
 					console.warn(`Unknown parameter '${key}' for tool '${toolCall.name}'`)
 					console.warn(`Valid param names:`, toolParamNames)
 					continue
@@ -246,8 +287,17 @@ export class NativeToolCallParser {
 				nativeArgs,
 			}
 
+			log.debug(`Successfully parsed tool call ${toolCall.name}`, {
+				hasNativeArgs: !!nativeArgs,
+				paramCount: Object.keys(params).length,
+			})
+
 			return result
 		} catch (error) {
+			log.error(`Failed to parse tool call arguments for ${toolCall.name}`, {
+				error: error instanceof Error ? error.message : String(error),
+				arguments: toolCall.arguments,
+			})
 			console.error(`Failed to parse tool call arguments:`, error)
 			console.error(`Error details:`, error instanceof Error ? error.message : String(error))
 			return null
@@ -265,6 +315,12 @@ export class NativeToolCallParser {
 		arguments: string
 	}): ToolUse<"use_mcp_tool"> | null {
 		try {
+			const log = logger.child({ ctx: "NativeToolCallParser.parseDynamicMcpTool" })
+			log.debug(`Parsing dynamic MCP tool`, {
+				name: toolCall.name,
+				id: toolCall.id,
+			})
+
 			const args = JSON.parse(toolCall.arguments)
 
 			// Extract server_name and tool_name from the arguments
@@ -274,9 +330,19 @@ export class NativeToolCallParser {
 			const toolInputProps = args.toolInputProps
 
 			if (!serverName || !toolName) {
+				log.error(`Missing server_name or tool_name in dynamic MCP tool`, {
+					serverName,
+					toolName,
+				})
 				console.error(`Missing server_name or tool_name in dynamic MCP tool`)
 				return null
 			}
+
+			log.debug(`Parsed dynamic MCP tool`, {
+				serverName,
+				toolName,
+				hasToolInputProps: !!toolInputProps,
+			})
 
 			// Build params for backward compatibility with XML protocol
 			const params: Partial<Record<string, string>> = {
@@ -303,8 +369,18 @@ export class NativeToolCallParser {
 				nativeArgs,
 			}
 
+			log.debug(`Successfully parsed dynamic MCP tool`, {
+				serverName: nativeArgs.server_name,
+				toolName: nativeArgs.tool_name,
+			})
+
 			return result
 		} catch (error) {
+			const log = logger.child({ ctx: "NativeToolCallParser.parseDynamicMcpTool" })
+			log.error(`Failed to parse dynamic MCP tool`, {
+				error: error instanceof Error ? error.message : String(error),
+				name: toolCall.name,
+			})
 			console.error(`Failed to parse dynamic MCP tool:`, error)
 			return null
 		}

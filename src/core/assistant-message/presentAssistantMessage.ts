@@ -40,6 +40,7 @@ import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isNativeProtocol } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { logger } from "../../utils/logging"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -169,7 +170,16 @@ export async function presentAssistantMessage(cline: Task) {
 			await cline.say("text", content, undefined, block.partial)
 			break
 		}
-		case "tool_use":
+		case "tool_use": {
+			const log = logger.child({ ctx: "presentAssistantMessage.tool_use", taskId: cline.taskId })
+			log.debug("Processing tool_use block", {
+				toolName: block.name,
+				toolId: block.id,
+				isPartial: block.partial,
+				hasNativeArgs: !!block.nativeArgs,
+				paramKeys: block.params ? Object.keys(block.params) : [],
+			})
+
 			const toolDescription = (): string => {
 				switch (block.name) {
 					case "execute_command":
@@ -311,10 +321,20 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
+			log.debug("Determined tool protocol", {
+				toolCallId,
+				toolProtocol,
+				toolName: block.name,
+			})
+
 			const pushToolResult = (content: ToolResponse) => {
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
+						log.warn("Skipping duplicate tool_result for native protocol", {
+							toolCallId,
+							toolName: block.name,
+						})
 						console.warn(
 							`[presentAssistantMessage] Skipping duplicate tool_result for tool_use_id: ${toolCallId}`,
 						)
@@ -338,6 +358,12 @@ export async function presentAssistantMessage(cline: Task) {
 							textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
 							"(tool did not return anything)"
 					}
+
+					log.debug("Adding tool_result to user message content", {
+						toolCallId,
+						contentLength: resultContent.length,
+						hasImages: imageBlocks.length > 0,
+					})
 
 					// Add tool_result with text content only
 					cline.userMessageContent.push({
@@ -490,6 +516,10 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			if (!block.partial) {
+				log.debug("Recording tool usage (non-partial)", {
+					toolName: block.name,
+					toolProtocol,
+				})
 				cline.recordToolUsage(block.name)
 				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
 			}
@@ -552,6 +582,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				}
 			}
+
+			log.debug("Executing tool handler", {
+				toolName: block.name,
+				toolProtocol,
+				hasApprovalCallback: !!askApproval,
+				hasErrorHandler: !!handleError,
+			})
 
 			switch (block.name) {
 				case "write_to_file":
@@ -795,7 +832,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 			}
 
+			log.debug("Tool execution completed", {
+				toolName: block.name,
+				didRejectTool: cline.didRejectTool,
+				didAlreadyUseTool: cline.didAlreadyUseTool,
+			})
 			break
+		}
 	}
 
 	// Seeing out of bounds is fine, it means that the next too call is being

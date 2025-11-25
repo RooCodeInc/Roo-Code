@@ -99,6 +99,7 @@ import { type AssistantMessageContent, presentAssistantMessage } from "../assist
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
 import { manageContext } from "../context-management"
+import { logger } from "../../utils/logging"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
@@ -2337,6 +2338,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 								break
 							case "tool_call": {
+								const log = logger.child({ ctx: "Task.tool_call", taskId: this.taskId })
+								log.debug("Received native tool call chunk", {
+									id: chunk.id,
+									name: chunk.name,
+									argumentsLength: chunk.arguments?.length || 0,
+								})
+
 								// Convert native tool call to ToolUse format
 								const toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,
@@ -2345,6 +2353,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								})
 
 								if (!toolUse) {
+									log.error("Failed to parse tool call", {
+										chunkId: chunk.id,
+										chunkName: chunk.name,
+										arguments: chunk.arguments,
+									})
 									console.error(`Failed to parse tool call for task ${this.taskId}:`, chunk)
 									break
 								}
@@ -2353,6 +2366,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// This is needed to create tool_result blocks that reference the correct tool_use_id
 								toolUse.id = chunk.id
 
+								log.debug("Successfully parsed tool call, adding to assistant message content", {
+									toolName: toolUse.name,
+									toolId: toolUse.id,
+									hasNativeArgs: !!toolUse.nativeArgs,
+									contentLength: this.assistantMessageContent.length,
+								})
+
 								// Add the tool use to assistant message content
 								this.assistantMessageContent.push(toolUse)
 
@@ -2360,6 +2380,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								this.userMessageContentReady = false
 
 								// Present the tool call to user
+								log.debug("Presenting tool call to user via presentAssistantMessage")
 								presentAssistantMessage(this)
 								break
 							}
@@ -2772,6 +2793,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Add tool_use blocks with their IDs for native protocol
 					const toolUseBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
+					const log = logger.child({ ctx: "Task.buildAssistantContent", taskId: this.taskId })
+
+					log.debug("Processing tool use blocks for API history", {
+						toolUseCount: toolUseBlocks.length,
+					})
+
 					for (const toolUse of toolUseBlocks) {
 						// Get the tool call ID that was stored during parsing
 						const toolCallId = (toolUse as any).id
@@ -2779,11 +2806,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// nativeArgs is already in the correct API format for all tools
 							const input = toolUse.nativeArgs || toolUse.params
 
+							log.debug("Adding tool_use to assistant content", {
+								toolName: toolUse.name,
+								toolId: toolCallId,
+								hasNativeArgs: !!toolUse.nativeArgs,
+								usingNativeArgs: !!toolUse.nativeArgs,
+							})
+
 							assistantContent.push({
 								type: "tool_use" as const,
 								id: toolCallId,
 								name: toolUse.name,
 								input,
+							})
+						} else {
+							log.warn("Tool use block missing ID (likely XML protocol)", {
+								toolName: toolUse.name,
 							})
 						}
 					}
