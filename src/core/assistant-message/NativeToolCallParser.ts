@@ -1,6 +1,11 @@
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
 import { parseJSON } from "partial-json"
+import type {
+	ApiStreamToolCallStartChunk,
+	ApiStreamToolCallDeltaChunk,
+	ApiStreamToolCallEndChunk,
+} from "../../api/transform/stream"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -17,8 +22,25 @@ type NativeArgsFor<TName extends ToolName> = TName extends keyof NativeToolArgs 
  * typed arguments via nativeArgs. Tool-specific handlers should consume
  * nativeArgs directly rather than relying on synthesized legacy params.
  */
+/**
+ * Event types returned from raw chunk processing.
+ */
+export type ToolCallStreamEvent = ApiStreamToolCallStartChunk | ApiStreamToolCallDeltaChunk | ApiStreamToolCallEndChunk
+
+/**
+ * Parser for native tool calls (OpenAI-style function calling).
+ * Converts native tool call format to ToolUse format for compatibility
+ * with existing tool execution infrastructure.
+ *
+ * For tools with refactored parsers (e.g., read_file), this parser provides
+ * typed arguments via nativeArgs. Tool-specific handlers should consume
+ * nativeArgs directly rather than relying on synthesized legacy params.
+ *
+ * This class also handles raw tool call chunk processing, converting
+ * provider-level raw chunks into start/delta/end events.
+ */
 export class NativeToolCallParser {
-	// Streaming state management
+	// Streaming state management for argument accumulation (keyed by tool call id)
 	private static streamingToolCalls = new Map<
 		string,
 		{
@@ -27,6 +49,141 @@ export class NativeToolCallParser {
 			argumentsAccumulator: string
 		}
 	>()
+
+	// Raw chunk tracking state (keyed by index from API stream)
+	private static rawChunkTracker = new Map<
+		number,
+		{
+			id: string
+			name: string
+			hasStarted: boolean
+			deltaBuffer: string[]
+		}
+	>()
+
+	/**
+	 * Process a raw tool call chunk from the API stream.
+	 * Handles tracking, buffering, and emits start/delta/end events.
+	 *
+	 * This is the entry point for providers that emit tool_call_raw chunks.
+	 * Returns an array of events to be processed by the consumer.
+	 */
+	public static processRawChunk(chunk: {
+		index: number
+		id?: string
+		name?: string
+		arguments?: string
+	}): ToolCallStreamEvent[] {
+		const events: ToolCallStreamEvent[] = []
+		const { index, id, name, arguments: args } = chunk
+
+		let tracked = this.rawChunkTracker.get(index)
+
+		// Initialize new tool call tracking when we receive an id
+		if (id && !tracked) {
+			tracked = {
+				id,
+				name: name || "",
+				hasStarted: false,
+				deltaBuffer: [],
+			}
+			this.rawChunkTracker.set(index, tracked)
+		}
+
+		if (!tracked) {
+			return events
+		}
+
+		// Update name if present in chunk and not yet set
+		if (name) {
+			tracked.name = name
+		}
+
+		// Emit start event when we have the name
+		if (!tracked.hasStarted && tracked.name) {
+			events.push({
+				type: "tool_call_start",
+				id: tracked.id,
+				name: tracked.name,
+			})
+			tracked.hasStarted = true
+
+			// Flush buffered deltas
+			for (const bufferedDelta of tracked.deltaBuffer) {
+				events.push({
+					type: "tool_call_delta",
+					id: tracked.id,
+					delta: bufferedDelta,
+				})
+			}
+			tracked.deltaBuffer = []
+		}
+
+		// Emit delta event for argument chunks
+		if (args) {
+			if (tracked.hasStarted) {
+				events.push({
+					type: "tool_call_delta",
+					id: tracked.id,
+					delta: args,
+				})
+			} else {
+				tracked.deltaBuffer.push(args)
+			}
+		}
+
+		return events
+	}
+
+	/**
+	 * Process stream finish reason.
+	 * Emits end events when finish_reason is 'tool_calls'.
+	 */
+	public static processFinishReason(finishReason: string | null | undefined): ToolCallStreamEvent[] {
+		const events: ToolCallStreamEvent[] = []
+
+		if (finishReason === "tool_calls" && this.rawChunkTracker.size > 0) {
+			for (const [, tracked] of this.rawChunkTracker.entries()) {
+				events.push({
+					type: "tool_call_end",
+					id: tracked.id,
+				})
+			}
+			this.rawChunkTracker.clear()
+		}
+
+		return events
+	}
+
+	/**
+	 * Finalize any remaining tool calls that weren't explicitly ended.
+	 * Should be called at the end of stream processing.
+	 */
+	public static finalizeRawChunks(): ToolCallStreamEvent[] {
+		const events: ToolCallStreamEvent[] = []
+
+		if (this.rawChunkTracker.size > 0) {
+			for (const [, tracked] of this.rawChunkTracker.entries()) {
+				if (tracked.hasStarted) {
+					events.push({
+						type: "tool_call_end",
+						id: tracked.id,
+					})
+				}
+			}
+			this.rawChunkTracker.clear()
+		}
+
+		return events
+	}
+
+	/**
+	 * Clear all raw chunk tracking state.
+	 * Should be called when a new API request starts.
+	 */
+	public static clearRawChunkState(): void {
+		this.rawChunkTracker.clear()
+	}
 
 	/**
 	 * Start streaming a new tool call.

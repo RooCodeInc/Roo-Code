@@ -2255,6 +2255,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.streamingToolCallIndices.clear()
 				// Clear any leftover streaming tool call state from previous interrupted streams
 				NativeToolCallParser.clearAllStreamingToolCalls()
+				NativeToolCallParser.clearRawChunkState()
 
 				await this.diffViewProvider.reset()
 
@@ -2342,82 +2343,93 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									pendingGroundingSources.push(...chunk.sources)
 								}
 								break
-							case "tool_call_start": {
-								// Initialize streaming in NativeToolCallParser
-								NativeToolCallParser.startStreamingToolCall(chunk.id, chunk.name as ToolName)
+							case "tool_call_raw": {
+								// Process raw tool call chunk through NativeToolCallParser
+								// which handles tracking, buffering, and emits events
+								const events = NativeToolCallParser.processRawChunk({
+									index: chunk.index,
+									id: chunk.id,
+									name: chunk.name,
+									arguments: chunk.arguments,
+								})
 
-								// Before adding a new tool, finalize any preceding text block
-								// This prevents the text block from blocking tool presentation
-								const lastBlock = this.assistantMessageContent[this.assistantMessageContent.length - 1]
-								if (lastBlock?.type === "text" && lastBlock.partial) {
-									lastBlock.partial = false
-								}
+								for (const event of events) {
+									if (event.type === "tool_call_start") {
+										// Initialize streaming in NativeToolCallParser
+										NativeToolCallParser.startStreamingToolCall(event.id, event.name as ToolName)
 
-								// Track the index where this tool will be stored
-								const toolUseIndex = this.assistantMessageContent.length
-								this.streamingToolCallIndices.set(chunk.id, toolUseIndex)
+										// Before adding a new tool, finalize any preceding text block
+										// This prevents the text block from blocking tool presentation
+										const lastBlock =
+											this.assistantMessageContent[this.assistantMessageContent.length - 1]
+										if (lastBlock?.type === "text" && lastBlock.partial) {
+											lastBlock.partial = false
+										}
 
-								// Create initial partial tool use
-								const partialToolUse: ToolUse = {
-									type: "tool_use",
-									name: chunk.name as ToolName,
-									params: {},
-									partial: true,
-								}
+										// Track the index where this tool will be stored
+										const toolUseIndex = this.assistantMessageContent.length
+										this.streamingToolCallIndices.set(event.id, toolUseIndex)
 
-								// Store the ID for native protocol
-								;(partialToolUse as any).id = chunk.id
+										// Create initial partial tool use
+										const partialToolUse: ToolUse = {
+											type: "tool_use",
+											name: event.name as ToolName,
+											params: {},
+											partial: true,
+										}
 
-								// Add to content and present
-								this.assistantMessageContent.push(partialToolUse)
-								this.userMessageContentReady = false
-								presentAssistantMessage(this)
-								break
-							}
-
-							case "tool_call_delta": {
-								// Process chunk using streaming JSON parser
-								const partialToolUse = NativeToolCallParser.processStreamingChunk(chunk.id, chunk.delta)
-
-								if (partialToolUse) {
-									// Get the index for this tool call
-									const toolUseIndex = this.streamingToolCallIndices.get(chunk.id)
-									if (toolUseIndex !== undefined) {
 										// Store the ID for native protocol
-										;(partialToolUse as any).id = chunk.id
+										;(partialToolUse as any).id = event.id
 
-										// Update the existing tool use with new partial data
-										this.assistantMessageContent[toolUseIndex] = partialToolUse
-
-										// Present updated tool use
+										// Add to content and present
+										this.assistantMessageContent.push(partialToolUse)
+										this.userMessageContentReady = false
 										presentAssistantMessage(this)
+									} else if (event.type === "tool_call_delta") {
+										// Process chunk using streaming JSON parser
+										const partialToolUse = NativeToolCallParser.processStreamingChunk(
+											event.id,
+											event.delta,
+										)
+
+										if (partialToolUse) {
+											// Get the index for this tool call
+											const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+											if (toolUseIndex !== undefined) {
+												// Store the ID for native protocol
+												;(partialToolUse as any).id = event.id
+
+												// Update the existing tool use with new partial data
+												this.assistantMessageContent[toolUseIndex] = partialToolUse
+
+												// Present updated tool use
+												presentAssistantMessage(this)
+											}
+										}
+									} else if (event.type === "tool_call_end") {
+										// Finalize the streaming tool call
+										const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
+
+										if (finalToolUse) {
+											// Store the tool call ID
+											;(finalToolUse as any).id = event.id
+
+											// Get the index and replace partial with final
+											const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+											if (toolUseIndex !== undefined) {
+												this.assistantMessageContent[toolUseIndex] = finalToolUse
+											}
+
+											// Clean up tracking
+											this.streamingToolCallIndices.delete(event.id)
+
+											// Mark that we have new content to process
+											this.userMessageContentReady = false
+
+											// Present the finalized tool call
+											presentAssistantMessage(this)
+										}
 									}
-								}
-								break
-							}
-
-							case "tool_call_end": {
-								// Finalize the streaming tool call
-								const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(chunk.id)
-
-								if (finalToolUse) {
-									// Store the tool call ID
-									;(finalToolUse as any).id = chunk.id
-
-									// Get the index and replace partial with final
-									const toolUseIndex = this.streamingToolCallIndices.get(chunk.id)
-									if (toolUseIndex !== undefined) {
-										this.assistantMessageContent[toolUseIndex] = finalToolUse
-									}
-
-									// Clean up tracking
-									this.streamingToolCallIndices.delete(chunk.id)
-
-									// Mark that we have new content to process
-									this.userMessageContentReady = false
-
-									// Present the finalized tool call
-									presentAssistantMessage(this)
 								}
 								break
 							}

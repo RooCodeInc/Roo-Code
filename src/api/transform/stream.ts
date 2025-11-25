@@ -9,6 +9,7 @@ export type ApiStreamChunk =
 	| ApiStreamToolCallStartChunk
 	| ApiStreamToolCallDeltaChunk
 	| ApiStreamToolCallEndChunk
+	| ApiStreamToolCallRawChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -64,6 +65,19 @@ export interface ApiStreamToolCallDeltaChunk {
 export interface ApiStreamToolCallEndChunk {
 	type: "tool_call_end"
 	id: string
+}
+
+/**
+ * Raw tool call chunk from the API stream.
+ * Providers emit this simple format; NativeToolCallParser handles all state management
+ * (tracking, buffering, emitting start/delta/end events).
+ */
+export interface ApiStreamToolCallRawChunk {
+	type: "tool_call_raw"
+	index: number
+	id?: string
+	name?: string
+	arguments?: string
 }
 
 export interface GroundingSource {

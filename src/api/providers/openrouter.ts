@@ -248,16 +248,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
-		// Track tool calls by index to emit streaming chunks (similar to roo.ts)
-		const toolCallTracker = new Map<
-			number,
-			{
-				id: string
-				name: string
-				hasStarted: boolean
-				deltaBuffer: string[]
-			}
-		>()
 		// Accumulator for reasoning_details: accumulate text by type-index key
 		const reasoningDetailsAccumulator = new Map<
 			string,
@@ -355,63 +345,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					yield { type: "reasoning", text: delta.reasoning }
 				}
 
-				// Check for tool calls in delta - emit streaming chunks
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
 				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 					for (const toolCall of delta.tool_calls) {
-						const index = toolCall.index
-						let tracked = toolCallTracker.get(index)
-
-						// Initialize new tool call tracking
-						if (toolCall.id && !tracked) {
-							tracked = {
-								id: toolCall.id,
-								name: toolCall.function?.name || "",
-								hasStarted: false,
-								deltaBuffer: [],
-							}
-							toolCallTracker.set(index, tracked)
-						}
-
-						if (!tracked) continue
-
-						// Update name if present in delta and not yet set
-						if (toolCall.function?.name) {
-							tracked.name = toolCall.function.name
-						}
-
-						// Emit start event when we have the name
-						if (!tracked.hasStarted && tracked.name) {
-							yield {
-								type: "tool_call_start",
-								id: tracked.id,
-								name: tracked.name,
-							}
-							tracked.hasStarted = true
-
-							// Flush buffered deltas
-							if (tracked.deltaBuffer.length > 0) {
-								for (const bufferedDelta of tracked.deltaBuffer) {
-									yield {
-										type: "tool_call_delta",
-										id: tracked.id,
-										delta: bufferedDelta,
-									}
-								}
-								tracked.deltaBuffer = []
-							}
-						}
-
-						// Emit delta event for argument chunks
-						if (toolCall.function?.arguments) {
-							if (tracked.hasStarted) {
-								yield {
-									type: "tool_call_delta",
-									id: tracked.id,
-									delta: toolCall.function.arguments,
-								}
-							} else {
-								tracked.deltaBuffer.push(toolCall.function.arguments)
-							}
+						yield {
+							type: "tool_call_raw",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
 						}
 					}
 				}
@@ -421,34 +363,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 			}
 
-			// When finish_reason is 'tool_calls', emit end events
-			if (finishReason === "tool_calls" && toolCallTracker.size > 0) {
-				for (const [, tracked] of toolCallTracker.entries()) {
-					yield {
-						type: "tool_call_end",
-						id: tracked.id,
-					}
-				}
-				toolCallTracker.clear()
-			}
-
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
-		}
-
-		// Fallback: If stream ends with tracked tool calls that weren't finalized
-		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-		if (toolCallTracker.size > 0) {
-			for (const [, tracked] of toolCallTracker.entries()) {
-				if (tracked.hasStarted) {
-					yield {
-						type: "tool_call_end",
-						id: tracked.id,
-					}
-				}
-			}
-			toolCallTracker.clear()
 		}
 
 		// After streaming completes, store the accumulated reasoning_details
