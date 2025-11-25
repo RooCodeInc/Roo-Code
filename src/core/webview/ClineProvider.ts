@@ -2925,11 +2925,11 @@ export class ClineProvider
 			language,
 			mode,
 			taskId: task?.taskId,
-			parentTaskId: task?.parentTask?.taskId,
+			parentTaskId: task?.parentTaskId,
 			apiProvider: apiConfiguration?.apiProvider,
 			modelId: task?.api?.getModel().id,
 			diffStrategy: task?.diffStrategy?.getName(),
-			isSubtask: task ? !!task.parentTask : undefined,
+			isSubtask: task ? !!task.parentTaskId : undefined,
 			...(todos && { todos }),
 		}
 	}
