@@ -23,7 +23,7 @@ export const IMAGE_GENERATION_MODELS: ImageGenerationModel[] = [
 	// Roo Code Cloud models
 	{ value: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", provider: "roo" },
 	{ value: "google/gemini-3-pro-image", label: "Gemini 3 Pro Image", provider: "roo" },
-	{ value: "bfl/flux-2-pro", label: "BFL Flux 2 Pro", provider: "roo", apiMethod: "images_api" },
+	{ value: "bfl/flux-2-pro:free", label: "BFL Flux 2 Pro (Free)", provider: "roo", apiMethod: "images_api" },
 ]
 
 /**
