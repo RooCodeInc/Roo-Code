@@ -3,14 +3,14 @@ import os from "os"
 import * as vscode from "vscode"
 import { getClientId } from "./getClientId"
 import osName from "os-name"
+import { Package } from "../shared/package"
 
 export function getParams(state: string, ignore: string[] = []) {
 	return [
 		["machine_code", getClientId()],
 		["state", state],
 		["provider", "casdoor"],
-		["plugin_version", "1.5.3"],
-		// ["plugin_version", Package.version],
+		["plugin_version", Package.version],
 		["vscode_version", vscode.version],
 		["uri_scheme", vscode.env.uriScheme],
 	].filter(([key]) => !ignore.includes(key))

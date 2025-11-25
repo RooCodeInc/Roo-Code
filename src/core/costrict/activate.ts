@@ -123,11 +123,11 @@ export async function activate(
 		const isLoggedIn = await zgsmAuthService.checkLoginStatusOnStartup()
 
 		if (isLoggedIn) {
-			provider.log("Login status detected at plugin startup: valid")
 			zgsmAuthService.getTokens().then(async (tokens) => {
 				if (!tokens) {
 					return
 				}
+				provider.log(`Login status detected at plugin startup: valid (${tokens.state})`)
 				writeCostrictAccessToken(tokens.access_token).then(async () => {
 					await zgsmCodebaseIndexManager.initialize()
 					zgsmCodebaseIndexManager.syncToken()
