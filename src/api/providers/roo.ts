@@ -18,6 +18,18 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
 
+import type { ModelInfo } from "@roo-code/types"
+
+// Model-specific defaults that should be applied even when models come from API cache
+const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
+	"minimax/minimax-m2": {
+		defaultToolProtocol: "native",
+	},
+	"anthropic/claude-haiku-4.5": {
+		defaultToolProtocol: "native",
+	},
+}
+
 // Extend OpenAI's CompletionUsage to include Roo specific fields
 interface RooUsage extends OpenAI.CompletionUsage {
 	cache_creation_input_tokens?: number
@@ -245,8 +257,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const models = getModelsFromCache("roo") || {}
 		const modelInfo = models[modelId]
 
+		// Get model-specific defaults if they exist
+		const modelDefaults = MODEL_DEFAULTS[modelId]
+
 		if (modelInfo) {
-			return { id: modelId, info: modelInfo }
+			// Merge model-specific defaults with cached model info
+			const mergedInfo = modelDefaults ? { ...modelInfo, ...modelDefaults } : modelInfo
+			return { id: modelId, info: mergedInfo }
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
