@@ -256,9 +256,9 @@ export class NativeToolCallParser {
 
 	/**
 	 * Finalize a streaming tool call.
-	 * Parses the complete JSON and returns the final ToolUse.
+	 * Parses the complete JSON and returns the final ToolUse or McpToolUse.
 	 */
-	public static finalizeStreamingToolCall(id: string): ToolUse | null {
+	public static finalizeStreamingToolCall(id: string): ToolUse | McpToolUse | null {
 		const toolCall = this.streamingToolCalls.get(id)
 		if (!toolCall) {
 			console.warn(`[NativeToolCallParser] Attempting to finalize unknown tool call: ${id}`)
