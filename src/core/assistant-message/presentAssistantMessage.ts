@@ -251,16 +251,25 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (cline.didRejectTool) {
 				// Ignore any tool content after user has rejected tool once.
-				if (!block.partial) {
+				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
+				const toolCallId = block.id
+				const errorMessage = !block.partial
+					? `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`
+					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
+
+				if (toolCallId) {
+					// Native protocol: MUST send tool_result for every tool_use
 					cline.userMessageContent.push({
-						type: "text",
-						text: `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`,
-					})
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
 				} else {
-					// Partial tool after user rejected a previous tool.
+					// XML protocol: send as text
 					cline.userMessageContent.push({
 						type: "text",
-						text: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`,
+						text: errorMessage,
 					})
 				}
 
@@ -269,10 +278,25 @@ export async function presentAssistantMessage(cline: Task) {
 
 			if (cline.didAlreadyUseTool) {
 				// Ignore any content after a tool has already been used.
-				cline.userMessageContent.push({
-					type: "text",
-					text: `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`,
-				})
+				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
+				const toolCallId = block.id
+				const errorMessage = `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`
+
+				if (toolCallId) {
+					// Native protocol: MUST send tool_result for every tool_use
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
+				} else {
+					// XML protocol: send as text
+					cline.userMessageContent.push({
+						type: "text",
+						text: errorMessage,
+					})
+				}
 
 				break
 			}
@@ -304,30 +328,35 @@ export async function presentAssistantMessage(cline: Task) {
 						return
 					}
 
-					// For native protocol, add as tool_result block
+					// For native protocol, tool_result content must be a string
+					// Images are added as separate blocks in the user message
 					let resultContent: string
+					let imageBlocks: Anthropic.ImageBlockParam[] = []
+
 					if (typeof content === "string") {
 						resultContent = content || "(tool did not return anything)"
 					} else {
-						// Convert array of content blocks to string for tool result
-						// Tool results in OpenAI format only support strings
-						resultContent = content
-							.map((item) => {
-								if (item.type === "text") {
-									return item.text
-								} else if (item.type === "image") {
-									return "(image content)"
-								}
-								return ""
-							})
-							.join("\n")
+						// Separate text and image blocks
+						const textBlocks = content.filter((item) => item.type === "text")
+						imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+
+						// Convert text blocks to string for tool_result
+						resultContent =
+							textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
+							"(tool did not return anything)"
 					}
 
+					// Add tool_result with text content only
 					cline.userMessageContent.push({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: resultContent,
 					} as Anthropic.ToolResultBlockParam)
+
+					// Add image blocks separately after tool_result
+					if (imageBlocks.length > 0) {
+						cline.userMessageContent.push(...imageBlocks)
+					}
 
 					hasToolResult = true
 				} else {
@@ -420,9 +449,6 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 
 				pushToolResult(formatResponse.toolError(errorString, toolProtocol))
-
-				// Mark that a tool failed in this turn to prevent attempt_completion
-				cline.didToolFailInCurrentTurn = true
 			}
 
 			// If block is partial, remove partial closing tag so its not
@@ -498,7 +524,6 @@ export async function presentAssistantMessage(cline: Task) {
 				)
 			} catch (error) {
 				cline.consecutiveMistakeCount++
-				cline.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(error.message, toolProtocol))
 				break
 			}
@@ -533,9 +558,6 @@ export async function presentAssistantMessage(cline: Task) {
 						// Track tool repetition in telemetry.
 						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
 					}
-
-					// Mark that a tool failed in this turn to prevent attempt_completion
-					cline.didToolFailInCurrentTurn = true
 
 					// Return tool result message about the repetition
 					pushToolResult(
