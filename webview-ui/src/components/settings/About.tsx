@@ -1,7 +1,7 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
-import { Info, Download, Upload, TriangleAlert } from "lucide-react"
+import { Info, Download, Upload, TriangleAlert, Bug, Lightbulb, Shield, MessageCircle } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import type { TelemetrySetting } from "@roo-code/types"
@@ -38,6 +38,43 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 			</SectionHeader>
 
 			<Section>
+				<div className="flex flex-col gap-2">
+					<div className="flex items-center gap-2">
+						<Bug className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.bugReport.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/issues/new?template=bug_report.yml">
+								{t("settings:about.bugReport.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<Lightbulb className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.featureRequest.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/issues/new?template=feature_request.yml">
+								{t("settings:about.featureRequest.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<Shield className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.securityIssue.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/security/policy">
+								{t("settings:about.securityIssue.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<MessageCircle className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.contact.label")}{" "}
+							<VSCodeLink href="mailto:security@roocode.com">security@roocode.com</VSCodeLink>
+						</span>
+					</div>
+				</div>
+
 				<div>
 					<VSCodeCheckbox
 						checked={telemetrySetting !== "disabled"}
