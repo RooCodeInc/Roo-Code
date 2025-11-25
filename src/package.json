@@ -574,7 +574,7 @@
 				},
 				"FunctionQuickCommands.enabled": {
 					"type": "boolean",
-					"default": true,
+					"default": false,
 					"order": 1,
 					"description": "%functionQuickCommands.enabled.description%"
 				},

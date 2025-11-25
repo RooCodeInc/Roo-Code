@@ -62,47 +62,14 @@ body:
       description: Different browsers, devices, providers, or settings you tried.
       placeholder: e.g., "Tried Chrome/Firefox, disabling dark theme, switching providers."
 
-	- type: dropdown
-		id: provider
-		attributes:
-			label: API Provider
-			description: Choose the API provider involved
-			multiple: false
-			options:
-				- Zgsm
-				- Anthropic
-				- AWS Bedrock
-				- Chutes AI
-				- DeepSeek
-				- Fireworks AI
-				- Glama
-				- Google Gemini
-				- Google Vertex AI
-				- Groq
-				- Human Relay Provider
-				- LiteLLM
-				- LM Studio
-				- Mistral AI
-				- Ollama
-				- OpenAI
-				- OpenAI Compatible
-				- OpenRouter
-				- Requesty
-				- SambaNova
-				- Unbound
-				- VS Code Language Model API
-				- xAI (Grok)
-				- Not Applicable / Other
-		validations:
-			required: true
+  - type: input
+    id: version
+    attributes:
+      label: App Version
+      description: What version of CoStrict are you using? (e.g., v3.3.1)
+    validations:
+      required: true
 
-	- type: input
-		id: model
-		attributes:
-			label: Model Used
-			description: Exact model name (e.g., Claude 3.7 Sonnet). Use N/A if irrelevant.
-		validations:
-			required: true
   - type: dropdown
     id: provider
     attributes:
@@ -139,6 +106,13 @@ body:
     attributes:
       label: Model Used (optional)
       description: Exact model name (e.g., Claude 3.7 Sonnet). Use N/A if irrelevant.
+
+  - type: textarea
+    id: roo-code-tasks
+    attributes:
+      label: CoStrict Task Links (optional)
+      description: If you have any publicly shared CoStrict task links that demonstrate the issue, paste them here.
+      placeholder: Paste your CoStrict share links here, one per line
 
   - type: textarea
     id: logs

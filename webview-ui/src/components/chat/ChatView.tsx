@@ -968,7 +968,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				textAreaRef.current?.focus()
 			}
 		},
-		50,
+		100,
 		[isHidden, sendingDisabled, enableButtons],
 	)
 

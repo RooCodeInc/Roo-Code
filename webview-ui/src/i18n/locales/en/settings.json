@@ -36,6 +36,26 @@
 		"language": "Language",
 		"about": "About Roo Code"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Found a bug?",
+			"link": "Report on GitHub"
+		},
+		"featureRequest": {
+			"label": "Have an idea?",
+			"link": "Share it with us"
+		},
+		"securityIssue": {
+			"label": "Discovered a vulnerability?",
+			"link": "Follow our disclosure process"
+		},
+		"contact": {
+			"label": "Need to talk to us? Write"
+		},
+		"community": "Want tips or to just hang out with other CoStrict users? Join Wechat Group",
+		"contactAndCommunity": "Contact & Community",
+		"manageSettings": "Manage Settings"
+	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
 	},
