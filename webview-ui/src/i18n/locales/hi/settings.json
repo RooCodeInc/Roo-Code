@@ -519,6 +519,25 @@
 			"placeholder": "डिफ़ॉल्ट: claude",
 			"maxTokensLabel": "अधिकतम आउटपुट टोकन",
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
+		},
+		"useCustomModelName": "Use custom model name",
+		"anthropic": {
+			"capabilityOverrides": "Model Capability Overrides:",
+			"supportsImages": "Supports images/vision",
+			"supportsPromptCache": "Supports prompt caching",
+			"supportsThinking": "Supports extended thinking",
+			"contextWindow": "Context window:",
+			"maxOutputTokens": "Max output tokens:"
+		},
+		"openAiNative": {
+			"modelOverrides": "Model Overrides",
+			"modelOverridesTooltip": "Override default model behavior for custom deployments like Azure OpenAI",
+			"disablePromptCache": "Disable prompt caching",
+			"disablePromptCacheDescription": "Disables extended prompt cache retention even if the model supports it. Useful for Azure OpenAI deployments that don't support caching.",
+			"enableTemperature": "Enable temperature",
+			"enableTemperatureDescription": "Enables temperature control (0-2). GPT-5 models default to 1.0.",
+			"enableVerbosity": "Enable verbosity",
+			"enableVerbosityDescription": "Enables verbosity control for output length. Controls how concise or detailed the model's responses are."
 		}
 	},
 	"browser": {
@@ -917,7 +936,8 @@
 			"inputPrice": "उदा. 0.0001",
 			"outputPrice": "उदा. 0.0002",
 			"cacheWritePrice": "उदा. 0.00005"
-		}
+		},
+		"customModelName": "e.g. claude-3-opus-20240229"
 	},
 	"defaults": {
 		"ollamaUrl": "डिफ़ॉल्ट: http://localhost:11434",

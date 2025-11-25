@@ -519,6 +519,25 @@
 			"placeholder": "預設：claude",
 			"maxTokensLabel": "最大輸出 Token",
 			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
+		},
+		"useCustomModelName": "Use custom model name",
+		"anthropic": {
+			"capabilityOverrides": "Model Capability Overrides:",
+			"supportsImages": "Supports images/vision",
+			"supportsPromptCache": "Supports prompt caching",
+			"supportsThinking": "Supports extended thinking",
+			"contextWindow": "Context window:",
+			"maxOutputTokens": "Max output tokens:"
+		},
+		"openAiNative": {
+			"modelOverrides": "Model Overrides",
+			"modelOverridesTooltip": "Override default model behavior for custom deployments like Azure OpenAI",
+			"disablePromptCache": "Disable prompt caching",
+			"disablePromptCacheDescription": "Disables extended prompt cache retention even if the model supports it. Useful for Azure OpenAI deployments that don't support caching.",
+			"enableTemperature": "Enable temperature",
+			"enableTemperatureDescription": "Enables temperature control (0-2). GPT-5 models default to 1.0.",
+			"enableVerbosity": "Enable verbosity",
+			"enableVerbosityDescription": "Enables verbosity control for output length. Controls how concise or detailed the model's responses are."
 		}
 	},
 	"browser": {
@@ -917,7 +936,8 @@
 			"inputPrice": "例：0.0001",
 			"outputPrice": "例：0.0002",
 			"cacheWritePrice": "例：0.00005"
-		}
+		},
+		"customModelName": "e.g. claude-3-opus-20240229"
 	},
 	"defaults": {
 		"ollamaUrl": "預設：http://localhost:11434",
