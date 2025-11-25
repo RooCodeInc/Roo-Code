@@ -12,6 +12,7 @@ export const minimaxModels = {
 		maxTokens: 16_384,
 		contextWindow: 192_000,
 		supportsImages: false,
+		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 		supportsNativeTools: true,
 		preserveReasoning: true,
@@ -33,6 +34,7 @@ export const minimaxModels = {
 		outputPrice: 1.2,
 		cacheWritesPrice: 0.375,
 		cacheReadsPrice: 0.03,
+		defaultToolProtocol: "native",
 		description:
 			"MiniMax M2 Stable (High Concurrency, Commercial Use), a model born for Agents and code, featuring Top-tier Coding Capabilities, Powerful Agentic Performance, and Ultimate Cost-Effectiveness & Speed.",
 	},
