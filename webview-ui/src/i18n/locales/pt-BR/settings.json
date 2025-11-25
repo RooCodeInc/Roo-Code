@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Ativar comandos slash iniciados pelo modelo",
 			"description": "Quando ativado, Roo pode executar seus comandos slash para executar fluxos de trabalho."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Chamadas paralelas de ferramentas",
+			"description": "Quando habilitado, o protocolo nativo pode executar múltiplas ferramentas em um único turno de mensagem do assistente."
 		}
 	},
 	"promptCaching": {

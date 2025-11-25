@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model-geïnitieerde slash-commando's inschakelen",
 			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Parallelle tool-aanroepen",
+			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in één enkele assistent-berichtbeurt."
 		}
 	},
 	"promptCaching": {

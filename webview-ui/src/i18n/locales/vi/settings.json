@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Bật lệnh slash do mô hình khởi tạo",
 			"description": "Khi được bật, Roo có thể chạy các lệnh slash của bạn để thực hiện các quy trình làm việc."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Lệnh gọi công cụ song song",
+			"description": "Khi được bật, giao thức native có thể thực thi nhiều công cụ trong một lượt tin nhắn của trợ lý."
 		}
 	},
 	"promptCaching": {

@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Paralel araç çağrıları",
+			"description": "Etkinleştirildiğinde, yerel protokol tek bir asistan mesaj turunda birden fazla araç yürütebilir."
 		}
 	},
 	"promptCaching": {

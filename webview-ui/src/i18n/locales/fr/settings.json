@@ -789,6 +789,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",
 			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Appels d'outils parallèles",
+			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
 		}
 	},
 	"promptCaching": {

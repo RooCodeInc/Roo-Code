@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "啟用模型啟動的斜線命令",
 			"description": "啟用時，Roo 可以執行您的斜線命令來執行工作流程。"
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "並行工具呼叫",
+			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
 		}
 	},
 	"promptCaching": {

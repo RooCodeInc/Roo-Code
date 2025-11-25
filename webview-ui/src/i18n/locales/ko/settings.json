@@ -790,6 +790,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "모델 시작 슬래시 명령 활성화",
 			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "병렬 도구 호출",
+			"description": "활성화되면 네이티브 프로토콜이 단일 어시스턴트 메시지 턴에서 여러 도구를 실행할 수 있습니다."
 		}
 	},
 	"promptCaching": {
