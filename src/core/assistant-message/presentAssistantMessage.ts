@@ -1,6 +1,7 @@
 import cloneDeep from "clone-deep"
 import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
+import { debugNativeToolCall } from "../../utils/debugNativeToolCalls"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -170,6 +171,17 @@ export async function presentAssistantMessage(cline: Task) {
 			break
 		}
 		case "tool_use":
+			// Debug: Log tool use block details
+			debugNativeToolCall("[presentAssistantMessage] Processing tool_use block:", {
+				name: block.name,
+				hasId: !!block.id,
+				hasNativeArgs: !!block.nativeArgs,
+				hasParams: !!block.params,
+				partial: block.partial,
+				paramKeys: block.params ? Object.keys(block.params) : [],
+				nativeArgsKeys: block.nativeArgs ? Object.keys(block.nativeArgs) : [],
+			})
+
 			const toolDescription = (): string => {
 				switch (block.name) {
 					case "execute_command":
@@ -258,6 +270,12 @@ export async function presentAssistantMessage(cline: Task) {
 					? `Skipping tool ${toolDescription()} due to user rejecting a previous tool.`
 					: `Tool ${toolDescription()} was interrupted and not executed due to user rejecting a previous tool.`
 
+				debugNativeToolCall(`[presentAssistantMessage] Tool rejected:`, {
+					toolName: block.name,
+					toolCallId,
+					errorMessage,
+				})
+
 				if (toolCallId) {
 					// Native protocol: MUST send tool_result for every tool_use
 					cline.userMessageContent.push({
@@ -282,6 +300,12 @@ export async function presentAssistantMessage(cline: Task) {
 				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
 				const toolCallId = block.id
 				const errorMessage = `Tool [${block.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message. You must assess the first tool's result before proceeding to use the next tool.`
+
+				debugNativeToolCall(`[presentAssistantMessage] Tool already used:`, {
+					toolName: block.name,
+					toolCallId,
+					errorMessage,
+				})
 
 				if (toolCallId) {
 					// Native protocol: MUST send tool_result for every tool_use
@@ -311,7 +335,20 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
+			debugNativeToolCall(`[presentAssistantMessage] Tool protocol detected:`, {
+				protocol: toolProtocol,
+				toolCallId,
+				toolName: block.name,
+			})
+
 			const pushToolResult = (content: ToolResponse) => {
+				debugNativeToolCall(`[presentAssistantMessage] Pushing tool result:`, {
+					protocol: toolProtocol,
+					toolCallId,
+					contentType: typeof content,
+					hasToolResult,
+				})
+
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
@@ -352,6 +389,11 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					hasToolResult = true
+					debugNativeToolCall(`[presentAssistantMessage] Native tool_result pushed:`, {
+						toolCallId,
+						resultLength: resultContent.length,
+						imageCount: imageBlocks.length,
+					})
 				} else {
 					// For XML protocol, add as text blocks (legacy behavior)
 					cline.userMessageContent.push({ type: "text", text: `${toolDescription()} Result:` })
@@ -490,6 +532,10 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			if (!block.partial) {
+				debugNativeToolCall(`[presentAssistantMessage] Recording tool usage:`, {
+					toolName: block.name,
+					protocol: toolProtocol,
+				})
 				cline.recordToolUsage(block.name)
 				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
 			}
@@ -552,6 +598,8 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				}
 			}
+
+			debugNativeToolCall(`[presentAssistantMessage] Executing tool handler for: ${block.name}`)
 
 			switch (block.name) {
 				case "write_to_file":
@@ -794,6 +842,8 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 			}
+
+			debugNativeToolCall(`[presentAssistantMessage] Tool handler completed for: ${block.name}`)
 
 			break
 	}

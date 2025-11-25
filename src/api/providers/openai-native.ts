@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import { debugNativeToolCall } from "../../utils/debugNativeToolCalls"
 
 import {
 	type ModelInfo,
@@ -786,6 +787,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								parsed.type === "response.function_call_arguments.done" ||
 								parsed.type === "response.tool_call_arguments.done"
 							) {
+								debugNativeToolCall("[OpenAI-Native] SSE tool call event:", {
+									type: parsed.type,
+									callId: parsed.call_id || parsed.tool_call_id || parsed.id,
+									hasName: !!(parsed.name || parsed.function_name),
+									hasDelta: !!(parsed.delta || parsed.arguments),
+								})
+
 								// Delegated to processEvent (handles accumulation and completion)
 								for await (const outChunk of this.processEvent(parsed, model)) {
 									yield outChunk
@@ -1076,21 +1084,36 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			event?.type === "response.function_call_arguments.delta"
 		) {
 			const callId = event.call_id || event.tool_call_id || event.id
+			debugNativeToolCall("[OpenAI-Native] Tool call delta received:", {
+				type: event.type,
+				callId,
+				hasName: !!(event.name || event.function_name),
+				hasDelta: !!(event.delta || event.arguments),
+				deltaLength: (event.delta || event.arguments)?.length,
+			})
+
 			if (callId) {
 				if (!this.currentToolCalls.has(callId)) {
 					this.currentToolCalls.set(callId, { name: "", arguments: "" })
+					debugNativeToolCall(`[OpenAI-Native] Created new tool call accumulator for ID: ${callId}`)
 				}
 				const toolCall = this.currentToolCalls.get(callId)!
 
 				// Update name if present (usually in the first delta)
 				if (event.name || event.function_name) {
 					toolCall.name = event.name || event.function_name
+					debugNativeToolCall(`[OpenAI-Native] Set tool call name: ${toolCall.name} for ID: ${callId}`)
 				}
 
 				// Append arguments delta
 				if (event.delta || event.arguments) {
 					toolCall.arguments += event.delta || event.arguments
+					debugNativeToolCall(
+						`[OpenAI-Native] Appended arguments delta for ${toolCall.name || "unnamed"}, total length: ${toolCall.arguments.length}`,
+					)
 				}
+			} else {
+				console.warn("[OpenAI-Native] Tool call delta received without call ID:", event)
 			}
 			return
 		}
@@ -1100,8 +1123,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			event?.type === "response.function_call_arguments.done"
 		) {
 			const callId = event.call_id || event.tool_call_id || event.id
+			debugNativeToolCall("[OpenAI-Native] Tool call done event:", {
+				type: event.type,
+				callId,
+				hasAccumulated: this.currentToolCalls.has(callId),
+			})
+
 			if (callId && this.currentToolCalls.has(callId)) {
 				const toolCall = this.currentToolCalls.get(callId)!
+				debugNativeToolCall(`[OpenAI-Native] Completing tool call:`, {
+					id: callId,
+					name: toolCall.name,
+					argumentsLength: toolCall.arguments.length,
+					argumentsPreview: toolCall.arguments.substring(0, 200),
+				})
+
 				// Yield the complete tool call
 				yield {
 					type: "tool_call",
@@ -1111,6 +1147,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 				// Remove from accumulator
 				this.currentToolCalls.delete(callId)
+				debugNativeToolCall(`[OpenAI-Native] Tool call yielded and removed from accumulator: ${callId}`)
+			} else {
+				console.warn(`[OpenAI-Native] Tool call done event for unknown ID: ${callId}`)
 			}
 			return
 		}
@@ -1136,12 +1175,28 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				) {
 					// Handle complete tool/function call item
 					const callId = item.call_id || item.tool_call_id || item.id
+					debugNativeToolCall("[OpenAI-Native] Output item tool/function call:", {
+						type: item.type,
+						callId,
+						name: item.name || item.function?.name || item.function_name,
+						hasArguments: !!(item.arguments || item.function?.arguments || item.function_arguments),
+					})
+
 					if (callId && !this.currentToolCalls.has(callId)) {
 						const args = item.arguments || item.function?.arguments || item.function_arguments
+						const toolName = item.name || item.function?.name || item.function_name || ""
+
+						debugNativeToolCall(`[OpenAI-Native] Yielding complete tool call from output item:`, {
+							id: callId,
+							name: toolName,
+							argumentsType: typeof args,
+							argumentsLength: typeof args === "string" ? args.length : 0,
+						})
+
 						yield {
 							type: "tool_call",
 							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
+							name: toolName,
 							arguments: typeof args === "string" ? args : "{}",
 						}
 					}
@@ -1154,7 +1209,17 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		if (event?.type === "response.done" || event?.type === "response.completed") {
 			// Yield any pending tool calls that didn't get a 'done' event (fallback)
 			if (this.currentToolCalls.size > 0) {
+				debugNativeToolCall(
+					`[OpenAI-Native] Response completed with ${this.currentToolCalls.size} pending tool calls (fallback)`,
+				)
+
 				for (const [callId, toolCall] of this.currentToolCalls) {
+					debugNativeToolCall(`[OpenAI-Native] Yielding pending tool call (fallback):`, {
+						id: callId,
+						name: toolCall.name,
+						argumentsLength: toolCall.arguments?.length || 0,
+					})
+
 					yield {
 						type: "tool_call",
 						id: callId,
