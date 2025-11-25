@@ -2845,7 +2845,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Check if we have any content to process (text or tool uses)
 				const hasTextContent = assistantMessage.length > 0
-				const hasToolUses = this.assistantMessageContent.some((block) => block.type === "tool_use")
+				const hasToolUses = this.assistantMessageContent.some(
+					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+				)
 
 				if (hasTextContent || hasToolUses) {
 					// Display grounding sources to the user if they exist
@@ -2870,20 +2872,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					// Add tool_use blocks with their IDs for native protocol
-					const toolUseBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
-					for (const toolUse of toolUseBlocks) {
-						// Get the tool call ID that was stored during parsing
-						const toolCallId = (toolUse as any).id
-						if (toolCallId) {
-							// nativeArgs is already in the correct API format for all tools
-							const input = toolUse.nativeArgs || toolUse.params
+					// This handles both regular ToolUse and McpToolUse types
+					const toolUseBlocks = this.assistantMessageContent.filter(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+					for (const block of toolUseBlocks) {
+						if (block.type === "mcp_tool_use") {
+							// McpToolUse already has the original tool name (e.g., "mcp_serverName_toolName")
+							const mcpBlock = block as import("../../shared/tools").McpToolUse
+							if (mcpBlock.id) {
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: mcpBlock.id,
+									name: mcpBlock.name, // Original dynamic name
+									input: {
+										server_name: mcpBlock.serverName,
+										tool_name: mcpBlock.toolName,
+										toolInputProps: mcpBlock.arguments,
+									},
+								})
+							}
+						} else {
+							// Regular ToolUse
+							const toolUse = block as import("../../shared/tools").ToolUse
+							const toolCallId = toolUse.id
+							if (toolCallId) {
+								// nativeArgs is already in the correct API format for all tools
+								const input = toolUse.nativeArgs || toolUse.params
 
-							assistantContent.push({
-								type: "tool_use" as const,
-								id: toolCallId,
-								name: toolUse.name,
-								input,
-							})
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: toolCallId,
+									name: toolUse.name,
+									input,
+								})
+							}
 						}
 					}
 
@@ -2917,7 +2940,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
-					const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
+					const didToolUse = this.assistantMessageContent.some(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
 
 					if (!didToolUse) {
 						const modelInfo = this.api.getModel().info

@@ -1,5 +1,11 @@
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
-import { type ToolUse, type ToolParamName, toolParamNames, type NativeToolArgs } from "../../shared/tools"
+import {
+	type ToolUse,
+	type McpToolUse,
+	type ToolParamName,
+	toolParamNames,
+	type NativeToolArgs,
+} from "../../shared/tools"
 import { parseJSON } from "partial-json"
 import type {
 	ApiStreamToolCallStartChunk,
@@ -490,10 +496,10 @@ export class NativeToolCallParser {
 		id: string
 		name: TName
 		arguments: string
-	}): ToolUse<TName> | null {
+	}): ToolUse<TName> | McpToolUse | null {
 		// Check if this is a dynamic MCP tool (mcp_serverName_toolName)
 		if (typeof toolCall.name === "string" && toolCall.name.startsWith("mcp_")) {
-			return this.parseDynamicMcpTool(toolCall) as ToolUse<TName> | null
+			return this.parseDynamicMcpTool(toolCall)
 		}
 
 		// Validate tool name
@@ -719,14 +725,14 @@ export class NativeToolCallParser {
 
 	/**
 	 * Parse dynamic MCP tools (named mcp_serverName_toolName).
-	 * These are generated dynamically by getMcpServerTools() and need to be
-	 * converted back to use_mcp_tool format.
+	 * These are generated dynamically by getMcpServerTools() and are returned
+	 * as McpToolUse objects that preserve the original tool name.
+	 *
+	 * In native mode, MCP tools are NOT converted to use_mcp_tool - they keep
+	 * their original name so it appears correctly in API conversation history.
+	 * The use_mcp_tool wrapper is only used in XML mode.
 	 */
-	private static parseDynamicMcpTool(toolCall: {
-		id: string
-		name: string
-		arguments: string
-	}): ToolUse<"use_mcp_tool"> | null {
+	public static parseDynamicMcpTool(toolCall: { id: string; name: string; arguments: string }): McpToolUse | null {
 		try {
 			const args = JSON.parse(toolCall.arguments)
 
@@ -734,36 +740,22 @@ export class NativeToolCallParser {
 			// The dynamic tool schema includes these as const properties
 			const serverName = args.server_name
 			const toolName = args.tool_name
-			const toolInputProps = args.toolInputProps
+			const toolInputProps = args.toolInputProps || {}
 
 			if (!serverName || !toolName) {
 				console.error(`Missing server_name or tool_name in dynamic MCP tool`)
 				return null
 			}
 
-			// Build params for backward compatibility with XML protocol
-			const params: Partial<Record<string, string>> = {
-				server_name: serverName,
-				tool_name: toolName,
-			}
-
-			if (toolInputProps) {
-				params.arguments = JSON.stringify(toolInputProps)
-			}
-
-			// Build nativeArgs with properly typed structure
-			const nativeArgs: NativeToolArgs["use_mcp_tool"] = {
-				server_name: serverName,
-				tool_name: toolName,
+			const result: McpToolUse = {
+				type: "mcp_tool_use" as const,
+				id: toolCall.id,
+				// Keep the original tool name (e.g., "mcp_serverName_toolName") for API history
+				name: toolCall.name,
+				serverName,
+				toolName,
 				arguments: toolInputProps,
-			}
-
-			const result: ToolUse<"use_mcp_tool"> = {
-				type: "tool_use" as const,
-				name: "use_mcp_tool",
-				params,
 				partial: false,
-				nativeArgs,
 			}
 
 			return result

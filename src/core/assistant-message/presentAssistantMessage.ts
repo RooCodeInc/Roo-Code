@@ -6,7 +6,7 @@ import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import type { ToolParamName, ToolResponse, ToolUse } from "../../shared/tools"
+import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
 import { Package } from "../../shared/package"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
@@ -100,6 +100,171 @@ export async function presentAssistantMessage(cline: Task) {
 	}
 
 	switch (block.type) {
+		case "mcp_tool_use": {
+			// Handle native MCP tool calls (from mcp_serverName_toolName dynamic tools)
+			// These are converted to the same execution path as use_mcp_tool but preserve
+			// their original name in API history
+			const mcpBlock = block as McpToolUse
+
+			if (cline.didRejectTool) {
+				// For native protocol, we must send a tool_result for every tool_use to avoid API errors
+				const toolCallId = mcpBlock.id
+				const errorMessage = !mcpBlock.partial
+					? `Skipping MCP tool ${mcpBlock.name} due to user rejecting a previous tool.`
+					: `MCP tool ${mcpBlock.name} was interrupted and not executed due to user rejecting a previous tool.`
+
+				if (toolCallId) {
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
+				}
+				break
+			}
+
+			if (cline.didAlreadyUseTool) {
+				const toolCallId = mcpBlock.id
+				const errorMessage = `MCP tool [${mcpBlock.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message.`
+
+				if (toolCallId) {
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: errorMessage,
+						is_error: true,
+					} as Anthropic.ToolResultBlockParam)
+				}
+				break
+			}
+
+			// Track if we've already pushed a tool result
+			let hasToolResult = false
+			const toolCallId = mcpBlock.id
+			const toolProtocol = TOOL_PROTOCOL.NATIVE // MCP tools in native mode always use native protocol
+
+			const pushToolResult = (content: ToolResponse) => {
+				if (hasToolResult) {
+					console.warn(
+						`[presentAssistantMessage] Skipping duplicate tool_result for mcp_tool_use: ${toolCallId}`,
+					)
+					return
+				}
+
+				let resultContent: string
+				let imageBlocks: Anthropic.ImageBlockParam[] = []
+
+				if (typeof content === "string") {
+					resultContent = content || "(tool did not return anything)"
+				} else {
+					const textBlocks = content.filter((item) => item.type === "text")
+					imageBlocks = content.filter((item) => item.type === "image") as Anthropic.ImageBlockParam[]
+					resultContent =
+						textBlocks.map((item) => (item as Anthropic.TextBlockParam).text).join("\n") ||
+						"(tool did not return anything)"
+				}
+
+				if (toolCallId) {
+					cline.userMessageContent.push({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: resultContent,
+					} as Anthropic.ToolResultBlockParam)
+
+					if (imageBlocks.length > 0) {
+						cline.userMessageContent.push(...imageBlocks)
+					}
+				}
+
+				hasToolResult = true
+				cline.didAlreadyUseTool = true
+			}
+
+			const toolDescription = () => `[mcp_tool: ${mcpBlock.serverName}/${mcpBlock.toolName}]`
+
+			const askApproval = async (
+				type: ClineAsk,
+				partialMessage?: string,
+				progressStatus?: ToolProgressStatus,
+				isProtected?: boolean,
+			) => {
+				const { response, text, images } = await cline.ask(
+					type,
+					partialMessage,
+					false,
+					progressStatus,
+					isProtected || false,
+				)
+
+				if (response !== "yesButtonClicked") {
+					if (text) {
+						await cline.say("user_feedback", text, images)
+						pushToolResult(
+							formatResponse.toolResult(
+								formatResponse.toolDeniedWithFeedback(text, toolProtocol),
+								images,
+							),
+						)
+					} else {
+						pushToolResult(formatResponse.toolDenied(toolProtocol))
+					}
+					cline.didRejectTool = true
+					return false
+				}
+
+				if (text) {
+					await cline.say("user_feedback", text, images)
+					pushToolResult(
+						formatResponse.toolResult(formatResponse.toolApprovedWithFeedback(text, toolProtocol), images),
+					)
+				}
+
+				return true
+			}
+
+			const handleError = async (action: string, error: Error) => {
+				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
+				await cline.say(
+					"error",
+					`Error ${action}:\n${error.message ?? JSON.stringify(serializeError(error), null, 2)}`,
+				)
+				pushToolResult(formatResponse.toolError(errorString, toolProtocol))
+			}
+
+			if (!mcpBlock.partial) {
+				cline.recordToolUsage("use_mcp_tool") // Record as use_mcp_tool for analytics
+				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool", toolProtocol)
+			}
+
+			// Execute the MCP tool using the same handler as use_mcp_tool
+			// Create a synthetic ToolUse block that the useMcpToolTool can handle
+			const syntheticToolUse: ToolUse<"use_mcp_tool"> = {
+				type: "tool_use",
+				id: mcpBlock.id,
+				name: "use_mcp_tool",
+				params: {
+					server_name: mcpBlock.serverName,
+					tool_name: mcpBlock.toolName,
+					arguments: JSON.stringify(mcpBlock.arguments),
+				},
+				partial: mcpBlock.partial,
+				nativeArgs: {
+					server_name: mcpBlock.serverName,
+					tool_name: mcpBlock.toolName,
+					arguments: mcpBlock.arguments,
+				},
+			}
+
+			await useMcpToolTool.handle(cline, syntheticToolUse, {
+				askApproval,
+				handleError,
+				pushToolResult,
+				removeClosingTag: (tag, text) => text || "",
+				toolProtocol,
+			})
+			break
+		}
 		case "text": {
 			if (cline.didRejectTool || cline.didAlreadyUseTool) {
 				break
@@ -721,14 +886,13 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "access_mcp_resource":
-					await accessMcpResourceTool(
-						cline,
-						block,
+					await accessMcpResourceTool.handle(cline, block as ToolUse<"access_mcp_resource">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
-					)
+						toolProtocol,
+					})
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
