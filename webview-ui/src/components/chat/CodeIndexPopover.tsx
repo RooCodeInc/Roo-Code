@@ -162,6 +162,14 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
 			})
 
+		// case "roo":
+		// 	// Roo Code Cloud uses session token from CloudService - no API key required
+		// 	return baseSchema.extend({
+		// 		codebaseIndexEmbedderModelId: z
+		// 			.string()
+		// 			.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
+		// 	})
+
 		default:
 			return baseSchema
 	}
@@ -173,7 +181,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 }) => {
 	const SECRET_PLACEHOLDER = "••••••••••••••••"
 	const { t } = useAppTranslation()
-	const { codebaseIndexConfig, codebaseIndexModels, cwd } = useExtensionState()
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { codebaseIndexConfig, codebaseIndexModels, cwd, cloudIsAuthenticated } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
@@ -697,6 +706,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												<SelectItem value="openrouter">
 													{t("settings:codeIndex.openRouterProvider")}
 												</SelectItem>
+												{/* <SelectItem value="roo">
+													{t("settings:codeIndex.rooProvider")}
+												</SelectItem> */}
 											</SelectContent>
 										</Select>
 									</div>
@@ -1223,6 +1235,55 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</div>
 										</>
 									)}
+
+									{/* {currentSettings.codebaseIndexEmbedderProvider === "roo" && (
+										<>
+											{!cloudIsAuthenticated && (
+												<div className="p-3 mb-2 bg-vscode-editorWarning-background text-vscode-editorWarning-foreground rounded text-sm">
+													{t("settings:codeIndex.rooCloudAuthNote")}
+												</div>
+											)}
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.modelLabel")}
+												</label>
+												<VSCodeDropdown
+													value={currentSettings.codebaseIndexEmbedderModelId}
+													onChange={(e: any) =>
+														updateSetting("codebaseIndexEmbedderModelId", e.target.value)
+													}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexEmbedderModelId,
+													})}>
+													<VSCodeOption value="" className="p-2">
+														{t("settings:codeIndex.selectModel")}
+													</VSCodeOption>
+													{getAvailableModels().map((modelId) => {
+														const model =
+															codebaseIndexModels?.[
+																currentSettings.codebaseIndexEmbedderProvider
+															]?.[modelId]
+														return (
+															<VSCodeOption key={modelId} value={modelId} className="p-2">
+																{modelId}{" "}
+																{model
+																	? t("settings:codeIndex.modelDimensions", {
+																			dimension: model.dimension,
+																		})
+																	: ""}
+															</VSCodeOption>
+														)
+													})}
+												</VSCodeDropdown>
+												{formErrors.codebaseIndexEmbedderModelId && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexEmbedderModelId}
+													</p>
+												)}
+											</div>
+										</>
+									)} */}
 
 									{/* Qdrant Settings */}
 									<div className="space-y-2">

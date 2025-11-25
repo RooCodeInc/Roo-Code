@@ -15,6 +15,8 @@ import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { t } from "../../i18n"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
 interface RooUsage extends OpenAI.CompletionUsage {
@@ -304,5 +306,31 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			id: modelId,
 			info: fallbackInfo,
 		}
+	}
+
+	/**
+	 * Generate an image using Roo Code Cloud's image generation API
+	 * @param prompt The text prompt for image generation
+	 * @param model The model to use for generation
+	 * @param inputImage Optional base64 encoded input image data URL
+	 * @returns The generated image data and format, or an error
+	 */
+	async generateImage(prompt: string, model: string, inputImage?: string): Promise<ImageGenerationResult> {
+		const sessionToken = getSessionToken()
+
+		if (!sessionToken || sessionToken === "unauthenticated") {
+			return {
+				success: false,
+				error: t("tools:generateImage.roo.authRequired"),
+			}
+		}
+
+		return generateImageWithProvider({
+			baseURL: `${this.fetcherBaseURL}/v1`,
+			authToken: sessionToken,
+			model,
+			prompt,
+			inputImage,
+		})
 	}
 }

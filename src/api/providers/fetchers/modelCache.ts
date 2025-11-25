@@ -31,7 +31,7 @@ import { ZgsmAuthConfig } from "../../../core/costrict/auth"
 import { IZgsmModelResponseData } from "@roo-code/types"
 import { getHuggingFaceModels } from "./huggingface"
 import { ClineProvider } from "../../../core/webview/ClineProvider"
-import { getRooModels } from "./roo"
+// import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
@@ -119,18 +119,18 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 		case "huggingface":
 			models = await getHuggingFaceModels()
 			break
-		case "roo": {
-			// Roo Code Cloud provider requires baseUrl and optional apiKey
-			const rooBaseUrl = options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
-			models = await getRooModels(rooBaseUrl, options.apiKey)
-			break
-		}
+		// case "roo": {
+		// 	// Roo Code Cloud provider requires baseUrl and optional apiKey
+		// 	const rooBaseUrl = options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+		// 	models = await getRooModels(rooBaseUrl, options.apiKey)
+		// 	break
+		// }
 		case "chutes":
 			models = await getChutesModels(options.apiKey)
 			break
 		default: {
 			// Ensures router is exhaustively checked if RouterName is a strict union.
-			const exhaustiveCheck: never = provider
+			const exhaustiveCheck: never | "roo" = provider
 			throw new Error(`Unknown provider: ${exhaustiveCheck}`)
 		}
 	}

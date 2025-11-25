@@ -36,6 +36,7 @@ export type AvailableEmbedders =
 	| "mistral"
 	| "vercel-ai-gateway"
 	| "openrouter"
+	| "roo"
 
 export interface EmbedderInfo {
 	name: AvailableEmbedders

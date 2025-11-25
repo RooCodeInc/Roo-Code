@@ -4,6 +4,7 @@ import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
 import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS, defaultCodebaseIndexEnabled } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
+// import { CloudService } from "@roo-code/cloud"
 
 /**
  * Manages configuration state and validation for the code indexing feature.
@@ -100,7 +101,9 @@ export class CodeIndexConfigManager {
 		this.openAiOptions = { openAiNativeApiKey: openAiKey }
 
 		// Set embedder provider with support for openai-compatible
-		if (codebaseIndexEmbedderProvider === "ollama") {
+		if (codebaseIndexEmbedderProvider === "openai") {
+			this.embedderProvider = "openai"
+		} else if (codebaseIndexEmbedderProvider === "ollama") {
 			this.embedderProvider = "ollama"
 		} else if (codebaseIndexEmbedderProvider === "openai-compatible") {
 			this.embedderProvider = "openai-compatible"
@@ -248,6 +251,16 @@ export class CodeIndexConfigManager {
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
 		}
+		// } else if (this.embedderProvider === "roo") {
+		// 	// Roo Code Cloud uses CloudService session token, so we need to check authentication
+		// 	const qdrantUrl = this.qdrantUrl
+		// 	const sessionToken = CloudService.hasInstance()
+		// 		? CloudService.instance.authService?.getSessionToken()
+		// 		: undefined
+		// 	const isAuthenticated = sessionToken && sessionToken !== "unauthenticated"
+		// 	const isConfigured = !!(qdrantUrl && isAuthenticated)
+		// 	return isConfigured
+		// }
 		return false // Should not happen if embedderProvider is always set correctly
 	}
 

@@ -39,7 +39,7 @@ import {
 	DoubaoHandler,
 	ZAiHandler,
 	FireworksHandler,
-	RooHandler,
+	// RooHandler,
 	FeatherlessHandler,
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
@@ -190,10 +190,10 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new FireworksHandler(options)
 		case "io-intelligence":
 			return new IOIntelligenceHandler(options)
-		case "roo":
-			// Never throw exceptions from provider constructors
-			// The provider-proxy server will handle authentication and return appropriate error codes
-			return new RooHandler(options)
+		// case "roo":
+		// 	// Never throw exceptions from provider constructors
+		// 	// The provider-proxy server will handle authentication and return appropriate error codes
+		// 	return new RooHandler(options)
 		case "featherless":
 			return new FeatherlessHandler(options)
 		case "vercel-ai-gateway":
@@ -203,7 +203,7 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 		case "baseten":
 			return new BasetenHandler(options)
 		default:
-			apiProvider satisfies "gemini-cli" | undefined
+			// apiProvider satisfies "gemini-cli" | undefined
 			return new AnthropicHandler(options)
 	}
 }

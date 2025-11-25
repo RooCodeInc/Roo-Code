@@ -713,7 +713,9 @@ export const webviewMessageHandler = async (
 
 		case "terminalOperation":
 			if (message.terminalOperation) {
-				provider.getCurrentTask()?.handleTerminalOperation(message.terminalOperation, message.terminalPid, message.executionId)
+				provider
+					.getCurrentTask()
+					?.handleTerminalOperation(message.terminalOperation, message.terminalPid, message.executionId)
 			}
 			break
 		case "clearTask":
@@ -981,6 +983,12 @@ export const webviewMessageHandler = async (
 			const litellmBaseUrl = apiConfiguration.litellmBaseUrl || message?.values?.litellmBaseUrl
 
 			if (litellmApiKey && litellmBaseUrl) {
+				// If explicit credentials are provided in message.values (from Refresh Models button),
+				// flush the cache first to ensure we fetch fresh data with the new credentials
+				if (message?.values?.litellmApiKey || message?.values?.litellmBaseUrl) {
+					await flushModels("litellm", true)
+				}
+
 				candidates.push({
 					key: "litellm",
 					options: { provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl },

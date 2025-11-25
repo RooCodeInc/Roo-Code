@@ -2016,6 +2016,7 @@ export class ClineProvider
 			maxGitStatusFiles,
 			taskSyncEnabled,
 			remoteControlEnabled,
+			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
@@ -2188,6 +2189,7 @@ export class ClineProvider
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			remoteControlEnabled,
+			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
@@ -2427,6 +2429,7 @@ export class ClineProvider
 				// 	return false
 				// }
 			})(),
+			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled: (() => {
