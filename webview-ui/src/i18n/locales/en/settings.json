@@ -38,19 +38,20 @@
 	"about": {
 		"bugReport": {
 			"label": "Found a bug?",
-			"link": "File on GitHub"
+			"link": "Report on GitHub"
 		},
 		"featureRequest": {
 			"label": "Have an idea?",
 			"link": "Share it with us"
 		},
 		"securityIssue": {
-			"label": "Discovered a security issue?",
+			"label": "Discovered a vulnerability?",
 			"link": "Follow our disclosure process"
 		},
 		"contact": {
 			"label": "Need to talk to us? Write"
-		}
+		},
+		"community": "Want tips or to just hang out with other Roo Code users? Join <redditLink>reddit.com/r/RooCode</redditLink> or <discordLink>discord.gg/roocode</discordLink>"
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
@@ -852,7 +853,6 @@
 		"useCustomModel": "Use custom: {{modelId}}"
 	},
 	"footer": {
-		"feedback": "If you have any questions or feedback, feel free to open an issue at <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> or join <redditLink>reddit.com/r/RooCode</redditLink> or <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Allow anonymous error and usage reporting",
 			"description": "Help improve Roo Code by sending anonymous usage data and error reports. This telemetry does not collect code, prompts or personal information. See our <privacyLink>privacy policy</privacyLink> for more details."
