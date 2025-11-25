@@ -180,6 +180,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 												type: "terminalOperation",
 												terminalOperation: "abort",
 												terminalPid: status.pid,
+												executionId: status.executionId,
 												terminalCommand: status.command,
 											})
 										}>

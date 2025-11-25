@@ -7,6 +7,7 @@ import { TerminalProcess } from "./TerminalProcess"
 import { Terminal } from "./Terminal"
 import { ExecaTerminal } from "./ExecaTerminal"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
+import { isJetbrainsPlatform } from "../../utils/platform"
 
 // Although vscode.window.terminals provides a list of all open terminals,
 // there's no way to know whether they're busy or not (exitStatus does not
@@ -22,6 +23,7 @@ export class TerminalRegistry {
 	private static nextTerminalId = 1
 	private static disposables: vscode.Disposable[] = []
 	private static isInitialized = false
+	private static maxNotBusyTerminals = 5 // Maximum number of non-busy terminals
 
 	public static initialize() {
 		if (this.isInitialized) {
@@ -48,7 +50,6 @@ export class TerminalRegistry {
 		try {
 			const startDisposable = vscode.window.onDidStartTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionStartEvent) => {
-					
 					if (e?.terminal?.name !== "CoStrict") {
 						return
 					}
@@ -79,7 +80,6 @@ export class TerminalRegistry {
 
 			const endDisposable = vscode.window.onDidEndTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionEndEvent) => {
-					
 					if (e.terminal.name !== "CoStrict") {
 						return
 					}
@@ -207,6 +207,11 @@ export class TerminalRegistry {
 
 		terminal.taskId = taskId
 
+		if (provider === "vscode" && !isJetbrainsPlatform()) {
+			// Check if we need to cleanup non-busy terminals after creating a new one
+			this.checkAndCleanupNotBusyTerminals()
+		}
+
 		return terminal
 	}
 
@@ -332,5 +337,64 @@ export class TerminalRegistry {
 	private static removeTerminal(id: number) {
 		ShellIntegrationManager.zshCleanupTmpDir(id)
 		this.terminals = this.terminals.filter((t) => t.id !== id)
+	}
+
+	/**
+	 * Safely destroys the specified terminal
+	 * @param terminal The terminal to destroy
+	 */
+	private static destroyTerminal(terminal: RooTerminal) {
+		console.info(
+			`[TerminalRegistry] Destroying terminal ${terminal.id} (created at ${new Date((terminal as any).createdAt).toISOString()})`,
+		)
+
+		// If it's a VSCode terminal, need to call dispose method
+		if (terminal instanceof Terminal) {
+			terminal.terminal.dispose()
+		}
+
+		// Remove from registry
+		this.removeTerminal(terminal.id)
+
+		console.info(`[TerminalRegistry] Terminal ${terminal.id} destroyed successfully`)
+	}
+
+	/**
+	 * Checks and cleans up non-busy terminals to ensure they don't exceed the maximum limit
+	 */
+	private static checkAndCleanupNotBusyTerminals() {
+		const notBusyTerminals = this.getTerminals(false)
+
+		if (notBusyTerminals.length <= this.maxNotBusyTerminals) {
+			return
+		}
+
+		console.info(
+			`[TerminalRegistry] Non-busy terminals count (${notBusyTerminals.length}) exceeds limit (${this.maxNotBusyTerminals})`,
+		)
+
+		// Sort by creation time, oldest first
+		const sortedTerminals = notBusyTerminals.sort((a, b) => (a as any).createdAt - (b as any).createdAt)
+
+		// Calculate the number of terminals to destroy
+		const terminalsToDestroy = sortedTerminals.slice(0, notBusyTerminals.length - this.maxNotBusyTerminals)
+
+		// Destroy the oldest terminals
+		terminalsToDestroy.forEach((terminal) => {
+			// Ensure terminal doesn't have unretrieved output
+			if (!terminal.hasUnretrievedOutput()) {
+				this.destroyTerminal(terminal)
+			} else {
+				console.warn(`[TerminalRegistry] Skipping terminal ${terminal.id} destruction - has unretrieved output`)
+			}
+		})
+
+		// If not enough terminals were destroyed due to unretrieved output, check again
+		const remainingNotBusyTerminals = this.getTerminals(false)
+		if (remainingNotBusyTerminals.length > this.maxNotBusyTerminals) {
+			console.warn(
+				`[TerminalRegistry] Still have ${remainingNotBusyTerminals.length} non-busy terminals after cleanup (some have unretrieved output)`,
+			)
+		}
 	}
 }

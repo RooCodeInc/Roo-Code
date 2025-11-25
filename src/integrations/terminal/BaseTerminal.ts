@@ -14,6 +14,7 @@ export abstract class BaseTerminal implements RooTerminal {
 	public readonly provider: RooTerminalProvider
 	public readonly id: number
 	public readonly initialCwd: string
+	public readonly createdAt: number
 
 	public busy: boolean
 	public running: boolean
@@ -27,6 +28,7 @@ export abstract class BaseTerminal implements RooTerminal {
 		this.provider = provider
 		this.id = id
 		this.initialCwd = cwd
+		this.createdAt = Date.now()
 		this.busy = false
 		this.running = false
 		this.streamClosed = false
@@ -148,6 +150,22 @@ export abstract class BaseTerminal implements RooTerminal {
 
 		this.cleanCompletedProcessQueue()
 		return output
+	}
+
+	/**
+		* Checks if the terminal has any unretrieved output
+		* @returns True if there is unretrieved output, false otherwise
+		*/
+	public hasUnretrievedOutput(): boolean {
+		// Check completed processes first
+		for (const process of this.completedProcesses) {
+			if (process.hasUnretrievedOutput()) {
+				return true
+			}
+		}
+
+		// Then check active process
+		return this.process?.hasUnretrievedOutput() ?? false
 	}
 
 	public static defaultShellIntegrationTimeout = 5_000

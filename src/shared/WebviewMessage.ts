@@ -235,6 +235,7 @@ export interface WebviewMessage {
 	hasSystemPromptOverride?: boolean
 	terminalOperation?: "continue" | "abort"
 	terminalPid?: number
+	executionId?: string
 	terminalCommand?: string
 	messageTs?: number
 	restoreCheckpoint?: boolean

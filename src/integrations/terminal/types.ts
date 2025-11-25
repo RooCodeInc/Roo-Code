@@ -7,6 +7,7 @@ export interface RooTerminal {
 	id: number
 	busy: boolean
 	running: boolean
+	createdAt: number
 	taskId?: string
 	process?: RooTerminalProcess
 	getCurrentWorkingDirectory(): string
@@ -18,6 +19,7 @@ export interface RooTerminal {
 	getUnretrievedOutput(): string
 	getLastCommand(): string
 	cleanCompletedProcessQueue(): void
+	hasUnretrievedOutput(): boolean
 }
 
 export interface RooTerminalCallbacks {

@@ -481,7 +481,8 @@ const ApiOptions = ({
 	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
 
 	// Show the tool protocol selector when model supports native tools
-	const showToolProtocolSelector = selectedModelInfo?.supportsNativeTools === true
+	const showToolProtocolSelector =
+		selectedModelInfo?.supportsNativeTools === true || apiConfiguration.apiProvider === "zgsm"
 
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {

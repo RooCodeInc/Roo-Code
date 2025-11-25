@@ -44,6 +44,7 @@ import {
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	TOOL_PROTOCOL,
+	CommandExecutionStatus,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -1313,13 +1314,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	async handleTerminalOperation(terminalOperation: "continue" | "abort", pid?: number) {
+	async handleTerminalOperation(terminalOperation: "continue" | "abort", pid?: number, executionId?: string) {
 		if (terminalOperation === "continue") {
 			this.terminalProcess?.continue()
 		} else if (terminalOperation === "abort") {
 			if (this.terminalProcess) {
 				this.terminalProcess.abort()
 			} else if (pid) {
+				if (executionId) {
+					const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
+					this.providerRef.deref()?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+				}
 				process.kill(pid, "SIGKILL")
 			}
 		}
