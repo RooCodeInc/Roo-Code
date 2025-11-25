@@ -151,7 +151,7 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
  */
 export const getModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 	const { provider } = options
-	let clineProvider = await ClineProvider.getAllInstance()
+	// let clineProvider = await ClineProvider.getAllInstance()
 
 	let models = getModelsFromCache(provider)
 

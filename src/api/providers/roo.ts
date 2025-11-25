@@ -4,7 +4,7 @@ import OpenAI from "openai"
 import { rooDefaultModelId, getApiProtocol } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ApiHandlerOptions, RouterName } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -223,7 +223,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		try {
 			// Fetch models and cache them in the shared cache
 			await getModels({
-				provider: "roo",
+				provider: "roo" as any,
 				baseUrl: baseURL,
 				apiKey,
 			})

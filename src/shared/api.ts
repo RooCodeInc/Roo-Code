@@ -190,7 +190,7 @@ const dynamicProviderExtras = {
 	glama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 	lmstudio: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
-	roo: {} as { apiKey?: string; baseUrl?: string },
+	// roo: {} as { apiKey?: string; baseUrl?: string },
 	chutes: {} as { apiKey?: string },
 } as const satisfies Record<RouterName, object>
 

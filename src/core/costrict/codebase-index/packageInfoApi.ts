@@ -1,3 +1,4 @@
+import { getClientId } from "../../../utils/getClientId"
 import { ZgsmAuthApi, ZgsmAuthConfig } from "../auth"
 import { PackageInfoResponse, VersionInfo } from "./types"
 
@@ -18,7 +19,13 @@ export class PackageInfoApi {
 		const url = `${baseUrl}/costrict${versionInfo.infoUrl}`
 
 		try {
-			const response = await fetch(url)
+			const response = await fetch(url, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					"zgsm-request-id": getClientId(),
+				},
+			})
 
 			if (!response.ok) {
 				const errorData = await await response.text()

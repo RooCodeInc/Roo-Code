@@ -3,6 +3,7 @@ import * as vscode from "vscode"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { ZgsmAuthConfig } from "../auth"
 import { t } from "../../../i18n"
+import { getClientId } from "../../../utils/getClientId"
 
 export interface INotice {
 	title: string
@@ -87,7 +88,11 @@ export class NotificationService {
 			}
 			const { language, apiConfiguration } = await this.provider.getState()
 			const baseUrl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()
-			const response = await axios.get(`${baseUrl}/costrict/announcement/announcement_${language}.json`)
+			const response = await axios.get(`${baseUrl}/costrict/announcement/announcement_${language}.json`, {
+				headers: {
+					"zgsm-request-id": getClientId(),
+				},
+			})
 			return response.data
 		} catch (error) {
 			console.error("Failed to fetch remote notices:", error)

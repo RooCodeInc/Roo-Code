@@ -1,3 +1,4 @@
+import { getClientId } from "../../../utils/getClientId"
 import { ZgsmAuthApi, ZgsmAuthConfig } from "../auth"
 import { PlatformDetector } from "./platform"
 import { PlatformResponse, VersionInfo } from "./types"
@@ -26,7 +27,13 @@ export class VersionApi {
 		const url = `${baseUrl}/costrict/costrict/${platform}/${arch}/platform.json`
 
 		try {
-			const response = await fetch(url)
+			const response = await fetch(url, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+					"zgsm-request-id": getClientId(),
+				},
+			})
 
 			if (!response.ok) {
 				const errorData = await response.text()

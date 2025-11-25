@@ -7,6 +7,7 @@ import { t } from "../../../i18n"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { TelemetryService } from "@roo-code/telemetry"
 import { ZgsmAuthConfig } from "../auth"
+import { getClientId } from "../../../utils/getClientId"
 
 export interface IErrorMap {
 	[code: string]: {
@@ -79,7 +80,11 @@ export class ErrorCodeManager {
 		try {
 			const { language, apiConfiguration } = await this.provider.getState()
 			const baseUrl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()
-			const response = await axios.get(`${baseUrl}/costrict/error-code/error_codes_${language}.json`)
+			const response = await axios.get(`${baseUrl}/costrict/error-code/error_codes_${language}.json`, {
+				headers: {
+					"zgsm-request-id": getClientId(),
+				},
+			})
 			return response.data
 		} catch (error) {
 			console.error("Failed to fetch remote error codes:", error)

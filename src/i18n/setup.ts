@@ -65,7 +65,7 @@ if (!isTestEnv) {
 
 // Merge CoStrict translations
 const mergedTranslations = mergeLanguageResources(translations, zgsmTranslations)
-console.log(`Merged translations:`, mergedTranslations)
+// console.log(`Merged translations:`, mergedTranslations)
 
 // Initialize i18next with configuration
 i18next.init({

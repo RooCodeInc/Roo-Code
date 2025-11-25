@@ -274,6 +274,7 @@ export async function executeCommandInTerminal(
 		// command actually executed.
 		workingDir = terminal.getCurrentWorkingDirectory()
 	}
+	console.time("runCommand")
 
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
@@ -318,6 +319,7 @@ export async function executeCommandInTerminal(
 		try {
 			await process
 		} finally {
+			console.timeEnd("runCommand")
 			task.terminalProcess = undefined
 		}
 	}

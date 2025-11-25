@@ -243,7 +243,7 @@ vi.mock("../../task/Task", () => ({
 				getTaskNumber: vi.fn().mockReturnValue(0),
 				setTaskNumber: vi.fn(),
 				setParentTask: vi.fn(),
-				setRootTask: vi.fn(),
+				// setRootTask: vi.fn(),
 				taskId: taskId || "test-task-id",
 				emit: vi.fn(),
 			}),
@@ -2720,12 +2720,12 @@ describe("ClineProvider - Router Models", () => {
 		expect(getModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "deepinfra" })
-		expect(getModels).toHaveBeenCalledWith(
-			expect.objectContaining({
-				provider: "roo",
-				baseUrl: expect.any(String),
-			}),
-		)
+		// expect(getModels).toHaveBeenCalledWith(
+		// 	expect.objectContaining({
+		// 		provider: "roo",
+		// 		baseUrl: expect.any(String),
+		// 	}),
+		// )
 		expect(getModels).toHaveBeenCalledWith({
 			provider: "litellm",
 			apiKey: "litellm-key",
@@ -2750,7 +2750,7 @@ describe("ClineProvider - Router Models", () => {
 				requesty: mockModels,
 				glama: mockModels,
 				unbound: mockModels,
-				roo: mockModels,
+				// roo: mockModels,
 				chutes: mockModels,
 				litellm: mockModels,
 				ollama: {},
@@ -2792,7 +2792,7 @@ describe("ClineProvider - Router Models", () => {
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound fail
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
 			.mockResolvedValueOnce(mockModels) // deepinfra success
-			.mockResolvedValueOnce(mockModels) // roo success
+			// .mockResolvedValueOnce(mockModels) // roo success
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
@@ -2815,7 +2815,7 @@ describe("ClineProvider - Router Models", () => {
 				requesty: {},
 				glama: mockModels,
 				unbound: {},
-				roo: mockModels,
+				// roo: mockModels,
 				chutes: {},
 				ollama: {},
 				lmstudio: {},
@@ -2949,7 +2949,7 @@ describe("ClineProvider - Router Models", () => {
 				requesty: mockModels,
 				glama: mockModels,
 				unbound: mockModels,
-				roo: mockModels,
+				// roo: mockModels,
 				chutes: mockModels,
 				litellm: {},
 				ollama: {},

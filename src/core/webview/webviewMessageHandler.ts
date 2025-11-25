@@ -906,7 +906,7 @@ export const webviewMessageHandler = async (
 						glama: {},
 						ollama: {},
 						lmstudio: {},
-						roo: {},
+						// roo: {},
 						chutes: {},
 					}
 
@@ -954,16 +954,16 @@ export const webviewMessageHandler = async (
 						baseUrl: apiConfiguration.deepInfraBaseUrl,
 					},
 				},
-				{
-					key: "roo",
-					options: {
-						provider: "roo",
-						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
-						apiKey: CloudService.hasInstance()
-							? CloudService.instance.authService?.getSessionToken()
-							: undefined,
-					},
-				},
+				// {
+				// 	key: "roo",
+				// 	options: {
+				// 		provider: "roo",
+				// 		baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+				// 		apiKey: CloudService.hasInstance()
+				// 			? CloudService.instance.authService?.getSessionToken()
+				// 			: undefined,
+				// 	},
+				// },
 				{
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
@@ -2356,18 +2356,18 @@ export const webviewMessageHandler = async (
 			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
 			break
 		}
-		case "rooCloudSignIn": {
-			try {
-				TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
-				// Use provider signup flow if useProviderSignup is explicitly true
-				await CloudService.instance.login(undefined, message.useProviderSignup ?? false)
-			} catch (error) {
-				provider.log(`AuthService#login failed: ${error}`)
-				vscode.window.showErrorMessage("Sign in failed.")
-			}
+		// case "rooCloudSignIn": {
+		// 	try {
+		// 		TelemetryService.instance.captureEvent(TelemetryEventName.AUTHENTICATION_INITIATED)
+		// 		// Use provider signup flow if useProviderSignup is explicitly true
+		// 		await CloudService.instance.login(undefined, message.useProviderSignup ?? false)
+		// 	} catch (error) {
+		// 		provider.log(`AuthService#login failed: ${error}`)
+		// 		vscode.window.showErrorMessage("Sign in failed.")
+		// 	}
 
-			break
-		}
+		// 	break
+		// }
 		case "cloudLandingPageSignIn": {
 			try {
 				const landingPageSlug = message.text || "supernova"
@@ -2391,80 +2391,80 @@ export const webviewMessageHandler = async (
 
 			break
 		}
-		case "rooCloudManualUrl": {
-			try {
-				if (!message.text) {
-					vscode.window.showErrorMessage(t("common:errors.manual_url_empty"))
-					break
-				}
+		// case "rooCloudManualUrl": {
+		// 	try {
+		// 		if (!message.text) {
+		// 			vscode.window.showErrorMessage(t("common:errors.manual_url_empty"))
+		// 			break
+		// 		}
 
-				// Parse the callback URL to extract parameters
-				const callbackUrl = message.text.trim()
-				const uri = vscode.Uri.parse(callbackUrl)
+		// 		// Parse the callback URL to extract parameters
+		// 		const callbackUrl = message.text.trim()
+		// 		const uri = vscode.Uri.parse(callbackUrl)
 
-				if (!uri.query) {
-					throw new Error(t("common:errors.manual_url_no_query"))
-				}
+		// 		if (!uri.query) {
+		// 			throw new Error(t("common:errors.manual_url_no_query"))
+		// 		}
 
-				const query = new URLSearchParams(uri.query)
-				const code = query.get("code")
-				const state = query.get("state")
-				const organizationId = query.get("organizationId")
+		// 		const query = new URLSearchParams(uri.query)
+		// 		const code = query.get("code")
+		// 		const state = query.get("state")
+		// 		const organizationId = query.get("organizationId")
 
-				if (!code || !state) {
-					throw new Error(t("common:errors.manual_url_missing_params"))
-				}
+		// 		if (!code || !state) {
+		// 			throw new Error(t("common:errors.manual_url_missing_params"))
+		// 		}
 
-				// Reuse the existing authentication flow
-				await CloudService.instance.handleAuthCallback(
-					code,
-					state,
-					organizationId === "null" ? null : organizationId,
-				)
+		// 		// Reuse the existing authentication flow
+		// 		await CloudService.instance.handleAuthCallback(
+		// 			code,
+		// 			state,
+		// 			organizationId === "null" ? null : organizationId,
+		// 		)
 
-				await provider.postStateToWebview()
-			} catch (error) {
-				provider.log(`ManualUrl#handleAuthCallback failed: ${error}`)
-				const errorMessage = error instanceof Error ? error.message : t("common:errors.manual_url_auth_failed")
+		// 		await provider.postStateToWebview()
+		// 	} catch (error) {
+		// 		provider.log(`ManualUrl#handleAuthCallback failed: ${error}`)
+		// 		const errorMessage = error instanceof Error ? error.message : t("common:errors.manual_url_auth_failed")
 
-				// Show error message through VS Code UI
-				vscode.window.showErrorMessage(`${t("common:errors.manual_url_auth_error")}: ${errorMessage}`)
-			}
+		// 		// Show error message through VS Code UI
+		// 		vscode.window.showErrorMessage(`${t("common:errors.manual_url_auth_error")}: ${errorMessage}`)
+		// 	}
 
-			break
-		}
-		case "switchOrganization": {
-			try {
-				const organizationId = message.organizationId ?? null
+		// 	break
+		// }
+		// case "switchOrganization": {
+		// 	try {
+		// 		const organizationId = message.organizationId ?? null
 
-				// Switch to the new organization context
-				await CloudService.instance.switchOrganization(organizationId)
+		// 		// Switch to the new organization context
+		// 		await CloudService.instance.switchOrganization(organizationId)
 
-				// Refresh the state to update UI
-				await provider.postStateToWebview()
+		// 		// Refresh the state to update UI
+		// 		await provider.postStateToWebview()
 
-				// Send success response back to webview
-				await provider.postMessageToWebview({
-					type: "organizationSwitchResult",
-					success: true,
-					organizationId: organizationId,
-				})
-			} catch (error) {
-				provider.log(`Organization switch failed: ${error}`)
-				const errorMessage = error instanceof Error ? error.message : String(error)
+		// 		// Send success response back to webview
+		// 		await provider.postMessageToWebview({
+		// 			type: "organizationSwitchResult",
+		// 			success: true,
+		// 			organizationId: organizationId,
+		// 		})
+		// 	} catch (error) {
+		// 		provider.log(`Organization switch failed: ${error}`)
+		// 		const errorMessage = error instanceof Error ? error.message : String(error)
 
-				// Send error response back to webview
-				await provider.postMessageToWebview({
-					type: "organizationSwitchResult",
-					success: false,
-					error: errorMessage,
-					organizationId: message.organizationId ?? null,
-				})
+		// 		// Send error response back to webview
+		// 		await provider.postMessageToWebview({
+		// 			type: "organizationSwitchResult",
+		// 			success: false,
+		// 			error: errorMessage,
+		// 			organizationId: message.organizationId ?? null,
+		// 		})
 
-				vscode.window.showErrorMessage(`Failed to switch organization: ${errorMessage}`)
-			}
-			break
-		}
+		// 		vscode.window.showErrorMessage(`Failed to switch organization: ${errorMessage}`)
+		// 	}
+		// 	break
+		// }
 
 		case "saveCodeIndexSettingsAtomic": {
 			if (!message.codeIndexSettings) {
