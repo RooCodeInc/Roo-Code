@@ -130,6 +130,42 @@ const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
 
+/**
+ * Converts internal 'reasoning' blocks to Anthropic's 'thinking' format.
+ * For multi-turn extended thinking, signatures are REQUIRED - without one,
+ * we strip reasoning blocks entirely (handles old conversations without signatures).
+ */
+function convertReasoningToThinking(
+	content: Anthropic.Messages.ContentBlockParam[],
+): Anthropic.Messages.ContentBlockParam[] {
+	const signatureBlock = content.find((block) => (block as any).type === "thoughtSignature") as
+		| { type: "thoughtSignature"; thoughtSignature: string }
+		| undefined
+	const signature = signatureBlock?.thoughtSignature
+
+	// No signature = strip reasoning (required for multi-turn extended thinking)
+	if (!signature) {
+		return content.filter(
+			(block) => (block as any).type !== "reasoning" && (block as any).type !== "thoughtSignature",
+		)
+	}
+
+	// Convert reasoning to thinking with signature
+	return content
+		.filter((block) => (block as any).type !== "thoughtSignature")
+		.map((block) => {
+			if ((block as any).type === "reasoning") {
+				const reasoningText = (block as any).text
+				return {
+					type: "thinking",
+					thinking: typeof reasoningText === "string" ? reasoningText : "",
+					signature,
+				} as unknown as Anthropic.Messages.ContentBlockParam
+			}
+			return block
+		})
+}
+
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
 	apiConfiguration: ProviderSettings
@@ -3703,6 +3739,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			summary?: any[]
 		}
 
+		// Type guard for standalone reasoning messages with encrypted content
+		const isEncryptedReasoningMessage = (
+			msg: ApiMessage,
+		): msg is ApiMessage & { type: "reasoning"; encrypted_content: string } => {
+			return msg.type === "reasoning" && typeof msg.encrypted_content === "string"
+		}
+
 		const cleanConversationHistory: (Anthropic.Messages.MessageParam | ReasoningItemForRequest)[] = []
 
 		// Determine API protocol - Anthropic uses 'thinking' blocks, others use 'reasoning'
@@ -3710,51 +3753,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
 		const isAnthropicProtocol = apiProtocol === "anthropic"
 
-		// Converts internal 'reasoning' blocks to Anthropic's 'thinking' format.
-		// For multi-turn extended thinking, signatures are REQUIRED - without one,
-		// we strip reasoning blocks entirely (handles old conversations without signatures).
-		const convertReasoningToThinking = (
-			content: Anthropic.Messages.ContentBlockParam[],
-		): Anthropic.Messages.ContentBlockParam[] => {
-			const signatureBlock = content.find((block) => (block as any).type === "thoughtSignature") as
-				| { type: "thoughtSignature"; thoughtSignature: string }
-				| undefined
-			const signature = signatureBlock?.thoughtSignature
-
-			// No signature = strip reasoning (required for multi-turn extended thinking)
-			if (!signature) {
-				return content.filter(
-					(block) => (block as any).type !== "reasoning" && (block as any).type !== "thoughtSignature",
-				)
+		for (const msg of messages) {
+			// Standalone encrypted reasoning items (OpenAI Native only, not supported by Anthropic)
+			if (isEncryptedReasoningMessage(msg) && !isAnthropicProtocol) {
+				cleanConversationHistory.push({
+					type: "reasoning",
+					summary: msg.summary,
+					encrypted_content: msg.encrypted_content,
+					...(msg.id ? { id: msg.id } : {}),
+				})
+				continue
 			}
 
-			// Convert reasoning to thinking with signature
-			return content
-				.filter((block) => (block as any).type !== "thoughtSignature")
-				.map((block) => {
-					if ((block as any).type === "reasoning") {
-						const reasoningText = (block as any).text
-						return {
-							type: "thinking",
-							thinking: typeof reasoningText === "string" ? reasoningText : "",
-							signature,
-						} as unknown as Anthropic.Messages.ContentBlockParam
-					}
-					return block
-				})
-		}
-
-		for (const msg of messages) {
-			// Standalone reasoning items (OpenAI Native only, not supported by Anthropic)
+			// Skip other standalone reasoning items (plain text reasoning without encrypted content)
 			if (msg.type === "reasoning") {
-				if (msg.encrypted_content && !isAnthropicProtocol) {
-					cleanConversationHistory.push({
-						type: "reasoning",
-						summary: msg.summary,
-						encrypted_content: msg.encrypted_content!,
-						...(msg.id ? { id: msg.id } : {}),
-					})
-				}
 				continue
 			}
 

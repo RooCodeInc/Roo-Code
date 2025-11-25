@@ -29,6 +29,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 	// Get current custom model info or create default
 	const customModelInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
 		contextWindow: 200000,
+		supportsImages: true,
 		supportsPromptCache: true,
 	}
 
@@ -37,6 +38,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 		(field: keyof ModelInfo, value: ModelInfo[keyof ModelInfo]) => {
 			const currentInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
 				contextWindow: 200000,
+				supportsImages: true,
 				supportsPromptCache: true,
 			}
 			setApiConfigurationField("anthropicCustomModelInfo", {

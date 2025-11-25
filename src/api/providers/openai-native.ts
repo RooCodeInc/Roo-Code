@@ -26,6 +26,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
 // Azure OpenAI has a 1024 character limit for tool/function descriptions
+// See: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/function-calling?tabs=rest#limitations
 const AZURE_TOOL_DESCRIPTION_LIMIT = 1024
 
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
