@@ -69,7 +69,7 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 			</Section>
 
 			<Section className="space-y-0">
-				<h3>Contact & Community</h3>
+				<h3>{t("settings:about.contactAndCommunity")}</h3>
 				<div className="flex flex-col gap-3">
 					<div className="flex items-start gap-2">
 						<Bug className="size-4 text-vscode-descriptionForeground shrink-0" />
@@ -121,7 +121,7 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 			</Section>
 
 			<Section className="space-y-0">
-				<h3>Settings</h3>
+				<h3>{t("settings:about.manageSettings")}</h3>
 				<div className="flex flex-wrap items-center gap-2">
 					<Button onClick={() => vscode.postMessage({ type: "exportSettings" })} className="w-28">
 						<Upload className="p-0.5" />

@@ -35,6 +35,26 @@
 		"language": "Bahasa",
 		"about": "Tentang Roo Code"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Menemukan bug?",
+			"link": "Laporkan di GitHub"
+		},
+		"featureRequest": {
+			"label": "Punya ide?",
+			"link": "Bagikan dengan kami"
+		},
+		"securityIssue": {
+			"label": "Menemukan kerentanan?",
+			"link": "Ikuti proses pengungkapan kami"
+		},
+		"contact": {
+			"label": "Perlu bicara dengan kami? Tulis"
+		},
+		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Kontak & Komunitas",
+		"manageSettings": "Kelola Pengaturan"
+	},
 	"slashCommands": {
 		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
 	},

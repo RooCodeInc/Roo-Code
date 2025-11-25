@@ -35,6 +35,26 @@
 		"language": "言語",
 		"about": "Roo Codeについて"
 	},
+	"about": {
+		"bugReport": {
+			"label": "バグを見つけましたか？",
+			"link": "GitHubで報告"
+		},
+		"featureRequest": {
+			"label": "アイデアがありますか？",
+			"link": "共有してください"
+		},
+		"securityIssue": {
+			"label": "脆弱性を発見しましたか？",
+			"link": "開示プロセスに従ってください"
+		},
+		"contact": {
+			"label": "お問い合わせが必要ですか？メールを送信"
+		},
+		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"contactAndCommunity": "お問い合わせとコミュニティ",
+		"manageSettings": "設定を管理"
+	},
 	"slashCommands": {
 		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
 	},
