@@ -1272,6 +1272,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
+		// Determine if we're using native tool protocol for proper message handling
+		const modelInfo = this.api.getModel().info
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const useNativeTools = isNativeProtocol(protocol)
+
 		const {
 			messages,
 			summary,
@@ -1287,6 +1292,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
+			useNativeTools, // Pass native tools flag for proper message handling
 		)
 		if (error) {
 			this.say(
@@ -3182,6 +3188,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
 
+		// Determine if we're using native tool protocol for proper message handling
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const useNativeTools = isNativeProtocol(protocol)
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await manageContext({
 			messages: this.apiConversationHistory,
@@ -3195,6 +3205,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			profileThresholds,
 			currentProfileId,
+			useNativeTools,
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -3297,6 +3308,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
 
+			// Determine if we're using native tool protocol for proper message handling
+			const modelInfoForProtocol = this.api.getModel().info
+			const protocol = resolveToolProtocol(this.apiConfiguration, modelInfoForProtocol)
+			const useNativeTools = isNativeProtocol(protocol)
+
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens,
@@ -3311,6 +3327,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				condensingApiHandler,
 				profileThresholds,
 				currentProfileId,
+				useNativeTools,
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)
