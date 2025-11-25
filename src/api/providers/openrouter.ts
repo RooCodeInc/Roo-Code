@@ -349,7 +349,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 					for (const toolCall of delta.tool_calls) {
 						yield {
-							type: "tool_call_raw",
+							type: "tool_call_partial",
 							index: toolCall.index,
 							id: toolCall.id,
 							name: toolCall.function?.name,

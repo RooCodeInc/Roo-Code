@@ -65,7 +65,7 @@ export class NativeToolCallParser {
 	 * Process a raw tool call chunk from the API stream.
 	 * Handles tracking, buffering, and emits start/delta/end events.
 	 *
-	 * This is the entry point for providers that emit tool_call_raw chunks.
+	 * This is the entry point for providers that emit tool_call_partial chunks.
 	 * Returns an array of events to be processed by the consumer.
 	 */
 	public static processRawChunk(chunk: {

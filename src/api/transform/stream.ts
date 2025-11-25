@@ -9,7 +9,7 @@ export type ApiStreamChunk =
 	| ApiStreamToolCallStartChunk
 	| ApiStreamToolCallDeltaChunk
 	| ApiStreamToolCallEndChunk
-	| ApiStreamToolCallRawChunk
+	| ApiStreamToolCallPartialChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -72,8 +72,8 @@ export interface ApiStreamToolCallEndChunk {
  * Providers emit this simple format; NativeToolCallParser handles all state management
  * (tracking, buffering, emitting start/delta/end events).
  */
-export interface ApiStreamToolCallRawChunk {
-	type: "tool_call_raw"
+export interface ApiStreamToolCallPartialChunk {
+	type: "tool_call_partial"
 	index: number
 	id?: string
 	name?: string

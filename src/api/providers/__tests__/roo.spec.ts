@@ -690,18 +690,18 @@ describe("RooHandler", () => {
 			}
 
 			// Verify we get raw tool call chunks
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_raw")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
 			expect(rawChunks).toHaveLength(2)
 			expect(rawChunks[0]).toEqual({
-				type: "tool_call_raw",
+				type: "tool_call_partial",
 				index: 0,
 				id: "call_123",
 				name: "read_file",
 				arguments: '{"path":"',
 			})
 			expect(rawChunks[1]).toEqual({
-				type: "tool_call_raw",
+				type: "tool_call_partial",
 				index: 0,
 				id: undefined,
 				name: undefined,
@@ -750,11 +750,11 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_raw")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
 			expect(rawChunks).toHaveLength(1)
 			expect(rawChunks[0]).toEqual({
-				type: "tool_call_raw",
+				type: "tool_call_partial",
 				index: 0,
 				id: "call_456",
 				name: "write_to_file",
@@ -816,7 +816,7 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_raw")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
 			expect(rawChunks).toHaveLength(2)
 			expect(rawChunks[0].index).toBe(0)
@@ -893,7 +893,7 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_raw")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 
 			expect(rawChunks).toHaveLength(3)
 			expect(rawChunks[0].arguments).toBe('{"command":"')
@@ -920,7 +920,7 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_raw")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			expect(rawChunks).toHaveLength(0)
 		})
 	})
