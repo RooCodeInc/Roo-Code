@@ -93,7 +93,7 @@ describe("generateImageWithImagesApi", () => {
 			const mockResponse = {
 				ok: true,
 				json: vi.fn().mockResolvedValue({
-					data: [{}], // Missing b64_json
+					data: [{}], // Missing b64_json and url
 				}),
 			}
 
@@ -108,6 +108,51 @@ describe("generateImageWithImagesApi", () => {
 
 			expect(result.success).toBe(false)
 			expect(result.error).toBeDefined()
+		})
+
+		it("should handle URL response instead of b64_json", async () => {
+			const mockResponse = {
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					data: [{ url: "data:image/png;base64,iVBORw0KGgo=" }],
+				}),
+			}
+
+			vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+
+			const result = await generateImageWithImagesApi({
+				baseURL: "https://api.example.com/v1",
+				authToken: "test-token",
+				model: "gpt-image-1",
+				prompt: "A cute cat",
+			})
+
+			expect(result.success).toBe(true)
+			expect(result.imageData).toBe("data:image/png;base64,iVBORw0KGgo=")
+			expect(result.imageFormat).toBe("png")
+		})
+
+		it("should handle external URL response", async () => {
+			const mockResponse = {
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					data: [{ url: "https://example.com/generated-image.png" }],
+				}),
+			}
+
+			vi.mocked(global.fetch).mockResolvedValue(mockResponse as any)
+
+			const result = await generateImageWithImagesApi({
+				baseURL: "https://api.example.com/v1",
+				authToken: "test-token",
+				model: "gpt-image-1",
+				prompt: "A cute cat",
+				outputFormat: "png",
+			})
+
+			expect(result.success).toBe(true)
+			expect(result.imageData).toBe("https://example.com/generated-image.png")
+			expect(result.imageFormat).toBe("png")
 		})
 
 		it("should handle empty data array in response", async () => {
@@ -201,7 +246,7 @@ describe("generateImageWithImagesApi", () => {
 	})
 
 	describe("image editing", () => {
-		it("should use /images/edits endpoint when inputImage is provided", async () => {
+		it("should use /images/generations endpoint with inputImage in request body", async () => {
 			const mockBase64 = Buffer.from("fake image data").toString("base64")
 			const mockResponse = {
 				ok: true,
@@ -225,9 +270,9 @@ describe("generateImageWithImagesApi", () => {
 
 			expect(result.success).toBe(true)
 
-			// Verify /images/edits endpoint was used
+			// Verify /images/generations endpoint was used (not /images/edits)
 			const callUrl = vi.mocked(global.fetch).mock.calls[0][0]
-			expect(callUrl).toContain("/images/edits")
+			expect(callUrl).toContain("/images/generations")
 		})
 
 		it("should handle edit operation errors", async () => {

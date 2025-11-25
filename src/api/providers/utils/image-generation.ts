@@ -267,22 +267,42 @@ export async function generateImageWithImagesApi(options: ImagesApiOptions): Pro
 			}
 		}
 
-		// Images API returns b64_json by default
-		const imageData = images[0]?.b64_json
-		if (!imageData) {
+		const imageItem = images[0]
+
+		// Handle b64_json response (most common)
+		if (imageItem?.b64_json) {
+			// Convert base64 to data URL
+			const dataUrl = `data:image/${outputFormat};base64,${imageItem.b64_json}`
 			return {
-				success: false,
-				error: t("tools:generateImage.invalidImageData"),
+				success: true,
+				imageData: dataUrl,
+				imageFormat: outputFormat,
 			}
 		}
 
-		// Convert base64 to data URL
-		const dataUrl = `data:image/${outputFormat};base64,${imageData}`
+		// Handle URL response (fallback)
+		if (imageItem?.url) {
+			// If it's already a data URL, use it directly
+			if (imageItem.url.startsWith("data:image/")) {
+				const formatMatch = imageItem.url.match(/^data:image\/(\w+);/)
+				const format = formatMatch?.[1] || outputFormat
+				return {
+					success: true,
+					imageData: imageItem.url,
+					imageFormat: format,
+				}
+			}
+			// For external URLs, return as-is (the caller will need to handle fetching)
+			return {
+				success: true,
+				imageData: imageItem.url,
+				imageFormat: outputFormat,
+			}
+		}
 
 		return {
-			success: true,
-			imageData: dataUrl,
-			imageFormat: outputFormat,
+			success: false,
+			error: t("tools:generateImage.invalidImageData"),
 		}
 	} catch (error) {
 		return {
