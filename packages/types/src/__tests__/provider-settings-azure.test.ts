@@ -7,12 +7,14 @@ describe("Azure Provider", () => {
 			expect(getApiProtocol("azure", "claude-sonnet-4-5")).toBe("anthropic")
 			expect(getApiProtocol("azure", "claude-haiku-4-5")).toBe("anthropic")
 			expect(getApiProtocol("azure", "claude-opus-4-1")).toBe("anthropic")
+			expect(getApiProtocol("azure", "claude-opus-4-5")).toBe("anthropic")
 		})
 
 		it("should return 'anthropic' for Azure provider with case-insensitive Claude models", () => {
 			expect(getApiProtocol("azure", "CLAUDE-SONNET-4-5")).toBe("anthropic")
 			expect(getApiProtocol("azure", "Claude-Haiku-4-5")).toBe("anthropic")
 			expect(getApiProtocol("azure", "CLAUDE-opus-4-1")).toBe("anthropic")
+			expect(getApiProtocol("azure", "CLAUDE-opus-4-5")).toBe("anthropic")
 		})
 
 		it("should return 'openai' for Azure provider with GPT models", () => {
@@ -35,12 +37,13 @@ describe("Azure Provider", () => {
 	})
 
 	describe("Azure model definitions", () => {
-		it("should have all 10 expected models defined", () => {
+		it("should have all 11 expected models defined", () => {
 			const modelIds = Object.keys(azureModels)
-			expect(modelIds).toHaveLength(10)
+			expect(modelIds).toHaveLength(11)
 			expect(modelIds).toContain("claude-sonnet-4-5")
 			expect(modelIds).toContain("claude-haiku-4-5")
 			expect(modelIds).toContain("claude-opus-4-1")
+			expect(modelIds).toContain("claude-opus-4-5")
 			expect(modelIds).toContain("gpt-5-pro")
 			expect(modelIds).toContain("gpt-5.1")
 			expect(modelIds).toContain("gpt-5-chat")
@@ -81,6 +84,18 @@ describe("Azure Provider", () => {
 
 			it("should have correct capabilities for claude-opus-4-1", () => {
 				const model = azureModels["claude-opus-4-1"]
+				expect(model.contextWindow).toBe(200_000)
+				expect(model.maxTokens).toBe(64_000)
+				expect(model.supportsImages).toBe(true)
+				expect(model.supportsPromptCache).toBe(true)
+				expect(model.supportsReasoningBudget).toBe(true)
+				expect(model.supportsTemperature).toBe(true)
+				expect(model.cacheWritesPrice).toBe(18.75)
+				expect(model.cacheReadsPrice).toBe(1.5)
+			})
+
+			it("should have correct capabilities for claude-opus-4-5", () => {
+				const model = azureModels["claude-opus-4-5"]
 				expect(model.contextWindow).toBe(200_000)
 				expect(model.maxTokens).toBe(64_000)
 				expect(model.supportsImages).toBe(true)
@@ -184,9 +199,9 @@ describe("Azure Provider", () => {
 		})
 
 		describe("Prompt caching support", () => {
-			it("should have caching enabled for 7 models", () => {
+			it("should have caching enabled for 8 models", () => {
 				const cachingModels = Object.entries(azureModels).filter(([_, model]) => model.supportsPromptCache)
-				expect(cachingModels).toHaveLength(7)
+				expect(cachingModels).toHaveLength(8)
 			})
 
 			it("should not have caching for chat models (gpt-5-chat, gpt-5-mini, gpt-5-nano)", () => {
@@ -199,6 +214,7 @@ describe("Azure Provider", () => {
 				expect(azureModels["claude-sonnet-4-5"].supportsPromptCache).toBe(true)
 				expect(azureModels["claude-haiku-4-5"].supportsPromptCache).toBe(true)
 				expect(azureModels["claude-opus-4-1"].supportsPromptCache).toBe(true)
+				expect(azureModels["claude-opus-4-5"].supportsPromptCache).toBe(true)
 			})
 
 			it("should have caching for reasoning GPT models", () => {
@@ -210,9 +226,9 @@ describe("Azure Provider", () => {
 		})
 
 		describe("Image support", () => {
-			it("should have image support for 8 models", () => {
+			it("should have image support for 9 models", () => {
 				const imageModels = Object.entries(azureModels).filter(([_, model]) => model.supportsImages)
-				expect(imageModels).toHaveLength(8)
+				expect(imageModels).toHaveLength(9)
 			})
 
 			it("should not have image support for codex models", () => {
@@ -224,6 +240,7 @@ describe("Azure Provider", () => {
 				expect(azureModels["claude-sonnet-4-5"].supportsImages).toBe(true)
 				expect(azureModels["claude-haiku-4-5"].supportsImages).toBe(true)
 				expect(azureModels["claude-opus-4-1"].supportsImages).toBe(true)
+				expect(azureModels["claude-opus-4-5"].supportsImages).toBe(true)
 			})
 
 			it("should have image support for non-codex GPT models", () => {
@@ -302,6 +319,11 @@ describe("Azure Provider", () => {
 
 				it("claude-opus-4-1 should not have tiers", () => {
 					const model = azureModels["claude-opus-4-1"]
+					expect("tiers" in model).toBe(false)
+				})
+
+				it("claude-opus-4-5 should not have tiers", () => {
+					const model = azureModels["claude-opus-4-5"]
 					expect("tiers" in model).toBe(false)
 				})
 
