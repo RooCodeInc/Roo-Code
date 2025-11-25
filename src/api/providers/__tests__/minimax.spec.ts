@@ -372,11 +372,13 @@ describe("MiniMaxHandler", () => {
 			const firstChunk = await stream.next()
 
 			expect(firstChunk.done).toBe(false)
+			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
 			expect(firstChunk.value).toEqual({
-				type: "tool_call",
+				type: "tool_call_partial",
+				index: 0,
 				id: "tool-123",
 				name: "get_weather",
-				arguments: JSON.stringify({ city: "London" }),
+				arguments: undefined,
 			})
 		})
 	})

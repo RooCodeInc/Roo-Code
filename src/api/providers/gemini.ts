@@ -236,13 +236,30 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 									yield { type: "reasoning", text: part.text }
 								}
 							} else if (part.functionCall) {
-								const callId = `${part.functionCall.name}-${toolCallCounter++}`
+								// Gemini sends complete function calls in a single chunk
+								// Emit as partial chunks for consistent handling with NativeToolCallParser
+								const callId = `${part.functionCall.name}-${toolCallCounter}`
+								const args = JSON.stringify(part.functionCall.args)
+
+								// Emit name first
 								yield {
-									type: "tool_call",
+									type: "tool_call_partial",
+									index: toolCallCounter,
 									id: callId,
 									name: part.functionCall.name,
-									arguments: JSON.stringify(part.functionCall.args),
+									arguments: undefined,
 								}
+
+								// Then emit arguments
+								yield {
+									type: "tool_call_partial",
+									index: toolCallCounter,
+									id: callId,
+									name: undefined,
+									arguments: args,
+								}
+
+								toolCallCounter++
 							} else {
 								// This is regular content
 								if (part.text) {

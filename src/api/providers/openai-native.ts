@@ -34,8 +34,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private lastResponseOutput: any[] | undefined
 	// Last top-level response id from Responses API (for troubleshooting)
 	private lastResponseId: string | undefined
-	// Accumulate partial tool calls: call_id -> { name, arguments }
-	private currentToolCalls: Map<string, { name: string; arguments: string }> = new Map()
 	// Abort controller for cancelling ongoing requests
 	private abortController?: AbortController
 
@@ -153,8 +151,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseOutput = undefined
 		// Reset last response id for this request
 		this.lastResponseId = undefined
-		// Reset tool call accumulator
-		this.currentToolCalls.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -1070,48 +1066,32 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			return
 		}
 
-		// Handle tool/function call deltas and completion
+		// Handle tool/function call deltas - emit as partial chunks
 		if (
 			event?.type === "response.tool_call_arguments.delta" ||
 			event?.type === "response.function_call_arguments.delta"
 		) {
+			// Emit partial chunks directly - NativeToolCallParser handles state management
 			const callId = event.call_id || event.tool_call_id || event.id
-			if (callId) {
-				if (!this.currentToolCalls.has(callId)) {
-					this.currentToolCalls.set(callId, { name: "", arguments: "" })
-				}
-				const toolCall = this.currentToolCalls.get(callId)!
+			const name = event.name || event.function_name
+			const args = event.delta || event.arguments
 
-				// Update name if present (usually in the first delta)
-				if (event.name || event.function_name) {
-					toolCall.name = event.name || event.function_name
-				}
-
-				// Append arguments delta
-				if (event.delta || event.arguments) {
-					toolCall.arguments += event.delta || event.arguments
-				}
+			yield {
+				type: "tool_call_partial",
+				index: event.index ?? 0,
+				id: callId,
+				name,
+				arguments: args,
 			}
 			return
 		}
 
+		// Handle tool/function call completion events
 		if (
 			event?.type === "response.tool_call_arguments.done" ||
 			event?.type === "response.function_call_arguments.done"
 		) {
-			const callId = event.call_id || event.tool_call_id || event.id
-			if (callId && this.currentToolCalls.has(callId)) {
-				const toolCall = this.currentToolCalls.get(callId)!
-				// Yield the complete tool call
-				yield {
-					type: "tool_call",
-					id: callId,
-					name: toolCall.name,
-					arguments: toolCall.arguments,
-				}
-				// Remove from accumulator
-				this.currentToolCalls.delete(callId)
-			}
+			// Tool call complete - no action needed, NativeToolCallParser handles completion
 			return
 		}
 
@@ -1135,8 +1115,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					event.type === "response.output_item.done" // Only handle done events for tool calls to ensure arguments are complete
 				) {
 					// Handle complete tool/function call item
+					// Emit as tool_call for backward compatibility with non-streaming tool handling
 					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId && !this.currentToolCalls.has(callId)) {
+					if (callId) {
 						const args = item.arguments || item.function?.arguments || item.function_arguments
 						yield {
 							type: "tool_call",
@@ -1152,19 +1133,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Completion events that may carry usage
 		if (event?.type === "response.done" || event?.type === "response.completed") {
-			// Yield any pending tool calls that didn't get a 'done' event (fallback)
-			if (this.currentToolCalls.size > 0) {
-				for (const [callId, toolCall] of this.currentToolCalls) {
-					yield {
-						type: "tool_call",
-						id: callId,
-						name: toolCall.name,
-						arguments: toolCall.arguments || "{}",
-					}
-				}
-				this.currentToolCalls.clear()
-			}
-
 			const usage = event?.response?.usage || event?.usage || undefined
 			const usageData = this.normalizeUsage(usage, model)
 			if (usageData) {

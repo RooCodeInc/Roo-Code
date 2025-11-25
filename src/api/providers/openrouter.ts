@@ -223,7 +223,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
-		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 		// Accumulator for reasoning_details: accumulate text by type-index key
 		const reasoningDetailsAccumulator = new Map<
 			string,
@@ -321,24 +320,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					yield { type: "reasoning", text: delta.reasoning }
 				}
 
-				// Check for tool calls in delta
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
 				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 					for (const toolCall of delta.tool_calls) {
-						const index = toolCall.index
-						const existing = toolCallAccumulator.get(index)
-
-						if (existing) {
-							// Accumulate arguments for existing tool call
-							if (toolCall.function?.arguments) {
-								existing.arguments += toolCall.function.arguments
-							}
-						} else {
-							// Start new tool call accumulation
-							toolCallAccumulator.set(index, {
-								id: toolCall.id || "",
-								name: toolCall.function?.name || "",
-								arguments: toolCall.function?.arguments || "",
-							})
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
 						}
 					}
 				}
@@ -348,37 +338,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 			}
 
-			// When finish_reason is 'tool_calls', yield all accumulated tool calls
-			if (finishReason === "tool_calls" && toolCallAccumulator.size > 0) {
-				for (const toolCall of toolCallAccumulator.values()) {
-					yield {
-						type: "tool_call",
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
-					}
-				}
-				// Clear accumulator after yielding
-				toolCallAccumulator.clear()
-			}
-
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
-		}
-
-		// Fallback: If stream ends with accumulated tool calls that weren't yielded
-		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-		if (toolCallAccumulator.size > 0) {
-			for (const toolCall of toolCallAccumulator.values()) {
-				yield {
-					type: "tool_call",
-					id: toolCall.id,
-					name: toolCall.name,
-					arguments: toolCall.arguments,
-				}
-			}
-			toolCallAccumulator.clear()
 		}
 
 		// After streaming completes, store the accumulated reasoning_details

@@ -64,7 +64,7 @@ import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/Extension
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
-import { DiffStrategy, type ToolUse } from "../../shared/tools"
+import { DiffStrategy, type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
 
@@ -321,6 +321,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
+
+	// Native tool call streaming state (track which index each tool is at)
+	private streamingToolCallIndices: Map<string, number> = new Map()
 
 	// Cached model info for current streaming session (set at start of each API request)
 	// This prevents excessive getModel() calls during tool execution
@@ -1323,7 +1326,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} else if (pid) {
 				if (executionId) {
 					const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
-					this.providerRef.deref()?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+					this.providerRef
+						.deref()
+						?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 				}
 				process.kill(pid, "SIGKILL")
 			}
@@ -2359,6 +2364,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser?.reset()
+				this.streamingToolCallIndices.clear()
+				// Clear any leftover streaming tool call state from previous interrupted streams
+				NativeToolCallParser.clearAllStreamingToolCalls()
+				NativeToolCallParser.clearRawChunkState()
 
 				await this.diffViewProvider.reset()
 
@@ -2447,7 +2456,99 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									pendingGroundingSources.push(...chunk.sources)
 								}
 								break
+							case "tool_call_partial": {
+								// Process raw tool call chunk through NativeToolCallParser
+								// which handles tracking, buffering, and emits events
+								const events = NativeToolCallParser.processRawChunk({
+									index: chunk.index,
+									id: chunk.id,
+									name: chunk.name,
+									arguments: chunk.arguments,
+								})
+
+								for (const event of events) {
+									if (event.type === "tool_call_start") {
+										// Initialize streaming in NativeToolCallParser
+										NativeToolCallParser.startStreamingToolCall(event.id, event.name as ToolName)
+
+										// Before adding a new tool, finalize any preceding text block
+										// This prevents the text block from blocking tool presentation
+										const lastBlock =
+											this.assistantMessageContent[this.assistantMessageContent.length - 1]
+										if (lastBlock?.type === "text" && lastBlock.partial) {
+											lastBlock.partial = false
+										}
+
+										// Track the index where this tool will be stored
+										const toolUseIndex = this.assistantMessageContent.length
+										this.streamingToolCallIndices.set(event.id, toolUseIndex)
+
+										// Create initial partial tool use
+										const partialToolUse: ToolUse = {
+											type: "tool_use",
+											name: event.name as ToolName,
+											params: {},
+											partial: true,
+										}
+
+										// Store the ID for native protocol
+										;(partialToolUse as any).id = event.id
+
+										// Add to content and present
+										this.assistantMessageContent.push(partialToolUse)
+										this.userMessageContentReady = false
+										presentAssistantMessage(this)
+									} else if (event.type === "tool_call_delta") {
+										// Process chunk using streaming JSON parser
+										const partialToolUse = NativeToolCallParser.processStreamingChunk(
+											event.id,
+											event.delta,
+										)
+
+										if (partialToolUse) {
+											// Get the index for this tool call
+											const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+											if (toolUseIndex !== undefined) {
+												// Store the ID for native protocol
+												;(partialToolUse as any).id = event.id
+
+												// Update the existing tool use with new partial data
+												this.assistantMessageContent[toolUseIndex] = partialToolUse
+
+												// Present updated tool use
+												presentAssistantMessage(this)
+											}
+										}
+									} else if (event.type === "tool_call_end") {
+										// Finalize the streaming tool call
+										const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
+
+										if (finalToolUse) {
+											// Store the tool call ID
+											;(finalToolUse as any).id = event.id
+
+											// Get the index and replace partial with final
+											const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+											if (toolUseIndex !== undefined) {
+												this.assistantMessageContent[toolUseIndex] = finalToolUse
+											}
+
+											// Clean up tracking
+											this.streamingToolCallIndices.delete(event.id)
+
+											// Mark that we have new content to process
+											this.userMessageContentReady = false
+
+											// Present the finalized tool call
+											presentAssistantMessage(this)
+										}
+									}
+								}
+								break
+							}
+
 							case "tool_call": {
+								// Legacy: Handle complete tool calls (for backward compatibility)
 								// Convert native tool call to ToolUse format
 								const toolUse = NativeToolCallParser.parseToolCall({
 									id: chunk.id,

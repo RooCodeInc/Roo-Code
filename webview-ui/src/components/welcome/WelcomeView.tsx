@@ -149,32 +149,32 @@ const WelcomeView = () => {
 											className="relative flex-1 border border-vscode-panel-border hover:bg-secondary rounded-md py-3 px-4 mb-2 flex flex-row gap-3 cursor-pointer transition-all no-underline text-inherit"
 											target="_blank"
 											rel="noopener noreferrer"
-											onClick={(e) => {
+											onClick={() => {
 												// Track telemetry for featured provider click
 												telemetryClient.capture(TelemetryEventName.FEATURED_PROVIDER_CLICKED, {
 													provider: provider.slug,
 												})
 
-												// Special handling for Roo provider
-												if (provider.slug === "roo") {
-													e.preventDefault()
+												// // Special handling for Roo provider
+												// if (provider.slug === "roo") {
+												// 	e.preventDefault()
 
-													// Set the Roo provider configuration
-													const rooConfig: ProviderSettings = {
-														apiProvider: "roo",
-													}
+												// 	// Set the Roo provider configuration
+												// 	const rooConfig: ProviderSettings = {
+												// 		apiProvider: "roo",
+												// 	}
 
-													// Save the Roo provider configuration
-													vscode.postMessage({
-														type: "upsertApiConfiguration",
-														text: currentApiConfigName,
-														apiConfiguration: rooConfig,
-													})
+												// 	// Save the Roo provider configuration
+												// 	vscode.postMessage({
+												// 		type: "upsertApiConfiguration",
+												// 		text: currentApiConfigName,
+												// 		apiConfiguration: rooConfig,
+												// 	})
 
-													// Then trigger cloud sign-in
-													vscode.postMessage({ type: "rooCloudSignIn" })
-												}
-												// For other providers, let the default link behavior work
+												// 	// Then trigger cloud sign-in
+												// 	vscode.postMessage({ type: "rooCloudSignIn" })
+												// }
+												// // For other providers, let the default link behavior work
 											}}>
 											{provider.incentive && (
 												<div className="absolute top-0 right-0 text-[10px] text-vscode-badge-foreground bg-vscode-badge-background px-2 py-0.5 rounded-bl rounded-tr-md">

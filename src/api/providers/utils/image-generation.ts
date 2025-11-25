@@ -48,7 +48,7 @@ export async function generateImageWithProvider(options: ImageGenerationOptions)
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
 				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-				"X-Title": "Roo Code",
+				"X-Title": "CoStrict",
 			},
 			body: JSON.stringify({
 				model,

@@ -266,8 +266,8 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
 			} else if (
 				selectedProvider === "litellm" ||
-				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
+				selectedProvider === "deepinfra"
+				// selectedProvider === "roo"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}

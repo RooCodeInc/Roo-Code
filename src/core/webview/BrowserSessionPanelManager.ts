@@ -62,7 +62,7 @@ export class BrowserSessionPanelManager {
 		const extensionMode = this.provider.context.extensionMode
 
 		// Create new panel
-		this.panel = vscode.window.createWebviewPanel("roo.browserSession", "Browser Session", vscode.ViewColumn.One, {
+		this.panel = vscode.window.createWebviewPanel("zgsm.browserSession", "Browser Session", vscode.ViewColumn.One, {
 			enableScripts: true,
 			retainContextWhenHidden: true,
 			localResourceRoots: [extensionUri],
