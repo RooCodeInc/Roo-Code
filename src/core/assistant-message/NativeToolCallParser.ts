@@ -28,11 +28,6 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | null {
-		// Check if this is a dynamic MCP tool (mcp_serverName_toolName)
-		if (typeof toolCall.name === "string" && toolCall.name.startsWith("mcp_")) {
-			return this.parseDynamicMcpTool(toolCall) as ToolUse<TName> | null
-		}
-
 		// Validate tool name
 		if (!toolNames.includes(toolCall.name as ToolName)) {
 			console.error(`Invalid tool name: ${toolCall.name}`)
@@ -250,62 +245,6 @@ export class NativeToolCallParser {
 		} catch (error) {
 			console.error(`Failed to parse tool call arguments:`, error)
 			console.error(`Error details:`, error instanceof Error ? error.message : String(error))
-			return null
-		}
-	}
-
-	/**
-	 * Parse dynamic MCP tools (named mcp_serverName_toolName).
-	 * These are generated dynamically by getMcpServerTools() and need to be
-	 * converted back to use_mcp_tool format.
-	 */
-	private static parseDynamicMcpTool(toolCall: {
-		id: string
-		name: string
-		arguments: string
-	}): ToolUse<"use_mcp_tool"> | null {
-		try {
-			const args = JSON.parse(toolCall.arguments)
-
-			// Extract server_name and tool_name from the arguments
-			// The dynamic tool schema includes these as const properties
-			const serverName = args.server_name
-			const toolName = args.tool_name
-			const toolInputProps = args.toolInputProps
-
-			if (!serverName || !toolName) {
-				console.error(`Missing server_name or tool_name in dynamic MCP tool`)
-				return null
-			}
-
-			// Build params for backward compatibility with XML protocol
-			const params: Partial<Record<string, string>> = {
-				server_name: serverName,
-				tool_name: toolName,
-			}
-
-			if (toolInputProps) {
-				params.arguments = JSON.stringify(toolInputProps)
-			}
-
-			// Build nativeArgs with properly typed structure
-			const nativeArgs: NativeToolArgs["use_mcp_tool"] = {
-				server_name: serverName,
-				tool_name: toolName,
-				arguments: toolInputProps,
-			}
-
-			const result: ToolUse<"use_mcp_tool"> = {
-				type: "tool_use" as const,
-				name: "use_mcp_tool",
-				params,
-				partial: false,
-				nativeArgs,
-			}
-
-			return result
-		} catch (error) {
-			console.error(`Failed to parse dynamic MCP tool:`, error)
 			return null
 		}
 	}

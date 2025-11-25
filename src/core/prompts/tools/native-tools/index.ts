@@ -15,6 +15,7 @@ import runSlashCommand from "./run_slash_command"
 import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
+import useMcpTool from "./use_mcp_tool"
 import writeToFile from "./write_to_file"
 import { apply_diff_single_file } from "./apply_diff"
 
@@ -46,6 +47,7 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		searchFiles,
 		switchMode,
 		updateTodoList,
+		useMcpTool,
 		writeToFile,
 	] satisfies OpenAI.Chat.ChatCompletionTool[]
 }
