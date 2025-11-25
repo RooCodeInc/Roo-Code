@@ -47,11 +47,12 @@ export type ToolCallStreamEvent = ApiStreamToolCallStartChunk | ApiStreamToolCal
  */
 export class NativeToolCallParser {
 	// Streaming state management for argument accumulation (keyed by tool call id)
+	// Note: name is string to accommodate dynamic MCP tools (mcp_serverName_toolName)
 	private static streamingToolCalls = new Map<
 		string,
 		{
 			id: string
-			name: ToolName
+			name: string
 			argumentsAccumulator: string
 		}
 	>()
@@ -194,8 +195,9 @@ export class NativeToolCallParser {
 	/**
 	 * Start streaming a new tool call.
 	 * Initializes tracking for incremental argument parsing.
+	 * Accepts string to support both ToolName and dynamic MCP tools (mcp_serverName_toolName).
 	 */
-	public static startStreamingToolCall(id: string, name: ToolName): void {
+	public static startStreamingToolCall(id: string, name: string): void {
 		this.streamingToolCalls.set(id, {
 			id,
 			name,
@@ -235,6 +237,11 @@ export class NativeToolCallParser {
 		// Accumulate the JSON string
 		toolCall.argumentsAccumulator += chunk
 
+		// For dynamic MCP tools, we don't return partial updates - wait for final
+		if (toolCall.name.startsWith("mcp_")) {
+			return null
+		}
+
 		// Parse whatever we can from the incomplete JSON!
 		// partial-json-parser extracts partial values (strings, arrays, objects) immediately
 		try {
@@ -243,7 +250,7 @@ export class NativeToolCallParser {
 			// Create partial ToolUse with extracted values
 			return this.createPartialToolUse(
 				toolCall.id,
-				toolCall.name,
+				toolCall.name as ToolName,
 				partialArgs || {},
 				true, // partial
 			)
@@ -266,9 +273,10 @@ export class NativeToolCallParser {
 		}
 
 		// Parse the complete accumulated JSON
+		// Cast to any for the name since parseToolCall handles both ToolName and dynamic MCP tools
 		const finalToolUse = this.parseToolCall({
 			id: toolCall.id,
-			name: toolCall.name,
+			name: toolCall.name as ToolName,
 			arguments: toolCall.argumentsAccumulator,
 		})
 
@@ -703,6 +711,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "access_mcp_resource":
+					if (args.server_name !== undefined && args.uri !== undefined) {
+						nativeArgs = {
+							server_name: args.server_name,
+							uri: args.uri,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				default:
 					break
 			}
@@ -734,16 +751,23 @@ export class NativeToolCallParser {
 	 */
 	public static parseDynamicMcpTool(toolCall: { id: string; name: string; arguments: string }): McpToolUse | null {
 		try {
-			const args = JSON.parse(toolCall.arguments)
+			// Parse the arguments - these are the actual tool arguments passed directly
+			const args = JSON.parse(toolCall.arguments || "{}")
 
-			// Extract server_name and tool_name from the arguments
-			// The dynamic tool schema includes these as const properties
-			const serverName = args.server_name
-			const toolName = args.tool_name
-			const toolInputProps = args.toolInputProps || {}
+			// Extract server_name and tool_name from the tool name itself
+			// Format: mcp_serverName_toolName
+			const nameParts = toolCall.name.split("_")
+			if (nameParts.length < 3 || nameParts[0] !== "mcp") {
+				console.error(`Invalid dynamic MCP tool name format: ${toolCall.name}`)
+				return null
+			}
+
+			// Server name is the second part, tool name is everything after
+			const serverName = nameParts[1]
+			const toolName = nameParts.slice(2).join("_")
 
 			if (!serverName || !toolName) {
-				console.error(`Missing server_name or tool_name in dynamic MCP tool`)
+				console.error(`Could not extract server_name or tool_name from: ${toolCall.name}`)
 				return null
 			}
 
@@ -754,7 +778,7 @@ export class NativeToolCallParser {
 				name: toolCall.name,
 				serverName,
 				toolName,
-				arguments: toolInputProps,
+				arguments: args,
 				partial: false,
 			}
 
