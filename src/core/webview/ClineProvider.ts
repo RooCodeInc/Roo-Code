@@ -3186,6 +3186,17 @@ export class ClineProvider
 			await this.removeClineFromStack()
 		}
 
+		// 5b) Mark child subtask as "completed" to prevent duplicate tool_result on revisit
+		try {
+			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+			await this.updateTaskHistory({
+				...childHistory,
+				status: "completed",
+			})
+		} catch {
+			// non-fatal: child history may not exist for some edge cases
+		}
+
 		// 6) Reopen the parent from history as the sole active task (restores saved mode)
 		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
 		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })

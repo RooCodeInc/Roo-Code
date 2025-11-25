@@ -68,25 +68,55 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
-				const didApprove = await askFinishSubTaskApproval()
-
-				if (!didApprove) {
-					pushToolResult(formatResponse.toolDenied())
-					return
-				}
-
-				pushToolResult("")
-
-				// Use the new metadata-driven delegation flow
+				// Check if this subtask has already completed and returned to parent
+				// to prevent duplicate tool_results when user revisits from history
 				const provider = task.providerRef.deref()
 				if (provider) {
-					await (provider as any).reopenParentFromDelegation({
-						parentTaskId: task.parentTaskId,
-						childTaskId: task.taskId,
-						completionResultSummary: result,
-					})
+					try {
+						const { historyItem } = await (provider as any).getTaskWithId(task.taskId)
+						if (historyItem?.status === "completed") {
+							// Subtask already completed - skip delegation flow entirely
+							// Fall through to normal completion ask flow below (outside this if block)
+							// This shows the user the completion result and waits for acceptance
+							// without injecting another tool_result to the parent
+						} else {
+							// Normal subtask completion - do delegation
+							const didApprove = await askFinishSubTaskApproval()
+
+							if (!didApprove) {
+								pushToolResult(formatResponse.toolDenied())
+								return
+							}
+
+							pushToolResult("")
+
+							// Use the new metadata-driven delegation flow
+							await (provider as any).reopenParentFromDelegation({
+								parentTaskId: task.parentTaskId,
+								childTaskId: task.taskId,
+								completionResultSummary: result,
+							})
+							return
+						}
+					} catch {
+						// If we can't get the history, proceed with normal delegation flow
+						const didApprove = await askFinishSubTaskApproval()
+
+						if (!didApprove) {
+							pushToolResult(formatResponse.toolDenied())
+							return
+						}
+
+						pushToolResult("")
+
+						await (provider as any).reopenParentFromDelegation({
+							parentTaskId: task.parentTaskId,
+							childTaskId: task.taskId,
+							completionResultSummary: result,
+						})
+						return
+					}
 				}
-				return
 			}
 
 			const { response, text, images } = await task.ask("completion_result", "", false)
