@@ -355,6 +355,117 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "ask_followup_question":
+				if (partialArgs.question !== undefined || partialArgs.follow_up !== undefined) {
+					nativeArgs = {
+						question: partialArgs.question,
+						follow_up: Array.isArray(partialArgs.follow_up) ? partialArgs.follow_up : undefined,
+					}
+				}
+				break
+
+			case "apply_diff":
+				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						diff: partialArgs.diff,
+					}
+				}
+				break
+
+			case "browser_action":
+				if (partialArgs.action !== undefined) {
+					nativeArgs = {
+						action: partialArgs.action,
+						url: partialArgs.url,
+						coordinate: partialArgs.coordinate,
+						size: partialArgs.size,
+						text: partialArgs.text,
+					}
+				}
+				break
+
+			case "codebase_search":
+				if (partialArgs.query !== undefined) {
+					nativeArgs = {
+						query: partialArgs.query,
+						path: partialArgs.path,
+					}
+				}
+				break
+
+			case "fetch_instructions":
+				if (partialArgs.task !== undefined) {
+					nativeArgs = {
+						task: partialArgs.task,
+					}
+				}
+				break
+
+			case "generate_image":
+				if (partialArgs.prompt !== undefined || partialArgs.path !== undefined) {
+					nativeArgs = {
+						prompt: partialArgs.prompt,
+						path: partialArgs.path,
+						image: partialArgs.image,
+					}
+				}
+				break
+
+			case "list_code_definition_names":
+				if (partialArgs.path !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+					}
+				}
+				break
+
+			case "run_slash_command":
+				if (partialArgs.command !== undefined) {
+					nativeArgs = {
+						command: partialArgs.command,
+						args: partialArgs.args,
+					}
+				}
+				break
+
+			case "search_files":
+				if (partialArgs.path !== undefined || partialArgs.regex !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						regex: partialArgs.regex,
+						file_pattern: partialArgs.file_pattern,
+					}
+				}
+				break
+
+			case "switch_mode":
+				if (partialArgs.mode_slug !== undefined || partialArgs.reason !== undefined) {
+					nativeArgs = {
+						mode_slug: partialArgs.mode_slug,
+						reason: partialArgs.reason,
+					}
+				}
+				break
+
+			case "update_todo_list":
+				if (partialArgs.todos !== undefined) {
+					nativeArgs = {
+						todos: partialArgs.todos,
+					}
+				}
+				break
+
+			case "use_mcp_tool":
+				if (partialArgs.server_name !== undefined || partialArgs.tool_name !== undefined) {
+					nativeArgs = {
+						server_name: partialArgs.server_name,
+						tool_name: partialArgs.tool_name,
+						arguments: partialArgs.arguments,
+					}
+				}
+				break
+
 			// Add other tools as needed
 			default:
 				break
