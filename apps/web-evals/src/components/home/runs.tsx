@@ -1,17 +1,61 @@
 "use client"
 
+import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Rocket } from "lucide-react"
 
 import type { Run, TaskMetrics } from "@roo-code/evals"
+import type { ToolName } from "@roo-code/types"
 
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui"
+import {
+	Button,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui"
 import { Run as Row } from "@/components/home/run"
 
 type RunWithTaskMetrics = Run & { taskMetrics: TaskMetrics | null }
 
+// Generate abbreviation from tool name (e.g., "read_file" -> "RF", "list_code_definition_names" -> "LCDN")
+function getToolAbbreviation(toolName: string): string {
+	return toolName
+		.split("_")
+		.map((word) => word[0]?.toUpperCase() ?? "")
+		.join("")
+}
+
 export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 	const router = useRouter()
+
+	// Collect all unique tool names from all runs and sort by total attempts
+	const toolColumns = useMemo<ToolName[]>(() => {
+		const toolTotals = new Map<ToolName, number>()
+
+		for (const run of runs) {
+			if (run.taskMetrics?.toolUsage) {
+				for (const [toolName, usage] of Object.entries(run.taskMetrics.toolUsage)) {
+					const tool = toolName as ToolName
+					const current = toolTotals.get(tool) ?? 0
+					toolTotals.set(tool, current + usage.attempts)
+				}
+			}
+		}
+
+		// Sort by total attempts descending
+		return Array.from(toolTotals.entries())
+			.sort((a, b) => b[1] - a[1])
+			.map(([name]): ToolName => name)
+	}, [runs])
+
+	// Calculate colSpan for empty state (5 base columns + dynamic tools + 3 end columns)
+	const totalColumns = 5 + toolColumns.length + 3
 
 	return (
 		<>
@@ -21,20 +65,29 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 						<TableHead>Model</TableHead>
 						<TableHead>Passed</TableHead>
 						<TableHead>Failed</TableHead>
-						<TableHead>% Correct</TableHead>
-						<TableHead>Tokens In / Out</TableHead>
-						<TableHead>Diff Edits</TableHead>
+						<TableHead>%</TableHead>
+						<TableHead>Tokens</TableHead>
+						{toolColumns.map((toolName) => (
+							<TableHead key={toolName} className="text-xs text-center">
+								<Tooltip>
+									<TooltipTrigger>{getToolAbbreviation(toolName)}</TooltipTrigger>
+									<TooltipContent>{toolName}</TooltipContent>
+								</Tooltip>
+							</TableHead>
+						))}
 						<TableHead>Cost</TableHead>
 						<TableHead>Duration</TableHead>
-						<TableHead />
+						<TableHead></TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{runs.length ? (
-						runs.map(({ taskMetrics, ...run }) => <Row key={run.id} run={run} taskMetrics={taskMetrics} />)
+						runs.map(({ taskMetrics, ...run }) => (
+							<Row key={run.id} run={run} taskMetrics={taskMetrics} toolColumns={toolColumns} />
+						))
 					) : (
 						<TableRow>
-							<TableCell colSpan={9} className="text-center">
+							<TableCell colSpan={totalColumns} className="text-center">
 								No eval runs yet.
 								<Button variant="link" onClick={() => router.push("/runs/new")}>
 									Launch
