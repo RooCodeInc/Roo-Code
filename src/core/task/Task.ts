@@ -1245,6 +1245,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	public async condenseContext(): Promise<void> {
+		// Create a checkpoint before context compression to allow reverting if needed
+		// Use force=true to ensure checkpoint even if no file changes, and suppress message for cleaner UI
+		if (this.enableCheckpoints) {
+			await this.checkpointSave(true, true)
+		}
+
 		const systemPrompt = await this.getSystemPrompt()
 
 		// Get condensing configuration
@@ -3296,6 +3302,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
+
+			// Create a checkpoint before automatic context compression to allow reverting if needed
+			// Only create checkpoint if compression might actually happen
+			const contextPercent = (100 * contextTokens) / contextWindow
+			if (
+				autoCondenseContext &&
+				(contextPercent >= autoCondenseContextPercent || contextTokens > contextWindow * 0.9 - (maxTokens || 0))
+			) {
+				if (this.enableCheckpoints) {
+					await this.checkpointSave(true, true)
+				}
+			}
 
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
