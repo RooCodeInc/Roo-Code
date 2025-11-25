@@ -126,6 +126,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 		let lastUsage: OpenAI.CompletionUsage | undefined
+		let hasYieldedToolCalls = false
 
 		for await (const chunk of stream) {
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
@@ -176,13 +177,22 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}
 			}
 
-			if (finishReason === "tool_calls") {
+			// Yield tool calls when:
+			// 1. finish_reason is "tool_calls" (standard OpenAI behavior)
+			// 2. OR when we have accumulated tool calls and ANY finish_reason is present
+			// 3. OR when we detect complete tool calls (for servers that stream tool calls without proper finish_reason)
+			// This ensures compatibility with various OpenAI-compatible servers including ik_llama.cpp
+			if (finishReason && toolCallAccumulator.size > 0 && !hasYieldedToolCalls) {
 				for (const toolCall of toolCallAccumulator.values()) {
-					yield {
-						type: "tool_call",
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
+					// Only yield if we have complete tool call data
+					if (toolCall.id && toolCall.name) {
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.name,
+							arguments: toolCall.arguments,
+						}
+						hasYieldedToolCalls = true
 					}
 				}
 				toolCallAccumulator.clear()
@@ -194,14 +204,17 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		}
 
 		// Fallback: If stream ends with accumulated tool calls that weren't yielded
-		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-		if (toolCallAccumulator.size > 0) {
+		// This is crucial for servers like ik_llama.cpp that may not send proper finish_reason
+		if (toolCallAccumulator.size > 0 && !hasYieldedToolCalls) {
 			for (const toolCall of toolCallAccumulator.values()) {
-				yield {
-					type: "tool_call",
-					id: toolCall.id,
-					name: toolCall.name,
-					arguments: toolCall.arguments,
+				// Yield any tool calls with at least an ID and name
+				if (toolCall.id && toolCall.name) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.name,
+						arguments: toolCall.arguments || "{}",
+					}
 				}
 			}
 			toolCallAccumulator.clear()
