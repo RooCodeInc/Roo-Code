@@ -8,11 +8,13 @@ import {
 	openAiModelInfoSaneDefaults,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { XmlMatcher } from "../../utils/xml-matcher"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -94,6 +96,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
+		// Check if we should force XML protocol based on user configuration
+		const toolProtocol = resolveToolProtocol(this.options, modelInfo)
+		const shouldUseNativeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && metadata?.tools
+
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
 			return
@@ -164,8 +170,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(shouldUseNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(shouldUseNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// Add max_tokens if needed
@@ -240,8 +246,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					: enabledLegacyFormat
 						? [systemMessage, ...convertToSimpleMessages(messages)]
 						: [systemMessage, ...convertToOpenAiMessages(messages)],
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(shouldUseNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(shouldUseNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// Add max_tokens if needed
@@ -341,6 +347,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 
+		// O3 family models should always use native tools when available
+		// (they don't support XML protocol)
+		const shouldUseNativeTools = metadata?.tools
+
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
@@ -357,8 +367,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(shouldUseNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(shouldUseNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -389,8 +399,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(shouldUseNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+				...(shouldUseNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
