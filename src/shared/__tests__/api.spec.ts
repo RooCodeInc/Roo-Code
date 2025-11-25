@@ -63,6 +63,7 @@ describe("getModelMaxOutputTokens", () => {
 	test("should handle reasoning budget models correctly", () => {
 		const reasoningModel: ModelInfo = {
 			...mockModel,
+			maxTokens: 64_000,
 			supportsReasoningBudget: true,
 			requiredReasoningBudget: true,
 		}
@@ -80,6 +81,29 @@ describe("getModelMaxOutputTokens", () => {
 		})
 
 		expect(result).toBe(32000)
+	})
+
+	test("should clamp reasoning budget custom max tokens to the provider limit", () => {
+		const reasoningModel: ModelInfo = {
+			...mockModel,
+			maxTokens: 50_000,
+			supportsReasoningBudget: true,
+			requiredReasoningBudget: true,
+		}
+
+		const settings: ProviderSettings = {
+			apiProvider: "anthropic",
+			enableReasoningEffort: true,
+			modelMaxTokens: 128_000,
+		}
+
+		const result = getModelMaxOutputTokens({
+			modelId: "claude-3-7-sonnet-20250219",
+			model: reasoningModel,
+			settings,
+		})
+
+		expect(result).toBe(50_000)
 	})
 
 	test("should return default of 8192 when maxTokens is undefined", () => {
@@ -298,7 +322,7 @@ describe("getModelMaxOutputTokens", () => {
 		expect(getModelMaxOutputTokens({ modelId: "test", model, settings })).toBe(4000)
 	})
 
-	test("should return default 16_384 for reasoning budget models when modelMaxTokens not provided", () => {
+	test("should default to the provider's cap when reasoning models omit custom max tokens", () => {
 		const model: ModelInfo = {
 			contextWindow: 200_000,
 			supportsPromptCache: true,
@@ -308,7 +332,7 @@ describe("getModelMaxOutputTokens", () => {
 
 		const settings = {}
 
-		expect(getModelMaxOutputTokens({ modelId: "test", model, settings })).toBe(16_384)
+		expect(getModelMaxOutputTokens({ modelId: "test", model, settings })).toBe(8000)
 	})
 })
 

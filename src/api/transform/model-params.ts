@@ -125,6 +125,16 @@ export function getModelParams({
 			reasoningBudget = minThinkingTokens
 		}
 
+		// Some providers (e.g., Vertex Gemini) publish an explicit thinking budget ceiling
+		// that can be lower than the 80% output-tokens cap. Honor that hard limit as well.
+		const providerMaxThinkingTokens =
+			typeof model.maxThinkingTokens === "number" && model.maxThinkingTokens > 0
+				? model.maxThinkingTokens
+				: undefined
+		if (providerMaxThinkingTokens && reasoningBudget > providerMaxThinkingTokens) {
+			reasoningBudget = providerMaxThinkingTokens
+		}
+
 		// Let's assume that "Hybrid" reasoning models require a temperature of
 		// 1.0 since Anthropic does.
 		temperature = 1.0

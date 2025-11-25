@@ -407,6 +407,23 @@ describe("getModelParams", () => {
 			})
 		})
 
+		it("should clamp thinking budget to provider maxThinkingTokens when present", () => {
+			const model: ModelInfo = {
+				...baseModel,
+				requiredReasoningBudget: true,
+				maxThinkingTokens: 6000,
+				maxTokens: 64000,
+			}
+
+			const result = getModelParams({
+				...anthropicParams,
+				settings: { modelMaxTokens: 64000, modelMaxThinkingTokens: 8000 },
+				model,
+			})
+
+			expect(result.reasoningBudget).toBe(6000)
+		})
+
 		it("should use DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS when no maxTokens is provided for reasoning budget models", () => {
 			const model: ModelInfo = {
 				...baseModel,
@@ -790,8 +807,8 @@ describe("getModelParams", () => {
 				model,
 			})
 
-			expect(result.maxTokens).toBe(20000)
-			expect(result.reasoningBudget).toBe(10000)
+			expect(result.maxTokens).toBe(16000) // Clamped to provider max
+			expect(result.reasoningBudget).toBe(8000) // Clamped to provider thinking limit
 			expect(result.temperature).toBe(1.0) // Overridden for reasoning budget models
 			expect(result.reasoningEffort).toBeUndefined() // Budget takes precedence
 		})

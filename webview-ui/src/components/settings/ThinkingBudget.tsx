@@ -70,6 +70,8 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	const isGemini25Pro = selectedModelId && selectedModelId.includes("gemini-2.5-pro")
 	const minThinkingTokens = isGemini25Pro ? GEMINI_25_PRO_MIN_THINKING_TOKENS : 1024
 
+	const providerMaxOutputTokens = modelInfo?.maxTokens
+
 	// Check model capabilities
 	const isReasoningSupported = !!modelInfo && modelInfo.supportsReasoningBinary
 	const isReasoningBudgetSupported = !!modelInfo && modelInfo.supportsReasoningBudget
@@ -103,12 +105,30 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	const customMaxOutputTokens = apiConfiguration.modelMaxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS
 	const customMaxThinkingTokens =
 		apiConfiguration.modelMaxThinkingTokens || DEFAULT_HYBRID_REASONING_MODEL_THINKING_TOKENS
+	const effectiveMaxOutputTokens = providerMaxOutputTokens
+		? Math.min(customMaxOutputTokens, providerMaxOutputTokens)
+		: customMaxOutputTokens
+	const maxOutputSliderLimit = providerMaxOutputTokens
+		? providerMaxOutputTokens
+		: Math.max(modelInfo?.maxTokens ?? 8192, customMaxOutputTokens, DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS)
+
+	useEffect(() => {
+		if (
+			!isReasoningBudgetSupported ||
+			!providerMaxOutputTokens ||
+			customMaxOutputTokens <= providerMaxOutputTokens
+		) {
+			return
+		}
+		setApiConfigurationField("modelMaxTokens", providerMaxOutputTokens, false)
+	}, [isReasoningBudgetSupported, providerMaxOutputTokens, customMaxOutputTokens, setApiConfigurationField])
 
 	// Dynamically expand or shrink the max thinking budget based on the custom
 	// max output tokens so that there's always a 20% buffer.
+	const computedMaxThinkingBudget = Math.floor(0.8 * effectiveMaxOutputTokens)
 	const modelMaxThinkingTokens = modelInfo?.maxThinkingTokens
-		? Math.min(modelInfo.maxThinkingTokens, Math.floor(0.8 * customMaxOutputTokens))
-		: Math.floor(0.8 * customMaxOutputTokens)
+		? Math.min(modelInfo.maxThinkingTokens, computedMaxThinkingBudget)
+		: computedMaxThinkingBudget
 
 	// If the custom max thinking tokens are going to exceed it's limit due
 	// to the custom max output tokens being reduced then we need to shrink it
@@ -158,11 +178,7 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 						<div className="flex items-center gap-1">
 							<Slider
 								min={8192}
-								max={Math.max(
-									modelInfo.maxTokens || 8192,
-									customMaxOutputTokens,
-									DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS,
-								)}
+								max={maxOutputSliderLimit}
 								step={1024}
 								value={[customMaxOutputTokens]}
 								onValueChange={([value]) => setApiConfigurationField("modelMaxTokens", value)}

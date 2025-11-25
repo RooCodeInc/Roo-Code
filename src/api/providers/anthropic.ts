@@ -50,12 +50,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let { id: modelId, info: modelInfo, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
 		// Determine effective max_tokens
-		// When thinking is enabled, max_tokens MUST be greater than thinking.budget_tokens
-		// Use 64000 - budget_tokens as the effective max tokens for output
-		let effectiveMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		// When thinking is enabled, Anthropic requires max_tokens + thinking.budget_tokens to stay within the model cap
+		// Respect the model's declared maxTokens limit (custom models may have lower limits than 64k)
+		const providerMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		let effectiveMaxTokens = providerMaxTokens
 		if (thinking && typeof thinking === "object" && "budget_tokens" in thinking) {
-			const budgetTokens = thinking.budget_tokens
-			effectiveMaxTokens = 64000 - budgetTokens
+			const budgetTokens = Math.max(0, thinking.budget_tokens)
+			// Deduct reasoning budget from the provider cap so the sum stays within limits.
+			// Always reserve at least 1 token for the completion to avoid zero/negative max_tokens.
+			effectiveMaxTokens = Math.max(1, providerMaxTokens - budgetTokens)
 		}
 
 		// Check if prompt caching is supported (use model info, which can be overridden for custom models)
@@ -128,17 +131,20 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			)
 		} else {
 			// No prompt caching - simpler request
-			stream = (await this.client.messages.create({
-				model: modelId,
-				max_tokens: effectiveMaxTokens,
-				// Temperature cannot be used with extended thinking (must be omitted or set to 1)
-				...(thinking ? {} : { temperature }),
-				// Only include thinking if explicitly enabled (for custom models that support it)
-				...(thinking ? { thinking } : {}),
-				system: [{ text: systemPrompt, type: "text" }],
-				messages: sanitizedMessages,
-				stream: true,
-			})) as any
+			stream = (await this.client.messages.create(
+				{
+					model: modelId,
+					max_tokens: effectiveMaxTokens,
+					// Temperature cannot be used with extended thinking (must be omitted or set to 1)
+					...(thinking ? {} : { temperature }),
+					// Only include thinking if explicitly enabled (for custom models that support it)
+					...(thinking ? { thinking } : {}),
+					system: [{ text: systemPrompt, type: "text" }],
+					messages: sanitizedMessages,
+					stream: true,
+				},
+				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
+			)) as any
 		}
 
 		let inputTokens = 0

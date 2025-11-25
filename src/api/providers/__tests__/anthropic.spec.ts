@@ -178,6 +178,35 @@ describe("AnthropicHandler", () => {
 			// Verify API
 			expect(mockCreate).toHaveBeenCalled()
 		})
+
+		it("caps max_tokens using the thinking budget", async () => {
+			const reasoningHandler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
+				modelMaxTokens: 64_000,
+				modelMaxThinkingTokens: 8_000,
+			})
+
+			const stream = reasoningHandler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			])
+
+			// Kick off the generator so the mocked client is invoked
+			await stream.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					max_tokens: 56_000,
+					thinking: expect.objectContaining({ budget_tokens: 8_000 }),
+				}),
+				expect.anything(),
+			)
+
+			await stream.return?.(undefined)
+		})
 	})
 
 	describe("completePrompt", () => {

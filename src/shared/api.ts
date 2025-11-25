@@ -126,7 +126,10 @@ export const getModelMaxOutputTokens = ({
 	}
 
 	if (shouldUseReasoningBudget({ model, settings })) {
-		return settings?.modelMaxTokens || DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS
+		const configuredMaxTokens = settings?.modelMaxTokens ?? DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS
+		const providerMaxTokens =
+			typeof model.maxTokens === "number" && model.maxTokens > 0 ? model.maxTokens : Number.POSITIVE_INFINITY
+		return Math.min(configuredMaxTokens, providerMaxTokens)
 	}
 
 	const isAnthropicContext =
