@@ -84,7 +84,7 @@ importers:
     dependencies:
       '@inkjs/ui':
         specifier: ^2.0.0
-        version: 2.0.0(ink@6.6.0(@types/react@18.3.23)(react@19.2.3))
+        version: 2.0.0(ink@6.6.0(@types/react@18.3.23)(react@19.2.4))
       '@roo-code/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -114,19 +114,19 @@ importers:
         version: 3.1.0
       ink:
         specifier: ^6.6.0
-        version: 6.6.0(@types/react@18.3.23)(react@19.2.3)
+        version: 6.6.0(@types/react@18.3.23)(react@19.2.4)
       p-wait-for:
         specifier: ^5.0.2
         version: 5.0.2
       react:
         specifier: ^19.1.0
-        version: 19.2.3
+        version: 19.2.4
       superjson:
         specifier: ^2.2.6
         version: 2.2.6
       zustand:
         specifier: ^5.0.0
-        version: 5.0.9(@types/react@18.3.23)(react@19.2.3)
+        version: 5.0.10(@types/react@18.3.23)(react@19.2.4)
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -268,7 +268,7 @@ importers:
         version: 0.518.0(react@18.3.1)
       next:
         specifier: ~15.2.8
-        version: 15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -377,7 +377,7 @@ importers:
         version: 0.518.0(react@18.3.1)
       next:
         specifier: ~15.2.8
-        version: 15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -444,7 +444,7 @@ importers:
         version: 10.4.21(postcss@8.5.4)
       next-sitemap:
         specifier: ^4.2.3
-        version: 4.2.3(next@15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 4.2.3(next@15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       postcss:
         specifier: ^8.5.4
         version: 8.5.4
@@ -1226,6 +1226,9 @@ importers:
       react:
         specifier: ^18.3.1
         version: 18.3.1
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@18.3.1)
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
@@ -1353,6 +1356,9 @@ importers:
       '@vitest/ui':
         specifier: ^3.2.3
         version: 3.2.4(vitest@3.2.4)
+      babel-plugin-react-compiler:
+        specifier: ^1.0.0
+        version: 1.0.0
       identity-obj-proxy:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2414,8 +2420,8 @@ packages:
   '@next/env@13.5.11':
     resolution: {integrity: sha512-fbb2C7HChgM7CemdCY+y3N1n8pcTKdqtQLbC7/EQtPdLvlMUT9JX/dBYl8MMZAtYG4uVMyPFHXckb68q/NRwqg==}
 
-  '@next/env@15.2.8':
-    resolution: {integrity: sha512-TaEsAki14R7BlgywA05t2PFYfwZiNlGUHyIQHVyloXX3y+Dm0HUITe5YwTkjtuOQuDhuuLotNEad4VtnmE11Uw==}
+  '@next/env@15.2.9':
+    resolution: {integrity: sha512-0JJ6OlIb1kZiAbY/Hi5XHb2ZT7B5/l8CyGX3GxtTY8LNl1Inm9EU8PnCtVzUR8N2Si3a1pX02PbKBlDcsHNvUQ==}
 
   '@next/eslint-plugin-next@15.3.2':
     resolution: {integrity: sha512-ijVRTXBgnHT33aWnDtmlG+LJD+5vhc9AKTJPquGG5NKXjpKNjc62woIhFtrAcWdBobt8kqjCoaJ0q6sDQoX7aQ==}
@@ -4788,6 +4794,9 @@ packages:
   b4a@1.6.7:
     resolution: {integrity: sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==}
 
+  babel-plugin-react-compiler@1.0.0:
+    resolution: {integrity: sha512-Ixm8tFfoKKIPYdCCKYTsqv+Fd4IJ0DQqMyEimo+pxUOMUR9cVPlwTrFt9Avu+3cb6Zp3mAzl+t1MrG2fxxKsxw==}
+
   bail@1.0.5:
     resolution: {integrity: sha512-xFbRxM1tahm08yHBP16MMjVUAvDaBMD38zsM9EMAUN61omwLmKlOpB/Zku5QkjZ8TZ4vn53pj+t518cH0S03RQ==}
 
@@ -5106,8 +5115,8 @@ packages:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}
     engines: {node: '>=6'}
 
-  cli-spinners@3.3.0:
-    resolution: {integrity: sha512-/+40ljC3ONVnYIttjMWrlL51nItDAbBrq2upN8BPyvGU/2n5Oxw3tbNwORCaNuNqLJnxGqOfjUuhsv7l5Q4IsQ==}
+  cli-spinners@3.4.0:
+    resolution: {integrity: sha512-bXfOC4QcT1tKXGorxL3wbJm6XJPDqEnij2gQ2m7ESQuE+/z9YFIWnl/5RpTiKWbMq3EVKR4fRLJGn6DVfu0mpw==}
     engines: {node: '>=18.20'}
 
   cli-truncate@4.0.0:
@@ -6012,8 +6021,8 @@ packages:
     resolution: {integrity: sha512-w+5mJ3GuFL+NjVtJlvydShqE1eN3h3PbI7/5LAsYJP/2qtuMXjfL2LpHSRqo4b4eSF5K/DH1JXKUAHSB2UW50g==}
     engines: {node: '>= 0.4'}
 
-  es-toolkit@1.43.0:
-    resolution: {integrity: sha512-SKCT8AsWvYzBBuUqMk4NPwFlSdqLpJwmy6AP322ERn8W2YLIB6JBXnwMI2Qsh2gfphT3q7EKAxKb23cvFHFwKA==}
+  es-toolkit@1.44.0:
+    resolution: {integrity: sha512-6penXeZalaV88MM3cGkFZZfOoLGWshWWfdy0tWw/RlVVyhvMaWSBTOvXNeiW3e5FwdS5ePW0LGEu17zT139ktg==}
 
   es6-error@4.1.1:
     resolution: {integrity: sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==}
@@ -8128,8 +8137,8 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
-  next@15.2.8:
-    resolution: {integrity: sha512-pe2trLKZTdaCuvNER0S9Wp+SP2APf7SfFmyUP9/w1SFA2UqmW0u+IsxCKkiky3n6um7mryaQIlgiDnKrf1ZwIw==}
+  next@15.2.9:
+    resolution: {integrity: sha512-jXEBIPi+kIkMe5KI4okvGIWvot9hyiDz2fT4OqxxsSeZTA6zhSwrQkJwTE3GmQ1HQlolcQjTNMjHMvc8hhog7g==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
     peerDependencies:
@@ -8804,6 +8813,11 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
+  react-compiler-runtime@1.0.0:
+    resolution: {integrity: sha512-rRfjYv66HlG8896yPUDONgKzG5BxZD1nV9U6rkm+7VCuvQc903C4MjcoZR4zPw53IKSOX9wMQVpA1IAbRtzQ7w==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0 || ^0.0.0-experimental
+
   react-cookie-consent@9.0.0:
     resolution: {integrity: sha512-Blyj+m+Zz7SFHYqT18p16EANgnSg2sIyU6Yp3vk83AnOnSW7qnehPkUe4+8+qxztJrNmCH5GP+VHsWzAKVOoZA==}
     engines: {node: '>=10'}
@@ -8943,8 +8957,8 @@ packages:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
 
-  react@19.2.3:
-    resolution: {integrity: sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==}
+  react@19.2.4:
+    resolution: {integrity: sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==}
     engines: {node: '>=0.10.0'}
 
   read-cache@1.0.0:
@@ -10427,7 +10441,6 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
-    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-fetch@3.6.20:
     resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
@@ -10704,8 +10717,8 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zustand@5.0.9:
-    resolution: {integrity: sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==}
+  zustand@5.0.10:
+    resolution: {integrity: sha512-U1AiltS1O9hSy3rul+Ub82ut2fqIAefiSuwECWt6jlMVUGejvf+5omLcRBSzqbRagSM3hQZbtzdeRc6QVScXTg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@types/react': ^18.3.23
@@ -12035,13 +12048,13 @@ snapshots:
   '@img/sharp-win32-x64@0.33.5':
     optional: true
 
-  '@inkjs/ui@2.0.0(ink@6.6.0(@types/react@18.3.23)(react@19.2.3))':
+  '@inkjs/ui@2.0.0(ink@6.6.0(@types/react@18.3.23)(react@19.2.4))':
     dependencies:
       chalk: 5.4.1
-      cli-spinners: 3.3.0
+      cli-spinners: 3.4.0
       deepmerge: 4.3.1
       figures: 6.1.0
-      ink: 6.6.0(@types/react@18.3.23)(react@19.2.3)
+      ink: 6.6.0(@types/react@18.3.23)(react@19.2.4)
 
   '@inquirer/external-editor@1.0.2(@types/node@24.2.1)':
     dependencies:
@@ -12294,7 +12307,7 @@ snapshots:
 
   '@next/env@13.5.11': {}
 
-  '@next/env@15.2.8': {}
+  '@next/env@15.2.9': {}
 
   '@next/eslint-plugin-next@15.3.2':
     dependencies:
@@ -14544,7 +14557,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -14918,6 +14931,10 @@ snapshots:
 
   b4a@1.6.7: {}
 
+  babel-plugin-react-compiler@1.0.0:
+    dependencies:
+      '@babel/types': 7.27.1
+
   bail@1.0.5: {}
 
   bail@2.0.2: {}
@@ -14995,7 +15012,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       http-errors: 2.0.0
       iconv-lite: 0.6.3
       on-finished: 2.4.1
@@ -15249,7 +15266,7 @@ snapshots:
 
   cli-spinners@2.9.2: {}
 
-  cli-spinners@3.3.0: {}
+  cli-spinners@3.4.0: {}
 
   cli-truncate@4.0.0:
     dependencies:
@@ -16117,7 +16134,7 @@ snapshots:
       is-date-object: 1.1.0
       is-symbol: 1.1.1
 
-  es-toolkit@1.43.0: {}
+  es-toolkit@1.44.0: {}
 
   es6-error@4.1.1: {}
 
@@ -16610,7 +16627,7 @@ snapshots:
 
   finalhandler@2.1.0:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -16858,7 +16875,7 @@ snapshots:
     dependencies:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -17182,7 +17199,7 @@ snapshots:
   https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -17256,7 +17273,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.23
 
-  ink@6.6.0(@types/react@18.3.23)(react@19.2.3):
+  ink@6.6.0(@types/react@18.3.23)(react@19.2.4):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.2.3
       ansi-escapes: 7.2.0
@@ -17267,12 +17284,12 @@ snapshots:
       cli-cursor: 4.0.0
       cli-truncate: 5.1.1
       code-excerpt: 4.0.0
-      es-toolkit: 1.43.0
+      es-toolkit: 1.44.0
       indent-string: 5.0.0
       is-in-ci: 2.0.0
       patch-console: 2.0.0
-      react: 19.2.3
-      react-reconciler: 0.33.0(react@19.2.3)
+      react: 19.2.4
+      react-reconciler: 0.33.0(react@19.2.4)
       signal-exit: 3.0.7
       slice-ansi: 7.1.0
       stack-utils: 2.0.6
@@ -17780,8 +17797,8 @@ snapshots:
       smol-toml: 1.3.4
       strip-json-comments: 5.0.2
       typescript: 5.8.3
-      zod: 3.25.76
-      zod-validation-error: 3.4.1(zod@3.25.76)
+      zod: 3.25.61
+      zod-validation-error: 3.4.1(zod@3.25.61)
 
   knuth-shuffle-seeded@1.0.6:
     dependencies:
@@ -18044,7 +18061,7 @@ snapshots:
       ansi-escapes: 7.0.0
       cli-cursor: 5.0.0
       slice-ansi: 7.1.0
-      strip-ansi: 7.1.2
+      strip-ansi: 7.1.0
       wrap-ansi: 9.0.0
 
   longest-streak@3.1.0: {}
@@ -18549,7 +18566,7 @@ snapshots:
 
   micromark@2.11.4:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       parse-entities: 2.0.0
     transitivePeerDependencies:
       - supports-color
@@ -18729,22 +18746,22 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  next-sitemap@4.2.3(next@15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  next-sitemap@4.2.3(next@15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@corex/deepmerge': 4.0.43
       '@next/env': 13.5.11
       fast-glob: 3.3.3
       minimist: 1.2.8
-      next: 15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next: 15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   next-themes@0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  next@15.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@15.2.9(babel-plugin-react-compiler@1.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@next/env': 15.2.8
+      '@next/env': 15.2.9
       '@swc/counter': 0.1.3
       '@swc/helpers': 0.5.15
       busboy: 1.6.0
@@ -18762,6 +18779,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 15.2.5
       '@next/swc-win32-arm64-msvc': 15.2.5
       '@next/swc-win32-x64-msvc': 15.2.5
+      babel-plugin-react-compiler: 1.0.0
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -18965,7 +18983,7 @@ snapshots:
       log-symbols: 6.0.0
       stdin-discarder: 0.2.2
       string-width: 7.2.0
-      strip-ansi: 7.1.2
+      strip-ansi: 7.1.0
 
   os-name@6.1.0:
     dependencies:
@@ -19058,7 +19076,7 @@ snapshots:
     dependencies:
       '@tootallnate/quickjs-emscripten': 0.23.0
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       get-uri: 6.0.4
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
@@ -19478,6 +19496,10 @@ snapshots:
       strip-json-comments: 2.0.1
     optional: true
 
+  react-compiler-runtime@1.0.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+
   react-cookie-consent@9.0.0(react@18.3.1):
     dependencies:
       js-cookie: 2.2.1
@@ -19531,9 +19553,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-reconciler@0.33.0(react@19.2.3):
+  react-reconciler@0.33.0(react@19.2.4):
     dependencies:
-      react: 19.2.3
+      react: 19.2.4
       scheduler: 0.27.0
 
   react-refresh@0.17.0: {}
@@ -19634,7 +19656,7 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  react@19.2.3: {}
+  react@19.2.4: {}
 
   read-cache@1.0.0:
     dependencies:
@@ -19948,7 +19970,7 @@ snapshots:
 
   router@2.2.0:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       depd: 2.0.0
       is-promise: 4.0.0
       parseurl: 1.3.3
@@ -20056,7 +20078,7 @@ snapshots:
 
   send@1.2.0:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
@@ -20277,7 +20299,7 @@ snapshots:
   socks-proxy-agent@8.0.5:
     dependencies:
       agent-base: 7.1.3
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       socks: 2.8.4
     transitivePeerDependencies:
       - supports-color
@@ -20400,7 +20422,7 @@ snapshots:
     dependencies:
       emoji-regex: 10.4.0
       get-east-asian-width: 1.3.0
-      strip-ansi: 7.1.2
+      strip-ansi: 7.1.0
 
   string-width@8.1.0:
     dependencies:
@@ -21787,9 +21809,9 @@ snapshots:
       typescript: 5.8.3
       zod: 3.25.61
 
-  zod-validation-error@3.4.1(zod@3.25.76):
+  zod-validation-error@3.4.1(zod@3.25.61):
     dependencies:
-      zod: 3.25.76
+      zod: 3.25.61
 
   zod@3.23.8: {}
 
@@ -21797,9 +21819,9 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zustand@5.0.9(@types/react@18.3.23)(react@19.2.3):
+  zustand@5.0.10(@types/react@18.3.23)(react@19.2.4):
     optionalDependencies:
       '@types/react': 18.3.23
-      react: 19.2.3
+      react: 19.2.4
 
   zwitch@2.0.4: {}
