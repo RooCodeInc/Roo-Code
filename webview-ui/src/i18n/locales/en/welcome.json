@@ -16,7 +16,15 @@
 			"incentive": "Try Roo out for free"
 		}
 	},
-	"chooseProvider": "To do its magic, Roo needs an API key.",
+	"chooseProvider": "To get started, you need an LLM provider:",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloud Provider",
+		"rooCloudDescription": "The simplest way to use Roo. A curated mix of free and paid models at a low cost",
+		"learnMore": "learn more",
+		"useAnotherProvider": "Use another provider",
+		"useAnotherProviderDescription": "Enter an API key and get going.",
+		"getStarted": "Get started"
+	},
 	"startRouter": "We recommend using an LLM Router:",
 	"startCustom": "Or you can bring your provider API key:",
 	"telemetry": {

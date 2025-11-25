@@ -9,6 +9,21 @@ vi.mock("../../../core/config/ContextProxy")
 // Mock embeddingModels module
 vi.mock("../../../shared/embeddingModels")
 
+// Mock CloudService
+vi.mock("@roo-code/cloud", () => ({
+	CloudService: {
+		hasInstance: vi.fn(() => false),
+		instance: {
+			authService: {
+				getSessionToken: vi.fn(() => undefined),
+			},
+		},
+	},
+}))
+
+import { CloudService } from "@roo-code/cloud"
+const mockedCloudService = vi.mocked(CloudService)
+
 // Import mocked functions
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../../shared/embeddingModels"
 
@@ -54,7 +69,7 @@ describe("CodeIndexConfigManager", () => {
 		it("should initialize with ContextProxy", () => {
 			expect(configManager).toBeDefined()
 			expect(configManager.isFeatureEnabled).toBe(true)
-			expect(configManager.currentEmbedderProvider).toBe("openai")
+			expect(configManager.currentEmbedderProvider).toBe("roo")
 		})
 	})
 
@@ -98,17 +113,41 @@ describe("CodeIndexConfigManager", () => {
 
 			const result = await configManager.loadConfiguration()
 
-			expect(result.currentConfig).toMatchObject({
-				isConfigured: false,
-				embedderProvider: "openai",
-				modelId: undefined,
-				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
-				qdrantUrl: "http://localhost:6333",
-				qdrantApiKey: "",
-				searchMinScore: 0.4,
-			})
+			// Roo is the default provider but requires authentication to be configured
+			// Since there's no session token in the test environment, isConfigured is false
+			expect(result.currentConfig.isConfigured).toBe(false)
+			expect(result.currentConfig.embedderProvider).toBe("roo")
+			expect(result.currentConfig.modelId).toBeUndefined()
+			expect(result.currentConfig.openAiOptions).toEqual({ openAiNativeApiKey: "" })
+			expect(result.currentConfig.ollamaOptions).toEqual({ ollamaBaseUrl: "" })
+			expect(result.currentConfig.qdrantUrl).toBe("http://localhost:6333")
+			expect(result.currentConfig.qdrantApiKey).toBe("")
+			expect(result.currentConfig.searchMinScore).toBe(0.4)
 			expect(result.requiresRestart).toBe(false)
+		})
+
+		it("should return isConfigured=true for Roo provider when authenticated", async () => {
+			// Mock CloudService to return an authenticated session
+			mockedCloudService.hasInstance.mockReturnValue(true)
+			;(mockedCloudService.instance.authService?.getSessionToken as ReturnType<typeof vi.fn>).mockReturnValue(
+				"valid-session-token",
+			)
+
+			mockContextProxy.getGlobalState.mockReturnValue({
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://localhost:6333",
+				codebaseIndexEmbedderProvider: "roo",
+			})
+			mockContextProxy.getSecret.mockReturnValue(undefined)
+
+			configManager = new CodeIndexConfigManager(mockContextProxy)
+			const result = await configManager.loadConfiguration()
+
+			expect(result.currentConfig.isConfigured).toBe(true)
+			expect(result.currentConfig.embedderProvider).toBe("roo")
+
+			// Reset the mock
+			mockedCloudService.hasInstance.mockReturnValue(false)
 		})
 
 		it("should load configuration from globalState and secrets", async () => {
@@ -1624,6 +1663,7 @@ describe("CodeIndexConfigManager", () => {
 
 			expect(config).toHaveProperty("isConfigured")
 			expect(config).toHaveProperty("embedderProvider")
+			// Provider is "openai" as set in the mock, not "roo"
 			expect(config.embedderProvider).toBe("openai")
 		})
 	})
@@ -1779,7 +1819,7 @@ describe("CodeIndexConfigManager", () => {
 				configManager = new CodeIndexConfigManager(mockContextProxy)
 				await configManager.loadConfiguration()
 
-				// Should use default model ID
+				// Should use default model ID for the configured provider (openai)
 				expect(configManager.currentModelDimension).toBe(1536)
 				expect(mockedGetDefaultModelId).toHaveBeenCalledWith("openai")
 				expect(mockedGetModelDimension).toHaveBeenCalledWith("openai", "text-embedding-3-small")
@@ -1806,6 +1846,124 @@ describe("CodeIndexConfigManager", () => {
 
 				// Should return undefined since custom dimension is invalid
 				expect(configManager.currentModelDimension).toBe(undefined)
+			})
+
+			describe("OpenRouter provider dimension handling", () => {
+				it("should correctly handle OpenRouter mistral model dimensions across restarts", async () => {
+					// Mock getModelDimension to return correct dimensions for OpenRouter models
+					mockedGetModelDimension.mockImplementation((provider, modelId) => {
+						if (provider === "openrouter") {
+							if (modelId === "mistralai/codestral-embed-2505") return 1536
+							if (modelId === "mistralai/mistral-embed-2312") return 1024
+							if (modelId === "openai/text-embedding-3-large") return 3072
+						}
+						return undefined
+					})
+
+					// Initial configuration with OpenRouter and Mistral model
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexEmbedderProvider: "openrouter",
+						codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+						codebaseIndexQdrantUrl: "http://localhost:6333",
+					})
+					mockContextProxy.getSecret.mockImplementation((key: string) => {
+						if (key === "codebaseIndexOpenRouterApiKey") return "test-openrouter-key"
+						if (key === "codeIndexQdrantApiKey") return "test-qdrant-key"
+						return undefined
+					})
+
+					configManager = new CodeIndexConfigManager(mockContextProxy)
+					await configManager.loadConfiguration()
+
+					// Should correctly return the built-in dimension for the Mistral model
+					expect(configManager.currentModelDimension).toBe(1536)
+					expect(mockedGetModelDimension).toHaveBeenCalledWith("openrouter", "mistralai/codestral-embed-2505")
+
+					// Simulate restart by creating a new config manager with same configuration
+					const restartConfigManager = new CodeIndexConfigManager(mockContextProxy)
+					await restartConfigManager.loadConfiguration()
+
+					// After "restart", dimension should still be correct
+					expect(restartConfigManager.currentModelDimension).toBe(1536)
+					expect(restartConfigManager.isFeatureConfigured).toBe(true)
+				})
+
+				it("should not require restart for OpenRouter when same model dimensions are used", async () => {
+					// Mock both models to have same dimension
+					mockedGetModelDimension.mockImplementation((provider, modelId) => {
+						if (provider === "openrouter") {
+							if (modelId === "mistralai/codestral-embed-2505") return 1536
+							if (modelId === "openai/text-embedding-3-small") return 1536
+						}
+						return undefined
+					})
+
+					// Initial state with OpenRouter and Mistral model
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexEmbedderProvider: "openrouter",
+						codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+						codebaseIndexQdrantUrl: "http://localhost:6333",
+					})
+					mockContextProxy.getSecret.mockImplementation((key: string) => {
+						if (key === "codebaseIndexOpenRouterApiKey") return "test-key"
+						if (key === "codeIndexQdrantApiKey") return "test-key"
+						return undefined
+					})
+
+					await configManager.loadConfiguration()
+
+					// Change to another model with same dimension
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexEmbedderProvider: "openrouter",
+						codebaseIndexEmbedderModelId: "openai/text-embedding-3-small", // Same 1536 dimension
+						codebaseIndexQdrantUrl: "http://localhost:6333",
+					})
+
+					const result = await configManager.loadConfiguration()
+					// Should NOT require restart since dimensions are the same
+					expect(result.requiresRestart).toBe(false)
+				})
+
+				it("should require restart for OpenRouter when model dimensions change", async () => {
+					// Mock models with different dimensions
+					mockedGetModelDimension.mockImplementation((provider, modelId) => {
+						if (provider === "openrouter") {
+							if (modelId === "mistralai/codestral-embed-2505") return 1536
+							if (modelId === "mistralai/mistral-embed-2312") return 1024
+						}
+						return undefined
+					})
+
+					// Initial state with 1536-dimension model
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexEmbedderProvider: "openrouter",
+						codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+						codebaseIndexQdrantUrl: "http://localhost:6333",
+					})
+					mockContextProxy.getSecret.mockImplementation((key: string) => {
+						if (key === "codebaseIndexOpenRouterApiKey") return "test-key"
+						if (key === "codeIndexQdrantApiKey") return "test-key"
+						return undefined
+					})
+
+					await configManager.loadConfiguration()
+
+					// Change to model with different dimension
+					mockContextProxy.getGlobalState.mockReturnValue({
+						codebaseIndexEnabled: true,
+						codebaseIndexEmbedderProvider: "openrouter",
+						codebaseIndexEmbedderModelId: "mistralai/mistral-embed-2312", // Different 1024 dimension
+						codebaseIndexQdrantUrl: "http://localhost:6333",
+					})
+
+					const result = await configManager.loadConfiguration()
+					// Should require restart since dimensions changed
+					expect(result.requiresRestart).toBe(true)
+				})
 			})
 		})
 	})

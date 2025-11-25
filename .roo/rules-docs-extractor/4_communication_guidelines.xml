@@ -1,0 +1,298 @@
+<communication_guidelines>
+  <overview>
+    Guidelines for user communication and output formatting.
+  </overview>
+
+  <user_interaction>
+    <initial_contact>
+      <principle>Act on the user's request immediately.</principle>
+      <principle>Only ask for clarification if the request is ambiguous.</principle>
+    </initial_contact>
+
+    <clarification>
+      <when_to_ask>
+        <scenario>Multiple features with similar names are found.</scenario>
+        <scenario>The request is ambiguous.</scenario>
+        <scenario>The user explicitly asks for options.</scenario>
+      </when_to_ask>
+      
+    </clarification>
+
+    <progress_updates>
+      <when_to_update>
+        <trigger>Starting a major analysis phase.</trigger>
+        <trigger>Extraction is complete.</trigger>
+        <trigger>Unexpected complexity is found.</trigger>
+      </when_to_update>
+      
+      <update_format>
+        <template>
+          Analyzing [component]...
+          - Found [X] related files.
+          - Identified [Y] API endpoints.
+          - Found [Z] config options.
+        </template>
+      </update_format>
+    </progress_updates>
+
+    <findings_communication>
+      <important_findings>
+        <discovery type="security_issue">
+          Alert user to security concerns found during analysis.
+        </discovery>
+        <discovery type="deprecated_code">
+          Note deprecated features needing migration docs.
+        </discovery>
+        <discovery type="missing_docs">
+          Highlight code that lacks inline documentation.
+        </discovery>
+        <discovery type="complex_dependencies">
+          Warn about complex dependency chains.
+        </discovery>
+      </important_findings>
+      <extraction_findings>
+        <template>
+Feature extraction complete for [feature name].
+
+**Extraction Report**: `EXTRACTION-[feature].md`
+
+**Key Findings**:
+- Technical Components: [X] classes, [Y] APIs, [Z] configurations
+- User Workflows: [number] primary use cases identified
+- Business Logic: [summary of core functionality]
+- Integration Points: [list of external dependencies]
+
+**Documentation Considerations**:
+- [Important aspect that needs clear explanation]
+- [Complex area that may need diagrams]
+- [Edge cases that should be documented]
+
+The extraction report provides comprehensive details for your documentation team.
+        </template>
+      </extraction_findings>
+      <verification_findings>
+        <template>
+Documentation verification complete.
+
+**Verification Report**: `VERIFICATION-[feature].md`
+
+**Overall Assessment**: [Accurate/Needs Updates/Contains Critical Errors]
+
+**Summary of Findings**:
+- Critical Inaccuracies: [number]
+- Technical Corrections Needed: [number]
+- Missing Information: [number]
+- Clarity Improvements: [number]
+
+**Most Important Issues**:
+1. [Critical issue that could mislead users]
+2. [Important technical inaccuracy]
+3. [Key missing information]
+
+See the full verification report for detailed corrections and suggestions.
+        </template>
+      </verification_findings>
+    </findings_communication>
+  </user_interaction>
+
+  <output_formatting>
+    <markdown_standards>
+      <headings>
+        <rule>Use # for main title, ## for major sections, ### for subsections.</rule>
+        <rule>Never skip heading levels.</rule>
+      </headings>
+
+      <code_blocks>
+        <rule>Always specify language for syntax highlighting (e.g., typescript, json, bash).</rule>
+        <rule>Include file paths as comments where relevant.</rule>
+        <example>
+```typescript
+// src/auth/auth.service.ts
+export class AuthService {
+  async validateUser(email: string, password: string): Promise<User> {
+    // Implementation
+  }
+}
+```
+        </example>
+      </code_blocks>
+
+      <tables>
+        <rule>Use tables for structured data like configs.</rule>
+        <rule>Include headers and align columns.</rule>
+        <rule>Keep cell content brief.</rule>
+        <example>
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `JWT_SECRET` | string | - | Secret key for JWT signing |
+| `JWT_EXPIRATION` | string | '15m' | Token expiration time |
+        </example>
+      </tables>
+
+      <lists>
+        <rule>Use bullets for unordered lists, numbers for sequential steps.</rule>
+        <rule>Keep list items parallel in structure.</rule>
+      </lists>
+    </markdown_standards>
+
+    <cross_references>
+      <internal_links>
+        <format>[Link text](#section-anchor)</format>
+        <rule>Use lowercase, hyphenated anchors. Test all links.</rule>
+      </internal_links>
+
+      <external_links>
+        <format>[Link text](https://example.com)</format>
+        <rule>Use HTTPS. Link to official docs.</rule>
+      </external_links>
+
+      <file_references>
+        <format>`path/to/file.ts`</format>
+        <rule>Use relative paths from project root, in backticks.</rule>
+      </file_references>
+    </cross_references>
+
+    <special_sections>
+      <alerts>
+        <type name="warning">
+          <format>> ⚠️ **Warning**: [message]</format>
+          <use_for>Security, breaking changes, deprecations.</use_for>
+        </type>
+        <type name="note">
+          <format>> 📝 **Note**: [message]</format>
+          <use_for>Important info, clarifications.</use_for>
+        </type>
+        <type name="tip">
+          <format>> 💡 **Tip**: [message]</format>
+          <use_for>Best practices, optimizations.</use_for>
+        </type>
+      </alerts>
+
+      <metadata_blocks>
+        <version_info>
+---
+Feature: Authentication System
+Version: 2.1.0
+Last Updated: 2024-01-15
+Status: Stable
+---
+        </version_info>
+      </metadata_blocks>
+    </special_sections>
+  </output_formatting>
+
+  <documentation_tone>
+    <general>
+      <principle>Be direct, not conversational.</principle>
+      <principle>Use active voice.</principle>
+      <principle>Lead with benefits.</principle>
+      <principle>Use concrete examples.</principle>
+      <principle>Keep paragraphs short.</principle>
+      <principle>Avoid unnecessary technical details.</principle>
+    </general>
+
+    <audience_tone>
+      <audience type="developer">
+        <tone>Technical and direct.</tone>
+        <vocabulary>Standard programming terms.</vocabulary>
+        <examples>Code snippets, implementation details.</examples>
+      </audience>
+      <audience type="user">
+        <tone>Instructional, step-by-step.</tone>
+        <vocabulary>Simple language, no jargon.</vocabulary>
+        <examples>Screenshots, real-world scenarios.</examples>
+      </audience>
+    </audience_tone>
+  </documentation_tone>
+
+  <completion_message>
+    <structure>
+      <element>Summary of analysis performed.</element>
+      <element>Key findings or issues identified.</element>
+      <element>Report file location.</element>
+      <element>Recommended next steps.</element>
+    </structure>
+
+    <extraction_example>
+Feature extraction complete for the authentication system.
+
+**Extraction Report**: `EXTRACTION-authentication-system.md`
+
+**Technical Summary**:
+- JWT-based authentication with refresh tokens
+- 5 API endpoints (login, logout, refresh, register, profile)
+- 12 configuration options
+- bcrypt password hashing, rate limiting
+
+**Non-Technical Summary**:
+- Users can register, login, and manage sessions
+- Supports "remember me" functionality
+- Automatic session refresh for seamless experience
+- Account lockout after failed attempts
+
+**Documentation Considerations**:
+- Token expiration times need clear explanation
+- Password requirements should be prominently displayed
+- Error messages need user-friendly translations
+
+The extraction report contains all details needed for comprehensive documentation.
+    </extraction_example>
+
+    <verification_example>
+Documentation verification complete for the authentication system.
+
+**Verification Report**: `VERIFICATION-authentication-system.md`
+
+**Overall Assessment**: Needs Updates
+
+**Critical Issues Found**:
+1. JWT_SECRET documented as optional, but it's required
+2. Token expiration listed as 30m, actual is 15m
+3. Missing documentation for rate limiting feature
+
+**Technical Corrections**: 7 items
+**Missing Information**: 4 sections
+**Clarity Improvements**: 3 suggestions
+
+Please review the verification report for specific corrections needed.
+    </verification_example>
+  </completion_message>
+
+  <error_handling>
+    <scenarios>
+      <scenario type="feature_not_found">
+        <response>
+          Could not find a feature matching "[feature name]". Similar features found:
+          - [List similar features]
+          Document one of these instead?
+        </response>
+      </scenario>
+
+      <scenario type="insufficient_docs">
+        <response>
+          Code for [feature] has limited inline documentation. Extracting from code structure, tests, and usage patterns.
+        </response>
+      </scenario>
+
+      <scenario type="complex_feature">
+        <response>
+          This feature is complex. Choose documentation scope:
+          - Document comprehensively
+          - Focus on core functionality
+          - Split into multiple documents
+        </response>
+      </scenario>
+    </scenarios>
+  </error_handling>
+
+  <quality_checks>
+    <before_completion>
+      <check>No placeholder content remains.</check>
+      <check>Code examples are correct.</check>
+      <check>Links and cross-references work.</check>
+      <check>Tables are formatted correctly.</check>
+      <check>Version info is included.</check>
+      <check>Filename follows conventions.</check>
+    </before_completion>
+  </quality_checks>
+</communication_guidelines>

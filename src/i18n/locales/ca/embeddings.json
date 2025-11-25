@@ -39,7 +39,8 @@
 		"invalidModel": "Model no vàlid. Comproveu la vostra configuració de model.",
 		"invalidResponse": "Resposta no vàlida del servei d'incrustació. Comproveu la vostra configuració.",
 		"apiKeyRequired": "Es requereix una clau d'API per a aquest incrustador",
-		"baseUrlRequired": "Es requereix una URL base per a aquest incrustador"
+		"baseUrlRequired": "Es requereix una URL base per a aquest incrustador",
+		"rooAuthenticationRequired": "Es requereix autenticació de Roo Code Cloud. Si us plau, inicieu sessió per utilitzar el proveïdor d'incrustacions Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Falta la configuració d'OpenAI per crear l'embedder",
@@ -47,6 +48,7 @@
 		"openAiCompatibleConfigMissing": "Falta la configuració compatible amb OpenAI per crear l'embedder",
 		"geminiConfigMissing": "Falta la configuració de Gemini per crear l'embedder",
 		"mistralConfigMissing": "Falta la configuració de Mistral per crear l'embedder",
+		"openRouterConfigMissing": "Falta la configuració d'OpenRouter per crear l'embedder",
 		"vercelAiGatewayConfigMissing": "Falta la configuració de Vercel AI Gateway per crear l'embedder",
 		"invalidEmbedderType": "Tipus d'embedder configurat no vàlid: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "No s'ha pogut determinar la dimensió del vector per al model '{{modelId}}' amb el proveïdor '{{provider}}'. Assegura't que la 'Dimensió d'incrustació' estigui configurada correctament als paràmetres del proveïdor compatible amb OpenAI.",

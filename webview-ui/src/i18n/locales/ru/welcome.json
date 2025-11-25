@@ -16,7 +16,15 @@
 			"incentive": "Попробуй Roo бесплатно"
 		}
 	},
-	"chooseProvider": "Для своей магии Roo нуждается в API-ключе.",
+	"chooseProvider": "Для начала работы тебе нужен LLM-провайдер:",
+	"providerSignup": {
+		"rooCloudProvider": "Провайдер Roo Code Cloud",
+		"rooCloudDescription": "Самый простой способ использования Roo. Подобранная комбинация бесплатных и платных моделей по низкой цене",
+		"learnMore": "подробнее",
+		"useAnotherProvider": "Использовать другого провайдера",
+		"useAnotherProviderDescription": "Введи API-ключ и начни.",
+		"getStarted": "Начать"
+	},
 	"startRouter": "Мы рекомендуем использовать маршрутизатор LLM:",
 	"startCustom": "Или вы можете использовать свой собственный API-ключ:",
 	"telemetry": {

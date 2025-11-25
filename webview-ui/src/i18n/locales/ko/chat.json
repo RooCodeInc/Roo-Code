@@ -85,24 +85,17 @@
 		"tooltip": "현재 작업 취소"
 	},
 	"scrollToBottom": "채팅 하단으로 스크롤",
-	"about": "AI 지원으로 코드를 생성, 리팩터링 및 디버깅합니다. 자세한 내용은 <DocsLink>문서</DocsLink>를 확인하세요.",
-	"onboarding": "<strong>이 작업 공간의 작업 목록이 비어 있습니다.</strong> 아래에 작업을 입력하여 시작하세요. 어떻게 시작해야 할지 모르겠나요? Roo가 무엇을 할 수 있는지 <DocsLink>문서</DocsLink>에서 자세히 알아보세요.",
+	"about": "Roo Code는 편집기 안에 있는 전체 AI 개발팀입니다.",
+	"docs": "더 알아보려면 <DocsLink>문서</DocsLink>를 확인하세요.",
+	"onboarding": "이 작업 공간의 작업 목록이 비어 있습니다.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "작업 오케스트레이션",
-			"description": "작업을 더 작고 관리하기 쉬운 부분으로 나눕니다."
-		},
-		"stickyModels": {
-			"title": "스티키 모드",
-			"description": "각 모드는 마지막으로 사용한 모델을 기억합니다."
-		},
-		"tools": {
-			"title": "도구",
-			"description": "AI가 웹 탐색, 명령 실행 등으로 문제를 해결하도록 허용합니다."
-		},
 		"customizableModes": {
-			"title": "사용자 정의 모드",
-			"description": "고유한 동작과 할당된 모델을 가진 전문 페르소나"
+			"title": "사용자 정의 가능한 모드",
+			"description": "작업에 집중하고 결과를 제공하는 전문화된 페르소나."
+		},
+		"modelAgnostic": {
+			"title": "자신만의 모델 가져오기",
+			"description": "자체 공급자 키를 사용하거나 로컬에서 추론을 실행하세요 — 마크업 없음, 종속 없음, 제한 없음"
 		}
 	},
 	"selectMode": "상호작용 모드 선택",
@@ -148,6 +141,9 @@
 		"initializingWarning": "체크포인트 초기화 중... 시간이 너무 오래 걸리면 <settingsLink>설정</settingsLink>에서 체크포인트를 비활성화하고 작업을 다시 시작할 수 있습니다.",
 		"menu": {
 			"viewDiff": "차이점 보기",
+			"more": "더 많은 옵션",
+			"viewDiffFromInit": "모든 변경 사항 보기",
+			"viewDiffWithCurrent": "이 체크포인트 이후 변경 사항 보기",
 			"restore": "체크포인트 복원",
 			"restoreFiles": "파일 복원",
 			"restoreFilesDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원합니다.",
@@ -264,6 +260,7 @@
 		"toggleAriaLabel": "자동 승인 전환",
 		"disabledAriaLabel": "자동 승인 비활성화됨 - 먼저 옵션을 선택하십시오",
 		"triggerLabelOff": "자동 승인 꺼짐",
+		"triggerLabelOffShort": "꺼짐",
 		"triggerLabel_zero": "0개 자동 승인됨",
 		"triggerLabel_one": "1개 자동 승인됨",
 		"triggerLabel_other": "{{count}}개 자동 승인됨",
@@ -293,9 +290,22 @@
 			"selectModel": "설정에서 Roo Code Cloud 제공업체의 <code>roo/code-supernova</code>를 선택하여 시작하세요.",
 			"goToSettingsButton": "설정으로 이동"
 		},
+		"release": {
+			"heading": "이 버전의 새로운 기능:",
+			"browserUse": "Browser Use 2.0은 지속적인 세션, 더 명확한 피드백, 전용 브라우저 패널, 더 자연스러운 작업 설명을 통해 채팅 내 브라우징 경험을 업그레이드합니다",
+			"cloudPaid": "Roo Code Cloud 제공업체는 이제 클라우드 에이전트와 추론 모두에 사용할 수 있는 크레딧을 구매할 수 있도록 지원합니다"
+		},
+		"cloudAgents": {
+			"heading": "클라우드의 새로운 기능:",
+			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold>, <bold>Coder</bold> 세 가지 전문 클라우드 에이전트를 소개합니다. 워크플로우를 향상시킵니다.",
+			"description": "에이전트는 클라우드에서 함께 작동하며 웹 또는 Slack을 통해 트리거할 수 있습니다.",
+			"tryButton": "클라우드 에이전트 사용해보기"
+		},
+		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>",
 		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
 	},
 	"browser": {
+		"session": "브라우저 세션",
 		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
 		"consoleLogs": "콘솔 로그",
 		"noNewLogs": "(새 로그 없음)",
@@ -312,8 +322,10 @@
 			"launch": "{{url}}에서 브라우저 실행",
 			"click": "클릭 ({{coordinate}})",
 			"type": "입력 \"{{text}}\"",
+			"press": "{{key}} 누르기",
 			"scrollDown": "아래로 스크롤",
 			"scrollUp": "위로 스크롤",
+			"hover": "가리키기 ({{coordinate}})",
 			"close": "브라우저 닫기"
 		}
 	},
@@ -412,5 +424,12 @@
 	"slashCommand": {
 		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다",
 		"didRun": "Roo가 슬래시 명령어를 실행했습니다"
+	},
+	"todo": {
+		"partial": "{{total}}개의 할 일 중 {{completed}}개 완료",
+		"complete": "{{total}}개의 할 일 완료",
+		"updated": "할 일 목록을 업데이트했습니다",
+		"completed": "완료됨",
+		"started": "시작됨"
 	}
 }

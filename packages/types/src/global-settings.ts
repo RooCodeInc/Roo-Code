@@ -30,6 +30,21 @@ export const DEFAULT_WRITE_DELAY_MS = 1000
 export const DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT = 50_000
 
 /**
+ * Minimum checkpoint timeout in seconds.
+ */
+export const MIN_CHECKPOINT_TIMEOUT_SECONDS = 10
+
+/**
+ * Maximum checkpoint timeout in seconds.
+ */
+export const MAX_CHECKPOINT_TIMEOUT_SECONDS = 60
+
+/**
+ * Default checkpoint timeout in seconds.
+ */
+export const DEFAULT_CHECKPOINT_TIMEOUT_SECONDS = 15
+
+/**
  * GlobalSettings
  */
 
@@ -44,6 +59,7 @@ export const globalSettingsSchema = z.object({
 	dismissedUpsells: z.array(z.string()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
+	imageGenerationProvider: z.enum(["openrouter", "roo"]).optional(),
 	openRouterImageApiKey: z.string().optional(),
 	openRouterImageGenerationSelectedModel: z.string().optional(),
 
@@ -79,6 +95,23 @@ export const globalSettingsSchema = z.object({
 	maxConcurrentFileReads: z.number().optional(),
 
 	/**
+	 * Whether to include current time in the environment details
+	 * @default true
+	 */
+	includeCurrentTime: z.boolean().optional(),
+	/**
+	 * Whether to include current cost in the environment details
+	 * @default true
+	 */
+	includeCurrentCost: z.boolean().optional(),
+	/**
+	 * Maximum number of git status file entries to include in the environment details.
+	 * Set to 0 to disable git status. The header (branch, commits) is always included when > 0.
+	 * @default 0
+	 */
+	maxGitStatusFiles: z.number().optional(),
+
+	/**
 	 * Whether to include diagnostic messages (errors, warnings) in tool outputs
 	 * @default true
 	 */
@@ -97,6 +130,12 @@ export const globalSettingsSchema = z.object({
 	cachedChromeHostUrl: z.string().optional(),
 
 	enableCheckpoints: z.boolean().optional(),
+	checkpointTimeout: z
+		.number()
+		.int()
+		.min(MIN_CHECKPOINT_TIMEOUT_SECONDS)
+		.max(MAX_CHECKPOINT_TIMEOUT_SECONDS)
+		.optional(),
 
 	ttsEnabled: z.boolean().optional(),
 	ttsSpeed: z.number().optional(),
@@ -186,6 +225,7 @@ export const SECRET_STATE_KEYS = [
 	"doubaoApiKey",
 	"moonshotApiKey",
 	"mistralApiKey",
+	"minimaxApiKey",
 	"unboundApiKey",
 	"requestyApiKey",
 	"xaiApiKey",
@@ -199,6 +239,7 @@ export const SECRET_STATE_KEYS = [
 	"codebaseIndexGeminiApiKey",
 	"codebaseIndexMistralApiKey",
 	"codebaseIndexVercelAiGatewayApiKey",
+	"codebaseIndexOpenRouterApiKey",
 	"huggingFaceApiKey",
 	"sambaNovaApiKey",
 	"zaiApiKey",
@@ -206,6 +247,7 @@ export const SECRET_STATE_KEYS = [
 	"featherlessApiKey",
 	"ioIntelligenceApiKey",
 	"vercelAiGatewayApiKey",
+	"basetenApiKey",
 ] as const
 
 // Global secrets that are part of GlobalSettings (not ProviderSettings)
@@ -305,6 +347,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	rateLimitSeconds: 0,
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
+	maxGitStatusFiles: 20,
 	showRooIgnoredFiles: true,
 	maxReadFileLine: -1, // -1 to enable full file reading.
 

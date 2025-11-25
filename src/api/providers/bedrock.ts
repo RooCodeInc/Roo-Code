@@ -22,11 +22,13 @@ import {
 	BEDROCK_DEFAULT_CONTEXT,
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
+	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
 } from "@roo-code/types"
 
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import { logger } from "../../utils/logging"
+import { Package } from "../../shared/package"
 import { MultiPointStrategy } from "../transform/cache-strategy/multi-point-strategy"
 import { ModelInfo as CacheModelInfo } from "../transform/cache-strategy/types"
 import { convertToBedrockConverseMessages as sharedConverter } from "../transform/bedrock-converse-format"
@@ -218,6 +220,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		this.costModelConfig = this.getModel()
 
 		const clientConfig: BedrockRuntimeClientConfig = {
+			userAgentAppId: `RooCode#${Package.version}`,
 			region: this.options.awsRegion,
 			// Add the endpoint configuration when specified and enabled
 			...(this.options.awsBedrockEndpoint &&
@@ -885,6 +888,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
+		// Also strip Global Inference profile prefix if present
+		if (modelId.startsWith("global.")) {
+			return modelId.substring("global.".length)
+		}
+
 		// Return the model ID as-is for all other cases
 		return modelId
 	}
@@ -962,8 +970,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			//a model was selected from the drop down
 			modelConfig = this.getModelById(this.options.apiModelId as string)
 
-			// Add cross-region inference prefix if enabled
-			if (this.options.awsUseCrossRegionInference && this.options.awsRegion) {
+			// Apply Global Inference prefix if enabled and supported (takes precedence over cross-region)
+			const baseIdForGlobal = this.parseBaseModelId(modelConfig.id)
+			if (
+				this.options.awsUseGlobalInference &&
+				BEDROCK_GLOBAL_INFERENCE_MODEL_IDS.includes(baseIdForGlobal as any)
+			) {
+				modelConfig.id = `global.${baseIdForGlobal}`
+			}
+			// Otherwise, add cross-region inference prefix if enabled
+			else if (this.options.awsUseCrossRegionInference && this.options.awsRegion) {
 				const prefix = AwsBedrockHandler.getPrefixForRegion(this.options.awsRegion)
 				if (prefix) {
 					modelConfig.id = `${prefix}${modelConfig.id}`

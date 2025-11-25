@@ -43,11 +43,6 @@ export const clineAsks = [
 export const clineAskSchema = z.enum(clineAsks)
 
 export type ClineAsk = z.infer<typeof clineAskSchema>
-
-// Needs classification:
-// - `followup`
-// - `command_output
-
 /**
  * IdleAsk
  *
@@ -100,6 +95,21 @@ export type InteractiveAsk = (typeof interactiveAsks)[number]
 
 export function isInteractiveAsk(ask: ClineAsk): ask is InteractiveAsk {
 	return (interactiveAsks as readonly ClineAsk[]).includes(ask)
+}
+
+/**
+ * NonBlockingAsk
+ *
+ * Asks that are not associated with an actual approval, and are only used
+ * to update chat messages.
+ */
+
+export const nonBlockingAsks = ["command_output"] as const satisfies readonly ClineAsk[]
+
+export type NonBlockingAsk = (typeof nonBlockingAsks)[number]
+
+export function isNonBlockingAsk(ask: ClineAsk): ask is NonBlockingAsk {
+	return (nonBlockingAsks as readonly ClineAsk[]).includes(ask)
 }
 
 /**
@@ -156,6 +166,7 @@ export const clineSays = [
 	"shell_integration_warning",
 	"browser_action",
 	"browser_action_result",
+	"browser_session_status",
 	"mcp_server_request_started",
 	"mcp_server_response",
 	"subtask_result",
@@ -216,17 +227,6 @@ export const clineMessageSchema = z.object({
 	isProtected: z.boolean().optional(),
 	apiProtocol: z.union([z.literal("openai"), z.literal("anthropic")]).optional(),
 	isAnswered: z.boolean().optional(),
-	metadata: z
-		.object({
-			gpt5: z
-				.object({
-					previous_response_id: z.string().optional(),
-					instructions: z.string().optional(),
-					reasoning_summary: z.string().optional(),
-				})
-				.optional(),
-		})
-		.optional(),
 })
 
 export type ClineMessage = z.infer<typeof clineMessageSchema>

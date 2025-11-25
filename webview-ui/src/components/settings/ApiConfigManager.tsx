@@ -342,7 +342,7 @@ const ApiConfigManager = ({
 							{t("settings:common.cancel")}
 						</Button>
 						<Button
-							variant="default"
+							variant="primary"
 							disabled={!newProfileName.trim()}
 							onClick={handleNewProfileSave}
 							data-testid="create-profile-button">

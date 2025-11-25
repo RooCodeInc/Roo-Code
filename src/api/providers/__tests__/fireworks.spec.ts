@@ -115,6 +115,27 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return MiniMax M2 model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/minimax-m2"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 4096,
+				contextWindow: 204800,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.3,
+				outputPrice: 1.2,
+				description: expect.stringContaining("MiniMax M2 is a high-performance language model"),
+			}),
+		)
+	})
+
 	it("should return Qwen3 235B model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/qwen3-235b-a22b-instruct-2507"
 		const handlerWithModel = new FireworksHandler({
@@ -242,6 +263,27 @@ describe("FireworksHandler", () => {
 		)
 	})
 
+	it("should return GLM-4.6 model with correct configuration", () => {
+		const testModelId: FireworksModelId = "accounts/fireworks/models/glm-4p6"
+		const handlerWithModel = new FireworksHandler({
+			apiModelId: testModelId,
+			fireworksApiKey: "test-fireworks-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.id).toBe(testModelId)
+		expect(model.info).toEqual(
+			expect.objectContaining({
+				maxTokens: 25344,
+				contextWindow: 198000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.55,
+				outputPrice: 2.19,
+				description: expect.stringContaining("Z.ai GLM-4.6 is an advanced coding model"),
+			}),
+		)
+	})
+
 	it("should return gpt-oss-20b model with correct configuration", () => {
 		const testModelId: FireworksModelId = "accounts/fireworks/models/gpt-oss-20b"
 		const handlerWithModel = new FireworksHandler({
@@ -342,7 +384,7 @@ describe("FireworksHandler", () => {
 		const firstChunk = await stream.next()
 
 		expect(firstChunk.done).toBe(false)
-		expect(firstChunk.value).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20 })
+		expect(firstChunk.value).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 20 })
 	})
 
 	it("createMessage should pass correct parameters to Fireworks client", async () => {
@@ -452,10 +494,8 @@ describe("FireworksHandler", () => {
 			chunks.push(chunk)
 		}
 
-		expect(chunks).toEqual([
-			{ type: "text", text: "Hello" },
-			{ type: "text", text: " world" },
-			{ type: "usage", inputTokens: 5, outputTokens: 10 },
-		])
+		expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+		expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 5, outputTokens: 10 })
 	})
 })

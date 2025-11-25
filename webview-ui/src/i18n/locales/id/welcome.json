@@ -16,7 +16,15 @@
 			"incentive": "Coba Roo gratis"
 		}
 	},
-	"chooseProvider": "Untuk melakukan keajaibannya, Roo membutuhkan API key.",
+	"chooseProvider": "Untuk memulai, kamu memerlukan penyedia LLM:",
+	"providerSignup": {
+		"rooCloudProvider": "Penyedia Roo Code Cloud",
+		"rooCloudDescription": "Cara termudah untuk menggunakan Roo. Campuran model gratis dan berbayar yang dikurasi dengan biaya rendah",
+		"learnMore": "pelajari lebih lanjut",
+		"useAnotherProvider": "Gunakan penyedia lain",
+		"useAnotherProviderDescription": "Masukkan kunci API dan mulai.",
+		"getStarted": "Mulai"
+	},
 	"startRouter": "Kami merekomendasikan menggunakan Router LLM:",
 	"startCustom": "Atau Anda dapat menggunakan API key Anda sendiri:",
 	"telemetry": {

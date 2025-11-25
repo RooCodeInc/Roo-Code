@@ -4,7 +4,6 @@ import { z } from "zod"
 import {
 	type ModelInfo,
 	isModelParameter,
-	OPEN_ROUTER_COMPUTER_USE_MODELS,
 	OPEN_ROUTER_REASONING_BUDGET_MODELS,
 	OPEN_ROUTER_REQUIRED_REASONING_BUDGET_MODELS,
 	anthropicModels,
@@ -116,7 +115,7 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				continue
 			}
 
-			models[id] = parseOpenRouterModel({
+			const parsedModel = parseOpenRouterModel({
 				id,
 				model,
 				inputModality: architecture?.input_modalities,
@@ -124,6 +123,8 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				maxTokens: top_provider?.max_completion_tokens,
 				supportedParameters: supported_parameters,
 			})
+
+			models[id] = parsedModel
 		}
 	} catch (error) {
 		console.error(
@@ -217,13 +218,8 @@ export const parseOpenRouterModel = ({
 		cacheReadsPrice,
 		description: model.description,
 		supportsReasoningEffort: supportedParameters ? supportedParameters.includes("reasoning") : undefined,
+		supportsNativeTools: supportedParameters ? supportedParameters.includes("tools") : undefined,
 		supportedParameters: supportedParameters ? supportedParameters.filter(isModelParameter) : undefined,
-	}
-
-	// The OpenRouter model definition doesn't give us any hints about
-	// computer use, so we need to set that manually.
-	if (OPEN_ROUTER_COMPUTER_USE_MODELS.has(id)) {
-		modelInfo.supportsComputerUse = true
 	}
 
 	if (OPEN_ROUTER_REASONING_BUDGET_MODELS.has(id)) {
@@ -251,6 +247,13 @@ export const parseOpenRouterModel = ({
 	// Set claude-opus-4.1 model to use the correct configuration
 	if (id === "anthropic/claude-opus-4.1") {
 		modelInfo.maxTokens = anthropicModels["claude-opus-4-1-20250805"].maxTokens
+	}
+
+	// Ensure correct reasoning handling for Claude Haiku 4.5 on OpenRouter
+	// Use budget control and disable effort-based reasoning fallback
+	if (id === "anthropic/claude-haiku-4.5") {
+		modelInfo.supportsReasoningBudget = true
+		modelInfo.supportsReasoningEffort = false
 	}
 
 	// Set horizon-alpha model to 32k max tokens

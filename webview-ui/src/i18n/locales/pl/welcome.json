@@ -16,7 +16,15 @@
 			"incentive": "Wypróbuj Roo za darmo"
 		}
 	},
-	"chooseProvider": "Aby działać, Roo potrzebuje klucza API.",
+	"chooseProvider": "Aby rozpocząć, potrzebujesz dostawcy LLM:",
+	"providerSignup": {
+		"rooCloudProvider": "Dostawca Roo Code Cloud",
+		"rooCloudDescription": "Najprostszy sposób korzystania z Roo. Wybrana mieszanka darmowych i płatnych modeli po niskich kosztach",
+		"learnMore": "dowiedz się więcej",
+		"useAnotherProvider": "Użyj innego dostawcy",
+		"useAnotherProviderDescription": "Wprowadź klucz API i zacznij.",
+		"getStarted": "Rozpocznij"
+	},
 	"startRouter": "Zalecamy korzystanie z routera LLM:",
 	"startCustom": "Lub możesz użyć własnego klucza API:",
 	"telemetry": {

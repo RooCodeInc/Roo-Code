@@ -96,7 +96,7 @@ describe("File-Based Custom System Prompt", () => {
 			const prompt = await SYSTEM_PROMPT(
 				mockContext,
 				"test/path", // Using a relative path without leading slash
-				false, // supportsComputerUse
+				false, // supportsImages
 				undefined, // mcpHub
 				undefined, // diffStrategy
 				undefined, // browserViewportSize
@@ -134,7 +134,7 @@ describe("File-Based Custom System Prompt", () => {
 		const prompt = await SYSTEM_PROMPT(
 			mockContext,
 			"test/path", // Using a relative path without leading slash
-			false, // supportsComputerUse
+			false, // supportsImages
 			undefined, // mcpHub
 			undefined, // diffStrategy
 			undefined, // browserViewportSize
@@ -180,7 +180,7 @@ describe("File-Based Custom System Prompt", () => {
 		const prompt = await SYSTEM_PROMPT(
 			mockContext,
 			"test/path", // Using a relative path without leading slash
-			false, // supportsComputerUse
+			false, // supportsImages
 			undefined, // mcpHub
 			undefined, // diffStrategy
 			undefined, // browserViewportSize

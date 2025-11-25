@@ -39,7 +39,8 @@
 		"invalidModel": "Mô hình không hợp lệ. Vui lòng kiểm tra cấu hình mô hình của bạn.",
 		"invalidResponse": "Phản hồi không hợp lệ từ dịch vụ embedder. Vui lòng kiểm tra cấu hình của bạn.",
 		"apiKeyRequired": "Cần có khóa API cho trình nhúng này",
-		"baseUrlRequired": "Cần có URL cơ sở cho trình nhúng này"
+		"baseUrlRequired": "Cần có URL cơ sở cho trình nhúng này",
+		"rooAuthenticationRequired": "Yêu cầu xác thực Roo Code Cloud. Vui lòng đăng nhập để sử dụng nhà cung cấp embeddings Roo."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "Thiếu cấu hình OpenAI để tạo embedder",
@@ -47,6 +48,7 @@
 		"openAiCompatibleConfigMissing": "Thiếu cấu hình tương thích OpenAI để tạo embedder",
 		"geminiConfigMissing": "Thiếu cấu hình Gemini để tạo embedder",
 		"mistralConfigMissing": "Thiếu cấu hình Mistral để tạo trình nhúng",
+		"openRouterConfigMissing": "Thiếu cấu hình OpenRouter để tạo trình nhúng",
 		"vercelAiGatewayConfigMissing": "Thiếu cấu hình Vercel AI Gateway để tạo trình nhúng",
 		"invalidEmbedderType": "Loại embedder được cấu hình không hợp lệ: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Không thể xác định kích thước vector cho mô hình '{{modelId}}' với nhà cung cấp '{{provider}}'. Hãy đảm bảo 'Kích thước Embedding' được cài đặt đúng trong cài đặt nhà cung cấp tương thích OpenAI.",

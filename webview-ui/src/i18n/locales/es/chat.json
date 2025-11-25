@@ -85,24 +85,17 @@
 		"tooltip": "Cancelar la operación actual"
 	},
 	"scrollToBottom": "Desplazarse al final del chat",
-	"about": "Genera, refactoriza y depura código con asistencia de IA. Consulta nuestra <DocsLink>documentación</DocsLink> para obtener más información.",
-	"onboarding": "<strong>Tu lista de tareas en este espacio de trabajo está vacía.</strong> Comienza escribiendo una tarea abajo. ¿No estás seguro cómo empezar? Lee más sobre lo que Roo puede hacer por ti en <DocsLink>la documentación</DocsLink>.",
+	"about": "Roo Code es todo un equipo de desarrollo de IA en tu editor.",
+	"docs": "Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",
+	"onboarding": "Tu lista de tareas en este espacio de trabajo está vacía.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Orquestación de Tareas",
-			"description": "Divide las tareas en partes más pequeñas y manejables."
-		},
-		"stickyModels": {
-			"title": "Modos persistentes",
-			"description": "Cada modo recuerda tu último modelo utilizado"
-		},
-		"tools": {
-			"title": "Herramientas",
-			"description": "Permite que la IA resuelva problemas navegando por la web, ejecutando comandos y mucho más."
-		},
 		"customizableModes": {
 			"title": "Modos personalizables",
-			"description": "Personalidades especializadas con sus propios comportamientos y modelos asignados"
+			"description": "Personajes especializados que se mantienen en la tarea y cumplen."
+		},
+		"modelAgnostic": {
+			"title": "Trae tu propio modelo",
+			"description": "Usa tu propia clave de proveedor o incluso ejecuta inferencia local — sin sobrecostes, sin ataduras, sin restricciones"
 		}
 	},
 	"selectMode": "Seleccionar modo de interacción",
@@ -148,6 +141,9 @@
 		"initializingWarning": "Todavía inicializando el punto de control... Si esto tarda demasiado, puedes desactivar los puntos de control en la <settingsLink>configuración</settingsLink> y reiniciar tu tarea.",
 		"menu": {
 			"viewDiff": "Ver diferencias",
+			"more": "Más opciones",
+			"viewDiffFromInit": "Ver todos los cambios",
+			"viewDiffWithCurrent": "Ver cambios desde este punto de control",
 			"restore": "Restaurar punto de control",
 			"restoreFiles": "Restaurar archivos",
 			"restoreFilesDescription": "Restaura los archivos de tu proyecto a una instantánea tomada en este punto.",
@@ -264,6 +260,7 @@
 		"toggleAriaLabel": "Conmutar la aprobación automática",
 		"disabledAriaLabel": "Aprobación automática deshabilitada: selecciona primero las opciones",
 		"triggerLabelOff": "Aprobación automática desactivada",
+		"triggerLabelOffShort": "Desactivado",
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",
@@ -293,9 +290,22 @@
 			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveedor Roo Code Cloud en Configuración para comenzar.",
 			"goToSettingsButton": "Ir a Configuración"
 		},
+		"release": {
+			"heading": "Novedades en esta versión:",
+			"browserUse": "Browser Use 2.0 mejora la experiencia de navegación en el chat con sesiones persistentes, retroalimentación más clara, un panel de navegador dedicado y descripciones de acciones más naturales",
+			"cloudPaid": "El proveedor de Roo Code Cloud ahora ofrece modelos pagos: compra créditos y úsalos tanto para agentes en la nube como para inferencia"
+		},
+		"cloudAgents": {
+			"heading": "Novedades en la Nube:",
+			"specialized": "Presentamos <bold>Explainer</bold>, <bold>Planner</bold> y <bold>Coder</bold> - tres agentes en la nube especializados para mejorar tus flujos de trabajo.",
+			"description": "Los agentes trabajan juntos en la nube y se pueden activar desde la web o mediante Slack.",
+			"tryButton": "Prueba los Agentes en la Nube"
+		},
+		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
 		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sesión del navegador",
 		"rooWantsToUse": "Roo quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",
@@ -308,12 +318,14 @@
 		},
 		"sessionStarted": "Sesión de navegador iniciada",
 		"actions": {
-			"title": "Acción de navegación: ",
+			"title": "Acción del navegador: ",
 			"launch": "Iniciar navegador en {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Escribir \"{{text}}\"",
+			"press": "Pulsar {{key}}",
 			"scrollDown": "Desplazar hacia abajo",
 			"scrollUp": "Desplazar hacia arriba",
+			"hover": "Flotar ({{coordinate}})",
 			"close": "Cerrar navegador"
 		}
 	},
@@ -412,5 +424,12 @@
 	"slashCommand": {
 		"wantsToRun": "Roo quiere ejecutar un comando slash",
 		"didRun": "Roo ejecutó un comando slash"
+	},
+	"todo": {
+		"partial": "{{completed}} de {{total}} tareas pendientes realizadas",
+		"complete": "{{total}} tareas pendientes realizadas",
+		"updated": "Se actualizó la lista de tareas pendientes",
+		"completed": "Completado",
+		"started": "Iniciado"
 	}
 }

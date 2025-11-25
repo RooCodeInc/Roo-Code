@@ -16,6 +16,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
 import { getToolDescriptionsForMode } from "./tools"
+import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 import {
 	getRulesSection,
 	getSystemInfoSection,
@@ -79,46 +80,57 @@ async function generatePrompt(
 	const hasMcpServers = mcpHub && mcpHub.getServers().length > 0
 	const shouldIncludeMcp = hasMcpGroup && hasMcpServers
 
+	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
+
+	// Determine the effective protocol (defaults to 'xml')
+	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
+
 	const [modesSection, mcpServersSection] = await Promise.all([
 		getModesSection(context),
 		shouldIncludeMcp
-			? getMcpServersSection(mcpHub, effectiveDiffStrategy, enableMcpServerCreation)
+			? getMcpServersSection(
+					mcpHub,
+					effectiveDiffStrategy,
+					enableMcpServerCreation,
+					!isNativeProtocol(effectiveProtocol),
+				)
 			: Promise.resolve(""),
 	])
 
-	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
+	// Build tools catalog section only for XML protocol
+	const toolsCatalog = isNativeProtocol(effectiveProtocol)
+		? ""
+		: `\n\n${getToolDescriptionsForMode(
+				mode,
+				cwd,
+				supportsComputerUse,
+				codeIndexManager,
+				effectiveDiffStrategy,
+				browserViewportSize,
+				shouldIncludeMcp ? mcpHub : undefined,
+				customModeConfigs,
+				experiments,
+				partialReadsEnabled,
+				settings,
+				enableMcpServerCreation,
+				modelId,
+			)}`
 
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection()}
+${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
 
-${getToolDescriptionsForMode(
-	mode,
-	cwd,
-	supportsComputerUse,
-	codeIndexManager,
-	effectiveDiffStrategy,
-	browserViewportSize,
-	shouldIncludeMcp ? mcpHub : undefined,
-	customModeConfigs,
-	experiments,
-	partialReadsEnabled,
-	settings,
-	enableMcpServerCreation,
-	modelId,
-)}
-
-${getToolUseGuidelinesSection(codeIndexManager)}
+${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol)}
 
 ${mcpServersSection}
 
-${getCapabilitiesSection(cwd, supportsComputerUse, shouldIncludeMcp ? mcpHub : undefined, effectiveDiffStrategy, codeIndexManager)}
+${getCapabilitiesSection(cwd, supportsComputerUse, mode, customModeConfigs, experiments, shouldIncludeMcp ? mcpHub : undefined, effectiveDiffStrategy, codeIndexManager, settings)}
 
 ${modesSection}
 
-${getRulesSection(cwd, supportsComputerUse, effectiveDiffStrategy, codeIndexManager)}
+${getRulesSection(cwd, supportsComputerUse, mode, customModeConfigs, experiments, effectiveDiffStrategy, codeIndexManager, settings)}
 
 ${getSystemInfoSection(cwd)}
 

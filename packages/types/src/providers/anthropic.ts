@@ -3,14 +3,13 @@ import type { ModelInfo } from "../model.js"
 // https://docs.anthropic.com/en/docs/about-claude/models
 
 export type AnthropicModelId = keyof typeof anthropicModels
-export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-20250514"
+export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5"
 
 export const anthropicModels = {
 	"claude-sonnet-4-5": {
 		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
@@ -32,7 +31,6 @@ export const anthropicModels = {
 		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
@@ -50,11 +48,21 @@ export const anthropicModels = {
 			},
 		],
 	},
-	"claude-opus-4-1-20250805": {
-		maxTokens: 8192,
+	"claude-opus-4-5-20251101": {
+		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
+		supportsPromptCache: true,
+		inputPrice: 5.0, // $5 per million input tokens
+		outputPrice: 25.0, // $25 per million output tokens
+		cacheWritesPrice: 6.25, // $6.25 per million tokens
+		cacheReadsPrice: 0.5, // $0.50 per million tokens
+		supportsReasoningBudget: true,
+	},
+	"claude-opus-4-1-20250805": {
+		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		contextWindow: 200_000,
+		supportsImages: true,
 		supportsPromptCache: true,
 		inputPrice: 15.0, // $15 per million input tokens
 		outputPrice: 75.0, // $75 per million output tokens
@@ -66,7 +74,6 @@ export const anthropicModels = {
 		maxTokens: 32_000, // Overridden to 8k if `enableReasoningEffort` is false.
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 15.0, // $15 per million input tokens
 		outputPrice: 75.0, // $75 per million output tokens
@@ -78,7 +85,6 @@ export const anthropicModels = {
 		maxTokens: 128_000, // Unlocked by passing `beta` flag to the model. Otherwise, it's 64k.
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens
 		outputPrice: 15.0, // $15 per million output tokens
@@ -91,7 +97,6 @@ export const anthropicModels = {
 		maxTokens: 8192, // Since we already have a `:thinking` virtual model we aren't setting `supportsReasoningBudget: true` here.
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens
 		outputPrice: 15.0, // $15 per million output tokens
@@ -102,7 +107,6 @@ export const anthropicModels = {
 		maxTokens: 8192,
 		contextWindow: 200_000,
 		supportsImages: true,
-		supportsComputerUse: true,
 		supportsPromptCache: true,
 		inputPrice: 3.0, // $3 per million input tokens
 		outputPrice: 15.0, // $15 per million output tokens
@@ -138,6 +142,19 @@ export const anthropicModels = {
 		outputPrice: 1.25,
 		cacheWritesPrice: 0.3,
 		cacheReadsPrice: 0.03,
+	},
+	"claude-haiku-4-5-20251001": {
+		maxTokens: 64_000,
+		contextWindow: 200_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.0,
+		outputPrice: 5.0,
+		cacheWritesPrice: 1.25,
+		cacheReadsPrice: 0.1,
+		supportsReasoningBudget: true,
+		description:
+			"Claude Haiku 4.5 delivers near-frontier intelligence at lightning speeds with extended thinking, vision, and multilingual support.",
 	},
 } as const satisfies Record<string, ModelInfo>
 

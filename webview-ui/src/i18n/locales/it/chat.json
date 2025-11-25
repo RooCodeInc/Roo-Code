@@ -85,24 +85,17 @@
 		"tooltip": "Annulla l'operazione corrente"
 	},
 	"scrollToBottom": "Scorri fino alla fine della chat",
-	"about": "Genera, refactor e debug del codice con l'assistenza dell'IA. Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
-	"onboarding": "Grazie alle più recenti innovazioni nelle capacità di codifica agentica, posso gestire complesse attività di sviluppo software passo dopo passo. Con strumenti che mi permettono di creare e modificare file, esplorare progetti complessi, utilizzare il browser ed eseguire comandi da terminale (dopo la tua autorizzazione), posso aiutarti in modi che vanno oltre il completamento del codice o il supporto tecnico. Posso persino usare MCP per creare nuovi strumenti ed estendere le mie capacità.",
+	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
+	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
+	"onboarding": "La tua lista di attività in questo spazio di lavoro è vuota.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Orchestrazione di Attività",
-			"description": "Dividi le attività in parti più piccole e gestibili."
-		},
-		"stickyModels": {
-			"title": "Modalità persistenti",
-			"description": "Ogni modalità ricorda il tuo ultimo modello utilizzato"
-		},
-		"tools": {
-			"title": "Strumenti",
-			"description": "Consenti all'IA di risolvere i problemi navigando sul Web, eseguendo comandi e altro ancora."
-		},
 		"customizableModes": {
 			"title": "Modalità personalizzabili",
-			"description": "Personalità specializzate con comportamenti propri e modelli assegnati"
+			"description": "Personaggi specializzati che rimangono in tema e portano a termine il compito."
+		},
+		"modelAgnostic": {
+			"title": "Porta il tuo modello",
+			"description": "Usa la tua chiave provider o esegui l'inferenza locale — nessun ricarico, nessun vincolo, nessuna restrizione"
 		}
 	},
 	"selectMode": "Seleziona modalità di interazione",
@@ -151,6 +144,9 @@
 		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",
 		"menu": {
 			"viewDiff": "Visualizza differenze",
+			"more": "Altre opzioni",
+			"viewDiffFromInit": "Visualizza tutte le modifiche",
+			"viewDiffWithCurrent": "Visualizza le modifiche da questo checkpoint",
 			"restore": "Ripristina checkpoint",
 			"restoreFiles": "Ripristina file",
 			"restoreFilesDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto.",
@@ -264,6 +260,7 @@
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"triggerLabelOff": "Approvazione automatica disattivata",
+		"triggerLabelOffShort": "Disattivata",
 		"triggerLabel_zero": "0 approvati automaticamente",
 		"triggerLabel_one": "1 approvato automaticamente",
 		"triggerLabel_other": "{{count}} approvati automaticamente",
@@ -293,9 +290,22 @@
 			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
+		"release": {
+			"heading": "Novità in questa versione:",
+			"browserUse": "Browser Use 2.0 migliora l'esperienza di navigazione in chat con sessioni persistenti, feedback più chiaro, un pannello browser dedicato e descrizioni di azioni più naturali",
+			"cloudPaid": "Il provider Roo Code Cloud offre ora modelli a pagamento: acquista crediti e usali sia per gli agenti cloud che per l'inferenza"
+		},
+		"cloudAgents": {
+			"heading": "Novità nel Cloud:",
+			"specialized": "Presentazione di <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
+			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
+			"tryButton": "Prova gli Agenti Cloud"
+		},
+		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>",
 		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sessione del browser",
 		"rooWantsToUse": "Roo vuole utilizzare il browser",
 		"consoleLogs": "Log della console",
 		"noNewLogs": "(Nessun nuovo log)",
@@ -312,8 +322,10 @@
 			"launch": "Avvia browser su {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Digita \"{{text}}\"",
+			"press": "Premi {{key}}",
 			"scrollDown": "Scorri verso il basso",
 			"scrollUp": "Scorri verso l'alto",
+			"hover": "Passa il mouse ({{coordinate}})",
 			"close": "Chiudi browser"
 		}
 	},
@@ -412,5 +424,12 @@
 	"slashCommand": {
 		"wantsToRun": "Roo vuole eseguire un comando slash",
 		"didRun": "Roo ha eseguito un comando slash"
+	},
+	"todo": {
+		"partial": "{{completed}} di {{total}} cose da fare completate",
+		"complete": "{{total}} cose da fare completate",
+		"updated": "Aggiornata la lista delle cose da fare",
+		"completed": "Completato",
+		"started": "Iniziato"
 	}
 }

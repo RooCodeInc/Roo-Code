@@ -45,7 +45,8 @@
 		"invalidModel": "Invalid model. Please check your model configuration.",
 		"invalidResponse": "Invalid response from embedder service. Please check your configuration.",
 		"apiKeyRequired": "API key is required for this embedder",
-		"baseUrlRequired": "Base URL is required for this embedder"
+		"baseUrlRequired": "Base URL is required for this embedder",
+		"rooAuthenticationRequired": "Roo Code Cloud authentication required. Please sign in to use the Roo embeddings provider."
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "OpenAI configuration missing for embedder creation",
@@ -53,6 +54,7 @@
 		"openAiCompatibleConfigMissing": "OpenAI Compatible configuration missing for embedder creation",
 		"geminiConfigMissing": "Gemini configuration missing for embedder creation",
 		"mistralConfigMissing": "Mistral configuration missing for embedder creation",
+		"openRouterConfigMissing": "OpenRouter configuration missing for embedder creation",
 		"vercelAiGatewayConfigMissing": "Vercel AI Gateway configuration missing for embedder creation",
 		"bedrockConfigMissing": "AWS Bedrock configuration missing for embedder creation",
 		"invalidEmbedderType": "Invalid embedder type configured: {{embedderProvider}}",

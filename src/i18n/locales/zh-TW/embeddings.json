@@ -39,7 +39,8 @@
 		"invalidModel": "無效的模型。請檢查您的模型組態。",
 		"invalidResponse": "內嵌服務回應無效。請檢查您的組態。",
 		"apiKeyRequired": "此嵌入器需要 API 金鑰",
-		"baseUrlRequired": "此嵌入器需要基礎 URL"
+		"baseUrlRequired": "此嵌入器需要基礎 URL",
+		"rooAuthenticationRequired": "需要 Roo Code Cloud 身份驗證。請登入以使用 Roo 嵌入提供商。"
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "建立嵌入器缺少 OpenAI 設定",
@@ -47,6 +48,7 @@
 		"openAiCompatibleConfigMissing": "建立嵌入器缺少 OpenAI 相容設定",
 		"geminiConfigMissing": "建立嵌入器缺少 Gemini 設定",
 		"mistralConfigMissing": "建立嵌入器時缺少 Mistral 設定",
+		"openRouterConfigMissing": "建立嵌入器時缺少 OpenRouter 設定",
 		"vercelAiGatewayConfigMissing": "建立嵌入器時缺少 Vercel AI Gateway 設定",
 		"invalidEmbedderType": "設定的嵌入器類型無效：{{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "無法確定提供商 '{{provider}}' 的模型 '{{modelId}}' 的向量維度。請確保在 OpenAI 相容提供商設定中正確設定了「嵌入維度」。",

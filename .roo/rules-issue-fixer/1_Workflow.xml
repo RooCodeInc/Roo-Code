@@ -17,7 +17,7 @@
       Then retrieve the issue:
       
       <execute_command>
-      <command>gh issue view [issue-number] --repo [owner]/[repo] --json number,title,body,state,labels,assignees,milestone,createdAt,updatedAt,closedAt,author</command>
+      <command>gh api repos/[owner]/[repo]/issues/[issue-number] --jq '{number,title,body,state,labels,assignees,milestone,createdAt:.created_at,updatedAt:.updated_at,closedAt:.closed_at,author:.user.login}'</command>
       </execute_command>
       
       If the command fails with an authentication error (e.g., "gh: Not authenticated" or "HTTP 401"), ask the user to authenticate:
@@ -49,7 +49,7 @@
       - Any decisions or changes to requirements
       
       <execute_command>
-      <command>gh issue view [issue number] --repo [owner]/[repo] --comments</command>
+      <command>gh api repos/[owner]/[repo]/issues/[issue-number]/comments --paginate --jq '.[].body'</command>
       </execute_command>
       
       Also check for:
@@ -191,7 +191,6 @@
       Use appropriate tools:
       - apply_diff for targeted changes
       - write_to_file for new files
-      - search_and_replace for systematic updates
       
       After each significant change, run relevant tests:
       - execute_command to run test suites

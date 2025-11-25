@@ -1,7 +1,6 @@
 import React, { useState } from "react"
 import { Trans } from "react-i18next"
 import {
-	VSCodeButton,
 	VSCodeCheckbox,
 	VSCodeLink,
 	VSCodePanels,
@@ -371,8 +370,8 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 								{server.instructions && (
 									<VSCodePanelTab id="instructions">{t("mcp:instructions")}</VSCodePanelTab>
 								)}
-								<VSCodePanelTab id="errors">
-									{t("mcp:tabs.errors")} ({server.errorHistory?.length || 0})
+								<VSCodePanelTab id="logs">
+									{t("mcp:tabs.logs")} ({server.errorHistory?.length || 0})
 								</VSCodePanelTab>
 
 								<VSCodePanelView id="tools-view">
@@ -439,7 +438,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 									</VSCodePanelView>
 								)}
 
-								<VSCodePanelView id="errors-view">
+								<VSCodePanelView id="logs-view">
 									{server.errorHistory && server.errorHistory.length > 0 ? (
 										<div
 											style={{
@@ -457,7 +456,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 									) : (
 										<div
 											style={{ padding: "10px 0", color: "var(--vscode-descriptionForeground)" }}>
-											{t("mcp:emptyState.noErrors")}
+											{t("mcp:emptyState.noLogs")}
 										</div>
 									)}
 								</VSCodePanelView>
@@ -529,15 +528,15 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 										</React.Fragment>
 									))}
 							</div>
-							<VSCodeButton
-								appearance="secondary"
+							<Button
+								variant="secondary"
 								onClick={handleRestart}
 								disabled={server.status === "connecting"}
 								style={{ width: "calc(100% - 20px)", margin: "0 10px 10px 10px" }}>
 								{server.status === "connecting"
 									? t("mcp:serverStatus.retrying")
 									: t("mcp:serverStatus.retryConnection")}
-							</VSCodeButton>
+							</Button>
 						</div>
 					)}
 
@@ -554,7 +553,7 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 						<Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
 							{t("mcp:deleteDialog.cancel")}
 						</Button>
-						<Button variant="default" onClick={handleDelete}>
+						<Button variant="primary" onClick={handleDelete}>
 							{t("mcp:deleteDialog.delete")}
 						</Button>
 					</DialogFooter>

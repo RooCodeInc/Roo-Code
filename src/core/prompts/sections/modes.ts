@@ -1,14 +1,16 @@
-import * as path from "path"
 import * as vscode from "vscode"
-import { promises as fs } from "fs"
 
 import type { ModeConfig } from "@roo-code/types"
 
 import { getAllModesWithPrompts } from "../../../shared/modes"
+import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
 
-export async function getModesSection(context: vscode.ExtensionContext): Promise<string> {
-	const settingsDir = path.join(context.globalStorageUri.fsPath, "settings")
-	await fs.mkdir(settingsDir, { recursive: true })
+export async function getModesSection(
+	context: vscode.ExtensionContext,
+	skipXmlExamples: boolean = false,
+): Promise<string> {
+	// Make sure path gets created
+	await ensureSettingsDirectoryExists(context)
 
 	// Get all modes with their overrides from extension state
 	const allModes = await getAllModesWithPrompts(context)
@@ -32,12 +34,18 @@ ${allModes
 	})
 	.join("\n")}`
 
-	modesContent += `
+	if (!skipXmlExamples) {
+		modesContent += `
 If the user asks you to create or edit a new mode for this project, you should read the instructions by using the fetch_instructions tool, like this:
 <fetch_instructions>
 <task>create_mode</task>
 </fetch_instructions>
 `
+	} else {
+		modesContent += `
+If the user asks you to create or edit a new mode for this project, you should read the instructions by using the fetch_instructions tool.
+`
+	}
 
 	return modesContent
 }

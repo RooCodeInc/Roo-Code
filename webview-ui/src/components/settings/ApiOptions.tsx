@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react"
 import { convertHeadersToObject } from "./utils/headers"
 import { useDebounce } from "react-use"
-import { VSCodeLink, VSCodeButton } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { ExternalLinkIcon } from "@radix-ui/react-icons"
 
 import {
@@ -26,6 +26,7 @@ import {
 	groqDefaultModelId,
 	cerebrasDefaultModelId,
 	chutesDefaultModelId,
+	basetenDefaultModelId,
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
 	sambaNovaDefaultModelId,
@@ -37,6 +38,9 @@ import {
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
+	minimaxDefaultModelId,
+	type ToolProtocol,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -64,6 +68,7 @@ import {
 
 import {
 	Anthropic,
+	Baseten,
 	Bedrock,
 	Cerebras,
 	Chutes,
@@ -85,6 +90,7 @@ import {
 	OpenRouter,
 	QwenCode,
 	Requesty,
+	Roo,
 	SambaNova,
 	Unbound,
 	Vertex,
@@ -95,6 +101,7 @@ import {
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
+	MiniMax,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -102,6 +109,7 @@ import { inputEventTransform, noTransform } from "./transforms"
 import { ModelInfoView } from "./ModelInfoView"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
+import { SimpleThinkingBudget } from "./SimpleThinkingBudget"
 import { Verbosity } from "./Verbosity"
 import { DiffSettingsControl } from "./DiffSettingsControl"
 import { TodoListSettingsControl } from "./TodoListSettingsControl"
@@ -109,6 +117,7 @@ import { TemperatureControl } from "./TemperatureControl"
 import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
 import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl"
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
+import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
 import { buildDocLink } from "@src/utils/docLinks"
 
 export interface ApiOptionsProps {
@@ -188,13 +197,17 @@ const ApiOptions = ({
 
 	const { data: routerModels, refetch: refetchRouterModels } = useRouterModels()
 
-	const { data: openRouterModelProviders } = useOpenRouterModelProviders(apiConfiguration?.openRouterModelId, {
-		enabled:
-			!!apiConfiguration?.openRouterModelId &&
-			routerModels?.openrouter &&
-			Object.keys(routerModels.openrouter).length > 1 &&
-			apiConfiguration.openRouterModelId in routerModels.openrouter,
-	})
+	const { data: openRouterModelProviders } = useOpenRouterModelProviders(
+		apiConfiguration?.openRouterModelId,
+		apiConfiguration?.openRouterBaseUrl,
+		{
+			enabled:
+				!!apiConfiguration?.openRouterModelId &&
+				routerModels?.openrouter &&
+				Object.keys(routerModels.openrouter).length > 1 &&
+				apiConfiguration.openRouterModelId in routerModels.openrouter,
+		},
+	)
 
 	// Update `apiModelId` whenever `selectedModelId` changes.
 	useEffect(() => {
@@ -228,7 +241,11 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestLmStudioModels" })
 			} else if (selectedProvider === "vscode-lm") {
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
-			} else if (selectedProvider === "litellm" || selectedProvider === "deepinfra") {
+			} else if (
+				selectedProvider === "litellm" ||
+				selectedProvider === "deepinfra" ||
+				selectedProvider === "roo"
+			) {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}
 		},
@@ -259,6 +276,7 @@ const ApiOptions = ({
 
 	const selectedProviderModels = useMemo(() => {
 		const models = MODELS_BY_PROVIDER[selectedProvider]
+
 		if (!models) return []
 
 		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
@@ -335,17 +353,19 @@ const ApiOptions = ({
 				deepseek: { field: "apiModelId", default: deepSeekDefaultModelId },
 				doubao: { field: "apiModelId", default: doubaoDefaultModelId },
 				moonshot: { field: "apiModelId", default: moonshotDefaultModelId },
+				minimax: { field: "apiModelId", default: minimaxDefaultModelId },
 				mistral: { field: "apiModelId", default: mistralDefaultModelId },
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
 				groq: { field: "apiModelId", default: groqDefaultModelId },
 				chutes: { field: "apiModelId", default: chutesDefaultModelId },
+				baseten: { field: "apiModelId", default: basetenDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
 				zai: {
 					field: "apiModelId",
 					default:
-						apiConfiguration.zaiApiLine === "china"
+						apiConfiguration.zaiApiLine === "china_coding"
 							? mainlandZAiDefaultModelId
 							: internationalZAiDefaultModelId,
 				},
@@ -396,6 +416,16 @@ const ApiOptions = ({
 		}
 	}, [selectedProvider])
 
+	// Calculate the default protocol that would be used if toolProtocol is not set
+	// Mirrors the simplified logic in resolveToolProtocol.ts:
+	// 1. User preference (toolProtocol) - handled by the select value binding
+	// 2. Model default - use if available
+	// 3. XML fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
+
+	// Show the tool protocol selector when model supports native tools
+	const showToolProtocolSelector = selectedModelInfo?.supportsNativeTools === true
+
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list
@@ -424,23 +454,38 @@ const ApiOptions = ({
 			return true
 		})
 
-		return providersWithModels.map(({ value, label }) => ({
+		const options = providersWithModels.map(({ value, label }) => ({
 			value,
 			label,
 		}))
-	}, [organizationAllowList, apiConfiguration.apiProvider])
+
+		// Pin "roo" to the top if not on welcome screen
+		if (!fromWelcomeView) {
+			const rooIndex = options.findIndex((opt) => opt.value === "roo")
+			if (rooIndex > 0) {
+				const [rooOption] = options.splice(rooIndex, 1)
+				options.unshift(rooOption)
+			}
+		}
+
+		return options
+	}, [organizationAllowList, apiConfiguration.apiProvider, fromWelcomeView])
 
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="flex flex-col gap-1 relative">
 				<div className="flex justify-between items-center">
 					<label className="block font-medium mb-1">{t("settings:providers.apiProvider")}</label>
-					{docs && (
-						<div className="text-xs text-vscode-descriptionForeground">
-							<VSCodeLink href={docs.url} className="hover:text-vscode-foreground" target="_blank">
-								{t("settings:providers.providerDocumentation", { provider: docs.name })}
-							</VSCodeLink>
-						</div>
+					{selectedProvider === "roo" && cloudIsAuthenticated ? (
+						<RooBalanceDisplay />
+					) : (
+						docs && (
+							<div className="text-xs text-vscode-descriptionForeground">
+								<VSCodeLink href={docs.url} className="hover:text-vscode-foreground" target="_blank">
+									{t("settings:providers.providerDocumentation", { provider: docs.name })}
+								</VSCodeLink>
+							</div>
+						)
 					)}
 				</div>
 				<SearchableSelect
@@ -534,6 +579,10 @@ const ApiOptions = ({
 				<Mistral apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
+			{selectedProvider === "baseten" && (
+				<Baseten apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			)}
+
 			{selectedProvider === "bedrock" && (
 				<Bedrock
 					apiConfiguration={apiConfiguration}
@@ -587,6 +636,10 @@ const ApiOptions = ({
 				<Moonshot apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
+			{selectedProvider === "minimax" && (
+				<MiniMax apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			)}
+
 			{selectedProvider === "vscode-lm" && (
 				<VSCodeLM apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -612,7 +665,13 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "chutes" && (
-				<Chutes apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Chutes
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
 			)}
 
 			{selectedProvider === "litellm" && (
@@ -667,22 +726,14 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "roo" && (
-				<div className="flex flex-col gap-3">
-					{cloudIsAuthenticated ? (
-						<div className="text-sm text-vscode-descriptionForeground">
-							{t("settings:providers.roo.authenticatedMessage")}
-						</div>
-					) : (
-						<div className="flex flex-col gap-2">
-							<VSCodeButton
-								appearance="primary"
-								onClick={() => vscode.postMessage({ type: "rooCloudSignIn" })}
-								className="w-fit">
-								{t("settings:providers.roo.connectButton")}
-							</VSCodeButton>
-						</div>
-					)}
-				</div>
+				<Roo
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					cloudIsAuthenticated={cloudIsAuthenticated}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
 			)}
 
 			{selectedProvider === "featherless" && (
@@ -750,12 +801,21 @@ const ApiOptions = ({
 				</>
 			)}
 
-			<ThinkingBudget
-				key={`${selectedProvider}-${selectedModelId}`}
-				apiConfiguration={apiConfiguration}
-				setApiConfigurationField={setApiConfigurationField}
-				modelInfo={selectedModelInfo}
-			/>
+			{selectedProvider === "roo" ? (
+				<SimpleThinkingBudget
+					key={`${selectedProvider}-${selectedModelId}`}
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					modelInfo={selectedModelInfo}
+				/>
+			) : (
+				<ThinkingBudget
+					key={`${selectedProvider}-${selectedModelId}`}
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					modelInfo={selectedModelInfo}
+				/>
+			)}
 
 			{/* Gate Verbosity UI by capability flag */}
 			{selectedModelInfo?.supportsVerbosity && (
@@ -787,6 +847,7 @@ const ApiOptions = ({
 								value={apiConfiguration.modelTemperature}
 								onChange={handleInputChange("modelTemperature", noTransform)}
 								maxValue={2}
+								defaultValue={selectedModelInfo?.defaultTemperature}
 							/>
 						)}
 						<RateLimitSecondsControl
@@ -843,6 +904,39 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
+						{showToolProtocolSelector && (
+							<div>
+								<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+								<Select
+									value={apiConfiguration.toolProtocol || "default"}
+									onValueChange={(value) => {
+										const newValue = value === "default" ? undefined : (value as ToolProtocol)
+										setApiConfigurationField("toolProtocol", newValue)
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder={t("settings:common.select")} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="default">
+											{t("settings:toolProtocol.default")} (
+											{defaultProtocol === TOOL_PROTOCOL.NATIVE
+												? t("settings:toolProtocol.native")
+												: t("settings:toolProtocol.xml")}
+											)
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.XML}>
+											{t("settings:toolProtocol.xml")}
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.NATIVE}>
+											{t("settings:toolProtocol.native")}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<div className="text-sm text-vscode-descriptionForeground mt-1">
+									{t("settings:toolProtocol.description")}
+								</div>
+							</div>
+						)}
 					</CollapsibleContent>
 				</Collapsible>
 			)}

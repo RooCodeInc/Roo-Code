@@ -21,7 +21,7 @@ export function convertModelNameForVertex(modelName: string): string {
 
 // Claude Code
 export type ClaudeCodeModelId = keyof typeof claudeCodeModels
-export const claudeCodeDefaultModelId: ClaudeCodeModelId = "claude-sonnet-4-20250514"
+export const claudeCodeDefaultModelId: ClaudeCodeModelId = "claude-sonnet-4-5"
 export const CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS = 16000
 
 /**
@@ -65,6 +65,14 @@ export const claudeCodeModels = {
 		supportsReasoningBudget: false,
 		requiredReasoningBudget: false,
 	},
+	"claude-opus-4-5-20251101": {
+		...anthropicModels["claude-opus-4-5-20251101"],
+		supportsImages: false,
+		supportsPromptCache: true, // Claude Code does report cache tokens
+		supportsReasoningEffort: false,
+		supportsReasoningBudget: false,
+		requiredReasoningBudget: false,
+	},
 	"claude-opus-4-1-20250805": {
 		...anthropicModels["claude-opus-4-1-20250805"],
 		supportsImages: false,
@@ -99,6 +107,14 @@ export const claudeCodeModels = {
 	},
 	"claude-3-5-haiku-20241022": {
 		...anthropicModels["claude-3-5-haiku-20241022"],
+		supportsImages: false,
+		supportsPromptCache: true, // Claude Code does report cache tokens
+		supportsReasoningEffort: false,
+		supportsReasoningBudget: false,
+		requiredReasoningBudget: false,
+	},
+	"claude-haiku-4-5-20251001": {
+		...anthropicModels["claude-haiku-4-5-20251001"],
 		supportsImages: false,
 		supportsPromptCache: true, // Claude Code does report cache tokens
 		supportsReasoningEffort: false,

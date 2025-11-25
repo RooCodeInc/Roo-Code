@@ -39,7 +39,8 @@
 		"invalidModel": "無効なモデルです。モデル構成を確認してください。",
 		"invalidResponse": "エンベッダーサービスからの無効な応答です。設定を確認してください。",
 		"apiKeyRequired": "このエンベッダーにはAPIキーが必要です。",
-		"baseUrlRequired": "このエンベッダーにはベースURLが必要です"
+		"baseUrlRequired": "このエンベッダーにはベースURLが必要です",
+		"rooAuthenticationRequired": "Roo Code Cloud認証が必要です。Roo埋め込みプロバイダーを使用するにはサインインしてください。"
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "エンベッダー作成のためのOpenAI設定がありません",
@@ -47,6 +48,7 @@
 		"openAiCompatibleConfigMissing": "エンベッダー作成のためのOpenAI互換設定がありません",
 		"geminiConfigMissing": "エンベッダー作成のためのGemini設定がありません",
 		"mistralConfigMissing": "エンベッダー作成のためのMistral設定がありません",
+		"openRouterConfigMissing": "エンベッダー作成のためのOpenRouter設定がありません",
 		"vercelAiGatewayConfigMissing": "エンベッダー作成のためのVercel AI Gateway設定がありません",
 		"invalidEmbedderType": "無効なエンベッダータイプが設定されています: {{embedderProvider}}",
 		"vectorDimensionNotDeterminedOpenAiCompatible": "プロバイダー '{{provider}}' のモデル '{{modelId}}' の埋め込み次元を決定できませんでした。OpenAI互換プロバイダー設定で「埋め込み次元」が正しく設定されていることを確認してください。",

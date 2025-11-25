@@ -6,6 +6,8 @@ import { GeminiEmbedder } from "./embedders/gemini"
 import { MistralEmbedder } from "./embedders/mistral"
 import { VercelAiGatewayEmbedder } from "./embedders/vercel-ai-gateway"
 import { BedrockEmbedder } from "./embedders/bedrock"
+import { OpenRouterEmbedder } from "./embedders/openrouter"
+import { RooEmbedder } from "./embedders/roo"
 import { EmbedderProvider, getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
 import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
@@ -86,6 +88,14 @@ export class CodeIndexServiceFactory {
 				throw new Error(t("embeddings:serviceFactory.bedrockConfigMissing"))
 			}
 			return new BedrockEmbedder(config.bedrockOptions.region, config.bedrockOptions.profile, config.modelId)
+		} else if (provider === "openrouter") {
+			if (!config.openRouterOptions?.apiKey) {
+				throw new Error(t("embeddings:serviceFactory.openRouterConfigMissing"))
+			}
+			return new OpenRouterEmbedder(config.openRouterOptions.apiKey, config.modelId)
+		} else if (provider === "roo") {
+			// Roo Code Cloud uses session token from CloudService, no API key required
+			return new RooEmbedder(config.modelId)
 		}
 
 		throw new Error(

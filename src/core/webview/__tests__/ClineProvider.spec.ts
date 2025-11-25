@@ -1,10 +1,15 @@
-// npx vitest core/webview/__tests__/ClineProvider.spec.ts
+// pnpm --filter roo-cline test core/webview/__tests__/ClineProvider.spec.ts
 
 import Anthropic from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 import axios from "axios"
 
-import { type ProviderSettingsEntry, type ClineMessage, ORGANIZATION_ALLOW_ALL } from "@roo-code/types"
+import {
+	type ProviderSettingsEntry,
+	type ClineMessage,
+	ORGANIZATION_ALLOW_ALL,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+} from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ExtensionMessage, ExtensionState } from "../../../shared/ExtensionMessage"
@@ -291,7 +296,6 @@ vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn().mockReturnValue({
 		getModel: vi.fn().mockReturnValue({
 			id: "claude-3-sonnet",
-			info: { supportsComputerUse: false },
 		}),
 	}),
 }))
@@ -482,7 +486,7 @@ describe("ClineProvider", () => {
 
 		// Verify Content Security Policy contains the necessary PostHog domains
 		expect(mockWebviewView.webview.html).toContain(
-			"connect-src vscode-webview://test-csp-source https://openrouter.ai https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com",
+			"connect-src vscode-webview://test-csp-source https://openrouter.ai https://api.requesty.ai https://ph.roocode.com",
 		)
 
 		// Extract the script-src directive section and verify required security elements
@@ -499,6 +503,7 @@ describe("ClineProvider", () => {
 
 		const mockState: ExtensionState = {
 			version: "1.0.0",
+			isBrowserSessionActive: false,
 			clineMessages: [],
 			taskHistory: [],
 			shouldShowAnnouncement: false,
@@ -557,6 +562,7 @@ describe("ClineProvider", () => {
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
+			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 		}
 
 		const message: ExtensionMessage = {
@@ -781,7 +787,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "writeDelayMs", value: 2000 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { writeDelayMs: 2000 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("writeDelayMs", 2000)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("writeDelayMs", 2000)
@@ -795,24 +801,24 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Simulate setting sound to enabled
-		await messageHandler({ type: "soundEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { soundEnabled: true } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("soundEnabled", true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("soundEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting sound to disabled
-		await messageHandler({ type: "soundEnabled", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { soundEnabled: false } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("soundEnabled", false)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting tts to enabled
-		await messageHandler({ type: "ttsEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { ttsEnabled: true } })
 		expect(setTtsEnabled).toHaveBeenCalledWith(true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("ttsEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Simulate setting tts to disabled
-		await messageHandler({ type: "ttsEnabled", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { ttsEnabled: false } })
 		expect(setTtsEnabled).toHaveBeenCalledWith(false)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("ttsEnabled", false)
 		expect(mockPostMessage).toHaveBeenCalled()
@@ -851,7 +857,7 @@ describe("ClineProvider", () => {
 	test("handles autoCondenseContext message", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-		await messageHandler({ type: "autoCondenseContext", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { autoCondenseContext: false } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoCondenseContext", false)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoCondenseContext", false)
 		expect(mockPostMessage).toHaveBeenCalled()
@@ -871,7 +877,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "autoCondenseContextPercent", value: 75 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { autoCondenseContextPercent: 75 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("autoCondenseContextPercent", 75)
@@ -979,7 +985,7 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Test browserToolEnabled
-		await messageHandler({ type: "browserToolEnabled", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { browserToolEnabled: true } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("browserToolEnabled", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
@@ -997,13 +1003,13 @@ describe("ClineProvider", () => {
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
 
 		// Test showRooIgnoredFiles with true
-		await messageHandler({ type: "showRooIgnoredFiles", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { showRooIgnoredFiles: true } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("showRooIgnoredFiles", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(true)
 
 		// Test showRooIgnoredFiles with false
-		await messageHandler({ type: "showRooIgnoredFiles", bool: false })
+		await messageHandler({ type: "updateSettings", updatedSettings: { showRooIgnoredFiles: false } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("showRooIgnoredFiles", false)
 		expect(mockPostMessage).toHaveBeenCalled()
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
@@ -1014,13 +1020,13 @@ describe("ClineProvider", () => {
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
 		// Test alwaysApproveResubmit
-		await messageHandler({ type: "alwaysApproveResubmit", bool: true })
+		await messageHandler({ type: "updateSettings", updatedSettings: { alwaysApproveResubmit: true } })
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("alwaysApproveResubmit", true)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("alwaysApproveResubmit", true)
 		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Test requestDelaySeconds
-		await messageHandler({ type: "requestDelaySeconds", value: 10 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { requestDelaySeconds: 10 } })
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("requestDelaySeconds", 10)
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
@@ -1087,7 +1093,7 @@ describe("ClineProvider", () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
-		await messageHandler({ type: "maxWorkspaceFiles", value: 300 })
+		await messageHandler({ type: "updateSettings", updatedSettings: { maxWorkspaceFiles: 300 } })
 
 		expect(updateGlobalStateSpy).toHaveBeenCalledWith("maxWorkspaceFiles", 300)
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("maxWorkspaceFiles", 300)
@@ -2684,11 +2690,19 @@ describe("ClineProvider - Router Models", () => {
 		expect(getModels).toHaveBeenCalledWith({ provider: "glama" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
+		expect(getModels).toHaveBeenCalledWith({ provider: "deepinfra" })
+		expect(getModels).toHaveBeenCalledWith(
+			expect.objectContaining({
+				provider: "roo",
+				baseUrl: expect.any(String),
+			}),
+		)
 		expect(getModels).toHaveBeenCalledWith({
 			provider: "litellm",
 			apiKey: "litellm-key",
 			baseUrl: "http://localhost:4000",
 		})
+		expect(getModels).toHaveBeenCalledWith({ provider: "chutes" })
 
 		// Verify response was sent
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2699,6 +2713,8 @@ describe("ClineProvider - Router Models", () => {
 				requesty: mockModels,
 				glama: mockModels,
 				unbound: mockModels,
+				roo: mockModels,
+				chutes: mockModels,
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
@@ -2706,6 +2722,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 
@@ -2737,6 +2754,8 @@ describe("ClineProvider - Router Models", () => {
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound fail
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
 			.mockResolvedValueOnce(mockModels) // deepinfra success
+			.mockResolvedValueOnce(mockModels) // roo success
+			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2750,6 +2769,8 @@ describe("ClineProvider - Router Models", () => {
 				requesty: {},
 				glama: mockModels,
 				unbound: {},
+				roo: mockModels,
+				chutes: {},
 				ollama: {},
 				lmstudio: {},
 				litellm: {},
@@ -2757,6 +2778,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 
 		// Verify error messages were sent for failed providers
@@ -2779,6 +2801,13 @@ describe("ClineProvider - Router Models", () => {
 			success: false,
 			error: "Unbound API error",
 			values: { provider: "unbound" },
+		})
+
+		expect(mockPostMessage).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Chutes API error",
+			values: { provider: "chutes" },
 		})
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2864,6 +2893,8 @@ describe("ClineProvider - Router Models", () => {
 				requesty: mockModels,
 				glama: mockModels,
 				unbound: mockModels,
+				roo: mockModels,
+				chutes: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -2871,6 +2902,7 @@ describe("ClineProvider - Router Models", () => {
 				huggingface: {},
 				"io-intelligence": {},
 			},
+			values: undefined,
 		})
 	})
 

@@ -85,24 +85,17 @@
 		"tooltip": "Aktuelle Operation abbrechen"
 	},
 	"scrollToBottom": "Zum Chat-Ende scrollen",
-	"about": "Generiere, überarbeite und debugge Code mit KI-Unterstützung. Weitere Informationen findest du in unserer <DocsLink>Dokumentation</DocsLink>.",
-	"onboarding": "<strong>Deine Aufgabenliste in diesem Arbeitsbereich ist leer.</strong> Beginne mit der Eingabe einer Aufgabe unten. Du bist dir nicht sicher, wie du anfangen sollst? Lies mehr darüber, was Roo für dich tun kann, in <DocsLink>den Dokumenten</DocsLink>.",
+	"about": "Roo Code ist ein ganzes KI-Entwicklerteam in deinem Editor.",
+	"docs": "Schau in unsere <DocsLink>Dokumentation</DocsLink>, um mehr zu erfahren.",
+	"onboarding": "Deine Aufgabenliste in diesem Arbeitsbereich ist leer.",
 	"rooTips": {
-		"boomerangTasks": {
-			"title": "Aufgaben-Orchestrierung",
-			"description": "Teile Aufgaben in kleinere, überschaubare Teile auf."
-		},
-		"stickyModels": {
-			"title": "Sticky Modi",
-			"description": "Jeder Modus merkt sich dein zuletzt verwendetes Modell"
-		},
-		"tools": {
-			"title": "Tools",
-			"description": "Erlaube der KI, Probleme durch Surfen im Web, Ausführen von Befehlen und mehr zu lösen."
-		},
 		"customizableModes": {
 			"title": "Anpassbare Modi",
-			"description": "Spezialisierte Personas mit eigenem Verhalten und zugewiesenen Modellen"
+			"description": "Spezialisierte Personas, die bei der Sache bleiben und liefern."
+		},
+		"modelAgnostic": {
+			"title": "Bring dein eigenes Modell mit",
+			"description": "Verwende deinen eigenen Anbieter-Schlüssel oder führe sogar lokale Inferenz aus – kein Aufschlag, keine Bindung, keine Einschränkungen"
 		}
 	},
 	"selectMode": "Interaktionsmodus auswählen",
@@ -148,6 +141,9 @@
 		"initializingWarning": "Checkpoint wird noch initialisiert... Falls dies zu lange dauert, kannst du Checkpoints in den <settingsLink>Einstellungen</settingsLink> deaktivieren und deine Aufgabe neu starten.",
 		"menu": {
 			"viewDiff": "Unterschiede anzeigen",
+			"more": "Weitere Optionen",
+			"viewDiffFromInit": "Alle Änderungen anzeigen",
+			"viewDiffWithCurrent": "Änderungen seit diesem Checkpoint anzeigen",
 			"restore": "Checkpoint wiederherstellen",
 			"restoreFiles": "Dateien wiederherstellen",
 			"restoreFilesDescription": "Stellt die Dateien deines Projekts auf einen Snapshot zurück, der an diesem Punkt erstellt wurde.",
@@ -264,6 +260,7 @@
 		"toggleAriaLabel": "Automatische Genehmigung umschalten",
 		"disabledAriaLabel": "Automatische Genehmigung deaktiviert - wähle zuerst Optionen aus",
 		"triggerLabelOff": "Automatische Genehmigung aus",
+		"triggerLabelOffShort": "Aus",
 		"triggerLabel_zero": "0 automatisch genehmigt",
 		"triggerLabel_one": "1 automatisch genehmigt",
 		"triggerLabel_other": "{{count}} automatisch genehmigt",
@@ -293,9 +290,22 @@
 			"selectModel": "Wähle <code>roo/code-supernova</code> vom Roo Code Cloud-Provider in den Einstellungen aus, um zu beginnen.",
 			"goToSettingsButton": "Zu den Einstellungen"
 		},
+		"release": {
+			"heading": "Neu in dieser Version:",
+			"browserUse": "Browser Use 2.0 verbessert das In-Chat-Browsing-Erlebnis mit persistenten Sitzungen, klareren Rückmeldungen, einem dedizierten Browser-Panel und natürlicheren Aktionsbeschreibungen",
+			"cloudPaid": "Der Roo Code Cloud-Provider bietet jetzt bezahlte Modelle: Kaufe Credits und nutze sie sowohl für Cloud-Agenten als auch für Inferenz"
+		},
+		"cloudAgents": {
+			"heading": "Neu in der Cloud:",
+			"specialized": "Wir stellen <bold>Explainer</bold>, <bold>Planner</bold> und <bold>Coder</bold> vor - drei spezialisierte Cloud-Agenten zur Verbesserung deiner Workflows.",
+			"description": "Die Agenten arbeiten zusammen in der Cloud und können vom Web oder über Slack ausgelöst werden.",
+			"tryButton": "Probiere Cloud-Agenten aus"
+		},
+		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>",
 		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Browser-Sitzung",
 		"rooWantsToUse": "Roo möchte den Browser verwenden",
 		"consoleLogs": "Konsolenprotokolle",
 		"noNewLogs": "(Keine neuen Protokolle)",
@@ -312,8 +322,10 @@
 			"launch": "Browser starten auf {{url}}",
 			"click": "Klicken ({{coordinate}})",
 			"type": "Eingeben \"{{text}}\"",
+			"press": "{{key}} drücken",
 			"scrollDown": "Nach unten scrollen",
 			"scrollUp": "Nach oben scrollen",
+			"hover": "Hover ({{coordinate}})",
 			"close": "Browser schließen"
 		}
 	},
@@ -412,5 +424,12 @@
 	"slashCommand": {
 		"wantsToRun": "Roo möchte einen Slash-Befehl ausführen",
 		"didRun": "Roo hat einen Slash-Befehl ausgeführt"
+	},
+	"todo": {
+		"partial": "{{completed}} von {{total}} To-Dos erledigt",
+		"complete": "{{total}} To-Dos erledigt",
+		"updated": "Die To-Do-Liste wurde aktualisiert",
+		"completed": "Abgeschlossen",
+		"started": "Gestartet"
 	}
 }

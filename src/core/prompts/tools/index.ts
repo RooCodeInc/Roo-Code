@@ -14,7 +14,6 @@ import { getWriteToFileDescription } from "./write-to-file"
 import { getSearchFilesDescription } from "./search-files"
 import { getListFilesDescription } from "./list-files"
 import { getInsertContentDescription } from "./insert-content"
-import { getSearchAndReplaceDescription } from "./search-and-replace"
 import { getListCodeDefinitionNamesDescription } from "./list-code-definition-names"
 import { getBrowserActionDescription } from "./browser-action"
 import { getAskFollowupQuestionDescription } from "./ask-followup-question"
@@ -54,7 +53,6 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	switch_mode: () => getSwitchModeDescription(),
 	new_task: (args) => getNewTaskDescription(args),
 	insert_content: (args) => getInsertContentDescription(args),
-	search_and_replace: (args) => getSearchAndReplaceDescription(args),
 	apply_diff: (args) =>
 		args.diffStrategy ? args.diffStrategy.getToolDescription({ cwd: args.cwd, toolOptions: args.toolOptions }) : "",
 	update_todo_list: (args) => getUpdateTodoListDescription(args),
@@ -150,10 +148,12 @@ export function getToolDescriptionsForMode(
 			return undefined
 		}
 
-		return descriptionFn({
+		const description = descriptionFn({
 			...args,
 			toolOptions: undefined, // No tool options in group-based approach
 		})
+
+		return description
 	})
 
 	return `# Tools\n\n${descriptions.filter(Boolean).join("\n\n")}`
@@ -176,8 +176,10 @@ export {
 	getAccessMcpResourceDescription,
 	getSwitchModeDescription,
 	getInsertContentDescription,
-	getSearchAndReplaceDescription,
 	getCodebaseSearchDescription,
 	getRunSlashCommandDescription,
 	getGenerateImageDescription,
 }
+
+// Export native tool definitions (JSON schema format for OpenAI-compatible APIs)
+export { nativeTools } from "./native-tools"

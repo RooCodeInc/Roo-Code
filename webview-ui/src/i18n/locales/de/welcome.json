@@ -16,7 +16,15 @@
 			"incentive": "Probier Roo kostenlos aus"
 		}
 	},
-	"chooseProvider": "Um seine Magie zu entfalten, benötigt Roo einen API-Schlüssel.",
+	"chooseProvider": "Um loszulegen, brauchst du einen LLM-Anbieter:",
+	"providerSignup": {
+		"rooCloudProvider": "Roo Code Cloud Provider",
+		"rooCloudDescription": "Der einfachste Weg, Roo zu nutzen. Eine kuratierte Mischung aus kostenlosen und bezahlten Modellen zu niedrigen Kosten",
+		"learnMore": "mehr erfahren",
+		"useAnotherProvider": "Anderen Anbieter verwenden",
+		"useAnotherProviderDescription": "Gib einen API-Schlüssel ein und leg los.",
+		"getStarted": "Loslegen"
+	},
 	"startRouter": "Wir empfehlen die Verwendung eines LLM-Routers:",
 	"startCustom": "Oder du kannst deinen eigenen API-Schlüssel verwenden:",
 	"telemetry": {

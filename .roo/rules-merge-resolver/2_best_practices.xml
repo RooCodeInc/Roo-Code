@@ -33,7 +33,7 @@
     <principle priority="high">
       <name>Escape Conflict Markers</name>
       <description>
-        When using apply_diff or search_and_replace tools, always escape merge
+        When using apply_diff, always escape merge
         conflict markers with backslashes to prevent parsing errors.
       </description>
       <example><![CDATA[
