@@ -2843,11 +2843,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// able to save the assistant's response.
 				let didEndLoop = false
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, tool uses, or reasoning)
 				const hasTextContent = assistantMessage.length > 0
 				const hasToolUses = this.assistantMessageContent.some((block) => block.type === "tool_use")
+				const hasReasoningContent = reasoningMessage.length > 0
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
 						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
@@ -2887,6 +2888,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 					}
 
+					// For reasoning-only responses (common with Gemini 3 after mode switches),
+					// ensure we have some content to save to prevent API errors
+					if (assistantContent.length === 0 && hasReasoningContent) {
+						// Add a minimal text block to indicate reasoning occurred
+						assistantContent.push({
+							type: "text" as const,
+							text: "[Model provided reasoning/thinking only]",
+						})
+					}
+
 					await this.addToApiConversationHistory(
 						{
 							role: "assistant",
@@ -2919,12 +2930,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// either use a tool or attempt_completion.
 					const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
 
-					if (!didToolUse) {
+					// Only count as a mistake if there's no tool use AND no reasoning
+					// (Gemini 3 models often provide reasoning-only responses initially after mode switches)
+					if (!didToolUse && !hasReasoningContent) {
 						const modelInfo = this.api.getModel().info
 						const state = await this.providerRef.deref()?.getState()
 						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
 						this.consecutiveMistakeCount++
+					} else if (!didToolUse && hasReasoningContent) {
+						// For reasoning-only responses, gently prompt the model to continue
+						const modelInfo = this.api.getModel().info
+						const state = await this.providerRef.deref()?.getState()
+						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+						this.userMessageContent.push({
+							type: "text",
+							text: "I see you're thinking about the task. Please proceed with using the appropriate tools to complete it, or call attempt_completion if you believe the task is done.",
+						})
+						// Don't increment mistake count for reasoning-only responses
 					}
 
 					if (this.userMessageContent.length > 0) {
