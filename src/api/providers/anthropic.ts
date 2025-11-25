@@ -50,15 +50,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let { id: modelId, info: modelInfo, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
 
 		// Determine effective max_tokens
-		// When thinking is enabled, Anthropic requires max_tokens + thinking.budget_tokens to stay within the model cap
-		// Respect the model's declared maxTokens limit (custom models may have lower limits than 64k)
-		const providerMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
-		let effectiveMaxTokens = providerMaxTokens
+		// Keep the user's requested output budget intact unless the provider cap would be exceeded.
+		const requestedMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		const providerMaxTokens = modelInfo?.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		let effectiveMaxTokens = Math.min(requestedMaxTokens, providerMaxTokens)
 		if (thinking && typeof thinking === "object" && "budget_tokens" in thinking) {
 			const budgetTokens = Math.max(0, thinking.budget_tokens)
-			// Deduct reasoning budget from the provider cap so the sum stays within limits.
-			// Always reserve at least 1 token for the completion to avoid zero/negative max_tokens.
-			effectiveMaxTokens = Math.max(1, providerMaxTokens - budgetTokens)
+			// Anthropic enforces (max_tokens + budget_tokens) <= provider cap; shrink only when necessary.
+			const maxTokensWithinProviderLimit = Math.max(1, providerMaxTokens - budgetTokens)
+			effectiveMaxTokens = Math.min(requestedMaxTokens, maxTokensWithinProviderLimit)
 		}
 
 		// Check if prompt caching is supported (use model info, which can be overridden for custom models)
