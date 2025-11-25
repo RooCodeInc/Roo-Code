@@ -130,6 +130,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		let lastUsage: OpenAI.CompletionUsage | undefined
 		const activeToolCallIds = new Set<string>()
+		let hasEmittedToolCallEnd = false
 
 		for await (const chunk of stream) {
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
@@ -177,18 +178,29 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				}
 			}
 
-			// Emit tool_call_end events when finish_reason is "tool_calls"
-			// This ensures tool calls are finalized even if the stream doesn't properly close
-			if (finishReason === "tool_calls" && activeToolCallIds.size > 0) {
+			// Emit tool_call_end events when ANY finish_reason is present (not just "tool_calls")
+			// This ensures compatibility with various OpenAI-compatible servers including ik_llama.cpp
+			// that may not set finish_reason to "tool_calls" specifically
+			if (finishReason && activeToolCallIds.size > 0 && !hasEmittedToolCallEnd) {
 				for (const id of activeToolCallIds) {
 					yield { type: "tool_call_end", id }
 				}
+				hasEmittedToolCallEnd = true
 				activeToolCallIds.clear()
 			}
 
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
+		}
+
+		// Fallback: If stream ends with active tool calls that weren't finalized
+		// This is crucial for servers like ik_llama.cpp that may not send proper finish_reason
+		if (activeToolCallIds.size > 0 && !hasEmittedToolCallEnd) {
+			for (const id of activeToolCallIds) {
+				yield { type: "tool_call_end", id }
+			}
+			activeToolCallIds.clear()
 		}
 
 		if (lastUsage) {
