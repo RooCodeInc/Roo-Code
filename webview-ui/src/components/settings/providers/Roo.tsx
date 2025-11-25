@@ -1,4 +1,4 @@
-import { type ProviderSettings, type OrganizationAllowList, rooDefaultModelId } from "@roo-code/types"
+import { type ProviderSettings, type OrganizationAllowList } from "@roo-code/types"
 
 import type { RouterModels } from "@roo/api"
 
@@ -6,7 +6,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
 import { Button } from "@src/components/ui"
 
-import { ModelPicker } from "../ModelPicker"
+// import { ModelPicker } from "../ModelPicker"
 
 type RooProps = {
 	apiConfiguration: ProviderSettings
@@ -18,12 +18,12 @@ type RooProps = {
 }
 
 export const Roo = ({
-	apiConfiguration,
-	setApiConfigurationField,
-	routerModels,
+	// apiConfiguration,
+	// setApiConfigurationField,
+	// routerModels,
 	cloudIsAuthenticated,
-	organizationAllowList,
-	modelValidationError,
+	// organizationAllowList,
+	// modelValidationError,
 }: RooProps) => {
 	const { t } = useAppTranslation()
 
@@ -45,7 +45,7 @@ export const Roo = ({
 					</Button>
 				</div>
 			)}
-			<ModelPicker
+			{/* <ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
 				defaultModelId={rooDefaultModelId}
@@ -55,7 +55,7 @@ export const Roo = ({
 				serviceUrl="https://roocode.com"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
-			/>
+			/> */}
 		</>
 	)
 }

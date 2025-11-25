@@ -1,5 +1,24 @@
 # CoStrict Change Log
 
+## [2.0.16]
+
+- Added bidirectional navigation between parent and child tasks.
+- Adapted to Browser Control 2.0.
+- Added built-in openspec-init initialization command.
+- Hid hint-type warnings to reduce noise.
+- Strictly compatible with all attempt_completion formats to reduce unnecessary requests.
+  Added compatibility for browser_action tool parameters, enabling small models to use the built-in browser - tool.
+- Fixed freeze issue when clicking Force Continue during command execution.
+- Enabled chatbox input to write directly into the command line (note: inline terminal does not support sudo).
+- Fixed deleted files appearing in context.
+- Moved the MCP icon out of the collapse menu.
+- Upgraded upstream repository dependencies to resolve file-encoding security issues.
+- Improved JetBrains platform compatibility.
+- Optimized duplicate shell terminal creation (limit up to 5 terminals).
+- Added native tool support for CoStrict provider.
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/8949c2f6fed704399a115bbb269ba322944984ee)
+- Fix codereview (#638)
+
 ## [2.0.15]
 
 - Add user ID tracking to API requests

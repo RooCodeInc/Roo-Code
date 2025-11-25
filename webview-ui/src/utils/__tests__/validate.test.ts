@@ -44,7 +44,7 @@ describe("Model Validation Functions", () => {
 		"vercel-ai-gateway": {},
 		zgsm: {},
 		huggingface: {},
-		roo: {},
+		// roo: {},
 		chutes: {},
 	}
 
