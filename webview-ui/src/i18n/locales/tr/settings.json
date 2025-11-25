@@ -35,6 +35,26 @@
 		"language": "Dil",
 		"about": "Roo Code Hakkında"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Bir hata mı buldunuz?",
+			"link": "GitHub'da bildirin"
+		},
+		"featureRequest": {
+			"label": "Bir fikriniz mi var?",
+			"link": "Bizimle paylaşın"
+		},
+		"securityIssue": {
+			"label": "Bir güvenlik açığı mı keşfettiniz?",
+			"link": "Açıklama sürecimizi takip edin"
+		},
+		"contact": {
+			"label": "Bizimle konuşmanız mı gerekiyor? Yazın"
+		},
+		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer Roo Code kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/RooCode</redditLink> veya <discordLink>discord.gg/roocode</discordLink>'a katılın",
+		"contactAndCommunity": "İletişim ve Topluluk",
+		"manageSettings": "Ayarları Yönet"
+	},
 	"slashCommands": {
 		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
 	},

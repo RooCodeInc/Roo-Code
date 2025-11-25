@@ -35,6 +35,26 @@
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Has trobat un error?",
+			"link": "Informa'n a GitHub"
+		},
+		"featureRequest": {
+			"label": "Tens una idea?",
+			"link": "Comparteix-la amb nosaltres"
+		},
+		"securityIssue": {
+			"label": "Has descobert una vulnerabilitat?",
+			"link": "Segueix el nostre procés de divulgació"
+		},
+		"contact": {
+			"label": "Necessites parlar amb nosaltres? Escriu"
+		},
+		"community": "Vols consells o simplement passar l'estona amb altres usuaris de Roo Code? Uneix-te a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Contacte i Comunitat",
+		"manageSettings": "Gestionar Configuració"
+	},
 	"slashCommands": {
 		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
 	},

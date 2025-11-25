@@ -1,7 +1,17 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
-import { Info, Download, Upload, TriangleAlert } from "lucide-react"
+import {
+	Info,
+	Download,
+	Upload,
+	TriangleAlert,
+	Bug,
+	Lightbulb,
+	Shield,
+	MessageCircle,
+	MessagesSquare,
+} from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import type { TelemetrySetting } from "@roo-code/types"
@@ -56,19 +66,63 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 						/>
 					</p>
 				</div>
+			</Section>
 
-				<div>
-					<Trans
-						i18nKey="settings:footer.feedback"
-						components={{
-							githubLink: <VSCodeLink href="https://github.com/RooCodeInc/Roo-Code" />,
-							redditLink: <VSCodeLink href="https://reddit.com/r/RooCode" />,
-							discordLink: <VSCodeLink href="https://discord.gg/roocode" />,
-						}}
-					/>
+			<Section className="space-y-0">
+				<h3>{t("settings:about.contactAndCommunity")}</h3>
+				<div className="flex flex-col gap-3">
+					<div className="flex items-start gap-2">
+						<Bug className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.bugReport.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/issues/new?template=bug_report.yml">
+								{t("settings:about.bugReport.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-start gap-2">
+						<Lightbulb className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.featureRequest.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/issues/new?template=feature_request.yml">
+								{t("settings:about.featureRequest.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-start gap-2">
+						<Shield className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.securityIssue.label")}{" "}
+							<VSCodeLink href="https://github.com/RooCodeInc/Roo-Code/security/policy">
+								{t("settings:about.securityIssue.link")}
+							</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-start gap-2">
+						<MessageCircle className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							{t("settings:about.contact.label")}{" "}
+							<VSCodeLink href="mailto:support@roocode.com">support@roocode.com</VSCodeLink>
+						</span>
+					</div>
+					<div className="flex items-start gap-2">
+						<MessagesSquare className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span>
+							<Trans
+								i18nKey="settings:about.community"
+								components={{
+									redditLink: <VSCodeLink href="https://reddit.com/r/RooCode" />,
+									discordLink: <VSCodeLink href="https://discord.gg/roocode" />,
+								}}
+							/>
+						</span>
+					</div>
 				</div>
+			</Section>
 
-				<div className="flex flex-wrap items-center gap-2 mt-2">
+			<Section className="space-y-0">
+				<h3>{t("settings:about.manageSettings")}</h3>
+				<div className="flex flex-wrap items-center gap-2">
 					<Button onClick={() => vscode.postMessage({ type: "exportSettings" })} className="w-28">
 						<Upload className="p-0.5" />
 						{t("settings:footer.settings.export")}

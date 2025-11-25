@@ -35,6 +35,26 @@
 		"language": "語言",
 		"about": "關於 Roo Code"
 	},
+	"about": {
+		"bugReport": {
+			"label": "發現錯誤？",
+			"link": "在 GitHub 回報"
+		},
+		"featureRequest": {
+			"label": "有想法？",
+			"link": "與我們分享"
+		},
+		"securityIssue": {
+			"label": "發現安全漏洞？",
+			"link": "遵循我們的揭露流程"
+		},
+		"contact": {
+			"label": "需要與我們聯絡？請寫信"
+		},
+		"community": "想要獲取使用技巧或與其他 Roo Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "聯絡與社群",
+		"manageSettings": "管理設定"
+	},
 	"slashCommands": {
 		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
 	},

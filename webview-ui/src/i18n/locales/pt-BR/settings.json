@@ -35,6 +35,26 @@
 		"language": "Idioma",
 		"about": "Sobre"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Encontrou um bug?",
+			"link": "Relatar no GitHub"
+		},
+		"featureRequest": {
+			"label": "Tem uma ideia?",
+			"link": "Compartilhe conosco"
+		},
+		"securityIssue": {
+			"label": "Descobriu uma vulnerabilidade?",
+			"link": "Siga nosso processo de divulgação"
+		},
+		"contact": {
+			"label": "Precisa falar conosco? Escreva"
+		},
+		"community": "Quer dicas ou apenas conversar com outros usuários do Roo Code? Junte-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Contato e Comunidade",
+		"manageSettings": "Gerenciar Configurações"
+	},
 	"slashCommands": {
 		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"
 	},
