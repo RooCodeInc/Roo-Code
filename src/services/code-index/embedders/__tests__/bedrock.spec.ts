@@ -88,12 +88,9 @@ describe("BedrockEmbedder", () => {
 			expect(embedder.embedderInfo.name).toBe("bedrock")
 		})
 
-		it("should require both region and profile", () => {
+		it("should require region", () => {
 			expect(() => new BedrockEmbedder("", "profile", "model")).toThrow(
-				"Both region and profile are required for Amazon Bedrock embedder",
-			)
-			expect(() => new BedrockEmbedder("us-east-1", "", "model")).toThrow(
-				"Both region and profile are required for Amazon Bedrock embedder",
+				"Region is required for AWS Bedrock embedder",
 			)
 		})
 
@@ -199,6 +196,140 @@ describe("BedrockEmbedder", () => {
 			expect(result).toEqual({
 				embeddings: [[0.1, 0.2, 0.3]],
 				usage: { promptTokens: 0, totalTokens: 0 },
+			})
+		})
+
+		it("should create embeddings with Nova multimodal model", async () => {
+			const novaMultimodalEmbedder = new BedrockEmbedder(
+				"us-east-1",
+				"test-profile",
+				"amazon.nova-2-multimodal-embeddings-v1:0",
+			)
+			const testTexts = ["Hello world"]
+			const mockResponse = {
+				body: new TextEncoder().encode(
+					JSON.stringify({
+						embeddings: [
+							{
+								embedding: [0.1, 0.2, 0.3],
+							},
+						],
+						inputTextTokenCount: 2,
+					}),
+				),
+			}
+			mockSend.mockResolvedValue(mockResponse)
+
+			const result = await novaMultimodalEmbedder.createEmbeddings(testTexts)
+
+			expect(mockSend).toHaveBeenCalled()
+			const command = mockSend.mock.calls[0][0] as any
+			expect(command.input.modelId).toBe("amazon.nova-2-multimodal-embeddings-v1:0")
+			const bodyStr =
+				typeof command.input.body === "string"
+					? command.input.body
+					: new TextDecoder().decode(command.input.body as Uint8Array)
+			// Nova multimodal embeddings use a task-based format with nested text object
+			expect(JSON.parse(bodyStr || "{}")).toEqual({
+				taskType: "SINGLE_EMBEDDING",
+				singleEmbeddingParams: {
+					embeddingPurpose: "GENERIC_INDEX",
+					embeddingDimension: 1024,
+					text: {
+						truncationMode: "END",
+						value: "Hello world",
+					},
+				},
+			})
+
+			expect(result).toEqual({
+				embeddings: [[0.1, 0.2, 0.3]],
+				usage: { promptTokens: 2, totalTokens: 2 },
+			})
+		})
+
+		it("should handle Nova multimodal model with multiple texts", async () => {
+			const novaMultimodalEmbedder = new BedrockEmbedder(
+				"us-east-1",
+				"test-profile",
+				"amazon.nova-2-multimodal-embeddings-v1:0",
+			)
+			const testTexts = ["Hello world", "Another text"]
+			const mockResponses = [
+				{
+					body: new TextEncoder().encode(
+						JSON.stringify({
+							embeddings: [
+								{
+									embedding: [0.1, 0.2, 0.3],
+								},
+							],
+							inputTextTokenCount: 2,
+						}),
+					),
+				},
+				{
+					body: new TextEncoder().encode(
+						JSON.stringify({
+							embeddings: [
+								{
+									embedding: [0.4, 0.5, 0.6],
+								},
+							],
+							inputTextTokenCount: 3,
+						}),
+					),
+				},
+			]
+
+			mockSend.mockResolvedValueOnce(mockResponses[0]).mockResolvedValueOnce(mockResponses[1])
+
+			const result = await novaMultimodalEmbedder.createEmbeddings(testTexts)
+
+			expect(mockSend).toHaveBeenCalledTimes(2)
+
+			// Verify the request format for both texts
+			const firstCommand = mockSend.mock.calls[0][0] as any
+			const firstBodyStr =
+				typeof firstCommand.input.body === "string"
+					? firstCommand.input.body
+					: new TextDecoder().decode(firstCommand.input.body as Uint8Array)
+			// Nova multimodal embeddings use a task-based format with nested text object
+			expect(JSON.parse(firstBodyStr || "{}")).toEqual({
+				taskType: "SINGLE_EMBEDDING",
+				singleEmbeddingParams: {
+					embeddingPurpose: "GENERIC_INDEX",
+					embeddingDimension: 1024,
+					text: {
+						truncationMode: "END",
+						value: "Hello world",
+					},
+				},
+			})
+
+			const secondCommand = mockSend.mock.calls[1][0] as any
+			const secondBodyStr =
+				typeof secondCommand.input.body === "string"
+					? secondCommand.input.body
+					: new TextDecoder().decode(secondCommand.input.body as Uint8Array)
+			expect(JSON.parse(secondBodyStr || "{}")).toEqual({
+				taskType: "SINGLE_EMBEDDING",
+				singleEmbeddingParams: {
+					embeddingPurpose: "GENERIC_INDEX",
+					embeddingDimension: 1024,
+					text: {
+						truncationMode: "END",
+						value: "Another text",
+					},
+				},
+			})
+
+			expect(result).toEqual({
+				embeddings: [
+					[0.1, 0.2, 0.3],
+					[0.4, 0.5, 0.6],
+				],
+				usage: { promptTokens: 5, totalTokens: 5 },
 			})
 		})
 

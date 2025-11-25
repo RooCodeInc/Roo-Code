@@ -143,10 +143,10 @@ export class CodeIndexConfigManager {
 		this.geminiOptions = geminiApiKey ? { apiKey: geminiApiKey } : undefined
 		this.mistralOptions = mistralApiKey ? { apiKey: mistralApiKey } : undefined
 		this.vercelAiGatewayOptions = vercelAiGatewayApiKey ? { apiKey: vercelAiGatewayApiKey } : undefined
-		// Set bedrockOptions only if both region and profile are provided
-		this.bedrockOptions =
-			bedrockRegion && bedrockProfile ? { region: bedrockRegion, profile: bedrockProfile } : undefined
-		this.openRouterOptions = openRouterApiKey ? { apiKey: openRouterApiKey } : undefined
+		// Set bedrockOptions if region is provided (profile is optional)
+		this.bedrockOptions = bedrockRegion
+			? { region: bedrockRegion, profile: bedrockProfile || undefined }
+			: undefined
 	}
 
 	/**
@@ -260,11 +260,10 @@ export class CodeIndexConfigManager {
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
 		} else if (this.embedderProvider === "bedrock") {
-			// Both region and profile are required for Bedrock
+			// Only region is required for Bedrock (profile is optional)
 			const region = this.bedrockOptions?.region
-			const profile = this.bedrockOptions?.profile
 			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(region && profile && qdrantUrl)
+			const isConfigured = !!(region && qdrantUrl)
 			return isConfigured
 		} else if (this.embedderProvider === "openrouter") {
 			const apiKey = this.openRouterOptions?.apiKey

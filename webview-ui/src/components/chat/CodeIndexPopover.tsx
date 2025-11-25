@@ -158,9 +158,7 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 		case "bedrock":
 			return baseSchema.extend({
 				codebaseIndexBedrockRegion: z.string().min(1, t("settings:codeIndex.validation.bedrockRegionRequired")),
-				codebaseIndexBedrockProfile: z
-					.string()
-					.min(1, t("settings:codeIndex.validation.bedrockProfileRequired")),
+				codebaseIndexBedrockProfile: z.string().optional(),
 				codebaseIndexEmbedderModelId: z
 					.string()
 					.min(1, t("settings:codeIndex.validation.modelSelectionRequired")),
@@ -187,7 +185,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 }) => {
 	const SECRET_PLACEHOLDER = "••••••••••••••••"
 	const { t } = useAppTranslation()
-	const { codebaseIndexConfig, codebaseIndexModels, cwd } = useExtensionState()
+	const { codebaseIndexConfig, codebaseIndexModels, cwd, apiConfiguration } = useExtensionState()
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
@@ -689,6 +687,33 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												updateSetting("codebaseIndexEmbedderProvider", value)
 												// Clear model selection when switching providers
 												updateSetting("codebaseIndexEmbedderModelId", "")
+
+												// Auto-populate Region and Profile when switching to Bedrock
+												// if the main API provider is also configured for Bedrock
+												if (
+													value === "bedrock" &&
+													apiConfiguration?.apiProvider === "bedrock"
+												) {
+													// Only populate if currently empty
+													if (
+														!currentSettings.codebaseIndexBedrockRegion &&
+														apiConfiguration.awsRegion
+													) {
+														updateSetting(
+															"codebaseIndexBedrockRegion",
+															apiConfiguration.awsRegion,
+														)
+													}
+													if (
+														!currentSettings.codebaseIndexBedrockProfile &&
+														apiConfiguration.awsProfile
+													) {
+														updateSetting(
+															"codebaseIndexBedrockProfile",
+															apiConfiguration.awsProfile,
+														)
+													}
+												}
 											}}>
 											<SelectTrigger className="w-full">
 												<SelectValue />
@@ -1206,6 +1231,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											<div className="space-y-2">
 												<label className="text-sm font-medium">
 													{t("settings:codeIndex.bedrockProfileLabel")}
+													<span className="text-xs text-vscode-descriptionForeground ml-1">
+														({t("settings:codeIndex.optional")})
+													</span>
 												</label>
 												<VSCodeTextField
 													value={currentSettings.codebaseIndexBedrockProfile || ""}

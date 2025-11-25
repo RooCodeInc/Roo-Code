@@ -23,20 +23,21 @@ export class BedrockEmbedder implements IEmbedder {
 	/**
 	 * Creates a new Amazon Bedrock embedder
 	 * @param region AWS region for Bedrock service (required)
-	 * @param profile AWS profile name for credentials (required)
+	 * @param profile AWS profile name for credentials (optional - uses default credential chain if not provided)
 	 * @param modelId Optional model ID override
 	 */
 	constructor(
 		private readonly region: string,
-		private readonly profile: string,
+		private readonly profile?: string,
 		modelId?: string,
 	) {
-		if (!region || !profile) {
-			throw new Error("Both region and profile are required for Amazon Bedrock embedder")
+		if (!region) {
+			throw new Error("Region is required for AWS Bedrock embedder")
 		}
 
-		// Initialize the Bedrock client with credentials from the specified profile
-		const credentials = fromIni({ profile: this.profile })
+		// Initialize the Bedrock client with credentials
+		// If profile is specified, use it; otherwise use default credential chain
+		const credentials = this.profile ? fromIni({ profile: this.profile }) : fromEnv()
 
 		this.bedrockClient = new BedrockRuntimeClient({
 			region: this.region,
@@ -188,7 +189,22 @@ export class BedrockEmbedder implements IEmbedder {
 		let modelId = model
 
 		// Prepare the request body based on the model
-		if (model.startsWith("amazon.titan-embed")) {
+		if (model.startsWith("amazon.nova-2-multimodal")) {
+			// Nova multimodal embeddings use a task-based format with embeddingParams
+			// Reference: https://docs.aws.amazon.com/bedrock/latest/userguide/embeddings-nova.html
+			requestBody = {
+				taskType: "SINGLE_EMBEDDING",
+				singleEmbeddingParams: {
+					embeddingPurpose: "GENERIC_INDEX",
+					embeddingDimension: 1024, // Nova supports 1024 or 3072
+					text: {
+						truncationMode: "END",
+						value: text,
+					},
+				},
+			}
+			console.log(`[BedrockEmbedder] Nova multimodal request for model ${model}:`, JSON.stringify(requestBody))
+		} else if (model.startsWith("amazon.titan-embed")) {
 			requestBody = {
 				inputText: text,
 			}
@@ -211,14 +227,35 @@ export class BedrockEmbedder implements IEmbedder {
 			accept: "application/json",
 		}
 
+		console.log(`[BedrockEmbedder] Sending request to model ${modelId}`)
+		console.log(`[BedrockEmbedder] Request body:`, requestBody)
+
 		const command = new InvokeModelCommand(params)
-		const response = await this.bedrockClient.send(command)
+
+		let response
+		try {
+			response = await this.bedrockClient.send(command)
+		} catch (error: any) {
+			console.error(`[BedrockEmbedder] API error for model ${modelId}:`, error)
+			console.error(`[BedrockEmbedder] Error name:`, error.name)
+			console.error(`[BedrockEmbedder] Error message:`, error.message)
+			console.error(`[BedrockEmbedder] Error details:`, JSON.stringify(error, null, 2))
+			throw error
+		}
 
 		// Parse the response
 		const responseBody = JSON.parse(new TextDecoder().decode(response.body))
+		console.log(`[BedrockEmbedder] Response for model ${modelId}:`, responseBody)
 
 		// Extract embedding based on model type
-		if (model.startsWith("amazon.titan-embed")) {
+		if (model.startsWith("amazon.nova-2-multimodal")) {
+			// Nova multimodal returns { embeddings: [{ embedding: [...] }] }
+			// Reference: AWS Bedrock documentation
+			return {
+				embedding: responseBody.embeddings?.[0]?.embedding || responseBody.embedding,
+				inputTextTokenCount: responseBody.inputTextTokenCount,
+			}
+		} else if (model.startsWith("amazon.titan-embed")) {
 			return {
 				embedding: responseBody.embedding,
 				inputTextTokenCount: responseBody.inputTextTokenCount,
