@@ -135,24 +135,28 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 		// Get the selected model
 		let selectedModel = state?.openRouterImageGenerationSelectedModel
+		let modelInfo = undefined
 
-		// Verify the selected model matches the selected provider
-		// If not, default to first model of the selected provider
+		// Find the model info matching both value AND provider
+		// (since the same model value can exist for multiple providers)
 		if (selectedModel) {
-			const modelInfo = IMAGE_GENERATION_MODELS.find((m) => m.value === selectedModel)
-			if (!modelInfo || modelInfo.provider !== imageProvider) {
-				// Model doesn't match provider, use first model for selected provider
+			modelInfo = IMAGE_GENERATION_MODELS.find((m) => m.value === selectedModel && m.provider === imageProvider)
+			if (!modelInfo) {
+				// Model doesn't exist for this provider, use first model for selected provider
 				const providerModels = IMAGE_GENERATION_MODELS.filter((m) => m.provider === imageProvider)
-				selectedModel = providerModels[0]?.value || IMAGE_GENERATION_MODEL_IDS[0]
+				modelInfo = providerModels[0]
+				selectedModel = modelInfo?.value || IMAGE_GENERATION_MODEL_IDS[0]
 			}
 		} else {
 			// No model selected, use first model for selected provider
 			const providerModels = IMAGE_GENERATION_MODELS.filter((m) => m.provider === imageProvider)
-			selectedModel = providerModels[0]?.value || IMAGE_GENERATION_MODEL_IDS[0]
+			modelInfo = providerModels[0]
+			selectedModel = modelInfo?.value || IMAGE_GENERATION_MODEL_IDS[0]
 		}
 
 		// Use the provider selection
 		const modelProvider = imageProvider
+		const apiMethod = modelInfo?.apiMethod
 
 		// Validate API key for OpenRouter
 		const openRouterApiKey = state?.openRouterImageApiKey
@@ -192,11 +196,11 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 			let result
 			if (modelProvider === "roo") {
-				// Use Roo Code Cloud provider
+				// Use Roo Code Cloud provider (supports both chat completions and images API)
 				const rooHandler = new RooHandler({} as any)
-				result = await rooHandler.generateImage(prompt, selectedModel, inputImageData)
+				result = await rooHandler.generateImage(prompt, selectedModel, inputImageData, apiMethod)
 			} else {
-				// Use OpenRouter provider
+				// Use OpenRouter provider (only supports chat completions API)
 				const openRouterHandler = new OpenRouterHandler({} as any)
 				result = await openRouterHandler.generateImage(prompt, selectedModel, openRouterApiKey!, inputImageData)
 			}

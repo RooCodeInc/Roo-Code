@@ -435,7 +435,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	/**
-	 * Generate an image using OpenRouter's image generation API
+	 * Generate an image using OpenRouter's image generation API (chat completions with modalities)
+	 * Note: OpenRouter only supports the chat completions approach, not the /images/generations endpoint
 	 * @param prompt The text prompt for image generation
 	 * @param model The model to use for generation
 	 * @param apiKey The OpenRouter API key (must be explicitly provided)
@@ -456,6 +457,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
+
+		// OpenRouter only supports chat completions approach for image generation
 		return generateImageWithProvider({
 			baseURL,
 			authToken: apiKey,

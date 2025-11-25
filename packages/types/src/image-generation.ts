@@ -2,10 +2,16 @@
  * Image generation model constants
  */
 
+/**
+ * API method used for image generation
+ */
+export type ImageGenerationApiMethod = "chat_completions" | "images_api"
+
 export interface ImageGenerationModel {
 	value: string
 	label: string
 	provider: ImageGenerationProvider
+	apiMethod?: ImageGenerationApiMethod
 }
 
 export const IMAGE_GENERATION_MODELS: ImageGenerationModel[] = [
@@ -17,6 +23,7 @@ export const IMAGE_GENERATION_MODELS: ImageGenerationModel[] = [
 	// Roo Code Cloud models
 	{ value: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", provider: "roo" },
 	{ value: "google/gemini-3-pro-image", label: "Gemini 3 Pro Image", provider: "roo" },
+	{ value: "bfl/flux-2-pro", label: "BFL Flux 2 Pro", provider: "roo", apiMethod: "images_api" },
 ]
 
 /**

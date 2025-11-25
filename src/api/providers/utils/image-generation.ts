@@ -20,6 +20,18 @@ interface ImageGenerationResponse {
 	}
 }
 
+interface ImagesApiResponse {
+	data?: Array<{
+		b64_json?: string
+		url?: string
+	}>
+	error?: {
+		message?: string
+		type?: string
+		code?: string
+	}
+}
+
 export interface ImageGenerationResult {
 	success: boolean
 	imageData?: string
@@ -33,6 +45,17 @@ interface ImageGenerationOptions {
 	model: string
 	prompt: string
 	inputImage?: string
+}
+
+interface ImagesApiOptions {
+	baseURL: string
+	authToken: string
+	model: string
+	prompt: string
+	inputImage?: string
+	size?: string
+	quality?: string
+	outputFormat?: string
 }
 
 /**
@@ -139,6 +162,127 @@ export async function generateImageWithProvider(options: ImageGenerationOptions)
 			success: true,
 			imageData: imageData,
 			imageFormat: base64Match[1],
+		}
+	} catch (error) {
+		return {
+			success: false,
+			error: error instanceof Error ? error.message : t("tools:generateImage.unknownError"),
+		}
+	}
+}
+
+/**
+ * Generate an image using OpenAI's Images API (/v1/images/generations)
+ * Supports BFL models (Flux) with provider-specific options for image editing
+ */
+export async function generateImageWithImagesApi(options: ImagesApiOptions): Promise<ImageGenerationResult> {
+	const { baseURL, authToken, model, prompt, inputImage, outputFormat = "png" } = options
+
+	try {
+		const url = `${baseURL}/images/generations`
+
+		// Build the request body
+		// For BFL models, inputImage is passed via providerOptions.blackForestLabs.inputImage
+		const requestBody: Record<string, unknown> = {
+			model,
+			prompt,
+			n: 1,
+		}
+
+		// Add optional parameters
+		if (options.size) {
+			requestBody.size = options.size
+		}
+		if (options.quality) {
+			requestBody.quality = options.quality
+		}
+
+		// For BFL (Black Forest Labs) models like flux-pro-1.1, use providerOptions
+		if (model.startsWith("bfl/")) {
+			requestBody.providerOptions = {
+				blackForestLabs: {
+					outputFormat: outputFormat,
+					// inputImage: Base64 encoded image or URL of image to use as reference
+					...(inputImage && { inputImage }),
+				},
+			}
+		} else {
+			// For other models, use standard output_format parameter
+			requestBody.output_format = outputFormat
+		}
+
+		const fetchOptions: RequestInit = {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${authToken}`,
+				"Content-Type": "application/json",
+				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
+				"X-Title": "Roo Code",
+			},
+			body: JSON.stringify(requestBody),
+		}
+
+		const response = await fetch(url, fetchOptions)
+
+		if (!response.ok) {
+			const errorText = await response.text()
+			let errorMessage = t("tools:generateImage.failedWithStatus", {
+				status: response.status,
+				statusText: response.statusText,
+			})
+
+			try {
+				const errorJson = JSON.parse(errorText)
+				if (errorJson.error?.message) {
+					errorMessage = t("tools:generateImage.failedWithMessage", {
+						message: errorJson.error.message,
+					})
+				}
+			} catch {
+				// Use default error message
+			}
+			return {
+				success: false,
+				error: errorMessage,
+			}
+		}
+
+		const result: ImagesApiResponse = await response.json()
+
+		if (result.error) {
+			return {
+				success: false,
+				error: t("tools:generateImage.failedWithMessage", {
+					message: result.error.message,
+				}),
+			}
+		}
+
+		// Extract the generated image from the response
+		const images = result.data
+		if (!images || images.length === 0) {
+			return {
+				success: false,
+				error: t("tools:generateImage.noImageGenerated"),
+			}
+		}
+
+		// Images API returns b64_json by default
+		const imageData = images[0]?.b64_json
+		if (!imageData) {
+			return {
+				success: false,
+				error: t("tools:generateImage.invalidImageData"),
+			}
+		}
+
+		// Convert base64 to data URL
+		const dataUrl = `data:image/${outputFormat};base64,${imageData}`
+
+		return {
+			success: true,
+			imageData: dataUrl,
+			imageFormat: outputFormat,
 		}
 	} catch (error) {
 		return {

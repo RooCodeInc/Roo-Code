@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { rooDefaultModelId, getApiProtocol } from "@roo-code/types"
+import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
@@ -15,7 +15,7 @@ import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 import { handleOpenAIError } from "./utils/openai-error-handler"
-import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
@@ -273,9 +273,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	 * @param prompt The text prompt for image generation
 	 * @param model The model to use for generation
 	 * @param inputImage Optional base64 encoded input image data URL
+	 * @param apiMethod The API method to use (chat_completions or images_api)
 	 * @returns The generated image data and format, or an error
 	 */
-	async generateImage(prompt: string, model: string, inputImage?: string): Promise<ImageGenerationResult> {
+	async generateImage(
+		prompt: string,
+		model: string,
+		inputImage?: string,
+		apiMethod?: ImageGenerationApiMethod,
+	): Promise<ImageGenerationResult> {
 		const sessionToken = getSessionToken()
 
 		if (!sessionToken || sessionToken === "unauthenticated") {
@@ -285,8 +291,23 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			}
 		}
 
+		const baseURL = `${this.fetcherBaseURL}/v1`
+
+		// Use the specified API method, defaulting to chat_completions for backward compatibility
+		if (apiMethod === "images_api") {
+			return generateImageWithImagesApi({
+				baseURL,
+				authToken: sessionToken,
+				model,
+				prompt,
+				inputImage,
+				outputFormat: "png",
+			})
+		}
+
+		// Default to chat completions approach
 		return generateImageWithProvider({
-			baseURL: `${this.fetcherBaseURL}/v1`,
+			baseURL,
 			authToken: sessionToken,
 			model,
 			prompt,
