@@ -2,7 +2,6 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
-import { EXPERIMENT_IDS } from "../shared/experiments"
 
 /* vscode mock for Task/Provider imports */
 vi.mock("vscode", () => {
