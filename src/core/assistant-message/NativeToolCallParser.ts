@@ -287,6 +287,31 @@ export class NativeToolCallParser {
 	}
 
 	/**
+	 * Convert raw file entries from API (with line_ranges strings) to FileEntry objects
+	 * (with lineRanges objects).
+	 *
+	 * API sends: { path: string, line_ranges: ["1-50", "100-200"] }
+	 * Returns:   { path: string, lineRanges: [{ start: 1, end: 50 }, { start: 100, end: 200 }] }
+	 */
+	private static convertFileEntries(files: any[]): FileEntry[] {
+		return files.map((file: any) => {
+			const entry: FileEntry = { path: file.path }
+			if (file.line_ranges && Array.isArray(file.line_ranges)) {
+				entry.lineRanges = file.line_ranges
+					.map((range: string) => {
+						const match = String(range).match(/^(\d+)-(\d+)$/)
+						if (match) {
+							return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+						}
+						return null
+					})
+					.filter(Boolean)
+			}
+			return entry
+		})
+	}
+
+	/**
 	 * Create a partial ToolUse from currently parsed arguments.
 	 * Used during streaming to show progress.
 	 */
@@ -313,23 +338,7 @@ export class NativeToolCallParser {
 		switch (name) {
 			case "read_file":
 				if (partialArgs.files && Array.isArray(partialArgs.files)) {
-					// Convert line_ranges strings to lineRanges objects
-					const convertedFiles = partialArgs.files.map((file: any) => {
-						const entry: any = { path: file.path }
-						if (file.line_ranges && Array.isArray(file.line_ranges)) {
-							entry.lineRanges = file.line_ranges
-								.map((range: string) => {
-									const match = String(range).match(/^(\d+)-(\d+)$/)
-									if (match) {
-										return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
-									}
-									return null
-								})
-								.filter(Boolean)
-						}
-						return entry
-					})
-					nativeArgs = { files: convertedFiles }
+					nativeArgs = { files: this.convertFileEntries(partialArgs.files) }
 				}
 				break
 
@@ -574,23 +583,7 @@ export class NativeToolCallParser {
 			switch (toolCall.name) {
 				case "read_file":
 					if (args.files && Array.isArray(args.files)) {
-						// Convert line_ranges strings to lineRanges objects
-						const convertedFiles = args.files.map((file: any) => {
-							const entry: FileEntry = { path: file.path }
-							if (file.line_ranges && Array.isArray(file.line_ranges)) {
-								entry.lineRanges = file.line_ranges
-									.map((range: string) => {
-										const match = String(range).match(/^(\d+)-(\d+)$/)
-										if (match) {
-											return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
-										}
-										return null
-									})
-									.filter(Boolean)
-							}
-							return entry
-						})
-						nativeArgs = { files: convertedFiles } as NativeArgsFor<TName>
+						nativeArgs = { files: this.convertFileEntries(args.files) } as NativeArgsFor<TName>
 					}
 					break
 
