@@ -291,7 +291,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		if (!relPath) {
+		if (!relPath || newContent === undefined) {
 			return
 		}
 
