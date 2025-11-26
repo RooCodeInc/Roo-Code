@@ -73,13 +73,13 @@ export class CodeIndexConfigManager {
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
 		// Fix: Read OpenAI Compatible settings from the correct location within codebaseIndexConfig
-		const openAiCompatibleBaseUrl = (codebaseIndexConfig as any).codebaseIndexOpenAiCompatibleBaseUrl ?? ""
+		const openAiCompatibleBaseUrl = codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl ?? ""
 		const openAiCompatibleApiKey = this.contextProxy?.getSecret("codebaseIndexOpenAiCompatibleApiKey") ?? ""
 		const geminiApiKey = this.contextProxy?.getSecret("codebaseIndexGeminiApiKey") ?? ""
 		const mistralApiKey = this.contextProxy?.getSecret("codebaseIndexMistralApiKey") ?? ""
 		const vercelAiGatewayApiKey = this.contextProxy?.getSecret("codebaseIndexVercelAiGatewayApiKey") ?? ""
-		const bedrockRegion = (codebaseIndexConfig as any).codebaseIndexBedrockRegion ?? "us-east-1"
-		const bedrockProfile = (codebaseIndexConfig as any).codebaseIndexBedrockProfile ?? ""
+		const bedrockRegion = codebaseIndexConfig.codebaseIndexBedrockRegion ?? "us-east-1"
+		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
 
 		// Update instance variables with configuration
@@ -90,7 +90,7 @@ export class CodeIndexConfigManager {
 		this.searchMaxResults = codebaseIndexSearchMaxResults
 
 		// Validate and set model dimension
-		const rawDimension = (codebaseIndexConfig as any).codebaseIndexEmbedderModelDimension
+		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
 		if (rawDimension !== undefined && rawDimension !== null) {
 			const dimension = Number(rawDimension)
 			if (!isNaN(dimension) && dimension > 0) {
