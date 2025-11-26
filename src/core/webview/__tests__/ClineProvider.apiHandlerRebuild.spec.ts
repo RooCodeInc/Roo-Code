@@ -106,6 +106,9 @@ vi.mock("../../task/Task", () => ({
 			overwriteApiConversationHistory: vi.fn(),
 			taskId: options?.historyItem?.id || "test-task-id",
 			emit: vi.fn(),
+			updateApiConfiguration: vi.fn().mockImplementation(function (this: any, newConfig: any) {
+				this.apiConfiguration = newConfig
+			}),
 		}
 		// Define apiConfiguration as a property so tests can read it
 		Object.defineProperty(mockTask, "apiConfiguration", {
@@ -250,7 +253,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 	})
 
 	describe("upsertProviderProfile", () => {
-		test("rebuilds API handler when provider/model unchanged but profile settings changed (explicit save)", async () => {
+		test("calls updateApiConfiguration when provider/model unchanged but profile settings changed (explicit save)", async () => {
 			// Create a task with the current config
 			const mockTask = new Task({
 				...defaultTaskOptions,
@@ -259,18 +262,14 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 					openRouterModelId: "openai/gpt-4",
 				},
 			})
-			const originalApi = {
+			mockTask.api = {
 				getModel: vi.fn().mockReturnValue({
 					id: "openai/gpt-4",
 					info: { contextWindow: 128000 },
 				}),
-			}
-			mockTask.api = originalApi as any
+			} as any
 
 			await provider.addClineToStack(mockTask)
-
-			// Clear the mock to track new calls
-			buildApiHandlerMock.mockClear()
 
 			// Save settings with SAME provider and model (simulating Save button click)
 			await provider.upsertProviderProfile(
@@ -285,22 +284,22 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				true,
 			)
 
-			// Verify buildApiHandler WAS called because we force rebuild on explicit save/switch
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called because we force rebuild on explicit save/switch
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "openrouter",
 					openRouterModelId: "openai/gpt-4",
+					rateLimitSeconds: 5,
+					modelTemperature: 0.7,
 				}),
 			)
-			// Verify the task's api property was reassigned (new client)
-			expect(mockTask.api).not.toBe(originalApi)
-			// Verify task.apiConfiguration was synchronized with non-model fields
+			// Verify task.apiConfiguration was synchronized
 			expect((mockTask as any).apiConfiguration.openRouterModelId).toBe("openai/gpt-4")
 			expect((mockTask as any).apiConfiguration.rateLimitSeconds).toBe(5)
 			expect((mockTask as any).apiConfiguration.modelTemperature).toBe(0.7)
 		})
 
-		test("rebuilds API handler when provider changes", async () => {
+		test("calls updateApiConfiguration when provider changes", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -316,8 +315,6 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			} as any
 
 			await provider.addClineToStack(mockTask)
-
-			buildApiHandlerMock.mockClear()
 
 			// Change provider to anthropic
 			await provider.upsertProviderProfile(
@@ -329,8 +326,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				true,
 			)
 
-			// Verify buildApiHandler WAS called since provider changed
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called since provider changed
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "anthropic",
 					apiModelId: "claude-3-5-sonnet-20241022",
@@ -338,7 +335,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			)
 		})
 
-		test("rebuilds API handler when model changes", async () => {
+		test("calls updateApiConfiguration when model changes", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -355,8 +352,6 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.addClineToStack(mockTask)
 
-			buildApiHandlerMock.mockClear()
-
 			// Change model to different model
 			await provider.upsertProviderProfile(
 				"test-config",
@@ -367,8 +362,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				true,
 			)
 
-			// Verify buildApiHandler WAS called since model changed
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called since model changed
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "openrouter",
 					openRouterModelId: "anthropic/claude-3-5-sonnet-20241022",
@@ -395,7 +390,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 	})
 
 	describe("activateProviderProfile", () => {
-		test("rebuilds API handler when provider/model unchanged but settings differ (explicit profile switch)", async () => {
+		test("calls updateApiConfiguration when provider/model unchanged but settings differ (explicit profile switch)", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -404,17 +399,14 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 					modelTemperature: 0.3,
 				},
 			})
-			const originalApi = {
+			mockTask.api = {
 				getModel: vi.fn().mockReturnValue({
 					id: "openai/gpt-4",
 					info: { contextWindow: 128000 },
 				}),
-			}
-			mockTask.api = originalApi as any
+			} as any
 
 			await provider.addClineToStack(mockTask)
-
-			buildApiHandlerMock.mockClear()
 
 			// Mock activateProfile to return same provider/model but different non-model setting
 			;(provider as any).providerSettingsManager.activateProfile = vi.fn().mockResolvedValue({
@@ -428,22 +420,20 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.activateProviderProfile({ name: "test-config" })
 
-			// Verify buildApiHandler WAS called due to forced rebuild on explicit switch
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called due to forced rebuild on explicit switch
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "openrouter",
 					openRouterModelId: "openai/gpt-4",
 				}),
 			)
-			// Verify the API reference changed
-			expect(mockTask.api).not.toBe(originalApi)
 			// Verify task.apiConfiguration was synchronized
 			expect((mockTask as any).apiConfiguration.openRouterModelId).toBe("openai/gpt-4")
 			expect((mockTask as any).apiConfiguration.modelTemperature).toBe(0.9)
 			expect((mockTask as any).apiConfiguration.rateLimitSeconds).toBe(7)
 		})
 
-		test("rebuilds API handler when provider changes and syncs task.apiConfiguration", async () => {
+		test("calls updateApiConfiguration when provider changes and syncs task.apiConfiguration", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -459,8 +449,6 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			} as any
 
 			await provider.addClineToStack(mockTask)
-
-			buildApiHandlerMock.mockClear()
 
 			// Mock activateProfile to return different provider
 			;(provider as any).providerSettingsManager.activateProfile = vi.fn().mockResolvedValue({
@@ -472,8 +460,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.activateProviderProfile({ name: "anthropic-config" })
 
-			// Verify buildApiHandler WAS called
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "anthropic",
 					apiModelId: "claude-3-5-sonnet-20241022",
@@ -484,7 +472,7 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			expect((mockTask as any).apiConfiguration.apiModelId).toBe("claude-3-5-sonnet-20241022")
 		})
 
-		test("rebuilds API handler when model changes and syncs task.apiConfiguration", async () => {
+		test("calls updateApiConfiguration when model changes and syncs task.apiConfiguration", async () => {
 			const mockTask = new Task({
 				...defaultTaskOptions,
 				apiConfiguration: {
@@ -501,8 +489,6 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.addClineToStack(mockTask)
 
-			buildApiHandlerMock.mockClear()
-
 			// Mock activateProfile to return different model
 			;(provider as any).providerSettingsManager.activateProfile = vi.fn().mockResolvedValue({
 				name: "test-config",
@@ -513,8 +499,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 
 			await provider.activateProviderProfile({ name: "test-config" })
 
-			// Verify buildApiHandler WAS called
-			expect(buildApiHandlerMock).toHaveBeenCalledWith(
+			// Verify updateApiConfiguration was called
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiProvider: "openrouter",
 					openRouterModelId: "anthropic/claude-3-5-sonnet-20241022",
@@ -545,7 +531,6 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			await provider.addClineToStack(mockTask)
 
 			// First switch: A -> B (openrouter -> anthropic)
-			buildApiHandlerMock.mockClear()
 			;(provider as any).providerSettingsManager.activateProfile = vi.fn().mockResolvedValue({
 				name: "anthropic-config",
 				id: "anthropic-id",
@@ -554,12 +539,12 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			})
 			await provider.activateProviderProfile({ name: "anthropic-config" })
 
-			expect(buildApiHandlerMock).toHaveBeenCalled()
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalled()
 			expect((mockTask as any).apiConfiguration.apiProvider).toBe("anthropic")
 			expect((mockTask as any).apiConfiguration.apiModelId).toBe("claude-3-5-sonnet-20241022")
 
 			// Second switch: B -> A (anthropic -> openrouter gpt-4)
-			buildApiHandlerMock.mockClear()
+			;(mockTask.updateApiConfiguration as any).mockClear()
 			;(provider as any).providerSettingsManager.activateProfile = vi.fn().mockResolvedValue({
 				name: "test-config",
 				id: "test-id",
@@ -568,7 +553,8 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 			})
 			await provider.activateProviderProfile({ name: "test-config" })
 
-			// API handler may or may not rebuild depending on mock model id, but apiConfiguration must be updated
+			// updateApiConfiguration called again, and apiConfiguration must be updated
+			expect(mockTask.updateApiConfiguration).toHaveBeenCalled()
 			expect((mockTask as any).apiConfiguration.apiProvider).toBe("openrouter")
 			expect((mockTask as any).apiConfiguration.openRouterModelId).toBe("openai/gpt-4")
 		})

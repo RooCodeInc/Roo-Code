@@ -550,7 +550,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			try {
 				const newState = await provider.getState()
 				if (newState?.apiConfiguration) {
-					await this.updateApiConfiguration(newState.apiConfiguration)
+					this.updateApiConfiguration(newState.apiConfiguration)
 				}
 			} catch (error) {
 				console.error(
@@ -1167,7 +1167,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 *
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
-	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
+	public updateApiConfiguration(newApiConfiguration: ProviderSettings): void {
 		// Update the configuration and rebuild the API handler
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
@@ -1222,7 +1222,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// This ensures the parser state is synchronized with the selected model
 					const newState = await provider.getState()
 					if (newState?.apiConfiguration) {
-						await this.updateApiConfiguration(newState.apiConfiguration)
+						this.updateApiConfiguration(newState.apiConfiguration)
 					}
 				}
 
