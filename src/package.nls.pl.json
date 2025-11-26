@@ -46,5 +46,6 @@
 	"settings.debugProxy.enabled.description": "**Włącz Debug Proxy** — Kieruj wszystkie wychodzące żądania sieciowe przez proxy na potrzeby debugowania MITM. Aktywne tylko wtedy, gdy uruchamiasz w trybie debugowania (F5).",
 	"settings.debugProxy.serverUrl.description": "URL proxy (np. `http://127.0.0.1:8888`). Używany tylko wtedy, gdy **Debug Proxy** jest włączony.",
 	"settings.debugProxy.tlsInsecure.description": "Akceptuj certyfikaty self-signed z proxy. **Wymagane do inspekcji MITM.** ⚠️ Niezabezpieczone — używaj tylko do lokalnego debugowania.",
-	"settings.taskHistoryRetention.description": "Automatyczne usuwanie historii zadań przy przeładowaniu rozszerzenia. Usuwa zadania starsze niż wybrany okres. Opcje: Nigdy (domyślnie), 90 dni, 60 dni, 30 dni, 7 dni lub 3 dni. Ostrzeżenie: Tej operacji nie można cofnąć i jest wykonywana tylko przy przeładowaniu wtyczki."
+	"settings.taskHistoryRetention.description": "Automatyczne usuwanie historii zadań przy przeładowaniu rozszerzenia. Usuwa zadania starsze niż wybrany okres. Opcje: Nigdy (domyślnie), 90 dni, 60 dni, 30 dni, 7 dni lub 3 dni. Ostrzeżenie: Tej operacji nie można cofnąć i jest wykonywana tylko przy przeładowaniu wtyczki.",
+	"settings.taskHistoryRetention.description": "Automatyczne usuwanie historii zadań przy przeładowaniu rozszerzenia. Usuwa zadania starsze niż wybrany okres. Opcje: Nigdy (domyślnie), 90 dni, 60 dni, 30 dni, 7 dni lub 3 dni. Ostrzeżenie: Tej operacji nie można cofnąć i jest wykonywana tylko przy przeładowaniu rozszerzenia."
 }

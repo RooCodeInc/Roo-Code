@@ -46,5 +46,6 @@
 	"settings.debugProxy.enabled.description": "**Enable Debug Proxy** — Route all outbound network requests through a proxy for MITM debugging. Only active when running in debug mode (F5).",
 	"settings.debugProxy.serverUrl.description": "Proxy URL (e.g., `http://127.0.0.1:8888`). Only used when **Debug Proxy** is enabled.",
 	"settings.debugProxy.tlsInsecure.description": "Accept self-signed certificates from the proxy. **Required for MITM inspection.** ⚠️ Insecure — only use for local debugging.",
-	"settings.taskHistoryRetention.description": "Auto-delete task history on extension reload. Deletes tasks older than the selected period. Options: Never (default), 90 days, 60 days, 30 days, 7 days, or 3 days. Warning: This cannot be undone and only runs on plugin reload."
+	"settings.taskHistoryRetention.description": "Auto-delete task history on extension reload. Deletes tasks older than the selected period. Options: Never (default), 90 days, 60 days, 30 days, 7 days, or 3 days. Warning: This cannot be undone and only runs on plugin reload.",
+	"settings.taskHistoryRetention.description": "Auto-delete task history on extension reload. Deletes tasks older than the selected period. Options: Never (default), 90 days, 60 days, 30 days, 7 days, or 3 days. Warning: This cannot be undone and only runs on extension reload."
 }

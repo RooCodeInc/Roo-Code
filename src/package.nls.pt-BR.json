@@ -46,5 +46,6 @@
 	"settings.debugProxy.enabled.description": "**Ativar Debug Proxy** — Redireciona todas as solicitações de rede de saída por meio de um proxy para depuração MITM. Só fica ativo quando você está executando em modo de depuração (F5).",
 	"settings.debugProxy.serverUrl.description": "URL do proxy (por exemplo, `http://127.0.0.1:8888`). Só é usada quando o **Debug Proxy** está ativado.",
 	"settings.debugProxy.tlsInsecure.description": "Aceitar certificados self-signed do proxy. **Necessário para inspeção MITM.** ⚠️ Inseguro — use apenas para depuração local.",
-	"settings.taskHistoryRetention.description": "Excluir automaticamente o histórico de tarefas ao recarregar a extensão. Exclui tarefas mais antigas que o período selecionado. Opções: Nunca (padrão), 90 dias, 60 dias, 30 dias, 7 dias ou 3 dias. Aviso: Isso não pode ser desfeito e só é executado ao recarregar o plugin."
+	"settings.taskHistoryRetention.description": "Excluir automaticamente o histórico de tarefas ao recarregar a extensão. Exclui tarefas mais antigas que o período selecionado. Opções: Nunca (padrão), 90 dias, 60 dias, 30 dias, 7 dias ou 3 dias. Aviso: Isso não pode ser desfeito e só é executado ao recarregar o plugin.",
+	"settings.taskHistoryRetention.description": "Excluir automaticamente o histórico de tarefas ao recarregar a extensão. Exclui tarefas mais antigas que o período selecionado. Opções: Nunca (padrão), 90 dias, 60 dias, 30 dias, 7 dias ou 3 dias. Aviso: Isso não pode ser desfeito e só é executado ao recarregar a extensão."
 }

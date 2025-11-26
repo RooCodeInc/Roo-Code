@@ -46,5 +46,6 @@
 	"settings.debugProxy.enabled.description": "**Debug Proxy 활성화** — 모든 아웃바운드 네트워크 요청을 MITM 디버깅을 위해 프록시를 통해 라우팅합니다. 디버그 모드(F5)로 실행 중일 때만 활성화됩니다.",
 	"settings.debugProxy.serverUrl.description": "프록시 URL(예: `http://127.0.0.1:8888`). **Debug Proxy** 가 활성화된 경우에만 사용됩니다.",
 	"settings.debugProxy.tlsInsecure.description": "프록시의 self-signed 인증서를 허용합니다. **MITM 검사에 필요합니다.** ⚠️ 안전하지 않으므로 로컬 디버깅에만 사용하세요.",
-	"settings.taskHistoryRetention.description": "확장 프로그램 재로드 시 작업 기록을 자동 삭제합니다. 선택한 기간보다 오래된 작업을 삭제합니다. 옵션: 안 함(기본값), 90일, 60일, 30일, 7일 또는 3일. 경고: 이 작업은 취소할 수 없으며 플러그인 재로드 시에만 실행됩니다."
+	"settings.taskHistoryRetention.description": "확장 프로그램 재로드 시 작업 기록을 자동 삭제합니다. 선택한 기간보다 오래된 작업을 삭제합니다. 옵션: 안 함(기본값), 90일, 60일, 30일, 7일 또는 3일. 경고: 이 작업은 취소할 수 없으며 플러그인 재로드 시에만 실행됩니다.",
+	"settings.taskHistoryRetention.description": "확장 프로그램 재로드 시 작업 기록을 자동 삭제합니다. 선택한 기간보다 오래된 작업을 삭제합니다. 옵션: 안 함(기본값), 90일, 60일, 30일, 7일 또는 3일. 경고: 이 작업은 취소할 수 없으며 확장 프로그램 재로드 시에만 실행됩니다."
 }
