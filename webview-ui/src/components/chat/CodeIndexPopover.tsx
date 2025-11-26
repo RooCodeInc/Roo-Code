@@ -311,44 +311,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 			} else if (event.data.type === "codeIndexSettingsSaved") {
 				if (event.data.success) {
 					setSaveStatus("saved")
-					// Use the settings returned from the backend to update both initial and current settings
-					// This ensures we have the exact values that were saved
-					if (event.data.settings) {
-						const savedSettings = {
-							codebaseIndexEnabled: event.data.settings.codebaseIndexEnabled ?? true,
-							codebaseIndexQdrantUrl: event.data.settings.codebaseIndexQdrantUrl || "",
-							codebaseIndexEmbedderProvider:
-								event.data.settings.codebaseIndexEmbedderProvider || "openai",
-							codebaseIndexEmbedderBaseUrl: event.data.settings.codebaseIndexEmbedderBaseUrl || "",
-							codebaseIndexEmbedderModelId: event.data.settings.codebaseIndexEmbedderModelId || "",
-							codebaseIndexEmbedderModelDimension:
-								event.data.settings.codebaseIndexEmbedderModelDimension || undefined,
-							codebaseIndexSearchMaxResults:
-								event.data.settings.codebaseIndexSearchMaxResults ??
-								CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
-							codebaseIndexSearchMinScore:
-								event.data.settings.codebaseIndexSearchMinScore ??
-								CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
-							codebaseIndexBedrockRegion: event.data.settings.codebaseIndexBedrockRegion || "",
-							codebaseIndexBedrockProfile: event.data.settings.codebaseIndexBedrockProfile || "",
-							codeIndexOpenAiKey: currentSettingsRef.current.codeIndexOpenAiKey,
-							codeIndexQdrantApiKey: currentSettingsRef.current.codeIndexQdrantApiKey,
-							codebaseIndexOpenAiCompatibleBaseUrl:
-								event.data.settings.codebaseIndexOpenAiCompatibleBaseUrl || "",
-							codebaseIndexOpenAiCompatibleApiKey:
-								currentSettingsRef.current.codebaseIndexOpenAiCompatibleApiKey,
-							codebaseIndexGeminiApiKey: currentSettingsRef.current.codebaseIndexGeminiApiKey,
-							codebaseIndexMistralApiKey: currentSettingsRef.current.codebaseIndexMistralApiKey,
-							codebaseIndexVercelAiGatewayApiKey:
-								currentSettingsRef.current.codebaseIndexVercelAiGatewayApiKey,
-						}
-
-						setInitialSettings(savedSettings)
-						setCurrentSettings(savedSettings)
-					}
-
+					// Update initial settings to match current settings after successful save
+					// This ensures hasUnsavedChanges becomes false
+					const savedSettings = { ...currentSettingsRef.current }
+					setInitialSettings(savedSettings)
+					// Also update current settings to maintain consistency
+					setCurrentSettings(savedSettings)
 					// Request secret status to ensure we have the latest state
 					// This is important to maintain placeholder display after save
+
 					vscode.postMessage({ type: "requestCodeIndexSecretStatus" })
 
 					setSaveStatus("idle")
