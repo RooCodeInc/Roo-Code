@@ -89,7 +89,7 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Key",
 		"vercelAiGatewayApiKeyPlaceholder": "Enter your Vercel AI Gateway API key",
-		"bedrockProvider": "AWS Bedrock",
+		"bedrockProvider": "Amazon Bedrock",
 		"bedrockRegionLabel": "AWS Region",
 		"bedrockRegionPlaceholder": "us-east-1",
 		"bedrockProfileLabel": "AWS Profile",

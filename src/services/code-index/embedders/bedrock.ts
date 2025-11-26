@@ -14,14 +14,14 @@ import { TelemetryEventName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 /**
- * AWS Bedrock implementation of the embedder interface with batching and rate limiting
+ * Amazon Bedrock implementation of the embedder interface with batching and rate limiting
  */
 export class BedrockEmbedder implements IEmbedder {
 	private bedrockClient: BedrockRuntimeClient
 	private readonly defaultModelId: string
 
 	/**
-	 * Creates a new AWS Bedrock embedder
+	 * Creates a new Amazon Bedrock embedder
 	 * @param region AWS region for Bedrock service (required)
 	 * @param profile AWS profile name for credentials (required)
 	 * @param modelId Optional model ID override
@@ -32,7 +32,7 @@ export class BedrockEmbedder implements IEmbedder {
 		modelId?: string,
 	) {
 		if (!region || !profile) {
-			throw new Error("Both region and profile are required for AWS Bedrock embedder")
+			throw new Error("Both region and profile are required for Amazon Bedrock embedder")
 		}
 
 		// Initialize the Bedrock client with credentials from the specified profile

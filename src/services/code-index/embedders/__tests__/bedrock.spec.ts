@@ -90,10 +90,10 @@ describe("BedrockEmbedder", () => {
 
 		it("should require both region and profile", () => {
 			expect(() => new BedrockEmbedder("", "profile", "model")).toThrow(
-				"Both region and profile are required for AWS Bedrock embedder",
+				"Both region and profile are required for Amazon Bedrock embedder",
 			)
 			expect(() => new BedrockEmbedder("us-east-1", "", "model")).toThrow(
-				"Both region and profile are required for AWS Bedrock embedder",
+				"Both region and profile are required for Amazon Bedrock embedder",
 			)
 		})
 

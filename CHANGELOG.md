@@ -374,7 +374,7 @@
 
 ## [3.28.11] - 2025-09-29
 
-- Fix: Correct AWS Bedrock Claude Sonnet 4.5 model identifier (#8371 by @sunhyung, PR by @app/roomote)
+- Fix: Correct Amazon Bedrock Claude Sonnet 4.5 model identifier (#8371 by @sunhyung, PR by @app/roomote)
 - Fix: Correct Claude Sonnet 4.5 model ID format (thanks @daniel-lxs!)
 
 ## [3.28.10] - 2025-09-29
@@ -706,7 +706,7 @@
 ## [3.25.14] - 2025-08-13
 
 - Fix: Only include verbosity parameter for models that support it (#7054 by @eastonmeth, PR by @app/roomote)
-- Fix: AWS Bedrock 1M context - Move anthropic_beta to additionalModelRequestFields (thanks @daniel-lxs!)
+- Fix: Amazon Bedrock 1M context - Move anthropic_beta to additionalModelRequestFields (thanks @daniel-lxs!)
 - Fix: Make cancelling requests more responsive by reverting recent changes
 
 ## [3.25.13] - 2025-08-12
@@ -1071,7 +1071,7 @@
 - Add user-configurable search score threshold slider for semantic search (thanks @hannesrudolph!)
 - Add default headers and testing for litellm fetcher (thanks @andrewshu2000!)
 - Fix consistent cancellation error messages for thinking vs streaming phases
-- Fix AWS Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
+- Fix Amazon Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
 - Fix URL loading timeout issues in @ mentions (thanks @MuriloFP!)
 - Fix API retry exponential backoff capped at 10 minutes (thanks @MuriloFP!)
 - Fix Qdrant URL field auto-filling with default value (thanks @SannidhyaSah!)
@@ -1085,7 +1085,7 @@
 - Suppress Mermaid error rendering
 - Improve Mermaid buttons with light background in light mode (thanks @chrarnoldus!)
 - Add .vscode/ to write-protected files/directories
-- Update AWS Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
+- Update Amazon Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
 
 ## [3.22.5] - 2025-06-28
 
@@ -1709,7 +1709,7 @@
 - Improved display of diff errors + easy copying for investigation
 - Fixes to .vscodeignore (thanks @franekp!)
 - Fix a zh-CN translation for model capabilities (thanks @zhangtony239!)
-- Rename AWS Bedrock to Amazon Bedrock (thanks @ronyblum!)
+- Rename Amazon Bedrock to Amazon Bedrock (thanks @ronyblum!)
 - Update extension title and description (thanks @StevenTCramer!)
 
 ## [3.11.12] - 2025-04-09
@@ -1958,12 +1958,12 @@
 - PowerShell-specific command handling (thanks @KJ7LNW!)
 - OpenAI-compatible DeepSeek/QwQ reasoning support (thanks @lightrabbit!)
 - Anthropic-style prompt caching in the OpenAI-compatible provider (thanks @dleen!)
-- Add Deepseek R1 for AWS Bedrock (thanks @ATempsch!)
+- Add Deepseek R1 for Amazon Bedrock (thanks @ATempsch!)
 - Fix MarkdownBlock text color for Dark High Contrast theme (thanks @cannuri!)
 - Add gemini-2.0-pro-exp-02-05 model to vertex (thanks @shohei-ihaya!)
 - Bring back progress status for multi-diff edits (thanks @qdaxb!)
 - Refactor alert dialog styles to use the correct vscode theme (thanks @cannuri!)
-- Custom ARNs in AWS Bedrock (thanks @Smartsheet-JB-Brown!)
+- Custom ARNs in Amazon Bedrock (thanks @Smartsheet-JB-Brown!)
 - Update MCP servers directory path for platform compatibility (thanks @hannesrudolph!)
 - Fix browser system prompt inclusion rules (thanks @cannuri!)
 - Publish git tags to github from CI (thanks @pdecat!)
@@ -2101,7 +2101,7 @@
 
 ## [3.7.1] - 2025-02-24
 
-- Add AWS Bedrock support for Sonnet 3.7 and update some defaults to Sonnet 3.7 instead of 3.5
+- Add Amazon Bedrock support for Sonnet 3.7 and update some defaults to Sonnet 3.7 instead of 3.5
 
 ## [3.7.0] - 2025-02-24
 
@@ -2118,7 +2118,7 @@
 
 ## [3.3.24] - 2025-02-20
 
-- Fixed a bug with region selection preventing AWS Bedrock profiles from being saved (thanks @oprstchn!)
+- Fixed a bug with region selection preventing Amazon Bedrock profiles from being saved (thanks @oprstchn!)
 - Updated the price of gpt-4o (thanks @marvijo-code!)
 
 ## [3.3.23] - 2025-02-20
@@ -2302,7 +2302,7 @@
 - Reverts provider key entry back to checking onInput instead of onChange to hopefully address issues entering API keys (thanks @samhvw8!)
 - Added explicit checkbox to use Azure for OpenAI compatible providers (thanks @samhvw8!)
 - Fixed Glama usage reporting (thanks @punkpeye!)
-- Added Llama 3.3 70B Instruct model to the AWS Bedrock provider options (thanks @Premshay!)
+- Added Llama 3.3 70B Instruct model to the Amazon Bedrock provider options (thanks @Premshay!)
 
 ## [3.2.7]
 
