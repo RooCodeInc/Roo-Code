@@ -829,6 +829,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "并行工具调用",
+			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
 		}
 	},
 	"promptCaching": {
