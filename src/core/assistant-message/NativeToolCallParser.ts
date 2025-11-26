@@ -313,7 +313,23 @@ export class NativeToolCallParser {
 		switch (name) {
 			case "read_file":
 				if (partialArgs.files && Array.isArray(partialArgs.files)) {
-					nativeArgs = { files: partialArgs.files }
+					// Convert line_ranges strings to lineRanges objects
+					const convertedFiles = partialArgs.files.map((file: any) => {
+						const entry: any = { path: file.path }
+						if (file.line_ranges && Array.isArray(file.line_ranges)) {
+							entry.lineRanges = file.line_ranges
+								.map((range: string) => {
+									const match = String(range).match(/^(\d+)-(\d+)$/)
+									if (match) {
+										return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+									}
+									return null
+								})
+								.filter(Boolean)
+						}
+						return entry
+					})
+					nativeArgs = { files: convertedFiles }
 				}
 				break
 
@@ -558,7 +574,23 @@ export class NativeToolCallParser {
 			switch (toolCall.name) {
 				case "read_file":
 					if (args.files && Array.isArray(args.files)) {
-						nativeArgs = { files: args.files } as NativeArgsFor<TName>
+						// Convert line_ranges strings to lineRanges objects
+						const convertedFiles = args.files.map((file: any) => {
+							const entry: FileEntry = { path: file.path }
+							if (file.line_ranges && Array.isArray(file.line_ranges)) {
+								entry.lineRanges = file.line_ranges
+									.map((range: string) => {
+										const match = String(range).match(/^(\d+)-(\d+)$/)
+										if (match) {
+											return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+										}
+										return null
+									})
+									.filter(Boolean)
+							}
+							return entry
+						})
+						nativeArgs = { files: convertedFiles } as NativeArgsFor<TName>
 					}
 					break
 
