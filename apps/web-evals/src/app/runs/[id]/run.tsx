@@ -1,9 +1,10 @@
 "use client"
 
-import { useMemo } from "react"
-import { LoaderCircle } from "lucide-react"
+import { useMemo, useState, useCallback, useEffect } from "react"
+import { toast } from "sonner"
+import { LoaderCircle, FileText, Copy, Check } from "lucide-react"
 
-import type { Run, TaskMetrics as _TaskMetrics } from "@roo-code/evals"
+import type { Run, TaskMetrics as _TaskMetrics, Task } from "@roo-code/evals"
 
 import { formatCurrency, formatDuration, formatTokens, formatToolUsageSuccessRate } from "@/lib/formatters"
 import { useRunStatus } from "@/hooks/use-run-status"
@@ -17,6 +18,12 @@ import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	ScrollArea,
+	Button,
 } from "@/components/ui"
 
 import { TaskStatus } from "./task-status"
@@ -35,9 +42,113 @@ function getToolAbbreviation(toolName: string): string {
 		.join("")
 }
 
+// Format log content with basic highlighting
+function formatLogContent(log: string): React.ReactNode[] {
+	const lines = log.split("\n")
+	return lines.map((line, index) => {
+		// Highlight timestamps [YYYY-MM-DDTHH:MM:SS.sssZ]
+		let formattedLine = line.replace(
+			/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/g,
+			'<span class="text-blue-400">[$1]</span>',
+		)
+
+		// Highlight log levels
+		formattedLine = formattedLine.replace(/\|\s*(INFO)\s*\|/g, '| <span class="text-green-400">$1</span> |')
+		formattedLine = formattedLine.replace(
+			/\|\s*(WARN|WARNING)\s*\|/g,
+			'| <span class="text-yellow-400">$1</span> |',
+		)
+		formattedLine = formattedLine.replace(/\|\s*(ERROR)\s*\|/g, '| <span class="text-red-400">$1</span> |')
+		formattedLine = formattedLine.replace(/\|\s*(DEBUG)\s*\|/g, '| <span class="text-gray-400">$1</span> |')
+
+		// Highlight task identifiers like taskCreated, taskFocused, etc.
+		formattedLine = formattedLine.replace(
+			/(taskCreated|taskFocused|taskStarted|taskCompleted|EvalPass|EvalFail)/g,
+			'<span class="text-purple-400">$1</span>',
+		)
+
+		// Highlight message arrows
+		formattedLine = formattedLine.replace(/→/g, '<span class="text-cyan-400">→</span>')
+
+		return (
+			<div
+				key={index}
+				className="hover:bg-white/5"
+				dangerouslySetInnerHTML={{ __html: formattedLine || "&nbsp;" }}
+			/>
+		)
+	})
+}
+
 export function Run({ run }: { run: Run }) {
 	const runStatus = useRunStatus(run)
 	const { tasks, tokenUsage, usageUpdatedAt } = runStatus
+
+	const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+	const [taskLog, setTaskLog] = useState<string | null>(null)
+	const [isLoadingLog, setIsLoadingLog] = useState(false)
+	const [copied, setCopied] = useState(false)
+
+	const onCopyLog = useCallback(async () => {
+		if (!taskLog) return
+
+		try {
+			await navigator.clipboard.writeText(taskLog)
+			setCopied(true)
+			toast.success("Log copied to clipboard")
+			setTimeout(() => setCopied(false), 2000)
+		} catch (error) {
+			console.error("Failed to copy log:", error)
+			toast.error("Failed to copy log")
+		}
+	}, [taskLog])
+
+	// Handle ESC key to close the dialog
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && selectedTask) {
+				setSelectedTask(null)
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown)
+		return () => document.removeEventListener("keydown", handleKeyDown)
+	}, [selectedTask])
+
+	const onViewTaskLog = useCallback(
+		async (task: Task) => {
+			// Only allow viewing logs for completed tasks
+			if (task.passed === null || task.passed === undefined) {
+				toast.error("Task is still running")
+				return
+			}
+
+			setSelectedTask(task)
+			setIsLoadingLog(true)
+			setTaskLog(null)
+
+			try {
+				const response = await fetch(`/api/runs/${run.id}/logs/${task.id}`)
+
+				if (!response.ok) {
+					const error = await response.json()
+					toast.error(error.error || "Failed to load log")
+					setSelectedTask(null)
+					return
+				}
+
+				const data = await response.json()
+				setTaskLog(data.logContent)
+			} catch (error) {
+				console.error("Error loading task log:", error)
+				toast.error("Failed to load log")
+				setSelectedTask(null)
+			} finally {
+				setIsLoadingLog(false)
+			}
+		},
+		[run.id],
+	)
 
 	const taskMetrics: Record<number, TaskMetrics> = useMemo(() => {
 		const metrics: Record<number, TaskMetrics> = {}
@@ -241,15 +352,28 @@ export function Run({ run }: { run: Run }) {
 						</TableHeader>
 						<TableBody>
 							{tasks.map((task) => (
-								<TableRow key={task.id}>
+								<TableRow
+									key={task.id}
+									className={task.finishedAt ? "cursor-pointer hover:bg-muted/50" : ""}
+									onClick={() => task.finishedAt && onViewTaskLog(task)}>
 									<TableCell>
 										<div className="flex items-center gap-2">
 											<TaskStatus
 												task={task}
 												running={!!task.startedAt || !!tokenUsage.get(task.id)}
 											/>
-											<div>
-												{task.language}/{task.exercise}
+											<div className="flex items-center gap-2">
+												<span>
+													{task.language}/{task.exercise}
+												</span>
+												{task.finishedAt && (
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<FileText className="size-3 text-muted-foreground" />
+														</TooltipTrigger>
+														<TooltipContent>Click to view log</TooltipContent>
+													</Tooltip>
+												)}
 											</div>
 										</div>
 									</TableCell>
@@ -282,6 +406,60 @@ export function Run({ run }: { run: Run }) {
 					</Table>
 				)}
 			</div>
+
+			{/* Task Log Dialog - Full Screen */}
+			<Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+				<DialogContent className="w-[95vw] !max-w-[95vw] h-[90vh] flex flex-col">
+					<DialogHeader className="flex-shrink-0">
+						<div className="flex items-center justify-between pr-8">
+							<DialogTitle className="flex items-center gap-2">
+								<FileText className="size-4" />
+								{selectedTask?.language}/{selectedTask?.exercise}
+								<span
+									className={`ml-2 text-sm ${selectedTask?.passed ? "text-green-600" : "text-red-600"}`}>
+									({selectedTask?.passed ? "Passed" : "Failed"})
+								</span>
+							</DialogTitle>
+							{taskLog && (
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={onCopyLog}
+									className="flex items-center gap-1">
+									{copied ? (
+										<>
+											<Check className="size-4" />
+											Copied!
+										</>
+									) : (
+										<>
+											<Copy className="size-4" />
+											Copy Log
+										</>
+									)}
+								</Button>
+							)}
+						</div>
+					</DialogHeader>
+					<div className="flex-1 min-h-0 overflow-hidden">
+						{isLoadingLog ? (
+							<div className="flex items-center justify-center h-full">
+								<LoaderCircle className="size-6 animate-spin" />
+							</div>
+						) : taskLog ? (
+							<ScrollArea className="h-full w-full">
+								<div className="text-xs font-mono bg-muted p-4 rounded-md overflow-x-auto">
+									{formatLogContent(taskLog)}
+								</div>
+							</ScrollArea>
+						) : (
+							<div className="flex items-center justify-center h-full text-muted-foreground">
+								Log file not available (may have been cleared)
+							</div>
+						)}
+					</div>
+				</DialogContent>
+			</Dialog>
 		</>
 	)
 }
