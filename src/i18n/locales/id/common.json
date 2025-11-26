@@ -121,7 +121,10 @@
 			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid."
+			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid.",
+			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
+			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
+			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
 		},
 		"manual_url_empty": "Silakan masukkan URL callback yang valid",
 		"manual_url_no_query": "URL callback tidak valid: parameter query hilang",

@@ -121,7 +121,10 @@
 			"authenticationRequired": "Nhà cung cấp Roo yêu cầu xác thực đám mây. Vui lòng đăng nhập vào Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "Khóa API chứa ký tự không hợp lệ."
+			"invalidKeyInvalidChars": "Khóa API chứa ký tự không hợp lệ.",
+			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
+			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
+			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
 		},
 		"manual_url_empty": "Vui lòng nhập URL callback hợp lệ",
 		"manual_url_no_query": "URL callback không hợp lệ: thiếu tham số truy vấn",

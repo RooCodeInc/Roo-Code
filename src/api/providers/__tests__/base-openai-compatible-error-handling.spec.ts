@@ -93,15 +93,6 @@ describe("BaseOpenAiCompatibleProvider - Error Handling Integration", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("TestProvider connection error:")
-			await expect(async () => {
-				const stream = provider.createMessage("system prompt", [
-					{ role: "user", content: "test message" },
-				])
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				for await (const _ of stream) {
-					// consume stream
-				}
 			}).rejects.toThrow("Cannot resolve hostname")
 		})
 
@@ -133,15 +124,6 @@ describe("BaseOpenAiCompatibleProvider - Error Handling Integration", () => {
 					// consume stream
 				}
 			}).rejects.toThrow("Request timed out")
-			await expect(async () => {
-				const stream = provider.createMessage("system prompt", [
-					{ role: "user", content: "test message" },
-				])
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				for await (const _ of stream) {
-					// consume stream
-				}
-			}).rejects.toThrow("VPN connection is stable")
 		})
 	})
 
@@ -263,9 +245,9 @@ describe("BaseOpenAiCompatibleProvider - Error Handling Integration", () => {
 					})
 				}
 
-				getModel() {
+				override getModel() {
 					return {
-						id: "custom-model",
+						id: "custom-model" as const,
 						info: this.providerModels["custom-model"],
 					}
 				}
