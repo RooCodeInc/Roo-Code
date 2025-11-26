@@ -438,10 +438,10 @@ describe("attemptCompletionTool", () => {
 
 				expect(mockSay).toHaveBeenCalledWith(
 					"error",
-					expect.stringContaining("Cannot execute attempt_completion because a previous tool call failed"),
+					expect.stringContaining("errors.attempt_completion_tool_failed"),
 				)
 				expect(mockPushToolResult).toHaveBeenCalledWith(
-					expect.stringContaining("Cannot execute attempt_completion because a previous tool call failed"),
+					expect.stringContaining("errors.attempt_completion_tool_failed"),
 				)
 			})
 
