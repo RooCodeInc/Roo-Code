@@ -7,7 +7,13 @@ import type { Run as EvalsRun, TaskMetrics as EvalsTaskMetrics } from "@roo-code
 import type { ToolName } from "@roo-code/types"
 
 import { deleteRun } from "@/actions/runs"
-import { formatCurrency, formatDuration, formatTokens, formatToolUsageSuccessRate } from "@/lib/formatters"
+import {
+	formatCurrency,
+	formatDateTime,
+	formatDuration,
+	formatTokens,
+	formatToolUsageSuccessRate,
+} from "@/lib/formatters"
 import { useCopyRun } from "@/hooks/use-copy-run"
 import {
 	Button,
@@ -72,7 +78,11 @@ export function Run({ run, taskMetrics, toolColumns }: RunProps) {
 	return (
 		<>
 			<TableRow className="cursor-pointer hover:bg-muted/50" onClick={handleRowClick}>
-				<TableCell>{run.model}</TableCell>
+				<TableCell className="max-w-[200px] truncate">{run.model}</TableCell>
+				<TableCell>{run.settings?.apiProvider ?? "-"}</TableCell>
+				<TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+					{formatDateTime(run.createdAt)}
+				</TableCell>
 				<TableCell>{run.passed}</TableCell>
 				<TableCell>{run.failed}</TableCell>
 				<TableCell>
