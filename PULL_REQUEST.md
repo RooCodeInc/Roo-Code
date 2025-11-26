@@ -31,10 +31,10 @@ Enhanced error handling for OpenAI-compatible API providers to detect and provid
 ## Testing
 
 ### Manual Testing:
-- ✅ Tested with unreachable internal endpoint (Kong AI Gateway at mskongai.use.ucdp.net)
-- ✅ Verified DNS resolution failure produces VPN guidance message
-- ✅ Verified error messages are clear and actionable
-- ✅ Error logging still captures technical details for debugging
+- Tested with unreachable internal endpoint (Kong AI Gateway at mskongai.use.ucdp.net)
+- Verified DNS resolution failure produces VPN guidance message
+- Verified error messages are clear and actionable
+- Error logging still captures technical details for debugging
 
 ### Error Message Examples:
 
