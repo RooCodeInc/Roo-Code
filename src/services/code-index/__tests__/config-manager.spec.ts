@@ -104,6 +104,7 @@ describe("CodeIndexConfigManager", () => {
 				modelId: undefined,
 				openAiOptions: { openAiNativeApiKey: "" },
 				ollamaOptions: { ollamaBaseUrl: "" },
+				bedrockOptions: { region: "us-east-1", profile: undefined },
 				qdrantUrl: "http://localhost:6333",
 				qdrantApiKey: "",
 				searchMinScore: 0.4,
