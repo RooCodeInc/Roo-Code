@@ -808,8 +808,9 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_file":
 					// Check if this model should use the simplified single-file read tool
+					// Only use simplified tool for XML protocol - native protocol works with standard tool
 					const modelId = cline.api.getModel().id
-					if (shouldUseSingleFileRead(modelId)) {
+					if (shouldUseSingleFileRead(modelId) && toolProtocol !== TOOL_PROTOCOL.NATIVE) {
 						await simpleReadFileTool(
 							cline,
 							block,
