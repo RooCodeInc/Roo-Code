@@ -51,11 +51,8 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderProvider: "openai",
 			codebaseIndexEmbedderBaseUrl: "",
 			codebaseIndexEmbedderModelId: "",
-			codebaseIndexEmbedderModelDimension: undefined,
 			codebaseIndexSearchMinScore: undefined,
 			codebaseIndexSearchMaxResults: undefined,
-			codebaseIndexOpenAiCompatibleBaseUrl: "",
-			codebaseIndexOpenAiCompatibleModelDimension: undefined,
 			codebaseIndexBedrockRegion: "us-east-1",
 			codebaseIndexBedrockProfile: "",
 		}
