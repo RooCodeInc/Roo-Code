@@ -30,6 +30,7 @@ export async function browserActionTool(
 			// if the block is complete and we don't have a valid action cline is a mistake
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("browser_action")
+			cline.didToolFailInCurrentTurn = true
 			pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "action"))
 			// Do not close the browser on parameter validation errors
 		}
@@ -63,6 +64,7 @@ export async function browserActionTool(
 				if (!url) {
 					cline.consecutiveMistakeCount++
 					cline.recordToolError("browser_action")
+					cline.didToolFailInCurrentTurn = true
 					pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "url"))
 					// Do not close the browser on parameter validation errors
 					return
@@ -102,6 +104,7 @@ export async function browserActionTool(
 					if (!coordinate) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "coordinate"))
 						// Do not close the browser on parameter validation errors
 						return // can't be within an inner switch
@@ -118,6 +121,7 @@ export async function browserActionTool(
 					} catch (error) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(
 							await cline.sayAndCreateMissingParamError(
 								"browser_action",
@@ -133,6 +137,7 @@ export async function browserActionTool(
 					if (!text) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "text"))
 						// Do not close the browser on parameter validation errors
 						return
@@ -143,6 +148,7 @@ export async function browserActionTool(
 					if (!size) {
 						cline.consecutiveMistakeCount++
 						cline.recordToolError("browser_action")
+						cline.didToolFailInCurrentTurn = true
 						pushToolResult(await cline.sayAndCreateMissingParamError("browser_action", "size"))
 						// Do not close the browser on parameter validation errors
 						return

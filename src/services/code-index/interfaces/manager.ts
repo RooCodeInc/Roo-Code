@@ -79,7 +79,6 @@ export type EmbedderProvider =
 	| "vercel-ai-gateway"
 	| "bedrock"
 	| "openrouter"
-	| "roo"
 
 export interface IndexProgressUpdate {
 	systemStatus: IndexingState

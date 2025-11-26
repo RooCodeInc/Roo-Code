@@ -102,6 +102,24 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					inputPrice: 0,
 					outputPrice: 0,
 				},
+				"minimax/minimax-m2": {
+					maxTokens: 32_768,
+					contextWindow: 1_000_000,
+					supportsImages: false,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 0.15,
+					outputPrice: 0.6,
+				},
+				"anthropic/claude-haiku-4.5": {
+					maxTokens: 8_192,
+					contextWindow: 200_000,
+					supportsImages: true,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 0.8,
+					outputPrice: 4,
+				},
 			}
 		}
 		return {}
@@ -401,6 +419,41 @@ describe("RooHandler", () => {
 				expect(modelInfo.info.maxTokens).toBeDefined()
 				expect(modelInfo.info.contextWindow).toBeDefined()
 			}
+		})
+
+		it("should apply defaultToolProtocol: native for minimax/minimax-m2", () => {
+			const handlerWithMinimax = new RooHandler({
+				apiModelId: "minimax/minimax-m2",
+			})
+			const modelInfo = handlerWithMinimax.getModel()
+			expect(modelInfo.id).toBe("minimax/minimax-m2")
+			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
+			// Verify cached model info is preserved
+			expect(modelInfo.info.maxTokens).toBe(32_768)
+			expect(modelInfo.info.contextWindow).toBe(1_000_000)
+		})
+
+		it("should apply defaultToolProtocol: native for anthropic/claude-haiku-4.5", () => {
+			const handlerWithHaiku = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+			const modelInfo = handlerWithHaiku.getModel()
+			expect(modelInfo.id).toBe("anthropic/claude-haiku-4.5")
+			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
+			// Verify cached model info is preserved
+			expect(modelInfo.info.maxTokens).toBe(8_192)
+			expect(modelInfo.info.contextWindow).toBe(200_000)
+		})
+
+		it("should not override existing properties when applying MODEL_DEFAULTS", () => {
+			const handlerWithMinimax = new RooHandler({
+				apiModelId: "minimax/minimax-m2",
+			})
+			const modelInfo = handlerWithMinimax.getModel()
+			// The defaults should be merged, but not overwrite existing cached values
+			expect(modelInfo.info.supportsNativeTools).toBe(true)
+			expect(modelInfo.info.inputPrice).toBe(0.15)
+			expect(modelInfo.info.outputPrice).toBe(0.6)
 		})
 	})
 

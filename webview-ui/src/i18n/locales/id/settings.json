@@ -78,8 +78,6 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Kunci API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
-		"rooProvider": "Roo Code Cloud",
-		"rooCloudAuthNote": "Roo Code Cloud menggunakan autentikasi akun Anda. Masuk ke Roo Code Cloud untuk menggunakan penyedia ini.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Kunci API:",
 		"mistralApiKeyPlaceholder": "Masukkan kunci API Mistral Anda",
@@ -839,6 +837,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
 			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Panggilan tool paralel",
+			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
 		}
 	},
 	"promptCaching": {

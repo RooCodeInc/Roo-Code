@@ -83,8 +83,6 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Clé d'API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Entrez votre clé d'API OpenRouter",
-		"rooProvider": "Roo Code Cloud",
-		"rooCloudAuthNote": "Roo Code Cloud utilise l'authentification de ton compte. Connecte-toi à Roo Code Cloud pour utiliser ce fournisseur.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Clé d'API:",
 		"mistralApiKeyPlaceholder": "Entrez votre clé d'API Mistral",
@@ -809,6 +807,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",
 			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Appels d'outils parallèles",
+			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
 		}
 	},
 	"promptCaching": {

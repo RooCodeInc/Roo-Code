@@ -191,15 +191,19 @@ describe("askFollowupQuestionTool", () => {
 			const result = NativeToolCallParser.finalizeStreamingToolCall("call_456")
 
 			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
 			expect(result?.name).toBe("ask_followup_question")
 			expect(result?.partial).toBe(false)
-			expect(result?.nativeArgs).toEqual({
-				question: "Choose an option",
-				follow_up: [
-					{ text: "Yes", mode: "code" },
-					{ text: "No", mode: null },
-				],
-			})
+			// Type guard: regular tools have type 'tool_use', MCP tools have type 'mcp_tool_use'
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toEqual({
+					question: "Choose an option",
+					follow_up: [
+						{ text: "Yes", mode: "code" },
+						{ text: "No", mode: null },
+					],
+				})
+			}
 		})
 	})
 })

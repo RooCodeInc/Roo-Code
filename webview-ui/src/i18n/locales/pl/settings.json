@@ -81,8 +81,6 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Klucz API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
-		"rooProvider": "Roo Code Cloud",
-		"rooCloudAuthNote": "Roo Code Cloud używa uwierzytelnienia twojego konta. Zaloguj się do Roo Code Cloud, aby używać tego dostawcy.",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
 		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",
@@ -810,6 +808,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
 			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Równoległe wywołania narzędzi",
+			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
 		}
 	},
 	"promptCaching": {

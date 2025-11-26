@@ -302,6 +302,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContentReady = false
 	didRejectTool = false
 	didAlreadyUseTool = false
+	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
@@ -549,7 +550,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			try {
 				const newState = await provider.getState()
 				if (newState?.apiConfiguration) {
-					await this.updateApiConfiguration(newState.apiConfiguration)
+					this.updateApiConfiguration(newState.apiConfiguration)
 				}
 			} catch (error) {
 				console.error(
@@ -1166,7 +1167,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 *
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
-	public async updateApiConfiguration(newApiConfiguration: ProviderSettings): Promise<void> {
+	public updateApiConfiguration(newApiConfiguration: ProviderSettings): void {
 		// Update the configuration and rebuild the API handler
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
@@ -1221,7 +1222,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// This ensures the parser state is synchronized with the selected model
 					const newState = await provider.getState()
 					if (newState?.apiConfiguration) {
-						await this.updateApiConfiguration(newState.apiConfiguration)
+						this.updateApiConfiguration(newState.apiConfiguration)
 					}
 				}
 
@@ -1272,6 +1273,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
+		// Determine if we're using native tool protocol for proper message handling
+		const modelInfo = this.api.getModel().info
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const useNativeTools = isNativeProtocol(protocol)
+
 		const {
 			messages,
 			summary,
@@ -1287,6 +1293,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
+			useNativeTools, // Pass native tools flag for proper message handling
 		)
 		if (error) {
 			this.say(
@@ -2249,6 +2256,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
+				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
+				// only prevent attempt_completion within the same assistant message, not across turns
+				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")
+				this.didToolFailInCurrentTurn = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
 				this.assistantMessageParser?.reset()
@@ -2458,7 +2469,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// Mark that we have new content to process
 								this.userMessageContentReady = false
 
-								// Present the tool call to user
+								// Present the tool call to user - presentAssistantMessage will execute
+								// tools sequentially and accumulate all results in userMessageContent
 								presentAssistantMessage(this)
 								break
 							}
@@ -2535,6 +2547,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							assistantMessage +=
 								"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]"
 							break
+						}
+					}
+
+					// Finalize any remaining streaming tool calls that weren't explicitly ended
+					// This is critical for MCP tools which need tool_call_end events to be properly
+					// converted from ToolUse to McpToolUse via finalizeStreamingToolCall()
+					const finalizeEvents = NativeToolCallParser.finalizeRawChunks()
+					for (const event of finalizeEvents) {
+						if (event.type === "tool_call_end") {
+							// Finalize the streaming tool call
+							const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
+
+							if (finalToolUse) {
+								// Store the tool call ID
+								;(finalToolUse as any).id = event.id
+
+								// Get the index and replace partial with final
+								const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+								if (toolUseIndex !== undefined) {
+									this.assistantMessageContent[toolUseIndex] = finalToolUse
+								}
+
+								// Clean up tracking
+								this.streamingToolCallIndices.delete(event.id)
+
+								// Mark that we have new content to process
+								this.userMessageContentReady = false
+
+								// Present the finalized tool call
+								presentAssistantMessage(this)
+							}
 						}
 					}
 
@@ -2803,12 +2846,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.assistantMessageContent = parsedBlocks
 				}
 
-				if (partialBlocks.length > 0) {
+				// Only present partial blocks that were just completed (from XML parsing)
+				// Native tool blocks were already presented during streaming, so don't re-present them
+				if (partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")) {
 					// If there is content to update then it will complete and
 					// update `this.userMessageContentReady` to true, which we
-					// `pWaitFor` before making the next request. All this is really
-					// doing is presenting the last partial message that we just set
-					// to complete.
+					// `pWaitFor` before making the next request.
 					presentAssistantMessage(this)
 				}
 
@@ -2845,7 +2888,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				// Check if we have any content to process (text or tool uses)
 				const hasTextContent = assistantMessage.length > 0
-				const hasToolUses = this.assistantMessageContent.some((block) => block.type === "tool_use")
+				const hasToolUses = this.assistantMessageContent.some(
+					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+				)
 
 				if (hasTextContent || hasToolUses) {
 					// Display grounding sources to the user if they exist
@@ -2870,20 +2915,38 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					// Add tool_use blocks with their IDs for native protocol
-					const toolUseBlocks = this.assistantMessageContent.filter((block) => block.type === "tool_use")
-					for (const toolUse of toolUseBlocks) {
-						// Get the tool call ID that was stored during parsing
-						const toolCallId = (toolUse as any).id
-						if (toolCallId) {
-							// nativeArgs is already in the correct API format for all tools
-							const input = toolUse.nativeArgs || toolUse.params
+					// This handles both regular ToolUse and McpToolUse types
+					const toolUseBlocks = this.assistantMessageContent.filter(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+					for (const block of toolUseBlocks) {
+						if (block.type === "mcp_tool_use") {
+							// McpToolUse already has the original tool name (e.g., "mcp_serverName_toolName")
+							// The arguments are the raw tool arguments (matching the simplified schema)
+							const mcpBlock = block as import("../../shared/tools").McpToolUse
+							if (mcpBlock.id) {
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: mcpBlock.id,
+									name: mcpBlock.name, // Original dynamic name
+									input: mcpBlock.arguments, // Direct tool arguments
+								})
+							}
+						} else {
+							// Regular ToolUse
+							const toolUse = block as import("../../shared/tools").ToolUse
+							const toolCallId = toolUse.id
+							if (toolCallId) {
+								// nativeArgs is already in the correct API format for all tools
+								const input = toolUse.nativeArgs || toolUse.params
 
-							assistantContent.push({
-								type: "tool_use" as const,
-								id: toolCallId,
-								name: toolUse.name,
-								input,
-							})
+								assistantContent.push({
+									type: "tool_use" as const,
+									id: toolCallId,
+									name: toolUse.name,
+									input,
+								})
+							}
 						}
 					}
 
@@ -2917,7 +2980,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
-					const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
+					const didToolUse = this.assistantMessageContent.some(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
 
 					if (!didToolUse) {
 						const modelInfo = this.api.getModel().info
@@ -3182,6 +3247,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
 
+		// Determine if we're using native tool protocol for proper message handling
+		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		const useNativeTools = isNativeProtocol(protocol)
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await manageContext({
 			messages: this.apiConversationHistory,
@@ -3195,6 +3264,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			profileThresholds,
 			currentProfileId,
+			useNativeTools,
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -3297,6 +3367,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
 
+			// Determine if we're using native tool protocol for proper message handling
+			const modelInfoForProtocol = this.api.getModel().info
+			const protocol = resolveToolProtocol(this.apiConfiguration, modelInfoForProtocol)
+			const useNativeTools = isNativeProtocol(protocol)
+
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens,
@@ -3311,6 +3386,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				condensingApiHandler,
 				profileThresholds,
 				currentProfileId,
+				useNativeTools,
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)

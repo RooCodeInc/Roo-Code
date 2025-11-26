@@ -81,8 +81,6 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API 키",
 		"openRouterApiKeyPlaceholder": "OpenRouter API 키를 입력하세요",
-		"rooProvider": "Roo Code Cloud",
-		"rooCloudAuthNote": "Roo Code Cloud는 계정 인증을 사용합니다. 이 제공업체를 사용하려면 Roo Code Cloud에 로그인하세요.",
 		"openaiCompatibleProvider": "OpenAI 호환",
 		"openAiKeyLabel": "OpenAI API 키",
 		"openAiKeyPlaceholder": "OpenAI API 키를 입력하세요",
@@ -810,6 +808,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "모델 시작 슬래시 명령 활성화",
 			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "병렬 도구 호출",
+			"description": "활성화되면 네이티브 프로토콜이 단일 어시스턴트 메시지 턴에서 여러 도구를 실행할 수 있습니다."
 		}
 	},
 	"promptCaching": {
