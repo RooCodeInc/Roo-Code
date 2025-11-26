@@ -19,9 +19,54 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 
+/**
+ * List of content block types that are NOT valid for Anthropic API.
+ * These are internal Roo Code types or types from other providers (e.g., Gemini's thoughtSignature).
+ * Valid Anthropic types are: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ */
+const INVALID_ANTHROPIC_BLOCK_TYPES = new Set([
+	"reasoning", // Internal Roo Code reasoning format
+	"thoughtSignature", // Gemini's encrypted reasoning signature
+])
+
+/**
+ * Filters out non-Anthropic content blocks from messages before sending to Anthropic API.
+ * This handles:
+ * - Internal "reasoning" blocks (Roo Code's internal representation)
+ * - Gemini's "thoughtSignature" blocks (encrypted reasoning continuity tokens)
+ *
+ * Anthropic API only accepts: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ */
+function filterNonAnthropicBlocks(messages: Anthropic.Messages.MessageParam[]): Anthropic.Messages.MessageParam[] {
+	return messages
+		.map((message) => {
+			if (typeof message.content === "string") {
+				return message
+			}
+
+			const filteredContent = message.content.filter((block) => {
+				const blockType = (block as { type: string }).type
+				// Filter out any block types that Anthropic doesn't recognize
+				return !INVALID_ANTHROPIC_BLOCK_TYPES.has(blockType)
+			})
+
+			// If all content was filtered out, return undefined to filter the message later
+			if (filteredContent.length === 0) {
+				return undefined
+			}
+
+			return {
+				...message,
+				content: filteredContent,
+			}
+		})
+		.filter((message): message is Anthropic.Messages.MessageParam => message !== undefined)
+}
+
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
+	private lastThinkingSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -41,9 +86,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Reset thinking signature for this request
+		this.lastThinkingSignature = undefined
+
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
+
+		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
+		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
 		if (
@@ -56,7 +107,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		switch (modelId) {
 			case "claude-sonnet-4-5":
 			case "claude-sonnet-4-20250514":
-			case "claude-opus-4-5-20251101":
 			case "claude-opus-4-1-20250805":
 			case "claude-opus-4-20250514":
 			case "claude-3-7-sonnet-20250219":
@@ -75,7 +125,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				 * know the last message to retrieve from the cache for the
 				 * current request.
 				 */
-				const userMsgIndices = messages.reduce(
+				const userMsgIndices = sanitizedMessages.reduce(
 					(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
 					[] as number[],
 				)
@@ -91,7 +141,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						thinking,
 						// Setting cache breakpoint for system prompt so new tasks can reuse it.
 						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: messages.map((message, index) => {
+						messages: sanitizedMessages.map((message, index) => {
 							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
 								return {
 									...message,
@@ -118,7 +168,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						switch (modelId) {
 							case "claude-sonnet-4-5":
 							case "claude-sonnet-4-20250514":
-							case "claude-opus-4-5-20251101":
 							case "claude-opus-4-1-20250805":
 							case "claude-opus-4-20250514":
 							case "claude-3-7-sonnet-20250219":
@@ -142,7 +191,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 					temperature,
 					system: [{ text: systemPrompt, type: "text" }],
-					messages,
+					messages: sanitizedMessages,
 					stream: true,
 				})) as any
 				break
@@ -227,6 +276,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 					break
 				case "content_block_stop":
+					// Block complete - no action needed for now.
+					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
+					// after iteration completes, which requires restructuring the streaming approach.
 					break
 			}
 		}
@@ -329,5 +381,13 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			// Use the base provider's implementation as fallback
 			return super.countTokens(content)
 		}
+	}
+
+	/**
+	 * Returns the thinking signature from the last response, if available.
+	 * This signature is used for multi-turn extended thinking continuity.
+	 */
+	public getThinkingSignature(): string | undefined {
+		return this.lastThinkingSignature
 	}
 }

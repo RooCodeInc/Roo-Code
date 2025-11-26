@@ -289,4 +289,99 @@ describe("AnthropicHandler", () => {
 			expect(model.info.outputPrice).toBe(22.5)
 		})
 	})
+
+	describe("reasoning block filtering", () => {
+		const systemPrompt = "You are a helpful assistant."
+
+		it("should filter out internal reasoning blocks before sending to API", async () => {
+			handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-5-sonnet-20241022",
+			})
+
+			// Messages with internal reasoning blocks (from stored conversation history)
+			const messagesWithReasoning: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello",
+				},
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "reasoning" as any,
+							text: "This is internal reasoning that should be filtered",
+						},
+						{
+							type: "text",
+							text: "This is the response",
+						},
+					],
+				},
+				{
+					role: "user",
+					content: "Continue",
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, messagesWithReasoning)
+			const chunks: any[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify the API was called with filtered messages (no reasoning blocks)
+			const calledMessages = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0].messages
+			expect(calledMessages).toHaveLength(3)
+
+			// Check assistant message - should have reasoning block filtered out
+			const assistantMessage = calledMessages.find((m: any) => m.role === "assistant")
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.content).toEqual([{ type: "text", text: "This is the response" }])
+
+			// Verify reasoning blocks were NOT sent to the API
+			expect(assistantMessage.content).not.toContainEqual(expect.objectContaining({ type: "reasoning" }))
+		})
+
+		it("should filter empty messages after removing all reasoning blocks", async () => {
+			handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-5-sonnet-20241022",
+			})
+
+			// Message with only reasoning content (should be completely filtered)
+			const messagesWithOnlyReasoning: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello",
+				},
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "reasoning" as any,
+							text: "Only reasoning, no actual text",
+						},
+					],
+				},
+				{
+					role: "user",
+					content: "Continue",
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, messagesWithOnlyReasoning)
+			const chunks: any[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify empty message was filtered out
+			const calledMessages = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0].messages
+			expect(calledMessages.length).toBe(2) // Only the two user messages
+			expect(calledMessages.every((m: any) => m.role === "user")).toBe(true)
+		})
+	})
 })

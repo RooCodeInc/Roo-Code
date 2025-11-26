@@ -20,10 +20,55 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
+/**
+ * List of content block types that are NOT valid for Anthropic API.
+ * These are internal Roo Code types or types from other providers (e.g., Gemini's thoughtSignature).
+ * Valid Anthropic types are: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ */
+const INVALID_ANTHROPIC_BLOCK_TYPES = new Set([
+	"reasoning", // Internal Roo Code reasoning format
+	"thoughtSignature", // Gemini's encrypted reasoning signature
+])
+
+/**
+ * Filters out non-Anthropic content blocks from messages before sending to Anthropic/Vertex API.
+ * This handles:
+ * - Internal "reasoning" blocks (Roo Code's internal representation)
+ * - Gemini's "thoughtSignature" blocks (encrypted reasoning continuity tokens)
+ *
+ * Anthropic API only accepts: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ */
+function filterNonAnthropicBlocks(messages: Anthropic.Messages.MessageParam[]): Anthropic.Messages.MessageParam[] {
+	return messages
+		.map((message) => {
+			if (typeof message.content === "string") {
+				return message
+			}
+
+			const filteredContent = message.content.filter((block) => {
+				const blockType = (block as { type: string }).type
+				// Filter out any block types that Anthropic doesn't recognize
+				return !INVALID_ANTHROPIC_BLOCK_TYPES.has(blockType)
+			})
+
+			// If all content was filtered out, return undefined to filter the message later
+			if (filteredContent.length === 0) {
+				return undefined
+			}
+
+			return {
+				...message,
+				content: filteredContent,
+			}
+		})
+		.filter((message): message is Anthropic.Messages.MessageParam => message !== undefined)
+}
+
 // https://docs.anthropic.com/en/api/claude-on-vertex-ai
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: AnthropicVertex
+	private lastThinkingSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -62,6 +107,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Reset thinking signature for this request
+		this.lastThinkingSignature = undefined
+
 		let {
 			id,
 			info: { supportsPromptCache },
@@ -69,6 +117,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			maxTokens,
 			reasoning: thinking,
 		} = this.getModel()
+
+		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
+		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
 		/**
 		 * Vertex API has specific limitations for prompt caching:
@@ -92,7 +143,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			system: supportsPromptCache
 				? [{ text: systemPrompt, type: "text" as const, cache_control: { type: "ephemeral" } }]
 				: systemPrompt,
-			messages: supportsPromptCache ? addCacheBreakpoints(messages) : messages,
+			messages: supportsPromptCache ? addCacheBreakpoints(sanitizedMessages) : sanitizedMessages,
 			stream: true,
 		}
 
@@ -158,6 +209,12 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 					break
 				}
+				case "content_block_stop": {
+					// Block complete - no action needed for now.
+					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
+					// after iteration completes, which requires restructuring the streaming approach.
+					break
+				}
 			}
 		}
 	}
@@ -216,5 +273,13 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 			throw error
 		}
+	}
+
+	/**
+	 * Returns the thinking signature from the last response, if available.
+	 * This signature is used for multi-turn extended thinking continuity.
+	 */
+	public getThinkingSignature(): string | undefined {
+		return this.lastThinkingSignature
 	}
 }
