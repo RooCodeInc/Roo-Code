@@ -47,5 +47,6 @@
 	"settings.debugProxy.serverUrl.description": "Proxy URL'si (ör. `http://127.0.0.1:8888`). Yalnızca **Debug Proxy** etkin olduğunda kullanılır.",
 	"settings.debugProxy.tlsInsecure.description": "Proxy'den gelen self-signed sertifikaları kabul et. **MITM incelemesi için gerekli.** ⚠️ Güvensiz — yalnızca lokal debugging için kullan.",
 	"settings.taskHistoryRetention.description": "Uzantı yeniden yüklendiğinde görev geçmişini otomatik olarak sil. Seçilen süreден eski görevleri siler. Seçenekler: Asla (varsayılan), 90 gün, 60 gün, 30 gün, 7 gün veya 3 gün. Uyarı: Bu işlem geri alınamaz ve yalnızca eklenti yeniden yüklendiğinde çalışır.",
-	"settings.taskHistoryRetention.description": "Uzantı yeniden yüklendiğinde görev geçmişini otomatik olarak sil. Seçilen süreден eski görevleri siler. Seçenekler: Asla (varsayılan), 90 gün, 60 gün, 30 gün, 7 gün veya 3 gün. Uyarı: Bu işlem geri alınamaz ve yalnızca uzantı yeniden yüklendiğinde çalışır."
+	"settings.taskHistoryRetention.description": "Uzantı yeniden yüklendiğinde görev geçmişini otomatik olarak sil. Seçilen süreден eski görevleri siler. Seçenekler: Asla (varsayılan), 90 gün, 60 gün, 30 gün, 7 gün veya 3 gün. Uyarı: Bu işlem geri alınamaz ve yalnızca uzantı yeniden yüklendiğinde çalışır.",
+	"settings.taskHistoryRetention.description": "Uzantı yeniden yüklendiğinde görev geçmişini otomatik olarak sil. Seçilen süreden eski görevleri siler. Seçenekler: Asla (varsayılan), 90 gün, 60 gün, 30 gün, 7 gün veya 3 gün. Uyarı: Bu işlem geri alınamaz ve yalnızca uzantı yeniden yüklendiğinde çalışır."
 }
