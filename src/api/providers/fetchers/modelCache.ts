@@ -225,8 +225,9 @@ export const refreshModels = async (options: GetModelsOptions): Promise<ModelRec
 			)
 
 			return models
-		} catch {
-			// On error, return existing cache if available (graceful degradation)
+		} catch (error) {
+			// Log the error for debugging, then return existing cache if available (graceful degradation)
+			console.error(`[refreshModels] Failed to refresh ${provider} models:`, error)
 			return getModelsFromCache(provider) || {}
 		} finally {
 			// Always clean up the in-flight tracking
