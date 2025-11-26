@@ -325,9 +325,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
-		// TEMPORARY: Log the raw API request body for debugging parallel tool calls
-		console.log("[OpenAI Native] API Request Body:", requestBody)
-
 		try {
 			// Use the official SDK
 			const stream = (await (this.client as any).responses.create(requestBody, {
