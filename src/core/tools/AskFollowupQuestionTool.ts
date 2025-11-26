@@ -71,6 +71,7 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 			if (!question) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("ask_followup_question")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", "question"))
 				return
 			}
@@ -91,7 +92,11 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"ask_followup_question">): Promise<void> {
-		const question: string | undefined = block.params.question
+		// Get question from params (for XML protocol) or nativeArgs (for native protocol)
+		const question: string | undefined = block.params.question ?? block.nativeArgs?.question
+
+		// During partial streaming, only show the question to avoid displaying raw JSON
+		// The full JSON with suggestions will be sent when the tool call is complete (!block.partial)
 		await task
 			.ask("followup", this.removeClosingTag("question", question, block.partial), block.partial)
 			.catch(() => {})

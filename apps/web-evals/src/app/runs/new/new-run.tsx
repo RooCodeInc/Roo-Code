@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useQuery } from "@tanstack/react-query"
@@ -9,7 +9,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal } from "lucide-react"
 
-import { globalSettingsSchema, providerSettingsSchema, EVALS_SETTINGS, getModelId } from "@roo-code/types"
+import {
+	globalSettingsSchema,
+	providerSettingsSchema,
+	EVALS_SETTINGS,
+	getModelId,
+	type ProviderSettings,
+	type GlobalSettings,
+} from "@roo-code/types"
 
 import { createRun } from "@/actions/runs"
 import { getExercises } from "@/actions/exercises"
@@ -59,12 +66,23 @@ import {
 
 import { SettingsDiff } from "./settings-diff"
 
+type ImportedSettings = {
+	apiConfigs: Record<string, ProviderSettings>
+	globalSettings: GlobalSettings
+	currentApiConfigName: string
+}
+
 export function NewRun() {
 	const router = useRouter()
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
+
+	// State for imported settings with config selection
+	const [importedSettings, setImportedSettings] = useState<ImportedSettings | null>(null)
+	const [selectedConfigName, setSelectedConfigName] = useState<string>("")
+	const [configPopoverOpen, setConfigPopoverOpen] = useState(false)
 
 	const openRouter = useOpenRouterModels()
 	const rooCodeCloud = useRooCodeCloudModels()
@@ -74,6 +92,9 @@ export function NewRun() {
 	const onFilter = provider === "openrouter" ? openRouter.onFilter : rooCodeCloud.onFilter
 
 	const exercises = useQuery({ queryKey: ["getExercises"], queryFn: () => getExercises() })
+
+	// State for selected exercises (needed for language toggle buttons)
+	const [selectedExercises, setSelectedExercises] = useState<string[]>([])
 
 	const form = useForm<CreateRun>({
 		resolver: zodResolver(createRunSchema),
@@ -97,6 +118,88 @@ export function NewRun() {
 	} = form
 
 	const [model, suite, settings] = watch(["model", "suite", "settings", "concurrency"])
+
+	// Load concurrency and timeout from localStorage on mount
+	useEffect(() => {
+		const savedConcurrency = localStorage.getItem("evals-concurrency")
+		if (savedConcurrency) {
+			const parsed = parseInt(savedConcurrency, 10)
+			if (!isNaN(parsed) && parsed >= CONCURRENCY_MIN && parsed <= CONCURRENCY_MAX) {
+				setValue("concurrency", parsed)
+			}
+		}
+		const savedTimeout = localStorage.getItem("evals-timeout")
+		if (savedTimeout) {
+			const parsed = parseInt(savedTimeout, 10)
+			if (!isNaN(parsed) && parsed >= TIMEOUT_MIN && parsed <= TIMEOUT_MAX) {
+				setValue("timeout", parsed)
+			}
+		}
+	}, [setValue])
+
+	// Extract unique languages from exercises
+	const languages = useMemo(() => {
+		if (!exercises.data) return []
+		const langs = new Set<string>()
+		for (const path of exercises.data) {
+			const lang = path.split("/")[0]
+			if (lang) langs.add(lang)
+		}
+		return Array.from(langs).sort()
+	}, [exercises.data])
+
+	// Get exercises for a specific language
+	const getExercisesForLanguage = useCallback(
+		(lang: string) => {
+			if (!exercises.data) return []
+			return exercises.data.filter((path) => path.startsWith(`${lang}/`))
+		},
+		[exercises.data],
+	)
+
+	// Toggle all exercises for a language
+	const toggleLanguage = useCallback(
+		(lang: string) => {
+			const langExercises = getExercisesForLanguage(lang)
+			const allSelected = langExercises.every((ex) => selectedExercises.includes(ex))
+
+			let newSelected: string[]
+			if (allSelected) {
+				// Remove all exercises for this language
+				newSelected = selectedExercises.filter((ex) => !ex.startsWith(`${lang}/`))
+			} else {
+				// Add all exercises for this language (avoiding duplicates)
+				const existing = new Set(selectedExercises)
+				for (const ex of langExercises) {
+					existing.add(ex)
+				}
+				newSelected = Array.from(existing)
+			}
+
+			setSelectedExercises(newSelected)
+			setValue("exercises", newSelected)
+		},
+		[getExercisesForLanguage, selectedExercises, setValue],
+	)
+
+	// Check if all exercises for a language are selected
+	const isLanguageSelected = useCallback(
+		(lang: string) => {
+			const langExercises = getExercisesForLanguage(lang)
+			return langExercises.length > 0 && langExercises.every((ex) => selectedExercises.includes(ex))
+		},
+		[getExercisesForLanguage, selectedExercises],
+	)
+
+	// Check if some (but not all) exercises for a language are selected
+	const isLanguagePartiallySelected = useCallback(
+		(lang: string) => {
+			const langExercises = getExercisesForLanguage(lang)
+			const selectedCount = langExercises.filter((ex) => selectedExercises.includes(ex)).length
+			return selectedCount > 0 && selectedCount < langExercises.length
+		},
+		[getExercisesForLanguage, selectedExercises],
+	)
 
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
@@ -155,8 +258,19 @@ export function NewRun() {
 					})
 					.parse(JSON.parse(await file.text()))
 
-				const providerSettings = providerProfiles.apiConfigs[providerProfiles.currentApiConfigName] ?? {}
+				// Store all imported configs for user selection
+				setImportedSettings({
+					apiConfigs: providerProfiles.apiConfigs,
+					globalSettings,
+					currentApiConfigName: providerProfiles.currentApiConfigName,
+				})
 
+				// Default to the current config
+				const defaultConfigName = providerProfiles.currentApiConfigName
+				setSelectedConfigName(defaultConfigName)
+
+				// Apply the default config
+				const providerSettings = providerProfiles.apiConfigs[defaultConfigName] ?? {}
 				setValue("model", getModelId(providerSettings) ?? "")
 				setValue("settings", { ...EVALS_SETTINGS, ...providerSettings, ...globalSettings })
 
@@ -167,6 +281,22 @@ export function NewRun() {
 			}
 		},
 		[clearErrors, setValue],
+	)
+
+	const onSelectConfig = useCallback(
+		(configName: string) => {
+			if (!importedSettings) {
+				return
+			}
+
+			setSelectedConfigName(configName)
+			setConfigPopoverOpen(false)
+
+			const providerSettings = importedSettings.apiConfigs[configName] ?? {}
+			setValue("model", getModelId(providerSettings) ?? "")
+			setValue("settings", { ...EVALS_SETTINGS, ...providerSettings, ...importedSettings.globalSettings })
+		},
+		[importedSettings, setValue],
 	)
 
 	return (
@@ -207,6 +337,63 @@ export function NewRun() {
 											className="hidden"
 											onChange={onImportSettings}
 										/>
+
+										{importedSettings && Object.keys(importedSettings.apiConfigs).length > 1 && (
+											<div className="space-y-1">
+												<Label>API Config</Label>
+												<Popover open={configPopoverOpen} onOpenChange={setConfigPopoverOpen}>
+													<PopoverTrigger asChild>
+														<Button
+															variant="input"
+															role="combobox"
+															aria-expanded={configPopoverOpen}
+															className="flex items-center justify-between w-full">
+															<div>{selectedConfigName || "Select config"}</div>
+															<ChevronsUpDown className="opacity-50" />
+														</Button>
+													</PopoverTrigger>
+													<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+														<Command>
+															<CommandInput
+																placeholder="Search configs..."
+																className="h-9"
+															/>
+															<CommandList>
+																<CommandEmpty>No config found.</CommandEmpty>
+																<CommandGroup>
+																	{Object.keys(importedSettings.apiConfigs).map(
+																		(configName) => (
+																			<CommandItem
+																				key={configName}
+																				value={configName}
+																				onSelect={onSelectConfig}>
+																				{configName}
+																				{configName ===
+																					importedSettings.currentApiConfigName && (
+																					<span className="ml-2 text-xs text-muted-foreground">
+																						(default)
+																					</span>
+																				)}
+																				<Check
+																					className={cn(
+																						"ml-auto size-4",
+																						configName ===
+																							selectedConfigName
+																							? "opacity-100"
+																							: "opacity-0",
+																					)}
+																				/>
+																			</CommandItem>
+																		),
+																	)}
+																</CommandGroup>
+															</CommandList>
+														</Command>
+													</PopoverContent>
+												</Popover>
+											</div>
+										)}
+
 										{settings && (
 											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
 										)}
@@ -306,18 +493,51 @@ export function NewRun() {
 						render={() => (
 							<FormItem>
 								<FormLabel>Exercises</FormLabel>
-								<Tabs
-									defaultValue="full"
-									onValueChange={(value) => setValue("suite", value as "full" | "partial")}>
-									<TabsList>
-										<TabsTrigger value="full">All</TabsTrigger>
-										<TabsTrigger value="partial">Some</TabsTrigger>
-									</TabsList>
-								</Tabs>
+								<div className="flex items-center gap-2 flex-wrap">
+									<Tabs
+										defaultValue="full"
+										onValueChange={(value) => {
+											setValue("suite", value as "full" | "partial")
+											if (value === "full") {
+												setSelectedExercises([])
+												setValue("exercises", [])
+											}
+										}}>
+										<TabsList>
+											<TabsTrigger value="full">All</TabsTrigger>
+											<TabsTrigger value="partial">Some</TabsTrigger>
+										</TabsList>
+									</Tabs>
+									{suite === "partial" && languages.length > 0 && (
+										<div className="flex items-center gap-1 flex-wrap">
+											{languages.map((lang) => (
+												<Button
+													key={lang}
+													type="button"
+													variant={
+														isLanguageSelected(lang)
+															? "default"
+															: isLanguagePartiallySelected(lang)
+																? "secondary"
+																: "outline"
+													}
+													size="sm"
+													onClick={() => toggleLanguage(lang)}
+													className="text-xs capitalize">
+													{lang}
+												</Button>
+											))}
+										</div>
+									)}
+								</div>
 								{suite === "partial" && (
 									<MultiSelect
 										options={exercises.data?.map((path) => ({ value: path, label: path })) || []}
-										onValueChange={(value) => setValue("exercises", value)}
+										value={selectedExercises}
+										onValueChange={(value) => {
+											setSelectedExercises(value)
+											setValue("exercises", value)
+										}}
 										placeholder="Select"
 										variant="inverted"
 										maxCount={4}
@@ -337,11 +557,14 @@ export function NewRun() {
 								<FormControl>
 									<div className="flex flex-row items-center gap-2">
 										<Slider
-											defaultValue={[field.value]}
+											value={[field.value]}
 											min={CONCURRENCY_MIN}
 											max={CONCURRENCY_MAX}
 											step={1}
-											onValueChange={(value) => field.onChange(value[0])}
+											onValueChange={(value) => {
+												field.onChange(value[0])
+												localStorage.setItem("evals-concurrency", String(value[0]))
+											}}
 										/>
 										<div>{field.value}</div>
 									</div>
@@ -360,11 +583,14 @@ export function NewRun() {
 								<FormControl>
 									<div className="flex flex-row items-center gap-2">
 										<Slider
-											defaultValue={[field.value]}
+											value={[field.value]}
 											min={TIMEOUT_MIN}
 											max={TIMEOUT_MAX}
 											step={1}
-											onValueChange={(value) => field.onChange(value[0])}
+											onValueChange={(value) => {
+												field.onChange(value[0])
+												localStorage.setItem("evals-timeout", String(value[0]))
+											}}
 										/>
 										<div>{field.value}</div>
 									</div>

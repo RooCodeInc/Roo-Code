@@ -191,11 +191,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			)
 
 			let lastUsage
-			const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
-				const finishReason = chunk.choices?.[0]?.finish_reason
 
 				if (delta.content) {
 					for (const chunk of matcher.update(delta.content)) {
@@ -212,52 +210,19 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
-						const index = toolCall.index
-						const existing = toolCallAccumulator.get(index)
-
-						if (existing) {
-							if (toolCall.function?.arguments) {
-								existing.arguments += toolCall.function.arguments
-							}
-						} else {
-							toolCallAccumulator.set(index, {
-								id: toolCall.id || "",
-								name: toolCall.function?.name || "",
-								arguments: toolCall.function?.arguments || "",
-							})
-						}
-					}
-				}
-
-				if (finishReason === "tool_calls") {
-					for (const toolCall of toolCallAccumulator.values()) {
 						yield {
-							type: "tool_call",
+							type: "tool_call_partial",
+							index: toolCall.index,
 							id: toolCall.id,
-							name: toolCall.name,
-							arguments: toolCall.arguments,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
 						}
 					}
-					toolCallAccumulator.clear()
 				}
 
 				if (chunk.usage) {
 					lastUsage = chunk.usage
 				}
-			}
-
-			// Fallback: If stream ends with accumulated tool calls that weren't yielded
-			// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-			if (toolCallAccumulator.size > 0) {
-				for (const toolCall of toolCallAccumulator.values()) {
-					yield {
-						type: "tool_call",
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
-					}
-				}
-				toolCallAccumulator.clear()
 			}
 
 			for (const chunk of matcher.final()) {
@@ -466,11 +431,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
-		const toolCallAccumulator = new Map<number, { id: string; name: string; arguments: string }>()
-
 		for await (const chunk of stream) {
 			const delta = chunk.choices?.[0]?.delta
-			const finishReason = chunk.choices?.[0]?.finish_reason
 
 			if (delta) {
 				if (delta.content) {
@@ -480,36 +442,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
-						const index = toolCall.index
-						const existing = toolCallAccumulator.get(index)
-
-						if (existing) {
-							if (toolCall.function?.arguments) {
-								existing.arguments += toolCall.function.arguments
-							}
-						} else {
-							toolCallAccumulator.set(index, {
-								id: toolCall.id || "",
-								name: toolCall.function?.name || "",
-								arguments: toolCall.function?.arguments || "",
-							})
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
 						}
 					}
 				}
-			}
-
-			if (finishReason === "tool_calls") {
-				for (const toolCall of toolCallAccumulator.values()) {
-					yield {
-						type: "tool_call",
-						id: toolCall.id,
-						name: toolCall.name,
-						arguments: toolCall.arguments,
-					}
-				}
-				toolCallAccumulator.clear()
 			}
 
 			if (chunk.usage) {
@@ -519,20 +463,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					outputTokens: chunk.usage.completion_tokens || 0,
 				}
 			}
-		}
-
-		// Fallback: If stream ends with accumulated tool calls that weren't yielded
-		// (e.g., finish_reason was 'stop' or 'length' instead of 'tool_calls')
-		if (toolCallAccumulator.size > 0) {
-			for (const toolCall of toolCallAccumulator.values()) {
-				yield {
-					type: "tool_call",
-					id: toolCall.id,
-					name: toolCall.name,
-					arguments: toolCall.arguments,
-				}
-			}
-			toolCallAccumulator.clear()
 		}
 	}
 

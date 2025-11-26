@@ -35,6 +35,26 @@
 		"language": "Idioma",
 		"about": "Sobre"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Encontrou um bug?",
+			"link": "Relatar no GitHub"
+		},
+		"featureRequest": {
+			"label": "Tem uma ideia?",
+			"link": "Compartilhe conosco"
+		},
+		"securityIssue": {
+			"label": "Descobriu uma vulnerabilidade?",
+			"link": "Siga nosso processo de divulgação"
+		},
+		"contact": {
+			"label": "Precisa falar conosco? Escreva"
+		},
+		"community": "Quer dicas ou apenas conversar com outros usuários do Roo Code? Junte-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Contato e Comunidade",
+		"manageSettings": "Gerenciar Configurações"
+	},
 	"slashCommands": {
 		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"
 	},
@@ -55,6 +75,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Chave de API",
 		"vercelAiGatewayApiKeyPlaceholder": "Digite sua chave de API do Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Região da AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Perfil da AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nome do perfil da AWS em ~/.aws/credentials (obrigatório).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Chave de API do OpenRouter",
 		"openRouterApiKeyPlaceholder": "Digite sua chave de API do OpenRouter",
@@ -125,11 +151,14 @@
 			"geminiApiKeyRequired": "A chave de API do Gemini é obrigatória",
 			"mistralApiKeyRequired": "A chave de API Mistral é obrigatória",
 			"vercelAiGatewayApiKeyRequired": "A chave de API do Vercel AI Gateway é obrigatória",
+			"bedrockRegionRequired": "A região da AWS é obrigatória",
+			"bedrockProfileRequired": "O perfil da AWS é obrigatório",
 			"ollamaBaseUrlRequired": "A URL base do Ollama é obrigatória",
 			"baseUrlRequired": "A URL base é obrigatória",
 			"modelDimensionMinValue": "A dimensão do modelo deve ser maior que 0",
 			"openRouterApiKeyRequired": "Chave API do OpenRouter é obrigatória"
 		},
+		"optional": "opcional",
 		"advancedConfigLabel": "Configuração Avançada",
 		"searchMinScoreLabel": "Limite de pontuação de busca",
 		"searchMinScoreDescription": "Pontuação mínima de similaridade (0.0-1.0) necessária para os resultados da busca. Valores mais baixos retornam mais resultados, mas podem ser menos relevantes. Valores mais altos retornam menos resultados, mas mais relevantes.",
@@ -782,6 +811,8 @@
 			"description": "Quando ativado, a ferramenta new_task exigirá que um parâmetro todos seja fornecido. Isso garante que todas as novas tarefas comecem com uma lista clara de objetivos. Quando desativado (padrão), o parâmetro todos permanece opcional para compatibilidade com versões anteriores."
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "Provedor",
+			"providerDescription": "Selecione o provedor para geração de imagens.",
 			"name": "Habilitar geração de imagens com IA",
 			"description": "Quando habilitado, Roo pode gerar imagens a partir de prompts de texto usando os modelos de geração de imagens do OpenRouter. Requer uma chave de API do OpenRouter configurada.",
 			"openRouterApiKeyLabel": "Chave de API do OpenRouter",
@@ -795,6 +826,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Ativar comandos slash iniciados pelo modelo",
 			"description": "Quando ativado, Roo pode executar seus comandos slash para executar fluxos de trabalho."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Chamadas paralelas de ferramentas",
+			"description": "Quando habilitado, o protocolo nativo pode executar múltiplas ferramentas em um único turno de mensagem do assistente."
 		}
 	},
 	"promptCaching": {

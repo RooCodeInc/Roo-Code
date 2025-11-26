@@ -51,7 +51,7 @@ export const getRooCodeCloudModels = async (): Promise<RooCodeCloudModel[]> => {
 		return []
 	}
 
-	return result.data.data.sort((a, b) => a.name.localeCompare(b.name))
+	return result.data.data.filter((model) => !model.deprecated).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export const useRooCodeCloudModels = () => {

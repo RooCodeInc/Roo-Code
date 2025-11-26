@@ -269,13 +269,31 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
+			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
+			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallPartialChunks).toHaveLength(3)
+			// First chunk has id and name
+			expect(toolCallPartialChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "call_1",
 				name: "test_tool",
-				arguments: '{"arg":"value"}',
+				arguments: "",
+			})
+			// Subsequent chunks have arguments
+			expect(toolCallPartialChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '{"arg":',
+			})
+			expect(toolCallPartialChunks[2]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '"value"}',
 			})
 		})
 
@@ -318,11 +336,12 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Tool calls should still be yielded via the fallback mechanism
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
+			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
+			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallPartialChunks).toHaveLength(1)
+			expect(toolCallPartialChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "call_fallback",
 				name: "fallback_tool",
 				arguments: '{"test":"fallback"}',
@@ -819,12 +838,21 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
+			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
+			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallPartialChunks).toHaveLength(2)
+			expect(toolCallPartialChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "call_1",
 				name: "test_tool",
+				arguments: "",
+			})
+			expect(toolCallPartialChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
 				arguments: "{}",
 			})
 		})
@@ -870,11 +898,12 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Tool calls should still be yielded via the fallback mechanism
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
+			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
+			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallPartialChunks).toHaveLength(1)
+			expect(toolCallPartialChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
 				id: "call_o3_fallback",
 				name: "o3_fallback_tool",
 				arguments: '{"o3":"test"}',

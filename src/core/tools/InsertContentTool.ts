@@ -85,6 +85,7 @@ export class InsertContentTool extends BaseTool<"insert_content"> {
 					task.recordToolError("insert_content")
 					const formattedError = `Cannot insert content at line ${lineNumber} into a non-existent file. For new files, 'line' must be 0 (to append) or 1 (to insert at the beginning).`
 					await task.say("error", formattedError)
+					task.didToolFailInCurrentTurn = true
 					pushToolResult(formattedError)
 					return
 				}

@@ -35,6 +35,26 @@
 		"language": "Язык",
 		"about": "О Roo Code"
 	},
+	"about": {
+		"bugReport": {
+			"label": "Нашли ошибку?",
+			"link": "Сообщить на GitHub"
+		},
+		"featureRequest": {
+			"label": "Есть идея?",
+			"link": "Поделитесь с нами"
+		},
+		"securityIssue": {
+			"label": "Обнаружили уязвимость?",
+			"link": "Следуйте нашему процессу раскрытия"
+		},
+		"contact": {
+			"label": "Нужно с нами связаться? Напишите"
+		},
+		"community": "Хотите получить советы или просто пообщаться с другими пользователями Roo Code? Присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Контакты и Сообщество",
+		"manageSettings": "Управление Настройками"
+	},
 	"slashCommands": {
 		"description": "Управляйте своими слэш-командами для быстрого выполнения пользовательских рабочих процессов и действий. <DocsLink>Узнать больше</DocsLink>"
 	},
@@ -55,6 +75,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Ключ API",
 		"vercelAiGatewayApiKeyPlaceholder": "Введите свой API-ключ Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Регион AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Профиль AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Имя профиля AWS из ~/.aws/credentials (обязательно).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Ключ API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Введите свой ключ API OpenRouter",
@@ -125,11 +151,14 @@
 			"geminiApiKeyRequired": "Требуется ключ API Gemini",
 			"mistralApiKeyRequired": "Требуется API-ключ Mistral",
 			"vercelAiGatewayApiKeyRequired": "Требуется API-ключ Vercel AI Gateway",
+			"bedrockRegionRequired": "Требуется регион AWS",
+			"bedrockProfileRequired": "Требуется профиль AWS",
 			"ollamaBaseUrlRequired": "Требуется базовый URL Ollama",
 			"baseUrlRequired": "Требуется базовый URL",
 			"modelDimensionMinValue": "Размерность модели должна быть больше 0",
 			"openRouterApiKeyRequired": "Требуется ключ API OpenRouter"
 		},
+		"optional": "необязательно",
 		"advancedConfigLabel": "Расширенная конфигурация",
 		"searchMinScoreLabel": "Порог оценки поиска",
 		"searchMinScoreDescription": "Минимальный балл сходства (0.0-1.0), необходимый для результатов поиска. Более низкие значения возвращают больше результатов, но они могут быть менее релевантными. Более высокие значения возвращают меньше результатов, но более релевантных.",
@@ -782,6 +811,8 @@
 			"description": "Если включено, инструмент new_task будет требовать предоставления параметра todos. Это гарантирует, что все новые задачи начинаются с четкого списка целей. Когда отключено (по умолчанию), параметр todos остается необязательным для обратной совместимости."
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "Провайдер",
+			"providerDescription": "Выберите провайдера для генерации изображений.",
 			"name": "Включить генерацию изображений ИИ",
 			"description": "Когда включено, Roo может генерировать изображения из текстовых запросов, используя модели генерации изображений OpenRouter. Требует настроенный API-ключ OpenRouter.",
 			"openRouterApiKeyLabel": "API-ключ OpenRouter",
@@ -795,6 +826,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Включить слэш-команды, инициированные моделью",
 			"description": "Когда включено, Roo может выполнять ваши слэш-команды для выполнения рабочих процессов."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Параллельные вызовы инструментов",
+			"description": "При включении нативный протокол может выполнять несколько инструментов в одном ходе сообщения ассистента."
 		}
 	},
 	"promptCaching": {

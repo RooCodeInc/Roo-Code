@@ -37,6 +37,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			if (!mode) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "mode"))
 				return
 			}
@@ -44,6 +45,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			if (!message) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "message"))
 				return
 			}
@@ -69,6 +71,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			if (requireTodos && todos === undefined) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("new_task")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(await task.sayAndCreateMissingParamError("new_task", "todos"))
 				return
 			}
@@ -81,6 +84,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				} catch (error) {
 					task.consecutiveMistakeCount++
 					task.recordToolError("new_task")
+					task.didToolFailInCurrentTurn = true
 					pushToolResult(formatResponse.toolError("Invalid todos format: must be a markdown checklist"))
 					return
 				}
