@@ -44,7 +44,7 @@ import {
 } from "./activate"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
-import { purgeOldTasks } from "./utils/task-history-retention"
+import { purgeOldTasks, RetentionSetting } from "./utils/task-history-retention"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -175,7 +175,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		outputChannel.appendLine(`[Retention] Startup purge: setting=${retention}`)
 
 		const result = await purgeOldTasks(
-			retention as any,
+			retention as RetentionSetting,
 			contextProxy.globalStorageUri.fsPath,
 			(m) => {
 				outputChannel.appendLine(m)

@@ -153,8 +153,10 @@ export async function purgeOldTasks(
 		// First try to get a timestamp from task_metadata.json (if present)
 		try {
 			const raw = await fs.readFile(metadataPath, "utf8")
-			const meta = JSON.parse(raw)
-			const maybeTs = Number((meta as any)?.ts)
+			const meta: unknown = JSON.parse(raw)
+			const maybeTs = Number(
+				typeof meta === "object" && meta !== null && "ts" in meta ? (meta as { ts: unknown }).ts : undefined,
+			)
 			if (Number.isFinite(maybeTs)) {
 				ts = maybeTs
 			}
