@@ -1,22 +1,27 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
 /**
- * List of content block types that are NOT valid for Anthropic API.
- * These are internal Roo Code types or types from other providers (e.g., Gemini's thoughtSignature).
- * Valid Anthropic types are: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ * Set of content block types that are valid for Anthropic API.
+ * Only these types will be passed through to the API.
+ * See: https://docs.anthropic.com/en/api/messages
  */
-export const INVALID_ANTHROPIC_BLOCK_TYPES = new Set([
-	"reasoning", // Internal Roo Code reasoning format
-	"thoughtSignature", // Gemini's encrypted reasoning signature
+export const VALID_ANTHROPIC_BLOCK_TYPES = new Set([
+	"text",
+	"image",
+	"tool_use",
+	"tool_result",
+	"thinking",
+	"redacted_thinking",
+	"document",
 ])
 
 /**
  * Filters out non-Anthropic content blocks from messages before sending to Anthropic/Vertex API.
- * This handles:
+ * Uses an allowlist approach - only blocks with types in VALID_ANTHROPIC_BLOCK_TYPES are kept.
+ * This automatically filters out:
  * - Internal "reasoning" blocks (Roo Code's internal representation)
  * - Gemini's "thoughtSignature" blocks (encrypted reasoning continuity tokens)
- *
- * Anthropic API only accepts: text, image, tool_use, tool_result, thinking, redacted_thinking, document
+ * - Any other unknown block types
  */
 export function filterNonAnthropicBlocks(
 	messages: Anthropic.Messages.MessageParam[],
@@ -29,8 +34,8 @@ export function filterNonAnthropicBlocks(
 
 			const filteredContent = message.content.filter((block) => {
 				const blockType = (block as { type: string }).type
-				// Filter out any block types that Anthropic doesn't recognize
-				return !INVALID_ANTHROPIC_BLOCK_TYPES.has(blockType)
+				// Only keep block types that Anthropic recognizes
+				return VALID_ANTHROPIC_BLOCK_TYPES.has(blockType)
 			})
 
 			// If all content was filtered out, return undefined to filter the message later

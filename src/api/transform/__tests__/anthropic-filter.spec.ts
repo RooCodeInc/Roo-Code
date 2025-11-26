@@ -1,22 +1,22 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { filterNonAnthropicBlocks, INVALID_ANTHROPIC_BLOCK_TYPES } from "../anthropic-filter"
+import { filterNonAnthropicBlocks, VALID_ANTHROPIC_BLOCK_TYPES } from "../anthropic-filter"
 
 describe("anthropic-filter", () => {
-	describe("INVALID_ANTHROPIC_BLOCK_TYPES", () => {
-		it("should contain reasoning type", () => {
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("reasoning")).toBe(true)
+	describe("VALID_ANTHROPIC_BLOCK_TYPES", () => {
+		it("should contain all valid Anthropic types", () => {
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("text")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("image")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("tool_use")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("tool_result")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("thinking")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("redacted_thinking")).toBe(true)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("document")).toBe(true)
 		})
 
-		it("should contain thoughtSignature type", () => {
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("thoughtSignature")).toBe(true)
-		})
-
-		it("should not contain valid Anthropic types", () => {
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("text")).toBe(false)
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("image")).toBe(false)
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("tool_use")).toBe(false)
-			expect(INVALID_ANTHROPIC_BLOCK_TYPES.has("tool_result")).toBe(false)
+		it("should not contain internal or provider-specific types", () => {
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("reasoning")).toBe(false)
+			expect(VALID_ANTHROPIC_BLOCK_TYPES.has("thoughtSignature")).toBe(false)
 		})
 	})
 
@@ -122,6 +122,23 @@ describe("anthropic-filter", () => {
 				{ type: "text", text: "Text 1" },
 				{ type: "text", text: "Text 2" },
 			])
+		})
+
+		it("should filter out any unknown block types", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "unknown_future_type", data: "some data" } as any,
+						{ type: "text", text: "Valid text" },
+					],
+				},
+			]
+
+			const result = filterNonAnthropicBlocks(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toEqual([{ type: "text", text: "Valid text" }])
 		})
 	})
 })
