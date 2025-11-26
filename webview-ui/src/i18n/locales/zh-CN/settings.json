@@ -83,8 +83,6 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API 密钥",
 		"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
-		"rooProvider": "Roo Code Cloud",
-		"rooCloudAuthNote": "Roo Code Cloud 使用您的帐户认证。请登录 Roo Code Cloud 以使用此提供商。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 密钥:",
 		"mistralApiKeyPlaceholder": "输入您的 Mistral API 密钥",

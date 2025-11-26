@@ -39,8 +39,7 @@
 		"invalidModel": "Ongeldig model. Controleer je modelconfiguratie.",
 		"invalidResponse": "Ongeldige reactie van embedder-service. Controleer je configuratie.",
 		"apiKeyRequired": "API-sleutel is vereist voor deze embedder",
-		"baseUrlRequired": "Basis-URL is vereist voor deze embedder",
-		"rooAuthenticationRequired": "Roo Code Cloud-authenticatie is vereist. Meld je aan om de Roo embeddings-provider te gebruiken."
+		"baseUrlRequired": "Basis-URL is vereist voor deze embedder"
 	},
 	"serviceFactory": {
 		"openAiConfigMissing": "OpenAI-configuratie ontbreekt voor het maken van embedder",

@@ -78,7 +78,6 @@ export type EmbedderProvider =
 	| "mistral"
 	| "vercel-ai-gateway"
 	| "openrouter"
-	| "roo"
 
 export interface IndexProgressUpdate {
 	systemStatus: IndexingState
