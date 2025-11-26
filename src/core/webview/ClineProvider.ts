@@ -1746,7 +1746,7 @@ export class ClineProvider
 			if (id === this.getCurrentTask()?.taskId) {
 				// if we found the taskid to delete - call finish to abort this task and allow a new task to be started,
 				// if we are deleting a subtask and parent task is still waiting for subtask to finish - it allows the parent to resume (this case should neve exist)
-				await this.finishSubTask(t("common:tasks.deleted"))
+				await this.finishSubTask(t("common:tasks.deleted"), id)
 			}
 
 			// delete task from the task history state

@@ -726,7 +726,7 @@ export const webviewMessageHandler = async (
 			const currentTask = provider.getCurrentTask()
 
 			if (currentTask && currentTask.parentTask) {
-				await provider.finishSubTask(t("common:tasks.canceled"))
+				await provider.finishSubTask(t("common:tasks.canceled"), currentTask.taskId)
 			} else {
 				// Regular task - just clear it
 				await provider.clearTask()
