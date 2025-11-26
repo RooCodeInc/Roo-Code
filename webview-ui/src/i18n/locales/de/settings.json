@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Modellabmessung muss größer als 0 sein",
 			"openRouterApiKeyRequired": "OpenRouter API-Schlüssel ist erforderlich"
 		},
+		"optional": "optional",
 		"advancedConfigLabel": "Erweiterte Konfiguration",
 		"searchMinScoreLabel": "Suchergebnis-Schwellenwert",
 		"searchMinScoreDescription": "Mindestähnlichkeitswert (0.0-1.0), der für Suchergebnisse erforderlich ist. Niedrigere Werte liefern mehr Ergebnisse, die jedoch möglicherweise weniger relevant sind. Höhere Werte liefern weniger, aber relevantere Ergebnisse.",

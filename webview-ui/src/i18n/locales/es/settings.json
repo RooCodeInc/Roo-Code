@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "La dimensión del modelo debe ser mayor que 0",
 			"openRouterApiKeyRequired": "Se requiere la clave API de OpenRouter"
 		},
+		"optional": "opcional",
 		"advancedConfigLabel": "Configuración avanzada",
 		"searchMinScoreLabel": "Umbral de puntuación de búsqueda",
 		"searchMinScoreDescription": "Puntuación mínima de similitud (0.0-1.0) requerida para los resultados de búsqueda. Valores más bajos devuelven más resultados pero pueden ser menos relevantes. Valores más altos devuelven menos resultados pero más relevantes.",

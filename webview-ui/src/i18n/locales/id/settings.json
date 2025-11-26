@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Dimensi model harus lebih besar dari 0",
 			"openRouterApiKeyRequired": "Kunci API OpenRouter diperlukan"
 		},
+		"optional": "opsional",
 		"advancedConfigLabel": "Konfigurasi Lanjutan",
 		"searchMinScoreLabel": "Ambang Batas Skor Pencarian",
 		"searchMinScoreDescription": "Skor kesamaan minimum (0.0-1.0) yang diperlukan untuk hasil pencarian. Nilai yang lebih rendah mengembalikan lebih banyak hasil tetapi mungkin kurang relevan. Nilai yang lebih tinggi mengembalikan lebih sedikit hasil tetapi lebih relevan.",

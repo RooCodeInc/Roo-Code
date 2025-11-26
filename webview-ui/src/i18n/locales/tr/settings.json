@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
 			"openRouterApiKeyRequired": "OpenRouter API anahtarı gereklidir"
 		},
+		"optional": "isteğe bağlı",
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
 		"searchMinScoreDescription": "Arama sonuçları için gereken minimum benzerlik puanı (0.0-1.0). Düşük değerler daha fazla sonuç döndürür ancak daha az alakalı olabilir. Yüksek değerler daha az ancak daha alakalı sonuçlar döndürür.",

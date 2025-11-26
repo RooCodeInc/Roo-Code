@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
 			"openRouterApiKeyRequired": "Wymagany jest klucz API OpenRouter"
 		},
+		"optional": "opcjonalny",
 		"advancedConfigLabel": "Konfiguracja zaawansowana",
 		"searchMinScoreLabel": "Próg wyniku wyszukiwania",
 		"searchMinScoreDescription": "Minimalny wynik podobieństwa (0.0-1.0) wymagany dla wyników wyszukiwania. Niższe wartości zwracają więcej wyników, ale mogą być mniej trafne. Wyższe wartości zwracają mniej wyników, ale bardziej trafnych.",

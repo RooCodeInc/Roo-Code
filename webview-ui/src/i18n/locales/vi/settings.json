@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Kích thước mô hình phải lớn hơn 0",
 			"openRouterApiKeyRequired": "Yêu cầu khóa API OpenRouter"
 		},
+		"optional": "tùy chọn",
 		"advancedConfigLabel": "Cấu hình nâng cao",
 		"searchMinScoreLabel": "Ngưỡng điểm tìm kiếm",
 		"searchMinScoreDescription": "Điểm tương đồng tối thiểu (0.0-1.0) cần thiết cho kết quả tìm kiếm. Giá trị thấp hơn trả về nhiều kết quả hơn nhưng có thể kém liên quan hơn. Giá trị cao hơn trả về ít kết quả hơn nhưng có liên quan hơn.",

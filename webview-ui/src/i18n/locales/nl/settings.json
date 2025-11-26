@@ -158,6 +158,7 @@
 			"modelDimensionMinValue": "Modelafmeting moet groter zijn dan 0",
 			"openRouterApiKeyRequired": "OpenRouter API-sleutel is vereist"
 		},
+		"optional": "optioneel",
 		"advancedConfigLabel": "Geavanceerde configuratie",
 		"searchMinScoreLabel": "Zoekscore drempel",
 		"searchMinScoreDescription": "Minimale overeenkomstscore (0.0-1.0) vereist voor zoekresultaten. Lagere waarden leveren meer resultaten op, maar zijn mogelijk minder relevant. Hogere waarden leveren minder, maar relevantere resultaten op.",
