@@ -55,6 +55,10 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 		}
 	}
 
+	// When using strict mode, ALL properties must be in the required array
+	// Optional properties are handled by having type: ["...", "null"]
+	const fileRequiredProperties = partialReadsEnabled ? ["path", "line_ranges"] : ["path"]
+
 	return {
 		type: "function",
 		function: {
@@ -70,7 +74,7 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 						items: {
 							type: "object",
 							properties: fileProperties,
-							required: ["path"],
+							required: fileRequiredProperties,
 							additionalProperties: false,
 						},
 						minItems: 1,
