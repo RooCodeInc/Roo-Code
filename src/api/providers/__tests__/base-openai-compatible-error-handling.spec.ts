@@ -49,22 +49,20 @@ class TestOpenAiProvider extends BaseOpenAiCompatibleProvider<"test-model"> {
 
 		super({
 			...options,
-			providerName: "TestProvider",
-			baseURL: "https://api.test.com",
-			defaultProviderModelId: "test-model",
-			providerModels,
-		})
-	}
-
-	getModel() {
-		return {
-			id: this.options.apiModelId || this.defaultProviderModelId,
-			info: this.providerModels[this.defaultProviderModelId],
-		}
-	}
+		providerName: "TestProvider",
+		baseURL: "https://api.test.com",
+		defaultProviderModelId: "test-model",
+		providerModels,
+	})
 }
 
-describe("BaseOpenAiCompatibleProvider - Error Handling Integration", () => {
+override getModel() {
+	return {
+		id: this.options.apiModelId || this.defaultProviderModelId,
+		info: this.providerModels[this.defaultProviderModelId],
+	}
+}
+}describe("BaseOpenAiCompatibleProvider - Error Handling Integration", () => {
 	let provider: TestOpenAiProvider
 	let mockCreate: any
 
