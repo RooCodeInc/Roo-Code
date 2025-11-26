@@ -213,9 +213,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
+		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models
+		const requestOptions = modelId.startsWith("anthropic/")
+			? { headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } }
+			: undefined
+
 		let stream
 		try {
-			stream = await this.client.chat.completions.create(completionParams)
+			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}
@@ -417,9 +422,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(reasoning && { reasoning }),
 		}
 
+		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models
+		const requestOptions = modelId.startsWith("anthropic/")
+			? { headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } }
+			: undefined
+
 		let response
 		try {
-			response = await this.client.chat.completions.create(completionParams)
+			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}
