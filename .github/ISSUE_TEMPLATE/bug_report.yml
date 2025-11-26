@@ -77,7 +77,7 @@ body:
       options:
 				- CoStrict
         - Anthropic
-        - AWS Bedrock
+        - Amazon Bedrock
         - Chutes AI
         - DeepSeek
         - Featherless AI
