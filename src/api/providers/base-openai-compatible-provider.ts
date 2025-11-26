@@ -112,7 +112,13 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const stream = await this.createStream(systemPrompt, messages, metadata)
+		let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
+		
+		try {
+			stream = await this.createStream(systemPrompt, messages, metadata)
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
+		}
 
 		const matcher = new XmlMatcher(
 			"think",
@@ -125,51 +131,55 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		let lastUsage: OpenAI.CompletionUsage | undefined
 
-		for await (const chunk of stream) {
-			// Check for provider-specific error responses (e.g., MiniMax base_resp)
-			const chunkAny = chunk as any
-			if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
-				throw new Error(
-					`${this.providerName} API Error (${chunkAny.base_resp.status_code}): ${chunkAny.base_resp.status_msg || "Unknown error"}`,
-				)
-			}
-
-			const delta = chunk.choices?.[0]?.delta
-
-			if (delta?.content) {
-				for (const processedChunk of matcher.update(delta.content)) {
-					yield processedChunk
+		try {
+			for await (const chunk of stream) {
+				// Check for provider-specific error responses (e.g., MiniMax base_resp)
+				const chunkAny = chunk as any
+				if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
+					throw new Error(
+						`${this.providerName} API Error (${chunkAny.base_resp.status_code}): ${chunkAny.base_resp.status_msg || "Unknown error"}`,
+					)
 				}
-			}
 
-			if (delta) {
-				for (const key of ["reasoning_content", "reasoning"] as const) {
-					if (key in delta) {
-						const reasoning_content = ((delta as any)[key] as string | undefined) || ""
-						if (reasoning_content?.trim()) {
-							yield { type: "reasoning", text: reasoning_content }
+				const delta = chunk.choices?.[0]?.delta
+
+				if (delta?.content) {
+					for (const processedChunk of matcher.update(delta.content)) {
+						yield processedChunk
+					}
+				}
+
+				if (delta) {
+					for (const key of ["reasoning_content", "reasoning"] as const) {
+						if (key in delta) {
+							const reasoning_content = ((delta as any)[key] as string | undefined) || ""
+							if (reasoning_content?.trim()) {
+								yield { type: "reasoning", text: reasoning_content }
+							}
+							break
 						}
-						break
 					}
 				}
-			}
 
-			// Emit raw tool call chunks - NativeToolCallParser handles state management
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
+				if (delta?.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
+						}
 					}
 				}
-			}
 
-			if (chunk.usage) {
-				lastUsage = chunk.usage
+				if (chunk.usage) {
+					lastUsage = chunk.usage
+				}
 			}
+		} catch (error) {
+			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if (lastUsage) {
