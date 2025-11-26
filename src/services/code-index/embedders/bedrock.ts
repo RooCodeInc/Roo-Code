@@ -203,7 +203,6 @@ export class BedrockEmbedder implements IEmbedder {
 					},
 				},
 			}
-			console.log(`[BedrockEmbedder] Nova multimodal request for model ${model}:`, JSON.stringify(requestBody))
 		} else if (model.startsWith("amazon.titan-embed")) {
 			requestBody = {
 				inputText: text,
@@ -227,25 +226,12 @@ export class BedrockEmbedder implements IEmbedder {
 			accept: "application/json",
 		}
 
-		console.log(`[BedrockEmbedder] Sending request to model ${modelId}`)
-		console.log(`[BedrockEmbedder] Request body:`, requestBody)
-
 		const command = new InvokeModelCommand(params)
 
-		let response
-		try {
-			response = await this.bedrockClient.send(command)
-		} catch (error: any) {
-			console.error(`[BedrockEmbedder] API error for model ${modelId}:`, error)
-			console.error(`[BedrockEmbedder] Error name:`, error.name)
-			console.error(`[BedrockEmbedder] Error message:`, error.message)
-			console.error(`[BedrockEmbedder] Error details:`, JSON.stringify(error, null, 2))
-			throw error
-		}
+		const response = await this.bedrockClient.send(command)
 
 		// Parse the response
 		const responseBody = JSON.parse(new TextDecoder().decode(response.body))
-		console.log(`[BedrockEmbedder] Response for model ${modelId}:`, responseBody)
 
 		// Extract embedding based on model type
 		if (model.startsWith("amazon.nova-2-multimodal")) {
