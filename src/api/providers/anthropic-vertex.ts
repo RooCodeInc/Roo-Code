@@ -68,7 +68,6 @@ function filterNonAnthropicBlocks(messages: Anthropic.Messages.MessageParam[]): 
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: AnthropicVertex
-	private lastThinkingSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -107,9 +106,6 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Reset thinking signature for this request
-		this.lastThinkingSignature = undefined
-
 		let {
 			id,
 			info: { supportsPromptCache },
@@ -273,13 +269,5 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 			throw error
 		}
-	}
-
-	/**
-	 * Returns the thinking signature from the last response, if available.
-	 * This signature is used for multi-turn extended thinking continuity.
-	 */
-	public getThinkingSignature(): string | undefined {
-		return this.lastThinkingSignature
 	}
 }

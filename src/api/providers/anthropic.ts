@@ -66,7 +66,6 @@ function filterNonAnthropicBlocks(messages: Anthropic.Messages.MessageParam[]): 
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
-	private lastThinkingSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -86,9 +85,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Reset thinking signature for this request
-		this.lastThinkingSignature = undefined
-
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let { id: modelId, betas = [], maxTokens, temperature, reasoning: thinking } = this.getModel()
@@ -107,6 +103,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		switch (modelId) {
 			case "claude-sonnet-4-5":
 			case "claude-sonnet-4-20250514":
+			case "claude-opus-4-5-20251101":
 			case "claude-opus-4-1-20250805":
 			case "claude-opus-4-20250514":
 			case "claude-3-7-sonnet-20250219":
@@ -168,6 +165,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						switch (modelId) {
 							case "claude-sonnet-4-5":
 							case "claude-sonnet-4-20250514":
+							case "claude-opus-4-5-20251101":
 							case "claude-opus-4-1-20250805":
 							case "claude-opus-4-20250514":
 							case "claude-3-7-sonnet-20250219":
@@ -381,13 +379,5 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			// Use the base provider's implementation as fallback
 			return super.countTokens(content)
 		}
-	}
-
-	/**
-	 * Returns the thinking signature from the last response, if available.
-	 * This signature is used for multi-turn extended thinking continuity.
-	 */
-	public getThinkingSignature(): string | undefined {
-		return this.lastThinkingSignature
 	}
 }
