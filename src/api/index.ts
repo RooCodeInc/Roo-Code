@@ -89,6 +89,11 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Used by providers to determine whether to include native tool definitions.
 	 */
 	toolProtocol?: ToolProtocol
+	/**
+	 * Abort controller signal to cancel the underlying HTTP request/stream.
+	 * Providers that support request cancellation must forward this to their SDK client.
+	 */
+	abortSignal?: AbortSignal
 }
 
 export interface ApiHandler {
