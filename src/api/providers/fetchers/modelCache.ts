@@ -118,6 +118,49 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 }
 
 /**
+ * Validate that fetched models contain expected models.
+ * Returns true if the fetched models appear to be complete.
+ */
+function validateFetchedModels(provider: RouterName, fetchedModels: ModelRecord): boolean {
+	// For OpenRouter, ensure we have a reasonable minimum number of models
+	// to avoid replacing a full cache with an incomplete response
+	if (provider === "openrouter") {
+		const modelCount = Object.keys(fetchedModels).length
+		// OpenRouter typically has 100+ models, so if we get less than 50,
+		// something might be wrong with the API response
+		if (modelCount < 50) {
+			console.warn(
+				`[MODEL_CACHE] OpenRouter returned only ${modelCount} models, which seems incomplete. Keeping existing cache.`,
+			)
+			return false
+		}
+	}
+
+	return true
+}
+
+/**
+ * Merge new models with existing cache, preserving user-selected models.
+ * This prevents losing models that are in use but temporarily missing from API.
+ */
+function mergeModels(existingModels: ModelRecord, newModels: ModelRecord, preserveKeys?: Set<string>): ModelRecord {
+	const merged = { ...newModels }
+
+	// Preserve specific models if they're in the preserve list
+	if (preserveKeys && preserveKeys.size > 0) {
+		for (const key of preserveKeys) {
+			if (existingModels[key] && !merged[key]) {
+				// Keep the existing model if it's not in the new set
+				merged[key] = existingModels[key]
+				console.debug(`[MODEL_CACHE] Preserved model ${key} from existing cache`)
+			}
+		}
+	}
+
+	return merged
+}
+
+/**
  * Get models from the cache or fetch them from the provider and cache them.
  * There are two caches:
  * 1. Memory cache - This is a simple in-memory cache that is used to store models for a short period of time.
@@ -126,10 +169,13 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
  * @param router - The router to fetch models from.
  * @param apiKey - Optional API key for the provider.
  * @param baseUrl - Optional base URL for the provider (currently used only for LiteLLM).
+ * @param preserveModelIds - Optional set of model IDs to preserve even if not in API response
  * @returns The models from the cache or the fetched models.
  */
-export const getModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
-	const { provider } = options
+export const getModels = async (
+	options: GetModelsOptions & { preserveModelIds?: Set<string> },
+): Promise<ModelRecord> => {
+	const { provider, preserveModelIds } = options
 
 	let models = getModelsFromCache(provider)
 
@@ -138,26 +184,45 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 	}
 
 	try {
-		models = await fetchModelsFromProvider(options)
+		const fetchedModels = await fetchModelsFromProvider(options)
 
-		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
+		// Get existing cache for merging
+		const existingModels = await readModels(provider).catch(() => undefined)
+
+		// Validate the fetched models
+		const isValid = validateFetchedModels(provider, fetchedModels)
+
+		if (!isValid && existingModels) {
+			// If validation fails and we have existing models, merge carefully
+			models = mergeModels(existingModels, fetchedModels, preserveModelIds)
+		} else if (existingModels && preserveModelIds && preserveModelIds.size > 0) {
+			// Even if valid, preserve specific models if requested
+			models = mergeModels(existingModels, fetchedModels, preserveModelIds)
+		} else {
+			models = fetchedModels
+		}
+
+		// Cache the merged models
 		memoryCache.set(provider, models)
 
 		await writeModels(provider, models).catch((err) =>
 			console.error(`[MODEL_CACHE] Error writing ${provider} models to file cache:`, err),
 		)
 
-		try {
-			models = await readModels(provider)
-		} catch (error) {
-			console.error(`[getModels] error reading ${provider} models from file cache`, error)
-		}
 		return models || {}
 	} catch (error) {
-		// Log the error and re-throw it so the caller can handle it (e.g., show a UI message).
+		// On error, try to use existing cache as fallback
 		console.error(`[getModels] Failed to fetch models in modelCache for ${provider}:`, error)
 
-		throw error // Re-throw the original error to be handled by the caller.
+		// Try to load from disk cache as fallback
+		const diskCache = await readModels(provider).catch(() => undefined)
+		if (diskCache) {
+			console.debug(`[MODEL_CACHE] Using disk cache as fallback for ${provider}`)
+			memoryCache.set(provider, diskCache)
+			return diskCache
+		}
+
+		throw error // Re-throw the original error if no fallback available
 	}
 }
 
@@ -168,12 +233,32 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
  * @param options - Provider options for fetching models
  * @returns Fresh models from API
  */
-export const refreshModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
-	const { provider } = options
+export const refreshModels = async (
+	options: GetModelsOptions & { preserveModelIds?: Set<string> },
+): Promise<ModelRecord> => {
+	const { provider, preserveModelIds } = options
 
 	try {
 		// Force fresh API fetch - skip getModelsFromCache() check
-		const models = await fetchModelsFromProvider(options)
+		const fetchedModels = await fetchModelsFromProvider(options)
+
+		// Get existing models for intelligent merging
+		const existingModels = getModelsFromCache(provider)
+
+		// Validate the fetched models
+		const isValid = validateFetchedModels(provider, fetchedModels)
+
+		let models: ModelRecord
+		if (!isValid && existingModels) {
+			// If validation fails, merge with existing to preserve user models
+			models = mergeModels(existingModels, fetchedModels, preserveModelIds)
+			console.debug(`[refreshModels] Merged ${provider} models due to incomplete API response`)
+		} else if (existingModels && preserveModelIds && preserveModelIds.size > 0) {
+			// Preserve specific models even in valid responses
+			models = mergeModels(existingModels, fetchedModels, preserveModelIds)
+		} else {
+			models = fetchedModels
+		}
 
 		// Update memory cache first
 		memoryCache.set(provider, models)

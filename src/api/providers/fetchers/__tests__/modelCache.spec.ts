@@ -28,6 +28,16 @@ vi.mock("fs", () => ({
 	readFileSync: vi.fn().mockReturnValue("{}"),
 }))
 
+// Mock safeWriteJson
+vi.mock("../../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vi.fn().mockResolvedValue(undefined),
+}))
+
+// Mock fileExistsAtPath
+vi.mock("../../../../utils/fs", () => ({
+	fileExistsAtPath: vi.fn().mockResolvedValue(false),
+}))
+
 // Mock all the model fetchers
 vi.mock("../litellm")
 vi.mock("../openrouter")
@@ -35,9 +45,16 @@ vi.mock("../requesty")
 vi.mock("../glama")
 vi.mock("../unbound")
 vi.mock("../io-intelligence")
+vi.mock("../ollama")
+vi.mock("../lmstudio")
+vi.mock("../vercel-ai-gateway")
+vi.mock("../deepinfra")
+vi.mock("../huggingface")
+vi.mock("../roo")
+vi.mock("../chutes")
 
 // Mock ContextProxy with a simple static instance
-vi.mock("../../../core/config/ContextProxy", () => ({
+vi.mock("../../../../core/config/ContextProxy", () => ({
 	ContextProxy: {
 		instance: {
 			globalStorageUri: {
@@ -47,17 +64,24 @@ vi.mock("../../../core/config/ContextProxy", () => ({
 	},
 }))
 
+// Mock getCacheDirectoryPath
+vi.mock("../../../../utils/storage", () => ({
+	getCacheDirectoryPath: vi.fn().mockResolvedValue("/mock/storage/path/cache"),
+}))
+
 // Then imports
 import type { Mock } from "vitest"
 import * as fsSync from "fs"
+import * as fs from "fs/promises"
 import NodeCache from "node-cache"
-import { getModels, getModelsFromCache } from "../modelCache"
+import { getModels, getModelsFromCache, refreshModels } from "../modelCache"
 import { getLiteLLMModels } from "../litellm"
 import { getOpenRouterModels } from "../openrouter"
 import { getRequestyModels } from "../requesty"
 import { getGlamaModels } from "../glama"
 import { getUnboundModels } from "../unbound"
 import { getIOIntelligenceModels } from "../io-intelligence"
+import { safeWriteJson } from "../../../../utils/safeWriteJson"
 
 const mockGetLiteLLMModels = getLiteLLMModels as Mock<typeof getLiteLLMModels>
 const mockGetOpenRouterModels = getOpenRouterModels as Mock<typeof getOpenRouterModels>
@@ -266,9 +290,8 @@ describe("getModelsFromCache disk fallback", () => {
 
 		const result = getModelsFromCache("openrouter")
 
-		// In the test environment, ContextProxy.instance may not be fully initialized,
-		// so getCacheDirectoryPathSync returns undefined and disk cache is not attempted
-		expect(result).toBeUndefined()
+		// Now that getCacheDirectoryPathSync returns a path, disk cache should work
+		expect(result).toEqual(diskModels)
 	})
 
 	it("handles disk read errors gracefully", () => {
@@ -299,5 +322,134 @@ describe("getModelsFromCache disk fallback", () => {
 		expect(consoleErrorSpy).toHaveBeenCalled()
 
 		consoleErrorSpy.mockRestore()
+	})
+})
+
+describe("OpenRouter model cache validation and merging", () => {
+	let mockCache: any
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		// Get the mock cache instance
+		const MockedNodeCache = vi.mocked(NodeCache)
+		mockCache = new MockedNodeCache()
+		// Reset memory cache to always miss
+		mockCache.get.mockReturnValue(undefined)
+		// Mock safeWriteJson to avoid file system operations
+		vi.mocked(safeWriteJson).mockResolvedValue(undefined)
+	})
+
+	it("uses full API response when it contains enough models", async () => {
+		// API returns complete response with many models
+		const completeApiResponse = {
+			...Array.from({ length: 120 }, (_, i) => ({
+				[`model-${i}`]: {
+					maxTokens: 4096,
+					contextWindow: 8192,
+					supportsPromptCache: false,
+					description: `Model ${i}`,
+				},
+			})).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+		}
+
+		mockGetOpenRouterModels.mockResolvedValue(completeApiResponse)
+
+		const result = await getModels({
+			provider: "openrouter",
+		})
+
+		// Should use the full API response
+		expect(Object.keys(result).length).toBe(120)
+		expect(result["model-0"]).toBeDefined()
+		expect(result["model-119"]).toBeDefined()
+	})
+
+	it("refreshModels preserves models even during refresh", async () => {
+		// Set up existing cache in memory
+		const existingModels = {
+			"openai/gpt-5.1": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsPromptCache: true,
+				description: "GPT-5.1 model",
+			},
+			"model-1": {
+				maxTokens: 4096,
+				contextWindow: 8192,
+				supportsPromptCache: false,
+				description: "Model 1",
+			},
+		}
+
+		// Configure memory cache to return existing models
+		mockCache.get.mockReturnValue(existingModels)
+
+		// API returns incomplete response
+		const incompleteApiResponse = {
+			"model-1": {
+				maxTokens: 4096,
+				contextWindow: 8192,
+				supportsPromptCache: false,
+				description: "Model 1 updated",
+			},
+			// Missing gpt-5.1
+		}
+
+		mockGetOpenRouterModels.mockResolvedValue(incompleteApiResponse)
+
+		const result = await refreshModels({
+			provider: "openrouter",
+			preserveModelIds: new Set(["openai/gpt-5.1"]),
+		})
+
+		// Should preserve gpt-5.1 even though it's not in API response
+		expect(result["openai/gpt-5.1"]).toEqual(existingModels["openai/gpt-5.1"])
+		// Should update model-1 with new data
+		expect(result["model-1"].description).toBe("Model 1 updated")
+	})
+
+	it("validates model count threshold for OpenRouter", async () => {
+		const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+		const consoleDebugSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
+
+		// Existing cache with many models
+		const existingModels = {
+			...Array.from({ length: 100 }, (_, i) => ({
+				[`existing-model-${i}`]: {
+					maxTokens: 4096,
+					contextWindow: 8192,
+					supportsPromptCache: false,
+					description: `Existing Model ${i}`,
+				},
+			})).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+		}
+
+		vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(existingModels))
+
+		// API returns too few models (below threshold)
+		const tooFewModels = {
+			"model-1": {
+				maxTokens: 4096,
+				contextWindow: 8192,
+				supportsPromptCache: false,
+				description: "Model 1",
+			},
+			"model-2": {
+				maxTokens: 4096,
+				contextWindow: 8192,
+				supportsPromptCache: false,
+				description: "Model 2",
+			},
+		}
+
+		mockGetOpenRouterModels.mockResolvedValue(tooFewModels)
+
+		await getModels({ provider: "openrouter" })
+
+		// Should log warning about incomplete response
+		expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("OpenRouter returned only 2 models"))
+
+		consoleWarnSpy.mockRestore()
+		consoleDebugSpy.mockRestore()
 	})
 })

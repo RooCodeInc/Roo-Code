@@ -82,8 +82,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	private async loadDynamicModels(): Promise<void> {
 		try {
+			// Preserve the current model ID even if it's not in the API response
+			const preserveModelIds = this.options.openRouterModelId
+				? new Set([this.options.openRouterModelId])
+				: undefined
+
 			const [models, endpoints] = await Promise.all([
-				getModels({ provider: "openrouter" }),
+				getModels({
+					provider: "openrouter",
+					preserveModelIds,
+				}),
 				getModelEndpoints({
 					router: "openrouter",
 					modelId: this.options.openRouterModelId,
@@ -359,8 +367,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	public async fetchModel() {
+		// Preserve the current model ID even if it's not in the API response
+		const preserveModelIds = this.options.openRouterModelId ? new Set([this.options.openRouterModelId]) : undefined
+
 		const [models, endpoints] = await Promise.all([
-			getModels({ provider: "openrouter" }),
+			getModels({
+				provider: "openrouter",
+				preserveModelIds,
+			}),
 			getModelEndpoints({
 				router: "openrouter",
 				modelId: this.options.openRouterModelId,
