@@ -169,40 +169,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			}))
 	}
 
-	/**
-	 * Convert OpenAI tool_choice to Mistral format.
-	 */
-	private convertToolChoiceForMistral(
-		toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
-	): "auto" | "none" | "any" | "required" | { type: "function"; function: { name: string } } {
-		if (!toolChoice) {
-			return "auto"
-		}
-
-		if (typeof toolChoice === "string") {
-			switch (toolChoice) {
-				case "none":
-					return "none"
-				case "auto":
-					return "auto"
-				case "required":
-					return "any" // Mistral uses "any" instead of "required"
-				default:
-					return "auto"
-			}
-		}
-
-		// Handle object form { type: "function", function: { name: string } }
-		if (typeof toolChoice === "object" && "function" in toolChoice) {
-			return {
-				type: "function",
-				function: { name: toolChoice.function.name },
-			}
-		}
-
-		return "auto"
-	}
-
 	override getModel() {
 		const id = this.options.apiModelId ?? mistralDefaultModelId
 		const info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
