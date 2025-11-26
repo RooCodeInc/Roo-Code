@@ -3294,38 +3294,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.currentRequestAbortController = new AbortController()
 		const abortSignal = this.currentRequestAbortController.signal
 
-		// Log conversation structure for debugging (omit content)
-		if (shouldIncludeTools) {
-			console.log(`[Task#${this.taskId}] Conversation structure being sent to API:`)
-			cleanConversationHistory.forEach((msg, idx) => {
-				if ("role" in msg) {
-					const contentSummary = Array.isArray(msg.content)
-						? msg.content
-								.map((block) => {
-									if ("type" in block) {
-										if (block.type === "tool_use") {
-											return `tool_use(${block.name}, id:${block.id})`
-										} else if (block.type === "tool_result") {
-											return `tool_result(id:${block.tool_use_id})`
-										} else if (block.type === "text") {
-											return `text(${(block.text as string).substring(0, 50)}...)`
-										} else if (block.type === "image") {
-											return "image"
-										}
-									}
-									return "unknown_block"
-								})
-								.join(", ")
-						: typeof msg.content === "string"
-							? `text(${msg.content.substring(0, 50)}...)`
-							: "unknown_content"
-					console.log(`  [${idx}] ${msg.role}: [${contentSummary}]`)
-				} else if ("type" in msg && msg.type === "reasoning") {
-					console.log(`  [${idx}] reasoning (encrypted)`)
-				}
-			})
-		}
-
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,

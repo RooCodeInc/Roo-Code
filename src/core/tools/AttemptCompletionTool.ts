@@ -9,6 +9,7 @@ import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { t } from "../../i18n"
 
 interface AttemptCompletionParams {
 	result: string
@@ -36,7 +37,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		// Prevent attempt_completion if any tool failed in the current turn
 		if (task.didToolFailInCurrentTurn) {
-			const errorMsg = `Cannot execute attempt_completion because a previous tool call failed in this turn. Please address the tool failure before attempting completion.`
+			const errorMsg = t("common:errors.attempt_completion_tool_failed")
 
 			await task.say("error", errorMsg)
 			pushToolResult(formatResponse.toolError(errorMsg))
