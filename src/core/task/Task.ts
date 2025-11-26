@@ -3452,11 +3452,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		}
 
+		// Resolve parallel tool calls setting from experiment (will move to per-API-profile setting later)
+		const parallelToolCallsEnabled = experiments.isEnabled(
+			state?.experiments ?? {},
+			EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
+		)
+
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
 			// Include tools and tool protocol when using native protocol and model supports it
-			...(shouldIncludeTools ? { tools: allTools, tool_choice: "auto", toolProtocol } : {}),
+			...(shouldIncludeTools
+				? { tools: allTools, tool_choice: "auto", toolProtocol, parallelToolCalls: parallelToolCallsEnabled }
+				: {}),
 		}
 
 		// Create an AbortController to allow cancelling the request mid-stream
