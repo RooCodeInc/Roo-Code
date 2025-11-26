@@ -1,13 +1,68 @@
-# Improve error messages for VPN-required connection failures
+# GitHub Issue: Improve error messages for VPN-required connection failures
 
-When using Roo Code with internal/corporate API endpoints that require VPN connectivity, users receive generic "Connection error" messages with no guidance about the root cause. Enhance the error handler to detect DNS resolution failures, connection refused errors, and timeouts, providing specific VPN connection guidance that reduces debugging time and improves the enterprise user experience.
+**Issue Type:** Enhancement Request
 
-## Context (who is affected and when)
-Enterprise users who configure Roo Code to use internal AI services (like Kong AI Gateway or corporate-hosted LLM endpoints) encounter this when their VPN connection is inactive or unstable. This affects developers working remotely or switching between networks who may not immediately realize their corporate services are unreachable.
+## Problem
+When using Roo Code with internal/corporate API endpoints that require VPN connectivity (such as Kong AI Gateway or other enterprise services behind corporate networks), users receive generic "Connection error" messages that provide no guidance about the root cause.
 
-## Desired behavior (conceptual, not technical)
-When a connection to an AI provider fails, Roo Code should tell users *why* it failed and *what to do about it*. Instead of generic "Connection error" messages, users should see clear guidance like "Cannot connect - check your VPN" for DNS failures, "Service unavailable - verify it's running" for connection refused, or "Request timed out - check VPN stability" for timeouts.
+**Current Error Message:**
+```
+OpenAI completion error: Connection error.
+Retry attempt 1
+Retrying now...
+```
 
-## Context (who is affected and when)
+This leads to:
+- User confusion and frustration
+- Increased support burden
+- Time wasted debugging network issues
+- Poor enterprise deployment experience
 
-Enterprise users and developers working with internal AI services (such as Kong AI Gateway, internal OpenAI-compatible endpoints, or other corporate API services) behind corporate networks encounter this issue whenever they attempt to use Roo Code without an active VPN connection. This also affects users who lose VPN connectivity mid-session or experience VPN instability.
+## Proposed Solution
+Enhance the error handler to detect specific network error patterns and provide context-aware error messages:
+
+1. **DNS Resolution Failures** (ENOTFOUND, "Could not resolve host", getaddrinfo)
+2. **Connection Refused Errors** (ECONNREFUSED)  
+3. **Timeout Errors** (ETIMEDOUT)
+
+Each error type should provide specific guidance about VPN requirements.
+
+## User Benefit
+- Immediate clarity on what action to take (connect to VPN)
+- Reduced debugging and support time
+- Better enterprise deployment experience
+- Specific guidance for internal endpoints (e.g., *.use.ucdp.net, internal Kong gateways)
+- Distinguishes between different network failure types
+
+## Expected Behavior
+
+**DNS Resolution Failure:**
+```
+OpenAI connection error: Cannot resolve hostname. 
+This usually means you need to connect to your corporate VPN to access internal services. 
+If you're using an internal API endpoint (e.g., *.use.ucdp.net), 
+please verify your VPN connection is active.
+```
+
+**Connection Refused:**
+```
+OpenAI connection error: Service refused connection. 
+The API endpoint is reachable but not accepting connections. 
+Please verify the service is running and the port is correct.
+```
+
+**Timeout:**
+```
+OpenAI connection error: Request timed out. 
+The API endpoint may be unreachable or experiencing issues. 
+If using an internal service, verify your VPN connection is stable.
+```
+
+## Alignment with Roadmap
+This enhancement aligns with the **Enhanced User Experience** roadmap goal by:
+- Streamlining the UX for clarity and intuitiveness
+- Reducing friction points that deter regular usage
+- Improving workflow to meet high expectations for daily-use tools
+
+## Implementation Note
+I have already implemented this enhancement and can submit a PR immediately upon assignment.
