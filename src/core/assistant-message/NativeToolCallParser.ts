@@ -287,21 +287,35 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Convert raw file entries from API (with line_ranges strings) to FileEntry objects
-	 * (with lineRanges objects).
+	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
+	 * (with lineRanges). Handles multiple formats for compatibility:
 	 *
-	 * API sends: { path: string, line_ranges: ["1-50", "100-200"] }
-	 * Returns:   { path: string, lineRanges: [{ start: 1, end: 50 }, { start: 100, end: 200 }] }
+	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
+	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
+	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
+	 *
+	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
 			const entry: FileEntry = { path: file.path }
 			if (file.line_ranges && Array.isArray(file.line_ranges)) {
 				entry.lineRanges = file.line_ranges
-					.map((range: string) => {
-						const match = String(range).match(/^(\d+)-(\d+)$/)
-						if (match) {
-							return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+					.map((range: any) => {
+						// Handle tuple format: [start, end]
+						if (Array.isArray(range) && range.length >= 2) {
+							return { start: Number(range[0]), end: Number(range[1]) }
+						}
+						// Handle object format: { start: number, end: number }
+						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
+							return { start: Number(range.start), end: Number(range.end) }
+						}
+						// Handle legacy string format: "1-50"
+						if (typeof range === "string") {
+							const match = range.match(/^(\d+)-(\d+)$/)
+							if (match) {
+								return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+							}
 						}
 						return null
 					})

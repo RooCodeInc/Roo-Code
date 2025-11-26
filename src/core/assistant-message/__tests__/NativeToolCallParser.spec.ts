@@ -8,7 +8,42 @@ describe("NativeToolCallParser", () => {
 
 	describe("parseToolCall", () => {
 		describe("read_file tool", () => {
-			it("should convert line_ranges strings to lineRanges objects", () => {
+			it("should handle line_ranges as tuples (new format)", () => {
+				const toolCall = {
+					id: "toolu_123",
+					name: "read_file" as const,
+					arguments: JSON.stringify({
+						files: [
+							{
+								path: "src/core/task/Task.ts",
+								line_ranges: [
+									[1920, 1990],
+									[2060, 2120],
+								],
+							},
+						],
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					expect(result.nativeArgs).toBeDefined()
+					const nativeArgs = result.nativeArgs as {
+						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					}
+					expect(nativeArgs.files).toHaveLength(1)
+					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
+					expect(nativeArgs.files[0].lineRanges).toEqual([
+						{ start: 1920, end: 1990 },
+						{ start: 2060, end: 2120 },
+					])
+				}
+			})
+
+			it("should handle line_ranges as strings (legacy format)", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
