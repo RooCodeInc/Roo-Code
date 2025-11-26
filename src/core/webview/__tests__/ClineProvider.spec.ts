@@ -692,7 +692,7 @@ describe("ClineProvider", () => {
 			await messageHandler({ type: "clearTask" })
 
 			// Verify finishSubTask was called (not clearTask)
-			expect(finishSubTaskSpy).toHaveBeenCalledWith(expect.stringContaining("canceled"))
+			expect(finishSubTaskSpy).toHaveBeenCalledWith("tasks.canceled", "test-task-id")
 			expect(clearTaskSpy).not.toHaveBeenCalled()
 			expect(postStateToWebviewSpy).toHaveBeenCalled()
 		})
