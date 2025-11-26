@@ -10,7 +10,7 @@ export type EmbedderProvider =
 	| "mistral"
 	| "vercel-ai-gateway"
 	| "bedrock"
-	| "openrouter"
+	| "openrouter" // Add other providers as needed
 
 export interface EmbeddingModelProfile {
 	dimension: number
