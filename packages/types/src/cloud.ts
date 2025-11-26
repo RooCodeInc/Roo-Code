@@ -440,8 +440,6 @@ export enum ExtensionBridgeEventName {
 	TaskPaused = RooCodeEventName.TaskPaused,
 	TaskUnpaused = RooCodeEventName.TaskUnpaused,
 	TaskSpawned = RooCodeEventName.TaskSpawned,
-
-	// NEW: Delegation events
 	TaskDelegated = RooCodeEventName.TaskDelegated,
 	TaskDelegationCompleted = RooCodeEventName.TaskDelegationCompleted,
 	TaskDelegationResumed = RooCodeEventName.TaskDelegationResumed,
@@ -525,8 +523,6 @@ export const extensionBridgeEventSchema = z.discriminatedUnion("type", [
 		instance: extensionInstanceSchema,
 		timestamp: z.number(),
 	}),
-
-	// NEW: Delegation events
 	z.object({
 		type: z.literal(ExtensionBridgeEventName.TaskDelegated),
 		instance: extensionInstanceSchema,

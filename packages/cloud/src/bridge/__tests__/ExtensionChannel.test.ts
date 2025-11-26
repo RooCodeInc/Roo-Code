@@ -120,8 +120,6 @@ describe("ExtensionChannel", () => {
 				RooCodeEventName.TaskPaused,
 				RooCodeEventName.TaskUnpaused,
 				RooCodeEventName.TaskSpawned,
-
-				// NEW: Delegation events
 				RooCodeEventName.TaskDelegated,
 				RooCodeEventName.TaskDelegationCompleted,
 				RooCodeEventName.TaskDelegationResumed,

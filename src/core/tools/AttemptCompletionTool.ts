@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
@@ -17,6 +17,18 @@ interface AttemptCompletionParams {
 export interface AttemptCompletionCallbacks extends ToolCallbacks {
 	askFinishSubTaskApproval: () => Promise<boolean>
 	toolDescription: () => string
+}
+
+/**
+ * Interface for provider methods needed by AttemptCompletionTool for delegation handling.
+ */
+interface DelegationProvider {
+	getTaskWithId(id: string): Promise<{ historyItem: HistoryItem }>
+	reopenParentFromDelegation(params: {
+		parentTaskId: string
+		childTaskId: string
+		completionResultSummary: string
+	}): Promise<void>
 }
 
 export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
@@ -70,10 +82,10 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			if (task.parentTaskId) {
 				// Check if this subtask has already completed and returned to parent
 				// to prevent duplicate tool_results when user revisits from history
-				const provider = task.providerRef.deref()
+				const provider = task.providerRef.deref() as DelegationProvider | undefined
 				if (provider) {
 					try {
-						const { historyItem } = await (provider as any).getTaskWithId(task.taskId)
+						const { historyItem } = await provider.getTaskWithId(task.taskId)
 						if (historyItem?.status === "completed") {
 							// Subtask already completed - skip delegation flow entirely
 							// Fall through to normal completion ask flow below (outside this if block)
@@ -81,40 +93,25 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 							// without injecting another tool_result to the parent
 						} else {
 							// Normal subtask completion - do delegation
-							const didApprove = await askFinishSubTaskApproval()
-
-							if (!didApprove) {
-								pushToolResult(formatResponse.toolDenied())
-								return
-							}
-
-							pushToolResult("")
-
-							// Use the new metadata-driven delegation flow
-							await (provider as any).reopenParentFromDelegation({
-								parentTaskId: task.parentTaskId,
-								childTaskId: task.taskId,
-								completionResultSummary: result,
-							})
-							return
+							const delegated = await this.delegateToParent(
+								task,
+								result,
+								provider,
+								askFinishSubTaskApproval,
+								pushToolResult,
+							)
+							if (delegated) return
 						}
 					} catch {
 						// If we can't get the history, proceed with normal delegation flow
-						const didApprove = await askFinishSubTaskApproval()
-
-						if (!didApprove) {
-							pushToolResult(formatResponse.toolDenied())
-							return
-						}
-
-						pushToolResult("")
-
-						await (provider as any).reopenParentFromDelegation({
-							parentTaskId: task.parentTaskId,
-							childTaskId: task.taskId,
-							completionResultSummary: result,
-						})
-						return
+						const delegated = await this.delegateToParent(
+							task,
+							result,
+							provider,
+							askFinishSubTaskApproval,
+							pushToolResult,
+						)
+						if (delegated) return
 					}
 				}
 			}
@@ -133,6 +130,35 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}
+	}
+
+	/**
+	 * Handles the common delegation flow when a subtask completes.
+	 * Returns true if delegation was performed and the caller should return early.
+	 */
+	private async delegateToParent(
+		task: Task,
+		result: string,
+		provider: DelegationProvider,
+		askFinishSubTaskApproval: () => Promise<boolean>,
+		pushToolResult: (result: string) => void,
+	): Promise<boolean> {
+		const didApprove = await askFinishSubTaskApproval()
+
+		if (!didApprove) {
+			pushToolResult(formatResponse.toolDenied())
+			return true
+		}
+
+		pushToolResult("")
+
+		await provider.reopenParentFromDelegation({
+			parentTaskId: task.parentTaskId!,
+			childTaskId: task.taskId,
+			completionResultSummary: result,
+		})
+
+		return true
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {

@@ -271,7 +271,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 				this.emit(RooCodeEventName.TaskSpawned, task.taskId, childTaskId)
 			})
 
-			// NEW: Delegation events
 			task.on(RooCodeEventName.TaskDelegated as any, (childTaskId: string) => {
 				;(this.emit as any)(RooCodeEventName.TaskDelegated, task.taskId, childTaskId)
 			})

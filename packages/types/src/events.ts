@@ -26,8 +26,6 @@ export enum RooCodeEventName {
 	TaskPaused = "taskPaused",
 	TaskUnpaused = "taskUnpaused",
 	TaskSpawned = "taskSpawned",
-
-	// NEW: Metadata-driven subtask lifecycle
 	TaskDelegated = "taskDelegated",
 	TaskDelegationCompleted = "taskDelegationCompleted",
 	TaskDelegationResumed = "taskDelegationResumed",
@@ -78,8 +76,6 @@ export const rooCodeEventsSchema = z.object({
 	[RooCodeEventName.TaskPaused]: z.tuple([z.string()]),
 	[RooCodeEventName.TaskUnpaused]: z.tuple([z.string()]),
 	[RooCodeEventName.TaskSpawned]: z.tuple([z.string(), z.string()]),
-
-	// NEW: Delegation events
 	[RooCodeEventName.TaskDelegated]: z.tuple([
 		z.string(), // parentTaskId
 		z.string(), // childTaskId
@@ -189,7 +185,6 @@ export const taskEventSchema = z.discriminatedUnion("eventName", [
 		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskSpawned],
 		taskId: z.number().optional(),
 	}),
-	// NEW: Delegation events
 	z.object({
 		eventName: z.literal(RooCodeEventName.TaskDelegated),
 		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskDelegated],
