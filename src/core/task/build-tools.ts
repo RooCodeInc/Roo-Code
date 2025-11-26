@@ -52,6 +52,7 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		experiments,
 		codeIndexManager,
 		filterSettings,
+		mcpHub,
 	)
 
 	// Filter MCP tools based on mode restrictions
