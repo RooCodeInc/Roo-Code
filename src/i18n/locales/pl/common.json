@@ -122,9 +122,9 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki.",
-			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
-			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
-			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
+			"dnsResolutionFailed": "Nie można rozpoznać nazwy hosta. Zazwyczaj oznacza to, że musisz połączyć się z firmowym VPN, aby uzyskać dostęp do usług wewnętrznych. Jeśli używasz wewnętrznego punktu końcowego API, sprawdź, czy połączenie VPN jest aktywne.",
+			"connectionRefused": "Usługa odrzuciła połączenie. Punkt końcowy API jest osiągalny, ale nie akceptuje połączeń. Sprawdź, czy usługa działa i czy port jest prawidłowy.",
+			"connectionTimeout": "Upłynął limit czasu żądania. Punkt końcowy API może być nieosiągalny lub mieć problemy. Jeśli korzystasz z usługi wewnętrznej, sprawdź, czy połączenie VPN jest stabilne."
 		},
 		"manual_url_empty": "Wprowadź prawidłowy URL callback",
 		"manual_url_no_query": "Nieprawidłowy URL callback: brak parametrów zapytania",

@@ -122,9 +122,9 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API कुंजी में अमान्य वर्ण हैं।",
-			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
-			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
-			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
+			"dnsResolutionFailed": "होस्टनाम को हल नहीं कर सकता। इसका आमतौर पर मतलब है कि आपको आंतरिक सेवाओं तक पहुँचने के लिए अपने कॉर्पोरेट VPN से कनेक्ट करना होगा। यदि आप किसी आंतरिक API एंडपॉइंट का उपयोग कर रहे हैं, तो कृपया सत्यापित करें कि आपका VPN कनेक्शन सक्रिय है।",
+			"connectionRefused": "सेवा ने कनेक्शन अस्वीकार कर दिया। API एंडपॉइंट पहुँच योग्य है लेकिन कनेक्शन स्वीकार नहीं कर रहा है। कृपया सत्यापित करें कि सेवा चल रही है और पोर्ट सही है।",
+			"connectionTimeout": "अनुरोध समय समाप्त हो गया। API एंडपॉइंट अप्राप्य हो सकता है या समस्याओं का सामना कर रहा है। यदि किसी आंतरिक सेवा का उपयोग कर रहे हैं, तो सत्यापित करें कि आपका VPN कनेक्शन स्थिर है।"
 		},
 		"manual_url_empty": "कृपया एक वैध callback URL दर्ज करें",
 		"manual_url_no_query": "अवैध callback URL: क्वेरी पैरामीटर गुम हैं",

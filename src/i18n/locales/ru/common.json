@@ -122,9 +122,9 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы.",
-			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
-			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
-			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
+			"dnsResolutionFailed": "Не удается разрешить имя хоста. Обычно это означает, что вам нужно подключиться к корпоративной VPN для доступа к внутренним сервисам. Если вы используете внутреннюю конечную точку API, убедитесь, что ваше VPN-соединение активно.",
+			"connectionRefused": "Служба отклонила соединение. Конечная точка API доступна, но не принимает соединения. Убедитесь, что служба запущена и порт указан правильно.",
+			"connectionTimeout": "Время ожидания запроса истекло. Конечная точка API может быть недоступна или испытывать проблемы. Если вы используете внутреннюю службу, убедитесь, что ваше VPN-соединение стабильно."
 		},
 		"manual_url_empty": "Введи действительный URL обратного вызова",
 		"manual_url_no_query": "Недействительный URL обратного вызова: отсутствуют параметры запроса",

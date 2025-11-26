@@ -121,9 +121,9 @@
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 金鑰包含無效字元。",
-			"dnsResolutionFailed": "Cannot resolve hostname. This usually means you need to connect to your corporate VPN to access internal services. If you're using an internal API endpoint, please verify your VPN connection is active.",
-			"connectionRefused": "Service refused connection. The API endpoint is reachable but not accepting connections. Please verify the service is running and the port is correct.",
-			"connectionTimeout": "Request timed out. The API endpoint may be unreachable or experiencing issues. If using an internal service, verify your VPN connection is stable."
+			"dnsResolutionFailed": "無法解析主機名稱。這通常表示您需要連接到企業VPN才能存取內部服務。如果您使用的是內部API端點，請驗證您的VPN連接是否處於活動狀態。",
+			"connectionRefused": "服務拒絕連接。API端點可存取但不接受連接。請驗證服務是否正在運行以及連接埠是否正確。",
+			"connectionTimeout": "請求逾時。API端點可能無法存取或遇到問題。如果使用內部服務，請驗證您的VPN連接是否穩定。"
 		},
 		"manual_url_empty": "請輸入有效的回呼 URL",
 		"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",
