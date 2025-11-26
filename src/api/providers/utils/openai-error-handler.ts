@@ -35,29 +35,17 @@ export function handleOpenAIError(error: unknown, providerName: string): Error {
 			msg.includes("EAI_AGAIN") ||
 			(msg.includes("Connection error") && !msg.includes("refused"))
 		) {
-			return new Error(
-				`${providerName} connection error: Cannot resolve hostname. ` +
-					`This usually means you need to connect to your corporate VPN to access internal services. ` +
-					`If you're using an internal API endpoint (e.g., *.use.ucdp.net), please verify your VPN connection is active.`,
-			)
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.dnsResolutionFailed")}`)
 		}
 
 		// Connection refused - service is reachable but not accepting connections
 		if (msg.includes("ECONNREFUSED") || msg.includes("Connection refused")) {
-			return new Error(
-				`${providerName} connection error: Service refused connection. ` +
-					`The API endpoint is reachable but not accepting connections. ` +
-					`Please verify the service is running and the port is correct.`,
-			)
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.connectionRefused")}`)
 		}
 
 		// Timeout errors
 		if (msg.includes("ETIMEDOUT") || msg.includes("timeout")) {
-			return new Error(
-				`${providerName} connection error: Request timed out. ` +
-					`The API endpoint may be unreachable or experiencing issues. ` +
-					`If using an internal service, verify your VPN connection is stable.`,
-			)
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.connectionTimeout")}`)
 		}
 
 		// For other Error instances, wrap with provider-specific prefix
