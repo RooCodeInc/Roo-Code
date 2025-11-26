@@ -938,6 +938,7 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 						removeClosingTag,
 						toolProtocol,
+						toolCallId: block.id,
 					})
 					break
 				case "attempt_completion": {

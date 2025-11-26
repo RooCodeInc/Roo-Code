@@ -30,7 +30,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { mode, message, todos } = params
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult, toolProtocol, toolCallId } = callbacks
 
 		try {
 			// Validate required parameters.
@@ -133,9 +133,20 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
-			pushToolResult(
-				`Successfully created new task in ${targetMode.name} mode with message: ${unescapedMessage} and ${todoItems.length} todo items`,
-			)
+			// For native protocol, defer the tool_result until the subtask completes.
+			// The actual result (including what the subtask accomplished) will be pushed
+			// by completeSubtask. This gives the parent task useful information about
+			// what the subtask actually did.
+			if (toolProtocol === "native" && toolCallId) {
+				task.pendingNewTaskToolCallId = toolCallId
+				// Don't push tool_result here - it will come from completeSubtask with the actual result.
+				// The task loop will stay alive because isPaused is true (see Task.ts stack push condition).
+			} else {
+				// For XML protocol, push the result immediately (existing behavior)
+				pushToolResult(
+					`Successfully created new task in ${targetMode.name} mode with message: ${unescapedMessage} and ${todoItems.length} todo items`,
+				)
+			}
 
 			return
 		} catch (error) {

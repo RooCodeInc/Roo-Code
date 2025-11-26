@@ -157,6 +157,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	readonly rootTaskId?: string
 	readonly parentTaskId?: string
 	childTaskId?: string
+	pendingNewTaskToolCallId?: string
 
 	readonly instanceId: string
 	readonly metadata: TaskMetadata
@@ -1967,10 +1968,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		try {
 			await this.say("subtask_result", lastMessage)
 
-			await this.addToApiConversationHistory({
-				role: "user",
-				content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
-			})
+			// Check if using native protocol to determine how to add the subtask result
+			const modelInfo = this.api.getModel().info
+			const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+
+			if (toolProtocol === "native" && this.pendingNewTaskToolCallId) {
+				// For native protocol, push the actual tool_result with the subtask's real result.
+				// NewTaskTool deferred pushing the tool_result until now so that the parent task
+				// gets useful information about what the subtask actually accomplished.
+				this.userMessageContent.push({
+					type: "tool_result",
+					tool_use_id: this.pendingNewTaskToolCallId,
+					content: `[new_task completed] Result: ${lastMessage}`,
+				} as Anthropic.ToolResultBlockParam)
+
+				// Clear the pending tool call ID
+				this.pendingNewTaskToolCallId = undefined
+			} else {
+				// For XML protocol (or if no pending tool call ID), add as a separate user message
+				await this.addToApiConversationHistory({
+					role: "user",
+					content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
+				})
+			}
 		} catch (error) {
 			this.providerRef
 				.deref()
@@ -2073,6 +2093,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				provider.log(`[subtasks] paused ${this.taskId}.${this.instanceId}`)
 				await this.waitForSubtask()
 				provider.log(`[subtasks] resumed ${this.taskId}.${this.instanceId}`)
+
+				// After subtask completes, completeSubtask has pushed content to userMessageContent.
+				// Copy it to currentUserContent so it gets sent to the API in this iteration.
+				if (this.userMessageContent.length > 0) {
+					currentUserContent.push(...this.userMessageContent)
+					this.userMessageContent = []
+				}
+
 				const currentMode = (await provider.getState())?.mode ?? defaultModeSlug
 
 				if (currentMode !== this.pausedModeSlug) {
@@ -2992,7 +3020,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						this.consecutiveMistakeCount++
 					}
 
-					if (this.userMessageContent.length > 0) {
+					// Push to stack if there's content OR if we're paused waiting for a subtask.
+					// When paused, we push an empty item so the loop continues to the pause check.
+					if (this.userMessageContent.length > 0 || this.isPaused) {
 						stack.push({
 							userContent: [...this.userMessageContent], // Create a copy to avoid mutation issues
 							includeFileDetails: false, // Subsequent iterations don't need file details
