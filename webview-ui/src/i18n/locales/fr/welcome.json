@@ -30,6 +30,7 @@
 		"description": "Termine l'inscription dans ton navigateur et tu reviendras ici automatiquement.",
 		"noPrompt": "Si tu n'es pas invité à ouvrir une URL, <clickHere>clique ici</clickHere>.",
 		"havingTrouble": "Si tu as terminé l'inscription mais que tu rencontres des problèmes, <clickHere>clique ici</clickHere>.",
+		"pasteUrl": "Colle l'URL de rappel depuis ton navigateur :",
 		"goBack": "Retour"
 	},
 	"startRouter": "Nous recommandons d'utiliser un routeur LLM :",

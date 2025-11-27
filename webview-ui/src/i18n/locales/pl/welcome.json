@@ -30,6 +30,7 @@
 		"description": "Ukończ rejestrację w przeglądarce i automatycznie wrócisz tutaj.",
 		"noPrompt": "Jeśli nie zostaniesz poproszony o otwarcie adresu URL, <clickHere>kliknij tutaj</clickHere>.",
 		"havingTrouble": "Jeśli ukończyłeś rejestrację, ale masz problemy, <clickHere>kliknij tutaj</clickHere>.",
+		"pasteUrl": "Wklej adres URL wywołania zwrotnego z przeglądarki:",
 		"goBack": "Wróć"
 	},
 	"startRouter": "Zalecamy korzystanie z routera LLM:",

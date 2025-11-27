@@ -30,6 +30,7 @@
 		"description": "Completa el registre al navegador i tornaràs aquí automàticament.",
 		"noPrompt": "Si no se t'avisa per obrir una URL, <clickHere>feu clic aquí</clickHere>.",
 		"havingTrouble": "Si has completat el registre però tens problemes, <clickHere>feu clic aquí</clickHere>.",
+		"pasteUrl": "Enganxa la URL de resposta del teu navegador:",
 		"goBack": "Enrere"
 	},
 	"startRouter": "Recomanem utilitzar un router LLM:",

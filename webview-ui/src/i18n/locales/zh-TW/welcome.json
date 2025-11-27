@@ -30,6 +30,7 @@
 		"description": "在瀏覽器中完成註冊，您將自動返回此處。",
 		"noPrompt": "如果您未被提示開啟 URL，<clickHere>請點擊此處</clickHere>。",
 		"havingTrouble": "如果您已完成註冊但遇到問題，<clickHere>請點擊此處</clickHere>。",
+		"pasteUrl": "從瀏覽器貼上回呼 URL：",
 		"goBack": "返回"
 	},
 	"startRouter": "我們建議使用 LLM 路由器：",

@@ -30,6 +30,7 @@
 		"description": "Voltooi de registratie in je browser en je keert automatisch hier terug.",
 		"noPrompt": "Als je niet wordt gevraagd een URL te openen, <clickHere>klik hier</clickHere>.",
 		"havingTrouble": "Als je de registratie hebt voltooid maar problemen hebt, <clickHere>klik hier</clickHere>.",
+		"pasteUrl": "Plak de callback-URL vanuit je browser:",
 		"goBack": "Terug"
 	},
 	"startRouter": "We raden aan om een LLM-router te gebruiken:",

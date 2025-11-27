@@ -30,6 +30,7 @@
 		"description": "Completa l'iscrizione nel tuo browser e tornerai qui automaticamente.",
 		"noPrompt": "Se non ti viene chiesto di aprire un URL, <clickHere>fai clic qui</clickHere>.",
 		"havingTrouble": "Se hai completato l'iscrizione ma hai problemi, <clickHere>fai clic qui</clickHere>.",
+		"pasteUrl": "Incolla l'URL di callback dal tuo browser:",
 		"goBack": "Indietro"
 	},
 	"startRouter": "Consigliamo di utilizzare un router LLM:",

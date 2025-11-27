@@ -162,7 +162,7 @@ const WelcomeViewProvider = () => {
 						{showManualEntry && (
 							<div className="mt-2 w-full max-w-sm">
 								<p className="text-sm text-vscode-descriptionForeground mb-2">
-									Paste the callback URL from your browser:
+									{t("welcome:waitingForCloud.pasteUrl")}
 								</p>
 								<VSCodeTextField
 									ref={manualUrlInputRef as any}
