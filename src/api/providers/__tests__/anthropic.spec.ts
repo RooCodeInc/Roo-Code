@@ -523,7 +523,7 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should convert tool_choice 'none' to undefined (omit tools)", async () => {
+		it("should omit both tools and tool_choice when tool_choice is 'none'", async () => {
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
@@ -536,9 +536,16 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
+			// Verify that neither tools nor tool_choice are included in the request
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: undefined,
+				expect.not.objectContaining({
+					tools: expect.anything(),
+				}),
+				expect.anything(),
+			)
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					tool_choice: expect.anything(),
 				}),
 				expect.anything(),
 			)

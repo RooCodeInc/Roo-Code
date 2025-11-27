@@ -66,8 +66,12 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		// Prepare native tool parameters if tools are provided and protocol is not XML
+		// Also exclude tools when tool_choice is "none" since that means "don't use tools"
 		const shouldIncludeNativeTools =
-			metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+			metadata?.tools &&
+			metadata.tools.length > 0 &&
+			metadata?.toolProtocol !== "xml" &&
+			metadata?.tool_choice !== "none"
 
 		const nativeToolParams = shouldIncludeNativeTools
 			? {
