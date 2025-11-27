@@ -25,6 +25,14 @@
 		"useAnotherProviderDescription": "APIキーを入力して始める。",
 		"getStarted": "始める"
 	},
+	"waitingForCloud": {
+		"heading": "Roo Code Cloudにお連れします...",
+		"description": "ブラウザでサインアップを完了すると、自動的にここに戻ります。",
+		"noPrompt": "URLを開くように促されない場合は、<clickHere>ここをクリック</clickHere>してください。",
+		"havingTrouble": "サインアップを完了しましたが問題がある場合は、<clickHere>ここをクリック</clickHere>してください。",
+		"pasteUrl": "ブラウザからコールバックURLを貼り付けてください：",
+		"goBack": "戻る"
+	},
 	"startRouter": "LLMルーターの使用をお勧めします：",
 	"startCustom": "または、あなた自身のAPIキーを使用できます：",
 	"telemetry": {
