@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 import accessMcpResource from "./access_mcp_resource"
-import { apply_diff_single_file } from "./apply_diff"
+import { apply_diff } from "./apply_diff"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
 import browserAction from "./browser_action"
@@ -32,7 +32,7 @@ export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./c
 export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
 	return [
 		accessMcpResource,
-		apply_diff_single_file,
+		apply_diff,
 		askFollowupQuestion,
 		attemptCompletion,
 		browserAction,
