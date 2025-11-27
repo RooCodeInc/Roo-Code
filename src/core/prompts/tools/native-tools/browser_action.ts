@@ -48,6 +48,7 @@ export default {
 					description: TEXT_PARAMETER_DESCRIPTION,
 				},
 			},
+			required: ["action"],
 			additionalProperties: false,
 		},
 	},
