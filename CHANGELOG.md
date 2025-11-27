@@ -1,5 +1,18 @@
 # Roo Code Changelog
 
+## [3.34.7] - 2025-11-27
+
+![3.34.7 Release - More Native Tool Integrations](/releases/3.34.7-release.png)
+
+- Support native tools in the Anthropic provider for improved tool calling (PR #9644 by @mrubens)
+- Enable native tool calling for z.ai models (PR #9645 by @mrubens)
+- Enable native tool calling for Moonshot models (PR #9646 by @mrubens)
+- Fix: OpenRouter tool calls handling improvements (PR #9642 by @mrubens)
+- Fix: OpenRouter GPT-5 strict schema validation for read_file tool (PR #9633 by @daniel-lxs)
+- Fix: Create parent directories early in write_to_file to prevent ENOENT errors (#9634 by @ivanenev, PR #9640 by @daniel-lxs)
+- Fix: Disable native tools and temperature support for claude-code provider (PR #9643 by @hannesrudolph)
+- Add 'taking you to cloud' screen after provider welcome for improved onboarding (PR #9652 by @mrubens)
+
 ## [3.34.6] - 2025-11-26
 
 ![3.34.6 Release - Bedrock Embeddings](/releases/3.34.6-release.png)
