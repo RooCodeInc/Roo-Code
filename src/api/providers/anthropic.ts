@@ -321,10 +321,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		// For extended thinking:
 		// - budget_tokens minimum is 1024
-		// - budget_tokens maximum is 16384
+		// - budget_tokens maximum is 32000 (allows headroom for custom models)
 		// - budget_tokens must be less than max_tokens
 		const THINKING_BUDGET_MIN = 1024
-		const THINKING_BUDGET_MAX = 16384
+		const THINKING_BUDGET_MAX = 32000
 		const configuredBudget =
 			params.reasoning && params.reasoning.type === "enabled"
 				? params.reasoning.budget_tokens

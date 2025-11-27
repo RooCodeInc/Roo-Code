@@ -199,6 +199,11 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 							<div className="w-12 text-sm text-center">{customMaxThinkingTokens}</div>
 						</div>
 					</div>
+					<div className="text-sm text-vscode-descriptionForeground">
+						{t("settings:thinkingBudget.responseTokens", {
+							tokens: (effectiveMaxOutputTokens - customMaxThinkingTokens).toLocaleString(),
+						})}
+					</div>
 				</>
 			)}
 		</>

@@ -182,6 +182,23 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 											className="w-32"
 										/>
 									</div>
+									<div className="flex items-center gap-2 mt-1">
+										<label className="text-sm whitespace-nowrap">
+											{t("settings:providers.anthropic.maxThinkingTokens")}
+										</label>
+										<VSCodeTextField
+											value={customModelInfo.maxThinkingTokens?.toString() || ""}
+											onInput={(e) => {
+												const value = parseInt((e.target as HTMLInputElement).value)
+												updateCustomModelInfo(
+													"maxThinkingTokens",
+													isNaN(value) ? undefined : value,
+												)
+											}}
+											placeholder="32000"
+											className="w-32"
+										/>
+									</div>
 								</div>
 							</>
 						)}

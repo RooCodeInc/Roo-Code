@@ -179,7 +179,41 @@ describe("AnthropicHandler", () => {
 			expect(mockCreate).toHaveBeenCalled()
 		})
 
-		it("caps max_tokens using the thinking budget", async () => {
+		it("caps max_tokens using the thinking budget when it would exceed provider cap", async () => {
+			// Provider cap for claude-3-7-sonnet-20250219:thinking is 128000
+			// Set modelMaxTokens to 125000 so that 125000 + 8000 = 133000 > 128000
+			// This forces the logic to reduce max_tokens to 128000 - 8000 = 120000
+			const reasoningHandler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
+				modelMaxTokens: 125_000,
+				modelMaxThinkingTokens: 8_000,
+			})
+
+			const stream = reasoningHandler.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			])
+
+			// Kick off the generator so the mocked client is invoked
+			await stream.next()
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					max_tokens: 120_000,
+					thinking: expect.objectContaining({ budget_tokens: 8_000 }),
+				}),
+				expect.anything(),
+			)
+
+			await stream.return?.(undefined)
+		})
+
+		it("does not reduce max_tokens when sum is within provider cap", async () => {
+			// Provider cap for claude-3-7-sonnet-20250219:thinking is 128000
+			// 64000 + 8000 = 72000 < 128000, so no reduction needed
 			const reasoningHandler = new AnthropicHandler({
 				apiKey: "test-api-key",
 				apiModelId: "claude-3-7-sonnet-20250219:thinking",
@@ -199,7 +233,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					max_tokens: 56_000,
+					max_tokens: 64_000,
 					thinking: expect.objectContaining({ budget_tokens: 8_000 }),
 				}),
 				expect.anything(),

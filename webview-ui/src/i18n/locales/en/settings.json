@@ -318,7 +318,8 @@
 			"supportsPromptCache": "Supports prompt caching",
 			"supportsThinking": "Supports extended thinking",
 			"contextWindow": "Context window:",
-			"maxOutputTokens": "Max output tokens:"
+			"maxOutputTokens": "Max output tokens:",
+			"maxThinkingTokens": "Max thinking tokens:"
 		},
 		"awsBedrock1MContextBetaLabel": "Enable 1M context window (Beta)",
 		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
@@ -897,7 +898,8 @@
 	},
 	"thinkingBudget": {
 		"maxTokens": "Max Tokens",
-		"maxThinkingTokens": "Max Thinking Tokens"
+		"maxThinkingTokens": "Max Thinking Tokens",
+		"responseTokens": "Response tokens: {{tokens}}"
 	},
 	"validation": {
 		"apiKey": "You must provide a valid API key.",
