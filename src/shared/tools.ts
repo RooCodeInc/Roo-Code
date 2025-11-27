@@ -279,7 +279,8 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		],
 	},
 	edit: {
-		tools: ["apply_diff", "search_and_replace", "write_to_file", "insert_content", "generate_image"],
+		tools: ["apply_diff", "write_to_file", "insert_content", "generate_image"],
+		customTools: ["search_and_replace"],
 	},
 	browser: {
 		tools: ["browser_action"],
