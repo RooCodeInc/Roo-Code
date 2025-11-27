@@ -209,7 +209,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}),
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
-			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
