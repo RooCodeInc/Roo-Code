@@ -82,12 +82,6 @@ const TaskItem = ({
 						{item.highlight ? undefined : item.task}
 					</div>
 
-					<div className="mt-1 flex flex-row flex-wrap items-center gap-2 text-xs">
-						{/* UI-neutral PR: hide delegated badge to keep visible UI unchanged */ null}
-						{/* UI-neutral PR: hide delegated child link to keep visual output unchanged */ null}
-						{/* UI-neutral PR: hide delegation completion indicator to avoid new UI affordances */ null}
-					</div>
-
 					<TaskItemFooter
 						item={item}
 						variant={variant}
