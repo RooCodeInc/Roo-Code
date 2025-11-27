@@ -519,7 +519,16 @@
 			"placeholder": "Standard: claude",
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
-		}
+		},
+		"azureApiKey": "Azure API Key",
+		"getAzureApiKey": "Azure API Key abrufen",
+		"azureBaseUrl": "Azure Basis-URL",
+		"azureBaseUrlHint": "Für Claude: https://<dein-azure>.services.ai.azure.com/anthropic/ | Für GPT: https://<dein-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Erweiterte Einstellungen anzeigen",
+		"azureDeploymentName": "Deployment-Name (optional)",
+		"azureDeploymentNameHint": "Überschreibe den Standard-Deployment-Namen. Lass es leer, um die Model-ID zu verwenden.",
+		"azureApiVersion": "API-Version (optional)",
+		"azureApiVersionHint": "Optionale Überschreibung der API-Version. Standards: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

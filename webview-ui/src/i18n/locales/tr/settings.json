@@ -519,7 +519,16 @@
 			"placeholder": "Varsayılan: claude",
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
-		}
+		},
+		"azureApiKey": "Azure API Anahtarı",
+		"getAzureApiKey": "Azure API Anahtarı Al",
+		"azureBaseUrl": "Azure Temel URL",
+		"azureBaseUrlHint": "Claude için: https://<senin-azure>.services.ai.azure.com/anthropic/ | GPT için: https://<senin-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Gelişmiş Ayarları Göster",
+		"azureDeploymentName": "Dağıtım Adı (İsteğe Bağlı)",
+		"azureDeploymentNameHint": "Varsayılan dağıtım adını geçersiz kıl. Model kimliğini kullanmak için boş bırak.",
+		"azureApiVersion": "API Sürümü (İsteğe Bağlı)",
+		"azureApiVersionHint": "İsteğe bağlı API sürüm geçersiz kılma. Varsayılan: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

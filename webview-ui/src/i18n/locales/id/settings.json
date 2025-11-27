@@ -523,7 +523,16 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
-		}
+		},
+		"azureApiKey": "Kunci API Azure",
+		"getAzureApiKey": "Dapatkan Kunci API Azure",
+		"azureBaseUrl": "URL Dasar Azure",
+		"azureBaseUrlHint": "Untuk Claude: https://<azure-anda>.services.ai.azure.com/anthropic/ | Untuk GPT: https://<azure-anda>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Tampilkan Pengaturan Lanjutan",
+		"azureDeploymentName": "Nama Deployment (Opsional)",
+		"azureDeploymentNameHint": "Menimpa nama deployment default. Biarkan kosong untuk menggunakan ID model.",
+		"azureApiVersion": "Versi API (Opsional)",
+		"azureApiVersionHint": "Penimpaan versi API opsional. Default: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

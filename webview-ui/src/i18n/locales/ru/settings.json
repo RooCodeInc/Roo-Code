@@ -519,7 +519,16 @@
 			"placeholder": "По умолчанию: claude",
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
-		}
+		},
+		"azureApiKey": "Ключ API Azure",
+		"getAzureApiKey": "Получить ключ API Azure",
+		"azureBaseUrl": "Базовый URL Azure",
+		"azureBaseUrlHint": "Для Claude: https://<ваш-azure>.services.ai.azure.com/anthropic/ | Для GPT: https://<ваш-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Показать дополнительные настройки",
+		"azureDeploymentName": "Имя развертывания (необязательно)",
+		"azureDeploymentNameHint": "Переопределить имя развертывания по умолчанию. Оставь пустым, чтобы использовать ID модели.",
+		"azureApiVersion": "Версия API (необязательно)",
+		"azureApiVersionHint": "Необязательное переопределение версии API. По умолчанию: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

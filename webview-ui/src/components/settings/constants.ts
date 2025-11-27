@@ -2,6 +2,7 @@ import {
 	type ProviderName,
 	type ModelInfo,
 	anthropicModels,
+	azureModels,
 	bedrockModels,
 	cerebrasModels,
 	claudeCodeModels,
@@ -25,6 +26,7 @@ import {
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
 	anthropic: anthropicModels,
+	azure: azureModels,
 	"claude-code": claudeCodeModels,
 	bedrock: bedrockModels,
 	cerebras: cerebrasModels,
@@ -50,6 +52,7 @@ export const PROVIDERS = [
 	{ value: "openrouter", label: "OpenRouter" },
 	{ value: "deepinfra", label: "DeepInfra" },
 	{ value: "anthropic", label: "Anthropic" },
+	{ value: "azure", label: "Azure AI" },
 	{ value: "claude-code", label: "Claude Code" },
 	{ value: "cerebras", label: "Cerebras" },
 	{ value: "gemini", label: "Google Gemini" },

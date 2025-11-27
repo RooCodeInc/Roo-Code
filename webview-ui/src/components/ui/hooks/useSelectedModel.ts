@@ -3,6 +3,7 @@ import {
 	type ProviderSettings,
 	type ModelInfo,
 	anthropicModels,
+	azureModels,
 	bedrockModels,
 	cerebrasModels,
 	deepSeekModels,
@@ -375,9 +376,12 @@ function getSelectedModel({
 		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "azure" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
+			const baseInfo =
+				provider === "azure"
+					? azureModels[id as keyof typeof azureModels]
+					: anthropicModels[id as keyof typeof anthropicModels]
 
 			// Apply 1M context beta tier pricing for Claude Sonnet 4
 			if (
@@ -404,8 +408,12 @@ function getSelectedModel({
 						contextWindow: tier.contextWindow,
 						inputPrice: tier.inputPrice ?? baseInfo.inputPrice,
 						outputPrice: tier.outputPrice ?? baseInfo.outputPrice,
-						cacheWritesPrice: tier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
-						cacheReadsPrice: tier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
+						...("cacheWritesPrice" in baseInfo && {
+							cacheWritesPrice: tier.cacheWritesPrice ?? baseInfo.cacheWritesPrice,
+						}),
+						...("cacheReadsPrice" in baseInfo && {
+							cacheReadsPrice: tier.cacheReadsPrice ?? baseInfo.cacheReadsPrice,
+						}),
 					}
 					return { id, info }
 				}

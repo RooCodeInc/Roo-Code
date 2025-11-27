@@ -125,7 +125,15 @@ export const StyledPre = styled.div<{
 	overflow-y: auto;
 	padding: 8px 3px;
 	border-radius: 6px;
-	${({ preStyle }) => preStyle && { ...preStyle }}
+	${({ preStyle }) =>
+		preStyle
+			? Object.entries(preStyle)
+					.map(([key, value]) => {
+						const cssKey = key.replace(/([A-Z])/g, "-$1").toLowerCase()
+						return `${cssKey}: ${value};`
+					})
+					.join("\n\t\t")
+			: ""}
 
 	pre {
 		background-color: ${CODE_BLOCK_BG_COLOR};

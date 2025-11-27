@@ -83,4 +83,28 @@ describe("getApiProtocol", () => {
 			expect(getApiProtocol("vertex", "ClAuDe-InStAnT")).toBe("anthropic")
 		})
 	})
+
+	describe("Azure provider with dual SDK routing", () => {
+		it("should return 'anthropic' for Azure provider with Claude models", () => {
+			expect(getApiProtocol("azure", "claude-sonnet-4-5")).toBe("anthropic")
+			expect(getApiProtocol("azure", "claude-haiku-4-5")).toBe("anthropic")
+			expect(getApiProtocol("azure", "claude-opus-4-1")).toBe("anthropic")
+		})
+
+		it("should return 'openai' for Azure provider with GPT models", () => {
+			expect(getApiProtocol("azure", "gpt-5-pro")).toBe("openai")
+			expect(getApiProtocol("azure", "gpt-5.1")).toBe("openai")
+			expect(getApiProtocol("azure", "gpt-5-chat")).toBe("openai")
+			expect(getApiProtocol("azure", "gpt-5-mini")).toBe("openai")
+		})
+
+		it("should be case-insensitive for Azure Claude detection", () => {
+			expect(getApiProtocol("azure", "CLAUDE-SONNET-4-5")).toBe("anthropic")
+			expect(getApiProtocol("azure", "Claude-Haiku-4-5")).toBe("anthropic")
+		})
+
+		it("should return 'openai' for Azure without model", () => {
+			expect(getApiProtocol("azure")).toBe("openai")
+		})
+	})
 })

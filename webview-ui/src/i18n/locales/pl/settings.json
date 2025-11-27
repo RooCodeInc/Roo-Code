@@ -519,7 +519,16 @@
 			"placeholder": "Domyślnie: claude",
 			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
 			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
-		}
+		},
+		"azureApiKey": "Klucz API Azure",
+		"getAzureApiKey": "Pobierz klucz API Azure",
+		"azureBaseUrl": "Bazowy URL Azure",
+		"azureBaseUrlHint": "Dla Claude: https://<twoj-azure>.services.ai.azure.com/anthropic/ | Dla GPT: https://<twoj-azure>.cognitiveservices.azure.com/",
+		"azureShowAdvanced": "Pokaż ustawienia zaawansowane",
+		"azureDeploymentName": "Nazwa wdrożenia (opcjonalnie)",
+		"azureDeploymentNameHint": "Nadpisz domyślną nazwę wdrożenia. Zostaw puste, aby użyć ID modelu.",
+		"azureApiVersion": "Wersja API (opcjonalnie)",
+		"azureApiVersionHint": "Opcjonalne nadpisanie wersji API. Domyślnie: Claude=2023-06-01, GPT=2024-12-01-preview"
 	},
 	"browser": {
 		"enable": {

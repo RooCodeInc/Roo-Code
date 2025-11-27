@@ -1,4 +1,5 @@
 export { Anthropic } from "./Anthropic"
+export { Azure } from "./Azure"
 export { Bedrock } from "./Bedrock"
 export { Cerebras } from "./Cerebras"
 export { Chutes } from "./Chutes"
