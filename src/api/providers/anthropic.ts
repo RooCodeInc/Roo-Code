@@ -51,14 +51,20 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
 		if (
-			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
+			(modelId === "claude-sonnet-4-20250514" ||
+				modelId === "claude-sonnet-4-5" ||
+				modelId === "claude-sonnet-4-5-20250929") &&
 			this.options.anthropicBeta1MContext
 		) {
 			betas.push("context-1m-2025-08-07")
 		}
 
+		// Map the alias to the full snapshot name for API calls
+		const apiModelId = modelId === "claude-sonnet-4-5" ? "claude-sonnet-4-5-20250929" : modelId
+
 		switch (modelId) {
 			case "claude-sonnet-4-5":
+			case "claude-sonnet-4-5-20250929":
 			case "claude-sonnet-4-20250514":
 			case "claude-opus-4-5-20251101":
 			case "claude-opus-4-1-20250805":
@@ -89,7 +95,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 				stream = await this.client.messages.create(
 					{
-						model: modelId,
+						model: apiModelId,
 						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 						temperature,
 						thinking,
@@ -121,6 +127,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						// Then check for models that support prompt caching
 						switch (modelId) {
 							case "claude-sonnet-4-5":
+							case "claude-sonnet-4-5-20250929":
 							case "claude-sonnet-4-20250514":
 							case "claude-opus-4-5-20251101":
 							case "claude-opus-4-1-20250805":
@@ -142,7 +149,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			}
 			default: {
 				stream = (await this.client.messages.create({
-					model: modelId,
+					model: apiModelId,
 					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 					temperature,
 					system: [{ text: systemPrompt, type: "text" }],
@@ -262,7 +269,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let info: ModelInfo = anthropicModels[id]
 
 		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
-		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
+		if (
+			(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5" || id === "claude-sonnet-4-5-20250929") &&
+			this.options.anthropicBeta1MContext
+		) {
 			// Use the tier pricing for 1M context
 			const tier = info.tiers?.[0]
 			if (tier) {
@@ -299,8 +309,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	async completePrompt(prompt: string) {
 		let { id: model, temperature } = this.getModel()
 
+		// Map the alias to the full snapshot name for API calls
+		const apiModel = model === "claude-sonnet-4-5" ? "claude-sonnet-4-5-20250929" : model
+
 		const message = await this.client.messages.create({
-			model,
+			model: apiModel,
 			max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
 			thinking: undefined,
 			temperature,
@@ -323,8 +336,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			// Use the current model
 			const { id: model } = this.getModel()
 
+			// Map the alias to the full snapshot name for API calls
+			const apiModel = model === "claude-sonnet-4-5" ? "claude-sonnet-4-5-20250929" : model
+
 			const response = await this.client.messages.countTokens({
-				model,
+				model: apiModel,
 				messages: [{ role: "user", content: content }],
 			})
 
