@@ -171,6 +171,7 @@ export function isToolAllowedForMode(
 	toolRequirements?: Record<string, boolean>,
 	toolParams?: Record<string, any>, // All tool parameters
 	experiments?: Record<string, boolean>,
+	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
 ): boolean {
 	// Always allow these tools
 	if (ALWAYS_AVAILABLE_TOOLS.includes(tool as any)) {
@@ -214,8 +215,14 @@ export function isToolAllowedForMode(
 			return true
 		}
 
-		// If the tool isn't in this group's tools, continue to next group
-		if (!groupConfig.tools.includes(tool)) {
+		// Check if the tool is in the group's regular tools
+		const isRegularTool = groupConfig.tools.includes(tool)
+
+		// Check if the tool is a custom tool that has been explicitly included
+		const isCustomTool = groupConfig.customTools?.includes(tool) && includedTools?.includes(tool)
+
+		// If the tool isn't in regular tools and isn't an included custom tool, continue to next group
+		if (!isRegularTool && !isCustomTool) {
 			continue
 		}
 

@@ -627,15 +627,7 @@ export class NativeToolCallParser {
 					break
 
 				case "apply_diff":
-					// Handle new operations-based apply_diff (search_and_replace renamed to apply_diff)
-					if (args.path !== undefined && args.operations !== undefined && Array.isArray(args.operations)) {
-						nativeArgs = {
-							path: args.path,
-							operations: args.operations,
-						} as NativeArgsFor<TName>
-					}
-					// Also handle legacy diff format for backward compatibility
-					else if (args.path !== undefined && args.diff !== undefined) {
+					if (args.path !== undefined && args.diff !== undefined) {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,
