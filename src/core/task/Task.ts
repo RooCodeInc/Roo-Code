@@ -1930,6 +1930,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			message,
 			initialTodos,
 			mode,
+		})
 		return child
 	}
 
