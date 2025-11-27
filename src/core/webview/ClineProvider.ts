@@ -92,7 +92,7 @@ import { Task } from "../task/Task"
 import { getSystemPromptFilePath } from "../prompts/sections/custom-system-prompt"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
@@ -2970,7 +2970,7 @@ export class ClineProvider
 	public async delegateParentAndOpenChild(params: {
 		parentTaskId: string
 		message: string
-		initialTodos: import("@roo-code/types").TodoItem[]
+		initialTodos: TodoItem[]
 		mode: string
 	}): Promise<Task> {
 		const { parentTaskId, message, initialTodos, mode } = params
