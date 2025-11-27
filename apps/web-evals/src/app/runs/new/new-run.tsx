@@ -248,9 +248,10 @@ export function NewRun() {
 							: {}),
 					}
 				} else if (provider === "other" && values.settings) {
-					// For imported settings, merge in experiments
+					// For imported settings, merge in experiments and tool protocol
 					values.settings = {
 						...values.settings,
+						toolProtocol: useNativeToolProtocol ? "native" : "xml",
 						...experimentsSettings,
 					}
 				}

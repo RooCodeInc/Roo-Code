@@ -42,12 +42,25 @@ function getToolAbbreviation(toolName: string): string {
 		.join("")
 }
 
-// Format log content with basic highlighting
+// Escape HTML to prevent XSS
+function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;")
+}
+
+// Format log content with basic highlighting (XSS-safe)
 function formatLogContent(log: string): React.ReactNode[] {
 	const lines = log.split("\n")
 	return lines.map((line, index) => {
+		// First escape the entire line to prevent XSS
+		let formattedLine = escapeHtml(line)
+
 		// Highlight timestamps [YYYY-MM-DDTHH:MM:SS.sssZ]
-		let formattedLine = line.replace(
+		formattedLine = formattedLine.replace(
 			/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/g,
 			'<span class="text-blue-400">[$1]</span>',
 		)
@@ -67,7 +80,7 @@ function formatLogContent(log: string): React.ReactNode[] {
 			'<span class="text-purple-400">$1</span>',
 		)
 
-		// Highlight message arrows
+		// Highlight message arrows (escaped as &rarr; after escapeHtml)
 		formattedLine = formattedLine.replace(/→/g, '<span class="text-cyan-400">→</span>')
 
 		return (
