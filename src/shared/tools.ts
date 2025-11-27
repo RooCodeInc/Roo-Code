@@ -88,7 +88,7 @@ export type NativeToolArgs = {
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	insert_content: { path: string; line: number; content: string }
-	apply_diff: { path: string; diff?: string }
+	apply_diff: { path: string; diff: string }
 	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
 	ask_followup_question: {
 		question: string
