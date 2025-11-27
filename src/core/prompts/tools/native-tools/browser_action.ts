@@ -22,7 +22,7 @@ export default {
 	function: {
 		name: "browser_action",
 		description: BROWSER_ACTION_DESCRIPTION,
-		strict: true,
+		strict: false,
 		parameters: {
 			type: "object",
 			properties: {
@@ -48,7 +48,6 @@ export default {
 					description: TEXT_PARAMETER_DESCRIPTION,
 				},
 			},
-			required: ["action"],
 			additionalProperties: false,
 		},
 	},
