@@ -1,5 +1,15 @@
 # CoStrict Change Log
 
+## [2.0.17]
+
+-
+- Fix WriteToFileTool.handlePartial
+- Update About page
+- Fix finishSubTask no taskId when canceling or deleting tasks
+- Fix user_feedback when readfile
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/a8a44510d5e3d92626e987d01796c1cbc82ceab2)
+- Fix known issues
+
 ## [2.0.16]
 
 - Added bidirectional navigation between parent and child tasks.
@@ -7,7 +17,7 @@
 - Added built-in openspec-init initialization command.
 - Hid hint-type warnings to reduce noise.
 - Strictly compatible with all attempt_completion formats to reduce unnecessary requests.
-  Added compatibility for browser_action tool parameters, enabling small models to use the built-in browser - tool.
+- Added compatibility for browser_action tool parameters, enabling small models to use the built-in browser tool.
 - Fixed freeze issue when clicking Force Continue during command execution.
 - Enabled chatbox input to write directly into the command line (note: inline terminal does not support sudo).
 - Fixed deleted files appearing in context.
@@ -17,7 +27,7 @@
 - Optimized duplicate shell terminal creation (limit up to 5 terminals).
 - Added native tool support for CoStrict provider.
 - Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/8949c2f6fed704399a115bbb269ba322944984ee)
-- Fix codereview (#638)
+- Fix known issues
 
 ## [2.0.15]
 
