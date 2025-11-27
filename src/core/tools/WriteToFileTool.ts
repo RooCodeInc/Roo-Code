@@ -7,7 +7,7 @@ import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
-import { fileExistsAtPath } from "../../utils/fs"
+import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
@@ -70,13 +70,19 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
 
 		let fileExists: boolean
+		const absolutePath = path.resolve(task.cwd, relPath)
 
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"
 		} else {
-			const absolutePath = path.resolve(task.cwd, relPath)
 			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
+		}
+
+		// Create parent directories early for new files to prevent ENOENT errors
+		// in subsequent operations (e.g., diffViewProvider.open, fs.readFile)
+		if (!fileExists) {
+			await createDirectoriesForFile(absolutePath)
 		}
 
 		if (newContent.startsWith("```")) {
@@ -307,16 +313,23 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		}
 
 		let fileExists: boolean
+		const absolutePath = path.resolve(task.cwd, relPath)
+
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"
 		} else {
-			const absolutePath = path.resolve(task.cwd, relPath)
 			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
 		}
 
+		// Create parent directories early for new files to prevent ENOENT errors
+		// in subsequent operations (e.g., diffViewProvider.open)
+		if (!fileExists) {
+			await createDirectoriesForFile(absolutePath)
+		}
+
 		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
-		const fullPath = path.resolve(task.cwd, relPath)
+		const fullPath = absolutePath
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 		const sharedMessageProps: ClineSayTool = {
