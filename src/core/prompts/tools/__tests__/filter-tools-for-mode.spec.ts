@@ -597,31 +597,29 @@ describe("filterMcpToolsForMode", () => {
 			expect(result.has("write_to_file")).toBe(true)
 		})
 
-		it("should include customTools when specified in includedTools", () => {
+		it("should NOT include tools that are not in any TOOL_GROUPS", () => {
 			const tools = new Set(["read_file"])
 			const modelInfo: ModelInfo = {
 				contextWindow: 100000,
 				supportsPromptCache: false,
-				includedTools: ["my_custom_tool"], // Assume this is in edit.customTools
+				includedTools: ["my_custom_tool"], // Not in any tool group
 			}
-			// For this test to work properly, we'd need to mock TOOL_GROUPS with customTools
-			// This test demonstrates the intended behavior
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
 			expect(result.has("read_file")).toBe(true)
-			// If my_custom_tool is in edit.customTools and code mode has edit group, it should be included
+			expect(result.has("my_custom_tool")).toBe(false)
 		})
 
-		it("should NOT include customTools from groups not allowed by mode", () => {
+		it("should NOT include undefined tools even with allowed groups", () => {
 			const tools = new Set(["read_file"])
 			const modelInfo: ModelInfo = {
 				contextWindow: 100000,
 				supportsPromptCache: false,
-				includedTools: ["custom_edit_tool"], // Assume in edit.customTools
+				includedTools: ["custom_edit_tool"], // Not in any tool group
 			}
-			// Architect mode doesn't have edit group
+			// Even though architect mode has read group, undefined tools are not added
 			const result = applyModelToolCustomization(tools, architectMode, modelInfo)
 			expect(result.has("read_file")).toBe(true)
-			// custom_edit_tool should NOT be included since architect doesn't have edit group
+			expect(result.has("custom_edit_tool")).toBe(false)
 		})
 	})
 
