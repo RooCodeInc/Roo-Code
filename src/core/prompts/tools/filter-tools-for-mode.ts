@@ -4,6 +4,7 @@ import { getModeBySlug, getToolsForMode, isToolAllowedForMode } from "../../../s
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
+import type { McpHub } from "../../../services/mcp/McpHub"
 
 /**
  * Filters native tools based on mode restrictions.
@@ -15,6 +16,7 @@ import type { CodeIndexManager } from "../../../services/code-index/manager"
  * @param experiments - Experiment flags
  * @param codeIndexManager - Code index manager for codebase_search feature check
  * @param settings - Additional settings for tool filtering
+ * @param mcpHub - MCP hub for checking available resources
  * @returns Filtered array of tools allowed for the mode
  */
 export function filterNativeToolsForMode(
@@ -24,6 +26,7 @@ export function filterNativeToolsForMode(
 	experiments: Record<string, boolean> | undefined,
 	codeIndexManager?: CodeIndexManager,
 	settings?: Record<string, any>,
+	mcpHub?: McpHub,
 ): OpenAI.Chat.ChatCompletionTool[] {
 	// Get mode configuration and all tools for this mode
 	const modeSlug = mode ?? defaultModeSlug
@@ -81,6 +84,11 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("browser_action")
 	}
 
+	// Conditionally exclude access_mcp_resource if MCP is not enabled or there are no resources
+	if (!mcpHub || !hasAnyMcpResources(mcpHub)) {
+		allowedToolNames.delete("access_mcp_resource")
+	}
+
 	// Filter native tools based on allowed tool names
 	return nativeTools.filter((tool) => {
 		// Handle both ChatCompletionTool and ChatCompletionCustomTool
@@ -89,6 +97,14 @@ export function filterNativeToolsForMode(
 		}
 		return false
 	})
+}
+
+/**
+ * Helper function to check if any MCP server has resources available
+ */
+function hasAnyMcpResources(mcpHub: McpHub): boolean {
+	const servers = mcpHub.getServers()
+	return servers.some((server) => server.resources && server.resources.length > 0)
 }
 
 /**

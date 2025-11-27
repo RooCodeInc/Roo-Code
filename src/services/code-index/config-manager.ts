@@ -80,7 +80,7 @@ export class CodeIndexConfigManager {
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
 
 		// Update instance variables with configuration
-		this.codebaseIndexEnabled = codebaseIndexEnabled ?? true
+		this.codebaseIndexEnabled = codebaseIndexEnabled ?? false
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore

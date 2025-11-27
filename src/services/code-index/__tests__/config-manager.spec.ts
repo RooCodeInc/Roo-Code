@@ -81,13 +81,13 @@ describe("CodeIndexConfigManager", () => {
 			expect(configManager.isFeatureEnabled).toBe(true)
 		})
 
-		it("should default to true when codebaseIndexEnabled is not set", async () => {
+		it("should default to false when codebaseIndexEnabled is not set", async () => {
 			mockContextProxy.getGlobalState.mockReturnValue({})
 			mockContextProxy.getSecret.mockReturnValue(undefined)
 
 			// Re-create instance to load the configuration
 			configManager = new CodeIndexConfigManager(mockContextProxy)
-			expect(configManager.isFeatureEnabled).toBe(true)
+			expect(configManager.isFeatureEnabled).toBe(false)
 		})
 	})
 

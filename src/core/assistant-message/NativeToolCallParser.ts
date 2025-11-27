@@ -288,6 +288,45 @@ export class NativeToolCallParser {
 	}
 
 	/**
+	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
+	 * (with lineRanges). Handles multiple formats for compatibility:
+	 *
+	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
+	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
+	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
+	 *
+	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
+	 */
+	private static convertFileEntries(files: any[]): FileEntry[] {
+		return files.map((file: any) => {
+			const entry: FileEntry = { path: file.path }
+			if (file.line_ranges && Array.isArray(file.line_ranges)) {
+				entry.lineRanges = file.line_ranges
+					.map((range: any) => {
+						// Handle tuple format: [start, end]
+						if (Array.isArray(range) && range.length >= 2) {
+							return { start: Number(range[0]), end: Number(range[1]) }
+						}
+						// Handle object format: { start: number, end: number }
+						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
+							return { start: Number(range.start), end: Number(range.end) }
+						}
+						// Handle legacy string format: "1-50"
+						if (typeof range === "string") {
+							const match = range.match(/^(\d+)-(\d+)$/)
+							if (match) {
+								return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
+							}
+						}
+						return null
+					})
+					.filter(Boolean)
+			}
+			return entry
+		})
+	}
+
+	/**
 	 * Create a partial ToolUse from currently parsed arguments.
 	 * Used during streaming to show progress.
 	 */
@@ -314,7 +353,7 @@ export class NativeToolCallParser {
 		switch (name) {
 			case "read_file":
 				if (partialArgs.files && Array.isArray(partialArgs.files)) {
-					nativeArgs = { files: partialArgs.files }
+					nativeArgs = { files: this.convertFileEntries(partialArgs.files) }
 				}
 				break
 
@@ -559,7 +598,7 @@ export class NativeToolCallParser {
 			switch (toolCall.name) {
 				case "read_file":
 					if (args.files && Array.isArray(args.files)) {
-						nativeArgs = { files: args.files } as NativeArgsFor<TName>
+						nativeArgs = { files: this.convertFileEntries(args.files) } as NativeArgsFor<TName>
 					}
 					break
 

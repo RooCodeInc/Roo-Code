@@ -232,6 +232,7 @@ describe("OpenRouterHandler", () => {
 					top_p: undefined,
 					transforms: ["middle-out"],
 				}),
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
@@ -256,7 +257,9 @@ describe("OpenRouterHandler", () => {
 
 			await handler.createMessage("test", []).next()
 
-			expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ transforms: ["middle-out"] }))
+			expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ transforms: ["middle-out"] }), {
+				headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" },
+			})
 		})
 
 		it("adds cache control for supported models", async () => {
@@ -298,6 +301,7 @@ describe("OpenRouterHandler", () => {
 						}),
 					]),
 				}),
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
@@ -337,12 +341,11 @@ describe("OpenRouterHandler", () => {
 				{
 					model: mockOptions.openRouterModelId,
 					max_tokens: 8192,
-					thinking: undefined,
 					temperature: 0,
 					messages: [{ role: "user", content: "test prompt" }],
 					stream: false,
 				},
-				{ signal: undefined },
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }, signal: undefined },
 			)
 		})
 
