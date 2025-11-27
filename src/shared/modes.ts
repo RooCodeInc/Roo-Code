@@ -47,7 +47,7 @@ export function doesFileMatchRegex(filePath: string, pattern: string): boolean {
 export function getToolsForMode(groups: readonly GroupEntry[]): string[] {
 	const tools = new Set<string>()
 
-	// Add tools from each group
+	// Add tools from each group (excluding customTools which are opt-in only)
 	groups.forEach((group) => {
 		const groupName = getGroupName(group)
 		const groupConfig = TOOL_GROUPS[groupName]

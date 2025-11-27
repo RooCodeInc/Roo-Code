@@ -237,6 +237,7 @@ export interface GenerateImageToolUse extends ToolUse<"generate_image"> {
 export type ToolGroupConfig = {
 	tools: readonly string[]
 	alwaysAvailable?: boolean // Whether this group is always available and shouldn't show in prompts view
+	customTools?: readonly string[] // Opt-in only tools - only available when explicitly included via model's includedTools
 }
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {

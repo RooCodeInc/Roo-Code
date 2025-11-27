@@ -38,12 +38,19 @@ export function applyModelToolCustomization(
 
 	// Apply included tools (add to allowed set, but only if they belong to an allowed group)
 	if (modelInfo.includedTools && modelInfo.includedTools.length > 0) {
-		// Build a map of tool -> group for all tools in TOOL_GROUPS
+		// Build a map of tool -> group for all tools in TOOL_GROUPS (including customTools)
 		const toolToGroup = new Map<string, ToolGroup>()
 		for (const [groupName, groupConfig] of Object.entries(TOOL_GROUPS)) {
+			// Add regular tools
 			groupConfig.tools.forEach((tool) => {
 				toolToGroup.set(tool, groupName as ToolGroup)
 			})
+			// Add customTools (opt-in only tools)
+			if (groupConfig.customTools) {
+				groupConfig.customTools.forEach((tool) => {
+					toolToGroup.set(tool, groupName as ToolGroup)
+				})
+			}
 		}
 
 		// Get the list of allowed groups for this mode
@@ -52,6 +59,7 @@ export function applyModelToolCustomization(
 		)
 
 		// Add included tools only if they belong to an allowed group
+		// This includes both regular tools and customTools
 		modelInfo.includedTools.forEach((tool) => {
 			const toolGroup = toolToGroup.get(tool)
 			if (toolGroup && allowedGroups.has(toolGroup)) {
