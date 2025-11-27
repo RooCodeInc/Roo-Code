@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import type OpenAI from "openai"
 import type { ModeConfig, ModelInfo } from "@roo-code/types"
 import { filterNativeToolsForMode, filterMcpToolsForMode, applyModelToolCustomization } from "../filter-tools-for-mode"
