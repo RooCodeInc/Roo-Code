@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type OpenAI from "openai"
 import type { ModeConfig, ModelInfo } from "@roo-code/types"
 import { filterNativeToolsForMode, filterMcpToolsForMode, applyModelToolCustomization } from "../filter-tools-for-mode"
+import * as toolsModule from "../../../../shared/tools"
 
 describe("filterNativeToolsForMode", () => {
 	const mockNativeTools: OpenAI.Chat.ChatCompletionTool[] = [
@@ -620,6 +621,62 @@ describe("filterMcpToolsForMode", () => {
 			const result = applyModelToolCustomization(tools, architectMode, modelInfo)
 			expect(result.has("read_file")).toBe(true)
 			expect(result.has("custom_edit_tool")).toBe(false)
+		})
+
+		describe("with customTools defined in TOOL_GROUPS", () => {
+			const originalToolGroups = { ...toolsModule.TOOL_GROUPS }
+
+			beforeEach(() => {
+				// Add a customTool to the edit group
+				;(toolsModule.TOOL_GROUPS as any).edit = {
+					...originalToolGroups.edit,
+					customTools: ["special_edit_tool"],
+				}
+			})
+
+			afterEach(() => {
+				// Restore original TOOL_GROUPS
+				;(toolsModule.TOOL_GROUPS as any).edit = originalToolGroups.edit
+			})
+
+			it("should include customTools when explicitly specified in includedTools", () => {
+				const tools = new Set(["read_file", "write_to_file"])
+				const modelInfo: ModelInfo = {
+					contextWindow: 100000,
+					supportsPromptCache: false,
+					includedTools: ["special_edit_tool"], // customTool from edit group
+				}
+				const result = applyModelToolCustomization(tools, codeMode, modelInfo)
+				expect(result.has("read_file")).toBe(true)
+				expect(result.has("write_to_file")).toBe(true)
+				expect(result.has("special_edit_tool")).toBe(true) // customTool should be included
+			})
+
+			it("should NOT include customTools when not specified in includedTools", () => {
+				const tools = new Set(["read_file", "write_to_file"])
+				const modelInfo: ModelInfo = {
+					contextWindow: 100000,
+					supportsPromptCache: false,
+					// No includedTools specified
+				}
+				const result = applyModelToolCustomization(tools, codeMode, modelInfo)
+				expect(result.has("read_file")).toBe(true)
+				expect(result.has("write_to_file")).toBe(true)
+				expect(result.has("special_edit_tool")).toBe(false) // customTool should NOT be included by default
+			})
+
+			it("should NOT include customTools from groups not allowed by mode", () => {
+				const tools = new Set(["read_file"])
+				const modelInfo: ModelInfo = {
+					contextWindow: 100000,
+					supportsPromptCache: false,
+					includedTools: ["special_edit_tool"], // customTool from edit group
+				}
+				// Architect mode doesn't have edit group
+				const result = applyModelToolCustomization(tools, architectMode, modelInfo)
+				expect(result.has("read_file")).toBe(true)
+				expect(result.has("special_edit_tool")).toBe(false) // customTool should NOT be included
+			})
 		})
 	})
 
