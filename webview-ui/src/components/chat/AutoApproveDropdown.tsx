@@ -2,14 +2,21 @@ import React from "react"
 import { ListChecks, LayoutList, Settings, CheckCheck, X } from "lucide-react"
 
 import { vscode } from "@/utils/vscode"
+
 import { cn } from "@/lib/utils"
+
 import { useExtensionState } from "@/context/ExtensionStateContext"
+
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch, Button } from "@/components/ui"
-import { AutoApproveSetting, autoApproveSettingsConfig } from "../settings/AutoApproveToggle"
+
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
 import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
+
+import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
+
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch, Button } from "@/components/ui"
+
+import { AutoApproveSetting, autoApproveSettingsConfig } from "../settings/AutoApproveToggle"
 
 interface AutoApproveDropdownProps {
 	disabled?: boolean
@@ -39,7 +46,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	const baseToggles = useAutoApprovalToggles()
 
-	// Include alwaysApproveResubmit in addition to the base toggles
+	// Include alwaysApproveResubmit in addition to the base toggles.
 	const toggles = React.useMemo(
 		() => ({
 			...baseToggles,
@@ -50,9 +57,8 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	const onAutoApproveToggle = React.useCallback(
 		(key: AutoApproveSetting, value: boolean) => {
-			vscode.postMessage({ type: key, bool: value })
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { [key]: value } })
 
-			// Update the specific toggle state
 			switch (key) {
 				case "alwaysAllowReadOnly":
 					setAlwaysAllowReadOnly(value)
@@ -86,7 +92,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 					break
 			}
 
-			// If enabling any option, ensure autoApprovalEnabled is true
+			// If enabling any option, ensure autoApprovalEnabled is true.
 			if (value && !autoApprovalEnabled) {
 				setAutoApprovalEnabled(true)
 				vscode.postMessage({ type: "autoApprovalEnabled", bool: true })

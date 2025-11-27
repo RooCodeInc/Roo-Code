@@ -33,6 +33,7 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 200000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				supportsNativeTools: true,
 				inputPrice: 3,
 				outputPrice: 15,
 				cacheWritesPrice: 3.75,
@@ -97,6 +98,7 @@ describe("OpenRouterHandler", () => {
 			const result = await handler.fetchModel()
 			expect(result.id).toBe("anthropic/claude-sonnet-4.5")
 			expect(result.info.supportsPromptCache).toBe(true)
+			expect(result.info.supportsNativeTools).toBe(true)
 		})
 
 		it("honors custom maxTokens for thinking models", async () => {
@@ -192,6 +194,7 @@ describe("OpenRouterHandler", () => {
 					top_p: undefined,
 					transforms: ["middle-out"],
 				}),
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
@@ -216,7 +219,9 @@ describe("OpenRouterHandler", () => {
 
 			await handler.createMessage("test", []).next()
 
-			expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ transforms: ["middle-out"] }))
+			expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ transforms: ["middle-out"] }), {
+				headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" },
+			})
 		})
 
 		it("adds cache control for supported models", async () => {
@@ -258,6 +263,7 @@ describe("OpenRouterHandler", () => {
 						}),
 					]),
 				}),
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
 		})
 
@@ -293,14 +299,16 @@ describe("OpenRouterHandler", () => {
 
 			expect(result).toBe("test completion")
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.openRouterModelId,
-				max_tokens: 8192,
-				thinking: undefined,
-				temperature: 0,
-				messages: [{ role: "user", content: "test prompt" }],
-				stream: false,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: mockOptions.openRouterModelId,
+					max_tokens: 8192,
+					temperature: 0,
+					messages: [{ role: "user", content: "test prompt" }],
+					stream: false,
+				},
+				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
+			)
 		})
 
 		it("handles API errors", async () => {

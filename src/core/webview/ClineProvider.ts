@@ -145,9 +145,13 @@ export class ClineProvider
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
 
+	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
+	private cloudOrganizationsCacheTimestamp: number | null = null
+	private static readonly CLOUD_ORGANIZATIONS_CACHE_DURATION_MS = 5 * 1000 // 5 seconds
+
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "nov-2025-v3.30.0-pr-fixer" // v3.30.0 PR Fixer announcement
+	public readonly latestAnnouncementId = "nov-2025-v3.34.0-browser-use-2-cloud-paid" // v3.34.0 Browser Use 2.0 & Cloud Paid Models announcement
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -1192,7 +1196,7 @@ export class ClineProvider
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
             <meta name="theme-color" content="#000000">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://us-assets.i.posthog.com 'strict-dynamic'; connect-src ${webview.cspSource} ${openRouterDomain} https://api.requesty.ai https://us.i.posthog.com https://us-assets.i.posthog.com;">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} https://storage.googleapis.com https://img.clerk.com data:; media-src ${webview.cspSource}; script-src ${webview.cspSource} 'wasm-unsafe-eval' 'nonce-${nonce}' https://ph.roocode.com 'strict-dynamic'; connect-src ${webview.cspSource} ${openRouterDomain} https://api.requesty.ai https://ph.roocode.com;">
             <link rel="stylesheet" type="text/css" href="${stylesUri}">
 			<link href="${codiconsUri}" rel="stylesheet" />
 			<script nonce="${nonce}">
@@ -1297,29 +1301,49 @@ export class ClineProvider
 	// Provider Profile Management
 
 	/**
-	 * Updates the current task's API handler if the provider or model has changed.
-	 * Also synchronizes the task.apiConfiguration so subsequent comparisons and logic
-	 * (protocol selection, reasoning display, model metadata) use the latest profile.
+	 * Updates the current task's API handler.
+	 * Rebuilds when:
+	 * - provider or model changes, OR
+	 * - explicitly forced (e.g., user-initiated profile switch/save to apply changed settings like headers/baseUrl/tier).
+	 * Always synchronizes task.apiConfiguration with latest provider settings.
 	 * @param providerSettings The new provider settings to apply
+	 * @param options.forceRebuild Force rebuilding the API handler regardless of provider/model equality
 	 */
-	private updateTaskApiHandlerIfNeeded(providerSettings: ProviderSettings): void {
+	private updateTaskApiHandlerIfNeeded(
+		providerSettings: ProviderSettings,
+		options: { forceRebuild?: boolean } = {},
+	): void {
 		const task = this.getCurrentTask()
 		if (!task) return
+
+		const { forceRebuild = false } = options
 
 		// Determine if we need to rebuild using the previous configuration snapshot
 		const prevConfig = task.apiConfiguration
 		const prevProvider = prevConfig?.apiProvider
 		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
+		const prevToolProtocol = prevConfig?.toolProtocol
 		const newProvider = providerSettings.apiProvider
 		const newModelId = getModelId(providerSettings)
+		const newToolProtocol = providerSettings.toolProtocol
 
-		if (prevProvider !== newProvider || prevModelId !== newModelId) {
-			task.api = buildApiHandler(providerSettings)
+		const needsRebuild =
+			forceRebuild ||
+			prevProvider !== newProvider ||
+			prevModelId !== newModelId ||
+			prevToolProtocol !== newToolProtocol
+
+		if (needsRebuild) {
+			// Use updateApiConfiguration which handles both API handler rebuild and parser sync.
+			// This is important when toolProtocol changes - the assistantMessageParser needs to be
+			// created/destroyed to match the new protocol (XML vs native).
+			// Note: updateApiConfiguration is declared async but has no actual async operations,
+			// so we can safely call it without awaiting.
+			task.updateApiConfiguration(providerSettings)
+		} else {
+			// No rebuild needed, just sync apiConfiguration
+			;(task as any).apiConfiguration = providerSettings
 		}
-
-		// Always sync the task's apiConfiguration with the latest provider settings.
-		// Note: Task.apiConfiguration is declared readonly in types, so we cast to any for runtime update.
-		;(task as any).apiConfiguration = providerSettings
 	}
 
 	getProviderProfileEntries(): ProviderSettingsEntry[] {
@@ -1369,7 +1393,7 @@ export class ClineProvider
 
 				// Change the provider for the current task.
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
-				this.updateTaskApiHandlerIfNeeded(providerSettings)
+				this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 			}
@@ -1424,9 +1448,8 @@ export class ClineProvider
 		if (id) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
 		}
-
 		// Change the provider for the current task.
-		this.updateTaskApiHandlerIfNeeded(providerSettings)
+		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 
 		await this.postStateToWebview()
 
@@ -1907,19 +1930,34 @@ export class ClineProvider
 			includeTaskHistoryInEnhance,
 			includeCurrentTime,
 			includeCurrentCost,
+			maxGitStatusFiles,
 			taskSyncEnabled,
 			remoteControlEnabled,
+			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			isBrowserSessionActive,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
 
 		try {
 			if (!CloudService.instance.isCloudAgent) {
-				cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+				const now = Date.now()
+
+				if (
+					this.cloudOrganizationsCache !== null &&
+					this.cloudOrganizationsCacheTimestamp !== null &&
+					now - this.cloudOrganizationsCacheTimestamp < ClineProvider.CLOUD_ORGANIZATIONS_CACHE_DURATION_MS
+				) {
+					cloudOrganizations = this.cloudOrganizationsCache!
+				} else {
+					cloudOrganizations = await CloudService.instance.getOrganizationMemberships()
+					this.cloudOrganizationsCache = cloudOrganizations
+					this.cloudOrganizationsCacheTimestamp = now
+				}
 			}
 		} catch (error) {
 			// Ignore this error.
@@ -1950,6 +1988,7 @@ export class ClineProvider
 			alwaysAllowModeSwitch: alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: alwaysAllowSubtasks ?? false,
 			alwaysAllowUpdateTodoList: alwaysAllowUpdateTodoList ?? false,
+			isBrowserSessionActive,
 			allowedMaxRequests,
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
@@ -1984,7 +2023,7 @@ export class ClineProvider
 			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
 			terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
-			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? false,
+			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
 			terminalCommandDelay: terminalCommandDelay ?? 0,
 			terminalPowershellCounter: terminalPowershellCounter ?? false,
 			terminalZshClearEolMark: terminalZshClearEolMark ?? true,
@@ -2036,7 +2075,7 @@ export class ClineProvider
 			customCondensingPrompt,
 			codebaseIndexModels: codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
 			codebaseIndexConfig: {
-				codebaseIndexEnabled: codebaseIndexConfig?.codebaseIndexEnabled ?? true,
+				codebaseIndexEnabled: codebaseIndexConfig?.codebaseIndexEnabled ?? false,
 				codebaseIndexQdrantUrl: codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
 				codebaseIndexEmbedderProvider: codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
@@ -2045,6 +2084,8 @@ export class ClineProvider
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
+				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2059,8 +2100,10 @@ export class ClineProvider
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
+			maxGitStatusFiles: maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			remoteControlEnabled,
+			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
@@ -2162,6 +2205,9 @@ export class ClineProvider
 			)
 		}
 
+		// Get actual browser session state
+		const isBrowserSessionActive = this.getCurrentTask()?.browserSession?.isSessionActive() ?? false
+
 		// Return the same structure as before.
 		return {
 			apiConfiguration: providerSettings,
@@ -2180,6 +2226,7 @@ export class ClineProvider
 			alwaysAllowSubtasks: stateValues.alwaysAllowSubtasks ?? false,
 			alwaysAllowFollowupQuestions: stateValues.alwaysAllowFollowupQuestions ?? false,
 			alwaysAllowUpdateTodoList: stateValues.alwaysAllowUpdateTodoList ?? false,
+			isBrowserSessionActive,
 			followupAutoApproveTimeoutMs: stateValues.followupAutoApproveTimeoutMs ?? 60000,
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,
@@ -2208,7 +2255,7 @@ export class ClineProvider
 				stateValues.terminalOutputCharacterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 			terminalShellIntegrationTimeout:
 				stateValues.terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
-			terminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? false,
+			terminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,
 			terminalCommandDelay: stateValues.terminalCommandDelay ?? 0,
 			terminalPowershellCounter: stateValues.terminalPowershellCounter ?? false,
 			terminalZshClearEolMark: stateValues.terminalZshClearEolMark ?? true,
@@ -2220,6 +2267,7 @@ export class ClineProvider
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,
 			enableMcpServerCreation: stateValues.enableMcpServerCreation ?? true,
+			mcpServers: this.mcpHub?.getAllServers() ?? [],
 			alwaysApproveResubmit: stateValues.alwaysApproveResubmit ?? false,
 			requestDelaySeconds: Math.max(5, stateValues.requestDelaySeconds ?? 10),
 			currentApiConfigName: stateValues.currentApiConfigName ?? "default",
@@ -2253,7 +2301,7 @@ export class ClineProvider
 			customCondensingPrompt: stateValues.customCondensingPrompt,
 			codebaseIndexModels: stateValues.codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
 			codebaseIndexConfig: {
-				codebaseIndexEnabled: stateValues.codebaseIndexConfig?.codebaseIndexEnabled ?? true,
+				codebaseIndexEnabled: stateValues.codebaseIndexConfig?.codebaseIndexEnabled ?? false,
 				codebaseIndexQdrantUrl:
 					stateValues.codebaseIndexConfig?.codebaseIndexQdrantUrl ?? "http://localhost:6333",
 				codebaseIndexEmbedderProvider:
@@ -2266,6 +2314,8 @@ export class ClineProvider
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
+				codebaseIndexBedrockRegion: stateValues.codebaseIndexConfig?.codebaseIndexBedrockRegion,
+				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
@@ -2273,6 +2323,7 @@ export class ClineProvider
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
 			includeCurrentTime: stateValues.includeCurrentTime ?? true,
 			includeCurrentCost: stateValues.includeCurrentCost ?? true,
+			maxGitStatusFiles: stateValues.maxGitStatusFiles ?? 0,
 			taskSyncEnabled,
 			remoteControlEnabled: (() => {
 				try {
@@ -2285,6 +2336,7 @@ export class ClineProvider
 					return false
 				}
 			})(),
+			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled: (() => {
@@ -2700,6 +2752,10 @@ export class ClineProvider
 
 		// Capture the current instance to detect if rehydrate already occurred elsewhere
 		const originalInstanceId = task.instanceId
+
+		// Immediately cancel the underlying HTTP request if one is in progress
+		// This ensures the stream fails quickly rather than waiting for network timeout
+		task.cancelCurrentRequest()
 
 		// Begin abort (non-blocking)
 		task.abortTask()

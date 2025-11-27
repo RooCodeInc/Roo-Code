@@ -97,8 +97,8 @@ const mockCline = {
 	},
 }
 
-// Import the function to test AFTER mocks are set up
-import { newTaskTool } from "../newTaskTool"
+// Import the class to test AFTER mocks are set up
+import { newTaskTool } from "../NewTaskTool"
 import type { ToolUse } from "../../../shared/tools"
 import { getModeBySlug } from "../../../shared/modes"
 import * as vscode from "vscode"
@@ -135,14 +135,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any, // Use 'as any' for simplicity in mocking complex type
-			block,
-			mockAskApproval, // Now correctly typed
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		// Verify askApproval was called
 		expect(mockAskApproval).toHaveBeenCalled()
@@ -173,14 +172,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval, // Now correctly typed
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"This is already unescaped: \\@file1.txt", // Expected: \@ remains \@
@@ -201,14 +199,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval, // Now correctly typed
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"A normal mention @file1.txt", // Expected: @ remains @
@@ -229,14 +226,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval, // Now correctly typed
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Mix: @file0.txt, \\@file1.txt, \\@file2.txt, \\\\\\@file3.txt", // Unit Test Expectation: @->@, \@->\@, \\@->\@, \\\\@->\\\\@
@@ -257,14 +253,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		// Should NOT error when todos is missing
 		expect(mockSayAndCreateMissingParamError).not.toHaveBeenCalledWith("new_task", "todos")
@@ -290,14 +285,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		// Should parse and include todos when provided
 		expect(mockStartSubtask).toHaveBeenCalledWith(
@@ -324,14 +318,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("new_task", "mode")
 		expect(mockCline.consecutiveMistakeCount).toBe(1)
@@ -350,14 +343,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("new_task", "message")
 		expect(mockCline.consecutiveMistakeCount).toBe(1)
@@ -376,14 +368,13 @@ describe("newTaskTool", () => {
 			partial: false,
 		}
 
-		await newTaskTool(
-			mockCline as any,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockStartSubtask).toHaveBeenCalledWith(
 			"Test message",
@@ -415,14 +406,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should NOT error when todos is missing and setting is disabled
 			expect(mockSayAndCreateMissingParamError).not.toHaveBeenCalledWith("new_task", "todos")
@@ -454,14 +444,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should error when todos is missing and setting is enabled
 			expect(mockSayAndCreateMissingParamError).toHaveBeenCalledWith("new_task", "todos")
@@ -493,14 +482,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should NOT error when todos is provided and setting is enabled
 			expect(mockSayAndCreateMissingParamError).not.toHaveBeenCalledWith("new_task", "todos")
@@ -538,14 +526,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should NOT error when todos is empty string and setting is enabled
 			expect(mockSayAndCreateMissingParamError).not.toHaveBeenCalledWith("new_task", "todos")
@@ -575,14 +562,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Verify that VSCode configuration was accessed with Package.name
 			expect(mockGetConfiguration).toHaveBeenCalledWith("roo-cline")
@@ -611,14 +597,13 @@ describe("newTaskTool", () => {
 				partial: false,
 			}
 
-			await newTaskTool(
-				mockCline as any,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await newTaskTool.handle(mockCline as any, block as ToolUse<"new_task">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Assert: configuration was read using the dynamic nightly namespace
 			expect(mockGetConfiguration).toHaveBeenCalledWith("roo-code-nightly")

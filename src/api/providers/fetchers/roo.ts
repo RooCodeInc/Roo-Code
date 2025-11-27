@@ -92,18 +92,23 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Determine if the model requires reasoning effort based on tags
 				const requiredReasoningEffort = tags.includes("reasoning-required")
 
+				// Determine if the model supports native tool calling based on tags
+				const supportsNativeTools = tags.includes("tool-use")
+
 				// Parse pricing (API returns strings, convert to numbers)
 				const inputPrice = parseApiPrice(pricing.input)
 				const outputPrice = parseApiPrice(pricing.output)
 				const cacheReadPrice = pricing.input_cache_read ? parseApiPrice(pricing.input_cache_read) : undefined
 				const cacheWritePrice = pricing.input_cache_write ? parseApiPrice(pricing.input_cache_write) : undefined
 
-				models[modelId] = {
+				// Build the base model info from API response
+				const baseModelInfo = {
 					maxTokens,
 					contextWindow,
 					supportsImages,
 					supportsReasoningEffort,
 					requiredReasoningEffort,
+					supportsNativeTools,
 					supportsPromptCache: Boolean(cacheReadPrice !== undefined),
 					inputPrice,
 					outputPrice,
@@ -113,6 +118,8 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					deprecated: model.deprecated || false,
 					isFree: tags.includes("free"),
 				}
+
+				models[modelId] = baseModelInfo
 			}
 
 			return models

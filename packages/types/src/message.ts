@@ -166,6 +166,7 @@ export const clineSays = [
 	"shell_integration_warning",
 	"browser_action",
 	"browser_action_result",
+	"browser_session_status",
 	"mcp_server_request_started",
 	"mcp_server_response",
 	"subtask_result",
@@ -226,15 +227,6 @@ export const clineMessageSchema = z.object({
 	isProtected: z.boolean().optional(),
 	apiProtocol: z.union([z.literal("openai"), z.literal("anthropic")]).optional(),
 	isAnswered: z.boolean().optional(),
-	metadata: z
-		.object({
-			gpt5: z
-				.object({
-					previous_response_id: z.string().optional(),
-				})
-				.optional(),
-		})
-		.optional(),
 })
 
 export type ClineMessage = z.infer<typeof clineMessageSchema>

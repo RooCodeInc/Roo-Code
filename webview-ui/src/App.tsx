@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from "react"
 import { useEvent } from "react-use"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import posthog from "posthog-js"
 
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 import TranslationProvider from "./i18n/TranslationContext"
@@ -15,6 +16,7 @@ import ChatView, { ChatViewRef } from "./components/chat/ChatView"
 import HistoryView from "./components/history/HistoryView"
 import SettingsView, { SettingsViewRef } from "./components/settings/SettingsView"
 import WelcomeView from "./components/welcome/WelcomeView"
+import WelcomeViewProvider from "./components/welcome/WelcomeViewProvider"
 import McpView from "./components/mcp/McpView"
 import { MarketplaceView } from "./components/marketplace/MarketplaceView"
 import ModesView from "./components/modes/ModesView"
@@ -80,6 +82,21 @@ const App = () => {
 		renderContext,
 		mdmCompliant,
 	} = useExtensionState()
+
+	const [useProviderSignupView, setUseProviderSignupView] = useState(false)
+
+	// Check PostHog feature flag for provider signup view
+	// Wait for telemetry to be initialized before checking feature flags
+	useEffect(() => {
+		if (!didHydrateState || telemetrySetting === "disabled") {
+			return
+		}
+
+		posthog.onFeatureFlags(function () {
+			// Feature flag for new provider-focused welcome view
+			setUseProviderSignupView(posthog?.getFeatureFlag("welcome-provider-signup") === "test")
+		})
+	}, [didHydrateState, telemetrySetting])
 
 	// Create a persistent state manager
 	const marketplaceStateManager = useMemo(() => new MarketplaceViewStateManager(), [])
@@ -247,7 +264,11 @@ const App = () => {
 	// Do not conditionally load ChatView, it's expensive and there's state we
 	// don't want to lose (user input, disableInput, askResponse promise, etc.)
 	return showWelcome ? (
-		<WelcomeView />
+		useProviderSignupView ? (
+			<WelcomeViewProvider />
+		) : (
+			<WelcomeView />
+		)
 	) : (
 		<>
 			{tab === "modes" && <ModesView onDone={() => switchTab("chat")} />}

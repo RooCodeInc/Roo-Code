@@ -1,7 +1,7 @@
 // npx vitest src/core/tools/__tests__/listCodeDefinitionNamesTool.spec.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { listCodeDefinitionNamesTool } from "../listCodeDefinitionNamesTool"
+import { listCodeDefinitionNamesTool } from "../ListCodeDefinitionNamesTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 import * as treeSitter from "../../../services/tree-sitter"
@@ -80,14 +80,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			expect(mockPushToolResult).toHaveBeenCalledWith(mockDefinitions)
 		})
@@ -118,14 +117,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			expect(mockPushToolResult).toHaveBeenCalledWith(mockDefinitions)
 		})
@@ -156,14 +154,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should only include definitions starting at or before line 25
 			const expectedResult = `# test.ts
@@ -197,14 +194,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should include foo (starts at 10) but not bar (starts at 60)
 			const expectedResult = `# test.ts
@@ -239,14 +235,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should include foo and bar but not baz
 			const expectedResult = `# test.ts
@@ -280,14 +275,13 @@ describe("listCodeDefinitionNamesTool", () => {
 				partial: false,
 			}
 
-			await listCodeDefinitionNamesTool(
-				mockTask as Task,
-				block,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
 			// Should keep header but exclude all definitions beyond line 50
 			const expectedResult = `# test.ts`
@@ -306,14 +300,13 @@ describe("listCodeDefinitionNamesTool", () => {
 
 		mockTask.sayAndCreateMissingParamError = vi.fn(async () => "Missing parameter: path")
 
-		await listCodeDefinitionNamesTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockTask.consecutiveMistakeCount).toBe(1)
 		expect(mockTask.recordToolError).toHaveBeenCalledWith("list_code_definition_names")
@@ -337,14 +330,13 @@ describe("listCodeDefinitionNamesTool", () => {
 			partial: false,
 		}
 
-		await listCodeDefinitionNamesTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await listCodeDefinitionNamesTool.handle(mockTask as Task, block as ToolUse<"list_code_definition_names">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		expect(mockPushToolResult).toHaveBeenCalledWith(mockDefinitions)
 	})
