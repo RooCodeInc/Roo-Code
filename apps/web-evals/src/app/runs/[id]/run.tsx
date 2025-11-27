@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useCallback, useEffect } from "react"
+import { useMemo, useState, useCallback } from "react"
 import { toast } from "sonner"
 import { LoaderCircle, FileText, Copy, Check } from "lucide-react"
 
@@ -102,18 +102,6 @@ export function Run({ run }: { run: Run }) {
 			toast.error("Failed to copy log")
 		}
 	}, [taskLog])
-
-	// Handle ESC key to close the dialog
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.key === "Escape" && selectedTask) {
-				setSelectedTask(null)
-			}
-		}
-
-		document.addEventListener("keydown", handleKeyDown)
-		return () => document.removeEventListener("keydown", handleKeyDown)
-	}, [selectedTask])
 
 	const onViewTaskLog = useCallback(
 		async (task: Task) => {
