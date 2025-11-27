@@ -6,11 +6,16 @@ import { getStorageBasePath } from "./storage"
 import { GlobalFileNames } from "../shared/globalFileNames"
 
 /**
+ * Allowed retention day values (as numbers).
+ */
+export type RetentionDays = 90 | 60 | 30 | 7 | 3
+
+/**
  * Supported values for the retention setting.
  * - "never" or 0 disables purging
  * - "90" | "60" | "30" | "7" | "3" (string) or 90 | 60 | 30 | 7 | 3 (number) specify days
  */
-export type RetentionSetting = "never" | "90" | "60" | "30" | "7" | "3" | 90 | 60 | 30 | 7 | 3 | 0 | "0" | number
+export type RetentionSetting = "never" | "0" | `${RetentionDays}` | RetentionDays | 0
 
 export type PurgeResult = {
 	purgedCount: number
@@ -213,20 +218,26 @@ export async function purgeOldTasks(
 
 		// Attempt deletion using provider callback (for full cleanup) or direct rm
 		let deletionError: unknown | null = null
+		let deleted = false
 		try {
 			if (deleteTaskById) {
 				logv(`[Retention] Deleting task ${d.name} via provider @ ${taskDir} (${reason})`)
 				await deleteTaskById(d.name, taskDir)
+				// Provider callback handles full cleanup; check if directory is gone
+				deleted = !(await pathExists(taskDir))
 			} else {
 				logv(`[Retention] Deleting task ${d.name} via fs.rm @ ${taskDir} (${reason})`)
 				await fs.rm(taskDir, { recursive: true, force: true })
+				deleted = !(await pathExists(taskDir))
 			}
 		} catch (e) {
 			deletionError = e
 		}
 
-		// Verify deletion; if still exists, attempt aggressive cleanup with retries
-		let deleted = await removeDirAggressive(taskDir)
+		// If directory still exists after initial attempt, try aggressive cleanup with retries
+		if (!deleted) {
+			deleted = await removeDirAggressive(taskDir)
+		}
 
 		if (!deleted) {
 			// Did not actually remove; report the most relevant error
