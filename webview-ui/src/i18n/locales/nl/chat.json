@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
 		"openInCloud": "Taak openen in Roo Code Cloud",
-		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen."
+		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
+		"openApiHistory": "API-geschiedenis openen",
+		"openUiHistory": "UI-geschiedenis openen"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",

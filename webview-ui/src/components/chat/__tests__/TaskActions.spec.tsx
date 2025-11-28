@@ -42,6 +42,8 @@ vi.mock("react-i18next", () => ({
 				"chat:task.connectToCloud": "Connect to Cloud",
 				"chat:task.connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
 				"chat:task.sharingDisabledByOrganization": "Sharing disabled by organization",
+				"chat:task.openApiHistory": "Open API History",
+				"chat:task.openUiHistory": "Open UI History",
 				"cloud:cloudBenefitsTitle": "Connect to Roo Code Cloud",
 				"cloud:cloudBenefitHistory": "Access your task history from anywhere",
 				"cloud:cloudBenefitSharing": "Share tasks with your team",

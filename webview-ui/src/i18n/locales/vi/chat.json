@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
 		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
 		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
-		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở."
+		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
+		"openApiHistory": "Mở lịch sử API",
+		"openUiHistory": "Mở lịch sử UI"
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",

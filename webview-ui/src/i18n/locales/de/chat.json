@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Organisationslink in die Zwischenablage kopiert",
 		"shareSuccessPublic": "Öffentlicher Link in die Zwischenablage kopiert",
 		"openInCloud": "Aufgabe in Roo Code Cloud öffnen",
-		"openInCloudIntro": "Überwache oder interagiere mit Roo von überall aus. Scanne, klicke oder kopiere zum Öffnen."
+		"openInCloudIntro": "Überwache oder interagiere mit Roo von überall aus. Scanne, klicke oder kopiere zum Öffnen.",
+		"openApiHistory": "API-Verlauf öffnen",
+		"openUiHistory": "UI-Verlauf öffnen"
 	},
 	"unpin": "Lösen von oben",
 	"pin": "Anheften",

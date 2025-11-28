@@ -69,12 +69,12 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				<>
 					<LucideIconButton
 						icon={FileJsonIcon}
-						title="Open API History"
+						title={t("chat:task.openApiHistory")}
 						onClick={() => vscode.postMessage({ type: "openDebugApiHistory" })}
 					/>
 					<LucideIconButton
 						icon={MessageSquareCodeIcon}
-						title="Open UI History"
+						title={t("chat:task.openUiHistory")}
 						onClick={() => vscode.postMessage({ type: "openDebugUiHistory" })}
 					/>
 				</>
