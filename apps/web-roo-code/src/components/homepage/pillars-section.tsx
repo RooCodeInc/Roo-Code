@@ -40,7 +40,10 @@ const MODE_EXAMPLES = [
 
 export function PillarsSection() {
 	return (
-		<section className="py-24 bg-muted/30">
+		<section className="py-24 bg-muted/30 relative">
+			<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
+				<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 dark:bg-blue-700/20 blur-[140px]" />
+			</div>
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
@@ -55,7 +58,7 @@ export function PillarsSection() {
 					<div className="relative col-span-3 h-full">
 						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-md rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Brain className="size-8 text-accent-foreground shrink-0 mt-1" strokeWidth={1.5} />
+								<Brain className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Model-agnostic by design</h3>
@@ -98,7 +101,7 @@ export function PillarsSection() {
 					<div className="relative col-span-5 h-full">
 						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Users2 className="size-8 text-accent-foreground shrink-0 mt-1" strokeWidth={1.5} />
+								<Users2 className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Role-specific Modes</h3>
@@ -138,16 +141,17 @@ export function PillarsSection() {
 					<div className="relative col-span-4 h-full">
 						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Keyboard className="size-8 text-accent-foreground shrink-0 mt-1" strokeWidth={1.5} />
+								<Keyboard className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Highly configurable</h3>
 								<h4 className="font-semibold text-lg">Make it fit your workflow.</h4>
 								<div className="text-muted-foreground my-4 space-y-1">
 									<p>
-										Developer tools need to fit like gloves. We made Roo thoughtuflly configurable
-										to fit your workflow as best it can.
+										Developer tools need to fit like gloves. Highly tweakable,
+										keyboard-shortcut-heavy gloves.
 									</p>
+									<p>We made Roo thoughtuflly configurable to fit your workflow as best it can.</p>
 								</div>
 							</div>
 						</div>
@@ -156,7 +160,7 @@ export function PillarsSection() {
 					<div className="relative col-span-4 h-full">
 						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
-								<Shield className="size-8 text-accent-foreground shrink-0 mt-1" strokeWidth={1.5} />
+								<Shield className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
 								<h3 className="text-2xl font-bold mb-1">Secure and transparent</h3>

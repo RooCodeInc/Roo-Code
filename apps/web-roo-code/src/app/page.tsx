@@ -3,8 +3,6 @@ import {
 	CompanyLogos,
 	FAQSection,
 	Testimonials,
-	CloudSection,
-	EcosystemSection,
 	CTASection,
 	OptionOverviewSection,
 	PillarsSection,
@@ -21,6 +19,9 @@ export default async function Home() {
 		<>
 			<StructuredData />
 			<section className="relative flex flex-col items-center overflow-hidden pt-20 pb-12 md:pt-32 md:pb-16">
+				<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
+					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
+				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
 					<h1 className="md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
 						Your AI Software Engineering Team is here.
@@ -66,42 +67,13 @@ export default async function Home() {
 					<div className="mb-12">
 						<CompanyLogos />
 					</div>
-
-					{/* Split Graphic Hero Visual */}
-					<div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0 rounded-2xl overflow-hidden border border-border shadow-2xl">
-						{/* Left Side: VS Code Extension (Blue Tint) */}
-						<div className="bg-blue-950/10 dark:bg-blue-950/30 p-6 md:p-10 border-b md:border-b-0 md:border-r border-blue-500/10 flex flex-col items-center justify-center min-h-[400px]">
-							<div className="mb-4 font-mono text-sm text-blue-500 font-bold tracking-wider uppercase">
-								Extension Image/Animation
-							</div>
-							<div className="relative w-full max-w-md">
-								<div className="absolute -inset-4 bg-blue-500/20 blur-3xl rounded-full" />
-							</div>
-						</div>
-
-						{/* Right Side: Terminal/Log Stream (Purple Tint) */}
-						<div className="bg-purple-950/10 dark:bg-purple-950/30 p-6 md:p-10 flex flex-col items-center justify-center min-h-[400px]">
-							<div className="mb-4 font-mono text-sm text-purple-500 font-bold tracking-wider uppercase">
-								Cloud Image/Animation
-							</div>
-						</div>
-					</div>
 				</div>
 			</section>
 
 			<PillarsSection />
 			<OptionOverviewSection />
-			<CloudSection />
-			<EcosystemSection />
-
-			<div id="testimonials">
-				<Testimonials />
-			</div>
-
-			<div id="faq">
-				<FAQSection />
-			</div>
-
+			<Testimonials />
+			<FAQSection />
 			<CTASection />
 		</>
 	)

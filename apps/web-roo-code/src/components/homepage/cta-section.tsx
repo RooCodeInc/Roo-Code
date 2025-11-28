@@ -11,12 +11,12 @@ export function CTASection() {
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 					<Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base">
 						<a
-							href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
+							href={EXTERNAL_LINKS.MARKETPLACE}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center gap-2">
 							<Download className="h-4 w-4" />
-							Download for VS Code
+							Install on VS Code
 						</a>
 					</Button>
 
@@ -26,7 +26,7 @@ export function CTASection() {
 							target="_blank"
 							rel="noopener noreferrer"
 							className="flex items-center gap-2">
-							Start Cloud Trial
+							Try Cloud for Free
 							<ArrowRight className="h-4 w-4" />
 						</a>
 					</Button>
