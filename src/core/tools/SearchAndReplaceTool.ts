@@ -2,6 +2,7 @@ import fs from "fs/promises"
 import path from "path"
 
 import { getReadablePath } from "../../utils/path"
+import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
@@ -184,11 +185,13 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 
 			const sanitizedDiff = sanitizeUnifiedDiff(diff)
 			const diffStats = computeDiffStats(sanitizedDiff) || undefined
+			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 			const sharedMessageProps: ClineSayTool = {
 				tool: "appliedDiff",
 				path: getReadablePath(task.cwd, relPath),
 				diff: sanitizedDiff,
+				isOutsideWorkspace,
 			}
 
 			// Include any partial errors in the message
@@ -277,10 +280,14 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			}
 		}
 
+		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
+		const isOutsideWorkspace = absolutePath ? isPathOutsideWorkspace(absolutePath) : false
+
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
 			path: getReadablePath(task.cwd, relPath || ""),
 			diff: operationsPreview,
+			isOutsideWorkspace,
 		}
 
 		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial).catch(() => {})
