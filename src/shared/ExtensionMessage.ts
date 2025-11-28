@@ -358,6 +358,7 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	debug?: boolean
 }
 
 export interface ClineSayTool {
