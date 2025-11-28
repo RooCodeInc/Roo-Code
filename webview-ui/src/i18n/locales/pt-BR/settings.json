@@ -861,6 +861,19 @@
 		"noMatchFound": "Nenhuma correspondência encontrada",
 		"useCustomModel": "Usar personalizado: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Excluir automaticamente o histórico de tarefas",
+		"description": "Exclui tarefas mais antigas que o período selecionado ao recarregar a extensão.",
+		"warning": "Aviso: Esta ação exclui permanentemente as tarefas e só é executada ao recarregar o plugin.",
+		"options": {
+			"never": "Nunca",
+			"90": "90 dias",
+			"60": "60 dias",
+			"30": "30 dias",
+			"7": "7 dias",
+			"3": "3 dias"
+		}
+	},
 	"footer": {
 		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

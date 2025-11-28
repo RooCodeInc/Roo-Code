@@ -861,6 +861,19 @@
 		"noMatchFound": "Совпадений не найдено",
 		"useCustomModel": "Использовать пользовательскую: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Автоматически удалять историю задач",
+		"description": "Удаляет задачи старше выбранного периода при перезагрузке расширения.",
+		"warning": "Внимание: Это действие безвозвратно удаляет задачи и выполняется только при перезагрузке плагина.",
+		"options": {
+			"never": "Никогда",
+			"90": "90 дней",
+			"60": "60 дней",
+			"30": "30 дней",
+			"7": "7 дней",
+			"3": "3 дня"
+		}
+	},
 	"footer": {
 		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

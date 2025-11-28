@@ -860,6 +860,19 @@
 		"noMatchFound": "No se encontraron coincidencias",
 		"useCustomModel": "Usar personalizado: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Eliminar automáticamente el historial de tareas",
+		"description": "Elimina las tareas anteriores al período seleccionado al recargar la extensión.",
+		"warning": "Advertencia: Esta acción elimina permanentemente las tareas y solo se ejecuta al recargar el complemento.",
+		"options": {
+			"never": "Nunca",
+			"90": "90 días",
+			"60": "60 días",
+			"30": "30 días",
+			"7": "7 días",
+			"3": "3 días"
+		}
+	},
 	"footer": {
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

@@ -861,6 +861,19 @@
 		"noMatchFound": "Không tìm thấy kết quả",
 		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Tự động xóa lịch sử tác vụ",
+		"description": "Xóa các tác vụ cũ hơn khoảng thời gian đã chọn khi tải lại tiện ích.",
+		"warning": "Cảnh báo: Hành động này xóa vĩnh viễn các tác vụ và chỉ chạy khi tải lại plugin.",
+		"options": {
+			"never": "Không bao giờ",
+			"90": "90 ngày",
+			"60": "60 ngày",
+			"30": "30 ngày",
+			"7": "7 ngày",
+			"3": "3 ngày"
+		}
+	},
 	"footer": {
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

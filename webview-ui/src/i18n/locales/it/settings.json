@@ -861,6 +861,19 @@
 		"noMatchFound": "Nessuna corrispondenza trovata",
 		"useCustomModel": "Usa personalizzato: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Elimina automaticamente la cronologia delle attività",
+		"description": "Elimina le attività più vecchie del periodo selezionato al ricaricamento dell'estensione.",
+		"warning": "Avviso: Questa azione elimina permanentemente le attività e viene eseguita solo al ricaricamento del plugin.",
+		"options": {
+			"never": "Mai",
+			"90": "90 giorni",
+			"60": "60 giorni",
+			"30": "30 giorni",
+			"7": "7 giorni",
+			"3": "3 giorni"
+		}
+	},
 	"footer": {
 		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

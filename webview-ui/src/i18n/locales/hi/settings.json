@@ -861,6 +861,19 @@
 		"noMatchFound": "कोई मिलान नहीं मिला",
 		"useCustomModel": "कस्टम उपयोग करें: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "कार्य इतिहास स्वचालित रूप से हटाएं",
+		"description": "एक्सटेंशन रीलोड पर चयनित अवधि से पुराने कार्यों को हटा देता है।",
+		"warning": "चेतावनी: यह क्रिया स्थायी रूप से कार्यों को हटा देती है और केवल प्लगइन रीलोड पर चलती है।",
+		"options": {
+			"never": "कभी नहीं",
+			"90": "90 दिन",
+			"60": "60 दिन",
+			"30": "30 दिन",
+			"7": "7 दिन",
+			"3": "3 दिन"
+		}
+	},
 	"footer": {
 		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",
 		"telemetry": {

@@ -861,6 +861,19 @@
 		"noMatchFound": "找不到符合的項目",
 		"useCustomModel": "使用自訂模型：{{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "自動刪除工作歷程記錄",
+		"description": "擴充功能重新載入時刪除早於所選時段的工作。",
+		"warning": "警告：此操作永久刪除工作，僅在外掛程式重新載入時執行。",
+		"options": {
+			"never": "永不",
+			"90": "90天",
+			"60": "60天",
+			"30": "30天",
+			"7": "7天",
+			"3": "3天"
+		}
+	},
 	"footer": {
 		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
 		"telemetry": {

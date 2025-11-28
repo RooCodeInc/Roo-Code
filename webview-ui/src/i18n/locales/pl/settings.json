@@ -861,6 +861,19 @@
 		"noMatchFound": "Nie znaleziono dopasowań",
 		"useCustomModel": "Użyj niestandardowy: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Automatyczne usuwanie historii zadań",
+		"description": "Usuwa zadania starsze niż wybrany okres przy ponownym ładowaniu rozszerzenia.",
+		"warning": "Ostrzeżenie: Ta akcja trwale usuwa zadania i działa tylko przy ponownym ładowaniu wtyczki.",
+		"options": {
+			"never": "Nigdy",
+			"90": "90 dni",
+			"60": "60 dni",
+			"30": "30 dni",
+			"7": "7 dni",
+			"3": "3 dni"
+		}
+	},
 	"footer": {
 		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

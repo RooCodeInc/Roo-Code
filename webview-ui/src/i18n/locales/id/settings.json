@@ -890,6 +890,19 @@
 		"noMatchFound": "Tidak ada yang cocok ditemukan",
 		"useCustomModel": "Gunakan kustom: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Hapus otomatis riwayat tugas",
+		"description": "Menghapus tugas yang lebih lama dari periode yang dipilih saat memuat ulang ekstensi.",
+		"warning": "Peringatan: Tindakan ini menghapus tugas secara permanen dan hanya berjalan saat memuat ulang plugin.",
+		"options": {
+			"never": "Tidak pernah",
+			"90": "90 hari",
+			"60": "60 hari",
+			"30": "30 hari",
+			"7": "7 hari",
+			"3": "3 hari"
+		}
+	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

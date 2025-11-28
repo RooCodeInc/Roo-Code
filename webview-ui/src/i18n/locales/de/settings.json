@@ -860,6 +860,19 @@
 		"noMatchFound": "Keine Übereinstimmung gefunden",
 		"useCustomModel": "Benutzerdefiniert verwenden: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Aufgabenverlauf automatisch löschen",
+		"description": "Löscht Aufgaben, die älter als der ausgewählte Zeitraum sind, beim Neuladen der Erweiterung.",
+		"warning": "Warnung: Diese Aktion löscht Aufgaben dauerhaft und wird nur beim Plugin-Neustart ausgeführt.",
+		"options": {
+			"never": "Nie",
+			"90": "90 Tage",
+			"60": "60 Tage",
+			"30": "30 Tage",
+			"7": "7 Tage",
+			"3": "3 Tage"
+		}
+	},
 	"footer": {
 		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
 		"telemetry": {

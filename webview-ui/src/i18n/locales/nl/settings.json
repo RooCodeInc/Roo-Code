@@ -861,6 +861,19 @@
 		"noMatchFound": "Geen overeenkomsten gevonden",
 		"useCustomModel": "Aangepast gebruiken: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Taakgeschiedenis automatisch verwijderen",
+		"description": "Verwijdert taken ouder dan de geselecteerde periode bij het herladen van de extensie.",
+		"warning": "Waarschuwing: Deze actie verwijdert taken permanent en wordt alleen uitgevoerd bij het herladen van de plugin.",
+		"options": {
+			"never": "Nooit",
+			"90": "90 dagen",
+			"60": "60 dagen",
+			"30": "30 dagen",
+			"7": "7 dagen",
+			"3": "3 dagen"
+		}
+	},
 	"footer": {
 		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

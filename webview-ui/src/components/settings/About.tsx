@@ -20,7 +20,7 @@ import { Package } from "@roo/package"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui"
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -28,9 +28,18 @@ import { Section } from "./Section"
 type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	telemetrySetting: TelemetrySetting
 	setTelemetrySetting: (setting: TelemetrySetting) => void
+	taskHistoryRetention: string
+	setTaskHistoryRetention: (value: "never" | "90" | "60" | "30" | "7" | "3") => void
 }
 
-export const About = ({ telemetrySetting, setTelemetrySetting, className, ...props }: AboutProps) => {
+export const About = ({
+	telemetrySetting,
+	setTelemetrySetting,
+	taskHistoryRetention,
+	setTaskHistoryRetention,
+	className,
+	...props
+}: AboutProps) => {
 	const { t } = useAppTranslation()
 
 	return (
@@ -122,7 +131,31 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 
 			<Section className="space-y-0">
 				<h3>{t("settings:about.manageSettings")}</h3>
-				<div className="flex flex-wrap items-center gap-2">
+				<div className="mt-4">
+					<label className="block font-medium mb-1">{t("settings:aboutRetention.label")}</label>
+					<Select
+						value={(taskHistoryRetention ?? "never").toString()}
+						onValueChange={(value: "never" | "90" | "60" | "30" | "7" | "3") => {
+							setTaskHistoryRetention(value)
+						}}>
+						<SelectTrigger className="w-64">
+							<SelectValue placeholder={t("settings:common.select")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="never">{t("settings:aboutRetention.options.never")}</SelectItem>
+							<SelectItem value="90">{t("settings:aboutRetention.options.90")}</SelectItem>
+							<SelectItem value="60">{t("settings:aboutRetention.options.60")}</SelectItem>
+							<SelectItem value="30">{t("settings:aboutRetention.options.30")}</SelectItem>
+							<SelectItem value="7">{t("settings:aboutRetention.options.7")}</SelectItem>
+							<SelectItem value="3">{t("settings:aboutRetention.options.3")}</SelectItem>
+						</SelectContent>
+					</Select>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:aboutRetention.description")}
+					</div>
+					<div className="text-red-500 text-sm mt-1">{t("settings:aboutRetention.warning")}</div>
+				</div>
+				<div className="flex flex-wrap items-center gap-2 mt-2">
 					<Button onClick={() => vscode.postMessage({ type: "exportSettings" })} className="w-28">
 						<Upload className="p-0.5" />
 						{t("settings:footer.settings.export")}

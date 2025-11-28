@@ -860,6 +860,19 @@
 		"noMatchFound": "Aucune correspondance trouvée",
 		"useCustomModel": "Utiliser personnalisé : {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "Supprimer automatiquement l'historique des tâches",
+		"description": "Supprime les tâches antérieures à la période sélectionnée lors du rechargement de l'extension.",
+		"warning": "Avertissement : Cette action supprime définitivement les tâches et ne s'exécute qu'au rechargement du plugin.",
+		"options": {
+			"never": "Jamais",
+			"90": "90 jours",
+			"60": "60 jours",
+			"30": "30 jours",
+			"7": "7 jours",
+			"3": "3 jours"
+		}
+	},
 	"footer": {
 		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

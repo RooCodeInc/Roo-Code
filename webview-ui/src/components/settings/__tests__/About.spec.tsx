@@ -29,6 +29,8 @@ describe("About", () => {
 	const defaultProps = {
 		telemetrySetting: "enabled" as const,
 		setTelemetrySetting: vi.fn(),
+		taskHistoryRetention: "never",
+		setTaskHistoryRetention: vi.fn(),
 	}
 
 	beforeEach(() => {

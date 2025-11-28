@@ -861,6 +861,19 @@
 		"noMatchFound": "未找到匹配项",
 		"useCustomModel": "使用自定义：{{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "自动删除任务历史",
+		"description": "扩展重新加载时删除早于所选时段的任务。",
+		"warning": "警告：此操作永久删除任务，仅在插件重新加载时运行。",
+		"options": {
+			"never": "永不",
+			"90": "90天",
+			"60": "60天",
+			"30": "30天",
+			"7": "7天",
+			"3": "3天"
+		}
+	},
 	"footer": {
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

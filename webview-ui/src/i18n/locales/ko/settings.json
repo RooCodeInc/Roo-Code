@@ -861,6 +861,19 @@
 		"noMatchFound": "일치하는 항목 없음",
 		"useCustomModel": "사용자 정의 사용: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "작업 기록 자동 삭제",
+		"description": "확장 프로그램 재로드 시 선택한 기간보다 오래된 작업을 삭제합니다.",
+		"warning": "경고: 이 작업은 작업을 영구적으로 삭제하며 플러그인 재로드 시에만 실행됩니다.",
+		"options": {
+			"never": "삭제 안 함",
+			"90": "90일",
+			"60": "60일",
+			"30": "30일",
+			"7": "7일",
+			"3": "3일"
+		}
+	},
 	"footer": {
 		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {

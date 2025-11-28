@@ -861,6 +861,19 @@
 		"noMatchFound": "一致するものが見つかりません",
 		"useCustomModel": "カスタムを使用: {{modelId}}"
 	},
+	"aboutRetention": {
+		"label": "タスク履歴を自動削除",
+		"description": "拡張機能の再読み込み時に、選択された期間より古いタスクを削除します。",
+		"warning": "警告：この操作はタスクを完全に削除し、プラグインの再読み込み時のみ実行されます。",
+		"options": {
+			"never": "削除しない",
+			"90": "90日",
+			"60": "60日",
+			"30": "30日",
+			"7": "7日",
+			"3": "3日"
+		}
+	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
