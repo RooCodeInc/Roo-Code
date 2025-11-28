@@ -42,60 +42,97 @@ function getToolAbbreviation(toolName: string): string {
 		.join("")
 }
 
-// Escape HTML to prevent XSS
-function escapeHtml(text: string): string {
-	return text
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#039;")
+// Pattern definitions for syntax highlighting
+type HighlightPattern = {
+	pattern: RegExp
+	className: string
+	// If true, wraps the entire match; if a number, wraps that capture group
+	wrapGroup?: number
 }
 
-// Format log content with basic highlighting (XSS-safe)
+const HIGHLIGHT_PATTERNS: HighlightPattern[] = [
+	// Timestamps [YYYY-MM-DDTHH:MM:SS.sssZ]
+	{ pattern: /\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/g, className: "text-blue-400" },
+	// Log levels
+	{ pattern: /\|\s*(INFO)\s*\|/g, className: "text-green-400", wrapGroup: 1 },
+	{ pattern: /\|\s*(WARN|WARNING)\s*\|/g, className: "text-yellow-400", wrapGroup: 1 },
+	{ pattern: /\|\s*(ERROR)\s*\|/g, className: "text-red-400", wrapGroup: 1 },
+	{ pattern: /\|\s*(DEBUG)\s*\|/g, className: "text-gray-400", wrapGroup: 1 },
+	// Task identifiers
+	{ pattern: /(taskCreated|taskFocused|taskStarted|taskCompleted|EvalPass|EvalFail)/g, className: "text-purple-400" },
+	// Message arrows
+	{ pattern: /→/g, className: "text-cyan-400" },
+]
+
+// Format a single line with syntax highlighting using React elements (XSS-safe)
+function formatLine(line: string): React.ReactNode[] {
+	// Find all matches with their positions
+	type Match = { start: number; end: number; text: string; className: string }
+	const matches: Match[] = []
+
+	for (const { pattern, className, wrapGroup } of HIGHLIGHT_PATTERNS) {
+		// Reset regex state
+		pattern.lastIndex = 0
+		let regexMatch
+		while ((regexMatch = pattern.exec(line)) !== null) {
+			const capturedText = wrapGroup !== undefined ? regexMatch[wrapGroup] : regexMatch[0]
+			// Skip if capture group didn't match
+			if (!capturedText) continue
+			const start =
+				wrapGroup !== undefined ? regexMatch.index + regexMatch[0].indexOf(capturedText) : regexMatch.index
+			matches.push({
+				start,
+				end: start + capturedText.length,
+				text: capturedText,
+				className,
+			})
+		}
+	}
+
+	// Sort matches by position and filter overlapping ones
+	matches.sort((a, b) => a.start - b.start)
+	const filteredMatches: Match[] = []
+	for (const m of matches) {
+		const lastMatch = filteredMatches[filteredMatches.length - 1]
+		if (!lastMatch || m.start >= lastMatch.end) {
+			filteredMatches.push(m)
+		}
+	}
+
+	// Build result with highlighted spans
+	const result: React.ReactNode[] = []
+	let currentPos = 0
+
+	for (const [i, m] of filteredMatches.entries()) {
+		// Add text before this match
+		if (m.start > currentPos) {
+			result.push(line.slice(currentPos, m.start))
+		}
+		// Add highlighted match
+		result.push(
+			<span key={`${i}-${m.start}`} className={m.className}>
+				{m.text}
+			</span>,
+		)
+		currentPos = m.end
+	}
+
+	// Add remaining text
+	if (currentPos < line.length) {
+		result.push(line.slice(currentPos))
+	}
+
+	return result.length > 0 ? result : [line]
+}
+
+// Format log content with basic highlighting (XSS-safe - no dangerouslySetInnerHTML)
 function formatLogContent(log: string): React.ReactNode[] {
 	const lines = log.split("\n")
-	return lines.map((line, index) => {
-		// First escape the entire line to prevent XSS
-		let formattedLine = escapeHtml(line)
-
-		// Highlight timestamps [YYYY-MM-DDTHH:MM:SS.sssZ]
-		formattedLine = formattedLine.replace(
-			/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/g,
-			'<span class="text-blue-400">[$1]</span>',
-		)
-
-		// Highlight log levels
-		formattedLine = formattedLine.replace(/\|\s*(INFO)\s*\|/g, '| <span class="text-green-400">$1</span> |')
-		formattedLine = formattedLine.replace(
-			/\|\s*(WARN|WARNING)\s*\|/g,
-			'| <span class="text-yellow-400">$1</span> |',
-		)
-		formattedLine = formattedLine.replace(/\|\s*(ERROR)\s*\|/g, '| <span class="text-red-400">$1</span> |')
-		formattedLine = formattedLine.replace(/\|\s*(DEBUG)\s*\|/g, '| <span class="text-gray-400">$1</span> |')
-
-		// Highlight task identifiers like taskCreated, taskFocused, etc.
-		formattedLine = formattedLine.replace(
-			/(taskCreated|taskFocused|taskStarted|taskCompleted|EvalPass|EvalFail)/g,
-			'<span class="text-purple-400">$1</span>',
-		)
-
-		// Highlight message arrows (escaped as &rarr; after escapeHtml)
-		formattedLine = formattedLine.replace(/→/g, '<span class="text-cyan-400">→</span>')
-
-		return (
-			<div
-				key={index}
-				className="hover:bg-white/5"
-            <div
-                key={index}
-                className="hover:bg-white/5"
-            >
-                {formattedLine || " "}
-            </div>
-			/>
-		)
-	})
+	return lines.map((line, index) => (
+		<div key={index} className="hover:bg-white/5">
+			{line ? formatLine(line) : " "}
+		</div>
+	))
 }
 
 export function Run({ run }: { run: Run }) {
