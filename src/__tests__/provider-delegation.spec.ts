@@ -13,15 +13,29 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
 		const createTask = vi.fn().mockResolvedValue({ taskId: "child-1" })
 		const handleModeSwitch = vi.fn().mockResolvedValue(undefined)
-		const getTaskWithId = vi.fn().mockResolvedValue({
-			historyItem: {
-				id: "parent-1",
-				task: "Parent",
-				tokensIn: 0,
-				tokensOut: 0,
-				totalCost: 0,
-				childIds: [],
-			},
+		const getTaskWithId = vi.fn().mockImplementation(async (id: string) => {
+			if (id === "parent-1") {
+				return {
+					historyItem: {
+						id: "parent-1",
+						task: "Parent",
+						tokensIn: 0,
+						tokensOut: 0,
+						totalCost: 0,
+						childIds: [],
+					},
+				}
+			}
+			// child-1
+			return {
+				historyItem: {
+					id: "child-1",
+					task: "Do something",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}
 		})
 
 		const provider = {
@@ -48,12 +62,18 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 
 		// Invariant: parent closed before child creation
 		expect(removeClineFromStack).toHaveBeenCalledTimes(1)
-		expect(createTask).toHaveBeenCalledWith("Do something", undefined, parentTask, { initialTodos: [] })
+		// Child task is created with initialStatus: "active" to avoid race conditions
+		expect(createTask).toHaveBeenCalledWith("Do something", undefined, parentTask, {
+			initialTodos: [],
+			initialStatus: "active",
+		})
 
-		// Metadata persistence
+		// Metadata persistence - parent gets "delegated" status (child status is set at creation via initialStatus)
 		expect(updateTaskHistory).toHaveBeenCalledTimes(1)
-		const saved = updateTaskHistory.mock.calls[0][0]
-		expect(saved).toEqual(
+
+		// Parent set to "delegated"
+		const parentSaved = updateTaskHistory.mock.calls[0][0]
+		expect(parentSaved).toEqual(
 			expect.objectContaining({
 				id: "parent-1",
 				status: "delegated",

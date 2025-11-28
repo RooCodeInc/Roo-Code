@@ -96,12 +96,14 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				if (provider) {
 					try {
 						const { historyItem } = await provider.getTaskWithId(task.taskId)
-						if (historyItem?.status === "completed") {
+						const status = historyItem?.status
+
+						if (status === "completed") {
 							// Subtask already completed - skip delegation flow entirely
 							// Fall through to normal completion ask flow below (outside this if block)
 							// This shows the user the completion result and waits for acceptance
 							// without injecting another tool_result to the parent
-						} else {
+						} else if (status === "active") {
 							// Normal subtask completion - do delegation
 							const delegated = await this.delegateToParent(
 								task,
@@ -111,17 +113,23 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 								pushToolResult,
 							)
 							if (delegated) return
+						} else {
+							// Unexpected status (undefined or "delegated") - log error and skip delegation
+							// undefined indicates a bug in status persistence during child creation
+							// "delegated" would mean this child has its own grandchild pending (shouldn't reach attempt_completion)
+							console.error(
+								`[AttemptCompletionTool] Unexpected child task status "${status}" for task ${task.taskId}. ` +
+									`Expected "active" or "completed". Skipping delegation to prevent data corruption.`,
+							)
+							// Fall through to normal completion ask flow
 						}
-					} catch {
-						// If we can't get the history, proceed with normal delegation flow
-						const delegated = await this.delegateToParent(
-							task,
-							result,
-							provider,
-							askFinishSubTaskApproval,
-							pushToolResult,
+					} catch (err) {
+						// If we can't get the history, log error and skip delegation
+						console.error(
+							`[AttemptCompletionTool] Failed to get history for task ${task.taskId}: ${(err as Error)?.message ?? String(err)}. ` +
+								`Skipping delegation.`,
 						)
-						if (delegated) return
+						// Fall through to normal completion ask flow
 					}
 				}
 			}

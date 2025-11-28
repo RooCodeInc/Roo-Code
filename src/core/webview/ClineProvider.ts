@@ -933,6 +933,8 @@ export class ClineProvider
 			onCreated: this.taskCreationCallback,
 			startTask: options?.startTask ?? true,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
+			// Preserve the status from the history item to avoid overwriting it when the task saves messages
+			initialStatus: historyItem.status,
 		})
 
 		if (isRehydratingCurrentTask) {
@@ -3017,9 +3019,15 @@ export class ClineProvider
 		}
 
 		// 4) Create child as sole active (parent reference preserved for lineage)
-		const child = await this.createTask(message, undefined, parent as any, { initialTodos })
+		// Pass initialStatus: "active" to ensure the child task's historyItem is created
+		// with status from the start, avoiding race conditions where the task might
+		// call attempt_completion before status is persisted separately.
+		const child = await this.createTask(message, undefined, parent as any, {
+			initialTodos,
+			initialStatus: "active",
+		})
 
-		// 4) Persist parent delegation metadata
+		// 5) Persist parent delegation metadata
 		try {
 			const { historyItem } = await this.getTaskWithId(parentTaskId)
 			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
@@ -3039,7 +3047,7 @@ export class ClineProvider
 			)
 		}
 
-		// 5) Emit TaskDelegated (provider-level)
+		// 6) Emit TaskDelegated (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
 		} catch {
@@ -3164,7 +3172,22 @@ export class ClineProvider
 
 		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
 
-		// 3) Update parent metadata and persist BEFORE emitting completion event
+		// 3) Update child metadata to "completed" status
+		try {
+			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+			await this.updateTaskHistory({
+				...childHistory,
+				status: "completed",
+			})
+		} catch (err) {
+			this.log(
+				`[reopenParentFromDelegation] Failed to persist child completed status for ${childTaskId}: ${
+					(err as Error)?.message ?? String(err)
+				}`,
+			)
+		}
+
+		// 4) Update parent metadata and persist BEFORE emitting completion event
 		const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId]))
 		const updatedHistory: typeof historyItem = {
 			...historyItem,
@@ -3176,35 +3199,24 @@ export class ClineProvider
 		}
 		await this.updateTaskHistory(updatedHistory)
 
-		// 4) Emit TaskDelegationCompleted (provider-level)
+		// 5) Emit TaskDelegationCompleted (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
 		} catch {
 			// non-fatal
 		}
 
-		// 5) Close child instance if still open (single-open-task invariant)
+		// 6) Close child instance if still open (single-open-task invariant)
 		const current = this.getCurrentTask()
 		if (current?.taskId === childTaskId) {
 			await this.removeClineFromStack()
 		}
 
-		// 5b) Mark child subtask as "completed" to prevent duplicate tool_result on revisit
-		try {
-			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
-			await this.updateTaskHistory({
-				...childHistory,
-				status: "completed",
-			})
-		} catch {
-			// non-fatal: child history may not exist for some edge cases
-		}
-
-		// 6) Reopen the parent from history as the sole active task (restores saved mode)
+		// 7) Reopen the parent from history as the sole active task (restores saved mode)
 		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
 		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
 
-		// 7) Inject restored histories into the in-memory instance before resuming
+		// 8) Inject restored histories into the in-memory instance before resuming
 		if (parentInstance) {
 			try {
 				await parentInstance.overwriteClineMessages(parentClineMessages)
@@ -3221,7 +3233,7 @@ export class ClineProvider
 			await parentInstance.resumeAfterDelegation()
 		}
 
-		// 8) Emit TaskDelegationResumed (provider-level)
+		// 9) Emit TaskDelegationResumed (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
 		} catch {

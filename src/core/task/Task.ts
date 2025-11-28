@@ -150,6 +150,8 @@ export interface TaskOptions extends CreateTaskOptions {
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
 	workspacePath?: string
+	/** Initial status for the task's history item (e.g., "active" for child tasks) */
+	initialStatus?: "active" | "delegated" | "completed"
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -321,6 +323,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
+	// Initial status for the task's history item (set at creation time to avoid race conditions)
+	private readonly initialStatus?: "active" | "delegated" | "completed"
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -341,6 +346,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		onCreated,
 		initialTodos,
 		workspacePath,
+		initialStatus,
 	}: TaskOptions) {
 		super()
 
@@ -427,6 +433,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
+		this.initialStatus = initialStatus
 
 		// Store the task's mode when it's created.
 		// For history items, use the stored mode; for new tasks, we'll set it
@@ -868,6 +875,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				globalStoragePath: this.globalStoragePath,
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
+				initialStatus: this.initialStatus,
 			})
 
 			if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {

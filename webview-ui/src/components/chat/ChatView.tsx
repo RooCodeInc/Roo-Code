@@ -355,8 +355,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(false)
 							setClineAsk("resume_task")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:resumeTask.title"))
-							setSecondaryButtonText(t("chat:terminate.title"))
+							// For completed subtasks, show "Start New Task" instead of "Resume"
+							// A subtask is considered completed if:
+							// - It has a parentTaskId AND
+							// - Its messages contain a completion_result (either ask or say)
+							const isCompletedSubtask =
+								currentTaskItem?.parentTaskId &&
+								messages.some(
+									(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
+								)
+							if (isCompletedSubtask) {
+								setPrimaryButtonText(t("chat:startNewTask.title"))
+								setSecondaryButtonText(undefined)
+							} else {
+								setPrimaryButtonText(t("chat:resumeTask.title"))
+								setSecondaryButtonText(t("chat:terminate.title"))
+							}
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
 						case "resume_completed_task":
@@ -399,6 +413,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 	}, [lastMessage, secondLastMessage])
+
+	// Update button text when messages change (e.g., completion_result is added) for subtasks in resume_task state
+	useEffect(() => {
+		if (clineAsk === "resume_task" && currentTaskItem?.parentTaskId) {
+			const hasCompletionResult = messages.some(
+				(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
+			)
+			if (hasCompletionResult) {
+				setPrimaryButtonText(t("chat:startNewTask.title"))
+				setSecondaryButtonText(undefined)
+			}
+		}
+	}, [clineAsk, currentTaskItem?.parentTaskId, messages, t])
 
 	useEffect(() => {
 		if (messages.length === 0) {
@@ -638,7 +665,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "tool":
 				case "browser_action_launch":
 				case "use_mcp_server":
-				case "resume_task":
 				case "mistake_limit_reached":
 					// Only send text/images if they exist
 					if (trimmedInput || (images && images.length > 0)) {
@@ -655,6 +681,33 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
 					}
 					break
+				case "resume_task":
+					// For completed subtasks (tasks with a parentTaskId and a completion_result),
+					// start a new task instead of resuming since the subtask is done
+					const isCompletedSubtaskForClick =
+						currentTaskItem?.parentTaskId &&
+						messagesRef.current.some(
+							(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
+						)
+					if (isCompletedSubtaskForClick) {
+						startNewTask()
+					} else {
+						// Only send text/images if they exist
+						if (trimmedInput || (images && images.length > 0)) {
+							vscode.postMessage({
+								type: "askResponse",
+								askResponse: "yesButtonClicked",
+								text: trimmedInput,
+								images: images,
+							})
+							// Clear input state after sending
+							setInputValue("")
+							setSelectedImages([])
+						} else {
+							vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
+						}
+					}
+					break
 				case "completion_result":
 				case "resume_completed_task":
 					// Waiting for feedback, but we can just present a new task button
@@ -669,7 +722,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask],
+		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
 	)
 
 	const handleSecondaryButtonClick = useCallback(

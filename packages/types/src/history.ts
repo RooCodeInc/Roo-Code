@@ -19,7 +19,7 @@ export const historyItemSchema = z.object({
 	size: z.number().optional(),
 	workspace: z.string().optional(),
 	mode: z.string().optional(),
-	status: z.enum(["active", "completed", "aborted", "delegated"]).optional(),
+	status: z.enum(["active", "completed", "delegated"]).optional(),
 	delegatedToId: z.string().optional(), // Last child this parent delegated to
 	childIds: z.array(z.string()).optional(), // All children spawned by this task
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)

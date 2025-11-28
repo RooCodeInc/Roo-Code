@@ -95,6 +95,8 @@ export interface CreateTaskOptions {
 	consecutiveMistakeLimit?: number
 	experiments?: Record<string, boolean>
 	initialTodos?: TodoItem[]
+	/** Initial status for the task's history item (e.g., "active" for child tasks) */
+	initialStatus?: "active" | "delegated" | "completed"
 }
 
 export enum TaskStatus {
