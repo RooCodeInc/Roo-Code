@@ -5,9 +5,17 @@ describe("Built-in Commands", () => {
 		it("should return all built-in commands", async () => {
 			const commands = await getBuiltInCommands()
 
-			expect(commands).toHaveLength(5)
+			expect(commands).toHaveLength(8)
 			expect(commands.map((cmd) => cmd.name)).toEqual(
-				expect.arrayContaining(["init", "project-wiki", "tdd", "generate-rules"]),
+				expect.arrayContaining([
+					"init",
+					"project-wiki",
+					"tdd",
+					"generate-rules",
+					"vibeplus-propsal",
+					"vibeplus-apply",
+					"vibeplus-archive",
+				]),
 			)
 
 			// Verify all commands have required properties
@@ -65,12 +73,30 @@ describe("Built-in Commands", () => {
 		it("should return all built-in command names", async () => {
 			const names = await getBuiltInCommandNames()
 
-			expect(names).toHaveLength(5)
+			expect(names).toHaveLength(8)
 			expect(names).toEqual(
-				expect.arrayContaining(["generate-rules", "init", "openspec-init", "project-wiki", "tdd"]),
+				expect.arrayContaining([
+					"generate-rules",
+					"init",
+					"openspec-init",
+					"project-wiki",
+					"tdd",
+					"vibeplus-propsal",
+					"vibeplus-apply",
+					"vibeplus-archive",
+				]),
 			)
 			// Order doesn't matter since it's based on filesystem order
-			expect(names.sort()).toEqual(["generate-rules", "init", "openspec-init", "project-wiki", "tdd"])
+			expect(names.sort()).toEqual([
+				"generate-rules",
+				"init",
+				"openspec-init",
+				"project-wiki",
+				"tdd",
+				"vibeplus-apply",
+				"vibeplus-archive",
+				"vibeplus-propsal",
+			])
 		})
 
 		it("should return array of strings", async () => {
@@ -102,6 +128,39 @@ describe("Built-in Commands", () => {
 			expect(content).toContain("rules-debug")
 			expect(content).toContain("rules-ask")
 			expect(content).toContain("rules-architect")
+		})
+
+		it("vibeplus-propsal command should have proper content", async () => {
+			const command = await getBuiltInCommand("vibeplus-propsal")
+			const content = command!.content
+
+			expect(command!.description).toBe("构建新的VibePlus变更。")
+			expect(command!.argumentHint).toBe("功能描述或请求")
+			expect(content).toContain("VIBEPLUS:START")
+			expect(content).toContain("VIBEPLUS:END")
+			expect(content).toContain("%command-vibeplus-propsal%")
+		})
+
+		it("vibeplus-apply command should have proper content", async () => {
+			const command = await getBuiltInCommand("vibeplus-apply")
+			const content = command!.content
+
+			expect(command!.description).toBe("实施已批准的VibePlus变更并保持任务同步。")
+			expect(command!.argumentHint).toBe("change-id")
+			expect(content).toContain("VIBEPLUS:START")
+			expect(content).toContain("VIBEPLUS:END")
+			expect(content).toContain("%command-vibeplus-apply%")
+		})
+
+		it("vibeplus-archive command should have proper content", async () => {
+			const command = await getBuiltInCommand("vibeplus-archive")
+			const content = command!.content
+
+			expect(command!.description).toBe("归档已部署的VibePlus变更并更新规格。")
+			expect(command!.argumentHint).toBe("change-id")
+			expect(content).toContain("VIBEPLUS:START")
+			expect(content).toContain("VIBEPLUS:END")
+			expect(content).toContain("%command-vibeplus-archive%")
 		})
 	})
 })

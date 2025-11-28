@@ -336,6 +336,42 @@ Next steps - Copy these prompts to CoStrict:
     and how I should work with you on this project"
 \`\`\`</task>`,
 	},
+	"vibeplus-propsal": {
+		name: "vibeplus-propsal",
+		description: "构建新的VibePlus变更。",
+		argumentHint: "功能描述或请求",
+		content: `---
+description: "构建新的VibePlus变更。"
+argument-hint: 功能描述或请求
+---
+<!-- VIBEPLUS:START -->
+%command-vibeplus-propsal%
+<!-- VIBEPLUS:END -->`,
+	},
+	"vibeplus-apply": {
+		name: "vibeplus-apply",
+		description: "实施已批准的VibePlus变更并保持任务同步。",
+		argumentHint: "change-id",
+		content: `---
+description: "实施已批准的VibePlus变更并保持任务同步。"
+argument-hint: change-id
+---
+<!-- VIBEPLUS:START -->
+%command-vibeplus-apply%
+<!-- VIBEPLUS:END -->`,
+	},
+	"vibeplus-archive": {
+		name: "vibeplus-archive",
+		description: "归档已部署的VibePlus变更并更新规格。",
+		argumentHint: "change-id",
+		content: `---
+description: "归档已部署的VibePlus变更并更新规格。"
+argument-hint: change-id
+---
+<!-- VIBEPLUS:START -->
+%command-vibeplus-archive%
+<!-- VIBEPLUS:END -->`,
+	},
 	"generate-rules": {
 		name: "generate-rules",
 		description: "Extract project-specific coding rules to improve code generation accuracy",
