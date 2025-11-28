@@ -28,10 +28,38 @@ import { getRunSlashCommandDescription } from "./run-slash-command"
 import { getGenerateImageDescription } from "./generate-image"
 import { CodeIndexManager } from "../../../services/code-index/manager"
 
+// Import lite descriptions
+import {
+	getLiteReadFileDescription,
+	getLiteWriteToFileDescription,
+	getLiteSearchFilesDescription,
+	getLiteListFilesDescription,
+	getLiteExecuteCommandDescription,
+	getLiteInsertContentDescription,
+	getLiteListCodeDefinitionNamesDescription,
+	getLiteAskFollowupQuestionDescription,
+	getLiteAttemptCompletionDescription,
+	getLiteBrowserActionDescription,
+	getLiteSwitchModeDescription,
+	getLiteNewTaskDescription,
+	getLiteUpdateTodoListDescription,
+	getLiteFetchInstructionsDescription,
+	getLiteApplyDiffDescription,
+	getLiteCodebaseSearchDescription,
+	getLiteUseMcpToolDescription,
+	getLiteAccessMcpResourceDescription,
+	getLiteGenerateImageDescription,
+	getLiteRunSlashCommandDescription,
+} from "./lite-descriptions"
+
 // Map of tool names to their description functions
 const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined> = {
-	execute_command: (args) => getExecuteCommandDescription(args),
+	execute_command: (args) => {
+		if (args.settings?.liteMode) return getLiteExecuteCommandDescription()
+		return getExecuteCommandDescription(args)
+	},
 	read_file: (args) => {
+		if (args.settings?.liteMode) return getLiteReadFileDescription(args)
 		// Check if the current model should use the simplified read_file tool
 		const modelId = args.settings?.modelId
 		if (modelId && shouldUseSingleFileRead(modelId)) {
@@ -39,25 +67,80 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 		}
 		return getReadFileDescription(args)
 	},
-	fetch_instructions: (args) => getFetchInstructionsDescription(args.settings?.enableMcpServerCreation),
-	write_to_file: (args) => getWriteToFileDescription(args),
-	search_files: (args) => getSearchFilesDescription(args),
-	list_files: (args) => getListFilesDescription(args),
-	list_code_definition_names: (args) => getListCodeDefinitionNamesDescription(args),
-	browser_action: (args) => getBrowserActionDescription(args),
-	ask_followup_question: () => getAskFollowupQuestionDescription(),
-	attempt_completion: (args) => getAttemptCompletionDescription(args),
-	use_mcp_tool: (args) => getUseMcpToolDescription(args),
-	access_mcp_resource: (args) => getAccessMcpResourceDescription(args),
-	codebase_search: (args) => getCodebaseSearchDescription(args),
-	switch_mode: () => getSwitchModeDescription(),
-	new_task: (args) => getNewTaskDescription(args),
-	insert_content: (args) => getInsertContentDescription(args),
-	apply_diff: (args) =>
-		args.diffStrategy ? args.diffStrategy.getToolDescription({ cwd: args.cwd, toolOptions: args.toolOptions }) : "",
-	update_todo_list: (args) => getUpdateTodoListDescription(args),
-	run_slash_command: () => getRunSlashCommandDescription(),
-	generate_image: (args) => getGenerateImageDescription(args),
+	fetch_instructions: (args) => {
+		if (args.settings?.liteMode) return getLiteFetchInstructionsDescription()
+		return getFetchInstructionsDescription(args.settings?.enableMcpServerCreation)
+	},
+	write_to_file: (args) => {
+		if (args.settings?.liteMode) return getLiteWriteToFileDescription()
+		return getWriteToFileDescription(args)
+	},
+	search_files: (args) => {
+		if (args.settings?.liteMode) return getLiteSearchFilesDescription()
+		return getSearchFilesDescription(args)
+	},
+	list_files: (args) => {
+		if (args.settings?.liteMode) return getLiteListFilesDescription()
+		return getListFilesDescription(args)
+	},
+	list_code_definition_names: (args) => {
+		if (args.settings?.liteMode) return getLiteListCodeDefinitionNamesDescription()
+		return getListCodeDefinitionNamesDescription(args)
+	},
+	browser_action: (args) => {
+		if (args.settings?.liteMode) return getLiteBrowserActionDescription()
+		return getBrowserActionDescription(args)
+	},
+	ask_followup_question: (args) => {
+		if (args.settings?.liteMode) return getLiteAskFollowupQuestionDescription()
+		return getAskFollowupQuestionDescription()
+	},
+	attempt_completion: (args) => {
+		if (args.settings?.liteMode) return getLiteAttemptCompletionDescription()
+		return getAttemptCompletionDescription(args)
+	},
+	use_mcp_tool: (args) => {
+		if (args.settings?.liteMode) return getLiteUseMcpToolDescription()
+		return getUseMcpToolDescription(args)
+	},
+	access_mcp_resource: (args) => {
+		if (args.settings?.liteMode) return getLiteAccessMcpResourceDescription()
+		return getAccessMcpResourceDescription(args)
+	},
+	codebase_search: (args) => {
+		if (args.settings?.liteMode) return getLiteCodebaseSearchDescription()
+		return getCodebaseSearchDescription(args)
+	},
+	switch_mode: (args) => {
+		if (args.settings?.liteMode) return getLiteSwitchModeDescription()
+		return getSwitchModeDescription()
+	},
+	new_task: (args) => {
+		if (args.settings?.liteMode) return getLiteNewTaskDescription()
+		return getNewTaskDescription(args)
+	},
+	insert_content: (args) => {
+		if (args.settings?.liteMode) return getLiteInsertContentDescription()
+		return getInsertContentDescription(args)
+	},
+	apply_diff: (args) => {
+		if (args.settings?.liteMode) return getLiteApplyDiffDescription(args.diffStrategy)
+		return args.diffStrategy
+			? args.diffStrategy.getToolDescription({ cwd: args.cwd, toolOptions: args.toolOptions })
+			: ""
+	},
+	update_todo_list: (args) => {
+		if (args.settings?.liteMode) return getLiteUpdateTodoListDescription()
+		return getUpdateTodoListDescription(args)
+	},
+	run_slash_command: (args) => {
+		if (args.settings?.liteMode) return getLiteRunSlashCommandDescription()
+		return getRunSlashCommandDescription()
+	},
+	generate_image: (args) => {
+		if (args.settings?.liteMode) return getLiteGenerateImageDescription()
+		return getGenerateImageDescription(args)
+	},
 }
 
 export function getToolDescriptionsForMode(

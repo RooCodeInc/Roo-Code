@@ -165,6 +165,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentTime: (value: boolean) => void
 	includeCurrentCost?: boolean
 	setIncludeCurrentCost: (value: boolean) => void
+	liteMode?: boolean
+	setLiteMode: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -597,6 +599,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentTime,
 		includeCurrentCost,
 		setIncludeCurrentCost,
+		liteMode: state.liteMode,
+		setLiteMode: (value) => setState((prevState) => ({ ...prevState, liteMode: value })),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

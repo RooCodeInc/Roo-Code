@@ -86,6 +86,20 @@ export function getRulesSection(
 	codeIndexManager?: CodeIndexManager,
 	settings?: SystemPromptSettings,
 ): string {
+	// Return simplified rules for lite mode
+	if (settings?.liteMode) {
+		return `====
+
+RULES
+
+- Base directory: ${cwd.toPosix()}
+- Use relative paths from base directory
+- Read files before editing
+- Wait for user confirmation after each tool use
+- Use attempt_completion to present final results
+- Be direct and technical, not conversational`
+	}
+
 	const isCodebaseSearchAvailable =
 		codeIndexManager &&
 		codeIndexManager.isFeatureEnabled &&
@@ -132,6 +146,7 @@ export function getRulesSection(
 	// Determine whether to use XML tool references based on protocol
 	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
+	// Full rules for regular mode
 	return `====
 
 RULES
