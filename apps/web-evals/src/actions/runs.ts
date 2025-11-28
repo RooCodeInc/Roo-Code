@@ -21,7 +21,7 @@ import { CreateRun } from "@/lib/schemas"
 
 const EVALS_REPO_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../evals")
 
-export async function createRun({ suite, exercises = [], timeout, ...values }: CreateRun) {
+export async function createRun({ suite, exercises = [], timeout, iterations = 1, ...values }: CreateRun) {
 	const run = await _createRun({
 		...values,
 		timeout,
@@ -36,15 +36,34 @@ export async function createRun({ suite, exercises = [], timeout, ...values }: C
 				throw new Error("Invalid exercise path: " + path)
 			}
 
-			await createTask({ ...values, runId: run.id, language: language as ExerciseLanguage, exercise })
+			// Create multiple tasks for each iteration
+			for (let iteration = 1; iteration <= iterations; iteration++) {
+				await createTask({
+					...values,
+					runId: run.id,
+					language: language as ExerciseLanguage,
+					exercise,
+					iteration,
+				})
+			}
 		}
 	} else {
 		for (const language of exerciseLanguages) {
-			const exercises = await getExercisesForLanguage(EVALS_REPO_PATH, language)
+			const languageExercises = await getExercisesForLanguage(EVALS_REPO_PATH, language)
 
-			await pMap(exercises, (exercise) => createTask({ runId: run.id, language, exercise }), {
-				concurrency: 10,
-			})
+			// Create tasks for all iterations of each exercise
+			const tasksToCreate: Array<{ language: ExerciseLanguage; exercise: string; iteration: number }> = []
+			for (const exercise of languageExercises) {
+				for (let iteration = 1; iteration <= iterations; iteration++) {
+					tasksToCreate.push({ language, exercise, iteration })
+				}
+			}
+
+			await pMap(
+				tasksToCreate,
+				({ language, exercise, iteration }) => createTask({ runId: run.id, language, exercise, iteration }),
+				{ concurrency: 10 },
+			)
 		}
 	}
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useCallback } from "react"
+import { useMemo, useState, useCallback, useEffect } from "react"
 import { toast } from "sonner"
 import { LoaderCircle, FileText, Copy, Check } from "lucide-react"
 
@@ -115,6 +115,18 @@ export function Run({ run }: { run: Run }) {
 			toast.error("Failed to copy log")
 		}
 	}, [taskLog])
+
+	// Handle ESC key to close the dialog
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && selectedTask) {
+				setSelectedTask(null)
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown)
+		return () => document.removeEventListener("keydown", handleKeyDown)
+	}, [selectedTask])
 
 	const onViewTaskLog = useCallback(
 		async (task: Task) => {
@@ -366,6 +378,11 @@ export function Run({ run }: { run: Run }) {
 											<div className="flex items-center gap-2">
 												<span>
 													{task.language}/{task.exercise}
+													{task.iteration > 1 && (
+														<span className="text-muted-foreground ml-1">
+															(#{task.iteration})
+														</span>
+													)}
 												</span>
 												{task.finishedAt && (
 													<Tooltip>
@@ -416,6 +433,9 @@ export function Run({ run }: { run: Run }) {
 							<DialogTitle className="flex items-center gap-2">
 								<FileText className="size-4" />
 								{selectedTask?.language}/{selectedTask?.exercise}
+								{selectedTask?.iteration && selectedTask.iteration > 1 && (
+									<span className="text-muted-foreground">(#{selectedTask.iteration})</span>
+								)}
 								<span
 									className={`ml-2 text-sm ${selectedTask?.passed ? "text-green-600" : "text-red-600"}`}>
 									({selectedTask?.passed ? "Passed" : "Failed"})

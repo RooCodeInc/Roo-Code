@@ -31,6 +31,9 @@ import {
 	TIMEOUT_MIN,
 	TIMEOUT_MAX,
 	TIMEOUT_DEFAULT,
+	ITERATIONS_MIN,
+	ITERATIONS_MAX,
+	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 
@@ -41,6 +44,7 @@ import {
 	Button,
 	Checkbox,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -116,6 +120,7 @@ export function NewRun() {
 			settings: undefined,
 			concurrency: CONCURRENCY_DEFAULT,
 			timeout: TIMEOUT_DEFAULT,
+			iterations: ITERATIONS_DEFAULT,
 			jobToken: "",
 		},
 	})
@@ -722,6 +727,32 @@ export function NewRun() {
 										<div>{field.value}</div>
 									</div>
 								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="iterations"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Iterations per Exercise</FormLabel>
+								<FormControl>
+									<div className="flex flex-row items-center gap-2">
+										<Slider
+											value={[field.value]}
+											min={ITERATIONS_MIN}
+											max={ITERATIONS_MAX}
+											step={1}
+											onValueChange={(value) => {
+												field.onChange(value[0])
+											}}
+										/>
+										<div>{field.value}</div>
+									</div>
+								</FormControl>
+								<FormDescription>Run each exercise multiple times to compare results</FormDescription>
 								<FormMessage />
 							</FormItem>
 						)}
