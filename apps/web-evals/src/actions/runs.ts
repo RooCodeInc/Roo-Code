@@ -3,7 +3,7 @@
 import * as path from "path"
 import fs from "fs"
 import { fileURLToPath } from "url"
-import { spawn, execSync } from "child_process"
+import { spawn, execSync, execFileSync } from "child_process"
 
 import { revalidatePath } from "next/cache"
 import pMap from "p-map"
@@ -144,7 +144,7 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		// Step 1: Kill the controller first
 		console.log(`Killing controller: ${controllerPattern}`)
 		try {
-			execSync(`docker kill ${controllerPattern}`, { encoding: "utf-8", timeout: 10000 })
+			execFileSync("docker", ["kill", controllerPattern], { encoding: "utf-8", timeout: 10000 })
 			killedContainers.push(controllerPattern)
 			console.log(`Killed controller container: ${controllerPattern}`)
 		} catch (_error) {
@@ -174,7 +174,7 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		// Kill each task runner container
 		for (const containerName of taskContainerNames) {
 			try {
-				execSync(`docker kill ${containerName}`, { encoding: "utf-8", timeout: 10000 })
+				execFileSync("docker", ["kill", containerName], { encoding: "utf-8", timeout: 10000 })
 				killedContainers.push(containerName)
 				console.log(`Killed task container: ${containerName}`)
 			} catch (error) {
