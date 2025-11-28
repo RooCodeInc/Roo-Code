@@ -20,6 +20,11 @@ export type ApiMessage = Anthropic.MessageParam & {
 	text?: string
 	// For OpenRouter reasoning_details array format (used by Gemini 3, etc.)
 	reasoning_details?: any[]
+	// For non-destructive condense: unique identifier for summary messages
+	condenseId?: string
+	// For non-destructive condense: points to the condenseId of the summary that replaces this message
+	// Messages with condenseParent are filtered out when sending to API if the summary exists
+	condenseParent?: string
 }
 
 export async function readApiMessages({

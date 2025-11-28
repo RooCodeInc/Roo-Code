@@ -21,6 +21,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
+import { cleanupAfterTruncation } from "../condense"
 
 import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
@@ -101,7 +102,9 @@ export const webviewMessageHandler = async (
 	}
 
 	/**
-	 * Removes the target message and all subsequent messages
+	 * Removes the target message and all subsequent messages.
+	 * After truncation, cleans up orphaned condenseParent references so that
+	 * messages whose summary was deleted become active again.
 	 */
 	const removeMessagesThisAndSubsequent = async (
 		currentCline: any,
@@ -112,9 +115,16 @@ export const webviewMessageHandler = async (
 		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
 
 		if (apiConversationHistoryIndex !== -1) {
-			await currentCline.overwriteApiConversationHistory(
-				currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex),
-			)
+			// Truncate API history
+			const truncatedApiHistory = currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex)
+
+			// Clean up orphaned condenseParent references after truncation.
+			// When a summary message is deleted by the truncation, messages that were
+			// tagged with its condenseId should have their condenseParent cleared
+			// so they become active again (can be sent to the API).
+			const cleanedApiHistory = cleanupAfterTruncation(truncatedApiHistory)
+
+			await currentCline.overwriteApiConversationHistory(cleanedApiHistory)
 		}
 	}
 

@@ -11,6 +11,8 @@ import {
 	summarizeConversation,
 	getMessagesSinceLastSummary,
 	getKeepMessagesWithToolBlocks,
+	getEffectiveApiHistory,
+	cleanupAfterTruncation,
 	N_MESSAGES_TO_KEEP,
 } from "../index"
 
@@ -407,22 +409,28 @@ describe("summarizeConversation", () => {
 		expect(mockApiHandler.createMessage).toHaveBeenCalled()
 		expect(maybeRemoveImageBlocks).toHaveBeenCalled()
 
-		// Verify the structure of the result
-		// The result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		// With non-destructive condensing, the result contains ALL original messages
+		// plus the summary message. Condensed messages are tagged but not deleted.
+		// Use getEffectiveApiHistory to verify the effective API view matches the old behavior.
+		expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
 
 		// Check that the first message is preserved
 		expect(result.messages[0]).toEqual(messages[0])
 
-		// Check that the summary message was inserted correctly
-		const summaryMessage = result.messages[1]
-		expect(summaryMessage.role).toBe("assistant")
-		expect(summaryMessage.content).toBe("This is a summary")
-		expect(summaryMessage.isSummary).toBe(true)
+		// Find the summary message (it has isSummary: true)
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.content).toBe("This is a summary")
+		expect(summaryMessage!.isSummary).toBe(true)
 
-		// Check that the last N_MESSAGES_TO_KEEP messages are preserved
-		const lastMessages = messages.slice(-N_MESSAGES_TO_KEEP)
-		expect(result.messages.slice(-N_MESSAGES_TO_KEEP)).toEqual(lastMessages)
+		// Verify that the effective API history matches expected: first + summary + last N messages
+		const effectiveHistory = getEffectiveApiHistory(result.messages)
+		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+
+		// Check that condensed messages are properly tagged
+		const condensedMessages = result.messages.filter((m) => m.condenseParent !== undefined)
+		expect(condensedMessages.length).toBeGreaterThan(0)
 
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
@@ -643,9 +651,11 @@ describe("summarizeConversation", () => {
 			prevContextTokens,
 		)
 
-		// Should successfully summarize
-		// Result should be: first message + summary + last N messages
-		expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		// With non-destructive condensing, result contains all messages plus summary
+		// Use getEffectiveApiHistory to verify the effective API view
+		expect(result.messages.length).toBe(messages.length + 1) // All messages + summary
+		const effectiveHistory = getEffectiveApiHistory(result.messages)
+		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()
@@ -809,14 +819,15 @@ describe("summarizeConversation", () => {
 			true, // useNativeTools - required for tool_use block preservation
 		)
 
-		// Verify the summary message has content array with text and tool_use blocks
-		const summaryMessage = result.messages[1]
-		expect(summaryMessage.role).toBe("assistant")
-		expect(summaryMessage.isSummary).toBe(true)
-		expect(Array.isArray(summaryMessage.content)).toBe(true)
+		// Find the summary message
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.isSummary).toBe(true)
+		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 
 		// Content should be [text block, tool_use block]
-		const content = summaryMessage.content as any[]
+		const content = summaryMessage!.content as any[]
 		expect(content).toHaveLength(2)
 		expect(content[0].type).toBe("text")
 		expect(content[0].text).toBe("Summary of conversation")
@@ -824,8 +835,11 @@ describe("summarizeConversation", () => {
 		expect(content[1].id).toBe("toolu_123")
 		expect(content[1].name).toBe("read_file")
 
-		// Verify the keepMessages are preserved correctly
-		expect(result.messages).toHaveLength(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last 3
+		// With non-destructive condensing, all messages are retained plus the summary
+		expect(result.messages.length).toBe(messages.length + 1) // all original + summary
+		// Verify effective history matches expected
+		const effectiveHistory = getEffectiveApiHistory(result.messages)
+		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last 3
 		expect(result.error).toBeUndefined()
 	})
 
