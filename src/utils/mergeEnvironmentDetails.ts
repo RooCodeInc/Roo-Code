@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-export function isMergeEnvironmentDetailsMergeNeeded(modelId: string): boolean {
+export function isMergeEnvironmentDetailsMergeNeeded(modelId?: string): boolean {
 	return false
 }
 
