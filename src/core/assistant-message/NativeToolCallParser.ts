@@ -519,6 +519,14 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "apply_patch":
+				if (partialArgs.patch !== undefined) {
+					nativeArgs = {
+						patch: partialArgs.patch,
+					}
+				}
+				break
+
 			// Add other tools as needed
 			default:
 				break
@@ -764,6 +772,14 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							server_name: args.server_name,
 							uri: args.uri,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "apply_patch":
+					if (args.patch !== undefined) {
+						nativeArgs = {
+							patch: args.patch,
 						} as NativeArgsFor<TName>
 					}
 					break

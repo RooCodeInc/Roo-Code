@@ -21,6 +21,7 @@ export const toolNames = [
 	"apply_diff",
 	"insert_content",
 	"search_and_replace",
+	"apply_patch",
 	"search_files",
 	"list_files",
 	"list_code_definition_names",
