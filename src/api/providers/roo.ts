@@ -22,10 +22,8 @@ import type { ModelInfo } from "@roo-code/types"
 
 // Model-specific defaults that should be applied even when models come from API cache
 const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
-	"minimax/minimax-m2:free": {
+	"minimax/minimax-m2": {
 		defaultToolProtocol: "native",
-		includedTools: ["search_and_replace"],
-		excludedTools: ["apply_diff"],
 	},
 	"anthropic/claude-haiku-4.5": {
 		defaultToolProtocol: "native",
