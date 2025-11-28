@@ -1,20 +1,16 @@
-/* eslint-disable react/jsx-no-target-blank */
-
 import { Button } from "@/components/ui"
 import {
-	CodeExample,
 	CompanyLogos,
 	FAQSection,
 	Testimonials,
-	StrategySection,
-	ExtensionSection,
-	BridgeSection,
 	CloudSection,
 	EcosystemSection,
 	CTASection,
+	OptionOverviewSection,
+	PillarsSection,
 } from "@/components/homepage"
 import { EXTERNAL_LINKS } from "@/lib/constants"
-import { ArrowRight, Terminal } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { StructuredData } from "@/components/structured-data"
 
 // Invalidate cache when a request comes in, at most once every hour.
@@ -29,23 +25,25 @@ export default async function Home() {
 					<h1 className="md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
 						Your AI Software Engineering Team is here.
 						<br />
-						<span className="text-muted-foreground">Interactive in your IDE, autonomous in the cloud.</span>
+						<span className="text-muted-foreground">Interactive in the IDE, autonomous in the cloud.</span>
 					</h1>
-					<div className="mt-4 max-w-3xl text-lg text-muted-foreground mb-10 space-y-3">
+					<div className="mt-2 max-w-3xl text-lg text-muted-foreground mb-10 space-y-3">
 						<p>
-							Use the <strong className="text-nowrap">Roo Code Extension</strong> for full control, or
-							delegate work to your <strong className="text-nowrap">Roo Code Cloud Agents</strong> from
-							Slack, Github or wherever your team gets work&nbsp;done.
+							Use the <strong className="text-nowrap">Roo Code Extension</strong> on your computer for
+							full control, or delegate work to your{" "}
+							<strong className="text-nowrap">Roo Code Cloud Agents</strong> from the web, Slack, Github
+							or wherever your team is.
 						</p>
 					</div>
 					<div className="flex flex-col sm:flex-row gap-4 mb-16">
 						<div className="flex flex-col items-center gap-2">
 							<Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg">
 								<a
-									href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"
+									href={EXTERNAL_LINKS.MARKETPLACE}
 									target="_blank"
+									rel="noreferrer"
 									className="flex items-center justify-center">
-									Install Extension on VS Code
+									Install VS Code Extension
 									<ArrowRight className="ml-2 size-5" />
 								</a>
 							</Button>
@@ -74,60 +72,25 @@ export default async function Home() {
 						{/* Left Side: VS Code Extension (Blue Tint) */}
 						<div className="bg-blue-950/10 dark:bg-blue-950/30 p-6 md:p-10 border-b md:border-b-0 md:border-r border-blue-500/10 flex flex-col items-center justify-center min-h-[400px]">
 							<div className="mb-4 font-mono text-sm text-blue-500 font-bold tracking-wider uppercase">
-								Local Runtime
+								Extension Image/Animation
 							</div>
 							<div className="relative w-full max-w-md">
 								<div className="absolute -inset-4 bg-blue-500/20 blur-3xl rounded-full" />
-								<CodeExample />
 							</div>
 						</div>
 
 						{/* Right Side: Terminal/Log Stream (Purple Tint) */}
 						<div className="bg-purple-950/10 dark:bg-purple-950/30 p-6 md:p-10 flex flex-col items-center justify-center min-h-[400px]">
 							<div className="mb-4 font-mono text-sm text-purple-500 font-bold tracking-wider uppercase">
-								Cloud Runtime
-							</div>
-							<div className="relative w-full max-w-md bg-background/80 rounded-lg border border-border p-4 shadow-lg font-mono text-xs md:text-sm overflow-hidden">
-								<div className="flex items-center gap-2 mb-3 border-b border-border pb-2">
-									<Terminal className="h-4 w-4 text-muted-foreground" />
-									<span className="text-muted-foreground">roo-cloud-agent-01</span>
-								</div>
-								<div className="space-y-2 text-muted-foreground">
-									<div className="flex gap-2">
-										<span className="text-green-500">➜</span>
-										<span>git checkout -b feature/auth-flow</span>
-									</div>
-									<div className="flex gap-2">
-										<span className="text-green-500">➜</span>
-										<span>npm install @auth/core</span>
-									</div>
-									<div className="text-blue-500">ℹ Installing dependencies...</div>
-									<div className="opacity-50">added 42 packages in 2s</div>
-									<div className="flex gap-2">
-										<span className="text-green-500">➜</span>
-										<span>Analyzing src/auth/config.ts...</span>
-									</div>
-									<div className="text-purple-500">ℹ Implementing OAuth providers</div>
-									<div className="flex gap-2">
-										<span className="text-green-500">➜</span>
-										<span>Running tests...</span>
-									</div>
-									<div className="text-green-500">✔ Tests passed (12/12)</div>
-									<div className="flex gap-2">
-										<span className="text-green-500">➜</span>
-										<span>gh pr create --title &quot;Add Auth&quot;</span>
-									</div>
-									<div className="animate-pulse">_</div>
-								</div>
+								Cloud Image/Animation
 							</div>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			<StrategySection />
-			<ExtensionSection />
-			<BridgeSection />
+			<PillarsSection />
+			<OptionOverviewSection />
 			<CloudSection />
 			<EcosystemSection />
 
