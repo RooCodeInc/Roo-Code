@@ -171,11 +171,12 @@ export function PillarsSection() {
 										<Link target="_blank" href="https://github.com/Roo-Code-Inc/Roo-Code">
 											open source
 										</Link>{" "}
-										so you can see for yourself exactly what it&apos;s doing.
+										so you can see for yourself exactly what it&apos;s doing and we don&apos;t use
+										your data for training.
 									</p>
 									<p>
-										And as a company, we take security seriously, with full SOC2 Type 2 compliance
-										and industry-standard security practices.
+										Plus we&apos;re fully SOC2 Type 2 compliance and follow industry-standard
+										security practices.
 									</p>
 								</div>
 							</div>
