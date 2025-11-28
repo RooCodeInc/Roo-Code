@@ -207,7 +207,7 @@ const WelcomeViewProvider = () => {
 					</p>
 				</div>
 
-				<div className="mb-4 space-y-3">
+				<div className="mb-4">
 					<VSCodeRadioGroup
 						value={selectedProvider}
 						onChange={(e: Event | React.FormEvent<HTMLElement>) => {
@@ -248,9 +248,9 @@ const WelcomeViewProvider = () => {
 					</VSCodeRadioGroup>
 
 					{/* Expand API options only when custom provider is selected, max height is used to force a transition */}
-					<div className="my-4 pl-8">
+					<div className="mb-8 border-l-2 border-vscode-panel-border ml-2 pl-6">
 						<div
-							className={`overflow-clip transition-[max-height] ease-in-out duration-750 ${selectedProvider === "custom" ? "max-h-[1000px]" : "max-h-0"}`}>
+							className={`overflow-clip transition-[max-height] ease-linear duration-750 ${selectedProvider === "custom" ? "max-h-[400px]" : "max-h-0"}`}>
 							<ApiOptions
 								fromWelcomeView
 								apiConfiguration={apiConfiguration || {}}
@@ -265,9 +265,6 @@ const WelcomeViewProvider = () => {
 					<Button onClick={handleGetStarted} variant="primary">
 						{t("welcome:providerSignup.getStarted")} →
 					</Button>
-					{errorMessage && selectedProvider === "custom" && (
-						<div className="text-vscode-errorForeground text-sm">{errorMessage}</div>
-					)}
 				</div>
 			</TabContent>
 		</Tab>

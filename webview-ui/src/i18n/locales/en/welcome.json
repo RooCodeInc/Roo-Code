@@ -16,7 +16,7 @@
 			"incentive": "Try Roo out for free"
 		}
 	},
-	"chooseProvider": "To get started, you need an LLM provider:",
+	"chooseProvider": "Roo needs an LLM provider to work. Choose yours:",
 	"providerSignup": {
 		"rooCloudProvider": "Roo Code Cloud Provider",
 		"rooCloudDescription": "The simplest way to use Roo. A curated mix of free and paid models at a low cost",
