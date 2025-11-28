@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## [3.34.8] - 2025-11-27
+
+![3.34.8 Release - Race Condition Fix](/releases/3.34.8-release.png)
+
+- Fix: Race condition in new_task tool for native protocol (PR #9655 by @daniel-lxs)
+
 ## [3.34.7] - 2025-11-27
 
 ![3.34.7 Release - More Native Tool Integrations](/releases/3.34.7-release.png)

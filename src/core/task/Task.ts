@@ -3515,6 +3515,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				apiConfiguration,
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				modelInfo,
 			})
 		}
 
