@@ -1,7 +1,8 @@
 import { useCallback, useState, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Ellipsis, ClipboardList, Copy, Check, LoaderCircle, Trash, Settings } from "lucide-react"
+import { toast } from "sonner"
+import { Ellipsis, ClipboardList, Copy, Check, LoaderCircle, Trash, Settings, FileDown } from "lucide-react"
 
 import type { Run as EvalsRun, TaskMetrics as EvalsTaskMetrics } from "@roo-code/evals"
 import type { ToolName } from "@roo-code/types"
@@ -48,8 +49,45 @@ export function Run({ run, taskMetrics, toolColumns }: RunProps) {
 	const router = useRouter()
 	const [deleteRunId, setDeleteRunId] = useState<number>()
 	const [showSettings, setShowSettings] = useState(false)
+	const [isExportingLogs, setIsExportingLogs] = useState(false)
 	const continueRef = useRef<HTMLButtonElement>(null)
 	const { isPending, copyRun, copied } = useCopyRun(run.id)
+
+	const onExportFailedLogs = useCallback(async () => {
+		if (run.failed === 0) {
+			toast.error("No failed tasks to export")
+			return
+		}
+
+		setIsExportingLogs(true)
+		try {
+			const response = await fetch(`/api/runs/${run.id}/logs/failed`)
+
+			if (!response.ok) {
+				const error = await response.json()
+				toast.error(error.error || "Failed to export logs")
+				return
+			}
+
+			// Download the zip file
+			const blob = await response.blob()
+			const url = window.URL.createObjectURL(blob)
+			const a = document.createElement("a")
+			a.href = url
+			a.download = `run-${run.id}-failed-logs.zip`
+			document.body.appendChild(a)
+			a.click()
+			window.URL.revokeObjectURL(url)
+			document.body.removeChild(a)
+
+			toast.success("Failed logs exported successfully")
+		} catch (error) {
+			console.error("Error exporting logs:", error)
+			toast.error("Failed to export logs")
+		} finally {
+			setIsExportingLogs(false)
+		}
+	}, [run.id, run.failed])
 
 	const onConfirmDelete = useCallback(async () => {
 		if (!deleteRunId) {
@@ -156,6 +194,23 @@ export function Run({ run, taskMetrics, toolColumns }: RunProps) {
 											<>
 												<Copy />
 												Copy to Production
+											</>
+										)}
+									</div>
+								</DropdownMenuItem>
+							)}
+							{run.failed > 0 && (
+								<DropdownMenuItem onClick={onExportFailedLogs} disabled={isExportingLogs}>
+									<div className="flex items-center gap-1">
+										{isExportingLogs ? (
+											<>
+												<LoaderCircle className="animate-spin" />
+												Exporting...
+											</>
+										) : (
+											<>
+												<FileDown />
+												Export Failed Logs
 											</>
 										)}
 									</div>

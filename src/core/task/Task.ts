@@ -186,6 +186,8 @@ export interface TaskOptions extends CreateTaskOptions {
 	onCreated?: (task: Task) => void
 	initialTodos?: TodoItem[]
 	workspacePath?: string
+	/** Initial status for the task's history item (e.g., "active" for child tasks) */
+	initialStatus?: "active" | "delegated" | "completed"
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -253,6 +255,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private readonly globalStoragePath: string
 	abort: boolean = false
 	currentRequestAbortController?: AbortController
+	skipPrevResponseIdOnce: boolean = false
 
 	// TaskStatus
 	idleAsk?: ClineMessage
@@ -264,8 +267,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	abortReason?: ClineApiReqCancelReason
 	isInitialized = false
 	isPaused: boolean = false
-	pausedModeSlug: string = defaultModeSlug
-	private pauseInterval: NodeJS.Timeout | undefined
 
 	// API
 	apiConfiguration: ProviderSettings
@@ -358,6 +359,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
+	// Initial status for the task's history item (set at creation time to avoid race conditions)
+	private readonly initialStatus?: "active" | "delegated" | "completed"
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -378,6 +382,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		onCreated,
 		initialTodos,
 		workspacePath,
+		initialStatus,
 	}: TaskOptions) {
 		super()
 
@@ -464,6 +469,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
+		this.initialStatus = initialStatus
 
 		// Store the task's mode when it's created.
 		// For history items, use the stored mode; for new tasks, we'll set it
@@ -905,6 +911,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				globalStoragePath: this.globalStoragePath,
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
+				initialStatus: this.initialStatus,
 			})
 
 			if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
@@ -1531,7 +1538,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				text: `<task>\n${task}\n</task>`,
 			},
 			...imageBlocks,
-		])
+		]).catch((error) => {
+			// Swallow loop rejection when the task was intentionally abandoned/aborted
+			// during delegation or user cancellation to prevent unhandled rejections.
+			if (this.abandoned === true || this.abortReason === "user_cancelled") {
+				return
+			}
+			throw error
+		})
 	}
 
 	private async resumeTaskFromHistory() {
@@ -1879,12 +1893,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error("Error removing event listeners:", error)
 		}
 
-		// Stop waiting for child task completion.
-		if (this.pauseInterval) {
-			clearInterval(this.pauseInterval)
-			this.pauseInterval = undefined
-		}
-
 		if (this.enableBridge) {
 			BridgeOrchestrator.getInstance()
 				?.unsubscribeFromTask(this.taskId)
@@ -1961,79 +1969,87 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Provider not available")
 		}
 
-		const newTask = await provider.createTask(message, undefined, this, { initialTodos })
-
-		if (newTask) {
-			this.isPaused = true // Pause parent.
-			this.childTaskId = newTask.taskId
-
-			await provider.handleModeSwitch(mode) // Set child's mode.
-			await delay(500) // Allow mode change to take effect.
-
-			this.emit(RooCodeEventName.TaskPaused, this.taskId)
-			this.emit(RooCodeEventName.TaskSpawned, newTask.taskId)
-		}
-
-		return newTask
-	}
-
-	// Used when a sub-task is launched and the parent task is waiting for it to
-	// finish.
-	// TBD: Add a timeout to prevent infinite waiting.
-	public async waitForSubtask() {
-		await new Promise<void>((resolve) => {
-			this.pauseInterval = setInterval(() => {
-				if (!this.isPaused) {
-					clearInterval(this.pauseInterval)
-					this.pauseInterval = undefined
-					resolve()
-				}
-			}, 1000)
+		const child = await (provider as any).delegateParentAndOpenChild({
+			parentTaskId: this.taskId,
+			message,
+			initialTodos,
+			mode,
 		})
+		return child
 	}
 
-	public async completeSubtask(lastMessage: string) {
-		this.isPaused = false
-		this.childTaskId = undefined
+	/**
+	 * Resume parent task after delegation completion without showing resume ask.
+	 * Used in metadata-driven subtask flow.
+	 *
+	 * This method:
+	 * - Clears any pending ask states
+	 * - Resets abort and streaming flags
+	 * - Ensures next API call includes full context
+	 * - Immediately continues task loop without user interaction
+	 */
+	public async resumeAfterDelegation(): Promise<void> {
+		// Clear any ask states that might have been set during history load
+		this.idleAsk = undefined
+		this.resumableAsk = undefined
+		this.interactiveAsk = undefined
 
-		this.emit(RooCodeEventName.TaskUnpaused, this.taskId)
+		// Reset abort and streaming state to ensure clean continuation
+		this.abort = false
+		this.abandoned = false
+		this.abortReason = undefined
+		this.didFinishAbortingStream = false
+		this.isStreaming = false
+		this.isWaitingForFirstChunk = false
 
-		// Fake an answer from the subtask that it has completed running and
-		// this is the result of what it has done add the message to the chat
-		// history and to the webview ui.
-		try {
-			await this.say("subtask_result", lastMessage)
+		// Ensure next API call includes full context after delegation
+		this.skipPrevResponseIdOnce = true
 
-			// Check if using native protocol to determine how to add the subtask result
-			const modelInfo = this.api.getModel().info
-			const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+		// Mark as initialized and active
+		this.isInitialized = true
+		this.emit(RooCodeEventName.TaskActive, this.taskId)
 
-			if (toolProtocol === "native" && this.pendingNewTaskToolCallId) {
-				// For native protocol, push the actual tool_result with the subtask's real result.
-				// NewTaskTool deferred pushing the tool_result until now so that the parent task
-				// gets useful information about what the subtask actually accomplished.
-				this.userMessageContent.push({
-					type: "tool_result",
-					tool_use_id: this.pendingNewTaskToolCallId,
-					content: `[new_task completed] Result: ${lastMessage}`,
-				} as Anthropic.ToolResultBlockParam)
-
-				// Clear the pending tool call ID
-				this.pendingNewTaskToolCallId = undefined
-			} else {
-				// For XML protocol (or if no pending tool call ID), add as a separate user message
-				await this.addToApiConversationHistory({
-					role: "user",
-					content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
-				})
-			}
-		} catch (error) {
-			this.providerRef
-				.deref()
-				?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`)
-
-			throw error
+		// Load conversation history if not already loaded
+		if (this.apiConversationHistory.length === 0) {
+			this.apiConversationHistory = await this.getSavedApiConversationHistory()
 		}
+
+		// Add environment details to the existing last user message (which contains the tool_result)
+		// This avoids creating a new user message which would cause consecutive user messages
+		const environmentDetails = await getEnvironmentDetails(this, true)
+		let lastUserMsgIndex = -1
+		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
+			if (this.apiConversationHistory[i].role === "user") {
+				lastUserMsgIndex = i
+				break
+			}
+		}
+		if (lastUserMsgIndex >= 0) {
+			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
+			if (Array.isArray(lastUserMsg.content)) {
+				// Remove any existing environment_details blocks before adding fresh ones
+				const contentWithoutEnvDetails = lastUserMsg.content.filter(
+					(block: Anthropic.Messages.ContentBlockParam) => {
+						if (block.type === "text" && typeof block.text === "string") {
+							const isEnvironmentDetailsBlock =
+								block.text.trim().startsWith("<environment_details>") &&
+								block.text.trim().endsWith("</environment_details>")
+							return !isEnvironmentDetailsBlock
+						}
+						return true
+					},
+				)
+				// Add fresh environment details
+				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			}
+		}
+
+		// Save the updated history
+		await this.saveApiConversationHistory()
+
+		// Continue task loop - pass empty array to signal no new user content needed
+		// The initiateTaskLoop will handle this by skipping user message addition
+		await this.initiateTaskLoop([])
 	}
 
 	// Task Loop
@@ -2121,37 +2137,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.consecutiveMistakeCount = 0
 			}
 
-			// In this Cline request loop, we need to check if this task instance
-			// has been asked to wait for a subtask to finish before continuing.
-			const provider = this.providerRef.deref()
-
-			if (this.isPaused && provider) {
-				provider.log(`[subtasks] paused ${this.taskId}.${this.instanceId}`)
-				await this.waitForSubtask()
-				provider.log(`[subtasks] resumed ${this.taskId}.${this.instanceId}`)
-
-				// After subtask completes, completeSubtask has pushed content to userMessageContent.
-				// Copy it to currentUserContent so it gets sent to the API in this iteration.
-				if (this.userMessageContent.length > 0) {
-					currentUserContent.push(...this.userMessageContent)
-					this.userMessageContent = []
-				}
-
-				const currentMode = (await provider.getState())?.mode ?? defaultModeSlug
-
-				if (currentMode !== this.pausedModeSlug) {
-					// The mode has changed, we need to switch back to the paused mode.
-					await provider.handleModeSwitch(this.pausedModeSlug)
-
-					// Delay to allow mode change to take effect before next tool is executed.
-					await delay(500)
-
-					provider.log(
-						`[subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
-					)
-				}
-			}
-
 			// Getting verbose details is an expensive operation, it uses ripgrep to
 			// top-down build file structure of project which for large projects can
 			// take a few seconds. For the best UX we show a placeholder api_req_started
@@ -2211,10 +2196,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
 
 			// Only add user message to conversation history if:
-			// 1. This is the first attempt (retryAttempt === 0), OR
-			// 2. The message was removed in a previous iteration (userMessageWasRemoved === true)
+			// 1. This is the first attempt (retryAttempt === 0), AND
+			// 2. The original userContent was not empty (empty signals delegation resume where
+			//    the user message with tool_result and env details is already in history), OR
+			// 3. The message was removed in a previous iteration (userMessageWasRemoved === true)
 			// This prevents consecutive user messages while allowing re-add when needed
-			if ((currentItem.retryAttempt ?? 0) === 0 || currentItem.userMessageWasRemoved) {
+			const isEmptyUserContent = currentUserContent.length === 0
+			const shouldAddUserMessage =
+				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
+			if (shouldAddUserMessage) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
 			}
@@ -2230,7 +2220,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} satisfies ClineApiReqInfo)
 
 			await this.saveClineMessages()
-			await provider?.postStateToWebview()
+			await this.providerRef.deref()?.postStateToWebview()
 
 			try {
 				let cacheWriteTokens = 0
@@ -3528,6 +3518,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
+			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
 			// Include tools and tool protocol when using native protocol and model supports it
 			...(shouldIncludeTools
 				? { tools: allTools, tool_choice: "auto", toolProtocol, parallelToolCalls: parallelToolCallsEnabled }
@@ -3537,6 +3528,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Create an AbortController to allow cancelling the request mid-stream
 		this.currentRequestAbortController = new AbortController()
 		const abortSignal = this.currentRequestAbortController.signal
+		// Reset the flag after using it
+		this.skipPrevResponseIdOnce = false
 
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(

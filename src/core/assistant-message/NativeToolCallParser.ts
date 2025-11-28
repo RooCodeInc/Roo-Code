@@ -635,6 +635,15 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "search_and_replace":
+					if (args.path !== undefined && args.operations !== undefined && Array.isArray(args.operations)) {
+						nativeArgs = {
+							path: args.path,
+							operations: args.operations,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				case "ask_followup_question":
 					if (args.question !== undefined && args.follow_up !== undefined) {
 						nativeArgs = {

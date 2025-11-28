@@ -3,7 +3,7 @@ import * as vscode from "vscode"
 import { TodoItem } from "@roo-code/types"
 
 import { Task } from "../task/Task"
-import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
+import { getModeBySlug } from "../../shared/modes"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import { parseMarkdownChecklist } from "./UpdateTodoListTool"
@@ -123,40 +123,16 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				task.checkpointSave(true)
 			}
 
-			// Preserve the current mode so we can resume with it later.
-			task.pausedModeSlug = (await provider.getState()).mode ?? defaultModeSlug
+			// Delegate parent and open child as sole active task
+			const child = await (provider as any).delegateParentAndOpenChild({
+				parentTaskId: task.taskId,
+				message: unescapedMessage,
+				initialTodos: todoItems,
+				mode,
+			})
 
-			// For native protocol, set the pending tool call ID BEFORE starting the subtask.
-			// This prevents a race condition where the subtask completes (during the delay
-			// in startSubtask) before we set the ID, which would cause completeSubtask to
-			// not push the tool_result, breaking the API conversation structure.
-			if (toolProtocol === "native" && toolCallId) {
-				task.pendingNewTaskToolCallId = toolCallId
-			}
-
-			const newTask = await task.startSubtask(unescapedMessage, todoItems, mode)
-
-			if (!newTask) {
-				// Clear the pending ID since the subtask wasn't created
-				if (toolProtocol === "native" && toolCallId) {
-					task.pendingNewTaskToolCallId = undefined
-				}
-				pushToolResult(t("tools:newTask.errors.policy_restriction"))
-				return
-			}
-
-			// For native protocol with toolCallId, don't push tool_result here.
-			// The actual result (including what the subtask accomplished) will be pushed
-			// by completeSubtask. This gives the parent task useful information about
-			// what the subtask actually did.
-			// The task loop will stay alive because isPaused is true (see Task.ts stack push condition).
-			if (toolProtocol !== "native" || !toolCallId) {
-				// For XML protocol, push the result immediately (existing behavior)
-				pushToolResult(
-					`Successfully created new task in ${targetMode.name} mode with message: ${unescapedMessage} and ${todoItems.length} todo items`,
-				)
-			}
-
+			// Reflect delegation in tool result (no pause/unpause, no wait)
+			pushToolResult(`Delegated to child task ${child.taskId}`)
 			return
 		} catch (error) {
 			await handleError("creating new task", error)
