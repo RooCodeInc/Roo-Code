@@ -87,7 +87,12 @@ function formatLogContent(log: string): React.ReactNode[] {
 			<div
 				key={index}
 				className="hover:bg-white/5"
-				dangerouslySetInnerHTML={{ __html: formattedLine || "&nbsp;" }}
+            <div
+                key={index}
+                className="hover:bg-white/5"
+            >
+                {formattedLine || " "}
+            </div>
 			/>
 		)
 	})
