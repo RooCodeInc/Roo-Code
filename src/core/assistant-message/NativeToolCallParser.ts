@@ -394,16 +394,10 @@ export class NativeToolCallParser {
 				break
 
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content || partialArgs.line_count !== undefined) {
+				if (partialArgs.path || partialArgs.content) {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
-						line_count:
-							typeof partialArgs.line_count === "number"
-								? partialArgs.line_count
-								: partialArgs.line_count
-									? parseInt(String(partialArgs.line_count), 10)
-									: undefined,
 					}
 				}
 				break
@@ -745,14 +739,10 @@ export class NativeToolCallParser {
 					break
 
 				case "write_to_file":
-					if (args.path !== undefined && args.content !== undefined && args.line_count !== undefined) {
+					if (args.path !== undefined && args.content !== undefined) {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
-							line_count:
-								typeof args.line_count === "number"
-									? args.line_count
-									: parseInt(String(args.line_count), 10),
 						} as NativeArgsFor<TName>
 					}
 					break
