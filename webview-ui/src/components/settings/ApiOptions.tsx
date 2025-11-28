@@ -466,6 +466,12 @@ const ApiOptions = ({
 				const [rooOption] = options.splice(rooIndex, 1)
 				options.unshift(rooOption)
 			}
+		} else {
+			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
+			if (openRouterIndex > 0) {
+				const [openRouterOption] = options.splice(openRouterIndex, 1)
+				options.unshift(openRouterOption)
+			}
 		}
 
 		return options
