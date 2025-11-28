@@ -114,7 +114,7 @@ export const processTaskInContainer = async ({
 
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		const containerName = `evals-task-${taskId}.${attempt}`
-		const args = [`--name ${containerName}`, ...baseArgs]
+		const args = [`--name ${containerName}`, `-e EVALS_ATTEMPT=${attempt}`, ...baseArgs]
 		const isRetry = attempt > 0
 
 		if (isRetry) {
@@ -266,7 +266,23 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				(payload[0].message.say && loggableSays.includes(payload[0].message.say)) ||
 				payload[0].message.partial !== true)
 		) {
-			logger.info(`${eventName} ->`, payload)
+			// Extract tool name for tool-related messages for clearer logging
+			let logEventName: string = eventName
+			if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "tool") {
+				try {
+					const textJson = JSON.parse(payload[0].message.text ?? "{}")
+					if (textJson.tool) {
+						logEventName = `${eventName} (tool: ${textJson.tool})`
+					}
+				} catch {
+					// If parsing fails, use the default event name
+				}
+			} else if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "command") {
+				logEventName = `${eventName} (command)`
+			} else if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "completion_result") {
+				logEventName = `${eventName} (completion_result)`
+			}
+			logger.info(`${logEventName} ->`, payload)
 		}
 
 		if (eventName === RooCodeEventName.TaskStarted) {
@@ -420,7 +436,10 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 
 	logger.close()
 
-	if (isApiUnstable) {
+	// Only throw for API instability if the task didn't complete successfully.
+	// If taskFinishedAt is set via TaskCompleted event, the task succeeded despite
+	// API retries, so re-running from scratch would waste resources.
+	if (isApiUnstable && !taskFinishedAt) {
 		throw new Error("API is unstable, throwing to trigger a retry.")
 	}
 }
