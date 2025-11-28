@@ -87,11 +87,13 @@ export const processTask = async ({
 }
 
 export const processTaskInContainer = async ({
+	runId,
 	taskId,
 	jobToken,
 	logger,
 	maxRetries = 10,
 }: {
+	runId: number
 	taskId: number
 	jobToken: string | null
 	logger: Logger
@@ -113,7 +115,7 @@ export const processTaskInContainer = async ({
 	logger.info(command)
 
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
-		const containerName = `evals-task-${taskId}.${attempt}`
+		const containerName = `evals-task-${runId}-${taskId}.${attempt}`
 		const args = [`--name ${containerName}`, `-e EVALS_ATTEMPT=${attempt}`, ...baseArgs]
 		const isRetry = attempt > 0
 

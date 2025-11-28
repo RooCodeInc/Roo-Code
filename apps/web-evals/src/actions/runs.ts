@@ -133,12 +133,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
  *
  * Container naming conventions:
  * - Controller: evals-controller-{runId}
- * - Task runners: evals-task-{taskId}.{attempt}
+ * - Task runners: evals-task-{runId}-{taskId}.{attempt}
  */
 export async function killRun(runId: number): Promise<KillRunResult> {
 	const killedContainers: string[] = []
 	const errors: string[] = []
 	const controllerPattern = `evals-controller-${runId}`
+	const taskPattern = `evals-task-${runId}-`
 
 	try {
 		// Step 1: Kill the controller first
@@ -156,8 +157,8 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		console.log("Waiting 10 seconds before killing runners...")
 		await sleep(10000)
 
-		// Step 3: Find and kill all task runner containers
-		const listCommand = `docker ps --format "{{.Names}}" --filter "name=evals-task-"`
+		// Step 3: Find and kill all task runner containers for THIS run only
+		const listCommand = `docker ps --format "{{.Names}}" --filter "name=${taskPattern}"`
 		let taskContainerNames: string[] = []
 
 		try {
@@ -165,7 +166,7 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 			taskContainerNames = output
 				.split("\n")
 				.map((name) => name.trim())
-				.filter((name) => name.length > 0 && name.startsWith("evals-task-"))
+				.filter((name) => name.length > 0 && name.startsWith(taskPattern))
 		} catch (error) {
 			console.error("Failed to list task containers:", error)
 			errors.push("Failed to list Docker task containers")

@@ -386,16 +386,6 @@ export function Run({ run }: { run: Run }) {
 
 		const passed = tasks.filter((t) => t.passed === true).length
 		const failed = tasks.filter((t) => t.passed === false).length
-		// Count running tasks exactly like TaskStatus shows spinner:
-		// - passed is not true and not false (null/undefined)
-		// - AND has activity (startedAt or tokenUsage)
-		const running = tasks.filter(
-			(t) => t.passed !== true && t.passed !== false && (t.startedAt || tokenUsage.get(t.id)),
-		).length
-		const pending = tasks.filter(
-			(t) => t.passed !== true && t.passed !== false && !t.startedAt && !tokenUsage.get(t.id),
-		).length
-		const total = tasks.length
 		const completed = passed + failed
 
 		let totalTokensIn = 0
@@ -431,9 +421,6 @@ export function Run({ run }: { run: Run }) {
 		return {
 			passed,
 			failed,
-			running,
-			pending,
-			total,
 			completed,
 			passRate: completed > 0 ? ((passed / completed) * 100).toFixed(1) : null,
 			totalTokensIn,

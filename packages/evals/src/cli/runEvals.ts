@@ -43,7 +43,7 @@ export const runEvals = async (runId: number) => {
 	const createTaskRunner = (task: (typeof filteredTasks)[number]) => async () => {
 		try {
 			if (containerized) {
-				await processTaskInContainer({ taskId: task.id, jobToken: run.jobToken, logger })
+				await processTaskInContainer({ runId: run.id, taskId: task.id, jobToken: run.jobToken, logger })
 			} else {
 				await processTask({ taskId: task.id, jobToken: run.jobToken, logger })
 			}
