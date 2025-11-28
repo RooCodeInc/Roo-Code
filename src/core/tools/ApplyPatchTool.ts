@@ -350,6 +350,39 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		if (change.movePath) {
 			const moveAbsolutePath = path.resolve(task.cwd, change.movePath)
 
+			// Validate destination path access permissions
+			const moveAccessAllowed = task.rooIgnoreController?.validateAccess(change.movePath)
+			if (!moveAccessAllowed) {
+				await task.say("rooignore_error", change.movePath)
+				pushToolResult(formatResponse.rooIgnoreError(change.movePath))
+				await task.diffViewProvider.reset()
+				return
+			}
+
+			// Check if destination path is write-protected
+			const isMovePathWriteProtected = task.rooProtectedController?.isWriteProtected(change.movePath) || false
+			if (isMovePathWriteProtected) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_patch")
+				const errorMessage = `Cannot move file to write-protected path: ${change.movePath}`
+				await task.say("error", errorMessage)
+				pushToolResult(formatResponse.toolError(errorMessage))
+				await task.diffViewProvider.reset()
+				return
+			}
+
+			// Check if destination path is outside workspace
+			const isMoveOutsideWorkspace = isPathOutsideWorkspace(moveAbsolutePath)
+			if (isMoveOutsideWorkspace) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("apply_patch")
+				const errorMessage = `Cannot move file to path outside workspace: ${change.movePath}`
+				await task.say("error", errorMessage)
+				pushToolResult(formatResponse.toolError(errorMessage))
+				await task.diffViewProvider.reset()
+				return
+			}
+
 			// Save new content to the new path
 			if (isPreventFocusDisruptionEnabled) {
 				await task.diffViewProvider.saveDirectly(
