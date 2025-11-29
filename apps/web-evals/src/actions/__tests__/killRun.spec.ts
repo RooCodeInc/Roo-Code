@@ -1,10 +1,9 @@
 // npx vitest run src/actions/__tests__/killRun.spec.ts
 
-import { execSync, execFileSync } from "child_process"
+import { execFileSync } from "child_process"
 
 // Mock child_process
 vi.mock("child_process", () => ({
-	execSync: vi.fn(),
 	execFileSync: vi.fn(),
 	spawn: vi.fn(),
 }))
@@ -36,7 +35,6 @@ vi.useFakeTimers()
 // Import after mocks
 import { killRun } from "../runs"
 
-const mockExecSync = execSync as ReturnType<typeof vi.fn>
 const mockExecFileSync = execFileSync as ReturnType<typeof vi.fn>
 
 describe("killRun", () => {
@@ -51,14 +49,12 @@ describe("killRun", () => {
 	it("should kill controller first, wait, then kill task containers", async () => {
 		const runId = 123
 
-		// execFileSync is used for docker kill commands
-		// execSync is used for docker ps
+		// execFileSync is used for all docker commands
 		mockExecFileSync
 			.mockReturnValueOnce("") // docker kill controller
+			.mockReturnValueOnce("evals-task-123-456.0\nevals-task-123-789.1\n") // docker ps
 			.mockReturnValueOnce("") // docker kill evals-task-123-456.0
 			.mockReturnValueOnce("") // docker kill evals-task-123-789.1
-
-		mockExecSync.mockReturnValueOnce("evals-task-123-456.0\nevals-task-123-789.1\n") // docker ps
 
 		const resultPromise = killRun(runId)
 
@@ -80,9 +76,11 @@ describe("killRun", () => {
 			["kill", "evals-controller-123"],
 			expect.any(Object),
 		)
-		// Verify execSync was called for docker ps with run-specific filter
-		expect(mockExecSync).toHaveBeenCalledWith(
-			'docker ps --format "{{.Names}}" --filter "name=evals-task-123-"',
+		// Verify execFileSync was called for docker ps with run-specific filter
+		expect(mockExecFileSync).toHaveBeenNthCalledWith(
+			2,
+			"docker",
+			["ps", "--format", "{{.Names}}", "--filter", "name=evals-task-123-"],
 			expect.any(Object),
 		)
 	})
@@ -94,9 +92,8 @@ describe("killRun", () => {
 			.mockImplementationOnce(() => {
 				throw new Error("No such container")
 			}) // controller kill fails
+			.mockReturnValueOnce("evals-task-456-100.0\n") // docker ps
 			.mockReturnValueOnce("") // docker kill task
-
-		mockExecSync.mockReturnValueOnce("evals-task-456-100.0\n") // docker ps
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
@@ -115,8 +112,9 @@ describe("killRun", () => {
 		const { redisClient } = await import("@/lib/server/redis")
 		vi.mocked(redisClient).mockResolvedValue({ del: mockDel } as never)
 
-		mockExecFileSync.mockReturnValueOnce("") // controller kill
-		mockExecSync.mockReturnValueOnce("") // docker ps (no tasks)
+		mockExecFileSync
+			.mockReturnValueOnce("") // controller kill
+			.mockReturnValueOnce("") // docker ps (no tasks)
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
@@ -129,10 +127,11 @@ describe("killRun", () => {
 	it("should handle docker ps failure gracefully", async () => {
 		const runId = 111
 
-		mockExecFileSync.mockReturnValueOnce("") // controller kill succeeds
-		mockExecSync.mockImplementationOnce(() => {
-			throw new Error("Docker error")
-		}) // docker ps fails
+		mockExecFileSync
+			.mockReturnValueOnce("") // controller kill succeeds
+			.mockImplementationOnce(() => {
+				throw new Error("Docker error")
+			}) // docker ps fails
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
@@ -149,12 +148,11 @@ describe("killRun", () => {
 
 		mockExecFileSync
 			.mockReturnValueOnce("") // controller kill
+			.mockReturnValueOnce("evals-task-222-300.0\nevals-task-222-400.0\n") // docker ps
 			.mockImplementationOnce(() => {
 				throw new Error("Kill failed")
 			}) // first task kill fails
 			.mockReturnValueOnce("") // second task kill succeeds
-
-		mockExecSync.mockReturnValueOnce("evals-task-222-300.0\nevals-task-222-400.0\n") // docker ps
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
@@ -170,10 +168,11 @@ describe("killRun", () => {
 	it("should return success with no containers when nothing is running", async () => {
 		const runId = 333
 
-		mockExecFileSync.mockImplementationOnce(() => {
-			throw new Error("No such container")
-		}) // controller not running
-		mockExecSync.mockReturnValueOnce("") // no task containers
+		mockExecFileSync
+			.mockImplementationOnce(() => {
+				throw new Error("No such container")
+			}) // controller not running
+			.mockReturnValueOnce("") // no task containers
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
@@ -189,19 +188,19 @@ describe("killRun", () => {
 
 		mockExecFileSync
 			.mockReturnValueOnce("") // controller kill
+			.mockReturnValueOnce("evals-task-555-100.0\n") // docker ps
 			.mockReturnValueOnce("") // docker kill task
-
-		// Only containers matching runId 555 should be returned by the filter
-		mockExecSync.mockReturnValueOnce("evals-task-555-100.0\n")
 
 		const resultPromise = killRun(runId)
 		await vi.advanceTimersByTimeAsync(10000)
 		const result = await resultPromise
 
 		expect(result.success).toBe(true)
-		// Verify the filter includes the runId
-		expect(mockExecSync).toHaveBeenCalledWith(
-			'docker ps --format "{{.Names}}" --filter "name=evals-task-555-"',
+		// Verify execFileSync was called for docker ps with run-specific filter
+		expect(mockExecFileSync).toHaveBeenNthCalledWith(
+			2,
+			"docker",
+			["ps", "--format", "{{.Names}}", "--filter", "name=evals-task-555-"],
 			expect.any(Object),
 		)
 	})

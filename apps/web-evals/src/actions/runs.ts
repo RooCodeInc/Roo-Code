@@ -3,7 +3,7 @@
 import * as path from "path"
 import fs from "fs"
 import { fileURLToPath } from "url"
-import { spawn, execSync, execFileSync } from "child_process"
+import { spawn, execFileSync } from "child_process"
 
 import { revalidatePath } from "next/cache"
 import pMap from "p-map"
@@ -161,11 +161,10 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		let taskContainerNames: string[] = []
 
 		try {
-			const output = execFileSync(
-				"docker",
-				["ps", "--format", "{{.Names}}", "--filter", `name=${taskPattern}`],
-				{ encoding: "utf-8", timeout: 10000 }
-			)
+			const output = execFileSync("docker", ["ps", "--format", "{{.Names}}", "--filter", `name=${taskPattern}`], {
+				encoding: "utf-8",
+				timeout: 10000,
+			})
 			taskContainerNames = output
 				.split("\n")
 				.map((name) => name.trim())
