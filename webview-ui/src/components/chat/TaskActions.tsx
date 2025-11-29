@@ -5,12 +5,12 @@ import type { HistoryItem } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useCopyToClipboard } from "@/utils/clipboard"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { ShareButton } from "./ShareButton"
 // import { CloudTaskButton } from "./CloudTaskButton"
-// import { CloudTaskButton } from "./CloudTaskButton"
-import { CopyIcon, DownloadIcon, Trash2Icon } from "lucide-react"
+import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -22,6 +22,7 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
 	const { t } = useTranslation()
 	const { copyWithFeedback } = useCopyToClipboard()
+	const { debug } = useExtensionState()
 
 	return (
 		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
@@ -68,6 +69,20 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 			{/* <CloudTaskButton item={item} disabled={buttonsDisabled} /> */}
 			{/* <ShareButton item={item} disabled={false} />
 			<CloudTaskButton item={item} disabled={buttonsDisabled} /> */}
+			{debug && item?.id && (
+				<>
+					<LucideIconButton
+						icon={FileJsonIcon}
+						title={t("chat:task.openApiHistory")}
+						onClick={() => vscode.postMessage({ type: "openDebugApiHistory" })}
+					/>
+					<LucideIconButton
+						icon={MessageSquareCodeIcon}
+						title={t("chat:task.openUiHistory")}
+						onClick={() => vscode.postMessage({ type: "openDebugUiHistory" })}
+					/>
+				</>
+			)}
 		</div>
 	)
 }

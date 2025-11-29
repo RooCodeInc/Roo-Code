@@ -9,6 +9,7 @@ import delay from "delay"
 import type { ExperimentId } from "@roo-code/types"
 import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT, MAX_WORKSPACE_FILES } from "@roo-code/types"
 
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
@@ -278,11 +279,15 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			details += `\n\n## Shell Support Syntax\n${formatUnsupport(features)}`
 		}
 	}
+	// Resolve and add tool protocol information
+	const modelInfo = cline.api.getModel().info
+	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo)
 
 	details += `\n\n# Current Mode\n`
 	details += `<slug>${currentMode}</slug>\n`
 	details += `<name>${modeDetails.name}</name>\n`
 	details += `<model>${modelId}</model>\n`
+	details += `<tool_format>${toolProtocol}</tool_format>\n`
 
 	if (Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.POWER_STEERING)) {
 		details += `<role>${modeDetails.roleDefinition}</role>\n`
@@ -324,7 +329,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ??
 		apiConfiguration?.apiProvider === "zgsm"
 	if (includeFileDetails || alwaysIncludeFileDetails) {
-		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files${alwaysIncludeFileDetails ? "" : " (Directory Tree KPT Format: Use 1 to represent files and objects to represent directories)"}\n`
+		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files${alwaysIncludeFileDetails ? " (Directory Tree KPT Format: Use 1 to represent files and objects to represent directories)" : ""}\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
 
 		if (isDesktop) {

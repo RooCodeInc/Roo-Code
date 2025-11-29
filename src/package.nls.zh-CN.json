@@ -78,5 +78,6 @@
 	"settings.commit.maxLength.description": "提交信息主题行的最大长度（20-300个字符）",
 	"settings.commit.language.description": "提交信息生成语言（auto = 使用系统语言）",
 	"settings.toolProtocol.description": "用于 AI 交互的工具协议。XML 是默认且推荐的协议。本机是实验性的，可能不适用于所有提供商。",
-	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
+	"settings.debug.description": "启用调试模式以显示额外按钮，用于在临时文件中以格式化 JSON 查看 API 对话历史和 UI 消息。"
 }

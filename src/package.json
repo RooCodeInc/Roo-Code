@@ -793,6 +793,11 @@
 					],
 					"default": "auto",
 					"description": "%settings.commit.language.description%"
+				},
+				"zgsm.debug": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.debug.description%"
 				}
 			}
 		}

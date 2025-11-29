@@ -349,10 +349,10 @@ export function pathsToTree(paths: string[]) {
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i]
 
-			if (i === parts.length - 1) {
+			if (i === parts.length - 1 && part) {
 				// 文件
 				node[part] = 1
-			} else {
+			} else if (part) {
 				// 目录
 				node = node[part] ??= {}
 			}
