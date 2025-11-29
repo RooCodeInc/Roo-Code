@@ -436,6 +436,12 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"roo-cline.accentColor": {
+					"type": "string",
+					"default": "",
+					"pattern": "^(#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})|rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)|rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\s*\\)|hsl\\(\\s*\\d+\\s*,\\s*\\d+%\\s*,\\s*\\d+%\\s*\\)|hsla\\(\\s*\\d+\\s*,\\s*\\d+%\\s*,\\s*\\d+%\\s*,\\s*[0-9.]+\\s*\\))?$",
+					"description": "%settings.accentColor.description%"
 				}
 			}
 		}
