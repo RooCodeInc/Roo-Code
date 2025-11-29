@@ -158,11 +158,14 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		await sleep(10000)
 
 		// Step 3: Find and kill all task runner containers for THIS run only
-		const listCommand = `docker ps --format "{{.Names}}" --filter "name=${taskPattern}"`
 		let taskContainerNames: string[] = []
 
 		try {
-			const output = execSync(listCommand, { encoding: "utf-8", timeout: 10000 })
+			const output = execFileSync(
+				"docker",
+				["ps", "--format", "{{.Names}}", "--filter", `name=${taskPattern}`],
+				{ encoding: "utf-8", timeout: 10000 }
+			)
 			taskContainerNames = output
 				.split("\n")
 				.map((name) => name.trim())
