@@ -495,8 +495,8 @@ export function NewRun() {
 													<Checkbox
 														id="native-other"
 														checked={useNativeToolProtocol}
-														onCheckedChange={(checked) =>
-															setUseNativeToolProtocol(checked === true)
+														onCheckedChange={(checked: boolean) =>
+															setUseNativeToolProtocol(checked)
 														}
 													/>
 													<span className="text-sm">Use Native Tool Calls</span>
@@ -507,8 +507,8 @@ export function NewRun() {
 													<Checkbox
 														id="multipleNativeToolCalls-other"
 														checked={useMultipleNativeToolCalls}
-														onCheckedChange={(checked) =>
-															setUseMultipleNativeToolCalls(checked === true)
+														onCheckedChange={(checked: boolean) =>
+															setUseMultipleNativeToolCalls(checked)
 														}
 													/>
 													<span className="text-sm">Use Multiple Native Tool Calls</span>
@@ -578,8 +578,8 @@ export function NewRun() {
 														<Checkbox
 															id="native"
 															checked={useNativeToolProtocol}
-															onCheckedChange={(checked) =>
-																setUseNativeToolProtocol(checked === true)
+															onCheckedChange={(checked: boolean) =>
+																setUseNativeToolProtocol(checked)
 															}
 														/>
 														<span className="text-sm">Use Native Tool Calls</span>
@@ -590,8 +590,8 @@ export function NewRun() {
 														<Checkbox
 															id="multipleNativeToolCalls"
 															checked={useMultipleNativeToolCalls}
-															onCheckedChange={(checked) =>
-																setUseMultipleNativeToolCalls(checked === true)
+															onCheckedChange={(checked: boolean) =>
+																setUseMultipleNativeToolCalls(checked)
 															}
 														/>
 														<span className="text-sm">Use Multiple Native Tool Calls</span>
