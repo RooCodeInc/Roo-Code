@@ -456,7 +456,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 								if (!firstTaskFound) {
 									actions.push("run_all")
 									// Add "run test" option
-									actions.push("run_test")
+									// actions.push("run_test")
 									firstTaskFound = true
 								}
 							} else if (status === "-") {
@@ -468,7 +468,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 								if (!firstTaskFound) {
 									actions.push("run_all")
 									// Add "run test" option
-									actions.push("run_test")
+									// actions.push("run_test")
 									firstTaskFound = true
 								}
 							} else if (status === "x") {
@@ -479,7 +479,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 								if (!firstTaskFound) {
 									actions.push("run_all")
 									// Add "run test" option
-									actions.push("run_test")
+									// actions.push("run_test")
 									firstTaskFound = true
 								}
 							} else {
@@ -499,7 +499,7 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 								if (!firstTaskFound) {
 									actions.push("run_all")
 									// Add "run test" option
-									actions.push("run_test")
+									// actions.push("run_test")
 									firstTaskFound = true
 								}
 							}
@@ -582,8 +582,8 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 				return getCommand("coworkflow.runTask")
 			case "run_all":
 				return getCommand("coworkflow.runAllTasks")
-			case "run_test":
-				return getCommand("coworkflow.runTest")
+			// case "run_test":
+			// 	return getCommand("coworkflow.runTest")
 			case "retry":
 				return getCommand("coworkflow.retryTask")
 			case "loading":
@@ -606,8 +606,8 @@ export class CoworkflowCodeLensProvider implements ICoworkflowCodeLensProvider {
 				return "$(play) " + t("workflow:actions.run")
 			case "run_all":
 				return "$(play-circle) " + t("workflow:actions.runAll")
-			case "run_test":
-				return "$(beaker) " + t("workflow:actions.generateTest")
+			// case "run_test":
+			// 	return "$(beaker) " + t("workflow:actions.generateTest")
 			case "retry":
 				return "$(refresh) " + t("workflow:actions.retry")
 			case "loading":

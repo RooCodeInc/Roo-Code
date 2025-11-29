@@ -111,8 +111,8 @@ export function registerCoworkflowCommands(context: vscode.ExtensionContext): vs
 			),
 		)
 
-		// 6.Register run test command
-		disposables.push(vscode.commands.registerCommand(getCommand(COWORKFLOW_COMMANDS.RUN_TEST), handleRunTest))
+		// // 6.Register run test command
+		// disposables.push(vscode.commands.registerCommand(getCommand(COWORKFLOW_COMMANDS.RUN_TEST), handleRunTest))
 	} catch (error) {
 		const coworkflowError = errorHandler.createError(
 			"command_error",
