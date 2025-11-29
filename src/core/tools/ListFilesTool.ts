@@ -8,6 +8,8 @@ import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
+import { MAX_WORKSPACE_FILES } from "@roo-code/types"
 
 interface ListFilesParams {
 	path: string
@@ -45,8 +47,17 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 			const absolutePath = path.resolve(task.cwd, relDirPath)
 			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
-			const [files, didHitLimit] = await listFiles(absolutePath, recursive || false, 200)
-			const { showRooIgnoredFiles = false } = (await task.providerRef.deref()?.getState()) ?? {}
+			const {
+				showRooIgnoredFiles = false,
+				experiments,
+				maxWorkspaceFiles = MAX_WORKSPACE_FILES,
+			} = (await task.providerRef.deref()?.getState()) ?? {}
+			const [files, didHitLimit] = await listFiles(
+				absolutePath,
+				recursive || false,
+				(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 4 : 1) *
+					maxWorkspaceFiles,
+			)
 
 			const result = formatResponse.formatFilesList(
 				absolutePath,
@@ -55,6 +66,7 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 				task.rooIgnoreController,
 				showRooIgnoredFiles,
 				task.rooProtectedController,
+				experiments,
 			)
 
 			const sharedMessageProps: ClineSayTool = {

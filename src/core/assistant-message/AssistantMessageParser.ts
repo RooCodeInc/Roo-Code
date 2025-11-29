@@ -99,14 +99,14 @@ export class AssistantMessageParser {
 				const toolUseClosingTag = `</${this.currentToolUse.name}>`
 				if (currentToolValue.endsWith(toolUseClosingTag)) {
 					// End of a tool use.
-
-					// Special handling for attempt_completion tool without result tag
-					if (this.currentToolUse.name === "attempt_completion") {
+					this.currentToolUse.partial = false
+					if (
+						this.currentToolUse.name === "attempt_completion" &&
+						!this.currentToolUse?.params?.result &&
+						currentToolValue.trim()
+					) {
 						this.currentToolUse.params.result = currentToolValueExtract(currentToolValue.trim())
 					}
-
-					this.currentToolUse.partial = false
-
 					this.currentToolUse = undefined
 					continue
 				} else {

@@ -172,6 +172,8 @@ describe("getEnvironmentDetails", () => {
 			false,
 			mockCline.rooIgnoreController,
 			false,
+			undefined,
+			{},
 		)
 	})
 

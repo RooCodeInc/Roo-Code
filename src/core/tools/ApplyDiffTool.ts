@@ -261,6 +261,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			}
 			captureCodeAccept(fileLanguage, changedLines)
 			const codeReviewService = CodeReviewService.getInstance()
+			// todo: this should be moved to a more appropriate place
 			codeReviewService.checkAndAcceptIssueByTaskId(task.taskId)
 
 			// Used to determine if we should wait for busy terminal to update before sending api request

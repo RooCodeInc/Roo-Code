@@ -6,7 +6,7 @@ export const renderModes = {
 		interval: 16,
 	},
 	fast: {
-		limit: 2,
+		limit: 1,
 		interval: 50,
 	},
 	medium: {

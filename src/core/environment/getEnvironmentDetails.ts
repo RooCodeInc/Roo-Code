@@ -320,13 +320,11 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 		details += `\n# Browser Session Status\nActive - A browser session is currently open and ready for browser_action commands${viewportInfo}\n`
 	}
-
-	if (
-		includeFileDetails ||
-		(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ??
-			apiConfiguration?.apiProvider === "zgsm")
-	) {
-		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files\n`
+	const alwaysIncludeFileDetails =
+		Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ??
+		apiConfiguration?.apiProvider === "zgsm"
+	if (includeFileDetails || alwaysIncludeFileDetails) {
+		details += `\n\n# Current Workspace Directory (${cline.cwd.toPosix()}) Files${alwaysIncludeFileDetails ? "" : " (Directory Tree KPT Format: Use 1 to represent files and objects to represent directories)"}\n`
 		const isDesktop = arePathsEqual(cline.cwd, path.join(os.homedir(), "Desktop"))
 
 		if (isDesktop) {
@@ -340,7 +338,12 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			if (maxFiles === 0) {
 				details += "(Workspace files context disabled. Use list_files to explore if needed.)"
 			} else {
-				const [files, didHitLimit] = await listFiles(cline.cwd, true, maxFiles)
+				const [files, didHitLimit] = await listFiles(
+					cline.cwd,
+					true,
+					(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 4 : 1) *
+						maxFiles,
+				)
 				const { showRooIgnoredFiles = false } = state ?? {}
 
 				const result = formatResponse.formatFilesList(
@@ -349,6 +352,8 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 					didHitLimit,
 					cline.rooIgnoreController,
 					showRooIgnoredFiles,
+					undefined,
+					experiments,
 				)
 
 				details += result

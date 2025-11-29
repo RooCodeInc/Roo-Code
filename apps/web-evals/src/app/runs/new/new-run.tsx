@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal } from "lucide-react"
+import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, Info } from "lucide-react"
 
 import {
 	globalSettingsSchema,
@@ -16,6 +16,7 @@ import {
 	getModelId,
 	type ProviderSettings,
 	type GlobalSettings,
+	type ReasoningEffort,
 } from "@roo-code/types"
 
 import { createRun } from "@/actions/runs"
@@ -30,6 +31,9 @@ import {
 	TIMEOUT_MIN,
 	TIMEOUT_MAX,
 	TIMEOUT_DEFAULT,
+	ITERATIONS_MIN,
+	ITERATIONS_MAX,
+	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +44,7 @@ import {
 	Button,
 	Checkbox,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -61,7 +66,14 @@ import {
 	PopoverTrigger,
 	Slider,
 	Label,
-	FormDescription,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from "@/components/ui"
 
 import { SettingsDiff } from "./settings-diff"
@@ -78,6 +90,8 @@ export function NewRun() {
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
+	const [useMultipleNativeToolCalls, setUseMultipleNativeToolCalls] = useState(true)
+	const [reasoningEffort, setReasoningEffort] = useState<ReasoningEffort | "">("")
 
 	// State for imported settings with config selection
 	const [importedSettings, setImportedSettings] = useState<ImportedSettings | null>(null)
@@ -106,6 +120,7 @@ export function NewRun() {
 			settings: undefined,
 			concurrency: CONCURRENCY_DEFAULT,
 			timeout: TIMEOUT_DEFAULT,
+			iterations: ITERATIONS_DEFAULT,
 			jobToken: "",
 		},
 	})
@@ -204,12 +219,24 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
+				// Validate jobToken for Roo Code Cloud provider
+				if (provider === "roo" && !values.jobToken?.trim()) {
+					toast.error("Roo Code Cloud Token is required")
+					return
+				}
+
+				// Build experiments settings
+				const experimentsSettings = useMultipleNativeToolCalls
+					? { experiments: { multipleNativeToolCalls: true } }
+					: {}
+
 				if (provider === "openrouter") {
 					values.settings = {
 						...(values.settings || {}),
 						apiProvider: "openrouter",
 						openRouterModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						...experimentsSettings,
 					}
 				} else if (provider === "roo") {
 					values.settings = {
@@ -217,6 +244,20 @@ export function NewRun() {
 						apiProvider: "roo",
 						apiModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						...experimentsSettings,
+						...(reasoningEffort
+							? {
+									enableReasoningEffort: true,
+									reasoningEffort: reasoningEffort as ReasoningEffort,
+								}
+							: {}),
+					}
+				} else if (provider === "other" && values.settings) {
+					// For imported settings, merge in experiments and tool protocol
+					values.settings = {
+						...values.settings,
+						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						...experimentsSettings,
 					}
 				}
 
@@ -226,7 +267,7 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[provider, model, router, useNativeToolProtocol],
+		[provider, model, router, useNativeToolProtocol, useMultipleNativeToolCalls, reasoningEffort],
 	)
 
 	const onSelectModel = useCallback(
@@ -394,6 +435,38 @@ export function NewRun() {
 											</div>
 										)}
 
+										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-3">
+											<Label className="text-sm font-medium text-muted-foreground">
+												Tool Protocol Options
+											</Label>
+											<div className="flex flex-col gap-2.5 pl-1">
+												<label
+													htmlFor="native-other"
+													className="flex items-center gap-2 cursor-pointer">
+													<Checkbox
+														id="native-other"
+														checked={useNativeToolProtocol}
+														onCheckedChange={(checked) =>
+															setUseNativeToolProtocol(checked === true)
+														}
+													/>
+													<span className="text-sm">Use Native Tool Calls</span>
+												</label>
+												<label
+													htmlFor="multipleNativeToolCalls-other"
+													className="flex items-center gap-2 cursor-pointer">
+													<Checkbox
+														id="multipleNativeToolCalls-other"
+														checked={useMultipleNativeToolCalls}
+														onCheckedChange={(checked) =>
+															setUseMultipleNativeToolCalls(checked === true)
+														}
+													/>
+													<span className="text-sm">Use Multiple Native Tool Calls</span>
+												</label>
+											</div>
+										</div>
+
 										{settings && (
 											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
 										)}
@@ -444,15 +517,66 @@ export function NewRun() {
 											</PopoverContent>
 										</Popover>
 
-										<div className="flex items-center gap-1.5">
-											<Checkbox
-												id="native"
-												checked={useNativeToolProtocol}
-												onCheckedChange={(checked) =>
-													setUseNativeToolProtocol(checked === true)
-												}
-											/>
-											<Label htmlFor="native">Use Native Tool Calls</Label>
+										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-4">
+											<div className="space-y-3">
+												<Label className="text-sm font-medium text-muted-foreground">
+													Tool Protocol Options
+												</Label>
+												<div className="flex flex-col gap-2.5 pl-1">
+													<label
+														htmlFor="native"
+														className="flex items-center gap-2 cursor-pointer">
+														<Checkbox
+															id="native"
+															checked={useNativeToolProtocol}
+															onCheckedChange={(checked) =>
+																setUseNativeToolProtocol(checked === true)
+															}
+														/>
+														<span className="text-sm">Use Native Tool Calls</span>
+													</label>
+													<label
+														htmlFor="multipleNativeToolCalls"
+														className="flex items-center gap-2 cursor-pointer">
+														<Checkbox
+															id="multipleNativeToolCalls"
+															checked={useMultipleNativeToolCalls}
+															onCheckedChange={(checked) =>
+																setUseMultipleNativeToolCalls(checked === true)
+															}
+														/>
+														<span className="text-sm">Use Multiple Native Tool Calls</span>
+													</label>
+												</div>
+											</div>
+
+											{provider === "roo" && (
+												<div className="space-y-2 pt-2 border-t border-border">
+													<Label className="text-sm font-medium text-muted-foreground">
+														Reasoning Effort
+													</Label>
+													<Select
+														value={reasoningEffort || "none"}
+														onValueChange={(value) =>
+															setReasoningEffort(
+																value === "none" ? "" : (value as ReasoningEffort),
+															)
+														}>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="None (default)" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">None (default)</SelectItem>
+															<SelectItem value="low">Low</SelectItem>
+															<SelectItem value="medium">Medium</SelectItem>
+															<SelectItem value="high">High</SelectItem>
+														</SelectContent>
+													</Select>
+													<p className="text-xs text-muted-foreground pl-1">
+														When set, enableReasoningEffort will be automatically enabled
+													</p>
+												</div>
+											)}
 										</div>
 									</>
 								)}
@@ -468,20 +592,28 @@ export function NewRun() {
 							name="jobToken"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Roo Code Cloud Token</FormLabel>
+									<div className="flex items-center gap-1">
+										<FormLabel>Roo Code Cloud Token</FormLabel>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Info className="size-4 text-muted-foreground cursor-help" />
+											</TooltipTrigger>
+											<TooltipContent side="right" className="max-w-xs">
+												<p>
+													If you have access to the Roo Code Cloud repository, generate a
+													token with:
+												</p>
+												<code className="text-xs block mt-1">
+													pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
+													[timeout]
+												</code>
+											</TooltipContent>
+										</Tooltip>
+									</div>
 									<FormControl>
-										<Input type="password" {...field} />
+										<Input type="password" placeholder="Required" {...field} />
 									</FormControl>
 									<FormMessage />
-									<FormDescription>
-										If you have access to the Roo Code Cloud repository then you can generate a
-										token with:
-										<br />
-										<code className="text-xs">
-											pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
-											[timeout]
-										</code>
-									</FormDescription>
 								</FormItem>
 							)}
 						/>
@@ -595,6 +727,32 @@ export function NewRun() {
 										<div>{field.value}</div>
 									</div>
 								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormField
+						control={form.control}
+						name="iterations"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Iterations per Exercise</FormLabel>
+								<FormControl>
+									<div className="flex flex-row items-center gap-2">
+										<Slider
+											value={[field.value]}
+											min={ITERATIONS_MIN}
+											max={ITERATIONS_MAX}
+											step={1}
+											onValueChange={(value) => {
+												field.onChange(value[0])
+											}}
+										/>
+										<div>{field.value}</div>
+									</div>
+								</FormControl>
+								<FormDescription>Run each exercise multiple times to compare results</FormDescription>
 								<FormMessage />
 							</FormItem>
 						)}

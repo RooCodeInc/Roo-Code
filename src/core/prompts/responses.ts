@@ -5,6 +5,7 @@ import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreContro
 import { RooProtectedController } from "../protect/RooProtectedController"
 import * as vscode from "vscode"
 import { ToolProtocol, isNativeProtocol, TOOL_PROTOCOL } from "@roo-code/types"
+import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 
 export const formatResponse = {
 	toolDenied: (protocol?: ToolProtocol) => {
@@ -203,6 +204,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 		rooIgnoreController: RooIgnoreController | undefined,
 		showRooIgnoredFiles: boolean,
 		rooProtectedController?: RooProtectedController,
+		experiments?: any,
 	): string => {
 		const sorted = files
 			.map((file) => {
@@ -261,14 +263,16 @@ Otherwise, if you have not completed the task and do not need additional informa
 				}
 			}
 		}
+		const _filesInfo = Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS)
+			? `${pathsToTree(rooIgnoreParsed)}\n`
+			: rooIgnoreParsed.join("\n")
+		// pathsToTree
 		if (didHitLimit) {
-			return `${rooIgnoreParsed.join(
-				"\n",
-			)}\n\n(File list truncated. Use list_files on specific subdirectories if you need to explore further.)`
+			return `${_filesInfo}\n\n(File list truncated. Use list_files on specific subdirectories if you need to explore further.)`
 		} else if (rooIgnoreParsed.length === 0 || (rooIgnoreParsed.length === 1 && rooIgnoreParsed[0] === "")) {
 			return "No files found."
 		} else {
-			return rooIgnoreParsed.join("\n")
+			return _filesInfo
 		}
 	},
 
@@ -333,4 +337,27 @@ Always ensure you provide all required parameters for the tool you wish to use.`
 function getToolInstructionsReminder(protocol?: ToolProtocol): string {
 	const effectiveProtocol = protocol ?? TOOL_PROTOCOL.XML
 	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+}
+
+export function pathsToTree(paths: string[]) {
+	const root: any = {}
+
+	for (const p of paths) {
+		const parts = p.split("/")
+		let node = root
+
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i]
+
+			if (i === parts.length - 1) {
+				// 文件
+				node[part] = 1
+			} else {
+				// 目录
+				node = node[part] ??= {}
+			}
+		}
+	}
+
+	return JSON.stringify(root)
 }
