@@ -1100,9 +1100,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (msg.say === "error") return false
 
 			return (
-				!isBrowserSessionMessage(msg) ||
-				!msg?.metadata?.isRateLimitRetry || // Hide rate limit retries
-				!["condense_context_error", "shell_integration_warning"].includes(msg.say!) || // Hide shell integration warning
+				!isBrowserSessionMessage(msg) &&
+				!msg?.metadata?.isRateLimitRetry && // Hide rate limit retries
+				!["condense_context_error", "shell_integration_warning"].includes(msg.say!) && // Hide shell integration warning
 				!(msg.type === "say" && msg.say === "reasoning" && !msg.text?.trim())
 			) // Hide empty reasoning messages
 		})
