@@ -9,7 +9,13 @@ import { BaseProvider } from "../../../api/providers/base-provider"
 import { ApiMessage } from "../../task-persistence/apiMessages"
 import * as condenseModule from "../../condense"
 
-import { TOKEN_BUFFER_PERCENTAGE, estimateTokenCount, truncateConversation, manageContext } from "../index"
+import {
+	TOKEN_BUFFER_PERCENTAGE,
+	estimateTokenCount,
+	truncateConversation,
+	manageContext,
+	removeOrphanedToolBlocks,
+} from "../index"
 
 // Create a mock ApiHandler for testing
 class MockApiHandler extends BaseProvider {
@@ -138,7 +144,7 @@ describe("Context Management", () => {
 			expect(result[1]).toEqual(messages[3])
 		})
 
-		it("should preserve tool_use/tool_result pairs when useNativeTools is true", () => {
+		it("should remove orphaned tool_use and tool_result blocks when useNativeTools is true", () => {
 			const toolUseBlock = {
 				type: "tool_use" as const,
 				id: "toolu_123",
@@ -167,31 +173,40 @@ describe("Context Management", () => {
 				{ role: "user", content: "Thanks" },
 			]
 
-			// Without useNativeTools, truncation would break the tool_use/tool_result pair
-			// 6 messages excluding first, 0.5 fraction = 3 messages to remove
-			// 3 is odd, so it rounds down to 2 to make it even
-			// This would leave messages starting from index 3 (the assistant with tool_use)
-			const resultWithoutNative = truncateConversation(messages, 0.5, taskId, false)
-			expect(resultWithoutNative.length).toBe(5) // First + 4 remaining
+			// With useNativeTools, orphaned tool blocks are removed
+			const result = truncateConversation(messages, 0.5, taskId, true)
 
-			// With useNativeTools, the truncation should be adjusted to preserve the pair
-			// Since the first remaining message after truncation would be the user message with tool_result,
-			// we need to also keep the preceding assistant message with tool_use
-			const resultWithNative = truncateConversation(messages, 0.5, taskId, true)
+			// Verify that all tool_use blocks have corresponding tool_result blocks
+			const toolUseIds = new Set<string>()
+			const toolResultIds = new Set<string>()
 
-			// The result should include the tool_use message to maintain pairing
-			expect(resultWithNative.length).toBe(5) // First + 4 remaining (same in this case)
-			// Verify the tool_use block is preserved
-			const assistantWithToolUse = resultWithNative.find(
-				(msg) =>
-					msg.role === "assistant" &&
-					Array.isArray(msg.content) &&
-					msg.content.some((block) => block.type === "tool_use"),
-			)
-			expect(assistantWithToolUse).toBeDefined()
+			for (const msg of result) {
+				if (msg.role === "assistant" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_use") {
+							toolUseIds.add(block.id)
+						}
+					}
+				} else if (msg.role === "user" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_result") {
+							toolResultIds.add(block.tool_use_id)
+						}
+					}
+				}
+			}
+
+			// Every tool_use should have a corresponding tool_result
+			for (const id of toolUseIds) {
+				expect(toolResultIds.has(id)).toBe(true)
+			}
+			// Every tool_result should have a corresponding tool_use
+			for (const id of toolResultIds) {
+				expect(toolUseIds.has(id)).toBe(true)
+			}
 		})
 
-		it("should preserve multiple tool_use/tool_result pairs with parallel tool calls", () => {
+		it("should handle multiple tool_use/tool_result pairs correctly", () => {
 			const toolUseBlock1 = {
 				type: "tool_use" as const,
 				id: "toolu_123",
@@ -219,39 +234,55 @@ describe("Context Management", () => {
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "Second message" },
 				{ role: "user", content: "Third message" },
-				{ role: "assistant", content: "Fourth message" },
-				{ role: "user", content: "Fifth message" },
 				{
 					role: "assistant",
-					content: [{ type: "text" as const, text: "Reading files..." }, toolUseBlock1, toolUseBlock2],
+					content: [{ type: "text" as const, text: "Reading file 1..." }, toolUseBlock1],
 				},
 				{
 					role: "user",
-					content: [toolResultBlock1, toolResultBlock2],
+					content: [toolResultBlock1],
+				},
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading file 2..." }, toolUseBlock2],
+				},
+				{
+					role: "user",
+					content: [toolResultBlock2],
 				},
 				{ role: "assistant", content: "Got both files" },
 				{ role: "user", content: "Thanks" },
 			]
 
-			// With useNativeTools, truncation should preserve the tool_use/tool_result pair
 			const result = truncateConversation(messages, 0.5, taskId, true)
 
-			// Verify that if tool_result blocks are in the result, their corresponding tool_use blocks are also present
-			const hasToolResult = result.some(
-				(msg) =>
-					msg.role === "user" &&
-					Array.isArray(msg.content) &&
-					msg.content.some((block) => block.type === "tool_result"),
-			)
+			// Verify that all tool_use blocks have corresponding tool_result blocks
+			const toolUseIds = new Set<string>()
+			const toolResultIds = new Set<string>()
 
-			if (hasToolResult) {
-				const hasToolUse = result.some(
-					(msg) =>
-						msg.role === "assistant" &&
-						Array.isArray(msg.content) &&
-						msg.content.some((block) => block.type === "tool_use"),
-				)
-				expect(hasToolUse).toBe(true)
+			for (const msg of result) {
+				if (msg.role === "assistant" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_use") {
+							toolUseIds.add(block.id)
+						}
+					}
+				} else if (msg.role === "user" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_result") {
+							toolResultIds.add(block.tool_use_id)
+						}
+					}
+				}
+			}
+
+			// Every tool_use should have a corresponding tool_result
+			for (const id of toolUseIds) {
+				expect(toolResultIds.has(id)).toBe(true)
+			}
+			// Every tool_result should have a corresponding tool_use
+			for (const id of toolResultIds) {
+				expect(toolUseIds.has(id)).toBe(true)
 			}
 		})
 
@@ -269,6 +300,151 @@ describe("Context Management", () => {
 			const resultWithNative = truncateConversation(messages, 0.5, taskId, true)
 
 			expect(resultWithNative).toEqual(resultWithoutNative)
+		})
+	})
+
+	/**
+	 * Tests for the removeOrphanedToolBlocks function
+	 */
+	describe("removeOrphanedToolBlocks", () => {
+		it("should remove orphaned tool_use blocks", () => {
+			const toolUseBlock = {
+				type: "tool_use" as const,
+				id: "toolu_123",
+				name: "read_file",
+				input: { path: "test.txt" },
+			}
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
+				},
+				// Missing tool_result for toolu_123
+				{ role: "user", content: "Continue" },
+			]
+
+			const result = removeOrphanedToolBlocks(messages)
+
+			// The tool_use block should be removed
+			const hasToolUse = result.some(
+				(msg) =>
+					msg.role === "assistant" &&
+					Array.isArray(msg.content) &&
+					msg.content.some((block) => block.type === "tool_use"),
+			)
+			expect(hasToolUse).toBe(false)
+		})
+
+		it("should remove orphaned tool_result blocks", () => {
+			const toolResultBlock = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_123",
+				content: "file contents",
+			}
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there" },
+				// Missing tool_use for toolu_123
+				{
+					role: "user",
+					content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
+				},
+			]
+
+			const result = removeOrphanedToolBlocks(messages)
+
+			// The tool_result block should be removed
+			const hasToolResult = result.some(
+				(msg) =>
+					msg.role === "user" &&
+					Array.isArray(msg.content) &&
+					msg.content.some((block) => block.type === "tool_result"),
+			)
+			expect(hasToolResult).toBe(false)
+		})
+
+		it("should keep properly paired tool_use and tool_result blocks", () => {
+			const toolUseBlock = {
+				type: "tool_use" as const,
+				id: "toolu_123",
+				name: "read_file",
+				input: { path: "test.txt" },
+			}
+			const toolResultBlock = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_123",
+				content: "file contents",
+			}
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
+				},
+				{
+					role: "user",
+					content: [toolResultBlock],
+				},
+				{ role: "assistant", content: "Got the file" },
+			]
+
+			const result = removeOrphanedToolBlocks(messages)
+
+			// Both tool_use and tool_result should be kept
+			expect(result).toEqual(messages)
+		})
+
+		it("should handle multiple tool_use blocks in one message (parallel tool calls)", () => {
+			const toolUseBlock1 = {
+				type: "tool_use" as const,
+				id: "toolu_123",
+				name: "read_file",
+				input: { path: "file1.txt" },
+			}
+			const toolUseBlock2 = {
+				type: "tool_use" as const,
+				id: "toolu_456",
+				name: "read_file",
+				input: { path: "file2.txt" },
+			}
+			const toolResultBlock1 = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_123",
+				content: "contents 1",
+			}
+			// Missing tool_result for toolu_456
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading files..." }, toolUseBlock1, toolUseBlock2],
+				},
+				{
+					role: "user",
+					content: [toolResultBlock1], // Only has result for toolu_123
+				},
+			]
+
+			const result = removeOrphanedToolBlocks(messages)
+
+			// toolu_456 should be removed, toolu_123 should be kept
+			const assistantMsg = result.find((msg) => msg.role === "assistant" && Array.isArray(msg.content))
+			expect(assistantMsg).toBeDefined()
+			if (assistantMsg && Array.isArray(assistantMsg.content)) {
+				const toolUseBlocks = assistantMsg.content.filter((block) => block.type === "tool_use")
+				expect(toolUseBlocks).toHaveLength(1)
+				expect((toolUseBlocks[0] as any).id).toBe("toolu_123")
+			}
+		})
+
+		it("should return empty array for empty input", () => {
+			const result = removeOrphanedToolBlocks([])
+			expect(result).toEqual([])
 		})
 	})
 

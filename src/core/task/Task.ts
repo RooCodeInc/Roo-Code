@@ -98,7 +98,7 @@ import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
-import { manageContext } from "../context-management"
+import { manageContext, removeOrphanedToolBlocks } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
@@ -3430,7 +3430,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory)
-		const messagesWithoutImages = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api)
+
+		// For native tools protocol, clean up any orphaned tool_use/tool_result blocks
+		// that may have been created by getMessagesSinceLastSummary slicing at summary boundaries
+		const modelInfoForCleanup = this.api.getModel().info
+		const protocolForCleanup = resolveToolProtocol(this.apiConfiguration, modelInfoForCleanup)
+		const useNativeToolsForCleanup = isNativeProtocol(protocolForCleanup)
+		const cleanedMessagesSinceLastSummary = useNativeToolsForCleanup
+			? removeOrphanedToolBlocks(messagesSinceLastSummary)
+			: messagesSinceLastSummary
+
+		const messagesWithoutImages = maybeRemoveImageBlocks(cleanedMessagesSinceLastSummary, this.api)
 		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages as ApiMessage[])
 
 		// Check auto-approval limits

@@ -15,6 +15,97 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 
 /**
+ * Removes orphaned tool_use and tool_result blocks from messages.
+ * An orphaned tool_use is one without a corresponding tool_result in the next message.
+ * An orphaned tool_result is one without a corresponding tool_use in the previous message.
+ *
+ * @param messages - The messages to clean
+ * @returns The cleaned messages with orphaned tool blocks removed
+ */
+export function removeOrphanedToolBlocks(messages: ApiMessage[]): ApiMessage[] {
+	if (messages.length === 0) {
+		return messages
+	}
+
+	// Helper function to check if a block is a tool_use type
+	const isToolUseBlock = (block: any): block is { type: "tool_use"; id: string } => {
+		return block.type === "tool_use"
+	}
+
+	// Collect all tool_use IDs and their positions
+	const toolUseIds = new Map<string, number>() // tool_use_id -> message index
+	const toolResultIds = new Map<string, number>() // tool_use_id -> message index
+
+	for (let i = 0; i < messages.length; i++) {
+		const message = messages[i]
+		if (message.role === "assistant" && Array.isArray(message.content)) {
+			for (const block of message.content) {
+				if (isToolUseBlock(block)) {
+					toolUseIds.set(block.id, i)
+				}
+			}
+		} else if (message.role === "user" && Array.isArray(message.content)) {
+			for (const block of message.content) {
+				if (block.type === "tool_result") {
+					toolResultIds.set(block.tool_use_id, i)
+				}
+			}
+		}
+	}
+
+	// Find orphaned tool_use IDs (no corresponding tool_result)
+	const orphanedToolUseIds = new Set<string>()
+	for (const [id, useIndex] of toolUseIds) {
+		const resultIndex = toolResultIds.get(id)
+		// tool_result must be in the message immediately after tool_use
+		if (resultIndex === undefined || resultIndex !== useIndex + 1) {
+			orphanedToolUseIds.add(id)
+		}
+	}
+
+	// Find orphaned tool_result IDs (no corresponding tool_use)
+	const orphanedToolResultIds = new Set<string>()
+	for (const [id, resultIndex] of toolResultIds) {
+		const useIndex = toolUseIds.get(id)
+		// tool_use must be in the message immediately before tool_result
+		if (useIndex === undefined || useIndex !== resultIndex - 1) {
+			orphanedToolResultIds.add(id)
+		}
+	}
+
+	// If no orphans, return original messages
+	if (orphanedToolUseIds.size === 0 && orphanedToolResultIds.size === 0) {
+		return messages
+	}
+
+	// Remove orphaned blocks from messages
+	const cleanedMessages: ApiMessage[] = []
+	for (const message of messages) {
+		if (message.role === "assistant" && Array.isArray(message.content)) {
+			const cleanedContent = message.content.filter(
+				(block) => !isToolUseBlock(block) || !orphanedToolUseIds.has(block.id),
+			)
+			// Only include message if it has content left
+			if (cleanedContent.length > 0) {
+				cleanedMessages.push({ ...message, content: cleanedContent })
+			}
+		} else if (message.role === "user" && Array.isArray(message.content)) {
+			const cleanedContent = message.content.filter(
+				(block) => block.type !== "tool_result" || !orphanedToolResultIds.has(block.tool_use_id),
+			)
+			// Only include message if it has content left
+			if (cleanedContent.length > 0) {
+				cleanedMessages.push({ ...message, content: cleanedContent })
+			}
+		} else {
+			cleanedMessages.push(message)
+		}
+	}
+
+	return cleanedMessages
+}
+
+/**
  * Context Management
  *
  * This module provides Context Management for conversations, combining:
@@ -55,8 +146,9 @@ export async function estimateTokenCount(
  *
  * When useNativeTools is true, this function ensures that tool_use/tool_result pairs
  * are not broken by the truncation. If the first remaining message after truncation
- * contains tool_result blocks, the truncation point is adjusted to include the
- * preceding assistant message with the corresponding tool_use blocks.
+ * contains tool_result blocks, the truncation point is moved forward to skip past
+ * the tool_result message (and its corresponding tool_use message), ensuring we don't
+ * start with an orphaned tool_result.
  *
  * @param {ApiMessage[]} messages - The conversation messages.
  * @param {number} fracToRemove - The fraction (between 0 and 1) of messages (excluding the first) to remove.
@@ -73,36 +165,16 @@ export function truncateConversation(
 	TelemetryService.instance.captureSlidingWindowTruncation(taskId)
 	const truncatedMessages = [messages[0]]
 	const rawMessagesToRemove = Math.floor((messages.length - 1) * fracToRemove)
-	let messagesToRemove = rawMessagesToRemove - (rawMessagesToRemove % 2)
-
-	// For native tools protocol, ensure we don't break tool_use/tool_result pairs
-	if (useNativeTools && messagesToRemove > 0) {
-		const startIndex = messagesToRemove + 1
-		if (startIndex < messages.length) {
-			const firstRemainingMessage = messages[startIndex]
-			// Check if the first remaining message is a user message with tool_result blocks
-			if (hasToolResultBlocks(firstRemainingMessage)) {
-				// Look for the preceding assistant message with tool_use blocks
-				const precedingIndex = startIndex - 1
-				if (precedingIndex > 0) {
-					// precedingIndex > 0 because we always keep messages[0]
-					const precedingMessage = messages[precedingIndex]
-					const toolUseBlocks = getToolUseBlocks(precedingMessage)
-					if (toolUseBlocks.length > 0) {
-						// Adjust truncation to include the assistant message with tool_use blocks
-						// We need to keep both the assistant message (precedingIndex) and the user message (startIndex)
-						// So we reduce messagesToRemove by 2 (to keep the pair)
-						messagesToRemove = Math.max(0, messagesToRemove - 2)
-						// Ensure messagesToRemove stays even
-						messagesToRemove = messagesToRemove - (messagesToRemove % 2)
-					}
-				}
-			}
-		}
-	}
+	const messagesToRemove = rawMessagesToRemove - (rawMessagesToRemove % 2)
 
 	const remainingMessages = messages.slice(messagesToRemove + 1)
 	truncatedMessages.push(...remainingMessages)
+
+	// For native tools protocol, clean up any orphaned tool_use/tool_result blocks
+	// that may have been created by the truncation
+	if (useNativeTools) {
+		return removeOrphanedToolBlocks(truncatedMessages)
+	}
 
 	return truncatedMessages
 }
@@ -216,7 +288,10 @@ export async function manageContext({
 				error = result.error
 				cost = result.cost
 			} else {
-				return { ...result, prevContextTokens }
+				// For native tools protocol, clean up any orphaned tool_use/tool_result blocks
+				// that may have been created by the condensation
+				const cleanedMessages = useNativeTools ? removeOrphanedToolBlocks(result.messages) : result.messages
+				return { ...result, messages: cleanedMessages, prevContextTokens }
 			}
 		}
 	}
