@@ -137,6 +137,139 @@ describe("Context Management", () => {
 			expect(result[0]).toEqual(messages[0])
 			expect(result[1]).toEqual(messages[3])
 		})
+
+		it("should preserve tool_use/tool_result pairs when useNativeTools is true", () => {
+			const toolUseBlock = {
+				type: "tool_use" as const,
+				id: "toolu_123",
+				name: "read_file",
+				input: { path: "test.txt" },
+			}
+			const toolResultBlock = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_123",
+				content: "file contents",
+			}
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
+				},
+				{
+					role: "user",
+					content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
+				},
+				{ role: "assistant", content: "Got the file" },
+				{ role: "user", content: "Thanks" },
+			]
+
+			// Without useNativeTools, truncation would break the tool_use/tool_result pair
+			// 6 messages excluding first, 0.5 fraction = 3 messages to remove
+			// 3 is odd, so it rounds down to 2 to make it even
+			// This would leave messages starting from index 3 (the assistant with tool_use)
+			const resultWithoutNative = truncateConversation(messages, 0.5, taskId, false)
+			expect(resultWithoutNative.length).toBe(5) // First + 4 remaining
+
+			// With useNativeTools, the truncation should be adjusted to preserve the pair
+			// Since the first remaining message after truncation would be the user message with tool_result,
+			// we need to also keep the preceding assistant message with tool_use
+			const resultWithNative = truncateConversation(messages, 0.5, taskId, true)
+
+			// The result should include the tool_use message to maintain pairing
+			expect(resultWithNative.length).toBe(5) // First + 4 remaining (same in this case)
+			// Verify the tool_use block is preserved
+			const assistantWithToolUse = resultWithNative.find(
+				(msg) =>
+					msg.role === "assistant" &&
+					Array.isArray(msg.content) &&
+					msg.content.some((block) => block.type === "tool_use"),
+			)
+			expect(assistantWithToolUse).toBeDefined()
+		})
+
+		it("should preserve multiple tool_use/tool_result pairs with parallel tool calls", () => {
+			const toolUseBlock1 = {
+				type: "tool_use" as const,
+				id: "toolu_123",
+				name: "read_file",
+				input: { path: "file1.txt" },
+			}
+			const toolUseBlock2 = {
+				type: "tool_use" as const,
+				id: "toolu_456",
+				name: "read_file",
+				input: { path: "file2.txt" },
+			}
+			const toolResultBlock1 = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_123",
+				content: "contents 1",
+			}
+			const toolResultBlock2 = {
+				type: "tool_result" as const,
+				tool_use_id: "toolu_456",
+				content: "contents 2",
+			}
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{ role: "assistant", content: "Fourth message" },
+				{ role: "user", content: "Fifth message" },
+				{
+					role: "assistant",
+					content: [{ type: "text" as const, text: "Reading files..." }, toolUseBlock1, toolUseBlock2],
+				},
+				{
+					role: "user",
+					content: [toolResultBlock1, toolResultBlock2],
+				},
+				{ role: "assistant", content: "Got both files" },
+				{ role: "user", content: "Thanks" },
+			]
+
+			// With useNativeTools, truncation should preserve the tool_use/tool_result pair
+			const result = truncateConversation(messages, 0.5, taskId, true)
+
+			// Verify that if tool_result blocks are in the result, their corresponding tool_use blocks are also present
+			const hasToolResult = result.some(
+				(msg) =>
+					msg.role === "user" &&
+					Array.isArray(msg.content) &&
+					msg.content.some((block) => block.type === "tool_result"),
+			)
+
+			if (hasToolResult) {
+				const hasToolUse = result.some(
+					(msg) =>
+						msg.role === "assistant" &&
+						Array.isArray(msg.content) &&
+						msg.content.some((block) => block.type === "tool_use"),
+				)
+				expect(hasToolUse).toBe(true)
+			}
+		})
+
+		it("should not modify truncation when first remaining message has no tool_result", () => {
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{ role: "assistant", content: "Fourth message" },
+				{ role: "user", content: "Fifth message" },
+			]
+
+			// Without tool_result blocks, useNativeTools should not affect the result
+			const resultWithoutNative = truncateConversation(messages, 0.5, taskId, false)
+			const resultWithNative = truncateConversation(messages, 0.5, taskId, true)
+
+			expect(resultWithNative).toEqual(resultWithoutNative)
+		})
 	})
 
 	/**

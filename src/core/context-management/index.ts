@@ -3,7 +3,14 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../api"
-import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
+import {
+	MAX_CONDENSE_THRESHOLD,
+	MIN_CONDENSE_THRESHOLD,
+	summarizeConversation,
+	SummarizeResponse,
+	hasToolResultBlocks,
+	getToolUseBlocks,
+} from "../condense"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 
@@ -46,16 +53,54 @@ export async function estimateTokenCount(
  *
  * This implements the sliding window truncation behavior.
  *
+ * When useNativeTools is true, this function ensures that tool_use/tool_result pairs
+ * are not broken by the truncation. If the first remaining message after truncation
+ * contains tool_result blocks, the truncation point is adjusted to include the
+ * preceding assistant message with the corresponding tool_use blocks.
+ *
  * @param {ApiMessage[]} messages - The conversation messages.
  * @param {number} fracToRemove - The fraction (between 0 and 1) of messages (excluding the first) to remove.
  * @param {string} taskId - The task ID for the conversation, used for telemetry
+ * @param {boolean} useNativeTools - Whether native tools protocol is being used (requires tool_use/tool_result pairing)
  * @returns {ApiMessage[]} The truncated conversation messages.
  */
-export function truncateConversation(messages: ApiMessage[], fracToRemove: number, taskId: string): ApiMessage[] {
+export function truncateConversation(
+	messages: ApiMessage[],
+	fracToRemove: number,
+	taskId: string,
+	useNativeTools?: boolean,
+): ApiMessage[] {
 	TelemetryService.instance.captureSlidingWindowTruncation(taskId)
 	const truncatedMessages = [messages[0]]
 	const rawMessagesToRemove = Math.floor((messages.length - 1) * fracToRemove)
-	const messagesToRemove = rawMessagesToRemove - (rawMessagesToRemove % 2)
+	let messagesToRemove = rawMessagesToRemove - (rawMessagesToRemove % 2)
+
+	// For native tools protocol, ensure we don't break tool_use/tool_result pairs
+	if (useNativeTools && messagesToRemove > 0) {
+		const startIndex = messagesToRemove + 1
+		if (startIndex < messages.length) {
+			const firstRemainingMessage = messages[startIndex]
+			// Check if the first remaining message is a user message with tool_result blocks
+			if (hasToolResultBlocks(firstRemainingMessage)) {
+				// Look for the preceding assistant message with tool_use blocks
+				const precedingIndex = startIndex - 1
+				if (precedingIndex > 0) {
+					// precedingIndex > 0 because we always keep messages[0]
+					const precedingMessage = messages[precedingIndex]
+					const toolUseBlocks = getToolUseBlocks(precedingMessage)
+					if (toolUseBlocks.length > 0) {
+						// Adjust truncation to include the assistant message with tool_use blocks
+						// We need to keep both the assistant message (precedingIndex) and the user message (startIndex)
+						// So we reduce messagesToRemove by 2 (to keep the pair)
+						messagesToRemove = Math.max(0, messagesToRemove - 2)
+						// Ensure messagesToRemove stays even
+						messagesToRemove = messagesToRemove - (messagesToRemove % 2)
+					}
+				}
+			}
+		}
+	}
+
 	const remainingMessages = messages.slice(messagesToRemove + 1)
 	truncatedMessages.push(...remainingMessages)
 
@@ -178,7 +223,7 @@ export async function manageContext({
 
 	// Fall back to sliding window truncation if needed
 	if (prevContextTokens > allowedTokens) {
-		const truncatedMessages = truncateConversation(messages, 0.5, taskId)
+		const truncatedMessages = truncateConversation(messages, 0.5, taskId, useNativeTools)
 		return { messages: truncatedMessages, prevContextTokens, summary: "", cost, error }
 	}
 	// No truncation or condensation needed

@@ -12,7 +12,7 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
  * For native tools protocol, user messages with tool_result blocks require
  * corresponding tool_use blocks from the previous assistant turn.
  */
-function hasToolResultBlocks(message: ApiMessage): boolean {
+export function hasToolResultBlocks(message: ApiMessage): boolean {
 	if (message.role !== "user" || typeof message.content === "string") {
 		return false
 	}
@@ -22,7 +22,7 @@ function hasToolResultBlocks(message: ApiMessage): boolean {
 /**
  * Gets the tool_use blocks from a message.
  */
-function getToolUseBlocks(message: ApiMessage): Anthropic.Messages.ToolUseBlock[] {
+export function getToolUseBlocks(message: ApiMessage): Anthropic.Messages.ToolUseBlock[] {
 	if (message.role !== "assistant" || typeof message.content === "string") {
 		return []
 	}
