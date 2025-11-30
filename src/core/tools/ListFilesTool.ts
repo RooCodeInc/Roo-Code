@@ -55,7 +55,7 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 			const [files, didHitLimit] = await listFiles(
 				absolutePath,
 				recursive || false,
-				(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 4 : 1) *
+				(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 2 : 1) *
 					maxWorkspaceFiles,
 			)
 
