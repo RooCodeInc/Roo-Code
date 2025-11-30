@@ -87,11 +87,13 @@ type ImportedSettings = {
 export function NewRun() {
 	const router = useRouter()
 
-	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
+	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
-	const [useMultipleNativeToolCalls, setUseMultipleNativeToolCalls] = useState(true)
+	const [useMultipleNativeToolCalls, setUseMultipleNativeToolCalls] = useState(false)
 	const [reasoningEffort, setReasoningEffort] = useState<ReasoningEffort | "">("")
+	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
+	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
 
 	// State for imported settings with config selection
 	const [importedSettings, setImportedSettings] = useState<ImportedSettings | null>(null)
@@ -134,7 +136,7 @@ export function NewRun() {
 
 	const [model, suite, settings] = watch(["model", "suite", "settings", "concurrency"])
 
-	// Load concurrency and timeout from localStorage on mount
+	// Load settings from localStorage on mount
 	useEffect(() => {
 		const savedConcurrency = localStorage.getItem("evals-concurrency")
 		if (savedConcurrency) {
@@ -148,6 +150,37 @@ export function NewRun() {
 			const parsed = parseInt(savedTimeout, 10)
 			if (!isNaN(parsed) && parsed >= TIMEOUT_MIN && parsed <= TIMEOUT_MAX) {
 				setValue("timeout", parsed)
+			}
+		}
+		const savedCommandTimeout = localStorage.getItem("evals-command-execution-timeout")
+		if (savedCommandTimeout) {
+			const parsed = parseInt(savedCommandTimeout, 10)
+			if (!isNaN(parsed) && parsed >= 20 && parsed <= 60) {
+				setCommandExecutionTimeout(parsed)
+			}
+		}
+		const savedShellTimeout = localStorage.getItem("evals-shell-integration-timeout")
+		if (savedShellTimeout) {
+			const parsed = parseInt(savedShellTimeout, 10)
+			if (!isNaN(parsed) && parsed >= 30 && parsed <= 60) {
+				setTerminalShellIntegrationTimeout(parsed)
+			}
+		}
+		// Load saved exercises selection
+		const savedSuite = localStorage.getItem("evals-suite")
+		if (savedSuite === "partial") {
+			setValue("suite", "partial")
+			const savedExercises = localStorage.getItem("evals-exercises")
+			if (savedExercises) {
+				try {
+					const parsed = JSON.parse(savedExercises) as string[]
+					if (Array.isArray(parsed)) {
+						setSelectedExercises(parsed)
+						setValue("exercises", parsed)
+					}
+				} catch {
+					// Invalid JSON, ignore
+				}
 			}
 		}
 	}, [setValue])
@@ -193,6 +226,7 @@ export function NewRun() {
 
 			setSelectedExercises(newSelected)
 			setValue("exercises", newSelected)
+			localStorage.setItem("evals-exercises", JSON.stringify(newSelected))
 		},
 		[getExercisesForLanguage, selectedExercises, setValue],
 	)
@@ -236,6 +270,8 @@ export function NewRun() {
 						apiProvider: "openrouter",
 						openRouterModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
 						...experimentsSettings,
 					}
 				} else if (provider === "roo") {
@@ -244,6 +280,8 @@ export function NewRun() {
 						apiProvider: "roo",
 						apiModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
 						...experimentsSettings,
 						...(reasoningEffort
 							? {
@@ -257,6 +295,8 @@ export function NewRun() {
 					values.settings = {
 						...values.settings,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
 						...experimentsSettings,
 					}
 				}
@@ -267,7 +307,16 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[provider, model, router, useNativeToolProtocol, useMultipleNativeToolCalls, reasoningEffort],
+		[
+			provider,
+			model,
+			router,
+			useNativeToolProtocol,
+			useMultipleNativeToolCalls,
+			reasoningEffort,
+			commandExecutionTimeout,
+			terminalShellIntegrationTimeout,
+		],
 	)
 
 	const onSelectModel = useCallback(
@@ -355,9 +404,9 @@ export function NewRun() {
 									value={provider}
 									onValueChange={(value) => setModelSource(value as "roo" | "openrouter" | "other")}>
 									<TabsList className="mb-2">
+										<TabsTrigger value="other">Import</TabsTrigger>
 										<TabsTrigger value="roo">Roo Code Cloud</TabsTrigger>
 										<TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
-										<TabsTrigger value="other">Other</TabsTrigger>
 									</TabsList>
 								</Tabs>
 
@@ -446,8 +495,8 @@ export function NewRun() {
 													<Checkbox
 														id="native-other"
 														checked={useNativeToolProtocol}
-														onCheckedChange={(checked) =>
-															setUseNativeToolProtocol(checked === true)
+														onCheckedChange={(checked: boolean) =>
+															setUseNativeToolProtocol(checked)
 														}
 													/>
 													<span className="text-sm">Use Native Tool Calls</span>
@@ -458,8 +507,8 @@ export function NewRun() {
 													<Checkbox
 														id="multipleNativeToolCalls-other"
 														checked={useMultipleNativeToolCalls}
-														onCheckedChange={(checked) =>
-															setUseMultipleNativeToolCalls(checked === true)
+														onCheckedChange={(checked: boolean) =>
+															setUseMultipleNativeToolCalls(checked)
 														}
 													/>
 													<span className="text-sm">Use Multiple Native Tool Calls</span>
@@ -529,8 +578,8 @@ export function NewRun() {
 														<Checkbox
 															id="native"
 															checked={useNativeToolProtocol}
-															onCheckedChange={(checked) =>
-																setUseNativeToolProtocol(checked === true)
+															onCheckedChange={(checked: boolean) =>
+																setUseNativeToolProtocol(checked)
 															}
 														/>
 														<span className="text-sm">Use Native Tool Calls</span>
@@ -541,8 +590,8 @@ export function NewRun() {
 														<Checkbox
 															id="multipleNativeToolCalls"
 															checked={useMultipleNativeToolCalls}
-															onCheckedChange={(checked) =>
-																setUseMultipleNativeToolCalls(checked === true)
+															onCheckedChange={(checked: boolean) =>
+																setUseMultipleNativeToolCalls(checked)
 															}
 														/>
 														<span className="text-sm">Use Multiple Native Tool Calls</span>
@@ -627,12 +676,14 @@ export function NewRun() {
 								<FormLabel>Exercises</FormLabel>
 								<div className="flex items-center gap-2 flex-wrap">
 									<Tabs
-										defaultValue="full"
+										value={suite}
 										onValueChange={(value) => {
 											setValue("suite", value as "full" | "partial")
+											localStorage.setItem("evals-suite", value)
 											if (value === "full") {
 												setSelectedExercises([])
 												setValue("exercises", [])
+												localStorage.removeItem("evals-exercises")
 											}
 										}}>
 										<TabsList>
@@ -669,6 +720,7 @@ export function NewRun() {
 										onValueChange={(value) => {
 											setSelectedExercises(value)
 											setValue("exercises", value)
+											localStorage.setItem("evals-exercises", JSON.stringify(value))
 										}}
 										placeholder="Select"
 										variant="inverted"
@@ -757,6 +809,70 @@ export function NewRun() {
 							</FormItem>
 						)}
 					/>
+
+					<FormItem className="py-5">
+						<div className="flex items-center gap-1">
+							<Label>Terminal Command Timeout (Seconds)</Label>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Info className="size-4 text-muted-foreground cursor-help" />
+								</TooltipTrigger>
+								<TooltipContent side="right" className="max-w-xs">
+									<p>
+										Maximum time in seconds to wait for terminal command execution to complete
+										before timing out. This applies to commands run via the execute_command tool.
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</div>
+						<div className="flex flex-row items-center gap-2">
+							<Slider
+								value={[commandExecutionTimeout]}
+								min={20}
+								max={60}
+								step={1}
+								onValueChange={([value]) => {
+									if (value !== undefined) {
+										setCommandExecutionTimeout(value)
+										localStorage.setItem("evals-command-execution-timeout", String(value))
+									}
+								}}
+							/>
+							<div className="w-8 text-right">{commandExecutionTimeout}</div>
+						</div>
+					</FormItem>
+
+					<FormItem className="py-5">
+						<div className="flex items-center gap-1">
+							<Label>Shell Integration Timeout (Seconds)</Label>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Info className="size-4 text-muted-foreground cursor-help" />
+								</TooltipTrigger>
+								<TooltipContent side="right" className="max-w-xs">
+									<p>
+										Maximum time in seconds to wait for shell integration to initialize when opening
+										a new terminal.
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</div>
+						<div className="flex flex-row items-center gap-2">
+							<Slider
+								value={[terminalShellIntegrationTimeout]}
+								min={30}
+								max={60}
+								step={1}
+								onValueChange={([value]) => {
+									if (value !== undefined) {
+										setTerminalShellIntegrationTimeout(value)
+										localStorage.setItem("evals-shell-integration-timeout", String(value))
+									}
+								}}
+							/>
+							<div className="w-8 text-right">{terminalShellIntegrationTimeout}</div>
+						</div>
+					</FormItem>
 
 					<FormField
 						control={form.control}

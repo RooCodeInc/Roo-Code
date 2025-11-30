@@ -124,9 +124,13 @@ export function Run({ run, taskMetrics, toolColumns }: RunProps) {
 				<TableCell>{run.passed}</TableCell>
 				<TableCell>{run.failed}</TableCell>
 				<TableCell>
-					{run.passed + run.failed > 0 && (
-						<span>{((run.passed / (run.passed + run.failed)) * 100).toFixed(1)}%</span>
-					)}
+					{run.passed + run.failed > 0 &&
+						(() => {
+							const percent = (run.passed / (run.passed + run.failed)) * 100
+							const colorClass =
+								percent === 100 ? "text-green-500" : percent >= 80 ? "text-yellow-500" : "text-red-500"
+							return <span className={colorClass}>{percent.toFixed(1)}%</span>
+						})()}
 				</TableCell>
 				<TableCell>
 					{taskMetrics && (
@@ -138,12 +142,20 @@ export function Run({ run, taskMetrics, toolColumns }: RunProps) {
 				</TableCell>
 				{toolColumns.map((toolName) => {
 					const usage = taskMetrics?.toolUsage?.[toolName]
+					const successRate =
+						usage && usage.attempts > 0 ? ((usage.attempts - usage.failures) / usage.attempts) * 100 : 100
+					const rateColor =
+						successRate === 100
+							? "text-muted-foreground"
+							: successRate >= 80
+								? "text-yellow-500"
+								: "text-red-500"
 					return (
 						<TableCell key={toolName} className="text-xs text-center">
 							{usage ? (
 								<div className="flex flex-col items-center">
 									<span className="font-medium">{usage.attempts}</span>
-									<span className="text-muted-foreground">{formatToolUsageSuccessRate(usage)}</span>
+									<span className={rateColor}>{formatToolUsageSuccessRate(usage)}</span>
 								</div>
 							) : (
 								<span className="text-muted-foreground">-</span>
