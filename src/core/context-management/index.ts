@@ -27,78 +27,75 @@ export function removeOrphanedToolBlocks(messages: ApiMessage[]): ApiMessage[] {
 		return messages
 	}
 
-	// Helper function to check if a block is a tool_use type
-	const isToolUseBlock = (block: any): block is { type: "tool_use"; id: string } => {
-		return block.type === "tool_use"
-	}
-
-	// Collect all tool_use IDs and their positions
-	const toolUseIds = new Map<string, number>() // tool_use_id -> message index
-	const toolResultIds = new Map<string, number>() // tool_use_id -> message index
+	// Collect tool_use and tool_result positions: id -> message index
+	const toolUseIndex = new Map<string, number>()
+	const toolResultIndex = new Map<string, number>()
 
 	for (let i = 0; i < messages.length; i++) {
-		const message = messages[i]
-		if (message.role === "assistant" && Array.isArray(message.content)) {
-			for (const block of message.content) {
-				if (isToolUseBlock(block)) {
-					toolUseIds.set(block.id, i)
-				}
-			}
-		} else if (message.role === "user" && Array.isArray(message.content)) {
-			for (const block of message.content) {
-				if (block.type === "tool_result") {
-					toolResultIds.set(block.tool_use_id, i)
-				}
+		const { role, content } = messages[i]
+		if (!Array.isArray(content)) continue
+
+		for (const block of content) {
+			if (role === "assistant" && block.type === "tool_use") {
+				toolUseIndex.set((block as { id: string }).id, i)
+			} else if (role === "user" && block.type === "tool_result") {
+				toolResultIndex.set((block as { tool_use_id: string }).tool_use_id, i)
 			}
 		}
 	}
 
-	// Find orphaned tool_use IDs (no corresponding tool_result)
+	// Early exit if no tool blocks
+	if (toolUseIndex.size === 0 && toolResultIndex.size === 0) {
+		return messages
+	}
+
+	// Find orphaned IDs: tool_use without tool_result at index+1, or vice versa
 	const orphanedToolUseIds = new Set<string>()
-	for (const [id, useIndex] of toolUseIds) {
-		const resultIndex = toolResultIds.get(id)
-		// tool_result must be in the message immediately after tool_use
-		if (resultIndex === undefined || resultIndex !== useIndex + 1) {
+	const orphanedToolResultIds = new Set<string>()
+
+	for (const [id, useIdx] of toolUseIndex) {
+		if (toolResultIndex.get(id) !== useIdx + 1) {
 			orphanedToolUseIds.add(id)
 		}
 	}
-
-	// Find orphaned tool_result IDs (no corresponding tool_use)
-	const orphanedToolResultIds = new Set<string>()
-	for (const [id, resultIndex] of toolResultIds) {
-		const useIndex = toolUseIds.get(id)
-		// tool_use must be in the message immediately before tool_result
-		if (useIndex === undefined || useIndex !== resultIndex - 1) {
+	for (const [id, resultIdx] of toolResultIndex) {
+		if (toolUseIndex.get(id) !== resultIdx - 1) {
 			orphanedToolResultIds.add(id)
 		}
 	}
 
-	// If no orphans, return original messages
+	// Early exit if no orphans
 	if (orphanedToolUseIds.size === 0 && orphanedToolResultIds.size === 0) {
 		return messages
 	}
 
-	// Remove orphaned blocks from messages
+	// Filter out orphaned blocks
 	const cleanedMessages: ApiMessage[] = []
 	for (const message of messages) {
-		if (message.role === "assistant" && Array.isArray(message.content)) {
-			const cleanedContent = message.content.filter(
-				(block) => !isToolUseBlock(block) || !orphanedToolUseIds.has(block.id),
-			)
-			// Only include message if it has content left
-			if (cleanedContent.length > 0) {
-				cleanedMessages.push({ ...message, content: cleanedContent })
-			}
-		} else if (message.role === "user" && Array.isArray(message.content)) {
-			const cleanedContent = message.content.filter(
-				(block) => block.type !== "tool_result" || !orphanedToolResultIds.has(block.tool_use_id),
-			)
-			// Only include message if it has content left
-			if (cleanedContent.length > 0) {
-				cleanedMessages.push({ ...message, content: cleanedContent })
-			}
-		} else {
+		const { role, content } = message
+
+		if (!Array.isArray(content)) {
 			cleanedMessages.push(message)
+			continue
+		}
+
+		const cleanedContent = content.filter((block) => {
+			if (role === "assistant" && block.type === "tool_use") {
+				return !orphanedToolUseIds.has((block as { id: string }).id)
+			}
+			if (role === "user" && block.type === "tool_result") {
+				return !orphanedToolResultIds.has((block as { tool_use_id: string }).tool_use_id)
+			}
+			return true
+		})
+
+		if (cleanedContent.length > 0) {
+			// Reuse original message if content unchanged
+			if (cleanedContent.length === content.length) {
+				cleanedMessages.push(message)
+			} else {
+				cleanedMessages.push({ ...message, content: cleanedContent })
+			}
 		}
 	}
 
