@@ -54,9 +54,56 @@ export function getLocalIP(): string {
 	return "127.0.0.1"
 }
 
+function getSafeOperatingSystemName(): string {
+	try {
+		return osName(os.platform(), os.release())
+	} catch (error) {
+		console.warn(`[zgsm getOperatingSystem] os-name failed: ${error.message}`)
+
+		const platform = os.platform()
+		const release = os.release()
+
+		const platformMap: Record<string, string> = {
+			win32: "Windows",
+			darwin: "macOS",
+			linux: "Linux",
+			freebsd: "FreeBSD",
+			openbsd: "OpenBSD",
+			sunos: "SunOS",
+			aix: "AIX",
+		}
+
+		const platformName = platformMap[platform] || platform
+
+		try {
+			if (platform === "win32") {
+				const majorVersion = parseInt(release.split(".")[0], 10)
+				const versionMap: Record<number, string> = {
+					10: "Windows 10/11",
+					6: "Windows Vista/7/8",
+					5: "Windows XP/2000",
+				}
+				return versionMap[majorVersion] || `Windows ${release}`
+			} else if (platform === "darwin") {
+				const versionParts = release.split(".")
+				if (versionParts.length >= 2) {
+					const major = parseInt(versionParts[0], 10)
+					const minor = parseInt(versionParts[1], 10)
+					return `macOS ${major}.${minor}`
+				}
+			}
+
+			return `${platformName} ${release}`
+		} catch (innerError) {
+			console.warn(`[zgsm getOperatingSystem] Fallback failed: ${innerError.message}`)
+			return platformName
+		}
+	}
+}
+
 let operatingSystem = ""
 
 export const getOperatingSystem = () => {
 	if (operatingSystem) return operatingSystem
-	return (operatingSystem = osName(os.platform(), os.release()))
+	return (operatingSystem = getSafeOperatingSystemName())
 }
