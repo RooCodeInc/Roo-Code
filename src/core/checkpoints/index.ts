@@ -20,8 +20,6 @@ import * as path from "path"
 import * as fs from "fs/promises"
 import { isCoworkflowDocument } from "../costrict/workflow/commands"
 
-/**
- */
 async function updateCospecMetadataForCheckpoint(
 	workspaceDir: string,
 	editFilePath: string,
@@ -253,14 +251,12 @@ export async function checkpointSave(task: Task, force = false, suppressMessage 
 	TelemetryService.instance.captureCheckpointCreated(task.taskId)
 
 	// Start the checkpoint process in the background.
-	const checkpointResult = service
+	return service
 		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
 		.catch((err) => {
 			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
 			task.enableCheckpoints = false
 		})
-
-	return checkpointResult
 }
 
 export type CheckpointRestoreOptions = {

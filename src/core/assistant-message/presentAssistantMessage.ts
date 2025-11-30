@@ -7,7 +7,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
-import { Package } from "../../shared/package"
+// import { Package } from "../../shared/package"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
@@ -37,13 +37,13 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { formatResponse } from "../prompts/responses"
 import { validateToolUse } from "../tools/validateToolUse"
 import { Task } from "../task/Task"
-import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+// import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { updateCospecMetadata } from "../checkpoints"
 import { fixBrowserLaunchAction } from "../../utils/fixbrowserLaunchAction"
-import { isNativeProtocol } from "@roo-code/types"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+// import { isNativeProtocol } from "@roo-code/types"
+// import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -898,15 +898,16 @@ export async function presentAssistantMessage(cline: Task) {
 						toolProtocol,
 					})
 					break
-				case "codebase_search":
-					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
+				// todo: when we have a new codebase_search tool, add it here
+				// case "codebase_search":
+				// 	await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
+				// 		askApproval,
+				// 		handleError,
+				// 		pushToolResult,
+				// 		removeClosingTag,
+				// 		toolProtocol,
+				// 	})
+				// 	break
 				case "list_code_definition_names":
 					await listCodeDefinitionNamesTool.handle(cline, block as ToolUse<"list_code_definition_names">, {
 						askApproval,
