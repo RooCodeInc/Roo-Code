@@ -2373,6 +2373,7 @@ export const webviewMessageHandler = async (
 					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
 				}
 
 				// Save global state first

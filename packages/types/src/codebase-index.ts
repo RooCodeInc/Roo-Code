@@ -48,6 +48,8 @@ export const codebaseIndexConfigSchema = z.object({
 	// Bedrock specific fields
 	codebaseIndexBedrockRegion: z.string().optional(),
 	codebaseIndexBedrockProfile: z.string().optional(),
+	// OpenRouter specific fields
+	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>

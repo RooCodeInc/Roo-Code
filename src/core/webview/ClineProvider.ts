@@ -2079,6 +2079,7 @@ export class ClineProvider
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
+				codebaseIndexOpenRouterSpecificProvider: codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2310,6 +2311,8 @@ export class ClineProvider
 				codebaseIndexSearchMinScore: stateValues.codebaseIndexConfig?.codebaseIndexSearchMinScore,
 				codebaseIndexBedrockRegion: stateValues.codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
+				codebaseIndexOpenRouterSpecificProvider:
+					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
