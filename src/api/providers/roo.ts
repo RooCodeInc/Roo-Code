@@ -4,6 +4,7 @@ import OpenAI from "openai"
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
+import { Package } from "../../shared/package"
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -121,12 +122,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		try {
-			const stream = await this.createStream(
-				systemPrompt,
-				messages,
-				metadata,
-				metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
-			)
+			const headers: Record<string, string> = {
+				"X-Roo-App-Version": Package.version,
+			}
+
+			if (metadata?.taskId) {
+				headers["X-Roo-Task-ID"] = metadata.taskId
+			}
+
+			const stream = await this.createStream(systemPrompt, messages, metadata, { headers })
 
 			let lastUsage: RooUsage | undefined = undefined
 
