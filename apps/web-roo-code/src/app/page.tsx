@@ -6,6 +6,7 @@ import {
 	CTASection,
 	OptionOverviewSection,
 	PillarsSection,
+	UseExamplesSection,
 } from "@/components/homepage"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import { ArrowRight } from "lucide-react"
@@ -72,6 +73,7 @@ export default async function Home() {
 
 			<PillarsSection />
 			<OptionOverviewSection />
+			<UseExamplesSection />
 			<Testimonials />
 			<FAQSection />
 			<CTASection />
