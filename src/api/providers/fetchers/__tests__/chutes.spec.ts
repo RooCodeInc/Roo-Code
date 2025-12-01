@@ -185,7 +185,7 @@ describe("getChutesModels", () => {
 		const models = await getChutesModels("test-api-key")
 
 		expect(models["test/tools-model"].supportsNativeTools).toBe(true)
-		expect(models["test/tools-model"].defaultToolProtocol).toBe("native")
+		expect(models["test/tools-model"].defaultToolProtocol).toBe("xml")
 	})
 
 	it("should not enable native tool support when tools is not in supported_features", async () => {
