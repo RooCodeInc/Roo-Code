@@ -121,7 +121,9 @@
 			"authenticationRequired": "Roo provider requires cloud authentication. Please sign in to Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
+			"invalidKeyInvalidChars": "API key contains invalid characters.",
+			"certificateError": "Certificate error when connecting to Ollama. For localhost connections, this is usually a false positive. Try restarting Ollama or check your certificate configuration.",
+			"certificateValidation": "Certificate validation failed. For local Ollama instances, ensure Ollama is running correctly. For remote instances, verify the SSL certificate is valid."
 		},
 		"manual_url_empty": "Please enter a valid callback URL",
 		"manual_url_no_query": "Invalid callback URL: missing query parameters",
