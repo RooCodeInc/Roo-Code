@@ -77,6 +77,7 @@ describe("getRooModels", () => {
 				description: "Fast coding model",
 				deprecated: false,
 				isFree: false,
+				defaultToolProtocol: "native", // Applied from MODEL_DEFAULTS
 			},
 		})
 	})

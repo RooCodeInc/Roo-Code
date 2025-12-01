@@ -1,9 +1,24 @@
-import { RooModelsResponseSchema } from "@roo-code/types"
+import { RooModelsResponseSchema, type ModelInfo } from "@roo-code/types"
 
 import type { ModelRecord } from "../../../shared/api"
 import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
+
+// Model-specific defaults that should be applied even when models come from API cache
+// These override API-provided values for specific models
+// Exported so RooHandler.getModel() can also apply these for fallback cases
+export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
+	"minimax/minimax-m2": {
+		defaultToolProtocol: "native",
+	},
+	"anthropic/claude-haiku-4.5": {
+		defaultToolProtocol: "native",
+	},
+	"xai/grok-code-fast-1": {
+		defaultToolProtocol: "native",
+	},
+}
 
 /**
  * Fetches available models from the Roo Code Cloud provider
@@ -119,7 +134,9 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					isFree: tags.includes("free"),
 				}
 
-				models[modelId] = baseModelInfo
+				// Apply model-specific defaults (e.g., defaultToolProtocol)
+				const modelDefaults = MODEL_DEFAULTS[modelId]
+				models[modelId] = modelDefaults ? { ...baseModelInfo, ...modelDefaults } : baseModelInfo
 			}
 
 			return models
