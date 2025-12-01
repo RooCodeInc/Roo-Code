@@ -859,7 +859,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Wyszukaj",
 		"noMatchFound": "Nie znaleziono dopasowań",
-		"useCustomModel": "Użyj niestandardowy: {{modelId}}"
+		"useCustomModel": "Użyj niestandardowy: {{modelId}}",
+		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
 	},
 	"footer": {
 		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",

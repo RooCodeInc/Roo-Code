@@ -859,7 +859,8 @@
 		"label": "Modello",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "Nessuna corrispondenza trovata",
-		"useCustomModel": "Usa personalizzato: {{modelId}}"
+		"useCustomModel": "Usa personalizzato: {{modelId}}",
+		"simplifiedExplanation": "Puoi modificare le impostazioni dettagliate del modello in seguito."
 	},
 	"footer": {
 		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
