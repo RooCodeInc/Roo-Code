@@ -1,4 +1,5 @@
 import * as vscode from "vscode"
+import { isJetbrainsPlatform } from "../../../utils/platform"
 
 export const renderModes = {
 	noLimit: {
@@ -20,6 +21,9 @@ export const renderModes = {
 }
 
 export function getApiResponseRenderMode() {
+	if (isJetbrainsPlatform()) {
+		return renderModes.medium
+	}
 	const apiResponseRenderMode = vscode.workspace
 		.getConfiguration("zgsm")
 		.get<string>("apiResponseRenderMode", "medium") as "fast" | "medium" | "slow" | "noLimit"

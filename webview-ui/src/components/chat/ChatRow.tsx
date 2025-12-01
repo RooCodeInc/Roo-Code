@@ -50,8 +50,6 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import { useSelectedModel } from "../ui/hooks/useSelectedModel"
 import HighlightedPlainText from "../common/HighlightedPlainText"
 import {
-	ChevronRight,
-	ChevronDown,
 	ClipboardCheck,
 	ClipboardCopy,
 	Eye,
@@ -188,15 +186,7 @@ export const ChatRowContent = ({
 	searchQuery,
 }: ChatRowContentProps) => {
 	const { t } = useTranslation()
-	const {
-		mcpServers,
-		alwaysAllowMcp,
-		currentCheckpoint,
-		mode,
-		apiConfiguration,
-		clineMessages,
-		apiRequestBlockHide,
-	} = useExtensionState()
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -362,15 +352,7 @@ export const ChatRowContent = ({
 							getIconSpan("error", errorColor)
 						)
 					) : cost !== null && cost !== undefined ? (
-						!apiRequestBlockHide ? (
-							isExpanded ? (
-								<ChevronDown className="w-4 shrink-0" />
-							) : (
-								<ChevronRight className="w-4 shrink-0" />
-							)
-						) : (
-							getIconSpan("arrow-swap", normalColor)
-						)
+						getIconSpan("arrow-swap", normalColor)
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
 					) : (
@@ -419,8 +401,6 @@ export const ChatRowContent = ({
 		isMcpServerResponding,
 		apiReqCancelReason,
 		cost,
-		apiRequestBlockHide,
-		isExpanded,
 		apiRequestFailedMessage,
 	])
 
@@ -1192,7 +1172,6 @@ export const ChatRowContent = ({
 					// Determine if the API request is in progress
 					const isApiRequestInProgress =
 						apiReqCancelReason === undefined && apiRequestFailedMessage === undefined && cost === undefined
-					const apiReqStartedRequestText = safeJsonParse<any>(message.text)?.request
 					return (
 						<>
 							<div
@@ -1207,27 +1186,9 @@ export const ChatRowContent = ({
 											? 10
 											: 0,
 									justifyContent: "space-between",
-									...(!apiRequestBlockHide && apiReqStartedRequestText
-										? {
-												cursor: "pointer",
-												userSelect: "none",
-												WebkitUserSelect: "none",
-												MozUserSelect: "none",
-												msUserSelect: "none",
-											}
-										: {}),
-								}}
-								onClick={
-									!apiRequestBlockHide && apiReqStartedRequestText ? handleToggleExpand : () => {}
-								}>
+								}}>
 								<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
-									{!apiRequestBlockHide && apiReqStartedRequestText ? (
-										icon
-									) : isLast ? (
-										<ProgressIndicator />
-									) : (
-										getIconSpan("arrow-swap", normalColor)
-									)}
+									{isLast ? <ProgressIndicator /> : getIconSpan("arrow-swap", normalColor)}
 									{title}
 									{(selectedLLM || originModelId) && !selectReason && (
 										<div
@@ -1300,16 +1261,6 @@ export const ChatRowContent = ({
 										)
 									}
 								/>
-							)}
-							{!apiRequestBlockHide && isExpanded && apiReqStartedRequestText && (
-								<div className="ml-6" style={{ marginTop: "10px" }}>
-									<CodeAccordian
-										code={apiReqStartedRequestText}
-										language="markdown"
-										isExpanded={true}
-										onToggleExpand={handleToggleExpand}
-									/>
-								</div>
 							)}
 						</>
 					)

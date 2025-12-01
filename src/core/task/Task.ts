@@ -47,7 +47,7 @@ import {
 	CommandExecutionStatus,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
+// import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 // api
@@ -64,7 +64,7 @@ import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/Extension
 import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
-import { DiffStrategy, type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
+import { DiffStrategy, type ToolUse } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
 
@@ -77,7 +77,7 @@ import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
-import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
+import { findToolName } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 
@@ -2195,16 +2195,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxDiagnosticMessages = 50,
 				maxReadFileLine = -1,
 				maxReadCharacterLimit = 20000,
-				apiRequestBlockHide = true,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
 			await this.say(
 				"api_req_started",
 				JSON.stringify({
-					request: apiRequestBlockHide
-						? undefined
-						: currentUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") +
-							"\n\nLoading...",
 					apiProtocol,
 					originModelId:
 						this.apiConfiguration?.apiProvider === "zgsm"
@@ -2270,9 +2265,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
 
 			this.clineMessages[lastApiReqIndex].text = JSON.stringify({
-				request: apiRequestBlockHide
-					? undefined
-					: finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
 				apiProtocol,
 				originModelId:
 					this.apiConfiguration?.apiProvider === "zgsm"

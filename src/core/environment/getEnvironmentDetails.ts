@@ -346,8 +346,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 				const [files, didHitLimit] = await listFiles(
 					cline.cwd,
 					true,
-					(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 2 : 1) *
-						maxFiles,
+					(alwaysIncludeFileDetails ? 3 : 1) * maxFiles,
 				)
 				const { showRooIgnoredFiles = false } = state ?? {}
 
@@ -358,7 +357,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 					cline.rooIgnoreController,
 					showRooIgnoredFiles,
 					undefined,
-					experiments,
+					alwaysIncludeFileDetails,
 				)
 
 				details += result

@@ -210,7 +210,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
-		apiRequestBlockHide,
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
@@ -421,7 +420,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
-					apiRequestBlockHide,
 					useZgsmCustomConfig: useZgsmCustomConfig ?? false,
 					zgsmCodebaseIndexEnabled: zgsmCodebaseIndexEnabled ?? true,
 					maxReadCharacterLimit: maxReadCharacterLimit ?? 40000,
@@ -861,7 +859,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
-							apiRequestBlockHide={apiRequestBlockHide ?? true}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

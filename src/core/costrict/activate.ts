@@ -48,6 +48,7 @@ import { getPanel } from "../../activate/registerCommands"
 import { t } from "../../i18n"
 import prettyBytes from "pretty-bytes"
 import { ensureProjectWikiSubtasksExists } from "./wiki/projectWikiHelpers"
+import { isJetbrainsPlatform } from "../../utils/platform"
 
 const HISTORY_WARN_SIZE = 1000 * 1000 * 1000 * 3
 
@@ -85,6 +86,7 @@ export async function activate(
 	provider: ClineProvider,
 	outputChannel: vscode.OutputChannel,
 ) {
+	const isJetbrains = isJetbrainsPlatform()
 	const logger = createLogger(Package.outputChannel)
 	initErrorCodeManager(provider)
 	initGitCheckoutDetector(context, logger)
@@ -170,35 +172,38 @@ export async function activate(
 			codeLensCallBackMoreCommand.command,
 			codeLensCallBackMoreCommand.callback(context),
 		),
-		// Register function header menu
-		vscode.languages.registerCodeLensProvider("*", new CostrictCodeLensProvider()),
 	)
 
-	// Listen for configuration changes
-	const configChanged = vscode.workspace.onDidChangeConfiguration((e) => {
-		if (e.affectsConfiguration(configCompletion)) {
-			// Code completion settings changed
-			updateCompletionConfig()
-		}
-		if (e.affectsConfiguration(configCodeLens)) {
-			// Function Quick Commands settings changed
-			updateCodelensConfig()
-		}
-		CompletionStatusBar.initByConfig()
-	})
-	context.subscriptions.push(configChanged)
-
-	context.subscriptions.push(
-		// Code completion service
-		vscode.languages.registerInlineCompletionItemProvider(
-			{ pattern: "**" },
-			new AICompletionProvider(context, provider),
-		),
-		// Shortcut command to trigger auto-completion manually
-		vscode.commands.registerCommand(shortKeyCut.command, () => {
-			shortKeyCut.callback(context)
-		}),
-	)
+	if (!isJetbrains) {
+		context.subscriptions.push(
+			// Register function header menu
+			vscode.languages.registerCodeLensProvider("*", new CostrictCodeLensProvider()),
+		)
+		// Listen for configuration changes
+		const configChanged = vscode.workspace.onDidChangeConfiguration((e) => {
+			if (e.affectsConfiguration(configCompletion)) {
+				// Code completion settings changed
+				updateCompletionConfig()
+			}
+			if (e.affectsConfiguration(configCodeLens)) {
+				// Function Quick Commands settings changed
+				updateCodelensConfig()
+			}
+			CompletionStatusBar.initByConfig()
+		})
+		context.subscriptions.push(configChanged)
+		context.subscriptions.push(
+			// Code completion service
+			vscode.languages.registerInlineCompletionItemProvider(
+				{ pattern: "**" },
+				new AICompletionProvider(context, provider),
+			),
+			// Shortcut command to trigger auto-completion manually
+			vscode.commands.registerCommand(shortKeyCut.command, () => {
+				shortKeyCut.callback(context)
+			}),
+		)
+	}
 
 	// Get zgsmRefreshToken without webview resolve
 	const tokens = await ZgsmAuthStorage.getInstance().getTokens()

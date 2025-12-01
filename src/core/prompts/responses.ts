@@ -204,7 +204,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 		rooIgnoreController: RooIgnoreController | undefined,
 		showRooIgnoredFiles: boolean,
 		rooProtectedController?: RooProtectedController,
-		experiments?: any,
+		alwaysIncludeFileDetails?: boolean,
 	): string => {
 		const sorted = files
 			.map((file) => {
@@ -263,9 +263,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 				}
 			}
 		}
-		const _filesInfo = Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS)
-			? `${pathsToTree(rooIgnoreParsed)}\n`
-			: rooIgnoreParsed.join("\n")
+		const _filesInfo = alwaysIncludeFileDetails ? `${pathsToTree(rooIgnoreParsed)}\n` : rooIgnoreParsed.join("\n")
 		// pathsToTree
 		if (didHitLimit) {
 			return `${_filesInfo}\n\n(File list truncated. Use list_files on specific subdirectories if you need to explore further.)`

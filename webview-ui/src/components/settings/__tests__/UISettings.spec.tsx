@@ -5,7 +5,6 @@ import { UISettings } from "../UISettings"
 describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
-		apiRequestBlockHide: false,
 		setCachedStateField: vi.fn(),
 	}
 

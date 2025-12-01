@@ -309,6 +309,8 @@ export async function addCustomInstructions(
 
 					// Hard constraint: no-edit if no change
 					`- **RULE: A file edit is allowed ONLY IF the final content will differ from the current content. If there is NO difference, you MUST NOT call ANY file-editing tool. The edit MUST be cancelled.**`,
+
+					`- **RULE: Request to switch to a different mode. This tool allows modes to request switching to another mode when needed, such as switching to Code mode to make code changes. The user must approve the mode switch`,
 				]
 
 	if (mode) {

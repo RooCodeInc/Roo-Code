@@ -1999,7 +1999,6 @@ export class ClineProvider
 			terminalCompressProgressBar,
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
-			apiRequestBlockHide,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -2157,7 +2156,6 @@ export class ClineProvider
 			hasSystemPromptOverride,
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
-			apiRequestBlockHide: apiRequestBlockHide ?? true,
 			cloudUserInfo,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			// cloudOrganizations,
@@ -2201,7 +2199,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
-			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
+			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", isJetbrainsPlatform()),
 		}
 	}
 
@@ -2391,7 +2389,6 @@ export class ClineProvider
 			maxConcurrentFileReads: stateValues.maxConcurrentFileReads ?? 5,
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
-			apiRequestBlockHide: stateValues.apiRequestBlockHide ?? true,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,

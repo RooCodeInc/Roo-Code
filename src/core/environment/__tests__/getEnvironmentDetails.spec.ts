@@ -173,7 +173,7 @@ describe("getEnvironmentDetails", () => {
 			mockCline.rooIgnoreController,
 			false,
 			undefined,
-			{},
+			false,
 		)
 	})
 

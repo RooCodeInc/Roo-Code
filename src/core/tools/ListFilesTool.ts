@@ -49,14 +49,17 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 
 			const {
 				showRooIgnoredFiles = false,
+				apiConfiguration,
 				experiments,
 				maxWorkspaceFiles = MAX_WORKSPACE_FILES,
 			} = (await task.providerRef.deref()?.getState()) ?? {}
+			const alwaysIncludeFileDetails =
+				Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ??
+				apiConfiguration?.apiProvider === "zgsm"
 			const [files, didHitLimit] = await listFiles(
 				absolutePath,
 				recursive || false,
-				(Experiments.isEnabled(experiments ?? {}, EXPERIMENT_IDS.ALWAYS_INCLUDE_FILE_DETAILS) ? 2 : 1) *
-					maxWorkspaceFiles,
+				(alwaysIncludeFileDetails ? 3 : 1) * maxWorkspaceFiles,
 			)
 
 			const result = formatResponse.formatFilesList(
@@ -66,7 +69,7 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 				task.rooIgnoreController,
 				showRooIgnoredFiles,
 				task.rooProtectedController,
-				experiments,
+				alwaysIncludeFileDetails,
 			)
 
 			const sharedMessageProps: ClineSayTool = {

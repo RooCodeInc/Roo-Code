@@ -1,5 +1,16 @@
 # CoStrict Change Log
 
+## [2.0.21]
+
+- Remove apiRequestBlockHide setting and related UI components
+
+## [2.0.20]
+
+- Update files prompt
+- Update getSafeOperatingSystemName call in safe fallback for OS detection
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/4591e960ed08079c763c21ec205d1eea291f6c80)
+- Fix known issues
+
 ## [2.0.19]
 
 - Remove run_test action and simplify run_task action prompt
