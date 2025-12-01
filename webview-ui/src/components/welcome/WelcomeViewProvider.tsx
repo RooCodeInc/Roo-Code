@@ -20,7 +20,7 @@ import { Tab, TabContent } from "../common/Tab"
 
 import RooHero from "./RooHero"
 import { Trans } from "react-i18next"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ArrowRight, BadgeInfo } from "lucide-react"
 
 type ProviderOption = "roo" | "custom"
 
@@ -33,6 +33,7 @@ const WelcomeViewProvider = () => {
 	const [authInProgress, setAuthInProgress] = useState(false)
 	const [showManualEntry, setShowManualEntry] = useState(false)
 	const [manualUrl, setManualUrl] = useState("")
+	const [manualErrorMessage, setManualErrorMessage] = useState<boolean | undefined>(undefined)
 	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
 
 	// When auth completes during the provider signup flow, save the Roo config
@@ -98,6 +99,7 @@ const WelcomeViewProvider = () => {
 		setAuthInProgress(false)
 		setShowManualEntry(false)
 		setManualUrl("")
+		setManualErrorMessage(false)
 	}, [])
 
 	const handleManualUrlChange = (e: any) => {
@@ -107,19 +109,21 @@ const WelcomeViewProvider = () => {
 		// Auto-trigger authentication when a complete URL is pasted
 		setTimeout(() => {
 			if (url.trim() && url.includes("://") && url.includes("/auth/clerk/callback")) {
+				setManualErrorMessage(false)
 				vscode.postMessage({ type: "rooCloudManualUrl", text: url.trim() })
 			}
 		}, 100)
 	}
 
-	const handleKeyDown = (e: any) => {
-		if (e.key === "Enter") {
-			const url = manualUrl.trim()
-			if (url && url.includes("://") && url.includes("/auth/clerk/callback")) {
-				vscode.postMessage({ type: "rooCloudManualUrl", text: url })
-			}
+	const handleSubmit = useCallback(() => {
+		const url = manualUrl.trim()
+		if (url && url.includes("://") && url.includes("/auth/clerk/callback")) {
+			setManualErrorMessage(false)
+			vscode.postMessage({ type: "rooCloudManualUrl", text: url })
+		} else {
+			setManualErrorMessage(true)
 		}
-	}
+	}, [manualUrl])
 
 	const handleOpenSignupUrl = () => {
 		vscode.postMessage({ type: "rooCloudSignIn", useProviderSignup: true })
@@ -133,61 +137,82 @@ const WelcomeViewProvider = () => {
 					<div className="flex flex-col items-start gap-4 pt-8">
 						<VSCodeProgressRing className="size-6" />
 						<h2 className="mt-0 mb-0 text-lg font-semibold">{t("welcome:waitingForCloud.heading")}</h2>
-						<p className="text-sm text-vscode-descriptionForeground mt-0">
+						<p className="text-vscode-descriptionForeground mt-0">
 							{t("welcome:waitingForCloud.description")}
 						</p>
 
-						<p className="text-sm text-vscode-descriptionForeground mt-2">
-							<Trans
-								i18nKey="welcome:waitingForCloud.noPrompt"
-								components={{
-									clickHere: (
-										<button
-											onClick={handleOpenSignupUrl}
-											className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0 text-sm"
-										/>
-									),
-								}}
-							/>
-						</p>
-
-						<p className="text-sm text-vscode-descriptionForeground">
-							<Trans
-								i18nKey="welcome:waitingForCloud.havingTrouble"
-								components={{
-									clickHere: (
-										<button
-											onClick={() => setShowManualEntry(true)}
-											className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0 text-sm"
-										/>
-									),
-								}}
-							/>
-						</p>
-
-						{showManualEntry && (
-							<div className="mt-2 w-full max-w-sm">
-								<p className="text-sm text-vscode-descriptionForeground mb-2">
-									{t("welcome:waitingForCloud.pasteUrl")}
-								</p>
-								<VSCodeTextField
-									ref={manualUrlInputRef as any}
-									value={manualUrl}
-									onChange={handleManualUrlChange}
-									onKeyDown={handleKeyDown}
-									placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
-									className="w-full"
+						<div className="flex gap-2 items-start pr-4 text-vscode-descriptionForeground">
+							<BadgeInfo className="size-4 inline shrink-0" />
+							<p className="m-0">
+								<Trans
+									i18nKey="welcome:waitingForCloud.noPrompt"
+									components={{
+										clickHere: (
+											<button
+												onClick={handleOpenSignupUrl}
+												className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0"
+											/>
+										),
+									}}
 								/>
+							</p>
+						</div>
+
+						<div className="flex gap-2 items-start pr-4 text-vscode-descriptionForeground">
+							<ArrowRight className="size-4 inline shrink-0" />
+							<div>
+								<p className="m-0">
+									<Trans
+										i18nKey="welcome:waitingForCloud.havingTrouble"
+										components={{
+											clickHere: (
+												<button
+													onClick={() => setShowManualEntry(true)}
+													className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0	"
+												/>
+											),
+										}}
+									/>
+								</p>
+
+								{showManualEntry && (
+									<div className="w-full max-w-sm">
+										<p className="text-vscode-descriptionForeground">
+											{t("welcome:waitingForCloud.pasteUrl")}
+										</p>
+										<div className="flex gap-2 items-center">
+											<VSCodeTextField
+												ref={manualUrlInputRef as any}
+												value={manualUrl}
+												onKeyUp={handleManualUrlChange}
+												placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
+												className="flex-1"
+											/>
+											<Button
+												onClick={handleSubmit}
+												disabled={manualUrl.length < 40}
+												variant="secondary">
+												<ArrowRight className="size-4" />
+											</Button>
+										</div>
+										{manualUrl && manualErrorMessage && (
+											<p className="text-vscode-errorForeground mt-2">
+												{t("welcome:waitingForCloud.invalidURL")}
+											</p>
+										)}
+									</div>
+								)}
 							</div>
-						)}
+						</div>
+					</div>
+
+					<div className="mt-4">
+						<Button onClick={handleGoBack} variant="secondary">
+							<ArrowLeft className="size-4" />
+							{t("welcome:waitingForCloud.goBack")}
+						</Button>
 					</div>
 				</TabContent>
-				<div className="sticky bottom-0 bg-vscode-sideBar-background p-4 border-t border-vscode-panel-border">
-					<Button onClick={handleGoBack} variant="secondary" className="flex items-center gap-2">
-						<ArrowLeft className="size-4" />
-						{t("welcome:waitingForCloud.goBack")}
-					</Button>
-				</div>
 			</Tab>
 		)
 	}
@@ -215,7 +240,6 @@ const WelcomeViewProvider = () => {
 						onChange={(e: Event | React.FormEvent<HTMLElement>) => {
 							const target = ((e as CustomEvent)?.detail?.target ||
 								(e.target as HTMLInputElement)) as HTMLInputElement
-							console.log("target.value", target.value)
 							setSelectedProvider(target.value as ProviderOption)
 						}}>
 						{/* Roo Code Cloud Provider Option */}
