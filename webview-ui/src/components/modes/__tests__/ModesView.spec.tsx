@@ -29,10 +29,9 @@ const mockExtensionState = {
 }
 
 const renderPromptsView = (props = {}) => {
-	const mockOnDone = vitest.fn()
 	return render(
 		<ExtensionStateContext.Provider value={{ ...mockExtensionState, ...props } as any}>
-			<ModesView onDone={mockOnDone} />
+			<ModesView />
 		</ExtensionStateContext.Provider>,
 	)
 }
@@ -128,7 +127,7 @@ describe("PromptsView", () => {
 		const { unmount } = render(
 			<ExtensionStateContext.Provider
 				value={{ ...mockExtensionState, mode: "code", customModes: [customMode] } as any}>
-				<ModesView onDone={vitest.fn()} />
+				<ModesView />
 			</ExtensionStateContext.Provider>,
 		)
 
@@ -154,7 +153,7 @@ describe("PromptsView", () => {
 		render(
 			<ExtensionStateContext.Provider
 				value={{ ...mockExtensionState, mode: "custom-mode", customModes: [customMode] } as any}>
-				<ModesView onDone={vitest.fn()} />
+				<ModesView />
 			</ExtensionStateContext.Provider>,
 		)
 
@@ -175,7 +174,7 @@ describe("PromptsView", () => {
 		const { unmount } = render(
 			<ExtensionStateContext.Provider
 				value={{ ...mockExtensionState, mode: "code", customModes: [customMode] } as any}>
-				<ModesView onDone={vitest.fn()} />
+				<ModesView />
 			</ExtensionStateContext.Provider>,
 		)
 
@@ -190,7 +189,7 @@ describe("PromptsView", () => {
 		render(
 			<ExtensionStateContext.Provider
 				value={{ ...mockExtensionState, mode: "custom-mode", customModes: [customMode] } as any}>
-				<ModesView onDone={vitest.fn()} />
+				<ModesView />
 			</ExtensionStateContext.Provider>,
 		)
 

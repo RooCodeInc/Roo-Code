@@ -69,23 +69,15 @@ vi.mock("@src/components/history/HistoryView", () => ({
 
 vi.mock("@src/components/mcp/McpView", () => ({
 	__esModule: true,
-	default: function McpView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="mcp-view" onClick={onDone}>
-				MCP View
-			</div>
-		)
+	default: function McpView() {
+		return <div data-testid="mcp-view">MCP View</div>
 	},
 }))
 
 vi.mock("@src/components/modes/ModesView", () => ({
 	__esModule: true,
-	default: function ModesView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="prompts-view" onClick={onDone}>
-				Modes View
-			</div>
-		)
+	default: function ModesView() {
+		return <div data-testid="prompts-view">Modes View</div>
 	},
 }))
 

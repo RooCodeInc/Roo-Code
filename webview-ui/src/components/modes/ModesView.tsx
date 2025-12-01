@@ -60,16 +60,12 @@ type ModeSource = "global" | "project"
 
 type ImportModeResult = { type: "importModeResult"; success: boolean; slug?: string; error?: string }
 
-type ModesViewProps = {
-	onDone?: () => void
-}
-
 // Helper to get group name regardless of format
 function getGroupName(group: GroupEntry): ToolGroup {
 	return Array.isArray(group) ? group[0] : group
 }
 
-const ModesView = (_props: ModesViewProps) => {
+const ModesView = () => {
 	const { t } = useAppTranslation()
 
 	const {
