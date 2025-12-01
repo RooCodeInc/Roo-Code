@@ -120,7 +120,7 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "QA Engineer",
-		use: "Write a Playwright test for the login flow failure case.",
+		use: "Write a Playwright test for the login flow failure case, extract existing mocks into shared.",
 		agent: AGENTS.coder,
 		context: SOURCES.github,
 	},
@@ -131,14 +131,8 @@ const USE_CASES: UseCase[] = [
 		context: SOURCES.extension,
 	},
 	{
-		role: "Data Scientist",
-		use: "Explain how this pandas transformation handles NaNs.",
-		agent: AGENTS.explainer,
-		context: SOURCES.web,
-	},
-	{
 		role: "Mobile Developer",
-		use: "Convert this React component to React Native.",
+		use: "Copy what we did in PR #4253 to this component.",
 		agent: AGENTS.coder,
 		context: SOURCES.slack,
 	},
@@ -246,7 +240,7 @@ const LAYER_SCALES = {
 
 function distributeItems(items: UseCase[]): PositionedUseCase[] {
 	const rng = seededRandom(12345)
-	const zones = { rows: 5, cols: 6 } // 30 zones for 26 items
+	const zones = { rows: 7, cols: 4 }
 	const zoneWidth = 100 / zones.cols
 	const zoneHeight = 100 / zones.rows
 
@@ -291,11 +285,11 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 
 function UseCaseCard({ item }: { item: PositionedUseCase }) {
 	const ContextIcon: LucideIcon = item.context.icon
-	const opacity = item.layer / 3
+	const opacity = Math.min(1, 0.5 + item.layer / 3)
 
 	return (
 		<motion.div
-			className="absolute w-[200px] md:w-[400px] cursor-default group"
+			className="absolute w-[200px] md:w-[300px] cursor-default group"
 			style={{
 				left: `${item.position.x}%`,
 				top: `${item.position.y}%`,
@@ -306,30 +300,28 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 				opacity: 1,
 				scale: item.scale,
 				transition: {
-					duration: 0.2 * (item.layer - 3),
+					duration: 0.1,
 					delay: 0, // Stagger by layer
 				},
 			}}
 			whileHover={{
-				scale: 1.2,
+				scale: 1.3,
 				zIndex: 30,
 			}}
 			viewport={{ once: true }}
 			// Use standard CSS transform for the positioning to avoid conflicts with Framer Motion's scale
 			transformTemplate={({ scale }) => `translate(-50%, -50%) scale(${scale})`}>
 			<div
-				className={`rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-sm transition-shadow hover:shadow-md ${
+				className={`rounded-xl outline outline-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-xl transition-all hover:shadow-xl hover:outline-8 ${
 					item.layer === 4 ? "shadow-lg border-border" : ""
 				}`}>
-				<div
-					className="text-base flex items-center gap-2 text-violet-600 mb-1 !group-hover:opacity-100"
-					style={{ opacity: opacity }}>
+				<div className="text-sm flex items-center gap-2 text-violet-600 mb-1" style={{ opacity: opacity }}>
 					{item.role}
 					<ArrowRight className="size-4" />
 					{item.agent.name} Agent
 				</div>
 
-				<div className="text-lg font-light leading-tight my-1" style={{ opacity: opacity }}>
+				<div className="text-base font-light leading-tight my-1" style={{ opacity: opacity }}>
 					{item.use}
 				</div>
 
@@ -347,7 +339,7 @@ export function UseExamplesSection() {
 	const positionedItems = useMemo(() => distributeItems(USE_CASES), [])
 
 	return (
-		<section className="py-24 bg-background overflow-hidden">
+		<section className="pt-24 bg-background overflow-hidden">
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-4xl font-bold tracking-tight mb-4">
@@ -360,7 +352,7 @@ export function UseExamplesSection() {
 				</div>
 
 				{/* Positioned Items Container */}
-				<div className="relative min-h-[500px] md:min-h-[600px] lg:min-h-[700px] w-full max-w-7xl mx-auto">
+				<div className="relative md:min-h-[800px] w-full max-w-6xl mx-auto">
 					{positionedItems.map((item, index) => (
 						<UseCaseCard key={index} item={item} />
 					))}
