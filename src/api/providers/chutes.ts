@@ -11,6 +11,7 @@ import { ApiStream } from "../transform/stream"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 import { RouterProvider } from "./router-provider"
+import { KimiToolCallParser } from "./kimi-tool-parser"
 
 export class ChutesHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
@@ -100,8 +101,60 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 			for (const processedChunk of matcher.final()) {
 				yield processedChunk
 			}
+		} else if (model.id.includes("Kimi-K2")) {
+			// Special handling for Kimi K2 models with their unique tool call format
+			const stream = await this.client.chat.completions.create(this.getCompletionParams(systemPrompt, messages))
+			const kimiParser = new KimiToolCallParser()
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices[0]?.delta
+
+				if (delta?.content) {
+					// Process through Kimi parser to extract tool calls
+					const parsed = kimiParser.processChunk(delta.content)
+					for (const item of parsed) {
+						if (item.type === "text" && item.content) {
+							yield { type: "text", text: item.content }
+						} else if (item.type === "tool_call" && item.toolCall) {
+							yield {
+								type: "tool_call",
+								id: item.toolCall.id,
+								name: item.toolCall.name,
+								arguments: item.toolCall.arguments,
+							}
+						}
+					}
+				}
+
+				if (delta && "reasoning_content" in delta && delta.reasoning_content) {
+					yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
+				}
+
+				if (chunk.usage) {
+					yield {
+						type: "usage",
+						inputTokens: chunk.usage.prompt_tokens || 0,
+						outputTokens: chunk.usage.completion_tokens || 0,
+					}
+				}
+			}
+
+			// Flush any remaining content from the parser
+			const remaining = kimiParser.flush()
+			for (const item of remaining) {
+				if (item.type === "text" && item.content) {
+					yield { type: "text", text: item.content }
+				} else if (item.type === "tool_call" && item.toolCall) {
+					yield {
+						type: "tool_call",
+						id: item.toolCall.id,
+						name: item.toolCall.name,
+						arguments: item.toolCall.arguments,
+					}
+				}
+			}
 		} else {
-			// For non-DeepSeek-R1 models, use standard OpenAI streaming
+			// For non-DeepSeek-R1 and non-Kimi models, use standard OpenAI streaming
 			const stream = await this.client.chat.completions.create(this.getCompletionParams(systemPrompt, messages))
 
 			for await (const chunk of stream) {
