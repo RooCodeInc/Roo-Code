@@ -46,7 +46,6 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 				supportsImages,
 				supportsPromptCache: false,
 				supportsNativeTools,
-				...(supportsNativeTools && { defaultToolProtocol: TOOL_PROTOCOL.NATIVE }),
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `Chutes AI model: ${m.id}`,
