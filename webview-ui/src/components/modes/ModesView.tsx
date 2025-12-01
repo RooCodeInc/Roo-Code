@@ -30,7 +30,6 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Section } from "@src/components/settings/Section"
 import { SectionHeader } from "@src/components/settings/SectionHeader"
-import { TabContent } from "@src/components/common/Tab"
 import {
 	Button,
 	Select,
@@ -602,880 +601,866 @@ const ModesView = () => {
 			</SectionHeader>
 
 			<Section>
-				<TabContent>
-					<div>
-						<div onClick={(e) => e.stopPropagation()} className="flex justify-between items-center mb-3">
-							<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
-							<div className="flex gap-2">
-								<div className="relative inline-block">
-									<StandardTooltip content={t("prompts:modes.editModesConfig")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="flex"
-											onClick={(e: React.MouseEvent) => {
-												e.preventDefault()
-												e.stopPropagation()
-												setShowConfigMenu((prev) => !prev)
-											}}
-											onBlur={() => {
-												// Add slight delay to allow menu item clicks to register
-												setTimeout(() => setShowConfigMenu(false), 200)
-											}}>
-											<span className="codicon codicon-json"></span>
-										</Button>
-									</StandardTooltip>
-									{showConfigMenu && (
-										<div
-											onClick={(e) => e.stopPropagation()}
-											onMouseDown={(e) => e.stopPropagation()}
-											className="absolute top-full right-0 w-[200px] mt-1 bg-vscode-editor-background border border-vscode-input-border rounded shadow-md z-[1000]">
-											<div
-												className="p-2 cursor-pointer text-vscode-foreground text-sm"
-												onMouseDown={(e) => {
-													e.preventDefault() // Prevent blur
-													vscode.postMessage({
-														type: "openCustomModesSettings",
-													})
-													setShowConfigMenu(false)
-												}}
-												onClick={(e) => e.preventDefault()}>
-												{t("prompts:modes.editGlobalModes")}
-											</div>
-											<div
-												className="p-2 cursor-pointer text-vscode-foreground text-sm border-t border-vscode-input-border"
-												onMouseDown={(e) => {
-													e.preventDefault() // Prevent blur
-													vscode.postMessage({
-														type: "openFile",
-														text: "./.roomodes",
-														values: {
-															create: true,
-															content: JSON.stringify({ customModes: [] }, null, 2),
-														},
-													})
-													setShowConfigMenu(false)
-												}}
-												onClick={(e) => e.preventDefault()}>
-												{t("prompts:modes.editProjectModes")}
-											</div>
-										</div>
-									)}
-								</div>
-								<StandardTooltip content={t("chat:modeSelector.marketplace")}>
+				<div>
+					<div onClick={(e) => e.stopPropagation()} className="flex justify-between items-center mb-3">
+						<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
+						<div className="flex gap-2">
+							<div className="relative inline-block">
+								<StandardTooltip content={t("prompts:modes.editModesConfig")}>
 									<Button
 										variant="ghost"
 										size="icon"
-										onClick={() => {
-											window.postMessage(
-												{
-													type: "action",
-													action: "marketplaceButtonClicked",
-													values: { marketplaceTab: "mode" },
-												},
-												"*",
-											)
+										className="flex"
+										onClick={(e: React.MouseEvent) => {
+											e.preventDefault()
+											e.stopPropagation()
+											setShowConfigMenu((prev) => !prev)
+										}}
+										onBlur={() => {
+											// Add slight delay to allow menu item clicks to register
+											setTimeout(() => setShowConfigMenu(false), 200)
 										}}>
-										<span className="codicon codicon-extensions"></span>
+										<span className="codicon codicon-json"></span>
 									</Button>
 								</StandardTooltip>
-
-								<StandardTooltip content={t("prompts:modes.importMode")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => setShowImportDialog(true)}
-										disabled={isImporting}
-										title={t("prompts:modes.importMode")}
-										data-testid="import-mode-toolbar-button">
-										<Download className="h-4 w-4" />
-									</Button>
-								</StandardTooltip>
-							</div>
-						</div>
-
-						<div className="text-sm text-vscode-descriptionForeground mb-3">
-							<Trans i18nKey="prompts:modes.createModeHelpText">
-								<VSCodeLink
-									href={buildDocLink("basic-usage/using-modes", "prompts_view_modes")}
-									style={{ display: "inline" }}
-									aria-label="Learn about using modes"></VSCodeLink>
-								<VSCodeLink
-									href={buildDocLink("features/custom-modes", "prompts_view_modes")}
-									style={{ display: "inline" }}
-									aria-label="Learn about customizing modes"></VSCodeLink>
-							</Trans>
-						</div>
-
-						<div className="flex items-center gap-1 mb-3">
-							{isRenamingMode ? (
-								<>
-									<VSCodeTextField
-										ref={renameInputRef}
-										value={renameInputValue}
-										onInput={(e: unknown) => {
-											const target = e as { target: { value: string } }
-											setRenameInputValue(target.target.value)
-										}}
-										className="grow"
-										placeholder={t("prompts:createModeDialog.name.placeholder")}
-									/>
-									<StandardTooltip content={t("settings:common.save")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											disabled={!renameInputValue.trim()}
-											onClick={handleSaveRenameMode}
-											data-testid="save-mode-rename-button">
-											<span className="codicon codicon-check" />
-										</Button>
-									</StandardTooltip>
-									<StandardTooltip content={t("settings:common.cancel")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={handleCancelRenameMode}
-											data-testid="cancel-mode-rename-button">
-											<span className="codicon codicon-close" />
-										</Button>
-									</StandardTooltip>
-								</>
-							) : (
-								<>
-									<Popover open={open} onOpenChange={onOpenChange}>
-										<PopoverTrigger asChild>
-											<Button
-												variant="combobox"
-												role="combobox"
-												aria-expanded={open}
-												className="justify-between grow"
-												data-testid="mode-select-trigger">
-												<div className="truncate">
-													{localRenames[visualMode] ??
-														getCurrentMode()?.name ??
-														t("prompts:modes.selectMode")}
-												</div>
-												<ChevronDown className="opacity-50" />
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-											<Command>
-												<div className="relative">
-													<CommandInput
-														ref={searchInputRef}
-														value={searchValue}
-														onValueChange={setSearchValue}
-														placeholder={t("prompts:modes.selectMode")}
-														className="h-9 mr-4"
-														data-testid="mode-search-input"
-													/>
-													{searchValue.length > 0 && (
-														<div className="absolute right-2 top-0 bottom-0 flex items-center justify-center">
-															<X
-																className="text-vscode-input-foreground opacity-50 hover:opacity-100 size-4 p-0.5 cursor-pointer"
-																onClick={onClearSearch}
-															/>
-														</div>
-													)}
-												</div>
-												<CommandList>
-													<CommandEmpty>
-														{searchValue && (
-															<div className="py-2 px-1 text-sm">
-																{t("prompts:modes.noMatchFound")}
-															</div>
-														)}
-													</CommandEmpty>
-													<CommandGroup>
-														{displayModes
-															.filter((modeConfig) =>
-																searchValue
-																	? modeConfig.name
-																			.toLowerCase()
-																			.includes(searchValue.toLowerCase())
-																	: true,
-															)
-															.map((modeConfig) => (
-																<CommandItem
-																	key={modeConfig.slug}
-																	value={`${modeConfig.name} ${modeConfig.slug}`}
-																	onSelect={() => {
-																		handleModeSwitch(modeConfig)
-																		setOpen(false)
-																	}}
-																	data-testid={`mode-option-${modeConfig.slug}`}>
-																	<div className="flex items-center justify-between w-full">
-																		<span
-																			style={{
-																				whiteSpace: "nowrap",
-																				overflow: "hidden",
-																				textOverflow: "ellipsis",
-																				flex: 2,
-																				minWidth: 0,
-																			}}>
-																			{modeConfig.name}
-																		</span>
-																		<span
-																			className="text-foreground"
-																			style={{
-																				whiteSpace: "nowrap",
-																				overflow: "hidden",
-																				textOverflow: "ellipsis",
-																				direction: "rtl",
-																				textAlign: "right",
-																				flex: 1,
-																				minWidth: 0,
-																				marginLeft: "0.5em",
-																			}}>
-																			{modeConfig.slug}
-																		</span>
-																	</div>
-																</CommandItem>
-															))}
-													</CommandGroup>
-												</CommandList>
-											</Command>
-										</PopoverContent>
-									</Popover>
-
-									{/* New mode (+) moved here from the top bar */}
-									<StandardTooltip content={t("prompts:modes.createNewMode")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={openCreateModeDialog}
-											data-testid="add-mode-button">
-											<span className="codicon codicon-add" />
-										</Button>
-									</StandardTooltip>
-
-									{/* Edit (rename) mode - only enabled for custom modes */}
-									<StandardTooltip content={t("settings:providers.renameProfile")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={handleStartRenameMode}
-											data-testid="rename-mode-button"
-											disabled={!findModeBySlug(visualMode, customModes)}>
-											<span className="codicon codicon-edit" />
-										</Button>
-									</StandardTooltip>
-
-									{/* Delete mode - disabled for built-in modes */}
-									<StandardTooltip content={t("prompts:createModeDialog.deleteMode")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => {
-												const customMode = findModeBySlug(visualMode, customModes)
-												if (customMode) {
-													setModeToDelete({
-														slug: customMode.slug,
-														name: customMode.name,
-														source: customMode.source || "global",
-													})
-													vscode.postMessage({
-														type: "deleteCustomMode",
-														slug: customMode.slug,
-														checkOnly: true,
-													})
-												}
+								{showConfigMenu && (
+									<div
+										onClick={(e) => e.stopPropagation()}
+										onMouseDown={(e) => e.stopPropagation()}
+										className="absolute top-full right-0 w-[200px] mt-1 bg-vscode-editor-background border border-vscode-input-border rounded shadow-md z-[1000]">
+										<div
+											className="p-2 cursor-pointer text-vscode-foreground text-sm"
+											onMouseDown={(e) => {
+												e.preventDefault() // Prevent blur
+												vscode.postMessage({
+													type: "openCustomModesSettings",
+												})
+												setShowConfigMenu(false)
 											}}
-											data-testid="delete-mode-button"
-											disabled={!findModeBySlug(visualMode, customModes)}>
-											<span className="codicon codicon-trash" />
-										</Button>
-									</StandardTooltip>
-
-									{/* Export mode (kept here to the right of the dropdown) */}
-									<StandardTooltip content={t("prompts:exportMode.title")}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => {
-												const currentMode = getCurrentMode()
-												if (currentMode?.slug && !isExporting) {
-													setIsExporting(true)
-													vscode.postMessage({
-														type: "exportMode",
-														slug: currentMode.slug,
-													})
-												}
-											}}
-											disabled={isExporting}
-											title={t("prompts:exportMode.title")}
-											data-testid="export-mode-toolbar-button">
-											<Upload className="h-4 w-4" />
-										</Button>
-									</StandardTooltip>
-								</>
-							)}
-						</div>
-
-						{/* API Configuration - Moved Here */}
-						<div className="mb-3">
-							<div className="font-bold mb-1">{t("prompts:apiConfiguration.title")}</div>
-							<div className="text-sm text-vscode-descriptionForeground mb-2">
-								{t("prompts:apiConfiguration.select")}
-							</div>
-							<div className="mb-2">
-								<Select
-									value={currentApiConfigName}
-									onValueChange={(value) => {
-										vscode.postMessage({
-											type: "loadApiConfiguration",
-											text: value,
-										})
-									}}>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder={t("settings:common.select")} />
-									</SelectTrigger>
-									<SelectContent>
-										{(listApiConfigMeta || []).map((config) => (
-											<SelectItem key={config.id} value={config.name}>
-												{config.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-					</div>
-
-					{/* Role Definition section */}
-					<div className="mb-4">
-						<div className="flex justify-between items-center mb-1">
-							<div className="font-bold">{t("prompts:roleDefinition.title")}</div>
-							{!findModeBySlug(visualMode, customModes) && (
-								<StandardTooltip content={t("prompts:roleDefinition.resetToDefault")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => {
-											const currentMode = getCurrentMode()
-											if (currentMode?.slug) {
-												handleAgentReset(currentMode.slug, "roleDefinition")
-											}
-										}}
-										data-testid="role-definition-reset">
-										<span className="codicon codicon-discard"></span>
-									</Button>
-								</StandardTooltip>
-							)}
-						</div>
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
-							{t("prompts:roleDefinition.description")}
-						</div>
-						<VSCodeTextArea
-							resize="vertical"
-							value={(() => {
-								const customMode = findModeBySlug(visualMode, customModes)
-								const prompt = customModePrompts?.[visualMode] as PromptComponent
-								return (
-									customMode?.roleDefinition ??
-									prompt?.roleDefinition ??
-									getRoleDefinition(visualMode)
-								)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ??
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(visualMode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(visualMode, {
-										...customMode,
-										roleDefinition: value.trim() || "",
-										source: customMode.source || "global",
-									})
-								} else {
-									// For built-in modes, update the prompts
-									updateAgentPrompt(visualMode, {
-										roleDefinition: value.trim() || undefined,
-									})
-								}
-							}}
-							className="w-full"
-							rows={5}
-							data-testid={`${getCurrentMode()?.slug || "code"}-prompt-textarea`}
-						/>
-					</div>
-
-					{/* Description section */}
-					<div className="mb-4">
-						<div className="flex justify-between items-center mb-1">
-							<div className="font-bold">{t("prompts:description.title")}</div>
-							{!findModeBySlug(visualMode, customModes) && (
-								<StandardTooltip content={t("prompts:description.resetToDefault")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => {
-											const currentMode = getCurrentMode()
-											if (currentMode?.slug) {
-												handleAgentReset(currentMode.slug, "description")
-											}
-										}}
-										data-testid="description-reset">
-										<span className="codicon codicon-discard"></span>
-									</Button>
-								</StandardTooltip>
-							)}
-						</div>
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
-							{t("prompts:description.description")}
-						</div>
-						<VSCodeTextField
-							value={(() => {
-								const customMode = findModeBySlug(visualMode, customModes)
-								const prompt = customModePrompts?.[visualMode] as PromptComponent
-								return customMode?.description ?? prompt?.description ?? getDescription(visualMode)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ??
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(visualMode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(visualMode, {
-										...customMode,
-										description: value.trim() || undefined,
-										source: customMode.source || "global",
-									})
-								} else {
-									// For built-in modes, update the prompts
-									updateAgentPrompt(visualMode, {
-										description: value.trim() || undefined,
-									})
-								}
-							}}
-							className="w-full"
-							data-testid={`${getCurrentMode()?.slug || "code"}-description-textfield`}
-						/>
-					</div>
-
-					{/* When to Use section */}
-					<div className="mb-4">
-						<div className="flex justify-between items-center mb-1">
-							<div className="font-bold">{t("prompts:whenToUse.title")}</div>
-							{!findModeBySlug(visualMode, customModes) && (
-								<StandardTooltip content={t("prompts:whenToUse.resetToDefault")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => {
-											const currentMode = getCurrentMode()
-											if (currentMode?.slug) {
-												handleAgentReset(currentMode.slug, "whenToUse")
-											}
-										}}
-										data-testid="when-to-use-reset">
-										<span className="codicon codicon-discard"></span>
-									</Button>
-								</StandardTooltip>
-							)}
-						</div>
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
-							{t("prompts:whenToUse.description")}
-						</div>
-						<VSCodeTextArea
-							resize="vertical"
-							value={(() => {
-								const customMode = findModeBySlug(visualMode, customModes)
-								const prompt = customModePrompts?.[visualMode] as PromptComponent
-								return customMode?.whenToUse ?? prompt?.whenToUse ?? getWhenToUse(visualMode)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ??
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(visualMode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(visualMode, {
-										...customMode,
-										whenToUse: value.trim() || undefined,
-										source: customMode.source || "global",
-									})
-								} else {
-									// For built-in modes, update the prompts
-									updateAgentPrompt(visualMode, {
-										whenToUse: value.trim() || undefined,
-									})
-								}
-							}}
-							className="w-full"
-							rows={4}
-							data-testid={`${getCurrentMode()?.slug || "code"}-when-to-use-textarea`}
-						/>
-					</div>
-
-					{/* Mode settings */}
-					<>
-						{/* Show tools for all modes */}
-						<div className="mb-4">
-							<div className="flex justify-between items-center mb-1">
-								<div className="font-bold">{t("prompts:tools.title")}</div>
-								{findModeBySlug(visualMode, customModes) && (
-									<StandardTooltip
-										content={
-											isToolsEditMode
-												? t("prompts:tools.doneEditing")
-												: t("prompts:tools.editTools")
-										}>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => setIsToolsEditMode(!isToolsEditMode)}>
-											<span
-												className={`codicon codicon-${isToolsEditMode ? "check" : "edit"}`}></span>
-										</Button>
-									</StandardTooltip>
-								)}
-							</div>
-							{!findModeBySlug(visualMode, customModes) && (
-								<div className="text-sm text-vscode-descriptionForeground mb-2">
-									{t("prompts:tools.builtInModesText")}
-								</div>
-							)}
-							{isToolsEditMode && findModeBySlug(visualMode, customModes) ? (
-								<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
-									{availableGroups.map((group) => {
-										const currentMode = getCurrentMode()
-										const isCustomMode = findModeBySlug(visualMode, customModes)
-										const customMode = isCustomMode
-										const isGroupEnabled = isCustomMode
-											? customMode?.groups?.some((g) => getGroupName(g) === group)
-											: currentMode?.groups?.some((g) => getGroupName(g) === group)
-
-										return (
-											<VSCodeCheckbox
-												key={group}
-												checked={isGroupEnabled}
-												onChange={handleGroupChange(group, Boolean(isCustomMode), customMode)}
-												disabled={!isCustomMode}>
-												{t(`prompts:tools.toolNames.${group}`)}
-												{group === "edit" && (
-													<div className="text-xs text-vscode-descriptionForeground mt-0.5">
-														{t("prompts:tools.allowedFiles")}{" "}
-														{(() => {
-															const currentMode = getCurrentMode()
-															const editGroup = currentMode?.groups?.find(
-																(g) =>
-																	Array.isArray(g) &&
-																	g[0] === "edit" &&
-																	g[1]?.fileRegex,
-															)
-															if (!Array.isArray(editGroup)) return t("prompts:allFiles")
-															return (
-																editGroup[1].description ||
-																`/${editGroup[1].fileRegex}/`
-															)
-														})()}
-													</div>
-												)}
-											</VSCodeCheckbox>
-										)
-									})}
-								</div>
-							) : (
-								<div className="text-sm text-vscode-foreground mb-2 leading-relaxed">
-									{(() => {
-										const currentMode = getCurrentMode()
-										const enabledGroups = currentMode?.groups || []
-
-										// If there are no enabled groups, display translated "None"
-										if (enabledGroups.length === 0) {
-											return t("prompts:tools.noTools")
-										}
-
-										return enabledGroups
-											.map((group) => {
-												const groupName = getGroupName(group)
-												const displayName = t(`prompts:tools.toolNames.${groupName}`)
-												if (Array.isArray(group) && group[1]?.fileRegex) {
-													const description =
-														group[1].description || `/${group[1].fileRegex}/`
-													return `${displayName} (${description})`
-												}
-												return displayName
-											})
-											.join(", ")
-									})()}
-								</div>
-							)}
-						</div>
-					</>
-
-					{/* Role definition for both built-in and custom modes */}
-					<div className="mb-2">
-						<div className="flex justify-between items-center mb-1">
-							<div className="font-bold">{t("prompts:customInstructions.title")}</div>
-							{!findModeBySlug(visualMode, customModes) && (
-								<StandardTooltip content={t("prompts:customInstructions.resetToDefault")}>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => {
-											const currentMode = getCurrentMode()
-											if (currentMode?.slug) {
-												handleAgentReset(currentMode.slug, "customInstructions")
-											}
-										}}
-										data-testid="custom-instructions-reset">
-										<span className="codicon codicon-discard"></span>
-									</Button>
-								</StandardTooltip>
-							)}
-						</div>
-						<div className="text-[13px] text-vscode-descriptionForeground mb-2">
-							{t("prompts:customInstructions.description", {
-								modeName: getCurrentMode()?.name || "Code",
-							})}
-						</div>
-						<VSCodeTextArea
-							resize="vertical"
-							value={(() => {
-								const customMode = findModeBySlug(visualMode, customModes)
-								const prompt = customModePrompts?.[visualMode] as PromptComponent
-								return (
-									customMode?.customInstructions ??
-									prompt?.customInstructions ??
-									getCustomInstructions(visualMode, customModes)
-								)
-							})()}
-							onChange={(e) => {
-								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ??
-									((e as any).target as HTMLTextAreaElement).value
-								const customMode = findModeBySlug(visualMode, customModes)
-								if (customMode) {
-									// For custom modes, update the JSON file
-									updateCustomMode(visualMode, {
-										...customMode,
-										// Preserve empty string; only treat null/undefined as unset
-										customInstructions: value ?? undefined,
-										source: customMode.source || "global",
-									})
-								} else {
-									// For built-in modes, update the prompts
-									const existingPrompt = customModePrompts?.[visualMode] as PromptComponent
-									updateAgentPrompt(visualMode, {
-										...existingPrompt,
-										customInstructions: value.trim() || undefined,
-									})
-								}
-							}}
-							rows={10}
-							className="w-full"
-							data-testid={`${getCurrentMode()?.slug || "code"}-custom-instructions-textarea`}
-						/>
-						<div className="text-xs text-vscode-descriptionForeground mt-1.5">
-							<Trans
-								i18nKey="prompts:customInstructions.loadFromFile"
-								values={{
-									mode: getCurrentMode()?.name || "Code",
-									slug: getCurrentMode()?.slug || "code",
-								}}
-								components={{
-									span: (
-										<span
-											className="text-vscode-textLink-foreground cursor-pointer underline"
-											onClick={() => {
-												const currentMode = getCurrentMode()
-												if (!currentMode) return
-
-												// Open or create an empty file
+											onClick={(e) => e.preventDefault()}>
+											{t("prompts:modes.editGlobalModes")}
+										</div>
+										<div
+											className="p-2 cursor-pointer text-vscode-foreground text-sm border-t border-vscode-input-border"
+											onMouseDown={(e) => {
+												e.preventDefault() // Prevent blur
 												vscode.postMessage({
 													type: "openFile",
-													text: `./.roo/rules-${currentMode.slug}/rules.md`,
+													text: "./.roomodes",
 													values: {
 														create: true,
-														content: "",
+														content: JSON.stringify({ customModes: [] }, null, 2),
 													},
 												})
+												setShowConfigMenu(false)
 											}}
-										/>
-									),
-									"0": (
-										<VSCodeLink
-											href={buildDocLink(
-												"features/custom-instructions#global-rules-directory",
-												"prompts_mode_specific_global_rules",
-											)}
-											style={{ display: "inline" }}
-											aria-label="Learn about global custom instructions for modes"
-										/>
-									),
-								}}
-							/>
+											onClick={(e) => e.preventDefault()}>
+											{t("prompts:modes.editProjectModes")}
+										</div>
+									</div>
+								)}
+							</div>
+							<StandardTooltip content={t("chat:modeSelector.marketplace")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										window.postMessage(
+											{
+												type: "action",
+												action: "marketplaceButtonClicked",
+												values: { marketplaceTab: "mode" },
+											},
+											"*",
+										)
+									}}>
+									<span className="codicon codicon-extensions"></span>
+								</Button>
+							</StandardTooltip>
+
+							<StandardTooltip content={t("prompts:modes.importMode")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => setShowImportDialog(true)}
+									disabled={isImporting}
+									title={t("prompts:modes.importMode")}
+									data-testid="import-mode-toolbar-button">
+									<Download className="h-4 w-4" />
+								</Button>
+							</StandardTooltip>
 						</div>
 					</div>
 
-					<div className="pb-4 border-b border-vscode-input-border">
-						<div className="flex gap-2 mb-4">
-							<Button
-								variant="primary"
-								onClick={() => {
-									const currentMode = getCurrentMode()
-									if (currentMode) {
-										vscode.postMessage({
-											type: "getSystemPrompt",
-											mode: currentMode.slug,
-										})
-									}
-								}}
-								data-testid="preview-prompt-button">
-								{t("prompts:systemPrompt.preview")}
-							</Button>
-							<StandardTooltip content={t("prompts:systemPrompt.copy")}>
+					<div className="text-sm text-vscode-descriptionForeground mb-3">
+						<Trans i18nKey="prompts:modes.createModeHelpText">
+							<VSCodeLink
+								href={buildDocLink("basic-usage/using-modes", "prompts_view_modes")}
+								style={{ display: "inline" }}
+								aria-label="Learn about using modes"></VSCodeLink>
+							<VSCodeLink
+								href={buildDocLink("features/custom-modes", "prompts_view_modes")}
+								style={{ display: "inline" }}
+								aria-label="Learn about customizing modes"></VSCodeLink>
+						</Trans>
+					</div>
+
+					<div className="flex items-center gap-1 mb-3">
+						{isRenamingMode ? (
+							<>
+								<VSCodeTextField
+									ref={renameInputRef}
+									value={renameInputValue}
+									onInput={(e: unknown) => {
+										const target = e as { target: { value: string } }
+										setRenameInputValue(target.target.value)
+									}}
+									className="grow"
+									placeholder={t("prompts:createModeDialog.name.placeholder")}
+								/>
+								<StandardTooltip content={t("settings:common.save")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										disabled={!renameInputValue.trim()}
+										onClick={handleSaveRenameMode}
+										data-testid="save-mode-rename-button">
+										<span className="codicon codicon-check" />
+									</Button>
+								</StandardTooltip>
+								<StandardTooltip content={t("settings:common.cancel")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={handleCancelRenameMode}
+										data-testid="cancel-mode-rename-button">
+										<span className="codicon codicon-close" />
+									</Button>
+								</StandardTooltip>
+							</>
+						) : (
+							<>
+								<Popover open={open} onOpenChange={onOpenChange}>
+									<PopoverTrigger asChild>
+										<Button
+											variant="combobox"
+											role="combobox"
+											aria-expanded={open}
+											className="justify-between grow"
+											data-testid="mode-select-trigger">
+											<div className="truncate">
+												{localRenames[visualMode] ??
+													getCurrentMode()?.name ??
+													t("prompts:modes.selectMode")}
+											</div>
+											<ChevronDown className="opacity-50" />
+										</Button>
+									</PopoverTrigger>
+									<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+										<Command>
+											<div className="relative">
+												<CommandInput
+													ref={searchInputRef}
+													value={searchValue}
+													onValueChange={setSearchValue}
+													placeholder={t("prompts:modes.selectMode")}
+													className="h-9 mr-4"
+													data-testid="mode-search-input"
+												/>
+												{searchValue.length > 0 && (
+													<div className="absolute right-2 top-0 bottom-0 flex items-center justify-center">
+														<X
+															className="text-vscode-input-foreground opacity-50 hover:opacity-100 size-4 p-0.5 cursor-pointer"
+															onClick={onClearSearch}
+														/>
+													</div>
+												)}
+											</div>
+											<CommandList>
+												<CommandEmpty>
+													{searchValue && (
+														<div className="py-2 px-1 text-sm">
+															{t("prompts:modes.noMatchFound")}
+														</div>
+													)}
+												</CommandEmpty>
+												<CommandGroup>
+													{displayModes
+														.filter((modeConfig) =>
+															searchValue
+																? modeConfig.name
+																		.toLowerCase()
+																		.includes(searchValue.toLowerCase())
+																: true,
+														)
+														.map((modeConfig) => (
+															<CommandItem
+																key={modeConfig.slug}
+																value={`${modeConfig.name} ${modeConfig.slug}`}
+																onSelect={() => {
+																	handleModeSwitch(modeConfig)
+																	setOpen(false)
+																}}
+																data-testid={`mode-option-${modeConfig.slug}`}>
+																<div className="flex items-center justify-between w-full">
+																	<span
+																		style={{
+																			whiteSpace: "nowrap",
+																			overflow: "hidden",
+																			textOverflow: "ellipsis",
+																			flex: 2,
+																			minWidth: 0,
+																		}}>
+																		{modeConfig.name}
+																	</span>
+																	<span
+																		className="text-foreground"
+																		style={{
+																			whiteSpace: "nowrap",
+																			overflow: "hidden",
+																			textOverflow: "ellipsis",
+																			direction: "rtl",
+																			textAlign: "right",
+																			flex: 1,
+																			minWidth: 0,
+																			marginLeft: "0.5em",
+																		}}>
+																		{modeConfig.slug}
+																	</span>
+																</div>
+															</CommandItem>
+														))}
+												</CommandGroup>
+											</CommandList>
+										</Command>
+									</PopoverContent>
+								</Popover>
+
+								{/* New mode (+) moved here from the top bar */}
+								<StandardTooltip content={t("prompts:modes.createNewMode")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={openCreateModeDialog}
+										data-testid="add-mode-button">
+										<span className="codicon codicon-add" />
+									</Button>
+								</StandardTooltip>
+
+								{/* Edit (rename) mode - only enabled for custom modes */}
+								<StandardTooltip content={t("settings:providers.renameProfile")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={handleStartRenameMode}
+										data-testid="rename-mode-button"
+										disabled={!findModeBySlug(visualMode, customModes)}>
+										<span className="codicon codicon-edit" />
+									</Button>
+								</StandardTooltip>
+
+								{/* Delete mode - disabled for built-in modes */}
+								<StandardTooltip content={t("prompts:createModeDialog.deleteMode")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => {
+											const customMode = findModeBySlug(visualMode, customModes)
+											if (customMode) {
+												setModeToDelete({
+													slug: customMode.slug,
+													name: customMode.name,
+													source: customMode.source || "global",
+												})
+												vscode.postMessage({
+													type: "deleteCustomMode",
+													slug: customMode.slug,
+													checkOnly: true,
+												})
+											}
+										}}
+										data-testid="delete-mode-button"
+										disabled={!findModeBySlug(visualMode, customModes)}>
+										<span className="codicon codicon-trash" />
+									</Button>
+								</StandardTooltip>
+
+								{/* Export mode (kept here to the right of the dropdown) */}
+								<StandardTooltip content={t("prompts:exportMode.title")}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => {
+											const currentMode = getCurrentMode()
+											if (currentMode?.slug && !isExporting) {
+												setIsExporting(true)
+												vscode.postMessage({
+													type: "exportMode",
+													slug: currentMode.slug,
+												})
+											}
+										}}
+										disabled={isExporting}
+										title={t("prompts:exportMode.title")}
+										data-testid="export-mode-toolbar-button">
+										<Upload className="h-4 w-4" />
+									</Button>
+								</StandardTooltip>
+							</>
+						)}
+					</div>
+
+					{/* API Configuration - Moved Here */}
+					<div className="mb-3">
+						<div className="font-bold mb-1">{t("prompts:apiConfiguration.title")}</div>
+						<div className="text-sm text-vscode-descriptionForeground mb-2">
+							{t("prompts:apiConfiguration.select")}
+						</div>
+						<div className="mb-2">
+							<Select
+								value={currentApiConfigName}
+								onValueChange={(value) => {
+									vscode.postMessage({
+										type: "loadApiConfiguration",
+										text: value,
+									})
+								}}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder={t("settings:common.select")} />
+								</SelectTrigger>
+								<SelectContent>
+									{(listApiConfigMeta || []).map((config) => (
+										<SelectItem key={config.id} value={config.name}>
+											{config.name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				</div>
+
+				{/* Role Definition section */}
+				<div className="mb-4">
+					<div className="flex justify-between items-center mb-1">
+						<div className="font-bold">{t("prompts:roleDefinition.title")}</div>
+						{!findModeBySlug(visualMode, customModes) && (
+							<StandardTooltip content={t("prompts:roleDefinition.resetToDefault")}>
 								<Button
 									variant="ghost"
 									size="icon"
 									onClick={() => {
 										const currentMode = getCurrentMode()
-										if (currentMode) {
-											vscode.postMessage({
-												type: "copySystemPrompt",
-												mode: currentMode.slug,
-											})
+										if (currentMode?.slug) {
+											handleAgentReset(currentMode.slug, "roleDefinition")
 										}
 									}}
-									data-testid="copy-prompt-button">
-									<span className="codicon codicon-copy"></span>
+									data-testid="role-definition-reset">
+									<span className="codicon codicon-discard"></span>
 								</Button>
 							</StandardTooltip>
-						</div>
+						)}
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						{t("prompts:roleDefinition.description")}
+					</div>
+					<VSCodeTextArea
+						resize="vertical"
+						value={(() => {
+							const customMode = findModeBySlug(visualMode, customModes)
+							const prompt = customModePrompts?.[visualMode] as PromptComponent
+							return customMode?.roleDefinition ?? prompt?.roleDefinition ?? getRoleDefinition(visualMode)
+						})()}
+						onChange={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							const customMode = findModeBySlug(visualMode, customModes)
+							if (customMode) {
+								// For custom modes, update the JSON file
+								updateCustomMode(visualMode, {
+									...customMode,
+									roleDefinition: value.trim() || "",
+									source: customMode.source || "global",
+								})
+							} else {
+								// For built-in modes, update the prompts
+								updateAgentPrompt(visualMode, {
+									roleDefinition: value.trim() || undefined,
+								})
+							}
+						}}
+						className="w-full"
+						rows={5}
+						data-testid={`${getCurrentMode()?.slug || "code"}-prompt-textarea`}
+					/>
+				</div>
 
-						{/* Advanced Features Disclosure */}
-						<div className="mt-4">
-							<button
-								onClick={() => setIsSystemPromptDisclosureOpen(!isSystemPromptDisclosureOpen)}
-								className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
-								aria-expanded={isSystemPromptDisclosureOpen}>
-								<span
-									className={`codicon codicon-${isSystemPromptDisclosureOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
-								<span>{t("prompts:advanced.title")}</span>
-							</button>
+				{/* Description section */}
+				<div className="mb-4">
+					<div className="flex justify-between items-center mb-1">
+						<div className="font-bold">{t("prompts:description.title")}</div>
+						{!findModeBySlug(visualMode, customModes) && (
+							<StandardTooltip content={t("prompts:description.resetToDefault")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										const currentMode = getCurrentMode()
+										if (currentMode?.slug) {
+											handleAgentReset(currentMode.slug, "description")
+										}
+									}}
+									data-testid="description-reset">
+									<span className="codicon codicon-discard"></span>
+								</Button>
+							</StandardTooltip>
+						)}
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						{t("prompts:description.description")}
+					</div>
+					<VSCodeTextField
+						value={(() => {
+							const customMode = findModeBySlug(visualMode, customModes)
+							const prompt = customModePrompts?.[visualMode] as PromptComponent
+							return customMode?.description ?? prompt?.description ?? getDescription(visualMode)
+						})()}
+						onChange={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							const customMode = findModeBySlug(visualMode, customModes)
+							if (customMode) {
+								// For custom modes, update the JSON file
+								updateCustomMode(visualMode, {
+									...customMode,
+									description: value.trim() || undefined,
+									source: customMode.source || "global",
+								})
+							} else {
+								// For built-in modes, update the prompts
+								updateAgentPrompt(visualMode, {
+									description: value.trim() || undefined,
+								})
+							}
+						}}
+						className="w-full"
+						data-testid={`${getCurrentMode()?.slug || "code"}-description-textfield`}
+					/>
+				</div>
 
-							{isSystemPromptDisclosureOpen && (
-								<div className="mt-2 ml-5 space-y-4">
-									{/* Override System Prompt Section */}
-									<div>
-										<h4 className="text-xs font-semibold text-vscode-foreground mb-2">
-											Override System Prompt
-										</h4>
-										<div className="text-xs text-vscode-descriptionForeground">
-											<Trans
-												i18nKey="prompts:advancedSystemPrompt.description"
-												values={{
-													slug: getCurrentMode()?.slug || "code",
-												}}
-												components={{
-													span: (
-														<span
-															className="text-vscode-textLink-foreground cursor-pointer underline"
-															onClick={() => {
-																const currentMode = getCurrentMode()
-																if (!currentMode) return
+				{/* When to Use section */}
+				<div className="mb-4">
+					<div className="flex justify-between items-center mb-1">
+						<div className="font-bold">{t("prompts:whenToUse.title")}</div>
+						{!findModeBySlug(visualMode, customModes) && (
+							<StandardTooltip content={t("prompts:whenToUse.resetToDefault")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										const currentMode = getCurrentMode()
+										if (currentMode?.slug) {
+											handleAgentReset(currentMode.slug, "whenToUse")
+										}
+									}}
+									data-testid="when-to-use-reset">
+									<span className="codicon codicon-discard"></span>
+								</Button>
+							</StandardTooltip>
+						)}
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						{t("prompts:whenToUse.description")}
+					</div>
+					<VSCodeTextArea
+						resize="vertical"
+						value={(() => {
+							const customMode = findModeBySlug(visualMode, customModes)
+							const prompt = customModePrompts?.[visualMode] as PromptComponent
+							return customMode?.whenToUse ?? prompt?.whenToUse ?? getWhenToUse(visualMode)
+						})()}
+						onChange={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							const customMode = findModeBySlug(visualMode, customModes)
+							if (customMode) {
+								// For custom modes, update the JSON file
+								updateCustomMode(visualMode, {
+									...customMode,
+									whenToUse: value.trim() || undefined,
+									source: customMode.source || "global",
+								})
+							} else {
+								// For built-in modes, update the prompts
+								updateAgentPrompt(visualMode, {
+									whenToUse: value.trim() || undefined,
+								})
+							}
+						}}
+						className="w-full"
+						rows={4}
+						data-testid={`${getCurrentMode()?.slug || "code"}-when-to-use-textarea`}
+					/>
+				</div>
 
-																vscode.postMessage({
-																	type: "openFile",
-																	text: `./.roo/system-prompt-${currentMode.slug}`,
-																	values: {
-																		create: true,
-																		content: "",
-																	},
-																})
-															}}
-														/>
-													),
-													"1": (
-														<VSCodeLink
-															href={buildDocLink(
-																"features/footgun-prompting",
-																"prompts_advanced_system_prompt",
-															)}
-															style={{ display: "inline" }}
-															aria-label="Read important information about overriding system prompts"></VSCodeLink>
-													),
-													"2": <strong />,
-												}}
-											/>
-										</div>
-									</div>
-								</div>
+				{/* Mode settings */}
+				<>
+					{/* Show tools for all modes */}
+					<div className="mb-4">
+						<div className="flex justify-between items-center mb-1">
+							<div className="font-bold">{t("prompts:tools.title")}</div>
+							{findModeBySlug(visualMode, customModes) && (
+								<StandardTooltip
+									content={
+										isToolsEditMode ? t("prompts:tools.doneEditing") : t("prompts:tools.editTools")
+									}>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => setIsToolsEditMode(!isToolsEditMode)}>
+										<span
+											className={`codicon codicon-${isToolsEditMode ? "check" : "edit"}`}></span>
+									</Button>
+								</StandardTooltip>
 							)}
 						</div>
-					</div>
+						{!findModeBySlug(visualMode, customModes) && (
+							<div className="text-sm text-vscode-descriptionForeground mb-2">
+								{t("prompts:tools.builtInModesText")}
+							</div>
+						)}
+						{isToolsEditMode && findModeBySlug(visualMode, customModes) ? (
+							<div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
+								{availableGroups.map((group) => {
+									const currentMode = getCurrentMode()
+									const isCustomMode = findModeBySlug(visualMode, customModes)
+									const customMode = isCustomMode
+									const isGroupEnabled = isCustomMode
+										? customMode?.groups?.some((g) => getGroupName(g) === group)
+										: currentMode?.groups?.some((g) => getGroupName(g) === group)
 
-					<div className="pb-5">
-						<h3 className="text-vscode-foreground mb-3">{t("prompts:globalCustomInstructions.title")}</h3>
-
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
-							<Trans i18nKey="prompts:globalCustomInstructions.description">
-								<VSCodeLink
-									href={buildDocLink(
-										"features/custom-instructions#setting-up-global-rules",
-										"prompts_global_custom_instructions",
-									)}
-									style={{ display: "inline" }}
-									aria-label="Learn more about global custom instructions"></VSCodeLink>
-							</Trans>
-						</div>
-						<VSCodeTextArea
-							resize="vertical"
-							value={customInstructions || ""}
-							onChange={(e) => {
-								const value =
-									(e as unknown as CustomEvent)?.detail?.target?.value ??
-									((e as any).target as HTMLTextAreaElement).value
-								setCustomInstructions(value ?? undefined)
-								vscode.postMessage({
-									type: "customInstructions",
-									text: value ?? undefined,
-								})
-							}}
-							rows={4}
-							className="w-full"
-							data-testid="global-custom-instructions-textarea"
-						/>
-						<div className="text-xs text-vscode-descriptionForeground mt-1.5">
-							<Trans
-								i18nKey="prompts:globalCustomInstructions.loadFromFile"
-								components={{
-									span: (
-										<span
-											className="text-vscode-textLink-foreground cursor-pointer underline"
-											onClick={() =>
-												vscode.postMessage({
-													type: "openFile",
-													text: "./.roo/rules/rules.md",
-													values: {
-														create: true,
-														content: "",
-													},
-												})
-											}
-										/>
-									),
-									"0": (
-										<VSCodeLink
-											href={buildDocLink(
-												"features/custom-instructions#setting-up-global-rules",
-												"prompts_global_rules",
+									return (
+										<VSCodeCheckbox
+											key={group}
+											checked={isGroupEnabled}
+											onChange={handleGroupChange(group, Boolean(isCustomMode), customMode)}
+											disabled={!isCustomMode}>
+											{t(`prompts:tools.toolNames.${group}`)}
+											{group === "edit" && (
+												<div className="text-xs text-vscode-descriptionForeground mt-0.5">
+													{t("prompts:tools.allowedFiles")}{" "}
+													{(() => {
+														const currentMode = getCurrentMode()
+														const editGroup = currentMode?.groups?.find(
+															(g) =>
+																Array.isArray(g) && g[0] === "edit" && g[1]?.fileRegex,
+														)
+														if (!Array.isArray(editGroup)) return t("prompts:allFiles")
+														return editGroup[1].description || `/${editGroup[1].fileRegex}/`
+													})()}
+												</div>
 											)}
-											style={{ display: "inline" }}
-											aria-label="Learn about setting up global custom instructions"
-										/>
-									),
-								}}
-							/>
-						</div>
+										</VSCodeCheckbox>
+									)
+								})}
+							</div>
+						) : (
+							<div className="text-sm text-vscode-foreground mb-2 leading-relaxed">
+								{(() => {
+									const currentMode = getCurrentMode()
+									const enabledGroups = currentMode?.groups || []
+
+									// If there are no enabled groups, display translated "None"
+									if (enabledGroups.length === 0) {
+										return t("prompts:tools.noTools")
+									}
+
+									return enabledGroups
+										.map((group) => {
+											const groupName = getGroupName(group)
+											const displayName = t(`prompts:tools.toolNames.${groupName}`)
+											if (Array.isArray(group) && group[1]?.fileRegex) {
+												const description = group[1].description || `/${group[1].fileRegex}/`
+												return `${displayName} (${description})`
+											}
+											return displayName
+										})
+										.join(", ")
+								})()}
+							</div>
+						)}
 					</div>
-				</TabContent>
+				</>
+
+				{/* Role definition for both built-in and custom modes */}
+				<div className="mb-2">
+					<div className="flex justify-between items-center mb-1">
+						<div className="font-bold">{t("prompts:customInstructions.title")}</div>
+						{!findModeBySlug(visualMode, customModes) && (
+							<StandardTooltip content={t("prompts:customInstructions.resetToDefault")}>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => {
+										const currentMode = getCurrentMode()
+										if (currentMode?.slug) {
+											handleAgentReset(currentMode.slug, "customInstructions")
+										}
+									}}
+									data-testid="custom-instructions-reset">
+									<span className="codicon codicon-discard"></span>
+								</Button>
+							</StandardTooltip>
+						)}
+					</div>
+					<div className="text-[13px] text-vscode-descriptionForeground mb-2">
+						{t("prompts:customInstructions.description", {
+							modeName: getCurrentMode()?.name || "Code",
+						})}
+					</div>
+					<VSCodeTextArea
+						resize="vertical"
+						value={(() => {
+							const customMode = findModeBySlug(visualMode, customModes)
+							const prompt = customModePrompts?.[visualMode] as PromptComponent
+							return (
+								customMode?.customInstructions ??
+								prompt?.customInstructions ??
+								getCustomInstructions(visualMode, customModes)
+							)
+						})()}
+						onChange={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							const customMode = findModeBySlug(visualMode, customModes)
+							if (customMode) {
+								// For custom modes, update the JSON file
+								updateCustomMode(visualMode, {
+									...customMode,
+									// Preserve empty string; only treat null/undefined as unset
+									customInstructions: value ?? undefined,
+									source: customMode.source || "global",
+								})
+							} else {
+								// For built-in modes, update the prompts
+								const existingPrompt = customModePrompts?.[visualMode] as PromptComponent
+								updateAgentPrompt(visualMode, {
+									...existingPrompt,
+									customInstructions: value.trim() || undefined,
+								})
+							}
+						}}
+						rows={10}
+						className="w-full"
+						data-testid={`${getCurrentMode()?.slug || "code"}-custom-instructions-textarea`}
+					/>
+					<div className="text-xs text-vscode-descriptionForeground mt-1.5">
+						<Trans
+							i18nKey="prompts:customInstructions.loadFromFile"
+							values={{
+								mode: getCurrentMode()?.name || "Code",
+								slug: getCurrentMode()?.slug || "code",
+							}}
+							components={{
+								span: (
+									<span
+										className="text-vscode-textLink-foreground cursor-pointer underline"
+										onClick={() => {
+											const currentMode = getCurrentMode()
+											if (!currentMode) return
+
+											// Open or create an empty file
+											vscode.postMessage({
+												type: "openFile",
+												text: `./.roo/rules-${currentMode.slug}/rules.md`,
+												values: {
+													create: true,
+													content: "",
+												},
+											})
+										}}
+									/>
+								),
+								"0": (
+									<VSCodeLink
+										href={buildDocLink(
+											"features/custom-instructions#global-rules-directory",
+											"prompts_mode_specific_global_rules",
+										)}
+										style={{ display: "inline" }}
+										aria-label="Learn about global custom instructions for modes"
+									/>
+								),
+							}}
+						/>
+					</div>
+				</div>
+
+				<div className="pb-4 border-b border-vscode-input-border">
+					<div className="flex gap-2 mb-4">
+						<Button
+							variant="primary"
+							onClick={() => {
+								const currentMode = getCurrentMode()
+								if (currentMode) {
+									vscode.postMessage({
+										type: "getSystemPrompt",
+										mode: currentMode.slug,
+									})
+								}
+							}}
+							data-testid="preview-prompt-button">
+							{t("prompts:systemPrompt.preview")}
+						</Button>
+						<StandardTooltip content={t("prompts:systemPrompt.copy")}>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => {
+									const currentMode = getCurrentMode()
+									if (currentMode) {
+										vscode.postMessage({
+											type: "copySystemPrompt",
+											mode: currentMode.slug,
+										})
+									}
+								}}
+								data-testid="copy-prompt-button">
+								<span className="codicon codicon-copy"></span>
+							</Button>
+						</StandardTooltip>
+					</div>
+
+					{/* Advanced Features Disclosure */}
+					<div className="mt-4">
+						<button
+							onClick={() => setIsSystemPromptDisclosureOpen(!isSystemPromptDisclosureOpen)}
+							className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+							aria-expanded={isSystemPromptDisclosureOpen}>
+							<span
+								className={`codicon codicon-${isSystemPromptDisclosureOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+							<span>{t("prompts:advanced.title")}</span>
+						</button>
+
+						{isSystemPromptDisclosureOpen && (
+							<div className="mt-2 ml-5 space-y-4">
+								{/* Override System Prompt Section */}
+								<div>
+									<h4 className="text-xs font-semibold text-vscode-foreground mb-2">
+										Override System Prompt
+									</h4>
+									<div className="text-xs text-vscode-descriptionForeground">
+										<Trans
+											i18nKey="prompts:advancedSystemPrompt.description"
+											values={{
+												slug: getCurrentMode()?.slug || "code",
+											}}
+											components={{
+												span: (
+													<span
+														className="text-vscode-textLink-foreground cursor-pointer underline"
+														onClick={() => {
+															const currentMode = getCurrentMode()
+															if (!currentMode) return
+
+															vscode.postMessage({
+																type: "openFile",
+																text: `./.roo/system-prompt-${currentMode.slug}`,
+																values: {
+																	create: true,
+																	content: "",
+																},
+															})
+														}}
+													/>
+												),
+												"1": (
+													<VSCodeLink
+														href={buildDocLink(
+															"features/footgun-prompting",
+															"prompts_advanced_system_prompt",
+														)}
+														style={{ display: "inline" }}
+														aria-label="Read important information about overriding system prompts"></VSCodeLink>
+												),
+												"2": <strong />,
+											}}
+										/>
+									</div>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className="pb-5">
+					<h3 className="text-vscode-foreground mb-3">{t("prompts:globalCustomInstructions.title")}</h3>
+
+					<div className="text-sm text-vscode-descriptionForeground mb-2">
+						<Trans i18nKey="prompts:globalCustomInstructions.description">
+							<VSCodeLink
+								href={buildDocLink(
+									"features/custom-instructions#setting-up-global-rules",
+									"prompts_global_custom_instructions",
+								)}
+								style={{ display: "inline" }}
+								aria-label="Learn more about global custom instructions"></VSCodeLink>
+						</Trans>
+					</div>
+					<VSCodeTextArea
+						resize="vertical"
+						value={customInstructions || ""}
+						onChange={(e) => {
+							const value =
+								(e as unknown as CustomEvent)?.detail?.target?.value ??
+								((e as any).target as HTMLTextAreaElement).value
+							setCustomInstructions(value ?? undefined)
+							vscode.postMessage({
+								type: "customInstructions",
+								text: value ?? undefined,
+							})
+						}}
+						rows={4}
+						className="w-full"
+						data-testid="global-custom-instructions-textarea"
+					/>
+					<div className="text-xs text-vscode-descriptionForeground mt-1.5">
+						<Trans
+							i18nKey="prompts:globalCustomInstructions.loadFromFile"
+							components={{
+								span: (
+									<span
+										className="text-vscode-textLink-foreground cursor-pointer underline"
+										onClick={() =>
+											vscode.postMessage({
+												type: "openFile",
+												text: "./.roo/rules/rules.md",
+												values: {
+													create: true,
+													content: "",
+												},
+											})
+										}
+									/>
+								),
+								"0": (
+									<VSCodeLink
+										href={buildDocLink(
+											"features/custom-instructions#setting-up-global-rules",
+											"prompts_global_rules",
+										)}
+										style={{ display: "inline" }}
+										aria-label="Learn about setting up global custom instructions"
+									/>
+								),
+							}}
+						/>
+					</div>
+				</div>
 			</Section>
 
 			{isCreateModeDialogOpen && (
