@@ -828,6 +828,148 @@ describe("summarizeConversation", () => {
 		expect(result.messages).toHaveLength(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last 3
 		expect(result.error).toBeUndefined()
 	})
+
+	it("should include user tool_result message in summarize request when preserving tool_use blocks", async () => {
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_history_fix",
+			name: "read_file",
+			input: { path: "sample.txt" },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_history_fix",
+			content: "file contents",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Let me help", ts: 2 },
+			{
+				role: "assistant",
+				content: [{ type: "text" as const, text: "Running tool..." }, toolUseBlock],
+				ts: 3,
+			},
+			{
+				role: "user",
+				content: [toolResultBlock, { type: "text" as const, text: "Thanks" }],
+				ts: 4,
+			},
+			{ role: "assistant", content: "Anything else?", ts: 5 },
+			{ role: "user", content: "Nope", ts: 6 },
+		]
+
+		let capturedRequestMessages: any[] | undefined
+		const customStream = (async function* () {
+			yield { type: "text" as const, text: "Summary of conversation" }
+			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
+		})()
+
+		mockApiHandler.createMessage = vi.fn().mockImplementation((_prompt, requestMessagesParam) => {
+			capturedRequestMessages = requestMessagesParam
+			return customStream
+		}) as any
+
+		const result = await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			true,
+		)
+
+		expect(result.error).toBeUndefined()
+		expect(capturedRequestMessages).toBeDefined()
+
+		const requestMessages = capturedRequestMessages!
+		expect(requestMessages[requestMessages.length - 1]).toEqual({
+			role: "user",
+			content: "Summarize the conversation so far, as described in the prompt instructions.",
+		})
+
+		const historyMessages = requestMessages.slice(0, -1)
+		expect(historyMessages.length).toBeGreaterThanOrEqual(2)
+
+		const assistantMessage = historyMessages[historyMessages.length - 2]
+		const userMessage = historyMessages[historyMessages.length - 1]
+
+		expect(assistantMessage.role).toBe("assistant")
+		expect(Array.isArray(assistantMessage.content)).toBe(true)
+		expect(
+			(assistantMessage.content as any[]).some(
+				(block) => block.type === "tool_use" && block.id === toolUseBlock.id,
+			),
+		).toBe(true)
+
+		expect(userMessage.role).toBe("user")
+		expect(Array.isArray(userMessage.content)).toBe(true)
+		expect(
+			(userMessage.content as any[]).some(
+				(block) => block.type === "tool_result" && block.tool_use_id === toolUseBlock.id,
+			),
+		).toBe(true)
+	})
+
+	it("should append multiple tool_use blocks for parallel tool calls", async () => {
+		const toolUseBlockA = {
+			type: "tool_use" as const,
+			id: "toolu_parallel_1",
+			name: "search",
+			input: { query: "foo" },
+		}
+		const toolUseBlockB = {
+			type: "tool_use" as const,
+			id: "toolu_parallel_2",
+			name: "search",
+			input: { query: "bar" },
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Start", ts: 1 },
+			{ role: "assistant", content: "Working...", ts: 2 },
+			{
+				role: "assistant",
+				content: [{ type: "text" as const, text: "Launching parallel tools" }, toolUseBlockA, toolUseBlockB],
+				ts: 3,
+			},
+			{
+				role: "user",
+				content: [
+					{ type: "tool_result" as const, tool_use_id: "toolu_parallel_1", content: "result A" },
+					{ type: "tool_result" as const, tool_use_id: "toolu_parallel_2", content: "result B" },
+					{ type: "text" as const, text: "Continue" },
+				],
+				ts: 4,
+			},
+			{ role: "assistant", content: "Processing results", ts: 5 },
+			{ role: "user", content: "Thanks", ts: 6 },
+		]
+
+		const result = await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+			false,
+			undefined,
+			undefined,
+			true,
+		)
+
+		const summaryMessage = result.messages[1]
+		expect(Array.isArray(summaryMessage.content)).toBe(true)
+		const summaryContent = summaryMessage.content as any[]
+		expect(summaryContent[0]).toEqual({ type: "text", text: "This is a summary" })
+
+		const preservedToolUses = summaryContent.filter((block) => block.type === "tool_use")
+		expect(preservedToolUses).toHaveLength(2)
+		expect(preservedToolUses.map((block) => block.id)).toEqual(["toolu_parallel_1", "toolu_parallel_2"])
+	})
 })
 
 describe("summarizeConversation with custom settings", () => {

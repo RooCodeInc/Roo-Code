@@ -172,8 +172,13 @@ export async function summarizeConversation(
 		? getKeepMessagesWithToolBlocks(messages, N_MESSAGES_TO_KEEP)
 		: { keepMessages: messages.slice(-N_MESSAGES_TO_KEEP), toolUseBlocksToPreserve: [] }
 
+	const keepStartIndex = Math.max(messages.length - N_MESSAGES_TO_KEEP, 0)
+	const includeFirstKeptMessageInSummary = toolUseBlocksToPreserve.length > 0
+	const summarySliceEnd = includeFirstKeptMessageInSummary ? keepStartIndex + 1 : keepStartIndex
+	const messagesBeforeKeep = summarySliceEnd > 0 ? messages.slice(0, summarySliceEnd) : []
+
 	// Get messages to summarize, including the first message and excluding the last N messages
-	const messagesToSummarize = getMessagesSinceLastSummary(messages.slice(0, -N_MESSAGES_TO_KEEP))
+	const messagesToSummarize = getMessagesSinceLastSummary(messagesBeforeKeep)
 
 	if (messagesToSummarize.length <= 1) {
 		const error =
