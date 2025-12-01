@@ -36,11 +36,7 @@ import McpResourceRow from "./McpResourceRow"
 import McpEnabledToggle from "./McpEnabledToggle"
 import { McpErrorRow } from "./McpErrorRow"
 
-type McpViewProps = {
-	onDone?: () => void
-}
-
-const McpView = (_props: McpViewProps) => {
+const McpView = () => {
 	const {
 		mcpServers: servers,
 		alwaysAllowMcp,
