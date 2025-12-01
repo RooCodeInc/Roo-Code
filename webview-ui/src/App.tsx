@@ -161,16 +161,6 @@ const App = () => {
 					const targetSection = message.values?.section as string | undefined
 					setCurrentSection(targetSection)
 					setCurrentMarketplaceTab(undefined)
-				} else if (message.action === "promptsButtonClicked") {
-					// Open settings on Modes section
-					switchTab("settings")
-					setCurrentSection("modes")
-					setCurrentMarketplaceTab(undefined)
-				} else if (message.action === "mcpButtonClicked") {
-					// Open settings on MCP section
-					switchTab("settings")
-					setCurrentSection("mcp")
-					setCurrentMarketplaceTab(undefined)
 				} else {
 					// Handle other actions using the mapping
 					const newTab = tabsByMessageAction[message.action]

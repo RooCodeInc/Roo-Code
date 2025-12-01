@@ -140,10 +140,8 @@ export interface ExtensionMessage {
 	}
 	action?:
 		| "chatButtonClicked"
-		| "mcpButtonClicked"
 		| "settingsButtonClicked"
 		| "historyButtonClicked"
-		| "promptsButtonClicked"
 		| "marketplaceButtonClicked"
 		| "cloudButtonClicked"
 		| "didBecomeVisible"

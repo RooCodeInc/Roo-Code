@@ -253,34 +253,6 @@ describe("App", () => {
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
 	})
 
-	it("switches to settings view when receiving mcpButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("mcpButtonClicked")
-		})
-
-		const settingsView = await screen.findByTestId("settings-view")
-		expect(settingsView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
-	it("switches to settings view when receiving promptsButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("promptsButtonClicked")
-		})
-
-		const settingsView = await screen.findByTestId("settings-view")
-		expect(settingsView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
 	it("returns to chat view when clicking done in settings view", async () => {
 		render(<AppWithProviders />)
 
