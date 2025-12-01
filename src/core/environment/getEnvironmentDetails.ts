@@ -23,7 +23,11 @@ import { getGitStatus } from "../../utils/git"
 import { Task } from "../task/Task"
 import { formatReminderSection } from "./reminder"
 
-export async function getEnvironmentDetails(cline: Task, includeFileDetails: boolean = false) {
+export async function getEnvironmentDetails(
+	cline: Task,
+	includeFileDetails: boolean = false,
+	overrideModelId?: string,
+) {
 	let details = ""
 
 	const clineProvider = cline.providerRef.deref()
@@ -216,7 +220,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		details += `\n\n# Current Cost\n${totalCost !== null ? `$${totalCost.toFixed(2)}` : "(Not available)"}`
 	}
 
-	const { id: modelId } = cline.api.getModel()
+	// Use the override model ID if provided (e.g., for preserving historical model in exports)
+	// Otherwise use the current model from the task
+	const modelId = overrideModelId || cline.api.getModel().id
 
 	// Add current mode and any mode-specific warnings.
 	const {

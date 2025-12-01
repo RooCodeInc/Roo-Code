@@ -806,6 +806,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async addToClineMessages(message: ClineMessage) {
+		// Add the current model ID to the message if not already present
+		if (!message.modelId) {
+			message.modelId = this.api.getModel().id
+		}
 		this.clineMessages.push(message)
 		const provider = this.providerRef.deref()
 		await provider?.postStateToWebview()
@@ -950,7 +954,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					askTs = Date.now()
 					this.lastMessageTs = askTs
 					console.log(`Task#ask: new partial ask -> ${type} @ ${askTs}`)
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
+					await this.addToClineMessages({
+						ts: askTs,
+						type: "ask",
+						ask: type,
+						text,
+						partial,
+						isProtected,
+						modelId: this.api.getModel().id,
+					})
 					// console.log("Task#ask: current ask promise was ignored (#2)")
 					throw new Error("Current ask promise was ignored (#2)")
 				}
@@ -990,7 +1002,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					askTs = Date.now()
 					console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+					await this.addToClineMessages({
+						ts: askTs,
+						type: "ask",
+						ask: type,
+						text,
+						isProtected,
+						modelId: this.api.getModel().id,
+					})
 				}
 			}
 		} else {
@@ -1001,7 +1020,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			askTs = Date.now()
 			console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 			this.lastMessageTs = askTs
-			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+			await this.addToClineMessages({
+				ts: askTs,
+				type: "ask",
+				ask: type,
+				text,
+				isProtected,
+				modelId: this.api.getModel().id,
+			})
 		}
 
 		let timeouts: NodeJS.Timeout[] = []
@@ -1379,6 +1405,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						images,
 						partial,
 						contextCondense,
+						modelId: this.api.getModel().id,
 					})
 				}
 			} else {
@@ -1416,6 +1443,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						text,
 						images,
 						contextCondense,
+						modelId: this.api.getModel().id,
 					})
 				}
 			}
@@ -1439,6 +1467,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				images,
 				checkpoint,
 				contextCondense,
+				modelId: this.api.getModel().id,
 			})
 		}
 
