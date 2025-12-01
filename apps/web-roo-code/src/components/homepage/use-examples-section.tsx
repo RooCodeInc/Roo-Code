@@ -339,7 +339,10 @@ export function UseExamplesSection() {
 	const positionedItems = useMemo(() => distributeItems(USE_CASES), [])
 
 	return (
-		<section className="pt-24 bg-background overflow-hidden">
+		<section className="pt-24 bg-background overflow-hidden relative">
+			<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
+				<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/10 blur-[140px]" />
+			</div>
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-4xl font-bold tracking-tight mb-4">
