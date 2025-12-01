@@ -12,6 +12,7 @@ import {
 	Wrench,
 	Map,
 	MessageCircleQuestionMark,
+	ArrowRight,
 } from "lucide-react"
 
 interface UseCase {
@@ -113,9 +114,117 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "Product Manager",
-		use: "How big of a change would it be to make this an option?",
+		use: "How big of a change would it be to make turn this from a yes/on to have 4 options?",
 		agent: AGENTS.coder,
 		context: SOURCES.web,
+	},
+	{
+		role: "QA Engineer",
+		use: "Write a Playwright test for the login flow failure case.",
+		agent: AGENTS.coder,
+		context: SOURCES.github,
+	},
+	{
+		role: "DevOps Engineer",
+		use: "Update the Dockerfile to use Node 20 Alpine.",
+		agent: AGENTS.fixer,
+		context: SOURCES.extension,
+	},
+	{
+		role: "Data Scientist",
+		use: "Explain how this pandas transformation handles NaNs.",
+		agent: AGENTS.explainer,
+		context: SOURCES.web,
+	},
+	{
+		role: "Mobile Developer",
+		use: "Convert this React component to React Native.",
+		agent: AGENTS.coder,
+		context: SOURCES.slack,
+	},
+	{
+		role: "Technical Writer",
+		use: "Generate JSDoc comments for the auth utility functions.",
+		agent: AGENTS.coder,
+		context: SOURCES.github,
+	},
+	{
+		role: "Junior Developer",
+		use: "Review my pull request for potential performance improvements.",
+		agent: AGENTS.reviewer,
+		context: SOURCES.extension,
+	},
+	{
+		role: "Engineering Manager",
+		use: "Break down the user profile feature into technical tasks.",
+		agent: AGENTS.planner,
+		context: SOURCES.web,
+	},
+	{
+		role: "Support Engineer",
+		use: "What's causing this stack trace? The customer is on MacOS 26.1.",
+		agent: AGENTS.explainer,
+		context: SOURCES.web,
+	},
+	{
+		role: "Frontend Developer",
+		use: "Make the navigation menu responsive on mobile devices.",
+		agent: AGENTS.coder,
+		context: SOURCES.web,
+	},
+	{
+		role: "Backend Engineer",
+		use: "Give me two architecture options for the notification system in this PRD.",
+		agent: AGENTS.planner,
+		context: SOURCES.web,
+	},
+	{
+		role: "Designer",
+		use: "Implement the loading spinner animation in CSS.",
+		agent: AGENTS.coder,
+		context: SOURCES.web,
+	},
+	{
+		role: "Customer Success",
+		use: "Write a script to find patterns in these CPU load logs.",
+		agent: AGENTS.coder,
+		context: SOURCES.slack,
+	},
+	{
+		role: "Full Stack Dev",
+		use: "Refactor user_preferences to use named columns instead of a single JSON blob",
+		agent: AGENTS.coder,
+		context: SOURCES.extension,
+	},
+	{
+		role: "QA Engineer",
+		use: "Automate the regression suite for the checkout process.",
+		agent: AGENTS.coder,
+		context: SOURCES.extension,
+	},
+	{
+		role: "DevOps Engineer",
+		use: "Understand and fix this build error.",
+		agent: AGENTS.coder,
+		context: SOURCES.extension,
+	},
+	{
+		role: "Product Marketer",
+		use: "What were the 5 most significant PRs merged in the past week?",
+		agent: AGENTS.explainer,
+		context: SOURCES.slack,
+	},
+	{
+		role: "Junior Developer",
+		use: "Explain how useEffect dependency arrays work here.",
+		agent: AGENTS.explainer,
+		context: SOURCES.extension,
+	},
+	{
+		role: "Senior Engineer",
+		use: "Check if this implementation follows the Single Responsibility Principle.",
+		agent: AGENTS.reviewer,
+		context: SOURCES.github,
 	},
 ]
 
@@ -137,7 +246,7 @@ const LAYER_SCALES = {
 
 function distributeItems(items: UseCase[]): PositionedUseCase[] {
 	const rng = seededRandom(12345)
-	const zones = { rows: 4, cols: 5 } // 20 zones for 20 items
+	const zones = { rows: 5, cols: 6 } // 30 zones for 26 items
 	const zoneWidth = 100 / zones.cols
 	const zoneHeight = 100 / zones.rows
 
@@ -157,7 +266,7 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 		const col = zoneIndex % zones.cols
 
 		// Distribute layers evenly
-		const layer = (Math.floor(index / 5) + 1) as 1 | 2 | 3 | 4
+		const layer = ((index % 4) + 1) as 1 | 2 | 3 | 4
 
 		// Calculate base position (center of zone)
 		const baseX = col * zoneWidth + zoneWidth / 2
@@ -182,11 +291,11 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 
 function UseCaseCard({ item }: { item: PositionedUseCase }) {
 	const ContextIcon: LucideIcon = item.context.icon
-	const AgentIcon: LucideIcon = item.agent.icon
+	const opacity = item.layer / 3
 
 	return (
 		<motion.div
-			className="absolute w-[200px] md:w-[300px] cursor-default"
+			className="absolute w-[200px] md:w-[400px] cursor-default group"
 			style={{
 				left: `${item.position.x}%`,
 				top: `${item.position.y}%`,
@@ -197,12 +306,12 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 				opacity: 1,
 				scale: item.scale,
 				transition: {
-					duration: 0.1,
+					duration: 0.2 * (item.layer - 3),
 					delay: 0, // Stagger by layer
 				},
 			}}
 			whileHover={{
-				scale: 1,
+				scale: 1.2,
 				zIndex: 30,
 			}}
 			viewport={{ once: true }}
@@ -212,17 +321,21 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 				className={`rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-sm transition-shadow hover:shadow-md ${
 					item.layer === 4 ? "shadow-lg border-border" : ""
 				}`}>
-				<div className="text-lg font- text-violet-600 mb-1">
+				<div
+					className="text-base flex items-center gap-2 text-violet-600 mb-1 !group-hover:opacity-100"
+					style={{ opacity: opacity }}>
 					{item.role}
-					<br />
-					<div>
-						with <AgentIcon className="size-4 inline ml-1" /> {item.agent.name} Agent
-					</div>
+					<ArrowRight className="size-4" />
+					{item.agent.name} Agent
 				</div>
 
-				<div className="text-xl font-light leading-tight my-1">{item.use}</div>
+				<div className="text-lg font-light leading-tight my-1" style={{ opacity: opacity }}>
+					{item.use}
+				</div>
 
-				<div className="text-base font-light text-muted-foreground leading-tight mb-1">
+				<div
+					className="text-xs font-light text-muted-foreground leading-tight mt-2"
+					style={{ opacity: opacity }}>
 					via <ContextIcon className="size-4 inline ml-1" /> {item.context.name}
 				</div>
 			</div>
