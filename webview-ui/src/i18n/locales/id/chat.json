@@ -306,8 +306,8 @@
 		},
 		"release": {
 			"heading": "Terbaru:",
-			"browserUse": "Browser Use 2.0 meningkatkan pengalaman browsing dalam chat dengan sesi persisten, feedback yang lebih jelas, panel browser khusus, dan deskripsi aksi yang lebih alami",
-			"cloudPaid": "Provider Roo Code Cloud sekarang menawarkan model berbayar: beli kredit dan gunakan untuk cloud agents dan inference"
+			"subtasks": "Orkestrasi subtugas yang ditingkatkan dengan resume induk otomatis dan keamanan pembukaan tunggal untuk alur kerja multi-tugas yang lebih baik",
+			"nativeTools": "Pemanggilan alat asli sekarang didukung di 13+ penyedia termasuk Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, dan banyak lagi"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

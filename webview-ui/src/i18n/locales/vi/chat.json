@@ -295,8 +295,8 @@
 		},
 		"release": {
 			"heading": "Mới trong phiên bản này:",
-			"browserUse": "Browser Use 2.0 nâng cấp trải nghiệm duyệt web trong trò chuyện với các phiên bản liên tục, phản hồi rõ ràng hơn, bảng điều khiển trình duyệt chuyên dụng và mô tả hành động tự nhiên hơn",
-			"cloudPaid": "Nhà cung cấp Roo Code Cloud hiện cung cấp các mô hình trả phí: mua tín dụng và sử dụng chúng cho cả các tác nhân đám mây và suy luận"
+			"subtasks": "Điều phối nhiệm vụ phụ được cải thiện với tính năng tiếp tục cha tự động và an toàn mở một lần cho các quy trình làm việc đa nhiệm vụ tốt hơn",
+			"nativeTools": "Gọi công cụ gốc hiện được hỗ trợ bởi 13+ nhà cung cấp bao gồm Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini và hơn thế nữa"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

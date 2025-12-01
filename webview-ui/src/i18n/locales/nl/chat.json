@@ -279,8 +279,8 @@
 		},
 		"release": {
 			"heading": "Nieuw:",
-			"browserUse": "Browser Use 2.0 verbetert de browse-ervaring in chat met persistente sessies, duidelijkere feedback, een toegewijd browserpaneel en natuurlijkere actiebeschrijvingen",
-			"cloudPaid": "De Roo Code Cloud provider biedt nu betaalde modellen: koop credits en gebruik ze voor zowel cloud agents als inference"
+			"subtasks": "Verbeterde subtaak-orchestratie met automatisch hervatten van bovenliggende taak en veiligheid bij eenmalig openen voor betere multi-task workflows",
+			"nativeTools": "Native tool-aanroepen worden nu ondersteund door 13+ providers, waaronder Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini en meer"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

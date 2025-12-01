@@ -294,8 +294,8 @@
 		},
 		"release": {
 			"heading": "Neu in dieser Version:",
-			"browserUse": "Browser Use 2.0 verbessert das In-Chat-Browsing-Erlebnis mit persistenten Sitzungen, klareren Rückmeldungen, einem dedizierten Browser-Panel und natürlicheren Aktionsbeschreibungen",
-			"cloudPaid": "Der Roo Code Cloud-Provider bietet jetzt bezahlte Modelle: Kaufe Credits und nutze sie sowohl für Cloud-Agenten als auch für Inferenz"
+			"subtasks": "Verbesserte Subtask-Orchestrierung mit automatischer Eltern-Wiederaufnahme und Einfach-Öffnen-Sicherheit für bessere Multi-Task-Workflows",
+			"nativeTools": "Native Tool-Aufrufe werden jetzt über 13+ Provider unterstützt, darunter Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini und mehr"
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

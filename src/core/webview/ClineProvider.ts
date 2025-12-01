@@ -152,7 +152,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "nov-2025-v3.34.0-browser-use-2-cloud-paid" // v3.34.0 Browser Use 2.0 & Cloud Paid Models announcement
+	public readonly latestAnnouncementId = "dec-2025-v3.35.0-subtasks-native-tools" // v3.35.0 Improved Subtasks & Native Tool Calling Expansion
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

@@ -294,8 +294,8 @@
 		},
 		"release": {
 			"heading": "이 버전의 새로운 기능:",
-			"browserUse": "Browser Use 2.0은 지속적인 세션, 더 명확한 피드백, 전용 브라우저 패널, 더 자연스러운 작업 설명을 통해 채팅 내 브라우징 경험을 업그레이드합니다",
-			"cloudPaid": "Roo Code Cloud 제공업체는 이제 클라우드 에이전트와 추론 모두에 사용할 수 있는 크레딧을 구매할 수 있도록 지원합니다"
+			"subtasks": "자동 부모 재개 및 단일 개방 안전성을 갖춘 개선된 하위 작업 오케스트레이션으로 더 나은 멀티태스킹 워크플로우를 제공합니다",
+			"nativeTools": "네이티브 도구 호출이 이제 Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini 등 13개 이상의 제공업체에서 지원됩니다"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

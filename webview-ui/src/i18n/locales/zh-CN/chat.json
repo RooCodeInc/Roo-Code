@@ -295,8 +295,8 @@
 		},
 		"release": {
 			"heading": "最新功能：",
-			"browserUse": "Browser Use 2.0 升级了聊天内浏览体验，支持持久会话、更清晰的反馈、专用浏览器面板以及更自然的操作描述",
-			"cloudPaid": "Roo Code Cloud 现已提供付费模型：购买积分即可同时用于云端智能体和推理服务"
+			"subtasks": "改进的子任务编排，支持自动恢复父任务和单一开启安全性，实现更好的多任务工作流程",
+			"nativeTools": "原生工具调用现已支持 13+ 提供商，包括 Bedrock、Ollama、Groq、DeepSeek、Vertex Gemini 等"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

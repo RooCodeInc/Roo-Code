@@ -304,8 +304,8 @@
 		},
 		"release": {
 			"heading": "最新功能：",
-			"browserUse": "Browser Use 2.0 升級了聊天內瀏覽體驗，支援持久會話、更清晰的回饋、專用瀏覽器面板以及更自然的動作描述",
-			"cloudPaid": "Roo Code Cloud 現已提供付費模型：購買點數即可同時用於雲端代理和推理服務"
+			"subtasks": "改進的子工作協調，支援自動恢復父工作和單一開啟安全性，實現更好的多工作流程",
+			"nativeTools": "原生工具呼叫現已支援 13+ 提供商，包括 Bedrock、Ollama、Groq、DeepSeek、Vertex Gemini 等"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

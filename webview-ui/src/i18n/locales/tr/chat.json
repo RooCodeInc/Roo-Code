@@ -295,8 +295,8 @@
 		},
 		"release": {
 			"heading": "Bu sürümdeki yenilikler:",
-			"browserUse": "Browser Use 2.0, kalıcı oturumlar, daha net geri bildirim, özel tarayıcı paneli ve daha doğal eylem açıklamalarıyla sohbet içi tarayıcı deneyimini yükseltir",
-			"cloudPaid": "Roo Code Cloud sağlayıcısı artık ücretli modeller sunuyor: kredi satın alın ve bunları hem bulut ajanları hem de çıkarım için kullanın"
+			"subtasks": "Alt görevlerin otomatik olarak üst görevleri devam ettirmesi ve tek açılış güvenliğiyle geliştirilmiş alt görev orkestrasyonu, daha iyi çok görevli iş akışları için",
+			"nativeTools": "Yerel araç çağrısı artık Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini ve daha fazlası dahil olmak üzere 13+ sağlayıcı tarafından destekleniyor"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
