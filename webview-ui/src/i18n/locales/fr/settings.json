@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Fournisseurs",
+		"modes": "Modes",
+		"mcp": "Serveurs MCP",
 		"autoApprove": "Auto-approbation",
 		"browser": "Accès ordinateur",
 		"checkpoints": "Points de contrôle",

@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "प्रदाता",
+		"modes": "मोड",
+		"mcp": "एमसीपी सर्वर",
 		"autoApprove": "अनुमोदन",
 		"browser": "ब्राउज़र",
 		"checkpoints": "चेकपॉइंट",

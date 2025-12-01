@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Provider",
+		"modes": "Mode",
+		"mcp": "Server MCP",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoint",

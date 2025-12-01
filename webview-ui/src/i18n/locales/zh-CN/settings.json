@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "提供商",
+		"modes": "模式",
+		"mcp": "MCP 服务",
 		"autoApprove": "自动批准",
 		"browser": "计算机交互",
 		"checkpoints": "存档点",
