@@ -634,19 +634,10 @@ export const webviewMessageHandler = async (
 			}
 			break
 		case "clearTask":
-			// Clear task resets the current session and allows for a new task
-			// to be started, if this session is a subtask - it allows the
-			// parent task to be resumed.
-			// Check if the current task actually has a parent task.
-			const currentTask = provider.getCurrentTask()
-
-			if (currentTask && currentTask.parentTask) {
-				await provider.finishSubTask(t("common:tasks.canceled"))
-			} else {
-				// Regular task - just clear it
-				await provider.clearTask()
-			}
-
+			// Clear task resets the current session. Delegation flows are
+			// handled via metadata; parent resumption occurs through
+			// reopenParentFromDelegation, not via finishSubTask.
+			await provider.clearTask()
 			await provider.postStateToWebview()
 			break
 		case "didShowAnnouncement":
@@ -882,6 +873,12 @@ export const webviewMessageHandler = async (
 			const litellmBaseUrl = apiConfiguration.litellmBaseUrl || message?.values?.litellmBaseUrl
 
 			if (litellmApiKey && litellmBaseUrl) {
+				// If explicit credentials are provided in message.values (from Refresh Models button),
+				// flush the cache first to ensure we fetch fresh data with the new credentials
+				if (message?.values?.litellmApiKey || message?.values?.litellmBaseUrl) {
+					await flushModels("litellm", true)
+				}
+
 				candidates.push({
 					key: "litellm",
 					options: { provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl },
@@ -2372,6 +2369,8 @@ export const webviewMessageHandler = async (
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
 					codebaseIndexEmbedderModelDimension: settings.codebaseIndexEmbedderModelDimension, // Generic dimension
 					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
+					codebaseIndexBedrockRegion: settings.codebaseIndexBedrockRegion,
+					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 				}
@@ -3044,6 +3043,63 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+
+		case "openDebugApiHistory":
+		case "openDebugUiHistory": {
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				vscode.window.showErrorMessage("No active task to view history for")
+				break
+			}
+
+			try {
+				const { getTaskDirectoryPath } = await import("../../utils/storage")
+				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
+				const taskDirPath = await getTaskDirectoryPath(globalStoragePath, currentTask.taskId)
+
+				const fileName =
+					message.type === "openDebugApiHistory" ? "api_conversation_history.json" : "ui_messages.json"
+				const sourceFilePath = path.join(taskDirPath, fileName)
+
+				// Check if file exists
+				if (!(await fileExistsAtPath(sourceFilePath))) {
+					vscode.window.showErrorMessage(`File not found: ${fileName}`)
+					break
+				}
+
+				// Read the source file
+				const content = await fs.readFile(sourceFilePath, "utf8")
+				let jsonContent: unknown
+
+				try {
+					jsonContent = JSON.parse(content)
+				} catch {
+					vscode.window.showErrorMessage(`Failed to parse ${fileName}`)
+					break
+				}
+
+				// Prettify the JSON
+				const prettifiedContent = JSON.stringify(jsonContent, null, 2)
+
+				// Create a temporary file
+				const tmpDir = os.tmpdir()
+				const timestamp = Date.now()
+				const tempFileName = `roo-debug-${message.type === "openDebugApiHistory" ? "api" : "ui"}-${currentTask.taskId.slice(0, 8)}-${timestamp}.json`
+				const tempFilePath = path.join(tmpDir, tempFileName)
+
+				await fs.writeFile(tempFilePath, prettifiedContent, "utf8")
+
+				// Open the temp file in VS Code
+				const doc = await vscode.workspace.openTextDocument(tempFilePath)
+				await vscode.window.showTextDocument(doc, { preview: true })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error opening debug history: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to open debug history: ${errorMessage}`)
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//

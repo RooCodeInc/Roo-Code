@@ -6,7 +6,12 @@ type ThoughtSignatureContentBlock = {
 	thoughtSignature?: string
 }
 
-type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock
+type ReasoningContentBlock = {
+	type: "reasoning"
+	text: string
+}
+
+type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock | ReasoningContentBlock
 type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
 
 function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
@@ -124,8 +129,10 @@ export function convertAnthropicContentToGemini(
 				]
 			}
 			default:
-				// Currently unsupported: "thinking" | "redacted_thinking" | "document"
-				throw new Error(`Unsupported content block type: ${block.type}`)
+				// Skip unsupported content block types (e.g., "reasoning", "thinking", "redacted_thinking", "document")
+				// These are typically metadata from other providers that don't need to be sent to Gemini
+				console.warn(`Skipping unsupported content block type: ${block.type}`)
+				return []
 		}
 	})
 }

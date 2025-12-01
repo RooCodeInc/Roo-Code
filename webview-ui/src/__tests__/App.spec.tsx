@@ -69,23 +69,15 @@ vi.mock("@src/components/history/HistoryView", () => ({
 
 vi.mock("@src/components/mcp/McpView", () => ({
 	__esModule: true,
-	default: function McpView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="mcp-view" onClick={onDone}>
-				MCP View
-			</div>
-		)
+	default: function McpView() {
+		return <div data-testid="mcp-view">MCP View</div>
 	},
 }))
 
 vi.mock("@src/components/modes/ModesView", () => ({
 	__esModule: true,
-	default: function ModesView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="prompts-view" onClick={onDone}>
-				Modes View
-			</div>
-		)
+	default: function ModesView() {
+		return <div data-testid="prompts-view">Modes View</div>
 	},
 }))
 
@@ -253,34 +245,6 @@ describe("App", () => {
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
 	})
 
-	it("switches to MCP view when receiving mcpButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("mcpButtonClicked")
-		})
-
-		const mcpView = await screen.findByTestId("mcp-view")
-		expect(mcpView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
-	it("switches to prompts view when receiving promptsButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("promptsButtonClicked")
-		})
-
-		const promptsView = await screen.findByTestId("prompts-view")
-		expect(promptsView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
 	it("returns to chat view when clicking done in settings view", async () => {
 		render(<AppWithProviders />)
 
@@ -299,7 +263,7 @@ describe("App", () => {
 		expect(screen.queryByTestId("settings-view")).not.toBeInTheDocument()
 	})
 
-	it.each(["history", "mcp", "prompts"])("returns to chat view when clicking done in %s view", async (view) => {
+	it.each(["history"])("returns to chat view when clicking done in %s view", async (view) => {
 		render(<AppWithProviders />)
 
 		act(() => {

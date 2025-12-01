@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Dostawcy",
+		"modes": "Tryby",
+		"mcp": "Serwery MCP",
 		"autoApprove": "Auto-zatwierdzanie",
 		"browser": "Dostęp komputera",
 		"checkpoints": "Punkty kontrolne",
@@ -34,6 +36,26 @@
 		"experimental": "Eksperymentalne",
 		"language": "Język",
 		"about": "O Roo Code"
+	},
+	"about": {
+		"bugReport": {
+			"label": "Znalazłeś błąd?",
+			"link": "Zgłoś na GitHub"
+		},
+		"featureRequest": {
+			"label": "Masz pomysł?",
+			"link": "Podziel się nim z nami"
+		},
+		"securityIssue": {
+			"label": "Odkryłeś lukę w zabezpieczeniach?",
+			"link": "Postępuj zgodnie z naszym procesem ujawniania"
+		},
+		"contact": {
+			"label": "Musisz z nami porozmawiać? Napisz"
+		},
+		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami Roo Code? Dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Kontakt i Społeczność",
+		"manageSettings": "Zarządzaj Ustawieniami"
 	},
 	"slashCommands": {
 		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
@@ -58,6 +80,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Klucz API",
 		"vercelAiGatewayApiKeyPlaceholder": "Wprowadź swój klucz API Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Region AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Profil AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nazwa profilu AWS z ~/.aws/credentials (wymagane).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Klucz API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
@@ -125,11 +153,14 @@
 			"geminiApiKeyRequired": "Wymagany jest klucz API Gemini",
 			"mistralApiKeyRequired": "Klucz API Mistral jest wymagany",
 			"vercelAiGatewayApiKeyRequired": "Klucz API Vercel AI Gateway jest wymagany",
+			"bedrockRegionRequired": "Region AWS jest wymagany",
+			"bedrockProfileRequired": "Profil AWS jest wymagany",
 			"ollamaBaseUrlRequired": "Wymagany jest bazowy adres URL Ollama",
 			"baseUrlRequired": "Wymagany jest bazowy adres URL",
 			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
 			"openRouterApiKeyRequired": "Wymagany jest klucz API OpenRouter"
 		},
+		"optional": "opcjonalny",
 		"advancedConfigLabel": "Konfiguracja zaawansowana",
 		"searchMinScoreLabel": "Próg wyniku wyszukiwania",
 		"searchMinScoreDescription": "Minimalny wynik podobieństwa (0.0-1.0) wymagany dla wyników wyszukiwania. Niższe wartości zwracają więcej wyników, ale mogą być mniej trafne. Wyższe wartości zwracają mniej wyników, ale bardziej trafnych.",
@@ -775,6 +806,8 @@
 			"description": "Gdy włączone, narzędzie new_task będzie wymagało podania parametru todos. Zapewnia to, że wszystkie nowe zadania rozpoczynają się od jasnej listy celów. Gdy wyłączone (domyślnie), parametr todos pozostaje opcjonalny dla zachowania kompatybilności wstecznej."
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "Dostawca",
+			"providerDescription": "Wybierz dostawcę do generowania obrazów.",
 			"name": "Włącz generowanie obrazów AI",
 			"description": "Gdy włączone, Roo może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
 			"openRouterApiKeyLabel": "Klucz API OpenRouter",
@@ -788,6 +821,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
 			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Równoległe wywołania narzędzi",
+			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
 		}
 	},
 	"promptCaching": {
@@ -826,7 +863,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Wyszukaj",
 		"noMatchFound": "Nie znaleziono dopasowań",
-		"useCustomModel": "Użyj niestandardowy: {{modelId}}"
+		"useCustomModel": "Użyj niestandardowy: {{modelId}}",
+		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
 	},
 	"footer": {
 		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",

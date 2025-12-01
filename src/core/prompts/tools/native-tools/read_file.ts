@@ -15,18 +15,18 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 	const baseDescription =
 		READ_FILE_BASE_DESCRIPTION +
 		" Structure: { files: [{ path: 'relative/path.ts'" +
-		(partialReadsEnabled ? ", line_ranges: ['1-50', '100-150']" : "") +
+		(partialReadsEnabled ? ", line_ranges: [[1, 50], [100, 150]]" : "") +
 		" }] }. " +
 		"The 'path' is required and relative to workspace. "
 
 	const optionalRangesDescription = partialReadsEnabled
-		? "The 'line_ranges' is optional for reading specific sections (format: 'start-end', 1-based inclusive). "
+		? "The 'line_ranges' is optional for reading specific sections. Each range is a [start, end] tuple (1-based inclusive). "
 		: ""
 
 	const examples = partialReadsEnabled
 		? "Example single file: { files: [{ path: 'src/app.ts' }] }. " +
-			"Example with line ranges: { files: [{ path: 'src/app.ts', line_ranges: ['1-50', '100-150'] }] }. " +
-			"Example multiple files: { files: [{ path: 'file1.ts', line_ranges: ['1-50'] }, { path: 'file2.ts' }] }"
+			"Example with line ranges: { files: [{ path: 'src/app.ts', line_ranges: [[1, 50], [100, 150]] }] }. " +
+			"Example multiple files: { files: [{ path: 'file1.ts', line_ranges: [[1, 50]] }, { path: 'file2.ts' }] }"
 		: "Example single file: { files: [{ path: 'src/app.ts' }] }. " +
 			"Example multiple files: { files: [{ path: 'file1.ts' }, { path: 'file2.ts' }] }"
 
@@ -45,13 +45,19 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 		fileProperties.line_ranges = {
 			type: ["array", "null"],
 			description:
-				"Optional 1-based inclusive ranges to read (format: start-end). Use multiple ranges for non-contiguous sections and keep ranges tight to the needed context.",
+				"Optional line ranges to read. Each range is a [start, end] tuple with 1-based inclusive line numbers. Use multiple ranges for non-contiguous sections.",
 			items: {
-				type: "string",
-				pattern: "^[0-9]+-[0-9]+$",
+				type: "array",
+				items: { type: "integer" },
+				minItems: 2,
+				maxItems: 2,
 			},
 		}
 	}
+
+	// When using strict mode, ALL properties must be in the required array
+	// Optional properties are handled by having type: ["...", "null"]
+	const fileRequiredProperties = partialReadsEnabled ? ["path", "line_ranges"] : ["path"]
 
 	return {
 		type: "function",
@@ -68,7 +74,7 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 						items: {
 							type: "object",
 							properties: fileProperties,
-							required: ["path"],
+							required: fileRequiredProperties,
 							additionalProperties: false,
 						},
 						minItems: 1,

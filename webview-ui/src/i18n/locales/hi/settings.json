@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "प्रदाता",
+		"modes": "मोड",
+		"mcp": "एमसीपी सर्वर",
 		"autoApprove": "अनुमोदन",
 		"browser": "ब्राउज़र",
 		"checkpoints": "चेकपॉइंट",
@@ -34,6 +36,26 @@
 		"experimental": "प्रायोगिक",
 		"language": "भाषा",
 		"about": "परिचय"
+	},
+	"about": {
+		"bugReport": {
+			"label": "बग मिला?",
+			"link": "GitHub पर रिपोर्ट करें"
+		},
+		"featureRequest": {
+			"label": "कोई विचार है?",
+			"link": "हमारे साथ साझा करें"
+		},
+		"securityIssue": {
+			"label": "कोई कमजोरी खोजी?",
+			"link": "हमारी प्रकटीकरण प्रक्रिया का पालन करें"
+		},
+		"contact": {
+			"label": "हमसे बात करने की जरूरत है? लिखें"
+		},
+		"community": "सुझाव चाहिए या बस अन्य Roo Code उपयोगकर्ताओं के साथ घूमना चाहते हैं? <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल हों",
+		"contactAndCommunity": "संपर्क और समुदाय",
+		"manageSettings": "सेटिंग्स प्रबंधित करें"
 	},
 	"slashCommands": {
 		"description": "कस्टम वर्कफ़्लो और क्रियाओं को तेज़ी से निष्पादित करने के लिए अपने स्लैश कमांड प्रबंधित करें। <DocsLink>और जानें</DocsLink>"
@@ -55,6 +77,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API कुंजी",
 		"vercelAiGatewayApiKeyPlaceholder": "अपनी Vercel AI Gateway API कुंजी दर्ज करें",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS क्षेत्र",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS प्रोफ़ाइल",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "~/.aws/credentials से AWS प्रोफ़ाइल नाम (आवश्यक)।",
 		"openRouterProvider": "ओपनराउटर",
 		"openRouterApiKeyLabel": "ओपनराउटर एपीआई कुंजी",
 		"openRouterApiKeyPlaceholder": "अपनी ओपनराउटर एपीआई कुंजी दर्ज करें",
@@ -125,11 +153,14 @@
 			"geminiApiKeyRequired": "Gemini API कुंजी आवश्यक है",
 			"mistralApiKeyRequired": "मिस्ट्रल एपीआई कुंजी आवश्यक है",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API कुंजी आवश्यक है",
+			"bedrockRegionRequired": "AWS क्षेत्र आवश्यक है",
+			"bedrockProfileRequired": "AWS प्रोफ़ाइल आवश्यक है",
 			"ollamaBaseUrlRequired": "Ollama आधार URL आवश्यक है",
 			"baseUrlRequired": "आधार URL आवश्यक है",
 			"modelDimensionMinValue": "मॉडल आयाम 0 से बड़ा होना चाहिए",
 			"openRouterApiKeyRequired": "OpenRouter API कुंजी आवश्यक है"
 		},
+		"optional": "वैकल्पिक",
 		"advancedConfigLabel": "उन्नत कॉन्फ़िगरेशन",
 		"searchMinScoreLabel": "खोज स्कोर थ्रेसहोल्ड",
 		"searchMinScoreDescription": "खोज परिणामों के लिए आवश्यक न्यूनतम समानता स्कोर (0.0-1.0)। कम मान अधिक परिणाम लौटाते हैं लेकिन कम प्रासंगिक हो सकते हैं। उच्च मान कम लेकिन अधिक प्रासंगिक परिणाम लौटाते हैं।",
@@ -775,6 +806,8 @@
 			"description": "जब सक्षम किया जाता है, तो new_task टूल को todos पैरामीटर प्रदान करने की आवश्यकता होगी। यह सुनिश्चित करता है कि सभी नए कार्य स्पष्ट उद्देश्यों की सूची के साथ शुरू हों। जब अक्षम किया जाता है (डिफ़ॉल्ट), तो todos पैरामीटर पिछड़े संगतता के लिए वैकल्पिक रहता है।"
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "प्रदाता",
+			"providerDescription": "छवि निर्माण के लिए प्रदाता चुनें।",
 			"name": "AI छवि निर्माण सक्षम करें",
 			"description": "जब सक्षम किया जाता है, तो Roo OpenRouter के छवि निर्माण मॉडल का उपयोग करके टेक्स्ट प्रॉम्प्ट से छवियां उत्पन्न कर सकता है। एक कॉन्फ़िगर किए गए OpenRouter API कुंजी की आवश्यकता होती है।",
 			"openRouterApiKeyLabel": "OpenRouter API कुंजी",
@@ -788,6 +821,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "मॉडल द्वारा शुरू किए गए स्लैश कमांड सक्षम करें",
 			"description": "जब सक्षम होता है, Roo वर्कफ़्लो चलाने के लिए आपके स्लैश कमांड चला सकता है।"
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "समानांतर टूल कॉल",
+			"description": "सक्षम होने पर, नेटिव प्रोटोकॉल एकल सहायक संदेश टर्न में एकाधिक टूल निष्पादित कर सकता है।"
 		}
 	},
 	"promptCaching": {
@@ -826,7 +863,8 @@
 		"label": "मॉडल",
 		"searchPlaceholder": "खोजें",
 		"noMatchFound": "कोई मिलान नहीं मिला",
-		"useCustomModel": "कस्टम उपयोग करें: {{modelId}}"
+		"useCustomModel": "कस्टम उपयोग करें: {{modelId}}",
+		"simplifiedExplanation": "आप बाद में विस्तृत मॉडल सेटिंग्स समायोजित कर सकते हैं।"
 	},
 	"footer": {
 		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",

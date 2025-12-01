@@ -1,5 +1,5 @@
 import type OpenAI from "openai"
-import type { ProviderSettings, ModeConfig } from "@roo-code/types"
+import type { ProviderSettings, ModeConfig, ModelInfo } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
@@ -13,6 +13,7 @@ interface BuildToolsOptions {
 	apiConfiguration: ProviderSettings | undefined
 	maxReadFileLine: number
 	browserToolEnabled: boolean
+	modelInfo?: ModelInfo
 }
 
 /**
@@ -23,8 +24,17 @@ interface BuildToolsOptions {
  * @returns Array of filtered native and MCP tools
  */
 export async function buildNativeToolsArray(options: BuildToolsOptions): Promise<OpenAI.Chat.ChatCompletionTool[]> {
-	const { provider, cwd, mode, customModes, experiments, apiConfiguration, maxReadFileLine, browserToolEnabled } =
-		options
+	const {
+		provider,
+		cwd,
+		mode,
+		customModes,
+		experiments,
+		apiConfiguration,
+		maxReadFileLine,
+		browserToolEnabled,
+		modelInfo,
+	} = options
 
 	const mcpHub = provider.getMcpHub()
 
@@ -36,6 +46,7 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	const filterSettings = {
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		browserToolEnabled: browserToolEnabled ?? true,
+		modelInfo,
 	}
 
 	// Determine if partial reads are enabled based on maxReadFileLine setting
@@ -52,6 +63,7 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		experiments,
 		codeIndexManager,
 		filterSettings,
+		mcpHub,
 	)
 
 	// Filter MCP tools based on mode restrictions

@@ -19,9 +19,7 @@
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
 	"views.sidebar.name": "Roo Code",
-	"command.mcpServers.title": "MCP 伺服器",
-	"command.prompts.title": "模式",
-	"command.history.title": "歷史記錄",
+	"command.history.title": "工作歷史記錄",
 	"command.marketplace.title": "應用市場",
 	"command.openInEditor.title": "在編輯器中開啟",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "為特定於代理的規則啟用 AGENTS.md 檔案的載入（請參閱 https://agent-rules.org/）",
 	"settings.apiRequestTimeout.description": "等待 API 回應的最長時間（秒）（0 = 無超時，1-3600秒，預設值：600秒）。對於像 LM Studio 和 Ollama 這樣可能需要更多處理時間的本地提供商，建議使用更高的值。",
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具建立新工作時需要 todos 參數",
-	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。",
+	"settings.debug.description": "啟用偵錯模式以顯示額外按鈕，用於在暫存檔案中以格式化 JSON 檢視 API 對話歷史紀錄和使用者介面訊息。"
 }

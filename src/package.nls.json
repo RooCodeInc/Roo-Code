@@ -6,9 +6,7 @@
 	"views.activitybar.title": "Roo Code",
 	"views.sidebar.name": "Roo Code",
 	"command.newTask.title": "New Task",
-	"command.mcpServers.title": "MCP Servers",
-	"command.prompts.title": "Modes",
-	"command.history.title": "History",
+	"command.history.title": "Task History",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Open in Editor",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "Enable loading of AGENTS.md files for agent-specific rules (see https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Maximum time in seconds to wait for API responses (0 = no timeout, 1-3600s, default: 600s). Higher values are recommended for local providers like LM Studio and Ollama that may need more processing time.",
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
-	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60."
+	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
+	"settings.debug.description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files."
 }

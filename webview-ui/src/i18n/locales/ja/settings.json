@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "プロバイダー",
+		"modes": "モード",
+		"mcp": "MCPサーバー",
 		"autoApprove": "自動承認",
 		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",
@@ -34,6 +36,26 @@
 		"experimental": "実験的",
 		"language": "言語",
 		"about": "Roo Codeについて"
+	},
+	"about": {
+		"bugReport": {
+			"label": "バグを見つけましたか？",
+			"link": "GitHubで報告"
+		},
+		"featureRequest": {
+			"label": "アイデアがありますか？",
+			"link": "共有してください"
+		},
+		"securityIssue": {
+			"label": "脆弱性を発見しましたか？",
+			"link": "開示プロセスに従ってください"
+		},
+		"contact": {
+			"label": "お問い合わせが必要ですか？メールを送信"
+		},
+		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"contactAndCommunity": "お問い合わせとコミュニティ",
+		"manageSettings": "設定を管理"
 	},
 	"slashCommands": {
 		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
@@ -55,6 +77,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "APIキー",
 		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI GatewayのAPIキーを入力してください",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS リージョン",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS プロファイル",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "~/.aws/credentials の AWS プロファイル名（必須）。",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter APIキー",
 		"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
@@ -125,11 +153,14 @@
 			"geminiApiKeyRequired": "Gemini APIキーが必要です",
 			"mistralApiKeyRequired": "Mistral APIキーが必要です",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway APIキーが必要です",
+			"bedrockRegionRequired": "AWS リージョンは必須です",
+			"bedrockProfileRequired": "AWS プロファイルは必須です",
 			"ollamaBaseUrlRequired": "OllamaのベースURLが必要です",
 			"baseUrlRequired": "ベースURLが必要です",
 			"modelDimensionMinValue": "モデルの次元は0より大きくなければなりません",
 			"openRouterApiKeyRequired": "OpenRouter APIキーが必要です"
 		},
+		"optional": "オプション",
 		"advancedConfigLabel": "詳細設定",
 		"searchMinScoreLabel": "検索スコアのしきい値",
 		"searchMinScoreDescription": "検索結果に必要な最小類似度スコア（0.0-1.0）。値を低くするとより多くの結果が返されますが、関連性が低くなる可能性があります。値を高くすると返される結果は少なくなりますが、より関連性が高くなります。",
@@ -775,6 +806,8 @@
 			"description": "有効にすると、new_taskツールはtodosパラメータの提供が必須になります。これにより、すべての新しいタスクが明確な目的のリストで開始されることが保証されます。無効（デフォルト）の場合、下位互換性のためにtodosパラメータはオプションのままです。"
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "プロバイダー",
+			"providerDescription": "画像生成に使用するプロバイダーを選択",
 			"name": "AI画像生成を有効にする",
 			"description": "有効にすると、RooはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
 			"openRouterApiKeyLabel": "OpenRouter APIキー",
@@ -788,6 +821,10 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "モデル開始スラッシュコマンドを有効にする",
 			"description": "有効にすると、Rooがワークフローを実行するためにあなたのスラッシュコマンドを実行できます。"
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "並列ツール呼び出し",
+			"description": "有効にすると、ネイティブプロトコルは単一のアシスタントメッセージターンで複数のツールを実行できます。"
 		}
 	},
 	"promptCaching": {
@@ -826,7 +863,8 @@
 		"label": "モデル",
 		"searchPlaceholder": "検索",
 		"noMatchFound": "一致するものが見つかりません",
-		"useCustomModel": "カスタムを使用: {{modelId}}"
+		"useCustomModel": "カスタムを使用: {{modelId}}",
+		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",

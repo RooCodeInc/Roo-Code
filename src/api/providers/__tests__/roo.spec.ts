@@ -102,6 +102,24 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					inputPrice: 0,
 					outputPrice: 0,
 				},
+				"minimax/minimax-m2": {
+					maxTokens: 32_768,
+					contextWindow: 1_000_000,
+					supportsImages: false,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 0.15,
+					outputPrice: 0.6,
+				},
+				"anthropic/claude-haiku-4.5": {
+					maxTokens: 8_192,
+					contextWindow: 200_000,
+					supportsImages: true,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 0.8,
+					outputPrice: 4,
+				},
 			}
 		}
 		return {}
@@ -402,6 +420,41 @@ describe("RooHandler", () => {
 				expect(modelInfo.info.contextWindow).toBeDefined()
 			}
 		})
+
+		it("should apply defaultToolProtocol: native for minimax/minimax-m2", () => {
+			const handlerWithMinimax = new RooHandler({
+				apiModelId: "minimax/minimax-m2",
+			})
+			const modelInfo = handlerWithMinimax.getModel()
+			expect(modelInfo.id).toBe("minimax/minimax-m2")
+			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
+			// Verify cached model info is preserved
+			expect(modelInfo.info.maxTokens).toBe(32_768)
+			expect(modelInfo.info.contextWindow).toBe(1_000_000)
+		})
+
+		it("should apply defaultToolProtocol: native for anthropic/claude-haiku-4.5", () => {
+			const handlerWithHaiku = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+			const modelInfo = handlerWithHaiku.getModel()
+			expect(modelInfo.id).toBe("anthropic/claude-haiku-4.5")
+			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
+			// Verify cached model info is preserved
+			expect(modelInfo.info.maxTokens).toBe(8_192)
+			expect(modelInfo.info.contextWindow).toBe(200_000)
+		})
+
+		it("should not override existing properties when applying MODEL_DEFAULTS", () => {
+			const handlerWithMinimax = new RooHandler({
+				apiModelId: "minimax/minimax-m2",
+			})
+			const modelInfo = handlerWithMinimax.getModel()
+			// The defaults should be merged, but not overwrite existing cached values
+			expect(modelInfo.info.supportsNativeTools).toBe(true)
+			expect(modelInfo.info.inputPrice).toBe(0.15)
+			expect(modelInfo.info.outputPrice).toBe(0.6)
+		})
 	})
 
 	describe("temperature and model configuration", () => {
@@ -636,7 +689,7 @@ describe("RooHandler", () => {
 			handler = new RooHandler(mockOptions)
 		})
 
-		it("should yield tool calls when finish_reason is tool_calls", async () => {
+		it("should yield raw tool call chunks when tool_calls present", async () => {
 			mockCreate.mockResolvedValueOnce({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -689,14 +742,27 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0].id).toBe("call_123")
-			expect(toolCallChunks[0].name).toBe("read_file")
-			expect(toolCallChunks[0].arguments).toBe('{"path":"test.ts"}')
+			// Verify we get raw tool call chunks
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(2)
+			expect(rawChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "call_123",
+				name: "read_file",
+				arguments: '{"path":"',
+			})
+			expect(rawChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: 'test.ts"}',
+			})
 		})
 
-		it("should yield tool calls even when finish_reason is not set (fallback behavior)", async () => {
+		it("should yield raw tool call chunks even when finish_reason is not tool_calls", async () => {
 			mockCreate.mockResolvedValueOnce({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -718,12 +784,11 @@ describe("RooHandler", () => {
 							},
 						],
 					}
-					// Stream ends without finish_reason being set to "tool_calls"
 					yield {
 						choices: [
 							{
 								delta: {},
-								finish_reason: "stop", // Different finish reason
+								finish_reason: "stop",
 								index: 0,
 							},
 						],
@@ -738,15 +803,19 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Tool calls should still be yielded via the fallback mechanism
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0].id).toBe("call_456")
-			expect(toolCallChunks[0].name).toBe("write_to_file")
-			expect(toolCallChunks[0].arguments).toBe('{"path":"test.ts","content":"hello"}')
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(1)
+			expect(rawChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "call_456",
+				name: "write_to_file",
+				arguments: '{"path":"test.ts","content":"hello"}',
+			})
 		})
 
-		it("should handle multiple tool calls", async () => {
+		it("should handle multiple tool calls with different indices", async () => {
 			mockCreate.mockResolvedValueOnce({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -800,15 +869,16 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(2)
-			expect(toolCallChunks[0].id).toBe("call_1")
-			expect(toolCallChunks[0].name).toBe("read_file")
-			expect(toolCallChunks[1].id).toBe("call_2")
-			expect(toolCallChunks[1].name).toBe("read_file")
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(2)
+			expect(rawChunks[0].index).toBe(0)
+			expect(rawChunks[0].id).toBe("call_1")
+			expect(rawChunks[1].index).toBe(1)
+			expect(rawChunks[1].id).toBe("call_2")
 		})
 
-		it("should accumulate tool call arguments across multiple chunks", async () => {
+		it("should emit raw chunks for streaming arguments", async () => {
 			mockCreate.mockResolvedValueOnce({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -876,14 +946,15 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0].id).toBe("call_789")
-			expect(toolCallChunks[0].name).toBe("execute_command")
-			expect(toolCallChunks[0].arguments).toBe('{"command":"npm install"}')
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+
+			expect(rawChunks).toHaveLength(3)
+			expect(rawChunks[0].arguments).toBe('{"command":"')
+			expect(rawChunks[1].arguments).toBe("npm install")
+			expect(rawChunks[2].arguments).toBe('"}')
 		})
 
-		it("should not yield empty tool calls when no tool calls present", async () => {
+		it("should not yield tool call chunks when no tool calls present", async () => {
 			mockCreate.mockResolvedValueOnce({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -902,8 +973,8 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(0)
+			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(rawChunks).toHaveLength(0)
 		})
 	})
 })

@@ -121,6 +121,7 @@ import { ConsecutiveMistakeLimitControl } from "./ConsecutiveMistakeLimitControl
 import { BedrockCustomArn } from "./providers/BedrockCustomArn"
 import { RooBalanceDisplay } from "./providers/RooBalanceDisplay"
 import { buildDocLink } from "@src/utils/docLinks"
+import { BookOpenText } from "lucide-react"
 
 export interface ApiOptionsProps {
 	uriScheme: string | undefined
@@ -469,6 +470,12 @@ const ApiOptions = ({
 				const [rooOption] = options.splice(rooIndex, 1)
 				options.unshift(rooOption)
 			}
+		} else {
+			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
+			if (openRouterIndex > 0) {
+				const [openRouterOption] = options.splice(openRouterIndex, 1)
+				options.unshift(openRouterOption)
+			}
 		}
 
 		return options
@@ -478,16 +485,15 @@ const ApiOptions = ({
 		<div className="flex flex-col gap-3">
 			<div className="flex flex-col gap-1 relative">
 				<div className="flex justify-between items-center">
-					<label className="block font-medium mb-1">{t("settings:providers.apiProvider")}</label>
+					<label className="block font-medium">{t("settings:providers.apiProvider")}</label>
 					{selectedProvider === "roo" && cloudIsAuthenticated ? (
 						<RooBalanceDisplay />
 					) : (
 						docs && (
-							<div className="text-xs text-vscode-descriptionForeground">
-								<VSCodeLink href={docs.url} className="hover:text-vscode-foreground" target="_blank">
-									{t("settings:providers.providerDocumentation", { provider: docs.name })}
-								</VSCodeLink>
-							</div>
+							<VSCodeLink href={docs.url} target="_blank" className="flex gap-2">
+								{docs.name}
+								<BookOpenText className="size-4 inline ml-2" />
+							</VSCodeLink>
 						)
 					)}
 				</div>
@@ -512,7 +518,7 @@ const ApiOptions = ({
 					routerModels={routerModels}
 					selectedModelId={selectedModelId}
 					uriScheme={uriScheme}
-					fromWelcomeView={fromWelcomeView}
+					simplifySettings={fromWelcomeView}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
 				/>
@@ -527,6 +533,7 @@ const ApiOptions = ({
 					refetchRouterModels={refetchRouterModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -538,6 +545,7 @@ const ApiOptions = ({
 					uriScheme={uriScheme}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -548,6 +556,7 @@ const ApiOptions = ({
 					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -559,15 +568,24 @@ const ApiOptions = ({
 					refetchRouterModels={refetchRouterModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
 			{selectedProvider === "anthropic" && (
-				<Anthropic apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Anthropic
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "claude-code" && (
-				<ClaudeCode apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<ClaudeCode
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "openai-native" && (
@@ -575,15 +593,24 @@ const ApiOptions = ({
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					selectedModelInfo={selectedModelInfo}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
 			{selectedProvider === "mistral" && (
-				<Mistral apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Mistral
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "baseten" && (
-				<Baseten apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Baseten
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "bedrock" && (
@@ -591,6 +618,7 @@ const ApiOptions = ({
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					selectedModelInfo={selectedModelInfo}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -602,7 +630,7 @@ const ApiOptions = ({
 				<Vertex
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
-					fromWelcomeView={fromWelcomeView}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -610,7 +638,7 @@ const ApiOptions = ({
 				<Gemini
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
-					fromWelcomeView={fromWelcomeView}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -620,27 +648,48 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
 			{selectedProvider === "lmstudio" && (
-				<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<LMStudio
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "deepseek" && (
-				<DeepSeek apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<DeepSeek
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "doubao" && (
-				<Doubao apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Doubao
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "qwen-code" && (
-				<QwenCode apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<QwenCode
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "moonshot" && (
-				<Moonshot apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+				<Moonshot
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
 			)}
 
 			{selectedProvider === "minimax" && (
@@ -678,6 +727,7 @@ const ApiOptions = ({
 					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -687,6 +737,7 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -704,6 +755,7 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -714,6 +766,7 @@ const ApiOptions = ({
 					routerModels={routerModels}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -740,6 +793,7 @@ const ApiOptions = ({
 					cloudIsAuthenticated={cloudIsAuthenticated}
 					organizationAllowList={organizationAllowList}
 					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
 				/>
 			)}
 
@@ -808,24 +862,25 @@ const ApiOptions = ({
 				</>
 			)}
 
-			{selectedProvider === "roo" ? (
-				<SimpleThinkingBudget
-					key={`${selectedProvider}-${selectedModelId}`}
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					modelInfo={selectedModelInfo}
-				/>
-			) : (
-				<ThinkingBudget
-					key={`${selectedProvider}-${selectedModelId}`}
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					modelInfo={selectedModelInfo}
-				/>
-			)}
+			{!fromWelcomeView &&
+				(selectedProvider === "roo" ? (
+					<SimpleThinkingBudget
+						key={`${selectedProvider}-${selectedModelId}`}
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						modelInfo={selectedModelInfo}
+					/>
+				) : (
+					<ThinkingBudget
+						key={`${selectedProvider}-${selectedModelId}`}
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						modelInfo={selectedModelInfo}
+					/>
+				))}
 
 			{/* Gate Verbosity UI by capability flag */}
-			{selectedModelInfo?.supportsVerbosity && (
+			{!fromWelcomeView && selectedModelInfo?.supportsVerbosity && (
 				<Verbosity
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}

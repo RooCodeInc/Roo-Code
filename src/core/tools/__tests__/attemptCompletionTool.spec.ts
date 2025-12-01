@@ -408,5 +408,69 @@ describe("attemptCompletionTool", () => {
 				expect.stringContaining("Cannot complete task while there are incomplete todos"),
 			)
 		})
+
+		describe("tool failure guardrail", () => {
+			it("should prevent completion when a previous tool failed in the current turn", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.todoList = undefined
+				mockTask.didToolFailInCurrentTurn = true
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					removeClosingTag: mockRemoveClosingTag,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+					toolProtocol: "xml",
+				}
+
+				const mockSay = vi.fn()
+				mockTask.say = mockSay
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockSay).toHaveBeenCalledWith(
+					"error",
+					expect.stringContaining("errors.attempt_completion_tool_failed"),
+				)
+				expect(mockPushToolResult).toHaveBeenCalledWith(
+					expect.stringContaining("errors.attempt_completion_tool_failed"),
+				)
+			})
+
+			it("should allow completion when no tools failed", async () => {
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				mockTask.todoList = undefined
+				mockTask.didToolFailInCurrentTurn = false
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					removeClosingTag: mockRemoveClosingTag,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+					toolProtocol: "xml",
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			})
+		})
 	})
 })

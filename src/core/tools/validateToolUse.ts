@@ -8,8 +8,20 @@ export function validateToolUse(
 	customModes?: ModeConfig[],
 	toolRequirements?: Record<string, boolean>,
 	toolParams?: Record<string, unknown>,
+	experiments?: Record<string, boolean>,
+	includedTools?: string[],
 ): void {
-	if (!isToolAllowedForMode(toolName, mode, customModes ?? [], toolRequirements, toolParams)) {
+	if (
+		!isToolAllowedForMode(
+			toolName,
+			mode,
+			customModes ?? [],
+			toolRequirements,
+			toolParams,
+			experiments,
+			includedTools,
+		)
+	) {
 		throw new Error(`Tool "${toolName}" is not allowed in ${mode} mode.`)
 	}
 }

@@ -120,9 +120,6 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		let cacheWriteTokens = 0
 		let cacheReadTokens = 0
 
-		// Track tool calls being accumulated via streaming
-		const toolCallAccumulator = new Map<number, { id: string; name: string; input: string }>()
-
 		for await (const chunk of stream) {
 			switch (chunk.type) {
 				case "message_start": {
@@ -180,16 +177,14 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 							yield { type: "text", text: chunk.content_block.text }
 							break
 						case "tool_use": {
-							// Tool use block started - store initial data
-							// If input is empty ({}), start with empty string as deltas will build it
-							// Otherwise, stringify the initial input as a base for potential deltas
-							const initialInput = chunk.content_block.input || {}
-							const hasInitialContent = Object.keys(initialInput).length > 0
-							toolCallAccumulator.set(chunk.index, {
+							// Emit initial tool call partial with id and name
+							yield {
+								type: "tool_call_partial",
+								index: chunk.index,
 								id: chunk.content_block.id,
 								name: chunk.content_block.name,
-								input: hasInitialContent ? JSON.stringify(initialInput) : "",
-							})
+								arguments: undefined,
+							}
 							break
 						}
 					}
@@ -203,31 +198,22 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 							yield { type: "text", text: chunk.delta.text }
 							break
 						case "input_json_delta": {
-							// Accumulate tool input JSON as it streams
-							const existingToolCall = toolCallAccumulator.get(chunk.index)
-							if (existingToolCall) {
-								existingToolCall.input += chunk.delta.partial_json
+							// Emit tool call partial chunks as arguments stream in
+							yield {
+								type: "tool_call_partial",
+								index: chunk.index,
+								id: undefined,
+								name: undefined,
+								arguments: chunk.delta.partial_json,
 							}
 							break
 						}
 					}
 
 					break
-				case "content_block_stop": {
-					// Block is complete - yield tool call if this was a tool_use block
-					const completedToolCall = toolCallAccumulator.get(chunk.index)
-					if (completedToolCall) {
-						yield {
-							type: "tool_call",
-							id: completedToolCall.id,
-							name: completedToolCall.name,
-							arguments: completedToolCall.input,
-						}
-						// Remove from accumulator after yielding
-						toolCallAccumulator.delete(chunk.index)
-					}
+				case "content_block_stop":
+					// Block is complete - no action needed, NativeToolCallParser handles completion
 					break
-				}
 			}
 		}
 
