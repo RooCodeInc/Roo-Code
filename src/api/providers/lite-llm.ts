@@ -122,7 +122,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			supportsNativeTools &&
 			metadata?.tools &&
 			metadata.tools.length > 0 &&
-			metadata?.toolProtocol !== TOOL_PROTOCOL.XML
+			metadata?.toolProtocol === TOOL_PROTOCOL.NATIVE
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
