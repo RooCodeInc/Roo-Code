@@ -199,9 +199,11 @@ const WelcomeViewProvider = () => {
 				<h2 className="mt-0 mb-0 text-xl">{t("welcome:greeting")}</h2>
 
 				<div className="text-base text-vscode-foreground space-y-3">
-					<p>
-						<Trans i18nKey="welcome:introduction" />
-					</p>
+					{selectedProvider === "roo" && (
+						<p>
+							<Trans i18nKey="welcome:introduction" />
+						</p>
+					)}
 					<p>
 						<Trans i18nKey="welcome:chooseProvider" />
 					</p>
@@ -248,9 +250,12 @@ const WelcomeViewProvider = () => {
 					</VSCodeRadioGroup>
 
 					{/* Expand API options only when custom provider is selected, max height is used to force a transition */}
-					<div className="mb-8 border-l-2 border-vscode-panel-border ml-2 pl-6">
+					<div className="mb-8 border-l-2 border-vscode-panel-border pl-6 ml-[7px]">
 						<div
-							className={`overflow-clip transition-[max-height] ease-linear duration-750 ${selectedProvider === "custom" ? "max-h-[400px]" : "max-h-0"}`}>
+							className={`overflow-clip transition-[max-height] ease-in-out duration-300 ${selectedProvider === "custom" ? "max-h-[600px]" : "max-h-0"}`}>
+							<p className="text-base text-vscode-descriptionForeground mt-0">
+								{t("welcome:providerSignup.noApiKeys")}
+							</p>
 							<ApiOptions
 								fromWelcomeView
 								apiConfiguration={apiConfiguration || {}}
@@ -261,7 +266,9 @@ const WelcomeViewProvider = () => {
 							/>
 						</div>
 					</div>
+				</div>
 
+				<div className="-mt-8">
 					<Button onClick={handleGetStarted} variant="primary">
 						{t("welcome:providerSignup.getStarted")} →
 					</Button>

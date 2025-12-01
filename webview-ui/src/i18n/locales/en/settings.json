@@ -864,7 +864,7 @@
 		"searchPlaceholder": "Search",
 		"noMatchFound": "No match found",
 		"useCustomModel": "Use custom: {{modelId}}",
-		"simplifiedExplanation": "You can adjust granular model settings later."
+		"simplifiedExplanation": "You can adjust detailed model settings later."
 	},
 	"footer": {
 		"telemetry": {

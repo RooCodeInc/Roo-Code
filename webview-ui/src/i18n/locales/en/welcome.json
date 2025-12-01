@@ -23,6 +23,7 @@
 		"learnMore": "learn more",
 		"useAnotherProvider": "Use another provider",
 		"useAnotherProviderDescription": "Enter an API key and get going.",
+		"noApiKeys": "Don't want to deal with keys? Go with the Roo Code Cloud Provider.",
 		"getStarted": "Get started"
 	},
 	"waitingForCloud": {
