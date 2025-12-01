@@ -253,29 +253,29 @@ describe("App", () => {
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
 	})
 
-	it("switches to MCP view when receiving mcpButtonClicked action", async () => {
+	it("switches to settings view when receiving mcpButtonClicked action", async () => {
 		render(<AppWithProviders />)
 
 		act(() => {
 			triggerMessage("mcpButtonClicked")
 		})
 
-		const mcpView = await screen.findByTestId("mcp-view")
-		expect(mcpView).toBeInTheDocument()
+		const settingsView = await screen.findByTestId("settings-view")
+		expect(settingsView).toBeInTheDocument()
 
 		const chatView = screen.getByTestId("chat-view")
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
 	})
 
-	it("switches to prompts view when receiving promptsButtonClicked action", async () => {
+	it("switches to settings view when receiving promptsButtonClicked action", async () => {
 		render(<AppWithProviders />)
 
 		act(() => {
 			triggerMessage("promptsButtonClicked")
 		})
 
-		const promptsView = await screen.findByTestId("prompts-view")
-		expect(promptsView).toBeInTheDocument()
+		const settingsView = await screen.findByTestId("settings-view")
+		expect(settingsView).toBeInTheDocument()
 
 		const chatView = screen.getByTestId("chat-view")
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
@@ -299,7 +299,7 @@ describe("App", () => {
 		expect(screen.queryByTestId("settings-view")).not.toBeInTheDocument()
 	})
 
-	it.each(["history", "mcp", "prompts"])("returns to chat view when clicking done in %s view", async (view) => {
+	it.each(["history"])("returns to chat view when clicking done in %s view", async (view) => {
 		render(<AppWithProviders />)
 
 		act(() => {
