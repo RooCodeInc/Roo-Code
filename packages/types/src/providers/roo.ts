@@ -38,6 +38,7 @@ export const RooModelSchema = z.object({
 	tags: z.array(z.string()).optional(),
 	pricing: RooPricingSchema,
 	deprecated: z.boolean().optional(),
+	default_temperature: z.number().optional(),
 })
 
 export const RooModelsResponseSchema = z.object({

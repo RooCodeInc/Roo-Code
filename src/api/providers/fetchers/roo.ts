@@ -132,6 +132,7 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					description: model.description || model.name,
 					deprecated: model.deprecated || false,
 					isFree: tags.includes("free"),
+					defaultTemperature: model.default_temperature,
 				}
 
 				// Apply model-specific defaults (e.g., defaultToolProtocol)

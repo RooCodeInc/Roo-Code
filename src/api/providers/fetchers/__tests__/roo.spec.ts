@@ -478,4 +478,69 @@ describe("getRooModels", () => {
 			"Failed to fetch Roo Code Cloud models: No response from server",
 		)
 	})
+
+	it("should parse default_temperature from API response", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-with-temp",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Default Temperature",
+					description: "Model with custom default temperature",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					default_temperature: 0.6,
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-with-temp"].defaultTemperature).toBe(0.6)
+	})
+
+	it("should handle models without default_temperature", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-no-temp",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model without Default Temperature",
+					description: "Model without custom default temperature",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-no-temp"].defaultTemperature).toBeUndefined()
+	})
 })
