@@ -118,7 +118,7 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "Product Manager",
-		use: "How big of a change would it be to make turn this from a yes/on to have 4 options?",
+		use: "How big of a change would it be to turn this from a yes/no to have 4 options?",
 		agent: AGENTS.coder,
 		context: SOURCES.web,
 	},
