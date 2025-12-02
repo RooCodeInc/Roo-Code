@@ -203,6 +203,7 @@ export const contextCondenseSchema = z.object({
 	prevContextTokens: z.number(),
 	newContextTokens: z.number(),
 	summary: z.string(),
+	condenseId: z.string().optional(),
 })
 
 export type ContextCondense = z.infer<typeof contextCondenseSchema>

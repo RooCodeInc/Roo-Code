@@ -118,6 +118,7 @@ export type SummarizeResponse = {
 	cost: number // The cost of the summarization operation
 	newContextTokens?: number // The number of tokens in the context for the next API request
 	error?: string // Populated iff the operation fails: error message shown to the user on failure (see Task.ts)
+	condenseId?: string // The unique ID of the created Summary message, for linking to condense_context clineMessage
 }
 
 /**
@@ -270,10 +271,14 @@ export async function summarizeConversation(
 	// Generate a unique condenseId for this summary
 	const condenseId = crypto.randomUUID()
 
+	// Use first kept message's timestamp minus 1 to ensure unique timestamp for summary.
+	// Fallback to Date.now() if keepMessages is empty (shouldn't happen due to earlier checks).
+	const firstKeptTs = keepMessages[0]?.ts ?? Date.now()
+
 	const summaryMessage: ApiMessage = {
 		role: "assistant",
 		content: summaryContent,
-		ts: keepMessages[0].ts,
+		ts: firstKeptTs - 1, // Unique timestamp before first kept message to avoid collision
 		isSummary: true,
 		condenseId, // Unique ID for this summary, used to track which messages it replaces
 	}
@@ -329,7 +334,7 @@ export async function summarizeConversation(
 		const error = t("common:errors.condense_context_grew")
 		return { ...response, cost, error }
 	}
-	return { messages: newMessages, summary, cost, newContextTokens }
+	return { messages: newMessages, summary, cost, newContextTokens, condenseId }
 }
 
 /* Returns the list of all messages since the last summary message, including the summary. Returns all messages if there is no summary. */

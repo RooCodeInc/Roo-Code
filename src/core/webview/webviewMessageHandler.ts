@@ -79,14 +79,24 @@ export const webviewMessageHandler = async (
 		return provider.getCurrentTask()?.cwd || provider.cwd
 	}
 	/**
-	 * Shared utility to find message indices based on timestamp
+	 * Shared utility to find message indices based on timestamp.
+	 * When multiple messages share the same timestamp (e.g., after condense),
+	 * this function prefers non-summary messages to ensure user operations
+	 * target the intended message rather than the summary.
 	 */
 	const findMessageIndices = (messageTs: number, currentCline: any) => {
 		// Find the exact message by timestamp, not the first one after a cutoff
 		const messageIndex = currentCline.clineMessages.findIndex((msg: ClineMessage) => msg.ts === messageTs)
-		const apiConversationHistoryIndex = currentCline.apiConversationHistory.findIndex(
-			(msg: ApiMessage) => msg.ts === messageTs,
-		)
+
+		// Find all matching API messages by timestamp
+		const allApiMatches = currentCline.apiConversationHistory
+			.map((msg: ApiMessage, idx: number) => ({ msg, idx }))
+			.filter(({ msg }: { msg: ApiMessage }) => msg.ts === messageTs)
+
+		// Prefer non-summary message if multiple matches exist (handles timestamp collision after condense)
+		const preferred = allApiMatches.find(({ msg }: { msg: ApiMessage }) => !msg.isSummary) || allApiMatches[0]
+		const apiConversationHistoryIndex = preferred?.idx ?? -1
+
 		return { messageIndex, apiConversationHistoryIndex }
 	}
 
@@ -103,25 +113,56 @@ export const webviewMessageHandler = async (
 
 	/**
 	 * Removes the target message and all subsequent messages.
-	 * After truncation, cleans up orphaned condenseParent references so that
-	 * messages whose summary was deleted become active again.
+	 * After truncation, cleans up orphaned condenseParent references for any
+	 * summaries that were removed by the truncation.
+	 *
+	 * Design: Rewind/delete operations preserve earlier condense states.
+	 * Only summaries that are removed by the truncation (i.e., were created
+	 * after the rewind point) have their associated condenseParent tags cleared.
+	 * This allows nested condensing to work correctly - rewinding past the
+	 * second condense restores visibility of messages condensed by it, while
+	 * keeping the first condense intact.
 	 */
 	const removeMessagesThisAndSubsequent = async (
 		currentCline: any,
 		messageIndex: number,
 		apiConversationHistoryIndex: number,
 	) => {
-		// Delete this message and all that follow
+		// Step 1: Collect condenseIds from condense_context messages being removed.
+		// These IDs link clineMessages to their corresponding Summaries in apiConversationHistory.
+		const removedCondenseIds = new Set<string>()
+		for (let i = messageIndex; i < currentCline.clineMessages.length; i++) {
+			const msg = currentCline.clineMessages[i]
+			if (msg.say === "condense_context" && msg.contextCondense?.condenseId) {
+				removedCondenseIds.add(msg.contextCondense.condenseId)
+			}
+		}
+
+		// Step 2: Delete this message and all that follow
 		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
 
 		if (apiConversationHistoryIndex !== -1) {
-			// Truncate API history
-			const truncatedApiHistory = currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex)
+			// Step 3: Truncate API history by timestamp/index
+			let truncatedApiHistory = currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex)
 
-			// Clean up orphaned condenseParent references after truncation.
-			// When a summary message is deleted by the truncation, messages that were
-			// tagged with its condenseId should have their condenseParent cleared
-			// so they become active again (can be sent to the API).
+			// Step 4: Remove Summaries whose condenseId was in a removed condense_context message.
+			// This handles the case where Summary.ts < truncation point but condense_context.ts > truncation point.
+			// Without this, the Summary would survive truncation but its corresponding UI event would be gone.
+			if (removedCondenseIds.size > 0) {
+				truncatedApiHistory = truncatedApiHistory.filter((msg: ApiMessage) => {
+					if (msg.isSummary && msg.condenseId && removedCondenseIds.has(msg.condenseId)) {
+						console.log(
+							`[removeMessagesThisAndSubsequent] Removing orphaned Summary with condenseId=${msg.condenseId}`,
+						)
+						return false
+					}
+					return true
+				})
+			}
+
+			// Step 5: Clean up orphaned condenseParent references for messages whose
+			// summary was removed by the truncation. Summaries and messages
+			// from earlier condense operations are preserved.
 			const cleanedApiHistory = cleanupAfterTruncation(truncatedApiHistory)
 
 			await currentCline.overwriteApiConversationHistory(cleanedApiHistory)

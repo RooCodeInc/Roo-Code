@@ -194,6 +194,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const params: GenerateContentParameters = { model, contents, config }
 
+		console.log("[GEMINI DEBUG] Raw API request body:", params)
+
 		try {
 			const result = await this.client.models.generateContentStream(params)
 
