@@ -39,7 +39,7 @@ export function validateApiConfiguration(
 function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): string | undefined {
 	switch (apiConfiguration.apiProvider) {
 		case "zgsm":
-			return validateZgsmBaseUrl(apiConfiguration)
+			return validateZgsmBaseUrl(apiConfiguration.zgsmBaseUrl)
 		case "openrouter":
 			if (!apiConfiguration.openRouterApiKey) {
 				return i18next.t("settings:validation.apiKey")
@@ -357,8 +357,8 @@ export const isValidUrl = (url: string) => {
 	}
 }
 
-export function validateZgsmBaseUrl(apiConfiguration: ProviderSettings): string | undefined {
-	const zgsmBaseUrl = apiConfiguration.zgsmBaseUrl?.trim()
+export function validateZgsmBaseUrl(zgsmBaseUrl?: string): string | undefined {
+	zgsmBaseUrl = zgsmBaseUrl?.trim()
 	if (!zgsmBaseUrl || isValidUrl(zgsmBaseUrl)) {
 		return undefined
 	}

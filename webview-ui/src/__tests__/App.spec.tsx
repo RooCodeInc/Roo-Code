@@ -5,14 +5,6 @@ import { render, screen, act, cleanup } from "@/utils/test-utils"
 
 import AppWithProviders from "../App"
 
-// Mock posthog
-vi.mock("posthog-js", () => ({
-	default: {
-		onFeatureFlags: vi.fn(),
-		getFeatureFlag: vi.fn(),
-	},
-}))
-
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
 		postMessage: vi.fn(),
@@ -299,6 +291,12 @@ describe("App", () => {
 
 	// 	act(() => {
 	// 		triggerMessage("marketplaceButtonClicked")
+	// 	})
+
+	// 	const marketplaceView = await screen.findByTestId("marketplace-view")
+
+	// 	act(() => {
+	// 		marketplaceView.click()
 	// 	})
 
 	// 	const marketplaceView = await screen.findByTestId("marketplace-view")

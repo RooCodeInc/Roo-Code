@@ -107,7 +107,7 @@ function formatNumber(num: number): string {
 	// if number is 1 million or more, format as millions
 	if (num >= 1000000) {
 		const truncated = Math.floor((num / 1000000) * 10) / 10
-		return truncated.toFixed(1) + "M"
+		return truncated.toFixed(2) + "M"
 	}
 
 	// otherwise, format as thousands

@@ -6,7 +6,7 @@
 		"title": "Help Improve CoStrict",
 		"anonymousTelemetry": "Send anonymous error and usage data to help us fix bugs and improve the extension. No code, prompts, or personal information is ever sent (unless you connect to CoStrict). See our <privacyLink>privacy policy</privacyLink> for more details."
 	},
-	"chooseProvider": "To do its magic, CoStrict needs an API key.",
+	"chooseProvider": "CoStrict needs an LLM provider to work. Choose yours:",
 	"vibe": {
 		"description": "Vibe coding alternates between clarifying requirements and generating code. It is ideal for rapid development and simple tasks, and empowers developers with strong prompt engineering skills to efficiently produce high-quality code."
 	},
@@ -14,5 +14,14 @@
 		"description": "Strict coding workflow: clarify requirements → design → task decomposition → test, self-verify, self-repair. Ideal for complex tasks (High token consumption)."
 	},
 	"developmentMode": "Development Mode",
-	"commonFeatures": "Common Features"
+	"commonFeatures": "Common Features",
+	"providerSignup": {
+		"rooCloudProvider": "CoStrict Provider",
+		"rooCloudDescription": "The simplest way to use CoStrict. A curated mix of free and paid models at a low cost",
+		"learnMore": "learn more",
+		"useAnotherProvider": "Use another provider",
+		"useAnotherProviderDescription": "Enter an API key and get going.",
+		"noApiKeys": "Don't want to deal with keys? Go with the CoStrict Provider.",
+		"getStarted": "Get started"
+	}
 }

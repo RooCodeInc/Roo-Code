@@ -529,6 +529,10 @@ const ApiOptions = ({
 			}
 		} else {
 			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
+			const zgsmIndex = options.findIndex((opt) => opt.value === "zgsm")
+			if (openRouterIndex > 0) {
+				options.splice(zgsmIndex, 1)
+			}
 			if (openRouterIndex > 0) {
 				const [openRouterOption] = options.splice(openRouterIndex, 1)
 				options.unshift(openRouterOption)
@@ -564,7 +568,7 @@ const ApiOptions = ({
 			</div>
 
 			{errorMessage && <ApiErrorMessage errorMessage={errorMessage} />}
-			{selectedProvider === "zgsm" && (
+			{!fromWelcomeView && selectedProvider === "zgsm" && (
 				<ZgsmAI
 					fromWelcomeView={fromWelcomeView}
 					apiConfiguration={apiConfiguration}
