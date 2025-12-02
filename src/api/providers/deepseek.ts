@@ -8,7 +8,6 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { XmlMatcher } from "../../utils/xml-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { convertToR1Format } from "../transform/r1-format"
 import { ApiStream, type ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
