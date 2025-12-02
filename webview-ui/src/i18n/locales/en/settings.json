@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Providers",
+		"modes": "Modes",
+		"mcp": "MCP Servers",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",
@@ -863,7 +865,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Search",
 		"noMatchFound": "No match found",
-		"useCustomModel": "Use custom: {{modelId}}"
+		"useCustomModel": "Use custom: {{modelId}}",
+		"simplifiedExplanation": "You can adjust detailed model settings later."
 	},
 	"footer": {
 		"telemetry": {

@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Sağlayıcılar",
+		"modes": "Modlar",
+		"mcp": "MCP Sunucuları",
 		"autoApprove": "Oto-Onay",
 		"browser": "Bilgisayar Erişimi",
 		"checkpoints": "Kontrol Noktaları",
@@ -859,7 +861,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Ara",
 		"noMatchFound": "Eşleşme bulunamadı",
-		"useCustomModel": "Özel kullan: {{modelId}}"
+		"useCustomModel": "Özel kullan: {{modelId}}",
+		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",

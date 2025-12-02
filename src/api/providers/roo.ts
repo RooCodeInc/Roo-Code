@@ -4,6 +4,7 @@ import OpenAI from "openai"
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
+import { Package } from "../../shared/package"
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -14,21 +15,10 @@ import { getRooReasoning } from "../transform/reasoning"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
+import { MODEL_DEFAULTS } from "../providers/fetchers/roo"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
-
-import type { ModelInfo } from "@roo-code/types"
-
-// Model-specific defaults that should be applied even when models come from API cache
-const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
-	"minimax/minimax-m2": {
-		defaultToolProtocol: "native",
-	},
-	"anthropic/claude-haiku-4.5": {
-		defaultToolProtocol: "native",
-	},
-}
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
 interface RooUsage extends OpenAI.CompletionUsage {
@@ -132,12 +122,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		try {
-			const stream = await this.createStream(
-				systemPrompt,
-				messages,
-				metadata,
-				metadata?.taskId ? { headers: { "X-Roo-Task-ID": metadata.taskId } } : undefined,
-			)
+			const headers: Record<string, string> = {
+				"X-Roo-App-Version": Package.version,
+			}
+
+			if (metadata?.taskId) {
+				headers["X-Roo-Task-ID"] = metadata.taskId
+			}
+
+			const stream = await this.createStream(systemPrompt, messages, metadata, { headers })
 
 			let lastUsage: RooUsage | undefined = undefined
 

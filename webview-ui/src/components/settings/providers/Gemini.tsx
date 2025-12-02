@@ -12,10 +12,10 @@ import { inputEventTransform } from "../transforms"
 type GeminiProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
-	fromWelcomeView?: boolean
+	simplifySettings?: boolean
 }
 
-export const Gemini = ({ apiConfiguration, setApiConfigurationField, fromWelcomeView }: GeminiProps) => {
+export const Gemini = ({ apiConfiguration, setApiConfigurationField, simplifySettings }: GeminiProps) => {
 	const { t } = useAppTranslation()
 
 	const [googleGeminiBaseUrlSelected, setGoogleGeminiBaseUrlSelected] = useState(
@@ -74,7 +74,7 @@ export const Gemini = ({ apiConfiguration, setApiConfigurationField, fromWelcome
 					/>
 				)}
 
-				{!fromWelcomeView && (
+				{!simplifySettings && (
 					<>
 						<Checkbox
 							className="mt-6"

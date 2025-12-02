@@ -519,6 +519,14 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "apply_patch":
+				if (partialArgs.patch !== undefined) {
+					nativeArgs = {
+						patch: partialArgs.patch,
+					}
+				}
+				break
+
 			// Add other tools as needed
 			default:
 				break
@@ -631,6 +639,15 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "search_and_replace":
+					if (args.path !== undefined && args.operations !== undefined && Array.isArray(args.operations)) {
+						nativeArgs = {
+							path: args.path,
+							operations: args.operations,
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -755,6 +772,14 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							server_name: args.server_name,
 							uri: args.uri,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "apply_patch":
+					if (args.patch !== undefined) {
+						nativeArgs = {
+							patch: args.patch,
 						} as NativeArgsFor<TName>
 					}
 					break

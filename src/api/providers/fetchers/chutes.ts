@@ -1,7 +1,7 @@
 import axios from "axios"
 import { z } from "zod"
 
-import { type ModelInfo, chutesModels } from "@roo-code/types"
+import { type ModelInfo, TOOL_PROTOCOL, chutesModels } from "@roo-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
 
@@ -14,6 +14,7 @@ const ChutesModelSchema = z.object({
 	context_length: z.number(),
 	max_model_len: z.number(),
 	input_modalities: z.array(z.string()),
+	supported_features: z.array(z.string()).optional(),
 })
 
 const ChutesModelsResponseSchema = z.object({ data: z.array(ChutesModelSchema) })
@@ -37,12 +38,14 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 			const contextWindow = m.context_length
 			const maxTokens = m.max_model_len
 			const supportsImages = m.input_modalities.includes("image")
+			const supportsNativeTools = m.supported_features?.includes("tools") ?? false
 
 			const info: ModelInfo = {
 				maxTokens,
 				contextWindow,
 				supportsImages,
 				supportsPromptCache: false,
+				supportsNativeTools,
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `Chutes AI model: ${m.id}`,

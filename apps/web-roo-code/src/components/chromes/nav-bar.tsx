@@ -93,13 +93,13 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 					</div>
 				</nav>
 
-				<div className="hidden md:flex md:items-center md:space-x-4">
-					<div className="flex flex-row space-x-2">
+				<div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0">
+					<div className="flex flex-row space-x-2 flex-shrink-0">
 						<ThemeToggle />
 						<Link
 							href={EXTERNAL_LINKS.GITHUB}
 							target="_blank"
-							className="hidden items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground md:flex">
+							className="hidden items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground md:flex whitespace-nowrap">
 							<RxGithubLogo className="h-4 w-4" />
 							{stars !== null && <span>{stars}</span>}
 						</Link>
@@ -121,7 +121,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 					<Link
 						href={EXTERNAL_LINKS.MARKETPLACE}
 						target="_blank"
-						className="hidden items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all duration-200 hover:shadow-lg hover:scale-105 md:flex">
+						className="hidden items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all duration-200 hover:shadow-lg hover:scale-105 md:flex whitespace-nowrap">
 						<VscVscode className="-mr-[2px] mt-[1px] h-4 w-4" />
 						<span>
 							Install <span className="font-black max-lg:text-xs">&middot;</span>

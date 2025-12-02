@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Anbieter",
+		"modes": "Modi",
+		"mcp": "MCP-Server",
 		"autoApprove": "Auto-Genehmigung",
 		"browser": "Computerzugriff",
 		"checkpoints": "Kontrollpunkte",
@@ -858,7 +860,8 @@
 		"label": "Modell",
 		"searchPlaceholder": "Suchen",
 		"noMatchFound": "Keine Übereinstimmung gefunden",
-		"useCustomModel": "Benutzerdefiniert verwenden: {{modelId}}"
+		"useCustomModel": "Benutzerdefiniert verwenden: {{modelId}}",
+		"simplifiedExplanation": "Du kannst detaillierte Modelleinstellungen später anpassen."
 	},
 	"footer": {
 		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",

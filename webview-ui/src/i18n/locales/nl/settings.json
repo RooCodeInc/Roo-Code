@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Providers",
+		"modes": "Modi",
+		"mcp": "MCP-servers",
 		"autoApprove": "Auto-goedkeuren",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",
@@ -859,7 +861,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Zoeken",
 		"noMatchFound": "Geen overeenkomsten gevonden",
-		"useCustomModel": "Aangepast gebruiken: {{modelId}}"
+		"useCustomModel": "Aangepast gebruiken: {{modelId}}",
+		"simplifiedExplanation": "Je kunt later gedetailleerde modelinstellingen aanpassen."
 	},
 	"footer": {
 		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",

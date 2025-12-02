@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal } from "lucide-react"
+import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, Info } from "lucide-react"
 
 import {
 	globalSettingsSchema,
@@ -16,6 +16,7 @@ import {
 	getModelId,
 	type ProviderSettings,
 	type GlobalSettings,
+	type ReasoningEffort,
 } from "@roo-code/types"
 
 import { createRun } from "@/actions/runs"
@@ -30,6 +31,9 @@ import {
 	TIMEOUT_MIN,
 	TIMEOUT_MAX,
 	TIMEOUT_DEFAULT,
+	ITERATIONS_MIN,
+	ITERATIONS_MAX,
+	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +44,7 @@ import {
 	Button,
 	Checkbox,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -61,7 +66,14 @@ import {
 	PopoverTrigger,
 	Slider,
 	Label,
-	FormDescription,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
 } from "@/components/ui"
 
 import { SettingsDiff } from "./settings-diff"
@@ -75,9 +87,13 @@ type ImportedSettings = {
 export function NewRun() {
 	const router = useRouter()
 
-	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("roo")
+	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
+	const [useMultipleNativeToolCalls, setUseMultipleNativeToolCalls] = useState(false)
+	const [reasoningEffort, setReasoningEffort] = useState<ReasoningEffort | "">("")
+	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
+	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
 
 	// State for imported settings with config selection
 	const [importedSettings, setImportedSettings] = useState<ImportedSettings | null>(null)
@@ -106,6 +122,7 @@ export function NewRun() {
 			settings: undefined,
 			concurrency: CONCURRENCY_DEFAULT,
 			timeout: TIMEOUT_DEFAULT,
+			iterations: ITERATIONS_DEFAULT,
 			jobToken: "",
 		},
 	})
@@ -119,7 +136,7 @@ export function NewRun() {
 
 	const [model, suite, settings] = watch(["model", "suite", "settings", "concurrency"])
 
-	// Load concurrency and timeout from localStorage on mount
+	// Load settings from localStorage on mount
 	useEffect(() => {
 		const savedConcurrency = localStorage.getItem("evals-concurrency")
 		if (savedConcurrency) {
@@ -133,6 +150,37 @@ export function NewRun() {
 			const parsed = parseInt(savedTimeout, 10)
 			if (!isNaN(parsed) && parsed >= TIMEOUT_MIN && parsed <= TIMEOUT_MAX) {
 				setValue("timeout", parsed)
+			}
+		}
+		const savedCommandTimeout = localStorage.getItem("evals-command-execution-timeout")
+		if (savedCommandTimeout) {
+			const parsed = parseInt(savedCommandTimeout, 10)
+			if (!isNaN(parsed) && parsed >= 20 && parsed <= 60) {
+				setCommandExecutionTimeout(parsed)
+			}
+		}
+		const savedShellTimeout = localStorage.getItem("evals-shell-integration-timeout")
+		if (savedShellTimeout) {
+			const parsed = parseInt(savedShellTimeout, 10)
+			if (!isNaN(parsed) && parsed >= 30 && parsed <= 60) {
+				setTerminalShellIntegrationTimeout(parsed)
+			}
+		}
+		// Load saved exercises selection
+		const savedSuite = localStorage.getItem("evals-suite")
+		if (savedSuite === "partial") {
+			setValue("suite", "partial")
+			const savedExercises = localStorage.getItem("evals-exercises")
+			if (savedExercises) {
+				try {
+					const parsed = JSON.parse(savedExercises) as string[]
+					if (Array.isArray(parsed)) {
+						setSelectedExercises(parsed)
+						setValue("exercises", parsed)
+					}
+				} catch {
+					// Invalid JSON, ignore
+				}
 			}
 		}
 	}, [setValue])
@@ -178,6 +226,7 @@ export function NewRun() {
 
 			setSelectedExercises(newSelected)
 			setValue("exercises", newSelected)
+			localStorage.setItem("evals-exercises", JSON.stringify(newSelected))
 		},
 		[getExercisesForLanguage, selectedExercises, setValue],
 	)
@@ -204,12 +253,26 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
+				// Validate jobToken for Roo Code Cloud provider
+				if (provider === "roo" && !values.jobToken?.trim()) {
+					toast.error("Roo Code Cloud Token is required")
+					return
+				}
+
+				// Build experiments settings
+				const experimentsSettings = useMultipleNativeToolCalls
+					? { experiments: { multipleNativeToolCalls: true } }
+					: {}
+
 				if (provider === "openrouter") {
 					values.settings = {
 						...(values.settings || {}),
 						apiProvider: "openrouter",
 						openRouterModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
+						...experimentsSettings,
 					}
 				} else if (provider === "roo") {
 					values.settings = {
@@ -217,6 +280,24 @@ export function NewRun() {
 						apiProvider: "roo",
 						apiModelId: model,
 						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
+						...experimentsSettings,
+						...(reasoningEffort
+							? {
+									enableReasoningEffort: true,
+									reasoningEffort: reasoningEffort as ReasoningEffort,
+								}
+							: {}),
+					}
+				} else if (provider === "other" && values.settings) {
+					// For imported settings, merge in experiments and tool protocol
+					values.settings = {
+						...values.settings,
+						toolProtocol: useNativeToolProtocol ? "native" : "xml",
+						commandExecutionTimeout,
+						terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000, // Convert to ms
+						...experimentsSettings,
 					}
 				}
 
@@ -226,7 +307,16 @@ export function NewRun() {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
 			}
 		},
-		[provider, model, router, useNativeToolProtocol],
+		[
+			provider,
+			model,
+			router,
+			useNativeToolProtocol,
+			useMultipleNativeToolCalls,
+			reasoningEffort,
+			commandExecutionTimeout,
+			terminalShellIntegrationTimeout,
+		],
 	)
 
 	const onSelectModel = useCallback(
@@ -314,9 +404,9 @@ export function NewRun() {
 									value={provider}
 									onValueChange={(value) => setModelSource(value as "roo" | "openrouter" | "other")}>
 									<TabsList className="mb-2">
+										<TabsTrigger value="other">Import</TabsTrigger>
 										<TabsTrigger value="roo">Roo Code Cloud</TabsTrigger>
 										<TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
-										<TabsTrigger value="other">Other</TabsTrigger>
 									</TabsList>
 								</Tabs>
 
@@ -394,6 +484,38 @@ export function NewRun() {
 											</div>
 										)}
 
+										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-3">
+											<Label className="text-sm font-medium text-muted-foreground">
+												Tool Protocol Options
+											</Label>
+											<div className="flex flex-col gap-2.5 pl-1">
+												<label
+													htmlFor="native-other"
+													className="flex items-center gap-2 cursor-pointer">
+													<Checkbox
+														id="native-other"
+														checked={useNativeToolProtocol}
+														onCheckedChange={(checked: boolean) =>
+															setUseNativeToolProtocol(checked)
+														}
+													/>
+													<span className="text-sm">Use Native Tool Calls</span>
+												</label>
+												<label
+													htmlFor="multipleNativeToolCalls-other"
+													className="flex items-center gap-2 cursor-pointer">
+													<Checkbox
+														id="multipleNativeToolCalls-other"
+														checked={useMultipleNativeToolCalls}
+														onCheckedChange={(checked: boolean) =>
+															setUseMultipleNativeToolCalls(checked)
+														}
+													/>
+													<span className="text-sm">Use Multiple Native Tool Calls</span>
+												</label>
+											</div>
+										</div>
+
 										{settings && (
 											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
 										)}
@@ -444,15 +566,66 @@ export function NewRun() {
 											</PopoverContent>
 										</Popover>
 
-										<div className="flex items-center gap-1.5">
-											<Checkbox
-												id="native"
-												checked={useNativeToolProtocol}
-												onCheckedChange={(checked) =>
-													setUseNativeToolProtocol(checked === true)
-												}
-											/>
-											<Label htmlFor="native">Use Native Tool Calls</Label>
+										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-4">
+											<div className="space-y-3">
+												<Label className="text-sm font-medium text-muted-foreground">
+													Tool Protocol Options
+												</Label>
+												<div className="flex flex-col gap-2.5 pl-1">
+													<label
+														htmlFor="native"
+														className="flex items-center gap-2 cursor-pointer">
+														<Checkbox
+															id="native"
+															checked={useNativeToolProtocol}
+															onCheckedChange={(checked: boolean) =>
+																setUseNativeToolProtocol(checked)
+															}
+														/>
+														<span className="text-sm">Use Native Tool Calls</span>
+													</label>
+													<label
+														htmlFor="multipleNativeToolCalls"
+														className="flex items-center gap-2 cursor-pointer">
+														<Checkbox
+															id="multipleNativeToolCalls"
+															checked={useMultipleNativeToolCalls}
+															onCheckedChange={(checked: boolean) =>
+																setUseMultipleNativeToolCalls(checked)
+															}
+														/>
+														<span className="text-sm">Use Multiple Native Tool Calls</span>
+													</label>
+												</div>
+											</div>
+
+											{provider === "roo" && (
+												<div className="space-y-2 pt-2 border-t border-border">
+													<Label className="text-sm font-medium text-muted-foreground">
+														Reasoning Effort
+													</Label>
+													<Select
+														value={reasoningEffort || "none"}
+														onValueChange={(value) =>
+															setReasoningEffort(
+																value === "none" ? "" : (value as ReasoningEffort),
+															)
+														}>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="None (default)" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="none">None (default)</SelectItem>
+															<SelectItem value="low">Low</SelectItem>
+															<SelectItem value="medium">Medium</SelectItem>
+															<SelectItem value="high">High</SelectItem>
+														</SelectContent>
+													</Select>
+													<p className="text-xs text-muted-foreground pl-1">
+														When set, enableReasoningEffort will be automatically enabled
+													</p>
+												</div>
+											)}
 										</div>
 									</>
 								)}
@@ -468,20 +641,28 @@ export function NewRun() {
 							name="jobToken"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Roo Code Cloud Token</FormLabel>
+									<div className="flex items-center gap-1">
+										<FormLabel>Roo Code Cloud Token</FormLabel>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Info className="size-4 text-muted-foreground cursor-help" />
+											</TooltipTrigger>
+											<TooltipContent side="right" className="max-w-xs">
+												<p>
+													If you have access to the Roo Code Cloud repository, generate a
+													token with:
+												</p>
+												<code className="text-xs block mt-1">
+													pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
+													[timeout]
+												</code>
+											</TooltipContent>
+										</Tooltip>
+									</div>
 									<FormControl>
-										<Input type="password" {...field} />
+										<Input type="password" placeholder="Required" {...field} />
 									</FormControl>
 									<FormMessage />
-									<FormDescription>
-										If you have access to the Roo Code Cloud repository then you can generate a
-										token with:
-										<br />
-										<code className="text-xs">
-											pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
-											[timeout]
-										</code>
-									</FormDescription>
 								</FormItem>
 							)}
 						/>
@@ -495,12 +676,14 @@ export function NewRun() {
 								<FormLabel>Exercises</FormLabel>
 								<div className="flex items-center gap-2 flex-wrap">
 									<Tabs
-										defaultValue="full"
+										value={suite}
 										onValueChange={(value) => {
 											setValue("suite", value as "full" | "partial")
+											localStorage.setItem("evals-suite", value)
 											if (value === "full") {
 												setSelectedExercises([])
 												setValue("exercises", [])
+												localStorage.removeItem("evals-exercises")
 											}
 										}}>
 										<TabsList>
@@ -537,6 +720,7 @@ export function NewRun() {
 										onValueChange={(value) => {
 											setSelectedExercises(value)
 											setValue("exercises", value)
+											localStorage.setItem("evals-exercises", JSON.stringify(value))
 										}}
 										placeholder="Select"
 										variant="inverted"
@@ -599,6 +783,96 @@ export function NewRun() {
 							</FormItem>
 						)}
 					/>
+
+					<FormField
+						control={form.control}
+						name="iterations"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Iterations per Exercise</FormLabel>
+								<FormControl>
+									<div className="flex flex-row items-center gap-2">
+										<Slider
+											value={[field.value]}
+											min={ITERATIONS_MIN}
+											max={ITERATIONS_MAX}
+											step={1}
+											onValueChange={(value) => {
+												field.onChange(value[0])
+											}}
+										/>
+										<div>{field.value}</div>
+									</div>
+								</FormControl>
+								<FormDescription>Run each exercise multiple times to compare results</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<FormItem className="py-5">
+						<div className="flex items-center gap-1">
+							<Label>Terminal Command Timeout (Seconds)</Label>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Info className="size-4 text-muted-foreground cursor-help" />
+								</TooltipTrigger>
+								<TooltipContent side="right" className="max-w-xs">
+									<p>
+										Maximum time in seconds to wait for terminal command execution to complete
+										before timing out. This applies to commands run via the execute_command tool.
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</div>
+						<div className="flex flex-row items-center gap-2">
+							<Slider
+								value={[commandExecutionTimeout]}
+								min={20}
+								max={60}
+								step={1}
+								onValueChange={([value]) => {
+									if (value !== undefined) {
+										setCommandExecutionTimeout(value)
+										localStorage.setItem("evals-command-execution-timeout", String(value))
+									}
+								}}
+							/>
+							<div className="w-8 text-right">{commandExecutionTimeout}</div>
+						</div>
+					</FormItem>
+
+					<FormItem className="py-5">
+						<div className="flex items-center gap-1">
+							<Label>Shell Integration Timeout (Seconds)</Label>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Info className="size-4 text-muted-foreground cursor-help" />
+								</TooltipTrigger>
+								<TooltipContent side="right" className="max-w-xs">
+									<p>
+										Maximum time in seconds to wait for shell integration to initialize when opening
+										a new terminal.
+									</p>
+								</TooltipContent>
+							</Tooltip>
+						</div>
+						<div className="flex flex-row items-center gap-2">
+							<Slider
+								value={[terminalShellIntegrationTimeout]}
+								min={30}
+								max={60}
+								step={1}
+								onValueChange={([value]) => {
+									if (value !== undefined) {
+										setTerminalShellIntegrationTimeout(value)
+										localStorage.setItem("evals-shell-integration-timeout", String(value))
+									}
+								}}
+							/>
+							<div className="w-8 text-right">{terminalShellIntegrationTimeout}</div>
+						</div>
+					</FormItem>
 
 					<FormField
 						control={form.control}

@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Provider",
+		"modes": "Mode",
+		"mcp": "Server MCP",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoint",
@@ -888,7 +890,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Cari",
 		"noMatchFound": "Tidak ada yang cocok ditemukan",
-		"useCustomModel": "Gunakan kustom: {{modelId}}"
+		"useCustomModel": "Gunakan kustom: {{modelId}}",
+		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",

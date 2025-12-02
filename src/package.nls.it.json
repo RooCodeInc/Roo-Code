@@ -19,9 +19,7 @@
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
 	"views.sidebar.name": "Roo Code",
-	"command.mcpServers.title": "Server MCP",
-	"command.prompts.title": "Modi",
-	"command.history.title": "Cronologia",
+	"command.history.title": "Cronologia Attività",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Apri nell'Editor",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "Abilita il caricamento dei file AGENTS.md per regole specifiche dell'agente (vedi https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Tempo massimo in secondi di attesa per le risposte API (0 = nessun timeout, 1-3600s, predefinito: 600s). Valori più alti sono consigliati per provider locali come LM Studio e Ollama che potrebbero richiedere più tempo di elaborazione.",
 	"settings.newTaskRequireTodos.description": "Richiedere il parametro todos quando si creano nuove attività con lo strumento new_task",
-	"settings.codeIndex.embeddingBatchSize.description": "La dimensione del batch per le operazioni di embedding durante l'indicizzazione del codice. Regola questo in base ai limiti del tuo provider API. Il valore predefinito è 60."
+	"settings.codeIndex.embeddingBatchSize.description": "La dimensione del batch per le operazioni di embedding durante l'indicizzazione del codice. Regola questo in base ai limiti del tuo provider API. Il valore predefinito è 60.",
+	"settings.debug.description": "Abilita la modalità debug per mostrare pulsanti aggiuntivi per visualizzare la cronologia delle conversazioni API e i messaggi dell'interfaccia utente come JSON formattato in file temporanei."
 }

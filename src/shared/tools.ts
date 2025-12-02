@@ -71,6 +71,8 @@ export const toolParamNames = [
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
+	"operations", // search_and_replace parameter for multiple operations
+	"patch", // apply_patch parameter
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -88,6 +90,8 @@ export type NativeToolArgs = {
 	execute_command: { command: string; cwd?: string }
 	insert_content: { path: string; line: number; content: string }
 	apply_diff: { path: string; diff: string }
+	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
+	apply_patch: { patch: string }
 	ask_followup_question: {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
@@ -237,6 +241,7 @@ export interface GenerateImageToolUse extends ToolUse<"generate_image"> {
 export type ToolGroupConfig = {
 	tools: readonly string[]
 	alwaysAvailable?: boolean // Whether this group is always available and shouldn't show in prompts view
+	customTools?: readonly string[] // Opt-in only tools - only available when explicitly included via model's includedTools
 }
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
@@ -245,6 +250,8 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
+	search_and_replace: "apply changes using search and replace",
+	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
 	list_code_definition_names: "list definitions",
@@ -276,6 +283,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "insert_content", "generate_image"],
+		customTools: ["search_and_replace", "apply_patch"],
 	},
 	browser: {
 		tools: ["browser_action"],

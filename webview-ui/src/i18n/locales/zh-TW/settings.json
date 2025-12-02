@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "供應商",
+		"modes": "模式",
+		"mcp": "MCP 伺服器",
 		"autoApprove": "自動核准",
 		"browser": "電腦存取",
 		"checkpoints": "檢查點",
@@ -859,7 +861,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜尋",
 		"noMatchFound": "找不到符合的項目",
-		"useCustomModel": "使用自訂模型：{{modelId}}"
+		"useCustomModel": "使用自訂模型：{{modelId}}",
+		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
 		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",

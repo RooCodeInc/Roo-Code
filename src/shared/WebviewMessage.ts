@@ -173,6 +173,8 @@ export interface WebviewMessage {
 		| "showBrowserSessionPanelAtStep"
 		| "refreshBrowserSessionPanel"
 		| "browserPanelDidLaunch"
+		| "openDebugApiHistory"
+		| "openDebugUiHistory"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"

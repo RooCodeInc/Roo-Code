@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "提供商",
+		"modes": "模式",
+		"mcp": "MCP 服务",
 		"autoApprove": "自动批准",
 		"browser": "计算机交互",
 		"checkpoints": "存档点",
@@ -859,7 +861,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜索",
 		"noMatchFound": "未找到匹配项",
-		"useCustomModel": "使用自定义：{{modelId}}"
+		"useCustomModel": "使用自定义：{{modelId}}",
+		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
 	},
 	"footer": {
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
