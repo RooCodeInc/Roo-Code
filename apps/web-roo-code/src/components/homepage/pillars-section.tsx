@@ -188,7 +188,7 @@ export function PillarsSection() {
 										your data for training.
 									</p>
 									<p>
-										Plus we&apos;re fully SOC2 Type 2 compliance and follow industry-standard
+							Plus we&apos;re fully SOC2 Type 2 compliant and follow industry-standard
 										security practices.
 									</p>
 								</div>
