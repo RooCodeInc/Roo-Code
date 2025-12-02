@@ -59,7 +59,7 @@ export class CodeReviewService {
 
 	// Task management
 	private currentTask: ReviewTask | null = null
-
+	private prevMode: string = ""
 	// Issue management and caching
 	private cachedIssues: Map<string, ReviewIssue> = new Map()
 	private currentActiveIssueId: string | null = null
@@ -234,7 +234,7 @@ export class CodeReviewService {
 			progress: 0.001, // use 0.001 to indicate running
 			total: 0,
 		})
-		const prevMode = await provider.getMode()
+		this.prevMode = (await provider.getMode()) ?? "code"
 		const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
 		provider.postMessageToWebview({
 			type: "action",
@@ -313,7 +313,8 @@ export class CodeReviewService {
 				clearTimeout(timeoutId)
 				await provider.removeClineFromStack()
 				await provider.refreshWorkspace()
-				await provider.handleModeSwitch(prevMode)
+				await provider.handleModeSwitch(this.prevMode)
+				this.prevMode = ""
 			}
 		})
 
@@ -404,14 +405,24 @@ export class CodeReviewService {
 	 * Stops polling for new results but keeps current results and marks task as completed
 	 */
 	async cancelCurrentTask(): Promise<void> {
-		// Check if there's a current task
-		if (!this.currentTask) {
-			throw new Error("No active task to cancel")
-		}
-		this.completeTask()
 		const provider = this.getProvider()
-		await provider?.removeClineFromStack()
-		await provider?.refreshWorkspace()
+		try {
+			if (!provider) {
+				throw new Error("No active provider")
+			}
+
+			// Check if there's a current task
+			if (!this.currentTask) {
+				throw new Error("No active task to cancel")
+			}
+			this.completeTask()
+			await provider?.removeClineFromStack()
+			await provider?.refreshWorkspace()
+		} finally {
+			const prevMode = this.prevMode
+			this.prevMode = ""
+			await provider?.handleModeSwitch(prevMode)
+		}
 	}
 
 	// ===== Issue Management Methods =====
