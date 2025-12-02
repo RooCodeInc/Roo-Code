@@ -99,6 +99,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
 			toolProtocol,
+			isStealthModel: modelInfo?.isStealthModel,
 		},
 	)
 

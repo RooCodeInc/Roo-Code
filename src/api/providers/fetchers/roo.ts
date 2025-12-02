@@ -115,6 +115,9 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// default-native-tools implies tool-use support
 				const supportsNativeTools = tags.includes("tool-use") || hasDefaultNativeTools
 
+				// Determine if the model should hide vendor/company identity (stealth mode)
+				const isStealthModel = tags.includes("stealth")
+
 				// Parse pricing (API returns strings, convert to numbers)
 				const inputPrice = parseApiPrice(pricing.input)
 				const outputPrice = parseApiPrice(pricing.output)
@@ -139,6 +142,7 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					isFree: tags.includes("free"),
 					defaultTemperature: model.default_temperature,
 					defaultToolProtocol,
+					isStealthModel: isStealthModel || undefined,
 				}
 
 				// Apply model-specific defaults (e.g., defaultToolProtocol)

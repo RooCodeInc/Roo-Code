@@ -1,22 +1,17 @@
 /**
  * Detects potential AI-generated code omissions in the given file content.
+ * Looks for comments containing omission keywords that weren't in the original file.
  * @param originalFileContent The original content of the file.
  * @param newFileContent The new content of the file to check.
- * @param predictedLineCount The predicted number of lines in the new content.
  * @returns True if a potential omission is detected, false otherwise.
  */
-export function detectCodeOmission(
-	originalFileContent: string,
-	newFileContent: string,
-	predictedLineCount: number,
-): boolean {
-	// Skip all checks if predictedLineCount is less than 100
-	if (!predictedLineCount || predictedLineCount < 100) {
+export function detectCodeOmission(originalFileContent: string, newFileContent: string): boolean {
+	const actualLineCount = newFileContent.split("\n").length
+
+	// Skip checks for small files (less than 100 lines)
+	if (actualLineCount < 100) {
 		return false
 	}
-
-	const actualLineCount = newFileContent.split("\n").length
-	const lengthRatio = actualLineCount / predictedLineCount
 
 	const originalLines = originalFileContent.split("\n")
 	const newLines = newFileContent.split("\n")
@@ -48,10 +43,7 @@ export function detectCodeOmission(
 			const words = line.toLowerCase().split(/\s+/)
 			if (omissionKeywords.some((keyword) => words.includes(keyword))) {
 				if (!originalLines.includes(line)) {
-					// For files with 100+ lines, only flag if content is more than 20% shorter
-					if (lengthRatio <= 0.8) {
-						return true
-					}
+					return true
 				}
 			}
 		}

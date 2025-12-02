@@ -492,6 +492,7 @@ export async function presentAssistantMessage(cline: Task) {
 			)
 
 			const pushToolResult = (content: ToolResponse) => {
+				const editTools = ["insert_content", "apply_diff", "search_and_replace", "apply_patch", "write_to_file"]
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
@@ -532,10 +533,7 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					hasToolResult = true
-					if (
-						["write_to_file", "apply_diff", "insert_content"].includes(block.name) &&
-						block.partial === false
-					) {
+					if (editTools.includes(block.name) && block.partial === false) {
 						updateCospecMetadata(cline, block?.params?.path)
 					}
 				} else {
@@ -550,10 +548,7 @@ export async function presentAssistantMessage(cline: Task) {
 					} else {
 						cline.userMessageContent.push(...content)
 					}
-					if (
-						["write_to_file", "apply_diff", "insert_content"].includes(block.name) &&
-						block.partial === false
-					) {
+					if (editTools.includes(block.name) && block.partial === false) {
 						updateCospecMetadata(cline, block?.params?.path)
 					}
 				}
