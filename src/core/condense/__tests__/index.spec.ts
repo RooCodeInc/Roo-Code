@@ -2,6 +2,7 @@
 
 import type { Mock } from "vitest"
 
+import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../../api"
@@ -827,13 +828,13 @@ describe("summarizeConversation", () => {
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 
 		// Content should be [text block, tool_use block]
-		const content = summaryMessage!.content as any[]
+		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
 		expect(content).toHaveLength(2)
 		expect(content[0].type).toBe("text")
-		expect(content[0].text).toBe("Summary of conversation")
+		expect((content[0] as Anthropic.Messages.TextBlockParam).text).toBe("Summary of conversation")
 		expect(content[1].type).toBe("tool_use")
-		expect(content[1].id).toBe("toolu_123")
-		expect(content[1].name).toBe("read_file")
+		expect((content[1] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_123")
+		expect((content[1] as Anthropic.Messages.ToolUseBlockParam).name).toBe("read_file")
 
 		// With non-destructive condensing, all messages are retained plus the summary
 		expect(result.messages.length).toBe(messages.length + 1) // all original + summary
@@ -979,10 +980,12 @@ describe("summarizeConversation", () => {
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-		const summaryContent = summaryMessage!.content as any[]
+		const summaryContent = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
 		expect(summaryContent[0]).toEqual({ type: "text", text: "This is a summary" })
 
-		const preservedToolUses = summaryContent.filter((block) => block.type === "tool_use")
+		const preservedToolUses = summaryContent.filter(
+			(block): block is Anthropic.Messages.ToolUseBlockParam => block.type === "tool_use",
+		)
 		expect(preservedToolUses).toHaveLength(2)
 		expect(preservedToolUses.map((block) => block.id)).toEqual(["toolu_parallel_1", "toolu_parallel_2"])
 	})
