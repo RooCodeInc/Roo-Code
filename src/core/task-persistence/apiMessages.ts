@@ -25,6 +25,13 @@ export type ApiMessage = Anthropic.MessageParam & {
 	// For non-destructive condense: points to the condenseId of the summary that replaces this message
 	// Messages with condenseParent are filtered out when sending to API if the summary exists
 	condenseParent?: string
+	// For non-destructive truncation: unique identifier for truncation marker messages
+	truncationId?: string
+	// For non-destructive truncation: points to the truncationId of the marker that hides this message
+	// Messages with truncationParent are filtered out when sending to API if the marker exists
+	truncationParent?: string
+	// Identifies a message as a truncation boundary marker
+	isTruncationMarker?: boolean
 }
 
 export async function readApiMessages({

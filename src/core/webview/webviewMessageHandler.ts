@@ -113,15 +113,15 @@ export const webviewMessageHandler = async (
 
 	/**
 	 * Removes the target message and all subsequent messages.
-	 * After truncation, cleans up orphaned condenseParent references for any
-	 * summaries that were removed by the truncation.
+	 * After truncation, cleans up orphaned condenseParent and truncationParent references for any
+	 * summaries or truncation markers that were removed by the truncation.
 	 *
-	 * Design: Rewind/delete operations preserve earlier condense states.
-	 * Only summaries that are removed by the truncation (i.e., were created
-	 * after the rewind point) have their associated condenseParent tags cleared.
-	 * This allows nested condensing to work correctly - rewinding past the
-	 * second condense restores visibility of messages condensed by it, while
-	 * keeping the first condense intact.
+	 * Design: Rewind/delete operations preserve earlier condense and truncation states.
+	 * Only summaries and truncation markers that are removed by the truncation (i.e., were created
+	 * after the rewind point) have their associated tags cleared.
+	 * This allows nested condensing and multiple truncations to work correctly - rewinding past the
+	 * second condense restores visibility of messages condensed by it, while keeping the first condense intact.
+	 * Same applies to truncation markers.
 	 */
 	const removeMessagesThisAndSubsequent = async (
 		currentCline: any,
@@ -131,10 +131,17 @@ export const webviewMessageHandler = async (
 		// Step 1: Collect condenseIds from condense_context messages being removed.
 		// These IDs link clineMessages to their corresponding Summaries in apiConversationHistory.
 		const removedCondenseIds = new Set<string>()
+		// Step 1b: Collect truncationIds from sliding_window_truncation messages being removed.
+		// These IDs link clineMessages to their corresponding truncation markers in apiConversationHistory.
+		const removedTruncationIds = new Set<string>()
+
 		for (let i = messageIndex; i < currentCline.clineMessages.length; i++) {
 			const msg = currentCline.clineMessages[i]
 			if (msg.say === "condense_context" && msg.contextCondense?.condenseId) {
 				removedCondenseIds.add(msg.contextCondense.condenseId)
+			}
+			if (msg.say === "sliding_window_truncation" && msg.contextTruncation?.truncationId) {
+				removedTruncationIds.add(msg.contextTruncation.truncationId)
 			}
 		}
 
@@ -160,9 +167,23 @@ export const webviewMessageHandler = async (
 				})
 			}
 
-			// Step 5: Clean up orphaned condenseParent references for messages whose
-			// summary was removed by the truncation. Summaries and messages
-			// from earlier condense operations are preserved.
+			// Step 4b: Remove truncation markers whose truncationId was in a removed sliding_window_truncation message.
+			// Same logic as condense - without this, the marker would survive but its UI event would be gone.
+			if (removedTruncationIds.size > 0) {
+				truncatedApiHistory = truncatedApiHistory.filter((msg: ApiMessage) => {
+					if (msg.isTruncationMarker && msg.truncationId && removedTruncationIds.has(msg.truncationId)) {
+						console.log(
+							`[removeMessagesThisAndSubsequent] Removing orphaned truncation marker with truncationId=${msg.truncationId}`,
+						)
+						return false
+					}
+					return true
+				})
+			}
+
+			// Step 5: Clean up orphaned condenseParent and truncationParent references for messages whose
+			// summary or truncation marker was removed by the truncation. Summaries, truncation markers, and messages
+			// from earlier condense/truncation operations are preserved.
 			const cleanedApiHistory = cleanupAfterTruncation(truncatedApiHistory)
 
 			await currentCline.overwriteApiConversationHistory(cleanedApiHistory)

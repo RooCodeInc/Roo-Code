@@ -175,6 +175,7 @@ export const clineSays = [
 	"diff_error",
 	"condense_context",
 	"condense_context_error",
+	"sliding_window_truncation",
 	"codebase_search_result",
 	"user_edit_todos",
 ] as const
@@ -209,6 +210,20 @@ export const contextCondenseSchema = z.object({
 export type ContextCondense = z.infer<typeof contextCondenseSchema>
 
 /**
+ * ContextTruncation
+ *
+ * Used to track sliding window truncation events for the UI.
+ */
+
+export const contextTruncationSchema = z.object({
+	truncationId: z.string(),
+	messagesRemoved: z.number(),
+	prevContextTokens: z.number(),
+})
+
+export type ContextTruncation = z.infer<typeof contextTruncationSchema>
+
+/**
  * ClineMessage
  */
 
@@ -225,6 +240,7 @@ export const clineMessageSchema = z.object({
 	checkpoint: z.record(z.string(), z.unknown()).optional(),
 	progressStatus: toolProgressStatusSchema.optional(),
 	contextCondense: contextCondenseSchema.optional(),
+	contextTruncation: contextTruncationSchema.optional(),
 	isProtected: z.boolean().optional(),
 	apiProtocol: z.union([z.literal("openai"), z.literal("anthropic")]).optional(),
 	isAnswered: z.boolean().optional(),

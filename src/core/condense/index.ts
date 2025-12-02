@@ -375,9 +375,11 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
  * Filters the API conversation history to get the "effective" messages to send to the API.
  * Messages with a condenseParent that points to an existing summary are filtered out,
  * as they have been replaced by that summary.
+ * Messages with a truncationParent that points to an existing truncation marker are also filtered out,
+ * as they have been hidden by sliding window truncation.
  *
- * This allows non-destructive condensing where messages are tagged but not deleted,
- * enabling accurate rewind operations while still sending condensed history to the API.
+ * This allows non-destructive condensing and truncation where messages are tagged but not deleted,
+ * enabling accurate rewind operations while still sending condensed/truncated history to the API.
  *
  * @param messages - The full API conversation history including tagged messages
  * @returns The filtered history that should be sent to the API
@@ -385,49 +387,91 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
 export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 	// Collect all condenseIds of summaries that exist in the current history
 	const existingSummaryIds = new Set<string>()
+	// Collect all truncationIds of truncation markers that exist in the current history
+	const existingTruncationIds = new Set<string>()
+
 	for (const msg of messages) {
 		if (msg.isSummary && msg.condenseId) {
 			existingSummaryIds.add(msg.condenseId)
+		}
+		if (msg.isTruncationMarker && msg.truncationId) {
+			existingTruncationIds.add(msg.truncationId)
 		}
 	}
 
 	// Filter out messages whose condenseParent points to an existing summary
-	// Messages with orphaned condenseParent (summary was deleted) are included
+	// or whose truncationParent points to an existing truncation marker.
+	// Messages with orphaned parents (summary/marker was deleted) are included
 	return messages.filter((msg) => {
-		if (!msg.condenseParent) {
-			return true // No parent, always include
+		// Filter out condensed messages if their summary exists
+		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
+			return false
 		}
-		// Include if the parent summary no longer exists (was deleted by rewind)
-		return !existingSummaryIds.has(msg.condenseParent)
+		// Filter out truncated messages if their truncation marker exists
+		if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
+			return false
+		}
+		return true
 	})
 }
 
 /**
- * Cleans up orphaned condenseParent references after a truncation operation (rewind/delete).
- * When a summary message is deleted, messages that were tagged with its condenseId
- * should have their condenseParent cleared so they become active again.
+ * Cleans up orphaned condenseParent and truncationParent references after a truncation operation (rewind/delete).
+ * When a summary message or truncation marker is deleted, messages that were tagged with its ID
+ * should have their parent reference cleared so they become active again.
  *
  * This function should be called after any operation that truncates the API history
- * to ensure messages are properly restored when their summary is deleted.
+ * to ensure messages are properly restored when their summary or truncation marker is deleted.
  *
  * @param messages - The API conversation history after truncation
- * @returns The cleaned history with orphaned condenseParent fields cleared
+ * @returns The cleaned history with orphaned condenseParent and truncationParent fields cleared
  */
 export function cleanupAfterTruncation(messages: ApiMessage[]): ApiMessage[] {
 	// Collect all condenseIds of summaries that still exist
 	const existingSummaryIds = new Set<string>()
+	// Collect all truncationIds of truncation markers that still exist
+	const existingTruncationIds = new Set<string>()
+
 	for (const msg of messages) {
 		if (msg.isSummary && msg.condenseId) {
 			existingSummaryIds.add(msg.condenseId)
 		}
+		if (msg.isTruncationMarker && msg.truncationId) {
+			existingTruncationIds.add(msg.truncationId)
+		}
 	}
 
-	// Clear condenseParent for messages whose summary was deleted
+	// Clear orphaned parent references for messages whose summary or truncation marker was deleted
 	return messages.map((msg) => {
+		let needsUpdate = false
+		const updates: Partial<ApiMessage> = {}
+
+		// Check for orphaned condenseParent
 		if (msg.condenseParent && !existingSummaryIds.has(msg.condenseParent)) {
-			// Summary was deleted, restore this message by clearing the parent reference
-			const { condenseParent, ...rest } = msg
-			return rest as ApiMessage
+			needsUpdate = true
+		}
+
+		// Check for orphaned truncationParent
+		if (msg.truncationParent && !existingTruncationIds.has(msg.truncationParent)) {
+			needsUpdate = true
+		}
+
+		if (needsUpdate) {
+			// Create a new object without orphaned parent references
+			const { condenseParent, truncationParent, ...rest } = msg
+			const result: ApiMessage = rest as ApiMessage
+
+			// Keep condenseParent if its summary still exists
+			if (condenseParent && existingSummaryIds.has(condenseParent)) {
+				result.condenseParent = condenseParent
+			}
+
+			// Keep truncationParent if its truncation marker still exists
+			if (truncationParent && existingTruncationIds.has(truncationParent)) {
+				result.truncationParent = truncationParent
+			}
+
+			return result
 		}
 		return msg
 	})
