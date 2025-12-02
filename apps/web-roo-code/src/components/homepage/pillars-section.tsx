@@ -71,7 +71,7 @@ export function PillarsSection() {
 								<div className="text-muted-foreground my-4 space-y-1">
 									<p>
 										&quot;The best model in the world&quot; changes every other week. Providers
-										throttlemodels with no warning. 1st-party coding agents only work with their own
+							throttle models with no warning. 1st-party coding agents only work with their own
 										models.
 									</p>
 									<p>Roo doesn&apos;t care.</p>
@@ -164,7 +164,7 @@ export function PillarsSection() {
 										Developer tools need to fit like gloves. Highly tweakable,
 										keyboard-shortcut-heavy gloves.
 									</p>
-									<p>We made Roo thoughtuflly configurable to fit your workflow as best it can.</p>
+								<p>We made Roo thoughtfully configurable to fit your workflow as best it can.</p>
 								</div>
 							</div>
 						</div>
