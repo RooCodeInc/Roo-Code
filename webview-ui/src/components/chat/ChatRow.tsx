@@ -536,7 +536,6 @@ export const ChatRowContent = ({
 			}
 			case "updateTodoList" as any: {
 				const todos = (tool as any).todos || []
-
 				// Get previous todos from the latest todos in the task context
 				const previousTodos = getPreviousTodos(clineMessages, message.ts)
 
@@ -990,13 +989,14 @@ export const ChatRowContent = ({
 						</div>
 						{message.type === "ask" && (
 							<div className="pl-6">
-								<CodeAccordian
-									path={tool.path}
-									code={tool.content}
-									language="text"
-									isExpanded={isExpanded}
-									onToggleExpand={handleToggleExpand}
-								/>
+								<ToolUseBlock>
+									<div className="p-2">
+										<div className="mb-2 break-words">{tool.content}</div>
+										<div className="flex items-center gap-1 text-xs text-vscode-descriptionForeground">
+											{tool.path}
+										</div>
+									</div>
+								</ToolUseBlock>
 							</div>
 						)}
 					</>
@@ -1381,6 +1381,10 @@ export const ChatRowContent = ({
 							<ImageBlock imageUri={imageInfo.imageUri} imagePath={imageInfo.imagePath} />
 						</div>
 					)
+				case "browser_action":
+				case "browser_action_result":
+					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
+					return null
 				default:
 					return (
 						<>

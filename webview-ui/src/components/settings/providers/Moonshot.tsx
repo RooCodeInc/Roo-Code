@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 type MoonshotProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	simplifySettings?: boolean
 }
 
 export const Moonshot = ({ apiConfiguration, setApiConfigurationField }: MoonshotProps) => {

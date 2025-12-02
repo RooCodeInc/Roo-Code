@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
 		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
 		"openInCloud": "Görevi Roo Code Cloud'da aç",
-		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala."
+		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
+		"openApiHistory": "API Geçmişini Aç",
+		"openUiHistory": "UI Geçmişini Aç"
 	},
 	"unpin": "Sabitlemeyi iptal et",
 	"pin": "Sabitle",
@@ -292,21 +294,21 @@
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
 		"release": {
-			"heading": "Uzantıdaki yenilikler:",
-			"openRouterEmbeddings": "OpenRouter gömme modelleri desteği",
-			"chutesDynamic": "Chutes artık en son modelleri dinamik olarak yüklüyor",
-			"queuedMessagesFix": "Sıradaki mesajların kaybolması için düzeltmeler"
+			"heading": "Bu sürümdeki yenilikler:",
+			"subtasks": "Alt görevlerin otomatik olarak üst görevleri devam ettirmesi ve tek açılış güvenliğiyle geliştirilmiş alt görev orkestrasyonu, daha iyi çok görevli iş akışları için",
+			"nativeTools": "Yerel araç çağrısı artık Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini ve daha fazlası dahil olmak üzere 13+ sağlayıcı tarafından destekleniyor"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
-			"prFixer": "PR Reviewer'ı tamamlamak için <bold>PR Fixer</bold> bulut ajanını tanıtıyoruz.",
-			"prFixerDescription": "Roo Code'un PR Fixer'ı, PR'larınıza doğrudan GitHub'dan yüksek kaliteli değişiklikler uygular. Bir PR yorumu aracılığıyla çağırın ve bağlamı, anlaşmaları ve ödünleri anlamak için tüm yorum geçmişini okuyacak - sonra doğru düzeltmeyi uygulayacaktır.",
-			"tryPrFixerButton": "PR Fixer'ı Dene"
+			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold> ve <bold>Coder</bold> tanıtımı - iş akışlarını geliştirmek için üç özel bulut ajanı.",
+			"description": "Ajanlar bulutta birlikte çalışır ve web'den veya Slack üzerinden tetiklenebilir.",
+			"tryButton": "Bulut Ajanlarını Dene"
 		},
 		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
 		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
 	},
 	"browser": {
+		"session": "Tarayıcı Oturumu",
 		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
 		"consoleLogs": "Konsol Kayıtları",
 		"noNewLogs": "(Yeni kayıt yok)",
@@ -319,12 +321,14 @@
 		},
 		"sessionStarted": "Tarayıcı Oturumu Başlatıldı",
 		"actions": {
-			"title": "Tarayıcı İşlemi: ",
+			"title": "Tarayıcı Eylemi: ",
 			"launch": "{{url}} adresinde tarayıcı başlat",
 			"click": "Tıkla ({{coordinate}})",
 			"type": "Yaz \"{{text}}\"",
+			"press": "{{key}} tuşuna bas",
 			"scrollDown": "Aşağı kaydır",
 			"scrollUp": "Yukarı kaydır",
+			"hover": "Üzerine gel ({{coordinate}})",
 			"close": "Tarayıcıyı kapat"
 		}
 	},
@@ -424,7 +428,6 @@
 		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
 		"didRun": "Roo bir slash komutu çalıştırdı"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{total}} yapılacaklar listesinden {{completed}} tanesi tamamlandı",
 		"complete": "{{total}} yapılacaklar listesi tamamlandı",

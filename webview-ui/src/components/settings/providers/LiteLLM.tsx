@@ -20,6 +20,7 @@ type LiteLLMProps = {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
+	simplifySettings?: boolean
 }
 
 export const LiteLLM = ({
@@ -27,6 +28,7 @@ export const LiteLLM = ({
 	setApiConfigurationField,
 	organizationAllowList,
 	modelValidationError,
+	simplifySettings,
 }: LiteLLMProps) => {
 	const { t } = useAppTranslation()
 	const { routerModels } = useExtensionState()
@@ -150,6 +152,7 @@ export const LiteLLM = ({
 				setApiConfigurationField={setApiConfigurationField}
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 
 			{/* Show prompt caching option if the selected model supports it */}

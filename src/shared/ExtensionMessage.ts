@@ -112,6 +112,7 @@ export interface ExtensionMessage {
 		| "authenticatedUser"
 		| "condenseTaskContextResponse"
 		| "singleRouterModelFetchResponse"
+		| "rooCreditBalance"
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "codebaseIndexConfig"
@@ -128,6 +129,8 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "interactionRequired"
+		| "browserSessionUpdate"
+		| "browserSessionNavigate"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -137,10 +140,8 @@ export interface ExtensionMessage {
 	}
 	action?:
 		| "chatButtonClicked"
-		| "mcpButtonClicked"
 		| "settingsButtonClicked"
 		| "historyButtonClicked"
-		| "promptsButtonClicked"
 		| "marketplaceButtonClicked"
 		| "cloudButtonClicked"
 		| "didBecomeVisible"
@@ -212,6 +213,9 @@ export interface ExtensionMessage {
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
+	browserSessionMessages?: ClineMessage[] // For browser session panel updates
+	isBrowserSessionActive?: boolean // For browser session panel updates
+	stepIndex?: number // For browserSessionNavigate: the target step index to display
 }
 
 export type ExtensionState = Pick<
@@ -277,11 +281,13 @@ export type ExtensionState = Pick<
 	| "profileThresholds"
 	| "includeDiagnosticMessages"
 	| "maxDiagnosticMessages"
+	| "imageGenerationProvider"
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
+	| "maxGitStatusFiles"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -331,6 +337,8 @@ export type ExtensionState = Pick<
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
+	isBrowserSessionActive: boolean // Actual browser session state
+
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
 	marketplaceItems?: MarketplaceItem[]
@@ -348,6 +356,7 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	debug?: boolean
 }
 
 export interface ClineSayTool {
@@ -418,6 +427,7 @@ export const browserActions = [
 	"click",
 	"hover",
 	"type",
+	"press",
 	"scroll_down",
 	"scroll_up",
 	"resize",
@@ -431,6 +441,7 @@ export interface ClineSayBrowserAction {
 	coordinate?: string
 	size?: string
 	text?: string
+	executedCoordinate?: string
 }
 
 export type BrowserActionResult = {
@@ -438,6 +449,8 @@ export type BrowserActionResult = {
 	logs?: string
 	currentUrl?: string
 	currentMousePosition?: string
+	viewportWidth?: number
+	viewportHeight?: number
 }
 
 export interface ClineAskUseMcpServer {

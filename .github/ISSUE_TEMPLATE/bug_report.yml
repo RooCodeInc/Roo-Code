@@ -76,7 +76,7 @@ body:
       label: API Provider (optional)
       options:
         - Anthropic
-        - AWS Bedrock
+        - Amazon Bedrock
         - Chutes AI
         - DeepSeek
         - Featherless AI

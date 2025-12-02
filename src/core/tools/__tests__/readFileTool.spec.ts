@@ -336,6 +336,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 				toolResult = result
 			},
 			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -645,6 +646,7 @@ describe("read_file tool XML output structure", () => {
 				toolResult = result
 			},
 			removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -749,6 +751,7 @@ describe("read_file tool XML output structure", () => {
 						localResult = result
 					},
 					removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+					toolProtocol: "xml",
 				})
 				// In multi-image scenarios, the result is pushed to pushToolResult, not returned directly.
 				// We need to check the mock's calls to get the result.
@@ -1369,6 +1372,7 @@ describe("read_file tool XML output structure", () => {
 					toolResult = result
 				},
 				removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
+				toolProtocol: "xml",
 			})
 
 			// Verify
@@ -1456,6 +1460,7 @@ describe("read_file tool with image support", () => {
 				toolResult = result
 			},
 			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
 		})
 
 		console.log("Result type:", Array.isArray(toolResult) ? "array" : typeof toolResult)
@@ -1627,6 +1632,7 @@ describe("read_file tool with image support", () => {
 					toolResult = result
 				},
 				removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+				toolProtocol: "xml",
 			})
 
 			// Verify error handling

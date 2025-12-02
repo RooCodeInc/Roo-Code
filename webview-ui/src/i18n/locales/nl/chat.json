@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
 		"openInCloud": "Taak openen in Roo Code Cloud",
-		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen."
+		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
+		"openApiHistory": "API-geschiedenis openen",
+		"openUiHistory": "UI-geschiedenis openen"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
@@ -276,16 +278,15 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
-			"heading": "Nieuw in de extensie:",
-			"openRouterEmbeddings": "Ondersteuning voor OpenRouter embedding-modellen",
-			"chutesDynamic": "Chutes laadt nu dynamisch de nieuwste modellen",
-			"queuedMessagesFix": "Oplossingen voor berichten in de wachtrij die verloren gaan"
+			"heading": "Nieuw:",
+			"subtasks": "Verbeterde subtaak-orchestratie met automatisch hervatten van bovenliggende taak en veiligheid bij eenmalig openen voor betere multi-task workflows",
+			"nativeTools": "Native tool-aanroepen worden nu ondersteund door 13+ providers, waaronder Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini en meer"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
-			"prFixer": "Introductie van de <bold>PR Fixer</bold> cloud-agent als aanvulling op de PR Reviewer.",
-			"prFixerDescription": "De PR Fixer van Roo Code past hoogwaardige wijzigingen toe op je PR's, direct vanuit GitHub. Roep het aan via een PR-opmerking en het leest de volledige opmerkingengeschiedenis om context, afspraken en afwegingen te begrijpen - en implementeert vervolgens de juiste oplossing.",
-			"tryPrFixerButton": "Probeer PR Fixer"
+			"specialized": "Introductie van <bold>Explainer</bold>, <bold>Planner</bold> en <bold>Coder</bold> - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
+			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
+			"tryButton": "Probeer Cloud-agents"
 		},
 		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
 		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
@@ -306,6 +307,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
+		"session": "Browsersessie",
 		"rooWantsToUse": "Roo wil de browser gebruiken",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",
@@ -318,12 +320,14 @@
 		},
 		"sessionStarted": "Browsersessie gestart",
 		"actions": {
-			"title": "Browse-actie: ",
+			"title": "Browseractie: ",
 			"launch": "Browser starten op {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Typ \"{{text}}\"",
+			"press": "Druk op {{key}}",
 			"scrollDown": "Scroll naar beneden",
 			"scrollUp": "Scroll naar boven",
+			"hover": "Zweven ({{coordinate}})",
 			"close": "Browser sluiten"
 		}
 	},
@@ -423,7 +427,6 @@
 		"wantsToRun": "Roo wil een slash commando uitvoeren",
 		"didRun": "Roo heeft een slash commando uitgevoerd"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} van {{total}} to-do's voltooid",
 		"complete": "{{total}} to-do's voltooid",

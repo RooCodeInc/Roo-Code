@@ -23,7 +23,7 @@ type OpenRouterProps = {
 	routerModels?: RouterModels
 	selectedModelId: string
 	uriScheme: string | undefined
-	fromWelcomeView?: boolean
+	simplifySettings?: boolean
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
 }
@@ -33,7 +33,7 @@ export const OpenRouter = ({
 	setApiConfigurationField,
 	routerModels,
 	uriScheme,
-	fromWelcomeView,
+	simplifySettings,
 	organizationAllowList,
 	modelValidationError,
 }: OpenRouterProps) => {
@@ -78,7 +78,7 @@ export const OpenRouter = ({
 					{t("settings:providers.getOpenRouterApiKey")}
 				</VSCodeButtonLink>
 			)}
-			{!fromWelcomeView && (
+			{!simplifySettings && (
 				<>
 					<div>
 						<Checkbox
@@ -124,6 +124,7 @@ export const OpenRouter = ({
 				serviceUrl="https://openrouter.ai/models"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 		</>
 	)

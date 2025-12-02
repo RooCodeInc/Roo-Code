@@ -19,9 +19,7 @@
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
 	"views.sidebar.name": "Roo Code",
-	"command.mcpServers.title": "MCP 服务器",
-	"command.prompts.title": "模式",
-	"command.history.title": "历史记录",
+	"command.history.title": "任务历史记录",
 	"command.marketplace.title": "应用市场",
 	"command.openInEditor.title": "在编辑器中打开",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "为特定于代理的规则启用 AGENTS.md 文件的加载（请参阅 https://agent-rules.org/）",
 	"settings.apiRequestTimeout.description": "等待 API 响应的最长时间（秒）（0 = 无超时，1-3600秒，默认值：600秒）。对于像 LM Studio 和 Ollama 这样可能需要更多处理时间的本地提供商，建议使用更高的值。",
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具创建新任务时需要 todos 参数",
-	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。"
+	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
+	"settings.debug.description": "启用调试模式以显示额外按钮，用于在临时文件中以格式化 JSON 查看 API 对话历史和 UI 消息。"
 }

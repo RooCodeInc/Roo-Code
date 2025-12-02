@@ -19,9 +19,7 @@
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
 	"views.sidebar.name": "Roo Code",
-	"command.mcpServers.title": "MCP 서버",
-	"command.prompts.title": "모드",
-	"command.history.title": "기록",
+	"command.history.title": "작업 기록",
 	"command.marketplace.title": "마켓플레이스",
 	"command.openInEditor.title": "에디터에서 열기",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "에이전트별 규칙에 대한 AGENTS.md 파일 로드를 활성화합니다 (참조: https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "API 응답을 기다리는 최대 시간(초) (0 = 시간 초과 없음, 1-3600초, 기본값: 600초). 더 많은 처리 시간이 필요할 수 있는 LM Studio 및 Ollama와 같은 로컬 공급자에게는 더 높은 값을 사용하는 것이 좋습니다.",
 	"settings.newTaskRequireTodos.description": "new_task 도구로 새 작업을 생성할 때 todos 매개변수 필요",
-	"settings.codeIndex.embeddingBatchSize.description": "코드 인덱싱 중 임베딩 작업의 배치 크기입니다. API 공급자의 제한에 따라 이를 조정하세요. 기본값은 60입니다."
+	"settings.codeIndex.embeddingBatchSize.description": "코드 인덱싱 중 임베딩 작업의 배치 크기입니다. API 공급자의 제한에 따라 이를 조정하세요. 기본값은 60입니다.",
+	"settings.debug.description": "디버그 모드를 활성화하여 API 대화 기록과 UI 메시지를 임시 파일에 포맷된 JSON으로 보기 위한 추가 버튼을 표시합니다."
 }

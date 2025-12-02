@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Provider",
+		"modes": "Mode",
+		"mcp": "Server MCP",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoint",
@@ -34,6 +36,26 @@
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
 		"about": "Tentang Roo Code"
+	},
+	"about": {
+		"bugReport": {
+			"label": "Menemukan bug?",
+			"link": "Laporkan di GitHub"
+		},
+		"featureRequest": {
+			"label": "Punya ide?",
+			"link": "Bagikan dengan kami"
+		},
+		"securityIssue": {
+			"label": "Menemukan kerentanan?",
+			"link": "Ikuti proses pengungkapan kami"
+		},
+		"contact": {
+			"label": "Perlu bicara dengan kami? Tulis"
+		},
+		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Kontak & Komunitas",
+		"manageSettings": "Kelola Pengaturan"
 	},
 	"slashCommands": {
 		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
@@ -55,6 +77,12 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Key",
 		"vercelAiGatewayApiKeyPlaceholder": "Masukkan kunci API Vercel AI Gateway Anda",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Wilayah AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Profil AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nama profil AWS dari ~/.aws/credentials (wajib).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Kunci API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
@@ -125,11 +153,14 @@
 			"geminiApiKeyRequired": "Kunci API Gemini diperlukan",
 			"mistralApiKeyRequired": "Kunci API Mistral diperlukan",
 			"vercelAiGatewayApiKeyRequired": "Kunci API Vercel AI Gateway diperlukan",
+			"bedrockRegionRequired": "Wilayah AWS diperlukan",
+			"bedrockProfileRequired": "Profil AWS diperlukan",
 			"ollamaBaseUrlRequired": "URL dasar Ollama diperlukan",
 			"baseUrlRequired": "URL dasar diperlukan",
 			"modelDimensionMinValue": "Dimensi model harus lebih besar dari 0",
 			"openRouterApiKeyRequired": "Kunci API OpenRouter diperlukan"
 		},
+		"optional": "opsional",
 		"advancedConfigLabel": "Konfigurasi Lanjutan",
 		"searchMinScoreLabel": "Ambang Batas Skor Pencarian",
 		"searchMinScoreDescription": "Skor kesamaan minimum (0.0-1.0) yang diperlukan untuk hasil pencarian. Nilai yang lebih rendah mengembalikan lebih banyak hasil tetapi mungkin kurang relevan. Nilai yang lebih tinggi mengembalikan lebih sedikit hasil tetapi lebih relevan.",
@@ -283,6 +314,8 @@
 		"anthropic1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
+		"basetenApiKey": "Baseten API Key",
+		"getBasetenApiKey": "Dapatkan Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Dapatkan Cerebras API Key",
 		"chutesApiKey": "Chutes API Key",
@@ -631,6 +664,10 @@
 		"includeCurrentCost": {
 			"label": "Sertakan biaya saat ini dalam konteks",
 			"description": "Ketika diaktifkan, biaya penggunaan API saat ini akan disertakan dalam prompt sistem. Nonaktifkan ini jika model berhenti bekerja karena masalah biaya."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status maks file",
+			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat > 0."
 		}
 	},
 	"terminal": {
@@ -693,6 +730,14 @@
 	},
 	"advancedSettings": {
 		"title": "Pengaturan lanjutan"
+	},
+	"toolProtocol": {
+		"label": "Protokol Panggilan Alat",
+		"description": "Pilih bagaimana Roo berkomunikasi dengan API. Asli menggunakan API panggilan fungsi penyedia, sedangkan XML menggunakan definisi alat berformat XML.",
+		"default": "Default",
+		"xml": "XML",
+		"native": "Asli",
+		"currentDefault": "Default: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
@@ -789,7 +834,9 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Aktifkan pembuatan gambar AI",
-			"description": "Ketika diaktifkan, Roo dapat menghasilkan gambar dari prompt teks menggunakan model pembuatan gambar OpenRouter. Memerlukan kunci API OpenRouter yang dikonfigurasi.",
+			"description": "Ketika diaktifkan, Roo dapat menghasilkan gambar dari prompt teks menggunakan model pembuatan gambar.",
+			"providerLabel": "Penyedia",
+			"providerDescription": "Pilih penyedia untuk menghasilkan gambar.",
 			"openRouterApiKeyLabel": "Kunci API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
 			"getApiKeyText": "Dapatkan kunci API Anda dari",
@@ -802,9 +849,9 @@
 			"name": "Aktifkan perintah slash yang dimulai model",
 			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
 		},
-		"NATIVE_TOOL_CALLING": {
-			"name": "Aktifkan pemanggilan alat asli",
-			"description": "Ketika diaktifkan, Roo akan menggunakan API pemanggilan fungsi asli dari penyedia alih-alih definisi alat berbasis XML. Ini bersifat eksperimental dan belum berfungsi dengan semua penyedia."
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Panggilan tool paralel",
+			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
 		}
 	},
 	"promptCaching": {
@@ -843,7 +890,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Cari",
 		"noMatchFound": "Tidak ada yang cocok ditemukan",
-		"useCustomModel": "Gunakan kustom: {{modelId}}"
+		"useCustomModel": "Gunakan kustom: {{modelId}}",
+		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",

@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
 		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
 		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
-		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở."
+		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
+		"openApiHistory": "Mở lịch sử API",
+		"openUiHistory": "Mở lịch sử UI"
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",
@@ -292,21 +294,21 @@
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
 		"release": {
-			"heading": "Mới trong Extension:",
-			"openRouterEmbeddings": "Hỗ trợ các mô hình nhúng OpenRouter",
-			"chutesDynamic": "Chutes giờ đây tải các mô hình mới nhất một cách động",
-			"queuedMessagesFix": "Sửa lỗi tin nhắn trong hàng đợi bị mất"
+			"heading": "Mới trong phiên bản này:",
+			"subtasks": "Điều phối nhiệm vụ phụ được cải thiện với tính năng tiếp tục cha tự động và an toàn mở một lần cho các quy trình làm việc đa nhiệm vụ tốt hơn",
+			"nativeTools": "Gọi công cụ gốc hiện được hỗ trợ bởi 13+ nhà cung cấp bao gồm Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini và hơn thế nữa"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
-			"prFixer": "Giới thiệu agent đám mây <bold>PR Fixer</bold> để bổ sung cho PR Reviewer.",
-			"prFixerDescription": "PR Fixer của Roo Code áp dụng các thay đổi chất lượng cao cho PR của bạn, ngay từ GitHub. Gọi qua bình luận PR và nó sẽ đọc toàn bộ lịch sử bình luận để hiểu ngữ cảnh, thỏa thuận và đánh đổi - sau đó triển khai bản sửa lỗi phù hợp.",
-			"tryPrFixerButton": "Dùng thử PR Fixer"
+			"specialized": "Giới thiệu <bold>Explainer</bold>, <bold>Planner</bold> và <bold>Coder</bold> - ba agent đám mây chuyên biệt để nâng cao quy trình làm việc của bạn.",
+			"description": "Các agent làm việc cùng nhau trên đám mây và có thể được kích hoạt từ web hoặc qua Slack.",
+			"tryButton": "Dùng thử Agents trên Cloud"
 		},
 		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>",
 		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Phiên trình duyệt",
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",
@@ -323,8 +325,10 @@
 			"launch": "Khởi chạy trình duyệt tại {{url}}",
 			"click": "Nhấp ({{coordinate}})",
 			"type": "Gõ \"{{text}}\"",
+			"press": "Nhấn {{key}}",
 			"scrollDown": "Cuộn xuống",
 			"scrollUp": "Cuộn lên",
+			"hover": "Di chuột ({{coordinate}})",
 			"close": "Đóng trình duyệt"
 		}
 	},
@@ -424,7 +428,6 @@
 		"wantsToRun": "Roo muốn chạy lệnh slash",
 		"didRun": "Roo đã chạy lệnh slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} trong tổng số {{total}} công việc đã hoàn thành",
 		"complete": "{{total}} công việc đã hoàn thành",

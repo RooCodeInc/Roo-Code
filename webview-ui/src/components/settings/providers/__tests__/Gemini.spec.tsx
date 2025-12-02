@@ -128,13 +128,13 @@ describe("Gemini", () => {
 		})
 	})
 
-	describe("fromWelcomeView prop", () => {
-		it("should hide URL context and grounding checkboxes when fromWelcomeView is true, but keep custom base URL", () => {
+	describe("simplifySettings prop", () => {
+		it("should hide URL context and grounding checkboxes when simplifySettings is true, but keep custom base URL", () => {
 			render(
 				<Gemini
 					apiConfiguration={defaultApiConfiguration}
 					setApiConfigurationField={mockSetApiConfigurationField}
-					fromWelcomeView={true}
+					simplifySettings={true}
 				/>,
 			)
 
@@ -145,12 +145,12 @@ describe("Gemini", () => {
 			expect(screen.queryByTestId("checkbox-grounding-search")).not.toBeInTheDocument()
 		})
 
-		it("should show all checkboxes when fromWelcomeView is false", () => {
+		it("should show all checkboxes when simplifySettings is false", () => {
 			render(
 				<Gemini
 					apiConfiguration={defaultApiConfiguration}
 					setApiConfigurationField={mockSetApiConfigurationField}
-					fromWelcomeView={false}
+					simplifySettings={false}
 				/>,
 			)
 
@@ -160,7 +160,7 @@ describe("Gemini", () => {
 			expect(screen.getByTestId("checkbox-grounding-search")).toBeInTheDocument()
 		})
 
-		it("should show all checkboxes when fromWelcomeView is undefined (default behavior)", () => {
+		it("should show all checkboxes when simplifySettings is undefined (default behavior)", () => {
 			render(
 				<Gemini
 					apiConfiguration={defaultApiConfiguration}

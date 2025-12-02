@@ -17,6 +17,7 @@ type VercelAiGatewayProps = {
 	routerModels?: RouterModels
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
+	simplifySettings?: boolean
 }
 
 export const VercelAiGateway = ({
@@ -25,6 +26,7 @@ export const VercelAiGateway = ({
 	routerModels,
 	organizationAllowList,
 	modelValidationError,
+	simplifySettings,
 }: VercelAiGatewayProps) => {
 	const { t } = useAppTranslation()
 
@@ -68,6 +70,7 @@ export const VercelAiGateway = ({
 				serviceUrl="https://vercel.com/ai-gateway/models"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 		</>
 	)

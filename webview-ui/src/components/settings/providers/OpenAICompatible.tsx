@@ -29,6 +29,7 @@ type OpenAICompatibleProps = {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
+	simplifySettings?: boolean
 }
 
 export const OpenAICompatible = ({
@@ -36,6 +37,7 @@ export const OpenAICompatible = ({
 	setApiConfigurationField,
 	organizationAllowList,
 	modelValidationError,
+	simplifySettings,
 }: OpenAICompatibleProps) => {
 	const { t } = useAppTranslation()
 
@@ -146,6 +148,7 @@ export const OpenAICompatible = ({
 				serviceUrl="https://platform.openai.com"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 			<R1FormatSetting
 				onChange={handleInputChange("openAiR1FormatEnabled", noTransform)}

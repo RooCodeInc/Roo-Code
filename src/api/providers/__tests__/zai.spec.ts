@@ -202,7 +202,7 @@ describe("ZAiHandler", () => {
 			const errorMessage = "Z AI API error"
 			mockCreate.mockRejectedValueOnce(new Error(errorMessage))
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				`Z AI completion error: ${errorMessage}`,
+				`Z.ai completion error: ${errorMessage}`,
 			)
 		})
 
@@ -252,7 +252,7 @@ describe("ZAiHandler", () => {
 			const firstChunk = await stream.next()
 
 			expect(firstChunk.done).toBe(false)
-			expect(firstChunk.value).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20 })
+			expect(firstChunk.value).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 20 })
 		})
 
 		it("createMessage should pass correct parameters to Z AI client", async () => {

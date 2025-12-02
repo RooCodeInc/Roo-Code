@@ -70,7 +70,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
 	// Resolve tool protocol for system prompt generation
-	const toolProtocol = resolveToolProtocol(apiConfiguration, modelInfo, apiConfiguration.apiProvider, experiments)
+	const toolProtocol = resolveToolProtocol(apiConfiguration, modelInfo)
 
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,
@@ -97,6 +97,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
 			toolProtocol,
+			isStealthModel: modelInfo?.isStealthModel,
 		},
 	)
 

@@ -60,6 +60,7 @@ export interface WebviewMessage {
 		| "requestOllamaModels"
 		| "requestLmStudioModels"
 		| "requestRooModels"
+		| "requestRooCreditBalance"
 		| "requestVsCodeLmModels"
 		| "requestHuggingFaceModels"
 		| "openImage"
@@ -165,6 +166,15 @@ export interface WebviewMessage {
 		| "dismissUpsell"
 		| "getDismissedUpsells"
 		| "updateSettings"
+		| "allowedCommands"
+		| "deniedCommands"
+		| "killBrowserSession"
+		| "openBrowserSessionPanel"
+		| "showBrowserSessionPanelAtStep"
+		| "refreshBrowserSessionPanel"
+		| "browserPanelDidLaunch"
+		| "openDebugApiHistory"
+		| "openDebugUiHistory"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -176,6 +186,9 @@ export interface WebviewMessage {
 	images?: string[]
 	bool?: boolean
 	value?: number
+	stepIndex?: number
+	isLaunchAction?: boolean
+	forceShow?: boolean
 	commands?: string[]
 	audioType?: AudioType
 	serverName?: string
@@ -213,6 +226,7 @@ export interface WebviewMessage {
 	upsellId?: string // For dismissUpsell
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
+	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
@@ -224,11 +238,14 @@ export interface WebviewMessage {
 			| "gemini"
 			| "mistral"
 			| "vercel-ai-gateway"
+			| "bedrock"
 			| "openrouter"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 		codebaseIndexOpenAiCompatibleBaseUrl?: string
+		codebaseIndexBedrockRegion?: string
+		codebaseIndexBedrockProfile?: string
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
 

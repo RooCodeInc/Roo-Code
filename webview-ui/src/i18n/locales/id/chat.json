@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
 		"openInCloud": "Buka tugas di Roo Code Cloud",
-		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka."
+		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka.",
+		"openApiHistory": "Buka Riwayat API",
+		"openUiHistory": "Buka Riwayat UI"
 	},
 	"history": {
 		"title": "Riwayat"
@@ -303,16 +305,15 @@
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"release": {
-			"heading": "Baru di Ekstensi:",
-			"openRouterEmbeddings": "Dukungan untuk model embedding OpenRouter",
-			"chutesDynamic": "Chutes sekarang memuat model terbaru secara dinamis",
-			"queuedMessagesFix": "Perbaikan untuk pesan antrian yang hilang"
+			"heading": "Terbaru:",
+			"subtasks": "Orkestrasi subtugas yang ditingkatkan dengan resume induk otomatis dan keamanan pembukaan tunggal untuk alur kerja multi-tugas yang lebih baik",
+			"nativeTools": "Pemanggilan alat asli sekarang didukung di 13+ penyedia termasuk Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, dan banyak lagi"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
-			"prFixer": "Memperkenalkan agen cloud <bold>PR Fixer</bold> untuk melengkapi PR Reviewer.",
-			"prFixerDescription": "PR Fixer dari Roo Code menerapkan perubahan berkualitas tinggi ke PR Anda, langsung dari GitHub. Panggil melalui komentar PR dan ia akan membaca seluruh riwayat komentar untuk memahami konteks, kesepakatan, dan trade-off - kemudian menerapkan perbaikan yang tepat.",
-			"tryPrFixerButton": "Coba PR Fixer"
+			"specialized": "Memperkenalkan <bold>Explainer</bold>, <bold>Planner</bold>, dan <bold>Coder</bold> - tiga agen cloud khusus untuk meningkatkan alur kerja Anda.",
+			"description": "Agen bekerja bersama di cloud dan dapat dipicu dari web atau melalui Slack.",
+			"tryButton": "Coba Agen Cloud"
 		},
 		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
 		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
@@ -327,6 +328,7 @@
 		"countdownDisplay": "{{count}}dtk"
 	},
 	"browser": {
+		"session": "Sesi Browser",
 		"rooWantsToUse": "Roo ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
@@ -339,12 +341,14 @@
 		},
 		"sessionStarted": "Sesi Browser Dimulai",
 		"actions": {
-			"title": "Aksi Browse: ",
+			"title": "Aksi Browser: ",
 			"launch": "Luncurkan browser di {{url}}",
 			"click": "Klik ({{coordinate}})",
 			"type": "Ketik \"{{text}}\"",
+			"press": "Tekan {{key}}",
 			"scrollDown": "Gulir ke bawah",
 			"scrollUp": "Gulir ke atas",
+			"hover": "Arahkan ({{coordinate}})",
 			"close": "Tutup browser"
 		}
 	},
@@ -429,7 +433,6 @@
 		"wantsToRun": "Roo ingin menjalankan perintah slash",
 		"didRun": "Roo telah menjalankan perintah slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} dari {{total}} to-do selesai",
 		"complete": "{{total}} to-do selesai",

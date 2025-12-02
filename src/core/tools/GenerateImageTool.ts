@@ -1,7 +1,12 @@
 import path from "path"
 import fs from "fs/promises"
 import * as vscode from "vscode"
-import type { GenerateImageParams } from "@roo-code/types"
+import {
+	GenerateImageParams,
+	IMAGE_GENERATION_MODEL_IDS,
+	IMAGE_GENERATION_MODELS,
+	getImageGenerationProvider,
+} from "@roo-code/types"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
@@ -9,10 +14,10 @@ import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { OpenRouterHandler } from "../../api/providers/openrouter"
+import { RooHandler } from "../../api/providers/roo"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
-
-const IMAGE_GENERATION_MODELS = ["google/gemini-2.5-flash-image", "openai/gpt-5-image", "openai/gpt-5-image-mini"]
+import { t } from "../../i18n"
 
 export class GenerateImageTool extends BaseTool<"generate_image"> {
 	readonly name = "generate_image" as const
@@ -27,7 +32,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 	async execute(params: GenerateImageParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { prompt, path: relPath, image: inputImagePath } = params
-		const { handleError, pushToolResult, askApproval, removeClosingTag } = callbacks
+		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol } = callbacks
 
 		const provider = task.providerRef.deref()
 		const state = await provider?.getState()
@@ -62,7 +67,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 		if (!accessAllowed) {
 			await task.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(relPath)))
+			pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
 			return
 		}
 
@@ -73,6 +78,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			const inputImageExists = await fileExistsAtPath(inputImageFullPath)
 			if (!inputImageExists) {
 				await task.say("error", `Input image not found: ${getReadablePath(task.cwd, inputImagePath)}`)
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(
 					formatResponse.toolError(`Input image not found: ${getReadablePath(task.cwd, inputImagePath)}`),
 				)
@@ -82,7 +88,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			const inputImageAccessAllowed = task.rooIgnoreController?.validateAccess(inputImagePath)
 			if (!inputImageAccessAllowed) {
 				await task.say("rooignore_error", inputImagePath)
-				pushToolResult(formatResponse.toolError(formatResponse.rooIgnoreError(inputImagePath)))
+				pushToolResult(formatResponse.rooIgnoreError(inputImagePath, toolProtocol))
 				return
 			}
 
@@ -96,6 +102,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 						"error",
 						`Unsupported image format: ${imageExtension}. Supported formats: ${supportedFormats.join(", ")}`,
 					)
+					task.didToolFailInCurrentTurn = true
 					pushToolResult(
 						formatResponse.toolError(
 							`Unsupported image format: ${imageExtension}. Supported formats: ${supportedFormats.join(", ")}`,
@@ -111,6 +118,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 					"error",
 					`Failed to read input image: ${error instanceof Error ? error.message : "Unknown error"}`,
 				)
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(
 					formatResponse.toolError(
 						`Failed to read input image: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -122,22 +130,46 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
 
-		const openRouterApiKey = state?.openRouterImageApiKey
+		// Use shared utility for backwards compatibility logic
+		const imageProvider = getImageGenerationProvider(
+			state?.imageGenerationProvider,
+			!!state?.openRouterImageGenerationSelectedModel,
+		)
 
-		if (!openRouterApiKey) {
-			await task.say(
-				"error",
-				"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
-			)
-			pushToolResult(
-				formatResponse.toolError(
-					"OpenRouter API key is required for image generation. Please configure it in the Image Generation experimental settings.",
-				),
-			)
-			return
+		// Get the selected model
+		let selectedModel = state?.openRouterImageGenerationSelectedModel
+		let modelInfo = undefined
+
+		// Find the model info matching both value AND provider
+		// (since the same model value can exist for multiple providers)
+		if (selectedModel) {
+			modelInfo = IMAGE_GENERATION_MODELS.find((m) => m.value === selectedModel && m.provider === imageProvider)
+			if (!modelInfo) {
+				// Model doesn't exist for this provider, use first model for selected provider
+				const providerModels = IMAGE_GENERATION_MODELS.filter((m) => m.provider === imageProvider)
+				modelInfo = providerModels[0]
+				selectedModel = modelInfo?.value || IMAGE_GENERATION_MODEL_IDS[0]
+			}
+		} else {
+			// No model selected, use first model for selected provider
+			const providerModels = IMAGE_GENERATION_MODELS.filter((m) => m.provider === imageProvider)
+			modelInfo = providerModels[0]
+			selectedModel = modelInfo?.value || IMAGE_GENERATION_MODEL_IDS[0]
 		}
 
-		const selectedModel = state?.openRouterImageGenerationSelectedModel || IMAGE_GENERATION_MODELS[0]
+		// Use the provider selection
+		const modelProvider = imageProvider
+		const apiMethod = modelInfo?.apiMethod
+
+		// Validate API key for OpenRouter
+		const openRouterApiKey = state?.openRouterImageApiKey
+
+		if (imageProvider === "openrouter" && !openRouterApiKey) {
+			const errorMessage = t("tools:generateImage.openRouterApiKeyRequired")
+			await task.say("error", errorMessage)
+			pushToolResult(formatResponse.toolError(errorMessage))
+			return
+		}
 
 		const fullPath = path.resolve(task.cwd, removeClosingTag("path", relPath))
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
@@ -165,17 +197,20 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 				return
 			}
 
-			const openRouterHandler = new OpenRouterHandler({} as any)
-
-			const result = await openRouterHandler.generateImage(
-				prompt,
-				selectedModel,
-				openRouterApiKey,
-				inputImageData,
-			)
+			let result
+			if (modelProvider === "roo") {
+				// Use Roo Code Cloud provider (supports both chat completions and images API)
+				const rooHandler = new RooHandler({} as any)
+				result = await rooHandler.generateImage(prompt, selectedModel, inputImageData, apiMethod)
+			} else {
+				// Use OpenRouter provider (only supports chat completions API)
+				const openRouterHandler = new OpenRouterHandler({} as any)
+				result = await openRouterHandler.generateImage(prompt, selectedModel, openRouterApiKey!, inputImageData)
+			}
 
 			if (!result.success) {
 				await task.say("error", result.error || "Failed to generate image")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(result.error || "Failed to generate image"))
 				return
 			}
@@ -183,6 +218,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			if (!result.imageData) {
 				const errorMessage = "No image data received"
 				await task.say("error", errorMessage)
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}
@@ -191,6 +227,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			if (!base64Match) {
 				const errorMessage = "Invalid image format received"
 				await task.say("error", errorMessage)
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}

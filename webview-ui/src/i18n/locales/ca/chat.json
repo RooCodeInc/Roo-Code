@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
 		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
 		"openInCloud": "Obrir tasca a Roo Code Cloud",
-		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir."
+		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
+		"openApiHistory": "Obrir historial d'API",
+		"openUiHistory": "Obrir historial d'UI"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -291,21 +293,21 @@
 			"goToSettingsButton": "Anar a Configuració"
 		},
 		"release": {
-			"heading": "Novetats a l'extensió:",
-			"openRouterEmbeddings": "Suport per a models d'incrustació d'OpenRouter",
-			"chutesDynamic": "Chutes ara carrega els últims models de forma dinàmica",
-			"queuedMessagesFix": "Correccions per a missatges en cua que es perden"
+			"heading": "Novetats:",
+			"subtasks": "Orquestració millorada de subtasques amb represa automàtica del pare i seguretat d'obertura única per a millors fluxos de treball multitasca",
+			"nativeTools": "Ara s'admet la crida nativa d'eines en més de 13 proveïdors, inclosos Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini i més"
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
-			"prFixer": "Presentem l'agent al núvol <bold>PR Fixer</bold> per complementar el Revisor de PR.",
-			"prFixerDescription": "El PR Fixer de Roo Code aplica canvis d'alta qualitat a les teves PR directament des de GitHub. Invoca'l mitjançant un comentari a la PR i llegirà tot l'historial de comentaris per entendre el context, els acords i els compromisos, i després implementarà la solució correcta.",
-			"tryPrFixerButton": "Prova el PR Fixer"
+			"specialized": "Presentem <bold>Explainer</bold>, <bold>Planner</bold> i <bold>Coder</bold> - tres agents al núvol especialitzats per millorar els teus fluxos de treball.",
+			"description": "Els agents treballen junts al núvol i es poden activar des del web o mitjançant Slack.",
+			"tryButton": "Prova els Agents al Núvol"
 		},
 		"careers": "A més, <careersLink>estem contractant!</careersLink>",
 		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sessió del navegador",
 		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",
@@ -318,12 +320,14 @@
 		},
 		"sessionStarted": "Sessió de navegador iniciada",
 		"actions": {
-			"title": "Acció de navegació: ",
+			"title": "Acció del navegador: ",
 			"launch": "Iniciar navegador a {{url}}",
 			"click": "Clic ({{coordinate}})",
 			"type": "Escriure \"{{text}}\"",
+			"press": "Prem {{key}}",
 			"scrollDown": "Desplaçar avall",
 			"scrollUp": "Desplaçar amunt",
+			"hover": "Plana sobre ({{coordinate}})",
 			"close": "Tancar navegador"
 		}
 	},
@@ -423,7 +427,6 @@
 		"terminal": "Terminal",
 		"url": "Enganxa la URL per obtenir-ne el contingut"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} de {{total}} tasques pendents fetes",
 		"complete": "{{total}} tasques pendents fetes",

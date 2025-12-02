@@ -11,6 +11,7 @@ export const deepSeekModels = {
 		contextWindow: 128_000,
 		supportsImages: false,
 		supportsPromptCache: true,
+		supportsNativeTools: true,
 		inputPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
 		outputPrice: 1.68, // $1.68 per million tokens - Updated Sept 5, 2025
 		cacheWritesPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
@@ -22,6 +23,7 @@ export const deepSeekModels = {
 		contextWindow: 128_000,
 		supportsImages: false,
 		supportsPromptCache: true,
+		supportsNativeTools: true,
 		inputPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
 		outputPrice: 1.68, // $1.68 per million tokens - Updated Sept 5, 2025
 		cacheWritesPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025

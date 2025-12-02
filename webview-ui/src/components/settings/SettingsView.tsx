@@ -25,6 +25,9 @@ import {
 	LucideIcon,
 	SquareSlash,
 	Glasses,
+	Plug,
+	Server,
+	Users2,
 } from "lucide-react"
 
 import {
@@ -32,6 +35,7 @@ import {
 	type ExperimentId,
 	type TelemetrySetting,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	ImageGenerationProvider,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -73,6 +77,8 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import ModesView from "../modes/ModesView"
+import McpView from "../mcp/McpView"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -94,6 +100,8 @@ const sectionNames = [
 	"notifications",
 	"contextManagement",
 	"terminal",
+	"modes",
+	"mcp",
 	"prompts",
 	"ui",
 	"experimental",
@@ -198,11 +206,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
 		includeTaskHistoryInEnhance,
+		imageGenerationProvider,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		includeCurrentTime,
 		includeCurrentCost,
+		maxGitStatusFiles,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -285,6 +295,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 			setChangeDetected(true)
 			return { ...prevState, telemetrySetting: setting }
+		})
+	}, [])
+
+	const setImageGenerationProvider = useCallback((provider: ImageGenerationProvider) => {
+		setCachedState((prevState) => {
+			if (prevState.imageGenerationProvider !== provider) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, imageGenerationProvider: provider }
 		})
 	}, [])
 
@@ -395,7 +415,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
+					maxGitStatusFiles: maxGitStatusFiles ?? 0,
 					profileThresholds,
+					imageGenerationProvider,
 					openRouterImageApiKey,
 					openRouterImageGenerationSelectedModel,
 					experiments,
@@ -486,7 +508,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
 		() => [
-			{ id: "providers", icon: Webhook },
+			{ id: "providers", icon: Plug },
+			{ id: "modes", icon: Users2 },
+			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "browser", icon: SquareMousePointer },
@@ -599,7 +623,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									isSelected // Use manual isSelected for styling
 										? `${settingsTabTrigger} ${settingsTabTriggerActive}`
 										: settingsTabTrigger,
-									"focus:ring-0", // Remove the focus ring styling
+									"cursor-pointer focus:ring-0", // Remove the focus ring styling
 								)}
 								data-testid={`tab-${id}`}
 								data-compact={isCompactMode}>
@@ -764,6 +788,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							writeDelayMs={writeDelayMs}
 							includeCurrentTime={includeCurrentTime}
 							includeCurrentCost={includeCurrentCost}
+							maxGitStatusFiles={maxGitStatusFiles}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
@@ -785,6 +810,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
+
+					{/* Modes Section */}
+					{activeTab === "modes" && <ModesView />}
+
+					{/* MCP Section */}
+					{activeTab === "mcp" && <McpView />}
 
 					{/* Prompts Section */}
 					{activeTab === "prompts" && (
@@ -813,10 +844,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							experiments={experiments}
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
+							imageGenerationProvider={imageGenerationProvider}
 							openRouterImageApiKey={openRouterImageApiKey as string | undefined}
 							openRouterImageGenerationSelectedModel={
 								openRouterImageGenerationSelectedModel as string | undefined
 							}
+							setImageGenerationProvider={setImageGenerationProvider}
 							setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 							setImageGenerationSelectedModel={setImageGenerationSelectedModel}
 						/>

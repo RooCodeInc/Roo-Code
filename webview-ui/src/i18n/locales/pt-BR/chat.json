@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
 		"shareSuccessPublic": "Link público copiado para a área de transferência",
 		"openInCloud": "Abrir tarefa no Roo Code Cloud",
-		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir."
+		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir.",
+		"openApiHistory": "Abrir histórico da API",
+		"openUiHistory": "Abrir histórico da UI"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -291,21 +293,21 @@
 			"goToSettingsButton": "Ir para Configurações"
 		},
 		"release": {
-			"heading": "Novidades na Extensão:",
-			"openRouterEmbeddings": "Suporte para modelos de embedding do OpenRouter",
-			"chutesDynamic": "Chutes agora carrega os modelos mais recentes dinamicamente",
-			"queuedMessagesFix": "Correções para mensagens enfileiradas que se perdiam"
+			"heading": "Novidades nesta versão:",
+			"subtasks": "Orquestração melhorada de subtarefas com retomada automática de pais e segurança de abertura única para melhores fluxos de trabalho multitarefa",
+			"nativeTools": "A chamada de ferramentas nativas agora é suportada em 13+ provedores, incluindo Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini e muito mais"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
-			"prFixer": "Apresentando o agente em nuvem <bold>PR Fixer</bold> para complementar o Revisor de PR.",
-			"prFixerDescription": "O PR Fixer do Roo Code aplica alterações de alta qualidade aos seus PRs, diretamente do GitHub. Invoque via comentário de PR e ele lerá todo o histórico de comentários para entender contexto, acordos e compromissos - depois implementa a correção certa.",
-			"tryPrFixerButton": "Experimentar PR Fixer"
+			"specialized": "Apresentando <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - três agentes em nuvem especializados para aprimorar seus fluxos de trabalho.",
+			"description": "Os agentes trabalham juntos na nuvem e podem ser acionados a partir da web ou por meio do Slack.",
+			"tryButton": "Experimentar Agentes em Nuvem"
 		},
 		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>",
 		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"browser": {
+		"session": "Sessão do Navegador",
 		"rooWantsToUse": "Roo quer usar o navegador",
 		"consoleLogs": "Logs do console",
 		"noNewLogs": "(Sem novos logs)",
@@ -322,8 +324,10 @@
 			"launch": "Iniciar navegador em {{url}}",
 			"click": "Clique ({{coordinate}})",
 			"type": "Digitar \"{{text}}\"",
+			"press": "Pressione {{key}}",
 			"scrollDown": "Rolar para baixo",
 			"scrollUp": "Rolar para cima",
+			"hover": "Pairar ({{coordinate}})",
 			"close": "Fechar navegador"
 		}
 	},
@@ -423,7 +427,6 @@
 		"wantsToRun": "Roo quer executar um comando slash",
 		"didRun": "Roo executou um comando slash"
 	},
-	"docs": "Check our <DocsLink>docs</DocsLink> to learn more.",
 	"todo": {
 		"partial": "{{completed}} de {{total}} tarefas concluídas",
 		"complete": "{{total}} tarefas concluídas",

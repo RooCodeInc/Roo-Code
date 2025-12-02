@@ -1,4 +1,9 @@
-import { DEEP_SEEK_DEFAULT_TEMPERATURE, type FeatherlessModelId, featherlessDefaultModelId, featherlessModels } from "@roo-code/types"
+import {
+	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	type FeatherlessModelId,
+	featherlessDefaultModelId,
+	featherlessModels,
+} from "@roo-code/types"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -8,6 +13,7 @@ import { convertToR1Format } from "../transform/r1-format"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
+import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
 export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<FeatherlessModelId> {
@@ -44,7 +50,11 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
@@ -85,7 +95,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 				yield processedChunk
 			}
 		} else {
-			yield* super.createMessage(systemPrompt, messages)
+			yield* super.createMessage(systemPrompt, messages, metadata)
 		}
 	}
 

@@ -18,6 +18,7 @@ type ChutesProps = {
 	routerModels?: RouterModels
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
+	simplifySettings?: boolean
 }
 
 export const Chutes = ({
@@ -26,6 +27,7 @@ export const Chutes = ({
 	routerModels,
 	organizationAllowList,
 	modelValidationError,
+	simplifySettings,
 }: ChutesProps) => {
 	const { t } = useAppTranslation()
 
@@ -67,6 +69,7 @@ export const Chutes = ({
 				serviceUrl="https://llm.chutes.ai/v1/models"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 		</>
 	)
