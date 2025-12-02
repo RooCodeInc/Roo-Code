@@ -19,7 +19,6 @@ export const toolNames = [
 	"read_file",
 	"write_to_file",
 	"apply_diff",
-	"insert_content",
 	"search_and_replace",
 	"apply_patch",
 	"search_files",
