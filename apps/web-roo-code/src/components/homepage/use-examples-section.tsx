@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo } from "react"
-import { motion } from "framer-motion"
+import { useMemo, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
 	LucideIcon,
 	Pointer,
@@ -13,8 +13,10 @@ import {
 	Map,
 	MessageCircleQuestionMark,
 	CornerDownRight,
+	ChevronDown,
 } from "lucide-react"
 import Image from "next/image"
+import { Button } from "../ui"
 
 interface UseCase {
 	role: string
@@ -286,8 +288,54 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 	})
 }
 
-function UseCaseCard({ item }: { item: PositionedUseCase }) {
+function UseCaseCardContent({
+	item,
+	opacity = 1,
+	className = "",
+}: {
+	item: UseCase & { avatar: string }
+	opacity?: number
+	className?: string
+}) {
 	const ContextIcon: LucideIcon = item.context.icon
+	return (
+		<div
+			className={`rounded-xl outline outline-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-xl transition-all hover:shadow-xl hover:outline-8 ${className}`}>
+			<div
+				className="text-sm flex items-center gap-2 font-medium text-violet-600 mb-1"
+				style={{ opacity: opacity }}>
+				<Image
+					src={item.avatar}
+					className="size-6 rounded-full outline-1 outline-border"
+					alt=""
+					width={18}
+					height={18}
+					unoptimized
+				/>
+				<span className="text-nowrap">{item.role}</span>
+			</div>
+
+			<div
+				className="text-[0.7em] flex flex-wrap items-center gap-1 text-muted-foreground mb-1"
+				style={{ opacity: opacity }}>
+				<CornerDownRight className="size-4 shrink-0 ml-3 -mt-1" />
+				<span className="text-nowrap font-mono">To {item.agent.name} Agent</span>
+			</div>
+
+			<div className="text-base font-light leading-tight my-1 ml-8" style={{ opacity: opacity }}>
+				{item.use}
+			</div>
+
+			<div
+				className="text-[0.7em] font-light text-muted-foreground leading-tight mt-2 ml-8"
+				style={{ opacity: opacity }}>
+				via <ContextIcon strokeWidth={1.5} className="size-3.5 inline ml-1" /> {item.context.name}
+			</div>
+		</div>
+	)
+}
+
+function DesktopUseCaseCard({ item }: { item: PositionedUseCase }) {
 	const opacity = Math.min(1, 0.5 + item.layer / 3)
 
 	return (
@@ -315,52 +363,23 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 			viewport={{ once: true }}
 			// Use standard CSS transform for the positioning to avoid conflicts with Framer Motion's scale
 			transformTemplate={({ scale }) => `translate(-50%, -50%) scale(${scale})`}>
-			<div
-				className={`rounded-xl outline outline-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-xl transition-all hover:shadow-xl hover:outline-8 ${
-					item.layer === 4 ? "shadow-lg border-border" : ""
-				}`}>
-				<div
-					className="text-sm flex items-center gap-2 font-medium text-violet-600 mb-1.5"
-					style={{ opacity: opacity }}>
-					<Image
-						src={item.avatar}
-						className="size-6 rounded-full outline-1 outline-border"
-						alt=""
-						width={18}
-						height={18}
-						unoptimized
-					/>
-					<span className="text-nowrap">{item.role}</span>
-				</div>
-
-				<div
-					className="text-[0.7em] flex flex-wrap items-center gap-1 text-muted-foreground mb-1"
-					style={{ opacity: opacity }}>
-					<CornerDownRight className="size-4 shrink-0 ml-3 -mt-1" />
-					<span className="text-nowrap font-mono">For {item.agent.name} Agent</span>
-				</div>
-
-				<div className="text-base font-light leading-tight my-1 ml-8" style={{ opacity: opacity }}>
-					{item.use}
-				</div>
-
-				<div
-					className="text-[0.7em] font-light text-muted-foreground leading-tight mt-2 ml-8"
-					style={{ opacity: opacity }}>
-					via <ContextIcon strokeWidth={1.5} className="size-3.5 inline ml-1" /> {item.context.name}
-				</div>
-			</div>
+			<UseCaseCardContent
+				item={item}
+				opacity={opacity}
+				className={item.layer === 4 ? "shadow-lg border-border" : ""}
+			/>
 		</motion.div>
 	)
 }
 
 export function UseExamplesSection() {
 	const positionedItems = useMemo(() => distributeItems(USE_CASES), [])
+	const [showAllMobile, setShowAllMobile] = useState(false)
 
 	return (
 		<section className="pt-24 bg-background overflow-hidden relative">
 			<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2">
-				<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/10 blur-[140px]" />
+				<div className="absolute left-1/2 top-1/2 h-[700px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/10 blur-[140px]" />
 			</div>
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
@@ -373,10 +392,36 @@ export function UseExamplesSection() {
 					</p>
 				</div>
 
-				{/* Positioned Items Container */}
-				<div className="relative h-[800px] md:min-h-[800px] w-full max-w-6xl mx-auto">
+				{/* Mobile: Vertical Staggered List */}
+				<div className="md:hidden flex flex-col gap-2 px-2 pb-12 max-w-md mx-auto">
+					<AnimatePresence mode="popLayout">
+						{positionedItems.slice(0, showAllMobile ? undefined : 8).map((item, index) => (
+							<motion.div
+								key={item.use} // Use a unique key for proper animation tracking
+								initial={{ opacity: 0, y: 20 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								transition={{ delay: (index % 8) * 0.1, duration: 0.4 }}
+								viewport={{ once: true, margin: "-50px" }}
+								className={`w-[90%] ${index % 2 === 0 ? "self-start" : "self-end"}`}>
+								<UseCaseCardContent item={item} />
+							</motion.div>
+						))}
+					</AnimatePresence>
+
+					{!showAllMobile && (
+						<div className="text-center mt-8 z-10">
+							<Button variant="outline" onClick={() => setShowAllMobile(true)}>
+								More
+								<ChevronDown />
+							</Button>
+						</div>
+					)}
+				</div>
+
+				{/* Desktop: Positioned Items Container */}
+				<div className="hidden md:block relative h-[800px] md:min-h-[800px] w-full max-w-6xl mx-auto">
 					{positionedItems.map((item, index) => (
-						<UseCaseCard key={index} item={item} />
+						<DesktopUseCaseCard key={index} item={item} />
 					))}
 				</div>
 			</div>
