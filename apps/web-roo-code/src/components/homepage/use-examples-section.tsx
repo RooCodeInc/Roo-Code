@@ -12,8 +12,9 @@ import {
 	Wrench,
 	Map,
 	MessageCircleQuestionMark,
-	ArrowRight,
+	CornerDownRight,
 } from "lucide-react"
+import Image from "next/image"
 
 interface UseCase {
 	role: string
@@ -37,6 +38,7 @@ interface PositionedUseCase extends UseCase {
 	position: { x: number; y: number }
 	scale: number
 	zIndex: number
+	avatar: string
 }
 
 const SOURCES = {
@@ -89,8 +91,8 @@ const USE_CASES: UseCase[] = [
 		context: SOURCES.slack,
 	},
 	{
-		role: "Customer Success Rep",
-		use: "What could be causing this bug?",
+		role: "Customer Success",
+		use: "What could be causing this bug as described by the customer?",
 		agent: AGENTS.explainer,
 		context: SOURCES.web,
 	},
@@ -128,11 +130,11 @@ const USE_CASES: UseCase[] = [
 		role: "DevOps Engineer",
 		use: "Update the Dockerfile to use Node 20 Alpine.",
 		agent: AGENTS.fixer,
-		context: SOURCES.extension,
+		context: SOURCES.slack,
 	},
 	{
 		role: "Mobile Developer",
-		use: "Copy what we did in PR #4253 to this component.",
+		use: "Copy what we did in PR #4253 and apply to this component.",
 		agent: AGENTS.coder,
 		context: SOURCES.slack,
 	},
@@ -144,13 +146,13 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "Junior Developer",
-		use: "Review my pull request for potential performance improvements.",
+		use: "Review this pull request for potential performance improvements.",
 		agent: AGENTS.reviewer,
-		context: SOURCES.extension,
+		context: SOURCES.github,
 	},
 	{
 		role: "Engineering Manager",
-		use: "Break down the user profile feature into technical tasks.",
+		use: "Break down this user profile feature into technical tasks, grouped by skill.",
 		agent: AGENTS.planner,
 		context: SOURCES.web,
 	},
@@ -198,7 +200,7 @@ const USE_CASES: UseCase[] = [
 	},
 	{
 		role: "DevOps Engineer",
-		use: "Understand and fix this build error.",
+		use: "Understand why this build error only happens in prod and fix it.",
 		agent: AGENTS.coder,
 		context: SOURCES.extension,
 	},
@@ -239,7 +241,7 @@ const LAYER_SCALES = {
 }
 
 function distributeItems(items: UseCase[]): PositionedUseCase[] {
-	const rng = seededRandom(12345)
+	const rng = seededRandom(Math.random() * 12345)
 	const zones = { rows: 7, cols: 4 }
 	const zoneWidth = 100 / zones.cols
 	const zoneHeight = 100 / zones.rows
@@ -272,6 +274,7 @@ function distributeItems(items: UseCase[]): PositionedUseCase[] {
 
 		return {
 			...item,
+			avatar: `/illustrations/user-faces/${index + 1}.jpg`,
 			layer,
 			position: {
 				x: baseX + jitterX,
@@ -289,11 +292,12 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 
 	return (
 		<motion.div
-			className="absolute w-[200px] md:w-[300px] cursor-default group"
+			className="absolute w-[200px] cursor-default group"
 			style={{
 				left: `${item.position.x}%`,
 				top: `${item.position.y}%`,
 				zIndex: item.zIndex,
+				width: Math.round(300 + Math.random() * 100),
 			}}
 			initial={{ opacity: 0, scale: 0 }}
 			whileInView={{
@@ -315,20 +319,35 @@ function UseCaseCard({ item }: { item: PositionedUseCase }) {
 				className={`rounded-xl outline outline-border/50 bg-card/80 backdrop-blur-sm p-3 md:p-4 shadow-xl transition-all hover:shadow-xl hover:outline-8 ${
 					item.layer === 4 ? "shadow-lg border-border" : ""
 				}`}>
-				<div className="text-sm flex items-center gap-2 text-violet-600 mb-1" style={{ opacity: opacity }}>
-					{item.role}
-					<ArrowRight className="size-4" />
-					{item.agent.name} Agent
+				<div
+					className="text-sm flex items-center gap-2 font-medium text-violet-600 mb-1.5"
+					style={{ opacity: opacity }}>
+					<Image
+						src={item.avatar}
+						className="size-6 rounded-full outline-1 outline-border"
+						alt=""
+						width={18}
+						height={18}
+						unoptimized
+					/>
+					<span className="text-nowrap">{item.role}</span>
 				</div>
 
-				<div className="text-base font-light leading-tight my-1" style={{ opacity: opacity }}>
+				<div
+					className="text-[0.7em] flex flex-wrap items-center gap-1 text-muted-foreground mb-1"
+					style={{ opacity: opacity }}>
+					<CornerDownRight className="size-4 shrink-0 ml-3 -mt-1" />
+					<span className="text-nowrap font-mono">For {item.agent.name} Agent</span>
+				</div>
+
+				<div className="text-base font-light leading-tight my-1 ml-8" style={{ opacity: opacity }}>
 					{item.use}
 				</div>
 
 				<div
-					className="text-xs font-light text-muted-foreground leading-tight mt-2"
+					className="text-[0.7em] font-light text-muted-foreground leading-tight mt-2 ml-8"
 					style={{ opacity: opacity }}>
-					via <ContextIcon className="size-4 inline ml-1" /> {item.context.name}
+					via <ContextIcon strokeWidth={1.5} className="size-3.5 inline ml-1" /> {item.context.name}
 				</div>
 			</div>
 		</motion.div>
