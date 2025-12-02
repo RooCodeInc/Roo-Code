@@ -25,7 +25,7 @@ export function CompanyLogos() {
 						<Image
 							width={0}
 							height={0}
-							className="h-[18px] w-auto overflow-clip opacity-70 dark:invert"
+							className="h-[22px] w-auto overflow-clip opacity-70 dark:invert"
 							src={`/logos/${logo.toLowerCase().replace(/\s+/g, "-")}.svg`}
 							alt={`${logo} Logo`}
 						/>

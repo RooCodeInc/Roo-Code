@@ -24,7 +24,7 @@ export default async function Home() {
 					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
 				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-					<h1 className="md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
+					<h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground max-w-4xl mb-6">
 						Your AI Software Engineering Team is here.
 						<br />
 						<span className="text-muted-foreground">Interactive in the IDE, autonomous in the cloud.</span>
@@ -39,7 +39,7 @@ export default async function Home() {
 					</div>
 					<div className="flex flex-col sm:flex-row gap-4 mb-16">
 						<div className="flex flex-col items-center gap-2">
-							<Button size="xl">
+							<Button size="xl" className="w-full">
 								<a
 									href={EXTERNAL_LINKS.MARKETPLACE}
 									target="_blank"
@@ -53,7 +53,7 @@ export default async function Home() {
 						</div>
 
 						<div className="flex flex-col items-center gap-2">
-							<Button size="xl">
+							<Button size="xl" className="w-full">
 								<a
 									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 									className="flex items-center justify-center">
@@ -65,7 +65,7 @@ export default async function Home() {
 						</div>
 					</div>
 
-					<div className="mb-12">
+					<div className="mb-12 px-4">
 						<CompanyLogos />
 					</div>
 				</div>

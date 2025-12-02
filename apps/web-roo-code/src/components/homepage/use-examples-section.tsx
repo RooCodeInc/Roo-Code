@@ -374,7 +374,7 @@ export function UseExamplesSection() {
 				</div>
 
 				{/* Positioned Items Container */}
-				<div className="relative md:min-h-[800px] w-full max-w-6xl mx-auto">
+				<div className="relative h-[800px] md:min-h-[800px] w-full max-w-6xl mx-auto">
 					{positionedItems.map((item, index) => (
 						<UseCaseCard key={index} item={item} />
 					))}

@@ -1,4 +1,4 @@
-import { Brain, Keyboard, Shield, Users2 } from "lucide-react"
+import { Brain, Keyboard, Shield, Users2, Map, Code, MessageCircleQuestion, Bug, TestTube } from "lucide-react"
 import Image from "next/image"
 import { Link } from "../ui"
 
@@ -19,22 +19,27 @@ const MODE_EXAMPLES = [
 	{
 		name: "Architect",
 		description: "Plans complex changes without making changes.",
+		icon: Map,
 	},
 	{
 		name: "Code",
 		description: "Implements, refactors and optimizes code.",
+		icon: Code,
 	},
 	{
 		name: "Ask",
 		description: "Explains functionality and program behavior.",
+		icon: MessageCircleQuestion,
 	},
 	{
 		name: "Debug",
 		description: "Diagnoses issues, traces failures, and proposes targeted, reliable fixes.",
+		icon: Bug,
 	},
 	{
 		name: "Test",
 		description: "Creates and improves performant tests without changing the actual functionality.",
+		icon: TestTube,
 	},
 ]
 
@@ -54,8 +59,8 @@ export function PillarsSection() {
 					</p>
 				</div>
 
-				<div className="grid grid-cols-8 gap-8">
-					<div className="relative col-span-3 h-full">
+				<div className="flex flex-col md:grid md:grid-cols-8 gap-8">
+					<div className="relative md:col-span-3 h-full">
 						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-md rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
 								<Brain className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
@@ -78,7 +83,7 @@ export function PillarsSection() {
 								</div>
 								<div className="mt-6">
 									<span className="text-muted-foreground text-sm">
-										Compatible with dozens of providers:
+										Compatible with dozens of providers
 									</span>
 									<div className="mt-4 flex flex-wrap items-center gap-4">
 										{MODEL_LOGOS.map((logo, index) => (
@@ -122,16 +127,24 @@ export function PillarsSection() {
 									</p>
 								</div>
 								<div className="mt-6">
-									<span className="text-muted-foreground text-sm">Some examples:</span>
+									<span className="text-muted-foreground text-sm">Some examples</span>
 									<ul className="flex gap-2 flex-wrap mt-2">
-										{MODE_EXAMPLES.map((mode) => (
-											<li
-												key={mode.name}
-												className="rounded-lg border bg-border/40 w-[30%] text-sm px-3 py-2">
-												<p className="font-semibold">{mode.name}</p>
-												<p className="text-muted-foreground text-xs">{mode.description}</p>
-											</li>
-										))}
+										{MODE_EXAMPLES.map((mode) => {
+											const Icon = mode.icon
+											return (
+												<li
+													key={mode.name}
+													className="rounded-lg border bg-border/40 w-full md:w-[30%] min-w-[200px] text-sm px-3 py-2 flex gap-1">
+													<Icon className="text-muted-foreground size-4 shrink-0 mt-0.5" />
+													<div>
+														<p className="font-semibold">{mode.name}</p>
+														<p className="text-muted-foreground text-xs">
+															{mode.description}
+														</p>
+													</div>
+												</li>
+											)
+										})}
 									</ul>
 								</div>
 							</div>
