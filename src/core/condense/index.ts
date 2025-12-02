@@ -441,7 +441,6 @@ export function cleanupAfterTruncation(messages: ApiMessage[]): ApiMessage[] {
 	// Clear orphaned parent references for messages whose summary or truncation marker was deleted
 	return messages.map((msg) => {
 		let needsUpdate = false
-		const updates: Partial<ApiMessage> = {}
 
 		// Check for orphaned condenseParent
 		if (msg.condenseParent && !existingSummaryIds.has(msg.condenseParent)) {
