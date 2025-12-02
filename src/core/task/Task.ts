@@ -2940,9 +2940,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.assistantMessageContent = parsedBlocks
 				}
 
-				// Only present partial blocks that were just completed (from XML parsing)
-				// Native tool blocks were already presented during streaming, so don't re-present them
-				if (partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")) {
+				// Present any partial blocks that were just completed
+				// For XML protocol: includes both text and tool_use blocks parsed from the text stream
+				// For native protocol: tool_use blocks were already presented during streaming via
+				// tool_call_partial events, but we still need to present them if they exist (e.g., malformed)
+				if (partialBlocks.length > 0) {
 					// If there is content to update then it will complete and
 					// update `this.userMessageContentReady` to true, which we
 					// `pWaitFor` before making the next request.
