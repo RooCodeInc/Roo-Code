@@ -52,7 +52,7 @@ export function PillarsSection() {
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-						To trust an agent, you have do it on your own terms.
+						To trust an agent, you have to do it on your own terms.
 					</h2>
 					<p className="text-xl text-muted-foreground max-w-xl mx-auto">
 						Roo is designed from the ground up to give you the confidence to do ever more with AI.
@@ -188,7 +188,7 @@ export function PillarsSection() {
 										your data for training.
 									</p>
 									<p>
-										Plus we&apos;re fully SOC2 Type 2 compliance and follow industry-standard
+							Plus we&apos;re fully SOC2 Type 2 compliant and follow industry-standard
 										security practices.
 									</p>
 								</div>
