@@ -645,4 +645,70 @@ describe("getRooModels", () => {
 		expect(models["test/non-native-model"].supportsNativeTools).toBe(true)
 		expect(models["test/non-native-model"].defaultToolProtocol).toBeUndefined()
 	})
+
+	it("should detect stealth mode from tags", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/stealth-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Stealth Model",
+					description: "Model with stealth mode",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["stealth"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/stealth-model"].isStealthModel).toBe(true)
+	})
+
+	it("should not set isStealthModel when stealth tag is absent", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/non-stealth-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Non-Stealth Model",
+					description: "Model without stealth mode",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/non-stealth-model"].isStealthModel).toBeUndefined()
+	})
 })

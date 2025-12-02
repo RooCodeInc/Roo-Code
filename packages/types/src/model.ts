@@ -105,6 +105,8 @@ export const modelInfoSchema = z.object({
 	cachableFields: z.array(z.string()).optional(),
 	// Flag to indicate if the model is deprecated and should not be used
 	deprecated: z.boolean().optional(),
+	// Flag to indicate if the model should hide vendor/company identity in responses
+	isStealthModel: z.boolean().optional(),
 	// Flag to indicate if the model is free (no cost)
 	isFree: z.boolean().optional(),
 	// Flag to indicate if the model supports native tool calling (OpenAI-style function calling)
