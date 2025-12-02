@@ -293,9 +293,6 @@ export async function summarizeConversation(
 	// Effective for API (filtered by getEffectiveApiHistory):
 	// [firstMessage, summary, msg9, msg10, msg11]
 
-	// Calculate the index range of messages to tag (between first message and keep messages)
-	const keepStartIndex = messages.length - N_MESSAGES_TO_KEEP
-
 	// Tag middle messages with condenseParent (skip first message, skip last N messages)
 	const newMessages = messages.map((msg, index) => {
 		// First message stays as-is
