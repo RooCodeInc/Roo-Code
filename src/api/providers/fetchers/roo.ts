@@ -107,8 +107,13 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Determine if the model requires reasoning effort based on tags
 				const requiredReasoningEffort = tags.includes("reasoning-required")
 
+				// Determine if native tool calling should be the default protocol for this model
+				const hasDefaultNativeTools = tags.includes("default-native-tools")
+				const defaultToolProtocol = hasDefaultNativeTools ? ("native" as const) : undefined
+
 				// Determine if the model supports native tool calling based on tags
-				const supportsNativeTools = tags.includes("tool-use")
+				// default-native-tools implies tool-use support
+				const supportsNativeTools = tags.includes("tool-use") || hasDefaultNativeTools
 
 				// Parse pricing (API returns strings, convert to numbers)
 				const inputPrice = parseApiPrice(pricing.input)
@@ -133,6 +138,7 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					deprecated: model.deprecated || false,
 					isFree: tags.includes("free"),
 					defaultTemperature: model.default_temperature,
+					defaultToolProtocol,
 				}
 
 				// Apply model-specific defaults (e.g., defaultToolProtocol)
