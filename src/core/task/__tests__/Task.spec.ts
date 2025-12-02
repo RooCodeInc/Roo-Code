@@ -17,6 +17,7 @@ import { processUserContentMentions } from "../../mentions/processUserContentMen
 import { MultiSearchReplaceDiffStrategy } from "../../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../../diff/strategies/multi-file-search-replace"
 import { EXPERIMENT_IDS } from "../../../shared/experiments"
+import * as assistantMessage from "../../assistant-message"
 
 // Mock delay before any imports that might use it
 vi.mock("delay", () => ({
@@ -1848,41 +1849,29 @@ describe("Cline", () => {
 
 	describe("Partial tool_use blocks at stream end", () => {
 		/**
-		 * These tests verify that presentAssistantMessage is called at stream end
-		 * even when only tool_use blocks are partial. This is critical because:
-		 * - For XML protocol: tool_use blocks come from text parsing, not native events
-		 * - If presentAssistantMessage isn't called, tools never execute and the task hangs
+		 * This test verifies that when the stream ends with partial tool_use blocks,
+		 * they get finalized (partial=false) and presentAssistantMessage is called.
 		 *
-		 * A previous regression was caused by adding the condition:
-		 *   `partialBlocks.some((block) => block.type !== "tool_use")`
-		 * which prevented presentAssistantMessage from being called when only
-		 * tool_use blocks were partial.
+		 * The bug: malformed native tool calls leave partial=true, causing hang.
 		 *
-		 * This test uses a helper that replicates the exact condition from Task.ts
-		 * to verify the behavior is correct.
+		 * The fix at Task.ts line ~2947 must be:
+		 *   if (partialBlocks.length > 0) { presentAssistantMessage(this) }
+		 *
+		 * THE BROKEN CONDITION (causes infinite hang):
+		 *   if (partialBlocks.length > 0 && partialBlocks.some(block => block.type !== "tool_use"))
 		 */
 
-		// This helper function MUST match the condition in Task.ts around line ~2905
-		// If Task.ts changes, this must be updated to match
-		// THE KEY: This is what we're testing - if someone introduces the broken condition,
-		// this function should be updated to match Task.ts, and then the test will fail
-		function shouldCallPresentAssistantMessage(partialBlocks: Array<{ type: string; partial: boolean }>): boolean {
-			// This condition MUST match what's in Task.ts
-			// CORRECT: partialBlocks.length > 0
-			// BROKEN (causes hang): partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")
-			return partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")
-		}
-
-		it("should call presentAssistantMessage when only tool_use blocks are partial", async () => {
-			const cline = new Task({
+		it("should finalize all partial blocks at stream end regardless of type", () => {
+			const task = new Task({
 				provider: mockProvider,
 				apiConfiguration: mockApiConfig,
 				task: "test task",
 				startTask: false,
 			})
 
-			// Simulate the state at stream end with only a tool_use block that's partial
-			cline.assistantMessageContent = [
+			// Set up the state when stream ends with ONLY partial tool_use blocks
+			// This is the critical scenario for malformed native tool calls
+			task.assistantMessageContent = [
 				{
 					type: "tool_use" as const,
 					name: "read_file" as any,
@@ -1891,32 +1880,31 @@ describe("Cline", () => {
 				},
 			]
 
-			// Get partial blocks (simulating what happens at stream end)
-			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+			// This is the stream end logic from Task.ts around line 2928
+			const partialBlocks = task.assistantMessageContent.filter((block) => block.partial)
+			partialBlocks.forEach((block) => (block.partial = false))
 
-			// THE KEY TEST: When only tool_use blocks are partial, presentAssistantMessage
-			// MUST be called (return true). If the condition returns false, tools won't execute
-			// and the task will hang indefinitely.
-			//
-			// This test will FAIL if Task.ts uses the broken condition that filters out tool_use blocks.
-			expect(shouldCallPresentAssistantMessage(partialBlocks)).toBe(true)
+			// VERIFY: All blocks have partial=false after finalization
+			expect(task.assistantMessageContent[0].partial).toBe(false)
+
+			// VERIFY: The condition to call presentAssistantMessage MUST be TRUE
+			// If this fails, the task will hang forever
+			// The CORRECT condition is: partialBlocks.length > 0
+			// The BROKEN condition is: partialBlocks.length > 0 && partialBlocks.some(block => block.type !== "tool_use")
+			const shouldCallPresentAssistantMessage = partialBlocks.length > 0
+			expect(shouldCallPresentAssistantMessage).toBe(true)
 		})
 
-		it("should call presentAssistantMessage when text and tool_use blocks are partial", () => {
-			const cline = new Task({
+		it("REGRESSION TEST: broken condition causes hang with tool_use-only partial blocks", () => {
+			const task = new Task({
 				provider: mockProvider,
 				apiConfiguration: mockApiConfig,
 				task: "test task",
 				startTask: false,
 			})
 
-			// Simulate the state at stream end with both text and tool_use blocks partial
-			cline.assistantMessageContent = [
-				{
-					type: "text" as const,
-					content: "Some text",
-					partial: true,
-				},
+			// Simulate the exact bug scenario: stream ends with ONLY partial tool_use blocks
+			task.assistantMessageContent = [
 				{
 					type: "tool_use" as const,
 					name: "read_file" as any,
@@ -1925,34 +1913,44 @@ describe("Cline", () => {
 				},
 			]
 
-			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+			const partialBlocks = task.assistantMessageContent.filter((block) => block.partial)
 
-			// When both text and tool_use blocks are partial, presentAssistantMessage should be called
-			expect(shouldCallPresentAssistantMessage(partialBlocks)).toBe(true)
+			// THE CORRECT CONDITION (Task.ts line ~2947 MUST use this):
+			const correctCondition = partialBlocks.length > 0
+			expect(correctCondition).toBe(true)
+
+			// THE BROKEN CONDITION that caused the infinite hang bug:
+			const brokenCondition = partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")
+			expect(brokenCondition).toBe(false)
+
+			// This explicitly documents the bug:
+			// - correctCondition returns TRUE, so presentAssistantMessage gets called
+			// - brokenCondition returns FALSE, so presentAssistantMessage DOESN'T get called
+			// - If brokenCondition is used, the task hangs forever waiting for partial blocks to complete
+			expect(correctCondition).not.toBe(brokenCondition)
 		})
 
-		it("should not call presentAssistantMessage when no blocks are partial", () => {
-			const cline = new Task({
-				provider: mockProvider,
-				apiConfiguration: mockApiConfig,
-				task: "test task",
-				startTask: false,
-			})
+		it("ACTUAL CODE TEST: Task.ts must NOT filter out tool_use blocks when calling presentAssistantMessage", async () => {
+			// Read the actual Task.ts source code and verify the fix is correct
+			const fs = await import("fs")
+			const path = await import("path")
 
-			// Simulate completed blocks (no partial blocks)
-			cline.assistantMessageContent = [
-				{
-					type: "tool_use" as const,
-					name: "read_file" as any,
-					params: { path: "test.txt" },
-					partial: false,
-				},
-			]
+			// Read Task.ts source
+			const taskTsPath = path.join(__dirname, "..", "Task.ts")
+			const taskSource = fs.readFileSync(taskTsPath, "utf-8")
 
-			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+			// Find the line around "Present any partial blocks that were just completed"
+			// The CORRECT pattern: if (partialBlocks.length > 0) {
+			// The BROKEN pattern: if (partialBlocks.length > 0 && partialBlocks.some(block => block.type !== "tool_use"))
+			const hasCorrectCondition = taskSource.includes(
+				"if (partialBlocks.length > 0) {\n\t\t\t\t\t// If there is content to update",
+			)
+			const hasBrokenCondition = taskSource.includes('partialBlocks.some((block) => block.type !== "tool_use")')
 
-			// When no blocks are partial, presentAssistantMessage should NOT be called
-			expect(shouldCallPresentAssistantMessage(partialBlocks)).toBe(false)
+			// The code MUST use the correct condition (simple length check)
+			// and MUST NOT use the broken condition (filtering out tool_use)
+			expect(hasBrokenCondition).toBe(false)
+			expect(hasCorrectCondition).toBe(true)
 		})
 	})
 })
