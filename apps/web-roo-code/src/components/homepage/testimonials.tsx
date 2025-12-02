@@ -195,7 +195,7 @@ export function Testimonials() {
 					<h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
 						More than 1 million people are shipping with Roo.
 					</h2>
-					<p className="mt-6 text-lg text-muted-foreground">And they have some great hings to say.</p>
+					<p className="mt-6 text-lg text-muted-foreground">And they have some great things to say.</p>
 				</div>
 
 				<motion.div
