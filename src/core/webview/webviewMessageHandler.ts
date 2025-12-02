@@ -77,6 +77,7 @@ import { initNotificationService } from "../costrict/notification"
 import delay from "delay"
 // import { ensureProjectWikiSubtasksExists } from "../costrict/wiki/projectWikiHelpers"
 import { setPendingTodoList } from "../tools/UpdateTodoListTool"
+import { getEditorType } from "../../utils/getEditorType"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -3317,16 +3318,7 @@ export const webviewMessageHandler = async (
 			const httpsProxy = process.env.https_proxy || process.env.HTTPS_PROXY
 
 			// Get editor type information
-			const remoteName = vscode.env.remoteName
-			let editorType = ""
-			if (remoteName) {
-				// Remote connection - show the remote type (e.g., "ssh", "wsl", "dev-container", etc.)
-				editorType = `Remote (${remoteName})`
-			} else {
-				// Local editor - show the specific VS Code edition/type
-				const appName = vscode.env.appName
-				editorType = `${appName}`
-			}
+			const editorType = getEditorType()
 
 			// Extract request ID from error message
 			const requestIdMatch = errorMessage?.match(/RequestID:\s*([a-f0-9-]+)/i)

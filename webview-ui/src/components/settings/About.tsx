@@ -112,7 +112,13 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 						<MessagesSquare className="size-4 text-vscode-descriptionForeground shrink-0" />
 						<span>
 							{t("settings:about.community")}
-							<img src={imagesBaseUri + "/wechat.png"} alt="wechat qrcode" className="mt-4 h-32" />
+							<img
+								width={100}
+								height={100}
+								src={imagesBaseUri + "/wechat.png"}
+								alt="wechat qrcode"
+								className="mt-4"
+							/>
 						</span>
 					</div>
 				</div>

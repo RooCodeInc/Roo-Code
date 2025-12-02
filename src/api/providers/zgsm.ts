@@ -34,6 +34,7 @@ import { COSTRICT_DEFAULT_HEADERS } from "../../shared/headers"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { getModels } from "./fetchers/modelCache"
 import { ClineApiReqCancelReason } from "../../shared/ExtensionMessage"
+import { getEditorType } from "../../utils/getEditorType"
 
 const autoModeModelId = "Auto"
 
@@ -294,6 +295,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			"zgsm-request-id": requestId,
 			"zgsm-client-id": clientId,
 			"zgsm-provider": metadata?.provider,
+			"x-costrict-idea": getEditorType(),
 			"zgsm-project-path": encodeURI(workspacePath),
 			"x-caller": metadata?.mode === "review" ? "review-checker" : "chat",
 		}

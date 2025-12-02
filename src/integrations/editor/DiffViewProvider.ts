@@ -18,7 +18,7 @@ import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import { DecorationController } from "./DecorationController"
 
-export const DIFF_VIEW_URI_SCHEME = "cline-diff"
+export const DIFF_VIEW_URI_SCHEME = "costrict-diff"
 export const DIFF_VIEW_LABEL_CHANGES = "Original ↔ CoStrict's Changes"
 
 // TODO: https://github.com/cline/cline/pull/3354
