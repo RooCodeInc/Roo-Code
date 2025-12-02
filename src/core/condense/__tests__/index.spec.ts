@@ -975,9 +975,11 @@ describe("summarizeConversation", () => {
 			true,
 		)
 
-		const summaryMessage = result.messages[1]
-		expect(Array.isArray(summaryMessage.content)).toBe(true)
-		const summaryContent = summaryMessage.content as any[]
+		// Find the summary message (it has isSummary: true)
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+		expect(Array.isArray(summaryMessage!.content)).toBe(true)
+		const summaryContent = summaryMessage!.content as any[]
 		expect(summaryContent[0]).toEqual({ type: "text", text: "This is a summary" })
 
 		const preservedToolUses = summaryContent.filter((block) => block.type === "tool_use")
