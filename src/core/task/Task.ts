@@ -2473,12 +2473,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 										// Finalize the streaming tool call
 										const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
 
+										// Get the index for this tool call
+										const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+
 										if (finalToolUse) {
 											// Store the tool call ID
 											;(finalToolUse as any).id = event.id
 
 											// Get the index and replace partial with final
-											const toolUseIndex = this.streamingToolCallIndices.get(event.id)
 											if (toolUseIndex !== undefined) {
 												this.assistantMessageContent[toolUseIndex] = finalToolUse
 											}
@@ -2490,6 +2492,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											this.userMessageContentReady = false
 
 											// Present the finalized tool call
+											presentAssistantMessage(this)
+										} else if (toolUseIndex !== undefined) {
+											// finalizeStreamingToolCall returned null (malformed JSON or missing args)
+											// We still need to mark the tool as non-partial so it gets executed
+											// The tool's validation will catch any missing required parameters
+											const existingToolUse = this.assistantMessageContent[toolUseIndex]
+											if (existingToolUse && existingToolUse.type === "tool_use") {
+												existingToolUse.partial = false
+												// Ensure it has the ID for native protocol
+												;(existingToolUse as any).id = event.id
+											}
+
+											// Clean up tracking
+											this.streamingToolCallIndices.delete(event.id)
+
+											// Mark that we have new content to process
+											this.userMessageContentReady = false
+
+											// Present the tool call - validation will handle missing params
 											presentAssistantMessage(this)
 										}
 									}
@@ -2611,12 +2632,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// Finalize the streaming tool call
 							const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
 
+							// Get the index for this tool call
+							const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+
 							if (finalToolUse) {
 								// Store the tool call ID
 								;(finalToolUse as any).id = event.id
 
 								// Get the index and replace partial with final
-								const toolUseIndex = this.streamingToolCallIndices.get(event.id)
 								if (toolUseIndex !== undefined) {
 									this.assistantMessageContent[toolUseIndex] = finalToolUse
 								}
@@ -2628,6 +2651,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								this.userMessageContentReady = false
 
 								// Present the finalized tool call
+								presentAssistantMessage(this)
+							} else if (toolUseIndex !== undefined) {
+								// finalizeStreamingToolCall returned null (malformed JSON or missing args)
+								// We still need to mark the tool as non-partial so it gets executed
+								// The tool's validation will catch any missing required parameters
+								const existingToolUse = this.assistantMessageContent[toolUseIndex]
+								if (existingToolUse && existingToolUse.type === "tool_use") {
+									existingToolUse.partial = false
+									// Ensure it has the ID for native protocol
+									;(existingToolUse as any).id = event.id
+								}
+
+								// Clean up tracking
+								this.streamingToolCallIndices.delete(event.id)
+
+								// Mark that we have new content to process
+								this.userMessageContentReady = false
+
+								// Present the tool call - validation will handle missing params
 								presentAssistantMessage(this)
 							}
 						}
