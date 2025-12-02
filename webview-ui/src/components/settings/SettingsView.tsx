@@ -26,6 +26,9 @@ import {
 	SquareSlash,
 	Glasses,
 	Loader2,
+	Plug,
+	Server,
+	Users2,
 } from "lucide-react"
 import { isEqual } from "lodash-es"
 import {
@@ -77,6 +80,8 @@ import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
+import ModesView from "../modes/ModesView"
+import McpView from "../mcp/McpView"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -98,6 +103,8 @@ const sectionNames = [
 	"notifications",
 	"contextManagement",
 	"terminal",
+	"modes",
+	"mcp",
 	"prompts",
 	"ui",
 	"experimental",
@@ -527,7 +534,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
 		() => [
-			{ id: "providers", icon: Webhook },
+			{ id: "providers", icon: Plug },
+			{ id: "modes", icon: Users2 },
+			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "browser", icon: SquareMousePointer },
@@ -647,7 +656,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									isSelected // Use manual isSelected for styling
 										? `${settingsTabTrigger} ${settingsTabTriggerActive}`
 										: settingsTabTrigger,
-									"focus:ring-0", // Remove the focus ring styling
+									"cursor-pointer focus:ring-0", // Remove the focus ring styling
 								)}
 								data-testid={`tab-${id}`}
 								data-compact={isCompactMode}>
@@ -842,6 +851,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
+
+					{/* Modes Section */}
+					{activeTab === "modes" && <ModesView />}
+
+					{/* MCP Section */}
+					{activeTab === "mcp" && <McpView />}
 
 					{/* Prompts Section */}
 					{activeTab === "prompts" && (

@@ -1577,11 +1577,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						) : (
 							// Logged out users should be upsold at least once on Cloud
 							<DismissibleUpsell
-								upsellId="taskList"
-								icon={<Cloud className="size-5 mt-0.5 shrink-0" />}
+								upsellId="taskList2"
+								icon={<Cloud className="size-5 shrink-0" />}
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
-								className="!bg-vscode-editor-background mt-6 border-border rounded-xl pl-4 pr-3 py-3 !text-base">
+							className="bg-none mt-6 border-border rounded-xl p-0 py-3 !text-base">
 								<Trans
 									i18nKey="cloud:upsell.taskList"
 									components={{

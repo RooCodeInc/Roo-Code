@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, useEffect, useRef, useLayoutEffect } fr
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
 import { Check, X, Brain } from "lucide-react"
+// import { ChevronsUpDown, Check, X, Info } from "lucide-react"
 
 import type { ProviderSettings, ModelInfo, OrganizationAllowList } from "@roo-code/types"
 
@@ -67,6 +68,7 @@ interface ModelPickerProps {
 	popoverContentClassName?: string
 	PopoverTriggerContentClassName?: string
 	tooltip?: string
+	simplifySettings?: boolean
 }
 
 export const ModelPicker = ({
@@ -86,6 +88,7 @@ export const ModelPicker = ({
 	popoverContentClassName = "",
 	PopoverTriggerContentClassName = "",
 	tooltip,
+	// simplifySettings,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 

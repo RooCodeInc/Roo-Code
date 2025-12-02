@@ -121,32 +121,13 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		// This ensures the focus happens after the view has switched
 		await visibleProvider.postMessageToWebview({ type: "action", action: "focusInput" })
 	},
-	mcpButtonClicked: () => {
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
-
-		if (!visibleProvider) {
-			return
-		}
-
-		TelemetryService.instance.captureTitleButtonClicked("mcp")
-
-		visibleProvider.postMessageToWebview({ type: "action", action: "mcpButtonClicked" })
-	},
-	promptsButtonClicked: () => {
-		const visibleProvider = getVisibleProviderOrLog(outputChannel)
-
-		if (!visibleProvider) {
-			return
-		}
-
-		TelemetryService.instance.captureTitleButtonClicked("prompts")
-
-		visibleProvider.postMessageToWebview({ type: "action", action: "promptsButtonClicked" })
-	},
 	popoutButtonClicked: () => {
 		TelemetryService.instance.captureTitleButtonClicked("popout")
 
 		return openClineInNewTab({ context, outputChannel, taskId: "" })
+	},
+	openNewButtonClicked: () => {
+		vscode.commands.executeCommand(`${Package.name}.SidebarProvider.focus`)
 	},
 	openInNewTab: (taskId?: string) => openClineInNewTab({ context, outputChannel, taskId }),
 	settingsButtonClicked: () => {

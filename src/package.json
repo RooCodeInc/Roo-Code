@@ -99,19 +99,14 @@
 				"shortTitle": "%command.shortKeyCut.title%"
 			},
 			{
+				"command": "zgsm.openNewButtonClicked",
+				"title": "%command.newTask.title%",
+				"icon": "assets/images/shenma_robot_logo_big.png"
+			},
+			{
 				"command": "zgsm.plusButtonClicked",
 				"title": "%command.newTask.title%",
 				"icon": "$(edit)"
-			},
-			{
-				"command": "zgsm.promptsButtonClicked",
-				"title": "%command.prompts.title%",
-				"icon": "$(organization)"
-			},
-			{
-				"command": "zgsm.mcpButtonClicked",
-				"title": "%command.mcpServers.title%",
-				"icon": "$(server)"
 			},
 			{
 				"command": "zgsm.historyButtonClicked",
@@ -397,16 +392,6 @@
 					"when": "view == zgsm.SidebarProvider"
 				},
 				{
-					"command": "zgsm.mcpButtonClicked",
-					"group": "navigation@4",
-					"when": "view == zgsm.SidebarProvider"
-				},
-				{
-					"command": "zgsm.promptsButtonClicked",
-					"group": "overflow@1",
-					"when": "view == zgsm.SidebarProvider"
-				},
-				{
 					"command": "zgsm.view.userHelperDoc",
 					"group": "overflow@2",
 					"when": "view == zgsm.SidebarProvider"
@@ -418,28 +403,28 @@
 				},
 				{
 					"command": "zgsm.popoutButtonClicked",
-					"group": "overflow@4",
+					"group": "overflow@2",
 					"when": "view == zgsm.SidebarProvider"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "zgsm.plusButtonClicked",
+					"command": "zgsm.openNewButtonClicked",
 					"group": "navigation@1",
-					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
-				},
-				{
-					"command": "zgsm.marketplaceButtonClicked",
-					"group": "navigation@2",
-					"when": "false"
+					"when": "activeWebviewPanelId != zgsm.TabPanelProvider"
 				},
 				{
 					"command": "zgsm.settingsButtonClicked",
-					"group": "navigation@3",
+					"group": "navigation@2",
 					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
 				},
 				{
 					"command": "zgsm.cloudButtonClicked",
+					"group": "navigation@3",
+					"when": "false"
+				},
+				{
+					"command": "zgsm.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "false"
 				},
@@ -449,13 +434,8 @@
 					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
 				},
 				{
-					"command": "zgsm.promptsButtonClicked",
+					"command": "zgsm.popoutButtonClicked",
 					"group": "overflow@2",
-					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
-				},
-				{
-					"command": "zgsm.mcpButtonClicked",
-					"group": "overflow@3",
 					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
 				},
 				{
@@ -466,11 +446,6 @@
 				{
 					"command": "zgsm.view.issue",
 					"group": "overflow@5",
-					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
-				},
-				{
-					"command": "zgsm.popoutButtonClicked",
-					"group": "overflow@6",
 					"when": "activeWebviewPanelId == zgsm.TabPanelProvider"
 				}
 			],

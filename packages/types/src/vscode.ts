@@ -42,11 +42,10 @@ export const commandIds = [
 	"activationCompleted",
 
 	"plusButtonClicked",
-	"promptsButtonClicked",
-	"mcpButtonClicked",
 	"historyButtonClicked",
 	"marketplaceButtonClicked",
 	"popoutButtonClicked",
+	"openNewButtonClicked",
 	"cloudButtonClicked",
 	"settingsButtonClicked",
 

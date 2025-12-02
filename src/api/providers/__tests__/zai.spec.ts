@@ -202,7 +202,7 @@ describe("ZAiHandler", () => {
 			const errorMessage = "Z AI API error"
 			mockCreate.mockRejectedValueOnce(new Error(errorMessage))
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
-				`Z AI completion error: ${errorMessage}`,
+				`Z.ai completion error: ${errorMessage}`,
 			)
 		})
 

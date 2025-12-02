@@ -17,10 +17,12 @@ import HistoryView from "./components/history/HistoryView"
 import SettingsView, { SettingsViewRef } from "./components/settings/SettingsView"
 import WelcomeView from "./components/welcome/WelcomeView"
 // import WelcomeViewProvider from "./components/welcome/WelcomeViewProvider"
-import McpView from "./components/mcp/McpView"
+// import McpView from "./components/mcp/McpView"
 // import { MarketplaceView } from "./components/marketplace/MarketplaceView"
-import ModesView from "./components/modes/ModesView"
+// import ModesView from "./components/modes/ModesView"
 import CodeReviewPage from "./components/code-review"
+// import WelcomeViewProvider from "./components/welcome/WelcomeViewProvider"
+// import { MarketplaceView } from "./components/marketplace/MarketplaceView"
 import { HumanRelayDialog } from "./components/human-relay/HumanRelayDialog"
 import { CheckpointRestoreDialog } from "./components/chat/CheckpointRestoreDialog"
 import { DeleteMessageDialog, EditMessageDialog } from "./components/chat/MessageModificationConfirmationDialog"
@@ -36,7 +38,8 @@ import { ReauthConfirmationDialog } from "./components/chat/ReauthConfirmationDi
 import { ZgsmCodebaseDisableConfirmDialog } from "./components/settings/ZgsmCodebaseDisableConfirmDialog"
 import { useTranslation } from "react-i18next"
 
-type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
+// type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
+type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
 
 interface HumanRelayDialogState {
 	isOpen: boolean
@@ -78,8 +81,6 @@ const MemoizedZgsmCodebaseDisableConfirmDialog = React.memo(ZgsmCodebaseDisableC
 const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]>, Tab>> = {
 	chatButtonClicked: "chat",
 	settingsButtonClicked: "settings",
-	promptsButtonClicked: "modes",
-	mcpButtonClicked: "mcp",
 	historyButtonClicked: "history",
 	// marketplaceButtonClicked: "marketplace",
 	cloudButtonClicked: "cloud",
@@ -342,8 +343,6 @@ const App = () => {
 		<WelcomeView />
 	) : (
 		<>
-			{tab === "modes" && <ModesView onDone={() => switchTab("chat")} />}
-			{tab === "mcp" && <McpView onDone={() => switchTab("chat")} />}
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
 			{tab === "settings" && (
 				<SettingsView ref={settingsRef} onDone={() => setTab("chat")} targetSection={currentSection} />

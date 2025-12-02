@@ -485,59 +485,6 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		}
 	}
 
-	// /**
-	//  * Scheduled index build: trigger every ten minutes
-	//  */
-	// triggerIndexBuildPoll(): void {
-	// 	if (this.isIndexBuildPollRunning) {
-	// 		this.log("Index build polling already running", "info", "ZgsmCodebaseIndexManager")
-	// 		return
-	// 	}
-
-	// 	this.log("Starting index build polling", "info", "ZgsmCodebaseIndexManager")
-	// 	this.isIndexBuildPollRunning = true
-	// 	this.indexBuildPollTimer = setInterval(async () => {
-	// 		await this.performIndexBuildPoll()
-	// 	}, this.INDEX_BUILD_POLL_INTERVAL)
-	// }
-
-	// /**
-	//  * Stop scheduled index build
-	//  */
-	// public stopIndexBuildPoll(): void {
-	// 	if (!this.isIndexBuildPollRunning) {
-	// 		return
-	// 	}
-
-	// 	this.log("Stopping index build polling", "info", "ZgsmCodebaseIndexManager")
-
-	// 	if (this.indexBuildPollTimer) {
-	// 		clearInterval(this.indexBuildPollTimer)
-	// 		this.indexBuildPollTimer = null
-	// 	}
-
-	// 	this.isIndexBuildPollRunning = false
-	// }
-
-	// private async performIndexBuildPoll(): Promise<void> {
-	// 	try {
-	// 		const workspacePath = getWorkspacePath() || ""
-	// 		if (workspacePath) {
-	// 			await this.triggerIndexBuild({
-	// 				workspace: workspacePath,
-	// 				path: workspacePath,
-	// 				type: "all",
-	// 			})
-	// 			this.log("Scheduled index build succeeded", "info", "ZgsmCodebaseIndexManager")
-	// 		} else {
-	// 			this.log("Workspace path is empty, skipping scheduled index build", "info", "ZgsmCodebaseIndexManager")
-	// 		}
-	// 	} catch (error) {
-	// 		const errorMessage = error instanceof Error ? error.message : "Unknown error occurred during scheduled index build"
-	// 		this.log(errorMessage, "error", "ZgsmCodebaseIndexManager")
-	// 	}
-	// }
-
 	/**
 	 * Health check
 	 */

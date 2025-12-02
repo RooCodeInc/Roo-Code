@@ -345,7 +345,11 @@ export const ModeSelector = ({
 							<IconButton
 								iconClass="codicon-settings-gear"
 								onClick={() => {
-									vscode.postMessage({ type: "switchTab", tab: "modes" })
+									vscode.postMessage({
+										type: "switchTab",
+										tab: "settings",
+										values: { section: "modes" },
+									})
 									setOpen(false)
 								}}
 							/>
