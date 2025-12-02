@@ -39,7 +39,7 @@ export default async function Home() {
 					</div>
 					<div className="flex flex-col sm:flex-row gap-4 mb-16">
 						<div className="flex flex-col items-center gap-2">
-							<Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg">
+							<Button size="xl">
 								<a
 									href={EXTERNAL_LINKS.MARKETPLACE}
 									target="_blank"
@@ -53,7 +53,7 @@ export default async function Home() {
 						</div>
 
 						<div className="flex flex-col items-center gap-2">
-							<Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg">
+							<Button size="xl">
 								<a
 									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 									className="flex items-center justify-center">

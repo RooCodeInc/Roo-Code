@@ -56,7 +56,7 @@ export function PillarsSection() {
 
 				<div className="grid grid-cols-8 gap-8">
 					<div className="relative col-span-3 h-full">
-						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-md rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
 								<Brain className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
@@ -99,7 +99,7 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-5 h-full">
-						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
 								<Users2 className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
@@ -139,7 +139,7 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-4 h-full">
-						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
 								<Keyboard className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
@@ -158,7 +158,7 @@ export function PillarsSection() {
 					</div>
 
 					<div className="relative col-span-4 h-full">
-						<div className="rounded-2xl bg-card border shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
+						<div className="rounded-2xl bg-card outline outline-border/50 hover:outline-8 shadow-lg p-8 h-full group transition-all hover:shadow-2xl">
 							<div className="absolute -right-3 -top-5 bg-card border shadow-lg rounded-full p-3 transition-all  group-hover:-top-4  group-hover:-right-2 group-hover:scale-110 group-hover:shadow-xl">
 								<Shield className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>

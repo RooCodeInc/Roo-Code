@@ -14,12 +14,16 @@ export function OptionOverviewSection() {
 						Roo&apos;s always there to help you get stuff done.
 					</p>
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-					<div className="rounded-2xl bg-card shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-blue-800/30">
-						<div className="h-12 w-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-6">
-							<Laptop className="h-6 w-6 text-blue-500" />
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto relative z-1">
+					<div className="absolute left-1/2 top-[140px] -translate-x-1/2 z-1">
+						<div className="rounded-full size-[300px] border-[10px] border-dashed animate-[spin_10s_linear_infinite] blur-[5px]" />
+					</div>
+
+					<div className="rounded-3xl bg-card outline outline-border/50 hover:outline-8 shadow-xl p-8 h-full group transition-all hover:shadow-2xl hover:shadow-blue-800/30 relative">
+						<div className="size-16 p-2 rounded-full flex items-center justify-center shadow-lg absolute -top-4 -right-4 transition-all outline outline-foreground/5 bg-card group group-hover:outline-3 group-hover:scale-105">
+							<Laptop className="size-10 text-blue-500" />
 						</div>
-						<h3 className="text-2xl font-semibold mb-2">Roo Code VS Code Extension</h3>
+						<h3 className="text-2xl font-semibold mt-6 mb-2">Roo Code VS Code Extension</h3>
 						<p className="font-semibold text-blue-500 mb-4">For Individual Work</p>
 
 						<div className="text-muted-foreground mb-4">
@@ -52,9 +56,9 @@ export function OptionOverviewSection() {
 						</Button>
 					</div>
 
-					<div className="rounded-2xl bg-card shadow-lg p-8 h-full group transition-all hover:shadow-2xl hover:shadow-violet-800/30">
-						<div className="h-12 w-12 bg-violet-500/10 rounded-lg flex items-center justify-center mb-6">
-							<Cloud className="h-6 w-6 text-violet-500" />
+					<div className="rounded-3xl bg-card outline outline-border/50 hover:outline-8 shadow-xl p-8 h-full group transition-all hover:shadow-2xl hover:shadow-blue-800/30 relative">
+						<div className="size-16 p-2 rounded-full flex items-center justify-center shadow-lg absolute -top-4 -right-4 transition-all outline outline-foreground/5 bg-card group group-hover:outline-3 group-hover:scale-105">
+							<Cloud className="size-10 text-violet-500" />
 						</div>
 						<h3 className="text-2xl font-semibold mb-2">Roo Code Cloud</h3>
 						<div className="font-semibold text-violet-500 mb-4">For Team Work with Agents</div>
@@ -75,7 +79,10 @@ export function OptionOverviewSection() {
 								<li className="list-disc">Get PR Reviews (and fixes) directly on Github</li>
 								<li className="list-disc">Collaborate with co-workers</li>
 							</ul>
-							<p>Ideal for kicking projects off and parallelizing execution.</p>
+							<p>
+								Ideal for kicking projects off, parallelizing execution and looping in the rest of your
+								team.
+							</p>
 						</div>
 
 						<Button size="lg" variant="default" className="bg-violet-600 hover:bg-violet-600/80">
