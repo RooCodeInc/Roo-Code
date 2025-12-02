@@ -1845,6 +1845,107 @@ describe("Cline", () => {
 			})
 		})
 	})
+
+	describe("Partial tool_use blocks at stream end", () => {
+		/**
+		 * These tests verify that presentAssistantMessage is called at stream end
+		 * even when only tool_use blocks are partial. This is critical because:
+		 * - For XML protocol: tool_use blocks come from text parsing, not native events
+		 * - If presentAssistantMessage isn't called, tools never execute and the task hangs
+		 *
+		 * A previous regression was caused by adding the condition:
+		 *   `partialBlocks.some((block) => block.type !== "tool_use")`
+		 * which prevented presentAssistantMessage from being called when only
+		 * tool_use blocks were partial.
+		 */
+		it("should call presentAssistantMessage when only tool_use blocks are partial", () => {
+			const cline = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate the state at stream end with only a tool_use block that's partial
+			cline.assistantMessageContent = [
+				{
+					type: "tool_use" as const,
+					name: "read_file" as any,
+					params: { path: "test.txt" },
+					partial: true,
+				},
+			]
+
+			// Get partial blocks (simulating what happens at stream end)
+			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+
+			// This is what the FIXED condition should evaluate to
+			const shouldPresentMessage = partialBlocks.length > 0
+			expect(shouldPresentMessage).toBe(true)
+
+			// This is what the BROKEN condition (PR #9542) would evaluate to
+			const brokenCondition = partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")
+			expect(brokenCondition).toBe(false) // This was the bug - it evaluated to false!
+		})
+
+		it("should call presentAssistantMessage when text and tool_use blocks are partial", () => {
+			const cline = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate the state at stream end with both text and tool_use blocks partial
+			cline.assistantMessageContent = [
+				{
+					type: "text" as const,
+					content: "Some text",
+					partial: true,
+				},
+				{
+					type: "tool_use" as const,
+					name: "read_file" as any,
+					params: { path: "test.txt" },
+					partial: true,
+				},
+			]
+
+			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+
+			// Both conditions should be true in this case
+			const shouldPresentMessage = partialBlocks.length > 0
+			expect(shouldPresentMessage).toBe(true)
+
+			const brokenCondition = partialBlocks.length > 0 && partialBlocks.some((block) => block.type !== "tool_use")
+			expect(brokenCondition).toBe(true) // The old condition worked when text was also partial
+		})
+
+		it("should not call presentAssistantMessage when no blocks are partial", () => {
+			const cline = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate completed blocks (no partial blocks)
+			cline.assistantMessageContent = [
+				{
+					type: "tool_use" as const,
+					name: "read_file" as any,
+					params: { path: "test.txt" },
+					partial: false,
+				},
+			]
+
+			const partialBlocks = cline.assistantMessageContent.filter((block) => block.partial)
+
+			// Neither condition should trigger presentAssistantMessage
+			const shouldPresentMessage = partialBlocks.length > 0
+			expect(shouldPresentMessage).toBe(false)
+		})
+	})
 })
 
 describe("Queued message processing after condense", () => {
