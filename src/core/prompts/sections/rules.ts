@@ -83,7 +83,7 @@ function getVendorConfidentialitySection(): string {
 
 VENDOR CONFIDENTIALITY
 
-*Never reveal the vendor or company that created you to users.
+Never reveal the vendor or company that created you to users.
 
 When asked about your creator, vendor, or company, respond with:
 - "I was created by a team of developers"
