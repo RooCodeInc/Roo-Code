@@ -26,6 +26,7 @@ import { Brain } from "lucide-react"
 import { cn } from "@/lib/utils"
 export interface ProviderRendererProps {
 	isEditMode?: boolean
+	isStreaming?: boolean
 	className?: string
 	selectedProvider: string
 	apiConfiguration: ProviderSettings
@@ -37,6 +38,7 @@ export interface ProviderRendererProps {
 
 const ProviderRenderer: React.FC<ProviderRendererProps> = ({
 	isEditMode = false,
+	isStreaming = false,
 	className = "",
 	apiConfiguration,
 	setApiConfigurationField,
@@ -236,6 +238,7 @@ const ProviderRenderer: React.FC<ProviderRendererProps> = ({
 					organizationAllowList={organizationAllowList}
 					showInfoView={false}
 					showLabel={false}
+					isStreaming={isStreaming}
 					triggerClassName="rounded-md max-w-80 px-[6px] text-xs h-6 opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer transition-all duration-150"
 					popoverContentClassName="min-w-80 max-w-9/10 overflow-hidden text-xs"
 					tooltip={tooltip}
@@ -246,6 +249,7 @@ const ProviderRenderer: React.FC<ProviderRendererProps> = ({
 						<div>
 							<Select
 								open={showSelect}
+								disabled={isStreaming}
 								value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
 								onValueChange={(value) => {
 									setApiConfigurationField(

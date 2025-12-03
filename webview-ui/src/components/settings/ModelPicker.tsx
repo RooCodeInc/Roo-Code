@@ -63,6 +63,7 @@ interface ModelPickerProps {
 	errorMessage?: string
 	showInfoView?: boolean
 	showLabel?: boolean
+	isStreaming?: boolean
 	triggerClassName?: string
 	popoverContentClassName?: string
 	PopoverTriggerContentClassName?: string
@@ -83,6 +84,7 @@ export const ModelPicker = ({
 	errorMessage,
 	showInfoView = true,
 	showLabel = true,
+	isStreaming = false,
 	triggerClassName = "",
 	popoverContentClassName = "",
 	PopoverTriggerContentClassName = "",
@@ -246,6 +248,7 @@ export const ModelPicker = ({
 									variant="combobox"
 									role="combobox"
 									aria-expanded={open}
+									disabled={isStreaming}
 									className={cn("w-full", "justify-between", triggerClassName)}
 									data-testid={`model-picker-button${modelPickerId}`}>
 									<div className={`truncate ${PopoverTriggerContentClassName}`}>

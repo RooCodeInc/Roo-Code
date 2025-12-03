@@ -290,7 +290,9 @@ async function getFileOrFolderContent(
 		} else if (stats.isDirectory()) {
 			const entries = await fs.readdir(absPath, { withFileTypes: true })
 			let folderContent = ""
-			const fileContentPromises: Promise<string | undefined>[] = []
+			const fileContentPromises: Array<
+				(maxReadFileLine?: number, maxReadCharacterLimit?: number) => Promise<string | undefined>
+			> = []
 			const LOCK_SYMBOL = "🔒"
 
 			for (let index = 0; index < entries.length; index++) {
@@ -315,24 +317,22 @@ async function getFileOrFolderContent(
 					if (!isIgnored) {
 						const filePath = path.join(mentionPath, entry.name)
 						const absoluteFilePath = path.resolve(absPath, entry.name)
-						fileContentPromises.push(
-							(async () => {
-								try {
-									const isBinary = await isBinaryFileWithEncodingDetection(absoluteFilePath)
-									if (isBinary) {
-										return undefined
-									}
-									const content = await extractTextFromFile(
-										absoluteFilePath,
-										maxReadFileLine,
-										maxReadCharacterLimit,
-									)
-									return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`
-								} catch (error) {
+						fileContentPromises.push(async (maxReadFileLine?: number, maxReadCharacterLimit?: number) => {
+							try {
+								const isBinary = await isBinaryFileWithEncodingDetection(absoluteFilePath)
+								if (isBinary) {
 									return undefined
 								}
-							})(),
-						)
+								const content = await extractTextFromFile(
+									absoluteFilePath,
+									maxReadFileLine,
+									maxReadCharacterLimit,
+								)
+								return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`
+							} catch (error) {
+								return undefined
+							}
+						})
 					}
 				} else if (entry.isDirectory()) {
 					folderContent += `${linePrefix}${displayName}/\n`
@@ -340,7 +340,18 @@ async function getFileOrFolderContent(
 					folderContent += `${linePrefix}${displayName}\n`
 				}
 			}
-			const fileContents = (await Promise.all(fileContentPromises)).filter((content) => content)
+			const fileContentPromisesCount = fileContentPromises.length
+			const [_maxReadFileLine, _maxReadCharacterLimit] = [
+				maxReadFileLine != null && maxReadFileLine > 0 && fileContentPromisesCount > 0
+					? Math.max(250, Math.ceil(maxReadFileLine / fileContentPromisesCount))
+					: maxReadFileLine,
+				maxReadCharacterLimit != null && maxReadCharacterLimit > 0 && fileContentPromisesCount > 0
+					? Math.max(10_000, Math.ceil(maxReadCharacterLimit / fileContentPromisesCount))
+					: maxReadCharacterLimit,
+			]
+			const fileContents = (
+				await Promise.all(fileContentPromises.map((cb) => cb(_maxReadFileLine, _maxReadCharacterLimit)))
+			).filter((content) => content)
 			return `${folderContent}\n${fileContents.join("\n\n")}`.trim()
 		} else {
 			return `(Failed to read contents of ${mentionPath})`

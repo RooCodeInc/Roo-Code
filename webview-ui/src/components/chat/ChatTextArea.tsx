@@ -58,6 +58,7 @@ interface ChatTextAreaProps {
 	hoverPreviewMap?: Map<string, string>
 	// Edit mode props
 	isEditMode?: boolean
+	isStreaming?: boolean
 	onCancel?: () => void
 	// Browser session status
 	isBrowserSessionActive?: boolean
@@ -82,6 +83,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			modeShortcutText,
 			hoverPreviewMap,
 			isEditMode = false,
+			isStreaming = false,
 			onCancel,
 			isBrowserSessionActive = false,
 			showBrowserDockToggle = false,
@@ -1380,6 +1382,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						{apiConfiguration && (
 							<ProviderRenderer
 								isEditMode={isEditMode}
+								isStreaming={isStreaming}
 								className="min-w-12 text-ellipsis overflow-hidden flex-shrink"
 								selectedProvider={apiConfiguration.apiProvider || "zgsm"}
 								apiConfiguration={apiConfiguration}

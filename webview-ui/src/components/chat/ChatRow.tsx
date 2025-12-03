@@ -1340,6 +1340,7 @@ export const ChatRowContent = ({
 											setMode={setEditMode}
 											modeShortcutText=""
 											isEditMode={true}
+											isStreaming={isStreaming}
 											onCancel={handleCancelEdit}
 										/>
 									</div>
