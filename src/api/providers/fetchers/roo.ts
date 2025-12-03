@@ -9,7 +9,7 @@ import { DEFAULT_HEADERS } from "../constants"
 // These override API-provided values for specific models
 // Exported so RooHandler.getModel() can also apply these for fallback cases
 export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
-	"minimax/minimax-m2": {
+	"minimax/minimax-m2:free": {
 		defaultToolProtocol: "native",
 	},
 	"anthropic/claude-haiku-4.5": {
