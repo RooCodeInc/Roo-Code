@@ -38,6 +38,7 @@ function getSessionToken(): string {
 
 export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private fetcherBaseURL: string
+	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		const sessionToken = getSessionToken()
@@ -116,12 +117,19 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
+	getReasoningDetails(): any[] | undefined {
+		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		try {
+			// Reset reasoning_details accumulator for this request
+			this.currentReasoningDetails = []
+
 			const headers: Record<string, string> = {
 				"X-Roo-App-Version": Package.version,
 			}
@@ -133,21 +141,97 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			const stream = await this.createStream(systemPrompt, messages, metadata, { headers })
 
 			let lastUsage: RooUsage | undefined = undefined
+			// Accumulator for reasoning_details: accumulate text by type-index key
+			const reasoningDetailsAccumulator = new Map<
+				string,
+				{
+					type: string
+					text?: string
+					summary?: string
+					data?: string
+					id?: string | null
+					format?: string
+					signature?: string
+					index: number
+				}
+			>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
 
 				if (delta) {
-					// Check for reasoning content (similar to OpenRouter)
-					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
+					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+					// Priority: Check for reasoning_details first, as it's the newer format
+					const deltaWithReasoning = delta as typeof delta & {
+						reasoning_details?: Array<{
+							type: string
+							text?: string
+							summary?: string
+							data?: string
+							id?: string | null
+							format?: string
+							signature?: string
+							index?: number
+						}>
+					}
+
+					if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
+						for (const detail of deltaWithReasoning.reasoning_details) {
+							const index = detail.index ?? 0
+							const key = `${detail.type}-${index}`
+							const existing = reasoningDetailsAccumulator.get(key)
+
+							if (existing) {
+								// Accumulate text/summary/data for existing reasoning detail
+								if (detail.text !== undefined) {
+									existing.text = (existing.text || "") + detail.text
+								}
+								if (detail.summary !== undefined) {
+									existing.summary = (existing.summary || "") + detail.summary
+								}
+								if (detail.data !== undefined) {
+									existing.data = (existing.data || "") + detail.data
+								}
+								// Update other fields if provided
+								if (detail.id !== undefined) existing.id = detail.id
+								if (detail.format !== undefined) existing.format = detail.format
+								if (detail.signature !== undefined) existing.signature = detail.signature
+							} else {
+								// Start new reasoning detail accumulation
+								reasoningDetailsAccumulator.set(key, {
+									type: detail.type,
+									text: detail.text,
+									summary: detail.summary,
+									data: detail.data,
+									id: detail.id,
+									format: detail.format,
+									signature: detail.signature,
+									index,
+								})
+							}
+
+							// Yield text for display (still fragmented for live streaming)
+							let reasoningText: string | undefined
+							if (detail.type === "reasoning.text" && typeof detail.text === "string") {
+								reasoningText = detail.text
+							} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
+								reasoningText = detail.summary
+							}
+							// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
+
+							if (reasoningText) {
+								yield { type: "reasoning", text: reasoningText }
+							}
+						}
+					} else if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+						// Handle legacy reasoning format - only if reasoning_details is not present
 						yield {
 							type: "reasoning",
 							text: delta.reasoning,
 						}
-					}
-
-					// Also check for reasoning_content for backward compatibility
-					if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
+					} else if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
+						// Also check for reasoning_content for backward compatibility
 						yield {
 							type: "reasoning",
 							text: delta.reasoning_content,
@@ -178,6 +262,11 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				if (chunk.usage) {
 					lastUsage = chunk.usage as RooUsage
 				}
+			}
+
+			// After streaming completes, store the accumulated reasoning_details
+			if (reasoningDetailsAccumulator.size > 0) {
+				this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
 			}
 
 			if (lastUsage) {
