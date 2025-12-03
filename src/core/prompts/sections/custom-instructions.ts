@@ -3,13 +3,13 @@ import path from "path"
 import * as os from "os"
 import { Dirent } from "fs"
 
-import { isLanguage, toolNames } from "@roo-code/types"
+import { isLanguage } from "@roo-code/types"
 
 import type { SystemPromptSettings } from "../types"
 import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 
 import { LANGUAGES } from "../../../shared/language"
-import { getRooDirectoriesForCwd, getGlobalRooDirectory } from "../../../services/roo-config"
+import { getRooDirectoriesForCwd } from "../../../services/roo-config"
 
 /**
  * Safely read a file and return its trimmed content
@@ -298,9 +298,6 @@ export async function addCustomInstructions(
 					// Tool usage condition
 					`- **RULE: You MUST use a tool ONLY IF the user request explicitly requires file reading/writing, file editing, file creation, project scanning, debugging, or technical code manipulation. If not required, tool use is FORBIDDEN.**`,
 
-					// Must select exactly one tool
-					`- **RULE: Every response MUST call EXACTLY ONE tool from: ${toolNames.map((t) => `\`${t}\``).join("、")}. Direct textual answers are FORBIDDEN.**`,
-
 					// Irrelevant user message
 					`- **RULE: If the user message is irrelevant (chat, jokes, nonsense), you MUST immediately respond using \`attempt_completion\`. No tool usage is allowed.**`,
 
@@ -309,8 +306,6 @@ export async function addCustomInstructions(
 
 					// Hard constraint: no-edit if no change
 					`- **RULE: A file edit is allowed ONLY IF the final content will differ from the current content. If there is NO difference, you MUST NOT call ANY file-editing tool. The edit MUST be cancelled.**`,
-
-					`- **RULE: Request to switch to a different mode. This tool allows modes to request switching to another mode when needed, such as switching to Code mode to make code changes. The user must approve the mode switch`,
 				]
 
 	if (mode) {

@@ -1,5 +1,21 @@
 # CoStrict Change Log
 
+## [2.0.23]
+
+- Fix welcome page login url
+
+## [2.0.22]
+
+- Add JetBrains platform detection and disable unsupported VS Code features (code completion, CodeLens)
+- Add editor type detection for API and Webview message handler
+- Add mode preservation in code review service
+- Add parameter support and proportional limits to file content reading
+- Rebrand diff view scheme to costrict and improve wechat image styling
+- Update rate limit default and optimize streaming-related components
+- Adjust content limits and simplify prompts
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/873a763ea794b80265d965b2613e6eea5002e303)
+- Fix known issues
+
 ## [2.0.21]
 
 - Remove apiRequestBlockHide setting and related UI components

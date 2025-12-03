@@ -346,7 +346,7 @@ async function getFileOrFolderContent(
 					? Math.max(250, Math.ceil(maxReadFileLine / fileContentPromisesCount))
 					: maxReadFileLine,
 				maxReadCharacterLimit != null && maxReadCharacterLimit > 0 && fileContentPromisesCount > 0
-					? Math.max(10_000, Math.ceil(maxReadCharacterLimit / fileContentPromisesCount))
+					? Math.max(20_000, Math.ceil(maxReadCharacterLimit / fileContentPromisesCount))
 					: maxReadCharacterLimit,
 			]
 			const fileContents = (

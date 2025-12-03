@@ -6,7 +6,7 @@ import type { ProviderSettings } from "@roo-code/types"
 import { TelemetryEventName } from "@roo-code/types"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { isValidUrl, validateApiConfiguration, validateZgsmBaseUrl } from "@src/utils/validate"
+import { validateApiConfiguration, validateZgsmBaseUrl } from "@src/utils/validate"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"
@@ -78,16 +78,16 @@ const WelcomeViewProvider = () => {
 		}
 
 		setErrorMessage(undefined)
-
 		// Send telemetry for account connect action
 		telemetryClient.capture(TelemetryEventName.ACCOUNT_CONNECT_CLICKED)
-		if (isValidUrl(costrictBaseurl)) {
-			setApiConfigurationFieldForApiOptions("zgsmBaseUrl", costrictBaseurl.trim().replace(/\/$/, ""))
-		}
+		const zgsmBaseUrl = costrictBaseurl.trim().replace(/\/$/, "")
+		setApiConfigurationFieldForApiOptions("zgsmBaseUrl", zgsmBaseUrl)
+
 		vscode.postMessage({
 			type: "zgsmLogin",
 			apiConfiguration: {
 				...apiConfiguration,
+				zgsmBaseUrl,
 				apiProvider: "zgsm",
 				zgsmModelId: "Auto",
 			},
