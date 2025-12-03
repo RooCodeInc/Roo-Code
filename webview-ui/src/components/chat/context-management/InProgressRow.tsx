@@ -18,9 +18,9 @@ export function InProgressRow({ eventType }: InProgressRowProps) {
 	const getProgressText = (): string => {
 		switch (eventType) {
 			case "condense_context":
-				return t("chat:contextCondense.condensing")
+				return t("chat:contextManagement.condensation.inProgress")
 			case "sliding_window_truncation":
-				return t("chat:contextManagement.truncating")
+				return t("chat:contextManagement.truncation.inProgress")
 			case "condense_context_error":
 				// Error state should never have an in-progress state
 				// This case should not be reached in normal operation

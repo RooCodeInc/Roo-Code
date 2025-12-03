@@ -11,15 +11,14 @@ vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
 		t: (key: string, options?: Record<string, unknown>) => {
 			const translations: Record<string, string> = {
-				"chat:contextCondense.title": "Context Condensed",
-				"chat:contextCondense.condensing": "Condensing context...",
-				"chat:contextCondense.errorHeader": "Failed to condense context",
-				"chat:contextManagement.truncating": "Truncating context...",
+				"chat:contextManagement.tokens": "tokens",
+				"chat:contextManagement.condensation.title": "Context Condensed",
+				"chat:contextManagement.condensation.inProgress": "Condensing context...",
+				"chat:contextManagement.condensation.errorHeader": "Failed to condense context",
 				"chat:contextManagement.truncation.title": "Context Truncated",
-				"chat:contextManagement.truncation.previousTokens": "Previous token count",
+				"chat:contextManagement.truncation.inProgress": "Truncating context...",
 				"chat:contextManagement.truncation.description":
 					"Older messages were removed from the conversation to stay within the context window limit.",
-				tokens: "tokens",
 			}
 
 			// Handle pluralization

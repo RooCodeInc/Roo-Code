@@ -58,9 +58,12 @@ export const ContextCondenseRow = ({ cost, prevContextTokens, newContextTokens, 
 				</div>
 				<div className="flex items-center gap-2 flex-grow">
 					<span className="codicon codicon-compress text-blue-400" />
-					<span className="font-bold text-vscode-foreground">{t("chat:contextCondense.title")}</span>
+					<span className="font-bold text-vscode-foreground">
+						{t("chat:contextManagement.condensation.title")}
+					</span>
 					<span className="text-vscode-descriptionForeground text-sm">
-						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()} {t("tokens")}
+						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()}{" "}
+						{t("chat:contextManagement.tokens")}
 					</span>
 					<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
 						${displayCost.toFixed(2)}
@@ -87,7 +90,9 @@ export const CondensingContextRow = () => {
 		<div className="flex items-center gap-2">
 			<ProgressIndicator />
 			<span className="codicon codicon-compress text-blue-400" />
-			<span className="font-bold text-vscode-foreground">{t("chat:contextCondense.condensing")}</span>
+			<span className="font-bold text-vscode-foreground">
+				{t("chat:contextManagement.condensation.inProgress")}
+			</span>
 		</div>
 	)
 }
@@ -100,7 +105,9 @@ export const CondenseContextErrorRow = ({ errorText }: { errorText?: string }) =
 		<div className="flex flex-col gap-1">
 			<div className="flex items-center gap-2">
 				<span className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80 text-base -mb-0.5"></span>
-				<span className="font-bold text-vscode-foreground">{t("chat:contextCondense.errorHeader")}</span>
+				<span className="font-bold text-vscode-foreground">
+					{t("chat:contextManagement.condensation.errorHeader")}
+				</span>
 			</div>
 			<span className="text-vscode-descriptionForeground text-sm">{errorText}</span>
 		</div>
