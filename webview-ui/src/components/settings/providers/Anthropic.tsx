@@ -29,6 +29,8 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 	// Get current custom model info or create default
 	const customModelInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
 		contextWindow: 200000,
+		maxTokens: 48000,
+		maxThinkingTokens: 16000,
 		supportsImages: true,
 		supportsPromptCache: true,
 	}
@@ -38,6 +40,8 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 		(field: keyof ModelInfo, value: ModelInfo[keyof ModelInfo]) => {
 			const currentInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
 				contextWindow: 200000,
+				maxTokens: 48000,
+				maxThinkingTokens: 16000,
 				supportsImages: true,
 				supportsPromptCache: true,
 			}
@@ -178,7 +182,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 												const value = parseInt((e.target as HTMLInputElement).value)
 												updateCustomModelInfo("maxTokens", isNaN(value) ? undefined : value)
 											}}
-											placeholder="8192"
+											placeholder="48000"
 											className="w-32"
 										/>
 									</div>
@@ -195,7 +199,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 													isNaN(value) ? undefined : value,
 												)
 											}}
-											placeholder="32000"
+											placeholder="16000"
 											className="w-32"
 										/>
 									</div>

@@ -111,10 +111,17 @@ export function getModelParams({
 			: DEFAULT_HYBRID_REASONING_MODEL_THINKING_TOKENS
 		reasoningBudget = customMaxThinkingTokens ?? defaultThinkingTokens
 
-		// Reasoning cannot exceed 80% of the `maxTokens` value.
+		// Cap reasoning budget to 80% of max_tokens by default (practical heuristic to leave room for output).
+		// This is more conservative than the API requirement but provides a better user experience.
 		// maxTokens should always be defined for reasoning budget models, but add a guard just in case
 		if (maxTokens && reasoningBudget > Math.floor(maxTokens * 0.8)) {
 			reasoningBudget = Math.floor(maxTokens * 0.8)
+		}
+
+		// Anthropic API requires: budget_tokens < max_tokens (strictly less than)
+		// This is a safety guard in case the 80% cap above is not enough (e.g., very small maxTokens)
+		if (maxTokens && reasoningBudget >= maxTokens) {
+			reasoningBudget = maxTokens - 1
 		}
 
 		// Reasoning cannot be less than minimum tokens.

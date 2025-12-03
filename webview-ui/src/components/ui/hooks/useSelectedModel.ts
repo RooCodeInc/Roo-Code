@@ -266,7 +266,10 @@ function getSelectedModel({
 		}
 		case "openai-native": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = openAiNativeModels[id as keyof typeof openAiNativeModels]
+			const info =
+				openAiNativeModels[id as keyof typeof openAiNativeModels] ||
+				apiConfiguration?.openAiCustomModelInfo ||
+				openAiModelInfoSaneDefaults
 			return { id, info }
 		}
 		case "mistral": {
@@ -378,6 +381,19 @@ function getSelectedModel({
 			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
+
+			// For Anthropic with custom model, merge custom model info
+			if (
+				provider === "anthropic" &&
+				apiConfiguration.anthropicCustomModelName &&
+				apiConfiguration.anthropicCustomModelInfo
+			) {
+				const info: ModelInfo = {
+					...baseInfo,
+					...apiConfiguration.anthropicCustomModelInfo,
+				}
+				return { id, info }
+			}
 
 			// Apply 1M context beta tier pricing for Claude Sonnet 4
 			if (

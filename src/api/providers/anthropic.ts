@@ -1,6 +1,11 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
-import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
+import { MessageStream } from "@anthropic-ai/sdk/lib/MessageStream"
+import {
+	CacheControlEphemeral,
+	RedactedThinkingBlock,
+	SignatureDelta,
+	ThinkingBlock,
+} from "@anthropic-ai/sdk/resources"
 import OpenAI from "openai"
 
 import {
@@ -26,6 +31,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	private options: ApiHandlerOptions
 	private client: Anthropic
 	private lastThoughtSignature?: string
+	private currentStream?: MessageStream
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -45,9 +51,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		// Reset signature tracking at start of each message
+		// Reset signature tracking and stream reference at start of each message
 		this.lastThoughtSignature = undefined
-		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
+		this.currentStream = undefined
+
+		let stream: MessageStream
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let {
 			id: modelId,
@@ -123,7 +131,8 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			// Add prompt caching beta header
 			betas.push("prompt-caching-2024-07-31")
 
-			stream = await this.client.messages.create(
+			// Use MessageStream for better error handling, abort support, and signature extraction
+			stream = this.client.messages.stream(
 				{
 					model: modelId,
 					max_tokens: effectiveMaxTokens,
@@ -149,14 +158,14 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						}
 						return message
 					}),
-					stream: true,
 					...nativeToolParams,
 				},
 				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
 			)
 		} else {
 			// No prompt caching - simpler request
-			stream = (await this.client.messages.create(
+			// Use MessageStream for better error handling, abort support, and signature extraction
+			stream = this.client.messages.stream(
 				{
 					model: modelId,
 					max_tokens: effectiveMaxTokens,
@@ -166,123 +175,165 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 					...(thinking ? { thinking } : {}),
 					system: [{ text: systemPrompt, type: "text" }],
 					messages: sanitizedMessages,
-					stream: true,
 					...nativeToolParams,
 				},
 				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
-			)) as any
+			)
 		}
+
+		// Store stream reference for potential abort
+		this.currentStream = stream
 
 		let inputTokens = 0
 		let outputTokens = 0
 		let cacheWriteTokens = 0
 		let cacheReadTokens = 0
 
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "message_start": {
-					// Tells us cache reads/writes/input/output.
-					const {
-						input_tokens = 0,
-						output_tokens = 0,
-						cache_creation_input_tokens,
-						cache_read_input_tokens,
-					} = chunk.message.usage
+		try {
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "message_start": {
+						// Tells us cache reads/writes/input/output.
+						const {
+							input_tokens = 0,
+							output_tokens = 0,
+							cache_creation_input_tokens,
+							cache_read_input_tokens,
+						} = chunk.message.usage
 
-					yield {
-						type: "usage",
-						inputTokens: input_tokens,
-						outputTokens: output_tokens,
-						cacheWriteTokens: cache_creation_input_tokens || undefined,
-						cacheReadTokens: cache_read_input_tokens || undefined,
+						yield {
+							type: "usage",
+							inputTokens: input_tokens,
+							outputTokens: output_tokens,
+							cacheWriteTokens: cache_creation_input_tokens || undefined,
+							cacheReadTokens: cache_read_input_tokens || undefined,
+						}
+
+						inputTokens += input_tokens
+						outputTokens += output_tokens
+						cacheWriteTokens += cache_creation_input_tokens || 0
+						cacheReadTokens += cache_read_input_tokens || 0
+
+						break
 					}
+					case "message_delta":
+						// Tells us stop_reason, stop_sequence, and output tokens
+						// along the way and at the end of the message.
+						yield {
+							type: "usage",
+							inputTokens: 0,
+							outputTokens: chunk.usage.output_tokens || 0,
+						}
 
-					inputTokens += input_tokens
-					outputTokens += output_tokens
-					cacheWriteTokens += cache_creation_input_tokens || 0
-					cacheReadTokens += cache_read_input_tokens || 0
+						break
+					case "message_stop":
+						// No usage data, just an indicator that the message is done.
+						break
+					case "content_block_start":
+						switch (chunk.content_block.type) {
+							case "thinking":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "reasoning", text: "\n" }
+								}
 
-					break
+								yield { type: "reasoning", text: chunk.content_block.thinking }
+								break
+							case "redacted_thinking":
+								// Redacted thinking blocks contain encrypted content that cannot be displayed
+								// The 'data' field contains the redacted content which is not human-readable
+								// We emit a placeholder to indicate thinking occurred but was redacted
+								if (chunk.index > 0) {
+									yield { type: "reasoning", text: "\n" }
+								}
+								yield { type: "reasoning", text: "[Thinking redacted]" }
+								break
+							case "text":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "text", text: "\n" }
+								}
+
+								yield { type: "text", text: chunk.content_block.text }
+								break
+							case "tool_use": {
+								// Emit initial tool call partial with id and name
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: chunk.content_block.id,
+									name: chunk.content_block.name,
+									arguments: undefined,
+								}
+								break
+							}
+						}
+						break
+					case "content_block_delta":
+						switch (chunk.delta.type) {
+							case "thinking_delta":
+								yield { type: "reasoning", text: chunk.delta.thinking }
+								break
+							case "signature_delta":
+								// Capture the signature for multi-turn extended thinking
+								// Using proper SDK type for SignatureDelta
+								this.lastThoughtSignature = (chunk.delta as SignatureDelta).signature
+								break
+							case "text_delta":
+								yield { type: "text", text: chunk.delta.text }
+								break
+							case "input_json_delta": {
+								// Emit tool call partial chunks as arguments stream in
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: undefined,
+									name: undefined,
+									arguments: chunk.delta.partial_json,
+								}
+								break
+							}
+						}
+
+						break
+					case "content_block_stop":
+						// Block complete - no action needed for now.
+						// NativeToolCallParser handles tool call completion
+						break
 				}
-				case "message_delta":
-					// Tells us stop_reason, stop_sequence, and output tokens
-					// along the way and at the end of the message.
-					yield {
-						type: "usage",
-						inputTokens: 0,
-						outputTokens: chunk.usage.output_tokens || 0,
-					}
-
-					break
-				case "message_stop":
-					// No usage data, just an indicator that the message is done.
-					break
-				case "content_block_start":
-					switch (chunk.content_block.type) {
-						case "thinking":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "reasoning", text: "\n" }
-							}
-
-							yield { type: "reasoning", text: chunk.content_block.thinking }
-							break
-						case "text":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "text", text: "\n" }
-							}
-
-							yield { type: "text", text: chunk.content_block.text }
-							break
-						case "tool_use": {
-							// Emit initial tool call partial with id and name
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: chunk.content_block.id,
-								name: chunk.content_block.name,
-								arguments: undefined,
-							}
-							break
-						}
-					}
-					break
-				case "content_block_delta":
-					switch (chunk.delta.type) {
-						case "thinking_delta":
-							yield { type: "reasoning", text: chunk.delta.thinking }
-							break
-						case "signature_delta":
-							// Capture the signature for multi-turn extended thinking
-							this.lastThoughtSignature = (chunk.delta as any).signature
-							break
-						case "text_delta":
-							yield { type: "text", text: chunk.delta.text }
-							break
-						case "input_json_delta": {
-							// Emit tool call partial chunks as arguments stream in
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: undefined,
-								name: undefined,
-								arguments: chunk.delta.partial_json,
-							}
-							break
-						}
-					}
-
-					break
-				case "content_block_stop":
-					// Block complete - no action needed for now.
-					// NativeToolCallParser handles tool call completion
-					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
-					// after iteration completes, which requires restructuring the streaming approach.
-					break
 			}
+
+			// After streaming completes, use finalMessage() to reliably extract signature
+			// from ThinkingBlock or RedactedThinkingBlock for multi-turn extended thinking conversations
+			try {
+				const finalMessage = await stream.finalMessage()
+				// Check for regular thinking block first
+				const thinkingBlock = finalMessage.content.find(
+					(block): block is ThinkingBlock => block.type === "thinking",
+				)
+				if (thinkingBlock?.signature) {
+					this.lastThoughtSignature = thinkingBlock.signature
+				} else {
+					// Check for redacted thinking block (also has signature for multi-turn)
+					const redactedBlock = finalMessage.content.find(
+						(block): block is RedactedThinkingBlock => block.type === "redacted_thinking",
+					)
+					// Note: RedactedThinkingBlock has 'data' field, not 'signature'
+					// The signature for multi-turn is captured during streaming via signature_delta
+				}
+			} catch {
+				// finalMessage may fail if stream was interrupted, signature captured during streaming is still valid
+			}
+		} catch (error) {
+			// Re-throw the error after cleanup
+			// The caller can handle specific error types (rate limits, context length, etc.)
+			this.currentStream = undefined
+			throw error
+		} finally {
+			// Clear stream reference after completion
+			this.currentStream = undefined
 		}
 
 		if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
@@ -459,6 +510,24 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	 */
 	public getThoughtSignature(): string | undefined {
 		return this.lastThoughtSignature
+	}
+
+	/**
+	 * Aborts the current streaming request if one is in progress.
+	 * This cleanly cancels the underlying HTTP request and any pending operations.
+	 */
+	public abort(): void {
+		if (this.currentStream) {
+			this.currentStream.abort()
+			this.currentStream = undefined
+		}
+	}
+
+	/**
+	 * Returns whether a stream is currently in progress.
+	 */
+	public isStreaming(): boolean {
+		return this.currentStream !== undefined
 	}
 
 	/**

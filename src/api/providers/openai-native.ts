@@ -3,6 +3,7 @@ import OpenAI from "openai"
 
 import {
 	type ModelInfo,
+	openAiModelInfoSaneDefaults,
 	openAiNativeDefaultModelId,
 	OpenAiNativeModelId,
 	openAiNativeModels,
@@ -41,21 +42,23 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Abort controller for cancelling ongoing requests
 	private abortController?: AbortController
 
+	// Track output item index to call_id mapping for streaming tool calls
+	// This allows delta events to be correlated with their parent tool call
+	private outputIndexToCallId: Map<number, { callId: string; name: string }> = new Map()
+
 	// Event types handled by the shared event processor to avoid duplication
+	// Official event types per OpenAI.ResponseStreamEvent spec, plus legacy variants for compatibility
 	private readonly coreHandledEventTypes = new Set<string>([
-		"response.text.delta",
 		"response.output_text.delta",
 		"response.reasoning.delta",
-		"response.reasoning_text.delta",
 		"response.reasoning_summary.delta",
 		"response.reasoning_summary_text.delta",
 		"response.refusal.delta",
 		"response.output_item.added",
-		"response.done",
+		"response.output_item.done",
 		"response.completed",
-		"response.tool_call_arguments.delta",
+		"response.done", // Legacy variant of response.completed
 		"response.function_call_arguments.delta",
-		"response.tool_call_arguments.done",
 		"response.function_call_arguments.done",
 	])
 
@@ -181,6 +184,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseOutput = undefined
 		// Reset last response id for this request
 		this.lastResponseId = undefined
+		// Reset output index to call_id mapping for streaming tool calls
+		this.outputIndexToCallId.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -248,6 +253,23 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Build a request body for the OpenAI Responses API.
 		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
+		// OpenAI Responses API uses flat tool format
+		type OpenAIToolFormat = {
+			type: "function"
+			name: string
+			description?: string
+			parameters?: any
+			strict?: boolean
+		}
+		// Azure OpenAI uses nested function format
+		type AzureToolFormat = {
+			type: "function"
+			function: {
+				name: string
+				description?: string
+				parameters?: any
+			}
+		}
 		interface ResponsesRequestBody {
 			model: string
 			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
@@ -262,13 +284,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			include?: string[]
 			/** Prompt cache retention policy: "in_memory" (default) or "24h" for extended caching */
 			prompt_cache_retention?: "in_memory" | "24h"
-			tools?: Array<{
-				type: "function"
-				name: string
-				description?: string
-				parameters?: any
-				strict?: boolean
-			}>
+			tools?: Array<OpenAIToolFormat | AzureToolFormat>
 			tool_choice?: any
 			parallel_tool_calls?: boolean
 		}
@@ -283,17 +299,20 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Check if using Azure OpenAI for Azure-specific handling
 		const isAzure = this.isAzureOpenAI()
 
+		// Respect caller preference for response storage (defaults to true to allow previous_response_id usage)
+		const shouldStoreResponses = metadata?.store ?? true
+
 		const body: ResponsesRequestBody = {
 			model: model.id,
 			input: formattedInput,
 			stream: true,
-			// Always use stateless operation with encrypted reasoning
-			store: false,
+			store: shouldStoreResponses,
 			// Always include instructions (system prompt) for Responses API.
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
 			// The official way to set system behavior is the top-level `instructions` field.
 			instructions: systemPrompt,
-			// Only include encrypted reasoning content when reasoning effort is set
+			// Include encrypted reasoning content when reasoning effort is set
+			// Azure Responses API supports include: ["reasoning.encrypted_content"]
 			...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			...(reasoningEffort
 				? {
@@ -324,17 +343,19 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Note: Azure OpenAI does not support prompt_cache_retention, so we skip it for Azure.
 			...(!isAzure && promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
 			...(metadata?.tools && {
+				// Both OpenAI and Azure Responses API use flat tool format
+				// Azure has a 1024 character description limit and doesn't support strict mode
 				tools: metadata.tools
 					.filter((tool) => tool.type === "function")
 					.map((tool) => ({
-						type: "function",
+						type: "function" as const,
 						name: tool.function.name,
-						// Azure OpenAI has a 1024 character limit for tool descriptions
 						description: isAzure
 							? this.truncateDescription(tool.function.description, AZURE_TOOL_DESCRIPTION_LIMIT)
 							: tool.function.description,
 						parameters: ensureAllRequired(tool.function.parameters),
-						strict: true,
+						// Only OpenAI supports strict mode for tools
+						...(isAzure ? {} : { strict: true }),
 					})),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
@@ -370,6 +391,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
+		// For Azure OpenAI, skip the SDK and use manual fetch directly
+		// The OpenAI SDK doesn't understand Azure's URL structure (/openai/v1/responses)
+		if (this.isAzureOpenAI()) {
+			yield* this.makeResponsesApiRequest(requestBody, model, metadata, systemPrompt, messages)
+			return
+		}
+
 		try {
 			// Use the official SDK
 			const stream = (await (this.client as any).responses.create(requestBody, {
@@ -403,6 +431,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private formatFullConversation(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): any {
 		// Format the entire conversation history for the Responses API using structured format
 		// The Responses API (like Realtime API) accepts a list of items, which can be messages, function calls, or function call outputs.
+		// Both OpenAI and Azure Responses API use the same input_text/input_image format per official docs:
+		// https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
 		const formattedInput: any[] = []
 
 		// Do NOT embed the system prompt as a developer message in the Responses API input.
@@ -418,8 +448,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			if (message.role === "user") {
-				const content: any[] = []
 				const toolResults: any[] = []
+				// Both OpenAI and Azure use structured content with input_text/input_image types
+				const content: any[] = []
 
 				if (typeof message.content === "string") {
 					content.push({ type: "input_text", text: message.content })
@@ -432,7 +463,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
 							content.push({ type: "input_image", image_url: imageUrl })
 						} else if (block.type === "tool_result") {
-							// Map Anthropic tool_result to Responses API function_call_output item
 							const result =
 								typeof block.content === "string"
 									? block.content
@@ -446,7 +476,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				// Add user message first
 				if (content.length > 0) {
 					formattedInput.push({ role: "user", content })
 				}
@@ -456,8 +485,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					formattedInput.push(...toolResults)
 				}
 			} else if (message.role === "assistant") {
-				const content: any[] = []
 				const toolCalls: any[] = []
+				// Both OpenAI and Azure use structured content with output_text type
+				const content: any[] = []
 
 				if (typeof message.content === "string") {
 					content.push({ type: "output_text", text: message.content })
@@ -466,7 +496,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						if (block.type === "text") {
 							content.push({ type: "output_text", text: block.text })
 						} else if (block.type === "tool_use") {
-							// Map Anthropic tool_use to Responses API function_call item
 							toolCalls.push({
 								type: "function_call",
 								call_id: block.id,
@@ -477,7 +506,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				// Add assistant message if it has content
 				if (content.length > 0) {
 					formattedInput.push({ role: "assistant", content })
 				}
@@ -496,11 +524,14 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * Builds the correct Responses API URL for OpenAI or Azure OpenAI.
 	 *
 	 * For OpenAI: https://api.openai.com/v1/responses
-	 * For Azure OpenAI: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses?api-version=preview
+	 * For Azure OpenAI: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses
 	 *
 	 * Azure OpenAI users should provide base URL as:
 	 *   https://YOUR_RESOURCE.openai.azure.com/openai/v1/
 	 * This method normalizes the URL and appends the correct path.
+	 *
+	 * Note: The v1 API does not require api-version query parameter per official Azure docs:
+	 * https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
 	 */
 	private buildResponsesApiUrl(): { url: string; isAzure: boolean } {
 		let baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
@@ -511,10 +542,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		if (isAzure) {
 			// Azure OpenAI endpoint
-			// Expected input: https://YOUR_RESOURCE.openai.azure.com/openai/v1/ or https://YOUR_RESOURCE.openai.azure.com/openai/
-			// Expected output: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses?api-version=preview
+			// Ensure /openai is in the path - users may provide URLs in different formats:
+			//   - https://YOUR_RESOURCE.openai.azure.com
+			//   - https://YOUR_RESOURCE.openai.azure.com/openai
+			//   - https://YOUR_RESOURCE.openai.azure.com/openai/v1
+			// All should resolve to: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses
+			if (!baseUrl.includes("/openai")) {
+				baseUrl = `${baseUrl}/openai`
+			}
 			return {
-				url: `${baseUrl}/v1/responses?api-version=preview`,
+				url: `${baseUrl}/v1/responses`,
 				isAzure: true,
 			}
 		}
@@ -861,19 +898,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 									}
 								}
 							} else if (parsed.type === "response.output_item.done") {
-								// Output item completed
-							}
-							// Handle function/tool call events
-							else if (
-								parsed.type === "response.function_call_arguments.delta" ||
-								parsed.type === "response.tool_call_arguments.delta" ||
-								parsed.type === "response.function_call_arguments.done" ||
-								parsed.type === "response.tool_call_arguments.done"
-							) {
-								// Delegated to processEvent (handles accumulation and completion)
-								for await (const outChunk of this.processEvent(parsed, model)) {
-									yield outChunk
-								}
+								// Output item completed - handled by coreHandledEventTypes
 							}
 							// Handle MCP (Model Context Protocol) tool events
 							else if (parsed.type === "response.mcp_call_arguments.delta") {
@@ -1154,38 +1179,38 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			return
 		}
 
-		// Handle tool/function call deltas - emit as partial chunks
-		if (
-			event?.type === "response.tool_call_arguments.delta" ||
-			event?.type === "response.function_call_arguments.delta"
-		) {
-			// Emit partial chunks directly - NativeToolCallParser handles state management
-			const callId = event.call_id || event.tool_call_id || event.id
-			const name = event.name || event.function_name
-			const args = event.delta || event.arguments
+		// Handle function call argument deltas - emit as partial chunks
+		// Per OpenAI spec: ResponseFunctionCallArgumentsDeltaEvent has item_id, output_index, delta
+		if (event?.type === "response.function_call_arguments.delta") {
+			const outputIndex = event.output_index ?? 0
+
+			// Look up call_id from our tracking map using output_index
+			// The item_id in the event references item.id, but we need item.call_id for tool execution
+			const tracked = this.outputIndexToCallId.get(outputIndex)
+			const callId = tracked?.callId
+			const name = tracked?.name
 
 			yield {
 				type: "tool_call_partial",
-				index: event.index ?? 0,
+				index: outputIndex,
 				id: callId,
 				name,
-				arguments: args,
+				arguments: event.delta,
 			}
 			return
 		}
 
-		// Handle tool/function call completion events
-		if (
-			event?.type === "response.tool_call_arguments.done" ||
-			event?.type === "response.function_call_arguments.done"
-		) {
-			// Tool call complete - no action needed, NativeToolCallParser handles completion
+		// Handle function call completion events
+		if (event?.type === "response.function_call_arguments.done") {
+			// Tool call arguments complete - final tool_call emitted via response.output_item.done
 			return
 		}
 
-		// Handle output item additions/completions (SDK or Responses API alternative format)
+		// Handle output item additions/completions
 		if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
 			const item = event?.item
+			const outputIndex = event?.output_index ?? 0
+
 			if (item) {
 				if (item.type === "text" && item.text) {
 					yield { type: "text", text: item.text }
@@ -1198,20 +1223,38 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							yield { type: "text", text: content.text }
 						}
 					}
-				} else if (
-					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done" // Only handle done events for tool calls to ensure arguments are complete
-				) {
-					// Handle complete tool/function call item
-					// Emit as tool_call for backward compatibility with non-streaming tool handling
-					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId) {
-						const args = item.arguments || item.function?.arguments || item.function_arguments
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
-							arguments: typeof args === "string" ? args : "{}",
+				} else if (item.type === "function_call") {
+					// Per OpenAI spec: FunctionToolCallItemResource has call_id, name, arguments, status
+					const callId = item.call_id || item.id
+					const name = item.name || ""
+
+					if (event.type === "response.output_item.added") {
+						// Tool call item added - emit initial tool_call_partial to initialize streaming parser
+						// This provides the id and name upfront so delta events can be correlated
+						if (callId) {
+							// Track the mapping from output index to call_id for delta events
+							this.outputIndexToCallId.set(outputIndex, { callId, name })
+
+							yield {
+								type: "tool_call_partial",
+								index: outputIndex,
+								id: callId,
+								name,
+								arguments: "", // Arguments will come via delta events
+							}
+						}
+					} else if (event.type === "response.output_item.done") {
+						// Tool call complete - emit final tool_call with complete arguments
+						if (callId) {
+							yield {
+								type: "tool_call",
+								id: callId,
+								name,
+								arguments: typeof item.arguments === "string" ? item.arguments : "{}",
+							}
+
+							// Clean up tracking
+							this.outputIndexToCallId.delete(outputIndex)
 						}
 					}
 				}
@@ -1297,16 +1340,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Removed isResponsesApiModel method as ALL models now use the Responses API
 
 	override getModel() {
-		const modelId = this.options.apiModelId
-
-		let id =
-			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
-
-		const info: ModelInfo = openAiNativeModels[id]
+		const requestedModelId = this.options.apiModelId?.trim() || openAiNativeDefaultModelId
+		const isKnownModel = requestedModelId in openAiNativeModels
+		const info: ModelInfo = isKnownModel
+			? openAiNativeModels[requestedModelId as OpenAiNativeModelId]
+			: this.options.openAiCustomModelInfo || openAiModelInfoSaneDefaults
 
 		const params = getModelParams({
 			format: "openai",
-			modelId: id,
+			modelId: requestedModelId,
 			model: info,
 			settings: this.options,
 			defaultTemperature: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
@@ -1317,7 +1359,24 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// The o3 models are named like "o3-mini-[reasoning-effort]", which are
 		// not valid model ids, so we need to strip the suffix.
-		return { id: id.startsWith("o3-mini") ? "o3-mini" : id, info, ...params, verbosity: params.verbosity }
+		const normalizedId = requestedModelId.startsWith("o3-mini") ? "o3-mini" : requestedModelId
+		return { id: normalizedId, info, ...params, verbosity: params.verbosity }
+	}
+
+	private captureResponseMetadata(response: any) {
+		if (!response) return
+
+		if (response.service_tier) {
+			this.lastServiceTier = response.service_tier as ServiceTier
+		}
+
+		if (Array.isArray(response.output)) {
+			this.lastResponseOutput = response.output
+		}
+
+		if (response.id) {
+			this.lastResponseId = response.id as string
+		}
 	}
 
 	/**
@@ -1352,7 +1411,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		try {
 			const model = this.getModel()
-			const { verbosity, reasoning } = model
+			const { verbosity } = model
 
 			// Resolve reasoning effort for models that support it
 			const reasoningEffort = this.getReasoningEffort(model)
@@ -1409,16 +1468,23 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				requestBody.text = { verbosity: verbosityValue as VerbosityLevel }
 			}
 
-			// Enable extended prompt cache retention for eligible models
+			// Enable extended prompt cache retention for eligible models (not for Azure)
 			const promptCacheRetention = this.getPromptCacheRetention(model)
 			if (promptCacheRetention) {
 				requestBody.prompt_cache_retention = promptCacheRetention
 			}
 
-			// Make the non-streaming request
+			// For Azure OpenAI, use manual fetch instead of SDK (SDK doesn't understand Azure URL structure)
+			if (this.isAzureOpenAI()) {
+				return await this.completePromptAzure(requestBody)
+			}
+
+			// Make the non-streaming request using OpenAI SDK
 			const response = await (this.client as any).responses.create(requestBody, {
 				signal: this.abortController.signal,
 			})
+
+			this.captureResponseMetadata(response)
 
 			// Extract text from the response
 			if (response?.output && Array.isArray(response.output)) {
@@ -1447,5 +1513,61 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		} finally {
 			this.abortController = undefined
 		}
+	}
+
+	/**
+	 * Azure-specific implementation of completePrompt using manual fetch.
+	 * The OpenAI SDK doesn't understand Azure's URL structure, so we use fetch directly.
+	 */
+	private async completePromptAzure(requestBody: any): Promise<string> {
+		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
+		const { url } = this.buildResponsesApiUrl()
+
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"api-key": apiKey,
+			},
+			body: JSON.stringify(requestBody),
+			signal: this.abortController?.signal,
+		})
+
+		if (!response.ok) {
+			const errorText = await response.text()
+			let errorMessage = `Azure OpenAI request failed (${response.status})`
+			try {
+				const errorJson = JSON.parse(errorText)
+				if (errorJson.error?.message) {
+					errorMessage += `: ${errorJson.error.message}`
+				}
+			} catch {
+				errorMessage += `: ${errorText}`
+			}
+			throw new Error(errorMessage)
+		}
+
+		const data = await response.json()
+		this.captureResponseMetadata(data)
+
+		// Extract text from the response
+		if (data?.output && Array.isArray(data.output)) {
+			for (const outputItem of data.output) {
+				if (outputItem.type === "message" && outputItem.content) {
+					for (const content of outputItem.content) {
+						if (content.type === "output_text" && content.text) {
+							return content.text
+						}
+					}
+				}
+			}
+		}
+
+		// Fallback: check for output_text directly
+		if (data?.output_text) {
+			return data.output_text
+		}
+
+		return ""
 	}
 }

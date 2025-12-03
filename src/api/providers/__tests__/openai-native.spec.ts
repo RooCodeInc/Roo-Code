@@ -2,6 +2,8 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
+import { openAiModelInfoSaneDefaults } from "@roo-code/types"
+
 import { OpenAiNativeHandler } from "../openai-native"
 import { ApiHandlerOptions } from "../../../shared/api"
 
@@ -125,6 +127,44 @@ describe("OpenAiNativeHandler", () => {
 				}
 			}).rejects.toThrow("OpenAI service error")
 		})
+
+		it("should default to store=true when metadata is not provided", async () => {
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					// no-op
+				},
+			}
+			mockResponsesCreate.mockResolvedValue(mockStream as any)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// drain
+			}
+
+			expect(mockResponsesCreate).toHaveBeenCalledWith(
+				expect.objectContaining({ store: true }),
+				expect.objectContaining({ signal: expect.any(Object) }),
+			)
+		})
+
+		it("should honor metadata.store when provided", async () => {
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					// no-op
+				},
+			}
+			mockResponsesCreate.mockResolvedValue(mockStream as any)
+
+			const stream = handler.createMessage(systemPrompt, messages, { taskId: "task-id", store: false })
+			for await (const _ of stream) {
+				// drain
+			}
+
+			expect(mockResponsesCreate).toHaveBeenCalledWith(
+				expect.objectContaining({ store: false }),
+				expect.objectContaining({ signal: expect.any(Object) }),
+			)
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -189,6 +229,35 @@ describe("OpenAiNativeHandler", () => {
 
 			expect(result).toBe("")
 		})
+
+		it("should capture response metadata for non-streaming completions", async () => {
+			const responsePayload = {
+				id: "resp_test",
+				service_tier: "priority",
+				output: [
+					{
+						type: "reasoning",
+						encrypted_content: "encrypted",
+					},
+					{
+						type: "message",
+						content: [
+							{
+								type: "output_text",
+								text: "Final response",
+							},
+						],
+					},
+				],
+			}
+			mockResponsesCreate.mockResolvedValue(responsePayload)
+
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("Final response")
+			expect(handler.getResponseId()).toBe("resp_test")
+			expect(handler.getEncryptedContent()).toEqual({ encrypted_content: "encrypted" })
+		})
 	})
 
 	describe("getModel", () => {
@@ -207,6 +276,38 @@ describe("OpenAiNativeHandler", () => {
 			const modelInfo = handlerWithoutModel.getModel()
 			expect(modelInfo.id).toBe("gpt-5.1") // Default model
 			expect(modelInfo.info).toBeDefined()
+		})
+
+		it("should preserve custom model ids and metadata", () => {
+			const handlerWithCustomModel = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-api-key",
+				apiModelId: "my-custom-model",
+				openAiCustomModelInfo: {
+					...openAiModelInfoSaneDefaults,
+					contextWindow: 222_000,
+					maxTokens: 16_000,
+					inputPrice: 0.5,
+					outputPrice: 1.5,
+				},
+			})
+
+			const modelInfo = handlerWithCustomModel.getModel()
+			expect(modelInfo.id).toBe("my-custom-model")
+			expect(modelInfo.info.contextWindow).toBe(222_000)
+			expect(modelInfo.info.maxTokens).toBe(16_000)
+			expect(modelInfo.info.outputPrice).toBe(1.5)
+		})
+
+		it("should fall back to sane defaults when metadata is missing for custom ids", () => {
+			const handlerWithUnknownModel = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-api-key",
+				apiModelId: "brand-new-model",
+			})
+
+			const modelInfo = handlerWithUnknownModel.getModel()
+			expect(modelInfo.id).toBe("brand-new-model")
+			expect(modelInfo.info.contextWindow).toBe(openAiModelInfoSaneDefaults.contextWindow)
+			expect(modelInfo.info.maxTokens).toBe(openAiModelInfoSaneDefaults.maxTokens)
 		})
 	})
 
@@ -859,6 +960,515 @@ describe("OpenAiNativeHandler", () => {
 	})
 })
 
+// Azure OpenAI specific tests
+describe("Azure OpenAI", () => {
+	const azureOptions: ApiHandlerOptions = {
+		apiModelId: "gpt-4.1",
+		openAiNativeApiKey: "test-azure-api-key",
+		openAiNativeBaseUrl: "https://my-resource.openai.azure.com/openai/v1",
+	}
+
+	afterEach(() => {
+		if ((global as any).fetch) {
+			delete (global as any).fetch
+		}
+		mockResponsesCreate.mockClear()
+	})
+
+	describe("URL and Authentication", () => {
+		it("should detect Azure OpenAI from URL", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode('data: {"type":"response.text.delta","delta":"Hello"}\n\n'),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+
+			// Mock SDK to fail to force fetch fallback
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System prompt", [{ role: "user", content: "Hello" }])
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			// Verify Azure-specific URL format (v1 API does not require api-version)
+			expect(mockFetch).toHaveBeenCalledWith(
+				"https://my-resource.openai.azure.com/openai/v1/responses",
+				expect.anything(),
+			)
+		})
+
+		it("should use api-key header for Azure instead of Authorization Bearer", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode('data: {"type":"response.text.delta","delta":"Hello"}\n\n'),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System prompt", [{ role: "user", content: "Hello" }])
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			// Verify api-key header is used
+			const callHeaders = mockFetch.mock.calls[0][1].headers
+			expect(callHeaders["api-key"]).toBe("test-azure-api-key")
+			expect(callHeaders["Authorization"]).toBeUndefined()
+		})
+
+		it("should handle various Azure URL formats correctly", async () => {
+			const urlFormats = [
+				"https://my-resource.openai.azure.com",
+				"https://my-resource.openai.azure.com/",
+				"https://my-resource.openai.azure.com/openai",
+				"https://my-resource.openai.azure.com/openai/",
+				"https://my-resource.openai.azure.com/openai/v1",
+				"https://my-resource.openai.azure.com/openai/v1/",
+			]
+
+			for (const baseUrl of urlFormats) {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				global.fetch = mockFetch as any
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					...azureOptions,
+					openAiNativeBaseUrl: baseUrl,
+				})
+
+				const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }])
+				for await (const _ of stream) {
+					// drain
+				}
+
+				// All should resolve to the same URL (v1 API does not require api-version)
+				expect(mockFetch.mock.calls[0][0]).toBe("https://my-resource.openai.azure.com/openai/v1/responses")
+			}
+		})
+	})
+
+	describe("Request Body Parameters", () => {
+		it("should default to store=true for Azure requests", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }])
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.store).toBe(true)
+		})
+
+		it("should allow disabling storage via metadata.store for Azure", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }], {
+				taskId: "task",
+				store: false,
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.store).toBe(false)
+		})
+
+		it("should include encrypted reasoning for Azure with reasoning effort", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler({
+				...azureOptions,
+				apiModelId: "o3-mini",
+				reasoningEffort: "medium",
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }])
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.include).toEqual(["reasoning.encrypted_content"])
+			expect(requestBody.reasoning?.effort).toBe("medium")
+		})
+
+		it("should NOT include prompt_cache_retention for Azure", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler({
+				...azureOptions,
+				apiModelId: "gpt-5.1", // Model that supports prompt caching
+			})
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }])
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.prompt_cache_retention).toBeUndefined()
+		})
+	})
+
+	describe("Tool Format", () => {
+		it("should use flat tool format for Azure Responses API", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "get_weather",
+						description: "Get the weather for a location",
+						parameters: {
+							type: "object",
+							properties: {
+								location: { type: "string", description: "City name" },
+							},
+							required: ["location"],
+						},
+					},
+				},
+			]
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }], {
+				taskId: "test",
+				tools,
+				tool_choice: "auto",
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+
+			// Should be flat format (no nested 'function' wrapper)
+			expect(requestBody.tools).toHaveLength(1)
+			expect(requestBody.tools[0]).toEqual({
+				type: "function",
+				name: "get_weather",
+				description: "Get the weather for a location",
+				parameters: {
+					type: "object",
+					properties: {
+						location: { type: "string", description: "City name" },
+					},
+					required: ["location"],
+				},
+				// No strict for Azure
+			})
+
+			// Verify NO nested function property
+			expect(requestBody.tools[0].function).toBeUndefined()
+		})
+
+		it("should truncate tool descriptions to 1024 chars for Azure", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+
+			const longDescription = "A".repeat(2000) // 2000 chars
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "test_tool",
+						description: longDescription,
+						parameters: { type: "object", properties: {} },
+					},
+				},
+			]
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }], {
+				taskId: "test",
+				tools,
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.tools[0].description.length).toBe(1024)
+			expect(requestBody.tools[0].description.endsWith("...")).toBe(true)
+		})
+
+		it("should NOT include strict: true for Azure tools", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "test_tool",
+						description: "Test",
+						parameters: { type: "object", properties: {} },
+					},
+				},
+			]
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }], {
+				taskId: "test",
+				tools,
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.tools[0].strict).toBeUndefined()
+		})
+
+		it("should include strict: true for OpenAI (not Azure) tools", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			// Use OpenAI (not Azure)
+			const handler = new OpenAiNativeHandler({
+				apiModelId: "gpt-4.1",
+				openAiNativeApiKey: "test-key",
+				// No Azure base URL
+			})
+
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "test_tool",
+						description: "Test",
+						parameters: { type: "object", properties: {} },
+					},
+				},
+			]
+
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hi" }], {
+				taskId: "test",
+				tools,
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			expect(requestBody.tools[0].strict).toBe(true)
+		})
+	})
+
+	describe("Message Formatting", () => {
+		it("should use structured input_text format for Azure user messages (same as OpenAI)", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System", [{ role: "user", content: "Hello World" }])
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			// Azure now uses the same structured format as OpenAI per official docs
+			expect(requestBody.input).toEqual([
+				{ role: "user", content: [{ type: "input_text", text: "Hello World" }] },
+			])
+		})
+
+		it("should use structured output_text format for Azure assistant messages (same as OpenAI)", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const stream = handler.createMessage("System", [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: "Hi there!" },
+				{ role: "user", content: "How are you?" },
+			])
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			// Azure now uses the same structured format as OpenAI per official docs
+			expect(requestBody.input).toEqual([
+				{ role: "user", content: [{ type: "input_text", text: "Hello" }] },
+				{ role: "assistant", content: [{ type: "output_text", text: "Hi there!" }] },
+				{ role: "user", content: [{ type: "input_text", text: "How are you?" }] },
+			])
+		})
+	})
+
+	describe("completePrompt", () => {
+		it("should capture response metadata for Azure non-streaming completions", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					id: "resp_azure",
+					service_tier: "flex",
+					output: [
+						{
+							type: "reasoning",
+							encrypted_content: "azure-encrypted",
+						},
+						{
+							type: "message",
+							content: [{ type: "output_text", text: "Azure response" }],
+						},
+					],
+				}),
+			})
+			global.fetch = mockFetch as any
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("Azure response")
+			expect(handler.getResponseId()).toBe("resp_azure")
+			expect(handler.getEncryptedContent()).toEqual({ encrypted_content: "azure-encrypted" })
+		})
+	})
+})
+
 // Additional tests for GPT-5 streaming event coverage
 describe("GPT-5 streaming event coverage (additional)", () => {
 	afterEach(() => {
@@ -1278,6 +1888,223 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 					chunks.push(chunk)
 				}
 			}).rejects.toThrow("Responses API error: Model overloaded")
+		})
+
+		// New tests: streaming tool calls
+		describe("Streaming tool calls", () => {
+			it("should emit tool_call_partial on output_item.added for function_call items", async () => {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							// Simulate tool call item added (provides id and name upfront)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","call_id":"call_123","name":"get_weather","arguments":""}}\n\n',
+								),
+							)
+							// Simulate argument deltas
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":"{\\"city\\""}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":": \\"SF\\"}"}\n\n',
+								),
+							)
+							// Simulate tool call completion
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call","call_id":"call_123","name":"get_weather","arguments":"{\\"city\\": \\"SF\\"}"}}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.done","response":{"usage":{"prompt_tokens":10,"completion_tokens":5}}}\n\n',
+								),
+							)
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				;(global as any).fetch = mockFetch as any
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					apiModelId: "gpt-4.1",
+					openAiNativeApiKey: "test-api-key",
+				})
+
+				const stream = handler.createMessage("System", [{ role: "user", content: "What is the weather?" }])
+
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				// Should have: 1 initial tool_call_partial (from added), 2 deltas (tool_call_partial), 1 final tool_call (from done)
+				const partialChunks = chunks.filter((c) => c.type === "tool_call_partial")
+				const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
+
+				// First partial should have id and name (from output_item.added)
+				expect(partialChunks.length).toBeGreaterThanOrEqual(1)
+				expect(partialChunks[0]).toMatchObject({
+					type: "tool_call_partial",
+					index: 0,
+					id: "call_123",
+					name: "get_weather",
+				})
+
+				// Final tool_call should have complete arguments
+				expect(toolCallChunks).toHaveLength(1)
+				expect(toolCallChunks[0]).toMatchObject({
+					type: "tool_call",
+					id: "call_123",
+					name: "get_weather",
+					arguments: '{"city": "SF"}',
+				})
+			})
+
+			it("should correlate delta events using output_index when call_id is not in delta", async () => {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							// Tool call added with id and name
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.added","output_index":2,"item":{"type":"function_call","call_id":"call_abc","name":"read_file","arguments":""}}\n\n',
+								),
+							)
+							// Delta without call_id - should use output_index to correlate
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":2,"delta":"{\\"path\\":\\"test.txt\\"}"}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.done","output_index":2,"item":{"type":"function_call","call_id":"call_abc","name":"read_file","arguments":"{\\"path\\":\\"test.txt\\"}"}}\n\n',
+								),
+							)
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				;(global as any).fetch = mockFetch as any
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					apiModelId: "gpt-4.1",
+					openAiNativeApiKey: "test-api-key",
+				})
+
+				const stream = handler.createMessage("System", [{ role: "user", content: "Read test.txt" }])
+
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const partialChunks = chunks.filter((c) => c.type === "tool_call_partial")
+
+				// The delta should be correlated to the correct tool call via output_index
+				// Find the delta chunk (has arguments but came after the initial)
+				const deltaChunk = partialChunks.find((c) => c.arguments && c.arguments.length > 0)
+				expect(deltaChunk).toBeDefined()
+				expect(deltaChunk.index).toBe(2)
+				// Should have id from the tracked mapping
+				expect(deltaChunk.id).toBe("call_abc")
+			})
+
+			it("should handle multiple concurrent tool calls with different output indices", async () => {
+				const mockFetch = vitest.fn().mockResolvedValue({
+					ok: true,
+					body: new ReadableStream({
+						start(controller) {
+							// First tool call
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","call_id":"call_1","name":"tool_a","arguments":""}}\n\n',
+								),
+							)
+							// Second tool call
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.added","output_index":1,"item":{"type":"function_call","call_id":"call_2","name":"tool_b","arguments":""}}\n\n',
+								),
+							)
+							// Deltas for both (interleaved)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":"{\\"a\\":"}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":1,"delta":"{\\"b\\":"}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":"1}"}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.function_call_arguments.delta","output_index":1,"delta":"2}"}\n\n',
+								),
+							)
+							// Done events
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call","call_id":"call_1","name":"tool_a","arguments":"{\\"a\\":1}"}}\n\n',
+								),
+							)
+							controller.enqueue(
+								new TextEncoder().encode(
+									'data: {"type":"response.output_item.done","output_index":1,"item":{"type":"function_call","call_id":"call_2","name":"tool_b","arguments":"{\\"b\\":2}"}}\n\n',
+								),
+							)
+							controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+							controller.close()
+						},
+					}),
+				})
+				;(global as any).fetch = mockFetch as any
+				mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+				const handler = new OpenAiNativeHandler({
+					apiModelId: "gpt-4.1",
+					openAiNativeApiKey: "test-api-key",
+				})
+
+				const stream = handler.createMessage("System", [{ role: "user", content: "Do both" }])
+
+				const chunks: any[] = []
+				for await (const chunk of stream) {
+					chunks.push(chunk)
+				}
+
+				const toolCallChunks = chunks.filter((c) => c.type === "tool_call")
+
+				// Should have 2 complete tool calls
+				expect(toolCallChunks).toHaveLength(2)
+				expect(toolCallChunks[0]).toMatchObject({
+					id: "call_1",
+					name: "tool_a",
+					arguments: '{"a":1}',
+				})
+				expect(toolCallChunks[1]).toMatchObject({
+					id: "call_2",
+					name: "tool_b",
+					arguments: '{"b":2}',
+				})
+			})
 		})
 
 		// New tests: ensure text.verbosity is omitted for models without supportsVerbosity

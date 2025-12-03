@@ -698,8 +698,11 @@ describe("getModelParams", () => {
 				model,
 			})
 
-			expect(result.maxTokens).toBe(16384) // Default value.
-			expect(result.reasoningBudget).toBe(8192) // Default value.
+			// max_tokens is capped at model.maxTokens (8000) since that's the provider limit
+			// configuredMaxTokens (16384 default) is reduced to model's capability
+			expect(result.maxTokens).toBe(8000)
+			// reasoningBudget uses default (8192) but is capped at 80% of maxTokens = 6400
+			expect(result.reasoningBudget).toBe(6400)
 		})
 	})
 
