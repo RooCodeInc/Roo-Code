@@ -57,6 +57,7 @@
 		"qrcode": "^1.5.4",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
+		"react-compiler-runtime": "^1.0.0",
 		"react-i18next": "^15.4.1",
 		"react-markdown": "^9.0.3",
 		"react-remark": "^2.1.0",
@@ -83,6 +84,7 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
+		"babel-plugin-react-compiler": "^1.0.0",
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
 		"@testing-library/jest-dom": "^6.6.3",
