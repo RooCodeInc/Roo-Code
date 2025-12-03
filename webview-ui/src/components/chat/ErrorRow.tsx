@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { MessageCircleWarning } from "lucide-react"
+import { BookOpenText, MessageCircleWarning } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
@@ -135,17 +135,19 @@ export const ErrorRow = memo(
 		// For diff_error type with expandable content
 		if (type === "diff_error" && expandable) {
 			return (
-				<div className="mt-0 overflow-hidden mb-2">
+				<div className="mt-0 overflow-hidden mb-2 pr-1 group">
 					<div
-						className={`font-normal text-vscode-editor-foreground flex items-center justify-between cursor-pointer ${
-							isExpanded ? "border-b border-vscode-editorGroup-border" : ""
+						className={`font-sm text-vscode-editor-foreground flex items-center justify-between cursor-pointer ${
+							isExpanded ? "" : ""
 						}`}
 						onClick={handleToggleExpand}>
-						<div className="flex items-center gap-2 flex-grow">
-							<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
-							<span className="font-bold">{errorTitle}</span>
+						<div className="flex items-center gap-2 flex-grow  text-vscode-errorForeground">
+							<MessageCircleWarning className="w-4" />
+							<span className="text-vscode-errorForeground font-bold grow cursor-pointer">
+								{errorTitle}
+							</span>
 						</div>
-						<div className="flex items-center">
+						<div className="flex items-center transition-opacity opacity-0 group-hover:opacity-100">
 							{showCopyButton && (
 								<VSCodeButton
 									appearance="icon"
@@ -158,7 +160,7 @@ export const ErrorRow = memo(
 						</div>
 					</div>
 					{isExpanded && (
-						<div className="p-2 bg-vscode-editor-background border-t-0">
+						<div className="px-2 py-1 mt-2 bg-vscode-editor-background ml-6 rounded-lg">
 							<CodeBlock source={message} language="xml" />
 						</div>
 					)}
@@ -168,36 +170,36 @@ export const ErrorRow = memo(
 
 		// Standard error display
 		return (
-			<>
+			<div className="group pr-2">
 				{errorTitle && (
-					<div className={headerClassName || "flex items-center gap-2 break-words"}>
+					<div className={headerClassName || "flex items-center justify-between gap-2 break-words"}>
 						<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
-						<span className="text-vscode-errorForeground font-bold">{errorTitle}</span>
+						<span className="text-vscode-errorForeground font-bold grow cursor-default">{errorTitle}</span>
+						{docsURL && (
+							<a
+								href={docsURL}
+								className="text-sm flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
+								onClick={(e) => {
+									e.preventDefault()
+									vscode.postMessage({ type: "openExternal", url: docsURL })
+								}}>
+								<BookOpenText className="size-3" />
+								Docs
+							</a>
+						)}
 					</div>
 				)}
-				<p
-					className={
-						messageClassName ||
-						"ml-6 my-0 pr-1 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
-					}>
-					{message}
-				</p>
-				{additionalContent}
-				{docsURL && (
-					<div className="ml-6 mt-2">
-						<a
-							href={docsURL}
-							className="text-sm text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground flex items-center gap-1"
-							onClick={(e) => {
-								e.preventDefault()
-								vscode.postMessage({ type: "openExternal", url: docsURL })
-							}}>
-							<span className="codicon codicon-book" />
-							Learn more
-						</a>
-					</div>
-				)}
-			</>
+				<div className="pl-6 py-1">
+					<p
+						className={
+							messageClassName ||
+							"my-0 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
+						}>
+						{message}
+					</p>
+					{additionalContent}
+				</div>
+			</div>
 		)
 	},
 )

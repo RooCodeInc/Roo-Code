@@ -1110,27 +1110,40 @@ export const ChatRowContent = ({
 					)
 				case "api_req_retry_delayed":
 					let body = t(`chat:apiRequest.failed`)
-					let footer
-					let code
+					let retryInfo, code, docsURL
 					if (message.text !== undefined) {
-						// Try to show better error message for that code, if available
+						// Try to show richer error message for that code, if available
 						if (parseInt(message.text.substring(0, 3)) >= 400) {
 							code = parseInt(message.text)
 							const stringForError = `chat:apiRequest.errorMessage.${code}`
 							if (i18n.exists(stringForError)) {
 								body = t(stringForError)
+								// Fill this out in upcoming PRs
+								// Do not remove this
+								// switch(code) {
+								// 	case ERROR_CODE:
+								// 		docsURL = ???
+								// 		break;
+								// }
 							} else {
 								body = t("chat:apiRequest.errorMessage.unknown")
+								docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
 							}
-							footer = (
-								<p className="ml-6 mt-1 font-light text-xs text-vscode-errorForeground/80">
+							retryInfo = (
+								<p className="mt-1 font-light text-xs text-vscode-errorForeground/80 cursor-default">
 									{message.text.substring(4)}
 								</p>
 							)
 						}
 					}
 					return (
-						<ErrorRow type="api_req_retry_delayed" code={code} message={body} additionalContent={footer} />
+						<ErrorRow
+							type="api_req_retry_delayed"
+							code={code}
+							message={body}
+							docsURL={docsURL}
+							additionalContent={retryInfo}
+						/>
 					)
 				case "api_req_finished":
 					return null // we should never see this message type

@@ -3679,6 +3679,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (error.status) {
 				// This sets the message as just the error code, for which
 				// ChatRow knows how to handle and use an i18n'd error string
+				// In development, hardcode headerText to an HTTP status code to check it
 				headerText = error.status
 			} else if (error?.message) {
 				headerText = error.message
