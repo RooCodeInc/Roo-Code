@@ -29,7 +29,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 			<div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center">
 					<Link href="/" className="flex items-center">
-						<Image src={logoSrc} alt="Roo Code Logo" width={130} height={24} className="h-[24px] w-auto" />
+						<Image src={logoSrc} alt="Roo Code Logo" width={160} height={32} className="h-[32px] w-auto" />
 					</Link>
 				</div>
 
