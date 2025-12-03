@@ -151,7 +151,7 @@
 			"403": "Unauthorized. Your API key is valid, but the provider refused to complete this request.",
 			"429": "Too many requests. You're being rate-limited by the provider. Please a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
-			"unknown": "Unkown API error. Please contact Roo Code support."
+			"unknown": "Unknown API error. Please contact Roo Code support."
 		}
 	},
 	"checkpoint": {
