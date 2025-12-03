@@ -162,7 +162,7 @@ export const ChatRowContent = ({
 	onBatchFileResponse,
 	isFollowUpAnswered,
 }: ChatRowContentProps) => {
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1099,24 +1099,38 @@ export const ChatRowContent = ({
 								<ErrorRow
 									type="api_failure"
 									message={apiRequestFailedMessage || apiReqStreamingFailedMessage || ""}
-									additionalContent={
-										apiRequestFailedMessage?.toLowerCase().includes("powershell") ? (
-											<>
-												<br />
-												<br />
-												{t("chat:powershell.issues")}{" "}
-												<a
-													href="https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22"
-													style={{ color: "inherit", textDecoration: "underline" }}>
-													troubleshooting guide
-												</a>
-												.
-											</>
-										) : undefined
+									docsURL={
+										apiRequestFailedMessage?.toLowerCase().includes("powershell")
+											? "https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22"
+											: undefined
 									}
 								/>
 							)}
 						</>
+					)
+				case "api_req_retry_delayed":
+					let body = t(`chat:apiRequest.failed`)
+					let footer
+					let code
+					if (message.text !== undefined) {
+						// Try to show better error message for that code, if available
+						if (parseInt(message.text.substring(0, 3)) >= 400) {
+							code = parseInt(message.text)
+							const stringForError = `chat:apiRequest.errorMessage.${code}`
+							if (i18n.exists(stringForError)) {
+								body = t(stringForError)
+							} else {
+								body = t("chat:apiRequest.errorMessage.unknown")
+							}
+							footer = (
+								<p className="ml-6 mt-1 font-light text-xs text-vscode-errorForeground/80">
+									{message.text.substring(4)}
+								</p>
+							)
+						}
+					}
+					return (
+						<ErrorRow type="api_req_retry_delayed" code={code} message={body} additionalContent={footer} />
 					)
 				case "api_req_finished":
 					return null // we should never see this message type

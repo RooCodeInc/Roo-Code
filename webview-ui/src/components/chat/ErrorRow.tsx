@@ -3,10 +3,55 @@ import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { MessageCircleWarning } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
+import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
 
+/**
+ * Unified error display component for all error types in the chat.
+ * Provides consistent styling, icons, and optional documentation links across all errors.
+ *
+ * @param type - Error type determines icon and default title
+ * @param title - Optional custom title (overrides default for error type)
+ * @param message - Error message text (required)
+ * @param docsURL - Optional documentation link URL (shown as "Learn more" with book icon)
+ * @param showCopyButton - Whether to show copy button for error message
+ * @param expandable - Whether error content can be expanded/collapsed
+ * @param defaultExpanded - Whether expandable content starts expanded
+ * @param additionalContent - Optional React nodes to render after message
+ * @param headerClassName - Custom CSS classes for header section
+ * @param messageClassName - Custom CSS classes for message section
+ *
+ * @example
+ * // Simple error
+ * <ErrorRow type="error" message="File not found" />
+ *
+ * @example
+ * // Error with documentation link
+ * <ErrorRow
+ *   type="api_failure"
+ *   message="API key missing"
+ *   docsURL="https://docs.example.com/api-setup"
+ * />
+ *
+ * @example
+ * // Expandable error with code
+ * <ErrorRow
+ *   type="diff_error"
+ *   message="Patch failed to apply"
+ *   expandable={true}
+ *   defaultExpanded={false}
+ *   additionalContent={<pre>{errorDetails}</pre>}
+ * />
+ */
 export interface ErrorRowProps {
-	type: "error" | "mistake_limit" | "api_failure" | "diff_error" | "streaming_failed" | "cancelled"
+	type:
+		| "error"
+		| "mistake_limit"
+		| "api_failure"
+		| "diff_error"
+		| "streaming_failed"
+		| "cancelled"
+		| "api_req_retry_delayed"
 	title?: string
 	message: string
 	showCopyButton?: boolean
@@ -15,6 +60,8 @@ export interface ErrorRowProps {
 	additionalContent?: React.ReactNode
 	headerClassName?: string
 	messageClassName?: string
+	code?: number
+	docsURL?: string // NEW: Optional documentation link
 }
 
 /**
@@ -31,6 +78,8 @@ export const ErrorRow = memo(
 		additionalContent,
 		headerClassName,
 		messageClassName,
+		docsURL,
+		code,
 	}: ErrorRowProps) => {
 		const { t } = useTranslation()
 		const [isExpanded, setIsExpanded] = useState(defaultExpanded)
@@ -48,6 +97,8 @@ export const ErrorRow = memo(
 					return t("chat:troubleMessage")
 				case "api_failure":
 					return t("chat:apiRequest.failed")
+				case "api_req_retry_delayed":
+					return t("chat:apiRequest.errorTitle", { code: code ? ` · ${code}` : null })
 				case "streaming_failed":
 					return t("chat:apiRequest.streamingFailed")
 				case "cancelled":
@@ -126,11 +177,26 @@ export const ErrorRow = memo(
 				)}
 				<p
 					className={
-						messageClassName || "ml-6 my-0 whitespace-pre-wrap break-words text-vscode-errorForeground"
+						messageClassName ||
+						"ml-6 my-0 pr-1 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
 					}>
 					{message}
 				</p>
 				{additionalContent}
+				{docsURL && (
+					<div className="ml-6 mt-2">
+						<a
+							href={docsURL}
+							className="text-sm text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground flex items-center gap-1"
+							onClick={(e) => {
+								e.preventDefault()
+								vscode.postMessage({ type: "openExternal", url: docsURL })
+							}}>
+							<span className="codicon codicon-book" />
+							Learn more
+						</a>
+					</div>
+				)}
 			</>
 		)
 	},

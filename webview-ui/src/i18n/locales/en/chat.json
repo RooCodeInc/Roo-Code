@@ -142,7 +142,15 @@
 		"failed": "API Request Failed",
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
-		"streamingFailed": "API Streaming Failed"
+		"streamingFailed": "API Streaming Failed",
+		"errorTitle": "API Error {{code}}",
+		"errorMessage": {
+			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
+			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
+			"429": "Too many requests. You're being rate-limited by the provider. Please a bit before your next API call.",
+			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
+			"unknown": "Unkown API error. Please contact Roo Code support."
+		}
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
