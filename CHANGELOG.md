@@ -1,5 +1,12 @@
 # Roo Code Changelog
 
+## [3.35.5] - 2025-12-03
+
+- Feat: Add provider routing selection for OpenRouter embeddings (#9144 by @SannidhyaSah, PR #9693 by @SannidhyaSah)
+- Default Minimax M2 to native tool calling (PR #9778 by @mrubens)
+- Sanitize the native tool calls to fix a bug with Gemini (PR #9769 by @mrubens)
+- UX: Updates to CloudView (PR #9776 by @roomote)
+
 ## [3.35.4] - 2025-12-02
 
 - Fix: Handle malformed native tool calls to prevent hanging (PR #9758 by @daniel-lxs)

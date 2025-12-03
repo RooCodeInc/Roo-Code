@@ -21,6 +21,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { type ApiMessage } from "../task-persistence/apiMessages"
 import { saveTaskMessages } from "../task-persistence"
+import { cleanupAfterTruncation } from "../condense"
 
 import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
@@ -78,14 +79,24 @@ export const webviewMessageHandler = async (
 		return provider.getCurrentTask()?.cwd || provider.cwd
 	}
 	/**
-	 * Shared utility to find message indices based on timestamp
+	 * Shared utility to find message indices based on timestamp.
+	 * When multiple messages share the same timestamp (e.g., after condense),
+	 * this function prefers non-summary messages to ensure user operations
+	 * target the intended message rather than the summary.
 	 */
 	const findMessageIndices = (messageTs: number, currentCline: any) => {
 		// Find the exact message by timestamp, not the first one after a cutoff
 		const messageIndex = currentCline.clineMessages.findIndex((msg: ClineMessage) => msg.ts === messageTs)
-		const apiConversationHistoryIndex = currentCline.apiConversationHistory.findIndex(
-			(msg: ApiMessage) => msg.ts === messageTs,
-		)
+
+		// Find all matching API messages by timestamp
+		const allApiMatches = currentCline.apiConversationHistory
+			.map((msg: ApiMessage, idx: number) => ({ msg, idx }))
+			.filter(({ msg }: { msg: ApiMessage }) => msg.ts === messageTs)
+
+		// Prefer non-summary message if multiple matches exist (handles timestamp collision after condense)
+		const preferred = allApiMatches.find(({ msg }: { msg: ApiMessage }) => !msg.isSummary) || allApiMatches[0]
+		const apiConversationHistoryIndex = preferred?.idx ?? -1
+
 		return { messageIndex, apiConversationHistoryIndex }
 	}
 
@@ -101,20 +112,81 @@ export const webviewMessageHandler = async (
 	}
 
 	/**
-	 * Removes the target message and all subsequent messages
+	 * Removes the target message and all subsequent messages.
+	 * After truncation, cleans up orphaned condenseParent and truncationParent references for any
+	 * summaries or truncation markers that were removed by the truncation.
+	 *
+	 * Design: Rewind/delete operations preserve earlier condense and truncation states.
+	 * Only summaries and truncation markers that are removed by the truncation (i.e., were created
+	 * after the rewind point) have their associated tags cleared.
+	 * This allows nested condensing and multiple truncations to work correctly - rewinding past the
+	 * second condense restores visibility of messages condensed by it, while keeping the first condense intact.
+	 * Same applies to truncation markers.
 	 */
 	const removeMessagesThisAndSubsequent = async (
 		currentCline: any,
 		messageIndex: number,
 		apiConversationHistoryIndex: number,
 	) => {
-		// Delete this message and all that follow
+		// Step 1: Collect condenseIds from condense_context messages being removed.
+		// These IDs link clineMessages to their corresponding Summaries in apiConversationHistory.
+		const removedCondenseIds = new Set<string>()
+		// Step 1b: Collect truncationIds from sliding_window_truncation messages being removed.
+		// These IDs link clineMessages to their corresponding truncation markers in apiConversationHistory.
+		const removedTruncationIds = new Set<string>()
+
+		for (let i = messageIndex; i < currentCline.clineMessages.length; i++) {
+			const msg = currentCline.clineMessages[i]
+			if (msg.say === "condense_context" && msg.contextCondense?.condenseId) {
+				removedCondenseIds.add(msg.contextCondense.condenseId)
+			}
+			if (msg.say === "sliding_window_truncation" && msg.contextTruncation?.truncationId) {
+				removedTruncationIds.add(msg.contextTruncation.truncationId)
+			}
+		}
+
+		// Step 2: Delete this message and all that follow
 		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
 
 		if (apiConversationHistoryIndex !== -1) {
-			await currentCline.overwriteApiConversationHistory(
-				currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex),
-			)
+			// Step 3: Truncate API history by timestamp/index
+			let truncatedApiHistory = currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex)
+
+			// Step 4: Remove Summaries whose condenseId was in a removed condense_context message.
+			// This handles the case where Summary.ts < truncation point but condense_context.ts > truncation point.
+			// Without this, the Summary would survive truncation but its corresponding UI event would be gone.
+			if (removedCondenseIds.size > 0) {
+				truncatedApiHistory = truncatedApiHistory.filter((msg: ApiMessage) => {
+					if (msg.isSummary && msg.condenseId && removedCondenseIds.has(msg.condenseId)) {
+						console.log(
+							`[removeMessagesThisAndSubsequent] Removing orphaned Summary with condenseId=${msg.condenseId}`,
+						)
+						return false
+					}
+					return true
+				})
+			}
+
+			// Step 4b: Remove truncation markers whose truncationId was in a removed sliding_window_truncation message.
+			// Same logic as condense - without this, the marker would survive but its UI event would be gone.
+			if (removedTruncationIds.size > 0) {
+				truncatedApiHistory = truncatedApiHistory.filter((msg: ApiMessage) => {
+					if (msg.isTruncationMarker && msg.truncationId && removedTruncationIds.has(msg.truncationId)) {
+						console.log(
+							`[removeMessagesThisAndSubsequent] Removing orphaned truncation marker with truncationId=${msg.truncationId}`,
+						)
+						return false
+					}
+					return true
+				})
+			}
+
+			// Step 5: Clean up orphaned condenseParent and truncationParent references for messages whose
+			// summary or truncation marker was removed by the truncation. Summaries, truncation markers, and messages
+			// from earlier condense/truncation operations are preserved.
+			const cleanedApiHistory = cleanupAfterTruncation(truncatedApiHistory)
+
+			await currentCline.overwriteApiConversationHistory(cleanedApiHistory)
 		}
 	}
 

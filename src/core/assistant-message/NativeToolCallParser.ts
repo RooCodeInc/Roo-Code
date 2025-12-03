@@ -371,28 +371,6 @@ export class NativeToolCallParser {
 				}
 				break
 
-			case "insert_content":
-				// For partial tool calls, we build nativeArgs incrementally as fields arrive.
-				// Unlike parseToolCall which validates all required fields, partial parsing
-				// needs to show progress as each field streams in.
-				if (
-					partialArgs.path !== undefined ||
-					partialArgs.line !== undefined ||
-					partialArgs.content !== undefined
-				) {
-					nativeArgs = {
-						path: partialArgs.path,
-						line:
-							typeof partialArgs.line === "number"
-								? partialArgs.line
-								: partialArgs.line !== undefined
-									? parseInt(String(partialArgs.line), 10)
-									: undefined,
-						content: partialArgs.content,
-					}
-				}
-				break
-
 			case "write_to_file":
 				if (partialArgs.path || partialArgs.content) {
 					nativeArgs = {
@@ -614,16 +592,6 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							cwd: args.cwd,
-						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "insert_content":
-					if (args.path !== undefined && args.line !== undefined && args.content !== undefined) {
-						nativeArgs = {
-							path: args.path,
-							line: typeof args.line === "number" ? args.line : parseInt(String(args.line), 10),
-							content: args.content,
 						} as NativeArgsFor<TName>
 					}
 					break

@@ -102,7 +102,7 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					inputPrice: 0,
 					outputPrice: 0,
 				},
-				"minimax/minimax-m2": {
+				"minimax/minimax-m2:free": {
 					maxTokens: 32_768,
 					contextWindow: 1_000_000,
 					supportsImages: false,
@@ -425,12 +425,12 @@ describe("RooHandler", () => {
 			}
 		})
 
-		it("should apply defaultToolProtocol: native for minimax/minimax-m2", () => {
+		it("should apply defaultToolProtocol: native for minimax/minimax-m2:free", () => {
 			const handlerWithMinimax = new RooHandler({
-				apiModelId: "minimax/minimax-m2",
+				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
-			expect(modelInfo.id).toBe("minimax/minimax-m2")
+			expect(modelInfo.id).toBe("minimax/minimax-m2:free")
 			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
 			// Verify cached model info is preserved
 			expect(modelInfo.info.maxTokens).toBe(32_768)
@@ -451,7 +451,7 @@ describe("RooHandler", () => {
 
 		it("should not override existing properties when applying MODEL_DEFAULTS", () => {
 			const handlerWithMinimax = new RooHandler({
-				apiModelId: "minimax/minimax-m2",
+				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
 			// The defaults should be merged, but not overwrite existing cached values
