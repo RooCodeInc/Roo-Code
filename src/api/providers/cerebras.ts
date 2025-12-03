@@ -16,6 +16,16 @@ import { t } from "../../i18n"
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
 
+/**
+ * Conservative max_tokens for Cerebras to avoid premature rate limiting.
+ * Cerebras rate limiter estimates token consumption using max_completion_tokens upfront,
+ * so requesting the model maximum (e.g., 64K) reserves that quota even if actual usage is low.
+ * 8K is sufficient for most agentic tool use while preserving rate limit headroom.
+ */
+const CEREBRAS_DEFAULT_MAX_TOKENS = 8_192
+const CEREBRAS_INTEGRATION_HEADER = "X-Cerebras-3rd-Party-Integration"
+const CEREBRAS_INTEGRATION_NAME = "roocode"
+
 export class CerebrasHandler extends BaseProvider implements SingleCompletionHandler {
 	private apiKey: string
 	private providerModels: typeof cerebrasModels
@@ -105,12 +115,14 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		const openaiMessages = convertToOpenAiMessages(messages)
 
 		// Prepare request body following Cerebras API specification exactly
+		// Use conservative default to avoid premature rate limiting (Cerebras reserves quota upfront)
+		const effectiveMaxTokens = Math.min(max_tokens || CEREBRAS_DEFAULT_MAX_TOKENS, CEREBRAS_DEFAULT_MAX_TOKENS)
 		const requestBody: Record<string, any> = {
 			model,
 			messages: [{ role: "system", content: systemPrompt }, ...openaiMessages],
 			stream: true,
 			// Use max_completion_tokens (Cerebras-specific parameter)
-			...(max_tokens && max_tokens > 0 && max_tokens <= 32768 ? { max_completion_tokens: max_tokens } : {}),
+			...(effectiveMaxTokens > 0 ? { max_completion_tokens: effectiveMaxTokens } : {}),
 			// Clamp temperature to Cerebras range (0 to 1.5)
 			...(temperature !== undefined && temperature !== CEREBRAS_DEFAULT_TEMPERATURE
 				? {
@@ -130,6 +142,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
+					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})
@@ -291,6 +304,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
+					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})
