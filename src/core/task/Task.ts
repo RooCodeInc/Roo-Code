@@ -3366,6 +3366,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 		const useNativeTools = isNativeProtocol(protocol)
 
+		// Send condenseTaskContextStarted to show in-progress indicator
+		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await manageContext({
 			messages: this.apiConversationHistory,
@@ -3405,6 +3408,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				truncationId: truncateResult.truncationId,
 				messagesRemoved: truncateResult.messagesRemoved ?? 0,
 				prevContextTokens: truncateResult.prevContextTokens,
+				newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
 			}
 			await this.say(
 				"sliding_window_truncation",
@@ -3418,6 +3422,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				contextTruncation,
 			)
 		}
+
+		// Notify webview that context management is complete (removes in-progress spinner)
+		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
 	}
 
 	public async *attemptApiRequest(retryAttempt: number = 0): ApiStream {
@@ -3505,6 +3512,45 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const protocol = resolveToolProtocol(this.apiConfiguration, modelInfoForProtocol)
 			const useNativeTools = isNativeProtocol(protocol)
 
+			// Check if context management will likely run (threshold check)
+			// This allows us to show an in-progress indicator to the user
+			// Important: Match the exact calculation from manageContext to avoid threshold mismatch
+			// manageContext uses: prevContextTokens = totalTokens + lastMessageTokens
+			const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
+			const lastMessageContent = lastMessage?.content
+			let lastMessageTokens = 0
+			if (lastMessageContent) {
+				lastMessageTokens = Array.isArray(lastMessageContent)
+					? await this.api.countTokens(lastMessageContent)
+					: await this.api.countTokens([{ type: "text", text: lastMessageContent as string }])
+			}
+			const prevContextTokens = contextTokens + lastMessageTokens
+			const estimatedUsagePercent = (100 * prevContextTokens) / contextWindow
+
+			// Match manageContext's threshold logic
+			const profileThresholdSettings = profileThresholds[currentProfileId] as
+				| { autoCondenseContextPercent?: number }
+				| undefined
+			const effectiveThreshold =
+				profileThresholdSettings?.autoCondenseContextPercent ?? autoCondenseContextPercent
+
+			// Calculate allowedTokens the same way manageContext does
+			const TOKEN_BUFFER_PERCENTAGE = 0.1
+			const reservedTokens = maxTokens ?? 8192 // ANTHROPIC_DEFAULT_MAX_TOKENS
+			const allowedTokens = contextWindow * (1 - TOKEN_BUFFER_PERCENTAGE) - reservedTokens
+
+			// Match manageContext's condition: contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens
+			const willManageContext = estimatedUsagePercent >= effectiveThreshold || prevContextTokens > allowedTokens
+
+			// Send condenseTaskContextStarted BEFORE manageContext to show in-progress indicator
+			// This notification must be sent here (not earlier) because the early check uses stale token count
+			// (before user message is added to history), which could incorrectly skip showing the indicator
+			if (willManageContext && autoCondenseContext) {
+				await this.providerRef
+					.deref()
+					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
+			}
+
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
 				totalTokens: contextTokens,
@@ -3551,6 +3597,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					truncationId: truncateResult.truncationId,
 					messagesRemoved: truncateResult.messagesRemoved ?? 0,
 					prevContextTokens: truncateResult.prevContextTokens,
+					newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
 				}
 				await this.say(
 					"sliding_window_truncation",
@@ -3563,6 +3610,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					undefined /* contextCondense */,
 					contextTruncation,
 				)
+			}
+
+			// Notify webview that context management is complete (sets isCondensing = false)
+			// This removes the in-progress spinner and allows the completed result to show
+			if (willManageContext && autoCondenseContext) {
+				await this.providerRef
+					.deref()
+					?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
 			}
 		}
 
