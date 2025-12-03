@@ -2,6 +2,10 @@ import type OpenAI from "openai"
 
 const BROWSER_ACTION_DESCRIPTION = `Request to interact with a Puppeteer-controlled browser. Every action, except close, will be responded to with a screenshot of the browser's current state, along with any new console logs. You may only perform one browser action per message, and wait for the user's response including a screenshot and logs to determine the next action.
 
+This tool is particularly useful for web development tasks as it allows you to launch a browser, navigate to pages, interact with elements through clicks and keyboard input, and capture the results through screenshots and console logs. Use it at key stages of web development tasks - such as after implementing new features, making substantial changes, when troubleshooting issues, or to verify the result of your work. Analyze the provided screenshots to ensure correct rendering or identify errors, and review console logs for runtime issues.
+
+The user may ask generic non-development tasks (such as "what's the latest news" or "look up the weather"), in which case you might use this tool to complete the task if it makes sense to do so, rather than trying to create a website or using curl to answer the question. However, if an available MCP server tool or resource can be used instead, you should prefer to use it over browser_action.
+
 Browser Session Lifecycle:
 - Browser sessions start with launch and end with close
 - The session remains active across multiple messages and tool uses
