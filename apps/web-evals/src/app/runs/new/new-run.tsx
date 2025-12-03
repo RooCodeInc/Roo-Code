@@ -649,12 +649,12 @@ export function NewRun() {
 											</TooltipTrigger>
 											<TooltipContent side="right" className="max-w-xs">
 												<p>
-													If you have access to the Roo Code Cloud repository, generate a
-													token with:
+													If you have access to the Roo Code Cloud repository and the
+													decryption key for the .env.* files, generate a token with:
 												</p>
 												<code className="text-xs block mt-1">
-													pnpm --filter @roo-code-cloud/auth production:create-job-token [org]
-													[timeout]
+													pnpm --filter @roo-code-cloud/auth production:create-auth-token
+													[email] [org] [ttl]
 												</code>
 											</TooltipContent>
 										</Tooltip>
