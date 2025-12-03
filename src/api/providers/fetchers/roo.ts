@@ -11,6 +11,8 @@ import { DEFAULT_HEADERS } from "../constants"
 export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
 	"minimax/minimax-m2:free": {
 		defaultToolProtocol: "native",
+		includedTools: ["search_and_replace"],
+		excludedTools: ["apply_diff"],
 	},
 	"anthropic/claude-haiku-4.5": {
 		defaultToolProtocol: "native",
