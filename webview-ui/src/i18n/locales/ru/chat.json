@@ -307,11 +307,20 @@
 		"thinking": "Обдумывание",
 		"seconds": "{{count}}с"
 	},
-	"contextCondense": {
-		"title": "Контекст сжат",
-		"condensing": "Сжатие контекста...",
-		"errorHeader": "Не удалось сжать контекст",
-		"tokens": "токены"
+	"contextManagement": {
+		"tokens": "токены",
+		"condensation": {
+			"title": "Контекст сжат",
+			"inProgress": "Сжатие контекста...",
+			"errorHeader": "Не удалось сжать контекст"
+		},
+		"truncation": {
+			"title": "Контекст усечён",
+			"inProgress": "Усечение контекста...",
+			"messagesRemoved": "{{count}} сообщение удалено",
+			"messagesRemoved_other": "{{count}} сообщений удалено",
+			"description": "Более старые сообщения были удалены из разговора, чтобы остаться в пределах контекстного окна. Это быстрый, но менее сохраняющий контекст подход по сравнению со сжатием."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Скопировать во ввод (то же, что shift + клик)",

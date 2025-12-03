@@ -283,11 +283,20 @@
 		"thinking": "Myślenie",
 		"seconds": "{{count}} s"
 	},
-	"contextCondense": {
-		"title": "Kontekst skondensowany",
-		"condensing": "Kondensowanie kontekstu...",
-		"errorHeader": "Nie udało się skondensować kontekstu",
-		"tokens": "tokeny"
+	"contextManagement": {
+		"tokens": "tokeny",
+		"condensation": {
+			"title": "Kontekst skondensowany",
+			"inProgress": "Kondensowanie kontekstu...",
+			"errorHeader": "Nie udało się skondensować kontekstu"
+		},
+		"truncation": {
+			"title": "Kontekst obcięty",
+			"inProgress": "Obcinanie kontekstu...",
+			"messagesRemoved": "{{count}} wiadomość usunięta",
+			"messagesRemoved_other": "{{count}} wiadomości usunięte",
+			"description": "Starsze wiadomości zostały usunięte z konwersacji, aby pozostać w granicach okna kontekstu. To szybsze, ale mniej zachowujące kontekst podejście w porównaniu z kondensacją."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiuj do pola wprowadzania (lub Shift + kliknięcie)",

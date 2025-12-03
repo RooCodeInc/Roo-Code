@@ -284,11 +284,20 @@
 		"thinking": "Düşünüyor",
 		"seconds": "{{count}}sn"
 	},
-	"contextCondense": {
-		"title": "Bağlam Özetlendi",
-		"condensing": "Bağlam yoğunlaştırılıyor...",
-		"errorHeader": "Bağlam yoğunlaştırılamadı",
-		"tokens": "token"
+	"contextManagement": {
+		"tokens": "token",
+		"condensation": {
+			"title": "Bağlam Özetlendi",
+			"inProgress": "Bağlam yoğunlaştırılıyor...",
+			"errorHeader": "Bağlam yoğunlaştırılamadı"
+		},
+		"truncation": {
+			"title": "Bağlam Kısaltıldı",
+			"inProgress": "Bağlam kısaltılıyor...",
+			"messagesRemoved": "{{count}} mesaj kaldırıldı",
+			"messagesRemoved_other": "{{count}} mesaj kaldırıldı",
+			"description": "Bağlam penceresi sınırında kalmak için eski mesajlar konuşmadan kaldırıldı. Bu, yoğunlaştırmaya kıyasla hızlı ancak daha az bağlam koruyucu bir yaklaşımdır."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Giriş alanına kopyala (veya Shift + tıklama)",

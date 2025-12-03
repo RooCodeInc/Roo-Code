@@ -283,11 +283,20 @@
 		"thinking": "Sto pensando",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Contesto condensato",
-		"condensing": "Condensazione del contesto...",
-		"errorHeader": "Impossibile condensare il contesto",
-		"tokens": "token"
+	"contextManagement": {
+		"tokens": "token",
+		"condensation": {
+			"title": "Contesto condensato",
+			"inProgress": "Condensazione del contesto...",
+			"errorHeader": "Impossibile condensare il contesto"
+		},
+		"truncation": {
+			"title": "Contesto troncato",
+			"inProgress": "Troncamento del contesto...",
+			"messagesRemoved": "{{count}} messaggio rimosso",
+			"messagesRemoved_other": "{{count}} messaggi rimossi",
+			"description": "I messaggi più vecchi sono stati rimossi dalla conversazione per rimanere entro il limite della finestra di contesto. Questo è un approccio veloce ma meno conservativo del contesto rispetto alla condensazione."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copia nell'input (o Shift + clic)",
