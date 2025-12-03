@@ -104,7 +104,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
-			...(metadata?.tools && { tools: metadata.tools }),
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
