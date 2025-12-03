@@ -283,11 +283,20 @@
 		"thinking": "생각 중",
 		"seconds": "{{count}}초"
 	},
-	"contextCondense": {
-		"title": "컨텍스트 요약됨",
-		"condensing": "컨텍스트 압축 중...",
-		"errorHeader": "컨텍스트 압축 실패",
-		"tokens": "토큰"
+	"contextManagement": {
+		"tokens": "토큰",
+		"condensation": {
+			"title": "컨텍스트 요약됨",
+			"inProgress": "컨텍스트 압축 중...",
+			"errorHeader": "컨텍스트 압축 실패"
+		},
+		"truncation": {
+			"title": "컨텍스트 잘림",
+			"inProgress": "컨텍스트 자르는 중...",
+			"messagesRemoved": "{{count}}개 메시지 제거됨",
+			"messagesRemoved_other": "{{count}}개 메시지 제거됨",
+			"description": "컨텍스트 윈도우 제한 내에 유지하기 위해 대화에서 오래된 메시지가 제거되었습니다. 이것은 압축에 비해 빠르지만 컨텍스트 보존 능력이 낮은 접근 방식입니다."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "입력창에 복사 (또는 Shift + 클릭)",

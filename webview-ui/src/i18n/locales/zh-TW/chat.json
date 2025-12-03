@@ -174,11 +174,20 @@
 		},
 		"current": "目前"
 	},
-	"contextCondense": {
-		"title": "上下文已壓縮",
-		"condensing": "正在壓縮上下文...",
-		"errorHeader": "壓縮上下文失敗",
-		"tokens": "Token"
+	"contextManagement": {
+		"tokens": "Token",
+		"condensation": {
+			"title": "上下文已壓縮",
+			"inProgress": "正在壓縮上下文...",
+			"errorHeader": "壓縮上下文失敗"
+		},
+		"truncation": {
+			"title": "上下文已截斷",
+			"inProgress": "正在截斷上下文...",
+			"messagesRemoved": "已移除 {{count}} 則訊息",
+			"messagesRemoved_other": "已移除 {{count}} 則訊息",
+			"description": "為保持在上下文視窗限制內，已從對話中移除較舊的訊息。與壓縮相比，這是一種快速但上下文保留較少的方法。"
+		}
 	},
 	"instructions": {
 		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
