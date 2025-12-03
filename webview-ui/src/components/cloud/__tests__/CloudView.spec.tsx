@@ -10,12 +10,15 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"cloud:title": "Cloud",
 				"settings:common.done": "Done",
 				"cloud:signIn": "Connect to Roo Code Cloud",
-				"cloud:cloudBenefitsTitle": "Connect to Roo Code Cloud",
-				"cloud:cloudBenefitSharing": "Share tasks with others",
-				"cloud:cloudBenefitHistory": "Access your task history",
+				"cloud:cloudBenefitsTitle": "Try Roo Code Cloud",
+				"cloud:cloudBenefitProvider": "Access free and paid models that work great with Roo",
+				"cloud:cloudBenefitCloudAgents": "Give tasks to autonomous Cloud agents",
+				"cloud:cloudBenefitTriggers": "Get code reviews on Github, start tasks from Slack and more",
+				"cloud:cloudBenefitWalkaway": "Follow and control tasks from anywhere (including your phone)",
+				"cloud:cloudBenefitHistory": "Access your task history from anywhere and share them with others",
 				"cloud:cloudBenefitMetrics": "Get a holistic view of your token consumption",
 				"cloud:logOut": "Log out",
-				"cloud:connect": "Connect Now",
+				"cloud:connect": "Get started",
 				"cloud:visitCloudWebsite": "Visit Roo Code Cloud",
 				"cloud:taskSync": "Task sync",
 				"cloud:taskSyncDescription": "Sync your tasks for viewing and sharing on Roo Code Cloud",
@@ -72,13 +75,18 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={null} isAuthenticated={false} cloudApiUrl="https://app.roocode.com" />)
 
 		// Check that the benefits section is displayed
-		expect(screen.getByRole("heading", { name: "Connect to Roo Code Cloud" })).toBeInTheDocument()
-		expect(screen.getByText("Share tasks with others")).toBeInTheDocument()
-		expect(screen.getByText("Access your task history")).toBeInTheDocument()
+		expect(screen.getByRole("heading", { name: "Try Roo Code Cloud" })).toBeInTheDocument()
+		expect(screen.getByText("Access free and paid models that work great with Roo")).toBeInTheDocument()
+		expect(screen.getByText("Give tasks to autonomous Cloud agents")).toBeInTheDocument()
+		expect(screen.getByText("Get code reviews on Github, start tasks from Slack and more")).toBeInTheDocument()
+		expect(screen.getByText("Follow and control tasks from anywhere (including your phone)")).toBeInTheDocument()
+		expect(
+			screen.getByText("Access your task history from anywhere and share them with others"),
+		).toBeInTheDocument()
 		expect(screen.getByText("Get a holistic view of your token consumption")).toBeInTheDocument()
 
 		// Check that the connect button is also present
-		expect(screen.getByText("Connect Now")).toBeInTheDocument()
+		expect(screen.getByRole("button", { name: "Get started" })).toBeInTheDocument()
 	})
 
 	it("should not display benefits when user is authenticated", () => {
@@ -90,11 +98,17 @@ describe("CloudView", () => {
 		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
 
 		// Check that the benefits section is NOT displayed
+		expect(screen.queryByText("Access free and paid models that work great with Roo")).not.toBeInTheDocument()
+		expect(screen.queryByText("Give tasks to autonomous Cloud agents")).not.toBeInTheDocument()
 		expect(
-			screen.queryByText("Follow and control tasks from anywhere with Roomote Control"),
+			screen.queryByText("Get code reviews on Github, start tasks from Slack and more"),
 		).not.toBeInTheDocument()
-		expect(screen.queryByText("Share tasks with others")).not.toBeInTheDocument()
-		expect(screen.queryByText("Access your task history")).not.toBeInTheDocument()
+		expect(
+			screen.queryByText("Follow and control tasks from anywhere (including your phone)"),
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByText("Access your task history from anywhere and share them with others"),
+		).not.toBeInTheDocument()
 		expect(screen.queryByText("Get a holistic view of your token consumption")).not.toBeInTheDocument()
 
 		// Check that user info is displayed instead
