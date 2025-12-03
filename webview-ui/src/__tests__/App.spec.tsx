@@ -2,17 +2,8 @@
 
 import React from "react"
 import { render, screen, act, cleanup } from "@/utils/test-utils"
-import posthog from "posthog-js"
 
 import AppWithProviders from "../App"
-
-// Mock posthog
-vi.mock("posthog-js", () => ({
-	default: {
-		onFeatureFlags: vi.fn(),
-		getFeatureFlag: vi.fn(),
-	},
-}))
 
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
@@ -69,23 +60,15 @@ vi.mock("@src/components/history/HistoryView", () => ({
 
 vi.mock("@src/components/mcp/McpView", () => ({
 	__esModule: true,
-	default: function McpView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="mcp-view" onClick={onDone}>
-				MCP View
-			</div>
-		)
+	default: function McpView() {
+		return <div data-testid="mcp-view">MCP View</div>
 	},
 }))
 
 vi.mock("@src/components/modes/ModesView", () => ({
 	__esModule: true,
-	default: function ModesView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="prompts-view" onClick={onDone}>
-				Modes View
-			</div>
-		)
+	default: function ModesView() {
+		return <div data-testid="prompts-view">Modes View</div>
 	},
 }))
 
@@ -100,12 +83,8 @@ vi.mock("@src/components/marketplace/MarketplaceView", () => ({
 }))
 
 vi.mock("@src/components/cloud/CloudView", () => ({
-	CloudView: function CloudView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="cloud-view" onClick={onDone}>
-				Cloud View
-			</div>
-		)
+	CloudView: function CloudView() {
+		return <div data-testid="cloud-view">Cloud View</div>
 	},
 }))
 
@@ -253,34 +232,6 @@ describe("App", () => {
 		expect(chatView.getAttribute("data-hidden")).toBe("true")
 	})
 
-	it("switches to MCP view when receiving mcpButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("mcpButtonClicked")
-		})
-
-		const mcpView = await screen.findByTestId("mcp-view")
-		expect(mcpView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
-	it("switches to prompts view when receiving promptsButtonClicked action", async () => {
-		render(<AppWithProviders />)
-
-		act(() => {
-			triggerMessage("promptsButtonClicked")
-		})
-
-		const promptsView = await screen.findByTestId("prompts-view")
-		expect(promptsView).toBeInTheDocument()
-
-		const chatView = screen.getByTestId("chat-view")
-		expect(chatView.getAttribute("data-hidden")).toBe("true")
-	})
-
 	it("returns to chat view when clicking done in settings view", async () => {
 		render(<AppWithProviders />)
 
@@ -299,7 +250,7 @@ describe("App", () => {
 		expect(screen.queryByTestId("settings-view")).not.toBeInTheDocument()
 	})
 
-	it.each(["history", "mcp", "prompts"])("returns to chat view when clicking done in %s view", async (view) => {
+	it.each(["history"])("returns to chat view when clicking done in %s view", async (view) => {
 		render(<AppWithProviders />)
 
 		act(() => {
@@ -347,55 +298,5 @@ describe("App", () => {
 		const chatView = screen.getByTestId("chat-view")
 		expect(chatView.getAttribute("data-hidden")).toBe("false")
 		expect(screen.queryByTestId("marketplace-view")).not.toBeInTheDocument()
-	})
-
-	describe("PostHog feature flag initialization", () => {
-		it("waits for state hydration before checking feature flags", () => {
-			mockUseExtensionState.mockReturnValue({
-				didHydrateState: false,
-				showWelcome: false,
-				shouldShowAnnouncement: false,
-				experiments: {},
-				language: "en",
-				telemetrySetting: "enabled",
-			})
-
-			render(<AppWithProviders />)
-
-			// PostHog feature flag check should not be called before hydration
-			expect(posthog.onFeatureFlags).not.toHaveBeenCalled()
-		})
-
-		it("checks feature flags after state hydration when telemetry is enabled", () => {
-			mockUseExtensionState.mockReturnValue({
-				didHydrateState: true,
-				showWelcome: false,
-				shouldShowAnnouncement: false,
-				experiments: {},
-				language: "en",
-				telemetrySetting: "enabled",
-			})
-
-			render(<AppWithProviders />)
-
-			// PostHog feature flag check should be called after hydration
-			expect(posthog.onFeatureFlags).toHaveBeenCalled()
-		})
-
-		it("does not check feature flags when telemetry is disabled", () => {
-			mockUseExtensionState.mockReturnValue({
-				didHydrateState: true,
-				showWelcome: false,
-				shouldShowAnnouncement: false,
-				experiments: {},
-				language: "en",
-				telemetrySetting: "disabled",
-			})
-
-			render(<AppWithProviders />)
-
-			// PostHog feature flag check should not be called when telemetry is disabled
-			expect(posthog.onFeatureFlags).not.toHaveBeenCalled()
-		})
 	})
 })

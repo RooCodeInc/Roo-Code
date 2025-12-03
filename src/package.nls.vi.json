@@ -19,9 +19,7 @@
 	"views.contextMenu.label": "Roo Code",
 	"views.terminalMenu.label": "Roo Code",
 	"views.sidebar.name": "Roo Code",
-	"command.mcpServers.title": "Máy Chủ MCP",
-	"command.prompts.title": "Chế Độ",
-	"command.history.title": "Lịch Sử",
+	"command.history.title": "Lịch Sử Tác Vụ",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Mở trong Trình Soạn Thảo",
 	"command.cloud.title": "Cloud",
@@ -43,5 +41,6 @@
 	"settings.useAgentRules.description": "Bật tải tệp AGENTS.md cho các quy tắc dành riêng cho tác nhân (xem https://agent-rules.org/)",
 	"settings.apiRequestTimeout.description": "Thời gian tối đa tính bằng giây để đợi phản hồi API (0 = không có thời gian chờ, 1-3600 giây, mặc định: 600 giây). Nên sử dụng các giá trị cao hơn cho các nhà cung cấp cục bộ như LM Studio và Ollama có thể cần thêm thời gian xử lý.",
 	"settings.newTaskRequireTodos.description": "Yêu cầu tham số todos khi tạo nhiệm vụ mới với công cụ new_task",
-	"settings.codeIndex.embeddingBatchSize.description": "Kích thước lô cho các hoạt động nhúng trong quá trình lập chỉ mục mã. Điều chỉnh điều này dựa trên giới hạn của nhà cung cấp API của bạn. Mặc định là 60."
+	"settings.codeIndex.embeddingBatchSize.description": "Kích thước lô cho các hoạt động nhúng trong quá trình lập chỉ mục mã. Điều chỉnh điều này dựa trên giới hạn của nhà cung cấp API của bạn. Mặc định là 60.",
+	"settings.debug.description": "Bật chế độ gỡ lỗi để hiển thị các nút bổ sung để xem lịch sử hội thoại API và thông điệp giao diện người dùng dưới dạng JSON được định dạng trong các tệp tạm thời."
 }

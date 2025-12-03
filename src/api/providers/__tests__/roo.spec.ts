@@ -304,7 +304,11 @@ describe("RooHandler", () => {
 						expect.objectContaining({ role: "user", content: "Second message" }),
 					]),
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 	})
@@ -469,7 +473,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					temperature: 0.7,
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -487,7 +495,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					temperature: 0.9,
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -572,7 +584,11 @@ describe("RooHandler", () => {
 					stream_options: { include_usage: true },
 					reasoning: { enabled: false },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -590,7 +606,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					reasoning: { enabled: false },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -608,7 +628,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					reasoning: { enabled: true, effort: "low" },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -626,7 +650,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					reasoning: { enabled: true, effort: "medium" },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -644,7 +672,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					reasoning: { enabled: true, effort: "high" },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 
@@ -679,7 +711,11 @@ describe("RooHandler", () => {
 				expect.objectContaining({
 					reasoning: { enabled: false },
 				}),
-				undefined,
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
 			)
 		})
 	})

@@ -15,8 +15,6 @@ suite("Roo Code Extension", function () {
 			"SidebarProvider.removeView",
 			"activationCompleted",
 			"plusButtonClicked",
-			"mcpButtonClicked",
-			"promptsButtonClicked",
 			"popoutButtonClicked",
 			"openInNewTab",
 			"settingsButtonClicked",

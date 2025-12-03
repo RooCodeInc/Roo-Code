@@ -39,7 +39,6 @@ export const toolParamNames = [
 	"command",
 	"path",
 	"content",
-	"line_count",
 	"regex",
 	"file_pattern",
 	"recursive",
@@ -72,6 +71,7 @@ export const toolParamNames = [
 	"image",
 	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
+	"patch", // apply_patch parameter
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -90,6 +90,7 @@ export type NativeToolArgs = {
 	insert_content: { path: string; line: number; content: string }
 	apply_diff: { path: string; diff: string }
 	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
+	apply_patch: { patch: string }
 	ask_followup_question: {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
@@ -104,7 +105,7 @@ export type NativeToolArgs = {
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
-	write_to_file: { path: string; content: string; line_count: number }
+	write_to_file: { path: string; content: string }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -162,7 +163,7 @@ export interface FetchInstructionsToolUse extends ToolUse<"fetch_instructions"> 
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
 	name: "write_to_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "line_count">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
 }
 
 export interface InsertCodeBlockToolUse extends ToolUse<"insert_content"> {
@@ -249,6 +250,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	write_to_file: "write files",
 	apply_diff: "apply changes",
 	search_and_replace: "apply changes using search and replace",
+	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
 	list_code_definition_names: "list definitions",
@@ -280,7 +282,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "insert_content", "generate_image"],
-		customTools: ["search_and_replace"],
+		customTools: ["search_and_replace", "apply_patch"],
 	},
 	browser: {
 		tools: ["browser_action"],

@@ -1,5 +1,51 @@
 # Roo Code Changelog
 
+## [3.35.4] - 2025-12-02
+
+- Fix: Handle malformed native tool calls to prevent hanging (PR #9758 by @daniel-lxs)
+- Fix: Remove reasoning toggles for GLM-4.5 and GLM-4.6 on z.ai provider (PR #9752 by @roomote)
+- Refactor: Remove line_count parameter from write_to_file tool (PR #9667 by @hannesrudolph)
+
+## [3.35.3] - 2025-12-02
+
+- Switch to new welcome view for improved onboarding experience (PR #9741 by @mrubens)
+- Update homepage with latest changes (PR #9675 by @brunobergher)
+- Improve privacy for stealth models by adding vendor confidentiality section to system prompt (PR #9742 by @mrubens)
+
+## [3.35.2] - 2025-12-01
+
+![3.35.2 Release - Model Default Temperatures](/releases/3.35.2-release.png)
+
+- Allow models to contain default temperature settings for provider-specific optimal defaults (PR #9734 by @mrubens)
+- Add tag-based native tool calling detection for Roo provider models (PR #9735 by @mrubens)
+- Enable native tool support for all LiteLLM models by default (PR #9736 by @mrubens)
+- Pass app version to provider for improved request tracking (PR #9730 by @cte)
+
+## [3.35.1] - 2025-12-01
+
+- Fix: Flush pending tool results before task delegation (PR #9726 by @daniel-lxs)
+- Improve: Better IPC error logging for easier debugging (PR #9727 by @cte)
+
+## [3.35.0] - 2025-12-01
+
+![3.35.0 Release - Subtasks & Native Tools](/releases/3.35.0-release.png)
+
+- Metadata-driven subtasks with automatic parent resume and single-open safety for improved task orchestration (#8081 by @hannesrudolph, PR #9090 by @hannesrudolph)
+- Native tool calling support expanded across many providers: Bedrock (PR #9698 by @mrubens), Cerebras (PR #9692 by @mrubens), Chutes with auto-detection from API (PR #9715 by @daniel-lxs), DeepInfra (PR #9691 by @mrubens), DeepSeek and Doubao (PR #9671 by @daniel-lxs), Groq (PR #9673 by @daniel-lxs), LiteLLM (PR #9719 by @daniel-lxs), Ollama (PR #9696 by @mrubens), OpenAI-compatible providers (PR #9676 by @daniel-lxs), Requesty (PR #9672 by @daniel-lxs), Unbound (PR #9699 by @mrubens), Vercel AI Gateway (PR #9697 by @mrubens), Vertex Gemini (PR #9678 by @daniel-lxs), and xAI with new Grok 4 Fast and Grok 4.1 Fast models (PR #9690 by @mrubens)
+- Fix: Preserve tool_use blocks in summary for parallel tool calls (#9700 by @SilentFlower, PR #9714 by @SilentFlower)
+- Default Grok Code Fast to native tools for better performance (PR #9717 by @mrubens)
+- UX improvements to the Roo Code Cloud provider-centric onboarding flow (PR #9709 by @brunobergher)
+- UX toolbar cleanup and settings consolidation for a cleaner interface (PR #9710 by @brunobergher)
+- Add model-specific tool customization via `excludedTools` and `includedTools` configuration (PR #9641 by @daniel-lxs)
+- Add new `apply_patch` native tool for more efficient file editing operations (PR #9663 by @hannesrudolph)
+- Add new `search_and_replace` tool for batch text replacements across files (PR #9549 by @hannesrudolph)
+- Add debug buttons to view API and UI history for troubleshooting (PR #9684 by @hannesrudolph)
+- Include tool format in environment details for better context awareness (PR #9661 by @mrubens)
+- Fix: Display install count in millions instead of thousands (PR #9677 by @app/roomote)
+- Web-evals improvements: add task log viewing, export failed logs, and new run options (PR #9637 by @hannesrudolph)
+- Web-evals updates: add kill run functionality (PR #9681 by @hannesrudolph)
+- Fix: Prevent navigation buttons from wrapping on smaller screens (PR #9721 by @app/roomote)
+
 ## [3.34.8] - 2025-11-27
 
 ![3.34.8 Release - Race Condition Fix](/releases/3.34.8-release.png)

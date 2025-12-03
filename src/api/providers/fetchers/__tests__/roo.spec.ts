@@ -77,6 +77,7 @@ describe("getRooModels", () => {
 				description: "Fast coding model",
 				deprecated: false,
 				isFree: false,
+				defaultToolProtocol: "native", // Applied from MODEL_DEFAULTS
 			},
 		})
 	})
@@ -476,5 +477,238 @@ describe("getRooModels", () => {
 		await expect(getRooModels(baseUrl, apiKey)).rejects.toThrow(
 			"Failed to fetch Roo Code Cloud models: No response from server",
 		)
+	})
+
+	it("should parse default_temperature from API response", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-with-temp",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Default Temperature",
+					description: "Model with custom default temperature",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					default_temperature: 0.6,
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-with-temp"].defaultTemperature).toBe(0.6)
+	})
+
+	it("should handle models without default_temperature", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-no-temp",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model without Default Temperature",
+					description: "Model without custom default temperature",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-no-temp"].defaultTemperature).toBeUndefined()
+	})
+
+	it("should set defaultToolProtocol to native when default-native-tools tag is present", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/native-tools-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Native Tools Model",
+					description: "Model with native tool calling default",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use", "default-native-tools"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/native-tools-model"].supportsNativeTools).toBe(true)
+		expect(models["test/native-tools-model"].defaultToolProtocol).toBe("native")
+	})
+
+	it("should imply supportsNativeTools when default-native-tools tag is present without tool-use tag", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/implicit-native-tools",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Implicit Native Tools Model",
+					description: "Model with default-native-tools but no tool-use tag",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["default-native-tools"], // Only default-native-tools, no tool-use
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/implicit-native-tools"].supportsNativeTools).toBe(true)
+		expect(models["test/implicit-native-tools"].defaultToolProtocol).toBe("native")
+	})
+
+	it("should not set defaultToolProtocol when default-native-tools tag is not present", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/non-native-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Non-Native Tools Model",
+					description: "Model without native tool calling default",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/non-native-model"].supportsNativeTools).toBe(true)
+		expect(models["test/non-native-model"].defaultToolProtocol).toBeUndefined()
+	})
+
+	it("should detect stealth mode from tags", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/stealth-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Stealth Model",
+					description: "Model with stealth mode",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["stealth"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/stealth-model"].isStealthModel).toBe(true)
+	})
+
+	it("should not set isStealthModel when stealth tag is absent", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/non-stealth-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Non-Stealth Model",
+					description: "Model without stealth mode",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/non-stealth-model"].isStealthModel).toBeUndefined()
 	})
 })

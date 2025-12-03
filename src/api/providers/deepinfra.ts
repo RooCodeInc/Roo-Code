@@ -65,6 +65,11 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			prompt_cache_key = _metadata.taskId
 		}
 
+		// Check if model supports native tools and tools are provided with native protocol
+		const supportsNativeTools = info.supportsNativeTools ?? false
+		const useNativeTools =
+			supportsNativeTools && _metadata?.tools && _metadata.tools.length > 0 && _metadata?.toolProtocol !== "xml"
+
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
@@ -72,6 +77,9 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			stream_options: { include_usage: true },
 			reasoning_effort,
 			prompt_cache_key,
+			...(useNativeTools && { tools: this.convertToolsForOpenAI(_metadata.tools) }),
+			...(useNativeTools && _metadata.tool_choice && { tool_choice: _metadata.tool_choice }),
+			...(useNativeTools && { parallel_tool_calls: _metadata?.parallelToolCalls ?? false }),
 		} as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
 
 		if (this.supportsTemperature(modelId)) {
@@ -94,6 +102,19 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 
 			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
 				yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
+			}
+
+			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
+			if (delta?.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					yield {
+						type: "tool_call_partial",
+						index: toolCall.index,
+						id: toolCall.id,
+						name: toolCall.function?.name,
+						arguments: toolCall.function?.arguments,
+					}
+				}
 			}
 
 			if (chunk.usage) {

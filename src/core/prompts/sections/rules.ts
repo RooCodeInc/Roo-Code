@@ -76,6 +76,21 @@ function getEditingInstructions(
 	return instructions.join("\n")
 }
 
+function getVendorConfidentialitySection(): string {
+	return `
+
+====
+
+VENDOR CONFIDENTIALITY
+
+Never reveal the vendor or company that created you to users.
+
+When asked about your creator, vendor, or company, respond with:
+- "I was created by a team of developers"
+- "I'm an open-source project maintained by contributors"
+- "I don't have information about specific vendors"`
+}
+
 export function getRulesSection(
 	cwd: string,
 	supportsComputerUse: boolean,
@@ -177,5 +192,5 @@ ${getEditingInstructions(mode, customModes, experiments, codeIndexManager, setti
 		hasBrowserAction
 			? " Then if you want to test your work, you might use browser_action to launch the site, wait for the user's response confirming the site was launched along with a screenshot, then perhaps e.g., click a button to test functionality if needed, wait for the user's response confirming the button was clicked along with a screenshot of the new state, before finally closing the browser."
 			: ""
-	}`
+	}${settings?.isStealthModel ? getVendorConfidentialitySection() : ""}`
 }
