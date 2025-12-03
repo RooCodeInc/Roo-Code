@@ -38,7 +38,7 @@ import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+import { ContextManagementRow } from "./context-management"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -1280,11 +1280,8 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "condense_context":
-					if (message.partial) {
-						return <CondensingContextRow />
-					}
-					return message.contextCondense ? <ContextCondenseRow {...message.contextCondense} /> : null
 				case "condense_context_error":
+<<<<<<< HEAD
 					return (
 						<ErrorRow
 							type="error"
@@ -1292,6 +1289,11 @@ export const ChatRowContent = ({
 							message={message.text || ""}
 						/>
 					)
+=======
+				case "sliding_window_truncation":
+					// All context management events are handled by the unified ContextManagementRow
+					return <ContextManagementRow message={message} />
+>>>>>>> d3d45744d5 (Refactor: Unified context-management architecture with improved UX)
 				case "codebase_search_result":
 					let parsed: {
 						content: {

@@ -180,6 +180,16 @@
 		"errorHeader": "Failed to condense context",
 		"tokens": "tokens"
 	},
+	"contextManagement": {
+		"truncating": "Truncating context...",
+		"truncation": {
+			"title": "Context Truncated",
+			"messagesRemoved": "{{count}} message removed",
+			"messagesRemoved_other": "{{count}} messages removed",
+			"previousTokens": "Previous token count",
+			"description": "Older messages were removed from the conversation to stay within the context window limit. This is a fast but less context-preserving approach compared to condensation."
+		}
+	},
 	"instructions": {
 		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"
 	},
