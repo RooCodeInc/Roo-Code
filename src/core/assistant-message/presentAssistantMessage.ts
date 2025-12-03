@@ -44,6 +44,105 @@ import { isNativeProtocol } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 /**
+ * Finds the correct tool_use_id from the last assistant message in API history.
+ * This is crucial for ensuring tool_result blocks match existing tool_use blocks,
+ * especially when editing messages in completed tasks.
+ *
+ * When a user edits a message in a completed task:
+ * 1. API history is truncated (keeping assistant's tool_use with id=A)
+ * 2. A new message flow may generate a different tool_use_id (id=B)
+ * 3. Without this fix, tool_result would use id=B but API history has id=A
+ * 4. This causes API errors: "unexpected tool_use_id found in tool_result blocks"
+ *
+ * @param task The Task instance containing API conversation history
+ * @param currentToolId The tool_use_id from the current streaming block
+ * @param toolName The name of the tool (used for matching when IDs don't match)
+ * @returns The correct tool_use_id to use in the tool_result
+ */
+export function getValidatedToolUseId(task: Task, currentToolId: string, toolName: string): string {
+	// Get API history first - this determines if we're in normal flow or edit flow
+	const apiHistory = task.apiConversationHistory
+	if (!apiHistory || apiHistory.length === 0) {
+		return currentToolId
+	}
+
+	// Check if we're in an EDIT scenario by looking at the last message in API history
+	// In edit scenario: last message is ASSISTANT with tool_use waiting for response
+	// In normal flow: last message is USER (the prompt that triggered this response)
+	const lastMessage = apiHistory[apiHistory.length - 1]
+
+	// If the last message is a USER message, this is normal flow
+	// The assistant message with tool_use will be added to history AFTER processing
+	if (lastMessage.role === "user") {
+		// Normal flow - use the current streaming ID
+		return currentToolId
+	}
+
+	// Last message is ASSISTANT - this might be an edit scenario
+	// The assistant message with tool_use is ALREADY in history
+	const assistantContent = lastMessage.content
+	if (!Array.isArray(assistantContent)) {
+		return currentToolId
+	}
+
+	const toolUseBlocks = assistantContent.filter(
+		(block): block is Anthropic.Messages.ToolUseBlock => block.type === "tool_use",
+	)
+
+	if (toolUseBlocks.length === 0) {
+		return currentToolId
+	}
+
+	// Check if the current tool_use_id already exists in the assistant message
+	const matchingById = toolUseBlocks.find((block) => block.id === currentToolId)
+	if (matchingById) {
+		// ID matches - use as-is (could be normal flow that just appended the message)
+		return currentToolId
+	}
+
+	// Current ID doesn't match any tool_use in the existing assistant message
+	// This indicates an EDIT scenario where:
+	// - API history has assistant message with tool_use id=A
+	// - A new ID was generated (currentToolId=B) during edit/reprocess
+	// - We need to use id=A to match the API history
+
+	// SAFETY CHECK: Only correct if there's exactly ONE unmatched tool_use
+	// Get tool_use_ids that already have tool_results in userMessageContent
+	const existingToolResultIds = new Set(
+		task.userMessageContent
+			.filter((block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result")
+			.map((block) => block.tool_use_id),
+	)
+
+	// Find tool_use blocks that don't have a corresponding tool_result yet
+	const unmatchedToolUses = toolUseBlocks.filter((block) => !existingToolResultIds.has(block.id))
+
+	if (unmatchedToolUses.length === 1) {
+		// Exactly one unmatched tool_use - this is a clear edit scenario
+		const correctId = unmatchedToolUses[0].id
+		console.log(
+			`[getValidatedToolUseId] Edit scenario detected: correcting tool_use_id from ${currentToolId} to ${correctId} for tool ${toolName}`,
+		)
+		return correctId
+	}
+
+	if (unmatchedToolUses.length > 1) {
+		// Multiple unmatched tool_use blocks - try to match by name
+		const matchingByName = unmatchedToolUses.filter((block) => block.name === toolName)
+		if (matchingByName.length === 1) {
+			const correctId = matchingByName[0].id
+			console.log(
+				`[getValidatedToolUseId] Edit scenario (name match): correcting tool_use_id from ${currentToolId} to ${correctId} for tool ${toolName}`,
+			)
+			return correctId
+		}
+	}
+
+	// Cannot safely determine the correct ID - return current and let API error naturally
+	return currentToolId
+}
+
+/**
  * Processes and presents assistant message content to the user interface.
  *
  * This function is the core message handling system that:
@@ -517,10 +616,15 @@ export async function presentAssistantMessage(cline: Task) {
 							"(tool did not return anything)"
 					}
 
+					// Validate and potentially correct the tool_use_id to ensure it matches
+					// the corresponding tool_use in the API history. This is crucial for
+					// message editing scenarios where IDs can get mismatched.
+					const validatedToolCallId = getValidatedToolUseId(cline, toolCallId, block.name)
+
 					// Add tool_result with text content only
 					cline.userMessageContent.push({
 						type: "tool_result",
-						tool_use_id: toolCallId,
+						tool_use_id: validatedToolCallId,
 						content: resultContent,
 					} as Anthropic.ToolResultBlockParam)
 
