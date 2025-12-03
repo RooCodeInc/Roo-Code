@@ -98,7 +98,7 @@ export const ErrorRow = memo(
 				case "api_failure":
 					return t("chat:apiRequest.failed")
 				case "api_req_retry_delayed":
-					return t("chat:apiRequest.errorTitle", { code: code ? ` · ${code}` : null })
+					return t("chat:apiRequest.errorTitle", { code: code ? ` · ${code}` : "" })
 				case "streaming_failed":
 					return t("chat:apiRequest.streamingFailed")
 				case "cancelled":
