@@ -9,7 +9,7 @@ import { vscode } from "@src/utils/vscode"
 import { telemetryClient } from "@src/utils/TelemetryClient"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { renderCloudBenefitsContent } from "./CloudUpsellDialog"
-import { CircleAlert, Info, Lock, TriangleAlert } from "lucide-react"
+import { ArrowRight, CircleAlert, Info, Lock, TriangleAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Tab, TabContent } from "../common/Tab"
 import { Button } from "@/components/ui/button"
@@ -265,12 +265,13 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, organization
 					</>
 				) : (
 					<>
-						<div className="flex flex-col items-start gap-4 px-8 max-w-100">
+						<div className="flex flex-col items-start gap-4 px-4 max-w-1lg">
 							<div className={cn(authInProgress && "opacity-50")}>{renderCloudBenefitsContent(t)}</div>
 
 							{!authInProgress && (
-								<Button variant="primary" onClick={handleConnectClick} className="w-full">
+								<Button variant="primary" onClick={handleConnectClick}>
 									{t("cloud:connect")}
+									<ArrowRight />
 								</Button>
 							)}
 
