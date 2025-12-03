@@ -11,7 +11,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch"
 import { renderCloudBenefitsContent } from "./CloudUpsellDialog"
 import { CircleAlert, Info, Lock, TriangleAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Tab, TabContent, TabHeader } from "../common/Tab"
+import { Tab, TabContent } from "../common/Tab"
 import { Button } from "@/components/ui/button"
 import { OrganizationSwitcher } from "./OrganizationSwitcher"
 import { StandardTooltip } from "../ui"
@@ -23,11 +23,10 @@ type CloudViewProps = {
 	userInfo: CloudUserInfo | null
 	isAuthenticated: boolean
 	cloudApiUrl?: string
-	onDone: () => void
 	organizations?: CloudOrganizationMembership[]
 }
 
-export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone, organizations = [] }: CloudViewProps) => {
+export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, organizations = [] }: CloudViewProps) => {
 	const { t } = useAppTranslation()
 	const {
 		remoteControlEnabled,
@@ -159,11 +158,6 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, onDone, orga
 
 	return (
 		<Tab>
-			<TabHeader className="flex justify-between items-center">
-				<h3 className="text-vscode-foreground m-0">{isAuthenticated && t("cloud:title")}</h3>
-				<Button onClick={onDone}>{t("settings:common.done")}</Button>
-			</TabHeader>
-
 			<TabContent className="pt-10">
 				{isAuthenticated ? (
 					<>
