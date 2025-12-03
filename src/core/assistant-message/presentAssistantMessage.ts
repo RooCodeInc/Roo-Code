@@ -478,13 +478,9 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
-			// Check experimental setting for multiple native tool calls
-			const provider = cline.providerRef.deref()
-			const state = await provider?.getState()
-			const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
-			)
+			// Multiple native tool calls feature is on hold - always disabled
+			// Previously resolved from experiments.isEnabled(..., EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS)
+			const isMultipleNativeToolCallsEnabled = false
 
 			const pushToolResult = (content: ToolResponse) => {
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
