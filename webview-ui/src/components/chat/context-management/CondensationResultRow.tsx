@@ -32,9 +32,12 @@ export function CondensationResultRow({ data }: CondensationResultRowProps) {
 				onClick={() => setIsExpanded(!isExpanded)}>
 				<div className="flex items-center gap-2 flex-grow">
 					<span className="codicon codicon-fold text-blue-400" />
-					<span className="font-bold text-vscode-foreground">{t("chat:contextCondense.title")}</span>
+					<span className="font-bold text-vscode-foreground">
+						{t("chat:contextManagement.condensation.title")}
+					</span>
 					<span className="text-vscode-descriptionForeground text-sm">
-						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()} {t("chat:contextCondense.tokens")}
+						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()}{" "}
+						{t("chat:contextManagement.tokens")}
 					</span>
 					<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
 						${displayCost.toFixed(2)}
