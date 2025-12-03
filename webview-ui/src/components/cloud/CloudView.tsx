@@ -265,7 +265,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, organization
 					</>
 				) : (
 					<>
-						<div className="flex flex-col items-start gap-4 px-4 max-w-1lg">
+						<div className="flex flex-col items-start gap-4 px-4 max-w-lg">
 							<div className={cn(authInProgress && "opacity-50")}>{renderCloudBenefitsContent(t)}</div>
 
 							{!authInProgress && (
