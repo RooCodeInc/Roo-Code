@@ -2994,13 +2994,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// able to save the assistant's response.
 				let didEndLoop = false
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, tool uses, or reasoning)
 				const hasTextContent = assistantMessage.length > 0
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
+				const hasReasoningContent = reasoningMessage && reasoningMessage.length > 0
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasToolUses || hasReasoningContent) {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
 						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
@@ -3019,6 +3020,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						assistantContent.push({
 							type: "text" as const,
 							text: assistantMessage,
+						})
+					}
+
+					// If we have only reasoning content and no other content, add a placeholder
+					// This ensures the assistant message has some content for the API history
+					if (hasReasoningContent && !hasTextContent && !hasToolUses) {
+						assistantContent.push({
+							type: "text" as const,
+							text: "[Reasoning completed]",
 						})
 					}
 
@@ -3093,11 +3103,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
-						const modelInfo = this.api.getModel().info
-						const state = await this.providerRef.deref()?.getState()
-						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
-						this.consecutiveMistakeCount++
+						// Only count as a mistake if there was no reasoning content either
+						// Reasoning-only responses are valid for Gemini 3 models
+						if (!hasReasoningContent) {
+							const modelInfo = this.api.getModel().info
+							const state = await this.providerRef.deref()?.getState()
+							const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+							this.userMessageContent.push({
+								type: "text",
+								text: formatResponse.noToolsUsed(toolProtocol),
+							})
+							this.consecutiveMistakeCount++
+						} else {
+							// For reasoning-only responses, provide a gentle continuation prompt
+							// without incrementing the mistake counter
+							const modelInfo = this.api.getModel().info
+							const state = await this.providerRef.deref()?.getState()
+							const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+							this.userMessageContent.push({
+								type: "text",
+								text: "I see you've been thinking about this. Please continue with the task by using the appropriate tools or providing your response.",
+							})
+						}
 					}
 
 					// Push to stack if there's content OR if we're paused waiting for a subtask.

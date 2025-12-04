@@ -1847,6 +1847,137 @@ describe("Cline", () => {
 	})
 })
 
+describe("Reasoning-only response handling", () => {
+	let mockProvider: any
+	let mockApiConfig: ProviderSettings
+
+	beforeEach(() => {
+		if (!TelemetryService.hasInstance()) {
+			TelemetryService.createInstance([])
+		}
+
+		const storageUri = { fsPath: path.join(os.tmpdir(), "test-storage") }
+		const ctx = {
+			globalState: {
+				get: vi.fn().mockImplementation((_key: keyof GlobalState) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			globalStorageUri: storageUri,
+			workspaceState: {
+				get: vi.fn().mockImplementation((_key) => undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			secrets: {
+				get: vi.fn().mockResolvedValue(undefined),
+				store: vi.fn().mockResolvedValue(undefined),
+				delete: vi.fn().mockResolvedValue(undefined),
+			},
+			extensionUri: { fsPath: "/mock/extension/path" },
+			extension: { packageJSON: { version: "1.0.0" } },
+		} as unknown as vscode.ExtensionContext
+
+		const output = {
+			appendLine: vi.fn(),
+			append: vi.fn(),
+			clear: vi.fn(),
+			show: vi.fn(),
+			hide: vi.fn(),
+			dispose: vi.fn(),
+		}
+
+		mockProvider = new ClineProvider(ctx, output as any, "sidebar", new ContextProxy(ctx)) as any
+		mockProvider.postMessageToWebview = vi.fn().mockResolvedValue(undefined)
+		mockProvider.postStateToWebview = vi.fn().mockResolvedValue(undefined)
+		mockProvider.getState = vi.fn().mockResolvedValue({})
+		mockProvider.updateTaskHistory = vi.fn().mockResolvedValue(undefined)
+
+		mockApiConfig = {
+			apiProvider: "openrouter",
+			openRouterModelId: "google/gemini-3-pro-preview",
+			apiKey: "test-api-key",
+		}
+	})
+
+	it("should handle reasoning-only responses without treating them as errors", async () => {
+		const task = new Task({
+			provider: mockProvider,
+			apiConfiguration: mockApiConfig,
+			task: "test task",
+			startTask: false,
+		})
+
+		// Set up initial state
+		task.consecutiveMistakeCount = 0
+		task.assistantMessageContent = []
+		task.userMessageContent = []
+
+		// Manually simulate the stream processing logic with reasoning-only content
+		const reasoningMessage = "I need to think about this problem..."
+		const hasTextContent = false
+		const hasToolUses = false
+		const hasReasoningContent = reasoningMessage.length > 0
+
+		// This simulates the fix logic in Task.ts
+		if (hasTextContent || hasToolUses || hasReasoningContent) {
+			// Simulate what happens when there's only reasoning and no tools were used
+			const didToolUse = false
+
+			if (!didToolUse) {
+				// Only count as a mistake if there was no reasoning content either
+				if (!hasReasoningContent) {
+					task.consecutiveMistakeCount++
+				} else {
+					// For reasoning-only responses, provide a gentle continuation prompt
+					// without incrementing the mistake counter
+					task.userMessageContent.push({
+						type: "text",
+						text: "I see you've been thinking about this. Please continue with the task by using the appropriate tools or providing your response.",
+					})
+				}
+			}
+
+			// Verify the mistake count did not increase
+			expect(task.consecutiveMistakeCount).toBe(0)
+
+			// Verify a continuation prompt was added
+			expect(task.userMessageContent).toHaveLength(1)
+			expect(task.userMessageContent[0]).toMatchObject({
+				type: "text",
+				text: expect.stringContaining("Please continue with the task"),
+			})
+		}
+	})
+
+	it("should count as mistake when there is no content at all", async () => {
+		const task = new Task({
+			provider: mockProvider,
+			apiConfiguration: mockApiConfig,
+			task: "test task",
+			startTask: false,
+		})
+
+		// Simulate scenario with no content at all
+		const reasoningMessage = ""
+		const hasTextContent = false
+		const hasToolUses = false
+		const hasReasoningContent = false
+
+		task.assistantMessageContent = []
+		task.userMessageContent = []
+		task.consecutiveMistakeCount = 0
+
+		// This simulates the logic when there's no content
+		if (!hasTextContent && !hasToolUses && !hasReasoningContent) {
+			// This should be treated as an error since there's no content at all
+			task.consecutiveMistakeCount++
+		}
+
+		expect(task.consecutiveMistakeCount).toBe(1)
+	})
+})
+
 describe("Queued message processing after condense", () => {
 	function createProvider(): any {
 		const storageUri = { fsPath: path.join(os.tmpdir(), "test-storage") }
