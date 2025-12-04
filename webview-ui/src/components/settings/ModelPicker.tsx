@@ -28,7 +28,6 @@ import { ApiErrorMessage } from "./ApiErrorMessage"
 
 type ModelIdKey = keyof Pick<
 	ProviderSettings,
-	| "glamaModelId"
 	| "openRouterModelId"
 	| "unboundModelId"
 	| "requestyModelId"
