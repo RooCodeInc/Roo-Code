@@ -1281,19 +1281,9 @@ export const ChatRowContent = ({
 					)
 				case "condense_context":
 				case "condense_context_error":
-<<<<<<< HEAD
-					return (
-						<ErrorRow
-							type="error"
-							title={t("chat:contextCondense.errorHeader")}
-							message={message.text || ""}
-						/>
-					)
-=======
 				case "sliding_window_truncation":
 					// All context management events are handled by the unified ContextManagementRow
 					return <ContextManagementRow message={message} />
->>>>>>> d3d45744d5 (Refactor: Unified context-management architecture with improved UX)
 				case "codebase_search_result":
 					let parsed: {
 						content: {
