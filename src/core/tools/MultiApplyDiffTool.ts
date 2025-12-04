@@ -694,14 +694,29 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 				let partFailHint = ""
 
 				if (successCount < diffItems.length) {
-					partFailHint = `Unable to apply all diff parts to file: ${absolutePath}`
+					// Enhanced error reporting for partial failures
+					const failedCount = diffItems.length - successCount
+					partFailHint = `⚠️ Partial diff application: ${successCount}/${diffItems.length} diffs applied successfully to ${getReadablePath(cline.cwd, relPath)}\n`
+					partFailHint += `Failed to apply ${failedCount} diff(s). Please review the file and retry failed changes.\n`
+
+					// Report the partial failure prominently with enhanced visibility
+					const partialFailureMessage =
+						`⚠️ PARTIAL DIFF APPLICATION\n` +
+						`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+						`File: ${getReadablePath(cline.cwd, relPath)}\n` +
+						`Status: ${successCount}/${diffItems.length} diffs applied successfully\n` +
+						`Failed: ${failedCount} diff(s) could not be applied\n` +
+						`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+						`Action Required: Review the file and retry failed changes`
+
+					await cline.say("error", partialFailureMessage)
 				}
 
 				// Get the formatted response message
 				const message = await cline.diffViewProvider.pushToolWriteResult(cline, cline.cwd, !fileExists)
 
 				if (partFailHint) {
-					results.push(partFailHint + "\n" + message)
+					results.push(partFailHint + message)
 				} else {
 					results.push(message)
 				}
