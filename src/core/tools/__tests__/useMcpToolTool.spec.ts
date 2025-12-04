@@ -24,7 +24,7 @@ vi.mock("../../prompts/responses", () => ({
 vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string, params?: any) => {
 		if (key === "mcp:errors.invalidJsonArgument" && params?.toolName) {
-			return `Roo tried to use ${params.toolName} with an invalid JSON argument. Retrying...`
+			return `Failed to use ${params.toolName}: Invalid JSON argument provided. Please ensure the arguments are properly formatted JSON and try again.`
 		}
 		if (key === "mcp:errors.toolNotFound" && params) {
 			return `Tool '${params.toolName}' does not exist on server '${params.serverName}'. Available tools: ${params.availableTools}`
@@ -164,7 +164,7 @@ describe("useMcpToolTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("use_mcp_tool")
-			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("invalid JSON argument"))
+			expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining("Invalid JSON argument"))
 			expect(mockPushToolResult).toHaveBeenCalledWith("Tool error: Invalid args for test_server:test_tool")
 		})
 	})
