@@ -129,6 +129,7 @@ import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { ErrorCodeManager } from "../costrict/error-code"
 import { ZgsmAuthService } from "../costrict/auth"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
+import psTree from "ps-tree"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -1366,16 +1367,49 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (terminalOperation === "continue") {
 			this.terminalProcess?.continue()
 		} else if (terminalOperation === "abort") {
+			const provider = this.providerRef.deref()
 			if (this.terminalProcess) {
 				this.terminalProcess.abort()
+				// if (executionId) {
+				// 	const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
+				// 	provider
+				// 		?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+				// }
 			} else if (pid) {
-				if (executionId) {
-					const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
-					this.providerRef
-						.deref()
-						?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				}
-				process.kill(pid, "SIGKILL")
+				psTree(pid, async (err, children) => {
+					if (!err) {
+						const pids = children.map((p) => parseInt(p.PID))
+						console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
+
+						for (const pid of pids) {
+							try {
+								process.kill(pid, "SIGKILL")
+							} catch (e) {
+								console.warn(
+									`[ExecaTerminalProcess#abort] Failed to send SIGKILL to child PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
+								)
+							}
+						}
+					} else {
+						console.error(
+							`[ExecaTerminalProcess#abort] Failed to get process tree for PID ${pid}: ${err.message}`,
+						)
+					}
+
+					try {
+						process.kill(pid, "SIGKILL")
+						if (executionId) {
+							const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
+							this.providerRef
+								.deref()
+								?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+						}
+					} catch (e) {
+						console.warn(
+							`[ExecaTerminalProcess#abort] Failed to kill process ${pid}: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
+				})
 			}
 		}
 	}

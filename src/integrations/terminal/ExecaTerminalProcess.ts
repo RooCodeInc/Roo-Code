@@ -49,6 +49,7 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				encoding: "buffer",
+				stdin: "ignore",
 				env: {
 					...process.env,
 					// Ensure UTF-8 encoding for Ruby, CocoaPods, etc.
@@ -208,14 +209,14 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 	}
 
 	public userInput(input: string) {
-		if (this.subprocess) {
-			// Write input to the subprocess
-			this.subprocess.stdin?.write(`${input ? `${input}\n` : ""}`)
-		} else {
-			// If the subprocess is not running, emit the input as a line
-			console.log(`[ExecaTerminalProcess#userInput] subprocess not running, emitting input as line: ${input}`)
-			this.emit("line", `${input ? `${input}\n` : ""}`)
-		}
+		// if (this.subprocess) {
+		// Write input to the subprocess
+		// this.subprocess.stdin?.write(`${input ? `${input}\n` : ""}`)
+		// } else {
+		// If the subprocess is not running, emit the input as a line
+		// console.log(`[ExecaTerminalProcess#userInput] subprocess not running, emitting input as line: ${input}`)
+		this.emit("line", `${input ? `${input}\n` : ""}`)
+		// }
 	}
 
 	public override abort() {

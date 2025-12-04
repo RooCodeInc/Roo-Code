@@ -207,9 +207,13 @@ export class TerminalRegistry {
 
 		terminal.taskId = taskId
 
-		if (provider === "vscode" && !isJetbrainsPlatform()) {
+		if (provider === "vscode") {
 			// Check if we need to cleanup non-busy terminals after creating a new one
-			this.checkAndCleanupNotBusyTerminals()
+			try {
+				this.checkAndCleanupNotBusyTerminals()
+			} catch (error) {
+				console.log("[TerminalRegistry] Error checking and cleaning up not busy terminals:", error)
+			}
 		}
 
 		return terminal

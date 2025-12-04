@@ -155,7 +155,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 					{status?.status === "exited" && (
 						<div className="flex flex-row items-center gap-2 font-mono text-xs">
 							<StandardTooltip
-								content={t("chat.commandExecution.exitStatus", { exitStatus: status.exitCode })}>
+								content={t("chat:commandExecution.exitStatus", { exitCode: status.exitCode })}>
 								<div
 									className={cn(
 										"rounded-full size-2",
@@ -180,7 +180,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 												type: "terminalOperation",
 												terminalOperation: "abort",
 												terminalPid: status.pid,
-												executionId: status.executionId,
+												executionId: status.executionId ?? executionId,
 												terminalCommand: status.command,
 											})
 										}>
