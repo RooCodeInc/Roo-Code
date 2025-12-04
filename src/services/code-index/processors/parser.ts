@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises"
+import { readFile, stat } from "fs/promises"
 import { createHash } from "crypto"
 import * as path from "path"
 import { Node } from "web-tree-sitter"
@@ -10,6 +10,7 @@ import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
+import { streamReadFile } from "./stream-reader"
 
 /**
  * Implementation of the code parser interface
@@ -50,8 +51,26 @@ export class CodeParser implements ICodeParser {
 			fileHash = options.fileHash || this.createFileHash(content)
 		} else {
 			try {
-				content = await readFile(filePath, "utf8")
-				fileHash = this.createFileHash(content)
+				// Check file size for streaming decision
+				const stats = await stat(filePath)
+				const STREAM_THRESHOLD = 10 * 1024 * 1024 // 10MB
+
+				if (stats.size > STREAM_THRESHOLD) {
+					// Use streaming for large files
+					console.log(
+						`[CodeParser] Using streaming for large file: ${filePath} (${(stats.size / 1024 / 1024).toFixed(2)}MB)`,
+					)
+					const streamResult = await streamReadFile(filePath, 10000, 50)
+					content = streamResult.lines.join("\n")
+					fileHash = streamResult.hash
+					if (streamResult.truncated) {
+						console.warn(`[CodeParser] File truncated for processing: ${filePath}`)
+					}
+				} else {
+					// Small file - read normally
+					content = await readFile(filePath, "utf8")
+					fileHash = this.createFileHash(content)
+				}
 			} catch (error) {
 				console.error(`Error reading file ${filePath}:`, error)
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {

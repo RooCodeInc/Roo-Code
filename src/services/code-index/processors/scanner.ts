@@ -30,6 +30,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 import { Package } from "../../../shared/package"
+import { streamReadFile, streamProcessFile } from "./stream-reader"
 
 export class DirectoryScanner implements IDirectoryScanner {
 	private readonly batchSegmentThreshold: number
@@ -134,13 +135,32 @@ export class DirectoryScanner implements IDirectoryScanner {
 						return
 					}
 
-					// Read file content
-					const content = await vscode.workspace.fs
-						.readFile(vscode.Uri.file(filePath))
-						.then((buffer) => Buffer.from(buffer).toString("utf-8"))
+					// Read file content with streaming for large files (> 10MB)
+					const STREAM_THRESHOLD = 10 * 1024 * 1024 // 10MB
+					let content: string
+					let currentFileHash: string
 
-					// Calculate current hash
-					const currentFileHash = createHash("sha256").update(content).digest("hex")
+					if (stats.size > STREAM_THRESHOLD) {
+						// Use streaming for large files to avoid memory issues
+						console.log(
+							`[DirectoryScanner] Using streaming for large file: ${filePath} (${(stats.size / 1024 / 1024).toFixed(2)}MB)`,
+						)
+						const streamResult = await streamReadFile(filePath, 10000, 50) // Max 50MB in memory
+						content = streamResult.lines.join("\n")
+						currentFileHash = streamResult.hash
+						if (streamResult.truncated) {
+							console.warn(
+								`[DirectoryScanner] File truncated for processing: ${filePath} (total: ${streamResult.totalSize} bytes)`,
+							)
+						}
+					} else {
+						// Small file - read normally
+						content = await vscode.workspace.fs
+							.readFile(vscode.Uri.file(filePath))
+							.then((buffer) => Buffer.from(buffer).toString("utf-8"))
+						currentFileHash = createHash("sha256").update(content).digest("hex")
+					}
+
 					processedFiles.add(filePath)
 
 					// Check against cache
