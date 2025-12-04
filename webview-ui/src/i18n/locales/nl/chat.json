@@ -279,8 +279,8 @@
 		},
 		"release": {
 			"heading": "Nieuw:",
-			"subtasks": "Verbeterde subtaak-orchestratie met automatisch hervatten van bovenliggende taak en veiligheid bij eenmalig openen voor betere multi-task workflows",
-			"nativeTools": "Native tool-aanroepen worden nu ondersteund door 13+ providers, waaronder Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini en meer"
+			"contextRewind": "Verbeterde context-samenvatting stelt je nu in staat om de volledige vorige context te herstellen bij het terugspoelen naar een checkpoint",
+			"rooProvider": "De Roo Code Cloud-provider behoudt nu reasoninginhoud en gebruikt standaard native tools voor betere prestaties"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

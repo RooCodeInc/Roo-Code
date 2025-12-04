@@ -300,8 +300,8 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"subtasks": "Improved subtask orchestration with automatic parent resume and single-open safety for better multi-task workflows",
-			"nativeTools": "Native tool calling now supported across 13+ providers including Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, and more"
+			"contextRewind": "Improved context condensing now lets you restore the full previous context when rewinding to a checkpoint",
+			"rooProvider": "Roo Code Cloud provider now preserves reasoning content and defaults to native tools for better performance"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

@@ -294,8 +294,8 @@
 		},
 		"release": {
 			"heading": "Nouveautés dans cette version :",
-			"subtasks": "Orchestration améliorée des sous-tâches avec reprise automatique du parent et sécurité à ouverture unique pour de meilleurs workflows multi-tâches",
-			"nativeTools": "L'appel d'outils natif est désormais pris en charge par plus de 13 fournisseurs, notamment Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini et bien d'autres"
+			"contextRewind": "La condensation améliorée du contexte te permet désormais de restaurer le contexte précédent complet en rembobinant vers un point de contrôle",
+			"rooProvider": "Le fournisseur Roo Code Cloud préserve désormais le contenu du raisonnement et utilise par défaut les outils natifs pour de meilleures performances"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

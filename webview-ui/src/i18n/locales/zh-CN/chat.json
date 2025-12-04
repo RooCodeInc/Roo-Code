@@ -295,8 +295,8 @@
 		},
 		"release": {
 			"heading": "最新功能：",
-			"subtasks": "改进的子任务编排，支持自动恢复父任务和单一开启安全性，实现更好的多任务工作流程",
-			"nativeTools": "原生工具调用现已支持 13+ 提供商，包括 Bedrock、Ollama、Groq、DeepSeek、Vertex Gemini 等"
+			"contextRewind": "改进的上下文压缩现在允许您在回到存档点时恢复完整的之前上下文",
+			"rooProvider": "Roo Code Cloud 提供商现在保留推理内容，并默认使用原生工具以获得更好的性能"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

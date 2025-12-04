@@ -295,8 +295,8 @@
 		},
 		"release": {
 			"heading": "Bu sürümdeki yenilikler:",
-			"subtasks": "Alt görevlerin otomatik olarak üst görevleri devam ettirmesi ve tek açılış güvenliğiyle geliştirilmiş alt görev orkestrasyonu, daha iyi çok görevli iş akışları için",
-			"nativeTools": "Yerel araç çağrısı artık Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini ve daha fazlası dahil olmak üzere 13+ sağlayıcı tarafından destekleniyor"
+			"contextRewind": "İyileştirilmiş bağlam sıkıştırması, artık bir kontrol noktasına geri sarma sırasında tam önceki bağlamı geri yüklemenizi sağlıyor",
+			"rooProvider": "Roo Code Cloud sağlayıcısı artık akıl yürütme içeriğini korur ve daha iyi performans için varsayılan olarak yerel araçları kullanır"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

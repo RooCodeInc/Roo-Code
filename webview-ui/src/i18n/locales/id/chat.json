@@ -306,8 +306,8 @@
 		},
 		"release": {
 			"heading": "Terbaru:",
-			"subtasks": "Orkestrasi subtugas yang ditingkatkan dengan resume induk otomatis dan keamanan pembukaan tunggal untuk alur kerja multi-tugas yang lebih baik",
-			"nativeTools": "Pemanggilan alat asli sekarang didukung di 13+ penyedia termasuk Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, dan banyak lagi"
+			"contextRewind": "Kondensasi konteks yang ditingkatkan sekarang memungkinkan Anda mengembalikan konteks sebelumnya secara penuh saat memutar ulang ke checkpoint",
+			"rooProvider": "Penyedia Roo Code Cloud sekarang mempertahankan konten penalaran dan menggunakan alat asli secara default untuk kinerja yang lebih baik"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

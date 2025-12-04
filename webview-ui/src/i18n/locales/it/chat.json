@@ -294,8 +294,8 @@
 		},
 		"release": {
 			"heading": "Novità in questa versione:",
-			"subtasks": "Orchestrazione migliorata delle sottoattività con ripresa automatica del genitore e sicurezza ad apertura singola per migliori flussi di lavoro multitasking",
-			"nativeTools": "La chiamata di strumenti nativi è ora supportata su 13+ provider, tra cui Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini e altri"
+			"contextRewind": "La condensazione migliorata del contesto ora ti consente di ripristinare il contesto precedente completo quando riavvolgi a un checkpoint",
+			"rooProvider": "Il provider Roo Code Cloud ora preserva il contenuto del ragionamento e utilizza gli strumenti nativi per impostazione predefinita per migliori prestazioni"
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",

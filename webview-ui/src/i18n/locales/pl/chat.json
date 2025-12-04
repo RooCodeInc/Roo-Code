@@ -294,8 +294,8 @@
 		},
 		"release": {
 			"heading": "Nowości:",
-			"subtasks": "Ulepszona orkiestracja podzadań z automatycznym wznowieniem zadania nadrzędnego i bezpieczeństwem jednokrotnego otwarcia dla lepszych przepływów pracy wielozadaniowych",
-			"nativeTools": "Natywne wywoływanie narzędzi jest teraz obsługiwane przez 13+ dostawców, w tym Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini i inne"
+			"contextRewind": "Ulepszona kondensacja kontekstu pozwala teraz przywrócić pełny poprzedni kontekst przy przewijaniu do punktu kontrolnego",
+			"rooProvider": "Dostawca Roo Code Cloud teraz zachowuje zawartość rozumowania i domyślnie używa narzędzi natywnych dla lepszej wydajności"
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
