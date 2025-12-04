@@ -29,6 +29,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { sanitizeReasoningDetailId } from "./utils/sanitize-reasoning-id"
 
 // Add custom interface for OpenRouter params.
 type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
@@ -286,18 +287,18 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 							if (detail.data !== undefined) {
 								existing.data = (existing.data || "") + detail.data
 							}
-							// Update other fields if provided
-							if (detail.id !== undefined) existing.id = detail.id
+							// Update other fields if provided - sanitize ID to remove invalid characters
+							if (detail.id !== undefined) existing.id = sanitizeReasoningDetailId(detail.id)
 							if (detail.format !== undefined) existing.format = detail.format
 							if (detail.signature !== undefined) existing.signature = detail.signature
 						} else {
-							// Start new reasoning detail accumulation
+							// Start new reasoning detail accumulation - sanitize ID to remove invalid characters
 							reasoningDetailsAccumulator.set(key, {
 								type: detail.type,
 								text: detail.text,
 								summary: detail.summary,
 								data: detail.data,
-								id: detail.id,
+								id: sanitizeReasoningDetailId(detail.id),
 								format: detail.format,
 								signature: detail.signature,
 								index,
