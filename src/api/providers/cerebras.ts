@@ -16,6 +16,9 @@ import { t } from "../../i18n"
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
 
+const CEREBRAS_INTEGRATION_HEADER = "X-Cerebras-3rd-Party-Integration"
+const CEREBRAS_INTEGRATION_NAME = "roocode"
+
 export class CerebrasHandler extends BaseProvider implements SingleCompletionHandler {
 	private apiKey: string
 	private providerModels: typeof cerebrasModels
@@ -36,11 +39,12 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	getModel(): { id: CerebrasModelId; info: (typeof cerebrasModels)[CerebrasModelId] } {
-		const modelId = (this.options.apiModelId as CerebrasModelId) || this.defaultProviderModelId
+		const modelId = this.options.apiModelId as CerebrasModelId
+		const validModelId = modelId && this.providerModels[modelId] ? modelId : this.defaultProviderModelId
 
 		return {
-			id: modelId,
-			info: this.providerModels[modelId],
+			id: validModelId,
+			info: this.providerModels[validModelId],
 		}
 	}
 
@@ -130,6 +134,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
+					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})
@@ -291,6 +296,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
+					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})

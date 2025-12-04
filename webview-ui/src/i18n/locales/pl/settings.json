@@ -89,6 +89,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Klucz API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routing dostawców OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter kieruje żądania do najlepszych dostępnych dostawców dla Twojego modelu osadzania. Domyślnie żądania są równoważone między najlepszymi dostawcami, aby zmaksymalizować czas działania. Możesz jednak wybrać konkretnego dostawcę do użycia z tym modelem.",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
 		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",

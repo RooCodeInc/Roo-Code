@@ -91,6 +91,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API 密钥",
 		"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
+		"openRouterProviderRoutingLabel": "OpenRouter 提供商路由",
+		"openRouterProviderRoutingDescription": "OpenRouter 将请求路由到适合您嵌入模型的最佳可用提供商。默认情况下，请求会在顶级提供商之间进行负载均衡以最大化正常运行时间。但是，您可以为此模型选择特定的提供商。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 密钥:",
 		"mistralApiKeyPlaceholder": "输入您的 Mistral API 密钥",

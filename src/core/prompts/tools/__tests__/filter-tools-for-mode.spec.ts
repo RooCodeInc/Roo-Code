@@ -550,13 +550,13 @@ describe("filterMcpToolsForMode", () => {
 				contextWindow: 100000,
 				supportsPromptCache: false,
 				excludedTools: ["apply_diff"],
-				includedTools: ["insert_content"], // Another edit tool
+				includedTools: ["search_and_replace"], // Another edit tool (customTool)
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
 			expect(result.has("read_file")).toBe(true)
 			expect(result.has("write_to_file")).toBe(true)
 			expect(result.has("apply_diff")).toBe(false) // Excluded
-			expect(result.has("insert_content")).toBe(true) // Included
+			expect(result.has("search_and_replace")).toBe(true) // Included
 		})
 
 		it("should handle empty excludedTools and includedTools arrays", () => {
@@ -709,16 +709,16 @@ describe("filterMcpToolsForMode", () => {
 			{
 				type: "function",
 				function: {
-					name: "insert_content",
-					description: "Insert content",
+					name: "execute_command",
+					description: "Execute command",
 					parameters: {},
 				},
 			},
 			{
 				type: "function",
 				function: {
-					name: "execute_command",
-					description: "Execute command",
+					name: "search_and_replace",
+					description: "Search and replace",
 					parameters: {},
 				},
 			},
@@ -746,7 +746,6 @@ describe("filterMcpToolsForMode", () => {
 
 			expect(toolNames).toContain("read_file")
 			expect(toolNames).toContain("write_to_file")
-			expect(toolNames).toContain("insert_content")
 			expect(toolNames).not.toContain("apply_diff") // Excluded by model
 		})
 
@@ -761,7 +760,7 @@ describe("filterMcpToolsForMode", () => {
 			const modelInfo: ModelInfo = {
 				contextWindow: 100000,
 				supportsPromptCache: false,
-				includedTools: ["insert_content"], // Edit group tool
+				includedTools: ["search_and_replace"], // Edit group customTool
 			}
 
 			const filtered = filterNativeToolsForMode(mockNativeTools, "limited", [modeWithOnlyRead], {}, undefined, {
@@ -770,7 +769,7 @@ describe("filterMcpToolsForMode", () => {
 
 			const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
 
-			expect(toolNames).toContain("insert_content") // Included by model
+			expect(toolNames).toContain("search_and_replace") // Included by model
 		})
 
 		it("should NOT include tools from groups not allowed by mode", () => {
@@ -810,7 +809,7 @@ describe("filterMcpToolsForMode", () => {
 				contextWindow: 100000,
 				supportsPromptCache: false,
 				excludedTools: ["apply_diff"],
-				includedTools: ["insert_content"],
+				includedTools: ["search_and_replace"],
 			}
 
 			const filtered = filterNativeToolsForMode(mockNativeTools, "code", [codeMode], {}, undefined, {
@@ -820,7 +819,7 @@ describe("filterMcpToolsForMode", () => {
 			const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
 
 			expect(toolNames).toContain("write_to_file")
-			expect(toolNames).toContain("insert_content") // Included
+			expect(toolNames).toContain("search_and_replace") // Included
 			expect(toolNames).not.toContain("apply_diff") // Excluded
 		})
 	})

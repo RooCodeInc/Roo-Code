@@ -91,6 +91,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API-Schlüssel",
 		"openRouterApiKeyPlaceholder": "Gib deinen OpenRouter API-Schlüssel ein",
+		"openRouterProviderRoutingLabel": "OpenRouter Anbieter-Routing",
+		"openRouterProviderRoutingDescription": "OpenRouter leitet Anfragen an die besten verfügbaren Anbieter für dein Embedding-Modell weiter. Standardmäßig werden Anfragen über die Top-Anbieter lastverteilt, um maximale Verfügbarkeit zu gewährleisten. Du kannst jedoch einen bestimmten Anbieter für dieses Modell auswählen.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API-Schlüssel:",
 		"mistralApiKeyPlaceholder": "Gib deinen Mistral-API-Schlüssel ein",

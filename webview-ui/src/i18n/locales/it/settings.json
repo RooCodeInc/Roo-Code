@@ -86,6 +86,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Chiave API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Inserisci la tua chiave API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routing dei fornitori OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter indirizza le richieste ai migliori fornitori disponibili per il tuo modello di embedding. Per impostazione predefinita, le richieste sono bilanciate tra i principali fornitori per massimizzare il tempo di attività. Tuttavia, puoi scegliere un fornitore specifico da utilizzare per questo modello.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Chiave API:",
 		"mistralApiKeyPlaceholder": "Inserisci la tua chiave API Mistral",
