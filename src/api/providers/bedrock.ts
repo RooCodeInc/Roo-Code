@@ -465,7 +465,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				10 * 60 * 1000,
 			)
 
-			const command = new ConverseStreamCommand(payload)
+			// Add explicitPromptCaching parameter when prompt caching is enabled
+			const commandPayload = usePromptCache ? { ...payload, explicitPromptCaching: "enabled" as const } : payload
+
+			const command = new ConverseStreamCommand(commandPayload)
 			const response = await this.client.send(command, {
 				abortSignal: controller.signal,
 			})
@@ -747,7 +750,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				inferenceConfig,
 			}
 
-			const command = new ConverseCommand(payload)
+			// Add explicitPromptCaching parameter when prompt caching is enabled
+			// Check if the model supports prompt cache
+			const promptCacheEnabled = Boolean(
+				this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig),
+			)
+			const commandPayload = promptCacheEnabled
+				? { ...payload, explicitPromptCaching: "enabled" as const }
+				: payload
+
+			const command = new ConverseCommand(commandPayload)
 			const response = await this.client.send(command)
 
 			if (
@@ -853,12 +865,23 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Apply cache points to the properly converted messages
+		// For AWS Bedrock, cache_control should be added as a property to the last content block
+		// of the message, not as a separate block
 		const messagesWithCache = convertedMessages.map((msg, index) => {
 			const placement = cacheResult.messageCachePointPlacements?.find((p) => p.index === index)
-			if (placement) {
+			if (placement && msg.content && msg.content.length > 0) {
+				// Add cache_control to the last content block of the message
+				const lastBlockIndex = msg.content.length - 1
+				const contentWithCache = [...msg.content]
+				// Use type assertion to add cache_control property which is supported by AWS Bedrock
+				// but not in the TypeScript types
+				contentWithCache[lastBlockIndex] = {
+					...contentWithCache[lastBlockIndex],
+					cache_control: { type: "ephemeral" },
+				} as any as ContentBlock
 				return {
 					...msg,
-					content: [...(msg.content || []), { cachePoint: { type: "default" } } as ContentBlock],
+					content: contentWithCache,
 				}
 			}
 			return msg
