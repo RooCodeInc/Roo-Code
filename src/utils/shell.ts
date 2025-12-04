@@ -3,6 +3,7 @@ import { userInfo } from "os"
 import { terminalUnsupportedSyntax } from "./shellConstants"
 import fs from "fs"
 import * as path from "path"
+import { isJetbrainsPlatform } from "./platform"
 
 let pwshInstalled = false
 const shellCache = {
@@ -379,6 +380,24 @@ export function getShell(terminalShellIntegrationDisabled = false): string {
 	const updateTime = Date.now()
 	if (process.env.NODE_ENV !== "test" && shellCache.shell && updateTime - shellCache.updateAt < 5000) {
 		return shellCache.shell
+	}
+
+	if (isJetbrainsPlatform()) {
+		try {
+			shell = vscode.env.appName.split("[shell]")[1]
+		} catch (error) {
+			console.log(error.message)
+
+			shell = ""
+		}
+
+		if (!shell) {
+			shell = getSafeFallbackShell()
+		}
+
+		shellCache.shell = shell
+		shellCache.updateAt = updateTime
+		return shell
 	}
 	// 1. Check VS Code config first.
 	if (process.platform === "win32") {

@@ -29,7 +29,6 @@ import { defaultLang } from "../../utils/language"
 
 export async function getEnvironmentDetails(cline: Task, includeFileDetails: boolean = false) {
 	let details = ""
-	// const shell = getShell()
 	const clineProvider = cline.providerRef.deref()
 	const state = await clineProvider?.getState()
 	const {

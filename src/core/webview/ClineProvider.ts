@@ -111,6 +111,7 @@ import ZgsmCodebaseIndexManager from "../costrict/codebase-index"
 import { sendZgsmCloseWindow } from "../costrict/auth/ipc"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { isJetbrainsPlatform } from "../../utils/platform"
+import { getAppName } from "../../utils/getAppName"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -3055,7 +3056,7 @@ export class ClineProvider
 				appVersion: packageJSON?.version ?? Package.version,
 				vscodeVersion: vscode.version,
 				platform: process.platform,
-				editorName: vscode.env.appName,
+				editorName: getAppName(),
 			}
 		}
 

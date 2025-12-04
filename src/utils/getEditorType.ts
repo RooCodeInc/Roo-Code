@@ -1,4 +1,5 @@
 import * as vscode from "vscode"
+import { getAppName } from "./getAppName"
 
 let editorType = ""
 
@@ -10,7 +11,7 @@ export const getEditorType = () => {
 		editorType = `Remote (${remoteName})`
 	} else {
 		// Local editor - show the specific VS Code edition/type, RunVsAgent "IntelliJ IDEA"
-		const appName = vscode.env.appName
+		const appName = getAppName()
 		editorType = `${appName}`
 	}
 

@@ -22,6 +22,7 @@ import { CodeReviewService } from "../costrict/code-review"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { getAppName } from "../../utils/getAppName"
 
 interface ApplyDiffParams {
 	path: string
@@ -168,7 +169,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 					if (autoCommitEnabled) {
 						autoCommit(relPath, task.cwd, {
 							model: task.api.getModel().id,
-							editorName: vscode.env.appName,
+							editorName: getAppName(),
 							date: new Date().toLocaleString(),
 						})
 					}
