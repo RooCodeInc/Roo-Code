@@ -299,7 +299,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
-		const info = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+		let info = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+
+		// Gemini models don't support native OpenAI tool calling format when accessed via OpenAI Compatible endpoints
+		// They require XML-style tool calls instead
+		if (id.toLowerCase().includes("gemini")) {
+			info = { ...info, supportsNativeTools: false }
+		}
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
