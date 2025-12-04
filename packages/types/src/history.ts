@@ -25,6 +25,11 @@ export const historyItemSchema = z.object({
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)
 	completedByChildId: z.string().optional(), // Child that completed and resumed this parent
 	completionResultSummary: z.string().optional(), // Summary from completed child
+	// Fork-related fields
+	forkedFromId: z.string().optional(), // ID of the parent task this was forked from
+	forkedAtMessageIndex: z.number().optional(), // Message index where fork occurred
+	forkIds: z.array(z.string()).optional(), // Array of task IDs that forked from this task
+	forkWorkspacePath: z.string().optional(), // Path to the forked workspace directory
 })
 
 export type HistoryItem = z.infer<typeof historyItemSchema>

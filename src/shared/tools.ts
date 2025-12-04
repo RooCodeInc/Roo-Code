@@ -72,6 +72,8 @@ export const toolParamNames = [
 	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
+	"message_index", // fork_conversation parameter
+	"target_directory", // fork_conversation parameter
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -259,6 +261,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	fork_conversation: "fork conversation",
 } as const
 
 // Define available tool groups.
@@ -300,6 +303,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"new_task",
 	"update_todo_list",
 	"run_slash_command",
+	"fork_conversation",
 ] as const
 
 export type DiffResult =

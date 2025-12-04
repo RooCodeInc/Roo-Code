@@ -3299,4 +3299,177 @@ export class ClineProvider
 			return vscode.Uri.file(filePath).toString()
 		}
 	}
+
+	/**
+	 * Fork a conversation at a specific point, creating a new task with copied workspace
+	 *
+	 * @param params - Fork parameters
+	 * @returns The newly created forked task
+	 */
+	public async forkConversation(params: {
+		parentTaskId: string
+		forkIndex: number
+		targetDirectory: string
+		messages: ClineMessage[]
+		apiMessages: Anthropic.MessageParam[]
+	}): Promise<Task> {
+		const { parentTaskId, forkIndex, targetDirectory, messages, apiMessages } = params
+
+		// 1) Get parent task history
+		const { historyItem } = await this.getTaskWithId(parentTaskId)
+
+		// 2) Copy workspace files to new directory
+		const sourceWorkspace = this.cwd
+		this.log(`[forkConversation] Copying workspace from ${sourceWorkspace} to ${targetDirectory}`)
+
+		try {
+			// Create target directory
+			await fs.mkdir(targetDirectory, { recursive: true })
+
+			// Copy workspace files (excluding node_modules, .git, etc.)
+			await this.copyWorkspaceFiles(sourceWorkspace, targetDirectory)
+		} catch (error) {
+			this.log(`[forkConversation] Error copying workspace: ${error}`)
+			throw new Error(`Failed to copy workspace: ${error instanceof Error ? error.message : String(error)}`)
+		}
+
+		// 3) Create new task with forked history
+		const timestamp = Date.now()
+		const forkedTaskId = `${parentTaskId}-fork-${timestamp}`
+
+		// Create forked history item
+		const forkedHistoryItem: HistoryItem = {
+			id: forkedTaskId,
+			rootTaskId: historyItem.rootTaskId || parentTaskId,
+			parentTaskId: undefined, // Fork is independent, not a subtask
+			number: (this.getGlobalState("taskHistory") ?? []).length + 1,
+			ts: timestamp,
+			task: `Fork of: ${historyItem.task}`,
+			tokensIn: 0,
+			tokensOut: 0,
+			totalCost: 0,
+			workspace: targetDirectory,
+			mode: historyItem.mode,
+			status: "active",
+			// Fork metadata
+			forkedFromId: parentTaskId,
+			forkedAtMessageIndex: forkIndex,
+			forkWorkspacePath: targetDirectory,
+		}
+
+		// 4) Update parent task metadata to track fork
+		try {
+			const forkIds = Array.from(new Set([...(historyItem.forkIds ?? []), forkedTaskId]))
+			const updatedHistory: typeof historyItem = {
+				...historyItem,
+				forkIds,
+			}
+			await this.updateTaskHistory(updatedHistory)
+		} catch (err) {
+			this.log(
+				`[forkConversation] Failed to update parent metadata for ${parentTaskId}: ${
+					(err as Error)?.message ?? String(err)
+				}`,
+			)
+		}
+
+		// 5) Save forked messages to disk
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		const { getTaskDirectoryPath } = await import("../../utils/storage")
+		const taskDirPath = await getTaskDirectoryPath(globalStoragePath, forkedTaskId)
+
+		// Save UI messages
+		const { saveTaskMessages } = await import("../task-persistence")
+		await saveTaskMessages({
+			messages,
+			taskId: forkedTaskId,
+			globalStoragePath,
+		})
+
+		// Save API messages
+		const { saveApiMessages } = await import("../task-persistence")
+		await saveApiMessages({
+			messages: apiMessages,
+			taskId: forkedTaskId,
+			globalStoragePath,
+		})
+
+		// 6) Add to task history
+		await this.updateTaskHistory(forkedHistoryItem)
+
+		// 7) Switch to the forked workspace
+		this.currentWorkspacePath = targetDirectory
+
+		// 8) Create and open the forked task
+		const forkedTask = await this.createTaskWithHistoryItem(forkedHistoryItem, { startTask: false })
+
+		// 9) Restore the messages in the forked task
+		if (forkedTask) {
+			await forkedTask.overwriteClineMessages(messages)
+			await forkedTask.overwriteApiConversationHistory(apiMessages)
+		}
+
+		// 10) Emit fork event
+		this.emit(RooCodeEventName.TaskForked, parentTaskId, forkedTaskId)
+
+		this.log(`[forkConversation] Successfully forked task ${parentTaskId} to ${forkedTaskId}`)
+
+		return forkedTask
+	}
+
+	/**
+	 * Copy workspace files to a new directory, excluding common ignore patterns
+	 */
+	private async copyWorkspaceFiles(source: string, target: string): Promise<void> {
+		const { exec } = require("child_process")
+		const { promisify } = require("util")
+		const execAsync = promisify(exec)
+
+		// Common patterns to exclude
+		const excludePatterns = [
+			"node_modules",
+			".git",
+			"dist",
+			"build",
+			".next",
+			".cache",
+			"coverage",
+			"*.log",
+			".env",
+			".DS_Store",
+			"Thumbs.db",
+		]
+
+		// Build rsync command (fallback to cp if rsync not available)
+		const excludeArgs = excludePatterns.map((p) => `--exclude='${p}'`).join(" ")
+
+		try {
+			// Try rsync first (more efficient)
+			await execAsync(`rsync -av ${excludeArgs} "${source}/" "${target}/"`)
+			this.log(`[copyWorkspaceFiles] Successfully copied workspace using rsync`)
+		} catch (rsyncError) {
+			// Fallback to cp if rsync is not available
+			this.log(`[copyWorkspaceFiles] rsync failed, falling back to cp: ${rsyncError}`)
+
+			try {
+				// Use cp with basic exclusions
+				await execAsync(`cp -r "${source}/." "${target}/"`)
+
+				// Remove common directories that should be excluded
+				for (const pattern of ["node_modules", ".git", "dist", "build"]) {
+					try {
+						await fs.rm(path.join(target, pattern), { recursive: true, force: true })
+					} catch {
+						// Ignore if directory doesn't exist
+					}
+				}
+
+				this.log(`[copyWorkspaceFiles] Successfully copied workspace using cp`)
+			} catch (cpError) {
+				throw new Error(
+					`Failed to copy workspace: ${cpError instanceof Error ? cpError.message : String(cpError)}`,
+				)
+			}
+		}
+	}
 }

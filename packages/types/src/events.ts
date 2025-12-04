@@ -29,6 +29,7 @@ export enum RooCodeEventName {
 	TaskDelegated = "taskDelegated",
 	TaskDelegationCompleted = "taskDelegationCompleted",
 	TaskDelegationResumed = "taskDelegationResumed",
+	TaskForked = "taskForked",
 
 	// Task Execution
 	Message = "message",
@@ -88,6 +89,10 @@ export const rooCodeEventsSchema = z.object({
 	[RooCodeEventName.TaskDelegationResumed]: z.tuple([
 		z.string(), // parentTaskId
 		z.string(), // childTaskId
+	]),
+	[RooCodeEventName.TaskForked]: z.tuple([
+		z.string(), // parentTaskId
+		z.string(), // forkedTaskId
 	]),
 
 	[RooCodeEventName.Message]: z.tuple([
@@ -198,6 +203,11 @@ export const taskEventSchema = z.discriminatedUnion("eventName", [
 	z.object({
 		eventName: z.literal(RooCodeEventName.TaskDelegationResumed),
 		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskDelegationResumed],
+		taskId: z.number().optional(),
+	}),
+	z.object({
+		eventName: z.literal(RooCodeEventName.TaskForked),
+		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskForked],
 		taskId: z.number().optional(),
 	}),
 
