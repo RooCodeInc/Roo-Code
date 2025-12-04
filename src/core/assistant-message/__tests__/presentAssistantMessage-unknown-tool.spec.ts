@@ -98,8 +98,8 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 			expect.stringContaining("Unknown tool"),
 		)
 
-		// Verify error message was shown to user
-		expect(mockTask.say).toHaveBeenCalledWith("error", expect.stringContaining('unknown tool: "nonexistent_tool"'))
+		// Verify error message was shown to user (uses i18n key)
+		expect(mockTask.say).toHaveBeenCalledWith("error", "unknownToolError")
 	})
 
 	it("should return error for unknown tool in XML protocol", async () => {
@@ -134,11 +134,8 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		// Verify recordToolError was called
 		expect(mockTask.recordToolError).toHaveBeenCalled()
 
-		// Verify error message was shown to user
-		expect(mockTask.say).toHaveBeenCalledWith(
-			"error",
-			expect.stringContaining('unknown tool: "fake_tool_that_does_not_exist"'),
-		)
+		// Verify error message was shown to user (uses i18n key)
+		expect(mockTask.say).toHaveBeenCalledWith("error", "unknownToolError")
 	})
 
 	it("should handle unknown tool without freezing (native protocol)", async () => {
