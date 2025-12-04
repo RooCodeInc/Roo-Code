@@ -29,7 +29,6 @@ import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
-import { MessageManager } from "../message-manager"
 
 import {
 	type WebviewMessage,
@@ -203,8 +202,7 @@ export const webviewMessageHandler = async (
 				}
 
 				// Delete this message and all subsequent messages using MessageManager
-				const manager = new MessageManager(currentCline)
-				await manager.rewindToTimestamp(targetMessage.ts!, { includeTargetMessage: false })
+				await currentCline.messageManager.rewindToTimestamp(targetMessage.ts!, { includeTargetMessage: false })
 
 				// Restore checkpoint associations for preserved messages
 				for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -371,10 +369,9 @@ export const webviewMessageHandler = async (
 			}
 
 			// Delete the original (user) message and all subsequent messages using MessageManager
-			const manager = new MessageManager(currentCline)
 			const rewindTs = currentCline.clineMessages[deleteFromMessageIndex]?.ts
 			if (rewindTs) {
-				await manager.rewindToTimestamp(rewindTs, { includeTargetMessage: false })
+				await currentCline.messageManager.rewindToTimestamp(rewindTs, { includeTargetMessage: false })
 			}
 
 			// Restore checkpoint associations for preserved messages

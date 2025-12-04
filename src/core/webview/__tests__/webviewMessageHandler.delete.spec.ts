@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import * as vscode from "vscode"
 import { ClineProvider } from "../ClineProvider"
+import { MessageManager } from "../../message-manager"
 
 // Mock the saveTaskMessages function
 vi.mock("../../task-persistence", () => ({
@@ -63,6 +64,9 @@ describe("webviewMessageHandler delete functionality", () => {
 			overwriteApiConversationHistory: vi.fn(async () => {}),
 			taskId: "test-task-id",
 		}
+		// Add messageManager using a real MessageManager instance (must be added after object creation
+		// to avoid circular reference issues with 'this')
+		getCurrentTaskMock.messageManager = new MessageManager(getCurrentTaskMock as any)
 
 		// Create mock provider
 		provider = {

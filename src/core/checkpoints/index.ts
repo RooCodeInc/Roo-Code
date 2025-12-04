@@ -4,7 +4,6 @@ import * as vscode from "vscode"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
-import { MessageManager } from "../message-manager"
 
 import { getWorkspacePath } from "../../utils/path"
 import { checkGitInstalled } from "../../utils/git"
@@ -268,8 +267,7 @@ export async function checkpointRestore(
 
 			// Use MessageManager to properly handle context-management events
 			// This ensures orphaned Summary messages and truncation markers are cleaned up
-			const manager = new MessageManager(task)
-			await manager.rewindToTimestamp(ts, {
+			await task.messageManager.rewindToTimestamp(ts, {
 				includeTargetMessage: operation === "edit",
 			})
 
