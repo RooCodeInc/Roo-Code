@@ -3000,6 +3000,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
 
+				// Special check for Claude Sonnet models with known issues
+				const modelId = this.api.getModel().id
+				const isClaudeSonnet =
+					modelId.includes("claude") && modelId.includes("sonnet") && !modelId.includes("opus")
+
+				if (!hasTextContent && !hasToolUses && isClaudeSonnet) {
+					const protocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+					console.warn(
+						`[Task#${this.taskId}.${this.instanceId}] Claude Sonnet model (${modelId}) returned empty response with ${protocol} protocol. ` +
+							`This is a known issue. Consider switching to Claude Opus 4.1 or adjusting tool protocol settings.`,
+					)
+				}
+
 				if (hasTextContent || hasToolUses) {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
@@ -3118,6 +3131,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// or tool_use content blocks from API which we should assume is
 					// an error.
 
+					// Log detailed information for debugging
+					const modelId = this.api.getModel().id
+					const protocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
+					console.error(
+						`[Task#${this.taskId}.${this.instanceId}] Empty assistant response detected. ` +
+							`Model: ${modelId}, Protocol: ${protocol}, ` +
+							`Retry attempt: ${currentItem.retryAttempt ?? 0}`,
+					)
+
 					// IMPORTANT: For native tool protocol, we already added the user message to
 					// apiConversationHistory at line 1876. Since the assistant failed to respond,
 					// we need to remove that message before retrying to avoid having two consecutive
@@ -3139,7 +3161,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						const errorMsg =
-							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
+							`Unexpected API Response from ${modelId}: The language model did not provide any assistant messages. ` +
+							`This may indicate an issue with the API or the model's output. ` +
+							`Using ${protocol} protocol. Retrying...`
 
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
@@ -3167,20 +3191,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Continue to retry the request
 						continue
 					} else {
-						// Prompt the user for retry decision
-						const { response } = await this.ask(
-							"api_req_failed",
-							"The model returned no assistant messages. This may indicate an issue with the API or the model's output.",
-						)
+						// Prompt the user for retry decision with more detailed error message
+						const errorDetails =
+							`The model ${modelId} returned no assistant messages using ${protocol} protocol. ` +
+							`This may indicate an issue with the API or the model's output. ` +
+							`Claude Opus 4.1 is known to work reliably. ` +
+							`You may want to switch models or check your API configuration.`
+
+						const { response } = await this.ask("api_req_failed", errorDetails)
 
 						if (response === "yesButtonClicked") {
 							await this.say("api_req_retried")
+
+							// Mark that user message might need to be re-added for native protocol
+							const needsUserMessageReAdd = isNativeProtocol(
+								resolveToolProtocol(this.apiConfiguration, this.api.getModel().info),
+							)
 
 							// Push the same content back to retry
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								userMessageWasRemoved: needsUserMessageReAdd,
 							})
 
 							// Continue to retry the request
@@ -3200,7 +3233,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 							await this.say(
 								"error",
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+								`Unexpected API Response from ${modelId}: The language model did not provide any assistant messages. ` +
+									`This may indicate an issue with the API or the model's output when using ${protocol} protocol.`,
 							)
 
 							await this.addToApiConversationHistory({
