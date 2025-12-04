@@ -58,11 +58,17 @@ export const McpExecution = ({
 
 		try {
 			const parsed = JSON.parse(text)
+
+			// Format JSON with proper indentation - use 4 spaces for better readability
+			const formatted = JSON.stringify(parsed, null, 4)
+
 			return {
 				isJson: true,
-				formatted: JSON.stringify(parsed, null, 2),
+				formatted: formatted,
 			}
 		} catch {
+			// If it's not valid JSON, return as-is
+			// The Markdown component will handle plain text with actual newlines
 			return {
 				isJson: false,
 				formatted: text,
