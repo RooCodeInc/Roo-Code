@@ -57,12 +57,9 @@ export const getRooReasoning = ({
 	}
 
 	if (model.requiredReasoningEffort) {
-		const effort: GetModelReasoningOptions["reasoningEffort"] = reasoningEffort ?? "medium"
-		const validEfforts: ReasoningEffortExtended[] = ["low", "medium", "high"]
-
 		// Honor the provided effort if it's valid, otherwise let the model choose.
-		if (validEfforts.includes(effort as ReasoningEffortExtended)) {
-			return { enabled: true, effort: effort as ReasoningEffortExtended }
+		if (reasoningEffort && reasoningEffort !== "disable" && reasoningEffort !== "minimal") {
+			return { enabled: true, effort: reasoningEffort }
 		} else {
 			return { enabled: true }
 		}
