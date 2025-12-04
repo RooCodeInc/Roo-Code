@@ -1,5 +1,21 @@
 # Roo Code Changelog
 
+## [3.36.0] - 2025-12-04
+
+![3.36.0 Release - Rewind Kangaroo](/releases/3.36.0-release.png)
+
+- Fix: Restore context when rewinding after condense (#8295 by @hannesrudolph, PR #9665 by @hannesrudolph)
+- Add reasoning_details support to Roo provider for enhanced model reasoning visibility (PR #9796 by @app/roomote)
+- Default to native tools for all models in the Roo provider for improved performance (PR #9811 by @mrubens)
+- Enable search_and_replace for Minimax models (PR #9780 by @mrubens)
+- Fix: Resolve Vercel AI Gateway model fetching issues (PR #9791 by @cte)
+- Fix: Apply conservative max tokens for Cerebras provider (PR #9804 by @sebastiand-cerebras)
+- Fix: Remove omission detection logic to eliminate false positives (#9785 by @Michaelzag, PR #9787 by @app/roomote)
+- Refactor: Remove deprecated insert_content tool (PR #9751 by @daniel-lxs)
+- Chore: Hide parallel tool calls experiment and disable feature (PR #9798 by @hannesrudolph)
+- Update next.js documentation site dependencies (PR #9799 by @jr)
+- Fix: Correct download count display on homepage (PR #9807 by @mrubens)
+
 ## [3.35.5] - 2025-12-03
 
 - Feat: Add provider routing selection for OpenRouter embeddings (#9144 by @SannidhyaSah, PR #9693 by @SannidhyaSah)

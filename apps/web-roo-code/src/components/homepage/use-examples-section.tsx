@@ -372,7 +372,7 @@ function DesktopUseCaseCard({ item }: { item: PositionedUseCase }) {
 	)
 }
 
-export function UseExamplesSection() {
+export function UseExamplesSection({ agentTitle = false }: { agentTitle?: boolean }) {
 	const positionedItems = useMemo(() => distributeItems(USE_CASES), [])
 	const [showAllMobile, setShowAllMobile] = useState(false)
 
@@ -384,7 +384,15 @@ export function UseExamplesSection() {
 			<div className="container px-4 mx-auto sm:px-6 lg:px-8">
 				<div className="text-center mb-16">
 					<h2 className="text-4xl font-bold tracking-tight mb-4">
-						The AI team to help your <em>entire</em> human team
+						{agentTitle ? (
+							<>
+								Part of the AI team to help your <em>entire</em> human team
+							</>
+						) : (
+							<>
+								The AI team to help your <em>entire</em> human team
+							</>
+						)}
 					</h2>
 					<p className="text-xl font-light text-muted-foreground max-w-2xl mx-auto">
 						Developers, PMs, Designers, Customer Success: everyone moves faster and more independently with

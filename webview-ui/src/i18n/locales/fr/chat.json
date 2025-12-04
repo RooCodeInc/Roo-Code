@@ -136,7 +136,18 @@
 		"failed": "Échec de la requête API",
 		"streaming": "Requête API...",
 		"cancelled": "Requête API annulée",
-		"streamingFailed": "Échec du streaming API"
+		"streamingFailed": "Échec du streaming API",
+		"errorTitle": "Erreur API {{code}}",
+		"errorMessage": {
+			"docs": "Documentation",
+			"400": "Le fournisseur n'a pas pu traiter la demande telle que présentée. Arrête la tâche et essaie une approche différente.",
+			"401": "Impossible de s'authentifier auprès du fournisseur. Veuillez vérifier la configuration de votre clé API.",
+			"402": "Il semble que vous ayez épuisé vos fonds/crédits sur votre compte. Allez chez votre fournisseur et ajoutez-en plus pour continuer.",
+			"403": "Non autorisé. Votre clé API est valide, mais le fournisseur a refusé de compléter cette demande.",
+			"429": "Trop de demandes. Vous êtes limité par le fournisseur. Veuillez attendre un peu avant votre prochain appel API.",
+			"500": "Erreur du serveur du fournisseur. Quelque chose ne va pas du côté du fournisseur, il n'y a rien de mal avec votre demande.",
+			"unknown": "Erreur API inconnue. Veuillez contacter le support Roo Code."
+		}
 	},
 	"checkpoint": {
 		"regular": "Point de contrôle",
@@ -294,8 +305,8 @@
 		},
 		"release": {
 			"heading": "Nouveautés dans cette version :",
-			"subtasks": "Orchestration améliorée des sous-tâches avec reprise automatique du parent et sécurité à ouverture unique pour de meilleurs workflows multi-tâches",
-			"nativeTools": "L'appel d'outils natif est désormais pris en charge par plus de 13 fournisseurs, notamment Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini et bien d'autres"
+			"contextRewind": "La condensation améliorée du contexte te permet désormais de restaurer le contexte précédent complet en rembobinant vers un point de contrôle",
+			"rooProvider": "Le fournisseur Roo Code Cloud préserve désormais le contenu du raisonnement et utilise par défaut les outils natifs pour de meilleures performances"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

@@ -136,7 +136,18 @@
 		"failed": "API İsteği Başarısız",
 		"streaming": "API İsteği...",
 		"cancelled": "API İsteği İptal Edildi",
-		"streamingFailed": "API Akışı Başarısız"
+		"streamingFailed": "API Akışı Başarısız",
+		"errorTitle": "API Hatası {{code}}",
+		"errorMessage": {
+			"docs": "Belgeler",
+			"400": "Sağlayıcı isteği bu şekilde işleyemedi. Görevi durdur ve farklı bir yaklaşım dene.",
+			"401": "Sağlayıcı ile kimlik doğrulaması yapılamadı. Lütfen API anahtarı yapılandırmanızı kontrol edin.",
+			"402": "Hesabınızda para/kredi bitti gibi görünüyor. Sağlayıcıya git ve devam etmek için daha fazla ekle.",
+			"403": "Yetkisiz. API anahtarınız geçerli ama sağlayıcı bu isteği tamamlamayı reddetti.",
+			"429": "Çok fazla istek. Sağlayıcı tarafından oran sınırlaması uygulanıyor. Lütfen sonraki API çağrısından önce biraz bekle.",
+			"500": "Sağlayıcı sunucu hatası. Sağlayıcı tarafında bir sorun var, isteğinizde sorun yok.",
+			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç."
+		}
 	},
 	"checkpoint": {
 		"regular": "Kontrol Noktası",
@@ -295,8 +306,8 @@
 		},
 		"release": {
 			"heading": "Bu sürümdeki yenilikler:",
-			"subtasks": "Alt görevlerin otomatik olarak üst görevleri devam ettirmesi ve tek açılış güvenliğiyle geliştirilmiş alt görev orkestrasyonu, daha iyi çok görevli iş akışları için",
-			"nativeTools": "Yerel araç çağrısı artık Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini ve daha fazlası dahil olmak üzere 13+ sağlayıcı tarafından destekleniyor"
+			"contextRewind": "İyileştirilmiş bağlam sıkıştırması, artık bir kontrol noktasına geri sarma sırasında tam önceki bağlamı geri yüklemenizi sağlıyor",
+			"rooProvider": "Roo Code Cloud sağlayıcısı artık akıl yürütme içeriğini korur ve daha iyi performans için varsayılan olarak yerel araçları kullanır"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
