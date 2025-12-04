@@ -276,7 +276,31 @@ function validateDynamicProviderModelId(
 
 	const models = routerModels?.[provider]
 
-	if (models && Object.keys(models).length > 1 && !Object.keys(models).includes(modelId)) {
+	// Only validate if we have a substantial model list (more than 10 models)
+	// This prevents false negatives for newer models that haven't been added to the cache yet
+	// OpenRouter frequently adds new models that are immediately usable but may not appear
+	// in the /models endpoint right away
+	if (models && Object.keys(models).length > 10 && !Object.keys(models).includes(modelId)) {
+		// For OpenRouter specifically, we'll be more lenient with model validation
+		// to support newer models like gpt-5.1, gemini-3-pro-preview, grok-4.1-fast:free
+		if (provider === "openrouter") {
+			// Only show a warning for models that don't match any known pattern
+			// Allow models that follow common naming patterns even if not in cache
+			const knownPatterns = [
+				/^openai\/gpt-\d+(\.\d+)?/, // Matches gpt-5, gpt-5.1, etc.
+				/^google\/gemini-\d+/, // Matches gemini-3, gemini-3-pro, etc.
+				/^x-ai\/grok-\d+/, // Matches grok-4, grok-4.1, etc.
+				/^anthropic\/claude-/, // Claude models
+				/^meta-llama\//, // Meta Llama models
+				/^mistralai\//, // Mistral models
+			]
+
+			// If the model matches a known pattern, allow it
+			if (knownPatterns.some((pattern) => pattern.test(modelId))) {
+				return undefined
+			}
+		}
+
 		return i18next.t("settings:validation.modelAvailability", { modelId })
 	}
 
