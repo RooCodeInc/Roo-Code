@@ -47,6 +47,12 @@ interface ImportResult {
 export class CustomModesManager {
 	private static readonly cacheTTL = 10_000
 
+	// Track which file(s) each mode was loaded from so edits/deletes can be routed back
+	private readonly modeFileIndex: Record<"global" | "project", Map<string, Set<string>>> = {
+		global: new Map(),
+		project: new Map(),
+	}
+
 	private disposables: vscode.Disposable[] = []
 	private isWriting = false
 	private writeQueue: Array<() => Promise<void>> = []
@@ -180,10 +186,11 @@ export class CustomModesManager {
 		}
 	}
 
-	private async loadModesFromFile(filePath: string): Promise<ModeConfig[]> {
+	private async loadModesFromFile(filePath: string, sourceHint?: "global" | "project"): Promise<ModeConfig[]> {
 		try {
 			const content = await fs.readFile(filePath, "utf-8")
-			const settings = this.parseYamlSafely(content, filePath)
+			const isJson = path.extname(filePath).toLowerCase() === ".json"
+			const settings = isJson ? JSON.parse(content) : this.parseYamlSafely(content, filePath)
 
 			// Ensure settings has customModes property
 			if (!settings || typeof settings !== "object" || !settings.customModes) {
@@ -209,7 +216,16 @@ export class CustomModesManager {
 
 			// Determine source based on file path
 			const isRoomodes = filePath.endsWith(ROOMODES_FILENAME)
-			const source = isRoomodes ? ("project" as const) : ("global" as const)
+			const source = sourceHint ?? (isRoomodes ? ("project" as const) : ("global" as const))
+
+			// Record the file(s) that contribute each mode so we can round-trip updates
+			for (const mode of result.data.customModes) {
+				const map = this.modeFileIndex[source]
+				const existing = map.get(mode.slug) ?? new Set<string>()
+				existing.add(filePath)
+				// Ensure last-wins ordering by re-setting
+				map.set(mode.slug, existing)
+			}
 
 			// Add source to each mode
 			return result.data.customModes.map((mode) => ({ ...mode, source }))
@@ -246,6 +262,101 @@ export class CustomModesManager {
 		return merged
 	}
 
+	private resetModeFileIndex(): void {
+		this.modeFileIndex.global.clear()
+		this.modeFileIndex.project.clear()
+	}
+
+	private async getGlobalConfigPaths(): Promise<string[]> {
+		const settingsPath = await this.getCustomModesFilePath()
+		const settingsDir = path.dirname(settingsPath)
+		const multiFileDir = path.join(settingsDir, "custom_modes.d")
+
+		let extraFiles: string[] = []
+
+		try {
+			const entries = await fs.readdir(multiFileDir, { withFileTypes: true })
+			extraFiles = entries
+				.filter((entry) => entry.isFile())
+				.map((entry) => path.join(multiFileDir, entry.name))
+				.filter((filePath) => /\.(ya?ml|json)$/i.test(filePath))
+				.sort()
+		} catch (error: any) {
+			if (error?.code !== "ENOENT") {
+				console.error(`[CustomModesManager] Failed to read custom_modes.d directory:`, error)
+			}
+		}
+
+		return [settingsPath, ...extraFiles]
+	}
+
+	private async getProjectConfigPaths(): Promise<string[]> {
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return []
+		}
+
+		const workspaceRoot = getWorkspacePath()
+		const mainPath = path.join(workspaceRoot, ROOMODES_FILENAME)
+		const dirPath = path.join(workspaceRoot, `${ROOMODES_FILENAME}.d`)
+
+		const paths: string[] = []
+		if (await fileExistsAtPath(mainPath)) {
+			paths.push(mainPath)
+		}
+
+		try {
+			const entries = await fs.readdir(dirPath, { withFileTypes: true })
+			const extra = entries
+				.filter((entry) => entry.isFile())
+				.map((entry) => path.join(dirPath, entry.name))
+				.filter((filePath) => /\.(ya?ml|json)$/i.test(filePath))
+				.sort()
+			paths.push(...extra)
+		} catch (error: any) {
+			if (error?.code !== "ENOENT") {
+				console.error(`[CustomModesManager] Failed to read .roomodes.d directory:`, error)
+			}
+		}
+
+		return paths
+	}
+
+	private async loadModesFromPaths(paths: string[], source: "global" | "project"): Promise<ModeConfig[]> {
+		const slugToMode = new Map<string, ModeConfig>()
+
+		for (const filePath of paths) {
+			try {
+				const fileModes = await this.loadModesFromFile(filePath, source)
+				for (const mode of fileModes) {
+					// Later files override earlier ones for the same slug within the same scope
+					slugToMode.delete(mode.slug)
+					slugToMode.set(mode.slug, { ...mode, source })
+				}
+			} catch (error) {
+				console.error(`[CustomModesManager] Error loading modes from ${filePath}:`, error)
+			}
+		}
+
+		return Array.from(slugToMode.values())
+	}
+
+	private async loadAllModes(): Promise<{ projectModes: ModeConfig[]; globalModes: ModeConfig[] }> {
+		this.resetModeFileIndex()
+
+		const [projectPaths, globalPaths] = await Promise.all([
+			this.getProjectConfigPaths(),
+			this.getGlobalConfigPaths(),
+		])
+
+		const [projectModes, globalModes] = await Promise.all([
+			this.loadModesFromPaths(projectPaths, "project"),
+			this.loadModesFromPaths(globalPaths, "global"),
+		])
+
+		return { projectModes, globalModes }
+	}
+
 	public async getCustomModesFilePath(): Promise<string> {
 		const settingsDir = await ensureSettingsDirectoryExists(this.context)
 		const filePath = path.join(settingsDir, GlobalFileNames.customModes)
@@ -265,91 +376,53 @@ export class CustomModesManager {
 		}
 
 		const settingsPath = await this.getCustomModesFilePath()
+		const settingsDir = path.dirname(settingsPath)
 
-		// Watch settings file
-		const settingsWatcher = vscode.workspace.createFileSystemWatcher(settingsPath)
-
-		const handleSettingsChange = async () => {
+		const refreshModes = async () => {
 			try {
-				// Ensure that the settings file exists (especially important for delete events)
-				await this.getCustomModesFilePath()
-				const content = await fs.readFile(settingsPath, "utf-8")
-
-				const errorMessage = t("common:customModes.errors.invalidFormat")
-
-				let config: any
-
-				try {
-					config = this.parseYamlSafely(content, settingsPath)
-				} catch (error) {
-					console.error(error)
-					vscode.window.showErrorMessage(errorMessage)
-					return
-				}
-
-				const result = customModesSettingsSchema.safeParse(config)
-
-				if (!result.success) {
-					vscode.window.showErrorMessage(errorMessage)
-					return
-				}
-
-				// Get modes from .roomodes if it exists (takes precedence)
-				const roomodesPath = await this.getWorkspaceRoomodes()
-				const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
-
-				// Merge modes from both sources (.roomodes takes precedence)
-				const mergedModes = await this.mergeCustomModes(roomodesModes, result.data.customModes)
+				const { projectModes, globalModes } = await this.loadAllModes()
+				const mergedModes = await this.mergeCustomModes(projectModes, globalModes)
 				await this.context.globalState.update("customModes", mergedModes)
 				this.clearCache()
 				await this.onUpdate()
 			} catch (error) {
-				console.error(`[CustomModesManager] Error handling settings file change:`, error)
+				console.error(`[CustomModesManager] Error reloading custom modes:`, error)
 			}
 		}
 
-		this.disposables.push(settingsWatcher.onDidChange(handleSettingsChange))
-		this.disposables.push(settingsWatcher.onDidCreate(handleSettingsChange))
-		this.disposables.push(settingsWatcher.onDidDelete(handleSettingsChange))
+		// Watch main global file
+		const settingsWatcher = vscode.workspace.createFileSystemWatcher(settingsPath)
+		this.disposables.push(settingsWatcher.onDidChange(refreshModes))
+		this.disposables.push(settingsWatcher.onDidCreate(refreshModes))
+		this.disposables.push(settingsWatcher.onDidDelete(refreshModes))
 		this.disposables.push(settingsWatcher)
 
-		// Watch .roomodes file - watch the path even if it doesn't exist yet
+		// Watch global multi-file directory (custom_modes.d)
+		const customModesDirPattern = new vscode.RelativePattern(path.join(settingsDir, "custom_modes.d"), "**/*")
+		const customModesDirWatcher = vscode.workspace.createFileSystemWatcher(customModesDirPattern)
+		this.disposables.push(customModesDirWatcher.onDidChange(refreshModes))
+		this.disposables.push(customModesDirWatcher.onDidCreate(refreshModes))
+		this.disposables.push(customModesDirWatcher.onDidDelete(refreshModes))
+		this.disposables.push(customModesDirWatcher)
+
+		// Watch project files/directories when workspace is present
 		const workspaceFolders = vscode.workspace.workspaceFolders
 		if (workspaceFolders && workspaceFolders.length > 0) {
 			const workspaceRoot = getWorkspacePath()
 			const roomodesPath = path.join(workspaceRoot, ROOMODES_FILENAME)
 			const roomodesWatcher = vscode.workspace.createFileSystemWatcher(roomodesPath)
 
-			const handleRoomodesChange = async () => {
-				try {
-					const settingsModes = await this.loadModesFromFile(settingsPath)
-					const roomodesModes = await this.loadModesFromFile(roomodesPath)
-					// .roomodes takes precedence
-					const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes)
-					await this.context.globalState.update("customModes", mergedModes)
-					this.clearCache()
-					await this.onUpdate()
-				} catch (error) {
-					console.error(`[CustomModesManager] Error handling .roomodes file change:`, error)
-				}
-			}
-
-			this.disposables.push(roomodesWatcher.onDidChange(handleRoomodesChange))
-			this.disposables.push(roomodesWatcher.onDidCreate(handleRoomodesChange))
-			this.disposables.push(
-				roomodesWatcher.onDidDelete(async () => {
-					// When .roomodes is deleted, refresh with only settings modes
-					try {
-						const settingsModes = await this.loadModesFromFile(settingsPath)
-						await this.context.globalState.update("customModes", settingsModes)
-						this.clearCache()
-						await this.onUpdate()
-					} catch (error) {
-						console.error(`[CustomModesManager] Error handling .roomodes file deletion:`, error)
-					}
-				}),
-			)
+			this.disposables.push(roomodesWatcher.onDidChange(refreshModes))
+			this.disposables.push(roomodesWatcher.onDidCreate(refreshModes))
+			this.disposables.push(roomodesWatcher.onDidDelete(refreshModes))
 			this.disposables.push(roomodesWatcher)
+
+			const roomodesDirPattern = new vscode.RelativePattern(path.join(workspaceRoot, `${ROOMODES_FILENAME}.d`), "**/*")
+			const roomodesDirWatcher = vscode.workspace.createFileSystemWatcher(roomodesDirPattern)
+			this.disposables.push(roomodesDirWatcher.onDidChange(refreshModes))
+			this.disposables.push(roomodesDirWatcher.onDidCreate(refreshModes))
+			this.disposables.push(roomodesDirWatcher.onDidDelete(refreshModes))
+			this.disposables.push(roomodesDirWatcher)
 		}
 	}
 
@@ -361,37 +434,8 @@ export class CustomModesManager {
 			return this.cachedModes
 		}
 
-		// Get modes from settings file.
-		const settingsPath = await this.getCustomModesFilePath()
-		const settingsModes = await this.loadModesFromFile(settingsPath)
-
-		// Get modes from .roomodes if it exists.
-		const roomodesPath = await this.getWorkspaceRoomodes()
-		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
-
-		// Create maps to store modes by source.
-		const projectModes = new Map<string, ModeConfig>()
-		const globalModes = new Map<string, ModeConfig>()
-
-		// Add project modes (they take precedence).
-		for (const mode of roomodesModes) {
-			projectModes.set(mode.slug, { ...mode, source: "project" as const })
-		}
-
-		// Add global modes.
-		for (const mode of settingsModes) {
-			if (!projectModes.has(mode.slug)) {
-				globalModes.set(mode.slug, { ...mode, source: "global" as const })
-			}
-		}
-
-		// Combine modes in the correct order: project modes first, then global modes.
-		const mergedModes = [
-			...roomodesModes.map((mode) => ({ ...mode, source: "project" as const })),
-			...settingsModes
-				.filter((mode) => !projectModes.has(mode.slug))
-				.map((mode) => ({ ...mode, source: "global" as const })),
-		]
+		const { projectModes, globalModes } = await this.loadAllModes()
+		const mergedModes = await this.mergeCustomModes(projectModes, globalModes)
 
 		await this.context.globalState.update("customModes", mergedModes)
 
@@ -416,9 +460,25 @@ export class CustomModesManager {
 			}
 
 			const isProjectMode = config.source === "project"
-			let targetPath: string
+			const targetSet = (isProjectMode ? this.modeFileIndex.project : this.modeFileIndex.global).get(slug)
+			const existingTargets = targetSet ? Array.from(targetSet) : []
+			const targetPaths: string[] = []
 
-			if (isProjectMode) {
+			const dirExists = async (dirPath: string): Promise<boolean> => {
+				if (!(await fileExistsAtPath(dirPath))) {
+					return false
+				}
+				try {
+					const stat = await fs.stat(dirPath)
+					return stat.isDirectory()
+				} catch (error) {
+					return false
+				}
+			}
+
+			if (existingTargets.length > 0) {
+				targetPaths.push(...existingTargets)
+			} else if (isProjectMode) {
 				const workspaceFolders = vscode.workspace.workspaceFolders
 
 				if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -427,15 +487,35 @@ export class CustomModesManager {
 				}
 
 				const workspaceRoot = getWorkspacePath()
-				targetPath = path.join(workspaceRoot, ROOMODES_FILENAME)
-				const exists = await fileExistsAtPath(targetPath)
+				const perFileDir = path.join(workspaceRoot, `${ROOMODES_FILENAME}.d`)
+				const usePerFile = await dirExists(perFileDir)
+				const targetPath = usePerFile
+					? path.join(perFileDir, `${slug}.yaml`)
+					: path.join(workspaceRoot, ROOMODES_FILENAME)
 
-				logger.info(`${exists ? "Updating" : "Creating"} project mode in ${ROOMODES_FILENAME}`, {
+				if (usePerFile) {
+					await fs.mkdir(perFileDir, { recursive: true })
+				}
+
+				targetPaths.push(targetPath)
+
+				logger.info(`${usePerFile ? "Updating" : "Creating"} project mode`, {
 					slug,
 					workspace: workspaceRoot,
+					targetPath,
 				})
 			} else {
-				targetPath = await this.getCustomModesFilePath()
+				const settingsPath = await this.getCustomModesFilePath()
+				const settingsDir = path.dirname(settingsPath)
+				const perFileDir = path.join(settingsDir, "custom_modes.d")
+				const usePerFile = await dirExists(perFileDir)
+				const targetPath = usePerFile ? path.join(perFileDir, `${slug}.yaml`) : settingsPath
+
+				if (usePerFile) {
+					await fs.mkdir(perFileDir, { recursive: true })
+				}
+
+				targetPaths.push(targetPath)
 			}
 
 			await this.queueWrite(async () => {
@@ -445,11 +525,15 @@ export class CustomModesManager {
 					source: isProjectMode ? ("project" as const) : ("global" as const),
 				}
 
-				await this.updateModesInFile(targetPath, (modes) => {
-					const updatedModes = modes.filter((m) => m.slug !== slug)
-					updatedModes.push(modeWithSource)
-					return updatedModes
-				})
+				const targets = targetPaths.length > 0 ? targetPaths : [await this.getCustomModesFilePath()]
+
+				for (const pathToUpdate of targets) {
+					await this.updateModesInFile(pathToUpdate, (modes) => {
+						const updatedModes = modes.filter((m) => m.slug !== slug)
+						updatedModes.push(modeWithSource)
+						return updatedModes
+					})
+				}
 
 				this.clearCache()
 				await this.refreshMergedState()
@@ -464,12 +548,13 @@ export class CustomModesManager {
 
 	private async updateModesInFile(filePath: string, operation: (modes: ModeConfig[]) => ModeConfig[]): Promise<void> {
 		let content = "{}"
+		const isJson = path.extname(filePath).toLowerCase() === ".json"
 
 		try {
 			content = await fs.readFile(filePath, "utf-8")
 		} catch (error) {
 			// File might not exist yet.
-			content = yaml.stringify({ customModes: [] }, { lineWidth: 0 })
+			content = isJson ? JSON.stringify({ customModes: [] }, null, 2) : yaml.stringify({ customModes: [] }, { lineWidth: 0 })
 		}
 
 		let settings
@@ -490,16 +575,17 @@ export class CustomModesManager {
 		}
 
 		settings.customModes = operation(settings.customModes)
-		await fs.writeFile(filePath, yaml.stringify(settings, { lineWidth: 0 }), "utf-8")
+
+		if (isJson) {
+			await fs.writeFile(filePath, JSON.stringify(settings, null, 2), "utf-8")
+		} else {
+			await fs.writeFile(filePath, yaml.stringify(settings, { lineWidth: 0 }), "utf-8")
+		}
 	}
 
 	private async refreshMergedState(): Promise<void> {
-		const settingsPath = await this.getCustomModesFilePath()
-		const roomodesPath = await this.getWorkspaceRoomodes()
-
-		const settingsModes = await this.loadModesFromFile(settingsPath)
-		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
-		const mergedModes = await this.mergeCustomModes(roomodesModes, settingsModes)
+		const { projectModes, globalModes } = await this.loadAllModes()
+		const mergedModes = await this.mergeCustomModes(projectModes, globalModes)
 
 		await this.context.globalState.update("customModes", mergedModes)
 
@@ -510,15 +596,9 @@ export class CustomModesManager {
 
 	public async deleteCustomMode(slug: string, fromMarketplace = false): Promise<void> {
 		try {
-			const settingsPath = await this.getCustomModesFilePath()
-			const roomodesPath = await this.getWorkspaceRoomodes()
-
-			const settingsModes = await this.loadModesFromFile(settingsPath)
-			const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
-
-			// Find the mode in either file
-			const projectMode = roomodesModes.find((m) => m.slug === slug)
-			const globalMode = settingsModes.find((m) => m.slug === slug)
+			const { projectModes, globalModes } = await this.loadAllModes()
+			const projectMode = projectModes.find((m) => m.slug === slug)
+			const globalMode = globalModes.find((m) => m.slug === slug)
 
 			if (!projectMode && !globalMode) {
 				throw new Error(t("common:customModes.errors.modeNotFound"))
@@ -526,16 +606,25 @@ export class CustomModesManager {
 
 			// Determine which mode to use for rules folder path calculation
 			const modeToDelete = projectMode || globalMode
+			const projectPaths = Array.from(this.modeFileIndex.project.get(slug) ?? [])
+			const globalPaths = Array.from(this.modeFileIndex.global.get(slug) ?? [])
+
+			// Fallback to default paths if we couldn't capture origin (e.g., first load)
+			if (projectMode && projectPaths.length === 0) {
+				const workspaceRoot = getWorkspacePath()
+				projectPaths.push(path.join(workspaceRoot, ROOMODES_FILENAME))
+			}
+			if (globalMode && globalPaths.length === 0) {
+				globalPaths.push(await this.getCustomModesFilePath())
+			}
 
 			await this.queueWrite(async () => {
-				// Delete from project first if it exists there
-				if (projectMode && roomodesPath) {
-					await this.updateModesInFile(roomodesPath, (modes) => modes.filter((m) => m.slug !== slug))
+				for (const filePath of projectPaths) {
+					await this.updateModesInFile(filePath, (modes) => modes.filter((m) => m.slug !== slug))
 				}
 
-				// Delete from global settings if it exists there
-				if (globalMode) {
-					await this.updateModesInFile(settingsPath, (modes) => modes.filter((m) => m.slug !== slug))
+				for (const filePath of globalPaths) {
+					await this.updateModesInFile(filePath, (modes) => modes.filter((m) => m.slug !== slug))
 				}
 
 				// Delete associated rules folder
@@ -1003,6 +1092,7 @@ export class CustomModesManager {
 	private clearCache(): void {
 		this.cachedModes = null
 		this.cachedAt = 0
+		this.resetModeFileIndex()
 	}
 
 	dispose(): void {

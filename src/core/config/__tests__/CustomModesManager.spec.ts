@@ -1757,4 +1757,116 @@ describe("CustomModesManager", () => {
 			expect(result.yaml).not.toContain("\\")
 		})
 	})
+
+	describe("multi-file custom mode configs", () => {
+		const mockSettingsDir = path.join(mockStoragePath, "settings")
+		const multiDir = path.join(mockSettingsDir, "custom_modes.d")
+		const multiFileA = path.join(multiDir, "mode-a.yaml")
+		const multiFileB = path.join(multiDir, "mode-b.yaml")
+
+		it("merges modes from custom_modes.d with last file winning per slug", async () => {
+			;(fs.readdir as Mock).mockImplementation(async (dirPath: string) => {
+				if (dirPath === multiDir) {
+					return [
+						{ name: "mode-a.yaml", isFile: () => true },
+						{ name: "mode-b.yaml", isFile: () => true },
+					]
+				}
+				return []
+			})
+
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath)
+
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({ customModes: [{ slug: "base", name: "Base", roleDefinition: "r", groups: ["read"] }] })
+				}
+				if (p === multiFileA) {
+					return yaml.stringify({ customModes: [{ slug: "shared", name: "FromA", roleDefinition: "a", groups: ["read"] }] })
+				}
+				if (p === multiFileB) {
+					return yaml.stringify({
+						customModes: [
+							{ slug: "shared", name: "FromB", roleDefinition: "b", groups: ["read"] },
+							{ slug: "extra", name: "Extra", roleDefinition: "x", groups: ["read"] },
+						],
+					})
+				}
+				throw new Error("File not found")
+			})
+
+			const modes = await manager.getCustomModes()
+
+			expect(modes.map((m) => m.slug)).toEqual(["base", "shared", "extra"])
+			const shared = modes.find((m) => m.slug === "shared")
+			expect(shared?.name).toBe("FromB")
+		})
+
+		it("updates modes back to their originating file in custom_modes.d", async () => {
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath || p === multiDir || p === multiFileA)
+			;(fs.readdir as Mock).mockImplementation(async (dirPath: string) => {
+				if (dirPath === multiDir) {
+					return [{ name: "mode-a.yaml", isFile: () => true }]
+				}
+				return []
+			})
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({ customModes: [] })
+				}
+				if (p === multiFileA) {
+					return yaml.stringify({
+						customModes: [{ slug: "mode-a", name: "Old", roleDefinition: "old", groups: ["read"] }],
+					})
+				}
+				throw new Error("File not found")
+			})
+
+			await manager.getCustomModes()
+
+			await manager.updateCustomMode("mode-a", {
+				slug: "mode-a",
+				name: "New",
+				roleDefinition: "updated",
+				groups: ["read"],
+				source: "global",
+			})
+
+			expect(fs.writeFile).toHaveBeenCalled()
+			const writeTargets = (fs.writeFile as Mock).mock.calls.map((call) => call[0])
+			expect(writeTargets).toContain(multiFileA)
+			// Should not fall back to main file when origin is known
+			expect(writeTargets.filter((p) => p === mockSettingsPath).length).toBe(0)
+		})
+
+		it("creates new per-mode file when custom_modes.d exists and slug is new", async () => {
+			;(fileExistsAtPath as Mock).mockImplementation(async (p: string) => p === mockSettingsPath || p === multiDir)
+			;(fs.readdir as Mock).mockImplementation(async (dirPath: string) => {
+				if (dirPath === multiDir) {
+					return []
+				}
+				return []
+			})
+			;(fs.readFile as Mock).mockImplementation(async (p: string) => {
+				if (p === mockSettingsPath) {
+					return yaml.stringify({ customModes: [] })
+				}
+				throw new Error("File not found")
+			})
+
+			await manager.getCustomModes()
+
+			await manager.updateCustomMode("brand-new", {
+				slug: "brand-new",
+				name: "Brand New",
+				roleDefinition: "r",
+				groups: ["read"],
+				source: "global",
+			})
+
+			expect(fs.writeFile).toHaveBeenCalled()
+			const writeTargets = (fs.writeFile as Mock).mock.calls.map((call) => call[0])
+			expect(writeTargets.some((p) => typeof p === "string" && p.endsWith(path.join("custom_modes.d", "brand-new.yaml")))).toBe(true)
+		})
+	})
 })
