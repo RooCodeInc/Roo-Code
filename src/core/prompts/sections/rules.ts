@@ -26,7 +26,6 @@ function getEditingInstructions(
 	// Filter for the main editing tools we care about
 	const hasApplyDiff = diffStrategy && availableEditTools.includes("apply_diff" as ToolName)
 	const hasWriteToFile = availableEditTools.includes("write_to_file" as ToolName)
-	const hasInsertContent = availableEditTools.includes("insert_content" as ToolName)
 
 	// If no editing tools are available, return empty string
 	if (availableEditTools.length === 0) {
@@ -43,20 +42,10 @@ function getEditingInstructions(
 	if (hasWriteToFile) {
 		availableTools.push("write_to_file (for creating new files or complete file rewrites)")
 	}
-	if (hasInsertContent) {
-		availableTools.push("insert_content (for adding lines to files)")
-	}
 
 	// Base editing instruction mentioning all available tools
 	if (availableTools.length > 0) {
 		instructions.push(`- For editing files, you have access to these tools: ${availableTools.join(", ")}.`)
-	}
-
-	// Additional details for insert_content
-	if (hasInsertContent) {
-		instructions.push(
-			"- The insert_content tool adds lines of text to files at a specific line number, such as adding a new function to a JavaScript file or inserting a new route in a Python file. Use line number 0 to append at the end of the file, or any positive number to insert before that line.",
-		)
 	}
 
 	// Preference instruction if multiple tools are available

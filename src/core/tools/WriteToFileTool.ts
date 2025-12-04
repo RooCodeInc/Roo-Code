@@ -11,7 +11,6 @@ import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
-import { detectCodeOmission } from "../../integrations/editor/detect-omission"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
@@ -125,32 +124,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					task.diffViewProvider.originalContent = ""
 				}
 
-				if (detectCodeOmission(task.diffViewProvider.originalContent || "", newContent)) {
-					if (task.diffStrategy) {
-						pushToolResult(
-							formatResponse.toolError(
-								`Content appears to contain comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
-							),
-						)
-						return
-					} else {
-						vscode.window
-							.showWarningMessage(
-								"Potential code truncation detected. This happens when the AI reaches its max output limit.",
-								"Follow guide to fix the issue",
-							)
-							.then((selection) => {
-								if (selection === "Follow guide to fix the issue") {
-									vscode.env.openExternal(
-										vscode.Uri.parse(
-											"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
-										),
-									)
-								}
-							})
-					}
-				}
-
 				let unified = fileExists
 					? formatResponse.createPrettyPatch(relPath, task.diffViewProvider.originalContent, newContent)
 					: convertNewFileToUnifiedDiff(newContent, relPath)
@@ -182,34 +155,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 				await delay(300)
 				task.diffViewProvider.scrollToFirstDiff()
-
-				if (detectCodeOmission(task.diffViewProvider.originalContent || "", newContent)) {
-					if (task.diffStrategy) {
-						await task.diffViewProvider.revertChanges()
-
-						pushToolResult(
-							formatResponse.toolError(
-								`Content appears to contain comments indicating omitted code (e.g., '// rest of code unchanged', '/* previous code */'). Please provide the complete file content without any omissions if possible, or otherwise use the 'apply_diff' tool to apply the diff to the original file.`,
-							),
-						)
-						return
-					} else {
-						vscode.window
-							.showWarningMessage(
-								"Potential code truncation detected. This happens when the AI reaches its max output limit.",
-								"Follow guide to fix the issue",
-							)
-							.then((selection) => {
-								if (selection === "Follow guide to fix the issue") {
-									vscode.env.openExternal(
-										vscode.Uri.parse(
-											"https://github.com/cline/cline/wiki/Troubleshooting-%E2%80%90-Cline-Deleting-Code-with-%22Rest-of-Code-Here%22-Comments",
-										),
-									)
-								}
-							})
-					}
-				}
 
 				let unified = fileExists
 					? formatResponse.createPrettyPatch(relPath, task.diffViewProvider.originalContent, newContent)

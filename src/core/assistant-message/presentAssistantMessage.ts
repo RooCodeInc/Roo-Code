@@ -16,7 +16,6 @@ import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/s
 import { shouldUseSingleFileRead, TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
-import { insertContentTool } from "../tools/InsertContentTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { listCodeDefinitionNamesTool } from "../tools/ListCodeDefinitionNamesTool"
@@ -381,8 +380,6 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.regex}'${
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
 						}]`
-					case "insert_content":
-						return `[${block.name} for '${block.params.path}']`
 					case "search_and_replace":
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_patch":
@@ -483,16 +480,12 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
-			// Check experimental setting for multiple native tool calls
-			const provider = cline.providerRef.deref()
-			const state = await provider?.getState()
-			const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
-			)
+			// Multiple native tool calls feature is on hold - always disabled
+			// Previously resolved from experiments.isEnabled(..., EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS)
+			const isMultipleNativeToolCallsEnabled = false
 
 			const pushToolResult = (content: ToolResponse) => {
-				const editTools = ["insert_content", "apply_diff", "search_and_replace", "apply_patch", "write_to_file"]
+				const editTools = [/* "insert_content", */ "apply_diff", "search_and_replace", "apply_patch", "write_to_file"]
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
@@ -820,16 +813,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					break
 				}
-				case "insert_content":
-					await checkpointSaveAndMark(cline)
-					await insertContentTool.handle(cline, block as ToolUse<"insert_content">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
 				case "search_and_replace":
 					await checkpointSaveAndMark(cline)
 					await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {

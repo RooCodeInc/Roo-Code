@@ -46,7 +46,6 @@ describe("getCapabilitiesSection", () => {
 
 		expect(result).toContain("apply_diff")
 		expect(result).toContain("write_to_file")
-		expect(result).toContain("insert_content")
 	})
 
 	it("excludes apply_diff from capabilities when diffStrategy is undefined", () => {
@@ -54,7 +53,6 @@ describe("getCapabilitiesSection", () => {
 
 		expect(result).not.toContain("apply_diff")
 		expect(result).toContain("write_to_file")
-		expect(result).toContain("insert_content")
 	})
 })
 

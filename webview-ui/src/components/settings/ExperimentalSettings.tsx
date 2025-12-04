@@ -55,6 +55,8 @@ export const ExperimentalSettings = ({
 			<Section>
 				{Object.entries(experimentConfigsMap)
 					.filter(([key]) => key in EXPERIMENT_IDS)
+					// Hide MULTIPLE_NATIVE_TOOL_CALLS - feature is on hold
+					.filter(([key]) => key !== "MULTIPLE_NATIVE_TOOL_CALLS")
 					.map((config) => {
 						if (config[0] === "MULTI_FILE_APPLY_DIFF") {
 							return (

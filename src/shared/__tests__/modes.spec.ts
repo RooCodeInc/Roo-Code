@@ -246,33 +246,6 @@ describe("isToolAllowedForMode", () => {
 			expect(isToolAllowedForMode("use_mcp_tool", "architect", [])).toBe(true)
 		})
 
-		it("applies restrictions to insert_content edit tool", () => {
-			// Test insert_content with matching file
-			expect(
-				isToolAllowedForMode("insert_content", "architect", [], undefined, {
-					path: "test.md",
-					line: "1",
-					content: "# New content",
-				}),
-			).toBe(true)
-
-			// Test insert_content with non-matching file - should throw error
-			expect(() =>
-				isToolAllowedForMode("insert_content", "architect", [], undefined, {
-					path: "test.py",
-					line: "1",
-					content: "print('hello')",
-				}),
-			).toThrow(FileRestrictionError)
-			expect(() =>
-				isToolAllowedForMode("insert_content", "architect", [], undefined, {
-					path: "test.py",
-					line: "1",
-					content: "print('hello')",
-				}),
-			).toThrow(/Markdown files only/)
-		})
-
 		it("applies restrictions to apply_diff with concurrent file edits (MULTI_FILE_APPLY_DIFF experiment)", () => {
 			// Test apply_diff with args parameter (used when MULTI_FILE_APPLY_DIFF experiment is enabled)
 			// This simulates concurrent/batch file editing

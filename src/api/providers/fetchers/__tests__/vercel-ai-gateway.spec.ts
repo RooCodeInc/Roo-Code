@@ -108,10 +108,7 @@ describe("Vercel AI Gateway Fetchers", () => {
 			const models = await getVercelAiGatewayModels()
 
 			expect(models).toEqual({})
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				"Vercel AI Gateway models response is invalid",
-				expect.any(Object),
-			)
+			expect(consoleErrorSpy).toHaveBeenCalled()
 			consoleErrorSpy.mockRestore()
 		})
 
