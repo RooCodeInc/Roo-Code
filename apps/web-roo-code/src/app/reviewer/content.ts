@@ -32,8 +32,8 @@ export const content: AgentPageContent = {
 			],
 		},
 		cta: {
-			buttonText: "Start 14-day Free Trial",
-			disclaimer: "(cancel anytime)",
+			buttonText: "Try now for free",
+			disclaimer: "",
 		},
 	},
 	howItWorks: {
