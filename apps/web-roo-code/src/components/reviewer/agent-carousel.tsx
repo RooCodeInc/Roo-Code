@@ -14,6 +14,9 @@ import {
 	PocketKnife,
 	TestTube,
 	Wrench,
+	BookOpen,
+	Code,
+	Map,
 	type LucideIcon,
 } from "lucide-react"
 
@@ -27,6 +30,9 @@ interface AIAgent {
 const aiAgents: AIAgent[] = [
 	{ icon: GitPullRequest, name: "PR Reviewer", page: "/reviewer" },
 	{ icon: Wrench, name: "PR Fixer", page: "/pr-fixer" },
+	{ icon: BookOpen, name: "Explainer", page: "/explainer" },
+	{ icon: Code, name: "Coder", page: "/coder" },
+	{ icon: Map, name: "Planner", page: "/planner" },
 	{ icon: PocketKnife, name: "Generalist" },
 	{ icon: Bug, name: "Bug Fixer" },
 	{ icon: TestTube, name: "Test Engineer" },

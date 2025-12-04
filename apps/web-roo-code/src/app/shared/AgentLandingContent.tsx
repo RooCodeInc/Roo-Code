@@ -10,6 +10,15 @@ import {
 	ListChecks,
 	BookMarked,
 	History,
+	BookOpen,
+	Lightbulb,
+	FileText,
+	Code,
+	Terminal,
+	FileCode,
+	Map,
+	Compass,
+	Target,
 	LucideIcon,
 } from "lucide-react"
 import Image from "next/image"
@@ -33,6 +42,15 @@ const iconMap: Record<IconName, LucideIcon> = {
 	ListChecks,
 	BookMarked,
 	History,
+	BookOpen,
+	Lightbulb,
+	FileText,
+	Code,
+	Terminal,
+	FileCode,
+	Map,
+	Compass,
+	Target,
 }
 
 /**

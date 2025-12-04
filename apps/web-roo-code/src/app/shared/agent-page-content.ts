@@ -11,6 +11,15 @@ export type IconName =
 	| "ListChecks"
 	| "BookMarked"
 	| "History"
+	| "BookOpen"
+	| "Lightbulb"
+	| "FileText"
+	| "Code"
+	| "Terminal"
+	| "FileCode"
+	| "Map"
+	| "Compass"
+	| "Target"
 
 /**
  * Generic content structure for agent landing pages.
