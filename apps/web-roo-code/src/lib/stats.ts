@@ -106,7 +106,7 @@ export async function getVSCodeDownloads() {
 function formatNumber(num: number): string {
 	// if number is 1 million or more, format as millions
 	if (num >= 1000000) {
-		const truncated = Math.floor((num / 1000000) * 10) / 10
+		const truncated = Math.floor((num / 1000000) * 100) / 100
 		return truncated.toFixed(2) + "M"
 	}
 
@@ -115,8 +115,8 @@ function formatNumber(num: number): string {
 	return truncated.toFixed(1) + "k"
 
 	// examples:
-	// console.log(formatNumber(1033400)) -> "1.0M"
-	// console.log(formatNumber(2500000)) -> "2.5M"
+	// console.log(formatNumber(1033400)) -> "1.03M"
+	// console.log(formatNumber(2500000)) -> "2.50M"
 	// console.log(formatNumber(337231)) -> "337.2k"
 	// console.log(formatNumber(23233)) -> "23.2k"
 	// console.log(formatNumber(2322)) -> "2.3k"
