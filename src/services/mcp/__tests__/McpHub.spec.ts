@@ -49,6 +49,16 @@ vi.mock("../../../utils/safeWriteJson", () => ({
 	}),
 }))
 
+// Mock McpServerManager
+vi.mock("../McpServerManager", () => ({
+	McpServerManager: {
+		notifyProviders: vi.fn(),
+		getInstance: vi.fn(),
+		unregisterProvider: vi.fn(),
+		cleanup: vi.fn(),
+	},
+}))
+
 vi.mock("vscode", () => ({
 	workspace: {
 		createFileSystemWatcher: vi.fn().mockReturnValue({
@@ -1502,9 +1512,12 @@ describe("McpHub", () => {
 				}
 				mcpHub.connections = [mockConnection]
 
+				// Get the mock McpServerManager
+				const { McpServerManager } = await import("../McpServerManager")
+
 				await mcpHub.updateServerTimeout("test-server", 120)
 
-				expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith(
+				expect(McpServerManager.notifyProviders).toHaveBeenCalledWith(
 					expect.objectContaining({
 						type: "mcpServers",
 					}),
@@ -1733,6 +1746,9 @@ describe("McpHub", () => {
 			const mcpHub = new McpHub(disabledMockProvider as unknown as ClineProvider)
 			await new Promise((resolve) => setTimeout(resolve, 100))
 
+			// Get the mock McpServerManager
+			const { McpServerManager } = await import("../McpServerManager")
+
 			// Clear previous calls
 			vi.clearAllMocks()
 
@@ -1746,8 +1762,8 @@ describe("McpHub", () => {
 			expect(server!.client).toBeNull()
 			expect(server!.transport).toBeNull()
 
-			// Verify postMessageToWebview was called to update the UI
-			expect(disabledMockProvider.postMessageToWebview).toHaveBeenCalledWith(
+			// Verify McpServerManager.notifyProviders was called to update the UI
+			expect(McpServerManager.notifyProviders).toHaveBeenCalledWith(
 				expect.objectContaining({
 					type: "mcpServers",
 				}),
