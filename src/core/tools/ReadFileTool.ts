@@ -107,7 +107,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 	async execute(params: { files: FileEntry[] }, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { handleError, pushToolResult, toolProtocol } = callbacks
-		const fileEntries = params.files
+		// Transform native protocol format if necessary
+		const fileEntries = this.transformNativeFileEntries(params.files)
 		const modelInfo = task.api.getModel().info
 		const protocol = resolveToolProtocol(task.apiConfiguration, modelInfo)
 		const useNative = isNativeProtocol(protocol)
@@ -713,6 +714,44 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		}
 
 		return `[${blockName} with missing path/args/files]`
+	}
+
+	/**
+	 * Transform native protocol file entries to the expected format.
+	 * Native protocol uses snake_case `line_ranges` as string arrays,
+	 * but our internal format uses camelCase `lineRanges` as LineRange objects.
+	 */
+	private transformNativeFileEntries(files: any[]): FileEntry[] {
+		return files.map((file) => {
+			const entry: FileEntry = {
+				path: file.path,
+			}
+
+			// Transform line_ranges (snake_case, string[]) to lineRanges (camelCase, LineRange[])
+			if (file.line_ranges && Array.isArray(file.line_ranges)) {
+				entry.lineRanges = []
+				for (const rangeStr of file.line_ranges) {
+					const match = String(rangeStr).match(/^(\d+)-(\d+)$/)
+					if (match) {
+						const [, startStr, endStr] = match
+						const start = parseInt(startStr, 10)
+						const end = parseInt(endStr, 10)
+						if (!isNaN(start) && !isNaN(end) && start > 0 && end > 0) {
+							entry.lineRanges.push({ start, end })
+						}
+					}
+				}
+				// Only keep lineRanges if we successfully parsed at least one range
+				if (entry.lineRanges.length === 0) {
+					delete entry.lineRanges
+				}
+			} else if (file.lineRanges && Array.isArray(file.lineRanges)) {
+				// Already in the correct format (camelCase with LineRange objects)
+				entry.lineRanges = file.lineRanges
+			}
+
+			return entry
+		})
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"read_file">): Promise<void> {

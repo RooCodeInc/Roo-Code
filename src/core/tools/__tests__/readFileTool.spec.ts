@@ -1726,3 +1726,214 @@ describe("read_file tool with image support", () => {
 		})
 	})
 })
+
+describe("read_file tool with native protocol line_ranges", () => {
+	// Test that the native protocol format (snake_case line_ranges as strings) works correctly
+	const testFilePath = "test/large-file.txt"
+	const absoluteFilePath = "/test/large-file.txt"
+
+	const mockedCountFileLines = vi.mocked(countFileLines)
+	const mockedReadLines = vi.mocked(readLines)
+	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedPathResolve = vi.mocked(path.resolve)
+
+	let mockCline: any
+	let mockProvider: any
+	let toolResult: ToolResponse | undefined
+
+	beforeEach(() => {
+		// Clear specific mocks
+		mockedCountFileLines.mockClear()
+		mockedReadLines.mockClear()
+		mockedIsBinaryFile.mockClear()
+		mockedPathResolve.mockClear()
+		addLineNumbersMock.mockClear()
+
+		// Use shared mock setup function
+		const mocks = createMockCline()
+		mockCline = mocks.mockCline
+		mockProvider = mocks.mockProvider
+
+		// Set up native protocol support
+		mockCline.api = {
+			getModel: vi.fn().mockReturnValue({
+				info: {
+					supportsImages: false,
+					contextWindow: 200000,
+					maxTokens: 4096,
+					supportsPromptCache: false,
+					supportsNativeTools: true, // Enable native tools support
+				},
+			}),
+		}
+
+		mockedPathResolve.mockReturnValue(absoluteFilePath)
+		mockedIsBinaryFile.mockResolvedValue(false)
+
+		// Mock addLineNumbers to add line numbers to content
+		addLineNumbersMock.mockImplementation((content, startLine = 1) => {
+			if (!content) return ""
+			const lines = content.split("\n")
+			return lines.map((line: string, i: number) => `${startLine + i} | ${line}`).join("\n")
+		})
+
+		toolResult = undefined
+	})
+
+	it("should respect line_ranges in native protocol format even with maxReadFileLine set", async () => {
+		// Setup - file with 472 lines, maxReadFileLine set to 250
+		mockedCountFileLines.mockResolvedValue(472)
+		mockProvider.getState.mockResolvedValue({ maxReadFileLine: 250 })
+
+		// Mock the specific lines we want to read (251-350)
+		const requestedContent = Array.from({ length: 100 }, (_, i) => `Line ${251 + i}`).join("\n")
+		mockedReadLines.mockResolvedValue(requestedContent)
+
+		// Mock addLineNumbers from extract-text module
+		const { addLineNumbers } = await import("../../../integrations/misc/extract-text")
+		vi.mocked(addLineNumbers).mockImplementation((content, startLine = 1) => {
+			if (!content) return ""
+			const lines = content.split("\n")
+			return lines.map((line: string, i: number) => `${startLine + i} | ${line}`).join("\n")
+		})
+
+		// Create a tool use with native protocol format (snake_case line_ranges as string array)
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: {}, // Native protocol doesn't use params
+			partial: false,
+			nativeArgs: {
+				files: [
+					{
+						path: testFilePath,
+						line_ranges: ["251-350"], // Snake_case, string array format
+					} as any, // Use any to bypass TypeScript for native protocol format
+				],
+			} as any,
+		}
+
+		// Execute the tool
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "native",
+		})
+
+		// Verify that readLines was called with the correct range
+		expect(mockedReadLines).toHaveBeenCalledWith(absoluteFilePath, 349, 250) // 0-indexed: lines 251-350
+
+		// Verify the result contains the requested lines, not the first 250 lines
+		expect(toolResult).toBeDefined()
+		// For native protocol, the result format is different
+		expect(toolResult).toContain("251-350")
+		expect(toolResult).toContain("251 |") // Check for line number prefix
+		expect(toolResult).not.toContain("Showing only 250 of 472 total lines")
+	})
+
+	it("should handle multiple line_ranges in native protocol format", async () => {
+		// Setup - file with 500 lines
+		mockedCountFileLines.mockResolvedValue(500)
+		mockProvider.getState.mockResolvedValue({ maxReadFileLine: 100 })
+
+		// Create a tool use with multiple ranges
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: {},
+			partial: false,
+			nativeArgs: {
+				files: [
+					{
+						path: testFilePath,
+						line_ranges: ["10-20", "300-310", "450-460"], // Multiple ranges
+					} as any, // Use any to bypass TypeScript for native protocol format
+				],
+			} as any,
+		}
+
+		// Mock the readLines to return different content for each range
+		mockedReadLines
+			.mockResolvedValueOnce("Lines 10-20 content")
+			.mockResolvedValueOnce("Lines 300-310 content")
+			.mockResolvedValueOnce("Lines 450-460 content")
+
+		// Mock addLineNumbers from extract-text module
+		const { addLineNumbers } = await import("../../../integrations/misc/extract-text")
+		vi.mocked(addLineNumbers).mockImplementation((content, startLine = 1) => {
+			if (!content) return ""
+			return `${startLine} | ${content}`
+		})
+
+		// Execute the tool
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "native",
+		})
+
+		// Verify that readLines was called for each range
+		expect(mockedReadLines).toHaveBeenCalledTimes(3)
+		expect(mockedReadLines).toHaveBeenNthCalledWith(1, absoluteFilePath, 19, 9) // lines 10-20
+		expect(mockedReadLines).toHaveBeenNthCalledWith(2, absoluteFilePath, 309, 299) // lines 300-310
+		expect(mockedReadLines).toHaveBeenNthCalledWith(3, absoluteFilePath, 459, 449) // lines 450-460
+
+		// Verify the result contains all ranges (native protocol format)
+		expect(toolResult).toContain("10-20")
+		expect(toolResult).toContain("300-310")
+		expect(toolResult).toContain("450-460")
+	})
+
+	it("should handle mixed camelCase and snake_case formats", async () => {
+		// Setup
+		mockedCountFileLines.mockResolvedValue(100)
+		mockProvider.getState.mockResolvedValue({ maxReadFileLine: 50 })
+		mockedReadLines.mockResolvedValue("Lines 60-70 content")
+
+		// Mock addLineNumbers from extract-text module
+		const { addLineNumbers } = await import("../../../integrations/misc/extract-text")
+		vi.mocked(addLineNumbers).mockImplementation((content, startLine = 1) => {
+			if (!content) return ""
+			return `${startLine} | ${content}`
+		})
+
+		// Test with already camelCase format (should still work)
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: {},
+			partial: false,
+			nativeArgs: {
+				files: [
+					{
+						path: testFilePath,
+						lineRanges: [{ start: 60, end: 70 }], // Already in camelCase with LineRange objects
+					},
+				],
+			},
+		}
+
+		// Execute the tool
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "native",
+		})
+
+		// Verify the camelCase format still works
+		expect(mockedReadLines).toHaveBeenCalledWith(absoluteFilePath, 69, 59) // lines 60-70
+		expect(toolResult).toContain("60-70")
+	})
+})
