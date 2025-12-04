@@ -231,6 +231,14 @@ html {
 body {
 	margin: 0;
 	line-height: 1.25;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+#root {
+	height: 100%;
+	position: relative;
 }
 
 body.scrollable,
