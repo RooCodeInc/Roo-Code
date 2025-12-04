@@ -2147,4 +2147,94 @@ describe("McpHub", () => {
 			)
 		})
 	})
+
+	describe("URL type auto-inference", () => {
+		it("should auto-infer 'streamable-http' type when URL is present without explicit type", () => {
+			const config = {
+				url: "https://api.example.com/mcp",
+				headers: {
+					Authorization: "Bearer token",
+				},
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("streamable-http")
+		})
+
+		it("should preserve explicit 'sse' type when specified with URL", () => {
+			const config = {
+				type: "sse",
+				url: "https://api.example.com/mcp",
+				headers: {
+					Authorization: "Bearer token",
+				},
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("sse")
+		})
+
+		it("should preserve explicit 'streamable-http' type when specified", () => {
+			const config = {
+				type: "streamable-http",
+				url: "https://api.example.com/mcp",
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("streamable-http")
+		})
+
+		it("should maintain backward compatibility for stdio type", () => {
+			const config = {
+				command: "node",
+				args: ["server.js"],
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("stdio")
+		})
+
+		it("should work with minimal URL config", () => {
+			const config = {
+				url: "https://docs.langchain.com/mcp",
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("streamable-http")
+		})
+
+		it("should auto-infer for GitHub Copilot-like config", () => {
+			const config = {
+				url: "https://api.githubcopilot.com/mcp",
+				headers: {
+					Authorization: "Bearer GITHUB_PAT",
+				},
+				alwaysAllow: ["SearchDocsByLangChain"],
+			}
+
+			const result = ServerConfigSchema.parse(config)
+			expect(result.type).toBe("streamable-http")
+		})
+
+		it("should reject invalid URL", () => {
+			const config = {
+				url: "not-a-url",
+			}
+
+			expect(() => ServerConfigSchema.parse(config)).toThrow("URL must be a valid URL format")
+		})
+
+		it("should reject mixed stdio and URL fields", () => {
+			const config = {
+				command: "node",
+				url: "https://api.example.com/mcp",
+			}
+
+			// This should be caught by the validateServerConfig function
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			expect(() => mcpHub["validateServerConfig"](config)).toThrow(
+				"Cannot mix 'stdio' and ('sse' or 'streamable-http') fields",
+			)
+		})
+	})
 })
