@@ -995,6 +995,16 @@ export async function presentAssistantMessage(cline: Task) {
 						toolProtocol,
 					})
 					break
+				default: {
+					// Handle unknown/invalid tool names
+					// This is critical for native protocol where every tool_use MUST have a tool_result
+					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
+					cline.consecutiveMistakeCount++
+					cline.recordToolError(block.name as ToolName, errorMessage)
+					await cline.say("error", `Roo tried to use an unknown tool: "${block.name}". Retrying...`)
+					pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
+					break
+				}
 			}
 
 			break
