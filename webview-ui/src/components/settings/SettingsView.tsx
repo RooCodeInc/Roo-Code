@@ -144,6 +144,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const {
 		alwaysAllowReadOnly,
 		alwaysAllowReadOnlyOutsideWorkspace,
+		allowedReadDirectories,
 		allowedCommands,
 		deniedCommands,
 		allowedMaxRequests,
@@ -156,6 +157,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		alwaysAllowSubtasks,
 		alwaysAllowWrite,
 		alwaysAllowWriteOutsideWorkspace,
+		allowedWriteDirectories,
 		alwaysAllowWriteProtected,
 		alwaysApproveResubmit,
 		autoCondenseContext,
@@ -352,8 +354,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					language,
 					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
 					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
+					allowedReadDirectories: allowedReadDirectories ?? undefined,
 					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
 					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
+					allowedWriteDirectories: allowedWriteDirectories ?? undefined,
 					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
 					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
 					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
@@ -713,8 +717,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						<AutoApproveSettings
 							alwaysAllowReadOnly={alwaysAllowReadOnly}
 							alwaysAllowReadOnlyOutsideWorkspace={alwaysAllowReadOnlyOutsideWorkspace}
+							allowedReadDirectories={allowedReadDirectories}
 							alwaysAllowWrite={alwaysAllowWrite}
 							alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
+							allowedWriteDirectories={allowedWriteDirectories}
 							alwaysAllowWriteProtected={alwaysAllowWriteProtected}
 							alwaysAllowBrowser={alwaysAllowBrowser}
 							alwaysApproveResubmit={alwaysApproveResubmit}

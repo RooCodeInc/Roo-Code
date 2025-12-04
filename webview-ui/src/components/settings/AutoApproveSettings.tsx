@@ -20,8 +20,10 @@ import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
 type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	alwaysAllowReadOnly?: boolean
 	alwaysAllowReadOnlyOutsideWorkspace?: boolean
+	allowedReadDirectories?: string[]
 	alwaysAllowWrite?: boolean
 	alwaysAllowWriteOutsideWorkspace?: boolean
+	allowedWriteDirectories?: string[]
 	alwaysAllowWriteProtected?: boolean
 	alwaysAllowBrowser?: boolean
 	alwaysApproveResubmit?: boolean
@@ -40,8 +42,10 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setCachedStateField: SetCachedStateField<
 		| "alwaysAllowReadOnly"
 		| "alwaysAllowReadOnlyOutsideWorkspace"
+		| "allowedReadDirectories"
 		| "alwaysAllowWrite"
 		| "alwaysAllowWriteOutsideWorkspace"
+		| "allowedWriteDirectories"
 		| "alwaysAllowWriteProtected"
 		| "alwaysAllowBrowser"
 		| "alwaysApproveResubmit"
@@ -63,8 +67,10 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 export const AutoApproveSettings = ({
 	alwaysAllowReadOnly,
 	alwaysAllowReadOnlyOutsideWorkspace,
+	allowedReadDirectories,
 	alwaysAllowWrite,
 	alwaysAllowWriteOutsideWorkspace,
+	allowedWriteDirectories,
 	alwaysAllowWriteProtected,
 	alwaysAllowBrowser,
 	alwaysApproveResubmit,
@@ -86,6 +92,8 @@ export const AutoApproveSettings = ({
 	const { t } = useAppTranslation()
 	const [commandInput, setCommandInput] = useState("")
 	const [deniedCommandInput, setDeniedCommandInput] = useState("")
+	const [readDirectoryInput, setReadDirectoryInput] = useState("")
+	const [writeDirectoryInput, setWriteDirectoryInput] = useState("")
 	const { autoApprovalEnabled, setAutoApprovalEnabled } = useExtensionState()
 
 	const toggles = useAutoApprovalToggles()
@@ -205,6 +213,73 @@ export const AutoApproveSettings = ({
 								{t("settings:autoApprove.readOnly.outsideWorkspace.description")}
 							</div>
 						</div>
+						<div className="pt-3">
+							<label className="block font-medium mb-1">
+								{t("settings:autoApprove.readOnly.allowedDirectories.label")}
+							</label>
+							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-2">
+								{t("settings:autoApprove.readOnly.allowedDirectories.description")}
+							</div>
+							<div className="flex gap-2">
+								<Input
+									value={readDirectoryInput}
+									onChange={(e: any) => setReadDirectoryInput(e.target.value)}
+									onKeyDown={(e: any) => {
+										if (e.key === "Enter") {
+											e.preventDefault()
+											const currentDirs = allowedReadDirectories ?? []
+											if (readDirectoryInput && !currentDirs.includes(readDirectoryInput)) {
+												const newDirs = [...currentDirs, readDirectoryInput]
+												setCachedStateField("allowedReadDirectories", newDirs)
+												setReadDirectoryInput("")
+												vscode.postMessage({
+													type: "updateSettings",
+													updatedSettings: { allowedReadDirectories: newDirs },
+												})
+											}
+										}
+									}}
+									placeholder={t("settings:autoApprove.readOnly.allowedDirectories.placeholder")}
+									className="grow"
+								/>
+								<Button
+									className="h-8"
+									onClick={() => {
+										const currentDirs = allowedReadDirectories ?? []
+										if (readDirectoryInput && !currentDirs.includes(readDirectoryInput)) {
+											const newDirs = [...currentDirs, readDirectoryInput]
+											setCachedStateField("allowedReadDirectories", newDirs)
+											setReadDirectoryInput("")
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { allowedReadDirectories: newDirs },
+											})
+										}
+									}}>
+									{t("settings:autoApprove.execute.addButton")}
+								</Button>
+							</div>
+							<div className="flex flex-wrap gap-2 mt-2">
+								{(allowedReadDirectories ?? []).map((dir, index) => (
+									<Button
+										key={index}
+										variant="secondary"
+										onClick={() => {
+											const newDirs = (allowedReadDirectories ?? []).filter((_, i) => i !== index)
+											setCachedStateField("allowedReadDirectories", newDirs)
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { allowedReadDirectories: newDirs },
+											})
+										}}>
+										<div className="flex flex-row items-center gap-1">
+											<div>{dir}</div>
+											<X className="text-foreground scale-75" />
+										</div>
+									</Button>
+								))}
+							</div>
+						</div>
 					</div>
 				)}
 
@@ -227,6 +302,75 @@ export const AutoApproveSettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:autoApprove.write.outsideWorkspace.description")}
+							</div>
+						</div>
+						<div className="pt-3">
+							<label className="block font-medium mb-1">
+								{t("settings:autoApprove.write.allowedDirectories.label")}
+							</label>
+							<div className="text-vscode-descriptionForeground text-sm mt-1 mb-2">
+								{t("settings:autoApprove.write.allowedDirectories.description")}
+							</div>
+							<div className="flex gap-2">
+								<Input
+									value={writeDirectoryInput}
+									onChange={(e: any) => setWriteDirectoryInput(e.target.value)}
+									onKeyDown={(e: any) => {
+										if (e.key === "Enter") {
+											e.preventDefault()
+											const currentDirs = allowedWriteDirectories ?? []
+											if (writeDirectoryInput && !currentDirs.includes(writeDirectoryInput)) {
+												const newDirs = [...currentDirs, writeDirectoryInput]
+												setCachedStateField("allowedWriteDirectories", newDirs)
+												setWriteDirectoryInput("")
+												vscode.postMessage({
+													type: "updateSettings",
+													updatedSettings: { allowedWriteDirectories: newDirs },
+												})
+											}
+										}
+									}}
+									placeholder={t("settings:autoApprove.write.allowedDirectories.placeholder")}
+									className="grow"
+								/>
+								<Button
+									className="h-8"
+									onClick={() => {
+										const currentDirs = allowedWriteDirectories ?? []
+										if (writeDirectoryInput && !currentDirs.includes(writeDirectoryInput)) {
+											const newDirs = [...currentDirs, writeDirectoryInput]
+											setCachedStateField("allowedWriteDirectories", newDirs)
+											setWriteDirectoryInput("")
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { allowedWriteDirectories: newDirs },
+											})
+										}
+									}}>
+									{t("settings:autoApprove.execute.addButton")}
+								</Button>
+							</div>
+							<div className="flex flex-wrap gap-2 mt-2">
+								{(allowedWriteDirectories ?? []).map((dir, index) => (
+									<Button
+										key={index}
+										variant="secondary"
+										onClick={() => {
+											const newDirs = (allowedWriteDirectories ?? []).filter(
+												(_, i) => i !== index,
+											)
+											setCachedStateField("allowedWriteDirectories", newDirs)
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { allowedWriteDirectories: newDirs },
+											})
+										}}>
+										<div className="flex flex-row items-center gap-1">
+											<div>{dir}</div>
+											<X className="text-foreground scale-75" />
+										</div>
+									</Button>
+								))}
 							</div>
 						</div>
 						<div>
