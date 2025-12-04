@@ -38,7 +38,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 		this.options = options
 
-		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		// Normalize base URL to ensure it works with or without "/v1" suffix
+		const baseURL = normalizeOpenAiBaseUrl(
+			this.options.openAiBaseUrl ?? "https://api.openai.com/v1",
+			options.openAiUseAzure,
+		)
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
@@ -516,16 +520,55 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 }
 
+/**
+ * Helper function to normalize OpenAI-compatible base URLs.
+ * Exported for use in getOpenAiModels function.
+ */
+function normalizeOpenAiBaseUrl(baseUrl: string, isAzure: boolean = false): string {
+	// Trim whitespace
+	let normalizedUrl = baseUrl.trim()
+
+	// Get host for special case detection
+	let urlHost = ""
+	try {
+		urlHost = new URL(normalizedUrl).host
+	} catch {
+		// Invalid URL, return as-is
+		return normalizedUrl
+	}
+
+	// Special case: don't modify Azure or other special endpoints
+	const isAzureAiInference = urlHost.endsWith(".services.ai.azure.com")
+	const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || isAzure
+
+	// Azure endpoints don't use /v1 suffix
+	if (isAzureAiInference || isAzureOpenAi) {
+		return normalizedUrl
+	}
+
+	// For standard OpenAI-compatible endpoints, ensure /v1 suffix
+	// Remove trailing slash first
+	normalizedUrl = normalizedUrl.replace(/\/$/, "")
+
+	// Check if it already ends with /v1 or /v1/ (case-insensitive)
+	if (!/\/v1$/i.test(normalizedUrl)) {
+		// Add /v1 suffix if not present
+		normalizedUrl = `${normalizedUrl}/v1`
+	}
+
+	return normalizedUrl
+}
+
 export async function getOpenAiModels(baseUrl?: string, apiKey?: string, openAiHeaders?: Record<string, string>) {
 	try {
 		if (!baseUrl) {
 			return []
 		}
 
-		// Trim whitespace from baseUrl to handle cases where users accidentally include spaces
-		const trimmedBaseUrl = baseUrl.trim()
+		// Normalize the base URL
+		const normalizedUrl = normalizeOpenAiBaseUrl(baseUrl, false)
 
-		if (!URL.canParse(trimmedBaseUrl)) {
+		if (!URL.canParse(normalizedUrl)) {
 			return []
 		}
 
@@ -543,7 +586,7 @@ export async function getOpenAiModels(baseUrl?: string, apiKey?: string, openAiH
 			config["headers"] = headers
 		}
 
-		const response = await axios.get(`${trimmedBaseUrl}/models`, config)
+		const response = await axios.get(`${normalizedUrl}/models`, config)
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		return [...new Set<string>(modelsArray)]
 	} catch (error) {
