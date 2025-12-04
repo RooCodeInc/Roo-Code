@@ -89,6 +89,6 @@ export const content: AgentPageContent = {
 	cta: {
 		heading: "Ship fixes, not follow-ups.",
 		description: "Let Roo Code's PR Fixer turn your review feedback into clean, ready-to-merge commits.",
-		buttonText: "Start 14-day Free Trial",
+		buttonText: "Try now for free",
 	},
 }

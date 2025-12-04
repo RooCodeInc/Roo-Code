@@ -16,8 +16,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { Button } from "@/components/ui"
-import { AnimatedBackground } from "@/components/homepage"
-import { AgentCarousel } from "@/components/reviewer/agent-carousel"
+import { AnimatedBackground, UseExamplesSection } from "@/components/homepage"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 import { type AgentPageContent, type IconName } from "./agent-page-content"
 
@@ -127,6 +126,9 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 
 			{/* How It Works Section */}
 			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
+					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
+				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
@@ -161,6 +163,9 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 
 			{/* Why Better Section */}
 			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
+					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 dark:bg-blue-700/20 blur-[140px]" />
+				</div>
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
@@ -198,7 +203,7 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 			</section>
 
 			{/* Agent Carousel */}
-			<AgentCarousel currentAgent={content.agentName} />
+			<UseExamplesSection agentTitle={true} />
 
 			{/* CTA Section */}
 			<section className="py-20">
