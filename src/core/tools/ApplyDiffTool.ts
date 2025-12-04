@@ -10,7 +10,6 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
@@ -33,11 +32,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 	async execute(params: ApplyDiffParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
-		let { path: relPath, diff: diffContent } = params
-
-		if (diffContent && !task.api.getModel().id.includes("claude")) {
-			diffContent = unescapeHtmlEntities(diffContent)
-		}
+		const { path: relPath, diff: diffContent } = params
 
 		try {
 			if (!relPath) {
