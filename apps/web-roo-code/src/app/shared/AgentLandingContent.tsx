@@ -202,7 +202,6 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 				</div>
 			</section>
 
-			{/* Agent Carousel */}
 			<UseExamplesSection agentTitle={true} />
 
 			{/* CTA Section */}
