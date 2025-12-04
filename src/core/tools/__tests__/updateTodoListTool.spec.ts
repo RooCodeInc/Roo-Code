@@ -203,6 +203,62 @@ Just some text
 			expect(result[2].content).toBe("Task 3")
 			expect(result[2].status).toBe("in_progress")
 		})
+
+		it("should handle escaped newlines from native tool calling (Minimax models)", () => {
+			// Test case similar to the reported issue - note the first line should be [ ] not just text
+			const md =
+				"[ ] Check git status and identify modified files\\n[x] Read modified files to understand changes\\n[x] Create proper commit message based on changes\\n[x] Create new branch with proper commit\\n[x] Push changes to the new branch"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(5)
+
+			expect(result[0].content).toBe("Check git status and identify modified files")
+			expect(result[0].status).toBe("pending")
+
+			expect(result[1].content).toBe("Read modified files to understand changes")
+			expect(result[1].status).toBe("completed")
+
+			expect(result[2].content).toBe("Create proper commit message based on changes")
+			expect(result[2].status).toBe("completed")
+
+			expect(result[3].content).toBe("Create new branch with proper commit")
+			expect(result[3].status).toBe("completed")
+
+			expect(result[4].content).toBe("Push changes to the new branch")
+			expect(result[4].status).toBe("completed")
+		})
+
+		it("should handle mixed escaped and real newlines", () => {
+			const md = "[ ] Task 1\\n[x] Task 2\n[-] Task 3\\n[ ] Task 4"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(4)
+
+			expect(result[0].content).toBe("Task 1")
+			expect(result[0].status).toBe("pending")
+
+			expect(result[1].content).toBe("Task 2")
+			expect(result[1].status).toBe("completed")
+
+			expect(result[2].content).toBe("Task 3")
+			expect(result[2].status).toBe("in_progress")
+
+			expect(result[3].content).toBe("Task 4")
+			expect(result[3].status).toBe("pending")
+		})
+
+		it("should handle escaped newlines with dash prefix", () => {
+			const md = "- [ ] Task 1\\n- [x] Task 2\\n- [-] Task 3"
+			const result = parseMarkdownChecklist(md)
+			expect(result).toHaveLength(3)
+
+			expect(result[0].content).toBe("Task 1")
+			expect(result[0].status).toBe("pending")
+
+			expect(result[1].content).toBe("Task 2")
+			expect(result[1].status).toBe("completed")
+
+			expect(result[2].content).toBe("Task 3")
+			expect(result[2].status).toBe("in_progress")
+		})
 	})
 
 	describe("ID generation", () => {
