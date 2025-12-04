@@ -4041,10 +4041,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * Uses lazy initialization - the MessageManager is only created when first accessed.
 	 * Subsequent accesses return the same cached instance.
 	 *
+	 * ## Important: Single Coordination Point
+	 *
+	 * **All MessageManager operations must go through this getter** rather than
+	 * instantiating `new MessageManager(task)` directly. This ensures:
+	 * - A single shared instance for consistent behavior
+	 * - Centralized coordination of all rewind/message operations
+	 * - Ability to add internal state or instrumentation in the future
+	 *
 	 * @example
 	 * ```typescript
-	 * // Rewind conversation to a specific timestamp
+	 * // Correct: Use the getter
 	 * await task.messageManager.rewindToTimestamp(ts)
+	 *
+	 * // Incorrect: Do NOT create new instances directly
+	 * // const manager = new MessageManager(task) // Don't do this!
 	 * ```
 	 */
 	get messageManager(): MessageManager {
