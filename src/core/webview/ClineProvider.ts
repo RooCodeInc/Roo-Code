@@ -145,6 +145,7 @@ export class ClineProvider
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
+	private static readonly DRAFT_MESSAGE_KEY = "roo.draftMessage"
 
 	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
 	private cloudOrganizationsCacheTimestamp: number | null = null
@@ -548,6 +549,43 @@ export class ClineProvider
 		}
 		this.pendingOperations.clear()
 		this.log(`[clearAllPendingEditOperations] Cleared all pending operations`)
+	}
+
+	// Draft Message Management
+
+	/**
+	 * Save draft message to workspace state
+	 * @param text - The draft message text
+	 * @param images - Array of base64 image data URLs
+	 */
+	public async saveDraftMessage(text: string, images: string[]): Promise<void> {
+		// Don't save empty drafts
+		if (!text.trim() && images.length === 0) {
+			await this.clearDraftMessage()
+			return
+		}
+
+		const draft = {
+			text,
+			images,
+			timestamp: Date.now(),
+		}
+		await this.context.workspaceState.update(ClineProvider.DRAFT_MESSAGE_KEY, draft)
+	}
+
+	/**
+	 * Get draft message from workspace state
+	 * @returns The saved draft or undefined
+	 */
+	public getDraftMessage(): { text: string; images: string[]; timestamp: number } | undefined {
+		return this.context.workspaceState.get(ClineProvider.DRAFT_MESSAGE_KEY)
+	}
+
+	/**
+	 * Clear draft message from workspace state
+	 */
+	public async clearDraftMessage(): Promise<void> {
+		await this.context.workspaceState.update(ClineProvider.DRAFT_MESSAGE_KEY, undefined)
 	}
 
 	/*

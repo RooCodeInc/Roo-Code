@@ -131,6 +131,7 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "draftMessage"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message

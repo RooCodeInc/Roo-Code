@@ -137,6 +137,29 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 
+	// Debounced draft save to prevent excessive writes
+	const saveDraftDebounced = useMemo(
+		() =>
+			debounce((text: string, images: string[]) => {
+				vscode.postMessage({ type: "saveDraftMessage", text, images })
+			}, 500),
+		[],
+	)
+
+	// Cleanup debounce on unmount
+	useEffect(() => {
+		return () => {
+			if (saveDraftDebounced && typeof (saveDraftDebounced as any).clear === "function") {
+				;(saveDraftDebounced as any).clear()
+			}
+		}
+	}, [saveDraftDebounced])
+
+	// Request saved draft on mount
+	useEffect(() => {
+		vscode.postMessage({ type: "getDraftMessage" })
+	}, [])
+
 	// We need to hold on to the ask because useEffect > lastMessage will always
 	// let us know when an ask comes in and handle it, but by the time
 	// handleMessage is called, the last message might not be the ask anymore
@@ -556,7 +579,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// setPrimaryButtonText(undefined)
 		// setSecondaryButtonText(undefined)
 		disableAutoScrollRef.current = false
+
+		// Clear saved draft
+		vscode.postMessage({ type: "clearDraftMessage" })
 	}, [])
+
+	// Wrapper to save draft when input value changes
+	const handleInputValueChange = useCallback(
+		(value: string) => {
+			setInputValue(value)
+			saveDraftDebounced(value, selectedImages)
+		},
+		[selectedImages, saveDraftDebounced],
+	)
 
 	/**
 	 * Handles sending messages to the extension
@@ -838,6 +873,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 				case "interactionRequired":
 					playSound("notification")
+					break
+				case "draftMessage":
+					// Only restore draft if there's no active task input
+					if (messagesRef.current.length === 0 || clineAskRef.current === undefined) {
+						if (message.text) {
+							setInputValue(message.text)
+						}
+						if (message.images && message.images.length > 0) {
+							setSelectedImages(message.images)
+						}
+					}
 					break
 			}
 			// textAreaRef.current is not explicitly required here since React
@@ -1567,7 +1613,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
-				setInputValue={setInputValue}
+				setInputValue={handleInputValueChange}
 				sendingDisabled={sendingDisabled || isProfileDisabled}
 				selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
 				placeholderText={placeholderText}

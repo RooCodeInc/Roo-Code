@@ -3173,6 +3173,28 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		/**
+		 * Draft Message Persistence
+		 */
+
+		case "saveDraftMessage":
+			await provider.saveDraftMessage(message.text || "", message.images || [])
+			break
+
+		case "getDraftMessage": {
+			const draft = provider.getDraftMessage()
+			await provider.postMessageToWebview({
+				type: "draftMessage",
+				text: draft?.text,
+				images: draft?.images,
+			})
+			break
+		}
+
+		case "clearDraftMessage":
+			await provider.clearDraftMessage()
+			break
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//
