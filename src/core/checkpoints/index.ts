@@ -219,12 +219,25 @@ export async function checkpointSave(task: Task, force = false, suppressMessage 
 	TelemetryService.instance.captureCheckpointCreated(task.taskId)
 
 	// Start the checkpoint process in the background.
-	return service
+	const checkpointResult = await service
 		.saveCheckpoint(`Task: ${task.taskId}, Time: ${Date.now()}`, { allowEmpty: force, suppressMessage })
 		.catch((err) => {
 			console.error("[Task#checkpointSave] caught unexpected error, disabling checkpoints", err)
 			task.enableCheckpoints = false
+			return undefined
 		})
+
+	// Save API conversation history snapshot along with checkpoint
+	if (checkpointResult && checkpointResult.commit) {
+		try {
+			await service.saveApiHistorySnapshot(checkpointResult.commit, task.apiConversationHistory)
+		} catch (err) {
+			console.error("[Task#checkpointSave] Failed to save API history snapshot:", err)
+			// Don't disable checkpoints for this error, continue with file checkpoint only
+		}
+	}
+
+	return checkpointResult
 }
 
 export type CheckpointRestoreOptions = {
@@ -258,7 +271,17 @@ export async function checkpointRestore(
 		await provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: commitHash })
 
 		if (mode === "restore") {
-			await task.overwriteApiConversationHistory(task.apiConversationHistory.filter((m) => !m.ts || m.ts < ts))
+			// Try to restore the API conversation history snapshot
+			const restoredApiHistory = await service.restoreApiHistorySnapshot(commitHash)
+			if (restoredApiHistory) {
+				// Use the restored snapshot instead of filtering by timestamp
+				await task.overwriteApiConversationHistory(restoredApiHistory)
+			} else {
+				// Fallback to the old behavior if no snapshot exists
+				await task.overwriteApiConversationHistory(
+					task.apiConversationHistory.filter((m) => !m.ts || m.ts < ts),
+				)
+			}
 
 			const deletedMessages = task.clineMessages.slice(index + 1)
 
