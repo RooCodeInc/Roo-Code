@@ -139,6 +139,7 @@
 		"streamingFailed": "API Akışı Başarısız",
 		"errorTitle": "API Hatası {{code}}",
 		"errorMessage": {
+			"docs": "Belgeler",
 			"400": "Sağlayıcı isteği bu şekilde işleyemedi. Görevi durdur ve farklı bir yaklaşım dene.",
 			"401": "Sağlayıcı ile kimlik doğrulaması yapılamadı. Lütfen API anahtarı yapılandırmanızı kontrol edin.",
 			"402": "Hesabınızda para/kredi bitti gibi görünüyor. Sağlayıcıya git ve devam etmek için daha fazla ekle.",

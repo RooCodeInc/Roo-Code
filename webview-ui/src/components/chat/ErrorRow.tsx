@@ -137,9 +137,7 @@ export const ErrorRow = memo(
 			return (
 				<div className="mt-0 overflow-hidden mb-2 pr-1 group">
 					<div
-						className={`font-sm text-vscode-editor-foreground flex items-center justify-between cursor-pointer ${
-							isExpanded ? "" : ""
-						}`}
+						className="font-sm text-vscode-editor-foreground flex items-center justify-between cursor-pointer"
 						onClick={handleToggleExpand}>
 						<div className="flex items-center gap-2 flex-grow  text-vscode-errorForeground">
 							<MessageCircleWarning className="w-4" />
@@ -183,8 +181,8 @@ export const ErrorRow = memo(
 									e.preventDefault()
 									vscode.postMessage({ type: "openExternal", url: docsURL })
 								}}>
-								<BookOpenText className="size-3" />
-								Docs
+								<BookOpenText className="size-3 mt-[3px]" />
+								{t("chat:apiRequest.errorMessage.docs")}
 							</a>
 						)}
 					</div>

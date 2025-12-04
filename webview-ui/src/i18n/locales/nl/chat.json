@@ -134,6 +134,7 @@
 		"streamingFailed": "API-streaming mislukt",
 		"errorTitle": "API-fout {{code}}",
 		"errorMessage": {
+			"docs": "Documentatie",
 			"400": "De provider kon het verzoek niet verwerken zoals ingediend. Stop de taak en probeer een ander benadering.",
 			"401": "Kon niet authenticeren met provider. Controleer je API-sleutelconfiguratie.",
 			"402": "Het lijkt erop dat je funds/credits op je account op zijn. Ga naar je provider en voeg meer toe om door te gaan.",

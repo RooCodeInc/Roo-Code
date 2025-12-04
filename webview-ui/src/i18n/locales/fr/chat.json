@@ -139,6 +139,7 @@
 		"streamingFailed": "Échec du streaming API",
 		"errorTitle": "Erreur API {{code}}",
 		"errorMessage": {
+			"docs": "Documentation",
 			"400": "Le fournisseur n'a pas pu traiter la demande telle que présentée. Arrête la tâche et essaie une approche différente.",
 			"401": "Impossible de s'authentifier auprès du fournisseur. Veuillez vérifier la configuration de votre clé API.",
 			"402": "Il semble que vous ayez épuisé vos fonds/crédits sur votre compte. Allez chez votre fournisseur et ajoutez-en plus pour continuer.",

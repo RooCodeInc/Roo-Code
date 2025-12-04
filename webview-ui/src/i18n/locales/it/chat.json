@@ -142,6 +142,7 @@
 		"streamingFailed": "Streaming API fallito",
 		"errorTitle": "Errore API {{code}}",
 		"errorMessage": {
+			"docs": "Documentazione",
 			"400": "Il provider non ha potuto elaborare la richiesta come presentata. Interrompi l'attività e prova un approccio diverso.",
 			"401": "Impossibile autenticare con il provider. Verifica la configurazione della tua chiave API.",
 			"402": "Sembra che tu abbia esaurito i fondi/crediti nel tuo account. Vai al tuo provider e aggiungi altro per continuare.",

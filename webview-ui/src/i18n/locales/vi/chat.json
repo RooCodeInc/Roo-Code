@@ -139,6 +139,7 @@
 		"streamingFailed": "Streaming API thất bại",
 		"errorTitle": "Lỗi API {{code}}",
 		"errorMessage": {
+			"docs": "Tài liệu",
 			"400": "Nhà cung cấp không thể xử lý yêu cầu theo cách này. Hãy dừng nhiệm vụ và thử một cách tiếp cận khác.",
 			"401": "Không thể xác thực với nhà cung cấp. Vui lòng kiểm tra cấu hình khóa API của bạn.",
 			"402": "Có vẻ như bạn đã hết tiền/tín dụng trong tài khoản. Hãy truy cập nhà cung cấp và thêm tiền để tiếp tục.",

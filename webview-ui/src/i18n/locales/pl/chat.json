@@ -139,6 +139,7 @@
 		"streamingFailed": "Strumieniowanie API nie powiodło się",
 		"errorTitle": "Błąd API {{code}}",
 		"errorMessage": {
+			"docs": "Dokumentacja",
 			"400": "Dostawca nie mógł przetworzyć żądania. Zatrzymaj zadanie i spróbuj innego podejścia.",
 			"401": "Nie można uwierzytelnić u dostawcy. Sprawdź konfigurację klucza API.",
 			"402": "Wygląda na to, że wyczerpałeś środki/kredyty na swoim koncie. Przejdź do dostawcy i dodaj więcej, aby kontynuować.",

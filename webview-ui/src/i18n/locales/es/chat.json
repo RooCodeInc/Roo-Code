@@ -139,6 +139,7 @@
 		"streamingFailed": "Transmisión API falló",
 		"errorTitle": "Error API {{code}}",
 		"errorMessage": {
+			"docs": "Documentación",
 			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
 			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
 			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
