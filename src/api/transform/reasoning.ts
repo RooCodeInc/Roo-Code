@@ -57,17 +57,15 @@ export const getRooReasoning = ({
 	}
 
 	if (model.requiredReasoningEffort) {
-		const providedEffort: GetModelReasoningOptions["reasoningEffort"] = reasoningEffort ?? "medium"
+		const effort: GetModelReasoningOptions["reasoningEffort"] = reasoningEffort ?? "medium"
 		const validEfforts: ReasoningEffortExtended[] = ["low", "medium", "high"]
 
-		// Honor the provided effort if it's valid, otherwise default to "medium".
-		const effectiveEffort: ReasoningEffortExtended = validEfforts.includes(
-			providedEffort as ReasoningEffortExtended,
-		)
-			? (providedEffort as ReasoningEffortExtended)
-			: "medium"
-
-		return { enabled: true, effort: effectiveEffort }
+		// Honor the provided effort if it's valid, otherwise let the model choose.
+		if (validEfforts.includes(effort as ReasoningEffortExtended)) {
+			return { enabled: true, effort: effort as ReasoningEffortExtended }
+		} else {
+			return { enabled: true }
+		}
 	}
 
 	// Explicit off switch from settings: always send disabled for back-compat and to
