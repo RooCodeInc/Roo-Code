@@ -139,6 +139,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		try {
 			const filesToApprove: FileResult[] = []
 
+			// Check if preReadFileCheckpoint is enabled
+			const globalState = await task.providerRef.deref()?.getState()
+			const preReadFileCheckpoint = (globalState as any)?.preReadFileCheckpoint ?? false
+
 			for (const fileResult of fileResults) {
 				const relPath = fileResult.path
 				const fullPath = path.resolve(task.cwd, relPath)
@@ -186,6 +190,44 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							nativeContent: `File: ${relPath}\nError: ${errorMsg}`,
 						})
 						continue
+					}
+
+					// Pre-read checkpoint: validate file size against context limits
+					if (preReadFileCheckpoint) {
+						const { contextTokens } = task.getTokenUsage()
+						const contextWindow = modelInfo.contextWindow
+
+						const budgetResult = await validateFileTokenBudget(fullPath, contextWindow, contextTokens || 0)
+
+						// If file exceeds context budget, ask user if they want to proceed
+						if (budgetResult.shouldTruncate && budgetResult.reason) {
+							const warningMessage = `⚠️ File Size Warning for ${relPath}:\n${budgetResult.reason}\n\nThe file may cause context limit issues. Do you want to proceed with reading this file?`
+
+							const completeMessage = JSON.stringify({
+								tool: "readFile",
+								path: getReadablePath(task.cwd, relPath),
+								content: fullPath,
+								reason: warningMessage,
+							} satisfies ClineSayTool)
+
+							const { response, text, images } = await task.ask("tool", completeMessage, false)
+
+							if (response !== "yesButtonClicked") {
+								if (text) await task.say("user_feedback", text, images)
+								task.didRejectTool = true
+								updateFileResult(relPath, {
+									status: "denied",
+									xmlContent: `<file><path>${relPath}</path><status>Denied by user due to file size exceeding context limits</status></file>`,
+									nativeContent: `File: ${relPath}\nStatus: Denied by user due to file size exceeding context limits`,
+									feedbackText: text,
+									feedbackImages: images,
+								})
+								continue
+							}
+
+							// User approved despite warning
+							if (text) await task.say("user_feedback", text, images)
+						}
 					}
 
 					filesToApprove.push(fileResult)

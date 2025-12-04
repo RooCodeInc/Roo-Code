@@ -194,6 +194,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxReadFileLine,
 		maxImageFileSize,
 		maxTotalImageSize,
+		preReadFileCheckpoint,
 		terminalCompressProgressBar,
 		maxConcurrentFileReads,
 		condensingApiConfigId,
@@ -402,6 +403,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					maxReadFileLine: maxReadFileLine ?? -1,
 					maxImageFileSize: maxImageFileSize ?? 5,
 					maxTotalImageSize: maxTotalImageSize ?? 20,
+					preReadFileCheckpoint: preReadFileCheckpoint ?? false,
 					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
 					includeDiagnosticMessages:
 						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
@@ -781,6 +783,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							maxReadFileLine={maxReadFileLine}
 							maxImageFileSize={maxImageFileSize}
 							maxTotalImageSize={maxTotalImageSize}
+							preReadFileCheckpoint={preReadFileCheckpoint}
 							maxConcurrentFileReads={maxConcurrentFileReads}
 							profileThresholds={profileThresholds}
 							includeDiagnosticMessages={includeDiagnosticMessages}
