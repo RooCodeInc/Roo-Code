@@ -1,0 +1,21 @@
+@keyframes prompt-highlight {
+	0% {
+		background-color: var(--vscode-editor-findMatchHighlightBackground);
+		opacity: 0;
+	}
+	20% {
+		opacity: 1;
+	}
+	80% {
+		opacity: 1;
+	}
+	100% {
+		background-color: transparent;
+		opacity: 0;
+	}
+}
+
+.prompt-highlight {
+	animation: prompt-highlight 1.5s ease-in-out;
+	border-radius: 4px;
+}

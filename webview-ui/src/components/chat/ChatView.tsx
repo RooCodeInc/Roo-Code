@@ -49,6 +49,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { UserPromptNavigation } from "./UserPromptNavigation"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1244,40 +1245,44 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return <BrowserSessionStatusRow key={messageOrGroup.ts} message={messageOrGroup} />
 			}
 
-			// regular message
+			// regular message - add data attribute for navigation
 			return (
-				<ChatRow
-					key={messageOrGroup.ts}
-					message={messageOrGroup}
-					isExpanded={expandedRows[messageOrGroup.ts] || false}
-					onToggleExpand={toggleRowExpansion} // This was already stabilized
-					lastModifiedMessage={modifiedMessages.at(-1)} // Original direct access
-					isLast={index === groupedMessages.length - 1} // Original direct access
-					onHeightChange={handleRowHeightChange}
-					isStreaming={isStreaming}
-					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
-					onBatchFileResponse={handleBatchFileResponse}
-					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
-					editable={
-						messageOrGroup.type === "ask" &&
-						messageOrGroup.ask === "tool" &&
-						(() => {
-							let tool: any = {}
-							try {
-								tool = JSON.parse(messageOrGroup.text || "{}")
-							} catch (_) {
-								if (messageOrGroup.text?.includes("updateTodoList")) {
-									tool = { tool: "updateTodoList" }
+				<div data-message-index={index}>
+					<ChatRow
+						key={messageOrGroup.ts}
+						message={messageOrGroup}
+						isExpanded={expandedRows[messageOrGroup.ts] || false}
+						onToggleExpand={toggleRowExpansion} // This was already stabilized
+						lastModifiedMessage={modifiedMessages.at(-1)} // Original direct access
+						isLast={index === groupedMessages.length - 1} // Original direct access
+						onHeightChange={handleRowHeightChange}
+						isStreaming={isStreaming}
+						onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
+						onBatchFileResponse={handleBatchFileResponse}
+						isFollowUpAnswered={
+							messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs
+						}
+						editable={
+							messageOrGroup.type === "ask" &&
+							messageOrGroup.ask === "tool" &&
+							(() => {
+								let tool: any = {}
+								try {
+									tool = JSON.parse(messageOrGroup.text || "{}")
+								} catch (_) {
+									if (messageOrGroup.text?.includes("updateTodoList")) {
+										tool = { tool: "updateTodoList" }
+									}
 								}
-							}
-							if (tool.tool === "updateTodoList" && alwaysAllowUpdateTodoList) {
-								return false
-							}
-							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
-						})()
-					}
-					hasCheckpoint={hasCheckpoint}
-				/>
+								if (tool.tool === "updateTodoList" && alwaysAllowUpdateTodoList) {
+									return false
+								}
+								return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
+							})()
+						}
+						hasCheckpoint={hasCheckpoint}
+					/>
+				</div>
 			)
 		},
 		[
@@ -1328,6 +1333,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				} else {
 					// Just Period = Next mode
 					switchToNextMode()
+				}
+			}
+
+			// Check for Alt + Arrow keys for prompt navigation
+			if (event.altKey && (event.key === "ArrowUp" || event.key === "ArrowDown")) {
+				event.preventDefault() // Prevent default scrolling
+
+				// Find the UserPromptNavigation component and trigger navigation
+				const promptNavButtons = document.querySelectorAll("[data-prompt-nav]")
+				if (promptNavButtons.length > 0) {
+					if (event.key === "ArrowUp") {
+						// Trigger previous prompt navigation
+						const prevButton = document.querySelector('[data-prompt-nav="prev"]') as HTMLButtonElement
+						prevButton?.click()
+					} else if (event.key === "ArrowDown") {
+						// Trigger next prompt navigation
+						const nextButton = document.querySelector('[data-prompt-nav="next"]') as HTMLButtonElement
+						nextButton?.click()
+					}
 				}
 			}
 		},
@@ -1474,17 +1498,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										: "opacity-50"
 							}`}>
 							{showScrollToBottom ? (
-								<StandardTooltip content={t("chat:scrollToBottom")}>
-									<Button
-										variant="secondary"
-										className="flex-[2]"
-										onClick={() => {
-											scrollToBottomSmooth()
-											disableAutoScrollRef.current = false
-										}}>
-										<span className="codicon codicon-chevron-down"></span>
-									</Button>
-								</StandardTooltip>
+								<div className="flex items-center gap-2 w-full">
+									<UserPromptNavigation
+										messages={messages}
+										virtuosoRef={virtuosoRef}
+										visibleMessages={groupedMessages}
+										className="mr-2"
+									/>
+									<StandardTooltip content={t("chat:scrollToBottom")}>
+										<Button
+											variant="secondary"
+											className="flex-1"
+											onClick={() => {
+												scrollToBottomSmooth()
+												disableAutoScrollRef.current = false
+											}}>
+											<span className="codicon codicon-chevron-down"></span>
+										</Button>
+									</StandardTooltip>
+								</div>
 							) : (
 								<>
 									{primaryButtonText && !isStreaming && (

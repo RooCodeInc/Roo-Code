@@ -98,6 +98,14 @@
 		"placeholder": "Edit your message..."
 	},
 	"scrollToBottom": "Scroll to bottom of chat",
+	"promptNavigation": {
+		"previous": "Previous prompt",
+		"previousTooltip": "Jump to previous user prompt",
+		"next": "Next prompt",
+		"nextTooltip": "Jump to next user prompt",
+		"position": "{{current}} of {{total}}",
+		"total": "{{total}} prompts"
+	},
 	"about": "Roo is a whole AI dev team in your editor",
 	"docs": "Check our <DocsLink>docs</DocsLink> to get started",
 	"onboarding": "What would you like to do?",
