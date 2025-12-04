@@ -46,11 +46,12 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	getModel(): { id: CerebrasModelId; info: (typeof cerebrasModels)[CerebrasModelId] } {
-		const modelId = (this.options.apiModelId as CerebrasModelId) || this.defaultProviderModelId
+		const modelId = this.options.apiModelId as CerebrasModelId
+		const validModelId = modelId && this.providerModels[modelId] ? modelId : this.defaultProviderModelId
 
 		return {
-			id: modelId,
-			info: this.providerModels[modelId],
+			id: validModelId,
+			info: this.providerModels[validModelId],
 		}
 	}
 
