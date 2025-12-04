@@ -125,6 +125,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
+import { MessageManager } from "../message-manager"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -326,6 +327,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Initial status for the task's history item (set at creation time to avoid race conditions)
 	private readonly initialStatus?: "active" | "delegated" | "completed"
+
+	// MessageManager for high-level message operations (lazy initialized)
+	private _messageManager?: MessageManager
 
 	constructor({
 		provider,
@@ -4030,6 +4034,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Provides convenient access to high-level message operations.
+	 * Uses lazy initialization - the MessageManager is only created when first accessed.
+	 * Subsequent accesses return the same cached instance.
+	 *
+	 * @example
+	 * ```typescript
+	 * // Rewind conversation to a specific timestamp
+	 * await task.messageManager.rewindToTimestamp(ts)
+	 * ```
+	 */
+	get messageManager(): MessageManager {
+		if (!this._messageManager) {
+			this._messageManager = new MessageManager(this)
+		}
+		return this._messageManager
 	}
 
 	/**

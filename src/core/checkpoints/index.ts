@@ -4,6 +4,7 @@ import * as vscode from "vscode"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
+import { MessageManager } from "../message-manager"
 
 import { getWorkspacePath } from "../../utils/path"
 import { checkGitInstalled } from "../../utils/git"
@@ -258,20 +259,21 @@ export async function checkpointRestore(
 		await provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: commitHash })
 
 		if (mode === "restore") {
-			await task.overwriteApiConversationHistory(task.apiConversationHistory.filter((m) => !m.ts || m.ts < ts))
-
+			// Calculate metrics from messages that will be deleted (must be done before rewind)
 			const deletedMessages = task.clineMessages.slice(index + 1)
 
 			const { totalTokensIn, totalTokensOut, totalCacheWrites, totalCacheReads, totalCost } = getApiMetrics(
 				task.combineMessages(deletedMessages),
 			)
 
-			// For delete operations, exclude the checkpoint message itself
-			// For edit operations, include the checkpoint message (to be edited)
-			const endIndex = operation === "edit" ? index + 1 : index
-			await task.overwriteClineMessages(task.clineMessages.slice(0, endIndex))
+			// Use MessageManager to properly handle context-management events
+			// This ensures orphaned Summary messages and truncation markers are cleaned up
+			const manager = new MessageManager(task)
+			await manager.rewindToTimestamp(ts, {
+				includeTargetMessage: operation === "edit",
+			})
 
-			// TODO: Verify that this is working as expected.
+			// Report the deleted API request metrics
 			await task.say(
 				"api_req_deleted",
 				JSON.stringify({

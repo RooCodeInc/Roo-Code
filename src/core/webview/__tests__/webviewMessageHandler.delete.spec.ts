@@ -387,8 +387,10 @@ describe("webviewMessageHandler delete functionality", () => {
 				expect(summary1.condenseParent).toBe(condenseId2) // Still tagged
 			})
 
-			it("should prefer non-summary message when timestamps collide for deletion target", async () => {
-				// When multiple messages share the same timestamp, prefer non-summary for targeting
+			it("should use timestamp-based truncation when multiple messages share same timestamp", async () => {
+				// When multiple messages share the same timestamp, timestamp-based truncation
+				// removes ALL messages at or after that timestamp. This is different from
+				// index-based truncation which would preserve earlier array indices.
 				const sharedTs = 1000
 
 				getCurrentTaskMock.clineMessages = [
@@ -405,7 +407,8 @@ describe("webviewMessageHandler delete functionality", () => {
 					{ ts: 1100, role: "assistant", content: "Response" },
 				]
 
-				// Delete at shared timestamp - should target non-summary message (index 2)
+				// Delete at shared timestamp - MessageManager uses ts < cutoffTs, so ALL
+				// messages at ts=1000 are removed (including the Summary)
 				await webviewMessageHandler(provider, {
 					type: "deleteMessageConfirm",
 					messageTs: sharedTs,
@@ -414,12 +417,10 @@ describe("webviewMessageHandler delete functionality", () => {
 				expect(getCurrentTaskMock.overwriteApiConversationHistory).toHaveBeenCalled()
 				const result = getCurrentTaskMock.overwriteApiConversationHistory.mock.calls[0][0]
 
-				// Truncation at index 2 means we keep indices 0-1: previous message and summary
-				expect(result.length).toBe(2)
+				// Timestamp-based truncation keeps only messages with ts < 1000
+				// Both the Summary (ts=1000) and non-summary (ts=1000) are removed
+				expect(result.length).toBe(1)
 				expect(result[0].content).toBe("Previous message")
-				// The summary is kept since it's before truncation point
-				expect(result[1].content).toBe("Summary")
-				expect(result[1].isSummary).toBe(true)
 			})
 
 			it("should remove Summary when its condense_context clineMessage is deleted", async () => {
