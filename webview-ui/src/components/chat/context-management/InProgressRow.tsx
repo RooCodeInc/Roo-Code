@@ -33,10 +33,12 @@ export function InProgressRow({ eventType }: InProgressRowProps) {
 	const getIcon = (): string => {
 		switch (eventType) {
 			case "condense_context":
-			case "condense_context_error":
-				return "codicon-fold"
 			case "sliding_window_truncation":
+				// All context management operations use the same icon
 				return "codicon-fold"
+			case "condense_context_error":
+				// Error state should never have an in-progress state - match getProgressText() behavior
+				throw new Error(`InProgressRow received error event type: ${eventType}`)
 			default:
 				assertNever(eventType)
 		}
