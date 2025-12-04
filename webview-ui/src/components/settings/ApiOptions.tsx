@@ -425,7 +425,11 @@ const ApiOptions = ({
 	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
 
 	// Show the tool protocol selector when model supports native tools
-	const showToolProtocolSelector = selectedModelInfo?.supportsNativeTools === true
+	// OR when using OpenAI Compatible/Ollama providers (to give users control regardless of model config)
+	const showToolProtocolSelector =
+		selectedModelInfo?.supportsNativeTools === true ||
+		selectedProvider === "openai" ||
+		selectedProvider === "ollama"
 
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
