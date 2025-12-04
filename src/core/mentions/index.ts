@@ -270,6 +270,11 @@ async function getFileOrFolderContent(
 	const unescapedPath = unescapeSpaces(mentionPath)
 	const absPath = path.resolve(cwd, unescapedPath)
 
+	// Add limits to prevent context window overflow
+	const MAX_DIR_CONTENT_SIZE = 50 * 1024 // 50KB limit for directory content (roughly 12-15K tokens)
+	const MAX_FILES_TO_INCLUDE = 20 // Maximum number of files to include from a directory
+	const MAX_FILE_SIZE = 10 * 1024 // 10KB limit per file when reading directory contents
+
 	try {
 		const stats = await fs.stat(absPath)
 
@@ -288,6 +293,11 @@ async function getFileOrFolderContent(
 			let folderContent = ""
 			const fileContentPromises: Promise<string | undefined>[] = []
 			const LOCK_SYMBOL = "🔒"
+
+			let totalContentSize = 0
+			let filesIncluded = 0
+			let filesTruncated = 0
+			let filesSkipped = 0
 
 			for (let index = 0; index < entries.length; index++) {
 				const entry = entries[index]
@@ -309,6 +319,12 @@ async function getFileOrFolderContent(
 				if (entry.isFile()) {
 					folderContent += `${linePrefix}${displayName}\n`
 					if (!isIgnored) {
+						// Check if we've reached the file limit or size limit
+						if (filesIncluded >= MAX_FILES_TO_INCLUDE || totalContentSize >= MAX_DIR_CONTENT_SIZE) {
+							filesSkipped++
+							continue
+						}
+
 						const filePath = path.join(mentionPath, entry.name)
 						const absoluteFilePath = path.resolve(absPath, entry.name)
 						fileContentPromises.push(
@@ -318,7 +334,28 @@ async function getFileOrFolderContent(
 									if (isBinary) {
 										return undefined
 									}
+
+									// Check file size before reading
+									const fileStats = await fs.stat(absoluteFilePath)
+									if (fileStats.size > MAX_FILE_SIZE) {
+										// For large files in directories, truncate the content
+										const content = await extractTextFromFile(absoluteFilePath, 50) // Read only first 50 lines
+										const truncatedContent = content.substring(0, MAX_FILE_SIZE)
+										filesTruncated++
+										filesIncluded++
+										totalContentSize += truncatedContent.length
+										return `<file_content path="${filePath.toPosix()}">\n${truncatedContent}\n[... File truncated. Showing first ${MAX_FILE_SIZE} bytes of ${fileStats.size} bytes ...]\n</file_content>`
+									}
+
 									const content = await extractTextFromFile(absoluteFilePath, maxReadFileLine)
+									if (totalContentSize + content.length > MAX_DIR_CONTENT_SIZE) {
+										// Skip this file if it would exceed the total size limit
+										filesSkipped++
+										return undefined
+									}
+
+									filesIncluded++
+									totalContentSize += content.length
 									return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`
 								} catch (error) {
 									return undefined
@@ -332,8 +369,29 @@ async function getFileOrFolderContent(
 					folderContent += `${linePrefix}${displayName}\n`
 				}
 			}
+
 			const fileContents = (await Promise.all(fileContentPromises)).filter((content) => content)
-			return `${folderContent}\n${fileContents.join("\n\n")}`.trim()
+			let result = `${folderContent}\n${fileContents.join("\n\n")}`.trim()
+
+			// Add warning messages if content was limited
+			const warnings: string[] = []
+			if (filesSkipped > 0) {
+				warnings.push(`[Note: ${filesSkipped} file(s) were skipped due to size or count limits]`)
+			}
+			if (filesTruncated > 0) {
+				warnings.push(`[Note: ${filesTruncated} file(s) were truncated to prevent context overflow]`)
+			}
+			if (totalContentSize >= MAX_DIR_CONTENT_SIZE) {
+				warnings.push(
+					`[Note: Directory content limited to ${MAX_DIR_CONTENT_SIZE} bytes to prevent context overflow]`,
+				)
+			}
+
+			if (warnings.length > 0) {
+				result += "\n\n" + warnings.join("\n")
+			}
+
+			return result
 		} else {
 			return `(Failed to read contents of ${mentionPath})`
 		}
