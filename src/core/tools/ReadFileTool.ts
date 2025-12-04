@@ -28,6 +28,7 @@ import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { isBinaryFileWithEncodingDetection } from "../../utils/encoding"
+import { handleRooCommandsApprovalSkip } from "../costrict/wiki/utils/rooCommandsUtils"
 
 interface FileResult {
 	path: string
@@ -173,7 +174,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 					if (hasRangeError) continue
 				}
-
+				if (handleRooCommandsApprovalSkip(fileResult, relPath, task, updateFileResult)) {
+					continue
+				}
 				if (fileResult.status === "pending") {
 					const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 					if (!accessAllowed) {
