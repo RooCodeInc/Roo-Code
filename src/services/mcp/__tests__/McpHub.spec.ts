@@ -2146,5 +2146,131 @@ describe("McpHub", () => {
 				}),
 			)
 		})
+
+		it("should handle npx with package@version syntax on Windows", async () => {
+			// Mock Windows platform
+			Object.defineProperty(process, "platform", {
+				value: "win32",
+				writable: true,
+				enumerable: true,
+				configurable: true,
+			})
+
+			// Mock StdioClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation((config: any) => {
+				// Verify that npx with package@version is properly wrapped
+				expect(config.command).toBe("cmd.exe")
+				// The package@version should be combined with npx in a single string
+				expect(config.args).toEqual(["/c", "npx chrome-devtools-mcp@latest"])
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with chrome-devtools-mcp@latest
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"chrome-devtools": {
+							command: "npx",
+							args: ["chrome-devtools-mcp@latest"],
+						},
+					},
+				}),
+			)
+
+			// Initialize servers (this will trigger connectToServer)
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify StdioClientTransport was called with properly wrapped command
+			expect(StdioClientTransport).toHaveBeenCalledWith(
+				expect.objectContaining({
+					command: "cmd.exe",
+					args: ["/c", "npx chrome-devtools-mcp@latest"],
+				}),
+			)
+		})
+
+		it("should handle npx with package@version and additional args on Windows", async () => {
+			// Mock Windows platform
+			Object.defineProperty(process, "platform", {
+				value: "win32",
+				writable: true,
+				enumerable: true,
+				configurable: true,
+			})
+
+			// Mock StdioClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation((config: any) => {
+				// Verify that npx with package@version and additional args is properly wrapped
+				expect(config.command).toBe("cmd.exe")
+				// The package@version should be combined with npx, and additional args follow
+				expect(config.args).toEqual(["/c", "npx some-package@1.2.3", "--config", "test.json"])
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with package@version and additional args
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"test-server": {
+							command: "npx",
+							args: ["some-package@1.2.3", "--config", "test.json"],
+						},
+					},
+				}),
+			)
+
+			// Initialize servers (this will trigger connectToServer)
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify StdioClientTransport was called with properly wrapped command
+			expect(StdioClientTransport).toHaveBeenCalledWith(
+				expect.objectContaining({
+					command: "cmd.exe",
+					args: ["/c", "npx some-package@1.2.3", "--config", "test.json"],
+				}),
+			)
+		})
 	})
 })

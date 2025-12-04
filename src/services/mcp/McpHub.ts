@@ -677,11 +677,30 @@ export class McpHub {
 				const isAlreadyWrapped =
 					configInjected.command.toLowerCase() === "cmd.exe" || configInjected.command.toLowerCase() === "cmd"
 
-				const command = isWindows && !isAlreadyWrapped ? "cmd.exe" : configInjected.command
-				const args =
-					isWindows && !isAlreadyWrapped
-						? ["/c", configInjected.command, ...(configInjected.args || [])]
-						: configInjected.args
+				// Special handling for npx with package@version syntax
+				const isNpxWithPackage =
+					configInjected.command.toLowerCase() === "npx" &&
+					configInjected.args &&
+					configInjected.args.length > 0 &&
+					configInjected.args[0].includes("@")
+
+				let command = configInjected.command
+				let args = configInjected.args
+
+				if (isWindows && !isAlreadyWrapped) {
+					if (isNpxWithPackage) {
+						// For npx with package@version, combine npx and package name into a single command string
+						// This ensures proper package resolution on Windows
+						const packageName = configInjected.args![0]
+						const remainingArgs = configInjected.args!.slice(1)
+						command = "cmd.exe"
+						args = ["/c", `npx ${packageName}`, ...remainingArgs]
+					} else {
+						// Standard wrapping for other commands
+						command = "cmd.exe"
+						args = ["/c", configInjected.command, ...(configInjected.args || [])]
+					}
+				}
 
 				transport = new StdioClientTransport({
 					command,
