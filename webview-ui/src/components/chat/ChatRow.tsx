@@ -171,6 +171,10 @@ export const ChatRowContent = ({
 	const [editMode, setEditMode] = useState<Mode>(mode || "code")
 	const [editImages, setEditImages] = useState<string[]>([])
 
+	// State for editing subtask instructions
+	const [isEditingSubtask, setIsEditingSubtask] = useState(false)
+	const [editedSubtaskContent, setEditedSubtaskContent] = useState("")
+
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
@@ -815,6 +819,30 @@ export const ChatRowContent = ({
 					</>
 				)
 			case "newTask":
+				// Handle edit button click for subtask
+				const handleEditSubtaskClick = () => {
+					setIsEditingSubtask(true)
+					setEditedSubtaskContent(tool.content || "")
+				}
+
+				// Handle cancel edit for subtask
+				const handleCancelEditSubtask = () => {
+					setIsEditingSubtask(false)
+					setEditedSubtaskContent(tool.content || "")
+				}
+
+				// Handle save edit for subtask
+				const handleSaveEditSubtask = () => {
+					setIsEditingSubtask(false)
+					// Send edited subtask content to backend
+					vscode.postMessage({
+						type: "submitEditedSubtask",
+						messageTs: message.ts,
+						editedSubtaskContent: editedSubtaskContent,
+						mode: tool.mode,
+					})
+				}
+
 				return (
 					<>
 						<div style={headerStyle}>
@@ -828,6 +856,7 @@ export const ChatRowContent = ({
 							</span>
 						</div>
 						<div
+							className="group"
 							style={{
 								marginTop: "4px",
 								backgroundColor: "var(--vscode-badge-background)",
@@ -835,6 +864,7 @@ export const ChatRowContent = ({
 								borderRadius: "4px 4px 0 0",
 								overflow: "hidden",
 								marginBottom: "2px",
+								position: "relative",
 							}}>
 							<div
 								style={{
@@ -846,13 +876,64 @@ export const ChatRowContent = ({
 									color: "var(--vscode-badge-foreground)",
 									display: "flex",
 									alignItems: "center",
-									gap: "6px",
+									justifyContent: "space-between",
 								}}>
-								<span className="codicon codicon-arrow-right"></span>
-								{t("chat:subtasks.newTaskContent")}
+								<div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+									<span className="codicon codicon-arrow-right"></span>
+									{t("chat:subtasks.newTaskContent")}
+								</div>
+								{/* Edit button for subtask instructions */}
+								{message.type === "ask" && !isStreaming && !isEditingSubtask && (
+									<div
+										className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+										onClick={(e) => {
+											e.stopPropagation()
+											handleEditSubtaskClick()
+										}}
+										title={t("chat:editSubtaskInstructions")}
+										style={{
+											padding: "2px 4px",
+											borderRadius: "3px",
+											display: "flex",
+											alignItems: "center",
+											gap: "4px",
+										}}>
+										<Edit className="w-4 h-4" aria-label="Edit subtask instructions" />
+									</div>
+								)}
 							</div>
 							<div style={{ padding: "12px 16px", backgroundColor: "var(--vscode-editor-background)" }}>
-								<MarkdownBlock markdown={tool.content} />
+								{isEditingSubtask ? (
+									<div className="flex flex-col gap-2">
+										<textarea
+											value={editedSubtaskContent}
+											onChange={(e) => setEditedSubtaskContent(e.target.value)}
+											className="w-full p-2 border border-vscode-input-border bg-vscode-input-background text-vscode-input-foreground rounded"
+											style={{
+												minHeight: "200px",
+												resize: "vertical",
+												fontFamily: "var(--vscode-editor-font-family)",
+												fontSize: "var(--vscode-editor-font-size)",
+											}}
+											placeholder={t("chat:editSubtaskInstructions.placeholder")}
+											autoFocus
+										/>
+										<div className="flex gap-2 justify-end">
+											<button
+												onClick={handleCancelEditSubtask}
+												className="px-3 py-1 rounded bg-vscode-button-secondaryBackground text-vscode-button-secondaryForeground hover:bg-vscode-button-secondaryHoverBackground">
+												{t("chat:cancel")}
+											</button>
+											<button
+												onClick={handleSaveEditSubtask}
+												className="px-3 py-1 rounded bg-vscode-button-background text-vscode-button-foreground hover:bg-vscode-button-hoverBackground">
+												{t("chat:save")}
+											</button>
+										</div>
+									</div>
+								) : (
+									<MarkdownBlock markdown={tool.content} />
+								)}
 							</div>
 						</div>
 					</>
