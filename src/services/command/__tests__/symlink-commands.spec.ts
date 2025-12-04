@@ -106,7 +106,21 @@ description: Symlinked command
 			// Mock readlink for symlink resolution
 			mockFs.readlink = vi.fn().mockResolvedValue("../shared/actual-command.md")
 
-			// Mock stat for file type checking
+			// Mock lstat for symlink target type checking (lstat doesn't follow symlinks)
+			mockFs.lstat = vi.fn().mockImplementation((filePath: string) => {
+				const normalizedPath = filePath.replace(/\\/g, "/")
+				if (normalizedPath.includes("commands")) {
+					return Promise.resolve({ isDirectory: () => true })
+				}
+				// Return file stats for the resolved symlink target
+				return Promise.resolve({
+					isFile: () => true,
+					isDirectory: () => false,
+					isSymbolicLink: () => false,
+				})
+			})
+
+			// Mock stat for directory checking
 			mockFs.stat = vi.fn().mockImplementation((filePath: string) => {
 				const normalizedPath = filePath.replace(/\\/g, "/")
 				if (normalizedPath.includes("commands")) {
@@ -144,6 +158,23 @@ description: Symlinked command
 
 		it.skipIf(process.platform === "win32")("should discover commands from symlinked directories", async () => {
 			const nestedContent = `# Nested Command from Symlinked Dir`
+
+			// Mock lstat for symlink target type checking (lstat doesn't follow symlinks)
+			mockFs.lstat = vi.fn().mockImplementation((filePath: string) => {
+				const normalizedPath = filePath.replace(/\\/g, "/")
+				if (normalizedPath.includes("commands") || normalizedPath.includes("shared-commands")) {
+					return Promise.resolve({
+						isDirectory: () => true,
+						isFile: () => false,
+						isSymbolicLink: () => false,
+					})
+				}
+				return Promise.resolve({
+					isFile: () => true,
+					isDirectory: () => false,
+					isSymbolicLink: () => false,
+				})
+			})
 
 			// First stat check for directory
 			mockFs.stat = vi.fn().mockImplementation((filePath: string) => {
@@ -211,6 +242,24 @@ description: Symlinked command
 
 		it("should handle cyclic symlinks gracefully (MAX_DEPTH protection)", async () => {
 			// Create a cyclic symlink scenario
+			// Mock lstat to return symlink for all targets (creating infinite loop)
+			mockFs.lstat = vi.fn().mockImplementation((filePath: string) => {
+				const normalizedPath = filePath.replace(/\\/g, "/")
+				if (normalizedPath.includes("commands")) {
+					return Promise.resolve({
+						isDirectory: () => true,
+						isFile: () => false,
+						isSymbolicLink: () => false,
+					})
+				}
+				// All symlink targets are symlinks (infinite loop)
+				return Promise.resolve({
+					isFile: () => false,
+					isDirectory: () => false,
+					isSymbolicLink: () => true,
+				})
+			})
+
 			mockFs.stat = vi.fn().mockImplementation((filePath: string) => {
 				const normalizedPath = filePath.replace(/\\/g, "/")
 				if (normalizedPath.includes("commands")) {
@@ -251,6 +300,26 @@ description: Symlinked command
 
 		it("should handle broken symlinks gracefully", async () => {
 			const regularContent = `# Regular Command`
+
+			// Mock lstat for symlink target type checking
+			mockFs.lstat = vi.fn().mockImplementation((filePath: string) => {
+				const normalizedPath = filePath.replace(/\\/g, "/")
+				if (normalizedPath.includes("commands")) {
+					return Promise.resolve({
+						isDirectory: () => true,
+						isFile: () => false,
+						isSymbolicLink: () => false,
+					})
+				}
+				if (normalizedPath.includes("nonexistent")) {
+					return Promise.reject(new Error("ENOENT: no such file or directory"))
+				}
+				return Promise.resolve({
+					isFile: () => true,
+					isDirectory: () => false,
+					isSymbolicLink: () => false,
+				})
+			})
 
 			mockFs.stat = vi.fn().mockImplementation((filePath: string) => {
 				const normalizedPath = filePath.replace(/\\/g, "/")
@@ -306,6 +375,24 @@ description: Symlinked command
 
 		it("should use symlink name for command name when symlink points to file", async () => {
 			const targetContent = `# Target File Content`
+
+			// Mock lstat for symlink target type checking (lstat doesn't follow symlinks)
+			mockFs.lstat = vi.fn().mockImplementation((filePath: string) => {
+				const normalizedPath = filePath.replace(/\\/g, "/")
+				if (normalizedPath.includes("commands")) {
+					return Promise.resolve({
+						isDirectory: () => true,
+						isFile: () => false,
+						isSymbolicLink: () => false,
+					})
+				}
+				// Return file stats for the resolved symlink target
+				return Promise.resolve({
+					isFile: () => true,
+					isDirectory: () => false,
+					isSymbolicLink: () => false,
+				})
+			})
 
 			mockFs.stat = vi.fn().mockImplementation((filePath: string) => {
 				const normalizedPath = filePath.replace(/\\/g, "/")

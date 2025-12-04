@@ -43,8 +43,8 @@ async function resolveCommandSymLink(symlinkPath: string, fileInfo: CommandFileI
 		// Resolve the target path (relative to the symlink location)
 		const resolvedTarget = path.resolve(path.dirname(symlinkPath), linkTarget)
 
-		// Check if the target is a file
-		const stats = await fs.stat(resolvedTarget)
+		// Check if the target is a file (use lstat to detect nested symlinks)
+		const stats = await fs.lstat(resolvedTarget)
 		if (stats.isFile()) {
 			// Only include markdown files
 			if (isMarkdownFile(resolvedTarget)) {
