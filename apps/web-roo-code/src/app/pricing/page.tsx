@@ -1,4 +1,4 @@
-import { Users, ArrowRight, LucideIcon, Check, PlugZap, SquareTerminal, User, CornerRightDown } from "lucide-react"
+import { Users, ArrowRight, LucideIcon, Check, SquareTerminal, CornerRightDown, Cloud } from "lucide-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 
@@ -88,12 +88,13 @@ const pricingTiers: PricingTier[] = [
 	},
 	{
 		name: "Cloud Free",
-		icon: User,
+		icon: Cloud,
 		price: "$0",
 		period: "/mo",
 		priceSuffix: "credits",
 		creditPrice: `$${PRICE_CREDITS}`,
 		description: "For AI-forward engineers",
+		featuresIntro: "Go beyond the extension with",
 		features: [
 			"Access to Cloud Agents: fully autonomous development you can call from Slack, Github and the web",
 			"Access to the Roo Code Cloud Provider",
@@ -103,7 +104,7 @@ const pricingTiers: PricingTier[] = [
 			"Professional support",
 		],
 		cta: {
-			text: "Get started",
+			text: "Sign up",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP,
 		},
 	},
@@ -119,7 +120,7 @@ const pricingTiers: PricingTier[] = [
 		featuresIntro: "Everything in Free +",
 		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
 		cta: {
-			text: "Get started",
+			text: "Sign up",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
 		},
 	},
@@ -131,7 +132,7 @@ export default function PricingPage() {
 			<AnimatedBackground />
 
 			{/* Hero Section */}
-			<section className="relative overflow-hidden pt-16 pb-12">
+			<section className="relative overflow-hidden pt-12 pb-10">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
 						<h1 className="text-5xl font-bold tracking-tight">Roo Code Pricing</h1>
@@ -146,19 +147,21 @@ export default function PricingPage() {
 			{/* Pricing Tiers */}
 			<section className="">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-3">
+					<div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-3 md:px-4">
 						{pricingTiers.map((tier) => {
 							const Icon = tier.icon
 							return (
 								<div
 									key={tier.name}
-									className="relative p-6 flex flex-col justify-start bg-background border rounded-2xl outline-1 outline-border transition-all hover:shadow-lg hover:outline-6">
-									<div className="mb-2">
+									className="relative group p-6 flex flex-col justify-start bg-background rounded-2xl outline outline-2 outline-border/50 hover:outline-8 transition-all shadow-xl hover:shadow-2xl hover:outline-6">
+									<div className="mb-6">
 										<div className="flex items-center justify-between">
 											<h3 className="text-2xl font-bold tracking-tight">{tier.name}</h3>
-											<Icon className="size-6" />
 										</div>
-										<p className="text-sm text-muted-foreground">{tier.description}</p>
+										<p className="text-sm font-medium">{tier.description}</p>
+									</div>
+									<div className="absolute -right-2 -top-4 rounded-full bg-card shadow-md p-4 outline outline-2 outline-border/50 group-hover:scale-105 group-hover:outline-8 transition-all">
+										<Icon className="size-6" strokeWidth={1.5} />
 									</div>
 
 									<div className="grow mb-8">
@@ -177,7 +180,7 @@ export default function PricingPage() {
 
 									<p className="text-base font-light">{tier.trial}</p>
 
-									<p className="text-xl my-1 tracking-tight font-light">
+									<p className="text-xl mb-1 tracking-tight font-light">
 										<strong className="font-bold">{tier.price}</strong>
 										{tier.period} + {tier.priceSuffix}
 										<CornerRightDown className="inline size-4 ml-1 relative top-0.5" />
@@ -191,7 +194,7 @@ export default function PricingPage() {
 											</>
 										)}
 										Inference:{" "}
-										<Link href="#roo-provider-section" className="underline hover:no-underline">
+										<Link href="/provider/pricing" className="underline hover:no-underline">
 											Roo Provider
 										</Link>{" "}
 										credits or{" "}
@@ -206,30 +209,35 @@ export default function PricingPage() {
 											<ArrowRight />
 										</Link>
 									</Button>
+
+									{/* <div className="bg-foreground/20 h-8 absolute -bottom-8 left-1/2 w-[1px]" /> */}
+									<div className="h-[28px] absolute bottom-[-31px] left-1/2 w-[4px] transition-colors bg-gradient-to-b from-transparent to-violet-700/20 group-hover:from-violet-500/50 group-hover:to-violet-500/20" />
 								</div>
 							)
 						})}
 					</div>
-				</div>
 
-				<div
-					id="roo-provider-section"
-					className="mx-4 md:mx-auto max-w-6xl p-7 mt-4 relative flex flex-col justify-start bg-background border rounded-2xl transition-all shadow-none hover:shadow-lg target:border-blue-500 target:shadow-blue-500/25 target:shadow-xl target:ring-1 target:ring-blue-500 duration-500">
-					<h3 className="text-xl font-semibold flex items-center gap-2 justify-between">
-						Roo Code Provider
-						<PlugZap className="size-6" />
-					</h3>
-					<div className="text-sm text-muted-foreground space-y-1 mt-2">
-						<p className="">
-							On any plan, you can bring your own LLM provider key or use the built-in Roo Code Cloud
-							provider.
-						</p>
-						<p className="text-sm text-muted-foreground">
-							We offer curated models, from free stealth models to the state-of-the-art with no markup.
-							<Link href="/provider/pricing" className="underline hover:no-underline ml-1">
-								See per model pricing
-							</Link>
-						</p>
+					<div className="max-w-6xl mx-auto mt-8 p-7 flex flex-col md:flew-row gap-8 md:gap-4 bg-violet-200/20 outline-violet-700/20 outline outline-1 rounded-2xl transition-all shadow-none">
+						<div className="md:border-r md:pr-4">
+							<h3 className="text-lg font-medium mb-1">Roo Code Provider</h3>
+							<div className="text-sm text-muted-foreground">
+								<p className="">
+									On any plan, you can use your own LLM provider API key or use the built-in Roo Code
+									Cloud provider – curated models to work with Roo with no markup, including the
+									latest Gemini, GPT and Claude. Paid with credits.
+									<Link href="/provider/pricing" className="underline hover:no-underline ml-1">
+										See per model pricing.
+									</Link>
+								</p>
+							</div>
+						</div>
+						<div className="">
+							<h3 className="text-lg font-medium mb-1">Credits</h3>
+							<p className="text-sm text-muted-foreground">
+								Credits are pre-paid, in dollars, and are deducted with usage for inference and Cloud
+								Agent runs. You&apos;re always in control of your spend, no surprises.
+							</p>
+						</div>
 					</div>
 				</div>
 			</section>
