@@ -2,7 +2,7 @@
 
 import { ExtensionContext } from "vscode"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings, ProviderSettingsWithId } from "@roo-code/types"
 
 import { ProviderSettingsManager, ProviderProfiles, SyncCloudProfilesResult } from "../ProviderSettingsManager"
 
@@ -791,6 +791,144 @@ describe("ProviderSettingsManager", () => {
 			await expect(providerSettingsManager.hasConfig("test")).rejects.toThrow(
 				"Failed to check config existence: Error: Failed to read provider profiles from secrets: Error: Storage failed",
 			)
+		})
+	})
+
+	describe("preserve credentials on provider switch", () => {
+		it("should preserve Vertex AI credentials when switching providers", async () => {
+			const vertexConfig: ProviderSettingsWithId = {
+				apiProvider: "vertex",
+				apiModelId: "gemini-2.5-flash-preview-05-20",
+				vertexKeyFile: "/path/to/key.json",
+				vertexJsonCredentials: '{"type": "service_account", "project_id": "test-project"}',
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			}
+
+			// Save Vertex config with credentials
+			const vertexId = await providerSettingsManager.saveConfig("vertex-profile", vertexConfig)
+
+			// Switch to a different provider
+			const openAiConfig: ProviderSettingsWithId = {
+				apiProvider: "openai",
+				openAiApiKey: "openai-key-123",
+				openAiModelId: "gpt-4",
+			}
+			await providerSettingsManager.saveConfig("vertex-profile", openAiConfig)
+
+			// Switch back to Vertex
+			const switchBackConfig: ProviderSettingsWithId = {
+				apiProvider: "vertex",
+				apiModelId: "gemini-2.5-flash-preview-05-20",
+			}
+			await providerSettingsManager.saveConfig("vertex-profile", switchBackConfig)
+
+			// Get the final config
+			const finalConfig = await providerSettingsManager.getProfile({ name: "vertex-profile" })
+
+			// Vertex credentials should be preserved
+			expect(finalConfig.vertexKeyFile).toBe("/path/to/key.json")
+			expect(finalConfig.vertexJsonCredentials).toBe('{"type": "service_account", "project_id": "test-project"}')
+			expect(finalConfig.vertexProjectId).toBe("test-project")
+			expect(finalConfig.vertexRegion).toBe("us-central1")
+
+			// OpenAI key should also be preserved
+			expect((finalConfig as any).openAiApiKey).toBe("openai-key-123")
+		})
+
+		it("should preserve AWS Bedrock credentials when switching providers", async () => {
+			const bedrockConfig: ProviderSettingsWithId = {
+				apiProvider: "bedrock",
+				apiModelId: "claude-3-5-sonnet",
+				awsAccessKey: "AWS_ACCESS_KEY_123",
+				awsSecretKey: "AWS_SECRET_KEY_456",
+				awsSessionToken: "SESSION_TOKEN_789",
+				awsRegion: "us-east-1",
+				awsProfile: "default",
+			}
+
+			// Save Bedrock config with credentials
+			await providerSettingsManager.saveConfig("aws-profile", bedrockConfig)
+
+			// Switch to Anthropic
+			const anthropicConfig: ProviderSettingsWithId = {
+				apiProvider: "anthropic",
+				apiKey: "anthropic-key-xyz",
+				apiModelId: "claude-3-5-sonnet-20241022",
+			}
+			await providerSettingsManager.saveConfig("aws-profile", anthropicConfig)
+
+			// Switch back to Bedrock without credentials
+			const switchBackConfig: ProviderSettingsWithId = {
+				apiProvider: "bedrock",
+				apiModelId: "claude-3-5-sonnet",
+			}
+			await providerSettingsManager.saveConfig("aws-profile", switchBackConfig)
+
+			// Get the final config
+			const finalConfig = await providerSettingsManager.getProfile({ name: "aws-profile" })
+
+			// AWS credentials should be preserved
+			expect(finalConfig.awsAccessKey).toBe("AWS_ACCESS_KEY_123")
+			expect(finalConfig.awsSecretKey).toBe("AWS_SECRET_KEY_456")
+			expect(finalConfig.awsSessionToken).toBe("SESSION_TOKEN_789")
+			expect(finalConfig.awsRegion).toBe("us-east-1")
+			expect(finalConfig.awsProfile).toBe("default")
+
+			// Anthropic key should also be preserved
+			expect((finalConfig as any).apiKey).toBe("anthropic-key-xyz")
+		})
+
+		it("should preserve multiple provider credentials across multiple switches", async () => {
+			// Start with OpenAI
+			await providerSettingsManager.saveConfig("multi", {
+				apiProvider: "openai",
+				openAiApiKey: "openai-key",
+				openAiBaseUrl: "https://api.openai.com",
+			})
+
+			// Switch to Vertex with credentials
+			await providerSettingsManager.saveConfig("multi", {
+				apiProvider: "vertex",
+				vertexProjectId: "gcp-project",
+				vertexRegion: "us-central1",
+				vertexKeyFile: "/path/to/gcp-key.json",
+			})
+
+			// Switch to AWS Bedrock
+			await providerSettingsManager.saveConfig("multi", {
+				apiProvider: "bedrock",
+				awsAccessKey: "aws-access",
+				awsSecretKey: "aws-secret",
+				awsRegion: "us-west-2",
+			})
+
+			// Switch to DeepSeek
+			await providerSettingsManager.saveConfig("multi", {
+				apiProvider: "deepseek",
+				deepSeekApiKey: "deepseek-key",
+				deepSeekBaseUrl: "https://api.deepseek.com",
+			})
+
+			// Switch back to OpenAI without any credentials
+			await providerSettingsManager.saveConfig("multi", {
+				apiProvider: "openai",
+				openAiModelId: "gpt-4-turbo",
+			})
+
+			const finalConfig = await providerSettingsManager.getProfile({ name: "multi" })
+
+			// All credentials should be preserved
+			expect((finalConfig as any).openAiApiKey).toBe("openai-key")
+			expect((finalConfig as any).openAiBaseUrl).toBe("https://api.openai.com")
+			expect((finalConfig as any).vertexProjectId).toBe("gcp-project")
+			expect((finalConfig as any).vertexRegion).toBe("us-central1")
+			expect((finalConfig as any).vertexKeyFile).toBe("/path/to/gcp-key.json")
+			expect((finalConfig as any).awsAccessKey).toBe("aws-access")
+			expect((finalConfig as any).awsSecretKey).toBe("aws-secret")
+			expect((finalConfig as any).awsRegion).toBe("us-west-2")
+			expect((finalConfig as any).deepSeekApiKey).toBe("deepseek-key")
+			expect((finalConfig as any).deepSeekBaseUrl).toBe("https://api.deepseek.com")
 		})
 	})
 
