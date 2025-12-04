@@ -122,6 +122,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setCustomSupportPrompts: (value: CustomSupportPrompts) => void
 	enhancementApiConfigId?: string
 	setEnhancementApiConfigId: (value: string) => void
+	alwaysRunEnhancePrompt?: boolean
+	setAlwaysRunEnhancePrompt: (value: boolean) => void
 	setExperimentEnabled: (id: ExperimentId, enabled: boolean) => void
 	setAutoApprovalEnabled: (value: boolean) => void
 	customModes: ModeConfig[]
@@ -228,6 +230,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		customSupportPrompts: {},
 		experiments: experimentDefault,
 		enhancementApiConfigId: "",
+		alwaysRunEnhancePrompt: false, // Default to false for backward compatibility
 		condensingApiConfigId: "", // Default empty string for condensing API config ID
 		customCondensingPrompt: "", // Default empty string for custom condensing prompt
 		hasOpenedModeSelector: false, // Default to false (not opened yet)
@@ -295,6 +298,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		project: {},
 		global: {},
 	})
+	const [alwaysRunEnhancePrompt, setAlwaysRunEnhancePrompt] = useState(false)
 	const [includeTaskHistoryInEnhance, setIncludeTaskHistoryInEnhance] = useState(true)
 	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
@@ -331,6 +335,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update followupAutoApproveTimeoutMs if present in state message
 					if ((newState as any).followupAutoApproveTimeoutMs !== undefined) {
 						setFollowupAutoApproveTimeoutMs((newState as any).followupAutoApproveTimeoutMs)
+					}
+					// Update alwaysRunEnhancePrompt if present in state message
+					if ((newState as any).alwaysRunEnhancePrompt !== undefined) {
+						setAlwaysRunEnhancePrompt((newState as any).alwaysRunEnhancePrompt)
 					}
 					// Update includeTaskHistoryInEnhance if present in state message
 					if ((newState as any).includeTaskHistoryInEnhance !== undefined) {
@@ -474,6 +482,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		profileThresholds: state.profileThresholds ?? {},
 		alwaysAllowFollowupQuestions,
 		followupAutoApproveTimeoutMs,
+		alwaysRunEnhancePrompt,
 		remoteControlEnabled: state.remoteControlEnabled ?? false,
 		taskSyncEnabled: state.taskSyncEnabled,
 		featureRoomoteControlEnabled: state.featureRoomoteControlEnabled ?? false,
@@ -493,6 +502,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAlwaysAllowModeSwitch: (value) => setState((prevState) => ({ ...prevState, alwaysAllowModeSwitch: value })),
 		setAlwaysAllowSubtasks: (value) => setState((prevState) => ({ ...prevState, alwaysAllowSubtasks: value })),
 		setAlwaysAllowFollowupQuestions,
+		setAlwaysRunEnhancePrompt,
 		setFollowupAutoApproveTimeoutMs: (value) =>
 			setState((prevState) => ({ ...prevState, followupAutoApproveTimeoutMs: value })),
 		setShowAnnouncement: (value) => setState((prevState) => ({ ...prevState, shouldShowAnnouncement: value })),

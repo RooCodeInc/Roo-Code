@@ -38,6 +38,8 @@ const PromptsSettings = ({
 		listApiConfigMeta,
 		enhancementApiConfigId,
 		setEnhancementApiConfigId,
+		alwaysRunEnhancePrompt,
+		setAlwaysRunEnhancePrompt,
 		condensingApiConfigId,
 		setCondensingApiConfigId,
 		customCondensingPrompt,
@@ -280,6 +282,33 @@ const PromptsSettings = ({
 										</VSCodeCheckbox>
 										<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 											{t("prompts:supportPrompts.enhance.includeTaskHistoryDescription")}
+										</div>
+									</div>
+
+									<div>
+										<VSCodeCheckbox
+											checked={alwaysRunEnhancePrompt}
+											onChange={(e: Event | FormEvent<HTMLElement>) => {
+												const target = (
+													"target" in e ? e.target : null
+												) as HTMLInputElement | null
+
+												if (!target) {
+													return
+												}
+
+												setAlwaysRunEnhancePrompt(target.checked)
+
+												vscode.postMessage({
+													type: "updateSettings",
+													updatedSettings: { alwaysRunEnhancePrompt: target.checked },
+												})
+											}}>
+											<span className="font-medium">Always run enhance prompt</span>
+										</VSCodeCheckbox>
+										<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+											Automatically enhance every message before sending it to improve quality and
+											clarity
 										</div>
 									</div>
 
