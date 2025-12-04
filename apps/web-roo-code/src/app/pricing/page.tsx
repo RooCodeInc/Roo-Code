@@ -217,7 +217,7 @@ export default function PricingPage() {
 						})}
 					</div>
 
-					<div className="max-w-6xl mx-auto mt-8 p-7 flex flex-col md:flew-row gap-8 md:gap-4 bg-violet-200/20 outline-violet-700/20 outline outline-1 rounded-2xl transition-all shadow-none">
+					<div className="max-w-6xl mx-auto mt-8 p-7 flex flex-col md:flex-row gap-8 md:gap-4 bg-violet-200/20 outline-violet-700/20 outline outline-1 rounded-2xl transition-all shadow-none">
 						<div className="md:border-r md:pr-4">
 							<h3 className="text-lg font-medium mb-1">Roo Code Provider</h3>
 							<div className="text-sm text-muted-foreground">
