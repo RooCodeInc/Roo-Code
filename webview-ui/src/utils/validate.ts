@@ -230,7 +230,9 @@ function getModelIdForProvider(apiConfiguration: ProviderSettings, provider: Pro
  */
 export function validateBedrockArn(arn: string, region?: string) {
 	// Validate ARN format.
-	const arnRegex = /^arn:aws:(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^/]+)\/([\w.\-:]+)|([^/]+))$/
+	// Support standard AWS (aws), GovCloud (aws-us-gov), and China (aws-cn) partitions
+	const arnRegex =
+		/^arn:(?:aws|aws-us-gov|aws-cn):(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^/]+)\/([\w.\-:]+)|([^/]+))$/
 	const match = arn.match(arnRegex)
 
 	if (!match) {
