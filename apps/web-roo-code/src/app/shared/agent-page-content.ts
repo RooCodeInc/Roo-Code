@@ -45,6 +45,7 @@ export interface AgentPageContent {
 		cta: {
 			buttonText: string
 			disclaimer: string
+			tracking: string
 		}
 	}
 	howItWorks: {

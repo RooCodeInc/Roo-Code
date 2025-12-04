@@ -92,7 +92,7 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 									className="w-full sm:w-auto backdrop-blur-sm border hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all duration-300"
 									asChild>
 									<a
-										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
+										href={`${EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}${content.hero.cta.tracking}`}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="flex w-full items-center justify-center">
@@ -219,11 +219,11 @@ export function AgentLandingContent({ content }: { content: AgentPageContent }) 
 								className="bg-black text-white hover:bg-gray-800 hover:shadow-lg hover:shadow-black/20 dark:bg-white dark:text-black dark:hover:bg-gray-200 dark:hover:shadow-white/20 transition-all duration-300"
 								asChild>
 								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}
+									href={`${EXTERNAL_LINKS.CLOUD_APP_SIGNUP_PRO}${content.hero.cta.tracking}`}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-center">
-									{content.cta.buttonText}
+									{content.hero.cta.buttonText}
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</a>
 							</Button>

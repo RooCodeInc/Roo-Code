@@ -34,6 +34,7 @@ export const content: AgentPageContent = {
 		cta: {
 			buttonText: "Try now for free",
 			disclaimer: "",
+			tracking: "&agent=reviewer",
 		},
 	},
 	howItWorks: {
