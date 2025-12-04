@@ -18,6 +18,7 @@ import {
 	mistralModels,
 	moonshotModels,
 	openAiNativeModels,
+	poeModels,
 	qwenCodeModels,
 	sambaNovaModels,
 	vertexModels,
@@ -135,6 +136,7 @@ export const providerNames = [
 	"moonshot",
 	"minimax",
 	"openai-native",
+	"poe",
 	"qwen-code",
 	"roo",
 	"sambanova",
@@ -366,6 +368,10 @@ const groqSchema = apiModelIdProviderModelSchema.extend({
 	groqApiKey: z.string().optional(),
 })
 
+const poeSchema = apiModelIdProviderModelSchema.extend({
+	poeApiKey: z.string().optional(),
+})
+
 const huggingFaceSchema = baseProviderSettingsSchema.extend({
 	huggingFaceApiKey: z.string().optional(),
 	huggingFaceModelId: z.string().optional(),
@@ -460,6 +466,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
+	poeSchema.merge(z.object({ apiProvider: z.literal("poe") })),
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
 	huggingFaceSchema.merge(z.object({ apiProvider: z.literal("huggingface") })),
 	chutesSchema.merge(z.object({ apiProvider: z.literal("chutes") })),
@@ -503,6 +510,7 @@ export const providerSettingsSchema = z.object({
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
+	...poeSchema.shape,
 	...basetenSchema.shape,
 	...huggingFaceSchema.shape,
 	...chutesSchema.shape,
@@ -591,6 +599,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	requesty: "requestyModelId",
 	xai: "apiModelId",
 	groq: "apiModelId",
+	poe: "apiModelId",
 	baseten: "apiModelId",
 	chutes: "apiModelId",
 	litellm: "litellmModelId",
@@ -680,6 +689,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(geminiModels),
 	},
 	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
+	poe: { id: "poe", label: "Poe", models: Object.keys(poeModels) },
 	"io-intelligence": {
 		id: "io-intelligence",
 		label: "IO Intelligence",
