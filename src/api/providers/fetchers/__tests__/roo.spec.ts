@@ -127,6 +127,9 @@ describe("getRooModels", () => {
 			description: "Model that requires reasoning",
 			deprecated: false,
 			isFree: false,
+			defaultTemperature: undefined,
+			defaultToolProtocol: "native",
+			isStealthModel: undefined,
 		})
 	})
 
@@ -174,6 +177,9 @@ describe("getRooModels", () => {
 			description: "Normal model without reasoning",
 			deprecated: false,
 			isFree: false,
+			defaultTemperature: undefined,
+			defaultToolProtocol: "native",
+			isStealthModel: undefined,
 		})
 	})
 
@@ -578,21 +584,21 @@ describe("getRooModels", () => {
 		expect(models["test/native-tools-model"].defaultToolProtocol).toBe("native")
 	})
 
-	it("should imply supportsNativeTools when default-native-tools tag is present without tool-use tag", async () => {
+	it("should set defaultToolProtocol to native for all models regardless of tags", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
 				{
-					id: "test/implicit-native-tools",
+					id: "test/model-without-tool-tags",
 					object: "model",
 					created: 1234567890,
 					owned_by: "test",
-					name: "Implicit Native Tools Model",
-					description: "Model with default-native-tools but no tool-use tag",
+					name: "Model Without Tool Tags",
+					description: "Model without any tool-related tags",
 					context_window: 128000,
 					max_tokens: 8192,
 					type: "language",
-					tags: ["default-native-tools"], // Only default-native-tools, no tool-use
+					tags: [], // No tool-related tags
 					pricing: {
 						input: "0.0001",
 						output: "0.0002",
@@ -608,21 +614,22 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/implicit-native-tools"].supportsNativeTools).toBe(true)
-		expect(models["test/implicit-native-tools"].defaultToolProtocol).toBe("native")
+		// All Roo provider models now default to native tool protocol
+		expect(models["test/model-without-tool-tags"].supportsNativeTools).toBe(false)
+		expect(models["test/model-without-tool-tags"].defaultToolProtocol).toBe("native")
 	})
 
-	it("should not set defaultToolProtocol when default-native-tools tag is not present", async () => {
+	it("should set supportsNativeTools from tool-use tag and always set defaultToolProtocol to native", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
 				{
-					id: "test/non-native-model",
+					id: "test/tool-use-model",
 					object: "model",
 					created: 1234567890,
 					owned_by: "test",
-					name: "Non-Native Tools Model",
-					description: "Model without native tool calling default",
+					name: "Tool Use Model",
+					description: "Model with tool-use tag",
 					context_window: 128000,
 					max_tokens: 8192,
 					type: "language",
@@ -642,8 +649,9 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/non-native-model"].supportsNativeTools).toBe(true)
-		expect(models["test/non-native-model"].defaultToolProtocol).toBeUndefined()
+		// tool-use tag sets supportsNativeTools, and all models get defaultToolProtocol: native
+		expect(models["test/tool-use-model"].supportsNativeTools).toBe(true)
+		expect(models["test/tool-use-model"].defaultToolProtocol).toBe("native")
 	})
 
 	it("should detect stealth mode from tags", async () => {

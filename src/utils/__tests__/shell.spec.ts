@@ -18,6 +18,10 @@ vi.mock("vscode", () => ({
 	Uri: {
 		joinPath: vi.fn((uri, ...paths) => ({ fsPath: `${uri.fsPath}/${paths.join("/")}` })),
 	},
+	env: {
+		machineId: "test-machine-id",
+		appName: "Visual Studio Code",
+	},
 }))
 
 // Mock the os module
