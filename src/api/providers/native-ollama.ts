@@ -311,12 +311,32 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			// Enhance error reporting
 			const statusCode = error.status || error.statusCode
 			const errorMessage = error.message || "Unknown error"
+			const errorCode = error.code || ""
+			const baseUrl = this.options.ollamaBaseUrl || "http://localhost:11434"
 
-			if (error.code === "ECONNREFUSED") {
+			// DNS resolution failures - typically VPN-related for internal endpoints
+			if (errorCode === "ENOTFOUND" || errorMessage.includes("ENOTFOUND")) {
 				throw new Error(
-					`Ollama service is not running at ${this.options.ollamaBaseUrl || "http://localhost:11434"}. Please start Ollama first.`,
+					`Cannot resolve hostname for Ollama at ${baseUrl}. If this is an internal service, please connect to your corporate VPN.`,
 				)
-			} else if (statusCode === 404) {
+			}
+
+			// Connection refused - service is reachable but not accepting connections
+			if (errorCode === "ECONNREFUSED" || errorMessage.includes("ECONNREFUSED")) {
+				throw new Error(
+					`Ollama service refused connection at ${baseUrl}. Please verify Ollama is running. Start it with: ollama serve`,
+				)
+			}
+
+			// Connection timeout - often indicates VPN or network stability issues
+			if (errorCode === "ETIMEDOUT" || errorMessage.includes("ETIMEDOUT")) {
+				throw new Error(
+					`Request to Ollama timed out at ${baseUrl}. If using an internal service, verify your VPN connection is stable.`,
+				)
+			}
+
+			// Model not found
+			if (statusCode === 404) {
 				throw new Error(
 					`Model ${this.getModel().id} not found in Ollama. Please pull the model first with: ollama pull ${this.getModel().id}`,
 				)
