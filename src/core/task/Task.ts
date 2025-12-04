@@ -2114,7 +2114,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			userMessageWasRemoved?: boolean // Track if user message was removed due to empty response
 		}
 
-		const stack: StackItem[] = [{ userContent, includeFileDetails, retryAttempt: 1 }]
+		const stack: StackItem[] = [{ userContent, includeFileDetails, retryAttempt: 0 }]
 
 		while (stack.length > 0) {
 			const currentItem = stack.pop()!
@@ -2213,7 +2213,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// This prevents consecutive user messages while allowing re-add when needed
 			const isEmptyUserContent = currentUserContent.length === 0
 			const shouldAddUserMessage =
-				((currentItem.retryAttempt ?? 1) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
+				((currentItem.retryAttempt ?? 0) === 0 && !isEmptyUserContent) || currentItem.userMessageWasRemoved
 			if (shouldAddUserMessage) {
 				await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
 				TelemetryService.instance.captureConversationMessage(this.taskId, "user")
@@ -3796,12 +3796,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
 				}
 
-				await this.say(
-					"api_req_retry_delayed",
-					`${headerText}\nAttempt #${retryAttempt + 2} in ${i} seconds...`,
-					undefined,
-					true,
-				)
+				await this.say("api_req_retry_delayed", `${headerText}\n↻ ${i}s...`, undefined, true)
 				await delay(1000)
 			}
 
