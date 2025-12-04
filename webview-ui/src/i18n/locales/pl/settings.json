@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "Domyślnie zwijaj komunikaty o myśleniu",
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Maksymalna liczba zadań na ekranie głównym"
 		}
 	}
 }

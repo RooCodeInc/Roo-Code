@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "デフォルトで思考メッセージを折りたたむ",
 			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
+		},
+		"maxTasksHomeScreen": {
+			"label": "ホーム画面の最大タスク数"
 		}
 	}
 }

@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "默认折叠“思考”消息",
 			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
+		},
+		"maxTasksHomeScreen": {
+			"label": "主屏幕中的最大任务数"
 		}
 	}
 }

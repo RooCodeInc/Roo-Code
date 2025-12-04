@@ -955,6 +955,9 @@
 		"collapseThinking": {
 			"label": "Gedankenblöcke standardmäßig ausblenden",
 			"description": "Wenn aktiviert, werden Gedankenblöcke standardmäßig ausgeblendet, bis du mit ihnen interagierst"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Maximale Anzahl von Aufgaben auf dem Startbildschirm"
 		}
 	}
 }

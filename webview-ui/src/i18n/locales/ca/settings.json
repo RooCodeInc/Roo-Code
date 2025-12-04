@@ -955,6 +955,9 @@
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Nombre màxim de tasques a la pantalla d'inici"
 		}
 	}
 }

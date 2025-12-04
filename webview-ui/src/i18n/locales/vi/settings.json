@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Số lượng tác vụ tối đa trong màn hình chính"
 		}
 	}
 }

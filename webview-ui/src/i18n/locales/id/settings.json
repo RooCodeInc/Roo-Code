@@ -985,6 +985,9 @@
 		"collapseThinking": {
 			"label": "Ciutkan pesan Berpikir secara default",
 			"description": "Jika diaktifkan, blok berpikir akan diciutkan secara default sampai Anda berinteraksi dengannya"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Jumlah maksimum tugas di layar utama"
 		}
 	}
 }

@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "Denkberichten standaard samenvouwen",
 			"description": "Indien ingeschakeld, worden denkblokken standaard samengevouwen totdat je ermee interageert"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Maximum aantal taken in het startscherm"
 		}
 	}
 }

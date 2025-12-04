@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "預設折疊“思考”訊息",
 			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
+		},
+		"maxTasksHomeScreen": {
+			"label": "主畫面中的最大工作數"
 		}
 	}
 }

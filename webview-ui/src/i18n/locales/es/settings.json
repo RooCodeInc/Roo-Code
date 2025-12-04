@@ -955,6 +955,9 @@
 		"collapseThinking": {
 			"label": "Colapsar mensajes de pensamiento por defecto",
 			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Número máximo de tareas en la pantalla de inicio"
 		}
 	}
 }

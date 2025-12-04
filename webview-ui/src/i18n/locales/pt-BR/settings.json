@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Número máximo de tarefas na tela inicial"
 		}
 	}
 }

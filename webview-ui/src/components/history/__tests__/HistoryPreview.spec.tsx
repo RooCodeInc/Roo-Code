@@ -3,8 +3,10 @@ import { render, screen } from "@/utils/test-utils"
 import type { HistoryItem } from "@roo-code/types"
 
 import HistoryPreview from "../HistoryPreview"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 
 vi.mock("../useTaskSearch")
+vi.mock("@/context/ExtensionStateContext")
 
 vi.mock("../TaskItem", () => {
 	return {
@@ -20,6 +22,7 @@ import { useTaskSearch } from "../useTaskSearch"
 import TaskItem from "../TaskItem"
 
 const mockUseTaskSearch = useTaskSearch as any
+const mockUseExtensionState = useExtensionState as any
 const mockTaskItem = TaskItem as any
 
 const mockTasks: HistoryItem[] = [
@@ -82,6 +85,32 @@ const mockTasks: HistoryItem[] = [
 describe("HistoryPreview", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		// Default mock for useExtensionState
+		mockUseExtensionState.mockReturnValue({
+			maxTasksHomeScreen: 4,
+		})
+	})
+
+	it("renders nothing when maxTasksHomeScreen is 0", () => {
+		mockUseExtensionState.mockReturnValue({
+			maxTasksHomeScreen: 0,
+		})
+		mockUseTaskSearch.mockReturnValue({
+			tasks: mockTasks,
+			searchQuery: "",
+			setSearchQuery: vi.fn(),
+			sortOption: "newest",
+			setSortOption: vi.fn(),
+			lastNonRelevantSort: null,
+			setLastNonRelevantSort: vi.fn(),
+			showAllWorkspaces: false,
+			setShowAllWorkspaces: vi.fn(),
+		})
+
+		const { container } = render(<HistoryPreview />)
+
+		// Should render nothing when maxTasksHomeScreen is 0
+		expect(container.firstChild).toBeNull()
 	})
 
 	it("renders nothing when no tasks are available", () => {
@@ -119,7 +148,7 @@ describe("HistoryPreview", () => {
 
 		render(<HistoryPreview />)
 
-		// Should render only the first 3 tasks
+		// Should render only the first 4 tasks
 		expect(screen.getByTestId("task-item-task-1")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-2")).toBeInTheDocument()
 		expect(screen.getByTestId("task-item-task-3")).toBeInTheDocument()
@@ -227,5 +256,30 @@ describe("HistoryPreview", () => {
 		const { container } = render(<HistoryPreview />)
 
 		expect(container.firstChild).toHaveClass("flex", "flex-col", "gap-1")
+	})
+
+	it("respects maxTasksHomeScreen setting", () => {
+		mockUseExtensionState.mockReturnValue({
+			maxTasksHomeScreen: 2,
+		})
+		mockUseTaskSearch.mockReturnValue({
+			tasks: mockTasks,
+			searchQuery: "",
+			setSearchQuery: vi.fn(),
+			sortOption: "newest",
+			setSortOption: vi.fn(),
+			lastNonRelevantSort: null,
+			setLastNonRelevantSort: vi.fn(),
+			showAllWorkspaces: false,
+			setShowAllWorkspaces: vi.fn(),
+		})
+
+		render(<HistoryPreview />)
+
+		// Should render only the first 2 tasks
+		expect(screen.getByTestId("task-item-task-1")).toBeInTheDocument()
+		expect(screen.getByTestId("task-item-task-2")).toBeInTheDocument()
+		expect(screen.queryByTestId("task-item-task-3")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("task-item-task-4")).not.toBeInTheDocument()
 	})
 })

@@ -956,6 +956,9 @@
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
+		},
+		"maxTasksHomeScreen": {
+			"label": "Ana ekrandaki maksimum görev sayısı"
 		}
 	}
 }
