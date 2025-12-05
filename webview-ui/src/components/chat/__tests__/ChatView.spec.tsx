@@ -468,7 +468,12 @@ describe("ChatView - Focus Grabbing Tests", () => {
 			expect(getByTestId("chat-textarea")).toBeInTheDocument()
 		})
 
-		// Clear any initial calls after state has settled
+		// Wait for debounced focus effect to settle (useDebounceEffect has 50ms delay)
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		})
+
+		// Clear any initial calls after state and debounce effects have settled
 		mockFocus.mockClear()
 
 		// Add follow-up question
@@ -494,7 +499,13 @@ describe("ChatView - Focus Grabbing Tests", () => {
 			expect(getByTestId("chat-textarea")).toBeInTheDocument()
 		})
 
+		// Wait for any debounced effects to settle after the follow-up message
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		})
+
 		// Should not grab focus for follow-up questions
+		// (enableButtons is set to true for followup to prevent focus grab)
 		expect(mockFocus).not.toHaveBeenCalled()
 	})
 })

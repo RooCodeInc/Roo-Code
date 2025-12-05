@@ -29,6 +29,7 @@ import {
 	McpTool,
 	McpToolCallResponse,
 } from "../../shared/mcp"
+import { Package } from "../../shared/package"
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
@@ -745,7 +746,10 @@ export class McpHub {
 				// Streamable HTTP connection
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
 					requestInit: {
-						headers: configInjected.headers,
+						headers: {
+							"User-Agent": `RooCode/${Package.version}`,
+							...configInjected.headers,
+						},
 					},
 				})
 
@@ -771,7 +775,10 @@ export class McpHub {
 				// SSE connection
 				const sseOptions = {
 					requestInit: {
-						headers: configInjected.headers,
+						headers: {
+							"User-Agent": `RooCode/${Package.version}`,
+							...configInjected.headers,
+						},
 					},
 				}
 				// Configure ReconnectingEventSource options
@@ -779,7 +786,11 @@ export class McpHub {
 					max_retry_time: 5000, // Maximum retry time in milliseconds
 					withCredentials: configInjected.headers?.["Authorization"] ? true : false, // Enable credentials if Authorization header exists
 					fetch: (url: string | URL, init: RequestInit) => {
-						const headers = new Headers({ ...(init?.headers || {}), ...(configInjected.headers || {}) })
+						const headers = new Headers({
+							"User-Agent": `RooCode/${Package.version}`,
+							...(init?.headers || {}),
+							...(configInjected.headers || {}),
+						})
 						return fetch(url, {
 							...init,
 							headers,
