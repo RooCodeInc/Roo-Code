@@ -490,6 +490,11 @@ describe("ChatView - Focus Grabbing Tests", () => {
 			expect(getByTestId("chat-textarea")).toBeInTheDocument()
 		})
 
+		// Wait for the debounced focus effect to fire (50ms debounce + buffer for CI variability)
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		})
+
 		// Clear any initial calls after state has settled
 		mockFocus.mockClear()
 
