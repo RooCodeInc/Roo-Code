@@ -205,8 +205,9 @@ async function _streamDataToFile(targetPath: string, data: any, prettyPrint = fa
 
 	// JsonStreamStringify traverses the object and streams tokens directly
 	// The 'spaces' parameter adds indentation during streaming, not via a separate pass
+	// Convert undefined to null for valid JSON serialization (undefined is not valid JSON)
 	const stringifyStream = new JsonStreamStringify(
-		data,
+		data === undefined ? null : data,
 		undefined, // replacer
 		prettyPrint ? "\t" : undefined, // spaces for indentation
 	)
