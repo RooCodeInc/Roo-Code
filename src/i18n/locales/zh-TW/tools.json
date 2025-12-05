@@ -7,6 +7,7 @@
 		"imageWithSize": "圖片檔案 ({{size}} KB)"
 	},
 	"toolRepetitionLimitReached": "Roo 似乎陷入循環，反覆嘗試同一操作 ({{toolName}})。這可能表明目前策略存在問題。請考慮重新描述工作、提供更具體的指示或引導其嘗試不同的方法。",
+	"unknownToolError": "Roo 嘗試使用未知工具：「{{toolName}}」。正在重試...",
 	"codebaseSearch": {
 		"approval": "正在搜尋程式碼庫中的「{{query}}」..."
 	},

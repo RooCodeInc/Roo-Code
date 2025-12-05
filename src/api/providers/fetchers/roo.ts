@@ -13,6 +13,21 @@ export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
 		includedTools: ["search_and_replace"],
 		excludedTools: ["apply_diff"],
 	},
+	"openai/gpt-5.1": {
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		reasoningEffort: "medium",
+	},
+	"openai/gpt-5": {
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		reasoningEffort: "medium",
+	},
+	"openai/gpt-5-mini": {
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		reasoningEffort: "medium",
+	},
 }
 
 /**

@@ -42,6 +42,23 @@ export const openAiNativeModels = {
 		tiers: [{ name: "priority", contextWindow: 400000, inputPrice: 2.5, outputPrice: 20.0, cacheReadsPrice: 0.25 }],
 		description: "GPT-5.1 Codex: A version of GPT-5.1 optimized for agentic coding in Codex",
 	},
+	"gpt-5.1-codex-max": {
+		maxTokens: 128000,
+		contextWindow: 400000,
+		supportsNativeTools: true,
+		supportsImages: true,
+		supportsPromptCache: true,
+		promptCacheRetention: "24h",
+		supportsReasoningEffort: ["low", "medium", "high"],
+		reasoningEffort: "medium",
+		inputPrice: 1.25,
+		outputPrice: 10.0,
+		cacheReadsPrice: 0.125,
+		supportsTemperature: false,
+		tiers: [{ name: "priority", contextWindow: 400000, inputPrice: 2.5, outputPrice: 20.0, cacheReadsPrice: 0.25 }],
+		description:
+			"GPT-5.1 Codex Max: Our most intelligent coding model optimized for long-horizon, agentic coding tasks",
+	},
 	"gpt-5.1-codex-mini": {
 		maxTokens: 128000,
 		contextWindow: 400000,
