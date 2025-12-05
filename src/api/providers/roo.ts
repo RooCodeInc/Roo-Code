@@ -15,7 +15,6 @@ import { getRooReasoning } from "../transform/reasoning"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
-import { MODEL_DEFAULTS } from "../providers/fetchers/roo"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
@@ -335,17 +334,12 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	override getModel() {
 		const modelId = this.options.apiModelId || rooDefaultModelId
 
-		// Get models from shared cache
+		// Get models from shared cache (settings are already applied by the fetcher)
 		const models = getModelsFromCache("roo") || {}
 		const modelInfo = models[modelId]
 
-		// Get model-specific defaults if they exist
-		const modelDefaults = MODEL_DEFAULTS[modelId]
-
 		if (modelInfo) {
-			// Merge model-specific defaults with cached model info
-			const mergedInfo = modelDefaults ? { ...modelInfo, ...modelDefaults } : modelInfo
-			return { id: modelId, info: mergedInfo }
+			return { id: modelId, info: modelInfo }
 		}
 
 		// Return the requested model ID even if not found, with fallback info.

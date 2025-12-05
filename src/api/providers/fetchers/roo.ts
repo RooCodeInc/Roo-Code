@@ -5,31 +5,6 @@ import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
 
-// Model-specific defaults that should be applied even when models come from API cache
-// These override API-provided values for specific models
-// Exported so RooHandler.getModel() can also apply these for fallback cases
-export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
-	"minimax/minimax-m2:free": {
-		includedTools: ["search_and_replace"],
-		excludedTools: ["apply_diff"],
-	},
-	"openai/gpt-5.1": {
-		includedTools: ["apply_patch"],
-		excludedTools: ["apply_diff", "write_to_file"],
-		reasoningEffort: "medium",
-	},
-	"openai/gpt-5": {
-		includedTools: ["apply_patch"],
-		excludedTools: ["apply_diff", "write_to_file"],
-		reasoningEffort: "medium",
-	},
-	"openai/gpt-5-mini": {
-		includedTools: ["apply_patch"],
-		excludedTools: ["apply_diff", "write_to_file"],
-		reasoningEffort: "medium",
-	},
-}
-
 /**
  * Fetches available models from the Roo Code Cloud provider
  *
@@ -150,9 +125,12 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					isStealthModel: isStealthModel || undefined,
 				}
 
-				// Apply model-specific defaults (e.g., defaultToolProtocol)
-				const modelDefaults = MODEL_DEFAULTS[modelId]
-				models[modelId] = modelDefaults ? { ...baseModelInfo, ...modelDefaults } : baseModelInfo
+				// Apply API-provided settings on top of base model info
+				// Settings allow the proxy to dynamically configure model-specific options
+				// like includedTools, excludedTools, reasoningEffort, etc.
+				const apiSettings = model.settings as Partial<ModelInfo> | undefined
+
+				models[modelId] = apiSettings ? { ...baseModelInfo, ...apiSettings } : baseModelInfo
 			}
 
 			return models
