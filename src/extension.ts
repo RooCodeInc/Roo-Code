@@ -161,7 +161,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					})
 				} else {
 					// Flush without refresh on logout
-					await flushModels("roo", false)
+					await flushModels({ provider: "roo" }, false)
 				}
 			} catch (error) {
 				cloudLogger(
