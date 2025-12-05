@@ -919,6 +919,130 @@ describe("OpenAiNativeHandler", () => {
 			expect(callBody.previous_response_id).toBeUndefined()
 		})
 
+		it("should initialize lastResponseId from conversation history for resumed tasks", async () => {
+			// This test verifies the conversation continuity fix where a new handler instance
+			// should extract the previous response ID from the conversation history's assistant
+			// message `id` field, enabling multi-turn continuity even after handler recreation.
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"response.output_item.added","item":{"type":"text","text":"Response"}}\n\n',
+							),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			// Create a NEW handler (simulating task resume where handler is recreated)
+			const gpt5Handler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.1",
+			})
+
+			// Messages that include a stored response ID from a previous API call
+			// This simulates what happens when a task is resumed and the conversation
+			// history is loaded from disk - assistant messages have `id` field with
+			// the response ID from when they were captured.
+			const messagesWithStoredResponseId: any[] = [
+				{ role: "user", content: "First question" },
+				{ role: "assistant", content: "First answer", id: "resp_stored_from_previous_call_123" },
+				{ role: "user", content: "Follow-up question" },
+			]
+
+			const stream = gpt5Handler.createMessage(systemPrompt, messagesWithStoredResponseId, {
+				taskId: "task1",
+			})
+			for await (const chunk of stream) {
+				// consume
+			}
+
+			const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			// Should have extracted the response ID from the conversation history
+			// and included it as previous_response_id in the request
+			expect(callBody.previous_response_id).toBe("resp_stored_from_previous_call_123")
+		})
+
+		it("should use lastResponseId over conversation history when both are available", async () => {
+			// This test verifies that if the handler already has a lastResponseId set
+			// (from a previous call in the same session), it takes precedence over
+			// any stored IDs in the conversation history.
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"response.output_item.added","item":{"type":"text","text":"Response 1"}}\n\n',
+							),
+						)
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"response.done","response":{"id":"resp_new_from_current_session"}}\n\n',
+							),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const gpt5Handler = new OpenAiNativeHandler({
+				...mockOptions,
+				apiModelId: "gpt-5.1",
+			})
+
+			// First call - establishes lastResponseId
+			const messagesFirst: any[] = [{ role: "user", content: "First question" }]
+
+			const stream1 = gpt5Handler.createMessage(systemPrompt, messagesFirst, { taskId: "task1" })
+			for await (const chunk of stream1) {
+				// consume
+			}
+
+			// Reset mock for second call
+			mockFetch.mockClear()
+			mockFetch.mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(
+							new TextEncoder().encode(
+								'data: {"type":"response.output_item.added","item":{"type":"text","text":"Response 2"}}\n\n',
+							),
+						)
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+
+			// Second call - with messages that have an OLD stored response ID
+			// but the handler already has a newer lastResponseId from the first call
+			const messagesSecond: any[] = [
+				{ role: "user", content: "First question" },
+				{ role: "assistant", content: "First answer", id: "resp_old_stored_id" },
+				{ role: "user", content: "Second question" },
+			]
+
+			const stream2 = gpt5Handler.createMessage(systemPrompt, messagesSecond, { taskId: "task1" })
+			for await (const chunk of stream2) {
+				// consume
+			}
+
+			const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			// Should use the current session's lastResponseId, not the old stored one
+			expect(callBody.previous_response_id).toBe("resp_new_from_current_session")
+		})
+
 		it("should provide helpful error messages for different error codes", async () => {
 			const testCases = [
 				{ status: 400, expectedMessage: "Invalid request to Responses API" },

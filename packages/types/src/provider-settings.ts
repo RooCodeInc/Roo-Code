@@ -318,6 +318,8 @@ const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	openAiNativeEnableVerbosity: z.boolean().optional(),
 	// Verbosity level when override is enabled (low, medium, high)
 	openAiNativeVerbosity: verbosityLevelsSchema.optional(),
+	// Enable debug logging for API calls (alternative to OPENAI_DEBUG env var)
+	openAiNativeEnableDebug: z.boolean().optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({

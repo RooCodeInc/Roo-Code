@@ -23,6 +23,13 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import {
+	OpenAINativeDebugger,
+	createUrlTransformationTracker,
+	buildDebugRequestInfo,
+	buildDebugResponseInfo,
+	type UrlTransformation,
+} from "./openai-native-debug"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -45,6 +52,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Track output item index to call_id mapping for streaming tool calls
 	// This allows delta events to be correlated with their parent tool call
 	private outputIndexToCallId: Map<number, { callId: string; name: string }> = new Map()
+
+	// Debugger instance for detailed logging when custom base URLs are configured
+	private debugger!: OpenAINativeDebugger
 
 	// Event types handled by the shared event processor to avoid duplication
 	// Official event types per OpenAI.ResponseStreamEvent spec, plus legacy variants for compatibility
@@ -72,6 +82,30 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+
+		// Initialize debugger - enabled via settings OR OPENAI_DEBUG env var
+		// Check settings first (more reliable in VS Code extension context), then environment variable
+		const debugFromSettings = this.options.openAiNativeEnableDebug === true
+		const debugFromEnv =
+			(typeof process !== "undefined" &&
+				process.env &&
+				(process.env.OPENAI_DEBUG === "true" || process.env.OPENAI_DEBUG === "1")) ||
+			false
+		const debugEnabled = debugFromSettings || debugFromEnv
+		this.debugger = new OpenAINativeDebugger({
+			enabled: debugEnabled,
+		})
+
+		// Log debug status on startup if enabled
+		if (debugEnabled) {
+			console.log(
+				`[OPENAI DEBUG] Debug logging enabled (from ${debugFromSettings ? "settings" : "environment variable"})`,
+			)
+			console.log(
+				`[OPENAI DEBUG] Base URL: ${this.options.openAiNativeBaseUrl || "https://api.openai.com (default)"}`,
+			)
+			console.log(`[OPENAI DEBUG] Is Azure: ${this.isAzureOpenAI()}`)
+		}
 	}
 
 	/**
@@ -190,10 +224,49 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Initialize lastResponseId from conversation history if not already set.
+		// This is critical for resuming tasks where a new handler instance is created
+		// but the conversation history already contains the previous response ID.
+		// The response ID is stored in the `id` field of assistant messages by Task.ts.
+		if (!this.lastResponseId && messages.length > 0) {
+			// Find the last assistant message with an id (response ID from previous API call)
+			for (let i = messages.length - 1; i >= 0; i--) {
+				const msg = messages[i] as any
+				if (msg.role === "assistant" && msg.id) {
+					this.lastResponseId = msg.id
+					if (this.debugger.enabled) {
+						console.log(
+							`[OPENAI DEBUG] Initialized lastResponseId from conversation history: ${this.lastResponseId}`,
+						)
+					}
+					break
+				}
+			}
+		}
+
 		// Capture previous response ID BEFORE resetting (for multi-turn conversation continuity)
 		// This enables the Azure/OpenAI Responses API to maintain conversation context via previous_response_id
 		const previousResponseId =
 			!metadata?.suppressPreviousResponseId && this.lastResponseId ? this.lastResponseId : undefined
+
+		// Debug: Log conversation continuity state
+		if (this.debugger.enabled) {
+			console.log(`[OPENAI DEBUG] Conversation Continuity State:`)
+			console.log(`  - Last Response ID: ${this.lastResponseId || "none"}`)
+			console.log(
+				`  - Previous Response ID (to send): ${previousResponseId || "none (suppressed or not available)"}`,
+			)
+			console.log(`  - Suppress Previous Response ID: ${metadata?.suppressPreviousResponseId || false}`)
+			console.log(`  - Last Response Output available: ${this.lastResponseOutput ? "yes" : "no"}`)
+			if (this.lastResponseOutput) {
+				console.log(`  - Last Response Output items: ${this.lastResponseOutput.length}`)
+				this.lastResponseOutput.forEach((item, idx) => {
+					console.log(
+						`    [${idx}] type: ${item.type}, has_encrypted_content: ${!!item.encrypted_content}, has_id: ${!!item.id}`,
+					)
+				})
+			}
+		}
 
 		// Reset resolved tier for this request; will be set from response if present
 		this.lastServiceTier = undefined
@@ -327,6 +400,33 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// Respect caller preference for response storage (defaults to true to allow previous_response_id usage)
 		const shouldStoreResponses = metadata?.store ?? true
+
+		// Debug: Log request body construction
+		if (this.debugger.enabled) {
+			console.log(`[OPENAI DEBUG] Building request body:`)
+			console.log(`  - Model: ${model.id}`)
+			console.log(`  - Stream: true`)
+			console.log(`  - Store: ${shouldStoreResponses}`)
+			console.log(`  - Is Azure: ${isAzure}`)
+			console.log(`  - Previous Response ID: ${previousResponseId || "none"}`)
+			console.log(`  - Reasoning Effort: ${reasoningEffort || "none"}`)
+			console.log(`  - Input items: ${formattedInput.length}`)
+			formattedInput.forEach((item: any, idx: number) => {
+				if (item.type === "reasoning") {
+					console.log(
+						`    [${idx}] type: reasoning, encrypted_content: ${!!item.encrypted_content}, id: ${item.id || "none"}`,
+					)
+				} else if (item.type === "message") {
+					console.log(
+						`    [${idx}] type: message, role: ${item.role}, content_blocks: ${item.content?.length || 0}`,
+					)
+				} else if (item.type === "function_call") {
+					console.log(`    [${idx}] type: function_call, name: ${item.name}`)
+				} else if (item.type === "function_call_output") {
+					console.log(`    [${idx}] type: function_call_output, call_id: ${item.call_id}`)
+				}
+			})
+		}
 
 		const body: ResponsesRequestBody = {
 			model: model.id,
@@ -569,34 +669,74 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * Note: The v1 API does not require api-version query parameter per official Azure docs:
 	 * https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
 	 */
-	private buildResponsesApiUrl(): { url: string; isAzure: boolean } {
+	private buildResponsesApiUrl(requestId?: string): {
+		url: string
+		isAzure: boolean
+		transformations: UrlTransformation[]
+	} {
 		const rawBaseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
 		const isAzure = this.isAzureOpenAI()
+
+		// Track URL transformations for debugging
+		const tracker = createUrlTransformationTracker()
 
 		let baseUrl = rawBaseUrl
 		let query = ""
 
 		try {
 			const parsed = new URL(rawBaseUrl)
-			baseUrl = `${parsed.origin}${parsed.pathname}`
+			const newBaseUrl = `${parsed.origin}${parsed.pathname}`
+			if (newBaseUrl !== rawBaseUrl) {
+				tracker.track("Parse URL", rawBaseUrl, newBaseUrl, "Extract origin and pathname")
+			}
+			baseUrl = newBaseUrl
 			query = parsed.search // Preserve query params such as api-version for Azure proxies
+			if (query) {
+				tracker.track("Extract query params", "", query, "Preserve api-version for Azure proxies")
+			}
 		} catch {
 			// If URL parsing fails, fall back to raw string handling without query preservation
+			tracker.track("URL parse failed", rawBaseUrl, rawBaseUrl, "Falling back to raw string handling")
 			query = ""
 		}
 
 		// Normalize path so we can safely append the Responses suffix
+		const beforeTrailingSlash = baseUrl
 		baseUrl = baseUrl.replace(/\/+$/, "") // drop trailing slashes
+		if (baseUrl !== beforeTrailingSlash) {
+			tracker.track("Remove trailing slashes", beforeTrailingSlash, baseUrl)
+		}
+
+		const beforeResponses = baseUrl
 		baseUrl = baseUrl.replace(/\/responses$/, "") // remove accidental /responses
+		if (baseUrl !== beforeResponses) {
+			tracker.track("Remove /responses suffix", beforeResponses, baseUrl, "Avoid double /responses path")
+		}
+
+		const beforeV1 = baseUrl
 		baseUrl = baseUrl.replace(/\/v1$/, "") // drop trailing /v1 if present
+		if (baseUrl !== beforeV1) {
+			tracker.track("Remove /v1 suffix", beforeV1, baseUrl, "Will be re-added with /responses")
+		}
 
 		if (isAzure && !baseUrl.includes("/openai")) {
+			const beforeOpenai = baseUrl
 			baseUrl = `${baseUrl}/openai`
+			tracker.track("Add /openai for Azure", beforeOpenai, baseUrl, "Azure OpenAI requires /openai path segment")
+		}
+
+		const finalUrl = `${baseUrl}/v1/responses${query}`
+		tracker.track("Construct final URL", baseUrl, finalUrl, "Append /v1/responses and query params")
+
+		// Log URL construction if debugging is enabled
+		if (requestId && this.debugger.enabled) {
+			this.debugger.logUrlConstruction(requestId, rawBaseUrl, tracker.transformations, finalUrl)
 		}
 
 		return {
-			url: `${baseUrl}/v1/responses${query}`,
+			url: finalUrl,
 			isAzure,
+			transformations: tracker.transformations,
 		}
 	}
 
@@ -608,7 +748,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const { url, isAzure } = this.buildResponsesApiUrl()
+
+		// Generate request ID for debugging correlation
+		const requestId = this.debugger.generateRequestId()
+		const startTime = Date.now()
+
+		const { url, isAzure, transformations } = this.buildResponsesApiUrl(requestId)
 
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
@@ -623,6 +768,25 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			headers["api-key"] = apiKey
 		} else {
 			headers["Authorization"] = `Bearer ${apiKey}`
+		}
+
+		// Add custom request ID header for correlation (as per OpenAI docs)
+		headers["X-Client-Request-Id"] = requestId
+
+		// Log request details if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logRequest(
+				buildDebugRequestInfo(
+					requestId,
+					url,
+					{ method: "POST", headers, body: JSON.stringify(requestBody) },
+					{
+						baseUrl: this.options.openAiNativeBaseUrl,
+						isAzure,
+						urlTransformations: transformations,
+					},
+				),
+			)
 		}
 
 		try {
@@ -686,7 +850,32 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					errorMessage += ` - ${errorDetails}`
 				}
 
-				throw new Error(errorMessage)
+				// Log error response if debugging is enabled
+				if (this.debugger.enabled) {
+					this.debugger.logResponse(
+						buildDebugResponseInfo(requestId, response, startTime, { error: errorDetails }),
+					)
+				}
+
+				const error = new Error(errorMessage)
+				// Log categorized error for debugging
+				if (this.debugger.enabled) {
+					const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+					errorInfo.context = {
+						status: response.status,
+						statusText: response.statusText,
+						url,
+						isAzure,
+					}
+					this.debugger.logError(errorInfo)
+				}
+
+				throw error
+			}
+
+			// Log successful response headers if debugging is enabled
+			if (this.debugger.enabled) {
+				this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime))
 			}
 
 			if (!response.body) {
@@ -694,8 +883,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			// Handle streaming response
-			yield* this.handleStreamResponse(response.body, model)
+			yield* this.handleStreamResponse(response.body, model, requestId)
 		} catch (error) {
+			// Log error if debugging is enabled
+			if (this.debugger.enabled && error instanceof Error) {
+				const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+				errorInfo.context = { url, isAzure }
+				this.debugger.logError(errorInfo)
+			}
+
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted
 				if (error.message.includes("Responses API")) {
@@ -708,6 +904,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			throw new Error(`Unexpected error connecting to Responses API`)
 		} finally {
 			this.abortController = undefined
+			this.debugger.endRequest(requestId)
 		}
 	}
 
@@ -718,7 +915,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * and yields structured data chunks (`ApiStream`). It handles a wide variety of event types,
 	 * including text deltas, reasoning, usage data, and various status/tool events.
 	 */
-	private async *handleStreamResponse(body: ReadableStream<Uint8Array>, model: OpenAiNativeModel): ApiStream {
+	private async *handleStreamResponse(
+		body: ReadableStream<Uint8Array>,
+		model: OpenAiNativeModel,
+		requestId?: string,
+	): ApiStream {
 		const reader = body.getReader()
 		const decoder = new TextDecoder()
 		let buffer = ""
@@ -757,10 +958,27 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							// Capture complete output array (includes reasoning items with encrypted_content)
 							if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 								this.lastResponseOutput = parsed.response.output
+								// Debug: Log captured output
+								if (requestId && this.debugger.enabled) {
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] Captured response output array (${parsed.response.output.length} items)`,
+									)
+								}
 							}
 							// Capture top-level response id
 							if (parsed.response?.id) {
 								this.lastResponseId = parsed.response.id as string
+								// Debug: Log captured response ID
+								if (requestId && this.debugger.enabled) {
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] Captured response ID: ${this.lastResponseId}`,
+									)
+								}
+							}
+
+							// Log stream events if debugging is enabled
+							if (requestId && this.debugger.enabled && parsed?.type) {
+								this.debugger.logStreamEvent(requestId, parsed.type, parsed)
 							}
 
 							// Delegate standard event types to the shared processor to avoid duplication
@@ -1049,10 +1267,36 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								// Capture top-level response id
 								if (parsed.response?.id) {
 									this.lastResponseId = parsed.response.id as string
+									// Debug: Log captured response ID at completion
+									if (requestId && this.debugger.enabled) {
+										console.log(
+											`[OPENAI DEBUG] [${requestId}] Response completed - ID: ${this.lastResponseId}`,
+										)
+									}
 								}
 								// Capture complete output array (includes reasoning items with encrypted_content)
 								if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 									this.lastResponseOutput = parsed.response.output
+									// Debug: Log captured output at completion
+									if (requestId && this.debugger.enabled) {
+										console.log(
+											`[OPENAI DEBUG] [${requestId}] Response completed - Output items: ${parsed.response.output.length}`,
+										)
+										parsed.response.output.forEach((item: any, idx: number) => {
+											console.log(
+												`  [${idx}] type: ${item.type}, encrypted_content: ${!!item.encrypted_content}, id: ${item.id || "none"}`,
+											)
+										})
+									}
+								} else if (requestId && this.debugger.enabled) {
+									// Debug: Warn if no response output at completion
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] WARNING: Response completed but no output array found!`,
+									)
+									console.log(`  - parsed.response exists: ${!!parsed.response}`)
+									console.log(
+										`  - parsed.response.output: ${JSON.stringify(parsed.response?.output)}`,
+									)
 								}
 
 								// Check if the done event contains the complete output (as a fallback)
@@ -1558,14 +1802,36 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 */
 	private async completePromptAzure(requestBody: any): Promise<string> {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const { url } = this.buildResponsesApiUrl()
+		const requestId = this.debugger.generateRequestId()
+		const startTime = Date.now()
+
+		const { url, isAzure, transformations } = this.buildResponsesApiUrl(requestId)
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"api-key": apiKey,
+			"X-Client-Request-Id": requestId,
+		}
+
+		// Log request if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logRequest(
+				buildDebugRequestInfo(
+					requestId,
+					url,
+					{ method: "POST", headers, body: JSON.stringify(requestBody) },
+					{
+						baseUrl: this.options.openAiNativeBaseUrl,
+						isAzure,
+						urlTransformations: transformations,
+					},
+				),
+			)
+		}
 
 		const response = await fetch(url, {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"api-key": apiKey,
-			},
+			headers,
 			body: JSON.stringify(requestBody),
 			signal: this.abortController?.signal,
 		})
@@ -1581,7 +1847,22 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			} catch {
 				errorMessage += `: ${errorText}`
 			}
+
+			// Log error response if debugging is enabled
+			if (this.debugger.enabled) {
+				this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime, { error: errorText }))
+				const error = new Error(errorMessage)
+				const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+				errorInfo.context = { url, isAzure, status: response.status }
+				this.debugger.logError(errorInfo)
+			}
+
 			throw new Error(errorMessage)
+		}
+
+		// Log successful response if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime))
 		}
 
 		const data = await response.json()
