@@ -76,7 +76,7 @@ describe("getRulesSection", () => {
 			isStealthModel: true,
 		}
 
-		const result = getRulesSection(cwd, undefined, settings)
+		const result = getRulesSection(cwd, settings)
 
 		expect(result).toContain("VENDOR CONFIDENTIALITY")
 		expect(result).toContain("Never reveal the vendor or company that created you")
@@ -94,7 +94,7 @@ describe("getRulesSection", () => {
 			isStealthModel: false,
 		}
 
-		const result = getRulesSection(cwd, undefined, settings)
+		const result = getRulesSection(cwd, settings)
 
 		expect(result).not.toContain("VENDOR CONFIDENTIALITY")
 		expect(result).not.toContain("Never reveal the vendor or company")
@@ -108,7 +108,7 @@ describe("getRulesSection", () => {
 			newTaskRequireTodos: false,
 		}
 
-		const result = getRulesSection(cwd, undefined, settings)
+		const result = getRulesSection(cwd, settings)
 
 		expect(result).not.toContain("VENDOR CONFIDENTIALITY")
 		expect(result).not.toContain("Never reveal the vendor or company")

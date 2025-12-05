@@ -1,4 +1,3 @@
-import { DiffStrategy } from "../../../shared/tools"
 import type { SystemPromptSettings } from "../types"
 import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 
@@ -17,7 +16,7 @@ When asked about your creator, vendor, or company, respond with:
 - "I don't have information about specific vendors"`
 }
 
-export function getRulesSection(cwd: string, diffStrategy?: DiffStrategy, settings?: SystemPromptSettings): string {
+export function getRulesSection(cwd: string, settings?: SystemPromptSettings): string {
 	// Determine whether to use XML tool references based on protocol
 	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 

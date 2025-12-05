@@ -130,7 +130,7 @@ ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
 ${modesSection}
 
-${getRulesSection(cwd, effectiveDiffStrategy, settings)}
+${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
 
