@@ -136,7 +136,18 @@
 		"failed": "Zapytanie API nie powiodło się",
 		"streaming": "Zapytanie API...",
 		"cancelled": "Zapytanie API anulowane",
-		"streamingFailed": "Strumieniowanie API nie powiodło się"
+		"streamingFailed": "Strumieniowanie API nie powiodło się",
+		"errorTitle": "Błąd API {{code}}",
+		"errorMessage": {
+			"docs": "Dokumentacja",
+			"400": "Dostawca nie mógł przetworzyć żądania. Zatrzymaj zadanie i spróbuj innego podejścia.",
+			"401": "Nie można uwierzytelnić u dostawcy. Sprawdź konfigurację klucza API.",
+			"402": "Wygląda na to, że wyczerpałeś środki/kredyty na swoim koncie. Przejdź do dostawcy i dodaj więcej, aby kontynuować.",
+			"403": "Brak autoryzacji. Twój klucz API jest ważny, ale dostawca odmówił ukończenia tego żądania.",
+			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
+			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
+			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code."
+		}
 	},
 	"checkpoint": {
 		"regular": "Punkt kontrolny",

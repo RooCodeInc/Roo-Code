@@ -439,12 +439,12 @@ describe("RooHandler", () => {
 			}
 		})
 
-		it("should not override existing properties when applying MODEL_DEFAULTS", () => {
+		it("should return cached model info with settings applied from API", () => {
 			const handlerWithMinimax = new RooHandler({
 				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
-			// The defaults should be merged, but not overwrite existing cached values
+			// The settings from API should already be applied in the cached model info
 			expect(modelInfo.info.supportsNativeTools).toBe(true)
 			expect(modelInfo.info.inputPrice).toBe(0.15)
 			expect(modelInfo.info.outputPrice).toBe(0.6)

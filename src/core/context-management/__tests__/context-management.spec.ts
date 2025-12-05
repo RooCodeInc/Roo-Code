@@ -65,14 +65,12 @@ describe("Context Management", () => {
 
 			// With 2 messages after the first, 0.5 fraction means remove 1 message
 			// But 1 is odd, so it rounds down to 0 (to make it even)
-			// Result should have messages + truncation marker
-			expect(result.messages.length).toBe(4) // First message + truncation marker + 2 remaining messages
+			// No truncation happens, so no marker is inserted
+			expect(result.messages.length).toBe(3) // Original messages unchanged
+			expect(result.messagesRemoved).toBe(0)
 			expect(result.messages[0]).toEqual(messages[0])
-			// messages[1] is the truncation marker
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Original messages[1] and messages[2] are at indices 2 and 3 now
-			expect(result.messages[2].content).toEqual(messages[1].content)
-			expect(result.messages[3].content).toEqual(messages[2].content)
+			expect(result.messages[1]).toEqual(messages[1])
+			expect(result.messages[2]).toEqual(messages[2])
 		})
 
 		it("should remove the specified fraction of messages (rounded to even number)", () => {
@@ -92,11 +90,16 @@ describe("Context Management", () => {
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 			expect(result.messagesRemoved).toBe(2)
 			expect(result.messages[0]).toEqual(messages[0])
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Messages 2 and 3 (indices 1 and 2 from original) should be tagged
+
+			// Messages at indices 1 and 2 from original should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
 			expect(result.messages[2].truncationParent).toBe(result.truncationId)
-			expect(result.messages[3].truncationParent).toBe(result.truncationId)
-			// Messages 4 and 5 (indices 3 and 4 from original) should NOT be tagged
+
+			// Marker should be at index 3 (at the boundary, after truncated messages)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
+
+			// Messages at indices 3 and 4 from original should NOT be tagged (now at indices 4 and 5)
 			expect(result.messages[4].truncationParent).toBeUndefined()
 			expect(result.messages[5].truncationParent).toBeUndefined()
 		})
@@ -117,9 +120,8 @@ describe("Context Management", () => {
 			const result = truncateConversation(messages, 0.3, taskId)
 
 			expect(result.messagesRemoved).toBe(0) // No messages removed
-			// Should still have truncation marker inserted
-			expect(result.messages.length).toBe(8) // 7 original + 1 marker
-			expect(result.messages[1].isTruncationMarker).toBe(true)
+			// When nothing is truncated, no marker is inserted
+			expect(result.messages.length).toBe(7) // Original messages unchanged
 		})
 
 		it("should handle edge case with fracToRemove = 0", () => {
@@ -132,9 +134,8 @@ describe("Context Management", () => {
 			const result = truncateConversation(messages, 0, taskId)
 
 			expect(result.messagesRemoved).toBe(0)
-			// Should have original messages + truncation marker
-			expect(result.messages.length).toBe(4)
-			expect(result.messages[1].isTruncationMarker).toBe(true)
+			// When nothing is truncated, no marker is inserted
+			expect(result.messages.length).toBe(3) // Original messages unchanged
 		})
 
 		it("should handle edge case with fracToRemove = 1", () => {
@@ -153,11 +154,16 @@ describe("Context Management", () => {
 			// Should have all original messages + truncation marker
 			expect(result.messages.length).toBe(5) // 4 original + 1 marker
 			expect(result.messages[0]).toEqual(messages[0])
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Messages at indices 2 and 3 should be tagged (original indices 1 and 2)
+
+			// Messages at indices 1 and 2 should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
 			expect(result.messages[2].truncationParent).toBe(result.truncationId)
-			expect(result.messages[3].truncationParent).toBe(result.truncationId)
-			// Last message should NOT be tagged
+
+			// Marker should be at index 3 (at the boundary)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
+
+			// Last message should NOT be tagged (now at index 4)
 			expect(result.messages[4].truncationParent).toBeUndefined()
 		})
 	})

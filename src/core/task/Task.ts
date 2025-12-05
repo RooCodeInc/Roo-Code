@@ -125,6 +125,7 @@ import { processUserContentMentions } from "../mentions/processUserContentMentio
 import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
+import { MessageManager } from "../message-manager"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -326,6 +327,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Initial status for the task's history item (set at creation time to avoid race conditions)
 	private readonly initialStatus?: "active" | "delegated" | "completed"
+
+	// MessageManager for high-level message operations (lazy initialized)
+	private _messageManager?: MessageManager
 
 	constructor({
 		provider,
@@ -3775,17 +3779,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (finalDelay <= 0) return
 
 			// Build header text; fall back to error message if none provided
-			let headerText = header
-			if (!headerText) {
-				if (error?.error?.metadata?.raw) {
-					headerText = JSON.stringify(error.error.metadata.raw, null, 2)
-				} else if (error?.message) {
-					headerText = error.message
-				} else {
-					headerText = "Unknown error"
-				}
+			let headerText
+			if (error.status) {
+				// This sets the message as just the error code, for which
+				// ChatRow knows how to handle and use an i18n'd error string
+				// In development, hardcode headerText to an HTTP status code to check it
+				headerText = error.status
+			} else if (error?.message) {
+				headerText = error.message
+			} else {
+				headerText = "Unknown error"
 			}
-			headerText = headerText ? `${headerText}\n\n` : ""
+
+			headerText = headerText ? `${headerText}\n` : ""
 
 			// Show countdown timer with exponential backoff
 			for (let i = finalDelay; i > 0; i--) {
@@ -3794,21 +3800,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
 				}
 
-				await this.say(
-					"api_req_retry_delayed",
-					`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
-					undefined,
-					true,
-				)
+				await this.say("api_req_retry_delayed", `${headerText}\n↻ ${i}s...`, undefined, true)
 				await delay(1000)
 			}
 
-			await this.say(
-				"api_req_retry_delayed",
-				`${headerText}Retry attempt ${retryAttempt + 1}\nRetrying now...`,
-				undefined,
-				false,
-			)
+			await this.say("api_req_retry_delayed", headerText, undefined, false)
 		} catch (err) {
 			console.error("Exponential backoff failed:", err)
 		}
@@ -4038,6 +4034,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Provides convenient access to high-level message operations.
+	 * Uses lazy initialization - the MessageManager is only created when first accessed.
+	 * Subsequent accesses return the same cached instance.
+	 *
+	 * ## Important: Single Coordination Point
+	 *
+	 * **All MessageManager operations must go through this getter** rather than
+	 * instantiating `new MessageManager(task)` directly. This ensures:
+	 * - A single shared instance for consistent behavior
+	 * - Centralized coordination of all rewind/message operations
+	 * - Ability to add internal state or instrumentation in the future
+	 *
+	 * @example
+	 * ```typescript
+	 * // Correct: Use the getter
+	 * await task.messageManager.rewindToTimestamp(ts)
+	 *
+	 * // Incorrect: Do NOT create new instances directly
+	 * // const manager = new MessageManager(task) // Don't do this!
+	 * ```
+	 */
+	get messageManager(): MessageManager {
+		if (!this._messageManager) {
+			this._messageManager = new MessageManager(this)
+		}
+		return this._messageManager
 	}
 
 	/**

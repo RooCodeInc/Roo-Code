@@ -13,12 +13,18 @@ import {
 	exerciseLanguages,
 	createRun as _createRun,
 	deleteRun as _deleteRun,
+	updateRun as _updateRun,
+	getIncompleteRuns as _getIncompleteRuns,
+	deleteRunsByIds as _deleteRunsByIds,
 	createTask,
 	getExercisesForLanguage,
 } from "@roo-code/evals"
 
 import { CreateRun } from "@/lib/schemas"
 import { redisClient } from "@/lib/server/redis"
+
+// Storage base path for eval logs
+const EVALS_STORAGE_PATH = "/tmp/evals/runs"
 
 const EVALS_REPO_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../../evals")
 
@@ -212,5 +218,152 @@ export async function killRun(runId: number): Promise<KillRunResult> {
 		success: killedContainers.length > 0 || errors.length === 0,
 		killedContainers,
 		errors,
+	}
+}
+
+export type DeleteIncompleteRunsResult = {
+	success: boolean
+	deletedCount: number
+	deletedRunIds: number[]
+	storageErrors: string[]
+}
+
+/**
+ * Delete all incomplete runs (runs without a taskMetricsId/final score).
+ * Removes both database records and storage folders.
+ */
+export async function deleteIncompleteRuns(): Promise<DeleteIncompleteRunsResult> {
+	const storageErrors: string[] = []
+
+	// Get all incomplete runs
+	const incompleteRuns = await _getIncompleteRuns()
+	const runIds = incompleteRuns.map((run) => run.id)
+
+	if (runIds.length === 0) {
+		return {
+			success: true,
+			deletedCount: 0,
+			deletedRunIds: [],
+			storageErrors: [],
+		}
+	}
+
+	// Delete storage folders for each run
+	for (const runId of runIds) {
+		const storagePath = path.join(EVALS_STORAGE_PATH, String(runId))
+		try {
+			if (fs.existsSync(storagePath)) {
+				fs.rmSync(storagePath, { recursive: true, force: true })
+				console.log(`Deleted storage folder: ${storagePath}`)
+			}
+		} catch (error) {
+			console.error(`Failed to delete storage folder ${storagePath}:`, error)
+			storageErrors.push(`Failed to delete storage for run ${runId}`)
+		}
+
+		// Also try to clear Redis state for any potentially running incomplete runs
+		try {
+			const redis = await redisClient()
+			await redis.del(`heartbeat:${runId}`)
+			await redis.del(`runners:${runId}`)
+		} catch (error) {
+			// Non-critical error, just log it
+			console.error(`Failed to clear Redis state for run ${runId}:`, error)
+		}
+	}
+
+	// Delete from database
+	await _deleteRunsByIds(runIds)
+
+	revalidatePath("/runs")
+
+	return {
+		success: true,
+		deletedCount: runIds.length,
+		deletedRunIds: runIds,
+		storageErrors,
+	}
+}
+
+/**
+ * Get count of incomplete runs (for UI display)
+ */
+export async function getIncompleteRunsCount(): Promise<number> {
+	const incompleteRuns = await _getIncompleteRuns()
+	return incompleteRuns.length
+}
+
+/**
+ * Delete all runs older than 30 days.
+ * Removes both database records and storage folders.
+ */
+export async function deleteOldRuns(): Promise<DeleteIncompleteRunsResult> {
+	const storageErrors: string[] = []
+
+	// Get all runs older than 30 days
+	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+	const { getRuns } = await import("@roo-code/evals")
+	const allRuns = await getRuns()
+	const oldRuns = allRuns.filter((run) => run.createdAt < thirtyDaysAgo)
+	const runIds = oldRuns.map((run) => run.id)
+
+	if (runIds.length === 0) {
+		return {
+			success: true,
+			deletedCount: 0,
+			deletedRunIds: [],
+			storageErrors: [],
+		}
+	}
+
+	// Delete storage folders for each run
+	for (const runId of runIds) {
+		const storagePath = path.join(EVALS_STORAGE_PATH, String(runId))
+		try {
+			if (fs.existsSync(storagePath)) {
+				fs.rmSync(storagePath, { recursive: true, force: true })
+				console.log(`Deleted storage folder: ${storagePath}`)
+			}
+		} catch (error) {
+			console.error(`Failed to delete storage folder ${storagePath}:`, error)
+			storageErrors.push(`Failed to delete storage for run ${runId}`)
+		}
+
+		// Also try to clear Redis state
+		try {
+			const redis = await redisClient()
+			await redis.del(`heartbeat:${runId}`)
+			await redis.del(`runners:${runId}`)
+		} catch (error) {
+			// Non-critical error, just log it
+			console.error(`Failed to clear Redis state for run ${runId}:`, error)
+		}
+	}
+
+	// Delete from database
+	await _deleteRunsByIds(runIds)
+
+	revalidatePath("/runs")
+
+	return {
+		success: true,
+		deletedCount: runIds.length,
+		deletedRunIds: runIds,
+		storageErrors,
+	}
+}
+
+/**
+ * Update the description of a run.
+ */
+export async function updateRunDescription(runId: number, description: string | null): Promise<{ success: boolean }> {
+	try {
+		await _updateRun(runId, { description })
+		revalidatePath("/runs")
+		revalidatePath(`/runs/${runId}`)
+		return { success: true }
+	} catch (error) {
+		console.error("Failed to update run description:", error)
+		return { success: false }
 	}
 }
