@@ -56,7 +56,7 @@ export const features: Feature[] = [
 		icon: Keyboard,
 		title: "Highly customizable",
 		description:
-			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more. Mosy settings can be global or serialized in your repository.",
+			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more. Most settings can be global or serialized in your repository.",
 	},
 	{
 		icon: GitPullRequest,
