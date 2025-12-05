@@ -41,17 +41,33 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+		const isAzureAnthropic = this._isAzureAnthropic(this.options.openAiBaseUrl)
 		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
 		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
 
-		const headers = {
+		const headers: Record<string, string> = {
 			...DEFAULT_HEADERS,
 			...(this.options.openAiHeaders || {}),
 		}
 
+		// For Azure Anthropic, use x-api-key header instead of Authorization Bearer
+		if (isAzureAnthropic) {
+			headers["x-api-key"] = apiKey
+			// Remove Authorization header if it exists
+			delete headers["Authorization"]
+		}
+
 		const timeout = getApiRequestTimeout()
 
-		if (isAzureAiInference) {
+		if (isAzureAnthropic) {
+			// Azure Anthropic uses standard OpenAI client but with special headers
+			this.client = new OpenAI({
+				baseURL,
+				apiKey: "not-provided", // API key is passed via x-api-key header
+				defaultHeaders: headers,
+				timeout,
+			})
+		} else if (isAzureAiInference) {
 			// Azure AI Inference Service (e.g., for DeepSeek) uses a different path structure
 			this.client = new OpenAI({
 				baseURL,
@@ -91,6 +107,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
+		const isAzureAnthropic = this._isAzureAnthropic(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
@@ -178,7 +195,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			try {
 				stream = await this.client.chat.completions.create(
 					requestOptions,
-					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+					// Don't append path for Azure Anthropic - it already has the correct path
+					isAzureAiInference && !isAzureAnthropic ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
@@ -255,9 +273,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let response
 			try {
+				const methodIsAzureAiInference = this._isAzureAiInference(modelUrl)
+				const methodIsAzureAnthropic = this._isAzureAnthropic(modelUrl)
 				response = await this.client.chat.completions.create(
 					requestOptions,
-					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+					// Don't append path for Azure Anthropic
+					methodIsAzureAiInference && !methodIsAzureAnthropic ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
@@ -307,6 +328,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	async completePrompt(prompt: string): Promise<string> {
 		try {
 			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+			const isAzureAnthropic = this._isAzureAnthropic(this.options.openAiBaseUrl)
 			const model = this.getModel()
 			const modelInfo = model.info
 
@@ -322,7 +344,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			try {
 				response = await this.client.chat.completions.create(
 					requestOptions,
-					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+					// Don't append path for Azure Anthropic
+					isAzureAiInference && !isAzureAnthropic ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
@@ -346,6 +369,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	): ApiStream {
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
+		const methodIsAzureAnthropic = this._isAzureAnthropic(this.options.openAiBaseUrl)
 
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
@@ -379,7 +403,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			try {
 				stream = await this.client.chat.completions.create(
 					requestOptions,
-					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+					// Don't append path for Azure Anthropic
+					methodIsAzureAiInference && !methodIsAzureAnthropic ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
@@ -414,7 +439,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			try {
 				response = await this.client.chat.completions.create(
 					requestOptions,
-					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+					// Don't append path for Azure Anthropic
+					methodIsAzureAiInference && !methodIsAzureAnthropic ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
 				)
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
@@ -491,9 +517,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		return urlHost.includes("x.ai")
 	}
 
+	private _isAzureAnthropic(baseUrl?: string): boolean {
+		// Check if the URL is for Azure Anthropic
+		// Pattern: https://{resource}-resource.services.ai.azure.com/anthropic/v1/messages
+		if (!baseUrl) return false
+		return baseUrl.includes(".services.ai.azure.com") && baseUrl.includes("/anthropic/")
+	}
+
 	private _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
-		return urlHost.endsWith(".services.ai.azure.com")
+		// Exclude Anthropic endpoints from Azure AI Inference detection
+		return urlHost.endsWith(".services.ai.azure.com") && !this._isAzureAnthropic(baseUrl)
 	}
 
 	/**
