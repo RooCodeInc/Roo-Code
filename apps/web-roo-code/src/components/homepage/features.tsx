@@ -32,7 +32,7 @@ export const features: Feature[] = [
 		icon: ReplaceAll,
 		title: "Model-agnostic",
 		description:
-			"Use the Roo Code cloud PRovider, bring your own provider key or even run local inference — no markup, lock-in, no restrictions.",
+			"Use the Roo Code cloud Provider, bring your own provider key or even run local inference — no markup, lock-in, no restrictions.",
 		logos: ["Anthropic", "OpenAI", "Gemini", "Grok", "Qwen", "Kimi", "Mistral", "Ollama"],
 	},
 	{
@@ -50,13 +50,13 @@ export const features: Feature[] = [
 	{
 		icon: TextSearch,
 		title: "Performant with large codebases",
-		description: "Configurable integrated semantic search for quicker retrieavel in large codebases.",
+		description: "Configurable integrated semantic search for quicker retrieval in large codebases.",
 	},
 	{
 		icon: Keyboard,
 		title: "Highly customizable",
 		description:
-			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more. Mosy settings can be global or serialized in your repository.",
+			"Fine-tune settings for Roo to work for you, like inference context, model properties, slash commands and more. Most settings can be global or serialized in your repository.",
 	},
 	{
 		icon: GitPullRequest,
