@@ -11,6 +11,7 @@ import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 // Type helper to handle thinking chunks from Mistral API
 // The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union
@@ -55,6 +56,8 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		const apiModelId = options.apiModelId || mistralDefaultModelId
 		this.options = { ...options, apiModelId }
 
+		// Note: Mistral SDK doesn't currently support timeout configuration directly
+		// The timeout is handled at the HTTP request level by the SDK internally
 		this.client = new Mistral({
 			serverURL: apiModelId.startsWith("codestral-")
 				? this.options.mistralCodestralUrl || "https://codestral.mistral.ai"
