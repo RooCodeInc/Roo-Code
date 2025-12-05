@@ -41,7 +41,7 @@ import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { CondenseContextErrorRow, CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+import { CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -185,7 +185,8 @@ export const ChatRowContent = ({
 	// editable,
 	searchQuery,
 }: ChatRowContentProps) => {
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
+
 	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1265,6 +1266,61 @@ export const ChatRowContent = ({
 						</>
 					)
 				}
+				case "api_req_retry_delayed":
+					let body = t(`chat:apiRequest.failed`)
+					let retryInfo, code, docsURL
+					if (message.text !== undefined) {
+						// Try to show richer error message for that code, if available
+						if (parseInt(message.text.substring(0, 3)) >= 400) {
+							code = parseInt(message.text)
+							const stringForError = `chat:apiRequest.errorMessage.${code}`
+							if (i18n.exists(stringForError)) {
+								body = t(stringForError)
+								// Fill this out in upcoming PRs
+								// Do not remove this
+								// switch(code) {
+								// 	case ERROR_CODE:
+								// 		docsURL = ???
+								// 		break;
+								// }
+							} else {
+								body = t("chat:apiRequest.errorMessage.unknown")
+								docsURL = "mailto:zgsm@sangfor.com.cn?subject=Unknown API Error"
+							}
+							retryInfo = (
+								<p className="mt-1 font-light text-xs text-vscode-errorForeground/80 cursor-default">
+									{message.text.substring(4)}
+								</p>
+							)
+						}
+					}
+					return (
+						<ErrorRow
+							type="api_req_retry_delayed"
+							apiConfiguration={apiConfiguration}
+							code={code}
+							message={apiConfiguration.apiProvider === "zgsm" ? message.text || "" : body}
+							docsURL={docsURL}
+							additionalContent={
+								!message?.metadata?.isRateLimit &&
+								!message?.metadata?.isRateLimitRetry &&
+								apiConfiguration.apiProvider === "zgsm" ? (
+									<>
+										<br />
+										<br />
+										<Button
+											size="sm"
+											className="ml-6"
+											onClick={() => handleCopyErrorDetail(message.text || "")}>
+											{t("chat:copy.errorDetail")}
+										</Button>
+									</>
+								) : (
+									retryInfo
+								)
+							}
+						/>
+					)
 				case "api_req_finished":
 					return null // we should never see this message type
 				case "text":
@@ -1452,7 +1508,14 @@ export const ChatRowContent = ({
 					}
 					return message.contextCondense ? <ContextCondenseRow {...message.contextCondense} /> : null
 				case "condense_context_error":
-					return <CondenseContextErrorRow errorText={message.text} />
+					return (
+						<ErrorRow
+							type="error"
+							apiConfiguration={apiConfiguration}
+							title={t("chat:contextCondense.errorHeader")}
+							message={message.text || ""}
+						/>
+					)
 				case "codebase_search_result":
 					let parsed: {
 						content: {
@@ -1485,28 +1548,6 @@ export const ChatRowContent = ({
 					return <CodebaseSearchResultsDisplay results={results} />
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
-				case "api_req_retry_delayed":
-					return (
-						<ErrorRow
-							type="api_req_retry_delayed"
-							message={message.text || ""}
-							apiConfiguration={apiConfiguration}
-							additionalContent={
-								!message?.metadata?.isRateLimit && !message?.metadata?.isRateLimitRetry ? (
-									<>
-										<br />
-										<br />
-										<Button
-											size="sm"
-											className="ml-6"
-											onClick={() => handleCopyErrorDetail(message.text || "")}>
-											{t("chat:copy.errorDetail")}
-										</Button>
-									</>
-								) : undefined
-							}
-						/>
-					)
 				case "tool" as any:
 					// Handle say tool messages
 					const sayTool = safeJsonParse<ClineSayTool>(message.text)

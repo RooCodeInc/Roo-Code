@@ -6,6 +6,43 @@ import { useCopyToClipboard } from "@src/utils/clipboard"
 import CodeBlock from "../common/CodeBlock"
 import { ProviderSettings } from "@roo-code/types"
 
+/**
+ * Unified error display component for all error types in the chat.
+ * Provides consistent styling, icons, and optional documentation links across all errors.
+ *
+ * @param type - Error type determines icon and default title
+ * @param title - Optional custom title (overrides default for error type)
+ * @param message - Error message text (required)
+ * @param docsURL - Optional documentation link URL (shown as "Learn more" with book icon)
+ * @param showCopyButton - Whether to show copy button for error message
+ * @param expandable - Whether error content can be expanded/collapsed
+ * @param defaultExpanded - Whether expandable content starts expanded
+ * @param additionalContent - Optional React nodes to render after message
+ * @param headerClassName - Custom CSS classes for header section
+ * @param messageClassName - Custom CSS classes for message section
+ *
+ * @example
+ * // Simple error
+ * <ErrorRow type="error" message="File not found" />
+ *
+ * @example
+ * // Error with documentation link
+ * <ErrorRow
+ *   type="api_failure"
+ *   message="API key missing"
+ *   docsURL="https://docs.example.com/api-setup"
+ * />
+ *
+ * @example
+ * // Expandable error with code
+ * <ErrorRow
+ *   type="diff_error"
+ *   message="Patch failed to apply"
+ *   expandable={true}
+ *   defaultExpanded={false}
+ *   additionalContent={<pre>{errorDetails}</pre>}
+ * />
+ */
 export interface ErrorRowProps {
 	type:
 		| "error"
@@ -24,6 +61,8 @@ export interface ErrorRowProps {
 	additionalContent?: React.ReactNode
 	headerClassName?: string
 	messageClassName?: string
+	code?: number
+	docsURL?: string // NEW: Optional documentation link
 }
 
 /**
@@ -41,6 +80,8 @@ export const ErrorRow = memo(
 		additionalContent,
 		headerClassName,
 		messageClassName,
+		// docsURL,
+		code,
 	}: ErrorRowProps) => {
 		const { t } = useTranslation()
 		const [isExpanded, setIsExpanded] = useState(defaultExpanded)
@@ -58,6 +99,8 @@ export const ErrorRow = memo(
 					return t("chat:troubleMessage")
 				case "api_failure":
 					return t("chat:apiRequest.failed")
+				case "api_req_retry_delayed":
+					return t("chat:apiRequest.errorTitle", { code: code ? ` · ${code}` : "" })
 				case "streaming_failed":
 					return t("chat:apiRequest.streamingFailed")
 				case "cancelled":
@@ -94,17 +137,17 @@ export const ErrorRow = memo(
 		// For diff_error type with expandable content
 		if (type === "diff_error" && expandable) {
 			return (
-				<div className="mt-0 overflow-hidden mb-2">
+				<div className="mt-0 overflow-hidden mb-2 pr-1 group">
 					<div
-						className={`font-normal text-vscode-editor-foreground flex items-center justify-between cursor-pointer ${
-							isExpanded ? "border-b border-vscode-editorGroup-border" : ""
-						}`}
+						className="font-sm text-vscode-editor-foreground flex items-center justify-between cursor-pointer"
 						onClick={handleToggleExpand}>
-						<div className="flex items-center gap-2 flex-grow">
+						<div className="flex items-center gap-2 flex-grow  text-vscode-errorForeground">
 							<MessageCircleWarning className="w-4" />
-							<span className="font-bold">{errorTitle}</span>
+							<span className="text-vscode-errorForeground font-bold grow cursor-pointer">
+								{errorTitle}
+							</span>
 						</div>
-						<div className="flex items-center">
+						<div className="flex items-center transition-opacity opacity-0 group-hover:opacity-100">
 							{showCopyButton && (
 								<VSCodeButton
 									appearance="icon"
@@ -117,7 +160,7 @@ export const ErrorRow = memo(
 						</div>
 					</div>
 					{isExpanded && (
-						<div className="p-2 bg-vscode-editor-background border-t-0">
+						<div className="px-2 py-1 mt-2 bg-vscode-editor-background ml-6 rounded-lg">
 							<CodeBlock source={message} language="xml" />
 						</div>
 					)}
@@ -127,7 +170,7 @@ export const ErrorRow = memo(
 
 		// Standard error display
 		return (
-			<>
+			<div className="group pr-2">
 				{errorTitle && (
 					<div className={headerClassName || "flex items-center gap-2 break-words"}>
 						<MessageCircleWarning className="w-4 opacity-80" />
@@ -146,7 +189,7 @@ export const ErrorRow = memo(
 						}}></p>
 				)}
 				{additionalContent}
-			</>
+			</div>
 		)
 	},
 )

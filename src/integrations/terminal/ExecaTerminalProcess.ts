@@ -49,6 +49,7 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
 				encoding: "buffer",
+				// Ignore stdin to ensure non-interactive mode and prevent hanging
 				stdin: "ignore",
 				env: {
 					...process.env,

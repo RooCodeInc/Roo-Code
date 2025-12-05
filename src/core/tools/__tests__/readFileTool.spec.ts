@@ -214,6 +214,7 @@ function createMockCline(): any {
 		// CRITICAL: Always ensure image support is enabled
 		api: {
 			getModel: vi.fn().mockReturnValue({
+				id: "test-model",
 				info: {
 					supportsImages: true,
 					contextWindow: 200000,
@@ -232,6 +233,7 @@ function createMockCline(): any {
 function setImageSupport(mockCline: any, supportsImages: boolean | undefined): void {
 	mockCline.api = {
 		getModel: vi.fn().mockReturnValue({
+			id: "test-model",
 			info: { supportsImages },
 		}),
 	}
