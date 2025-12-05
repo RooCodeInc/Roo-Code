@@ -67,29 +67,64 @@ export function truncateConversation(messages: ApiMessage[], fracToRemove: numbe
 	TelemetryService.instance.captureSlidingWindowTruncation(taskId)
 
 	const truncationId = crypto.randomUUID()
-	const rawMessagesToRemove = Math.floor((messages.length - 1) * fracToRemove)
+
+	// Filter to only visible messages (those not already truncated)
+	// We need to track original indices to correctly tag messages in the full array
+	const visibleIndices: number[] = []
+	messages.forEach((msg, index) => {
+		if (!msg.truncationParent && !msg.isTruncationMarker) {
+			visibleIndices.push(index)
+		}
+	})
+
+	// Calculate how many visible messages to truncate (excluding first visible message)
+	const visibleCount = visibleIndices.length
+	const rawMessagesToRemove = Math.floor((visibleCount - 1) * fracToRemove)
 	const messagesToRemove = rawMessagesToRemove - (rawMessagesToRemove % 2)
+
+	if (messagesToRemove <= 0) {
+		// Nothing to truncate
+		return {
+			messages,
+			truncationId,
+			messagesRemoved: 0,
+		}
+	}
+
+	// Get the indices of visible messages to truncate (skip first visible, take next N)
+	const indicesToTruncate = new Set(visibleIndices.slice(1, messagesToRemove + 1))
 
 	// Tag messages that are being "truncated" (hidden from API calls)
 	const taggedMessages = messages.map((msg, index) => {
-		if (index > 0 && index <= messagesToRemove) {
+		if (indicesToTruncate.has(index)) {
 			return { ...msg, truncationParent: truncationId }
 		}
 		return msg
 	})
 
-	// Insert truncation marker after first message (so we know a truncation happened)
-	const firstKeptTs = messages[messagesToRemove + 1]?.ts ?? Date.now()
+	// Find the actual boundary - the index right after the last truncated message
+	const lastTruncatedVisibleIndex = visibleIndices[messagesToRemove] // Last visible message being truncated
+	// If all visible messages except the first are truncated, insert marker at the end
+	const firstKeptVisibleIndex = visibleIndices[messagesToRemove + 1] ?? taggedMessages.length
+
+	// Insert truncation marker at the actual boundary (between last truncated and first kept)
+	const firstKeptTs = messages[firstKeptVisibleIndex]?.ts ?? Date.now()
 	const truncationMarker: ApiMessage = {
-		role: "assistant",
+		role: "user",
 		content: `[Sliding window truncation: ${messagesToRemove} messages hidden to reduce context]`,
 		ts: firstKeptTs - 1,
 		isTruncationMarker: true,
 		truncationId,
 	}
 
-	// Insert marker after first message
-	const result = [taggedMessages[0], truncationMarker, ...taggedMessages.slice(1)]
+	// Insert marker at the boundary position
+	// Find where to insert: right before the first kept visible message
+	const insertPosition = firstKeptVisibleIndex
+	const result = [
+		...taggedMessages.slice(0, insertPosition),
+		truncationMarker,
+		...taggedMessages.slice(insertPosition),
+	]
 
 	return {
 		messages: result,

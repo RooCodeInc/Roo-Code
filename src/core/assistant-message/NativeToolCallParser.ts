@@ -756,8 +756,11 @@ export class NativeToolCallParser {
 
 			return result
 		} catch (error) {
-			console.error(`Failed to parse tool call arguments:`, error)
-			console.error(`Error details:`, error instanceof Error ? error.message : String(error))
+			console.error(
+				`Failed to parse tool call arguments: ${error instanceof Error ? error.message : String(error)}`,
+			)
+
+			console.error(`Tool call: ${JSON.stringify(toolCall, null, 2)}`)
 			return null
 		}
 	}

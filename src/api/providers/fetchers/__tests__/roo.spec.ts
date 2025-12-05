@@ -77,7 +77,7 @@ describe("getRooModels", () => {
 				description: "Fast coding model",
 				deprecated: false,
 				isFree: false,
-				defaultToolProtocol: "native", // Applied from MODEL_DEFAULTS
+				defaultToolProtocol: "native",
 			},
 		})
 	})
@@ -718,5 +718,87 @@ describe("getRooModels", () => {
 		const models = await getRooModels(baseUrl, apiKey)
 
 		expect(models["test/non-stealth-model"].isStealthModel).toBeUndefined()
+	})
+
+	it("should apply API-provided settings to model info", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-with-settings",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Settings",
+					description: "Model with API-provided settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						includedTools: ["apply_patch"],
+						excludedTools: ["apply_diff", "write_to_file"],
+						reasoningEffort: "high",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-with-settings"].includedTools).toEqual(["apply_patch"])
+		expect(models["test/model-with-settings"].excludedTools).toEqual(["apply_diff", "write_to_file"])
+		expect(models["test/model-with-settings"].reasoningEffort).toBe("high")
+	})
+
+	it("should handle arbitrary settings properties dynamically", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/dynamic-settings-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Dynamic Settings Model",
+					description: "Model with arbitrary settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						customProperty: "custom-value",
+						anotherSetting: 42,
+						nestedConfig: { key: "value" },
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+		const model = models["test/dynamic-settings-model"] as any
+
+		// Arbitrary settings should be passed through
+		expect(model.customProperty).toBe("custom-value")
+		expect(model.anotherSetting).toBe(42)
+		expect(model.nestedConfig).toEqual({ key: "value" })
 	})
 })
