@@ -3,11 +3,17 @@
 import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
+import * as fs from "fs/promises"
 
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
-		toolResult: vi.fn((result: string) => `Tool result: ${result}`),
+		toolResult: vi.fn((result: string, images?: string[]) => {
+			if (images && images.length > 0) {
+				return `Tool result: ${result} [with ${images.length} image(s)]`
+			}
+			return `Tool result: ${result}`
+		}),
 		toolError: vi.fn((error: string) => `Tool error: ${error}`),
 		invalidMcpToolArgumentError: vi.fn((server: string, tool: string) => `Invalid args for ${server}:${tool}`),
 		unknownMcpToolError: vi.fn((server: string, tool: string, availableTools: string[]) => {
@@ -19,6 +25,17 @@ vi.mock("../../prompts/responses", () => ({
 			return `Server '${server}' is not configured. Available servers: ${list}`
 		}),
 	},
+}))
+
+// Mock fs/promises for image saving tests
+vi.mock("fs/promises", () => ({
+	mkdir: vi.fn(),
+	writeFile: vi.fn(),
+}))
+
+// Mock getWorkspacePath
+vi.mock("../../../utils/path", () => ({
+	getWorkspacePath: vi.fn(() => "/workspace"),
 }))
 
 vi.mock("../../../i18n", () => ({
@@ -234,7 +251,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockAskApproval).toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully", [])
 			expect(mockPushToolResult).toHaveBeenCalledWith("Tool result: Tool executed successfully")
 		})
 
@@ -448,7 +465,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully")
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Tool executed successfully", [])
 		})
 
 		it("should reject unknown server names with available servers listed", async () => {
@@ -535,6 +552,302 @@ describe("useMcpToolTool", () => {
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("No servers available"))
 			expect(callToolMock).not.toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("image handling", () => {
+		beforeEach(() => {
+			// Setup fs mocks
+			vi.mocked(fs).mkdir.mockResolvedValue(undefined as any)
+			vi.mocked(fs).writeFile.mockResolvedValue(undefined as any)
+		})
+
+		it("should handle tool response with image content", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "image_tool",
+					arguments: '{"prompt": "generate image"}',
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			const mockToolResult = {
+				content: [
+					{ type: "text", text: "Image generated successfully" },
+					{
+						type: "image",
+						data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+						mimeType: "image/png",
+					},
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify image was saved to file system
+			expect(vi.mocked(fs).mkdir).toHaveBeenCalledWith(expect.stringContaining("mcp-images"), { recursive: true })
+			expect(vi.mocked(fs).writeFile).toHaveBeenCalledWith(expect.stringContaining(".png"), expect.any(Buffer))
+
+			// Verify task.say was called with images
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("Image generated successfully"),
+				expect.arrayContaining([expect.stringContaining("data:image/png;base64,")]),
+			)
+
+			// Verify pushToolResult was called with images
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("[with 1 image(s)]"))
+		})
+
+		it("should handle multiple images in tool response", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "multi_image_tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			const mockToolResult = {
+				content: [
+					{
+						type: "image",
+						data: "image1base64data",
+						mimeType: "image/jpeg",
+					},
+					{
+						type: "image",
+						data: "image2base64data",
+						mimeType: "image/png",
+					},
+					{ type: "text", text: "Generated 2 images" },
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			// Clear previous mock calls from other tests
+			vi.mocked(fs).writeFile.mockClear()
+			vi.mocked(fs).mkdir.mockClear()
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify both images were saved
+			expect(vi.mocked(fs).writeFile).toHaveBeenCalledTimes(2)
+			expect(vi.mocked(fs).writeFile).toHaveBeenNthCalledWith(
+				1,
+				expect.stringContaining(".jpeg"),
+				expect.any(Buffer),
+			)
+			expect(vi.mocked(fs).writeFile).toHaveBeenNthCalledWith(
+				2,
+				expect.stringContaining(".png"),
+				expect.any(Buffer),
+			)
+
+			// Verify task.say was called with both images
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.any(String),
+				expect.arrayContaining([
+					expect.stringContaining("data:image/jpeg;base64,"),
+					expect.stringContaining("data:image/png;base64,"),
+				]),
+			)
+
+			// Verify pushToolResult indicates multiple images
+			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("[with 2 image(s)]"))
+		})
+
+		it("should handle image with data URL format", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "image_tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			const mockToolResult = {
+				content: [
+					{
+						type: "image",
+						data: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+						mimeType: "image/png",
+					},
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify image was processed correctly even with data URL format
+			expect(vi.mocked(fs).writeFile).toHaveBeenCalled()
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.any(String),
+				expect.arrayContaining([expect.stringContaining("data:image/png;base64,")]),
+			)
+		})
+
+		it("should handle mixed content (text, resource, and image)", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "mixed_content_tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			const mockToolResult = {
+				content: [
+					{ type: "text", text: "Processing complete" },
+					{
+						type: "resource",
+						resource: {
+							uri: "file://test.txt",
+							mimeType: "text/plain",
+						},
+					},
+					{
+						type: "image",
+						data: "testImageData",
+						mimeType: "image/jpeg",
+					},
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify all content types were processed
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("Processing complete"),
+				expect.arrayContaining([expect.stringContaining("data:image/jpeg;base64,")]),
+			)
+			expect(vi.mocked(fs).writeFile).toHaveBeenCalledWith(expect.stringContaining(".jpeg"), expect.any(Buffer))
+		})
+
+		it("should handle tool response with only images (no text)", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "image_only_tool",
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			const mockToolResult = {
+				content: [
+					{
+						type: "image",
+						data: "imageData",
+						mimeType: "image/png",
+					},
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify image was saved and paths were included in response
+			expect(vi.mocked(fs).writeFile).toHaveBeenCalled()
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("Image 1 saved to:"),
+				expect.arrayContaining([expect.stringContaining("data:image/png;base64,")]),
+			)
 		})
 	})
 })
