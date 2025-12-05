@@ -38,7 +38,7 @@ import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { ContextManagementRow } from "./context-management"
+import { InProgressRow, CondensationResultRow, CondensationErrorRow, TruncationResultRow } from "./context-management"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -1280,10 +1280,27 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "condense_context":
+					// In-progress state
+					if (message.partial) {
+						return <InProgressRow eventType="condense_context" />
+					}
+					// Completed state
+					if (message.contextCondense) {
+						return <CondensationResultRow data={message.contextCondense} />
+					}
+					return null
 				case "condense_context_error":
+					return <CondensationErrorRow errorText={message.text} />
 				case "sliding_window_truncation":
-					// All context management events are handled by the unified ContextManagementRow
-					return <ContextManagementRow message={message} />
+					// In-progress state
+					if (message.partial) {
+						return <InProgressRow eventType="sliding_window_truncation" />
+					}
+					// Completed state
+					if (message.contextTruncation) {
+						return <TruncationResultRow data={message.contextTruncation} />
+					}
+					return null
 				case "codebase_search_result":
 					let parsed: {
 						content: {
