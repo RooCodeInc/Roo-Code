@@ -380,6 +380,7 @@ describe("OpenAiNativeHandler", () => {
 			// Now using structured format with content arrays (no system prompt in input; it's provided via `instructions`)
 			expect(parsedBody.input).toEqual([
 				{
+					type: "message",
 					role: "user",
 					content: [{ type: "input_text", text: "Hello!" }],
 				},
@@ -910,6 +911,7 @@ describe("OpenAiNativeHandler", () => {
 			const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
 			expect(callBody.input).toEqual([
 				{
+					type: "message",
 					role: "user",
 					content: [{ type: "input_text", text: "Hello!" }],
 				},
@@ -1400,7 +1402,7 @@ describe("Azure OpenAI", () => {
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
 			// Azure now uses the same structured format as OpenAI per official docs
 			expect(requestBody.input).toEqual([
-				{ role: "user", content: [{ type: "input_text", text: "Hello World" }] },
+				{ type: "message", role: "user", content: [{ type: "input_text", text: "Hello World" }] },
 			])
 		})
 
@@ -1431,9 +1433,53 @@ describe("Azure OpenAI", () => {
 			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
 			// Azure now uses the same structured format as OpenAI per official docs
 			expect(requestBody.input).toEqual([
-				{ role: "user", content: [{ type: "input_text", text: "Hello" }] },
-				{ role: "assistant", content: [{ type: "output_text", text: "Hi there!" }] },
-				{ role: "user", content: [{ type: "input_text", text: "How are you?" }] },
+				{ type: "message", role: "user", content: [{ type: "input_text", text: "Hello" }] },
+				{ type: "message", role: "assistant", content: [{ type: "output_text", text: "Hi there!" }] },
+				{ type: "message", role: "user", content: [{ type: "input_text", text: "How are you?" }] },
+			])
+		})
+
+		it("should include type: message for assistant messages that follow reasoning items", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({
+				ok: true,
+				body: new ReadableStream({
+					start(controller) {
+						controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"))
+						controller.close()
+					},
+				}),
+			})
+			global.fetch = mockFetch as any
+			mockResponsesCreate.mockRejectedValue(new Error("SDK not available"))
+
+			const handler = new OpenAiNativeHandler(azureOptions)
+			// Simulate a conversation with reasoning items (as would be restored from API history)
+			const messagesWithReasoning: any[] = [
+				{ role: "user", content: "Think about this problem" },
+				// Reasoning item from previous response
+				{ type: "reasoning", encrypted_content: "encrypted_reasoning_data", id: "rs_123" },
+				{ role: "assistant", content: "Here is my answer based on that reasoning" },
+				{ role: "user", content: "Thanks!" },
+			]
+
+			const stream = handler.createMessage("System", messagesWithReasoning)
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+			// Verify the reasoning item is followed by a properly formatted assistant message
+			// with type: "message" which is required by the Responses API
+			expect(requestBody.input).toEqual([
+				{ type: "message", role: "user", content: [{ type: "input_text", text: "Think about this problem" }] },
+				{ type: "reasoning", encrypted_content: "encrypted_reasoning_data", id: "rs_123" },
+				{
+					type: "message",
+					role: "assistant",
+					content: [{ type: "output_text", text: "Here is my answer based on that reasoning" }],
+				},
+				{ type: "message", role: "user", content: [{ type: "input_text", text: "Thanks!" }] },
 			])
 		})
 	})
@@ -1831,14 +1877,17 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 			expect(requestBody.instructions).toBe("You are a helpful assistant.")
 			expect(requestBody.input).toEqual([
 				{
+					type: "message",
 					role: "user",
 					content: [{ type: "input_text", text: "First question" }],
 				},
 				{
+					type: "message",
 					role: "assistant",
 					content: [{ type: "output_text", text: "First answer" }],
 				},
 				{
+					type: "message",
 					role: "user",
 					content: [{ type: "input_text", text: "Second question" }],
 				},

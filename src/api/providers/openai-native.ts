@@ -85,9 +85,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			const url = new URL(baseUrl)
 			const host = url.host.toLowerCase()
 			// Use endsWith() for secure URL validation to prevent subdomain attacks
-			return host.endsWith(".openai.azure.com") || host.endsWith(".azure.com")
-		} catch {
+			if (host.endsWith(".openai.azure.com") || host.endsWith(".azure.com")) {
+				return true
+			}
+
+			// Some customers route Azure OpenAI through custom domains that retain the `/openai/` path segment.
+			// Detect these by inspecting the pathname so we still honor Azure-specific behaviors (headers, tool limits, etc.).
+			const normalizedPath = url.pathname.toLowerCase()
+			if (normalizedPath.includes("/openai/") || normalizedPath.endsWith("/openai")) {
+				return true
+			}
+
 			return false
+		} catch {
+			// Fallback heuristic for non-standard URLs that still contain the Azure path signature.
+			return baseUrl.includes("/openai/")
 		}
 	}
 
@@ -178,11 +190,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Capture previous response ID BEFORE resetting (for multi-turn conversation continuity)
+		// This enables the Azure/OpenAI Responses API to maintain conversation context via previous_response_id
+		const previousResponseId =
+			!metadata?.suppressPreviousResponseId && this.lastResponseId ? this.lastResponseId : undefined
+
 		// Reset resolved tier for this request; will be set from response if present
 		this.lastServiceTier = undefined
 		// Reset output array to capture current response output items
 		this.lastResponseOutput = undefined
-		// Reset last response id for this request
+		// Reset last response id for this request (will be set from the new response)
 		this.lastResponseId = undefined
 		// Reset output index to call_id mapping for streaming tool calls
 		this.outputIndexToCallId.clear()
@@ -204,6 +221,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			verbosity,
 			reasoningEffort,
 			metadata,
+			previousResponseId,
 		)
 
 		// Make the request (pass systemPrompt and messages for potential retry)
@@ -217,6 +235,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		verbosity: any,
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		previousResponseId?: string,
 	): any {
 		// Ensure all properties are in the required array for OpenAI's strict mode
 		// This recursively processes nested objects and array items
@@ -272,7 +291,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		interface ResponsesRequestBody {
 			model: string
-			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
+			input: Array<
+				| { type: "message"; role: "user" | "assistant"; content: any[] }
+				| { type: "reasoning"; encrypted_content: string; id?: string; summary?: any[] }
+				| { type: "function_call"; call_id: string; name: string; arguments: string }
+				| { type: "function_call_output"; call_id: string; output: string }
+			>
 			stream: boolean
 			reasoning?: { effort?: ReasoningEffortExtended; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
@@ -287,6 +311,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			tools?: Array<OpenAIToolFormat | AzureToolFormat>
 			tool_choice?: any
 			parallel_tool_calls?: boolean
+			/** Previous response ID for multi-turn conversation continuity (Azure/OpenAI Responses API) */
+			previous_response_id?: string
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -359,6 +385,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					})),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			// Include previous_response_id for multi-turn conversation continuity when available.
+			// This lets the Azure/OpenAI Responses API maintain conversation context including reasoning items,
+			// which helps avoid the "reasoning item without required following item" error.
+			...(previousResponseId && { previous_response_id: previousResponseId }),
 		}
 
 		// For native tool protocol, control parallel tool calls based on the metadata flag.
@@ -477,7 +507,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 
 				if (content.length > 0) {
-					formattedInput.push({ role: "user", content })
+					// Use type: "message" for user messages to ensure proper Responses API format
+					formattedInput.push({ type: "message", role: "user", content })
 				}
 
 				// Add tool results as separate items
@@ -506,11 +537,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				if (content.length > 0) {
-					formattedInput.push({ role: "assistant", content })
+				// Always emit assistant message when there's content OR tool calls.
+				// This is CRITICAL for the Responses API: reasoning items must be followed by their
+				// "required following item" (a message). When assistant responds with only tool calls
+				// (no text), we still need to emit an empty assistant message to satisfy this requirement.
+				// Without this, we get: "Item 'rs_...' of type 'reasoning' was provided without its required following item"
+				if (content.length > 0 || toolCalls.length > 0) {
+					formattedInput.push({ type: "message", role: "assistant", content })
 				}
 
-				// Add tool calls as separate items
+				// Add tool calls as separate items (after the message)
 				if (toolCalls.length > 0) {
 					formattedInput.push(...toolCalls)
 				}
@@ -534,32 +570,33 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
 	 */
 	private buildResponsesApiUrl(): { url: string; isAzure: boolean } {
-		let baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
+		const rawBaseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
 		const isAzure = this.isAzureOpenAI()
 
-		// Remove trailing slashes and /v1 suffix for consistent handling
-		baseUrl = baseUrl.replace(/\/+$/, "").replace(/\/v1$/, "")
+		let baseUrl = rawBaseUrl
+		let query = ""
 
-		if (isAzure) {
-			// Azure OpenAI endpoint
-			// Ensure /openai is in the path - users may provide URLs in different formats:
-			//   - https://YOUR_RESOURCE.openai.azure.com
-			//   - https://YOUR_RESOURCE.openai.azure.com/openai
-			//   - https://YOUR_RESOURCE.openai.azure.com/openai/v1
-			// All should resolve to: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses
-			if (!baseUrl.includes("/openai")) {
-				baseUrl = `${baseUrl}/openai`
-			}
-			return {
-				url: `${baseUrl}/v1/responses`,
-				isAzure: true,
-			}
+		try {
+			const parsed = new URL(rawBaseUrl)
+			baseUrl = `${parsed.origin}${parsed.pathname}`
+			query = parsed.search // Preserve query params such as api-version for Azure proxies
+		} catch {
+			// If URL parsing fails, fall back to raw string handling without query preservation
+			query = ""
 		}
 
-		// Standard OpenAI
+		// Normalize path so we can safely append the Responses suffix
+		baseUrl = baseUrl.replace(/\/+$/, "") // drop trailing slashes
+		baseUrl = baseUrl.replace(/\/responses$/, "") // remove accidental /responses
+		baseUrl = baseUrl.replace(/\/v1$/, "") // drop trailing /v1 if present
+
+		if (isAzure && !baseUrl.includes("/openai")) {
+			baseUrl = `${baseUrl}/openai`
+		}
+
 		return {
-			url: `${baseUrl}/v1/responses`,
-			isAzure: false,
+			url: `${baseUrl}/v1/responses${query}`,
+			isAzure,
 		}
 	}
 
