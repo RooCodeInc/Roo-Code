@@ -74,10 +74,10 @@ export const bedrockModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		inputPrice: 0.3,
-		outputPrice: 2.5,
+		inputPrice: 0.33,
+		outputPrice: 2.75,
 		cacheWritesPrice: 0,
-		cacheReadsPrice: 0.075,
+		cacheReadsPrice: 0.0825, // 75% less than input price
 		minTokensPerCachePoint: 1,
 		maxCachePoints: 1,
 		cachableFields: ["system"],
