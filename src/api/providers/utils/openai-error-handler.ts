@@ -27,6 +27,27 @@ export function handleOpenAIError(error: unknown, providerName: string): Error {
 			return new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
 		}
 
+		// Network/DNS resolution errors - likely VPN issue
+		if (
+			msg.includes("Could not resolve host") ||
+			msg.includes("ENOTFOUND") ||
+			msg.includes("getaddrinfo") ||
+			msg.includes("EAI_AGAIN") ||
+			(msg.includes("Connection error") && !msg.includes("refused"))
+		) {
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.dnsResolutionFailed")}`)
+		}
+
+		// Connection refused - service is reachable but not accepting connections
+		if (msg.includes("ECONNREFUSED") || msg.includes("Connection refused")) {
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.connectionRefused")}`)
+		}
+
+		// Timeout errors
+		if (msg.includes("ETIMEDOUT") || msg.includes("timeout")) {
+			return new Error(`${providerName} connection error: ${i18n.t("common:errors.api.connectionTimeout")}`)
+		}
+
 		// For other Error instances, wrap with provider-specific prefix
 		return new Error(`${providerName} completion error: ${msg}`)
 	}
