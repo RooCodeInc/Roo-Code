@@ -976,12 +976,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useDebounceEffect(
 		() => {
-			if (!isHidden && !sendingDisabled && !enableButtons) {
+			const hasPendingFollowUp = lastMessage?.type === "ask" && lastMessage.ask === "followup"
+			if (!isHidden && !sendingDisabled && !enableButtons && !hasPendingFollowUp) {
 				textAreaRef.current?.focus()
 			}
 		},
 		50,
-		[isHidden, sendingDisabled, enableButtons],
+		[isHidden, sendingDisabled, enableButtons, lastMessage?.ask, lastMessage?.type],
 	)
 
 	useEffect(() => {

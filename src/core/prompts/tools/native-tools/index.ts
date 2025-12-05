@@ -6,7 +6,7 @@ import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
 import browserAction from "./browser_action"
 import codebaseSearch from "./codebase_search"
-import executeCommand from "./execute_command"
+import { getExecuteCommandTool } from "./execute_command"
 import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listCodeDefinitionNames from "./list_code_definition_names"
@@ -27,9 +27,15 @@ export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./c
  * Get native tools array, optionally customizing based on settings.
  *
  * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param options - Optional flags (e.g., enable Windows script mode for execute_command)
  * @returns Array of native tool definitions
  */
-export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+export function getNativeTools(
+	partialReadsEnabled: boolean = true,
+	options: { windowsScriptModeEnabled?: boolean } = {},
+): OpenAI.Chat.ChatCompletionTool[] {
+	const executeCommand = getExecuteCommandTool({ enableScriptMode: options.windowsScriptModeEnabled ?? false })
+
 	return [
 		accessMcpResource,
 		apply_diff,

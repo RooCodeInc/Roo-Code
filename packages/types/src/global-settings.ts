@@ -160,6 +160,7 @@ export const globalSettingsSchema = z.object({
 	terminalZshP10k: z.boolean().optional(),
 	terminalZdotdir: z.boolean().optional(),
 	terminalCompressProgressBar: z.boolean().optional(),
+	windowsScriptExecutionEnabled: z.boolean().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
 

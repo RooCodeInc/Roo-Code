@@ -2258,6 +2258,7 @@ export class ClineProvider
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
 			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
+			windowsScriptExecutionEnabled: stateValues.windowsScriptExecutionEnabled ?? true,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,

@@ -87,6 +87,7 @@ export function getToolDescriptionsForMode(
 			modelId,
 		},
 		experiments,
+		isWindows: settings?.isWindows,
 	}
 
 	const tools = new Set<string>()

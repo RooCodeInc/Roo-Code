@@ -12,4 +12,6 @@ export interface SystemPromptSettings {
 	toolProtocol?: ToolProtocol
 	/** When true, model should hide vendor/company identity in responses */
 	isStealthModel?: boolean
+	windowsScriptExecutionEnabled?: boolean
+	isWindows?: boolean
 }

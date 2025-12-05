@@ -1,5 +1,7 @@
 import fs from "fs/promises"
 import * as path from "path"
+import * as os from "os"
+import { randomUUID } from "crypto"
 import * as vscode from "vscode"
 
 import delay from "delay"
@@ -22,7 +24,9 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 class ShellIntegrationError extends Error {}
 
 interface ExecuteCommandParams {
-	command: string
+	command?: string
+	script_content?: string
+	script_runner?: string
 	cwd?: string
 }
 
@@ -32,23 +36,78 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 	parseLegacy(params: Partial<Record<string, string>>): ExecuteCommandParams {
 		return {
 			command: params.command || "",
+			script_content: params.script_content,
+			script_runner: params.script_runner,
 			cwd: params.cwd,
 		}
 	}
 
 	async execute(params: ExecuteCommandParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { command, cwd: customCwd } = params
+		const { command, cwd: customCwd, script_content, script_runner } = params
 		const { handleError, pushToolResult, askApproval, removeClosingTag, toolProtocol } = callbacks
 
+		const provider = await task.providerRef.deref()
+		const providerState = await provider?.getState()
+		const isWindows = process.platform === "win32"
+		const scriptModeEnabled = isWindows && (providerState?.windowsScriptExecutionEnabled ?? true)
+
+		const trimmedScriptContent = script_content ? unescapeHtmlEntities(script_content).trim() : ""
+		const trimmedScriptRunner = script_runner ? script_runner.trim() : ""
+		const hasScriptRequest = trimmedScriptContent.length > 0
+		const shouldUseScriptMode = hasScriptRequest && scriptModeEnabled
+
+		let tempScriptPath: string | undefined
+		let tempScriptDir: string | undefined
+		let commandToRun = command
+
 		try {
-			if (!command) {
+			if (hasScriptRequest && !scriptModeEnabled) {
+				if (!command || !command.trim()) {
+					pushToolResult(
+						"Script execution mode is not available on this platform or is disabled. Please send a regular command instead.",
+					)
+					return
+				}
+			}
+
+			if (shouldUseScriptMode) {
+				if (!trimmedScriptRunner) {
+					task.consecutiveMistakeCount++
+					task.recordToolError("execute_command")
+					pushToolResult(await task.sayAndCreateMissingParamError("execute_command", "script_runner"))
+					return
+				}
+
+				// Prevent command injection: runner must be a single token/path without whitespace or shell metacharacters.
+				// Allow only safe runner tokens: alphanumerics plus common path separators and dots/underscores/hyphens/colons.
+				// This prevents injection via shell metacharacters while still allowing full paths.
+				const runnerPattern = /^[\w.\-\\/:\u0080-\uFFFF]+$/
+				if (!runnerPattern.test(trimmedScriptRunner)) {
+					task.recordToolError("execute_command")
+					pushToolResult(
+						"script_runner must be a single executable or path without spaces or shell metacharacters.",
+					)
+					return
+				}
+
+				tempScriptDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-script-"))
+				tempScriptPath = path.join(tempScriptDir, `script-${randomUUID()}.tmp`)
+				await fs.writeFile(tempScriptPath, trimmedScriptContent, "utf-8")
+
+				// Quote path to handle spaces; runner is provided by the model.
+				commandToRun = `${trimmedScriptRunner} ${JSON.stringify(tempScriptPath)}`
+			}
+
+			if (!commandToRun || !commandToRun.trim()) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("execute_command")
 				pushToolResult(await task.sayAndCreateMissingParamError("execute_command", "command"))
 				return
 			}
 
-			const ignoredFileAttemptedToAccess = task.rooIgnoreController?.validateCommand(command)
+			const unescapedCommand = unescapeHtmlEntities(commandToRun)
+
+			const ignoredFileAttemptedToAccess = task.rooIgnoreController?.validateCommand(unescapedCommand)
 
 			if (ignoredFileAttemptedToAccess) {
 				await task.say("rooignore_error", ignoredFileAttemptedToAccess)
@@ -58,17 +117,25 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			task.consecutiveMistakeCount = 0
 
-			const unescapedCommand = unescapeHtmlEntities(command)
-			const didApprove = await askApproval("command", unescapedCommand)
+			const approvalPreview = shouldUseScriptMode
+				? [
+						`Runner: ${trimmedScriptRunner}`,
+						`Temporary script file will be created and removed automatically: ${tempScriptPath}`,
+						"",
+						trimmedScriptContent,
+					].join("\n")
+				: unescapedCommand
+
+			const didApprove = await askApproval("command", approvalPreview)
 
 			if (!didApprove) {
+				if (tempScriptPath) {
+					await fs.rm(tempScriptPath).catch(() => {})
+				}
 				return
 			}
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
-			const provider = await task.providerRef.deref()
-			const providerState = await provider?.getState()
-
 			const {
 				terminalOutputLineLimit = 500,
 				terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
@@ -136,6 +203,12 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 		} catch (error) {
 			await handleError("executing command", error as Error)
 			return
+		} finally {
+			if (tempScriptDir) {
+				await fs.rm(tempScriptDir, { recursive: true, force: true }).catch(() => {})
+			} else if (tempScriptPath) {
+				await fs.rm(tempScriptPath).catch(() => {})
+			}
 		}
 	}
 
@@ -326,6 +399,34 @@ export async function executeCommandInTerminal(
 	// the correct order of messages (although the webview is smart about
 	// grouping command_output messages despite any gaps anyways).
 	await delay(50)
+
+	// If we reached this point without any output or exit details, the command likely
+	// failed before producing stream events (common with malformed scripts on Windows).
+	// Surface a failure result so the UI doesn't stay in a pending state.
+	if (!message && !completed && !exitDetails) {
+		let terminalSnapshot = ""
+		try {
+			// Try to grab whatever the terminal has, to surface any hidden errors.
+			if (terminal instanceof Terminal) {
+				terminalSnapshot = await Terminal.getTerminalContents(1)
+			}
+		} catch (snapshotError) {
+			console.warn("[ExecuteCommandTool] Failed to grab terminal contents:", snapshotError)
+		}
+
+		const workingDirInfo = workingDir ? ` in '${workingDir.toPosix()}'` : ""
+		const snapshotInfo = terminalSnapshot ? `\n\nTerminal output snapshot:\n${terminalSnapshot}` : ""
+
+		return [
+			false,
+			[
+				"Command finished without producing output or exit details.",
+				`It may have failed immediately${workingDirInfo}.`,
+				"Please check runner availability, file paths, or script syntax and retry.",
+				snapshotInfo,
+			].join("\n"),
+		]
+	}
 
 	if (message) {
 		const { text, images } = message

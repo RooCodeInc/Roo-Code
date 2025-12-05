@@ -188,6 +188,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		terminalZshOhMy,
 		terminalZshP10k,
 		terminalZdotdir,
+		windowsScriptExecutionEnabled,
 		writeDelayMs,
 		showRooIgnoredFiles,
 		remoteBrowserEnabled,
@@ -807,6 +808,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							terminalZshP10k={terminalZshP10k}
 							terminalZdotdir={terminalZdotdir}
 							terminalCompressProgressBar={terminalCompressProgressBar}
+							windowsScriptExecutionEnabled={windowsScriptExecutionEnabled}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

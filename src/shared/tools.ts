@@ -42,6 +42,8 @@ export const toolParamNames = [
 	"regex",
 	"file_pattern",
 	"recursive",
+	"script_content",
+	"script_runner",
 	"action",
 	"url",
 	"coordinate",
@@ -86,7 +88,8 @@ export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
 	read_file: { files: FileEntry[] }
 	attempt_completion: { result: string }
-	execute_command: { command: string; cwd?: string }
+	execute_command: { command?: string; cwd?: string; script_content?: string; script_runner?: string }
+	insert_content: { path: string; line: number; content: string }
 	apply_diff: { path: string; diff: string }
 	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
 	apply_patch: { patch: string }
@@ -147,7 +150,7 @@ export interface McpToolUse {
 export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
-	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
+	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd" | "script_content" | "script_runner">>
 }
 
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
