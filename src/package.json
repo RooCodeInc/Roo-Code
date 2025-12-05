@@ -407,6 +407,12 @@
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				},
+				"roo-cline.enableCodebaseIndexing": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.enableCodebaseIndexing.description%",
+					"scope": "resource"
+				},
 				"roo-cline.debug": {
 					"type": "boolean",
 					"default": false,
