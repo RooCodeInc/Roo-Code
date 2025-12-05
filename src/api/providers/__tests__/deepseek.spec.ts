@@ -317,4 +317,449 @@ describe("DeepSeekHandler", () => {
 			expect(result.cacheReadTokens).toBeUndefined()
 		})
 	})
+
+	describe("native tool calling", () => {
+		it("should use OpenAI format for deepseek-reasoner with native tools", async () => {
+			const handlerWithReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+			})
+
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text" as const,
+							text: "Use the calculator tool to add 2 + 2",
+						},
+					],
+				},
+			]
+
+			const metadata = {
+				taskId: "test-task-id",
+				toolProtocol: "native" as const,
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "calculator",
+							description: "A simple calculator",
+							parameters: {
+								type: "object",
+								properties: {
+									operation: { type: "string" },
+									a: { type: "number" },
+									b: { type: "number" },
+								},
+								required: ["operation", "a", "b"],
+							},
+						},
+					},
+				],
+			}
+
+			// Mock the stream response with tool calls
+			mockCreate.mockImplementationOnce(async (options) => {
+				// Verify that the messages are in OpenAI format (not R1 format)
+				expect(options.messages).toBeDefined()
+				expect(options.messages.length).toBeGreaterThan(0)
+				// First message should be user role with system prompt
+				expect(options.messages[0].role).toBe("user")
+
+				// Verify tools are included
+				expect(options.tools).toBeDefined()
+				expect(options.tools.length).toBe(1)
+				expect(options.tools[0].function.name).toBe("calculator")
+
+				// Return a mock stream with tool call
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										tool_calls: [
+											{
+												index: 0,
+												id: "call_123",
+												function: {
+													name: "calculator",
+													arguments: '{"operation":"add","a":2,"b":2}',
+												},
+											},
+										],
+									},
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 20,
+								completion_tokens: 10,
+								total_tokens: 30,
+							},
+						}
+					},
+				}
+			})
+
+			const stream = handlerWithReasoner.createMessage(systemPrompt, messages, metadata)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify tool call chunks were emitted
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallChunks.length).toBeGreaterThan(0)
+			expect(toolCallChunks[0].name).toBe("calculator")
+			expect(toolCallChunks[0].arguments).toBe('{"operation":"add","a":2,"b":2}')
+		})
+
+		it("should handle tool results properly with deepseek-reasoner", async () => {
+			const handlerWithReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+			})
+
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text" as const,
+							text: "Use the calculator tool to add 2 + 2",
+						},
+					],
+				},
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use" as const,
+							id: "tool_use_123",
+							name: "calculator",
+							input: { operation: "add", a: 2, b: 2 },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result" as const,
+							tool_use_id: "tool_use_123",
+							content: "4",
+						},
+					],
+				},
+			]
+
+			const metadata = {
+				taskId: "test-task-id",
+				toolProtocol: "native" as const,
+			}
+
+			mockCreate.mockImplementationOnce(async (options) => {
+				// Verify tool result is properly converted to OpenAI format
+				const toolMessage = options.messages.find((msg: any) => msg.role === "tool")
+				expect(toolMessage).toBeDefined()
+				expect(toolMessage.tool_call_id).toBe("tool_use_123")
+				expect(toolMessage.content).toBe("4")
+
+				// Return a mock stream
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: { content: "The result is 4" },
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 30,
+								completion_tokens: 5,
+								total_tokens: 35,
+							},
+						}
+					},
+				}
+			})
+
+			const stream = handlerWithReasoner.createMessage(systemPrompt, messages, metadata)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks[0].text).toBe("The result is 4")
+		})
+
+		it("should use R1 format for deepseek-reasoner without native tools", async () => {
+			const handlerWithReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+			})
+
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text" as const,
+							text: "Hello!",
+						},
+					],
+				},
+			]
+
+			// No metadata or toolProtocol is "xml"
+			const metadata = {
+				taskId: "test-task-id",
+				toolProtocol: "xml" as const,
+			}
+
+			mockCreate.mockImplementationOnce(async (options) => {
+				// Verify that messages are in R1 format (merged consecutive same-role messages)
+				expect(options.messages).toBeDefined()
+				// In R1 format, system prompt is merged with user message
+				expect(options.messages[0].role).toBe("user")
+				expect(options.messages[0].content).toContain("You are a helpful assistant")
+				expect(options.messages[0].content).toContain("Hello!")
+
+				// Return a mock stream
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: { content: "Hi there!" },
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 3,
+								total_tokens: 13,
+							},
+						}
+					},
+				}
+			})
+
+			const stream = handlerWithReasoner.createMessage(systemPrompt, messages, metadata)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks[0].text).toBe("Hi there!")
+		})
+
+		it("should handle reasoning_content for deepseek-reasoner", async () => {
+			const handlerWithReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+			})
+
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text" as const,
+							text: "What is 2 + 2?",
+						},
+					],
+				},
+			]
+
+			const metadata = {
+				taskId: "test-task-id",
+				toolProtocol: "native" as const,
+			}
+
+			mockCreate.mockImplementationOnce(async () => {
+				// Return a mock stream with reasoning_content
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: {
+										reasoning_content: "Let me calculate 2 + 2...",
+									},
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {
+										content: "2 + 2 equals 4",
+									},
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 15,
+								completion_tokens: 10,
+								total_tokens: 25,
+							},
+						}
+					},
+				}
+			})
+
+			const stream = handlerWithReasoner.createMessage(systemPrompt, messages, metadata)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify reasoning chunks were emitted
+			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+			expect(reasoningChunks[0].text).toBe("Let me calculate 2 + 2...")
+
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks[0].text).toBe("2 + 2 equals 4")
+		})
+
+		it("should use parent implementation for deepseek-chat model", async () => {
+			// deepseek-chat should always use parent implementation
+			const handlerWithChat = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-chat",
+			})
+
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text" as const,
+							text: "Hello!",
+						},
+					],
+				},
+			]
+
+			const metadata = {
+				taskId: "test-task-id",
+				toolProtocol: "native" as const,
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "test_tool",
+							description: "A test tool",
+							parameters: {
+								type: "object",
+								properties: {},
+							},
+						},
+					},
+				],
+			}
+
+			mockCreate.mockImplementationOnce(async (options) => {
+				// For deepseek-chat, it should use the parent's OpenAI format handling
+				expect(options.messages).toBeDefined()
+				// Should have system message and user message
+				expect(options.messages[0].role).toBe("system")
+				// The content might be wrapped in an array for prompt caching
+				if (Array.isArray(options.messages[0].content)) {
+					expect(options.messages[0].content[0].text).toBe("You are a helpful assistant.")
+				} else {
+					expect(options.messages[0].content).toBe("You are a helpful assistant.")
+				}
+				expect(options.messages[1].role).toBe("user")
+
+				// Return a mock stream
+				return {
+					[Symbol.asyncIterator]: async function* () {
+						yield {
+							choices: [
+								{
+									delta: { content: "Hello!" },
+									index: 0,
+								},
+							],
+							usage: null,
+						}
+						yield {
+							choices: [
+								{
+									delta: {},
+									index: 0,
+								},
+							],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 2,
+								total_tokens: 12,
+							},
+						}
+					},
+				}
+			})
+
+			const stream = handlerWithChat.createMessage(systemPrompt, messages, metadata)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks[0].text).toBe("Hello!")
+		})
+	})
 })
