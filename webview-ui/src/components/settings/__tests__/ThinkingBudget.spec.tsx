@@ -215,4 +215,22 @@ describe("ThinkingBudget", () => {
 
 		expect(setApiConfigurationField).toHaveBeenCalledWith("modelMaxTokens", 12000)
 	})
+
+	it("should clamp modelMaxTokens to the provider limit for reasoning models", () => {
+		const setApiConfigurationField = vi.fn()
+
+		render(
+			<ThinkingBudget
+				{...defaultProps}
+				apiConfiguration={{ modelMaxTokens: 70000 }}
+				setApiConfigurationField={setApiConfigurationField}
+				modelInfo={{
+					...mockModelInfo,
+					maxTokens: 64000,
+				}}
+			/>,
+		)
+
+		expect(setApiConfigurationField).toHaveBeenCalledWith("modelMaxTokens", 64000, false)
+	})
 })

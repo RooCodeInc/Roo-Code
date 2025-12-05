@@ -1,6 +1,11 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
-import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
+import { MessageStream } from "@anthropic-ai/sdk/lib/MessageStream"
+import {
+	CacheControlEphemeral,
+	RedactedThinkingBlock,
+	SignatureDelta,
+	ThinkingBlock,
+} from "@anthropic-ai/sdk/resources"
 import OpenAI from "openai"
 
 import {
@@ -25,6 +30,8 @@ import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-t
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
+	private lastThoughtSignature?: string
+	private currentStream?: MessageStream
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -44,21 +51,43 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
+		// Reset signature tracking and stream reference at start of each message
+		this.lastThoughtSignature = undefined
+		this.currentStream = undefined
+
+		let stream: MessageStream
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let {
 			id: modelId,
+			info: modelInfo,
 			betas = ["fine-grained-tool-streaming-2025-05-14"],
 			maxTokens,
 			temperature,
 			reasoning: thinking,
 		} = this.getModel()
 
+		// Determine effective max_tokens
+		// Keep the user's requested output budget intact unless the provider cap would be exceeded.
+		const requestedMaxTokens = maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		const providerMaxTokens = modelInfo?.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+		let effectiveMaxTokens = Math.min(requestedMaxTokens, providerMaxTokens)
+		if (thinking && typeof thinking === "object" && "budget_tokens" in thinking) {
+			const budgetTokens = Math.max(0, thinking.budget_tokens)
+			// Anthropic enforces (max_tokens + budget_tokens) <= provider cap; shrink only when necessary.
+			const maxTokensWithinProviderLimit = Math.max(1, providerMaxTokens - budgetTokens)
+			effectiveMaxTokens = Math.min(requestedMaxTokens, maxTokensWithinProviderLimit)
+		}
+
+		// Check if prompt caching is supported (use model info, which can be overridden for custom models)
+		const supportsPromptCache = modelInfo.supportsPromptCache
+
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
 		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
 		// Add 1M context beta flag if enabled for Claude Sonnet 4 and 4.5
+		// Only apply if not using a custom model name (custom models handle their own betas)
 		if (
+			!this.options.anthropicCustomModelName &&
 			(modelId === "claude-sonnet-4-20250514" || modelId === "claude-sonnet-4-5") &&
 			this.options.anthropicBeta1MContext
 		) {
@@ -80,210 +109,231 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				}
 			: {}
 
-		switch (modelId) {
-			case "claude-sonnet-4-5":
-			case "claude-sonnet-4-20250514":
-			case "claude-opus-4-5-20251101":
-			case "claude-opus-4-1-20250805":
-			case "claude-opus-4-20250514":
-			case "claude-3-7-sonnet-20250219":
-			case "claude-3-5-sonnet-20241022":
-			case "claude-3-5-haiku-20241022":
-			case "claude-3-opus-20240229":
-			case "claude-haiku-4-5-20251001":
-			case "claude-3-haiku-20240307": {
-				/**
-				 * The latest message will be the new user message, one before
-				 * will be the assistant message from a previous request, and
-				 * the user message before that will be a previously cached user
-				 * message. So we need to mark the latest user message as
-				 * ephemeral to cache it for the next request, and mark the
-				 * second to last user message as ephemeral to let the server
-				 * know the last message to retrieve from the cache for the
-				 * current request.
-				 */
-				const userMsgIndices = sanitizedMessages.reduce(
-					(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-					[] as number[],
-				)
+		if (supportsPromptCache) {
+			/**
+			 * The latest message will be the new user message, one before
+			 * will be the assistant message from a previous request, and
+			 * the user message before that will be a previously cached user
+			 * message. So we need to mark the latest user message as
+			 * ephemeral to cache it for the next request, and mark the
+			 * second to last user message as ephemeral to let the server
+			 * know the last message to retrieve from the cache for the
+			 * current request.
+			 */
+			const userMsgIndices = sanitizedMessages.reduce(
+				(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
+				[] as number[],
+			)
 
-				const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+			const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
+			const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-				stream = await this.client.messages.create(
-					{
-						model: modelId,
-						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-						temperature,
-						thinking,
-						// Setting cache breakpoint for system prompt so new tasks can reuse it.
-						system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-						messages: sanitizedMessages.map((message, index) => {
-							if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-								return {
-									...message,
-									content:
-										typeof message.content === "string"
-											? [{ type: "text", text: message.content, cache_control: cacheControl }]
-											: message.content.map((content, contentIndex) =>
-													contentIndex === message.content.length - 1
-														? { ...content, cache_control: cacheControl }
-														: content,
-												),
-								}
-							}
-							return message
-						}),
-						stream: true,
-						...nativeToolParams,
-					},
-					(() => {
-						// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-						// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-						// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
+			// Add prompt caching beta header
+			betas.push("prompt-caching-2024-07-31")
 
-						// Then check for models that support prompt caching
-						switch (modelId) {
-							case "claude-sonnet-4-5":
-							case "claude-sonnet-4-20250514":
-							case "claude-opus-4-5-20251101":
-							case "claude-opus-4-1-20250805":
-							case "claude-opus-4-20250514":
-							case "claude-3-7-sonnet-20250219":
-							case "claude-3-5-sonnet-20241022":
-							case "claude-3-5-haiku-20241022":
-							case "claude-3-opus-20240229":
-							case "claude-haiku-4-5-20251001":
-							case "claude-3-haiku-20240307":
-								betas.push("prompt-caching-2024-07-31")
-								return { headers: { "anthropic-beta": betas.join(",") } }
-							default:
-								return undefined
-						}
-					})(),
-				)
-				break
-			}
-			default: {
-				stream = (await this.client.messages.create({
+			// Use MessageStream for better error handling, abort support, and signature extraction
+			stream = this.client.messages.stream(
+				{
 					model: modelId,
-					max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-					temperature,
+					max_tokens: effectiveMaxTokens,
+					// Temperature cannot be used with extended thinking (must be omitted or set to 1)
+					...(thinking ? {} : { temperature }),
+					// Only include thinking if it's defined with proper structure
+					...(thinking ? { thinking } : {}),
+					// Setting cache breakpoint for system prompt so new tasks can reuse it.
+					system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+					messages: sanitizedMessages.map((message, index) => {
+						if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+							return {
+								...message,
+								content:
+									typeof message.content === "string"
+										? [{ type: "text", text: message.content, cache_control: cacheControl }]
+										: message.content.map((content, contentIndex) =>
+												contentIndex === message.content.length - 1
+													? { ...content, cache_control: cacheControl }
+													: content,
+											),
+							}
+						}
+						return message
+					}),
+					...nativeToolParams,
+				},
+				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
+			)
+		} else {
+			// No prompt caching - simpler request
+			// Use MessageStream for better error handling, abort support, and signature extraction
+			stream = this.client.messages.stream(
+				{
+					model: modelId,
+					max_tokens: effectiveMaxTokens,
+					// Temperature cannot be used with extended thinking (must be omitted or set to 1)
+					...(thinking ? {} : { temperature }),
+					// Only include thinking if explicitly enabled (for custom models that support it)
+					...(thinking ? { thinking } : {}),
 					system: [{ text: systemPrompt, type: "text" }],
 					messages: sanitizedMessages,
-					stream: true,
 					...nativeToolParams,
-				})) as any
-				break
-			}
+				},
+				betas.length > 0 ? { headers: { "anthropic-beta": betas.join(",") } } : undefined,
+			)
 		}
+
+		// Store stream reference for potential abort
+		this.currentStream = stream
 
 		let inputTokens = 0
 		let outputTokens = 0
 		let cacheWriteTokens = 0
 		let cacheReadTokens = 0
 
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "message_start": {
-					// Tells us cache reads/writes/input/output.
-					const {
-						input_tokens = 0,
-						output_tokens = 0,
-						cache_creation_input_tokens,
-						cache_read_input_tokens,
-					} = chunk.message.usage
+		try {
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "message_start": {
+						// Tells us cache reads/writes/input/output.
+						const {
+							input_tokens = 0,
+							output_tokens = 0,
+							cache_creation_input_tokens,
+							cache_read_input_tokens,
+						} = chunk.message.usage
 
-					yield {
-						type: "usage",
-						inputTokens: input_tokens,
-						outputTokens: output_tokens,
-						cacheWriteTokens: cache_creation_input_tokens || undefined,
-						cacheReadTokens: cache_read_input_tokens || undefined,
+						yield {
+							type: "usage",
+							inputTokens: input_tokens,
+							outputTokens: output_tokens,
+							cacheWriteTokens: cache_creation_input_tokens || undefined,
+							cacheReadTokens: cache_read_input_tokens || undefined,
+						}
+
+						inputTokens += input_tokens
+						outputTokens += output_tokens
+						cacheWriteTokens += cache_creation_input_tokens || 0
+						cacheReadTokens += cache_read_input_tokens || 0
+
+						break
 					}
+					case "message_delta":
+						// Tells us stop_reason, stop_sequence, and output tokens
+						// along the way and at the end of the message.
+						yield {
+							type: "usage",
+							inputTokens: 0,
+							outputTokens: chunk.usage.output_tokens || 0,
+						}
 
-					inputTokens += input_tokens
-					outputTokens += output_tokens
-					cacheWriteTokens += cache_creation_input_tokens || 0
-					cacheReadTokens += cache_read_input_tokens || 0
+						break
+					case "message_stop":
+						// No usage data, just an indicator that the message is done.
+						break
+					case "content_block_start":
+						switch (chunk.content_block.type) {
+							case "thinking":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "reasoning", text: "\n" }
+								}
 
-					break
+								yield { type: "reasoning", text: chunk.content_block.thinking }
+								break
+							case "redacted_thinking":
+								// Redacted thinking blocks contain encrypted content that cannot be displayed
+								// The 'data' field contains the redacted content which is not human-readable
+								// We emit a placeholder to indicate thinking occurred but was redacted
+								if (chunk.index > 0) {
+									yield { type: "reasoning", text: "\n" }
+								}
+								yield { type: "reasoning", text: "[Thinking redacted]" }
+								break
+							case "text":
+								// We may receive multiple text blocks, in which
+								// case just insert a line break between them.
+								if (chunk.index > 0) {
+									yield { type: "text", text: "\n" }
+								}
+
+								yield { type: "text", text: chunk.content_block.text }
+								break
+							case "tool_use": {
+								// Emit initial tool call partial with id and name
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: chunk.content_block.id,
+									name: chunk.content_block.name,
+									arguments: undefined,
+								}
+								break
+							}
+						}
+						break
+					case "content_block_delta":
+						switch (chunk.delta.type) {
+							case "thinking_delta":
+								yield { type: "reasoning", text: chunk.delta.thinking }
+								break
+							case "signature_delta":
+								// Capture the signature for multi-turn extended thinking
+								// Using proper SDK type for SignatureDelta
+								this.lastThoughtSignature = (chunk.delta as SignatureDelta).signature
+								break
+							case "text_delta":
+								yield { type: "text", text: chunk.delta.text }
+								break
+							case "input_json_delta": {
+								// Emit tool call partial chunks as arguments stream in
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: undefined,
+									name: undefined,
+									arguments: chunk.delta.partial_json,
+								}
+								break
+							}
+						}
+
+						break
+					case "content_block_stop":
+						// Block complete - no action needed for now.
+						// NativeToolCallParser handles tool call completion
+						break
 				}
-				case "message_delta":
-					// Tells us stop_reason, stop_sequence, and output tokens
-					// along the way and at the end of the message.
-					yield {
-						type: "usage",
-						inputTokens: 0,
-						outputTokens: chunk.usage.output_tokens || 0,
-					}
-
-					break
-				case "message_stop":
-					// No usage data, just an indicator that the message is done.
-					break
-				case "content_block_start":
-					switch (chunk.content_block.type) {
-						case "thinking":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "reasoning", text: "\n" }
-							}
-
-							yield { type: "reasoning", text: chunk.content_block.thinking }
-							break
-						case "text":
-							// We may receive multiple text blocks, in which
-							// case just insert a line break between them.
-							if (chunk.index > 0) {
-								yield { type: "text", text: "\n" }
-							}
-
-							yield { type: "text", text: chunk.content_block.text }
-							break
-						case "tool_use": {
-							// Emit initial tool call partial with id and name
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: chunk.content_block.id,
-								name: chunk.content_block.name,
-								arguments: undefined,
-							}
-							break
-						}
-					}
-					break
-				case "content_block_delta":
-					switch (chunk.delta.type) {
-						case "thinking_delta":
-							yield { type: "reasoning", text: chunk.delta.thinking }
-							break
-						case "text_delta":
-							yield { type: "text", text: chunk.delta.text }
-							break
-						case "input_json_delta": {
-							// Emit tool call partial chunks as arguments stream in
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: undefined,
-								name: undefined,
-								arguments: chunk.delta.partial_json,
-							}
-							break
-						}
-					}
-
-					break
-				case "content_block_stop":
-					// Block complete - no action needed for now.
-					// NativeToolCallParser handles tool call completion
-					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
-					// after iteration completes, which requires restructuring the streaming approach.
-					break
 			}
+
+			// After streaming completes, use finalMessage() to reliably extract signature
+			// from ThinkingBlock or RedactedThinkingBlock for multi-turn extended thinking conversations
+			try {
+				const finalMessage = await stream.finalMessage()
+				// Check for regular thinking block first
+				const thinkingBlock = finalMessage.content.find(
+					(block): block is ThinkingBlock => block.type === "thinking",
+				)
+				if (thinkingBlock?.signature) {
+					this.lastThoughtSignature = thinkingBlock.signature
+				} else {
+					// Check for redacted thinking block (also has signature for multi-turn)
+					const redactedBlock = finalMessage.content.find(
+						(block): block is RedactedThinkingBlock => block.type === "redacted_thinking",
+					)
+					// Note: RedactedThinkingBlock has 'data' field, not 'signature'
+					// The signature for multi-turn is captured during streaming via signature_delta
+				}
+			} catch {
+				// finalMessage may fail if stream was interrupted, signature captured during streaming is still valid
+			}
+		} catch (error) {
+			// Re-throw the error after cleanup
+			// The caller can handle specific error types (rate limits, context length, etc.)
+			this.currentStream = undefined
+			throw error
+		} finally {
+			// Clear stream reference after completion
+			this.currentStream = undefined
 		}
 
 		if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
@@ -306,8 +356,29 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	getModel() {
 		const modelId = this.options.apiModelId
+		const customModelName = this.options.anthropicCustomModelName
+		const customModelInfo = this.options.anthropicCustomModelInfo
+
+		// If a custom model name is provided (for custom base URLs), use it
+		// but fall back to default model info for parameters
 		let id = modelId && modelId in anthropicModels ? (modelId as AnthropicModelId) : anthropicDefaultModelId
-		let info: ModelInfo = anthropicModels[id]
+
+		// Determine base model info:
+		// 1. If anthropicCustomModelInfo is provided, use it as the base
+		// 2. Otherwise, use the preset model info
+		let info: ModelInfo
+
+		if (customModelName && customModelInfo) {
+			// Use unified custom model info when provided
+			info = { ...customModelInfo }
+		} else {
+			// Use preset model info
+			info = { ...anthropicModels[id] }
+		}
+
+		// If using a custom model name, we use that as the actual model ID sent to the API
+		// but still use the selected model's info for context limits, pricing, etc.
+		const effectiveModelId = customModelName || id
 
 		// If 1M context beta is enabled for Claude Sonnet 4 or 4.5, update the model info
 		if ((id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") && this.options.anthropicBeta1MContext) {
@@ -336,11 +407,41 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
 		// suffix.
+		// Enable thinking for:
+		// 1. The :thinking model variant
+		// 2. Custom models with supportsReasoningBudget in anthropicCustomModelInfo
+		const enableThinking =
+			id === "claude-3-7-sonnet-20250219:thinking" || (customModelName && info.supportsReasoningBudget)
+
+		let finalModelId = effectiveModelId
+		if (id === "claude-3-7-sonnet-20250219:thinking") {
+			// Only strip the :thinking suffix if we're not using a custom model name
+			finalModelId = customModelName || "claude-3-7-sonnet-20250219"
+		}
+
+		// For extended thinking:
+		// - budget_tokens minimum is 1024
+		// - budget_tokens maximum is 32000 (allows headroom for custom models)
+		// - budget_tokens must be less than max_tokens
+		const THINKING_BUDGET_MIN = 1024
+		const THINKING_BUDGET_MAX = 32000
+		const configuredBudget =
+			params.reasoning && params.reasoning.type === "enabled"
+				? params.reasoning.budget_tokens
+				: THINKING_BUDGET_MIN
+		const thinkingBudget = Math.min(THINKING_BUDGET_MAX, Math.max(THINKING_BUDGET_MIN, configuredBudget))
+
 		return {
-			id: id === "claude-3-7-sonnet-20250219:thinking" ? "claude-3-7-sonnet-20250219" : id,
+			id: finalModelId,
 			info,
-			betas: id === "claude-3-7-sonnet-20250219:thinking" ? ["output-128k-2025-02-19"] : undefined,
+			betas: enableThinking ? ["output-128k-2025-02-19"] : undefined,
 			...params,
+			// Override reasoning if custom thinking is enabled (via anthropicCustomModelInfo)
+			// Use budget_tokens (snake_case) as required by Anthropic API
+			// Note: max_tokens must be greater than budget_tokens
+			...(enableThinking && !params.reasoning
+				? { reasoning: { type: "enabled" as const, budget_tokens: thinkingBudget } }
+				: {}),
 		}
 	}
 
@@ -401,6 +502,32 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		const content = message.content.find(({ type }) => type === "text")
 		return content?.type === "text" ? content.text : ""
+	}
+
+	/**
+	 * Returns the signature from the last thinking block for multi-turn extended thinking.
+	 * This signature is required when sending thinking blocks back to the API.
+	 */
+	public getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
+	}
+
+	/**
+	 * Aborts the current streaming request if one is in progress.
+	 * This cleanly cancels the underlying HTTP request and any pending operations.
+	 */
+	public abort(): void {
+		if (this.currentStream) {
+			this.currentStream.abort()
+			this.currentStream = undefined
+		}
+	}
+
+	/**
+	 * Returns whether a stream is currently in progress.
+	 */
+	public isStreaming(): boolean {
+		return this.currentStream !== undefined
 	}
 
 	/**

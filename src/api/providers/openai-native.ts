@@ -3,6 +3,7 @@ import OpenAI from "openai"
 
 import {
 	type ModelInfo,
+	openAiModelInfoSaneDefaults,
 	openAiNativeDefaultModelId,
 	OpenAiNativeModelId,
 	openAiNativeModels,
@@ -22,8 +23,19 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import {
+	OpenAINativeDebugger,
+	createUrlTransformationTracker,
+	buildDebugRequestInfo,
+	buildDebugResponseInfo,
+	type UrlTransformation,
+} from "./openai-native-debug"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
+
+// Azure OpenAI has a 1024 character limit for tool/function descriptions
+// See: https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/function-calling?tabs=rest#limitations
+const AZURE_TOOL_DESCRIPTION_LIMIT = 1024
 
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -37,21 +49,26 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Abort controller for cancelling ongoing requests
 	private abortController?: AbortController
 
+	// Track output item index to call_id mapping for streaming tool calls
+	// This allows delta events to be correlated with their parent tool call
+	private outputIndexToCallId: Map<number, { callId: string; name: string }> = new Map()
+
+	// Debugger instance for detailed logging when custom base URLs are configured
+	private debugger!: OpenAINativeDebugger
+
 	// Event types handled by the shared event processor to avoid duplication
+	// Official event types per OpenAI.ResponseStreamEvent spec, plus legacy variants for compatibility
 	private readonly coreHandledEventTypes = new Set<string>([
-		"response.text.delta",
 		"response.output_text.delta",
 		"response.reasoning.delta",
-		"response.reasoning_text.delta",
 		"response.reasoning_summary.delta",
 		"response.reasoning_summary_text.delta",
 		"response.refusal.delta",
 		"response.output_item.added",
-		"response.done",
+		"response.output_item.done",
 		"response.completed",
-		"response.tool_call_arguments.delta",
+		"response.done", // Legacy variant of response.completed
 		"response.function_call_arguments.delta",
-		"response.tool_call_arguments.done",
 		"response.function_call_arguments.done",
 	])
 
@@ -65,6 +82,68 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
 		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+
+		// Initialize debugger - enabled via settings OR OPENAI_DEBUG env var
+		// Check settings first (more reliable in VS Code extension context), then environment variable
+		const debugFromSettings = this.options.openAiNativeEnableDebug === true
+		const debugFromEnv =
+			(typeof process !== "undefined" &&
+				process.env &&
+				(process.env.OPENAI_DEBUG === "true" || process.env.OPENAI_DEBUG === "1")) ||
+			false
+		const debugEnabled = debugFromSettings || debugFromEnv
+		this.debugger = new OpenAINativeDebugger({
+			enabled: debugEnabled,
+		})
+
+		// Log debug status on startup if enabled
+		if (debugEnabled) {
+			console.log(
+				`[OPENAI DEBUG] Debug logging enabled (from ${debugFromSettings ? "settings" : "environment variable"})`,
+			)
+			console.log(
+				`[OPENAI DEBUG] Base URL: ${this.options.openAiNativeBaseUrl || "https://api.openai.com (default)"}`,
+			)
+			console.log(`[OPENAI DEBUG] Is Azure: ${this.isAzureOpenAI()}`)
+		}
+	}
+
+	/**
+	 * Detects if the configured base URL points to Azure OpenAI.
+	 * Azure OpenAI URLs typically end with '.openai.azure.com' or '.azure.com'.
+	 */
+	private isAzureOpenAI(): boolean {
+		const baseUrl = this.options.openAiNativeBaseUrl
+		if (!baseUrl) return false
+		try {
+			const url = new URL(baseUrl)
+			const host = url.host.toLowerCase()
+			// Use endsWith() for secure URL validation to prevent subdomain attacks
+			if (host.endsWith(".openai.azure.com") || host.endsWith(".azure.com")) {
+				return true
+			}
+
+			// Some customers route Azure OpenAI through custom domains that retain the `/openai/` path segment.
+			// Detect these by inspecting the pathname so we still honor Azure-specific behaviors (headers, tool limits, etc.).
+			const normalizedPath = url.pathname.toLowerCase()
+			if (normalizedPath.includes("/openai/") || normalizedPath.endsWith("/openai")) {
+				return true
+			}
+
+			return false
+		} catch {
+			// Fallback heuristic for non-standard URLs that still contain the Azure path signature.
+			return baseUrl.includes("/openai/")
+		}
+	}
+
+	/**
+	 * Truncates a string to the specified limit, adding "..." if truncated.
+	 */
+	private truncateDescription(description: string | undefined, limit: number): string | undefined {
+		if (!description) return description
+		if (description.length <= limit) return description
+		return description.slice(0, limit - 3) + "..."
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -145,12 +224,58 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Initialize lastResponseId from conversation history if not already set.
+		// This is critical for resuming tasks where a new handler instance is created
+		// but the conversation history already contains the previous response ID.
+		// The response ID is stored in the `id` field of assistant messages by Task.ts.
+		if (!this.lastResponseId && messages.length > 0) {
+			// Find the last assistant message with an id (response ID from previous API call)
+			for (let i = messages.length - 1; i >= 0; i--) {
+				const msg = messages[i] as any
+				if (msg.role === "assistant" && msg.id) {
+					this.lastResponseId = msg.id
+					if (this.debugger.enabled) {
+						console.log(
+							`[OPENAI DEBUG] Initialized lastResponseId from conversation history: ${this.lastResponseId}`,
+						)
+					}
+					break
+				}
+			}
+		}
+
+		// Capture previous response ID BEFORE resetting (for multi-turn conversation continuity)
+		// This enables the Azure/OpenAI Responses API to maintain conversation context via previous_response_id
+		const previousResponseId =
+			!metadata?.suppressPreviousResponseId && this.lastResponseId ? this.lastResponseId : undefined
+
+		// Debug: Log conversation continuity state
+		if (this.debugger.enabled) {
+			console.log(`[OPENAI DEBUG] Conversation Continuity State:`)
+			console.log(`  - Last Response ID: ${this.lastResponseId || "none"}`)
+			console.log(
+				`  - Previous Response ID (to send): ${previousResponseId || "none (suppressed or not available)"}`,
+			)
+			console.log(`  - Suppress Previous Response ID: ${metadata?.suppressPreviousResponseId || false}`)
+			console.log(`  - Last Response Output available: ${this.lastResponseOutput ? "yes" : "no"}`)
+			if (this.lastResponseOutput) {
+				console.log(`  - Last Response Output items: ${this.lastResponseOutput.length}`)
+				this.lastResponseOutput.forEach((item, idx) => {
+					console.log(
+						`    [${idx}] type: ${item.type}, has_encrypted_content: ${!!item.encrypted_content}, has_id: ${!!item.id}`,
+					)
+				})
+			}
+		}
+
 		// Reset resolved tier for this request; will be set from response if present
 		this.lastServiceTier = undefined
 		// Reset output array to capture current response output items
 		this.lastResponseOutput = undefined
-		// Reset last response id for this request
+		// Reset last response id for this request (will be set from the new response)
 		this.lastResponseId = undefined
+		// Reset output index to call_id mapping for streaming tool calls
+		this.outputIndexToCallId.clear()
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -169,6 +294,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			verbosity,
 			reasoningEffort,
 			metadata,
+			previousResponseId,
 		)
 
 		// Make the request (pass systemPrompt and messages for potential retry)
@@ -182,6 +308,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		verbosity: any,
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		previousResponseId?: string,
 	): any {
 		// Ensure all properties are in the required array for OpenAI's strict mode
 		// This recursively processes nested objects and array items
@@ -218,9 +345,31 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Build a request body for the OpenAI Responses API.
 		// Ensure we explicitly pass max_output_tokens based on Roo's reserved model response calculation
 		// so requests do not default to very large limits (e.g., 120k).
+		// OpenAI Responses API uses flat tool format
+		type OpenAIToolFormat = {
+			type: "function"
+			name: string
+			description?: string
+			parameters?: any
+			strict?: boolean
+		}
+		// Azure OpenAI uses nested function format
+		type AzureToolFormat = {
+			type: "function"
+			function: {
+				name: string
+				description?: string
+				parameters?: any
+			}
+		}
 		interface ResponsesRequestBody {
 			model: string
-			input: Array<{ role: "user" | "assistant"; content: any[] } | { type: string; content: string }>
+			input: Array<
+				| { type: "message"; role: "user" | "assistant"; content: any[] }
+				| { type: "reasoning"; encrypted_content: string; id?: string; summary?: any[] }
+				| { type: "function_call"; call_id: string; name: string; arguments: string }
+				| { type: "function_call_output"; call_id: string; output: string }
+			>
 			stream: boolean
 			reasoning?: { effort?: ReasoningEffortExtended; summary?: "auto" }
 			text?: { verbosity: VerbosityLevel }
@@ -232,15 +381,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			include?: string[]
 			/** Prompt cache retention policy: "in_memory" (default) or "24h" for extended caching */
 			prompt_cache_retention?: "in_memory" | "24h"
-			tools?: Array<{
-				type: "function"
-				name: string
-				description?: string
-				parameters?: any
-				strict?: boolean
-			}>
+			tools?: Array<OpenAIToolFormat | AzureToolFormat>
 			tool_choice?: any
 			parallel_tool_calls?: boolean
+			/** Previous response ID for multi-turn conversation continuity (Azure/OpenAI Responses API) */
+			previous_response_id?: string
 		}
 
 		// Validate requested tier against model support; if not supported, omit.
@@ -250,17 +395,50 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Decide whether to enable extended prompt cache retention for this request
 		const promptCacheRetention = this.getPromptCacheRetention(model)
 
+		// Check if using Azure OpenAI for Azure-specific handling
+		const isAzure = this.isAzureOpenAI()
+
+		// Respect caller preference for response storage (defaults to true to allow previous_response_id usage)
+		const shouldStoreResponses = metadata?.store ?? true
+
+		// Debug: Log request body construction
+		if (this.debugger.enabled) {
+			console.log(`[OPENAI DEBUG] Building request body:`)
+			console.log(`  - Model: ${model.id}`)
+			console.log(`  - Stream: true`)
+			console.log(`  - Store: ${shouldStoreResponses}`)
+			console.log(`  - Is Azure: ${isAzure}`)
+			console.log(`  - Previous Response ID: ${previousResponseId || "none"}`)
+			console.log(`  - Reasoning Effort: ${reasoningEffort || "none"}`)
+			console.log(`  - Input items: ${formattedInput.length}`)
+			formattedInput.forEach((item: any, idx: number) => {
+				if (item.type === "reasoning") {
+					console.log(
+						`    [${idx}] type: reasoning, encrypted_content: ${!!item.encrypted_content}, id: ${item.id || "none"}`,
+					)
+				} else if (item.type === "message") {
+					console.log(
+						`    [${idx}] type: message, role: ${item.role}, content_blocks: ${item.content?.length || 0}`,
+					)
+				} else if (item.type === "function_call") {
+					console.log(`    [${idx}] type: function_call, name: ${item.name}`)
+				} else if (item.type === "function_call_output") {
+					console.log(`    [${idx}] type: function_call_output, call_id: ${item.call_id}`)
+				}
+			})
+		}
+
 		const body: ResponsesRequestBody = {
 			model: model.id,
 			input: formattedInput,
 			stream: true,
-			// Always use stateless operation with encrypted reasoning
-			store: false,
+			store: shouldStoreResponses,
 			// Always include instructions (system prompt) for Responses API.
 			// Unlike Chat Completions, system/developer roles in input have no special semantics here.
 			// The official way to set system behavior is the top-level `instructions` field.
 			instructions: systemPrompt,
-			// Only include encrypted reasoning content when reasoning effort is set
+			// Include encrypted reasoning content when reasoning effort is set
+			// Azure Responses API supports include: ["reasoning.encrypted_content"]
 			...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			...(reasoningEffort
 				? {
@@ -270,33 +448,47 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						},
 					}
 				: {}),
-			// Only include temperature if the model supports it
-			...(model.info.supportsTemperature !== false && {
-				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
+			// Only include temperature if the model supports it or user explicitly enabled it via override
+			...((model.info.supportsTemperature !== false || this.options.openAiNativeEnableTemperature) && {
+				// Use provider-specific temperature if override is enabled, otherwise use global setting
+				temperature: this.options.openAiNativeEnableTemperature
+					? (this.options.openAiNativeTemperature ?? 1) // GPT-5 default is 1
+					: (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE),
 			}),
 			// Explicitly include the calculated max output tokens.
 			// Use the per-request reserved output computed by Roo (params.maxTokens from getModelParams).
 			...(model.maxTokens ? { max_output_tokens: model.maxTokens } : {}),
 			// Include tier when selected and supported by the model, or when explicitly "default"
+			// Note: Service tier is supported on Azure OpenAI as well
 			...(requestedTier &&
 				(requestedTier === "default" || allowedTierNames.has(requestedTier)) && {
 					service_tier: requestedTier,
 				}),
 			// Enable extended prompt cache retention for models that support it.
 			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
-			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
+			// Note: Azure OpenAI does not support prompt_cache_retention, so we skip it for Azure.
+			...(!isAzure && promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
 			...(metadata?.tools && {
+				// Both OpenAI and Azure Responses API use flat tool format
+				// Azure has a 1024 character description limit and doesn't support strict mode
 				tools: metadata.tools
 					.filter((tool) => tool.type === "function")
 					.map((tool) => ({
-						type: "function",
+						type: "function" as const,
 						name: tool.function.name,
-						description: tool.function.description,
+						description: isAzure
+							? this.truncateDescription(tool.function.description, AZURE_TOOL_DESCRIPTION_LIMIT)
+							: tool.function.description,
 						parameters: ensureAllRequired(tool.function.parameters),
-						strict: true,
+						// Only OpenAI supports strict mode for tools
+						...(isAzure ? {} : { strict: true }),
 					})),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			// Include previous_response_id for multi-turn conversation continuity when available.
+			// This lets the Azure/OpenAI Responses API maintain conversation context including reasoning items,
+			// which helps avoid the "reasoning item without required following item" error.
+			...(previousResponseId && { previous_response_id: previousResponseId }),
 		}
 
 		// For native tool protocol, control parallel tool calls based on the metadata flag.
@@ -307,9 +499,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
 		}
 
-		// Include text.verbosity only when the model explicitly supports it
-		if (model.info.supportsVerbosity === true) {
-			body.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+		// Include text.verbosity when the model explicitly supports it or user enabled override
+		if (model.info.supportsVerbosity === true || this.options.openAiNativeEnableVerbosity) {
+			// Use provider-specific verbosity if override is enabled, otherwise use global setting or default
+			const verbosityValue = this.options.openAiNativeEnableVerbosity
+				? this.options.openAiNativeVerbosity || "medium"
+				: verbosity || "medium"
+			body.text = { verbosity: verbosityValue as VerbosityLevel }
 		}
 
 		return body
@@ -324,6 +520,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	): ApiStream {
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
+
+		// For Azure OpenAI, skip the SDK and use manual fetch directly
+		// The OpenAI SDK doesn't understand Azure's URL structure (/openai/v1/responses)
+		if (this.isAzureOpenAI()) {
+			yield* this.makeResponsesApiRequest(requestBody, model, metadata, systemPrompt, messages)
+			return
+		}
 
 		try {
 			// Use the official SDK
@@ -358,6 +561,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private formatFullConversation(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): any {
 		// Format the entire conversation history for the Responses API using structured format
 		// The Responses API (like Realtime API) accepts a list of items, which can be messages, function calls, or function call outputs.
+		// Both OpenAI and Azure Responses API use the same input_text/input_image format per official docs:
+		// https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
 		const formattedInput: any[] = []
 
 		// Do NOT embed the system prompt as a developer message in the Responses API input.
@@ -373,8 +578,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			if (message.role === "user") {
-				const content: any[] = []
 				const toolResults: any[] = []
+				// Both OpenAI and Azure use structured content with input_text/input_image types
+				const content: any[] = []
 
 				if (typeof message.content === "string") {
 					content.push({ type: "input_text", text: message.content })
@@ -387,7 +593,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							const imageUrl = `data:${image.source.media_type};base64,${image.source.data}`
 							content.push({ type: "input_image", image_url: imageUrl })
 						} else if (block.type === "tool_result") {
-							// Map Anthropic tool_result to Responses API function_call_output item
 							const result =
 								typeof block.content === "string"
 									? block.content
@@ -401,9 +606,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				// Add user message first
 				if (content.length > 0) {
-					formattedInput.push({ role: "user", content })
+					// Use type: "message" for user messages to ensure proper Responses API format
+					formattedInput.push({ type: "message", role: "user", content })
 				}
 
 				// Add tool results as separate items
@@ -411,8 +616,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					formattedInput.push(...toolResults)
 				}
 			} else if (message.role === "assistant") {
-				const content: any[] = []
 				const toolCalls: any[] = []
+				// Both OpenAI and Azure use structured content with output_text type
+				const content: any[] = []
 
 				if (typeof message.content === "string") {
 					content.push({ type: "output_text", text: message.content })
@@ -421,7 +627,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						if (block.type === "text") {
 							content.push({ type: "output_text", text: block.text })
 						} else if (block.type === "tool_use") {
-							// Map Anthropic tool_use to Responses API function_call item
 							toolCalls.push({
 								type: "function_call",
 								call_id: block.id,
@@ -432,12 +637,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				// Add assistant message if it has content
-				if (content.length > 0) {
-					formattedInput.push({ role: "assistant", content })
+				// Always emit assistant message when there's content OR tool calls.
+				// This is CRITICAL for the Responses API: reasoning items must be followed by their
+				// "required following item" (a message). When assistant responds with only tool calls
+				// (no text), we still need to emit an empty assistant message to satisfy this requirement.
+				// Without this, we get: "Item 'rs_...' of type 'reasoning' was provided without its required following item"
+				if (content.length > 0 || toolCalls.length > 0) {
+					formattedInput.push({ type: "message", role: "assistant", content })
 				}
 
-				// Add tool calls as separate items
+				// Add tool calls as separate items (after the message)
 				if (toolCalls.length > 0) {
 					formattedInput.push(...toolCalls)
 				}
@@ -445,6 +654,90 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 
 		return formattedInput
+	}
+
+	/**
+	 * Builds the correct Responses API URL for OpenAI or Azure OpenAI.
+	 *
+	 * For OpenAI: https://api.openai.com/v1/responses
+	 * For Azure OpenAI: https://YOUR_RESOURCE.openai.azure.com/openai/v1/responses
+	 *
+	 * Azure OpenAI users should provide base URL as:
+	 *   https://YOUR_RESOURCE.openai.azure.com/openai/v1/
+	 * This method normalizes the URL and appends the correct path.
+	 *
+	 * Note: The v1 API does not require api-version query parameter per official Azure docs:
+	 * https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses
+	 */
+	private buildResponsesApiUrl(requestId?: string): {
+		url: string
+		isAzure: boolean
+		transformations: UrlTransformation[]
+	} {
+		const rawBaseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
+		const isAzure = this.isAzureOpenAI()
+
+		// Track URL transformations for debugging
+		const tracker = createUrlTransformationTracker()
+
+		let baseUrl = rawBaseUrl
+		let query = ""
+
+		try {
+			const parsed = new URL(rawBaseUrl)
+			const newBaseUrl = `${parsed.origin}${parsed.pathname}`
+			if (newBaseUrl !== rawBaseUrl) {
+				tracker.track("Parse URL", rawBaseUrl, newBaseUrl, "Extract origin and pathname")
+			}
+			baseUrl = newBaseUrl
+			query = parsed.search // Preserve query params such as api-version for Azure proxies
+			if (query) {
+				tracker.track("Extract query params", "", query, "Preserve api-version for Azure proxies")
+			}
+		} catch {
+			// If URL parsing fails, fall back to raw string handling without query preservation
+			tracker.track("URL parse failed", rawBaseUrl, rawBaseUrl, "Falling back to raw string handling")
+			query = ""
+		}
+
+		// Normalize path so we can safely append the Responses suffix
+		const beforeTrailingSlash = baseUrl
+		baseUrl = baseUrl.replace(/\/+$/, "") // drop trailing slashes
+		if (baseUrl !== beforeTrailingSlash) {
+			tracker.track("Remove trailing slashes", beforeTrailingSlash, baseUrl)
+		}
+
+		const beforeResponses = baseUrl
+		baseUrl = baseUrl.replace(/\/responses$/, "") // remove accidental /responses
+		if (baseUrl !== beforeResponses) {
+			tracker.track("Remove /responses suffix", beforeResponses, baseUrl, "Avoid double /responses path")
+		}
+
+		const beforeV1 = baseUrl
+		baseUrl = baseUrl.replace(/\/v1$/, "") // drop trailing /v1 if present
+		if (baseUrl !== beforeV1) {
+			tracker.track("Remove /v1 suffix", beforeV1, baseUrl, "Will be re-added with /responses")
+		}
+
+		if (isAzure && !baseUrl.includes("/openai")) {
+			const beforeOpenai = baseUrl
+			baseUrl = `${baseUrl}/openai`
+			tracker.track("Add /openai for Azure", beforeOpenai, baseUrl, "Azure OpenAI requires /openai path segment")
+		}
+
+		const finalUrl = `${baseUrl}/v1/responses${query}`
+		tracker.track("Construct final URL", baseUrl, finalUrl, "Append /v1/responses and query params")
+
+		// Log URL construction if debugging is enabled
+		if (requestId && this.debugger.enabled) {
+			this.debugger.logUrlConstruction(requestId, rawBaseUrl, tracker.transformations, finalUrl)
+		}
+
+		return {
+			url: finalUrl,
+			isAzure,
+			transformations: tracker.transformations,
+		}
 	}
 
 	private async *makeResponsesApiRequest(
@@ -455,20 +748,51 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
-		const url = `${baseUrl}/v1/responses`
+
+		// Generate request ID for debugging correlation
+		const requestId = this.debugger.generateRequestId()
+		const startTime = Date.now()
+
+		const { url, isAzure, transformations } = this.buildResponsesApiUrl(requestId)
 
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
+		// Build headers - Azure uses api-key header instead of Authorization Bearer
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			Accept: "text/event-stream",
+		}
+
+		if (isAzure) {
+			headers["api-key"] = apiKey
+		} else {
+			headers["Authorization"] = `Bearer ${apiKey}`
+		}
+
+		// Add custom request ID header for correlation (as per OpenAI docs)
+		headers["X-Client-Request-Id"] = requestId
+
+		// Log request details if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logRequest(
+				buildDebugRequestInfo(
+					requestId,
+					url,
+					{ method: "POST", headers, body: JSON.stringify(requestBody) },
+					{
+						baseUrl: this.options.openAiNativeBaseUrl,
+						isAzure,
+						urlTransformations: transformations,
+					},
+				),
+			)
+		}
+
 		try {
 			const response = await fetch(url, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${apiKey}`,
-					Accept: "text/event-stream",
-				},
+				headers,
 				body: JSON.stringify(requestBody),
 				signal: this.abortController.signal,
 			})
@@ -526,7 +850,32 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					errorMessage += ` - ${errorDetails}`
 				}
 
-				throw new Error(errorMessage)
+				// Log error response if debugging is enabled
+				if (this.debugger.enabled) {
+					this.debugger.logResponse(
+						buildDebugResponseInfo(requestId, response, startTime, { error: errorDetails }),
+					)
+				}
+
+				const error = new Error(errorMessage)
+				// Log categorized error for debugging
+				if (this.debugger.enabled) {
+					const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+					errorInfo.context = {
+						status: response.status,
+						statusText: response.statusText,
+						url,
+						isAzure,
+					}
+					this.debugger.logError(errorInfo)
+				}
+
+				throw error
+			}
+
+			// Log successful response headers if debugging is enabled
+			if (this.debugger.enabled) {
+				this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime))
 			}
 
 			if (!response.body) {
@@ -534,8 +883,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			}
 
 			// Handle streaming response
-			yield* this.handleStreamResponse(response.body, model)
+			yield* this.handleStreamResponse(response.body, model, requestId)
 		} catch (error) {
+			// Log error if debugging is enabled
+			if (this.debugger.enabled && error instanceof Error) {
+				const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+				errorInfo.context = { url, isAzure }
+				this.debugger.logError(errorInfo)
+			}
+
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted
 				if (error.message.includes("Responses API")) {
@@ -548,6 +904,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			throw new Error(`Unexpected error connecting to Responses API`)
 		} finally {
 			this.abortController = undefined
+			this.debugger.endRequest(requestId)
 		}
 	}
 
@@ -558,7 +915,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * and yields structured data chunks (`ApiStream`). It handles a wide variety of event types,
 	 * including text deltas, reasoning, usage data, and various status/tool events.
 	 */
-	private async *handleStreamResponse(body: ReadableStream<Uint8Array>, model: OpenAiNativeModel): ApiStream {
+	private async *handleStreamResponse(
+		body: ReadableStream<Uint8Array>,
+		model: OpenAiNativeModel,
+		requestId?: string,
+	): ApiStream {
 		const reader = body.getReader()
 		const decoder = new TextDecoder()
 		let buffer = ""
@@ -597,10 +958,27 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							// Capture complete output array (includes reasoning items with encrypted_content)
 							if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 								this.lastResponseOutput = parsed.response.output
+								// Debug: Log captured output
+								if (requestId && this.debugger.enabled) {
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] Captured response output array (${parsed.response.output.length} items)`,
+									)
+								}
 							}
 							// Capture top-level response id
 							if (parsed.response?.id) {
 								this.lastResponseId = parsed.response.id as string
+								// Debug: Log captured response ID
+								if (requestId && this.debugger.enabled) {
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] Captured response ID: ${this.lastResponseId}`,
+									)
+								}
+							}
+
+							// Log stream events if debugging is enabled
+							if (requestId && this.debugger.enabled && parsed?.type) {
+								this.debugger.logStreamEvent(requestId, parsed.type, parsed)
 							}
 
 							// Delegate standard event types to the shared processor to avoid duplication
@@ -775,19 +1153,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 									}
 								}
 							} else if (parsed.type === "response.output_item.done") {
-								// Output item completed
-							}
-							// Handle function/tool call events
-							else if (
-								parsed.type === "response.function_call_arguments.delta" ||
-								parsed.type === "response.tool_call_arguments.delta" ||
-								parsed.type === "response.function_call_arguments.done" ||
-								parsed.type === "response.tool_call_arguments.done"
-							) {
-								// Delegated to processEvent (handles accumulation and completion)
-								for await (const outChunk of this.processEvent(parsed, model)) {
-									yield outChunk
-								}
+								// Output item completed - handled by coreHandledEventTypes
 							}
 							// Handle MCP (Model Context Protocol) tool events
 							else if (parsed.type === "response.mcp_call_arguments.delta") {
@@ -901,10 +1267,36 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 								// Capture top-level response id
 								if (parsed.response?.id) {
 									this.lastResponseId = parsed.response.id as string
+									// Debug: Log captured response ID at completion
+									if (requestId && this.debugger.enabled) {
+										console.log(
+											`[OPENAI DEBUG] [${requestId}] Response completed - ID: ${this.lastResponseId}`,
+										)
+									}
 								}
 								// Capture complete output array (includes reasoning items with encrypted_content)
 								if (parsed.response?.output && Array.isArray(parsed.response.output)) {
 									this.lastResponseOutput = parsed.response.output
+									// Debug: Log captured output at completion
+									if (requestId && this.debugger.enabled) {
+										console.log(
+											`[OPENAI DEBUG] [${requestId}] Response completed - Output items: ${parsed.response.output.length}`,
+										)
+										parsed.response.output.forEach((item: any, idx: number) => {
+											console.log(
+												`  [${idx}] type: ${item.type}, encrypted_content: ${!!item.encrypted_content}, id: ${item.id || "none"}`,
+											)
+										})
+									}
+								} else if (requestId && this.debugger.enabled) {
+									// Debug: Warn if no response output at completion
+									console.log(
+										`[OPENAI DEBUG] [${requestId}] WARNING: Response completed but no output array found!`,
+									)
+									console.log(`  - parsed.response exists: ${!!parsed.response}`)
+									console.log(
+										`  - parsed.response.output: ${JSON.stringify(parsed.response?.output)}`,
+									)
 								}
 
 								// Check if the done event contains the complete output (as a fallback)
@@ -1068,38 +1460,38 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			return
 		}
 
-		// Handle tool/function call deltas - emit as partial chunks
-		if (
-			event?.type === "response.tool_call_arguments.delta" ||
-			event?.type === "response.function_call_arguments.delta"
-		) {
-			// Emit partial chunks directly - NativeToolCallParser handles state management
-			const callId = event.call_id || event.tool_call_id || event.id
-			const name = event.name || event.function_name
-			const args = event.delta || event.arguments
+		// Handle function call argument deltas - emit as partial chunks
+		// Per OpenAI spec: ResponseFunctionCallArgumentsDeltaEvent has item_id, output_index, delta
+		if (event?.type === "response.function_call_arguments.delta") {
+			const outputIndex = event.output_index ?? 0
+
+			// Look up call_id from our tracking map using output_index
+			// The item_id in the event references item.id, but we need item.call_id for tool execution
+			const tracked = this.outputIndexToCallId.get(outputIndex)
+			const callId = tracked?.callId
+			const name = tracked?.name
 
 			yield {
 				type: "tool_call_partial",
-				index: event.index ?? 0,
+				index: outputIndex,
 				id: callId,
 				name,
-				arguments: args,
+				arguments: event.delta,
 			}
 			return
 		}
 
-		// Handle tool/function call completion events
-		if (
-			event?.type === "response.tool_call_arguments.done" ||
-			event?.type === "response.function_call_arguments.done"
-		) {
-			// Tool call complete - no action needed, NativeToolCallParser handles completion
+		// Handle function call completion events
+		if (event?.type === "response.function_call_arguments.done") {
+			// Tool call arguments complete - final tool_call emitted via response.output_item.done
 			return
 		}
 
-		// Handle output item additions/completions (SDK or Responses API alternative format)
+		// Handle output item additions/completions
 		if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
 			const item = event?.item
+			const outputIndex = event?.output_index ?? 0
+
 			if (item) {
 				if (item.type === "text" && item.text) {
 					yield { type: "text", text: item.text }
@@ -1112,20 +1504,38 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							yield { type: "text", text: content.text }
 						}
 					}
-				} else if (
-					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done" // Only handle done events for tool calls to ensure arguments are complete
-				) {
-					// Handle complete tool/function call item
-					// Emit as tool_call for backward compatibility with non-streaming tool handling
-					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId) {
-						const args = item.arguments || item.function?.arguments || item.function_arguments
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
-							arguments: typeof args === "string" ? args : "{}",
+				} else if (item.type === "function_call") {
+					// Per OpenAI spec: FunctionToolCallItemResource has call_id, name, arguments, status
+					const callId = item.call_id || item.id
+					const name = item.name || ""
+
+					if (event.type === "response.output_item.added") {
+						// Tool call item added - emit initial tool_call_partial to initialize streaming parser
+						// This provides the id and name upfront so delta events can be correlated
+						if (callId) {
+							// Track the mapping from output index to call_id for delta events
+							this.outputIndexToCallId.set(outputIndex, { callId, name })
+
+							yield {
+								type: "tool_call_partial",
+								index: outputIndex,
+								id: callId,
+								name,
+								arguments: "", // Arguments will come via delta events
+							}
+						}
+					} else if (event.type === "response.output_item.done") {
+						// Tool call complete - emit final tool_call with complete arguments
+						if (callId) {
+							yield {
+								type: "tool_call",
+								id: callId,
+								name,
+								arguments: typeof item.arguments === "string" ? item.arguments : "{}",
+							}
+
+							// Clean up tracking
+							this.outputIndexToCallId.delete(outputIndex)
 						}
 					}
 				}
@@ -1169,8 +1579,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * The policy is driven by ModelInfo.promptCacheRetention so that model-specific details
 	 * live in the shared types layer rather than this provider. When set to "24h" and the
 	 * model supports prompt caching, extended prompt cache retention is requested.
+	 *
+	 * Users can override this by enabling openAiNativeDisablePromptCache to disable caching.
 	 */
 	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
+		// Allow user to disable prompt caching via settings
+		if (this.options.openAiNativeDisablePromptCache) return undefined
+
+		// Azure OpenAI doesn't support prompt_cache_retention
+		if (this.isAzureOpenAI()) return undefined
+
 		if (!model.info.supportsPromptCache) return undefined
 
 		if (model.info.promptCacheRetention === "24h") {
@@ -1203,16 +1621,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	// Removed isResponsesApiModel method as ALL models now use the Responses API
 
 	override getModel() {
-		const modelId = this.options.apiModelId
-
-		let id =
-			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
-
-		const info: ModelInfo = openAiNativeModels[id]
+		const requestedModelId = this.options.apiModelId?.trim() || openAiNativeDefaultModelId
+		const isKnownModel = requestedModelId in openAiNativeModels
+		const info: ModelInfo = isKnownModel
+			? openAiNativeModels[requestedModelId as OpenAiNativeModelId]
+			: this.options.openAiCustomModelInfo || openAiModelInfoSaneDefaults
 
 		const params = getModelParams({
 			format: "openai",
-			modelId: id,
+			modelId: requestedModelId,
 			model: info,
 			settings: this.options,
 			defaultTemperature: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
@@ -1223,7 +1640,24 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		// The o3 models are named like "o3-mini-[reasoning-effort]", which are
 		// not valid model ids, so we need to strip the suffix.
-		return { id: id.startsWith("o3-mini") ? "o3-mini" : id, info, ...params, verbosity: params.verbosity }
+		const normalizedId = requestedModelId.startsWith("o3-mini") ? "o3-mini" : requestedModelId
+		return { id: normalizedId, info, ...params, verbosity: params.verbosity }
+	}
+
+	private captureResponseMetadata(response: any) {
+		if (!response) return
+
+		if (response.service_tier) {
+			this.lastServiceTier = response.service_tier as ServiceTier
+		}
+
+		if (Array.isArray(response.output)) {
+			this.lastResponseOutput = response.output
+		}
+
+		if (response.id) {
+			this.lastResponseId = response.id as string
+		}
 	}
 
 	/**
@@ -1258,7 +1692,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		try {
 			const model = this.getModel()
-			const { verbosity, reasoning } = model
+			const { verbosity } = model
 
 			// Resolve reasoning effort for models that support it
 			const reasoningEffort = this.getReasoningEffort(model)
@@ -1293,9 +1727,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				}
 			}
 
-			// Only include temperature if the model supports it
-			if (model.info.supportsTemperature !== false) {
-				requestBody.temperature = this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE
+			// Only include temperature if the model supports it or user explicitly enabled it via override
+			if (model.info.supportsTemperature !== false || this.options.openAiNativeEnableTemperature) {
+				// Use provider-specific temperature if override is enabled, otherwise use global setting
+				requestBody.temperature = this.options.openAiNativeEnableTemperature
+					? (this.options.openAiNativeTemperature ?? 1) // GPT-5 default is 1
+					: (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE)
 			}
 
 			// Include max_output_tokens if available
@@ -1303,21 +1740,32 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				requestBody.max_output_tokens = model.maxTokens
 			}
 
-			// Include text.verbosity only when the model explicitly supports it
-			if (model.info.supportsVerbosity === true) {
-				requestBody.text = { verbosity: (verbosity || "medium") as VerbosityLevel }
+			// Include text.verbosity when the model explicitly supports it or user enabled override
+			if (model.info.supportsVerbosity === true || this.options.openAiNativeEnableVerbosity) {
+				// Use provider-specific verbosity if override is enabled, otherwise use global setting or default
+				const verbosityValue = this.options.openAiNativeEnableVerbosity
+					? this.options.openAiNativeVerbosity || "medium"
+					: verbosity || "medium"
+				requestBody.text = { verbosity: verbosityValue as VerbosityLevel }
 			}
 
-			// Enable extended prompt cache retention for eligible models
+			// Enable extended prompt cache retention for eligible models (not for Azure)
 			const promptCacheRetention = this.getPromptCacheRetention(model)
 			if (promptCacheRetention) {
 				requestBody.prompt_cache_retention = promptCacheRetention
 			}
 
-			// Make the non-streaming request
+			// For Azure OpenAI, use manual fetch instead of SDK (SDK doesn't understand Azure URL structure)
+			if (this.isAzureOpenAI()) {
+				return await this.completePromptAzure(requestBody)
+			}
+
+			// Make the non-streaming request using OpenAI SDK
 			const response = await (this.client as any).responses.create(requestBody, {
 				signal: this.abortController.signal,
 			})
+
+			this.captureResponseMetadata(response)
 
 			// Extract text from the response
 			if (response?.output && Array.isArray(response.output)) {
@@ -1346,5 +1794,98 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		} finally {
 			this.abortController = undefined
 		}
+	}
+
+	/**
+	 * Azure-specific implementation of completePrompt using manual fetch.
+	 * The OpenAI SDK doesn't understand Azure's URL structure, so we use fetch directly.
+	 */
+	private async completePromptAzure(requestBody: any): Promise<string> {
+		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
+		const requestId = this.debugger.generateRequestId()
+		const startTime = Date.now()
+
+		const { url, isAzure, transformations } = this.buildResponsesApiUrl(requestId)
+
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			"api-key": apiKey,
+			"X-Client-Request-Id": requestId,
+		}
+
+		// Log request if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logRequest(
+				buildDebugRequestInfo(
+					requestId,
+					url,
+					{ method: "POST", headers, body: JSON.stringify(requestBody) },
+					{
+						baseUrl: this.options.openAiNativeBaseUrl,
+						isAzure,
+						urlTransformations: transformations,
+					},
+				),
+			)
+		}
+
+		const response = await fetch(url, {
+			method: "POST",
+			headers,
+			body: JSON.stringify(requestBody),
+			signal: this.abortController?.signal,
+		})
+
+		if (!response.ok) {
+			const errorText = await response.text()
+			let errorMessage = `Azure OpenAI request failed (${response.status})`
+			try {
+				const errorJson = JSON.parse(errorText)
+				if (errorJson.error?.message) {
+					errorMessage += `: ${errorJson.error.message}`
+				}
+			} catch {
+				errorMessage += `: ${errorText}`
+			}
+
+			// Log error response if debugging is enabled
+			if (this.debugger.enabled) {
+				this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime, { error: errorText }))
+				const error = new Error(errorMessage)
+				const errorInfo = this.debugger.categorizeError(error, requestId, startTime)
+				errorInfo.context = { url, isAzure, status: response.status }
+				this.debugger.logError(errorInfo)
+			}
+
+			throw new Error(errorMessage)
+		}
+
+		// Log successful response if debugging is enabled
+		if (this.debugger.enabled) {
+			this.debugger.logResponse(buildDebugResponseInfo(requestId, response, startTime))
+		}
+
+		const data = await response.json()
+		this.captureResponseMetadata(data)
+
+		// Extract text from the response
+		if (data?.output && Array.isArray(data.output)) {
+			for (const outputItem of data.output) {
+				if (outputItem.type === "message" && outputItem.content) {
+					for (const content of outputItem.content) {
+						if (content.type === "output_text" && content.text) {
+							return content.text
+						}
+					}
+				}
+			}
+		}
+
+		// Fallback: check for output_text directly
+		if (data?.output_text) {
+			return data.output_text
+		}
+
+		return ""
 	}
 }

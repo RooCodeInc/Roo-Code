@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 import { Checkbox } from "vscrui"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
@@ -21,10 +21,38 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 	const selectedModel = useSelectedModel(apiConfiguration)
 
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
+	const [useCustomModelName, setUseCustomModelName] = useState(!!apiConfiguration?.anthropicCustomModelName)
 
 	// Check if the current model supports 1M context beta
 	const supports1MContextBeta =
 		selectedModel?.id === "claude-sonnet-4-20250514" || selectedModel?.id === "claude-sonnet-4-5"
+
+	// Get current custom model info or create default
+	const customModelInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
+		contextWindow: 200000,
+		maxTokens: 48000,
+		maxThinkingTokens: 16000,
+		supportsImages: true,
+		supportsPromptCache: true,
+	}
+
+	// Helper to update a specific field in anthropicCustomModelInfo
+	const updateCustomModelInfo = useCallback(
+		(field: keyof ModelInfo, value: ModelInfo[keyof ModelInfo]) => {
+			const currentInfo = apiConfiguration?.anthropicCustomModelInfo ?? {
+				contextWindow: 200000,
+				maxTokens: 48000,
+				maxThinkingTokens: 16000,
+				supportsImages: true,
+				supportsPromptCache: true,
+			}
+			setApiConfigurationField("anthropicCustomModelInfo", {
+				...currentInfo,
+				[field]: value,
+			})
+		},
+		[apiConfiguration?.anthropicCustomModelInfo, setApiConfigurationField],
+	)
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
@@ -64,6 +92,9 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 						if (!checked) {
 							setApiConfigurationField("anthropicBaseUrl", "")
 							setApiConfigurationField("anthropicUseAuthToken", false)
+							setUseCustomModelName(false)
+							setApiConfigurationField("anthropicCustomModelName", "")
+							setApiConfigurationField("anthropicCustomModelInfo", undefined)
 						}
 					}}>
 					{t("settings:providers.useCustomBaseUrl")}
@@ -83,6 +114,99 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 							className="w-full mt-1">
 							{t("settings:providers.anthropicUseAuthToken")}
 						</Checkbox>
+						<Checkbox
+							checked={useCustomModelName}
+							onChange={(checked: boolean) => {
+								setUseCustomModelName(checked)
+								if (!checked) {
+									setApiConfigurationField("anthropicCustomModelName", "")
+									setApiConfigurationField("anthropicCustomModelInfo", undefined)
+								}
+							}}
+							className="w-full mt-1">
+							{t("settings:providers.useCustomModelName")}
+						</Checkbox>
+						{useCustomModelName && (
+							<>
+								<VSCodeTextField
+									value={apiConfiguration?.anthropicCustomModelName || ""}
+									onInput={handleInputChange("anthropicCustomModelName")}
+									placeholder={t("settings:placeholders.customModelName")}
+									className="w-full mt-1"
+								/>
+								<div className="text-sm text-vscode-descriptionForeground mt-2 mb-1">
+									{t("settings:providers.anthropic.capabilityOverrides")}
+								</div>
+								<div className="flex flex-col gap-1 ml-2">
+									<Checkbox
+										checked={customModelInfo.supportsImages ?? true}
+										onChange={(checked: boolean) => {
+											updateCustomModelInfo("supportsImages", checked)
+										}}>
+										{t("settings:providers.anthropic.supportsImages")}
+									</Checkbox>
+									<Checkbox
+										checked={customModelInfo.supportsPromptCache ?? true}
+										onChange={(checked: boolean) => {
+											updateCustomModelInfo("supportsPromptCache", checked)
+										}}>
+										{t("settings:providers.anthropic.supportsPromptCache")}
+									</Checkbox>
+									<Checkbox
+										checked={customModelInfo.supportsReasoningBudget ?? false}
+										onChange={(checked: boolean) => {
+											updateCustomModelInfo("supportsReasoningBudget", checked)
+										}}>
+										{t("settings:providers.anthropic.supportsThinking")}
+									</Checkbox>
+									<div className="flex items-center gap-2 mt-1">
+										<label className="text-sm whitespace-nowrap">
+											{t("settings:providers.anthropic.contextWindow")}
+										</label>
+										<VSCodeTextField
+											value={customModelInfo.contextWindow?.toString() || ""}
+											onInput={(e) => {
+												const value = parseInt((e.target as HTMLInputElement).value)
+												updateCustomModelInfo("contextWindow", isNaN(value) ? undefined : value)
+											}}
+											placeholder="200000"
+											className="w-32"
+										/>
+									</div>
+									<div className="flex items-center gap-2 mt-1">
+										<label className="text-sm whitespace-nowrap">
+											{t("settings:providers.anthropic.maxOutputTokens")}
+										</label>
+										<VSCodeTextField
+											value={customModelInfo.maxTokens?.toString() || ""}
+											onInput={(e) => {
+												const value = parseInt((e.target as HTMLInputElement).value)
+												updateCustomModelInfo("maxTokens", isNaN(value) ? undefined : value)
+											}}
+											placeholder="48000"
+											className="w-32"
+										/>
+									</div>
+									<div className="flex items-center gap-2 mt-1">
+										<label className="text-sm whitespace-nowrap">
+											{t("settings:providers.anthropic.maxThinkingTokens")}
+										</label>
+										<VSCodeTextField
+											value={customModelInfo.maxThinkingTokens?.toString() || ""}
+											onInput={(e) => {
+												const value = parseInt((e.target as HTMLInputElement).value)
+												updateCustomModelInfo(
+													"maxThinkingTokens",
+													isNaN(value) ? undefined : value,
+												)
+											}}
+											placeholder="16000"
+											className="w-32"
+										/>
+									</div>
+								</div>
+							</>
+						)}
 					</>
 				)}
 			</div>
