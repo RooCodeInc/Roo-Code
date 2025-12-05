@@ -24,11 +24,12 @@ interface ContextEventIds {
  * - Removing orphaned truncation markers when their sliding_window_truncation is removed
  * - Cleaning up orphaned condenseParent/truncationParent tags
  *
- * Usage:
+ * Usage (always access via Task.messageManager getter):
  * ```typescript
- * const manager = new MessageManager(task)
- * await manager.rewindToTimestamp(messageTs, { includeTargetMessage: false })
+ * await task.messageManager.rewindToTimestamp(messageTs, { includeTargetMessage: false })
  * ```
+ *
+ * @see Task.messageManager - The getter that provides lazy-initialized access to this manager
  */
 export class MessageManager {
 	constructor(private task: Task) {}
