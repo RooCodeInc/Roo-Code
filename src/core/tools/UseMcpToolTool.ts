@@ -5,6 +5,9 @@ import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import * as fs from "fs/promises"
+import * as path from "path"
+import { readImageAsDataUrlWithBuffer, isSupportedImageFormat } from "./helpers/imageHelpers"
 
 interface UseMcpToolParams {
 	server_name: string
@@ -34,6 +37,73 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		}
 	}
 
+	/**
+	 * Checks if a value appears to be a file path pointing to an image
+	 */
+	private async isImageFilePath(value: unknown): Promise<boolean> {
+		if (typeof value !== "string") {
+			return false
+		}
+
+		// Skip if it's already a base64 data URL
+		if (value.startsWith("data:image/")) {
+			return false
+		}
+
+		// Check if it looks like a file path
+		const ext = path.extname(value).toLowerCase()
+		if (!isSupportedImageFormat(ext)) {
+			return false
+		}
+
+		// Check if the file exists
+		try {
+			const stats = await fs.stat(value)
+			return stats.isFile()
+		} catch {
+			// File doesn't exist or can't be accessed
+			return false
+		}
+	}
+
+	/**
+	 * Recursively processes an object/array to convert image file paths to base64 data URLs
+	 */
+	private async convertImagePathsToBase64(obj: unknown): Promise<unknown> {
+		if (obj === null || obj === undefined) {
+			return obj
+		}
+
+		// Handle arrays
+		if (Array.isArray(obj)) {
+			return Promise.all(obj.map((item) => this.convertImagePathsToBase64(item)))
+		}
+
+		// Handle objects
+		if (typeof obj === "object") {
+			const result: Record<string, unknown> = {}
+			for (const [key, value] of Object.entries(obj)) {
+				result[key] = await this.convertImagePathsToBase64(value)
+			}
+			return result
+		}
+
+		// Handle potential image file paths
+		if (await this.isImageFilePath(obj)) {
+			try {
+				const { dataUrl } = await readImageAsDataUrlWithBuffer(obj as string)
+				return dataUrl
+			} catch (error) {
+				// If we can't read the image, return the original value
+				console.error(`Failed to convert image file to base64: ${error}`)
+				return obj
+			}
+		}
+
+		// Return primitive values as-is
+		return obj
+	}
+
 	async execute(params: UseMcpToolParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
@@ -55,12 +125,17 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			// Reset mistake count on successful validation
 			task.consecutiveMistakeCount = 0
 
+			// Convert any image file paths in arguments to base64 data URLs
+			const processedArguments = parsedArguments
+				? ((await this.convertImagePathsToBase64(parsedArguments)) as Record<string, unknown>)
+				: parsedArguments
+
 			// Get user approval
 			const completeMessage = JSON.stringify({
 				type: "use_mcp_tool",
 				serverName,
 				toolName,
-				arguments: params.arguments ? JSON.stringify(params.arguments) : undefined,
+				arguments: processedArguments ? JSON.stringify(processedArguments) : undefined,
 			} satisfies ClineAskUseMcpServer)
 
 			const executionId = task.lastMessageTs?.toString() ?? Date.now().toString()
@@ -75,7 +150,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				task,
 				serverName,
 				toolName,
-				parsedArguments,
+				processedArguments,
 				executionId,
 				pushToolResult,
 			)
