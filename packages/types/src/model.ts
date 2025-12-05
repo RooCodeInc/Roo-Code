@@ -111,6 +111,8 @@ export const modelInfoSchema = z.object({
 	isFree: z.boolean().optional(),
 	// Flag to indicate if the model supports native tool calling (OpenAI-style function calling)
 	supportsNativeTools: z.boolean().optional(),
+	// Flag to indicate if the model supports Google Search grounding
+	supportsGrounding: z.boolean().optional(),
 	// Default tool protocol preferred by this model (if not specified, falls back to capability/provider defaults)
 	defaultToolProtocol: z.enum(["xml", "native"]).optional(),
 	// Exclude specific native tools from being available (only applies to native protocol)
