@@ -29,7 +29,7 @@ export default async function ExtensionPage() {
 				<AnimatedBackground />
 				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
-						<div className="flex flex-col px-4 justify-center space-y-4 sm:space-y-8">
+						<div className="flex flex-col justify-center space-y-4 sm:space-y-8">
 							<div>
 								<h1 className="text-4xl font-bold tracking-tight mt-8 text-center md:text-left md:text-4xl lg:text-5xl lg:mt-0">
 									The Open Source AI Coding Assistant for serious work.
@@ -57,7 +57,9 @@ export default async function ExtensionPage() {
 									</a>
 								</Button>
 							</div>
-							<CompanyLogos />
+							<div className="md:max-h-[70px] md:overflow-clip text-center md:text-left pt-6 md:pt-0">
+								<CompanyLogos />
+							</div>
 						</div>
 						<div className="relative flex items-center mx-auto h-full mt-8 lg:mt-0">
 							<div className="flex items-center justify-center">

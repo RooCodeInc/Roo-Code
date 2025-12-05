@@ -169,7 +169,7 @@ export default function PricingPage() {
 					<p className="text-sm text-muted-foreground">
 						We offer a select mix of tested state of the art closed and open weight LLMs for you to choose,
 						with no markup.
-						<Link href="/provider/pricing" className="underline hover:no-underline ml-1">
+						<Link href="/provider" className="underline hover:no-underline ml-1">
 							See detailed pricing
 						</Link>
 					</p>
@@ -223,7 +223,7 @@ export default function PricingPage() {
 											</>
 										)}
 										Inference:{" "}
-										<Link href="/provider/pricing" className="underline hover:no-underline">
+										<Link href="/provider" className="underline hover:no-underline">
 											Roo Provider pricing
 										</Link>{" "}
 										or{" "}
