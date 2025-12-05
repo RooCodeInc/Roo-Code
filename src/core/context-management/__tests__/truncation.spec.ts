@@ -389,6 +389,39 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			expect(result.messagesRemoved).toBe(0)
 		})
 
+		it("should handle truncating all visible messages except first", () => {
+			// This tests the edge case where visibleIndices[messagesToRemove + 1] would be undefined
+			// 3 messages total: first is preserved, 2 others can be truncated
+			const threeMessages: ApiMessage[] = [
+				{ role: "user", content: "Initial", ts: 1000 },
+				{ role: "assistant", content: "Response 1", ts: 1100 },
+				{ role: "user", content: "Message 2", ts: 1200 },
+			]
+
+			// With fracToRemove = 1.0:
+			// visibleCount = 3
+			// rawMessagesToRemove = floor((3-1) * 1.0) = 2
+			// messagesToRemove = 2 (already even)
+			// This truncates ALL messages except the first
+			const result = truncateConversation(threeMessages, 1.0, "test-task-id")
+
+			expect(result.messagesRemoved).toBe(2)
+			// Should have 3 original messages + 1 marker = 4
+			expect(result.messages.length).toBe(4)
+
+			// First message should be untouched
+			expect(result.messages[0].truncationParent).toBeUndefined()
+			expect(result.messages[0].content).toBe("Initial")
+
+			// Messages at indices 1 and 2 should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
+			expect(result.messages[2].truncationParent).toBe(result.truncationId)
+
+			// Marker should be at the end (index 3)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
+		})
+
 		it("should handle empty condenseParent and truncationParent gracefully", () => {
 			const messagesWithoutTags: ApiMessage[] = [
 				{ role: "user", content: "Message 1", ts: 1000 },
