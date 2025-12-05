@@ -42,7 +42,6 @@ It supports users in conducting code checks on functions, selected code lines, c
 ![morefeature](./assets/images/readme/codereview_en.png)
 
 - **More features:**
-
     - **Code Completion:** Automatically generates subsequent code based on the cursor's context code, quickly outputs code in seconds
     - **Vibe Code:** Vibe Code is designed for rapid development and simple tasks. It supports multi-turn natural language dialogue, allowing for real-time refinement and precise code generation.
     - **MCP Service:** Seamlessly integrates with the MCP open ecosystem to enable standardized system connectivity. You can Integrate external APIs、Connect to databases、Develop custom tools through MCP services.
@@ -77,7 +76,7 @@ Communicate via [GitHub Issues](https://github.com/zgsm-ai/costrict/issues/new/c
 
 ## License
 
-[Apache 2.0 © 2025 CoStrict, Inc.](./LICENSE)
+[Apache 2.0 © 2025 Sangfor, Inc.](./LICENSE)
 
 ## Star History
 
