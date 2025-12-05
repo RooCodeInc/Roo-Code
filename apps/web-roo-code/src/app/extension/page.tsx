@@ -29,18 +29,19 @@ export default async function ExtensionPage() {
 				<AnimatedBackground />
 				<div className="container relative flex items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid h-full relative gap-8 md:gap-12 lg:grid-cols-2 lg:gap-16">
-						<div className="flex flex-col px-4 justify-center space-y-6 sm:space-y-8">
+						<div className="flex flex-col px-4 justify-center space-y-4 sm:space-y-8">
 							<div>
 								<h1 className="text-4xl font-bold tracking-tight mt-8 text-center md:text-left md:text-4xl lg:text-5xl lg:mt-0">
 									The Open Source AI Coding Assistant for serious work.
 								</h1>
-								<p className="mt-4 max-w-md text-lg text-muted-foreground text-center md:text-left sm:mt-6">
-									Roo&apos;s specialized modes stay on task and ship great code. The Orchestrator
-									coordinates them all and can runs for hours.
-								</p>
-								<p className="mt-4 max-w-md text-lg text-muted-foreground text-center md:text-left sm:mt-6">
+								<p className="mt-4 max-w-lg text-lg text-muted-foreground text-center md:text-left sm:mt-6">
+									Specialized modes stay on task and ship great code.
+									<br />
 									Fully model-agnostic so you can use the best (or mosrt cost-effective) model for
-									each task. No lock-ins.
+									each task.
+								</p>
+								<p className="max-w-lg text-lg text-muted-foreground text-center md:text-left sm:mt-6">
+									Stop chasing this week&apos;s hot new model or CLI tool and go deep with Roo Code.
 								</p>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">

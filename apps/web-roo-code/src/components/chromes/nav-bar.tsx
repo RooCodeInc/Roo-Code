@@ -110,7 +110,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 					</Link>
 				</nav>
 
-				<div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0">
+				<div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0 font-medium">
 					<div className="flex flex-row space-x-2 flex-shrink-0">
 						<ThemeToggle />
 						<Link
