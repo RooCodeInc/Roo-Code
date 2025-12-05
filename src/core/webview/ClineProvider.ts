@@ -2652,6 +2652,70 @@ export class ClineProvider
 	// task is a subtask of the previous one, and when it finishes it is removed
 	// from the stack and the caller is resumed in this way we can have a chain
 	// of tasks, each one being a sub task of the previous one until the main
+	/**
+	 * Fork the current conversation at a specific message timestamp.
+	 * Creates a new task with the conversation history up to that point.
+	 */
+	public async forkConversationAtMessage(messageTs: number): Promise<void> {
+		const currentTask = this.getCurrentTask()
+		if (!currentTask) {
+			throw new Error("No active task to fork")
+		}
+
+		// Find the message index to fork from
+		const messageIndex = currentTask.clineMessages.findIndex((msg: any) => msg.ts === messageTs)
+		if (messageIndex === -1) {
+			throw new Error(`Message with timestamp ${messageTs} not found`)
+		}
+
+		// Find the corresponding API conversation history index
+		const apiIndex = currentTask.apiConversationHistory.findIndex((msg: any) => msg.ts === messageTs)
+
+		// If exact match not found, find the first API message at or after the timestamp
+		let apiIndexToUse = apiIndex
+		if (apiIndexToUse === -1) {
+			apiIndexToUse = currentTask.apiConversationHistory.findIndex(
+				(msg: any) => typeof msg?.ts === "number" && msg.ts >= messageTs,
+			)
+		}
+
+		// Get the current mode from provider state
+		const { mode } = await this.getState()
+
+		// Create a new history item with messages up to the fork point
+		const forkedHistoryItem: HistoryItem = {
+			id: currentTask.taskId, // Will be replaced with a new ID in createTaskWithHistoryItem
+			ts: Date.now(),
+			number: 0, // Will be set by the history system
+			mode: mode,
+			task: `Forked from: ${currentTask.taskId}`,
+			tokensIn: 0, // Reset token counts for the fork
+			tokensOut: 0,
+			cacheWrites: 0,
+			cacheReads: 0,
+			totalCost: 0,
+			// Note: messages are stored separately in the task persistence system
+		}
+
+		// Store the forked messages in the task's message history
+		const forkedMessages = currentTask.clineMessages.slice(0, messageIndex + 1)
+		const forkedApiHistory =
+			apiIndexToUse !== -1 ? currentTask.apiConversationHistory.slice(0, apiIndexToUse + 1) : []
+
+		// Create the new task with the forked history
+		// We'll need to pass the messages through a different mechanism
+		const newTask = await this.createTaskWithHistoryItem(forkedHistoryItem)
+
+		// Now update the new task with the forked messages
+		if (this.getCurrentTask()) {
+			await this.getCurrentTask()!.overwriteClineMessages(forkedMessages)
+			await this.getCurrentTask()!.overwriteApiConversationHistory(forkedApiHistory)
+		}
+
+		// The new task is now active, and the UI will be updated
+		this.log(`Forked conversation from message at ${messageTs}`)
+	}
+
 	// task is finished.
 	public async createTask(
 		text?: string,

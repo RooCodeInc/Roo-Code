@@ -1838,6 +1838,35 @@ export const webviewMessageHandler = async (
 
 			await handleDeleteMessageConfirm(message.messageTs, message.restoreCheckpoint)
 			break
+		case "forkConversation": {
+			const forkMessageTs = message.messageTs
+			if (!forkMessageTs || typeof forkMessageTs !== "number") {
+				await vscode.window.showErrorMessage(t("common:errors.message.invalid_timestamp_for_fork"))
+				break
+			}
+
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				await vscode.window.showErrorMessage(t("common:errors.message.no_active_task_to_fork"))
+				break
+			}
+
+			try {
+				// Fork the conversation at the specified message
+				await provider.forkConversationAtMessage(forkMessageTs)
+
+				// Show success message
+				await vscode.window.showInformationMessage(t("common:info.conversation_forked"))
+			} catch (error) {
+				console.error("Error forking conversation:", error)
+				await vscode.window.showErrorMessage(
+					t("common:errors.message.error_forking_conversation", {
+						error: error instanceof Error ? error.message : String(error),
+					}),
+				)
+			}
+			break
+		}
 		case "editMessageConfirm":
 			if (message.messageTs && message.text) {
 				await handleEditMessageConfirm(

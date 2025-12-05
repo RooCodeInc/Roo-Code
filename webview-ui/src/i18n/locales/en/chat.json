@@ -252,6 +252,9 @@
 	"feedback": {
 		"youSaid": "You said"
 	},
+	"fork": {
+		"tooltip": "Fork conversation from this point"
+	},
 	"mcp": {
 		"wantsToUseTool": "Roo wants to use a tool on the {{serverName}} MCP server",
 		"wantsToAccessResource": "Roo wants to access a resource on the {{serverName}} MCP server"
