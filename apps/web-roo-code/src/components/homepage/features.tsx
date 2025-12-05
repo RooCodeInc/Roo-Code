@@ -50,7 +50,7 @@ export const features: Feature[] = [
 	{
 		icon: TextSearch,
 		title: "Performant with large codebases",
-		description: "Configurable integrated semantic search for quicker retrieavel in large codebases.",
+		description: "Configurable integrated semantic search for quicker retrieval in large codebases.",
 	},
 	{
 		icon: Keyboard,
