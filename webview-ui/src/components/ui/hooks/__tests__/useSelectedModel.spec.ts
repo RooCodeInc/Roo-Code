@@ -55,7 +55,6 @@ describe("useSelectedModel", () => {
 						"test-model": baseModelInfo,
 					},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -119,7 +118,6 @@ describe("useSelectedModel", () => {
 						},
 					},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -187,7 +185,6 @@ describe("useSelectedModel", () => {
 						"test-model": baseModelInfo,
 					},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -242,7 +239,6 @@ describe("useSelectedModel", () => {
 				data: {
 					openrouter: { "test-model": baseModelInfo },
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -286,7 +282,6 @@ describe("useSelectedModel", () => {
 						},
 					},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -349,7 +344,7 @@ describe("useSelectedModel", () => {
 
 		it("should NOT set loading when openrouter provider metadata is loading but provider is static (anthropic)", () => {
 			mockUseRouterModels.mockReturnValue({
-				data: { openrouter: {}, requesty: {}, glama: {}, unbound: {}, litellm: {}, "io-intelligence": {} },
+				data: { openrouter: {}, requesty: {}, unbound: {}, litellm: {}, "io-intelligence": {} },
 				isLoading: false,
 				isError: false,
 			} as any)
@@ -417,7 +412,6 @@ describe("useSelectedModel", () => {
 				data: {
 					openrouter: {},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -455,7 +449,6 @@ describe("useSelectedModel", () => {
 				data: {
 					openrouter: {},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},
@@ -490,7 +483,6 @@ describe("useSelectedModel", () => {
 				data: {
 					openrouter: {},
 					requesty: {},
-					glama: {},
 					unbound: {},
 					litellm: {},
 					"io-intelligence": {},

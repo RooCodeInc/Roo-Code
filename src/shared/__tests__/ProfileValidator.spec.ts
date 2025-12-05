@@ -306,21 +306,6 @@ describe("ProfileValidator", () => {
 			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)
 		})
 
-		it("should extract glamaModelId for glama provider", () => {
-			const allowList: OrganizationAllowList = {
-				allowAll: false,
-				providers: {
-					glama: { allowAll: false, models: ["glama-model"] },
-				},
-			}
-			const profile: ProviderSettings = {
-				apiProvider: "glama",
-				glamaModelId: "glama-model",
-			}
-
-			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)
-		})
-
 		it("should extract requestyModelId for requesty provider", () => {
 			const allowList: OrganizationAllowList = {
 				allowAll: false,
