@@ -19,7 +19,6 @@ import { MODEL_DEFAULTS } from "../providers/fetchers/roo"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
-import { sanitizeReasoningDetailId } from "./utils/sanitize-reasoning-id"
 
 // Extend OpenAI's CompletionUsage to include Roo specific fields
 interface RooUsage extends OpenAI.CompletionUsage {
@@ -194,18 +193,18 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 								if (detail.data !== undefined) {
 									existing.data = (existing.data || "") + detail.data
 								}
-								// Update other fields if provided - sanitize ID to remove invalid characters
-								if (detail.id !== undefined) existing.id = sanitizeReasoningDetailId(detail.id)
+								// Update other fields if provided
+								if (detail.id !== undefined) existing.id = detail.id
 								if (detail.format !== undefined) existing.format = detail.format
 								if (detail.signature !== undefined) existing.signature = detail.signature
 							} else {
-								// Start new reasoning detail accumulation - sanitize ID to remove invalid characters
+								// Start new reasoning detail accumulation
 								reasoningDetailsAccumulator.set(key, {
 									type: detail.type,
 									text: detail.text,
 									summary: detail.summary,
 									data: detail.data,
-									id: sanitizeReasoningDetailId(detail.id),
+									id: detail.id,
 									format: detail.format,
 									signature: detail.signature,
 									index,
