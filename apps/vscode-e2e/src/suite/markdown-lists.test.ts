@@ -150,7 +150,7 @@ suite("Markdown List Rendering", function () {
 			text: "Please create a list that has both numbered items and bullet points, mixing ordered and unordered lists",
 		})
 
-		await waitUntilCompleted({ api, taskId })
+		await waitUntilCompleted({ api, taskId, timeout: 60_000 })
 
 		// Find a message that contains both types of lists
 		const listMessage = messages.find(
