@@ -32,6 +32,7 @@ vitest.mock("../fetchers/modelCache", () => ({
 			},
 		})
 	}),
+	getModelsFromCache: vitest.fn().mockReturnValue(undefined),
 }))
 
 // Mock OpenAI client

@@ -5,7 +5,7 @@ import type { ModelInfo } from "@roo-code/types"
 import { ApiHandlerOptions, RouterName, ModelRecord } from "../../shared/api"
 
 import { BaseProvider } from "./base-provider"
-import { getModels } from "./fetchers/modelCache"
+import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 
@@ -63,9 +63,22 @@ export abstract class RouterProvider extends BaseProvider {
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = this.modelId ?? this.defaultModelId
 
-		return this.models[id]
-			? { id, info: this.models[id] }
-			: { id: this.defaultModelId, info: this.defaultModelInfo }
+		// First check instance models (populated by fetchModel)
+		if (this.models[id]) {
+			return { id, info: this.models[id] }
+		}
+
+		// Fall back to global cache (synchronous disk/memory cache)
+		// This ensures models are available before fetchModel() is called
+		const cachedModels = getModelsFromCache(this.name)
+		if (cachedModels?.[id]) {
+			// Also populate instance models for future calls
+			this.models = cachedModels
+			return { id, info: cachedModels[id] }
+		}
+
+		// Last resort: return default model
+		return { id: this.defaultModelId, info: this.defaultModelInfo }
 	}
 
 	protected supportsTemperature(modelId: string): boolean {
