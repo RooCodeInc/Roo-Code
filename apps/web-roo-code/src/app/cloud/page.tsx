@@ -103,7 +103,7 @@ const features: Feature[] = [
 	},
 	{
 		icon: Github,
-		title: "Github PR Reviews",
+		title: "GitHub PR Reviews",
 		description:
 			"Agents can automatically review Pull Requests, provide feedback, and even push fixes directly to your repository.",
 	},
