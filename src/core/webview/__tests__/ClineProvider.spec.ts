@@ -22,6 +22,7 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 import { ClineProvider } from "../ClineProvider"
 import { resetLanguageCache } from "../../../utils/language"
+import { MessageManager } from "../../message-manager"
 
 // Mock setup must come before imports.
 vi.mock("../../prompts/sections/custom-instructions")
@@ -229,25 +230,21 @@ vi.mock("../../../integrations/workspace/WorkspaceTracker", () => {
 })
 
 vi.mock("../../task/Task", () => ({
-	Task: vi
-		.fn()
-		.mockImplementation(
-			(_provider, _apiConfiguration, _customInstructions, _diffEnabled, _fuzzyMatchThreshold, _task, taskId) => ({
-				api: undefined,
-				abortTask: vi.fn(),
-				handleWebviewAskResponse: vi.fn(),
-				clineMessages: [],
-				apiConversationHistory: [],
-				overwriteClineMessages: vi.fn(),
-				overwriteApiConversationHistory: vi.fn(),
-				getTaskNumber: vi.fn().mockReturnValue(0),
-				setTaskNumber: vi.fn(),
-				setParentTask: vi.fn(),
-				// setRootTask: vi.fn(),
-				taskId: taskId || "test-task-id",
-				emit: vi.fn(),
-			}),
-		),
+	Task: vi.fn().mockImplementation((options: any) => ({
+		api: undefined,
+		abortTask: vi.fn(),
+		handleWebviewAskResponse: vi.fn(),
+		clineMessages: [],
+		apiConversationHistory: [],
+		overwriteClineMessages: vi.fn(),
+		overwriteApiConversationHistory: vi.fn(),
+		getTaskNumber: vi.fn().mockReturnValue(0),
+		setTaskNumber: vi.fn(),
+		setParentTask: vi.fn(),
+		setRootTask: vi.fn(),
+		taskId: options?.historyItem?.id || "test-task-id",
+		emit: vi.fn(),
+	})),
 }))
 
 vi.mock("../../../integrations/misc/extract-text", () => ({
@@ -363,6 +360,32 @@ afterAll(() => {
 })
 
 describe("ClineProvider", () => {
+	beforeAll(() => {
+		vi.mocked(Task).mockImplementation((options: any) => {
+			const task: any = {
+				api: undefined,
+				abortTask: vi.fn(),
+				handleWebviewAskResponse: vi.fn(),
+				clineMessages: [],
+				apiConversationHistory: [],
+				overwriteClineMessages: vi.fn(),
+				overwriteApiConversationHistory: vi.fn(),
+				getTaskNumber: vi.fn().mockReturnValue(0),
+				setTaskNumber: vi.fn(),
+				setParentTask: vi.fn(),
+				setRootTask: vi.fn(),
+				taskId: options?.historyItem?.id || "test-task-id",
+				emit: vi.fn(),
+			}
+
+			Object.defineProperty(task, "messageManager", {
+				get: () => new MessageManager(task),
+			})
+
+			return task
+		})
+	})
+
 	let defaultTaskOptions: TaskOptions
 
 	let provider: ClineProvider

@@ -170,7 +170,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 							text?: string
 							summary?: string
 							data?: string
-							id?: string | null
 							format?: string
 							signature?: string
 							index?: number
@@ -194,8 +193,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 								if (detail.data !== undefined) {
 									existing.data = (existing.data || "") + detail.data
 								}
-								// Update other fields if provided - sanitize ID to remove invalid characters
-								if (detail.id !== undefined) existing.id = sanitizeReasoningDetailId(detail.id)
+								// Update other fields if provided
 								if (detail.format !== undefined) existing.format = detail.format
 								if (detail.signature !== undefined) existing.signature = detail.signature
 							} else {
@@ -205,7 +203,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 									text: detail.text,
 									summary: detail.summary,
 									data: detail.data,
-									id: sanitizeReasoningDetailId(detail.id),
 									format: detail.format,
 									signature: detail.signature,
 									index,

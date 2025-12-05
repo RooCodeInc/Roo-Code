@@ -33,39 +33,41 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 		it("should tag messages with truncationParent instead of deleting", () => {
 			const result = truncateConversation(messages, 0.5, "test-task-id")
 
-			// All messages should still be present
+			// All messages should still be present plus the truncation marker
 			expect(result.messages.length).toBe(messages.length + 1) // +1 for truncation marker
 
 			// Calculate expected messages to remove: floor((11-1) * 0.5) = 5, rounded to even = 4
 			const expectedMessagesToRemove = 4
 
-			// Messages 1-4 should be tagged with truncationParent
-			for (let i = 1; i <= expectedMessagesToRemove; i++) {
-				// Account for truncation marker inserted at position 1
-				const msgIndex = i < 1 ? i : i + 1
-				expect(result.messages[msgIndex].truncationParent).toBeDefined()
-				expect(result.messages[msgIndex].truncationParent).toBe(result.truncationId)
+			// Find which messages have truncationParent set
+			const taggedMessages = result.messages.filter((msg) => msg.truncationParent)
+			expect(taggedMessages.length).toBe(expectedMessagesToRemove)
+
+			// All tagged messages should point to the truncationId
+			for (const msg of taggedMessages) {
+				expect(msg.truncationParent).toBe(result.truncationId)
 			}
 
 			// First message should not be tagged
 			expect(result.messages[0].truncationParent).toBeUndefined()
 
-			// Remaining messages should not be tagged
-			for (let i = expectedMessagesToRemove + 2; i < result.messages.length; i++) {
-				expect(result.messages[i].truncationParent).toBeUndefined()
-			}
+			// Marker should not have truncationParent
+			const marker = result.messages.find((msg) => msg.isTruncationMarker)
+			expect(marker?.truncationParent).toBeUndefined()
 		})
 
 		it("should insert truncation marker with truncationId", () => {
 			const result = truncateConversation(messages, 0.5, "test-task-id")
 
-			// Truncation marker should be at index 1 (after first message)
-			const marker = result.messages[1]
-			expect(marker.isTruncationMarker).toBe(true)
-			expect(marker.truncationId).toBeDefined()
-			expect(marker.truncationId).toBe(result.truncationId)
-			expect(marker.role).toBe("assistant")
-			expect(marker.content).toContain("Sliding window truncation")
+			// Truncation marker should be at the boundary (after truncated messages)
+			// With 4 messages truncated (indices 1-4), marker should be at index 5
+			const marker = result.messages.find((msg) => msg.isTruncationMarker)
+			expect(marker).toBeDefined()
+			expect(marker!.isTruncationMarker).toBe(true)
+			expect(marker!.truncationId).toBeDefined()
+			expect(marker!.truncationId).toBe(result.truncationId)
+			expect(marker!.role).toBe("user")
+			expect(marker!.content).toContain("Sliding window truncation")
 		})
 
 		it("should return truncationId and messagesRemoved", () => {
@@ -367,10 +369,10 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 			// No messages should be tagged (messagesToRemove = 0)
 			const taggedMessages = result.messages.filter((msg) => msg.truncationParent)
 			expect(taggedMessages.length).toBe(0)
+			expect(result.messagesRemoved).toBe(0)
 
-			// Should still have truncation marker
-			const marker = result.messages.find((msg) => msg.isTruncationMarker)
-			expect(marker).toBeDefined()
+			// When nothing is truncated, no marker is inserted
+			expect(result.messages).toEqual(messages)
 		})
 
 		it("should handle truncateConversation with very few messages", () => {
@@ -381,10 +383,43 @@ describe("Non-Destructive Sliding Window Truncation", () => {
 
 			const result = truncateConversation(fewMessages, 0.5, "test-task-id")
 
-			// Should not crash and should still create marker
-			expect(result.messages.length).toBeGreaterThan(0)
-			const marker = result.messages.find((msg) => msg.isTruncationMarker)
-			expect(marker).toBeDefined()
+			// With only 1 message after first, 0.5 fraction = 0.5, floored to 0, rounded to even = 0
+			// So no messages should be removed and no marker inserted
+			expect(result.messages.length).toBe(2)
+			expect(result.messagesRemoved).toBe(0)
+		})
+
+		it("should handle truncating all visible messages except first", () => {
+			// This tests the edge case where visibleIndices[messagesToRemove + 1] would be undefined
+			// 3 messages total: first is preserved, 2 others can be truncated
+			const threeMessages: ApiMessage[] = [
+				{ role: "user", content: "Initial", ts: 1000 },
+				{ role: "assistant", content: "Response 1", ts: 1100 },
+				{ role: "user", content: "Message 2", ts: 1200 },
+			]
+
+			// With fracToRemove = 1.0:
+			// visibleCount = 3
+			// rawMessagesToRemove = floor((3-1) * 1.0) = 2
+			// messagesToRemove = 2 (already even)
+			// This truncates ALL messages except the first
+			const result = truncateConversation(threeMessages, 1.0, "test-task-id")
+
+			expect(result.messagesRemoved).toBe(2)
+			// Should have 3 original messages + 1 marker = 4
+			expect(result.messages.length).toBe(4)
+
+			// First message should be untouched
+			expect(result.messages[0].truncationParent).toBeUndefined()
+			expect(result.messages[0].content).toBe("Initial")
+
+			// Messages at indices 1 and 2 should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
+			expect(result.messages[2].truncationParent).toBe(result.truncationId)
+
+			// Marker should be at the end (index 3)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
 		})
 
 		it("should handle empty condenseParent and truncationParent gracefully", () => {

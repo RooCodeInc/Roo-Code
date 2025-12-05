@@ -1,8 +1,9 @@
 import React, { useState, useCallback, memo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { MessageCircleWarning } from "lucide-react"
+import { BookOpenText, MessageCircleWarning } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
+import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
 import { ProviderSettings } from "@roo-code/types"
 
@@ -81,6 +82,7 @@ export const ErrorRow = memo(
 		headerClassName,
 		messageClassName,
 		// docsURL,
+		docsURL,
 		code,
 	}: ErrorRowProps) => {
 		const { t } = useTranslation()
@@ -172,9 +174,21 @@ export const ErrorRow = memo(
 		return (
 			<div className="group pr-2">
 				{errorTitle && (
-					<div className={headerClassName || "flex items-center gap-2 break-words"}>
+					<div className={headerClassName || "flex items-center justify-between gap-2 break-words"}>
 						<MessageCircleWarning className="w-4 opacity-80" />
-						<span className="font-bold opacity-80">{errorTitle}</span>
+						<span className="opacity-80 font-bold grow cursor-default">{errorTitle}</span>
+						{docsURL && (
+							<a
+								href={docsURL}
+								className="text-sm flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
+								onClick={(e) => {
+									e.preventDefault()
+									vscode.postMessage({ type: "openExternal", url: docsURL })
+								}}>
+								<BookOpenText className="size-3 mt-[3px]" />
+								{t("chat:apiRequest.errorMessage.docs")}
+							</a>
+						)}
 					</div>
 				)}
 				{apiConfiguration.apiProvider !== "zgsm" ? (
