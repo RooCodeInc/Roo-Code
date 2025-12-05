@@ -100,6 +100,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API Key",
 		"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
+		"openRouterProviderRoutingLabel": "OpenRouter Provider Routing",
+		"openRouterProviderRoutingDescription": "OpenRouter routes requests to the best available providers for your embedding model. By default, requests are load balanced across the top providers to maximize uptime. However, you can choose a specific provider to use for this model.",
 		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "OpenAI API Key",
 		"openAiKeyPlaceholder": "Enter your OpenAI API key",

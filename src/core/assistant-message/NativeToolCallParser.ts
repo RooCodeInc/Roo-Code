@@ -371,39 +371,11 @@ export class NativeToolCallParser {
 				}
 				break
 
-			case "insert_content":
-				// For partial tool calls, we build nativeArgs incrementally as fields arrive.
-				// Unlike parseToolCall which validates all required fields, partial parsing
-				// needs to show progress as each field streams in.
-				if (
-					partialArgs.path !== undefined ||
-					partialArgs.line !== undefined ||
-					partialArgs.content !== undefined
-				) {
-					nativeArgs = {
-						path: partialArgs.path,
-						line:
-							typeof partialArgs.line === "number"
-								? partialArgs.line
-								: partialArgs.line !== undefined
-									? parseInt(String(partialArgs.line), 10)
-									: undefined,
-						content: partialArgs.content,
-					}
-				}
-				break
-
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content || partialArgs.line_count !== undefined) {
+				if (partialArgs.path || partialArgs.content) {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
-						line_count:
-							typeof partialArgs.line_count === "number"
-								? partialArgs.line_count
-								: partialArgs.line_count
-									? parseInt(String(partialArgs.line_count), 10)
-									: undefined,
 					}
 				}
 				break
@@ -624,16 +596,6 @@ export class NativeToolCallParser {
 					}
 					break
 
-				case "insert_content":
-					if (args.path !== undefined && args.line !== undefined && args.content !== undefined) {
-						nativeArgs = {
-							path: args.path,
-							line: typeof args.line === "number" ? args.line : parseInt(String(args.line), 10),
-							content: args.content,
-						} as NativeArgsFor<TName>
-					}
-					break
-
 				case "apply_diff":
 					if (args.path !== undefined && args.diff !== undefined) {
 						nativeArgs = {
@@ -745,14 +707,10 @@ export class NativeToolCallParser {
 					break
 
 				case "write_to_file":
-					if (args.path !== undefined && args.content !== undefined && args.line_count !== undefined) {
+					if (args.path !== undefined && args.content !== undefined) {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
-							line_count:
-								typeof args.line_count === "number"
-									? args.line_count
-									: parseInt(String(args.line_count), 10),
 						} as NativeArgsFor<TName>
 					}
 					break
@@ -798,8 +756,11 @@ export class NativeToolCallParser {
 
 			return result
 		} catch (error) {
-			console.error(`Failed to parse tool call arguments:`, error)
-			console.error(`Error details:`, error instanceof Error ? error.message : String(error))
+			console.error(
+				`Failed to parse tool call arguments: ${error instanceof Error ? error.message : String(error)}`,
+			)
+
+			console.error(`Tool call: ${JSON.stringify(toolCall, null, 2)}`)
 			return null
 		}
 	}

@@ -142,7 +142,18 @@
 		"failed": "API Request Failed",
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
-		"streamingFailed": "API Streaming Failed"
+		"streamingFailed": "API Streaming Failed",
+		"errorTitle": "API Error {{code}}",
+		"errorMessage": {
+			"docs": "Docs",
+			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
+			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
+			"402": "You seem to have run out of funds/credits in your account. Go to your provider and add more to continue.",
+			"403": "Unauthorized. Your API key is valid, but the provider refused to complete this request.",
+			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
+			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
+			"unknown": "Unknown API error. Please contact Roo Code support."
+		}
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
@@ -300,8 +311,8 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"subtasks": "Improved subtask orchestration with automatic parent resume and single-open safety for better multi-task workflows",
-			"nativeTools": "Native tool calling now supported across 13+ providers including Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, and more"
+			"contextRewind": "Improved context condensing now lets you restore the full previous context when rewinding to a checkpoint",
+			"rooProvider": "Roo Code Cloud provider now preserves reasoning content and defaults to native tools for better performance"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

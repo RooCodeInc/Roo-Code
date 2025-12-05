@@ -91,6 +91,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Clé d'API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Entrez votre clé d'API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routage des fournisseurs OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter dirige les requêtes vers les meilleurs fournisseurs disponibles pour votre modèle d'embedding. Par défaut, les requêtes sont équilibrées entre les principaux fournisseurs pour maximiser la disponibilité. Cependant, vous pouvez choisir un fournisseur spécifique à utiliser pour ce modèle.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Clé d'API:",
 		"mistralApiKeyPlaceholder": "Entrez votre clé d'API Mistral",

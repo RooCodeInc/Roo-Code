@@ -7,6 +7,7 @@
 		"imageWithSize": "Tệp hình ảnh ({{size}} KB)"
 	},
 	"toolRepetitionLimitReached": "Roo dường như đang bị mắc kẹt trong một vòng lặp, liên tục cố gắng thực hiện cùng một hành động ({{toolName}}). Điều này có thể cho thấy vấn đề với chiến lược hiện tại. Hãy cân nhắc việc diễn đạt lại nhiệm vụ, cung cấp hướng dẫn cụ thể hơn, hoặc hướng Roo theo một cách tiếp cận khác.",
+	"unknownToolError": "Roo đã cố gắng sử dụng một công cụ không xác định: \"{{toolName}}\". Đang thử lại...",
 	"codebaseSearch": {
 		"approval": "Đang tìm kiếm '{{query}}' trong cơ sở mã..."
 	},

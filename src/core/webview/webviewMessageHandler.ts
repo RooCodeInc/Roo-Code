@@ -78,14 +78,24 @@ export const webviewMessageHandler = async (
 		return provider.getCurrentTask()?.cwd || provider.cwd
 	}
 	/**
-	 * Shared utility to find message indices based on timestamp
+	 * Shared utility to find message indices based on timestamp.
+	 * When multiple messages share the same timestamp (e.g., after condense),
+	 * this function prefers non-summary messages to ensure user operations
+	 * target the intended message rather than the summary.
 	 */
 	const findMessageIndices = (messageTs: number, currentCline: any) => {
 		// Find the exact message by timestamp, not the first one after a cutoff
 		const messageIndex = currentCline.clineMessages.findIndex((msg: ClineMessage) => msg.ts === messageTs)
-		const apiConversationHistoryIndex = currentCline.apiConversationHistory.findIndex(
-			(msg: ApiMessage) => msg.ts === messageTs,
-		)
+
+		// Find all matching API messages by timestamp
+		const allApiMatches = currentCline.apiConversationHistory
+			.map((msg: ApiMessage, idx: number) => ({ msg, idx }))
+			.filter(({ msg }: { msg: ApiMessage }) => msg.ts === messageTs)
+
+		// Prefer non-summary message if multiple matches exist (handles timestamp collision after condense)
+		const preferred = allApiMatches.find(({ msg }: { msg: ApiMessage }) => !msg.isSummary) || allApiMatches[0]
+		const apiConversationHistoryIndex = preferred?.idx ?? -1
+
 		return { messageIndex, apiConversationHistoryIndex }
 	}
 
@@ -98,24 +108,6 @@ export const webviewMessageHandler = async (
 		return currentCline.apiConversationHistory.findIndex(
 			(msg: ApiMessage) => typeof msg?.ts === "number" && (msg.ts as number) >= ts,
 		)
-	}
-
-	/**
-	 * Removes the target message and all subsequent messages
-	 */
-	const removeMessagesThisAndSubsequent = async (
-		currentCline: any,
-		messageIndex: number,
-		apiConversationHistoryIndex: number,
-	) => {
-		// Delete this message and all that follow
-		await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, messageIndex))
-
-		if (apiConversationHistoryIndex !== -1) {
-			await currentCline.overwriteApiConversationHistory(
-				currentCline.apiConversationHistory.slice(0, apiConversationHistoryIndex),
-			)
-		}
 	}
 
 	/**
@@ -209,8 +201,8 @@ export const webviewMessageHandler = async (
 					}
 				}
 
-				// Delete this message and all subsequent messages
-				await removeMessagesThisAndSubsequent(currentCline, messageIndex, apiIndexToUse)
+				// Delete this message and all subsequent messages using MessageManager
+				await currentCline.messageManager.rewindToTimestamp(targetMessage.ts!, { includeTargetMessage: false })
 
 				// Restore checkpoint associations for preserved messages
 				for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -376,8 +368,11 @@ export const webviewMessageHandler = async (
 				}
 			}
 
-			// Delete the original (user) message and all subsequent messages
-			await removeMessagesThisAndSubsequent(currentCline, deleteFromMessageIndex, deleteFromApiIndex)
+			// Delete the original (user) message and all subsequent messages using MessageManager
+			const rewindTs = currentCline.clineMessages[deleteFromMessageIndex]?.ts
+			if (rewindTs) {
+				await currentCline.messageManager.rewindToTimestamp(rewindTs, { includeTargetMessage: false })
+			}
 
 			// Restore checkpoint associations for preserved messages
 			for (const [ts, checkpoint] of preservedCheckpoints) {
@@ -2373,6 +2368,7 @@ export const webviewMessageHandler = async (
 					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
+					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
 				}
 
 				// Save global state first

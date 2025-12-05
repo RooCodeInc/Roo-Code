@@ -86,6 +86,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Ключ API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Введите свой ключ API OpenRouter",
+		"openRouterProviderRoutingLabel": "Маршрутизация провайдера OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter направляет запросы к лучшим доступным провайдерам для вашей модели эмбеддинга. По умолчанию запросы балансируются между топовыми провайдерами для максимальной доступности. Однако вы можете выбрать конкретного провайдера для этой модели.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Ключ API:",
 		"mistralApiKeyPlaceholder": "Введите свой API-ключ Mistral",

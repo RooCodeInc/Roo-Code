@@ -136,7 +136,18 @@
 		"failed": "Solicitud API falló",
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
-		"streamingFailed": "Transmisión API falló"
+		"streamingFailed": "Transmisión API falló",
+		"errorTitle": "Error API {{code}}",
+		"errorMessage": {
+			"docs": "Documentación",
+			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
+			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
+			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
+			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
+			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
+			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
+			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code."
+		}
 	},
 	"checkpoint": {
 		"regular": "Punto de control",
@@ -294,8 +305,8 @@
 		},
 		"release": {
 			"heading": "Novedades en esta versión:",
-			"subtasks": "Orquestación mejorada de subtareas con reanudación automática de padres y seguridad de apertura única para mejores flujos de trabajo multitarea",
-			"nativeTools": "Ahora se admite la llamada de herramientas nativas en más de 13 proveedores, incluidos Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini y más"
+			"contextRewind": "La condensación mejorada del contexto ahora te permite restaurar el contexto anterior completo cuando retrocedes a un punto de control",
+			"rooProvider": "El proveedor de Roo Code Cloud ahora preserva el contenido del razonamiento y usa herramientas nativas de forma predeterminada para mejor rendimiento"
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",

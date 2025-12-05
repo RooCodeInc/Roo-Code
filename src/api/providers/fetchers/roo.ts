@@ -5,21 +5,6 @@ import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
 
-// Model-specific defaults that should be applied even when models come from API cache
-// These override API-provided values for specific models
-// Exported so RooHandler.getModel() can also apply these for fallback cases
-export const MODEL_DEFAULTS: Record<string, Partial<ModelInfo>> = {
-	"minimax/minimax-m2": {
-		defaultToolProtocol: "native",
-	},
-	"anthropic/claude-haiku-4.5": {
-		defaultToolProtocol: "native",
-	},
-	"xai/grok-code-fast-1": {
-		defaultToolProtocol: "native",
-	},
-}
-
 /**
  * Fetches available models from the Roo Code Cloud provider
  *
@@ -107,13 +92,8 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Determine if the model requires reasoning effort based on tags
 				const requiredReasoningEffort = tags.includes("reasoning-required")
 
-				// Determine if native tool calling should be the default protocol for this model
-				const hasDefaultNativeTools = tags.includes("default-native-tools")
-				const defaultToolProtocol = hasDefaultNativeTools ? ("native" as const) : undefined
-
 				// Determine if the model supports native tool calling based on tags
-				// default-native-tools implies tool-use support
-				const supportsNativeTools = tags.includes("tool-use") || hasDefaultNativeTools
+				const supportsNativeTools = tags.includes("tool-use")
 
 				// Determine if the model should hide vendor/company identity (stealth mode)
 				const isStealthModel = tags.includes("stealth")
@@ -141,13 +121,16 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 					deprecated: model.deprecated || false,
 					isFree: tags.includes("free"),
 					defaultTemperature: model.default_temperature,
-					defaultToolProtocol,
+					defaultToolProtocol: "native" as const,
 					isStealthModel: isStealthModel || undefined,
 				}
 
-				// Apply model-specific defaults (e.g., defaultToolProtocol)
-				const modelDefaults = MODEL_DEFAULTS[modelId]
-				models[modelId] = modelDefaults ? { ...baseModelInfo, ...modelDefaults } : baseModelInfo
+				// Apply API-provided settings on top of base model info
+				// Settings allow the proxy to dynamically configure model-specific options
+				// like includedTools, excludedTools, reasoningEffort, etc.
+				const apiSettings = model.settings as Partial<ModelInfo> | undefined
+
+				models[modelId] = apiSettings ? { ...baseModelInfo, ...apiSettings } : baseModelInfo
 			}
 
 			return models

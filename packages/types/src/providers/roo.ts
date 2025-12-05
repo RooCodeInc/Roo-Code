@@ -39,6 +39,9 @@ export const RooModelSchema = z.object({
 	pricing: RooPricingSchema,
 	deprecated: z.boolean().optional(),
 	default_temperature: z.number().optional(),
+	// Dynamic settings that map directly to ModelInfo properties
+	// Allows the API to configure model-specific defaults like includedTools, excludedTools, reasoningEffort, etc.
+	settings: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const RooModelsResponseSchema = z.object({

@@ -263,7 +263,6 @@ const App = () => {
 					isAuthenticated={cloudIsAuthenticated}
 					cloudApiUrl={cloudApiUrl}
 					organizations={cloudOrganizations}
-					onDone={() => switchTab("chat")}
 				/>
 			)}
 			<ChatView

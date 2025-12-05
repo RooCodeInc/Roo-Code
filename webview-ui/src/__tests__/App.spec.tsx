@@ -83,12 +83,8 @@ vi.mock("@src/components/marketplace/MarketplaceView", () => ({
 }))
 
 vi.mock("@src/components/cloud/CloudView", () => ({
-	CloudView: function CloudView({ onDone }: { onDone: () => void }) {
-		return (
-			<div data-testid="cloud-view" onClick={onDone}>
-				Cloud View
-			</div>
-		)
+	CloudView: function CloudView() {
+		return <div data-testid="cloud-view">Cloud View</div>
 	},
 }))
 

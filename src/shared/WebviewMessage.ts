@@ -248,6 +248,7 @@ export interface WebviewMessage {
 		codebaseIndexBedrockProfile?: string
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
+		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
 
 		// Secret settings
 		codeIndexOpenAiKey?: string

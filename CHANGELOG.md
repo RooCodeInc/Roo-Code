@@ -1,5 +1,61 @@
 # Roo Code Changelog
 
+## [3.36.2] - 2025-12-04
+
+![3.36.2 Release - Dynamic API Settings](/releases/3.36.2-release.png)
+
+- Restrict GPT-5 tool set to apply_patch for improved compatibility (PR #9853 by @hannesrudolph)
+- Add dynamic settings support for Roo models from API, allowing model-specific configurations to be fetched dynamically (PR #9852 by @hannesrudolph)
+- Fix: Resolve Chutes provider model fetching issue (PR #9854 by @cte)
+
+## [3.36.1] - 2025-12-04
+
+![3.36.1 Release - Message Management & Stability Improvements](/releases/3.36.1-release.png)
+
+- Add MessageManager layer for centralized history coordination, fixing message synchronization issues (PR #9842 by @hannesrudolph)
+- Fix: Prevent cascading truncation loop by only truncating visible messages (PR #9844 by @hannesrudolph)
+- Fix: Handle unknown/invalid native tool calls to prevent extension freeze (PR #9834 by @daniel-lxs)
+- Always enable reasoning for models that require it (PR #9836 by @cte)
+- ChatView: Smoother stick-to-bottom behavior during streaming (PR #8999 by @hannesrudolph)
+- UX: Improved error messages and documentation links (PR #9777 by @brunobergher)
+- Fix: Overly round follow-up question suggestions styling (PR #9829 by @brunobergher)
+- Add symlink support for slash commands in .roo/commands folder (PR #9838 by @mrubens)
+- Ignore input to the execa terminal process for safer command execution (PR #9827 by @mrubens)
+- Be safer about large file reads (PR #9843 by @jr)
+- Add gpt-5.1-codex-max model to OpenAI provider (PR #9848 by @hannesrudolph)
+- Evals UI: Add filtering, bulk delete, tool consolidation, and run notes (PR #9837 by @hannesrudolph)
+- Evals UI: Add multi-model launch and UI improvements (PR #9845 by @hannesrudolph)
+- Web: New pricing page (PR #9821 by @brunobergher)
+
+## [3.36.0] - 2025-12-04
+
+![3.36.0 Release - Rewind Kangaroo](/releases/3.36.0-release.png)
+
+- Fix: Restore context when rewinding after condense (#8295 by @hannesrudolph, PR #9665 by @hannesrudolph)
+- Add reasoning_details support to Roo provider for enhanced model reasoning visibility (PR #9796 by @app/roomote)
+- Default to native tools for all models in the Roo provider for improved performance (PR #9811 by @mrubens)
+- Enable search_and_replace for Minimax models (PR #9780 by @mrubens)
+- Fix: Resolve Vercel AI Gateway model fetching issues (PR #9791 by @cte)
+- Fix: Apply conservative max tokens for Cerebras provider (PR #9804 by @sebastiand-cerebras)
+- Fix: Remove omission detection logic to eliminate false positives (#9785 by @Michaelzag, PR #9787 by @app/roomote)
+- Refactor: Remove deprecated insert_content tool (PR #9751 by @daniel-lxs)
+- Chore: Hide parallel tool calls experiment and disable feature (PR #9798 by @hannesrudolph)
+- Update next.js documentation site dependencies (PR #9799 by @jr)
+- Fix: Correct download count display on homepage (PR #9807 by @mrubens)
+
+## [3.35.5] - 2025-12-03
+
+- Feat: Add provider routing selection for OpenRouter embeddings (#9144 by @SannidhyaSah, PR #9693 by @SannidhyaSah)
+- Default Minimax M2 to native tool calling (PR #9778 by @mrubens)
+- Sanitize the native tool calls to fix a bug with Gemini (PR #9769 by @mrubens)
+- UX: Updates to CloudView (PR #9776 by @roomote)
+
+## [3.35.4] - 2025-12-02
+
+- Fix: Handle malformed native tool calls to prevent hanging (PR #9758 by @daniel-lxs)
+- Fix: Remove reasoning toggles for GLM-4.5 and GLM-4.6 on z.ai provider (PR #9752 by @roomote)
+- Refactor: Remove line_count parameter from write_to_file tool (PR #9667 by @hannesrudolph)
+
 ## [3.35.3] - 2025-12-02
 
 - Switch to new welcome view for improved onboarding experience (PR #9741 by @mrubens)

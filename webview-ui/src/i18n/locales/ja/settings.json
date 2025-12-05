@@ -86,6 +86,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter APIキー",
 		"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
+		"openRouterProviderRoutingLabel": "OpenRouterプロバイダールーティング",
+		"openRouterProviderRoutingDescription": "OpenRouterは、埋め込みモデルに最適な利用可能なプロバイダーにリクエストをルーティングします。デフォルトでは、稼働時間を最大化するために、リクエストはトッププロバイダー間で負荷分散されます。ただし、このモデルに使用する特定のプロバイダーを選択することもできます。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "APIキー:",
 		"mistralApiKeyPlaceholder": "Mistral APIキーを入力してください",

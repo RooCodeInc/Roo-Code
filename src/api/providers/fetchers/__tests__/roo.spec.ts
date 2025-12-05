@@ -77,7 +77,7 @@ describe("getRooModels", () => {
 				description: "Fast coding model",
 				deprecated: false,
 				isFree: false,
-				defaultToolProtocol: "native", // Applied from MODEL_DEFAULTS
+				defaultToolProtocol: "native",
 			},
 		})
 	})
@@ -127,6 +127,9 @@ describe("getRooModels", () => {
 			description: "Model that requires reasoning",
 			deprecated: false,
 			isFree: false,
+			defaultTemperature: undefined,
+			defaultToolProtocol: "native",
+			isStealthModel: undefined,
 		})
 	})
 
@@ -174,6 +177,9 @@ describe("getRooModels", () => {
 			description: "Normal model without reasoning",
 			deprecated: false,
 			isFree: false,
+			defaultTemperature: undefined,
+			defaultToolProtocol: "native",
+			isStealthModel: undefined,
 		})
 	})
 
@@ -578,21 +584,21 @@ describe("getRooModels", () => {
 		expect(models["test/native-tools-model"].defaultToolProtocol).toBe("native")
 	})
 
-	it("should imply supportsNativeTools when default-native-tools tag is present without tool-use tag", async () => {
+	it("should set defaultToolProtocol to native for all models regardless of tags", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
 				{
-					id: "test/implicit-native-tools",
+					id: "test/model-without-tool-tags",
 					object: "model",
 					created: 1234567890,
 					owned_by: "test",
-					name: "Implicit Native Tools Model",
-					description: "Model with default-native-tools but no tool-use tag",
+					name: "Model Without Tool Tags",
+					description: "Model without any tool-related tags",
 					context_window: 128000,
 					max_tokens: 8192,
 					type: "language",
-					tags: ["default-native-tools"], // Only default-native-tools, no tool-use
+					tags: [], // No tool-related tags
 					pricing: {
 						input: "0.0001",
 						output: "0.0002",
@@ -608,21 +614,22 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/implicit-native-tools"].supportsNativeTools).toBe(true)
-		expect(models["test/implicit-native-tools"].defaultToolProtocol).toBe("native")
+		// All Roo provider models now default to native tool protocol
+		expect(models["test/model-without-tool-tags"].supportsNativeTools).toBe(false)
+		expect(models["test/model-without-tool-tags"].defaultToolProtocol).toBe("native")
 	})
 
-	it("should not set defaultToolProtocol when default-native-tools tag is not present", async () => {
+	it("should set supportsNativeTools from tool-use tag and always set defaultToolProtocol to native", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
 				{
-					id: "test/non-native-model",
+					id: "test/tool-use-model",
 					object: "model",
 					created: 1234567890,
 					owned_by: "test",
-					name: "Non-Native Tools Model",
-					description: "Model without native tool calling default",
+					name: "Tool Use Model",
+					description: "Model with tool-use tag",
 					context_window: 128000,
 					max_tokens: 8192,
 					type: "language",
@@ -642,8 +649,9 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/non-native-model"].supportsNativeTools).toBe(true)
-		expect(models["test/non-native-model"].defaultToolProtocol).toBeUndefined()
+		// tool-use tag sets supportsNativeTools, and all models get defaultToolProtocol: native
+		expect(models["test/tool-use-model"].supportsNativeTools).toBe(true)
+		expect(models["test/tool-use-model"].defaultToolProtocol).toBe("native")
 	})
 
 	it("should detect stealth mode from tags", async () => {
@@ -710,5 +718,87 @@ describe("getRooModels", () => {
 		const models = await getRooModels(baseUrl, apiKey)
 
 		expect(models["test/non-stealth-model"].isStealthModel).toBeUndefined()
+	})
+
+	it("should apply API-provided settings to model info", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/model-with-settings",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Settings",
+					description: "Model with API-provided settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						includedTools: ["apply_patch"],
+						excludedTools: ["apply_diff", "write_to_file"],
+						reasoningEffort: "high",
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		expect(models["test/model-with-settings"].includedTools).toEqual(["apply_patch"])
+		expect(models["test/model-with-settings"].excludedTools).toEqual(["apply_diff", "write_to_file"])
+		expect(models["test/model-with-settings"].reasoningEffort).toBe("high")
+	})
+
+	it("should handle arbitrary settings properties dynamically", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/dynamic-settings-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Dynamic Settings Model",
+					description: "Model with arbitrary settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						customProperty: "custom-value",
+						anotherSetting: 42,
+						nestedConfig: { key: "value" },
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+		const model = models["test/dynamic-settings-model"] as any
+
+		// Arbitrary settings should be passed through
+		expect(model.customProperty).toBe("custom-value")
+		expect(model.anotherSetting).toBe(42)
+		expect(model.nestedConfig).toEqual({ key: "value" })
 	})
 })

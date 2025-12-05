@@ -136,7 +136,18 @@
 		"failed": "Yêu cầu API thất bại",
 		"streaming": "Yêu cầu API...",
 		"cancelled": "Yêu cầu API đã hủy",
-		"streamingFailed": "Streaming API thất bại"
+		"streamingFailed": "Streaming API thất bại",
+		"errorTitle": "Lỗi API {{code}}",
+		"errorMessage": {
+			"docs": "Tài liệu",
+			"400": "Nhà cung cấp không thể xử lý yêu cầu theo cách này. Hãy dừng nhiệm vụ và thử một cách tiếp cận khác.",
+			"401": "Không thể xác thực với nhà cung cấp. Vui lòng kiểm tra cấu hình khóa API của bạn.",
+			"402": "Có vẻ như bạn đã hết tiền/tín dụng trong tài khoản. Hãy truy cập nhà cung cấp và thêm tiền để tiếp tục.",
+			"403": "Truy cập bị từ chối. Khóa API của bạn hợp lệ, nhưng nhà cung cấp từ chối hoàn thành yêu cầu này.",
+			"429": "Quá nhiều yêu cầu. Nhà cung cấp đang giới hạn tốc độ yêu cầu của bạn. Vui lòng chờ một chút trước khi gọi API tiếp theo.",
+			"500": "Lỗi máy chủ của nhà cung cấp. Có sự cố ở phía nhà cung cấp, không có gì sai với yêu cầu của bạn.",
+			"unknown": "Lỗi API không xác định. Vui lòng liên hệ hỗ trợ Roo Code."
+		}
 	},
 	"checkpoint": {
 		"regular": "Điểm kiểm tra",
@@ -295,8 +306,8 @@
 		},
 		"release": {
 			"heading": "Mới trong phiên bản này:",
-			"subtasks": "Điều phối nhiệm vụ phụ được cải thiện với tính năng tiếp tục cha tự động và an toàn mở một lần cho các quy trình làm việc đa nhiệm vụ tốt hơn",
-			"nativeTools": "Gọi công cụ gốc hiện được hỗ trợ bởi 13+ nhà cung cấp bao gồm Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini và hơn thế nữa"
+			"contextRewind": "Nén ngữ cảnh được cải thiện hiện cho phép bạn khôi phục bối cảnh trước đó đầy đủ khi cuộn lại đến một điểm kiểm tra",
+			"rooProvider": "Nhà cung cấp Roo Code Cloud hiện giữ lại nội dung lý luận và sử dụng các công cụ gốc theo mặc định để có hiệu suất tốt hơn"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

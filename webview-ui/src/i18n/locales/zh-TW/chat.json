@@ -142,7 +142,18 @@
 		"failed": "API 請求失敗",
 		"streaming": "正在處理 API 請求...",
 		"cancelled": "API 請求已取消",
-		"streamingFailed": "API 串流處理失敗"
+		"streamingFailed": "API 串流處理失敗",
+		"errorTitle": "API 錯誤 {{code}}",
+		"errorMessage": {
+			"docs": "文件",
+			"400": "提供商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
+			"401": "無法向提供商進行身份驗證。請檢查您的 API 金鑰設定。",
+			"402": "您的帳戶資金/額度似乎已用盡。請前往提供商增加額度以繼續。",
+			"403": "無權存取。您的 API 金鑰有效，但提供商拒絕完成此請求。",
+			"429": "請求次數過多。提供商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
+			"500": "提供商伺服器錯誤。提供商端發生問題，您的請求沒有問題。",
+			"unknown": "未知 API 錯誤。請聯絡 Roo Code 支援。"
+		}
 	},
 	"checkpoint": {
 		"regular": "檢查點",
@@ -304,8 +315,8 @@
 		},
 		"release": {
 			"heading": "最新功能：",
-			"subtasks": "改進的子工作協調，支援自動恢復父工作和單一開啟安全性，實現更好的多工作流程",
-			"nativeTools": "原生工具呼叫現已支援 13+ 提供商，包括 Bedrock、Ollama、Groq、DeepSeek、Vertex Gemini 等"
+			"contextRewind": "改進的上下文壓縮現在允許您在回到存檔點時恢復完整的先前上下文",
+			"rooProvider": "Roo Code Cloud 提供商現在保留推理內容，並預設使用原生工具以獲得更佳效能"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

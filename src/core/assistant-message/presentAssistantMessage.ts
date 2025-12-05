@@ -8,6 +8,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
 import { Package } from "../../shared/package"
+import { t } from "../../i18n"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
@@ -16,7 +17,6 @@ import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/s
 import { shouldUseSingleFileRead, TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
-import { insertContentTool } from "../tools/InsertContentTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { listCodeDefinitionNamesTool } from "../tools/ListCodeDefinitionNamesTool"
@@ -334,7 +334,11 @@ export async function presentAssistantMessage(cline: Task) {
 			await cline.say("text", content, undefined, block.partial)
 			break
 		}
-		case "tool_use":
+		case "tool_use": {
+			// Fetch state early so it's available for toolDescription and validation
+			const state = await cline.providerRef.deref()?.getState()
+			const { mode, customModes, experiments: stateExperiments, apiConfiguration } = state ?? {}
+
 			const toolDescription = (): string => {
 				switch (block.name) {
 					case "execute_command":
@@ -379,8 +383,6 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.regex}'${
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
 						}]`
-					case "insert_content":
-						return `[${block.name} for '${block.params.path}']`
 					case "search_and_replace":
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_patch":
@@ -481,13 +483,9 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id
 			const toolProtocol = toolCallId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 
-			// Check experimental setting for multiple native tool calls
-			const provider = cline.providerRef.deref()
-			const state = await provider?.getState()
-			const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
-			)
+			// Multiple native tool calls feature is on hold - always disabled
+			// Previously resolved from experiments.isEnabled(..., EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS)
+			const isMultipleNativeToolCallsEnabled = false
 
 			const pushToolResult = (content: ToolResponse) => {
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
@@ -682,30 +680,46 @@ export async function presentAssistantMessage(cline: Task) {
 				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
 			}
 
-			// Validate tool use before execution.
-			const {
-				mode,
-				customModes,
-				experiments: stateExperiments,
-				apiConfiguration,
-			} = (await cline.providerRef.deref()?.getState()) ?? {}
-			const modelInfo = cline.api.getModel()
-			const includedTools = modelInfo?.info?.includedTools
+			// Validate tool use before execution - ONLY for complete (non-partial) blocks.
+			// Validating partial blocks would cause validation errors to be thrown repeatedly
+			// during streaming, pushing multiple tool_results for the same tool_use_id and
+			// potentially causing the stream to appear frozen.
+			if (!block.partial) {
+				const modelInfo = cline.api.getModel()
+				const includedTools = modelInfo?.info?.includedTools
 
-			try {
-				validateToolUse(
-					block.name as ToolName,
-					mode ?? defaultModeSlug,
-					customModes ?? [],
-					{ apply_diff: cline.diffEnabled },
-					block.params,
-					stateExperiments,
-					includedTools,
-				)
-			} catch (error) {
-				cline.consecutiveMistakeCount++
-				pushToolResult(formatResponse.toolError(error.message, toolProtocol))
-				break
+				try {
+					validateToolUse(
+						block.name as ToolName,
+						mode ?? defaultModeSlug,
+						customModes ?? [],
+						{ apply_diff: cline.diffEnabled },
+						block.params,
+						stateExperiments,
+						includedTools,
+					)
+				} catch (error) {
+					cline.consecutiveMistakeCount++
+					// For validation errors (unknown tool, tool not allowed for mode), we need to:
+					// 1. Send a tool_result with the error (required for native protocol)
+					// 2. NOT set didAlreadyUseTool = true (the tool was never executed, just failed validation)
+					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
+					// which would cause the extension to appear to hang
+					const errorContent = formatResponse.toolError(error.message, toolProtocol)
+					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
+						// For native protocol, push tool_result directly without setting didAlreadyUseTool
+						cline.userMessageContent.push({
+							type: "tool_result",
+							tool_use_id: toolCallId,
+							content: typeof errorContent === "string" ? errorContent : "(validation error)",
+							is_error: true,
+						} as Anthropic.ToolResultBlockParam)
+					} else {
+						// For XML protocol, use the standard pushToolResult
+						pushToolResult(errorContent)
+					}
+					break
+				}
 			}
 
 			// Check for identical consecutive tool calls.
@@ -811,16 +825,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					break
 				}
-				case "insert_content":
-					await checkpointSaveAndMark(cline)
-					await insertContentTool.handle(cline, block as ToolUse<"insert_content">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
 				case "search_and_replace":
 					await checkpointSaveAndMark(cline)
 					await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
@@ -1012,9 +1016,40 @@ export async function presentAssistantMessage(cline: Task) {
 						toolProtocol,
 					})
 					break
+				default: {
+					// Handle unknown/invalid tool names
+					// This is critical for native protocol where every tool_use MUST have a tool_result
+					// Note: This case should rarely be reached since validateToolUse now checks for unknown tools
+
+					// CRITICAL: Don't process partial blocks for unknown tools - just let them stream in.
+					// If we try to show errors for partial blocks, we'd show the error on every streaming chunk,
+					// creating a loop that appears to freeze the extension. Only handle complete blocks.
+					if (block.partial) {
+						break
+					}
+
+					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
+					cline.consecutiveMistakeCount++
+					cline.recordToolError(block.name as ToolName, errorMessage)
+					await cline.say("error", t("tools:unknownToolError", { toolName: block.name }))
+					// Push tool_result directly for native protocol WITHOUT setting didAlreadyUseTool
+					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
+					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
+						cline.userMessageContent.push({
+							type: "tool_result",
+							tool_use_id: toolCallId,
+							content: formatResponse.toolError(errorMessage, toolProtocol),
+							is_error: true,
+						} as Anthropic.ToolResultBlockParam)
+					} else {
+						pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
+					}
+					break
+				}
 			}
 
 			break
+		}
 	}
 
 	// Seeing out of bounds is fine, it means that the next too call is being

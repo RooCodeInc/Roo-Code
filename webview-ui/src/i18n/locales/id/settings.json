@@ -86,6 +86,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Kunci API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Masukkan kunci API OpenRouter Anda",
+		"openRouterProviderRoutingLabel": "Perutean Provider OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter mengarahkan permintaan ke provider terbaik yang tersedia untuk model embedding Anda. Secara default, permintaan diseimbangkan beban di seluruh provider teratas untuk memaksimalkan uptime. Namun, Anda dapat memilih provider spesifik untuk digunakan untuk model ini.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Kunci API:",
 		"mistralApiKeyPlaceholder": "Masukkan kunci API Mistral Anda",
