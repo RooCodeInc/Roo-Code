@@ -68,6 +68,21 @@ export const bedrockModels = {
 		maxCachePoints: 1,
 		cachableFields: ["system"],
 	},
+	"amazon.nova-lite-v2:0": {
+		maxTokens: 5000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsNativeTools: true,
+		inputPrice: 0.3,
+		outputPrice: 2.5,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.075,
+		minTokensPerCachePoint: 1,
+		maxCachePoints: 1,
+		cachableFields: ["system"],
+		description: "Amazon Nova 2 Lite - Comparable to Claude Haiku 4.5",
+	},
 	"amazon.nova-micro-v1:0": {
 		maxTokens: 5000,
 		contextWindow: 128_000,
@@ -81,21 +96,6 @@ export const bedrockModels = {
 		minTokensPerCachePoint: 1,
 		maxCachePoints: 1,
 		cachableFields: ["system"],
-	},
-	"amazon.nova-lite-v2:0": {
-		maxTokens: 5000,
-		contextWindow: 300_000,
-		supportsImages: true,
-		supportsPromptCache: true,
-		supportsNativeTools: true,
-		inputPrice: 0.075,
-		outputPrice: 0.3,
-		cacheWritesPrice: 0.075, // per million tokens
-		cacheReadsPrice: 0.01875, // per million tokens
-		minTokensPerCachePoint: 1,
-		maxCachePoints: 1,
-		cachableFields: ["system"],
-		description: "Amazon Nova 2 Lite - Comparable to Claude Haiku 4.5",
 	},
 	"anthropic.claude-sonnet-4-20250514-v1:0": {
 		maxTokens: 8192,
