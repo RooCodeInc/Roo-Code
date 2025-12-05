@@ -153,7 +153,7 @@ export default function CloudPage() {
 							Your AI Team <span className="text-violet-500">in the Cloud</span>
 						</h1>
 						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-							Create your agent team in the Cloud, give them access to Github, and start delegating tasks
+						Create your agent team in the Cloud, give them access to GitHub, and start delegating tasks
 							from Web and Slack.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
