@@ -276,9 +276,8 @@ export const flushModels = async (options: GetModelsOptions, refresh: boolean = 
 		// Don't delete memory cache - let refreshModels atomically replace it
 		// This prevents a race condition where getModels() might be called
 		// before refresh completes, avoiding a gap in cache availability
-		refreshModels(options).catch((error) => {
-			console.error(`[flushModels] Refresh failed for ${provider}:`, error)
-		})
+		// Await the refresh to ensure the cache is updated before returning
+		await refreshModels(options)
 	} else {
 		// Only delete memory cache when not refreshing
 		memoryCache.del(provider)
