@@ -349,13 +349,13 @@ export function NewRun() {
 
 				// Show launching toast
 				const totalRuns = selectionsToLaunch.length
-				toast.info(totalRuns > 1 ? `Launching ${totalRuns} runs (1 per minute)...` : "Launching run...")
+				toast.info(totalRuns > 1 ? `Launching ${totalRuns} runs (every 20 seconds)...` : "Launching run...")
 
-				// Launch runs with 1-minute delay between each
+				// Launch runs with 20-second delay between each
 				for (let i = 0; i < selectionsToLaunch.length; i++) {
 					const selection = selectionsToLaunch[i]!
 
-					// Wait 1 minute between runs (except for the first one)
+					// Wait 20 seconds between runs (except for the first one)
 					if (i > 0) {
 						await new Promise((resolve) => setTimeout(resolve, 20000))
 					}
