@@ -135,8 +135,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...convertToOpenAiMessages(messages),
 		]
 
-		// DeepSeek highly recommends using user instead of system role.
-		if (modelId.startsWith("deepseek/deepseek-r1") || modelId === "perplexity/sonar-reasoning") {
+		// DeepSeek R1 and Prover models require user instead of system role.
+		// Note: DeepSeek V3/Chat models (deepseek-v3, deepseek-v3.2, deepseek-chat-v3.1, etc.) do NOT use R1 format
+		if (
+			modelId.startsWith("deepseek/deepseek-r1") ||
+			modelId.startsWith("deepseek/deepseek-prover") ||
+			modelId === "perplexity/sonar-reasoning"
+		) {
 			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 		}
 
@@ -388,7 +393,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
-		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
+		// Only DeepSeek R1 and Prover models use special temperature and topP settings
+		// DeepSeek V3/Chat models (v3, v3.2, chat-v3.1, etc.) use standard settings
+		const isDeepSeekR1 =
+			id.startsWith("deepseek/deepseek-r1") ||
+			id.startsWith("deepseek/deepseek-prover") ||
+			id === "perplexity/sonar-reasoning"
+		const isDeepSeekV3 =
+			id.startsWith("deepseek/deepseek-v3") || // Matches deepseek/deepseek-v3, deepseek/deepseek-v3.2, etc.
+			id.startsWith("deepseek/deepseek-chat") // Matches deepseek/deepseek-chat, deepseek/deepseek-chat-v3.1, etc.
 
 		const params = getModelParams({
 			format: "openrouter",

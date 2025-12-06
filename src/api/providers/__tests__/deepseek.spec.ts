@@ -147,6 +147,25 @@ describe("DeepSeekHandler", () => {
 			const _handler = new DeepSeekHandler(mockOptions)
 			expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: mockOptions.deepSeekApiKey }))
 		})
+
+		it("should map deepseek-3.2 alias to deepseek-chat for API calls", async () => {
+			vi.clearAllMocks()
+			const handlerWith32 = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-3.2",
+			})
+			const stream = handlerWith32.createMessage("test", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+			// Verify the API was called with deepseek-chat (not deepseek-3.2)
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek-chat",
+				}),
+				expect.anything(),
+			)
+		})
 	})
 
 	describe("getModel", () => {
@@ -172,6 +191,19 @@ describe("DeepSeekHandler", () => {
 			expect(model.info.contextWindow).toBe(128_000)
 			expect(model.info.supportsImages).toBe(false)
 			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it("should return correct model info for deepseek-3.2 alias", () => {
+			const handlerWith32 = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-3.2",
+			})
+			const model = handlerWith32.getModel()
+			expect(model.id).toBe("deepseek-3.2") // Returns user's model ID
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(8192) // Same as deepseek-chat
+			expect(model.info.contextWindow).toBe(128_000)
+			expect(model.info.supportsNativeTools).toBe(true)
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
@@ -315,6 +347,221 @@ describe("DeepSeekHandler", () => {
 			expect(result.outputTokens).toBe(50)
 			expect(result.cacheWriteTokens).toBeUndefined()
 			expect(result.cacheReadTokens).toBeUndefined()
+		})
+	})
+
+	describe("Thinking Mode Support", () => {
+		it("should add thinking parameter when enableReasoningEffort is true for V3 models", async () => {
+			vi.clearAllMocks()
+			const handlerWithThinking = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-chat",
+				enableReasoningEffort: true,
+			})
+			const stream = handlerWithThinking.createMessage("test", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+			// Verify the API was called with the thinking parameter
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek-chat",
+					thinking: { type: "enabled" },
+				}),
+			)
+		})
+
+		it("should add thinking parameter when enableReasoningEffort is true for deepseek-3.2 alias", async () => {
+			vi.clearAllMocks()
+			const handlerWithThinking = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-3.2",
+				enableReasoningEffort: true,
+			})
+			const stream = handlerWithThinking.createMessage("test", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+			// Verify the API was called with the thinking parameter and mapped model ID
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "deepseek-chat",
+					thinking: { type: "enabled" },
+				}),
+			)
+		})
+
+		it("should NOT add thinking parameter when enableReasoningEffort is false", async () => {
+			vi.clearAllMocks()
+			const handlerWithoutThinking = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-chat",
+				enableReasoningEffort: false,
+			})
+			const stream = handlerWithoutThinking.createMessage("test", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+			// Verify the API was called WITHOUT the thinking parameter
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					thinking: expect.anything(),
+				}),
+				expect.anything(),
+			)
+		})
+
+		it("should NOT add thinking parameter for deepseek-reasoner model even with enableReasoningEffort", async () => {
+			vi.clearAllMocks()
+			const handlerReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+				enableReasoningEffort: true,
+			})
+			const stream = handlerReasoner.createMessage("test", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+			// Verify the API was called WITHOUT the thinking parameter
+			// (deepseek-reasoner uses R1 format, not thinking mode)
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					thinking: expect.anything(),
+				}),
+				expect.anything(),
+			)
+		})
+
+		it("should handle reasoning_content in response when thinking mode is enabled", async () => {
+			// Mock a response with reasoning_content
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { reasoning_content: "Let me think about this..." },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: { content: "Here is my answer." },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								index: 0,
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 15,
+							total_tokens: 25,
+						},
+					}
+				},
+			}))
+
+			const handlerWithThinking = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-chat",
+				enableReasoningEffort: true,
+			})
+			const stream = handlerWithThinking.createMessage("test", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have a reasoning chunk
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+			expect(reasoningChunks[0].text).toBe("Let me think about this...")
+
+			// Should have a text chunk
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBeGreaterThan(0)
+			expect(textChunks[0].text).toBe("Here is my answer.")
+		})
+
+		it("should handle tool calls with thinking mode enabled", async () => {
+			// Mock a response with tool calls in thinking mode
+			mockCreate.mockImplementationOnce(async () => ({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: { reasoning_content: "I need to call a tool..." },
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_123",
+											function: {
+												name: "read_file",
+												arguments: '{"path": "/test.txt"}',
+											},
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+						usage: null,
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								index: 0,
+							},
+						],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 20,
+							total_tokens: 30,
+						},
+					}
+				},
+			}))
+
+			const handlerWithThinking = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-chat",
+				enableReasoningEffort: true,
+			})
+			// Note: tools are passed in Anthropic format and converted internally
+			const stream = handlerWithThinking.createMessage("test", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have a reasoning chunk
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+
+			// Should have a tool call chunk
+			const toolCallChunks = chunks.filter((c) => c.type === "tool_call_partial")
+			expect(toolCallChunks.length).toBeGreaterThan(0)
+			expect(toolCallChunks[0].name).toBe("read_file")
+			expect(toolCallChunks[0].id).toBe("call_123")
 		})
 	})
 })

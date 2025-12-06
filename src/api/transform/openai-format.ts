@@ -132,7 +132,10 @@ export function convertToOpenAiMessages(
 					},
 				}))
 
-				// Check if the message has reasoning_details (used by Gemini 3, etc.)
+				// Check if the message has reasoning_details or reasoning_content
+				// - reasoning_details: used by Gemini 3, OpenRouter, etc.
+				// - reasoning_content: used by DeepSeek V3.2 thinking mode
+				// See: https://api-docs.deepseek.com/guides/thinking_mode
 				const messageWithDetails = anthropicMessage as any
 				const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam = {
 					role: "assistant",
@@ -144,6 +147,13 @@ export function convertToOpenAiMessages(
 				// Preserve reasoning_details if present (will be processed by provider if needed)
 				if (messageWithDetails.reasoning_details && Array.isArray(messageWithDetails.reasoning_details)) {
 					;(baseMessage as any).reasoning_details = messageWithDetails.reasoning_details
+				}
+
+				// Preserve reasoning_content if present (used by DeepSeek V3.2 thinking mode)
+				// DeepSeek requires reasoning_content to be passed back in subsequent API calls
+				// when using thinking mode with tool calling
+				if (messageWithDetails.reasoning_content && typeof messageWithDetails.reasoning_content === "string") {
+					;(baseMessage as any).reasoning_content = messageWithDetails.reasoning_content
 				}
 
 				openAiMessages.push(baseMessage)

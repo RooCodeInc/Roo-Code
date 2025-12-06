@@ -270,5 +270,23 @@ export const parseOpenRouterModel = ({
 		modelInfo.maxTokens = 32768
 	}
 
+	// Configure DeepSeek V3/Chat models properly
+	// These models support standard tool calling but NOT R1 format
+	// OpenRouter uses deepseek/deepseek-v3, deepseek/deepseek-v3.2, deepseek/deepseek-chat-v3.1, etc.
+	if (
+		id.startsWith("deepseek/deepseek-v3") || // Matches deepseek/deepseek-v3, deepseek/deepseek-v3.2, deepseek/deepseek-v3.1-terminus, etc.
+		id.startsWith("deepseek/deepseek-chat") // Matches deepseek/deepseek-chat, deepseek/deepseek-chat-v3.1, deepseek/deepseek-chat-v3-0324, etc.
+	) {
+		// Ensure these models are marked as supporting native tools
+		// but NOT reasoning format (they're not R1 models)
+		if (modelInfo.supportsNativeTools === undefined) {
+			modelInfo.supportsNativeTools = true
+		}
+		// Ensure reasonable max tokens if not set
+		if (!modelInfo.maxTokens || modelInfo.maxTokens < 8192) {
+			modelInfo.maxTokens = 8192
+		}
+	}
+
 	return modelInfo
 }
