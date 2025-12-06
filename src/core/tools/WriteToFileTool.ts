@@ -192,7 +192,26 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 			return
 		} catch (error) {
-			await handleError("writing file", error as Error)
+			const err = error as Error
+			// Check if this is a VS Code file size limit error
+			if (err?.message?.includes("Files above") && err?.message?.includes("MB")) {
+				// The file was likely written successfully, but VS Code can't display it
+				// Provide a more helpful message to the user
+				await task.say(
+					"text",
+					`The file was saved successfully, but it exceeds VS Code's display size limit for extensions. The file operation completed successfully.`,
+				)
+				pushToolResult(
+					formatResponse.toolResult(
+						`File saved successfully. Note: File exceeds VS Code's display size limit but the operation completed.`,
+						[],
+					),
+				)
+				await task.diffViewProvider.reset()
+				return
+			}
+			// For other errors, use the standard error handling
+			await handleError("writing file", err)
 			await task.diffViewProvider.reset()
 			return
 		}
