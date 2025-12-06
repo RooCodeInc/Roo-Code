@@ -3342,10 +3342,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { profileThresholds = {} } = state ?? {}
 
 		const { contextTokens } = this.getTokenUsage()
-		const modelInfo = this.api.getModel().info
+		// Get the current model info from the API handler to ensure we have the correct context window
+		// This is important for Bedrock models with 1M context enabled
+		const currentModel = this.api.getModel()
+		const modelInfo = currentModel.info
 
 		const maxTokens = getModelMaxOutputTokens({
-			modelId: this.api.getModel().id,
+			modelId: currentModel.id,
 			model: modelInfo,
 			settings: this.apiConfiguration,
 		})
@@ -3487,10 +3490,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { contextTokens } = this.getTokenUsage()
 
 		if (contextTokens) {
-			const modelInfo = this.api.getModel().info
+			// Get the current model info from the API handler to ensure we have the correct context window
+			// This is important for Bedrock models with 1M context enabled
+			const currentModel = this.api.getModel()
+			const modelInfo = currentModel.info
 
 			const maxTokens = getModelMaxOutputTokens({
-				modelId: this.api.getModel().id,
+				modelId: currentModel.id,
 				model: modelInfo,
 				settings: this.apiConfiguration,
 			})
