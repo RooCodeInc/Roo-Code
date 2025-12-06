@@ -47,7 +47,7 @@ export function convertAnthropicContentToGemini(
 		return [{ text: content }]
 	}
 
-	return content.flatMap((block): Part | Part[] => {
+	const parts = content.flatMap((block): Part | Part[] => {
 		// Handle thoughtSignature blocks first
 		if (isThoughtSignatureContentBlock(block)) {
 			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
@@ -135,6 +135,14 @@ export function convertAnthropicContentToGemini(
 				return []
 		}
 	})
+
+	// Filter out any empty arrays that were returned by flatMap
+	// This prevents sending empty parts to the Gemini API which would cause errors
+	return parts.filter((part): part is Part => {
+		// Check if the part is actually a Part object (not an empty array)
+		// Empty arrays from flatMap will be filtered out here
+		return part && typeof part === "object" && Object.keys(part).length > 0
+	})
 }
 
 export function convertAnthropicMessageToGemini(
@@ -143,6 +151,8 @@ export function convertAnthropicMessageToGemini(
 ): Content[] {
 	const parts = convertAnthropicContentToGemini(message.content, options)
 
+	// Skip creating Content objects if there are no valid parts
+	// This prevents sending empty messages to the Gemini API
 	if (parts.length === 0) {
 		return []
 	}

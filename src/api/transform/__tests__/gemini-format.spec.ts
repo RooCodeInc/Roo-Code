@@ -463,4 +463,131 @@ describe("convertAnthropicMessageToGemini", () => {
 			},
 		])
 	})
+
+	it("should return empty array when all content blocks are skipped", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "reasoning" as any,
+					text: "Thinking...",
+				},
+				{
+					type: "thinking" as any,
+					text: "More thinking...",
+				},
+			],
+		}
+
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([])
+	})
+
+	it("should handle message with only empty tool results", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "user",
+			content: [
+				{
+					type: "tool_result",
+					tool_use_id: "tool-123",
+					content: null as any,
+				},
+				{
+					type: "tool_result",
+					tool_use_id: "tool-456",
+					content: undefined as any,
+				},
+			],
+		}
+
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([])
+	})
+
+	it("should filter out empty parts from mixed content", () => {
+		const toolIdToName = new Map<string, string>()
+		toolIdToName.set("tool-123", "calculator")
+
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{ type: "text", text: "Let me help you" },
+				{
+					type: "tool_result",
+					tool_use_id: "tool-999",
+					content: null as any, // This should be filtered out
+				},
+				{
+					type: "reasoning" as any,
+					text: "Thinking...", // This should be filtered out
+				},
+				{
+					type: "tool_use",
+					id: "tool-123",
+					name: "calculator",
+					input: { a: 1, b: 2 },
+				},
+			],
+		}
+
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { toolIdToName })
+
+		expect(result).toEqual([
+			{
+				role: "model",
+				parts: [
+					{ text: "Let me help you" },
+					{
+						functionCall: {
+							name: "calculator",
+							args: { a: 1, b: 2 },
+						},
+						thoughtSignature: "skip_thought_signature_validator",
+					},
+				],
+			},
+		])
+	})
+
+	it("should handle thoughtSignature blocks that are excluded", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{
+					type: "thoughtSignature",
+					thoughtSignature: "some-signature",
+				} as any,
+				{ type: "text", text: "Response text" },
+			],
+		}
+
+		// When includeThoughtSignatures is false, thoughtSignature blocks should be filtered out
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { includeThoughtSignatures: false })
+
+		expect(result).toEqual([
+			{
+				role: "model",
+				parts: [{ text: "Response text" }],
+			},
+		])
+	})
+
+	it("should handle message with only thoughtSignature when excluded", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{
+					type: "thoughtSignature",
+					thoughtSignature: "some-signature",
+				} as any,
+			],
+		}
+
+		// When includeThoughtSignatures is false and there's only a thoughtSignature block
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { includeThoughtSignatures: false })
+
+		expect(result).toEqual([])
+	})
 })
