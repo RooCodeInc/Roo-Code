@@ -281,7 +281,13 @@ function getSelectedModel({
 		}
 		case "ollama": {
 			const id = apiConfiguration.ollamaModelId ?? ""
-			const info = ollamaModels && ollamaModels[apiConfiguration.ollamaModelId!]
+			// Try exact match first, then lowercase for case-insensitive lookup
+			let info = ollamaModels && ollamaModels[apiConfiguration.ollamaModelId!]
+			if (!info && ollamaModels && apiConfiguration.ollamaModelId) {
+				// Try case-insensitive lookup
+				const lowerModelId = apiConfiguration.ollamaModelId.toLowerCase()
+				info = ollamaModels[lowerModelId]
+			}
 
 			const adjustedInfo =
 				info?.contextWindow &&

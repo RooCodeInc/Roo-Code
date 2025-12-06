@@ -89,7 +89,14 @@ export async function getOllamaModels(
 							{ headers },
 						)
 						.then((ollamaModelInfo) => {
-							models[ollamaModel.name] = parseOllamaModel(ollamaModelInfo.data)
+							const modelInfo = parseOllamaModel(ollamaModelInfo.data)
+							// Store with original name
+							models[ollamaModel.name] = modelInfo
+							// Also store with lowercase name for case-insensitive lookup
+							const lowerName = ollamaModel.name.toLowerCase()
+							if (lowerName !== ollamaModel.name) {
+								models[lowerName] = modelInfo
+							}
 						}),
 				)
 			}
