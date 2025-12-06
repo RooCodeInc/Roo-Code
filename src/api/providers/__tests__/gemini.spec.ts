@@ -90,6 +90,76 @@ describe("GeminiHandler", () => {
 			)
 		})
 
+		it("should not duplicate text when both candidates and text properties are present", async () => {
+			// This test verifies the fix for issue #9822 - repeated/duplicated responses
+			// Setup mock to return chunks with both candidates AND text properties
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					// First chunk has both candidates with parts and a text property
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "Hello from candidates" }],
+								},
+							},
+						],
+						text: "Hello from candidates", // Same text in fallback property
+					}
+					// Second chunk also has both
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: " world!" }],
+								},
+							},
+						],
+						text: " world!", // Same text in fallback property
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have exactly 3 chunks: 'Hello from candidates', ' world!', and usage
+			// NOT 5 chunks (which would indicate duplication)
+			expect(chunks.length).toBe(3)
+			expect(chunks[0]).toEqual({ type: "text", text: "Hello from candidates" })
+			expect(chunks[1]).toEqual({ type: "text", text: " world!" })
+			expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 5 })
+		})
+
+		it("should use fallback text property when no candidates are present", async () => {
+			// Setup mock to return chunks with only text property (no candidates)
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "Fallback text 1" }
+					yield { text: " Fallback text 2" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should properly use fallback text when candidates are not present
+			expect(chunks.length).toBe(3)
+			expect(chunks[0]).toEqual({ type: "text", text: "Fallback text 1" })
+			expect(chunks[1]).toEqual({ type: "text", text: " Fallback text 2" })
+			expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 5 })
+		})
+
 		it("should handle API errors", async () => {
 			const mockError = new Error("Gemini API error")
 			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
