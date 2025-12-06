@@ -1994,6 +1994,97 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
+	 * Resume task after an in-place message edit without creating a new user message.
+	 * Used when editing tool_result messages to preserve tool_use_id.
+	 *
+	 * This method:
+	 * - Clears any pending ask states and promises
+	 * - Resets abort, streaming, and tool execution flags
+	 * - Ensures next API call includes full context
+	 * - Immediately continues task loop using existing history
+	 */
+	public async resumeAfterMessageEdit(): Promise<void> {
+		// Clear any ask states and pending ask promises
+		this.idleAsk = undefined
+		this.resumableAsk = undefined
+		this.interactiveAsk = undefined
+		this.askResponse = undefined
+		this.askResponseText = undefined
+		this.askResponseImages = undefined
+
+		// Reset abort and streaming state
+		this.abort = false
+		this.abandoned = false
+		this.abortReason = undefined
+		this.didFinishAbortingStream = false
+		this.isStreaming = false
+		this.isWaitingForFirstChunk = false
+
+		// Reset tool execution flags - critical for preventing:
+		// - "Response interrupted by a tool use result" injected message
+		// - Tool state from previous execution affecting the new request
+		this.didRejectTool = false
+		this.didAlreadyUseTool = false
+		this.didToolFailInCurrentTurn = false
+		this.didCompleteReadingStream = false
+		this.userMessageContentReady = false
+		this.presentAssistantMessageLocked = false
+		this.presentAssistantMessageHasPendingUpdates = false
+
+		// Clear any pending user message content (we're resuming, not adding new)
+		this.userMessageContent = []
+		this.assistantMessageContent = []
+
+		// Ensure next API call includes full context
+		this.skipPrevResponseIdOnce = true
+
+		// Reset consecutive mistake count for fresh start
+		this.consecutiveMistakeCount = 0
+
+		// Reset lastMessageTs to prevent any pending asks from throwing "ignored" errors
+		// when the first say() in the new task loop updates the timestamp
+		this.lastMessageTs = undefined
+
+		// Mark as active
+		this.emit(RooCodeEventName.TaskActive, this.taskId)
+
+		// Add fresh environment details to the last user message
+		const environmentDetails = await getEnvironmentDetails(this, true)
+		let lastUserMsgIndex = -1
+		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
+			if (this.apiConversationHistory[i].role === "user") {
+				lastUserMsgIndex = i
+				break
+			}
+		}
+		if (lastUserMsgIndex >= 0) {
+			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
+			if (Array.isArray(lastUserMsg.content)) {
+				// Remove any existing environment_details blocks before adding fresh ones
+				const contentWithoutEnvDetails = lastUserMsg.content.filter(
+					(block: Anthropic.Messages.ContentBlockParam) => {
+						if (block.type === "text" && typeof block.text === "string") {
+							const isEnvironmentDetailsBlock =
+								block.text.trim().startsWith("<environment_details>") &&
+								block.text.trim().endsWith("</environment_details>")
+							return !isEnvironmentDetailsBlock
+						}
+						return true
+					},
+				)
+				// Add fresh environment details
+				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			}
+		}
+
+		// Save the updated history
+		await this.saveApiConversationHistory()
+
+		// Continue task loop with empty array - signals no new user content needed
+		await this.initiateTaskLoop([])
+	}
+
+	/**
 	 * Resume parent task after delegation completion without showing resume ask.
 	 * Used in metadata-driven subtask flow.
 	 *
