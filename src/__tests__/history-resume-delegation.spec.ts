@@ -33,6 +33,19 @@ vi.mock("../core/task-persistence", () => ({
 	readApiMessages: vi.fn().mockResolvedValue([]),
 	saveApiMessages: vi.fn().mockResolvedValue(undefined),
 	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+	getPendingSubtasks: vi.fn().mockReturnValue([]),
+	// appendToolResult should actually add the tool_result to the messages
+	appendToolResult: vi.fn().mockImplementation((msgs, toolUseId, result) => {
+		const newMsgs = [...msgs]
+		newMsgs.push({
+			role: "user",
+			content: [{ type: "tool_result", tool_use_id: toolUseId, content: result }],
+			ts: Date.now(),
+		})
+		return newMsgs
+	}),
+	getOtherToolResults: vi.fn().mockReturnValue([]),
+	hasPendingSubtasksInHistory: vi.fn().mockReturnValue(false),
 }))
 
 import { ClineProvider } from "../core/webview/ClineProvider"
@@ -69,6 +82,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			taskId: "parent-1",
 			skipPrevResponseIdOnce: false,
 			resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			hasPendingSubtasks: vi.fn().mockReturnValue(false),
 		})
 
 		const provider = {
@@ -143,6 +157,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+				hasPendingSubtasks: vi.fn().mockReturnValue(false),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -175,31 +190,14 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 
-		// Verify API history injection (user role message)
-		expect(saveApiMessages).toHaveBeenCalledWith(
-			expect.objectContaining({
-				messages: expect.arrayContaining([
-					expect.objectContaining({
-						role: "user",
-						content: expect.arrayContaining([
-							expect.objectContaining({
-								type: "text",
-								text: expect.stringContaining("Subtask c1 completed"),
-							}),
-						]),
-					}),
-				]),
-				taskId: "p1",
-				globalStoragePath: "/storage",
-			}),
-		)
-
 		// Verify both include original messages
 		const uiCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
 		expect(uiCall.messages).toHaveLength(2) // 1 original + 1 injected
 
+		// Note: API history doesn't get injected text messages without a tool_use to respond to.
+		// This test case has no new_task tool_use, so no tool_result is added.
 		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
-		expect(apiCall.messages).toHaveLength(2) // 1 original + 1 injected
+		expect(apiCall.messages).toHaveLength(1) // 1 original only (no injection without tool_use)
 	})
 
 	it("reopenParentFromDelegation injects tool_result when new_task tool_use exists in API history", async () => {
@@ -226,6 +224,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+				hasPendingSubtasks: vi.fn().mockReturnValue(false),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -297,6 +296,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 			overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 			overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+			hasPendingSubtasks: vi.fn().mockReturnValue(false),
 		}
 
 		const provider = {
@@ -360,6 +360,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+				hasPendingSubtasks: vi.fn().mockReturnValue(false),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -410,6 +411,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+				hasPendingSubtasks: vi.fn().mockReturnValue(false),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -453,6 +455,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
 				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
 				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+				hasPendingSubtasks: vi.fn().mockReturnValue(false),
 			}),
 			updateTaskHistory: vi.fn().mockResolvedValue([]),
 		} as unknown as ClineProvider
@@ -469,7 +472,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		).resolves.toBeUndefined()
 
-		// Verify saves still occurred with just the injected message
+		// Verify saves still occurred with just the injected message for UI
 		expect(saveTaskMessages).toHaveBeenCalledWith(
 			expect.objectContaining({
 				messages: [
@@ -481,13 +484,10 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 
+		// Note: API history doesn't get injected without a tool_use to respond to
 		expect(saveApiMessages).toHaveBeenCalledWith(
 			expect.objectContaining({
-				messages: [
-					expect.objectContaining({
-						role: "user",
-					}),
-				],
+				messages: [], // Empty - no tool_use means no tool_result injection
 			}),
 		)
 	})

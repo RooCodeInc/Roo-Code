@@ -93,7 +93,15 @@ import { getSystemPromptFilePath } from "../prompts/sections/custom-system-promp
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
+import {
+	readApiMessages,
+	saveApiMessages,
+	saveTaskMessages,
+	getPendingSubtasks,
+	appendToolResult,
+	getOtherToolResults,
+	hasPendingSubtasksInHistory,
+} from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -2993,24 +3001,26 @@ export class ClineProvider
 				`[delegateParentAndOpenChild] Parent mismatch: expected ${parentTaskId}, current ${parent.taskId}`,
 			)
 		}
-		// 2) Flush pending tool results to API history BEFORE disposing the parent.
-		//    This is critical for native tool protocol: when tools are called before new_task,
-		//    their tool_result blocks are in userMessageContent but not yet saved to API history.
-		//    If we don't flush them, the parent's API conversation will be incomplete and
-		//    cause 400 errors when resumed (missing tool_result for tool_use blocks).
+		// 2) DON'T flush pending tool results to history when we're in subtask execution flow.
+		//    The executePendingSubtasks() method handles saving other tool results that were
+		//    called in the same turn as new_task. These will be combined with subtask results
+		//    into a SINGLE user message when all subtasks complete. If we flush here, we'd create
+		//    a separate user message that breaks the conversation structure (tool results
+		//    MUST follow the assistant message that called them in a single user message).
 		//
-		//    NOTE: We do NOT pass the assistant message here because the assistant message
-		//    is already added to apiConversationHistory by the normal flow in
-		//    recursivelyMakeClineRequests BEFORE tools start executing. We only need to
-		//    flush the pending user message with tool_results.
-		try {
-			await parent.flushPendingToolResultsToHistory()
-		} catch (error) {
-			this.log(
-				`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-			)
+		//    Only flush if this is a direct delegation (no pending subtasks in history), which means
+		//    the parent called new_task without the parallel subtask execution flow.
+		const hasParallelSubtasks = hasPendingSubtasksInHistory(parent.apiConversationHistory)
+		if (!hasParallelSubtasks) {
+			try {
+				await parent.flushPendingToolResultsToHistory()
+			} catch (error) {
+				this.log(
+					`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				)
+			}
 		}
 
 		// 3) Enforce single-open invariant by closing/disposing the parent first
@@ -3082,6 +3092,12 @@ export class ClineProvider
 
 	/**
 	 * Reopen parent task from delegation with write-back and events.
+	 *
+	 * This method derives pending subtask state directly from api_conversation_history.json
+	 * instead of using workspaceState. The state is determined by comparing:
+	 * - tool_use blocks with name: "new_task" in the last assistant message
+	 * - tool_result blocks in the last user message
+	 * - Pending = tool_use.id NOT in tool_results
 	 */
 	public async reopenParentFromDelegation(params: {
 		parentTaskId: string
@@ -3114,13 +3130,11 @@ export class ClineProvider
 			parentApiMessages = []
 		}
 
-		// 2) Inject synthetic records: UI subtask_result and update API tool_result
 		const ts = Date.now()
-
-		// Defensive: ensure arrays
 		if (!Array.isArray(parentClineMessages)) parentClineMessages = []
 		if (!Array.isArray(parentApiMessages)) parentApiMessages = []
 
+		// Add the child's result to the UI messages
 		const subtaskUiMessage: ClineMessage = {
 			type: "say",
 			say: "subtask_result",
@@ -3130,72 +3144,75 @@ export class ClineProvider
 		parentClineMessages.push(subtaskUiMessage)
 		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
 
-		// Find the tool_use_id from the last assistant message's new_task tool_use
+		// Derive pending subtasks from the api_conversation_history
+		// The getPendingSubtasks function compares tool_use blocks vs tool_result blocks
+		const pendingSubtasksFromHistory = getPendingSubtasks(parentApiMessages)
+
+		// Get other tool results (non-new_task tools) from the last assistant message
+		// that haven't been added to history yet
+		const otherToolResults = getOtherToolResults(parentApiMessages)
+
+		// Find the toolUseId for the child that just completed
+		// First, check if there's a pending subtask matching the child's details
+		// Since we execute subtasks in order, the first pending one should be the one that just completed
 		let toolUseId: string | undefined
-		for (let i = parentApiMessages.length - 1; i >= 0; i--) {
-			const msg = parentApiMessages[i]
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
-				for (const block of msg.content) {
-					if (block.type === "tool_use" && block.name === "new_task") {
-						toolUseId = block.id
-						break
+
+		// Look through assistant message to find the new_task tool_use that matches
+		// We need to find which one was being executed - look for the first pending one
+		if (pendingSubtasksFromHistory.length > 0) {
+			// The first pending subtask is the one we just completed
+			toolUseId = pendingSubtasksFromHistory[0].toolCallId
+		} else {
+			// Fallback: find the last new_task tool_use in the assistant message
+			for (let i = parentApiMessages.length - 1; i >= 0; i--) {
+				const msg = parentApiMessages[i]
+				if (msg.role === "assistant" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_use" && block.name === "new_task") {
+							toolUseId = block.id
+							break
+						}
 					}
+					if (toolUseId) break
 				}
-				if (toolUseId) break
 			}
 		}
 
-		// The API expects: user → assistant (with tool_use) → user (with tool_result)
-		// We need to add a NEW user message with the tool_result AFTER the assistant's tool_use
-		// NOT add it to an existing user message
+		// Append the completed subtask's tool_result to the conversation history
 		if (toolUseId) {
-			// Check if the last message is already a user message with a tool_result for this tool_use_id
-			// (in case this is a retry or the history was already updated)
+			const resultContent = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+			parentApiMessages = appendToolResult(parentApiMessages, toolUseId, resultContent)
+		}
+
+		// Check if there are more pending subtasks to execute after adding this result
+		const remainingPendingSubtasks = getPendingSubtasks(parentApiMessages)
+		const hasMoreSubtasks = remainingPendingSubtasks.length > 0
+
+		// If no more subtasks and we have other tool results that need to be flushed,
+		// add them to the conversation (they come before subtask results)
+		if (!hasMoreSubtasks && otherToolResults.length > 0) {
+			// The other tool results should be added to the last user message
 			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
-			let alreadyHasToolResult = false
 			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
-				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
-						alreadyHasToolResult = true
-						break
-					}
+				// Check if these results are already in the message
+				const existingToolResultIds = new Set(
+					lastMsg.content.filter((b: any) => b.type === "tool_result").map((b: any) => b.tool_use_id),
+				)
+
+				// Add missing other tool results at the beginning (before subtask results)
+				const newContent = [...otherToolResults.filter((r) => !existingToolResultIds.has(r.tool_use_id))]
+
+				if (newContent.length > 0) {
+					// Insert other tool results at the beginning of the content array
+					// to maintain original tool call order
+					lastMsg.content = [...newContent, ...lastMsg.content]
 				}
 			}
-
-			// If no existing tool_result found, create a NEW user message with the tool_result
-			if (!alreadyHasToolResult) {
-				parentApiMessages.push({
-					role: "user",
-					content: [
-						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-						},
-					],
-					ts,
-				})
-			}
-		} else {
-			// Fallback for XML protocol or when toolUseId couldn't be found:
-			// Add a text block (not ideal but maintains backward compatibility)
-			parentApiMessages.push({
-				role: "user",
-				content: [
-					{
-						type: "text",
-						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-					},
-				],
-				ts,
-			})
 		}
 
 		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })
 
-		// 3) Update child metadata to "completed" status
+		// 2) Update child metadata to "completed" status
 		try {
 			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
 			await this.updateTaskHistory({
@@ -3210,7 +3227,7 @@ export class ClineProvider
 			)
 		}
 
-		// 4) Update parent metadata and persist BEFORE emitting completion event
+		// 3) Update parent metadata and persist BEFORE emitting completion event
 		const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId]))
 		const updatedHistory: typeof historyItem = {
 			...historyItem,
@@ -3222,24 +3239,24 @@ export class ClineProvider
 		}
 		await this.updateTaskHistory(updatedHistory)
 
-		// 5) Emit TaskDelegationCompleted (provider-level)
+		// 4) Emit TaskDelegationCompleted (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
 		} catch {
 			// non-fatal
 		}
 
-		// 6) Close child instance if still open (single-open-task invariant)
+		// 5) Close child instance if still open (single-open-task invariant)
 		const current = this.getCurrentTask()
 		if (current?.taskId === childTaskId) {
 			await this.removeClineFromStack()
 		}
 
-		// 7) Reopen the parent from history as the sole active task (restores saved mode)
+		// 6) Reopen the parent from history as the sole active task (restores saved mode)
 		//    IMPORTANT: startTask=false to suppress resume-from-history ask scheduling
 		const parentInstance = await this.createTaskWithHistoryItem(updatedHistory, { startTask: false })
 
-		// 8) Inject restored histories into the in-memory instance before resuming
+		// 7) Inject restored histories into the in-memory instance before resuming
 		if (parentInstance) {
 			try {
 				await parentInstance.overwriteClineMessages(parentClineMessages)
@@ -3252,11 +3269,22 @@ export class ClineProvider
 				// non-fatal
 			}
 
-			// Auto-resume parent without ask("resume_task")
-			await parentInstance.resumeAfterDelegation()
+			// Check if there are more pending subtasks to execute (derived from history)
+			const pendingFromHistory = getPendingSubtasks(parentApiMessages)
+			if (pendingFromHistory.length > 0) {
+				// Execute the next pending subtask
+				// This will cause the parent to be "paused" again and a new child will run
+				this.log(
+					`[reopenParentFromDelegation] Parent ${parentTaskId} has ${pendingFromHistory.length} more subtasks, executing next one`,
+				)
+				await parentInstance.executePendingSubtasks()
+			} else {
+				// No more pending subtasks - resume the parent with the API
+				await parentInstance.resumeAfterDelegation()
+			}
 		}
 
-		// 9) Emit TaskDelegationResumed (provider-level)
+		// 8) Emit TaskDelegationResumed (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegationResumed, parentTaskId, childTaskId)
 		} catch {
