@@ -871,7 +871,12 @@ export const webviewMessageHandler = async (
 				// If explicit credentials are provided in message.values (from Refresh Models button),
 				// flush the cache first to ensure we fetch fresh data with the new credentials
 				if (message?.values?.litellmApiKey || message?.values?.litellmBaseUrl) {
-					await flushModels("litellm", true)
+					const litellmFlushOptions: GetModelsOptions = {
+						provider: "litellm",
+						apiKey: litellmApiKey,
+						baseUrl: litellmBaseUrl,
+					}
+					await flushModels("litellm", true, litellmFlushOptions)
 				}
 
 				candidates.push({
