@@ -46,9 +46,30 @@ export class SimpleInstaller {
 
 		// If CustomModesManager is available, use importModeWithRules
 		if (this.customModesManager) {
+			// Parse the main mode content
+			const mainMode = yaml.parse(item.content)
+			const modesToImport = [mainMode]
+
+			// Check if this mode has bundled submodes
+			if (item.type === "mode" && item.submodes && Array.isArray(item.submodes)) {
+				// Parse each submode and add parent/hidden properties
+				for (const submodeContent of item.submodes) {
+					try {
+						const submode = yaml.parse(submodeContent)
+						// Ensure submodes have the parent relationship and hidden flag set
+						submode.parent = mainMode.slug
+						submode.hidden = true
+						modesToImport.push(submode)
+					} catch (error) {
+						console.warn(`Failed to parse submode content: ${error}`)
+						// Continue with other submodes if one fails
+					}
+				}
+			}
+
 			// Transform marketplace content to import format (wrap in customModes array)
 			const importData = {
-				customModes: [yaml.parse(item.content)],
+				customModes: modesToImport,
 			}
 			const importYaml = yaml.stringify(importData)
 
@@ -67,12 +88,11 @@ export class SimpleInstaller {
 			try {
 				const fileContent = await fs.readFile(filePath, "utf-8")
 				const lines = fileContent.split("\n")
-				const modeData = yaml.parse(item.content)
 
 				// Find the line containing the slug of the added mode
-				if (modeData?.slug) {
+				if (mainMode?.slug) {
 					const slugLineIndex = lines.findIndex(
-						(l) => l.includes(`slug: ${modeData.slug}`) || l.includes(`slug: "${modeData.slug}"`),
+						(l) => l.includes(`slug: ${mainMode.slug}`) || l.includes(`slug: "${mainMode.slug}"`),
 					)
 					if (slugLineIndex >= 0) {
 						line = slugLineIndex + 1 // Convert to 1-based line number
@@ -319,9 +339,21 @@ export class SimpleInstaller {
 			throw new Error("Mode missing slug identifier")
 		}
 
-		// Get the current modes to determine the source
+		// Get the current modes to check for submodes
 		const modes = await this.customModesManager.getCustomModes()
-		const mode = modes.find((m) => m.slug === modeSlug)
+
+		// Find all submodes that belong to this parent mode
+		const submodesToDelete = modes.filter((m) => m.parent === modeSlug && m.hidden)
+
+		// Delete submodes first (if any)
+		for (const submode of submodesToDelete) {
+			try {
+				await this.customModesManager.deleteCustomMode(submode.slug, true)
+			} catch (error) {
+				console.warn(`Failed to delete submode ${submode.slug}: ${error}`)
+				// Continue with other deletions even if one fails
+			}
+		}
 
 		// Use CustomModesManager to delete the mode configuration
 		// This also handles rules folder deletion
