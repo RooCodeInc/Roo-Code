@@ -146,7 +146,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		const handleRooModelsCache = async () => {
 			try {
 				// Flush and refresh cache on auth state changes
-				await flushModels("roo", true)
+				const rooOptions = {
+					provider: "roo" as const,
+					baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+					apiKey: CloudService.hasInstance()
+						? CloudService.instance.authService?.getSessionToken()
+						: undefined,
+				}
+				await flushModels(rooOptions, true)
 
 				if (data.state === "active-session") {
 					cloudLogger(`[authStateChangedHandler] Refreshed Roo models cache for active session`)
