@@ -789,7 +789,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
-							if (!isHidden && !sendingDisabled && !enableButtons) {
+							// Do not grab focus during follow-up questions
+							if (!isHidden && !sendingDisabled && !enableButtons && clineAsk !== "followup") {
 								textAreaRef.current?.focus()
 							}
 							break
@@ -858,6 +859,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSecondaryButtonClick,
 			setCheckpointWarning,
 			playSound,
+			clineAsk,
 		],
 	)
 
@@ -976,12 +978,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useDebounceEffect(
 		() => {
-			if (!isHidden && !sendingDisabled && !enableButtons) {
+			// Do not grab focus during follow-up questions
+			if (!isHidden && !sendingDisabled && !enableButtons && clineAsk !== "followup") {
 				textAreaRef.current?.focus()
 			}
 		},
 		50,
-		[isHidden, sendingDisabled, enableButtons],
+		[isHidden, sendingDisabled, enableButtons, clineAsk],
 	)
 
 	useEffect(() => {
@@ -1216,7 +1219,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
-			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
+			const _hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
 
 			// Check if this is a browser action message
 			if (messageOrGroup.type === "say" && messageOrGroup.say === "browser_action") {
@@ -1252,12 +1255,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					key={messageOrGroup.ts}
 					message={messageOrGroup}
 					isExpanded={expandedRows[messageOrGroup.ts] || false}
-					onToggleExpand={toggleRowExpansion} // This was already stabilized
-					lastModifiedMessage={modifiedMessages.at(-1)} // Original direct access
-					isLast={index === groupedMessages.length - 1} // Original direct access
+					onToggleExpand={toggleRowExpansion}
+					lastModifiedMessage={modifiedMessages.at(-1)}
+					isLast={index === groupedMessages.length - 1}
 					onHeightChange={handleRowHeightChange}
 					isStreaming={isStreaming}
-					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
+					onSuggestionClick={handleSuggestionClickInRow}
 					onBatchFileResponse={handleBatchFileResponse}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
 					editable={
@@ -1278,7 +1281,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
 						})()
 					}
-					hasCheckpoint={hasCheckpoint}
 				/>
 			)
 		},

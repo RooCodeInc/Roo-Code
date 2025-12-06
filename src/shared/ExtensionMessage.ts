@@ -131,6 +131,7 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "requireCtrlEnterToSend"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -138,6 +139,7 @@ export interface ExtensionMessage {
 		type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"
 		timeout: number
 	}
+	bool?: boolean
 	action?:
 		| "chatButtonClicked"
 		| "settingsButtonClicked"
@@ -288,6 +290,7 @@ export type ExtensionState = Pick<
 	| "includeCurrentTime"
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"
+	| "requireCtrlEnterToSend"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

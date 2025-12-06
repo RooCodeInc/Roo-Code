@@ -105,6 +105,7 @@
 	"enhancePrompt": "Ulepsz podpowiedź dodatkowym kontekstem",
 	"addImages": "Dodaj obrazy do wiadomości",
 	"sendMessage": "Wyślij wiadomość",
+	"pressToSend": "Naciśnij {{keyCombination}}, aby wysłać",
 	"stopTts": "Zatrzymaj syntezę mowy",
 	"typeMessage": "Wpisz wiadomość...",
 	"typeTask": "Wpisz swoje zadanie tutaj...",

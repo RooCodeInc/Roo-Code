@@ -213,6 +213,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		requireCtrlEnterToSend,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -416,6 +417,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
+					requireCtrlEnterToSend: requireCtrlEnterToSend ?? false,
 					profileThresholds,
 					imageGenerationProvider,
 					openRouterImageApiKey,
@@ -833,6 +835,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+							requireCtrlEnterToSend={requireCtrlEnterToSend ?? false}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
