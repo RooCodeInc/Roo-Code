@@ -58,20 +58,25 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
 
 		// Use the OpenAI-compatible API.
+		const requestOptions = {
+			model: modelId,
+			max_tokens: modelInfo.maxTokens,
+			temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages),
+			] as OpenAI.Chat.ChatCompletionMessageParam[],
+			stream: true as const,
+			stream_options: { include_usage: true },
+			...(reasoning && reasoning),
+			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+		}
+
 		let stream
 		try {
-			stream = await this.client.chat.completions.create({
-				model: modelId,
-				max_tokens: modelInfo.maxTokens,
-				temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
-				messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
-				stream: true,
-				stream_options: { include_usage: true },
-				...(reasoning && reasoning),
-				...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
-			})
+			stream = await this.client.chat.completions.create(requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
 		}

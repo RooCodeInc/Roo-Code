@@ -8,6 +8,7 @@ import { Terminal } from "./Terminal"
 import { ExecaTerminal } from "./ExecaTerminal"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
 import { isJetbrainsPlatform } from "../../utils/platform"
+import delay from "delay"
 
 // Although vscode.window.terminals provides a list of all open terminals,
 // there's no way to know whether they're busy or not (exitStatus does not
@@ -55,6 +56,7 @@ export class TerminalRegistry {
 					}
 					// Get a handle to the stream as early as possible:
 					const stream = e.execution.read()
+					await delay(100) // Wait for stream to be ready
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
 
 					console.info("[onDidStartTerminalShellExecution]", {
