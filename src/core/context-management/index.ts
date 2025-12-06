@@ -164,6 +164,7 @@ export type ContextManagementResult = SummarizeResponse & {
 	prevContextTokens: number
 	truncationId?: string
 	messagesRemoved?: number
+	newContextTokensAfterTruncation?: number
 }
 
 /**
@@ -254,6 +255,25 @@ export async function manageContext({
 	// Fall back to sliding window truncation if needed
 	if (prevContextTokens > allowedTokens) {
 		const truncationResult = truncateConversation(messages, 0.5, taskId)
+
+		// Calculate new context tokens after truncation by counting non-truncated messages
+		// Messages with truncationParent are hidden, so we count only those without it
+		const effectiveMessages = truncationResult.messages.filter(
+			(msg) => !msg.truncationParent && !msg.isTruncationMarker,
+		)
+		let newContextTokensAfterTruncation = 0
+		for (const msg of effectiveMessages) {
+			const content = msg.content
+			if (Array.isArray(content)) {
+				newContextTokensAfterTruncation += await estimateTokenCount(content, apiHandler)
+			} else if (typeof content === "string") {
+				newContextTokensAfterTruncation += await estimateTokenCount(
+					[{ type: "text", text: content }],
+					apiHandler,
+				)
+			}
+		}
+
 		return {
 			messages: truncationResult.messages,
 			prevContextTokens,
@@ -262,6 +282,7 @@ export async function manageContext({
 			error,
 			truncationId: truncationResult.truncationId,
 			messagesRemoved: truncationResult.messagesRemoved,
+			newContextTokensAfterTruncation,
 		}
 	}
 	// No truncation or condensation needed

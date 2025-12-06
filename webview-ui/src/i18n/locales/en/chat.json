@@ -174,11 +174,20 @@
 		},
 		"current": "Current"
 	},
-	"contextCondense": {
-		"title": "Context Condensed",
-		"condensing": "Condensing context...",
-		"errorHeader": "Failed to condense context",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Context Condensed",
+			"inProgress": "Condensing context...",
+			"errorHeader": "Failed to condense context"
+		},
+		"truncation": {
+			"title": "Context Truncated",
+			"inProgress": "Truncating context...",
+			"messagesRemoved": "{{count}} message removed",
+			"messagesRemoved_other": "{{count}} messages removed",
+			"description": "Older messages were removed from the conversation to stay within the context window limit. This is a fast but less context-preserving approach compared to condensation."
+		}
 	},
 	"instructions": {
 		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"

@@ -284,11 +284,20 @@
 		"thinking": "Đang suy nghĩ",
 		"seconds": "{{count}} giây"
 	},
-	"contextCondense": {
-		"title": "Ngữ cảnh đã tóm tắt",
-		"condensing": "Đang cô đọng ngữ cảnh...",
-		"errorHeader": "Không thể cô đọng ngữ cảnh",
-		"tokens": "token"
+	"contextManagement": {
+		"tokens": "token",
+		"condensation": {
+			"title": "Ngữ cảnh đã tóm tắt",
+			"inProgress": "Đang cô đọng ngữ cảnh...",
+			"errorHeader": "Không thể cô đọng ngữ cảnh"
+		},
+		"truncation": {
+			"title": "Ngữ cảnh đã cắt bớt",
+			"inProgress": "Đang cắt bớt ngữ cảnh...",
+			"messagesRemoved": "{{count}} tin nhắn đã xóa",
+			"messagesRemoved_other": "{{count}} tin nhắn đã xóa",
+			"description": "Các tin nhắn cũ hơn đã bị xóa khỏi cuộc trò chuyện để giữ trong giới hạn cửa sổ ngữ cảnh. Đây là cách tiếp cận nhanh nhưng ít bảo toàn ngữ cảnh hơn so với cô đọng."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Sao chép vào ô nhập liệu (hoặc Shift + nhấp chuột)",

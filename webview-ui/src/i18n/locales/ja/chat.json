@@ -283,11 +283,20 @@
 		"thinking": "考え中",
 		"seconds": "{{count}}秒"
 	},
-	"contextCondense": {
-		"title": "コンテキスト要約",
-		"condensing": "コンテキストを圧縮中...",
-		"errorHeader": "コンテキストの圧縮に失敗しました",
-		"tokens": "トークン"
+	"contextManagement": {
+		"tokens": "トークン",
+		"condensation": {
+			"title": "コンテキスト要約",
+			"inProgress": "コンテキストを圧縮中...",
+			"errorHeader": "コンテキストの圧縮に失敗しました"
+		},
+		"truncation": {
+			"title": "コンテキスト切り詰め",
+			"inProgress": "コンテキストを切り詰め中...",
+			"messagesRemoved": "{{count}}件のメッセージを削除",
+			"messagesRemoved_other": "{{count}}件のメッセージを削除",
+			"description": "コンテキストウィンドウの制限内に収めるため、古いメッセージが会話から削除されました。これは圧縮と比較して高速ですが、コンテキストの保持性が低いアプローチです。"
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "入力欄にコピー（またはShift + クリック）",
