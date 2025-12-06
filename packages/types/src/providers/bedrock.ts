@@ -27,6 +27,25 @@ export const bedrockModels = {
 		minTokensPerCachePoint: 1024,
 		maxCachePoints: 4,
 		cachableFields: ["system", "messages", "tools"],
+		// Service tier pricing (FLEX ~20% discount, PRIORITY ~20% premium)
+		tiers: [
+			{
+				name: "flex" as const,
+				contextWindow: 200_000,
+				inputPrice: 2.4, // 20% discount
+				outputPrice: 12.0, // 20% discount
+				cacheWritesPrice: 3.0, // 20% discount
+				cacheReadsPrice: 0.24, // 20% discount
+			},
+			{
+				name: "priority" as const,
+				contextWindow: 200_000,
+				inputPrice: 3.6, // 20% premium
+				outputPrice: 18.0, // 20% premium
+				cacheWritesPrice: 4.5, // 20% premium
+				cacheReadsPrice: 0.36, // 20% premium
+			},
+		],
 	},
 	"amazon.nova-pro-v1:0": {
 		maxTokens: 5000,
@@ -184,6 +203,25 @@ export const bedrockModels = {
 		minTokensPerCachePoint: 2048,
 		maxCachePoints: 4,
 		cachableFields: ["system", "messages", "tools"],
+		// Service tier pricing (FLEX ~20% discount, PRIORITY ~20% premium)
+		tiers: [
+			{
+				name: "flex" as const,
+				contextWindow: 200_000,
+				inputPrice: 0.64, // 20% discount
+				outputPrice: 3.2, // 20% discount
+				cacheWritesPrice: 0.8, // 20% discount
+				cacheReadsPrice: 0.064, // 20% discount
+			},
+			{
+				name: "priority" as const,
+				contextWindow: 200_000,
+				inputPrice: 0.96, // 20% premium
+				outputPrice: 4.8, // 20% premium
+				cacheWritesPrice: 1.2, // 20% premium
+				cacheReadsPrice: 0.096, // 20% premium
+			},
+		],
 	},
 	"anthropic.claude-haiku-4-5-20251001-v1:0": {
 		maxTokens: 8192,
@@ -235,6 +273,21 @@ export const bedrockModels = {
 		supportsNativeTools: true,
 		inputPrice: 0.25,
 		outputPrice: 1.25,
+		// Service tier pricing (FLEX ~20% discount, PRIORITY ~20% premium)
+		tiers: [
+			{
+				name: "flex" as const,
+				contextWindow: 200_000,
+				inputPrice: 0.2, // 20% discount
+				outputPrice: 1.0, // 20% discount
+			},
+			{
+				name: "priority" as const,
+				contextWindow: 200_000,
+				inputPrice: 0.3, // 20% premium
+				outputPrice: 1.5, // 20% premium
+			},
+		],
 	},
 	"anthropic.claude-2-1-v1:0": {
 		maxTokens: 4096,

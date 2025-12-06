@@ -53,13 +53,14 @@ interface BedrockInferenceConfig {
 }
 
 // Define interface for Bedrock additional model request fields
-// This includes thinking configuration, 1M context beta, and other model-specific parameters
+// This includes thinking configuration, 1M context beta, service tier, and other model-specific parameters
 interface BedrockAdditionalModelFields {
 	thinking?: {
 		type: "enabled"
 		budget_tokens: number
 	}
 	anthropic_beta?: string[]
+	service_tier?: "STANDARD" | "FLEX" | "PRIORITY"
 	[key: string]: any // Add index signature to be compatible with DocumentType
 }
 
@@ -431,6 +432,28 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				additionalModelRequestFields = {} as BedrockAdditionalModelFields
 			}
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
+		}
+
+		// Add service tier if specified and model supports it
+		if (this.options.awsBedrockServiceTier && modelConfig.info.tiers && modelConfig.info.tiers.length > 0) {
+			if (!additionalModelRequestFields) {
+				additionalModelRequestFields = {} as BedrockAdditionalModelFields
+			}
+			// Convert from lowercase to uppercase for API
+			const tierMap: Record<string, "STANDARD" | "FLEX" | "PRIORITY"> = {
+				default: "STANDARD",
+				flex: "FLEX",
+				priority: "PRIORITY",
+			}
+			const mappedTier = tierMap[this.options.awsBedrockServiceTier as string]
+			if (mappedTier) {
+				additionalModelRequestFields.service_tier = mappedTier
+				logger.info("Service tier specified for Bedrock request", {
+					ctx: "bedrock",
+					modelId: modelConfig.id,
+					serviceTier: mappedTier,
+				})
+			}
 		}
 
 		// Build tool configuration if native tools are enabled
@@ -1027,15 +1050,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		reasoningBudget?: number
 	} {
 		if (this.costModelConfig?.id?.trim().length > 0) {
+			// Apply service tier pricing if specified
+			const tierAdjustedInfo = this.applyServiceTierPricing(this.costModelConfig.info)
+
 			// Get model params for cost model config
 			const params = getModelParams({
 				format: "anthropic",
 				modelId: this.costModelConfig.id,
-				model: this.costModelConfig.info,
+				model: tierAdjustedInfo,
 				settings: this.options,
 				defaultTemperature: BEDROCK_DEFAULT_TEMPERATURE,
 			})
-			return { ...this.costModelConfig, ...params }
+			return { ...this.costModelConfig, info: tierAdjustedInfo, ...params }
 		}
 
 		let modelConfig = undefined
@@ -1080,17 +1106,20 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
+		// Apply service tier pricing if specified
+		const tierAdjustedInfo = this.applyServiceTierPricing(modelConfig.info)
+
 		// Get model params including reasoning configuration
 		const params = getModelParams({
 			format: "anthropic",
 			modelId: modelConfig.id,
-			model: modelConfig.info,
+			model: tierAdjustedInfo,
 			settings: this.options,
 			defaultTemperature: BEDROCK_DEFAULT_TEMPERATURE,
 		})
 
 		// Don't override maxTokens/contextWindow here; handled in getModelById (and includes user overrides)
-		return { ...modelConfig, ...params } as {
+		return { ...modelConfig, info: tierAdjustedInfo, ...params } as {
 			id: BedrockModelId | string
 			info: ModelInfo
 			maxTokens?: number
@@ -1228,6 +1257,33 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 		return false
+	}
+
+	/************************************************************************************
+	 *
+	 *     SERVICE TIER PRICING
+	 *
+	 *************************************************************************************/
+
+	/**
+	 * Returns a shallow-cloned ModelInfo with pricing overridden for the given tier, if available.
+	 * If no tier or no overrides exist, the original ModelInfo is returned.
+	 */
+	private applyServiceTierPricing(info: ModelInfo): ModelInfo {
+		const tier = this.options.awsBedrockServiceTier
+		if (!tier || tier === "default") return info
+
+		// Find the tier with matching name in the tiers array
+		const tierInfo = info.tiers?.find((t) => t.name === tier)
+		if (!tierInfo) return info
+
+		return {
+			...info,
+			inputPrice: tierInfo.inputPrice ?? info.inputPrice,
+			outputPrice: tierInfo.outputPrice ?? info.outputPrice,
+			cacheReadsPrice: tierInfo.cacheReadsPrice ?? info.cacheReadsPrice,
+			cacheWritesPrice: tierInfo.cacheWritesPrice ?? info.cacheWritesPrice,
+		}
 	}
 
 	/************************************************************************************
