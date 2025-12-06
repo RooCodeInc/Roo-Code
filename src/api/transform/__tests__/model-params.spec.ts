@@ -990,4 +990,74 @@ describe("getModelParams", () => {
 			expect(result.reasoningBudget).toBe(8192) // Default thinking tokens
 		})
 	})
+
+	describe("Interleaved thinking mode temperature handling", () => {
+		const interleavedThinkingModel: ModelInfo = {
+			...baseModel,
+			maxTokens: 65536,
+			supportsInterleavedThinking: true,
+		}
+
+		const nonInterleavedThinkingModel: ModelInfo = {
+			...baseModel,
+			maxTokens: 8192,
+			supportsInterleavedThinking: false,
+		}
+
+		it("should set temperature to undefined for interleaved thinking models", () => {
+			const result = getModelParams({
+				format: "openai",
+				modelId: "deepseek-reasoner",
+				model: interleavedThinkingModel,
+				settings: {},
+			})
+
+			expect(result.temperature).toBeUndefined()
+			expect(result.format).toBe("openai")
+		})
+
+		it("should set temperature to undefined for interleaved thinking models even with custom temperature setting", () => {
+			const result = getModelParams({
+				format: "openai",
+				modelId: "deepseek-reasoner",
+				model: interleavedThinkingModel,
+				settings: { modelTemperature: 0.8 },
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+
+		it("should use normal temperature handling for non-interleaved thinking models", () => {
+			const result = getModelParams({
+				format: "openai",
+				modelId: "deepseek-chat",
+				model: nonInterleavedThinkingModel,
+				settings: {},
+			})
+
+			expect(result.temperature).toBe(0) // Default temperature
+		})
+
+		it("should respect custom temperature for non-interleaved thinking models", () => {
+			const result = getModelParams({
+				format: "openai",
+				modelId: "deepseek-chat",
+				model: nonInterleavedThinkingModel,
+				settings: { modelTemperature: 0.7 },
+			})
+
+			expect(result.temperature).toBe(0.7)
+		})
+
+		it("should not affect other openai models", () => {
+			const result = getModelParams({
+				format: "openai",
+				modelId: "gpt-4",
+				model: baseModel,
+				settings: { modelTemperature: 0.5 },
+			})
+
+			expect(result.temperature).toBe(0.5)
+		})
+	})
 })

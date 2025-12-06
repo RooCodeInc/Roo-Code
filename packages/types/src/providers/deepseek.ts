@@ -24,6 +24,10 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
+		// Enables interleaved thinking mode (reasoning_content field)
+		supportsInterleavedThinking: true,
+		// Parameter passed via extra_body to enable thinking mode
+		interleavedThinkingParam: { thinking: { type: "enabled" } },
 		inputPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
 		outputPrice: 1.68, // $1.68 per million tokens - Updated Sept 5, 2025
 		cacheWritesPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025

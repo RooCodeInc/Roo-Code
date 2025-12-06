@@ -705,6 +705,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const reasoningSummary = handler.getSummary?.()
 			const reasoningDetails = handler.getReasoningDetails?.()
 
+			// Check if model supports interleaved thinking
+			const modelInfo = this.api.getModel().info
+			const supportsInterleavedThinking = modelInfo?.supportsInterleavedThinking === true
+
 			// Start from the original assistant message
 			const messageWithTs: any = {
 				...message,
@@ -717,9 +721,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				messageWithTs.reasoning_details = reasoningDetails
 			}
 
+			// Store reasoning_content as top-level field for interleaved thinking models
+			// (not converted to content blocks, as per interleaved thinking API format)
+			if (supportsInterleavedThinking && reasoning && !reasoningDetails) {
+				messageWithTs.reasoning_content = reasoning
+			}
+
 			// Store reasoning: plain text (most providers) or encrypted (OpenAI Native)
 			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
-			if (reasoning && !reasoningDetails) {
+			// Skip for interleaved thinking models (they use reasoning_content instead)
+			if (reasoning && !reasoningDetails && !supportsInterleavedThinking) {
 				const reasoningBlock = {
 					type: "reasoning",
 					text: reasoning,

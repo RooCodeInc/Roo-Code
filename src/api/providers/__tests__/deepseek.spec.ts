@@ -172,6 +172,15 @@ describe("DeepSeekHandler", () => {
 			expect(model.info.contextWindow).toBe(128_000)
 			expect(model.info.supportsImages).toBe(false)
 			expect(model.info.supportsPromptCache).toBe(true)
+			// Verify interleaved thinking capability flags
+			expect(model.info.supportsInterleavedThinking).toBe(true)
+			expect(model.info.interleavedThinkingParam).toEqual({ thinking: { type: "enabled" } })
+		})
+
+		it("should not have interleaved thinking flags for deepseek-chat", () => {
+			const model = handler.getModel()
+			expect(model.info.supportsInterleavedThinking).toBeUndefined()
+			expect(model.info.interleavedThinkingParam).toBeUndefined()
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {

@@ -157,6 +157,11 @@ export function getModelParams({
 			params.temperature = undefined
 		}
 
+		// Override temperature for interleaved thinking models (temperature has no effect in thinking mode)
+		if (model?.supportsInterleavedThinking === true) {
+			params.temperature = undefined
+		}
+
 		return {
 			format,
 			...params,

@@ -83,6 +83,19 @@ export const modelInfoSchema = z.object({
 	supportsReasoningBudget: z.boolean().optional(),
 	// Capability flag to indicate whether the model supports simple on/off binary reasoning
 	supportsReasoningBinary: z.boolean().optional(),
+	/**
+	 * Capability flag to indicate whether the model supports interleaved thinking.
+	 * When true, the model emits `reasoning_content` alongside `content` in responses.
+	 * Examples: DeepSeek reasoner, Kimi K2 Thinking, Minimax M2.
+	 */
+	supportsInterleavedThinking: z.boolean().optional(),
+	/**
+	 * Provider-specific parameters needed to enable interleaved thinking.
+	 * Different providers may use different parameter formats.
+	 * Example: DeepSeek uses `{ thinking: { type: "enabled" } }`.
+	 * This parameter is passed via `extra_body` or similar mechanism.
+	 */
+	interleavedThinkingParam: z.record(z.any()).optional(),
 	// Capability flag to indicate whether the model supports temperature parameter
 	supportsTemperature: z.boolean().optional(),
 	defaultTemperature: z.number().optional(),

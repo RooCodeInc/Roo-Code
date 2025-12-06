@@ -344,6 +344,14 @@ describe("Task reasoning preservation", () => {
 				id: "rs_test",
 			}),
 			getResponseId: vi.fn().mockReturnValue("resp_test"),
+			getModel: vi.fn().mockReturnValue({
+				id: "test-model",
+				info: {
+					contextWindow: 16000,
+					supportsPromptCache: true,
+					// supportsInterleavedThinking is undefined (not an interleaved thinking model)
+				},
+			}),
 		} as any
 
 		await (task as any).addToApiConversationHistory({

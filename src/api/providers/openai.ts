@@ -17,6 +17,7 @@ import { XmlMatcher } from "../../utils/xml-matcher"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
+import { isNewUserTurn } from "../transform/detect-turn-boundary"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -85,13 +86,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { info: modelInfo, reasoning } = this.getModel()
+		const { info: modelInfo, reasoning, temperature } = this.getModel()
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		const supportsInterleavedThinking = modelInfo?.supportsInterleavedThinking === true || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
@@ -107,8 +108,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		if (this.options.openAiStreamingEnabled ?? true) {
 			let convertedMessages
 
-			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+			if (supportsInterleavedThinking) {
+				// For interleaved thinking models, conditionally clear reasoning_content:
+				// - Clear for new user turns (preserve only final answers)
+				// - Preserve during tool call sequences (required by API)
+				const allMessages = [{ role: "user", content: systemPrompt }, ...messages]
+				const shouldClearReasoning = isNewUserTurn(allMessages)
+				convertedMessages = convertToR1Format(allMessages, shouldClearReasoning)
 			} else if (ark || enabledLegacyFormat) {
 				convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
 			} else {
@@ -159,7 +165,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				temperature,
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -169,6 +175,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(metadata?.toolProtocol === "native" && {
 					parallel_tool_calls: metadata.parallelToolCalls ?? false,
 				}),
+			}
+
+			// Add interleaved thinking parameter if supported
+			if (supportsInterleavedThinking && modelInfo?.interleavedThinkingParam) {
+				// @ts-ignore-next-line - extra_body is not in the type definition but is supported by OpenAI API
+				requestOptions.extra_body = modelInfo.interleavedThinkingParam
 			}
 
 			// Add max_tokens if needed
@@ -193,24 +205,47 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}) as const,
 			)
 
+			// Accumulation state for interleaved thinking mode
+			// According to API documentation for interleaved thinking, chunks contain either reasoning_content OR content, not both
+			// However, tool_calls may appear alongside either reasoning_content or content
+			let reasoningAccumulator = ""
+			let isReasoningPhase = true
+			let hasEmittedReasoning = false
+
 			let lastUsage
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
 
+				// Handle reasoning_content accumulation (interleaved thinking mode)
+				if ("reasoning_content" in delta && delta.reasoning_content) {
+					reasoningAccumulator += (delta.reasoning_content as string | undefined) || ""
+					isReasoningPhase = true
+					// Note: Continue to process tool_calls and usage in same chunk if present
+				}
+
+				// Handle content - if we were in reasoning phase, emit accumulated reasoning first
 				if (delta.content) {
+					// Transition from reasoning to content phase
+					if (isReasoningPhase && reasoningAccumulator && !hasEmittedReasoning) {
+						yield {
+							type: "reasoning",
+							text: reasoningAccumulator,
+						}
+						hasEmittedReasoning = true
+						reasoningAccumulator = ""
+					}
+					isReasoningPhase = false
+
+					// Process content as usual
 					for (const chunk of matcher.update(delta.content)) {
 						yield chunk
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
-					yield {
-						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
-					}
-				}
-
+				// Handle tool calls (can occur during reasoning or content phase)
+				// Note: Reasoning may continue after tool calls, so we don't emit reasoning here
+				// Reasoning will be emitted when transitioning to content phase or at stream end
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
 						yield {
@@ -228,6 +263,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
+			// Emit any remaining accumulated reasoning content at stream end
+			// This handles cases where stream ends during reasoning phase
+			if (reasoningAccumulator && !hasEmittedReasoning) {
+				yield {
+					type: "reasoning",
+					text: reasoningAccumulator,
+				}
+			}
+
 			for (const chunk of matcher.final()) {
 				yield chunk
 			}
@@ -238,8 +282,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
-				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				messages: supportsInterleavedThinking
+					? (() => {
+							// For interleaved thinking models, conditionally clear reasoning_content:
+							// - Clear for new user turns (preserve only final answers)
+							// - Preserve during tool call sequences (required by API)
+							const allMessages = [{ role: "user", content: systemPrompt }, ...messages]
+							const shouldClearReasoning = isNewUserTurn(allMessages)
+							return convertToR1Format(allMessages, shouldClearReasoning)
+						})()
 					: enabledLegacyFormat
 						? [systemMessage, ...convertToSimpleMessages(messages)]
 						: [systemMessage, ...convertToOpenAiMessages(messages)],
@@ -248,6 +299,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(metadata?.toolProtocol === "native" && {
 					parallel_tool_calls: metadata.parallelToolCalls ?? false,
 				}),
+			}
+
+			// Add interleaved thinking parameter if supported
+			if (supportsInterleavedThinking && modelInfo?.interleavedThinkingParam) {
+				// @ts-ignore-next-line - extra_body is not in the type definition but is supported by OpenAI API
+				requestOptions.extra_body = modelInfo.interleavedThinkingParam
 			}
 
 			// Add max_tokens if needed
@@ -275,6 +332,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							arguments: toolCall.function.arguments,
 						}
 					}
+				}
+			}
+
+			// Handle reasoning_content for interleaved thinking models
+			if (supportsInterleavedThinking && "reasoning_content" in message && message.reasoning_content) {
+				yield {
+					type: "reasoning",
+					text: (message.reasoning_content as string | undefined) || "",
 				}
 			}
 

@@ -1,6 +1,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
+import { clearReasoningContentFromMessages } from "./clear-reasoning-content"
+
 type ContentPartText = OpenAI.Chat.ChatCompletionContentPartText
 type ContentPartImage = OpenAI.Chat.ChatCompletionContentPartImage
 type UserMessage = OpenAI.Chat.ChatCompletionUserMessageParam
@@ -10,23 +12,45 @@ type AnthropicMessage = Anthropic.Messages.MessageParam
 
 /**
  * Converts Anthropic messages to OpenAI format while merging consecutive messages with the same role.
- * This is required for DeepSeek Reasoner which does not support successive messages with the same role.
+ * This is required for models using R1 format (e.g., interleaved thinking models) which do not support successive messages with the same role.
  *
- * @param messages Array of Anthropic messages
- * @returns Array of OpenAI messages where consecutive messages with the same role are combined
+ * According to API documentation for interleaved thinking:
+ * - `reasoning_content` from previous turns should NOT be included when sending messages for new turns
+ * - `reasoning_content` MUST be preserved during tool call sequences within the same turn
+ *
+ * This function conditionally clears reasoning_content based on whether a new turn is starting or
+ * a tool call sequence is continuing.
+ *
+ * @param messages Array of Anthropic messages (may contain reasoning_content from previous turns)
+ * @param clearReasoningContent If true, clears reasoning_content from assistant messages (default: true for backward compatibility).
+ *                              Set to false to preserve reasoning_content during tool call sequences.
+ * @returns Array of OpenAI messages where consecutive messages with the same role are combined,
+ *          and reasoning_content is conditionally cleared based on clearReasoningContent parameter
  */
-export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
-	return messages.reduce<Message[]>((merged, message) => {
+export function convertToR1Format(messages: AnthropicMessage[], clearReasoningContent: boolean = true): Message[] {
+	// Conditionally clear reasoning_content from assistant messages before conversion
+	// - If clearReasoningContent is true (new turn): clear reasoning_content
+	// - If clearReasoningContent is false (tool call continuation): preserve reasoning_content
+	const cleanedMessages = clearReasoningContent ? clearReasoningContentFromMessages(messages) : messages
+
+	return cleanedMessages.reduce<Message[]>((merged, message) => {
 		const lastMessage = merged[merged.length - 1]
 		let messageContent: string | (ContentPartText | ContentPartImage)[] = ""
 		let hasImages = false
+
+		// Extract reasoning_content if present (for assistant messages during tool call sequences)
+		const messageWithReasoning = message as any
+		const reasoningContent =
+			message.role === "assistant" && "reasoning_content" in messageWithReasoning
+				? messageWithReasoning.reasoning_content
+				: undefined
 
 		// Convert content to appropriate format
 		if (Array.isArray(message.content)) {
 			const textParts: string[] = []
 			const imageParts: ContentPartImage[] = []
 
-			message.content.forEach((part) => {
+			message.content.forEach((part: Anthropic.TextBlockParam | Anthropic.ImageBlockParam) => {
 				if (part.type === "text") {
 					textParts.push(part.text)
 				}
@@ -71,6 +95,12 @@ export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
 				if (message.role === "assistant") {
 					const mergedContent = [...lastContent, ...newContent] as AssistantMessage["content"]
 					lastMessage.content = mergedContent
+					// Preserve reasoning_content if present (for tool call sequences)
+					// Note: When merging, we keep the reasoning_content from the last message
+					// This is correct because in tool call sequences, we want the most recent reasoning
+					if (reasoningContent !== undefined) {
+						;(lastMessage as any).reasoning_content = reasoningContent
+					}
 				} else {
 					const mergedContent = [...lastContent, ...newContent] as UserMessage["content"]
 					lastMessage.content = mergedContent
@@ -82,6 +112,10 @@ export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
 				const newMessage: AssistantMessage = {
 					role: "assistant",
 					content: messageContent as AssistantMessage["content"],
+				}
+				// Preserve reasoning_content if present (for tool call sequences)
+				if (reasoningContent !== undefined) {
+					;(newMessage as any).reasoning_content = reasoningContent
 				}
 				merged.push(newMessage)
 			} else {
