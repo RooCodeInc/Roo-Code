@@ -211,14 +211,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				if (delta.tool_calls) {
+				// Emit raw tool call chunks with validation
+				if (delta.tool_calls && Array.isArray(delta.tool_calls)) {
 					for (const toolCall of delta.tool_calls) {
-						yield {
-							type: "tool_call_partial",
-							index: toolCall.index,
-							id: toolCall.id,
-							name: toolCall.function?.name,
-							arguments: toolCall.function?.arguments,
+						// Validate toolCall structure before emitting
+						if (toolCall && typeof toolCall.index === "number") {
+							yield {
+								type: "tool_call_partial",
+								index: toolCall.index,
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								arguments: toolCall.function?.arguments,
+							}
 						}
 					}
 				}
@@ -455,14 +459,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				// Emit raw tool call chunks - NativeToolCallParser handles state management
-				if (delta.tool_calls) {
+				if (delta.tool_calls && Array.isArray(delta.tool_calls)) {
 					for (const toolCall of delta.tool_calls) {
-						yield {
-							type: "tool_call_partial",
-							index: toolCall.index,
-							id: toolCall.id,
-							name: toolCall.function?.name,
-							arguments: toolCall.function?.arguments,
+						// Validate toolCall structure before emitting
+						if (toolCall && typeof toolCall.index === "number") {
+							yield {
+								type: "tool_call_partial",
+								index: toolCall.index,
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								arguments: toolCall.function?.arguments,
+							}
 						}
 					}
 				}

@@ -137,15 +137,19 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				)
 			}
 
+			// Safely access delta with fallback
 			const delta = chunk.choices?.[0]?.delta
 
-			if (delta?.content) {
-				for (const processedChunk of matcher.update(delta.content)) {
-					yield processedChunk
-				}
-			}
-
+			// Only process if delta exists
 			if (delta) {
+				// Process content
+				if (delta.content) {
+					for (const processedChunk of matcher.update(delta.content)) {
+						yield processedChunk
+					}
+				}
+
+				// Process reasoning content
 				for (const key of ["reasoning_content", "reasoning"] as const) {
 					if (key in delta) {
 						const reasoning_content = ((delta as any)[key] as string | undefined) || ""
@@ -155,21 +159,26 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 						break
 					}
 				}
-			}
 
-			// Emit raw tool call chunks - NativeToolCallParser handles state management
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
+				// Ensure tool_calls is properly handled even if structure varies
+				if (delta.tool_calls && Array.isArray(delta.tool_calls)) {
+					for (const toolCall of delta.tool_calls) {
+						// Validate toolCall structure before emitting
+						if (toolCall && typeof toolCall.index === "number") {
+							yield {
+								type: "tool_call_partial",
+								index: toolCall.index,
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								arguments: toolCall.function?.arguments,
+							}
+						}
 					}
 				}
 			}
 
+			// Process usage information
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
