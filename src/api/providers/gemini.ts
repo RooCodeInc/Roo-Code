@@ -6,7 +6,6 @@ import {
 	type GenerateContentConfig,
 	type GroundingMetadata,
 	FunctionCallingConfigMode,
-	Content,
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
 
@@ -15,7 +14,7 @@ import { type ModelInfo, type GeminiModelId, geminiDefaultModelId, geminiModels 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { safeJsonParse } from "../../shared/safeJsonParse"
 
-import { convertAnthropicContentToGemini, convertAnthropicMessageToGemini } from "../transform/gemini-format"
+import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { t } from "i18next"
 import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -428,30 +427,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			throw error
-		}
-	}
-
-	override async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
-		try {
-			const { id: model } = this.getModel()
-
-			const countTokensRequest = {
-				model,
-				// Token counting does not need encrypted continuation; always drop thoughtSignature.
-				contents: convertAnthropicContentToGemini(content, { includeThoughtSignatures: false }),
-			}
-
-			const response = await this.client.models.countTokens(countTokensRequest)
-
-			if (response.totalTokens === undefined) {
-				console.warn("Gemini token counting returned undefined, using fallback")
-				return super.countTokens(content)
-			}
-
-			return response.totalTokens
-		} catch (error) {
-			console.warn("Gemini token counting failed, using fallback", error)
-			return super.countTokens(content)
 		}
 	}
 
