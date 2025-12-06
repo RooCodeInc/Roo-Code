@@ -347,7 +347,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
+							// Check if current task has a parent task to return to
+							setPrimaryButtonText(
+								currentTaskItem?.parentTaskId
+									? t("chat:completeSubtaskAndReturn")
+									: t("chat:startNewTask.title"),
+							)
 							setSecondaryButtonText(undefined)
 							break
 						case "resume_task":
@@ -376,7 +381,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(false)
 							setClineAsk("resume_completed_task")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
+							// Check if current task has a parent task to return to
+							setPrimaryButtonText(
+								currentTaskItem?.parentTaskId
+									? t("chat:completeSubtaskAndReturn")
+									: t("chat:startNewTask.title"),
+							)
 							setSecondaryButtonText(undefined)
 							setDidClickCancel(false)
 							break
