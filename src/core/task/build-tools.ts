@@ -14,6 +14,7 @@ interface BuildToolsOptions {
 	maxReadFileLine: number
 	browserToolEnabled: boolean
 	modelInfo?: ModelInfo
+	windowsScriptExecutionEnabled?: boolean
 }
 
 /**
@@ -53,7 +54,9 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	const partialReadsEnabled = maxReadFileLine !== -1
 
 	// Build native tools with dynamic read_file tool based on partialReadsEnabled
-	const nativeTools = getNativeTools(partialReadsEnabled)
+	const nativeTools = getNativeTools(partialReadsEnabled, {
+		windowsScriptModeEnabled: process.platform === "win32" && (options.windowsScriptExecutionEnabled ?? true),
+	})
 
 	// Filter native tools based on mode restrictions
 	const filteredNativeTools = filterNativeToolsForMode(

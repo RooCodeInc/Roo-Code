@@ -266,6 +266,7 @@ export type ExtensionState = Pick<
 	| "terminalZshP10k"
 	| "terminalZdotdir"
 	| "terminalCompressProgressBar"
+	| "windowsScriptExecutionEnabled"
 	| "diagnosticsEnabled"
 	| "diffEnabled"
 	| "fuzzyMatchThreshold"

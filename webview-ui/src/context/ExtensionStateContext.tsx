@@ -214,6 +214,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalOutputLineLimit: 500,
 		terminalOutputCharacterLimit: 50000,
 		terminalShellIntegrationTimeout: 4000,
+		windowsScriptExecutionEnabled: true,
 		mcpEnabled: true,
 		enableMcpServerCreation: false,
 		remoteControlEnabled: false,

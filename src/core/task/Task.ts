@@ -3323,6 +3323,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						.get<boolean>("newTaskRequireTodos", false),
 					toolProtocol,
 					isStealthModel: modelInfo?.isStealthModel,
+					windowsScriptExecutionEnabled: state?.windowsScriptExecutionEnabled ?? true,
+					isWindows: process.platform === "win32",
 				},
 				undefined, // todoList
 				this.api.getModel().id,
@@ -3611,6 +3613,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
 				modelInfo,
+				windowsScriptExecutionEnabled: state?.windowsScriptExecutionEnabled ?? true,
 			})
 		}
 
