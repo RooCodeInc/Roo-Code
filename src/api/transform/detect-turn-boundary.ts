@@ -58,10 +58,7 @@ export function isNewUserTurn(messages: Anthropic.Messages.MessageParam[]): bool
 		// Check if assistant message has tool_use blocks
 		const hasToolUse =
 			Array.isArray(lastMessage.content) &&
-			lastMessage.content.some(
-				(part: Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolUseBlockParam) =>
-					part.type === "tool_use",
-			)
+			lastMessage.content.some((part): part is Anthropic.ToolUseBlockParam => part.type === "tool_use")
 
 		// If assistant has tool_use blocks → continuation (tool call sequence)
 		if (hasToolUse) {
@@ -82,8 +79,7 @@ export function isNewUserTurn(messages: Anthropic.Messages.MessageParam[]): bool
 			const hasToolResults =
 				Array.isArray(previousMessage.content) &&
 				previousMessage.content.some(
-					(part: Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam) =>
-						part.type === "tool_result",
+					(part): part is Anthropic.ToolResultBlockParam => part.type === "tool_result",
 				)
 
 			// If previous user message has tool_result blocks → continuation

@@ -50,7 +50,7 @@ export function convertToR1Format(messages: AnthropicMessage[], clearReasoningCo
 			const textParts: string[] = []
 			const imageParts: ContentPartImage[] = []
 
-			message.content.forEach((part: Anthropic.TextBlockParam | Anthropic.ImageBlockParam) => {
+			message.content.forEach((part) => {
 				if (part.type === "text") {
 					textParts.push(part.text)
 				}

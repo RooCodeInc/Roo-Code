@@ -112,7 +112,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				// For interleaved thinking models, conditionally clear reasoning_content:
 				// - Clear for new user turns (preserve only final answers)
 				// - Preserve during tool call sequences (required by API)
-				const allMessages = [{ role: "user", content: systemPrompt }, ...messages]
+				const allMessages: Anthropic.Messages.MessageParam[] = [
+					{ role: "user" as const, content: systemPrompt },
+					...messages,
+				]
 				const shouldClearReasoning = isNewUserTurn(allMessages)
 				convertedMessages = convertToR1Format(allMessages, shouldClearReasoning)
 			} else if (ark || enabledLegacyFormat) {
@@ -287,7 +290,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							// For interleaved thinking models, conditionally clear reasoning_content:
 							// - Clear for new user turns (preserve only final answers)
 							// - Preserve during tool call sequences (required by API)
-							const allMessages = [{ role: "user", content: systemPrompt }, ...messages]
+							const allMessages: Anthropic.Messages.MessageParam[] = [
+								{ role: "user" as const, content: systemPrompt },
+								...messages,
+							]
 							const shouldClearReasoning = isNewUserTurn(allMessages)
 							return convertToR1Format(allMessages, shouldClearReasoning)
 						})()

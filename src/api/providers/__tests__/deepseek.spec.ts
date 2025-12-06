@@ -70,7 +70,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId } from "@roo-code/types"
+import { deepSeekDefaultModelId, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -173,14 +173,14 @@ describe("DeepSeekHandler", () => {
 			expect(model.info.supportsImages).toBe(false)
 			expect(model.info.supportsPromptCache).toBe(true)
 			// Verify interleaved thinking capability flags
-			expect(model.info.supportsInterleavedThinking).toBe(true)
-			expect(model.info.interleavedThinkingParam).toEqual({ thinking: { type: "enabled" } })
+			expect((model.info as ModelInfo).supportsInterleavedThinking).toBe(true)
+			expect((model.info as ModelInfo).interleavedThinkingParam).toEqual({ thinking: { type: "enabled" } })
 		})
 
 		it("should not have interleaved thinking flags for deepseek-chat", () => {
 			const model = handler.getModel()
-			expect(model.info.supportsInterleavedThinking).toBeUndefined()
-			expect(model.info.interleavedThinkingParam).toBeUndefined()
+			expect((model.info as ModelInfo).supportsInterleavedThinking).toBeUndefined()
+			expect((model.info as ModelInfo).interleavedThinkingParam).toBeUndefined()
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
