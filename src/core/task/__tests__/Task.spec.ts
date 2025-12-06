@@ -881,7 +881,7 @@ describe("Cline", () => {
 			})
 
 			describe("processUserContentMentions", () => {
-				it("should process mentions in task and feedback tags", async () => {
+				it("should process mentions in user_message tags", async () => {
 					const [cline, task] = Task.create({
 						provider: mockProvider,
 						apiConfiguration: mockApiConfig,
@@ -895,7 +895,7 @@ describe("Cline", () => {
 						} as const,
 						{
 							type: "text",
-							text: "<task>Text with 'some/path' (see below for file content) in task tags</task>",
+							text: "<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 						} as const,
 						{
 							type: "tool_result",
@@ -903,7 +903,7 @@ describe("Cline", () => {
 							content: [
 								{
 									type: "text",
-									text: "<feedback>Check 'some/path' (see below for file content)</feedback>",
+									text: "<user_message>Check 'some/path' (see below for file content)</user_message>",
 								},
 							],
 						} as Anthropic.ToolResultBlockParam,
@@ -931,18 +931,18 @@ describe("Cline", () => {
 						"Regular text with 'some/path' (see below for file content)",
 					)
 
-					// Text within task tags should be processed
+					// Text within user_message tags should be processed
 					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain("processed:")
 					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain(
-						"<task>Text with 'some/path' (see below for file content) in task tags</task>",
+						"<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 					)
 
-					// Feedback tag content should be processed
+					// user_message tag content should be processed
 					const toolResult1 = processedContent[2] as Anthropic.ToolResultBlockParam
 					const content1 = Array.isArray(toolResult1.content) ? toolResult1.content[0] : toolResult1.content
 					expect((content1 as Anthropic.TextBlockParam).text).toContain("processed:")
 					expect((content1 as Anthropic.TextBlockParam).text).toContain(
-						"<feedback>Check 'some/path' (see below for file content)</feedback>",
+						"<user_message>Check 'some/path' (see below for file content)</user_message>",
 					)
 
 					// Regular tool result should not be processed
