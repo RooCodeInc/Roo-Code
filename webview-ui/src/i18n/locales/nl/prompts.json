@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Nieuwe taak starten",
 				"description": "Start een nieuwe taak met gebruikersinvoer. Beschikbaar via de Command Palette."
+			},
+			"CREATE_PR": {
+				"label": "Pull Request aanmaken",
+				"description": "Genereer instructies om een PR voor te bereiden, te beoordelen en aan te maken met de GitHub CLI. Je kunt dit sjabloon aanpassen."
 			}
 		}
 	},

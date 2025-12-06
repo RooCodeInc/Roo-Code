@@ -74,7 +74,7 @@ import { MdmService } from "../../services/mdm/MdmService"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
-import { getWorkspaceGitInfo } from "../../utils/git"
+import { getWorkspaceGitInfo, isGitHubRepository } from "../../utils/git"
 import { getWorkspacePath } from "../../utils/path"
 import { OrganizationAllowListViolationError } from "../../utils/errors"
 
@@ -1966,6 +1966,15 @@ export class ClineProvider
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
 
+		// Check if the current workspace is a git repository
+		const gitInfo = await getWorkspaceGitInfo()
+		// A repository is valid if we found ANY git info (not just a remote URL)
+		// This includes defaultBranch, which is populated even for worktrees.
+		const isGitRepository = Object.keys(gitInfo).length > 0
+
+		// Check if the repository is specifically a GitHub repository
+		const isGithubRepository = isGitHubRepository(gitInfo.repositoryUrl)
+
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -2102,6 +2111,8 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			isGitRepository,
+			isGithubRepository,
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
 		}
 	}
@@ -2348,6 +2359,8 @@ export class ClineProvider
 					return false
 				}
 			})(),
+			isGitRepository: false, // Will be computed in getStateToPostToWebview
+			isGithubRepository: false, // Will be computed in getStateToPostToWebview
 		}
 	}
 

@@ -37,7 +37,7 @@
 		"tooltip": "Probeer de bewerking opnieuw"
 	},
 	"startNewTask": {
-		"title": "Nieuwe taak starten",
+		"title": "Nieuwe taak",
 		"tooltip": "Begin een nieuwe taak"
 	},
 	"proceedAnyways": {
@@ -61,6 +61,10 @@
 	"approve": {
 		"title": "Goedkeuren",
 		"tooltip": "Deze actie goedkeuren"
+	},
+	"createPR": {
+		"title": "PR aanmaken",
+		"tooltip": "Een pull request aanmaken van je wijzigingen"
 	},
 	"runCommand": {
 		"title": "Commando",

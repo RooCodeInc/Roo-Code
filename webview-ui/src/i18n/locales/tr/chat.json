@@ -42,7 +42,7 @@
 		"tooltip": "İşlemi tekrar dene"
 	},
 	"startNewTask": {
-		"title": "Yeni Görev Başlat",
+		"title": "Yeni Görev",
 		"tooltip": "Yeni bir görev başlat"
 	},
 	"proceedAnyways": {
@@ -61,6 +61,10 @@
 	"approve": {
 		"title": "Onayla",
 		"tooltip": "Bu eylemi onayla"
+	},
+	"createPR": {
+		"title": "PR Oluştur",
+		"tooltip": "Değişikliklerinizden bir pull request oluşturun"
 	},
 	"runCommand": {
 		"title": "Komut",

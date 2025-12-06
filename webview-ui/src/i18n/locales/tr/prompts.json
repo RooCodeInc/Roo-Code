@@ -140,6 +140,10 @@
 			"NEW_TASK": {
 				"label": "Yeni Görev Başlat",
 				"description": "Girdiyle yeni bir görev başlat. Komut paletinde kullanılabilir."
+			},
+			"CREATE_PR": {
+				"label": "Pull Request Oluştur",
+				"description": "GitHub CLI'yi kullanarak bir PR'ı hazırlamak, incelemek ve oluşturmak için talimatlar oluşturun. Bu şablonu özelleştirebilirsiniz."
 			}
 		}
 	},

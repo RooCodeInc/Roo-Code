@@ -142,6 +142,10 @@
 			"NEW_TASK": {
 				"label": "開始新工作",
 				"description": "根據使用者輸入開始一個新的任務。可在命令選擇區使用。"
+			},
+			"CREATE_PR": {
+				"label": "建立拉取請求",
+				"description": "產生使用 GitHub CLI 來暫存、審查和建立 PR 的說明。您可以自訂此範本。"
 			}
 		}
 	},

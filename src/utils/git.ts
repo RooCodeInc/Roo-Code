@@ -29,14 +29,39 @@ export interface GitCommit {
  */
 export async function getGitRepositoryInfo(workspaceRoot: string): Promise<GitRepositoryInfo> {
 	try {
-		const gitDir = path.join(workspaceRoot, ".git")
+		let gitDir = path.join(workspaceRoot, ".git")
 
-		// Check if .git directory exists
+		// Check if .git exists (could be a directory or file)
 		try {
 			await fs.access(gitDir)
 		} catch {
 			// Not a git repository
 			return {}
+		}
+
+		// Check if .git is a file (worktree) or directory
+		const stats = await fs.stat(gitDir)
+		if (stats.isFile()) {
+			// This is a worktree - read the .git file to get the actual git directory
+			const gitFileContent = await fs.readFile(gitDir, "utf8")
+			const gitdirMatch = gitFileContent.match(/gitdir:\s*(.+)/)
+			if (gitdirMatch && gitdirMatch[1]) {
+				const worktreeGitDir = gitdirMatch[1].trim() // This is the worktree's .git directory
+				gitDir = worktreeGitDir // Update gitDir to the actual .git directory
+
+				// For worktrees, the config is in the main repo's .git directory
+				// Worktree path is like: /path/to/repo/.git/worktrees/name
+				// Main config is at: /path/to/repo/.git/config
+				if (worktreeGitDir.includes("/worktrees/")) {
+					// Extract the path to the main repository's .git directory
+					const mainGitDir = worktreeGitDir.split("/worktrees/")[0]
+					// Use this mainGitDir for reading the config file
+					gitDir = mainGitDir // This is crucial: we need to read config from the main repo's .git dir
+				}
+			} else {
+				// Invalid .git file format
+				return {}
+			}
 		}
 
 		const gitInfo: GitRepositoryInfo = {}
@@ -183,6 +208,49 @@ export function extractRepositoryName(url: string): string {
 		return ""
 	} catch {
 		return ""
+	}
+}
+
+/**
+ * Checks if a git repository URL is from GitHub
+ * @param repositoryUrl The repository URL to check
+ * @returns true if the URL is from GitHub, false otherwise
+ */
+export function isGitHubRepository(repositoryUrl?: string): boolean {
+	if (!repositoryUrl) {
+		return false
+	}
+
+	try {
+		const url = repositoryUrl.toLowerCase().trim()
+
+		// Try to parse as HTTPS/HTTP URL
+		if (url.startsWith("https://") || url.startsWith("http://")) {
+			const parsed = new URL(url)
+			return parsed.hostname === "github.com" || parsed.hostname.endsWith(".github.com")
+		}
+
+		// Handle SSH format: git@github.com:user/repo.git
+		if (url.startsWith("git@")) {
+			const match = url.match(/^git@([^:]+):/)
+			if (match && match[1]) {
+				const host = match[1]
+				return host === "github.com" || host.endsWith(".github.com")
+			}
+		}
+
+		// Handle SSH with protocol: ssh://git@github.com/user/repo.git
+		if (url.startsWith("ssh://")) {
+			const match = url.match(/^ssh:\/\/(?:git@)?([^\/]+)/)
+			if (match && match[1]) {
+				const host = match[1]
+				return host === "github.com" || host.endsWith(".github.com")
+			}
+		}
+
+		return false
+	} catch {
+		return false
 	}
 }
 

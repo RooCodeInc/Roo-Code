@@ -37,8 +37,12 @@
 		"tooltip": "Try the operation again"
 	},
 	"startNewTask": {
-		"title": "Start New Task",
-		"tooltip": "Begin a new task"
+		"title": "New Task",
+		"tooltip": "Start a new task"
+	},
+	"createPR": {
+		"title": "Create PR",
+		"tooltip": "Create a pull request from your changes"
 	},
 	"proceedAnyways": {
 		"title": "Proceed Anyways",
