@@ -92,7 +92,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const supportsInterleavedThinking = modelInfo?.supportsInterleavedThinking === true || enabledR1Format
+		const supportsInterleavedThinking = modelInfo?.supportsInterleavedThinking === true
 		const ark = modelUrl.includes(".volces.com")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {

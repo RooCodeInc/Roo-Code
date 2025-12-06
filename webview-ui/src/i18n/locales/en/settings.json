@@ -476,6 +476,10 @@
 				"label": "Prompt Caching",
 				"description": "Is this model capable of caching prompts?"
 			},
+			"interleavedThinking": {
+				"label": "Interleaved Thinking",
+				"description": "Is this model capable of reasoning between tool-calls?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Input Price",
