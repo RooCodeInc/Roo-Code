@@ -2074,6 +2074,8 @@ export class ClineProvider
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? "",
 				codebaseIndexEmbedderModelId: codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
 				codebaseIndexEmbedderModelDimension: codebaseIndexConfig?.codebaseIndexEmbedderModelDimension ?? 1536,
+				codebaseIndexOllamaEmbeddingTimeoutMs: codebaseIndexConfig?.codebaseIndexOllamaEmbeddingTimeoutMs,
+				codebaseIndexOllamaValidationTimeoutMs: codebaseIndexConfig?.codebaseIndexOllamaValidationTimeoutMs,
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: codebaseIndexConfig?.codebaseIndexSearchMaxResults,
 				codebaseIndexSearchMinScore: codebaseIndexConfig?.codebaseIndexSearchMinScore,
@@ -2305,6 +2307,10 @@ export class ClineProvider
 				codebaseIndexEmbedderModelId: stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelId ?? "",
 				codebaseIndexEmbedderModelDimension:
 					stateValues.codebaseIndexConfig?.codebaseIndexEmbedderModelDimension,
+				codebaseIndexOllamaEmbeddingTimeoutMs:
+					stateValues.codebaseIndexConfig?.codebaseIndexOllamaEmbeddingTimeoutMs,
+				codebaseIndexOllamaValidationTimeoutMs:
+					stateValues.codebaseIndexConfig?.codebaseIndexOllamaValidationTimeoutMs,
 				codebaseIndexOpenAiCompatibleBaseUrl:
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenAiCompatibleBaseUrl,
 				codebaseIndexSearchMaxResults: stateValues.codebaseIndexConfig?.codebaseIndexSearchMaxResults,
