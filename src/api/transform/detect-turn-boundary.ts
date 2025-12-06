@@ -8,11 +8,13 @@ import { Anthropic } from "@anthropic-ai/sdk"
  * - Between turns (new user question): reasoning_content from previous turns should be cleared
  *
  * Turn detection heuristics:
- * - Last message is user message → new turn (return true)
- * - Last message is assistant with tool_use blocks → continuation (return false)
+ * - Last message is user message:
+ *   - If user has tool_result blocks → still in tool call sequence (return false, preserve reasoning_content)
+ *   - If user has no tool_result blocks → new turn (return true, clear reasoning_content)
+ * - Last message is assistant with tool_use blocks → continuation (return false, preserve reasoning_content)
  * - Last message is assistant without tool_use blocks → check previous message:
- *   - If previous is user with tool_result blocks → continuation (return false)
- *   - If previous is user without tool_result blocks → new turn (return true)
+ *   - If previous is user with tool_result blocks → model stopped sending tool calls (return true, clear reasoning_content)
+ *   - If previous is user without tool_result blocks → new turn (return true, clear reasoning_content)
  *
  * @param messages Array of Anthropic messages in conversation order
  * @returns true if starting a new user turn (should clear reasoning_content),
@@ -32,12 +34,12 @@ import { Anthropic } from "@anthropic-ai/sdk"
  *   { role: "assistant", content: [{ type: "tool_use", ... }] }
  * ]) // returns false
  *
- * // Continuation: last message is assistant, previous is user with tool results
+ * // Model stopped sending tool calls: last message is assistant without tool_use, previous is user with tool results
  * isNewUserTurn([
  *   { role: "assistant", content: [{ type: "tool_use", ... }] },
  *   { role: "user", content: [{ type: "tool_result", ... }] },
  *   { role: "assistant", content: "Answer" }
- * ]) // returns false
+ * ]) // returns true (clear reasoning_content - model stopped sending tool calls)
  * ```
  */
 export function isNewUserTurn(messages: Anthropic.Messages.MessageParam[]): boolean {
@@ -48,8 +50,19 @@ export function isNewUserTurn(messages: Anthropic.Messages.MessageParam[]): bool
 
 	const lastMessage = messages[messages.length - 1]
 
-	// Case 1: Last message is user message → new turn
+	// Case 1: Last message is user message
 	if (lastMessage.role === "user") {
+		// Check if user message has tool_result blocks
+		const hasToolResults =
+			Array.isArray(lastMessage.content) &&
+			lastMessage.content.some((part): part is Anthropic.ToolResultBlockParam => part.type === "tool_result")
+
+		// If user message has tool_result blocks → still in tool call sequence (preserve reasoning_content)
+		if (hasToolResults) {
+			return false
+		}
+
+		// If user message has no tool_result blocks → new turn (clear reasoning_content)
 		return true
 	}
 
@@ -82,10 +95,13 @@ export function isNewUserTurn(messages: Anthropic.Messages.MessageParam[]): bool
 					(part): part is Anthropic.ToolResultBlockParam => part.type === "tool_result",
 				)
 
-			// If previous user message has tool_result blocks → continuation
-			// (This means we're in a tool call sequence)
+			// If previous user message has tool_result blocks AND assistant has no tool_use blocks
+			// → Model has stopped sending tool calls, clear reasoning_content (return true)
+			// If assistant still has tool_use blocks, we would have returned false earlier
+			// So at this point, assistant has no tool_use blocks, meaning tool call sequence has ended
 			if (hasToolResults) {
-				return false
+				// Model stopped sending tool calls → clear reasoning_content
+				return true
 			}
 
 			// If previous user message has no tool_result blocks → new turn
