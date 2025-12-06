@@ -24,6 +24,7 @@ import { IpcServer } from "@roo-code/ipc"
 import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { openClineInNewTab } from "../activate/registerCommands"
+import { formatTaskAsMarkdown } from "../core/task/formatTaskAsMarkdown"
 
 export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	private readonly outputChannel: vscode.OutputChannel
@@ -459,5 +460,47 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 		await this.sidebarProvider.activateProviderProfile({ name })
 		return this.getActiveProfile()
+	}
+
+	// Task Content Management
+
+	public async getTaskAsMarkdown(taskId?: string): Promise<string | undefined> {
+		try {
+			let messages: any[] | undefined
+
+			if (taskId) {
+				// Get messages for a specific task from history
+				// The messages are stored separately on disk, we need to load them
+				const { readTaskMessages } = await import("../core/task-persistence/taskMessages")
+				const globalStoragePath = this.sidebarProvider.contextProxy.globalStorageUri.fsPath
+
+				try {
+					messages = await readTaskMessages({
+						taskId,
+						globalStoragePath,
+					})
+				} catch (error) {
+					// Task messages not found or error reading them
+					this.log(`[API] getTaskAsMarkdown: Failed to read messages for task ${taskId}: ${error}`)
+					return undefined
+				}
+			} else {
+				// Get messages from the current active task
+				const currentTask = this.sidebarProvider.getCurrentTask()
+				if (currentTask) {
+					messages = currentTask.clineMessages
+				}
+			}
+
+			if (!messages || messages.length === 0) {
+				return undefined
+			}
+
+			// Format the messages as markdown
+			return formatTaskAsMarkdown(messages)
+		} catch (error) {
+			this.log(`[API] getTaskAsMarkdown failed: ${error instanceof Error ? error.message : String(error)}`)
+			return undefined
+		}
 	}
 }
