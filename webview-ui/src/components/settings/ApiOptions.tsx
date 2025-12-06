@@ -28,6 +28,7 @@ import {
 	chutesDefaultModelId,
 	basetenDefaultModelId,
 	bedrockDefaultModelId,
+	poeDefaultModelId,
 	vertexDefaultModelId,
 	sambaNovaDefaultModelId,
 	internationalZAiDefaultModelId,
@@ -88,6 +89,7 @@ import {
 	OpenAI,
 	OpenAICompatible,
 	OpenRouter,
+	Poe,
 	QwenCode,
 	Requesty,
 	Roo,
@@ -361,6 +363,7 @@ const ApiOptions = ({
 				chutes: { field: "apiModelId", default: chutesDefaultModelId },
 				baseten: { field: "apiModelId", default: basetenDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
+				poe: { field: "apiModelId", default: poeDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
 				sambanova: { field: "apiModelId", default: sambaNovaDefaultModelId },
 				zai: {
@@ -617,6 +620,10 @@ const ApiOptions = ({
 					selectedModelInfo={selectedModelInfo}
 					simplifySettings={fromWelcomeView}
 				/>
+			)}
+
+			{selectedProvider === "poe" && (
+				<Poe apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "vertex" && (
