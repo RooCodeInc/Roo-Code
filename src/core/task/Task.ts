@@ -2869,9 +2869,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
+						// Enhanced error diagnostics for streaming failures
+						const streamingErrorDiagnostics = {
+							provider: this.apiConfiguration.apiProvider,
+							model: cachedModelId,
+							timestamp: new Date().toISOString(),
+							streamPosition: this.currentStreamingContentIndex,
+							hasPartialContent: this.assistantMessageContent.length > 0,
+							tokensProcessed: {
+								input: inputTokens,
+								output: outputTokens,
+								cacheRead: cacheReadTokens,
+								cacheWrite: cacheWriteTokens,
+							},
+							errorType: error.name || "StreamError",
+							errorCode: error.status || error.code || "UNKNOWN",
+						}
+
 						const streamingFailedMessage = this.abort
 							? undefined
-							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
+							: `${error.message || "Stream interrupted"}\n\nDiagnostics:\n${JSON.stringify(streamingErrorDiagnostics, null, 2)}`
+
+						// Log detailed streaming error
+						if (!this.abort) {
+							console.error(`[Task#${this.taskId}] Stream failed mid-processing:`, {
+								error: error.message || error,
+								diagnostics: streamingErrorDiagnostics,
+								stack: error.stack,
+							})
+						}
 
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
@@ -3142,8 +3168,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Reuse the state variable from above
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
+						const errorDetails = {
+							provider: this.apiConfiguration.apiProvider,
+							model: this.api.getModel().id,
+							timestamp: new Date().toISOString(),
+							contextTokens: this.getTokenUsage().contextTokens,
+							attempt: (currentItem.retryAttempt ?? 0) + 1,
+						}
 						const errorMsg =
-							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
+							`Unexpected API Response: The language model did not provide any assistant messages. ` +
+							`This may indicate an issue with the API or the model's output.\n` +
+							`Details: ${JSON.stringify(errorDetails, null, 2)}`
 
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
@@ -3687,15 +3722,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled && alwaysApproveResubmit) {
-				let errorMsg
-
-				if (error.error?.metadata?.raw) {
-					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
-				} else if (error.message) {
-					errorMsg = error.message
-				} else {
-					errorMsg = "Unknown error"
+				// Enhanced error diagnostics
+				const errorDiagnostics = {
+					provider: this.apiConfiguration.apiProvider,
+					model: this.api.getModel().id,
+					endpoint:
+						this.apiConfiguration.openAiNativeBaseUrl || this.apiConfiguration.ollamaBaseUrl || "default",
+					timestamp: new Date().toISOString(),
+					attempt: retryAttempt + 1,
+					maxRetries: MAX_EXPONENTIAL_BACKOFF_SECONDS / (requestDelaySeconds || 5),
+					contextTokens: this.getTokenUsage().contextTokens,
+					errorCode: error.status || error.code || "UNKNOWN",
+					errorType: error.name || "APIError",
 				}
+
+				let errorMsg
+				if (error.error?.metadata?.raw) {
+					errorMsg = `API Error Details:\n${JSON.stringify(error.error.metadata.raw, null, 2)}\n\nDiagnostics:\n${JSON.stringify(errorDiagnostics, null, 2)}`
+				} else if (error.message) {
+					errorMsg = `${error.message}\n\nDiagnostics:\n${JSON.stringify(errorDiagnostics, null, 2)}`
+				} else {
+					errorMsg = `Unknown error\n\nDiagnostics:\n${JSON.stringify(errorDiagnostics, null, 2)}`
+				}
+
+				// Log detailed error for debugging
+				console.error(`[Task#${this.taskId}] API request failed:`, {
+					error: error.message || error,
+					diagnostics: errorDiagnostics,
+					stack: error.stack,
+				})
 
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
@@ -3723,7 +3778,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (response !== "yesButtonClicked") {
 					// This will never happen since if noButtonClicked, we will
 					// clear current task, aborting this instance.
-					throw new Error("API request failed")
+					const errorDetails = {
+						message: error.message || "Unknown error",
+						status: error.status,
+						provider: this.apiConfiguration.apiProvider,
+						model: this.api.getModel().id,
+						timestamp: new Date().toISOString(),
+						...(error.error?.metadata && { metadata: error.error.metadata }),
+					}
+					throw new Error(`API request failed: ${JSON.stringify(errorDetails, null, 2)}`)
 				}
 
 				await this.say("api_req_retried")
