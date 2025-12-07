@@ -99,7 +99,7 @@ import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { AssistantMessageParser } from "../assistant-message/AssistantMessageParser"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
-import { manageContext } from "../context-management"
+import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
@@ -3514,8 +3514,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Check if context management will likely run (threshold check)
 			// This allows us to show an in-progress indicator to the user
-			// Important: Match the exact calculation from manageContext to avoid threshold mismatch
-			// manageContext uses: prevContextTokens = totalTokens + lastMessageTokens
+			// We use the centralized willManageContext helper to avoid duplicating threshold logic
 			const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 			const lastMessageContent = lastMessage?.content
 			let lastMessageTokens = 0
@@ -3524,28 +3523,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					? await this.api.countTokens(lastMessageContent)
 					: await this.api.countTokens([{ type: "text", text: lastMessageContent as string }])
 			}
-			const prevContextTokens = contextTokens + lastMessageTokens
-			const estimatedUsagePercent = (100 * prevContextTokens) / contextWindow
 
-			// Match manageContext's threshold logic
-			const profileThresholdSettings = profileThresholds[currentProfileId] as
-				| { autoCondenseContextPercent?: number }
-				| undefined
-			const effectiveThreshold =
-				profileThresholdSettings?.autoCondenseContextPercent ?? autoCondenseContextPercent
-
-			// Calculate allowedTokens the same way manageContext does
-			const TOKEN_BUFFER_PERCENTAGE = 0.1
-			const reservedTokens = maxTokens ?? 8192 // ANTHROPIC_DEFAULT_MAX_TOKENS
-			const allowedTokens = contextWindow * (1 - TOKEN_BUFFER_PERCENTAGE) - reservedTokens
-
-			// Match manageContext's condition: contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens
-			const willManageContext = estimatedUsagePercent >= effectiveThreshold || prevContextTokens > allowedTokens
+			const contextManagementWillRun = willManageContext({
+				totalTokens: contextTokens,
+				contextWindow,
+				maxTokens,
+				autoCondenseContext,
+				autoCondenseContextPercent,
+				profileThresholds,
+				currentProfileId,
+				lastMessageTokens,
+			})
 
 			// Send condenseTaskContextStarted BEFORE manageContext to show in-progress indicator
 			// This notification must be sent here (not earlier) because the early check uses stale token count
 			// (before user message is added to history), which could incorrectly skip showing the indicator
-			if (willManageContext && autoCondenseContext) {
+			if (contextManagementWillRun && autoCondenseContext) {
 				await this.providerRef
 					.deref()
 					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
@@ -3614,7 +3607,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Notify webview that context management is complete (sets isCondensing = false)
 			// This removes the in-progress spinner and allows the completed result to show
-			if (willManageContext && autoCondenseContext) {
+			if (contextManagementWillRun && autoCondenseContext) {
 				await this.providerRef
 					.deref()
 					?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
