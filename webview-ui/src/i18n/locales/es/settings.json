@@ -506,6 +506,7 @@
 			"none": "Ninguno",
 			"minimal": "Mínimo (el más rápido)",
 			"high": "Alto",
+			"xhigh": "Muy alto",
 			"medium": "Medio",
 			"low": "Bajo"
 		},

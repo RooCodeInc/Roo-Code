@@ -506,6 +506,7 @@
 			"none": "Cap",
 			"minimal": "Mínim (el més ràpid)",
 			"high": "Alt",
+			"xhigh": "Molt alt",
 			"medium": "Mitjà",
 			"low": "Baix"
 		},
