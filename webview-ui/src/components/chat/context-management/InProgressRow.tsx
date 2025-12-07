@@ -21,7 +21,6 @@ export function InProgressRow({ eventType }: InProgressRowProps) {
 	return (
 		<div className="flex items-center gap-2">
 			<ProgressIndicator />
-			<span className="codicon codicon-fold text-blue-400" />
 			<span className="font-bold text-vscode-foreground">{progressText}</span>
 		</div>
 	)

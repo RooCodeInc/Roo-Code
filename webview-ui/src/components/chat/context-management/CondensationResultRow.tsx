@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
+import { FoldVertical } from "lucide-react"
 
 import type { ContextCondense } from "@roo-code/types"
 
@@ -31,7 +32,7 @@ export function CondensationResultRow({ data }: CondensationResultRowProps) {
 				className="flex items-center justify-between cursor-pointer select-none"
 				onClick={() => setIsExpanded(!isExpanded)}>
 				<div className="flex items-center gap-2 flex-grow">
-					<span className="codicon codicon-fold text-blue-400" />
+					<FoldVertical size={16} className="text-blue-400" />
 					<span className="font-bold text-vscode-foreground">
 						{t("chat:contextManagement.condensation.title")}
 					</span>
