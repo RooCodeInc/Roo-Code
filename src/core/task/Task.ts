@@ -3941,6 +3941,39 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					continue
 				}
 
+				// Check if this message has reasoning_content (interleaved thinking models like DeepSeek)
+				// reasoning_content is stored as a top-level field, not in content blocks
+				const msgWithReasoning = msg as any
+				if ("reasoning_content" in msgWithReasoning && typeof msgWithReasoning.reasoning_content === "string") {
+					// Build the assistant message with reasoning_content and tool_calls preserved
+					let assistantContent: Anthropic.Messages.MessageParam["content"]
+
+					if (contentArray.length === 0) {
+						assistantContent = ""
+					} else if (contentArray.length === 1 && contentArray[0].type === "text") {
+						assistantContent = (contentArray[0] as Anthropic.Messages.TextBlockParam).text
+					} else {
+						assistantContent = contentArray
+					}
+
+					// Create message with reasoning_content and tool_calls preserved
+					// Note: tool_calls may be in the message if it was stored from a tool call response
+					const assistantMessage: any = {
+						role: "assistant",
+						content: assistantContent,
+						reasoning_content: msgWithReasoning.reasoning_content,
+					}
+
+					// Preserve tool_calls if present (for interleaved thinking tool call sequences)
+					if (msgWithReasoning.tool_calls) {
+						assistantMessage.tool_calls = msgWithReasoning.tool_calls
+					}
+
+					cleanConversationHistory.push(assistantMessage)
+
+					continue
+				}
+
 				// Embedded reasoning: encrypted (send) or plain text (skip)
 				const hasEncryptedReasoning =
 					first && (first as any).type === "reasoning" && typeof (first as any).encrypted_content === "string"
