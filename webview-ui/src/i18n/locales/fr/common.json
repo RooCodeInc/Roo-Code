@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "L'initialisation du checkpoint a pris plus de {{timeout}} secondes, donc les checkpoints sont désactivés pour cette tâche. Tu peux désactiver les checkpoints ou prolonger le délai dans <settingsLink>les paramètres du checkpoint</settingsLink>.",
 		"attempt_completion_tool_failed": "Tu ne peux pas exécuter attempt_completion car un appel d'outil précédent a échoué dans ce tour. Résous l'échec de l'outil avant de tenter de terminer."
 	},
+	"backgroundTasks": {
+		"title": "Tâches en arrière-plan",
+		"ariaLabel": "Tâches en arrière-plan",
+		"tooltip": "{{count}} tâche(s) en arrière-plan en cours",
+		"stopService": "Arrêter le service",
+		"showLogs": "Afficher la sortie du terminal",
+		"hideLogs": "Masquer la sortie du terminal",
+		"terminalOutput": "Sortie du terminal",
+		"refreshLogs": "Actualiser les logs",
+		"loadingLogs": "Chargement des logs...",
+		"noLogs": "Aucune sortie pour le moment",
+		"status": {
+			"starting": "Démarrage",
+			"ready": "Prêt",
+			"running": "En cours",
+			"stopping": "Arrêt",
+			"failed": "Échec"
+		}
+	},
 	"tasks": {
 		"delegated": "Délégué à la sous-tâche",
 		"delegated_to": "Délégué à la tâche {{childId}}",

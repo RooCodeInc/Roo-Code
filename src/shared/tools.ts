@@ -72,6 +72,8 @@ export const toolParamNames = [
 	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
+	"service_id", // get_service_logs parameter for service identification
+	"max_lines", // get_service_logs parameter for log line limit
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -98,6 +100,8 @@ export type NativeToolArgs = {
 	codebase_search: { query: string; path?: string }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
+	get_service_logs: { service_id?: string | null; max_lines?: number | null }
+	stop_service: { service_id: string }
 	list_code_definition_names: { path: string }
 	run_slash_command: { command: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
@@ -259,6 +263,8 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	get_service_logs: "get service logs",
+	stop_service: "stop service",
 } as const
 
 // Define available tool groups.
@@ -281,7 +287,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command"],
+		tools: ["execute_command", "get_service_logs", "stop_service"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],

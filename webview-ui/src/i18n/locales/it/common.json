@@ -2,10 +2,10 @@
 	"errorBoundary": {
 		"title": "Qualcosa è andato storto",
 		"reportText": "Aiutaci a migliorare segnalando questo errore su",
-		"githubText": "la nostra pagina GitHub Issues",
+		"githubText": "la nostra pagina di Issues di GitHub",
 		"copyInstructions": "Copia e incolla il seguente messaggio di errore per includerlo come parte della tua segnalazione:",
-		"errorStack": "Stack di errore:",
-		"componentStack": "Stack dei componenti:"
+		"errorStack": "Pila di errori:",
+		"componentStack": "Pila dei componenti:"
 	},
 	"answers": {
 		"yes": "Sì",
@@ -68,9 +68,9 @@
 		}
 	},
 	"confirmation": {
-		"deleteMessage": "Elimina Messaggio",
+		"deleteMessage": "Elimina messaggio",
 		"deleteWarning": "Eliminando questo messaggio verranno eliminati tutti i messaggi successivi nella conversazione. Vuoi procedere?",
-		"editMessage": "Modifica Messaggio",
+		"editMessage": "Modifica messaggio",
 		"editWarning": "Modificando questo messaggio verranno eliminati tutti i messaggi successivi nella conversazione. Vuoi procedere?",
 		"editQuestionWithCheckpoint": "Modificando questo messaggio verranno eliminati tutti i messaggi successivi nella conversazione. Vuoi anche annullare tutte le modifiche fino a questo checkpoint?",
 		"deleteQuestionWithCheckpoint": "Eliminando questo messaggio verranno eliminati tutti i messaggi successivi nella conversazione. Vuoi anche annullare tutte le modifiche fino a questo checkpoint?",
@@ -100,6 +100,25 @@
 		"wait_checkpoint_long_time": "Hai aspettato {{timeout}} secondi per l'inizializzazione del checkpoint. Se non ti serve questa funzione, disattivala nelle <settingsLink>impostazioni del checkpoint</settingsLink>.",
 		"init_checkpoint_fail_long_time": "L'inizializzazione del checkpoint ha impiegato più di {{timeout}} secondi, quindi i checkpoint sono disabilitati per questa attività. Puoi disattivare i checkpoint o aumentare il tempo di attesa nelle <settingsLink>impostazioni del checkpoint</settingsLink>.",
 		"attempt_completion_tool_failed": "Non puoi eseguire attempt_completion perché una chiamata di strumento precedente è fallita in questo turno. Risolvi il problema dello strumento prima di tentare di completare."
+	},
+	"backgroundTasks": {
+		"title": "Attività in background",
+		"ariaLabel": "Attività in background",
+		"tooltip": "{{count}} attività in background in esecuzione",
+		"stopService": "Ferma servizio",
+		"showLogs": "Mostra output del terminale",
+		"hideLogs": "Nascondi output del terminale",
+		"terminalOutput": "Output del terminale",
+		"refreshLogs": "Aggiorna log",
+		"loadingLogs": "Caricamento log...",
+		"noLogs": "Nessun output ancora",
+		"status": {
+			"starting": "Avvio",
+			"ready": "Pronto",
+			"running": "In esecuzione",
+			"stopping": "Arresto",
+			"failed": "Fallito"
+		}
 	},
 	"tasks": {
 		"delegated": "Delegato a sottoattività",

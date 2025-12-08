@@ -37,6 +37,11 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	allowedMaxRequests?: number | undefined
 	allowedMaxCost?: number | undefined
 	deniedCommands?: string[]
+	// 服务模式设置 / Service mode settings
+	commandExecutionTimeout?: number
+	serviceReadyTimeout?: number
+	serviceCommandPatterns?: string[]
+	enableUniversalCommandTimeout?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "alwaysAllowReadOnly"
 		| "alwaysAllowReadOnlyOutsideWorkspace"
@@ -57,6 +62,10 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "allowedMaxCost"
 		| "deniedCommands"
 		| "alwaysAllowUpdateTodoList"
+		| "commandExecutionTimeout"
+		| "serviceReadyTimeout"
+		| "serviceCommandPatterns"
+		| "enableUniversalCommandTimeout"
 	>
 }
 
@@ -80,12 +89,18 @@ export const AutoApproveSettings = ({
 	allowedMaxRequests,
 	allowedMaxCost,
 	deniedCommands,
+	// 服务模式设置 / Service mode settings
+	commandExecutionTimeout = 0,
+	serviceReadyTimeout = 60,
+	serviceCommandPatterns = [],
+	enableUniversalCommandTimeout = false,
 	setCachedStateField,
 	...props
 }: AutoApproveSettingsProps) => {
 	const { t } = useAppTranslation()
 	const [commandInput, setCommandInput] = useState("")
 	const [deniedCommandInput, setDeniedCommandInput] = useState("")
+	const [servicePatternInput, setServicePatternInput] = useState("")
 	const { autoApprovalEnabled, setAutoApprovalEnabled } = useExtensionState()
 
 	const toggles = useAutoApprovalToggles()
@@ -111,6 +126,18 @@ export const AutoApproveSettings = ({
 			setCachedStateField("deniedCommands", newCommands)
 			setDeniedCommandInput("")
 			vscode.postMessage({ type: "updateSettings", updatedSettings: { deniedCommands: newCommands } })
+		}
+	}
+
+	// 添加服务命令模式 / Add service command pattern
+	const handleAddServicePattern = () => {
+		const currentPatterns = serviceCommandPatterns ?? []
+
+		if (servicePatternInput && !currentPatterns.includes(servicePatternInput)) {
+			const newPatterns = [...currentPatterns, servicePatternInput]
+			setCachedStateField("serviceCommandPatterns", newPatterns)
+			setServicePatternInput("")
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { serviceCommandPatterns: newPatterns } })
 		}
 	}
 
@@ -408,6 +435,147 @@ export const AutoApproveSettings = ({
 									</div>
 								</Button>
 							))}
+						</div>
+
+						{/* 服务模式设置 / Service Mode Settings */}
+						<div className="mt-6 pt-6 border-t border-vscode-panel-border">
+							<div className="flex items-center gap-4 font-bold mb-3">
+								<span className="codicon codicon-server-process" />
+								<div>{t("settings:autoApprove.serviceMode.title")}</div>
+							</div>
+
+							{/* 命令执行超时 / Command Execution Timeout */}
+							<div className="mb-4">
+								<label className="block font-medium mb-1">
+									{t("settings:autoApprove.serviceMode.commandTimeout.label")}
+								</label>
+								<div className="text-vscode-descriptionForeground text-sm mb-2">
+									{t("settings:autoApprove.serviceMode.commandTimeout.description")}
+								</div>
+								<div className="flex items-center gap-2">
+									<Slider
+										min={0}
+										max={600}
+										step={1}
+										value={[commandExecutionTimeout]}
+										onValueChange={([value]) => {
+											setCachedStateField("commandExecutionTimeout", value)
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { commandExecutionTimeout: value },
+											})
+										}}
+										data-testid="command-timeout-slider"
+									/>
+									<span className="w-16">
+										{commandExecutionTimeout === 0
+											? t("settings:autoApprove.serviceMode.noTimeout")
+											: `${commandExecutionTimeout}s`}
+									</span>
+								</div>
+							</div>
+
+							{/* 服务就绪超时 / Service Ready Timeout */}
+							<div className="mb-4">
+								<label className="block font-medium mb-1">
+									{t("settings:autoApprove.serviceMode.serviceTimeout.label")}
+								</label>
+								<div className="text-vscode-descriptionForeground text-sm mb-2">
+									{t("settings:autoApprove.serviceMode.serviceTimeout.description")}
+								</div>
+								<div className="flex items-center gap-2">
+									<Slider
+										min={10}
+										max={600}
+										step={1}
+										value={[serviceReadyTimeout]}
+										onValueChange={([value]) => {
+											setCachedStateField("serviceReadyTimeout", value)
+											vscode.postMessage({
+												type: "updateSettings",
+												updatedSettings: { serviceReadyTimeout: value },
+											})
+										}}
+										data-testid="service-timeout-slider"
+									/>
+									<span className="w-16">{serviceReadyTimeout}s</span>
+								</div>
+							</div>
+
+							{/* 通用命令超时 / Universal Command Timeout */}
+							<div className="mb-4">
+								<VSCodeCheckbox
+									checked={enableUniversalCommandTimeout}
+									onChange={(e: any) => {
+										setCachedStateField("enableUniversalCommandTimeout", e.target.checked)
+										vscode.postMessage({
+											type: "updateSettings",
+											updatedSettings: { enableUniversalCommandTimeout: e.target.checked },
+										})
+									}}
+									data-testid="universal-timeout-checkbox">
+									<span className="font-medium">
+										{t("settings:autoApprove.serviceMode.universalTimeout.label")}
+									</span>
+								</VSCodeCheckbox>
+								<div className="text-vscode-descriptionForeground text-sm mt-1">
+									{t("settings:autoApprove.serviceMode.universalTimeout.description")}
+								</div>
+							</div>
+
+							{/* 自定义服务命令模式 / Custom Service Command Patterns */}
+							<div className="mb-4">
+								<label className="block font-medium mb-1">
+									{t("settings:autoApprove.serviceMode.patterns.label")}
+								</label>
+								<div className="text-vscode-descriptionForeground text-sm mb-2">
+									{t("settings:autoApprove.serviceMode.patterns.description")}
+								</div>
+								<div className="flex gap-2">
+									<Input
+										value={servicePatternInput}
+										onChange={(e: any) => setServicePatternInput(e.target.value)}
+										onKeyDown={(e: any) => {
+											if (e.key === "Enter") {
+												e.preventDefault()
+												handleAddServicePattern()
+											}
+										}}
+										placeholder={t("settings:autoApprove.serviceMode.patterns.placeholder")}
+										className="grow"
+										data-testid="service-pattern-input"
+									/>
+									<Button
+										className="h-8"
+										onClick={handleAddServicePattern}
+										data-testid="add-service-pattern-button">
+										{t("settings:autoApprove.execute.addButton")}
+									</Button>
+								</div>
+								<div className="flex flex-wrap gap-2 mt-2">
+									{(serviceCommandPatterns ?? []).map((pattern, index) => (
+										<Button
+											key={index}
+											variant="secondary"
+											data-testid={`remove-service-pattern-${index}`}
+											onClick={() => {
+												const newPatterns = (serviceCommandPatterns ?? []).filter(
+													(_, i) => i !== index,
+												)
+												setCachedStateField("serviceCommandPatterns", newPatterns)
+												vscode.postMessage({
+													type: "updateSettings",
+													updatedSettings: { serviceCommandPatterns: newPatterns },
+												})
+											}}>
+											<div className="flex flex-row items-center gap-1">
+												<div>{pattern}</div>
+												<X className="text-foreground scale-75" />
+											</div>
+										</Button>
+									))}
+								</div>
+							</div>
 						</div>
 					</div>
 				)}

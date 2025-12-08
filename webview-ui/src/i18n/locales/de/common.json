@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "Die Initialisierung des Checkpoints dauert länger als {{timeout}} Sekunden, deshalb sind Checkpoints für diese Aufgabe deaktiviert. Du kannst Checkpoints ausschalten oder die Wartezeit in den <settingsLink>Checkpoint-Einstellungen</settingsLink> verlängern.",
 		"attempt_completion_tool_failed": "Du kannst attempt_completion nicht ausführen, weil ein vorheriger Tool-Aufruf in diesem Durchgang fehlgeschlagen ist. Behebe den Tool-Fehler, bevor du versuchst, abzuschließen."
 	},
+	"backgroundTasks": {
+		"title": "Hintergrundaufgaben",
+		"ariaLabel": "Hintergrundaufgaben",
+		"tooltip": "{{count}} Hintergrundaufgabe(n) läuft/laufen",
+		"stopService": "Service stoppen",
+		"showLogs": "Terminal-Ausgabe anzeigen",
+		"hideLogs": "Terminal-Ausgabe ausblenden",
+		"terminalOutput": "Terminal-Ausgabe",
+		"refreshLogs": "Logs aktualisieren",
+		"loadingLogs": "Lade Logs...",
+		"noLogs": "Noch keine Ausgabe",
+		"status": {
+			"starting": "Gestartet",
+			"ready": "Bereit",
+			"running": "Läuft",
+			"stopping": "Gestoppt",
+			"failed": "Fehlgeschlagen"
+		}
+	},
 	"tasks": {
 		"delegated": "An Unteraufgabe delegiert",
 		"delegated_to": "An Aufgabe {{childId}} delegiert",

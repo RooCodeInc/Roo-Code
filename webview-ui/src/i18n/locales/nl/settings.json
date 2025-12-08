@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "De takenlijst wordt automatisch bijgewerkt zonder goedkeuring"
 		},
+		"serviceMode": {
+			"title": "Service Mode Instellingen",
+			"noTimeout": "Geen timeout",
+			"commandTimeout": {
+				"label": "Commando Uitvoer Timeout",
+				"description": "Maximale tijd in seconden om te wachten op niet-service commando's om te voltooien (0 = geen timeout). Commando's zoals npm install zullen timeout na deze duur."
+			},
+			"serviceTimeout": {
+				"label": "Service Ready Timeout",
+				"description": "Maximale tijd in seconden om te wachten op service commando's (zoals npm run dev) om gereed te rapporteren. De AI zal wachten op output zoals 'listening on port' voordat wordt doorgegaan."
+			},
+			"universalTimeout": {
+				"label": "Universele Commando Timeout Inschakelen",
+				"description": "Wanneer ingeschakeld, zullen alle commando's die de timeout overschrijden blijven draaien op de achtergrond in plaats van te worden beëindigd. Dit behandelt langlopende commando's als achtergronddiensten."
+			},
+			"patterns": {
+				"label": "Aangepaste Service Commando Patronen",
+				"description": "Voeg regex patronen toe om aanvullende commando's te identificeren als service commando's. Ingebouwde patronen detecteren al 70+ veelvoorkomende service commando's (npm run dev, docker-compose up, etc.).",
+				"placeholder": "Voer regex patroon in (bv. 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",
 			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",

@@ -292,6 +292,42 @@ export class ClineProvider
 		} else {
 			this.log("CloudService not ready, deferring cloud profile sync")
 		}
+
+		// Initialize service status update mechanism
+		this.initializeServiceStatusUpdates()
+	}
+
+	/**
+	 * Initialize service status update mechanism
+	 */
+	private async initializeServiceStatusUpdates() {
+		try {
+			const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+			const unsubscribe = ServiceManager.onServiceStatusChange((serviceHandle) => {
+				// When service status changes, send update message to frontend
+				const services = ServiceManager.listServices()
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				this.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			})
+
+			// Add unsubscribe function to disposables for cleanup
+			this.disposables.push({
+				dispose: unsubscribe,
+			})
+		} catch (error) {
+			this.log(`Failed to initialize service status updates: ${error}`)
+		}
 	}
 
 	/**
@@ -1962,6 +1998,13 @@ export class ClineProvider
 		const mergedDeniedCommands = this.mergeDeniedCommands(deniedCommands)
 		const cwd = this.cwd
 
+		// 从 VS Code 配置读取服务模式设置 / Read service mode settings from VS Code config
+		const config = vscode.workspace.getConfiguration(Package.name)
+		const commandExecutionTimeout = config.get<number>("commandExecutionTimeout", 0)
+		const serviceReadyTimeout = config.get<number>("serviceReadyTimeout", 60)
+		const serviceCommandPatterns = config.get<string[]>("serviceCommandPatterns", [])
+		const enableUniversalCommandTimeout = config.get<boolean>("enableUniversalCommandTimeout", false)
+
 		// Check if there's a system prompt override for the current mode
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
@@ -2006,6 +2049,11 @@ export class ClineProvider
 				telemetrySetting !== "unset" && lastShownAnnouncementId !== this.latestAnnouncementId,
 			allowedCommands: mergedAllowedCommands,
 			deniedCommands: mergedDeniedCommands,
+			// 服务模式设置 / Service mode settings
+			commandExecutionTimeout,
+			serviceReadyTimeout,
+			serviceCommandPatterns,
+			enableUniversalCommandTimeout,
 			soundVolume: soundVolume ?? 0.5,
 			browserViewportSize: browserViewportSize ?? "900x600",
 			screenshotQuality: screenshotQuality ?? 75,

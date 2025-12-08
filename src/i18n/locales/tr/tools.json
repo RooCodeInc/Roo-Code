@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Şu anda çalışan arka plan hizmeti bulunmamaktadır.",
+		"available_services": "Mevcut arka plan hizmetleri:",
+		"usage_hint": "Belirtilen service_id ile get_service_logs kullanarak bu hizmetin günlüklerini alabilirsiniz.",
+		"service_not_found": "Hizmet '{{serviceId}}' bulunamadı. Parametresiz get_service_logs kullanarak çalışan tüm hizmetleri listeleyebilirsiniz.",
+		"service_info": "Hizmet: {{serviceId}}\nKomut: {{command}}\nDurum: {{status}}",
+		"no_logs": "Henüz günlük yok."
+	},
+	"stop_service": {
+		"no_services": "Şu anda çalışan arka plan hizmeti bulunmamaktadır.",
+		"service_id_required": "Bir hizmeti durdurmak için service_id gereklidir.",
+		"available_services": "Mevcut arka plan hizmetleri:",
+		"usage_hint": "Belirtilen service_id ile stop_service kullanarak bu hizmeti durdurabilirsiniz.",
+		"service_not_found": "Hizmet '{{serviceId}}' bulunamadı.",
+		"success": "Hizmet '{{serviceId}}' başarıyla durduruldu.",
+		"partial_success": "Hizmet '{{serviceId}}' tamamen sonlandırılmamış olabilir.",
+		"stopping": "Hizmet '{{serviceId}}' durduruluyor.",
+		"error": "Hizmet '{{serviceId}}' durdurulamadı: {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (satır {{start}}-{{end}})",
 		"definitionsOnly": " (sadece tanımlar)",

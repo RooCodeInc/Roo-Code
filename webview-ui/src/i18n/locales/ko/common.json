@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "체크포인트 초기화가 {{timeout}}초 이상 걸려서 이 작업에 대해 체크포인트가 꺼졌어. 체크포인트를 끄거나 <settingsLink>체크포인트 설정</settingsLink>에서 대기 시간을 늘릴 수 있어.",
 		"attempt_completion_tool_failed": "이전 도구 호출이 이 턴에서 실패했기 때문에 attempt_completion을 실행할 수 없습니다. 완료를 시도하기 전에 도구 실패를 해결하세요."
 	},
+	"backgroundTasks": {
+		"title": "백그라운드에서 실행 중인 작업",
+		"ariaLabel": "백그라운드 작업",
+		"tooltip": "{{count}}개의 백그라운드 작업이 실행 중",
+		"stopService": "서비스 중지",
+		"showLogs": "터미널 출력 표시",
+		"hideLogs": "터미널 출력 숨기기",
+		"terminalOutput": "터미널 출력",
+		"refreshLogs": "로그 새로고침",
+		"loadingLogs": "로그 로딩 중...",
+		"noLogs": "아직 출력 없음",
+		"status": {
+			"starting": "시작 중",
+			"ready": "준비됨",
+			"running": "실행 중",
+			"stopping": "중지 중",
+			"failed": "실패"
+		}
+	},
 	"tasks": {
 		"delegated": "하위 작업에 위임됨",
 		"delegated_to": "작업 {{childId}}에 위임됨",

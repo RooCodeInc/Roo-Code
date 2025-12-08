@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "承認なしで自動的にToDoリストを更新"
 		},
+		"serviceMode": {
+			"title": "サービスモード設定",
+			"noTimeout": "タイムアウトなし",
+			"commandTimeout": {
+				"label": "コマンド実行タイムアウト",
+				"description": "非サービスコマンドが完了するまで待機する最大時間（秒）（0 = タイムアウトなし）。npm installのようなコマンドはこの期間後にタイムアウトします。"
+			},
+			"serviceTimeout": {
+				"label": "サービス準備完了タイムアウト",
+				"description": "サービスコマンド（npm run devなど）が準備完了を報告するまで待機する最大時間（秒）。AIは続行する前に「listening on port」のような出力を待機します。"
+			},
+			"universalTimeout": {
+				"label": "ユニバーサルコマンドタイムアウトを有効にする",
+				"description": "有効にすると、タイムアウトを超えるすべてのコマンドは終了せずにバックグラウンドで実行を継続します。これにより、長時間実行されるコマンドがバックグラウンドサービスとして扱われます。"
+			},
+			"patterns": {
+				"label": "カスタムサービスコマンドパターン",
+				"description": "追加のコマンドをサービスコマンドとして識別するための正規表現パターンを追加します。組み込みパターンはすでに70以上の一般的なサービスコマンド（npm run dev、docker-compose upなど）を検出します。",
+				"placeholder": "正規表現パターンを入力（例：'node.*server'）"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",
 			"description": "タスクを続行するための承認を求める前に、自動的にこの数のAPIリクエストを行います。",

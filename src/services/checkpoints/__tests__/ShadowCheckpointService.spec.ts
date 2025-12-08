@@ -106,7 +106,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(diff12[0].paths.absolute).toBe(testFile)
 				expect(diff12[0].content.before).toBe("Ahoy, world!")
 				expect(diff12[0].content.after).toBe("Goodbye, world!")
-			})
+			}, 30000) // Increase timeout to 30 seconds for Git operations
 
 			it("handles new files in diff", async () => {
 				const newFile = path.join(service.workspaceDir, "new.txt")

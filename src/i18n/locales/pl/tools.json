@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Obecnie nie ma żadnych usług działających w tle.",
+		"available_services": "Dostępne usługi w tle:",
+		"usage_hint": "Użyj get_service_logs z określonym service_id, aby uzyskać logi tej usługi.",
+		"service_not_found": "Usługa '{{serviceId}}' nie została znaleziona. Użyj get_service_logs bez parametrów, aby wyświetlić wszystkie działające usługi.",
+		"service_info": "Usługa: {{serviceId}}\nPolecenie: {{command}}\nStatus: {{status}}",
+		"no_logs": "Brak dostępnych logów."
+	},
+	"stop_service": {
+		"no_services": "Obecnie nie ma żadnych usług działających w tle.",
+		"service_id_required": "Wymagany jest service_id do zatrzymania usługi.",
+		"available_services": "Dostępne usługi w tle:",
+		"usage_hint": "Użyj stop_service z określonym service_id, aby zatrzymać tę usługę.",
+		"service_not_found": "Usługa '{{serviceId}}' nie została znaleziona.",
+		"success": "Usługa '{{serviceId}}' została pomyślnie zatrzymana.",
+		"partial_success": "Usługa '{{serviceId}}' mogła nie zostać całkowicie zakończona.",
+		"stopping": "Zatrzymywanie usługi '{{serviceId}}'.",
+		"error": "Nie udało się zatrzymać usługi '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (linie {{start}}-{{end}})",
 		"definitionsOnly": " (tylko definicje)",

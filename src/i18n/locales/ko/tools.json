@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "현재 실행 중인 백그라운드 서비스가 없습니다.",
+		"available_services": "사용 가능한 백그라운드 서비스:",
+		"usage_hint": "특정 service_id와 함께 get_service_logs를 사용하여 해당 서비스의 로그를 가져올 수 있습니다.",
+		"service_not_found": "서비스 '{{serviceId}}'를 찾을 수 없습니다. 매개변수 없이 get_service_logs를 사용하여 실행 중인 모든 서비스를 나열할 수 있습니다.",
+		"service_info": "서비스: {{serviceId}}\n명령어: {{command}}\n상태: {{status}}",
+		"no_logs": "아직 사용 가능한 로그가 없습니다."
+	},
+	"stop_service": {
+		"no_services": "현재 실행 중인 백그라운드 서비스가 없습니다.",
+		"service_id_required": "서비스를 중지하려면 service_id가 필요합니다.",
+		"available_services": "사용 가능한 백그라운드 서비스:",
+		"usage_hint": "특정 service_id와 함께 stop_service를 사용하여 해당 서비스를 중지할 수 있습니다.",
+		"service_not_found": "서비스 '{{serviceId}}'를 찾을 수 없습니다.",
+		"success": "서비스 '{{serviceId}}'가 성공적으로 중지되었습니다.",
+		"partial_success": "서비스 '{{serviceId}}'가 완전히 종료되지 않았을 수 있습니다.",
+		"stopping": "서비스 '{{serviceId}}'를 중지하고 있습니다.",
+		"error": "서비스 '{{serviceId}}' 중지 실패: {{error}}"
+	},
 	"readFile": {
 		"linesRange": " ({{start}}-{{end}}행)",
 		"definitionsOnly": " (정의만)",

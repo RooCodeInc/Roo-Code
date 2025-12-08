@@ -9,6 +9,8 @@ import codebaseSearch from "./codebase_search"
 import executeCommand from "./execute_command"
 import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
+import getServiceLogs from "./get_service_logs"
+import stopService from "./stop_service"
 import listCodeDefinitionNames from "./list_code_definition_names"
 import listFiles from "./list_files"
 import newTask from "./new_task"
@@ -41,6 +43,8 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		executeCommand,
 		fetchInstructions,
 		generateImage,
+		getServiceLogs,
+		stopService,
 		listCodeDefinitionNames,
 		listFiles,
 		newTask,

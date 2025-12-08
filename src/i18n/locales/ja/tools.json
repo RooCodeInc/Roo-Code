@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "現在実行中のバックグラウンドサービスはありません。",
+		"available_services": "利用可能なバックグラウンドサービス：",
+		"usage_hint": "特定のservice_idを指定してget_service_logsを使用すると、そのサービスのログを取得できます。",
+		"service_not_found": "サービス '{{serviceId}}' が見つかりません。パラメータなしでget_service_logsを使用すると、実行中のすべてのサービスを一覧表示できます。",
+		"service_info": "サービス：{{serviceId}}\nコマンド：{{command}}\nステータス：{{status}}",
+		"no_logs": "まだログがありません。"
+	},
+	"stop_service": {
+		"no_services": "現在実行中のバックグラウンドサービスはありません。",
+		"service_id_required": "サービスを停止するにはservice_idが必要です。",
+		"available_services": "利用可能なバックグラウンドサービス：",
+		"usage_hint": "特定のservice_idを指定してstop_serviceを使用すると、そのサービスを停止できます。",
+		"service_not_found": "サービス '{{serviceId}}' が見つかりません。",
+		"success": "サービス '{{serviceId}}' は正常に停止されました。",
+		"partial_success": "サービス '{{serviceId}}' は完全に終了しなかった可能性があります。",
+		"stopping": "サービス '{{serviceId}}' を停止中です。",
+		"error": "サービス '{{serviceId}}' の停止に失敗しました：{{error}}"
+	},
 	"readFile": {
 		"linesRange": " ({{start}}-{{end}}行目)",
 		"definitionsOnly": " (定義のみ)",

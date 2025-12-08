@@ -12,6 +12,130 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 	private subprocess?: ReturnType<typeof execa>
 	private pidUpdatePromise?: Promise<void>
 
+	/**
+	 * Cross-platform helper function to force kill process
+	 * @param pid Process ID
+	 * @param isMainProcess Whether it's the main process (main process needs to kill process tree)
+	 * @returns Whether termination was successful
+	 */
+	private async forceKillProcess(pid: number, isMainProcess: boolean = false): Promise<boolean> {
+		const platform = process.platform
+
+		if (platform === "win32") {
+			// Windows: use taskkill
+			try {
+				const args = isMainProcess
+					? ["/PID", pid.toString(), "/F", "/T"] // Main process: kill process tree
+					: ["/PID", pid.toString(), "/F"] // Child process: kill single process only
+
+				await execa("taskkill", args)
+				console.log(`[ExecaTerminalProcess#forceKillProcess] Successfully killed process ${pid} using taskkill`)
+				return true
+			} catch (error) {
+				console.error(
+					`[ExecaTerminalProcess#forceKillProcess] Failed to kill process ${pid} using taskkill: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				return false
+			}
+		} else {
+			// Linux/Unix/macOS: use kill -9
+			try {
+				if (isMainProcess) {
+					// Main process: try to kill process tree first, then kill main process
+					try {
+						await execa("pkill", ["-9", "-P", pid.toString()])
+						console.log(`[ExecaTerminalProcess#forceKillProcess] Killed process tree for PID ${pid}`)
+					} catch (pkillError) {
+						// pkill may fail (if no child processes), continue trying kill
+						console.warn(
+							`[ExecaTerminalProcess#forceKillProcess] pkill failed (may have no children): ${pkillError instanceof Error ? pkillError.message : String(pkillError)}`,
+						)
+					}
+				}
+
+				// Force kill process
+				await execa("kill", ["-9", pid.toString()])
+				console.log(`[ExecaTerminalProcess#forceKillProcess] Successfully killed process ${pid} using kill -9`)
+				return true
+			} catch (error) {
+				console.error(
+					`[ExecaTerminalProcess#forceKillProcess] Failed to kill process ${pid} using kill -9: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				return false
+			}
+		}
+	}
+
+	/**
+	 * More aggressive process group termination method (used after all regular methods fail)
+	 * @param pid Process ID
+	 * @returns Whether termination was successful
+	 */
+	private async forceKillProcessGroup(pid: number): Promise<boolean> {
+		const platform = process.platform
+
+		if (platform === "win32") {
+			// Windows: use taskkill to force kill process tree, including all child processes, with multiple retries
+			try {
+				// Try multiple times to ensure process is terminated
+				for (let i = 0; i < 3; i++) {
+					try {
+						await execa("taskkill", ["/PID", pid.toString(), "/F", "/T"], {
+							timeout: 2000,
+						})
+						console.log(
+							`[ExecaTerminalProcess#forceKillProcessGroup] Successfully killed process tree ${pid} (attempt ${i + 1})`,
+						)
+						return true
+					} catch (error) {
+						if (i === 2) {
+							// Last attempt failed
+							console.error(
+								`[ExecaTerminalProcess#forceKillProcessGroup] Failed to kill process tree ${pid} after 3 attempts: ${error instanceof Error ? error.message : String(error)}`,
+							)
+							return false
+						}
+						// Wait a bit before retrying
+						await new Promise((resolve) => setTimeout(resolve, 500))
+					}
+				}
+				// If loop ends normally (shouldn't happen in theory), return false as fallback
+				return false
+			} catch (error) {
+				console.error(
+					`[ExecaTerminalProcess#forceKillProcessGroup] Error killing process tree: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				return false
+			}
+		} else {
+			// Linux/Unix/macOS: kill entire process group
+			try {
+				// Use negative PID to kill entire process group
+				await execa("kill", ["-9", `-${pid}`])
+				console.log(`[ExecaTerminalProcess#forceKillProcessGroup] Successfully killed process group ${pid}`)
+				return true
+			} catch (error) {
+				// If process group kill fails, try other methods
+				console.warn(
+					`[ExecaTerminalProcess#forceKillProcessGroup] Failed to kill process group: ${error instanceof Error ? error.message : String(error)}`,
+				)
+
+				// Fallback: use pkill to kill process tree
+				try {
+					await execa("pkill", ["-9", "-P", pid.toString()])
+					await execa("kill", ["-9", pid.toString()])
+					console.log(`[ExecaTerminalProcess#forceKillProcessGroup] Successfully killed using pkill + kill`)
+					return true
+				} catch (pkillError) {
+					console.error(
+						`[ExecaTerminalProcess#forceKillProcessGroup] All methods failed: ${pkillError instanceof Error ? pkillError.message : String(pkillError)}`,
+					)
+					return false
+				}
+			}
+		}
+	}
+
 	constructor(terminal: RooTerminal) {
 		super()
 
@@ -158,29 +282,67 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		this.emit("continue")
 	}
 
-	public override abort() {
+	public override async abort(): Promise<void> {
 		this.aborted = true
 
-		// Function to perform the kill operations
-		const performKill = () => {
-			// Try to kill using the subprocess object
-			if (this.subprocess) {
-				try {
-					this.subprocess.kill("SIGKILL")
-				} catch (e) {
-					console.warn(
-						`[ExecaTerminalProcess#abort] Failed to kill subprocess: ${e instanceof Error ? e.message : String(e)}`,
-					)
+		// Simplified process termination function: directly use process group kill (most reliable method)
+		const performKill = async () => {
+			if (!this.pid) {
+				// If no PID, only cleanup subprocess
+				if (this.subprocess) {
+					try {
+						if (typeof (this.subprocess as any).cancel === "function") {
+							;(this.subprocess as any).cancel()
+						}
+						this.subprocess = undefined
+					} catch (e) {
+						console.warn(
+							`[ExecaTerminalProcess#abort] Failed to cleanup subprocess: ${e instanceof Error ? e.message : String(e)}`,
+						)
+					}
 				}
+				return
 			}
 
-			// Kill the stored PID (which should be the actual command after our update)
-			if (this.pid) {
+			console.log(`[ExecaTerminalProcess#abort] Terminating process ${this.pid} and its process group`)
+
+			// Directly use process group kill (most reliable method, kills all related processes at once)
+			const killed = await this.forceKillProcessGroup(this.pid)
+
+			if (!killed) {
+				// If process group kill fails, try individual process kill as fallback
+				console.warn(
+					`[ExecaTerminalProcess#abort] Process group kill failed, trying individual process kill as fallback`,
+				)
+				await this.forceKillProcess(this.pid, true)
+			}
+
+			// Verify process is actually terminated
+			await new Promise((resolve) => setTimeout(resolve, 500))
+			try {
+				process.kill(this.pid, 0)
+				// Process is still running
+				console.error(
+					`[ExecaTerminalProcess#abort] Process ${this.pid} still running after all termination attempts`,
+				)
+			} catch (e) {
+				// Process has been terminated
+				console.log(`[ExecaTerminalProcess#abort] Process ${this.pid} successfully terminated`)
+			}
+
+			// Cleanup subprocess object
+			if (this.subprocess) {
 				try {
-					process.kill(this.pid, "SIGKILL")
+					// Try to cancel subprocess (if supported)
+					if (typeof (this.subprocess as any).cancel === "function") {
+						;(this.subprocess as any).cancel()
+					}
+					// Cleanup subprocess reference
+					this.subprocess = undefined
+					console.log(`[ExecaTerminalProcess#abort] Subprocess object cleaned up`)
 				} catch (e) {
 					console.warn(
-						`[ExecaTerminalProcess#abort] Failed to kill process ${this.pid}: ${e instanceof Error ? e.message : String(e)}`,
+						`[ExecaTerminalProcess#abort] Failed to cleanup subprocess: ${e instanceof Error ? e.message : String(e)}`,
 					)
 				}
 			}
@@ -188,34 +350,9 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 
 		// If PID update is in progress, wait for it before killing
 		if (this.pidUpdatePromise) {
-			this.pidUpdatePromise.then(performKill).catch(() => performKill())
+			await this.pidUpdatePromise.then(() => performKill()).catch(() => performKill())
 		} else {
-			performKill()
-		}
-
-		// Continue with the rest of the abort logic
-		if (this.pid) {
-			// Also check for any child processes
-			psTree(this.pid, async (err, children) => {
-				if (!err) {
-					const pids = children.map((p) => parseInt(p.PID))
-					console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
-
-					for (const pid of pids) {
-						try {
-							process.kill(pid, "SIGKILL")
-						} catch (e) {
-							console.warn(
-								`[ExecaTerminalProcess#abort] Failed to send SIGKILL to child PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
-							)
-						}
-					}
-				} else {
-					console.error(
-						`[ExecaTerminalProcess#abort] Failed to get process tree for PID ${this.pid}: ${err.message}`,
-					)
-				}
-			})
+			await performKill()
 		}
 	}
 
@@ -240,6 +377,15 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		// )
 
 		return output.slice(0, index)
+	}
+
+	/**
+	 * Peek at all unretrieved output including incomplete lines.
+	 * This method does NOT update lastRetrievedIndex.
+	 * 查看所有未检索的输出，包括不完整的行。此方法不会更新 lastRetrievedIndex。
+	 */
+	public override peekAllUnretrievedOutput(): string {
+		return this.fullOutput.slice(this.lastRetrievedIndex)
 	}
 
 	private emitRemainingBufferIfListening() {

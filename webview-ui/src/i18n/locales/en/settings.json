@@ -240,6 +240,27 @@
 			"addButton": "Add",
 			"autoDenied": "Commands with the prefix `{{prefix}}` have been forbidden by the user. Do not bypass this restriction by running another command."
 		},
+		"serviceMode": {
+			"title": "Service Mode Settings",
+			"noTimeout": "No timeout",
+			"commandTimeout": {
+				"label": "Command Execution Timeout",
+				"description": "Maximum time in seconds to wait for non-service commands to complete (0 = no timeout). Commands like npm install will timeout after this duration."
+			},
+			"serviceTimeout": {
+				"label": "Service Ready Timeout",
+				"description": "Maximum time in seconds to wait for service commands (like npm run dev) to report ready. The AI will wait for output like 'listening on port' before continuing."
+			},
+			"universalTimeout": {
+				"label": "Enable Universal Command Timeout",
+				"description": "When enabled, all commands that exceed the timeout will continue running in the background instead of being terminated. This treats long-running commands as background services."
+			},
+			"patterns": {
+				"label": "Custom Service Command Patterns",
+				"description": "Add regex patterns to identify additional commands as service commands. Built-in patterns already detect 70+ common service commands (npm run dev, docker-compose up, etc.).",
+				"placeholder": "Enter regex pattern (e.g., 'node.*server')"
+			}
+		},
 		"updateTodoList": {
 			"label": "Todo",
 			"description": "Automatically update the to-do list without requiring approval"

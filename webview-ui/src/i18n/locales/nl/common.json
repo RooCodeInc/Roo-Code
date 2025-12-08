@@ -68,12 +68,12 @@
 		}
 	},
 	"confirmation": {
-		"deleteMessage": "Bericht Verwijderen",
+		"deleteMessage": "Bericht verwijderen",
 		"deleteWarning": "Het verwijderen van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je doorgaan?",
-		"editMessage": "Bericht Bewerken",
+		"editMessage": "Bericht bewerken",
 		"editWarning": "Het bewerken van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je doorgaan?",
-		"editQuestionWithCheckpoint": "Het bewerken van dit bericht zal alle latere berichten in het gesprek verwijderen. Wil je ook alle wijzigingen ongedaan maken tot dit checkpoint?",
-		"deleteQuestionWithCheckpoint": "Het verwijderen van dit bericht zal alle latere berichten in het gesprek verwijderen. Wil je ook alle wijzigingen ongedaan maken tot dit checkpoint?",
+		"editQuestionWithCheckpoint": "Het bewerken van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je ook alle wijzigingen ongedaan maken tot dit checkpoint?",
+		"deleteQuestionWithCheckpoint": "Het verwijderen van dit bericht zal alle volgende berichten in het gesprek verwijderen. Wil je ook alle wijzigingen ongedaan maken tot dit checkpoint?",
 		"editOnly": "Nee, alleen bericht bewerken",
 		"deleteOnly": "Nee, alleen bericht verwijderen",
 		"restoreToCheckpoint": "Ja, checkpoint herstellen",
@@ -100,6 +100,25 @@
 		"wait_checkpoint_long_time": "Je hebt {{timeout}} seconden gewacht op de initialisatie van de checkpoint. Als je deze functie niet nodig hebt, schakel hem dan uit in de <settingsLink>checkpoint-instellingen</settingsLink>.",
 		"init_checkpoint_fail_long_time": "De initialisatie van de checkpoint duurde meer dan {{timeout}} seconden, dus checkpoints zijn uitgeschakeld voor deze taak. Je kunt checkpoints uitschakelen of de wachttijd in de <settingsLink>checkpoint-instellingen</settingsLink> verhogen.",
 		"attempt_completion_tool_failed": "Je kunt attempt_completion niet uitvoeren omdat een eerdere tool-aanroep in deze beurt is mislukt. Los het tool-probleem op voordat je probeert te voltooien."
+	},
+	"backgroundTasks": {
+		"title": "Achtergrondtaken",
+		"ariaLabel": "Achtergrondtaken",
+		"tooltip": "{{count}} achtergrondta(a)k(en) actief",
+		"stopService": "Service stoppen",
+		"showLogs": "Terminal-uitvoer tonen",
+		"hideLogs": "Terminal-uitvoer verbergen",
+		"terminalOutput": "Terminal-uitvoer",
+		"refreshLogs": "Logs vernieuwen",
+		"loadingLogs": "Logs laden...",
+		"noLogs": "Nog geen output",
+		"status": {
+			"starting": "Starten",
+			"ready": "Klaar",
+			"running": "Actief",
+			"stopping": "Stoppen",
+			"failed": "Mislukt"
+		}
 	},
 	"tasks": {
 		"delegated": "Gedelegeerd naar subtaak",

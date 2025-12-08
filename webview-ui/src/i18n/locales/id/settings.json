@@ -244,6 +244,27 @@
 			"label": "Todo",
 			"description": "Daftar tugas diperbarui secara otomatis tanpa persetujuan"
 		},
+		"serviceMode": {
+			"title": "Pengaturan Mode Layanan",
+			"noTimeout": "Tidak ada timeout",
+			"commandTimeout": {
+				"label": "Timeout Eksekusi Perintah",
+				"description": "Waktu maksimum dalam detik untuk menunggu perintah non-layanan untuk selesai (0 = tidak ada timeout). Perintah seperti npm install akan timeout setelah durasi ini."
+			},
+			"serviceTimeout": {
+				"label": "Timeout Layanan Siap",
+				"description": "Waktu maksimum dalam detik untuk menunggu perintah layanan (seperti npm run dev) untuk melaporkan siap. AI akan menunggu output seperti 'listening on port' sebelum melanjutkan."
+			},
+			"universalTimeout": {
+				"label": "Aktifkan Timeout Perintah Universal",
+				"description": "Ketika diaktifkan, semua perintah yang melebihi timeout akan terus berjalan di latar belakang alih-alih dihentikan. Ini memperlakukan perintah yang berjalan lama sebagai layanan latar belakang."
+			},
+			"patterns": {
+				"label": "Pola Perintah Layanan Kustom",
+				"description": "Tambahkan pola regex untuk mengidentifikasi perintah tambahan sebagai perintah layanan. Pola bawaan sudah mendeteksi 70+ perintah layanan umum (npm run dev, docker-compose up, dll.).",
+				"placeholder": "Masukkan pola regex (misalnya 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Permintaan Maks",
 			"description": "Secara otomatis membuat sejumlah permintaan API ini sebelum meminta persetujuan untuk melanjutkan tugas.",

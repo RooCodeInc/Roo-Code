@@ -122,7 +122,7 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	/**
 	 * Aborts the process via a SIGINT.
 	 */
-	abstract abort(): void
+	abstract abort(): Promise<void>
 
 	/**
 	 * Checks if this process has unretrieved output.
@@ -136,6 +136,16 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	 * @returns The unretrieved output
 	 */
 	abstract getUnretrievedOutput(): string
+
+	/**
+	 * Peek at all unretrieved output including incomplete lines (without newline at the end).
+	 * This method does NOT update lastRetrievedIndex, so it can be called multiple times
+	 * to peek at the current output without consuming it.
+	 * 查看所有未检索的输出，包括不完整的行（没有换行符的行）
+	 * 此方法不会更新 lastRetrievedIndex，所以可以多次调用来查看当前输出而不消费它
+	 * @returns All unretrieved output including incomplete lines
+	 */
+	abstract peekAllUnretrievedOutput(): string
 
 	protected startHotTimer(data: string) {
 		this.isHot = true

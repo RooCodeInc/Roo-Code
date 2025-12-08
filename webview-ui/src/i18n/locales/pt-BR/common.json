@@ -1,16 +1,11 @@
 {
 	"errorBoundary": {
 		"title": "Algo deu errado",
-		"reportText": "Ajude-nos a melhorar relatando este erro em",
-		"githubText": "nossa página de Issues no GitHub",
-		"copyInstructions": "Copie e cole a seguinte mensagem de erro para incluí-la como parte do seu relatório:",
-		"errorStack": "Pilha de Erro:",
-		"componentStack": "Pilha de Componentes:"
-	},
-	"number_format": {
-		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
+		"reportText": "Ajude-nos a melhorar o aplicativo relatando este erro em",
+		"githubText": "nossa página de problemas do GitHub",
+		"copyInstructions": "Copie e cole a seguinte mensagem de erro para incluir em seu relatório:",
+		"errorStack": "Pilha de erros:",
+		"componentStack": "Pilha de componentes:"
 	},
 	"answers": {
 		"yes": "Sim",
@@ -18,6 +13,11 @@
 		"cancel": "Cancelar",
 		"remove": "Remover",
 		"keep": "Manter"
+	},
+	"number_format": {
+		"thousand_suffix": "k",
+		"million_suffix": "m",
+		"billion_suffix": "b"
 	},
 	"ui": {
 		"search_placeholder": "Pesquisar...",
@@ -59,47 +59,66 @@
 			"invalidDataUri": "Formato de URI de dados inválido",
 			"copyingImage": "Erro ao copiar imagem: {{error}}",
 			"openingImage": "Erro ao abrir imagem: {{error}}",
-			"pathNotExists": "Caminho não existe: {{path}}",
+			"pathNotExists": "O caminho não existe: {{path}}",
 			"couldNotOpen": "Não foi possível abrir o arquivo: {{error}}",
 			"couldNotOpenGeneric": "Não foi possível abrir o arquivo!"
 		},
 		"success": {
-			"imageDataUriCopied": "URI de dados da imagem copiada para a área de transferência"
+			"imageDataUriCopied": "URI de dados da imagem copiado para a área de transferência"
 		}
 	},
 	"confirmation": {
 		"deleteMessage": "Excluir Mensagem",
-		"deleteWarning": "Excluir esta mensagem irá excluir todas as mensagens subsequentes na conversa. Deseja prosseguir?",
+		"deleteWarning": "Excluir esta mensagem excluirá todas as mensagens subsequentes na conversa. Deseja continuar?",
 		"editMessage": "Editar Mensagem",
-		"editWarning": "Editar esta mensagem irá excluir todas as mensagens subsequentes na conversa. Deseja prosseguir?",
-		"editQuestionWithCheckpoint": "Editar esta mensagem irá excluir todas as mensagens posteriores na conversa. Você também deseja desfazer todas as alterações até este checkpoint?",
-		"deleteQuestionWithCheckpoint": "Excluir esta mensagem irá excluir todas as mensagens posteriores na conversa. Você também deseja desfazer todas as alterações até este checkpoint?",
-		"editOnly": "Não, apenas editar a mensagem",
-		"deleteOnly": "Não, apenas excluir a mensagem",
-		"restoreToCheckpoint": "Sim, restaurar o checkpoint",
+		"editWarning": "Editar esta mensagem excluirá todas as mensagens subsequentes na conversa. Deseja continuar?",
+		"editQuestionWithCheckpoint": "Editar esta mensagem excluirá todas as mensagens posteriores na conversa. Você também gostaria de reverter todas as alterações até este ponto de verificação?",
+		"deleteQuestionWithCheckpoint": "Excluir esta mensagem excluirá todas as mensagens posteriores na conversa. Você também gostaria de reverter todas as alterações até este ponto de verificação?",
+		"editOnly": "Não, apenas editar mensagem",
+		"deleteOnly": "Não, apenas excluir mensagem",
+		"restoreToCheckpoint": "Sim, restaurar ponto de verificação",
 		"proceed": "Prosseguir",
 		"dontShowAgain": "Não mostrar novamente"
 	},
 	"time_ago": {
-		"just_now": "agora mesmo",
-		"seconds_ago": "há {{count}} segundos",
+		"just_now": "agora há pouco",
+		"seconds_ago": "{{count}} segundos atrás",
 		"minute_ago": "há um minuto",
-		"minutes_ago": "há {{count}} minutos",
+		"minutes_ago": "{{count}} minutos atrás",
 		"hour_ago": "há uma hora",
-		"hours_ago": "há {{count}} horas",
+		"hours_ago": "{{count}} horas atrás",
 		"day_ago": "há um dia",
-		"days_ago": "há {{count}} dias",
+		"days_ago": "{{count}} dias atrás",
 		"week_ago": "há uma semana",
-		"weeks_ago": "há {{count}} semanas",
+		"weeks_ago": "{{count}} semanas atrás",
 		"month_ago": "há um mês",
-		"months_ago": "há {{count}} meses",
+		"months_ago": "{{count}} meses atrás",
 		"year_ago": "há um ano",
-		"years_ago": "há {{count}} anos"
+		"years_ago": "{{count}} anos atrás"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Você esperou {{timeout}} segundos para inicializar o checkpoint. Se não precisa dessa função, desative nas <settingsLink>configurações do checkpoint</settingsLink>.",
-		"init_checkpoint_fail_long_time": "A inicialização do checkpoint levou mais de {{timeout}} segundos, então os checkpoints foram desativados para esta tarefa. Você pode desativar os checkpoints ou aumentar o tempo de espera nas <settingsLink>configurações do checkpoint</settingsLink>.",
-		"attempt_completion_tool_failed": "Não é possível executar attempt_completion porque uma chamada de ferramenta anterior falhou neste turno. Por favor, resolva a falha da ferramenta antes de tentar concluir."
+		"wait_checkpoint_long_time": "Você esperou {{timeout}} segundos pela inicialização do ponto de verificação. Se não precisar desta funcionalidade, desative-a em <settingsLink>configurações do ponto de verificação</settingsLink>.",
+		"init_checkpoint_fail_long_time": "A inicialização do ponto de verificação levou mais de {{timeout}} segundos, então os pontos de verificação foram desativados para esta tarefa. Você pode desativar os pontos de verificação ou aumentar o tempo de espera em <settingsLink>configurações do ponto de verificação</settingsLink>.",
+		"attempt_completion_tool_failed": "Não foi possível executar attempt_completion porque uma chamada de ferramenta anterior falhou neste ciclo. Resolva o erro da ferramenta antes de tentar concluir."
+	},
+	"backgroundTasks": {
+		"title": "Tarefas em segundo plano",
+		"ariaLabel": "Tarefas em segundo plano",
+		"tooltip": "{{count}} tarefa(s) em segundo plano em execução",
+		"stopService": "Parar serviço",
+		"showLogs": "Mostrar saída do terminal",
+		"hideLogs": "Ocultar saída do terminal",
+		"terminalOutput": "Saída do terminal",
+		"refreshLogs": "Atualizar logs",
+		"loadingLogs": "Carregando logs...",
+		"noLogs": "Nenhuma saída ainda",
+		"status": {
+			"starting": "Iniciando",
+			"ready": "Pronto",
+			"running": "Executando",
+			"stopping": "Parando",
+			"failed": "Falhou"
+		}
 	},
 	"tasks": {
 		"delegated": "Delegado para subtarefa",

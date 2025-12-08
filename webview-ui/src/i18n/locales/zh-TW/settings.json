@@ -240,6 +240,27 @@
 			"label": "待辦",
 			"description": "自動更新待辦清單無需核准"
 		},
+		"serviceMode": {
+			"title": "服務模式設定",
+			"noTimeout": "無逾時",
+			"commandTimeout": {
+				"label": "指令執行逾時",
+				"description": "等待非服務指令完成的最大時間（秒）（0 = 無逾時）。如 npm install 等指令將在此時間後逾時。"
+			},
+			"serviceTimeout": {
+				"label": "服務就緒逾時",
+				"description": "服務指令（如 npm run dev）報告就緒的最大等待時間（秒）。AI 將等待類似 'listening on port' 的輸出後繼續。"
+			},
+			"universalTimeout": {
+				"label": "啟用通用指令逾時",
+				"description": "啟用後，所有逾時的指令將在後台繼續執行而不是被終止。這會將長時間執行的指令視為後台服務。"
+			},
+			"patterns": {
+				"label": "自訂服務指令模式",
+				"description": "新增正則表達式模式以識別其他服務指令。內建模式已識別 70+ 種常見服務指令（npm run dev、docker-compose up 等）。",
+				"placeholder": "輸入正則表達式（例如 'node.*server'）"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "最大請求數",
 			"description": "在請求核准以繼續執行工作之前，自動發出此數量的 API 請求。",

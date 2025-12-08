@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "No background services are currently running.",
+		"available_services": "Available background services:",
+		"usage_hint": "Use get_service_logs with a specific service_id to get logs from that service.",
+		"service_not_found": "Service '{{serviceId}}' not found. Use get_service_logs without parameters to list all running services.",
+		"service_info": "Service: {{serviceId}}\nCommand: {{command}}\nStatus: {{status}}",
+		"no_logs": "No logs available yet."
+	},
+	"stop_service": {
+		"no_services": "No background services are currently running.",
+		"service_id_required": "A service_id is required to stop a service.",
+		"available_services": "Available background services:",
+		"usage_hint": "Use stop_service with a specific service_id to stop that service.",
+		"service_not_found": "Service '{{serviceId}}' not found.",
+		"success": "Service '{{serviceId}}' has been stopped successfully.",
+		"partial_success": "Service '{{serviceId}}' may not have fully terminated.",
+		"stopping": "Service '{{serviceId}}' is being stopped.",
+		"error": "Failed to stop service '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (lines {{start}}-{{end}})",
 		"definitionsOnly": " (definitions only)",

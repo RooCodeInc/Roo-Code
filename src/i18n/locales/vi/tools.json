@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Hiện tại không có dịch vụ nền nào đang chạy.",
+		"available_services": "Các dịch vụ nền có sẵn:",
+		"usage_hint": "Sử dụng get_service_logs với service_id cụ thể để lấy nhật ký của dịch vụ đó.",
+		"service_not_found": "Dịch vụ '{{serviceId}}' không được tìm thấy. Sử dụng get_service_logs không có tham số để liệt kê tất cả các dịch vụ đang chạy.",
+		"service_info": "Dịch vụ: {{serviceId}}\nLệnh: {{command}}\nTrạng thái: {{status}}",
+		"no_logs": "Chưa có nhật ký nào có sẵn."
+	},
+	"stop_service": {
+		"no_services": "Hiện tại không có dịch vụ nền nào đang chạy.",
+		"service_id_required": "Cần có service_id để dừng dịch vụ.",
+		"available_services": "Các dịch vụ nền có sẵn:",
+		"usage_hint": "Sử dụng stop_service với service_id cụ thể để dừng dịch vụ đó.",
+		"service_not_found": "Dịch vụ '{{serviceId}}' không được tìm thấy.",
+		"success": "Dịch vụ '{{serviceId}}' đã được dừng thành công.",
+		"partial_success": "Dịch vụ '{{serviceId}}' có thể không được dừng hoàn toàn.",
+		"stopping": "Đang dừng dịch vụ '{{serviceId}}'.",
+		"error": "Không thể dừng dịch vụ '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (dòng {{start}}-{{end}})",
 		"definitionsOnly": " (chỉ định nghĩa)",

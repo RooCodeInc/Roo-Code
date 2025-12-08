@@ -342,6 +342,26 @@
 					"default": [],
 					"description": "%commands.commandTimeoutAllowlist.description%"
 				},
+				"roo-cline.serviceReadyTimeout": {
+					"type": "number",
+					"default": 60,
+					"minimum": 10,
+					"maximum": 600,
+					"description": "%commands.serviceReadyTimeout.description%"
+				},
+				"roo-cline.serviceCommandPatterns": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "%commands.serviceCommandPatterns.description%"
+				},
+				"roo-cline.enableUniversalCommandTimeout": {
+					"type": "boolean",
+					"default": false,
+					"description": "%commands.enableUniversalCommandTimeout.description%"
+				},
 				"roo-cline.preventCompletionWithOpenTodos": {
 					"type": "boolean",
 					"default": false,

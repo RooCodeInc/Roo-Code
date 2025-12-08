@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "La inicialización del punto de control ha tardado más de {{timeout}} segundos, por lo que los puntos de control están desactivados para esta tarea. Puedes desactivar los puntos de control o aumentar el tiempo de espera en <settingsLink>la configuración del punto de control</settingsLink>.",
 		"attempt_completion_tool_failed": "No se puede ejecutar attempt_completion porque una llamada de herramienta anterior falló en este turno. Por favor, resuelve el error de la herramienta antes de intentar completar."
 	},
+	"backgroundTasks": {
+		"title": "Tareas en segundo plano",
+		"ariaLabel": "Tareas en segundo plano",
+		"tooltip": "{{count}} tarea(s) en segundo plano en ejecución",
+		"stopService": "Detener servicio",
+		"showLogs": "Mostrar salida de terminal",
+		"hideLogs": "Ocultar salida de terminal",
+		"terminalOutput": "Salida de terminal",
+		"refreshLogs": "Actualizar registros",
+		"loadingLogs": "Cargando registros...",
+		"noLogs": "Sin salida aún",
+		"status": {
+			"starting": "Iniciando",
+			"ready": "Listo",
+			"running": "En ejecución",
+			"stopping": "Deteniendo",
+			"failed": "Fallido"
+		}
+	},
 	"tasks": {
 		"delegated": "Delegado a subtarea",
 		"delegated_to": "Delegado a la tarea {{childId}}",

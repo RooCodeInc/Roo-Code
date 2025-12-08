@@ -213,6 +213,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		// 服务模式设置 / Service mode settings
+		commandExecutionTimeout,
+		serviceReadyTimeout,
+		serviceCommandPatterns,
+		enableUniversalCommandTimeout,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -730,6 +735,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							allowedMaxRequests={allowedMaxRequests ?? undefined}
 							allowedMaxCost={allowedMaxCost ?? undefined}
 							deniedCommands={deniedCommands}
+							// 服务模式设置 / Service mode settings
+							commandExecutionTimeout={commandExecutionTimeout}
+							serviceReadyTimeout={serviceReadyTimeout}
+							serviceCommandPatterns={serviceCommandPatterns}
+							enableUniversalCommandTimeout={enableUniversalCommandTimeout}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

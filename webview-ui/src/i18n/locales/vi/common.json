@@ -1,11 +1,11 @@
 {
 	"errorBoundary": {
-		"title": "Đã xảy ra lỗi",
-		"reportText": "Vui lòng giúp chúng tôi cải thiện bằng cách báo cáo lỗi này trên",
+		"title": "Đã có lỗi xảy ra",
+		"reportText": "Giúp chúng tôi cải thiện ứng dụng bằng cách báo cáo lỗi này tại",
 		"githubText": "trang GitHub Issues của chúng tôi",
-		"copyInstructions": "Sao chép và dán thông báo lỗi sau đây để đưa vào báo cáo của bạn:",
-		"errorStack": "Stack lỗi:",
-		"componentStack": "Stack thành phần:"
+		"copyInstructions": "Sao chép và dán thông báo lỗi sau để đưa vào báo cáo của bạn:",
+		"errorStack": "Ngăn xếp lỗi:",
+		"componentStack": "Ngăn xếp thành phần:"
 	},
 	"answers": {
 		"yes": "Có",
@@ -15,13 +15,13 @@
 		"keep": "Giữ"
 	},
 	"number_format": {
-		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
+		"thousand_suffix": "n",
+		"million_suffix": "tr",
+		"billion_suffix": "tỷ"
 	},
 	"ui": {
 		"search_placeholder": "Tìm kiếm...",
-		"no_results": "Không tìm thấy kết quả nào"
+		"no_results": "Không tìm thấy kết quả"
 	},
 	"mermaid": {
 		"loading": "Đang tạo biểu đồ mermaid...",
@@ -68,16 +68,16 @@
 		}
 	},
 	"confirmation": {
-		"deleteMessage": "Xóa Tin Nhắn",
+		"deleteMessage": "Xóa Tin nhắn",
 		"deleteWarning": "Xóa tin nhắn này sẽ xóa tất cả các tin nhắn tiếp theo trong cuộc trò chuyện. Bạn có muốn tiếp tục không?",
-		"editMessage": "Chỉnh Sửa Tin Nhắn",
+		"editMessage": "Chỉnh sửa Tin nhắn",
 		"editWarning": "Chỉnh sửa tin nhắn này sẽ xóa tất cả các tin nhắn tiếp theo trong cuộc trò chuyện. Bạn có muốn tiếp tục không?",
-		"editQuestionWithCheckpoint": "Chỉnh sửa tin nhắn này sẽ xóa tất cả các tin nhắn sau đó trong cuộc trò chuyện. Bạn có muốn hoàn tác tất cả các thay đổi về checkpoint này không?",
-		"deleteQuestionWithCheckpoint": "Xóa tin nhắn này sẽ xóa tất cả các tin nhắn sau đó trong cuộc trò chuyện. Bạn có muốn hoàn tác tất cả các thay đổi về checkpoint này không?",
+		"editQuestionWithCheckpoint": "Chỉnh sửa tin nhắn này sẽ xóa tất cả các tin nhắn sau này trong cuộc trò chuyện. Bạn có muốn khôi phục tất cả các thay đổi đến điểm kiểm tra này không?",
+		"deleteQuestionWithCheckpoint": "Xóa tin nhắn này sẽ xóa tất cả các tin nhắn sau này trong cuộc trò chuyện. Bạn có muốn khôi phục tất cả các thay đổi đến điểm kiểm tra này không?",
 		"editOnly": "Không, chỉ chỉnh sửa tin nhắn",
 		"deleteOnly": "Không, chỉ xóa tin nhắn",
-		"restoreToCheckpoint": "Có, khôi phục checkpoint",
-		"proceed": "Tiếp Tục",
+		"restoreToCheckpoint": "Có, khôi phục điểm kiểm tra",
+		"proceed": "Tiếp tục",
 		"dontShowAgain": "Không hiển thị lại"
 	},
 	"time_ago": {
@@ -97,14 +97,33 @@
 		"years_ago": "{{count}} năm trước"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Bạn đã chờ {{timeout}} giây để khởi tạo điểm kiểm tra. Nếu không cần chức năng này, hãy tắt nó trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>.",
-		"init_checkpoint_fail_long_time": "Khởi tạo điểm kiểm tra mất hơn {{timeout}} giây, vì vậy các điểm kiểm tra đã bị vô hiệu hóa cho tác vụ này. Bạn có thể tắt các điểm kiểm tra hoặc tăng thời gian chờ trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>.",
-		"attempt_completion_tool_failed": "Không thể thực thi attempt_completion vì một lệnh gọi công cụ trước đó đã thất bại trong lượt này. Vui lòng giải quyết lỗi công cụ trước khi cố gắng hoàn thành."
+		"wait_checkpoint_long_time": "Bạn đã đợi {{timeout}} giây để khởi tạo điểm kiểm tra. Nếu bạn không cần tính năng này, hãy tắt nó trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>.",
+		"init_checkpoint_fail_long_time": "Việc khởi tạo điểm kiểm tra đã mất hơn {{timeout}} giây, vì vậy các điểm kiểm tra đã bị tắt cho nhiệm vụ này. Bạn có thể tắt các điểm kiểm tra hoặc tăng thời gian chờ trong <settingsLink>cài đặt điểm kiểm tra</settingsLink>.",
+		"attempt_completion_tool_failed": "Không thể thực hiện attempt_completion vì lệnh gọi công cụ trước đó đã thất bại trong chu kỳ này. Hãy giải quyết lỗi công cụ trước khi cố gắng hoàn thành."
+	},
+	"backgroundTasks": {
+		"title": "Tác vụ Nền",
+		"ariaLabel": "Tác vụ Nền",
+		"tooltip": "{{count}} tác vụ nền đang chạy",
+		"stopService": "Dừng dịch vụ",
+		"showLogs": "Hiển thị đầu ra terminal",
+		"hideLogs": "Ẩn đầu ra terminal",
+		"terminalOutput": "Đầu ra terminal",
+		"refreshLogs": "Làm mới nhật ký",
+		"loadingLogs": "Đang tải nhật ký...",
+		"noLogs": "Chưa có đầu ra",
+		"status": {
+			"starting": "Đang bắt đầu",
+			"ready": "Sẵn sàng",
+			"running": "Đang chạy",
+			"stopping": "Đang dừng",
+			"failed": "Thất bại"
+		}
 	},
 	"tasks": {
-		"delegated": "Ủy quyền cho nhiệm vụ con",
-		"delegated_to": "Ủy quyền cho nhiệm vụ {{childId}}",
-		"delegation_completed": "Nhiệm vụ con hoàn thành, tiếp tục nhiệm vụ cha",
-		"awaiting_child": "Đang chờ nhiệm vụ con {{childId}}"
+		"delegated": "Được ủy quyền cho tác vụ con",
+		"delegated_to": "Được ủy quyền cho tác vụ {{childId}}",
+		"delegation_completed": "Tác vụ con đã hoàn thành, tiếp tục tác vụ cha",
+		"awaiting_child": "Đang chờ tác vụ con {{childId}}"
 	}
 }

@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "Inisialisasi checkpoint sudah lebih dari {{timeout}} detik, jadi checkpoint dinonaktifkan untuk tugas ini. Kamu bisa mematikan checkpoint atau menambah waktu tunggu di <settingsLink>pengaturan checkpoint</settingsLink>.",
 		"attempt_completion_tool_failed": "Tidak dapat mengeksekusi attempt_completion karena panggilan alat sebelumnya gagal dalam giliran ini. Harap atasi kegagalan alat sebelum mencoba menyelesaikan."
 	},
+	"backgroundTasks": {
+		"title": "Tugas yang berjalan di latar belakang",
+		"ariaLabel": "Tugas latar belakang",
+		"tooltip": "{{count}} tugas latar belakang sedang berjalan",
+		"stopService": "Hentikan layanan",
+		"showLogs": "Tampilkan output terminal",
+		"hideLogs": "Sembunyikan output terminal",
+		"terminalOutput": "Output terminal",
+		"refreshLogs": "Refresh log",
+		"loadingLogs": "Memuat log...",
+		"noLogs": "Belum ada output",
+		"status": {
+			"starting": "Memulai",
+			"ready": "Siap",
+			"running": "Berjalan",
+			"stopping": "Menghentikan",
+			"failed": "Gagal"
+		}
+	},
 	"tasks": {
 		"delegated": "Didelegasikan ke subtugas",
 		"delegated_to": "Didelegasikan ke tugas {{childId}}",

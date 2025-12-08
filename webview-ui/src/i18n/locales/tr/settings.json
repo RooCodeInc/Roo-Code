@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "Yapılacaklar listesi onay gerektirmeden otomatik olarak güncellenir"
 		},
+		"serviceMode": {
+			"title": "Servis Modu Ayarları",
+			"noTimeout": "Zaman aşımı yok",
+			"commandTimeout": {
+				"label": "Komut Çalıştırma Zaman Aşımı",
+				"description": "Servis dışı komutların tamamlanmasını beklemek için maksimum saniye (0 = zaman aşımı yok). npm install gibi komutlar bu süre sonra zaman aşımına uğrayacaktır."
+			},
+			"serviceTimeout": {
+				"label": "Servis Hazır Zaman Aşımı",
+				"description": "Servis komutlarının (npm run dev gibi) hazır olduğunu raporlamasını beklemek için maksimum saniye. AI, devam etmeden önce 'listening on port' gibi çıktıları bekleyecektir."
+			},
+			"universalTimeout": {
+				"label": "Evrensel Komut Zaman Aşımını Etkinleştir",
+				"description": "Etkinleştirildiğinde, zaman aşımını aşan tüm komutlar sonlandırılmak yerine arka planda çalışmaya devam edecektir. Bu, uzun süren komutları arka plan servisleri olarak ele alır."
+			},
+			"patterns": {
+				"label": "Özel Servis Komut Desenleri",
+				"description": "Ek komutları servis komutları olarak tanımlamak için regex desenleri ekleyin. Yerleşik desenler zaten 70+ yaygın servis komutunu algılar (npm run dev, docker-compose up, vb.).",
+				"placeholder": "Regex deseni girin (örneğin 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
 			"description": "Göreve devam etmek için onay istemeden önce bu sayıda API isteği otomatik olarak yap.",

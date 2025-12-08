@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "La llista de tasques es actualitza automàticament sense aprovació"
 		},
+		"serviceMode": {
+			"title": "Configuració del Mode Servei",
+			"noTimeout": "Sense temps d'espera",
+			"commandTimeout": {
+				"label": "Temps d'espera d'execució de comandaments",
+				"description": "Temps màxim en segons per esperar que els comandaments no de servei es completin (0 = sense temps d'espera). Els comandaments com npm install acabaran el temps d'espera després d'aquesta durada."
+			},
+			"serviceTimeout": {
+				"label": "Temps d'espera de servei preparat",
+				"description": "Temps màxim en segons per esperar que els comandaments de servei (com npm run dev) informin que estan preparats. La IA esperarà una sortida com 'escoltant al port' abans de continuar."
+			},
+			"universalTimeout": {
+				"label": "Activar temps d'espera universal de comandaments",
+				"description": "Quan està activat, tots els comandaments que superin el temps d'espera continuaran executant-se en segon pla en lloc de ser terminats. Això tracta els comandaments de llarga durada com a serveis en segon pla."
+			},
+			"patterns": {
+				"label": "Patrons de comandaments de servei personalitzats",
+				"description": "Afegeix patrons regex per identificar comandaments addicionals com a comandaments de servei. Els patrons integrats ja detecten 70+ comandaments de servei comuns (npm run dev, docker-compose up, etc.).",
+				"placeholder": "Introdueix patró regex (ex. 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",
 			"description": "Fes aquesta quantitat de sol·licituds API automàticament abans de demanar aprovació per continuar amb la tasca.",

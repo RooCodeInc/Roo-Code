@@ -33,9 +33,17 @@ export interface RooTerminalProcess extends EventEmitter<RooTerminalProcessEvent
 	isHot: boolean
 	run: (command: string) => Promise<void>
 	continue: () => void
-	abort: () => void
+	abort: () => Promise<void>
 	hasUnretrievedOutput: () => boolean
 	getUnretrievedOutput: () => string
+	/**
+	 * Get all unretrieved output including incomplete lines (without newline at the end)
+	 * This method does NOT update lastRetrievedIndex, so it can be called multiple times
+	 * to peek at the current output without consuming it.
+	 * 获取所有未检索的输出，包括不完整的行（没有换行符的行）
+	 * 此方法不会更新 lastRetrievedIndex，所以可以多次调用来查看当前输出而不消费它
+	 */
+	peekAllUnretrievedOutput: () => string
 }
 
 export type RooTerminalProcessResultPromise = RooTerminalProcess & Promise<void>

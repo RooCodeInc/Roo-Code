@@ -241,6 +241,27 @@
 			"label": "Todo",
 			"description": "La liste de tâches est mise à jour automatiquement sans approbation"
 		},
+		"serviceMode": {
+			"title": "Paramètres du mode service",
+			"noTimeout": "Pas de timeout",
+			"commandTimeout": {
+				"label": "Timeout d'exécution de commande",
+				"description": "Temps maximum en secondes pour attendre l'achèvement des commandes non-service (0 = pas de timeout). Les commandes comme npm install expireront après cette durée."
+			},
+			"serviceTimeout": {
+				"label": "Timeout de disponibilité du service",
+				"description": "Temps maximum en secondes pour attendre que les commandes de service (comme npm run dev) signalent leur disponibilité. L'IA attendra des sorties comme 'listening on port' avant de continuer."
+			},
+			"universalTimeout": {
+				"label": "Activer le timeout universel de commande",
+				"description": "Lorsqu'activé, toutes les commandes qui dépassent le timeout continueront de s'exécuter en arrière-plan au lieu d'être terminées. Cela traite les commandes longues comme des services d'arrière-plan."
+			},
+			"patterns": {
+				"label": "Modèles de commande de service personnalisés",
+				"description": "Ajoutez des modèles regex pour identifier des commandes supplémentaires comme commandes de service. Les modèles intégrés détectent déjà 70+ commandes de service courantes (npm run dev, docker-compose up, etc.).",
+				"placeholder": "Entrez le modèle regex (ex: 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",
 			"description": "Effectuer automatiquement ce nombre de requêtes API avant de demander l'approbation pour continuer la tâche.",

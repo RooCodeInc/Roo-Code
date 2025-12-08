@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "Lista zadań jest automatycznie aktualizowana bez zatwierdzenia"
 		},
+		"serviceMode": {
+			"title": "Ustawienia Trybu Serwisowego",
+			"noTimeout": "Brak limitu czasu",
+			"commandTimeout": {
+				"label": "Limit czasu wykonania polecenia",
+				"description": "Maksymalny czas w sekundach oczekiwania na zakończenie poleceń nie-serwisowych (0 = bez limitu). Polecenia takie jak npm install zakończą się po tym czasie."
+			},
+			"serviceTimeout": {
+				"label": "Limit czasu gotowości serwisu",
+				"description": "Maksymalny czas w sekundach oczekiwania na polecenia serwisowe (takie jak npm run dev) zgłoszenie gotowości. AI będzie czekał na wyjście takie jak 'nasłuchiwanie na porcie' przed kontynuowaniem."
+			},
+			"universalTimeout": {
+				"label": "Włącz uniwersalny limit czasu poleceń",
+				"description": "Po włączeniu, wszystkie polecenia przekraczające limit czasu będą kontynuować działać w tle zamiastem bycia zakończone. Traktuje długotrwałe polecenia jako usługi w tle."
+			},
+			"patterns": {
+				"label": "Niestandardowe wzorce poleceń serwisowych",
+				"description": "Dodaj wzorce regex, aby identyfikować dodatkowe polecenia jako polecenia serwisowe. Wbudowane wzorce już wykrywają 70+ typowych poleceń serwisowych (npm run dev, docker-compose up, itp.).",
+				"placeholder": "Wprowadź wzorzec regex (np. 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Maksymalna liczba żądań",
 			"description": "Automatycznie wykonaj tyle żądań API przed poproszeniem o zgodę na kontynuowanie zadania.",
