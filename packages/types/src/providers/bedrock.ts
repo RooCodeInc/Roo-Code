@@ -68,7 +68,7 @@ export const bedrockModels = {
 		maxCachePoints: 1,
 		cachableFields: ["system"],
 	},
-	"amazon.nova-lite-v2:0": {
+	"amazon.nova-2-lite-v1:0": {
 		maxTokens: 5000,
 		contextWindow: 1_000_000,
 		supportsImages: true,
