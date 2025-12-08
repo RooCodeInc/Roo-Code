@@ -13,6 +13,7 @@ import {
 	RooCodeEventName,
 	IpcMessageType,
 	EVALS_SETTINGS,
+	type ToolUsage,
 } from "@roo-code/types"
 import { IpcClient } from "@roo-code/ipc"
 
@@ -277,6 +278,8 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	let taskMetricsId: number | undefined
 	let rooTaskId: string | undefined
 	let isClientDisconnected = false
+	// Track accumulated tool usage across task instances (handles rehydration after abort)
+	const accumulatedToolUsage: ToolUsage = {}
 
 	const ignoreEvents: Record<"broadcast" | "log", RooCodeEventName[]> = {
 		broadcast: [RooCodeEventName.Message],
@@ -364,13 +367,9 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
-		// After TaskAborted, ignore any further TaskTokenUsageUpdated events.
-		// This prevents a rehydrated task instance (which has empty toolUsage)
-		// from overwriting the final metrics that were saved before abort.
 		if (
 			(eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) &&
-			taskMetricsId &&
-			!taskAbortedAt
+			taskMetricsId
 		) {
 			const duration = Date.now() - taskStartedAt
 
@@ -378,7 +377,25 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				payload[1]
 
 			// For both TaskTokenUsageUpdated and TaskCompleted: toolUsage is payload[2]
-			const toolUsage = payload[2]
+			const incomingToolUsage: ToolUsage = payload[2] ?? {}
+
+			// Merge incoming tool usage with accumulated data using MAX strategy.
+			// This handles the case where a task is rehydrated after abort:
+			// - Empty rehydrated data won't overwrite existing: max(5, 0) = 5
+			// - Legitimate restart with additional work is captured: max(5, 8) = 8
+			// Each task instance tracks its own cumulative values, so we take the max
+			// to preserve the highest values seen across all instances.
+			for (const [toolName, usage] of Object.entries(incomingToolUsage)) {
+				const existing = accumulatedToolUsage[toolName as keyof ToolUsage]
+				if (existing) {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = {
+						attempts: Math.max(existing.attempts, usage.attempts),
+						failures: Math.max(existing.failures, usage.failures),
+					}
+				} else {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = { ...usage }
+				}
+			}
 
 			await updateTaskMetrics(taskMetricsId, {
 				cost: totalCost,
@@ -388,7 +405,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				duration,
 				cacheWrites: totalCacheWrites ?? 0,
 				cacheReads: totalCacheReads ?? 0,
-				toolUsage, // Now included in every update
+				toolUsage: accumulatedToolUsage,
 			})
 		}
 
