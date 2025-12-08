@@ -449,7 +449,7 @@ export const bedrockModels = {
 		preserveReasoning: true,
 		inputPrice: 0.6,
 		outputPrice: 2.5,
-		description: "Kimi K2 Thinking  (1T parameter MoE model with 32B active parameters)",
+		description: "Kimi K2 Thinking (1T parameter MoE model with 32B active parameters)",
 	},
 	"minimax.minimax-m2": {
 		maxTokens: 16_384,
