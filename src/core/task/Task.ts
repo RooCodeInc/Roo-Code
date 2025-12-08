@@ -4,6 +4,8 @@ import os from "os"
 import crypto from "crypto"
 import EventEmitter from "events"
 
+import { AskIgnoredError } from "./AskIgnoredError"
+
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import delay from "delay"
@@ -983,7 +985,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// whole array in new listener.
 					this.updateClineMessage(lastMessage)
 					// console.log("Task#ask: current ask promise was ignored (#1)")
-					throw new Error("Current ask promise was ignored (#1)")
+					throw new AskIgnoredError("updating existing partial")
 				} else {
 					// This is a new partial message, so add it with partial
 					// state.
@@ -992,7 +994,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					console.log(`Task#ask: new partial ask -> ${type} @ ${askTs}`)
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
 					// console.log("Task#ask: current ask promise was ignored (#2)")
-					throw new Error("Current ask promise was ignored (#2)")
+					throw new AskIgnoredError("new partial")
 				}
 			} else {
 				if (isUpdatingPreviousPartial) {
@@ -1146,7 +1148,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
 			console.log("Task#ask: current ask promise was ignored")
-			throw new Error("Current ask promise was ignored")
+			throw new AskIgnoredError("superseded")
 		}
 
 		const result = { response: this.askResponse!, text: this.askResponseText, images: this.askResponseImages }
