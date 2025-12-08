@@ -216,8 +216,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let hasEmittedReasoning = false
 
 			let lastUsage
-			let finalReasoningContent = ""
-			let finalContent = ""
 			let finalToolCalls: any[] = []
 			let toolCallBuffer: ApiStreamToolCallPartialChunk[] = []
 
