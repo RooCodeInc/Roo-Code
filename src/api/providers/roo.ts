@@ -296,13 +296,15 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 				}
 			}
 		} catch (error) {
-			// Log streaming errors with context
-			console.error("[RooHandler] Error during message streaming:", {
+			const errorContext = {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 				modelId: this.options.apiModelId,
 				hasTaskId: Boolean(metadata?.taskId),
-			})
+			}
+
+			console.error(`[RooHandler] Error during message streaming: ${JSON.stringify(errorContext)}`)
+
 			throw error
 		}
 	}
