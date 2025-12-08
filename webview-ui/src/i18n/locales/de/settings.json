@@ -471,6 +471,10 @@
 				"label": "Prompt-Caching",
 				"description": "Ist dieses Modell in der Lage, Prompts zu cachen?"
 			},
+			"interleavedThinking": {
+				"label": "Verschachteltes Denken",
+				"description": "Ist dieses Modell in der Lage, zwischen Werkzeugaufrufen zu denken?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Eingabepreis",

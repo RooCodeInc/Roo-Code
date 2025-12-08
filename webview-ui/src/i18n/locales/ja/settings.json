@@ -471,6 +471,10 @@
 				"label": "プロンプトキャッシュ",
 				"description": "このモデルはプロンプトのキャッシュが可能ですか？"
 			},
+			"interleavedThinking": {
+				"label": "交互思考",
+				"description": "このモデルはツール呼び出しの間で推論できますか？"
+			},
 			"pricing": {
 				"input": {
 					"label": "入力価格",

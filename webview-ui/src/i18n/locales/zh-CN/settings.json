@@ -471,6 +471,10 @@
 				"label": "提示缓存",
 				"description": "此模型是否能够缓存提示？"
 			},
+			"interleavedThinking": {
+				"label": "交错思考",
+				"description": "此模型是否能在工具调用之间进行推理？"
+			},
 			"pricing": {
 				"input": {
 					"label": "输入价格",

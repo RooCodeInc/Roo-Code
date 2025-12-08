@@ -471,6 +471,10 @@
 				"label": "İstem Önbelleği",
 				"description": "Bu model istemleri önbelleğe alabilir mi?"
 			},
+			"interleavedThinking": {
+				"label": "Araya Giren Düşünme",
+				"description": "Bu model araç çağrıları arasında mantık yürütebilir mi?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Giriş Fiyatı",

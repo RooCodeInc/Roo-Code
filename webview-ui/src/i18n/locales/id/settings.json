@@ -475,6 +475,10 @@
 				"label": "Prompt Caching",
 				"description": "Apakah model ini mampu melakukan caching prompt?"
 			},
+			"interleavedThinking": {
+				"label": "Pemikiran Berselang",
+				"description": "Apakah model ini mampu berpikir di antara panggilan alat?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Harga Input",

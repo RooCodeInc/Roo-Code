@@ -471,6 +471,10 @@
 				"label": "프롬프트 캐시",
 				"description": "이 모델이 프롬프트를 캐시할 수 있습니까?"
 			},
+			"interleavedThinking": {
+				"label": "인터리브드 씽킹",
+				"description": "이 모델은 도구 호출 사이에 추론할 수 있습니까?"
+			},
 			"pricing": {
 				"input": {
 					"label": "입력 가격",

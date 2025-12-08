@@ -471,6 +471,10 @@
 				"label": "Caché de prompts",
 				"description": "¿Es este modelo capaz de almacenar prompts en caché?"
 			},
+			"interleavedThinking": {
+				"label": "Pensamiento Intercalado",
+				"description": "¿Es este modelo capaz de razonar entre llamadas de herramientas?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Precio de entrada",

@@ -471,6 +471,10 @@
 				"label": "提示快取",
 				"description": "此模型是否能夠快取提示？"
 			},
+			"interleavedThinking": {
+				"label": "交錯思考",
+				"description": "此模型是否能在工具呼叫之間進行推理？"
+			},
 			"pricing": {
 				"input": {
 					"label": "輸入價格",

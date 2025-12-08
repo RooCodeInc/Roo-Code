@@ -471,6 +471,10 @@
 				"label": "Buforowanie podpowiedzi",
 				"description": "Czy model jest w stanie buforować podpowiedzi?"
 			},
+			"interleavedThinking": {
+				"label": "Myślenie Przeplatane",
+				"description": "Czy ten model jest w stanie rozumować między wywołaniami narzędzi?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Cena wejścia",

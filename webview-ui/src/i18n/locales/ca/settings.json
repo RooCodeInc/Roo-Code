@@ -471,6 +471,10 @@
 				"label": "Emmagatzematge en caché de prompts",
 				"description": "Aquest model és capaç d'emmagatzemar prompts en caché?"
 			},
+			"interleavedThinking": {
+				"label": "Pensament Intercalat",
+				"description": "Aquest model és capaç de raonar entre crides d'eines?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Preu d'entrada",

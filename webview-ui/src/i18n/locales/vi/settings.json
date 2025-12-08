@@ -471,6 +471,10 @@
 				"label": "Bộ nhớ đệm lời nhắc",
 				"description": "Mô hình này có khả năng lưu trữ lời nhắc trong bộ nhớ đệm không?"
 			},
+			"interleavedThinking": {
+				"label": "Suy Nghĩ Xen Kẽ",
+				"description": "Mô hình này có khả năng suy luận giữa các lần gọi công cụ không?"
+			},
 			"pricing": {
 				"input": {
 					"label": "Giá đầu vào",
