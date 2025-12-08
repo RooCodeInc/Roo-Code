@@ -453,7 +453,7 @@ export const bedrockModels = {
 	},
 	"minimax.minimax-m2": {
 		maxTokens: 16_384,
-		contextWindow: 230_000,
+		contextWindow: 196_608,
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
