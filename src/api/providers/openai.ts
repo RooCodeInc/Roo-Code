@@ -18,7 +18,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
 import { convertToSimpleMessages } from "../transform/simple-format"
 import { isNewUserTurn } from "../transform/detect-turn-boundary"
-import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { ApiStream, ApiStreamUsageChunk, type ApiStreamToolCallPartialChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
@@ -216,6 +216,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let hasEmittedReasoning = false
 
 			let lastUsage
+			let finalReasoningContent = ""
+			let finalContent = ""
+			let finalToolCalls: any[] = []
+			let toolCallBuffer: ApiStreamToolCallPartialChunk[] = []
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
@@ -238,6 +242,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						hasEmittedReasoning = true
 						reasoningAccumulator = ""
 					}
+
+					// Emit buffered tool calls before processing content
+					for (const toolCall of toolCallBuffer) {
+						yield toolCall
+					}
+					toolCallBuffer = []
+
 					isReasoningPhase = false
 
 					// Process content as usual
@@ -249,15 +260,34 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				// Handle tool calls (can occur during reasoning or content phase)
 				// Note: Reasoning may continue after tool calls, so we don't emit reasoning here
 				// Reasoning will be emitted when transitioning to content phase or at stream end
+				// Buffer tool calls instead of yielding immediately to ensure reasoning appears first
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
-						yield {
+						// Track tool calls for debug logging
+						if (toolCall.index !== undefined) {
+							if (!finalToolCalls[toolCall.index]) {
+								finalToolCalls[toolCall.index] = {
+									id: toolCall.id,
+									type: toolCall.type,
+									function: { name: toolCall.function?.name, arguments: "" },
+								}
+							}
+							if (toolCall.function?.name) {
+								finalToolCalls[toolCall.index].function.name = toolCall.function.name
+							}
+							if (toolCall.function?.arguments) {
+								finalToolCalls[toolCall.index].function.arguments += toolCall.function.arguments
+							}
+						}
+						// Buffer tool calls instead of yielding immediately
+						// Default index to 0 if undefined (required by type)
+						toolCallBuffer.push({
 							type: "tool_call_partial",
-							index: toolCall.index,
+							index: toolCall.index ?? 0,
 							id: toolCall.id,
 							name: toolCall.function?.name,
 							arguments: toolCall.function?.arguments,
-						}
+						})
 					}
 				}
 
@@ -274,6 +304,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					text: reasoningAccumulator,
 				}
 			}
+
+			// Emit any buffered tool calls after reasoning is emitted
+			// This ensures reasoning appears before tool calls in the UI
+			for (const toolCall of toolCallBuffer) {
+				yield toolCall
+			}
+			toolCallBuffer = []
 
 			for (const chunk of matcher.final()) {
 				yield chunk
