@@ -49,7 +49,7 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		browserToolEnabled: browserToolEnabled ?? true,
 		modelInfo,
-		diffEnabled: diffEnabled ?? false,
+		diffEnabled: diffEnabled ?? true,
 	}
 
 	// Determine if partial reads are enabled based on maxReadFileLine setting
