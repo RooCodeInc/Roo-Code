@@ -193,13 +193,14 @@ export class CustomModesManager {
 			const result = customModesSettingsSchema.safeParse(settings)
 
 			if (!result.success) {
-				const issues = result.error.issues
-					.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
-					.join("\n")
-				console.error(`[CustomModesManager] Schema validation failed for ${filePath}:\n${issues}`)
+				console.error(`[CustomModesManager] Schema validation failed for ${filePath}:`, result.error)
 
 				// Show user-friendly error for .roomodes files
 				if (filePath.endsWith(ROOMODES_FILENAME)) {
+					const issues = result.error.issues
+						.map((issue) => `• ${issue.path.join(".")}: ${issue.message}`)
+						.join("\n")
+
 					vscode.window.showErrorMessage(t("common:customModes.errors.schemaValidationError", { issues }))
 				}
 
