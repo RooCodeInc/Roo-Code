@@ -389,7 +389,8 @@ export function Run({ run }: { run: Run }) {
 		return Array.from(toolTotals.entries())
 			.sort((a, b) => b[1] - a[1])
 			.map(([name]): ToolName => name)
-	}, [tasks, toolUsage])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [tasks, toolUsage, usageUpdatedAt])
 
 	// Compute aggregate stats
 	const stats = useMemo(() => {
