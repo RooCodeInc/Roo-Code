@@ -84,7 +84,7 @@ describe("isNewUserTurn", () => {
 			expect(isNewUserTurn(messages)).toBe(false)
 		})
 
-		it("should return false when last message is assistant after tool results", () => {
+		it("should return true when assistant stops making tool calls after receiving results", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{ role: "user", content: "Get weather" },
 				{
@@ -111,7 +111,7 @@ describe("isNewUserTurn", () => {
 				{ role: "assistant", content: "The weather is sunny" },
 			]
 
-			expect(isNewUserTurn(messages)).toBe(false)
+			expect(isNewUserTurn(messages)).toBe(true)
 		})
 
 		it("should return false for multiple tool call rounds in same turn", () => {
@@ -176,7 +176,7 @@ describe("isNewUserTurn", () => {
 			expect(isNewUserTurn(messages)).toBe(false)
 		})
 
-		it("should handle user message with tool_result blocks correctly", () => {
+		it("should return true when assistant completes tool call sequence without requesting more tools", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "assistant",
@@ -202,10 +202,10 @@ describe("isNewUserTurn", () => {
 				{ role: "assistant", content: "The date is 2025-01-01" },
 			]
 
-			expect(isNewUserTurn(messages)).toBe(false)
+			expect(isNewUserTurn(messages)).toBe(true)
 		})
 
-		it("should handle user message with both text and tool_result blocks", () => {
+		it("should return true when assistant ends tool sequence even with mixed content in tool results", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "assistant",
@@ -232,7 +232,7 @@ describe("isNewUserTurn", () => {
 				{ role: "assistant", content: "Thanks" },
 			]
 
-			expect(isNewUserTurn(messages)).toBe(false)
+			expect(isNewUserTurn(messages)).toBe(true)
 		})
 	})
 })
