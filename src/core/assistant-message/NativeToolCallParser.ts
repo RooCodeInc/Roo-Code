@@ -499,6 +499,20 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "search_replace":
+				if (
+					partialArgs.file_path !== undefined ||
+					partialArgs.old_string !== undefined ||
+					partialArgs.new_string !== undefined
+				) {
+					nativeArgs = {
+						file_path: partialArgs.file_path,
+						old_string: partialArgs.old_string,
+						new_string: partialArgs.new_string,
+					}
+				}
+				break
+
 			// Add other tools as needed
 			default:
 				break
@@ -738,6 +752,20 @@ export class NativeToolCallParser {
 					if (args.patch !== undefined) {
 						nativeArgs = {
 							patch: args.patch,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "search_replace":
+					if (
+						args.file_path !== undefined &&
+						args.old_string !== undefined &&
+						args.new_string !== undefined
+					) {
+						nativeArgs = {
+							file_path: args.file_path,
+							old_string: args.old_string,
+							new_string: args.new_string,
 						} as NativeArgsFor<TName>
 					}
 					break
