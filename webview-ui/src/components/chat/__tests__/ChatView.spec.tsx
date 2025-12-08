@@ -60,6 +60,28 @@ vi.mock("../AutoApproveMenu", () => ({
 	default: () => null,
 }))
 
+// Mock react-virtuoso to render items directly without virtualization
+// This allows tests to verify items rendered in the chat list
+vi.mock("react-virtuoso", () => ({
+	Virtuoso: function MockVirtuoso({
+		data,
+		itemContent,
+	}: {
+		data: ClineMessage[]
+		itemContent: (index: number, item: ClineMessage) => React.ReactNode
+	}) {
+		return (
+			<div data-testid="virtuoso-item-list">
+				{data.map((item, index) => (
+					<div key={item.ts} data-testid={`virtuoso-item-${index}`}>
+						{itemContent(index, item)}
+					</div>
+				))}
+			</div>
+		)
+	},
+}))
+
 // Mock VersionIndicator - returns null by default to prevent rendering in tests
 vi.mock("../../common/VersionIndicator", () => ({
 	default: vi.fn(() => null),
@@ -465,6 +487,11 @@ describe("ChatView - Focus Grabbing Tests", () => {
 		// Wait for the component to fully render and settle before clearing mocks
 		await waitFor(() => {
 			expect(getByTestId("chat-textarea")).toBeInTheDocument()
+		})
+
+		// Wait for the debounced focus effect to fire (50ms debounce + buffer for CI variability)
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 100))
 		})
 
 		// Clear any initial calls after state has settled

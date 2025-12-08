@@ -867,8 +867,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							handeSetChatBoxMessageByContext(message.text ?? "", message.images ?? [])
 					}
 					break
+				case "condenseTaskContextStarted":
+					// Handle both manual and automatic condensation start
+					// We don't check the task ID because:
+					// 1. There can only be one active task at a time
+					// 2. Task switching resets isCondensing to false (see useEffect with task?.ts dependency)
+					// 3. For new tasks, currentTaskItem may not be populated yet due to async state updates
+					if (message.text) {
+						setIsCondensing(true)
+						// Note: sendingDisabled is only set for manual condensation via handleCondenseContext
+						// Automatic condensation doesn't disable sending since the task is already running
+					}
+					break
 				case "condenseTaskContextResponse":
-					if (message.text && message.text === currentTaskItem?.id) {
+					// Same reasoning as above - we trust this is for the current task
+					if (message.text) {
 						if (isCondensing && sendingDisabled) {
 							setSendingDisabled(false)
 						}
@@ -887,7 +900,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			// not using its value but its reference.
 		},
 		[
-			currentTaskItem?.id,
 			isHidden,
 			sendingDisabled,
 			enableButtons,
