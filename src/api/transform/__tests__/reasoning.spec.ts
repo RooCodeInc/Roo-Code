@@ -87,16 +87,18 @@ describe("reasoning.ts", () => {
 			expect(result).toEqual({ effort: "high" })
 		})
 
-		it("should return reasoning effort params when model has reasoningEffort property", () => {
+		it("should return undefined when model has reasoningEffort but NO supportsReasoningEffort", () => {
 			const modelWithEffort: ModelInfo = {
 				...baseModel,
 				reasoningEffort: "medium",
+				// Note: NO supportsReasoningEffort property
 			}
 
 			const options = { ...baseOptions, model: modelWithEffort }
 			const result = getOpenRouterReasoning(options)
 
-			expect(result).toEqual({ effort: "medium" })
+			// Without supportsReasoningEffort capability, reasoning should NOT be enabled
+			expect(result).toBeUndefined()
 		})
 
 		it("should return undefined when model has no reasoning capabilities", () => {
@@ -482,16 +484,18 @@ describe("reasoning.ts", () => {
 			expect(result).toEqual({ reasoning_effort: "high" })
 		})
 
-		it("should return reasoning effort params when model has reasoningEffort property", () => {
+		it("should return undefined when model has reasoningEffort but NO supportsReasoningEffort", () => {
 			const modelWithEffort: ModelInfo = {
 				...baseModel,
 				reasoningEffort: "medium",
+				// Note: NO supportsReasoningEffort property
 			}
 
 			const options = { ...baseOptions, model: modelWithEffort }
 			const result = getOpenAiReasoning(options)
 
-			expect(result).toEqual({ reasoning_effort: "medium" })
+			// Without supportsReasoningEffort capability, reasoning should NOT be enabled
+			expect(result).toBeUndefined()
 		})
 
 		it("should return undefined when model has no reasoning effort capability", () => {
@@ -540,6 +544,7 @@ describe("reasoning.ts", () => {
 			efforts.forEach((effort) => {
 				const modelWithEffort: ModelInfo = {
 					...baseModel,
+					supportsReasoningEffort: true, // Must have capability to use reasoning
 					reasoningEffort: effort,
 				}
 
@@ -552,6 +557,7 @@ describe("reasoning.ts", () => {
 		it("should not be affected by reasoningBudget parameter", () => {
 			const modelWithEffort: ModelInfo = {
 				...baseModel,
+				supportsReasoningEffort: true, // Must have capability
 				reasoningEffort: "medium",
 			}
 
@@ -695,6 +701,7 @@ describe("reasoning.ts", () => {
 			const hybridModel: ModelInfo = {
 				...baseModel,
 				supportsReasoningBudget: true,
+				supportsReasoningEffort: true, // Must have capability for OpenAI effort
 				reasoningEffort: "medium",
 			}
 
@@ -750,9 +757,10 @@ describe("reasoning.ts", () => {
 			expect(openAiResult).toBeUndefined()
 		})
 
-		it("should handle model with reasoningEffort property", () => {
+		it("should handle model with reasoningEffort property and supportsReasoningEffort", () => {
 			const modelWithEffort: ModelInfo = {
 				...baseModel,
+				supportsReasoningEffort: true, // Must have capability
 				reasoningEffort: "low",
 			}
 
@@ -808,6 +816,7 @@ describe("reasoning.ts", () => {
 		it("should return correct types for OpenAI reasoning params", () => {
 			const modelWithEffort: ModelInfo = {
 				...baseModel,
+				supportsReasoningEffort: true, // Must have capability
 				reasoningEffort: "medium",
 			}
 

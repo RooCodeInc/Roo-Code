@@ -667,12 +667,12 @@ describe("getModelParams", () => {
 			expect(result.reasoning).toBeUndefined() // Anthropic doesn't support reasoning effort
 		})
 
-		it("should use reasoningEffort if supportsReasoningEffort is false but reasoningEffort is set", () => {
+		it("should NOT use reasoningEffort if supportsReasoningEffort is false even if reasoningEffort is set", () => {
 			const model: ModelInfo = {
 				...baseModel,
-				maxTokens: 3000, // Changed to 3000 (18.75% of 16000), which is within 20% threshold
+				maxTokens: 3000, // 3000 is 18.75% of 16000, within 20% threshold
 				supportsReasoningEffort: false,
-				reasoningEffort: "medium",
+				reasoningEffort: "medium", // This should be ignored without supportsReasoningEffort capability
 			}
 
 			const result = getModelParams({
@@ -681,8 +681,10 @@ describe("getModelParams", () => {
 				model,
 			})
 
-			expect(result.maxTokens).toBe(3000) // Now uses model.maxTokens since it's within 20% threshold
-			expect(result.reasoningEffort).toBe("medium")
+			expect(result.maxTokens).toBe(3000)
+			// Without supportsReasoningEffort capability, reasoning should NOT be enabled
+			expect(result.reasoningEffort).toBeUndefined()
+			expect(result.reasoning).toBeUndefined()
 		})
 	})
 
