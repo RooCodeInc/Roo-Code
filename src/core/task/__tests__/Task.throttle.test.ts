@@ -2,6 +2,7 @@ import { RooCodeEventName, ProviderSettings, TokenUsage, ToolUsage } from "@roo-
 
 import { Task } from "../Task"
 import { ClineProvider } from "../../webview/ClineProvider"
+import { hasToolUsageChanged, hasTokenUsageChanged } from "../../../shared/getApiMetrics"
 
 // Mock dependencies
 vi.mock("../../webview/ClineProvider")
@@ -380,5 +381,239 @@ describe("Task token usage throttling", () => {
 
 		// Should not have emitted again since token usage didn't change
 		expect(secondEmitCount).toBe(firstEmitCount)
+	})
+
+	test("should emit when tool usage changes even if token usage is the same", async () => {
+		const { taskMetadata } = await import("../../task-persistence")
+
+		// Mock taskMetadata to return same token usage
+		const constantTokenUsage: TokenUsage = {
+			totalTokensIn: 100,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+			totalCacheWrites: 0,
+			totalCacheReads: 0,
+		}
+
+		vi.mocked(taskMetadata).mockResolvedValue({
+			historyItem: {
+				id: "test-task-id",
+				number: 1,
+				task: "Test task",
+				ts: Date.now(),
+				totalCost: 0.01,
+				tokensIn: 100,
+				tokensOut: 50,
+			},
+			tokenUsage: constantTokenUsage,
+		})
+
+		const emitSpy = vi.spyOn(task, "emit")
+
+		// Add first message - should emit
+		await (task as any).addToClineMessages({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Message 1",
+		})
+
+		const firstEmitCount = emitSpy.mock.calls.filter(
+			(call) => call[0] === RooCodeEventName.TaskTokenUsageUpdated,
+		).length
+
+		// Wait for throttle period
+		vi.advanceTimersByTime(2100)
+
+		// Change tool usage (token usage stays the same)
+		task.toolUsage = {
+			read_file: { attempts: 5, failures: 1 },
+		}
+
+		// Add another message
+		await (task as any).addToClineMessages({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Message 2",
+		})
+
+		const secondEmitCount = emitSpy.mock.calls.filter(
+			(call) => call[0] === RooCodeEventName.TaskTokenUsageUpdated,
+		).length
+
+		// Should have emitted because tool usage changed even though token usage didn't
+		expect(secondEmitCount).toBeGreaterThan(firstEmitCount)
+	})
+
+	test("should update toolUsageSnapshot when emission occurs", async () => {
+		// Add initial message
+		await (task as any).addToClineMessages({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Message 1",
+		})
+
+		// Initially toolUsageSnapshot should be set to current toolUsage (empty object)
+		const initialSnapshot = (task as any).toolUsageSnapshot
+		expect(initialSnapshot).toBeDefined()
+		expect(Object.keys(initialSnapshot)).toHaveLength(0)
+
+		// Wait for throttle period
+		vi.advanceTimersByTime(2100)
+
+		// Update tool usage
+		task.toolUsage = {
+			read_file: { attempts: 3, failures: 0 },
+			write_to_file: { attempts: 2, failures: 1 },
+		}
+
+		// Add another message
+		await (task as any).addToClineMessages({
+			ts: Date.now(),
+			type: "say",
+			say: "text",
+			text: "Message 2",
+		})
+
+		// Snapshot should be updated to match the new toolUsage
+		const newSnapshot = (task as any).toolUsageSnapshot
+		expect(newSnapshot).not.toBe(initialSnapshot)
+		expect(newSnapshot.read_file).toEqual({ attempts: 3, failures: 0 })
+		expect(newSnapshot.write_to_file).toEqual({ attempts: 2, failures: 1 })
+	})
+
+	test("emitFinalTokenUsageUpdate should emit on tool usage change alone", async () => {
+		const emitSpy = vi.spyOn(task, "emit")
+
+		// Set initial tool usage and simulate previous emission
+		;(task as any).tokenUsageSnapshot = task.getTokenUsage()
+		;(task as any).toolUsageSnapshot = {}
+
+		// Change tool usage
+		task.toolUsage = {
+			execute_command: { attempts: 1, failures: 0 },
+		}
+
+		// Call emitFinalTokenUsageUpdate
+		task.emitFinalTokenUsageUpdate()
+
+		// Should emit due to tool usage change
+		expect(emitSpy).toHaveBeenCalledWith(
+			RooCodeEventName.TaskTokenUsageUpdated,
+			task.taskId,
+			expect.any(Object),
+			task.toolUsage,
+		)
+	})
+})
+
+describe("hasToolUsageChanged", () => {
+	test("should return true when snapshot is undefined and current has data", () => {
+		const current: ToolUsage = {
+			read_file: { attempts: 1, failures: 0 },
+		}
+		expect(hasToolUsageChanged(current, undefined)).toBe(true)
+	})
+
+	test("should return false when both are empty", () => {
+		expect(hasToolUsageChanged({}, {})).toBe(false)
+	})
+
+	test("should return false when snapshot is undefined and current is empty", () => {
+		expect(hasToolUsageChanged({}, undefined)).toBe(false)
+	})
+
+	test("should return true when a new tool is added", () => {
+		const current: ToolUsage = {
+			read_file: { attempts: 1, failures: 0 },
+			write_to_file: { attempts: 1, failures: 0 },
+		}
+		const snapshot: ToolUsage = {
+			read_file: { attempts: 1, failures: 0 },
+		}
+		expect(hasToolUsageChanged(current, snapshot)).toBe(true)
+	})
+
+	test("should return true when attempts change", () => {
+		const current: ToolUsage = {
+			read_file: { attempts: 2, failures: 0 },
+		}
+		const snapshot: ToolUsage = {
+			read_file: { attempts: 1, failures: 0 },
+		}
+		expect(hasToolUsageChanged(current, snapshot)).toBe(true)
+	})
+
+	test("should return true when failures change", () => {
+		const current: ToolUsage = {
+			read_file: { attempts: 1, failures: 1 },
+		}
+		const snapshot: ToolUsage = {
+			read_file: { attempts: 1, failures: 0 },
+		}
+		expect(hasToolUsageChanged(current, snapshot)).toBe(true)
+	})
+
+	test("should return false when nothing changed", () => {
+		const current: ToolUsage = {
+			read_file: { attempts: 3, failures: 1 },
+			write_to_file: { attempts: 2, failures: 0 },
+		}
+		const snapshot: ToolUsage = {
+			read_file: { attempts: 3, failures: 1 },
+			write_to_file: { attempts: 2, failures: 0 },
+		}
+		expect(hasToolUsageChanged(current, snapshot)).toBe(false)
+	})
+})
+
+describe("hasTokenUsageChanged", () => {
+	test("should return true when snapshot is undefined", () => {
+		const current: TokenUsage = {
+			totalTokensIn: 100,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+		}
+		expect(hasTokenUsageChanged(current, undefined)).toBe(true)
+	})
+
+	test("should return true when totalTokensIn changes", () => {
+		const current: TokenUsage = {
+			totalTokensIn: 200,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+		}
+		const snapshot: TokenUsage = {
+			totalTokensIn: 100,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+		}
+		expect(hasTokenUsageChanged(current, snapshot)).toBe(true)
+	})
+
+	test("should return false when nothing changed", () => {
+		const current: TokenUsage = {
+			totalTokensIn: 100,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+			totalCacheWrites: 10,
+			totalCacheReads: 5,
+		}
+		const snapshot: TokenUsage = {
+			totalTokensIn: 100,
+			totalTokensOut: 50,
+			totalCost: 0.01,
+			contextTokens: 150,
+			totalCacheWrites: 10,
+			totalCacheReads: 5,
+		}
+		expect(hasTokenUsageChanged(current, snapshot)).toBe(false)
 	})
 })

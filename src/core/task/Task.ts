@@ -63,7 +63,7 @@ import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
 import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
-import { getApiMetrics, hasTokenUsageChanged } from "../../shared/getApiMetrics"
+import { getApiMetrics, hasTokenUsageChanged, hasToolUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { DiffStrategy, type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
@@ -323,6 +323,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Token Usage Cache
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
+
+	// Tool Usage Cache
+	private toolUsageSnapshot?: ToolUsage
 
 	// Token Usage Throttling
 	private lastTokenUsageEmitTime?: number
@@ -929,11 +932,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const shouldEmitDueToThrottle = timeSinceLastEmit >= this.TOKEN_USAGE_EMIT_INTERVAL_MS
 
-			if (shouldEmitDueToThrottle && hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
+			// Emit if throttle window allows AND either token usage or tool usage changed
+			const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
+			const toolChanged = hasToolUsageChanged(this.toolUsage, this.toolUsageSnapshot)
+
+			if (shouldEmitDueToThrottle && (tokenChanged || toolChanged)) {
 				this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
 				this.lastTokenUsageEmitTime = now
 				this.tokenUsageSnapshot = tokenUsage
 				this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
+				// Deep copy tool usage for snapshot
+				this.toolUsageSnapshot = JSON.parse(JSON.stringify(this.toolUsage))
 			}
 
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
@@ -1858,11 +1867,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 */
 	public emitFinalTokenUsageUpdate(): void {
 		const tokenUsage = this.getTokenUsage()
-		if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
+		const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
+		const toolChanged = hasToolUsageChanged(this.toolUsage, this.toolUsageSnapshot)
+
+		if (tokenChanged || toolChanged) {
 			this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
 			this.tokenUsageSnapshot = tokenUsage
 			this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
 			this.lastTokenUsageEmitTime = Date.now()
+			// Deep copy tool usage for snapshot
+			this.toolUsageSnapshot = JSON.parse(JSON.stringify(this.toolUsage))
 		}
 	}
 

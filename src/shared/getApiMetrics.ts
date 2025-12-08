@@ -1,4 +1,4 @@
-import type { TokenUsage, ClineMessage } from "@roo-code/types"
+import type { TokenUsage, ToolUsage, ToolName, ClineMessage } from "@roo-code/types"
 
 export type ParsedApiReqStartedTextType = {
 	tokensIn: number
@@ -122,4 +122,36 @@ export function hasTokenUsageChanged(current: TokenUsage, snapshot?: TokenUsage)
 	]
 
 	return keysToCompare.some((key) => current[key] !== snapshot[key])
+}
+
+/**
+ * Check if tool usage has changed by comparing attempts and failures.
+ * @param current - Current tool usage data
+ * @param snapshot - Previous snapshot to compare against
+ * @returns true if any tool's attempts/failures have changed or snapshot is undefined
+ */
+export function hasToolUsageChanged(current: ToolUsage, snapshot?: ToolUsage): boolean {
+	if (!snapshot) {
+		return Object.keys(current).length > 0
+	}
+
+	const currentKeys = Object.keys(current) as ToolName[]
+	const snapshotKeys = Object.keys(snapshot) as ToolName[]
+
+	// Check if number of tools changed
+	if (currentKeys.length !== snapshotKeys.length) {
+		return true
+	}
+
+	// Check if any tool's stats changed
+	return currentKeys.some((key) => {
+		const currentTool = current[key]
+		const snapshotTool = snapshot[key]
+
+		if (!snapshotTool || !currentTool) {
+			return true
+		}
+
+		return currentTool.attempts !== snapshotTool.attempts || currentTool.failures !== snapshotTool.failures
+	})
 }
