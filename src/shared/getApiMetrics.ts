@@ -127,16 +127,15 @@ export function hasTokenUsageChanged(current: TokenUsage, snapshot?: TokenUsage)
 /**
  * Check if tool usage has changed by comparing attempts and failures.
  * @param current - Current tool usage data
- * @param snapshot - Previous snapshot to compare against
- * @returns true if any tool's attempts/failures have changed or snapshot is undefined
+ * @param snapshot - Previous snapshot to compare against (undefined treated as empty)
+ * @returns true if any tool's attempts/failures have changed between current and snapshot
  */
 export function hasToolUsageChanged(current: ToolUsage, snapshot?: ToolUsage): boolean {
-	if (!snapshot) {
-		return Object.keys(current).length > 0
-	}
+	// Treat undefined snapshot as empty object for consistent comparison
+	const effectiveSnapshot = snapshot ?? {}
 
 	const currentKeys = Object.keys(current) as ToolName[]
-	const snapshotKeys = Object.keys(snapshot) as ToolName[]
+	const snapshotKeys = Object.keys(effectiveSnapshot) as ToolName[]
 
 	// Check if number of tools changed
 	if (currentKeys.length !== snapshotKeys.length) {
@@ -146,7 +145,7 @@ export function hasToolUsageChanged(current: ToolUsage, snapshot?: ToolUsage): b
 	// Check if any tool's stats changed
 	return currentKeys.some((key) => {
 		const currentTool = current[key]
-		const snapshotTool = snapshot[key]
+		const snapshotTool = effectiveSnapshot[key]
 
 		if (!snapshotTool || !currentTool) {
 			return true

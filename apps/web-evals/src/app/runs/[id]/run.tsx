@@ -336,6 +336,8 @@ export function Run({ run }: { run: Run }) {
 	)
 
 	const taskMetrics: Record<number, TaskMetrics> = useMemo(() => {
+		// Reference usageUpdatedAt to trigger recomputation when Map contents change
+		void usageUpdatedAt
 		const metrics: Record<number, TaskMetrics> = {}
 
 		tasks?.forEach((task) => {
@@ -372,11 +374,13 @@ export function Run({ run }: { run: Run }) {
 		})
 
 		return metrics
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// tokenUsage ref is stable; usageUpdatedAt triggers recomputation when Map contents change
 	}, [tasks, tokenUsage, usageUpdatedAt])
 
 	// Collect all unique tool names from all tasks and sort by total attempts
 	const toolColumns = useMemo<ToolName[]>(() => {
+		// Reference usageUpdatedAt to trigger recomputation when Map contents change
+		void usageUpdatedAt
 		if (!tasks) return []
 
 		const toolTotals = new Map<ToolName, number>()
@@ -408,11 +412,13 @@ export function Run({ run }: { run: Run }) {
 		return Array.from(toolTotals.entries())
 			.sort((a, b) => b[1] - a[1])
 			.map(([name]): ToolName => name)
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// toolUsage ref is stable; usageUpdatedAt triggers recomputation when Map contents change
 	}, [tasks, toolUsage, usageUpdatedAt])
 
 	// Compute aggregate stats
 	const stats = useMemo(() => {
+		// Reference usageUpdatedAt to trigger recomputation when Map contents change
+		void usageUpdatedAt
 		if (!tasks) return null
 
 		const passed = tasks.filter((t) => t.passed === true).length
@@ -469,11 +475,13 @@ export function Run({ run }: { run: Run }) {
 			totalDuration,
 			toolUsage: toolUsageAggregate,
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [tasks, taskMetrics, tokenUsage, toolUsage, usageUpdatedAt])
+		// Map refs are stable; usageUpdatedAt triggers recomputation when Map contents change
+	}, [tasks, taskMetrics, toolUsage, usageUpdatedAt])
 
 	// Calculate elapsed time (wall-clock time from run creation to completion or now)
 	const elapsedTime = useMemo(() => {
+		// Reference usageUpdatedAt to trigger recomputation for live elapsed time updates
+		void usageUpdatedAt
 		if (!tasks || tasks.length === 0) return null
 
 		const startTime = new Date(run.createdAt).getTime()
@@ -492,7 +500,7 @@ export function Run({ run }: { run: Run }) {
 
 		// If still running, use current time
 		return Date.now() - startTime
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		// usageUpdatedAt triggers recomputation for running tasks to update elapsed time
 	}, [tasks, run.createdAt, run.taskMetricsId, usageUpdatedAt])
 
 	return (
