@@ -1127,9 +1127,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					type === "browser_action_launch" ||
 					type === "use_mcp_server"
 				) {
-					// For tool approvals, we need to approve first, then send
-					// the message if there's text/images.
-					this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+					// For tool approvals, check if auto-approval is enabled
+					// If auto-approval is disabled (approval.decision === "ask"), reject the command
+					// to prevent unauthorized execution, then send the queued message
+					if (approval.decision === "ask") {
+						// Reject the command/tool execution to prevent bypass
+						this.handleWebviewAskResponse("noButtonClicked", message.text, message.images)
+					} else {
+						// Only approve if auto-approval is enabled
+						this.handleWebviewAskResponse("yesButtonClicked", message.text, message.images)
+					}
 				} else {
 					// For other ask types (like followup or command_output), fulfill the ask
 					// directly.
