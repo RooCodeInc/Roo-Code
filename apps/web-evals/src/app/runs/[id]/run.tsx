@@ -339,17 +339,34 @@ export function Run({ run }: { run: Run }) {
 		const metrics: Record<number, TaskMetrics> = {}
 
 		tasks?.forEach((task) => {
-			const usage = tokenUsage.get(task.id)
+			const streamingUsage = tokenUsage.get(task.id)
+			const dbMetrics = task.taskMetrics
 
-			if (task.finishedAt && task.taskMetrics) {
-				metrics[task.id] = task.taskMetrics
-			} else if (usage) {
+			// For finished tasks, prefer DB values but fall back to streaming values
+			// This handles race conditions during timeout where DB might not have latest data
+			if (task.finishedAt) {
+				// Check if DB metrics have meaningful values (not just default/empty)
+				const dbHasData = dbMetrics && (dbMetrics.tokensIn > 0 || dbMetrics.tokensOut > 0 || dbMetrics.cost > 0)
+				if (dbHasData) {
+					metrics[task.id] = dbMetrics
+				} else if (streamingUsage) {
+					// Fall back to streaming values if DB is empty/stale
+					metrics[task.id] = {
+						tokensIn: streamingUsage.totalTokensIn,
+						tokensOut: streamingUsage.totalTokensOut,
+						tokensContext: streamingUsage.contextTokens,
+						duration: streamingUsage.duration ?? 0,
+						cost: streamingUsage.totalCost,
+					}
+				}
+			} else if (streamingUsage) {
+				// For running tasks, use streaming values
 				metrics[task.id] = {
-					tokensIn: usage.totalTokensIn,
-					tokensOut: usage.totalTokensOut,
-					tokensContext: usage.contextTokens,
-					duration: usage.duration ?? 0,
-					cost: usage.totalCost,
+					tokensIn: streamingUsage.totalTokensIn,
+					tokensOut: streamingUsage.totalTokensOut,
+					tokensContext: streamingUsage.contextTokens,
+					duration: streamingUsage.duration ?? 0,
+					cost: streamingUsage.totalCost,
 				}
 			}
 		})
@@ -365,22 +382,24 @@ export function Run({ run }: { run: Run }) {
 		const toolTotals = new Map<ToolName, number>()
 
 		for (const task of tasks) {
-			// Use DB values for finished tasks
-			if (task.finishedAt && task.taskMetrics?.toolUsage) {
-				for (const [toolName, usage] of Object.entries(task.taskMetrics.toolUsage)) {
+			// Get both DB and streaming values
+			const dbToolUsage = task.taskMetrics?.toolUsage
+			const streamingToolUsage = toolUsage.get(task.id)
+
+			// For finished tasks, prefer DB values but fall back to streaming values
+			// For running tasks, use streaming values
+			// This handles race conditions during timeout where DB might not have latest data
+			const taskToolUsage = task.finishedAt
+				? dbToolUsage && Object.keys(dbToolUsage).length > 0
+					? dbToolUsage
+					: streamingToolUsage
+				: streamingToolUsage
+
+			if (taskToolUsage) {
+				for (const [toolName, usage] of Object.entries(taskToolUsage)) {
 					const tool = toolName as ToolName
 					const current = toolTotals.get(tool) ?? 0
 					toolTotals.set(tool, current + usage.attempts)
-				}
-			} else {
-				// Use streaming values for running tasks
-				const streamingToolUsage = toolUsage.get(task.id)
-				if (streamingToolUsage) {
-					for (const [toolName, usage] of Object.entries(streamingToolUsage)) {
-						const tool = toolName as ToolName
-						const current = toolTotals.get(tool) ?? 0
-						toolTotals.set(tool, current + usage.attempts)
-					}
 				}
 			}
 		}
@@ -417,8 +436,15 @@ export function Run({ run }: { run: Run }) {
 				totalDuration += metrics.duration
 			}
 
-			// Aggregate tool usage: use DB values for finished tasks, streaming values for running tasks
-			const taskToolUsage = task.finishedAt ? task.taskMetrics?.toolUsage : toolUsage.get(task.id)
+			// Aggregate tool usage: prefer DB values for finished tasks, fall back to streaming values
+			// This handles race conditions during timeout where DB might not have latest data
+			const dbToolUsage = task.taskMetrics?.toolUsage
+			const streamingToolUsage = toolUsage.get(task.id)
+			const taskToolUsage = task.finishedAt
+				? dbToolUsage && Object.keys(dbToolUsage).length > 0
+					? dbToolUsage
+					: streamingToolUsage
+				: streamingToolUsage
 
 			if (taskToolUsage) {
 				for (const [key, usage] of Object.entries(taskToolUsage)) {
@@ -669,10 +695,13 @@ export function Run({ run }: { run: Run }) {
 													{formatTokens(taskMetrics[task.id]!.tokensContext)}
 												</TableCell>
 												{toolColumns.map((toolName) => {
-													// Use DB values for finished tasks, streaming values for running tasks
+													// Use DB values for finished tasks, but fall back to streaming values
+													// if DB values are missing (handles race condition during timeout)
+													const dbUsage = task.taskMetrics?.toolUsage?.[toolName]
+													const streamingUsage = toolUsage.get(task.id)?.[toolName]
 													const usage = task.finishedAt
-														? task.taskMetrics?.toolUsage?.[toolName]
-														: toolUsage.get(task.id)?.[toolName]
+														? (dbUsage ?? streamingUsage)
+														: streamingUsage
 
 													const successRate =
 														usage && usage.attempts > 0
