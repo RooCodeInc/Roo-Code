@@ -283,11 +283,20 @@
 		"thinking": "Pensant",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Context condensat",
-		"condensing": "Condensant context...",
-		"errorHeader": "Error en condensar el context",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Context condensat",
+			"inProgress": "Condensant context...",
+			"errorHeader": "Error en condensar el context"
+		},
+		"truncation": {
+			"title": "Context truncat",
+			"inProgress": "Truncant context...",
+			"messagesRemoved": "{{count}} missatge eliminat",
+			"messagesRemoved_other": "{{count}} missatges eliminats",
+			"description": "S'han eliminat missatges més antics de la conversa per mantenir-se dins del límit de la finestra de context. Aquest és un enfocament ràpid però menys conservador del context en comparació amb la condensació."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a l'entrada (o Shift + clic)",

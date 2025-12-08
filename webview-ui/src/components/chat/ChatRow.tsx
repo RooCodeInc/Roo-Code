@@ -38,7 +38,7 @@ import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
-import { CondensingContextRow, ContextCondenseRow } from "./ContextCondenseRow"
+import { InProgressRow, CondensationResultRow, CondensationErrorRow, TruncationResultRow } from "./context-management"
 import CodebaseSearchResultsDisplay from "./CodebaseSearchResultsDisplay"
 import { appendImages } from "@src/utils/imageUtils"
 import { McpExecution } from "./McpExecution"
@@ -1280,18 +1280,27 @@ export const ChatRowContent = ({
 						/>
 					)
 				case "condense_context":
+					// In-progress state
 					if (message.partial) {
-						return <CondensingContextRow />
+						return <InProgressRow eventType="condense_context" />
 					}
-					return message.contextCondense ? <ContextCondenseRow {...message.contextCondense} /> : null
+					// Completed state
+					if (message.contextCondense) {
+						return <CondensationResultRow data={message.contextCondense} />
+					}
+					return null
 				case "condense_context_error":
-					return (
-						<ErrorRow
-							type="error"
-							title={t("chat:contextCondense.errorHeader")}
-							message={message.text || ""}
-						/>
-					)
+					return <CondensationErrorRow errorText={message.text} />
+				case "sliding_window_truncation":
+					// In-progress state
+					if (message.partial) {
+						return <InProgressRow eventType="sliding_window_truncation" />
+					}
+					// Completed state
+					if (message.contextTruncation) {
+						return <TruncationResultRow data={message.contextTruncation} />
+					}
+					return null
 				case "codebase_search_result":
 					let parsed: {
 						content: {

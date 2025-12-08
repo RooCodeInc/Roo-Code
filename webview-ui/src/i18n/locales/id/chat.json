@@ -177,11 +177,20 @@
 		},
 		"current": "Saat Ini"
 	},
-	"contextCondense": {
-		"title": "Konteks Dikondensasi",
-		"condensing": "Mengondensasi konteks...",
-		"errorHeader": "Gagal mengondensasi konteks",
-		"tokens": "token"
+	"contextManagement": {
+		"tokens": "token",
+		"condensation": {
+			"title": "Konteks Dikondensasi",
+			"inProgress": "Mengondensasi konteks...",
+			"errorHeader": "Gagal mengondensasi konteks"
+		},
+		"truncation": {
+			"title": "Konteks Dipotong",
+			"inProgress": "Memotong konteks...",
+			"messagesRemoved": "{{count}} pesan dihapus",
+			"messagesRemoved_other": "{{count}} pesan dihapus",
+			"description": "Pesan lama telah dihapus dari percakapan untuk tetap dalam batas jendela konteks. Ini adalah pendekatan yang cepat tetapi kurang mempertahankan konteks dibandingkan dengan kondensasi."
+		}
 	},
 	"instructions": {
 		"wantsToFetch": "Roo ingin mengambil instruksi detail untuk membantu tugas saat ini"

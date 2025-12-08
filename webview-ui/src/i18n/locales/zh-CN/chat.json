@@ -284,11 +284,20 @@
 		"thinking": "思考中",
 		"seconds": "{{count}}秒"
 	},
-	"contextCondense": {
-		"title": "上下文已压缩",
-		"condensing": "正在压缩上下文...",
-		"errorHeader": "上下文压缩失败",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "Token",
+		"condensation": {
+			"title": "上下文已压缩",
+			"inProgress": "正在压缩上下文...",
+			"errorHeader": "上下文压缩失败"
+		},
+		"truncation": {
+			"title": "上下文已截断",
+			"inProgress": "正在截断上下文...",
+			"messagesRemoved": "已移除 {{count}} 条消息",
+			"messagesRemoved_other": "已移除 {{count}} 条消息",
+			"description": "为保持在上下文窗口限制内，已从对话中移除较旧的消息。与压缩相比，这是一种快速但上下文保留较少的方法。"
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "复制到输入框（或按住Shift点击）",

@@ -283,11 +283,20 @@
 		"thinking": "Denke nach",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Kontext komprimiert",
-		"condensing": "Kontext wird komprimiert...",
-		"errorHeader": "Kontext konnte nicht komprimiert werden",
-		"tokens": "Tokens"
+	"contextManagement": {
+		"tokens": "Tokens",
+		"condensation": {
+			"title": "Kontext komprimiert",
+			"inProgress": "Kontext wird komprimiert...",
+			"errorHeader": "Kontext konnte nicht komprimiert werden"
+		},
+		"truncation": {
+			"title": "Kontext gekürzt",
+			"inProgress": "Kontext wird gekürzt...",
+			"messagesRemoved": "{{count}} Nachricht entfernt",
+			"messagesRemoved_other": "{{count}} Nachrichten entfernt",
+			"description": "Ältere Nachrichten wurden aus der Konversation entfernt, um innerhalb des Kontextfenster-Limits zu bleiben. Dies ist ein schnellerer, aber weniger kontexterhaltender Ansatz im Vergleich zur Komprimierung."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "In Eingabefeld kopieren (oder Shift + Klick)",

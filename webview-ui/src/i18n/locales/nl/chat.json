@@ -306,11 +306,20 @@
 		"thinking": "Denkt na",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Context samengevat",
-		"condensing": "Context aan het samenvatten...",
-		"errorHeader": "Context samenvatten mislukt",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Context samengevat",
+			"inProgress": "Context aan het samenvatten...",
+			"errorHeader": "Context samenvatten mislukt"
+		},
+		"truncation": {
+			"title": "Context ingekort",
+			"inProgress": "Context aan het inkorten...",
+			"messagesRemoved": "{{count}} bericht verwijderd",
+			"messagesRemoved_other": "{{count}} berichten verwijderd",
+			"description": "Oudere berichten zijn uit het gesprek verwijderd om binnen de limiet van het contextvenster te blijven. Dit is een snelle maar minder contextbehoudende aanpak in vergelijking met samenvoeging."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
