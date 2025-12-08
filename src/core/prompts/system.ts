@@ -68,6 +68,19 @@ async function generatePrompt(
 		throw new Error("Extension context is required for generating system prompt")
 	}
 
+	const promptSettings: SystemPromptSettings = settings
+		? { ...settings, isWindows: settings.isWindows ?? os.platform() === "win32" }
+		: {
+				maxConcurrentFileReads: 5,
+				todoListEnabled: true,
+				browserToolEnabled: true,
+				useAgentRules: true,
+				newTaskRequireTodos: false,
+				toolProtocol: undefined,
+				windowsScriptExecutionEnabled: true,
+				isWindows: os.platform() === "win32",
+			}
+
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
@@ -111,7 +124,7 @@ async function generatePrompt(
 				customModeConfigs,
 				experiments,
 				partialReadsEnabled,
-				settings,
+				promptSettings,
 				enableMcpServerCreation,
 				modelId,
 			)}`
@@ -139,7 +152,7 @@ ${getObjectiveSection()}
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
 	language: language ?? formatLanguage(vscode.env.language),
 	rooIgnoreInstructions,
-	settings,
+	settings: promptSettings,
 })}`
 
 	return basePrompt

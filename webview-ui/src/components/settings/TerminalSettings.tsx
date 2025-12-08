@@ -28,6 +28,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
 	terminalCompressProgressBar?: boolean
+	windowsScriptExecutionEnabled?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputLineLimit"
 		| "terminalOutputCharacterLimit"
@@ -40,6 +41,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshP10k"
 		| "terminalZdotdir"
 		| "terminalCompressProgressBar"
+		| "windowsScriptExecutionEnabled"
 	>
 }
 
@@ -55,6 +57,7 @@ export const TerminalSettings = ({
 	terminalZshP10k,
 	terminalZdotdir,
 	terminalCompressProgressBar,
+	windowsScriptExecutionEnabled,
 	setCachedStateField,
 	className,
 	...props
@@ -199,6 +202,27 @@ export const TerminalSettings = ({
 						</div>
 					</div>
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<div>
+							<VSCodeCheckbox
+								checked={windowsScriptExecutionEnabled ?? true}
+								onChange={(e: any) =>
+									setCachedStateField("windowsScriptExecutionEnabled", e.target.checked)
+								}
+								data-testid="terminal-windows-script-mode-checkbox">
+								<span className="font-medium">
+									{t("settings:terminal.windowsScriptExecution.label", {
+										defaultValue: "Windows: run long commands via temporary script",
+									})}
+								</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:terminal.windowsScriptExecution.description", {
+									defaultValue:
+										"On Windows you can send long commands as script text: Roo will create a temp file, run it with the specified interpreter, and delete it. Disable to always use plain commands.",
+								})}
+							</div>
+						</div>
+
 						<div>
 							<VSCodeCheckbox
 								checked={terminalShellIntegrationDisabled ?? true}
