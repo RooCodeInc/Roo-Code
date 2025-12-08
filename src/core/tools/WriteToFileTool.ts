@@ -17,6 +17,8 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { TelemetryService } from "@roo-code/telemetry"
+import { getLanguage } from "../../utils/file"
 
 interface WriteToFileParams {
 	path: string
@@ -114,7 +116,8 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				state?.experiments ?? {},
 				EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
 			)
-
+			const language = await getLanguage(absolutePath)
+			const changedLines = newContent.split("\n").length
 			if (isPreventFocusDisruptionEnabled) {
 				task.diffViewProvider.editType = fileExists ? "modify" : "create"
 				if (fileExists) {
@@ -137,6 +140,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 				const didApprove = await askApproval("tool", completeMessage, undefined, isWriteProtected)
 
 				if (!didApprove) {
+					TelemetryService.instance.captureCodeReject(language, changedLines)
 					return
 				}
 
@@ -170,6 +174,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 				if (!didApprove) {
 					await task.diffViewProvider.revertChanges()
+					TelemetryService.instance.captureCodeReject(language, changedLines)
 					return
 				}
 
@@ -181,6 +186,8 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			}
 
 			task.didEditFile = true
+
+			TelemetryService.instance.captureCodeAccept(language, changedLines)
 
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, !fileExists)
 

@@ -85,6 +85,21 @@ vi.mock("vscode", async (importOriginal) => {
 	}
 })
 
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		get instance() {
+			return {
+				captureCodeAccept: vi.fn(),
+				captureCodeReject: vi.fn(),
+			}
+		},
+	},
+}))
+
+vi.mock("../../../utils/file", () => ({
+	getLanguage: vi.fn().mockResolvedValue("TypeScript"),
+}))
+
 vi.mock("../../ignore/RooIgnoreController", () => ({
 	RooIgnoreController: class {
 		initialize() {

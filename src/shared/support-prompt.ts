@@ -112,6 +112,14 @@ Output only the summary of the conversation so far, without any additional comme
 %run-task-3%
 `,
 	},
+	WORKFLOW_TASK_RETRY: {
+		template: `%run-task-1%
+\${scope}
+%run-task-2%
+\${selectedText}
+%run-task-3%
+`,
+	},
 	WORKFLOW_TASK_RUN_TESTS: {
 		template: `基于 \`\${scope}\` 目录下已创建的需求文档(requirements.md)、架构设计文档(design.md)和任务规划文档(tasks.md),生成配套测试用例。
 
@@ -145,14 +153,7 @@ todo list 中必须包含以下操作，**请勿遗漏任何一个步骤**:
 完成后使用attempt_completion工具提供变更总结，包括更新的功能点、受影响模块和验证要点。这些具体指令优先于\${mode}的常规指令。
 `,
 	},
-	WORKFLOW_TASK_RETRY: {
-		template: `%run-task-1%
-\${scope}
-%run-task-2%
-\${selectedText}
-%run-task-3%
-`,
-	},
+
 	WORKFLOW_RQS_UPDATE: {
 		template: `用户更新了需求文档请更新相应的设计文档。基于 \`\${scope}\` 目录下已创建的需求文档(requirements.md)、架构设计文档(design.md)实施设计变更，如果没有则跳过。
 

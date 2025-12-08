@@ -100,6 +100,12 @@ export const costrictCommandIds = [
 	"coworkflow.refreshCodeLens",
 	"coworkflow.refreshDecorations",
 	"coworkflow.runTest",
+	"coworkflow.runTaskJetbrains",
+	"coworkflow.runAllTasksJetbrains",
+	"coworkflow.retryTaskJetbrains",
+	"coworkflow.syncToDesignJetbrains",
+	"coworkflow.syncToTasksJetbrains",
+	"coworkflow.runTestJetbrains",
 ] as const
 export type CostrictCommandId = (typeof costrictCommandIds)[number]
 export type CommandId = (typeof commandIds)[number]

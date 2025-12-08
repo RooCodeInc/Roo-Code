@@ -1,4 +1,4 @@
-import { TelemetryService, PrometheusTelemetryClient } from "@roo-code/telemetry"
+import { TelemetryService, CostrictTelemetryClient } from "@roo-code/telemetry"
 import type { ClineProvider } from "../../webview/ClineProvider"
 import { ZgsmAuthConfig } from "../auth"
 export * from "./constants"
@@ -8,9 +8,9 @@ export function initTelemetry(provider: ClineProvider) {
 	const zgsmBaseUrl = provider.getValue("zgsmBaseUrl")
 	const baseUrl = zgsmBaseUrl ? zgsmBaseUrl : ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()
 	try {
-		telemetryService.register(new PrometheusTelemetryClient(`${baseUrl}/pushgateway/api/v1`, false))
+		telemetryService.register(new CostrictTelemetryClient(`${baseUrl}`, false))
 		telemetryService.setProvider(provider)
 	} catch (error) {
-		console.warn("Failed to register PrometheusTelemetryClient:", error)
+		console.warn("Failed to register CostrictTelemetryClient:", error)
 	}
 }

@@ -196,6 +196,34 @@
 				"icon": "$(shield)"
 			},
 			{
+				"command": "zgsm.coworkflow.runTaskJetbrains",
+				"title": "runTaskJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.runAllTasksJetbrains",
+				"title": "runAllTasksJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.retryTaskJetbrains",
+				"title": "retryTaskJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.updateSectionJetbrains",
+				"title": "updateSectionJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.runTestJetbrains",
+				"title": "runTestJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.syncToDesignJetbrains",
+				"title": "syncToDesignJetbrains"
+			},
+			{
+				"command": "zgsm.coworkflow.syncToTasksJetbrains",
+				"title": "syncToTasksJetbrains"
+			},
+			{
 				"command": "zgsm.codeReviewJetbrains",
 				"title": "%command.codeReview.title%"
 			},

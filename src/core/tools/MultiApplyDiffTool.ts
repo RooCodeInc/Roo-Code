@@ -19,6 +19,7 @@ import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { isNativeProtocol } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { getLanguage } from "../../utils/file"
 
 interface DiffOperation {
 	path: string
@@ -375,21 +376,35 @@ Original error: ${errorMessage}`
 				if (text) {
 					await cline.say("user_feedback", text, images)
 				}
-				operationsToApprove.forEach((opResult) => {
+				for (const opResult of operationsToApprove) {
 					updateOperationResult(opResult.path, { status: "approved" })
-				})
+					// capture code accept
+					const batchDiff = batchDiffs.find((bd) => bd.path === getReadablePath(cline.cwd, opResult.path))
+					if (batchDiff?.diffStats) {
+						const language = await getLanguage(opResult.path)
+						const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+						TelemetryService.instance.captureCodeAccept(language, lines)
+					}
+				}
 			} else if (response === "noButtonClicked") {
 				// Deny all files
 				if (text) {
 					await cline.say("user_feedback", text, images)
 				}
 				cline.didRejectTool = true
-				operationsToApprove.forEach((opResult) => {
+				for (const opResult of operationsToApprove) {
 					updateOperationResult(opResult.path, {
 						status: "denied",
 						result: `Changes to ${opResult.path} were not approved by user`,
 					})
-				})
+					// capture code reject
+					const batchDiff = batchDiffs.find((bd) => bd.path === getReadablePath(cline.cwd, opResult.path))
+					if (batchDiff?.diffStats) {
+						const language = await getLanguage(opResult.path)
+						const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+						TelemetryService.instance.captureCodeReject(language, lines)
+					}
+				}
 			} else {
 				// Handle individual permissions from objectResponse
 				try {
@@ -399,19 +414,34 @@ Original error: ${errorMessage}`
 						const approvedFiles = parsedResponse.approvedFiles
 						let hasAnyDenial = false
 
-						operationsToApprove.forEach((opResult) => {
+						for (const opResult of operationsToApprove) {
 							const approved = approvedFiles[opResult.path] === true
+							const batchDiff = batchDiffs.find(
+								(bd) => bd.path === getReadablePath(cline.cwd, opResult.path),
+							)
 
 							if (approved) {
 								updateOperationResult(opResult.path, { status: "approved" })
+								// capture code accept
+								if (batchDiff?.diffStats) {
+									const language = await getLanguage(opResult.path)
+									const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+									TelemetryService.instance.captureCodeAccept(language, lines)
+								}
 							} else {
 								hasAnyDenial = true
 								updateOperationResult(opResult.path, {
 									status: "denied",
 									result: `Changes to ${opResult.path} were not approved by user`,
 								})
+								// capture code reject
+								if (batchDiff?.diffStats) {
+									const language = await getLanguage(opResult.path)
+									const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+									TelemetryService.instance.captureCodeReject(language, lines)
+								}
 							}
-						})
+						}
 
 						if (hasAnyDenial) {
 							cline.didRejectTool = true
@@ -421,20 +451,33 @@ Original error: ${errorMessage}`
 						const individualPermissions = parsedResponse
 						let hasAnyDenial = false
 
-						batchDiffs.forEach((batchDiff, index) => {
+						for (let index = 0; index < batchDiffs.length; index++) {
+							const batchDiff = batchDiffs[index]
 							const opResult = operationsToApprove[index]
 							const approved = individualPermissions[batchDiff.key] === true
 
 							if (approved) {
 								updateOperationResult(opResult.path, { status: "approved" })
+								// capture code accept
+								if (batchDiff?.diffStats) {
+									const language = await getLanguage(opResult.path)
+									const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+									TelemetryService.instance.captureCodeAccept(language, lines)
+								}
 							} else {
 								hasAnyDenial = true
 								updateOperationResult(opResult.path, {
 									status: "denied",
 									result: `Changes to ${opResult.path} were not approved by user`,
 								})
+								// capture code reject
+								if (batchDiff?.diffStats) {
+									const language = await getLanguage(opResult.path)
+									const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+									TelemetryService.instance.captureCodeReject(language, lines)
+								}
 							}
-						})
+						}
 
 						if (hasAnyDenial) {
 							cline.didRejectTool = true
@@ -444,12 +487,19 @@ Original error: ${errorMessage}`
 					// Fallback: if JSON parsing fails, deny all files
 					console.error("Failed to parse individual permissions:", error)
 					cline.didRejectTool = true
-					operationsToApprove.forEach((opResult) => {
+					for (const opResult of operationsToApprove) {
 						updateOperationResult(opResult.path, {
 							status: "denied",
 							result: `Changes to ${opResult.path} were not approved by user`,
 						})
-					})
+						// capture code reject
+						const batchDiff = batchDiffs.find((bd) => bd.path === getReadablePath(cline.cwd, opResult.path))
+						if (batchDiff?.diffStats) {
+							const language = await getLanguage(opResult.path)
+							const lines = (batchDiff.diffStats.added || 0) + (batchDiff.diffStats.removed || 0)
+							TelemetryService.instance.captureCodeReject(language, lines)
+						}
+					}
 				}
 			}
 		} else if (operationsToApprove.length === 1) {
@@ -645,6 +695,13 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 						if (!isPreventFocusDisruptionEnabled) {
 							await cline.diffViewProvider.revertChanges()
 						}
+						// capture code reject
+						const rejectStats = computeDiffStats(unifiedPatch)
+						if (rejectStats) {
+							const language = await getLanguage(relPath)
+							const lines = (rejectStats.added || 0) + (rejectStats.removed || 0)
+							TelemetryService.instance.captureCodeReject(language, lines)
+						}
 						results.push(`Changes to ${relPath} were not approved by user`)
 						continue
 					}
@@ -662,6 +719,13 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 					} else {
 						// Call saveChanges to update the DiffViewProvider properties
 						await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
+					}
+					// capture code accept
+					const acceptStats = computeDiffStats(unifiedPatch)
+					if (acceptStats) {
+						const language = await getLanguage(relPath)
+						const lines = (acceptStats.added || 0) + (acceptStats.removed || 0)
+						TelemetryService.instance.captureCodeAccept(language, lines)
 					}
 				} else {
 					// Batch operations - already approved above

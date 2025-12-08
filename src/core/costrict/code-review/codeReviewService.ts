@@ -602,7 +602,7 @@ export class CodeReviewService {
 	}
 
 	public async checkAndAcceptIssueByTaskId(taskId: string) {
-		if (!taskId && !this.taskList.has(taskId)) {
+		if (!taskId || !this.taskList.has(taskId)) {
 			return
 		}
 		const issueId = this.taskList.get(taskId)!
