@@ -364,9 +364,13 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
+		// After TaskAborted, ignore any further TaskTokenUsageUpdated events.
+		// This prevents a rehydrated task instance (which has empty toolUsage)
+		// from overwriting the final metrics that were saved before abort.
 		if (
 			(eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) &&
-			taskMetricsId
+			taskMetricsId &&
+			!taskAbortedAt
 		) {
 			const duration = Date.now() - taskStartedAt
 
