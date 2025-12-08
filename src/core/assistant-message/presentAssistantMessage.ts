@@ -224,6 +224,11 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			const handleError = async (action: string, error: Error) => {
+				// Silently ignore "ask promise was ignored" errors - this is an internal control flow
+				// signal, not an actual error. It occurs when a newer ask supersedes an older one.
+				if (error.message?.includes("ask promise was ignored")) {
+					return
+				}
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 				await cline.say(
 					"error",
@@ -610,6 +615,11 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			const handleError = async (action: string, error: Error) => {
+				// Silently ignore "ask promise was ignored" errors - this is an internal control flow
+				// signal, not an actual error. It occurs when a newer ask supersedes an older one.
+				if (error.message?.includes("ask promise was ignored")) {
+					return
+				}
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
 
 				await cline.say(
