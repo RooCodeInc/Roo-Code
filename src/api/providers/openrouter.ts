@@ -9,6 +9,8 @@ import {
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
+
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -338,6 +340,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 				if (delta.content) {
 					yield { type: "text", text: delta.content }
+				}
+			}
+
+			// Process finish_reason to emit tool_call_end events
+			// This ensures tool calls are finalized even if the stream doesn't properly close
+			if (finishReason) {
+				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+				for (const event of endEvents) {
+					yield event
 				}
 			}
 

@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../../shared/package"
@@ -157,6 +158,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
 
 				if (delta) {
 					// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
@@ -255,6 +257,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 							type: "text",
 							text: delta.content,
 						}
+					}
+				}
+
+				if (finishReason) {
+					const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+					for (const event of endEvents) {
+						yield event
 					}
 				}
 
