@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Derzeit sind keine Hintergrunddienste aktiv.",
+		"available_services": "Verfügbare Hintergrunddienste:",
+		"usage_hint": "Verwende get_service_logs mit einer bestimmten service_id, um Logs von diesem Dienst zu erhalten.",
+		"service_not_found": "Dienst '{{serviceId}}' nicht gefunden. Verwende get_service_logs ohne Parameter, um alle laufenden Dienste aufzulisten.",
+		"service_info": "Dienst: {{serviceId}}\nBefehl: {{command}}\nStatus: {{status}}",
+		"no_logs": "Noch keine Logs verfügbar."
+	},
+	"stop_service": {
+		"no_services": "Derzeit sind keine Hintergrunddienste aktiv.",
+		"service_id_required": "Eine service_id ist erforderlich, um einen Dienst zu stoppen.",
+		"available_services": "Verfügbare Hintergrunddienste:",
+		"usage_hint": "Verwende stop_service mit einer bestimmten service_id, um diesen Dienst zu stoppen.",
+		"service_not_found": "Dienst '{{serviceId}}' nicht gefunden.",
+		"success": "Dienst '{{serviceId}}' wurde erfolgreich gestoppt.",
+		"partial_success": "Dienst '{{serviceId}}' wurde möglicherweise nicht vollständig beendet.",
+		"stopping": "Dienst '{{serviceId}}' wird gestoppt.",
+		"error": "Fehler beim Stoppen des Dienstes '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (Zeilen {{start}}-{{end}})",
 		"definitionsOnly": " (nur Definitionen)",

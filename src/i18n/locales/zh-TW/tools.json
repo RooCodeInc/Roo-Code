@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "目前沒有背景服務在運行。",
+		"available_services": "可用的背景服務：",
+		"usage_hint": "使用 get_service_logs 配合特定的 service_id 來獲取該服務的日誌。",
+		"service_not_found": "找不到服務 '{{serviceId}}'。使用不帶參數的 get_service_logs 來列出所有運行中的服務。",
+		"service_info": "服務：{{serviceId}}\n指令：{{command}}\n狀態：{{status}}",
+		"no_logs": "尚無日誌可用。"
+	},
+	"stop_service": {
+		"no_services": "目前沒有背景服務在運行。",
+		"service_id_required": "停止服務需要提供 service_id。",
+		"available_services": "可用的背景服務：",
+		"usage_hint": "使用 stop_service 配合特定的 service_id 來停止該服務。",
+		"service_not_found": "找不到服務 '{{serviceId}}'。",
+		"success": "服務 '{{serviceId}}' 已成功停止。",
+		"partial_success": "服務 '{{serviceId}}' 可能尚未完全終止。",
+		"stopping": "服務 '{{serviceId}}' 正在停止中。",
+		"error": "停止服務 '{{serviceId}}' 失敗：{{error}}"
+	},
 	"readFile": {
 		"linesRange": " (第 {{start}}-{{end}} 行)",
 		"definitionsOnly": " (僅定義)",

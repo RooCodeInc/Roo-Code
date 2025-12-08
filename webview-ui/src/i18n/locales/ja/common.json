@@ -101,6 +101,25 @@
 		"init_checkpoint_fail_long_time": "チェックポイントの初期化が {{timeout}} 秒以上かかったため、このタスクではチェックポイントが無効化されました。チェックポイントをオフにするか、<settingsLink>チェックポイント設定</settingsLink>で待機時間を延長できます。",
 		"attempt_completion_tool_failed": "前回のツール呼び出しがこのターンで失敗したため、attempt_completionを実行できません。完了を試みる前にツールの失敗に対処してください。"
 	},
+	"backgroundTasks": {
+		"title": "バックグラウンドで実行中のタスク",
+		"ariaLabel": "バックグラウンドタスク",
+		"tooltip": "{{count}} 個のバックグラウンドタスクが実行中",
+		"stopService": "サービスを停止",
+		"showLogs": "ターミナル出力を表示",
+		"hideLogs": "ターミナル出力を非表示",
+		"terminalOutput": "ターミナル出力",
+		"refreshLogs": "ログを更新",
+		"loadingLogs": "ログを読み込み中...",
+		"noLogs": "まだ出力がありません",
+		"status": {
+			"starting": "起動中",
+			"ready": "準備完了",
+			"running": "実行中",
+			"stopping": "停止中",
+			"failed": "失敗"
+		}
+	},
 	"tasks": {
 		"delegated": "サブタスクに委任",
 		"delegated_to": "タスク{{childId}}に委任",

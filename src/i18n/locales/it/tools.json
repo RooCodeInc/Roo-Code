@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Nessun servizio in background è attualmente in esecuzione.",
+		"available_services": "Servizi in background disponibili:",
+		"usage_hint": "Usa get_service_logs con un service_id specifico per ottenere i log di quel servizio.",
+		"service_not_found": "Servizio '{{serviceId}}' non trovato. Usa get_service_logs senza parametri per elencare tutti i servizi in esecuzione.",
+		"service_info": "Servizio: {{serviceId}}\nComando: {{command}}\nStato: {{status}}",
+		"no_logs": "Nessun log disponibile ancora."
+	},
+	"stop_service": {
+		"no_services": "Nessun servizio in background è attualmente in esecuzione.",
+		"service_id_required": "È richiesto un service_id per fermare un servizio.",
+		"available_services": "Servizi in background disponibili:",
+		"usage_hint": "Usa stop_service con un service_id specifico per fermare quel servizio.",
+		"service_not_found": "Servizio '{{serviceId}}' non trovato.",
+		"success": "Il servizio '{{serviceId}}' è stato fermato con successo.",
+		"partial_success": "Il servizio '{{serviceId}}' potrebbe non essere stato terminato completamente.",
+		"stopping": "Fermatura del servizio '{{serviceId}}' in corso.",
+		"error": "Impossibile fermare il servizio '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (righe {{start}}-{{end}})",
 		"definitionsOnly": " (solo definizioni)",

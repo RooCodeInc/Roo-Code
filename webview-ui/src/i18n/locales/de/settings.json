@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "To-Do-Liste wird automatisch aktualisiert, ohne dass du zustimmen musst"
 		},
+		"serviceMode": {
+			"title": "Dienstmodus-Einstellungen",
+			"noTimeout": "Kein Timeout",
+			"commandTimeout": {
+				"label": "Befehlsausführungs-Timeout",
+				"description": "Maximale Zeit in Sekunden, um auf den Abschluss von Nicht-Dienstbefehlen zu warten (0 = kein Timeout). Befehle wie npm install werden nach dieser Dauer timeouten."
+			},
+			"serviceTimeout": {
+				"label": "Dienst-Bereit-Timeout",
+				"description": "Maximale Zeit in Sekunden, um auf Dienstbefehle (wie npm run dev) zu warten, um bereitzusein. Die KI wartet auf Ausgaben wie 'listening on port', bevor sie fortgesetzt wird."
+			},
+			"universalTimeout": {
+				"label": "Universellen Befehls-Timeout aktivieren",
+				"description": "Wenn aktiviert, werden alle Befehle, die das Timeout überschreiten, im Hintergrund weiter ausgeführt, anstatt beendet zu werden. Dies behandelt langlaufende Befehle als Hintergrunddienste."
+			},
+			"patterns": {
+				"label": "Benutzerdefinierte Dienstbefehlsmuster",
+				"description": "Regex-Muster hinzufügen, um zusätzliche Befehle als Dienstbefehle zu identifizieren. Integrierte Muster erkennen bereits 70+ gängige Dienstbefehle (npm run dev, docker-compose up, usw.).",
+				"placeholder": "Regex-Muster eingeben (z.B. 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Maximale Anfragen",
 			"description": "Automatisch so viele API-Anfragen stellen, bevor du um die Erlaubnis gebeten wirst, mit der Aufgabe fortzufahren.",

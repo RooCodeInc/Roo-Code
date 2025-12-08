@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "La lista delle cose da fare viene aggiornata automaticamente senza approvazione"
 		},
+		"serviceMode": {
+			"title": "Impostazioni modalità servizio",
+			"noTimeout": "Nessun timeout",
+			"commandTimeout": {
+				"label": "Timeout esecuzione comando",
+				"description": "Tempo massimo in secondi per attendere il completamento dei comandi non-servizio (0 = nessun timeout). Comandi come npm install scadranno dopo questa durata."
+			},
+			"serviceTimeout": {
+				"label": "Timeout disponibilità servizio",
+				"description": "Tempo massimo in secondi per attendere che i comandi di servizio (come npm run dev) segnalino la disponibilità. L'IA attenderà output come 'listening on port' prima di continuare."
+			},
+			"universalTimeout": {
+				"label": "Abilita timeout universale comando",
+				"description": "Quando abilitato, tutti i comandi che superano il timeout continueranno a essere eseguiti in background invece di essere terminati. Questo tratta i comandi di lunga esecuzione come servizi in background."
+			},
+			"patterns": {
+				"label": "Pattern comandi servizio personalizzati",
+				"description": "Aggiungi pattern regex per identificare comandi aggiuntivi come comandi di servizio. I pattern integrati rilevano già 70+ comandi di servizio comuni (npm run dev, docker-compose up, ecc.).",
+				"placeholder": "Inserisci pattern regex (es. 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Richieste massime",
 			"description": "Esegui automaticamente questo numero di richieste API prima di chiedere l'approvazione per continuare con l'attività.",

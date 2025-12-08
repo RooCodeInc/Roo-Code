@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Actualment no hi ha cap servei en segon pla executant-se.",
+		"available_services": "Serveis en segon pla disponibles:",
+		"usage_hint": "Utilitza get_service_logs amb un service_id específic per obtenir els registres d'aquest servei.",
+		"service_not_found": "Servei '{{serviceId}}' no trobat. Utilitza get_service_logs sense paràmetres per llistar tots els serveis en execució.",
+		"service_info": "Servei: {{serviceId}}\nComandament: {{command}}\nEstat: {{status}}",
+		"no_logs": "Encara no hi ha registres disponibles."
+	},
+	"stop_service": {
+		"no_services": "Actualment no hi ha cap servei en segon pla executant-se.",
+		"service_id_required": "Es requereix un service_id per aturar un servei.",
+		"available_services": "Serveis en segon pla disponibles:",
+		"usage_hint": "Utilitza stop_service amb un service_id específic per aturar aquest servei.",
+		"service_not_found": "Servei '{{serviceId}}' no trobat.",
+		"success": "El servei '{{serviceId}}' s'ha aturat correctament.",
+		"partial_success": "El servei '{{serviceId}}' pot no haver finalitzat completament.",
+		"stopping": "Aturant el servei '{{serviceId}}'.",
+		"error": "Error en aturar el servei '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (línies {{start}}-{{end}})",
 		"definitionsOnly": " (només definicions)",

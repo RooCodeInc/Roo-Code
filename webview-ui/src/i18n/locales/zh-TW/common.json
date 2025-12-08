@@ -1,9 +1,9 @@
 {
 	"errorBoundary": {
-		"title": "發生錯誤",
-		"reportText": "請協助我們回報此錯誤，以利產品改善：",
+		"title": "出現錯誤",
+		"reportText": "透過在以下地址報告此錯誤來幫助我們改進應用程式",
 		"githubText": "我們的 GitHub Issues 頁面",
-		"copyInstructions": "複製並貼上以下錯誤訊息，將其作為提交內容的一部分：",
+		"copyInstructions": "複製並貼上下列錯誤訊息以包含在您的報告中：",
 		"errorStack": "錯誤堆疊：",
 		"componentStack": "元件堆疊："
 	},
@@ -15,16 +15,16 @@
 		"keep": "保留"
 	},
 	"number_format": {
-		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
+		"thousand_suffix": "千",
+		"million_suffix": "百萬",
+		"billion_suffix": "十億"
 	},
 	"ui": {
 		"search_placeholder": "搜尋...",
-		"no_results": "找不到結果"
+		"no_results": "未找到結果"
 	},
 	"mermaid": {
-		"loading": "正在產生 Mermaid 圖表...",
+		"loading": "正在生成 mermaid 圖表...",
 		"render_error": "無法渲染圖表",
 		"buttons": {
 			"zoom": "縮放",
@@ -45,20 +45,20 @@
 		},
 		"feedback": {
 			"imageCopied": "圖片已複製到剪貼簿",
-			"copyError": "複製圖片時發生錯誤"
+			"copyError": "複製圖片錯誤"
 		}
 	},
 	"image": {
 		"tabs": {
-			"view": "圖像"
+			"view": "圖片"
 		},
 		"noData": "無圖片資料"
 	},
 	"file": {
 		"errors": {
 			"invalidDataUri": "無效的資料 URI 格式",
-			"copyingImage": "複製圖片時發生錯誤：{{error}}",
-			"openingImage": "開啟圖片時發生錯誤：{{error}}",
+			"copyingImage": "複製圖片錯誤：{{error}}",
+			"openingImage": "開啟圖片錯誤：{{error}}",
 			"pathNotExists": "路徑不存在：{{path}}",
 			"couldNotOpen": "無法開啟檔案：{{error}}",
 			"couldNotOpenGeneric": "無法開啟檔案！"
@@ -69,14 +69,14 @@
 	},
 	"confirmation": {
 		"deleteMessage": "刪除訊息",
-		"deleteWarning": "刪除此訊息將會刪除對話中所有後續的訊息。您要繼續嗎？",
+		"deleteWarning": "刪除此訊息將刪除對話中的所有後續訊息。您要繼續嗎？",
 		"editMessage": "編輯訊息",
-		"editWarning": "編輯此訊息將刪除對話中的所有後續訊息。是否繼續？",
-		"editQuestionWithCheckpoint": "編輯此訊息將刪除對話中的所有後續訊息。是否同時將所有變更撤銷到此存檔點？",
-		"deleteQuestionWithCheckpoint": "刪除此訊息將刪除對話中的所有後續訊息。是否同時將所有變更撤銷到此存檔點？",
+		"editWarning": "編輯此訊息將刪除對話中的所有後續訊息。您要繼續嗎？",
+		"editQuestionWithCheckpoint": "編輯此訊息將刪除對話中的所有後續訊息。您是否還要還原到此檢查點的所有變更？",
+		"deleteQuestionWithCheckpoint": "刪除此訊息將刪除對話中的所有後續訊息。您是否還要還原到此檢查點的所有變更？",
 		"editOnly": "否，僅編輯訊息",
 		"deleteOnly": "否，僅刪除訊息",
-		"restoreToCheckpoint": "是，恢復存檔點",
+		"restoreToCheckpoint": "是，還原檢查點",
 		"proceed": "繼續",
 		"dontShowAgain": "不再顯示"
 	},
@@ -97,14 +97,33 @@
 		"years_ago": "{{count}} 年前"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "初始化存檔點已等待 {{timeout}} 秒。如果你不需要存檔點功能，請在<settingsLink>存檔點設定</settingsLink>中關閉。",
-		"init_checkpoint_fail_long_time": "存檔點初始化已超過 {{timeout}} 秒，因此此工作已停用存檔點。你可以關閉存檔點或在<settingsLink>存檔點設定</settingsLink>中延長等待時間。",
-		"attempt_completion_tool_failed": "無法執行 attempt_completion，因為本輪中先前的工具呼叫失敗了。請在嘗試完成前解決工具失敗問題。"
+		"wait_checkpoint_long_time": "您已等待 {{timeout}} 秒以初始化檢查點。如果不需要此功能，請在<settingsLink>檢查點設定</settingsLink>中停用它。",
+		"init_checkpoint_fail_long_time": "檢查點初始化花費了超過 {{timeout}} 秒，因此已為此任務停用檢查點。您可以在<settingsLink>檢查點設定</settingsLink>中停用檢查點或增加等待時間。",
+		"attempt_completion_tool_failed": "無法執行 attempt_completion，因為在此週期中之前的工具呼叫失敗。請在嘗試完成之前解決工具錯誤。"
+	},
+	"backgroundTasks": {
+		"title": "背景任務",
+		"ariaLabel": "背景任務",
+		"tooltip": "{{count}} 個背景任務正在執行",
+		"stopService": "停止服務",
+		"showLogs": "顯示終端輸出",
+		"hideLogs": "隱藏終端輸出",
+		"terminalOutput": "終端輸出",
+		"refreshLogs": "重新整理日誌",
+		"loadingLogs": "正在載入日誌...",
+		"noLogs": "暫無輸出",
+		"status": {
+			"starting": "正在啟動",
+			"ready": "就緒",
+			"running": "正在執行",
+			"stopping": "正在停止",
+			"failed": "失敗"
+		}
 	},
 	"tasks": {
-		"delegated": "已委派給子工作",
-		"delegated_to": "已委派給工作 {{childId}}",
-		"delegation_completed": "子工作已完成，繼續父工作",
-		"awaiting_child": "等待子工作 {{childId}}"
+		"delegated": "已委派給子任務",
+		"delegated_to": "已委派給任務 {{childId}}",
+		"delegation_completed": "子任務已完成，恢復父任務",
+		"awaiting_child": "正在等待子任務 {{childId}}"
 	}
 }

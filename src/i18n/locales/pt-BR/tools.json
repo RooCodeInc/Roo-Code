@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Nenhum serviço em segundo plano está atualmente em execução.",
+		"available_services": "Serviços em segundo plano disponíveis:",
+		"usage_hint": "Use get_service_logs com um service_id específico para obter os logs desse serviço.",
+		"service_not_found": "Serviço '{{serviceId}}' não encontrado. Use get_service_logs sem parâmetros para listar todos os serviços em execução.",
+		"service_info": "Serviço: {{serviceId}}\nComando: {{command}}\nStatus: {{status}}",
+		"no_logs": "Nenhum log disponível ainda."
+	},
+	"stop_service": {
+		"no_services": "Nenhum serviço em segundo plano está atualmente em execução.",
+		"service_id_required": "Um service_id é necessário para parar um serviço.",
+		"available_services": "Serviços em segundo plano disponíveis:",
+		"usage_hint": "Use stop_service com um service_id específico para parar esse serviço.",
+		"service_not_found": "Serviço '{{serviceId}}' não encontrado.",
+		"success": "Serviço '{{serviceId}}' foi parado com sucesso.",
+		"partial_success": "Serviço '{{serviceId}}' pode não ter sido completamente terminado.",
+		"stopping": "Parando serviço '{{serviceId}}'.",
+		"error": "Falha ao parar serviço '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (linhas {{start}}-{{end}})",
 		"definitionsOnly": " (apenas definições)",

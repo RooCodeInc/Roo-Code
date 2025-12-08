@@ -119,4 +119,67 @@ describe("ExecaTerminalProcess", () => {
 			expect(mockTerminal.setActiveStream).toHaveBeenLastCalledWith(undefined)
 		})
 	})
+
+	describe("peekAllUnretrievedOutput", () => {
+		it("should return all unretrieved output including incomplete lines", () => {
+			// Manually set up the internal state to simulate output accumulation
+			// Access private properties for testing purposes
+			const process = terminalProcess as any
+			process.fullOutput = "line1\nline2\nincomplete"
+			process.lastRetrievedIndex = 0
+
+			// peekAllUnretrievedOutput should return everything including the incomplete line
+			const peeked = terminalProcess.peekAllUnretrievedOutput()
+			expect(peeked).toBe("line1\nline2\nincomplete")
+
+			// Call again - should return same result since peek doesn't consume
+			const peekedAgain = terminalProcess.peekAllUnretrievedOutput()
+			expect(peekedAgain).toBe("line1\nline2\nincomplete")
+		})
+
+		it("should return empty string when no unretrieved output", () => {
+			// Simulate already retrieved state
+			const process = terminalProcess as any
+			process.fullOutput = "all retrieved\n"
+			process.lastRetrievedIndex = "all retrieved\n".length
+
+			const peeked = terminalProcess.peekAllUnretrievedOutput()
+			expect(peeked).toBe("")
+		})
+
+		it("should not affect lastRetrievedIndex", () => {
+			// Set up state with some output
+			const process = terminalProcess as any
+			process.fullOutput = "line1\nline2\n"
+			process.lastRetrievedIndex = 0
+
+			// Peek first - should NOT update lastRetrievedIndex
+			terminalProcess.peekAllUnretrievedOutput()
+			expect(process.lastRetrievedIndex).toBe(0)
+
+			// hasUnretrievedOutput should still return true
+			expect(terminalProcess.hasUnretrievedOutput()).toBe(true)
+
+			// getUnretrievedOutput should still return the output and update lastRetrievedIndex
+			const output = terminalProcess.getUnretrievedOutput()
+			expect(output).toBe("line1\nline2\n")
+
+			// Now lastRetrievedIndex should be updated
+			expect(process.lastRetrievedIndex).toBe("line1\nline2\n".length)
+
+			// hasUnretrievedOutput should return false
+			expect(terminalProcess.hasUnretrievedOutput()).toBe(false)
+		})
+
+		it("should return partial output after some retrieval", () => {
+			// Simulate partial retrieval
+			const process = terminalProcess as any
+			process.fullOutput = "line1\nline2\nline3\n"
+			process.lastRetrievedIndex = "line1\n".length
+
+			// peek should return only the unretrieved part
+			const peeked = terminalProcess.peekAllUnretrievedOutput()
+			expect(peeked).toBe("line2\nline3\n")
+		})
+	})
 })

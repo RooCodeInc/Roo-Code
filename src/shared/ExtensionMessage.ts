@@ -132,6 +132,8 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "backgroundServicesUpdate"
+		| "serviceLogsUpdate"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -217,6 +219,20 @@ export interface ExtensionMessage {
 	browserSessionMessages?: ClineMessage[] // For browser session panel updates
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
+	// For backgroundServicesUpdate: list of background services
+	// 用于 backgroundServicesUpdate：后台服务列表
+	services?: Array<{
+		serviceId: string
+		command: string
+		status: string
+		pid?: number
+		startedAt: number
+		readyAt?: number
+	}>
+	// For serviceLogsUpdate: service ID and its logs
+	// 用于 serviceLogsUpdate：服务 ID 及其日志
+	serviceId?: string
+	logs?: string[]
 }
 
 export type ExtensionState = Pick<
@@ -243,6 +259,10 @@ export type ExtensionState = Pick<
 	| "followupAutoApproveTimeoutMs"
 	| "allowedCommands"
 	| "deniedCommands"
+	| "commandExecutionTimeout"
+	| "serviceReadyTimeout"
+	| "serviceCommandPatterns"
+	| "enableUniversalCommandTimeout"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
 	| "browserToolEnabled"

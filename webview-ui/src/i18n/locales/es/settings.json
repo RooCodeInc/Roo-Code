@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "La lista de tareas se actualiza automáticamente sin aprobación"
 		},
+		"serviceMode": {
+			"title": "Configuración del modo servicio",
+			"noTimeout": "Sin tiempo de espera",
+			"commandTimeout": {
+				"label": "Tiempo de espera de ejecución de comandos",
+				"description": "Tiempo máximo en segundos para esperar que los comandos no-servicio se completen (0 = sin tiempo de espera). Comandos como npm install expirarán después de esta duración."
+			},
+			"serviceTimeout": {
+				"label": "Tiempo de espera de disponibilidad del servicio",
+				"description": "Tiempo máximo en segundos para esperar que los comandos de servicio (como npm run dev) reporten estar listos. La IA esperará salidas como 'listening on port' antes de continuar."
+			},
+			"universalTimeout": {
+				"label": "Habilitar tiempo de espera universal de comandos",
+				"description": "Cuando está habilitado, todos los comandos que excedan el tiempo de espera continuarán ejecutándose en segundo plano en lugar de ser terminados. Esto trata los comandos de larga ejecución como servicios de segundo plano."
+			},
+			"patterns": {
+				"label": "Patrones de comandos de servicio personalizados",
+				"description": "Añade patrones regex para identificar comandos adicionales como comandos de servicio. Los patrones integrados ya detectan 70+ comandos de servicio comunes (npm run dev, docker-compose up, etc.).",
+				"placeholder": "Introduce patrón regex (ej: 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "Solicitudes máximas",
 			"description": "Realizar automáticamente esta cantidad de solicitudes a la API antes de pedir aprobación para continuar con la tarea.",

@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "当前没有正在运行的后台服务。",
+		"available_services": "可用的后台服务：",
+		"usage_hint": "使用 get_service_logs 并指定 service_id 来获取该服务的日志。",
+		"service_not_found": "未找到服务 '{{serviceId}}'。使用不带参数的 get_service_logs 可以列出所有正在运行的服务。",
+		"service_info": "服务：{{serviceId}}\n命令：{{command}}\n状态：{{status}}",
+		"no_logs": "暂无日志。"
+	},
+	"stop_service": {
+		"no_services": "当前没有正在运行的后台服务。",
+		"service_id_required": "需要指定 service_id 才能停止服务。",
+		"available_services": "可用的后台服务：",
+		"usage_hint": "使用 stop_service 并指定 service_id 来停止该服务。",
+		"service_not_found": "未找到服务 '{{serviceId}}'。",
+		"success": "服务 '{{serviceId}}' 已成功停止。",
+		"partial_success": "服务 '{{serviceId}}' 可能未完全终止。",
+		"stopping": "正在停止服务 '{{serviceId}}'。",
+		"error": "停止服务 '{{serviceId}}' 失败：{{error}}"
+	},
 	"readFile": {
 		"linesRange": " (第 {{start}}-{{end}} 行)",
 		"definitionsOnly": " (仅定义)",

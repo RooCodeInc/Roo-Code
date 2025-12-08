@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Aucun service d'arrière-plan n'est actuellement en cours d'exécution.",
+		"available_services": "Services d'arrière-plan disponibles :",
+		"usage_hint": "Utilisez get_service_logs avec un service_id spécifique pour obtenir les logs de ce service.",
+		"service_not_found": "Service '{{serviceId}}' non trouvé. Utilisez get_service_logs sans paramètres pour lister tous les services en cours d'exécution.",
+		"service_info": "Service : {{serviceId}}\nCommande : {{command}}\nStatut : {{status}}",
+		"no_logs": "Aucun log disponible pour le moment."
+	},
+	"stop_service": {
+		"no_services": "Aucun service d'arrière-plan n'est actuellement en cours d'exécution.",
+		"service_id_required": "Un service_id est requis pour arrêter un service.",
+		"available_services": "Services d'arrière-plan disponibles :",
+		"usage_hint": "Utilisez stop_service avec un service_id spécifique pour arrêter ce service.",
+		"service_not_found": "Service '{{serviceId}}' non trouvé.",
+		"success": "Le service '{{serviceId}}' a été arrêté avec succès.",
+		"partial_success": "Le service '{{serviceId}}' n'a peut-être pas été complètement terminé.",
+		"stopping": "Le service '{{serviceId}}' est en cours d'arrêt.",
+		"error": "Échec de l'arrêt du service '{{serviceId}}' : {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (lignes {{start}}-{{end}})",
 		"definitionsOnly": " (définitions uniquement)",
