@@ -1856,7 +1856,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * Force emit a final token usage update, ignoring throttle.
 	 * Called before task completion or abort to ensure final stats are captured.
 	 */
-	private emitFinalTokenUsageUpdate(): void {
+	public emitFinalTokenUsageUpdate(): void {
 		const tokenUsage = this.getTokenUsage()
 		if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
 			this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)

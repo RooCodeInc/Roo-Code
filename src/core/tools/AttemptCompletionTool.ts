@@ -88,11 +88,11 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			// Force final token usage update before emitting TaskCompleted
 			// This ensures the most recent stats are captured regardless of throttle timer
-			const tokenUsage = task.getTokenUsage()
-			task.emit(RooCodeEventName.TaskTokenUsageUpdated, task.taskId, tokenUsage, task.toolUsage)
+			// and properly updates the snapshot to prevent redundant emissions
+			task.emitFinalTokenUsageUpdate()
 
 			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, task.toolUsage)
+			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
@@ -203,6 +203,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 					undefined,
 					false,
 				)
+
+				// Force final token usage update before emitting TaskCompleted for consistency
+				task.emitFinalTokenUsageUpdate()
 
 				TelemetryService.instance.captureTaskCompleted(task.taskId)
 				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
