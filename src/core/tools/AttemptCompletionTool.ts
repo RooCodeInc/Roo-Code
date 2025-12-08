@@ -85,8 +85,14 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			task.consecutiveMistakeCount = 0
 
 			await task.say("completion_result", result, undefined, false)
+
+			// Force final token usage update before emitting TaskCompleted
+			// This ensures the most recent stats are captured regardless of throttle timer
+			const tokenUsage = task.getTokenUsage()
+			task.emit(RooCodeEventName.TaskTokenUsageUpdated, task.taskId, tokenUsage, task.toolUsage)
+
 			TelemetryService.instance.captureTaskCompleted(task.taskId)
-			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
+			task.emit(RooCodeEventName.TaskCompleted, task.taskId, tokenUsage, task.toolUsage)
 
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {

@@ -324,6 +324,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private tokenUsageSnapshot?: TokenUsage
 	private tokenUsageSnapshotAt?: number
 
+	// Token Usage Throttling
+	private lastTokenUsageEmitTime?: number
+	private readonly TOKEN_USAGE_EMIT_INTERVAL_MS = 2000 // 2 seconds
+
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
 
@@ -920,10 +924,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				initialStatus: this.initialStatus,
 			})
 
-			if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
-				this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage)
-				this.tokenUsageSnapshot = undefined
-				this.tokenUsageSnapshotAt = undefined
+			const now = Date.now()
+			const timeSinceLastEmit = this.lastTokenUsageEmitTime ? now - this.lastTokenUsageEmitTime : Infinity
+
+			const shouldEmitDueToThrottle = timeSinceLastEmit >= this.TOKEN_USAGE_EMIT_INTERVAL_MS
+
+			if (shouldEmitDueToThrottle && hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
+				this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
+				this.lastTokenUsageEmitTime = now
+				this.tokenUsageSnapshot = tokenUsage
+				this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
 			}
 
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
@@ -1842,6 +1852,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	/**
+	 * Force emit a final token usage update, ignoring throttle.
+	 * Called before task completion or abort to ensure final stats are captured.
+	 */
+	private emitFinalTokenUsageUpdate(): void {
+		const tokenUsage = this.getTokenUsage()
+		if (hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)) {
+			this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
+			this.tokenUsageSnapshot = tokenUsage
+			this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
+			this.lastTokenUsageEmitTime = Date.now()
+		}
+	}
+
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
 
@@ -1851,6 +1875,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.abort = true
+
+		// Force final token usage update before abort event
+		this.emitFinalTokenUsageUpdate()
+
 		this.emit(RooCodeEventName.TaskAborted)
 
 		try {

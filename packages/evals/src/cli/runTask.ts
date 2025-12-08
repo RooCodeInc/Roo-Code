@@ -373,6 +373,9 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			const { totalCost, totalTokensIn, totalTokensOut, contextTokens, totalCacheWrites, totalCacheReads } =
 				payload[1]
 
+			// For both TaskTokenUsageUpdated and TaskCompleted: toolUsage is payload[2]
+			const toolUsage = payload[2]
+
 			await updateTaskMetrics(taskMetricsId, {
 				cost: totalCost,
 				tokensIn: totalTokensIn,
@@ -381,12 +384,8 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				duration,
 				cacheWrites: totalCacheWrites ?? 0,
 				cacheReads: totalCacheReads ?? 0,
+				toolUsage, // Now included in every update
 			})
-		}
-
-		if (eventName === RooCodeEventName.TaskCompleted && taskMetricsId) {
-			const toolUsage = payload[2]
-			await updateTaskMetrics(taskMetricsId, { toolUsage })
 		}
 
 		if (eventName === RooCodeEventName.TaskAborted) {

@@ -246,8 +246,8 @@ export class ClineProvider
 			const onTaskUnpaused = (taskId: string) => this.emit(RooCodeEventName.TaskUnpaused, taskId)
 			const onTaskSpawned = (taskId: string) => this.emit(RooCodeEventName.TaskSpawned, taskId)
 			const onTaskUserMessage = (taskId: string) => this.emit(RooCodeEventName.TaskUserMessage, taskId)
-			const onTaskTokenUsageUpdated = (taskId: string, tokenUsage: TokenUsage) =>
-				this.emit(RooCodeEventName.TaskTokenUsageUpdated, taskId, tokenUsage)
+			const onTaskTokenUsageUpdated = (taskId: string, tokenUsage: TokenUsage, toolUsage: any) =>
+				this.emit(RooCodeEventName.TaskTokenUsageUpdated, taskId, tokenUsage, toolUsage)
 
 			// Attach the listeners.
 			instance.on(RooCodeEventName.TaskStarted, onTaskStarted)

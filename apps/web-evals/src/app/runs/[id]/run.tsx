@@ -242,7 +242,7 @@ function formatLogContent(log: string): React.ReactNode[] {
 
 export function Run({ run }: { run: Run }) {
 	const runStatus = useRunStatus(run)
-	const { tasks, tokenUsage, usageUpdatedAt, heartbeat, runners } = runStatus
+	const { tasks, tokenUsage, toolUsage, usageUpdatedAt, heartbeat, runners } = runStatus
 
 	const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 	const [taskLog, setTaskLog] = useState<string | null>(null)
@@ -365,11 +365,22 @@ export function Run({ run }: { run: Run }) {
 		const toolTotals = new Map<ToolName, number>()
 
 		for (const task of tasks) {
-			if (task.taskMetrics?.toolUsage) {
+			// Use DB values for finished tasks
+			if (task.finishedAt && task.taskMetrics?.toolUsage) {
 				for (const [toolName, usage] of Object.entries(task.taskMetrics.toolUsage)) {
 					const tool = toolName as ToolName
 					const current = toolTotals.get(tool) ?? 0
 					toolTotals.set(tool, current + usage.attempts)
+				}
+			} else {
+				// Use streaming values for running tasks
+				const streamingToolUsage = toolUsage.get(task.id)
+				if (streamingToolUsage) {
+					for (const [toolName, usage] of Object.entries(streamingToolUsage)) {
+						const tool = toolName as ToolName
+						const current = toolTotals.get(tool) ?? 0
+						toolTotals.set(tool, current + usage.attempts)
+					}
 				}
 			}
 		}
@@ -378,7 +389,7 @@ export function Run({ run }: { run: Run }) {
 		return Array.from(toolTotals.entries())
 			.sort((a, b) => b[1] - a[1])
 			.map(([name]): ToolName => name)
-	}, [tasks])
+	}, [tasks, toolUsage])
 
 	// Compute aggregate stats
 	const stats = useMemo(() => {
@@ -393,8 +404,8 @@ export function Run({ run }: { run: Run }) {
 		let totalCost = 0
 		let totalDuration = 0
 
-		// Aggregate tool usage from completed tasks
-		const toolUsage: ToolUsage = {}
+		// Aggregate tool usage from all tasks (both finished and running)
+		const toolUsageAggregate: ToolUsage = {}
 
 		for (const task of tasks) {
 			const metrics = taskMetrics[task.id]
@@ -405,15 +416,17 @@ export function Run({ run }: { run: Run }) {
 				totalDuration += metrics.duration
 			}
 
-			// Aggregate tool usage from finished tasks with taskMetrics
-			if (task.finishedAt && task.taskMetrics?.toolUsage) {
-				for (const [key, usage] of Object.entries(task.taskMetrics.toolUsage)) {
+			// Aggregate tool usage: use DB values for finished tasks, streaming values for running tasks
+			const taskToolUsage = task.finishedAt ? task.taskMetrics?.toolUsage : toolUsage.get(task.id)
+
+			if (taskToolUsage) {
+				for (const [key, usage] of Object.entries(taskToolUsage)) {
 					const tool = key as keyof ToolUsage
-					if (!toolUsage[tool]) {
-						toolUsage[tool] = { attempts: 0, failures: 0 }
+					if (!toolUsageAggregate[tool]) {
+						toolUsageAggregate[tool] = { attempts: 0, failures: 0 }
 					}
-					toolUsage[tool].attempts += usage.attempts
-					toolUsage[tool].failures += usage.failures
+					toolUsageAggregate[tool].attempts += usage.attempts
+					toolUsageAggregate[tool].failures += usage.failures
 				}
 			}
 		}
@@ -427,10 +440,10 @@ export function Run({ run }: { run: Run }) {
 			totalTokensOut,
 			totalCost,
 			totalDuration,
-			toolUsage,
+			toolUsage: toolUsageAggregate,
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [tasks, taskMetrics, tokenUsage, usageUpdatedAt])
+	}, [tasks, taskMetrics, tokenUsage, toolUsage, usageUpdatedAt])
 
 	// Calculate elapsed time (wall-clock time from run creation to completion or now)
 	const elapsedTime = useMemo(() => {
@@ -655,7 +668,11 @@ export function Run({ run }: { run: Run }) {
 													{formatTokens(taskMetrics[task.id]!.tokensContext)}
 												</TableCell>
 												{toolColumns.map((toolName) => {
-													const usage = task.taskMetrics?.toolUsage?.[toolName]
+													// Use DB values for finished tasks, streaming values for running tasks
+													const usage = task.finishedAt
+														? task.taskMetrics?.toolUsage?.[toolName]
+														: toolUsage.get(task.id)?.[toolName]
+
 													const successRate =
 														usage && usage.attempts > 0
 															? ((usage.attempts - usage.failures) / usage.attempts) * 100
