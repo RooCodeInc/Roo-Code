@@ -551,6 +551,33 @@ export const webviewMessageHandler = async (
 						await vscode.workspace
 							.getConfiguration(Package.name)
 							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "commandExecutionTimeout") {
+						// 命令执行超时设置 / Command execution timeout setting
+						newValue = typeof value === "number" ? Math.max(0, Math.min(600, value)) : 0
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("commandExecutionTimeout", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "serviceReadyTimeout") {
+						// 服务就绪超时设置 / Service ready timeout setting
+						newValue = typeof value === "number" ? Math.max(10, Math.min(600, value)) : 60
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("serviceReadyTimeout", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "serviceCommandPatterns") {
+						// 自定义服务命令模式 / Custom service command patterns
+						const patterns = value ?? []
+						newValue = Array.isArray(patterns)
+							? patterns.filter((p) => typeof p === "string" && p.trim().length > 0)
+							: []
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("serviceCommandPatterns", newValue, vscode.ConfigurationTarget.Global)
+					} else if (key === "enableUniversalCommandTimeout") {
+						// 通用命令超时设置 / Universal command timeout setting
+						newValue = value ?? false
+						await vscode.workspace
+							.getConfiguration(Package.name)
+							.update("enableUniversalCommandTimeout", newValue, vscode.ConfigurationTarget.Global)
 					} else if (key === "ttsEnabled") {
 						newValue = value ?? true
 						setTtsEnabled(newValue as boolean)
@@ -2803,6 +2830,96 @@ export const webviewMessageHandler = async (
 				await provider.postMessageToWebview({
 					type: "commands",
 					commands: [],
+				})
+			}
+			break
+		}
+		case "requestBackgroundServices": {
+			try {
+				const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+				const services = ServiceManager.listServices()
+
+				// Convert to the format expected by the frontend
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			} catch (error) {
+				provider.log(
+					`Error fetching background services: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+				// Send empty array on error
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: [],
+				})
+			}
+			break
+		}
+		case "stopService": {
+			try {
+				const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+				if (!message.serviceId) {
+					provider.log("Error: stopService message missing serviceId")
+					return
+				}
+
+				await ServiceManager.stopService(message.serviceId)
+
+				// Send updated service list
+				const services = ServiceManager.listServices()
+				const serviceList = services.map((service) => ({
+					serviceId: service.serviceId,
+					command: service.command,
+					status: service.status,
+					pid: service.pid,
+					startedAt: service.startedAt,
+					readyAt: service.readyAt,
+				}))
+
+				await provider.postMessageToWebview({
+					type: "backgroundServicesUpdate",
+					services: serviceList,
+				})
+			} catch (error) {
+				provider.log(`Error stopping service: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
+		case "requestServiceLogs": {
+			// 处理获取服务日志的请求
+			try {
+				const { ServiceManager } = await import("../../integrations/terminal/ServiceManager")
+				if (!message.serviceId) {
+					provider.log("Error: requestServiceLogs message missing serviceId")
+					return
+				}
+
+				const logs = ServiceManager.getServiceLogs(message.serviceId, 100)
+
+				await provider.postMessageToWebview({
+					type: "serviceLogsUpdate",
+					serviceId: message.serviceId,
+					logs: logs,
+				})
+			} catch (error) {
+				provider.log(
+					`Error fetching service logs: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+				// Send empty logs on error
+				await provider.postMessageToWebview({
+					type: "serviceLogsUpdate",
+					serviceId: message.serviceId || "",
+					logs: [],
 				})
 			}
 			break

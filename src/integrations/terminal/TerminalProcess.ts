@@ -264,7 +264,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		this.emit("continue")
 	}
 
-	public override abort() {
+	public override async abort(): Promise<void> {
 		if (this.isListening) {
 			// Send SIGINT using CTRL+C
 			this.terminal.terminal.sendText("\x03")
@@ -274,6 +274,16 @@ export class TerminalProcess extends BaseTerminalProcess {
 	public override hasUnretrievedOutput(): boolean {
 		// If the process is still active or has unretrieved content, return true
 		return this.lastRetrievedIndex < this.fullOutput.length
+	}
+
+	/**
+	 * Peek at all unretrieved output including incomplete lines.
+	 * This method does NOT update lastRetrievedIndex.
+	 * 查看所有未检索的输出，包括不完整的行。此方法不会更新 lastRetrievedIndex。
+	 */
+	public override peekAllUnretrievedOutput(): string {
+		const output = this.fullOutput.slice(this.lastRetrievedIndex)
+		return this.removeEscapeSequences(output)
 	}
 
 	public override getUnretrievedOutput(): string {

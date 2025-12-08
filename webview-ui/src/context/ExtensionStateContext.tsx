@@ -75,6 +75,15 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setShowAnnouncement: (value: boolean) => void
 	setAllowedCommands: (value: string[]) => void
 	setDeniedCommands: (value: string[]) => void
+	// 服务模式设置 / Service mode settings
+	commandExecutionTimeout?: number
+	setCommandExecutionTimeout: (value: number) => void
+	serviceReadyTimeout?: number
+	setServiceReadyTimeout: (value: number) => void
+	serviceCommandPatterns?: string[]
+	setServiceCommandPatterns: (value: string[]) => void
+	enableUniversalCommandTimeout?: boolean
+	setEnableUniversalCommandTimeout: (value: boolean) => void
 	setAllowedMaxRequests: (value: number | undefined) => void
 	setAllowedMaxCost: (value: number | undefined) => void
 	setSoundEnabled: (value: boolean) => void
@@ -198,6 +207,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		shouldShowAnnouncement: false,
 		allowedCommands: [],
 		deniedCommands: [],
+		// 服务模式设置默认值 / Service mode settings defaults
+		commandExecutionTimeout: 0,
+		serviceReadyTimeout: 60,
+		serviceCommandPatterns: [],
+		enableUniversalCommandTimeout: false,
 		soundEnabled: false,
 		soundVolume: 0.5,
 		isBrowserSessionActive: false,
@@ -498,6 +512,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setShowAnnouncement: (value) => setState((prevState) => ({ ...prevState, shouldShowAnnouncement: value })),
 		setAllowedCommands: (value) => setState((prevState) => ({ ...prevState, allowedCommands: value })),
 		setDeniedCommands: (value) => setState((prevState) => ({ ...prevState, deniedCommands: value })),
+		// 服务模式设置 setters / Service mode settings setters
+		setCommandExecutionTimeout: (value) =>
+			setState((prevState) => ({ ...prevState, commandExecutionTimeout: value })),
+		setServiceReadyTimeout: (value) => setState((prevState) => ({ ...prevState, serviceReadyTimeout: value })),
+		setServiceCommandPatterns: (value) =>
+			setState((prevState) => ({ ...prevState, serviceCommandPatterns: value })),
+		setEnableUniversalCommandTimeout: (value) =>
+			setState((prevState) => ({ ...prevState, enableUniversalCommandTimeout: value })),
 		setAllowedMaxRequests: (value) => setState((prevState) => ({ ...prevState, allowedMaxRequests: value })),
 		setAllowedMaxCost: (value) => setState((prevState) => ({ ...prevState, allowedMaxCost: value })),
 		setSoundEnabled: (value) => setState((prevState) => ({ ...prevState, soundEnabled: value })),

@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Tidak ada layanan latar belakang yang sedang berjalan saat ini.",
+		"available_services": "Layanan latar belakang yang tersedia:",
+		"usage_hint": "Gunakan get_service_logs dengan service_id tertentu untuk mendapatkan log dari layanan tersebut.",
+		"service_not_found": "Layanan '{{serviceId}}' tidak ditemukan. Gunakan get_service_logs tanpa parameter untuk daftar semua layanan yang berjalan.",
+		"service_info": "Layanan: {{serviceId}}\nPerintah: {{command}}\nStatus: {{status}}",
+		"no_logs": "Belum ada log yang tersedia."
+	},
+	"stop_service": {
+		"no_services": "Tidak ada layanan latar belakang yang sedang berjalan saat ini.",
+		"service_id_required": "Service_id diperlukan untuk menghentikan layanan.",
+		"available_services": "Layanan latar belakang yang tersedia:",
+		"usage_hint": "Gunakan stop_service dengan service_id tertentu untuk menghentikan layanan tersebut.",
+		"service_not_found": "Layanan '{{serviceId}}' tidak ditemukan.",
+		"success": "Layanan '{{serviceId}}' telah berhasil dihentikan.",
+		"partial_success": "Layanan '{{serviceId}}' mungkin tidak sepenuhnya dihentikan.",
+		"stopping": "Menghentikan layanan '{{serviceId}}'.",
+		"error": "Gagal menghentikan layanan '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (baris {{start}}-{{end}})",
 		"definitionsOnly": " (hanya definisi)",

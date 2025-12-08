@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "वर्तमान में कोई बैकग्राउंड सेवाएं नहीं चल रही हैं।",
+		"available_services": "उपलब्ध बैकग्राउंड सेवाएं:",
+		"usage_hint": "किसी विशिष्ट service_id के साथ get_service_logs का उपयोग करके उस सेवा के लॉग प्राप्त करें।",
+		"service_not_found": "सेवा '{{serviceId}}' नहीं मिली। बिना पैरामीटर के get_service_logs का उपयोग करके सभी चल रही सेवाओं की सूची प्राप्त करें।",
+		"service_info": "सेवा: {{serviceId}}\nकमांड: {{command}}\nस्थिति: {{status}}",
+		"no_logs": "अभी तक कोई लॉग उपलब्ध नहीं है।"
+	},
+	"stop_service": {
+		"no_services": "वर्तमान में कोई बैकग्राउंड सेवाएं नहीं चल रही हैं।",
+		"service_id_required": "किसी सेवा को रोकने के लिए service_id आवश्यक है।",
+		"available_services": "उपलब्ध बैकग्राउंड सेवाएं:",
+		"usage_hint": "किसी विशिष्ट service_id के साथ stop_service का उपयोग करके उस सेवा को रोकें।",
+		"service_not_found": "सेवा '{{serviceId}}' नहीं मिली।",
+		"success": "सेवा '{{serviceId}}' सफलतापूर्वक रोकी गई।",
+		"partial_success": "सेवा '{{serviceId}}' पूरी तरह से समाप्त नहीं हुई हो सकती है।",
+		"stopping": "सेवा '{{serviceId}}' रोकी जा रही है।",
+		"error": "सेवा '{{serviceId}}' रोकने में विफल: {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (पंक्तियाँ {{start}}-{{end}})",
 		"definitionsOnly": " (केवल परिभाषाएँ)",

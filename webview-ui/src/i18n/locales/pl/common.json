@@ -4,13 +4,8 @@
 		"reportText": "Pomóż nam ulepszyć aplikację, zgłaszając ten błąd na",
 		"githubText": "naszej stronie GitHub Issues",
 		"copyInstructions": "Skopiuj i wklej poniższy komunikat o błędzie, aby dołączyć go do zgłoszenia:",
-		"errorStack": "Stos błędu:",
+		"errorStack": "Stos błędów:",
 		"componentStack": "Stos komponentów:"
-	},
-	"number_format": {
-		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
 	},
 	"answers": {
 		"yes": "Tak",
@@ -18,6 +13,11 @@
 		"cancel": "Anuluj",
 		"remove": "Usuń",
 		"keep": "Zachowaj"
+	},
+	"number_format": {
+		"thousand_suffix": "k",
+		"million_suffix": "m",
+		"billion_suffix": "b"
 	},
 	"ui": {
 		"search_placeholder": "Szukaj...",
@@ -64,7 +64,7 @@
 			"couldNotOpenGeneric": "Nie można otworzyć pliku!"
 		},
 		"success": {
-			"imageDataUriCopied": "URI danych obrazu skopiowane do schowka"
+			"imageDataUriCopied": "URI danych obrazu skopiowany do schowka"
 		}
 	},
 	"confirmation": {
@@ -100,6 +100,25 @@
 		"wait_checkpoint_long_time": "Czekałeś {{timeout}} sekund na inicjalizację punktu kontrolnego. Jeśli nie potrzebujesz tej funkcji, wyłącz ją w <settingsLink>ustawieniach punktu kontrolnego</settingsLink>.",
 		"init_checkpoint_fail_long_time": "Inicjalizacja punktu kontrolnego trwała ponad {{timeout}} sekund, więc punkty kontrolne zostały wyłączone dla tego zadania. Możesz wyłączyć punkty kontrolne lub wydłużyć czas oczekiwania w <settingsLink>ustawieniach punktu kontrolnego</settingsLink>.",
 		"attempt_completion_tool_failed": "Nie można wykonać attempt_completion, ponieważ poprzednie wywołanie narzędzia nie powiodło się w tym cyklu. Rozwiąż błąd narzędzia przed próbą zakończenia."
+	},
+	"backgroundTasks": {
+		"title": "Zadania w tle",
+		"ariaLabel": "Zadania w tle",
+		"tooltip": "{{count}} zadanie/zadań w tle działa",
+		"stopService": "Zatrzymaj usługę",
+		"showLogs": "Pokaż wyjście terminala",
+		"hideLogs": "Ukryj wyjście terminala",
+		"terminalOutput": "Wyjście terminala",
+		"refreshLogs": "Odśwież logi",
+		"loadingLogs": "Ładowanie logów...",
+		"noLogs": "Brak wyjścia",
+		"status": {
+			"starting": "Uruchamianie",
+			"ready": "Gotowe",
+			"running": "Działa",
+			"stopping": "Zatrzymywanie",
+			"failed": "Niepowodzenie"
+		}
 	},
 	"tasks": {
 		"delegated": "Przekazano do podzadania",

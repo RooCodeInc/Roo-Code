@@ -69,14 +69,14 @@
 	},
 	"confirmation": {
 		"deleteMessage": "Delete Message",
-		"deleteWarning": "Deleting this message will delete all subsequent messages in the conversation. Do you want to proceed?",
+		"deleteWarning": "Deleting this message will delete all subsequent messages in conversation. Do you want to proceed?",
 		"editMessage": "Edit Message",
-		"editWarning": "Editing this message will delete all subsequent messages in the conversation. Do you want to proceed?",
-		"editQuestionWithCheckpoint": "Editing this message will delete all later messages in the conversation. Do you also want to undo all changes back to this checkpoint?",
-		"deleteQuestionWithCheckpoint": "Deleting this message will delete all later messages in the conversation. Do you also want to undo all changes back to this checkpoint?",
+		"editWarning": "Editing this message will delete all subsequent messages in conversation. Do you want to proceed?",
+		"editQuestionWithCheckpoint": "Editing this message will delete all later messages in conversation. Do you also want to undo all changes back to this checkpoint?",
+		"deleteQuestionWithCheckpoint": "Deleting this message will delete all later messages in conversation. Do you also want to undo all changes back to this checkpoint?",
 		"editOnly": "No, edit message only",
 		"deleteOnly": "No, delete message only",
-		"restoreToCheckpoint": "Yes, restore the checkpoint",
+		"restoreToCheckpoint": "Yes, restore checkpoint",
 		"proceed": "Proceed",
 		"dontShowAgain": "Don't show this again"
 	},
@@ -97,9 +97,28 @@
 		"years_ago": "{{count}} years ago"
 	},
 	"errors": {
-		"wait_checkpoint_long_time": "Waited {{timeout}} seconds for checkpoint initialization. If you don't need the checkpoint feature, please turn it off in <settingsLink>the checkpoint settings</settingsLink>.",
+		"wait_checkpoint_long_time": "Waited {{timeout}} seconds for checkpoint initialization. If you don't need checkpoint feature, please turn it off in <settingsLink>the checkpoint settings</settingsLink>.",
 		"init_checkpoint_fail_long_time": "Checkpoint initialization has taken more than {{timeout}} seconds, so checkpoints are disabled for this task. You can disable checkpoints or extend the waiting time in <settingsLink>the checkpoint settings</settingsLink>.",
-		"attempt_completion_tool_failed": "Cannot execute attempt_completion because a previous tool call failed in this turn. Please address the tool failure before attempting completion."
+		"attempt_completion_tool_failed": "Cannot execute attempt_completion because a previous tool call failed in this turn. Please address tool failure before attempting completion."
+	},
+	"backgroundTasks": {
+		"title": "Background Running Tasks",
+		"ariaLabel": "Background Tasks",
+		"tooltip": "{{count}} background task(s) running",
+		"stopService": "Stop Service",
+		"showLogs": "Show terminal output",
+		"hideLogs": "Hide terminal output",
+		"terminalOutput": "Terminal Output",
+		"refreshLogs": "Refresh logs",
+		"loadingLogs": "Loading logs...",
+		"noLogs": "No output yet",
+		"status": {
+			"starting": "Starting",
+			"ready": "Ready",
+			"running": "Running",
+			"stopping": "Stopping",
+			"failed": "Failed"
+		}
 	},
 	"tasks": {
 		"delegated": "Delegated to subtask",

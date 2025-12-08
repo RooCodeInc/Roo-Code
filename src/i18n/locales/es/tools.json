@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Actualmente no hay servicios de fondo en ejecución.",
+		"available_services": "Servicios de fondo disponibles:",
+		"usage_hint": "Usa get_service_logs con un service_id específico para obtener los registros de ese servicio.",
+		"service_not_found": "Servicio '{{serviceId}}' no encontrado. Usa get_service_logs sin parámetros para listar todos los servicios en ejecución.",
+		"service_info": "Servicio: {{serviceId}}\nComando: {{command}}\nEstado: {{status}}",
+		"no_logs": "Aún no hay registros disponibles."
+	},
+	"stop_service": {
+		"no_services": "Actualmente no hay servicios de fondo en ejecución.",
+		"service_id_required": "Se requiere un service_id para detener un servicio.",
+		"available_services": "Servicios de fondo disponibles:",
+		"usage_hint": "Usa stop_service con un service_id específico para detener ese servicio.",
+		"service_not_found": "Servicio '{{serviceId}}' no encontrado.",
+		"success": "El servicio '{{serviceId}}' se ha detenido exitosamente.",
+		"partial_success": "El servicio '{{serviceId}}' puede no haberse terminado completamente.",
+		"stopping": "Deteniendo el servicio '{{serviceId}}'.",
+		"error": "Error al detener el servicio '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (líneas {{start}}-{{end}})",
 		"definitionsOnly": " (solo definiciones)",

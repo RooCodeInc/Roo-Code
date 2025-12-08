@@ -175,6 +175,9 @@ export interface WebviewMessage {
 		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
+		| "requestBackgroundServices"
+		| "stopService"
+		| "requestServiceLogs"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -227,6 +230,7 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	serviceId?: string // For stopService and requestServiceLogs
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

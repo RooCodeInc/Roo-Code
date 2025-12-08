@@ -240,6 +240,27 @@
 			"label": "Todo",
 			"description": "승인 없이 자동으로 할 일 목록이 업데이트됩니다"
 		},
+		"serviceMode": {
+			"title": "서비스 모드 설정",
+			"noTimeout": "타임아웃 없음",
+			"commandTimeout": {
+				"label": "명령 실행 타임아웃",
+				"description": "비서비스 명령이 아닌 경우 완료될 때까지 대기하는 최대 시간(초). npm install과 같은 명령은 이 시간 후 타임아웃됩니다."
+			},
+			"serviceTimeout": {
+				"label": "서비스 준비 타임아웃",
+				"description": "서비스 명령(예: npm run dev)이 준비되었다고 보고할 때까지 대기하는 최대 시간(초). AI는 'listening on port'와 같은 출력을 기다린 후 계속합니다."
+			},
+			"universalTimeout": {
+				"label": "범용 명령 타임아웃 활성화",
+				"description": "활성화되면 타임아웃을 초과한 모든 명령이 백그라운드에서 계속 실행됩니다. 이는 장기 실행 명령을 백그라운드 서비스로 취급합니다."
+			},
+			"patterns": {
+				"label": "사용자 지정 서비스 명령 패턴",
+				"description": "추가적인 명령을 서비스 명령으로 식별하기 위해 정규식 패턴을 추가합니다. 내장 패턴은 이미 70+ 개의 일반적인 서비스 명령(npm run dev, docker-compose up 등)을 감지합니다.",
+				"placeholder": "정규식 패턴 입력 (예: 'node.*server')"
+			}
+		},
 		"apiRequestLimit": {
 			"title": "최대 요청 수",
 			"description": "작업을 계속하기 위한 승인을 요청하기 전에 자동으로 이 수의 API 요청을 수행합니다.",

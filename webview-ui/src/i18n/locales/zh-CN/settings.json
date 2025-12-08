@@ -236,6 +236,27 @@
 			"addButton": "添加",
 			"autoDenied": "前缀为 `{{prefix}}` 的命令已被用户禁止。不要通过运行其他命令来绕过此限制。"
 		},
+		"serviceMode": {
+			"title": "服务模式设置",
+			"noTimeout": "无超时",
+			"commandTimeout": {
+				"label": "命令执行超时",
+				"description": "非服务命令执行的最大等待时间（秒）（0 = 无超时）。如 npm install 等命令将在此时间后超时。"
+			},
+			"serviceTimeout": {
+				"label": "服务就绪超时",
+				"description": "服务命令（如 npm run dev）报告就绪的最大等待时间（秒）。AI 将等待类似 'listening on port' 的输出后继续。"
+			},
+			"universalTimeout": {
+				"label": "启用通用命令超时",
+				"description": "启用后，所有超时的命令将在后台继续运行而不是被终止。这会将长时间运行的命令视为后台服务。"
+			},
+			"patterns": {
+				"label": "自定义服务命令模式",
+				"description": "添加正则表达式模式以识别其他服务命令。内置模式已识别 70+ 种常见服务命令（npm run dev、docker-compose up 等）。",
+				"placeholder": "输入正则表达式（例如 'node.*server'）"
+			}
+		},
 		"updateTodoList": {
 			"label": "待办",
 			"description": "无需批准即可自动更新待办清单"

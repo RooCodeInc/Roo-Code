@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "В настоящее время фоновые службы не выполняются.",
+		"available_services": "Доступные фоновые службы:",
+		"usage_hint": "Используйте get_service_logs с указанным service_id для получения журналов этой службы.",
+		"service_not_found": "Служба '{{serviceId}}' не найдена. Используйте get_service_logs без параметров для списка всех выполняющихся служб.",
+		"service_info": "Служба: {{serviceId}}\nКоманда: {{command}}\nСтатус: {{status}}",
+		"no_logs": "Журналы пока недоступны."
+	},
+	"stop_service": {
+		"no_services": "В настоящее время фоновые службы не выполняются.",
+		"service_id_required": "Требуется service_id для остановки службы.",
+		"available_services": "Доступные фоновые службы:",
+		"usage_hint": "Используйте stop_service с указанным service_id для остановки этой службы.",
+		"service_not_found": "Служба '{{serviceId}}' не найдена.",
+		"success": "Служба '{{serviceId}}' успешно остановлена.",
+		"partial_success": "Служба '{{serviceId}}' может быть не полностью завершена.",
+		"stopping": "Остановка службы '{{serviceId}}'.",
+		"error": "Не удалось остановить службу '{{serviceId}}': {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (строки {{start}}-{{end}})",
 		"definitionsOnly": " (только определения)",

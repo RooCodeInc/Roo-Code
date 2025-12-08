@@ -23,6 +23,8 @@ import { listCodeDefinitionNamesTool } from "../tools/ListCodeDefinitionNamesToo
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
+import { getServiceLogsTool } from "../tools/GetServiceLogsTool"
+import { stopServiceTool } from "../tools/StopServiceTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
@@ -417,6 +419,10 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "get_service_logs":
+						return `[${block.name}${block.params.service_id ? ` for '${block.params.service_id}'` : ""}]`
+					case "stop_service":
+						return `[${block.name}${block.params.service_id ? ` for '${block.params.service_id}'` : ""}]`
 					default:
 						return `[${block.name}]`
 				}
@@ -1009,6 +1015,26 @@ export async function presentAssistantMessage(cline: Task) {
 				case "generate_image":
 					await checkpointSaveAndMark(cline)
 					await generateImageTool.handle(cline, block as ToolUse<"generate_image">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "get_service_logs":
+					// 获取后台服务日志 - 不需要 checkpoint，这是只读操作
+					await getServiceLogsTool.handle(cline, block as ToolUse<"get_service_logs">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "stop_service":
+					// 停止后台服务 - 不需要 checkpoint，这是控制操作
+					await stopServiceTool.handle(cline, block as ToolUse<"stop_service">, {
 						askApproval,
 						handleError,
 						pushToolResult,

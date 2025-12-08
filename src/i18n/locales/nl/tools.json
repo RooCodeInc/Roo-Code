@@ -1,4 +1,23 @@
 {
+	"get_service_logs": {
+		"no_services": "Er zijn momenteel geen achtergrondservices actief.",
+		"available_services": "Beschikbare achtergrondservices:",
+		"usage_hint": "Gebruik get_service_logs met een specifieke service_id om de logs van die service te krijgen.",
+		"service_not_found": "Service '{{serviceId}}' niet gevonden. Gebruik get_service_logs zonder parameters om alle actieve services weer te geven.",
+		"service_info": "Service: {{serviceId}}\nCommando: {{command}}\nStatus: {{status}}",
+		"no_logs": "Nog geen logs beschikbaar."
+	},
+	"stop_service": {
+		"no_services": "Er zijn momenteel geen achtergrondservices actief.",
+		"service_id_required": "Een service_id is vereist om een service te stoppen.",
+		"available_services": "Beschikbare achtergrondservices:",
+		"usage_hint": "Gebruik stop_service met een specifieke service_id om die service te stoppen.",
+		"service_not_found": "Service '{{serviceId}}' niet gevonden.",
+		"success": "Service '{{serviceId}}' is succesvol gestopt.",
+		"partial_success": "Service '{{serviceId}}' is mogelijk niet volledig beëindigd.",
+		"stopping": "Service '{{serviceId}}' wordt gestopt.",
+		"error": "Service '{{serviceId}}' stoppen mislukt: {{error}}"
+	},
 	"readFile": {
 		"linesRange": " (regels {{start}}-{{end}})",
 		"definitionsOnly": " (alleen definities)",

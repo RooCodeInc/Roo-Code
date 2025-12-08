@@ -236,6 +236,27 @@
 			"addButton": "Thêm",
 			"autoDenied": "Các lệnh có tiền tố `{{prefix}}` đã bị người dùng cấm. Đừng vượt qua hạn chế này bằng cách chạy lệnh khác."
 		},
+		"serviceMode": {
+			"title": "Cài đặt Chế độ Dịch vụ",
+			"noTimeout": "Không có thời gian chờ",
+			"commandTimeout": {
+				"label": "Thời gian chờ thực thi lệnh",
+				"description": "Thời gian tối đa tính bằng giây để đợi các lệnh không phải dịch vụ hoàn tất (0 = không có thời gian chờ). Các lệnh như npm install sẽ hết thời gian sau khoảng thời gian này."
+			},
+			"serviceTimeout": {
+				"label": "Thời gian chờ sẵn sàng của dịch vụ",
+				"description": "Thời gian tối đa tính bằng giây để đợi các lệnh dịch vụ (như npm run dev) báo cáo sẵn sàng. AI sẽ đợi đầu ra như 'listening on port' trước khi tiếp tục."
+			},
+			"universalTimeout": {
+				"label": "Bật Thời gian chờ lệnh phổ quát",
+				"description": "Khi được bật, tất cả các lệnh vượt quá thời gian chờ sẽ tiếp tục chạy ở chế độ nền thay vì bị chấm dứt. Điều này coi các lệnh chạy dài là dịch vụ nền."
+			},
+			"patterns": {
+				"label": "Mẫu lệnh dịch vụ tùy chỉnh",
+				"description": "Thêm các mẫu regex để xác định các lệnh bổ sung là lệnh dịch vụ. Các mẫu tích hợp sẵn đã phát hiện 70+ lệnh dịch vụ phổ biến (npm run dev, docker-compose up, v.v.).",
+				"placeholder": "Nhập mẫu regex (ví dụ: 'node.*server')"
+			}
+		},
 		"updateTodoList": {
 			"label": "Todo",
 			"description": "Danh sách việc cần làm được cập nhật tự động mà không cần phê duyệt"

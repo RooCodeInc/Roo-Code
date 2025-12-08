@@ -85,7 +85,11 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowUpdateTodoList: z.boolean().optional(),
 	allowedCommands: z.array(z.string()).optional(),
 	deniedCommands: z.array(z.string()).optional(),
+	// 服务模式设置 / Service mode settings
 	commandExecutionTimeout: z.number().optional(),
+	serviceReadyTimeout: z.number().optional(),
+	serviceCommandPatterns: z.array(z.string()).optional(),
+	enableUniversalCommandTimeout: z.boolean().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),
 	allowedMaxRequests: z.number().nullish(),
