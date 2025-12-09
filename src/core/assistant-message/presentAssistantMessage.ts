@@ -42,8 +42,6 @@ import { Task } from "../task/Task"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
-import { isNativeProtocol } from "@roo-code/types"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -525,6 +523,7 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					// Add tool_result with text content only
+					// Note: tool_use_id validation happens centrally in addToApiConversationHistory
 					cline.userMessageContent.push({
 						type: "tool_result",
 						tool_use_id: toolCallId,

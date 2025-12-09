@@ -129,6 +129,7 @@ import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHist
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
+import { validateAndFixToolResultIds } from "./validateToolResultIds"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -811,7 +812,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
-			const messageWithTs = { ...message, ts: Date.now() }
+			// For user messages, validate and fix tool_result IDs against the previous assistant message
+			// This is a centralized catch-all that handles all tool_use/tool_result ID mismatches
+			const previousAssistantMessage = this.apiConversationHistory
+				.slice()
+				.reverse()
+				.find((msg) => msg.role === "assistant")
+			const validatedMessage = validateAndFixToolResultIds(message, previousAssistantMessage)
+			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
 		}
 
@@ -849,7 +857,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			role: "user",
 			content: this.userMessageContent,
 		}
-		const userMessageWithTs = { ...userMessage, ts: Date.now() }
+
+		// Validate and fix tool_result IDs against the previous assistant message
+		const previousAssistantMessage = this.apiConversationHistory
+			.slice()
+			.reverse()
+			.find((msg) => msg.role === "assistant")
+		const validatedMessage = validateAndFixToolResultIds(userMessage, previousAssistantMessage)
+		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
 
 		await this.saveApiConversationHistory()
