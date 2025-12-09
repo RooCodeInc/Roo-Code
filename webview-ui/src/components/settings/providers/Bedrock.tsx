@@ -35,6 +35,9 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 		!!apiConfiguration?.apiModelId &&
 		BEDROCK_GLOBAL_INFERENCE_MODEL_IDS.includes(apiConfiguration.apiModelId as any)
 
+	// Check if the selected model supports service tiers
+	const supportsServiceTiers = !!(selectedModelInfo?.tiers && selectedModelInfo.tiers.length > 0)
+
 	// Update the endpoint enabled state when the configuration changes
 	useEffect(() => {
 		setAwsEndpointSelected(!!apiConfiguration?.awsBedrockEndpointEnabled)
@@ -150,6 +153,26 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 					</SelectContent>
 				</Select>
 			</div>
+			{supportsServiceTiers && (
+				<div>
+					<label className="block font-medium mb-1">Service Tier</label>
+					<Select
+						value={apiConfiguration?.awsBedrockServiceTier || "default"}
+						onValueChange={(value) => setApiConfigurationField("awsBedrockServiceTier", value)}>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Select service tier" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="default">Standard (Default)</SelectItem>
+							<SelectItem value="flex">Flex (Lower cost, higher latency)</SelectItem>
+							<SelectItem value="priority">Priority (Lower latency, higher cost)</SelectItem>
+						</SelectContent>
+					</Select>
+					<div className="text-sm text-vscode-descriptionForeground mt-1">
+						Choose the service tier based on your cost and latency requirements
+					</div>
+				</div>
+			)}
 			{supportsGlobalInference && (
 				<Checkbox
 					checked={apiConfiguration?.awsUseGlobalInference || false}

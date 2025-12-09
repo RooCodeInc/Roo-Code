@@ -236,6 +236,8 @@ const bedrockSchema = apiModelIdProviderModelSchema.extend({
 	awsBedrockEndpointEnabled: z.boolean().optional(),
 	awsBedrockEndpoint: z.string().optional(),
 	awsBedrock1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+	// AWS Bedrock service tier for models that support it (STANDARD, FLEX, PRIORITY)
+	awsBedrockServiceTier: serviceTierSchema.optional(),
 })
 
 const vertexSchema = apiModelIdProviderModelSchema.extend({
