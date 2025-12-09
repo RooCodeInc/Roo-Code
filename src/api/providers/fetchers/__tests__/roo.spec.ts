@@ -802,7 +802,7 @@ describe("getRooModels", () => {
 		expect(model.nestedConfig).toEqual({ key: "value" })
 	})
 
-	it("should apply versioned settings on top of plain settings", async () => {
+	it("should apply versioned settings when version matches", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -826,15 +826,11 @@ describe("getRooModels", () => {
 						includedTools: ["apply_patch"],
 						excludedTools: ["write_to_file"],
 					},
-					// Versioned settings for new clients (low version requirement, always met)
+					// Versioned settings keyed by version number (low version - always met)
 					versionedSettings: {
-						includedTools: {
-							value: ["apply_patch", "search_replace"],
-							minPluginVersion: "1.0.0", // Very low version - always met
-						},
-						excludedTools: {
-							value: ["apply_diff", "write_to_file"],
-							minPluginVersion: "1.0.0", // Very low version - always met
+						"1.0.0": {
+							includedTools: ["apply_patch", "search_replace"],
+							excludedTools: ["apply_diff", "write_to_file"],
 						},
 					},
 				},
@@ -848,12 +844,12 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		// Versioned settings should override plain settings
+		// Versioned settings should be used instead of plain settings
 		expect(models["test/versioned-model"].includedTools).toEqual(["apply_patch", "search_replace"])
 		expect(models["test/versioned-model"].excludedTools).toEqual(["apply_diff", "write_to_file"])
 	})
 
-	it("should use plain settings when versioned settings version requirement is not met", async () => {
+	it("should use plain settings when no versioned settings version matches", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -875,11 +871,10 @@ describe("getRooModels", () => {
 					settings: {
 						includedTools: ["apply_patch"],
 					},
+					// Versioned settings keyed by very high version - never met
 					versionedSettings: {
-						// Very high version requirement - never met
-						includedTools: {
-							value: ["apply_patch", "search_replace"],
-							minPluginVersion: "99.0.0",
+						"99.0.0": {
+							includedTools: ["apply_patch", "search_replace"],
 						},
 					},
 				},
@@ -893,7 +888,7 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		// Should use plain settings since versioned requirement is not met
+		// Should use plain settings since no versioned settings match current version
 		expect(models["test/old-version-model"].includedTools).toEqual(["apply_patch"])
 	})
 
@@ -916,11 +911,10 @@ describe("getRooModels", () => {
 						input: "0.0001",
 						output: "0.0002",
 					},
-					// No plain settings, only versionedSettings
+					// No plain settings, only versionedSettings keyed by version
 					versionedSettings: {
-						customFeature: {
-							value: true,
-							minPluginVersion: "1.0.0", // Low version, should always be met
+						"1.0.0": {
+							customFeature: true,
 						},
 					},
 				},
@@ -933,8 +927,53 @@ describe("getRooModels", () => {
 		})
 
 		const models = await getRooModels(baseUrl, apiKey)
-		const model = models["test/versioned-only-model"] as any
+		const model = models["test/versioned-only-model"] as Record<string, unknown>
 
 		expect(model.customFeature).toBe(true)
+	})
+
+	it("should select highest matching version from versionedSettings", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/multi-version-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Multiple Versions",
+					description: "Model with multiple version settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						feature: "default",
+					},
+					// Multiple version keys - should use highest one <= current version
+					versionedSettings: {
+						"99.0.0": { feature: "future" },
+						"3.0.0": { feature: "current" },
+						"2.0.0": { feature: "old" },
+						"1.0.0": { feature: "very_old" },
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+		const model = models["test/multi-version-model"] as Record<string, unknown>
+
+		// Should use 3.0.0 version settings (highest that's <= current plugin version)
+		expect(model.feature).toBe("current")
 	})
 })

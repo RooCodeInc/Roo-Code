@@ -1,15 +1,11 @@
-import { z } from "zod"
+import cmp from "semver-compare"
 
 import { Package } from "../../../shared/package"
 
 /**
- * Schema for a versioned setting value.
- * Allows settings to be gated behind a minimum plugin version.
- *
- * These values should be placed in the `versionedSettings` field of the API response,
- * separate from the plain `settings` field. This ensures backward compatibility:
- * - Old clients read from `settings` (plain values only)
- * - New clients read from both `settings` and `versionedSettings`
+ * Type for versioned settings where the version is the key.
+ * Each version key maps to a settings object that should be used
+ * when the current plugin version is >= that version.
  *
  * Example API response:
  * ```
@@ -18,76 +14,34 @@ import { Package } from "../../../shared/package"
  *     includedTools: ['search_replace']  // Plain value for old clients
  *   },
  *   versionedSettings: {
- *     includedTools: {
- *       value: ['search_replace', 'apply_diff'],  // Enhanced value for new clients
- *       minPluginVersion: '3.36.4',
- *     }
+ *     '3.36.4': {
+ *       includedTools: ['search_replace', 'apply_diff'],  // Enhanced value for 3.36.4+
+ *       excludedTools: ['write_to_file'],
+ *     },
+ *     '3.35.0': {
+ *       includedTools: ['search_replace'],  // Value for 3.35.0 - 3.36.3
+ *     },
  *   }
  * }
  * ```
+ *
+ * The resolver will find the highest version key that is <= the current plugin version
+ * and use those settings. If no version matches, falls back to plain `settings`.
  */
-export const versionedValueSchema = <T extends z.ZodTypeAny>(valueSchema: T) =>
-	z.object({
-		value: valueSchema,
-		minPluginVersion: z.string(),
-	})
+export type VersionedSettings = Record<string, Record<string, unknown>>
 
 /**
- * Type for a versioned setting value.
- */
-export type VersionedValue<T> = {
-	value: T
-	minPluginVersion: string
-}
-
-/**
- * Type guard to check if a value is a versioned value object.
- */
-export function isVersionedValue(value: unknown): value is VersionedValue<unknown> {
-	return (
-		typeof value === "object" &&
-		value !== null &&
-		"value" in value &&
-		"minPluginVersion" in value &&
-		typeof (value as VersionedValue<unknown>).minPluginVersion === "string"
-	)
-}
-
-/**
- * Compares two semantic version strings.
+ * Compares two semantic version strings using semver-compare.
  *
  * @param version1 First version string (e.g., "3.36.4")
  * @param version2 Second version string (e.g., "3.36.0")
- * @returns negative if version1 < version2, 0 if equal, positive if version1 > version2
+ * @returns -1 if version1 < version2, 0 if equal, 1 if version1 > version2
  */
 export function compareSemver(version1: string, version2: string): number {
-	// Parse version strings, handling potential pre-release tags
-	const parseVersion = (v: string): number[] => {
-		// Remove any pre-release suffix (e.g., "-beta.1", "-rc.2")
-		const baseVersion = v.split("-")[0]
-		return baseVersion.split(".").map((part) => {
-			const num = parseInt(part, 10)
-			return isNaN(num) ? 0 : num
-		})
-	}
-
-	const v1Parts = parseVersion(version1)
-	const v2Parts = parseVersion(version2)
-
-	// Pad shorter array with zeros
-	const maxLength = Math.max(v1Parts.length, v2Parts.length)
-	while (v1Parts.length < maxLength) v1Parts.push(0)
-	while (v2Parts.length < maxLength) v2Parts.push(0)
-
-	// Compare each component
-	for (let i = 0; i < maxLength; i++) {
-		const diff = v1Parts[i] - v2Parts[i]
-		if (diff !== 0) {
-			return diff
-		}
-	}
-
-	return 0
+	// Handle pre-release versions by stripping the suffix
+	// semver-compare doesn't handle pre-release properly
+	const stripPrerelease = (v: string): string => v.split("-")[0]
+	return cmp(stripPrerelease(version1), stripPrerelease(version2))
 }
 
 /**
@@ -102,35 +56,58 @@ export function meetsMinimumVersion(minPluginVersion: string, currentVersion: st
 }
 
 /**
- * Resolves versioned settings by extracting values only when the current plugin
- * version meets the minimum version requirement.
+ * Finds the highest version from versionedSettings that is <= the current plugin version.
  *
- * Settings can be either:
- * - Direct values: `{ includedTools: ['search_replace'] }`
- * - Versioned values: `{ includedTools: { value: ['search_replace'], minPluginVersion: '3.36.4' } }`
- *
- * @param settings The settings object with potentially versioned values
+ * @param versionedSettings The versioned settings object with version keys
  * @param currentVersion The current plugin version (defaults to Package.version)
- * @returns A new settings object with versioned values resolved
+ * @returns The highest matching version key, or undefined if none match
  */
-export function resolveVersionedSettings<T extends Record<string, unknown>>(
-	settings: T,
+export function findHighestMatchingVersion(
+	versionedSettings: VersionedSettings,
 	currentVersion: string = Package.version,
-): Partial<T> {
-	const resolved: Partial<T> = {}
+): string | undefined {
+	const versions = Object.keys(versionedSettings)
 
-	for (const [key, value] of Object.entries(settings)) {
-		if (isVersionedValue(value)) {
-			// Only include the setting if the version requirement is met
-			if (meetsMinimumVersion(value.minPluginVersion, currentVersion)) {
-				resolved[key as keyof T] = value.value as T[keyof T]
-			}
-			// If version requirement is not met, the setting is omitted
-		} else {
-			// Non-versioned values are included directly
-			resolved[key as keyof T] = value as T[keyof T]
-		}
+	// Filter to versions that are <= currentVersion
+	const matchingVersions = versions.filter((version) => meetsMinimumVersion(version, currentVersion))
+
+	if (matchingVersions.length === 0) {
+		return undefined
 	}
 
-	return resolved
+	// Sort in descending order and return the highest
+	matchingVersions.sort((a, b) => compareSemver(b, a))
+	return matchingVersions[0]
+}
+
+/**
+ * Resolves versioned settings by finding the highest version that is <= the current
+ * plugin version and returning those settings.
+ *
+ * The versionedSettings structure uses version numbers as keys:
+ * ```
+ * versionedSettings: {
+ *   '3.36.4': { includedTools: ['search_replace'], excludedTools: ['apply_diff'] },
+ *   '3.35.0': { includedTools: ['search_replace'] },
+ * }
+ * ```
+ *
+ * This function finds the highest version key that is <= currentVersion and returns
+ * the corresponding settings object. If no version matches, returns an empty object.
+ *
+ * @param versionedSettings The versioned settings object with version keys
+ * @param currentVersion The current plugin version (defaults to Package.version)
+ * @returns The settings object for the highest matching version, or empty object if none match
+ */
+export function resolveVersionedSettings<T extends Record<string, unknown>>(
+	versionedSettings: VersionedSettings,
+	currentVersion: string = Package.version,
+): Partial<T> {
+	const matchingVersion = findHighestMatchingVersion(versionedSettings, currentVersion)
+
+	if (!matchingVersion) {
+		return {}
+	}
+
+	return versionedSettings[matchingVersion] as Partial<T>
 }

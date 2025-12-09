@@ -4,7 +4,7 @@ import type { ModelRecord } from "../../../shared/api"
 import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
-import { resolveVersionedSettings } from "./versionedSettings"
+import { resolveVersionedSettings, type VersionedSettings } from "./versionedSettings"
 
 /**
  * Fetches available models from the Roo Code Cloud provider
@@ -132,27 +132,31 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				//
 				// Two fields are used for backward compatibility:
 				// - `settings`: Plain values that work with all client versions (e.g., { includedTools: ['search_replace'] })
-				// - `versionedSettings`: Values gated by minPluginVersion (e.g., { includedTools: { value: ['search_replace'], minPluginVersion: '3.36.4' } })
+				// - `versionedSettings`: Version-keyed settings (e.g., { '3.36.4': { includedTools: ['search_replace'] } })
 				//
-				// New clients process both fields - settings first, then overlay resolved versionedSettings.
-				// Old clients only see `settings` and ignore `versionedSettings`.
+				// New clients check versionedSettings first - if a matching version is found, those settings are used.
+				// Otherwise, falls back to plain `settings`. Old clients only see `settings`.
 				const apiSettings = model.settings as Record<string, unknown> | undefined
-				const apiVersionedSettings = model.versionedSettings as Record<string, unknown> | undefined
+				const apiVersionedSettings = model.versionedSettings as VersionedSettings | undefined
 
 				// Start with base model info
 				let modelInfo: ModelInfo = { ...baseModelInfo }
 
-				// Apply plain settings (backward compatible with old clients)
-				if (apiSettings) {
-					modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
-				}
-
-				// Apply versioned settings (new clients only - resolved based on plugin version)
+				// Try to resolve versioned settings first (finds highest version <= current plugin version)
+				// If versioned settings match, use them exclusively (they contain all necessary settings)
+				// Otherwise fall back to plain settings for backward compatibility
 				if (apiVersionedSettings) {
-					const resolvedVersionedSettings = resolveVersionedSettings(
-						apiVersionedSettings,
-					) as Partial<ModelInfo>
-					modelInfo = { ...modelInfo, ...resolvedVersionedSettings }
+					const resolvedVersionedSettings = resolveVersionedSettings<Partial<ModelInfo>>(apiVersionedSettings)
+					if (Object.keys(resolvedVersionedSettings).length > 0) {
+						// Versioned settings found - use them exclusively
+						modelInfo = { ...modelInfo, ...resolvedVersionedSettings }
+					} else if (apiSettings) {
+						// No matching versioned settings - fall back to plain settings
+						modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
+					}
+				} else if (apiSettings) {
+					// No versioned settings at all - use plain settings
+					modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
 				}
 
 				models[modelId] = modelInfo

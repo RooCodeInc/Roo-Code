@@ -43,11 +43,12 @@ export const RooModelSchema = z.object({
 	// Allows the API to configure model-specific defaults like includedTools, excludedTools, reasoningEffort, etc.
 	// These are always direct values (e.g., includedTools: ['search_replace']) for backward compatibility with old clients.
 	settings: z.record(z.string(), z.unknown()).optional(),
-	// Versioned settings that are gated behind minimum plugin versions.
-	// Each value is an object with { value: T, minPluginVersion: string }.
-	// New clients check this field first and resolve based on current plugin version.
+	// Versioned settings keyed by version number (e.g., '3.36.4').
+	// Each version key maps to a settings object that is used when plugin version >= that version.
+	// New clients find the highest version key <= current version and use those settings.
 	// Old clients ignore this field and use plain values from `settings`.
-	versionedSettings: z.record(z.string(), z.unknown()).optional(),
+	// Example: { '3.36.4': { includedTools: ['search_replace'] }, '3.35.0': { ... } }
+	versionedSettings: z.record(z.string(), z.record(z.string(), z.unknown())).optional(),
 })
 
 export const RooModelsResponseSchema = z.object({

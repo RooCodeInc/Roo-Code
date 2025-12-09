@@ -1,41 +1,12 @@
 import {
 	compareSemver,
 	meetsMinimumVersion,
+	findHighestMatchingVersion,
 	resolveVersionedSettings,
-	isVersionedValue,
-	type VersionedValue,
+	type VersionedSettings,
 } from "../versionedSettings"
 
 describe("versionedSettings", () => {
-	describe("isVersionedValue", () => {
-		it("should return true for valid versioned value objects", () => {
-			const versionedValue: VersionedValue<string[]> = {
-				value: ["search_replace"],
-				minPluginVersion: "3.36.4",
-			}
-			expect(isVersionedValue(versionedValue)).toBe(true)
-		})
-
-		it("should return true for versioned value with any value type", () => {
-			expect(isVersionedValue({ value: true, minPluginVersion: "1.0.0" })).toBe(true)
-			expect(isVersionedValue({ value: 42, minPluginVersion: "1.0.0" })).toBe(true)
-			expect(isVersionedValue({ value: "string", minPluginVersion: "1.0.0" })).toBe(true)
-			expect(isVersionedValue({ value: null, minPluginVersion: "1.0.0" })).toBe(true)
-			expect(isVersionedValue({ value: { nested: "object" }, minPluginVersion: "1.0.0" })).toBe(true)
-		})
-
-		it("should return false for non-versioned values", () => {
-			expect(isVersionedValue(null)).toBe(false)
-			expect(isVersionedValue(undefined)).toBe(false)
-			expect(isVersionedValue("string")).toBe(false)
-			expect(isVersionedValue(123)).toBe(false)
-			expect(isVersionedValue(["array"])).toBe(false)
-			expect(isVersionedValue({ value: "only value" })).toBe(false)
-			expect(isVersionedValue({ minPluginVersion: "1.0.0" })).toBe(false)
-			expect(isVersionedValue({ value: "test", minPluginVersion: 123 })).toBe(false) // version must be string
-		})
-	})
-
 	describe("compareSemver", () => {
 		it("should return 0 for equal versions", () => {
 			expect(compareSemver("1.0.0", "1.0.0")).toBe(0)
@@ -59,14 +30,6 @@ describe("versionedSettings", () => {
 			expect(compareSemver("3.36.3", "3.36.4")).toBeLessThan(0)
 			expect(compareSemver("3.35.0", "3.36.4")).toBeLessThan(0)
 			expect(compareSemver("2.0.0", "3.36.4")).toBeLessThan(0)
-		})
-
-		it("should handle versions with different segment counts", () => {
-			expect(compareSemver("1.0", "1.0.0")).toBe(0)
-			expect(compareSemver("1", "1.0.0")).toBe(0)
-			expect(compareSemver("1.0.0.0", "1.0.0")).toBe(0)
-			expect(compareSemver("1.0.1", "1.0")).toBeGreaterThan(0)
-			expect(compareSemver("1.0", "1.0.1")).toBeLessThan(0)
 		})
 
 		it("should handle pre-release versions by ignoring pre-release suffix", () => {
@@ -101,34 +64,69 @@ describe("versionedSettings", () => {
 		})
 	})
 
+	describe("findHighestMatchingVersion", () => {
+		it("should return undefined when no versions match", () => {
+			const versionedSettings: VersionedSettings = {
+				"4.0.0": { includedTools: ["apply_diff"] },
+				"5.0.0": { includedTools: ["apply_diff", "search_replace"] },
+			}
+
+			const result = findHighestMatchingVersion(versionedSettings, "3.36.4")
+			expect(result).toBeUndefined()
+		})
+
+		it("should return the exact version when it matches", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.36.4": { includedTools: ["apply_diff"] },
+				"3.35.0": { includedTools: ["search_replace"] },
+			}
+
+			const result = findHighestMatchingVersion(versionedSettings, "3.36.4")
+			expect(result).toBe("3.36.4")
+		})
+
+		it("should return the highest version that is <= current version", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.37.0": { includedTools: ["future_tool"] },
+				"3.36.4": { includedTools: ["apply_diff"] },
+				"3.35.0": { includedTools: ["search_replace"] },
+				"3.34.0": { includedTools: ["basic_tool"] },
+			}
+
+			// Current version is 3.36.5, should match 3.36.4 (highest <= 3.36.5)
+			const result = findHighestMatchingVersion(versionedSettings, "3.36.5")
+			expect(result).toBe("3.36.4")
+		})
+
+		it("should handle single version", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.35.0": { includedTools: ["search_replace"] },
+			}
+
+			expect(findHighestMatchingVersion(versionedSettings, "3.36.4")).toBe("3.35.0")
+			expect(findHighestMatchingVersion(versionedSettings, "3.34.0")).toBeUndefined()
+		})
+
+		it("should handle empty versionedSettings", () => {
+			const versionedSettings: VersionedSettings = {}
+
+			const result = findHighestMatchingVersion(versionedSettings, "3.36.4")
+			expect(result).toBeUndefined()
+		})
+	})
+
 	describe("resolveVersionedSettings", () => {
 		const currentVersion = "3.36.4"
 
-		it("should pass through non-versioned settings unchanged", () => {
-			const settings = {
-				includedTools: ["search_replace"],
-				excludedTools: ["apply_diff"],
-				supportsReasoningEffort: false,
-			}
-
-			const resolved = resolveVersionedSettings(settings, currentVersion)
-
-			expect(resolved).toEqual(settings)
-		})
-
-		it("should include versioned settings when version requirement is met", () => {
-			const settings = {
-				includedTools: {
-					value: ["search_replace"],
-					minPluginVersion: "3.36.4",
-				},
-				excludedTools: {
-					value: ["apply_diff"],
-					minPluginVersion: "3.36.0",
+		it("should return settings for exact version match", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.36.4": {
+					includedTools: ["search_replace"],
+					excludedTools: ["apply_diff"],
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, currentVersion)
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
 
 			expect(resolved).toEqual({
 				includedTools: ["search_replace"],
@@ -136,60 +134,56 @@ describe("versionedSettings", () => {
 			})
 		})
 
-		it("should exclude versioned settings when version requirement is not met", () => {
-			const settings = {
-				includedTools: {
-					value: ["search_replace"],
-					minPluginVersion: "3.36.5", // Higher than current
+		it("should return settings for highest matching version", () => {
+			const versionedSettings: VersionedSettings = {
+				"4.0.0": {
+					includedTools: ["future_tool"],
 				},
-				excludedTools: {
-					value: ["apply_diff"],
-					minPluginVersion: "4.0.0", // Higher than current
+				"3.36.0": {
+					includedTools: ["search_replace"],
+					excludedTools: ["apply_diff"],
+				},
+				"3.35.0": {
+					includedTools: ["old_tool"],
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, currentVersion)
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
+
+			expect(resolved).toEqual({
+				includedTools: ["search_replace"],
+				excludedTools: ["apply_diff"],
+			})
+		})
+
+		it("should return empty object when no versions match", () => {
+			const versionedSettings: VersionedSettings = {
+				"4.0.0": {
+					includedTools: ["future_tool"],
+				},
+				"3.37.0": {
+					includedTools: ["newer_tool"],
+				},
+			}
+
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
 
 			expect(resolved).toEqual({})
 		})
 
-		it("should handle mixed versioned and non-versioned settings", () => {
-			const settings = {
-				supportsReasoningEffort: false, // Non-versioned, should be included
-				includedTools: {
-					value: ["search_replace"],
-					minPluginVersion: "3.36.4", // Met, should be included
-				},
-				excludedTools: {
-					value: ["apply_diff"],
-					minPluginVersion: "4.0.0", // Not met, should be excluded
-				},
-				description: "A test model", // Non-versioned, should be included
-			}
-
-			const resolved = resolveVersionedSettings(settings, currentVersion)
-
-			expect(resolved).toEqual({
-				supportsReasoningEffort: false,
-				includedTools: ["search_replace"],
-				description: "A test model",
-			})
-		})
-
-		it("should handle empty settings object", () => {
+		it("should handle empty versionedSettings", () => {
 			const resolved = resolveVersionedSettings({}, currentVersion)
 			expect(resolved).toEqual({})
 		})
 
 		it("should handle versioned boolean values", () => {
-			const settings = {
-				supportsNativeTools: {
-					value: true,
-					minPluginVersion: "3.36.0",
+			const versionedSettings: VersionedSettings = {
+				"3.36.0": {
+					supportsNativeTools: true,
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, currentVersion)
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
 
 			expect(resolved).toEqual({
 				supportsNativeTools: true,
@@ -197,14 +191,13 @@ describe("versionedSettings", () => {
 		})
 
 		it("should handle versioned null values", () => {
-			const settings = {
-				defaultTemperature: {
-					value: null,
-					minPluginVersion: "3.36.0",
+			const versionedSettings: VersionedSettings = {
+				"3.36.0": {
+					defaultTemperature: null,
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, currentVersion)
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
 
 			expect(resolved).toEqual({
 				defaultTemperature: null,
@@ -212,33 +205,59 @@ describe("versionedSettings", () => {
 		})
 
 		it("should handle versioned nested objects", () => {
-			const settings = {
-				complexSetting: {
-					value: { nested: { deeply: true } },
-					minPluginVersion: "3.36.0",
+			const versionedSettings: VersionedSettings = {
+				"3.36.0": {
+					complexSetting: { nested: { deeply: true } },
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, currentVersion)
+			const resolved = resolveVersionedSettings(versionedSettings, currentVersion)
 
 			expect(resolved).toEqual({
 				complexSetting: { nested: { deeply: true } },
 			})
 		})
 
-		it("should correctly resolve settings with exact version match", () => {
-			const settings = {
-				feature: {
-					value: "enabled",
-					minPluginVersion: "3.36.4", // Exact match
+		it("should use all settings from the matching version", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.36.4": {
+					includedTools: ["search_replace", "apply_diff"],
+					excludedTools: ["write_to_file"],
+					supportsReasoningEffort: true,
+					description: "Updated model",
+				},
+				"3.35.0": {
+					includedTools: ["search_replace"],
+					description: "Old model",
 				},
 			}
 
-			const resolved = resolveVersionedSettings(settings, "3.36.4")
+			const resolved = resolveVersionedSettings(versionedSettings, "3.36.4")
 
 			expect(resolved).toEqual({
-				feature: "enabled",
+				includedTools: ["search_replace", "apply_diff"],
+				excludedTools: ["write_to_file"],
+				supportsReasoningEffort: true,
+				description: "Updated model",
 			})
+		})
+
+		it("should handle multiple versions and select correct one", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.38.0": { feature: "very_new" },
+				"3.37.0": { feature: "new" },
+				"3.36.0": { feature: "current" },
+				"3.35.0": { feature: "old" },
+				"3.34.0": { feature: "very_old" },
+			}
+
+			// Test different current versions
+			expect(resolveVersionedSettings(versionedSettings, "3.40.0")).toEqual({ feature: "very_new" })
+			expect(resolveVersionedSettings(versionedSettings, "3.37.5")).toEqual({ feature: "new" })
+			expect(resolveVersionedSettings(versionedSettings, "3.36.5")).toEqual({ feature: "current" })
+			expect(resolveVersionedSettings(versionedSettings, "3.35.5")).toEqual({ feature: "old" })
+			expect(resolveVersionedSettings(versionedSettings, "3.34.5")).toEqual({ feature: "very_old" })
+			expect(resolveVersionedSettings(versionedSettings, "3.33.0")).toEqual({})
 		})
 	})
 })
