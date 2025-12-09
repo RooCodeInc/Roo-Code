@@ -4,6 +4,7 @@ import type { ModelRecord } from "../../../shared/api"
 import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
+import { resolveVersionedSettings } from "./versionedSettings"
 
 /**
  * Fetches available models from the Roo Code Cloud provider
@@ -128,9 +129,18 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Apply API-provided settings on top of base model info
 				// Settings allow the proxy to dynamically configure model-specific options
 				// like includedTools, excludedTools, reasoningEffort, etc.
-				const apiSettings = model.settings as Partial<ModelInfo> | undefined
+				// Settings can be versioned with minPluginVersion to gate features by plugin version:
+				// - Direct values: { includedTools: ['search_replace'] }
+				// - Versioned values: { includedTools: { value: ['search_replace'], minPluginVersion: '3.36.4' } }
+				const apiSettings = model.settings as Record<string, unknown> | undefined
 
-				models[modelId] = apiSettings ? { ...baseModelInfo, ...apiSettings } : baseModelInfo
+				if (apiSettings) {
+					// Resolve versioned settings based on current plugin version
+					const resolvedSettings = resolveVersionedSettings(apiSettings) as Partial<ModelInfo>
+					models[modelId] = { ...baseModelInfo, ...resolvedSettings }
+				} else {
+					models[modelId] = baseModelInfo
+				}
 			}
 
 			return models
