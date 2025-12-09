@@ -94,6 +94,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			clineMessages,
 			commands,
 			cloudUserInfo,
+			alwaysRunEnhancePrompt,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -123,6 +124,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			return () => document.removeEventListener("mousedown", handleClickOutside)
 		}, [showDropdown])
 
+		const [pendingSend, setPendingSend] = useState(false)
+
 		// Handle enhanced prompt response and search results.
 		useEffect(() => {
 			const messageHandler = (event: MessageEvent) => {
@@ -151,6 +154,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 
 					setIsEnhancingPrompt(false)
+
+					// If we were waiting to send after enhancement, send now
+					if (pendingSend) {
+						setPendingSend(false)
+						onSend()
+					}
 				} else if (message.type === "insertTextIntoTextarea") {
 					if (message.text && textAreaRef.current) {
 						// Insert the command text at the current cursor position
@@ -201,7 +210,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [setInputValue, searchRequestId, inputValue])
+		}, [setInputValue, searchRequestId, inputValue, pendingSend, onSend])
 
 		const [isDraggingOver, setIsDraggingOver] = useState(false)
 		const [textAreaBaseHeight, setTextAreaBaseHeight] = useState<number | undefined>(undefined)
@@ -474,10 +483,19 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
 					event.preventDefault()
-
-					// Always call onSend - let ChatView handle queueing when disabled
 					resetHistoryNavigation()
-					onSend()
+
+					// Check if we should auto-enhance first
+					const trimmedInput = inputValue.trim()
+					if (alwaysRunEnhancePrompt && trimmedInput && clineMessages?.length === 0) {
+						// This is a new task and auto-enhance is enabled
+						setIsEnhancingPrompt(true)
+						setPendingSend(true)
+						vscode.postMessage({ type: "enhancePrompt" as const, text: trimmedInput })
+					} else {
+						// Normal send without enhancement
+						onSend()
+					}
 				}
 
 				if (event.key === "Backspace" && !isComposing) {
@@ -541,6 +559,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				alwaysRunEnhancePrompt,
+				clineMessages?.length,
 			],
 		)
 
