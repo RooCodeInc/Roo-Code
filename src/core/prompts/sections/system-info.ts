@@ -4,11 +4,34 @@ import osName from "os-name"
 import { getShell } from "../../../utils/shell"
 
 export function getSystemInfoSection(cwd: string): string {
+	// Try to get detailed OS name, but fall back to basic info if it fails
+	// This prevents ENOENT errors on Windows when PowerShell isn't available
+	let operatingSystemInfo: string
+	try {
+		operatingSystemInfo = osName()
+	} catch (error) {
+		// Fallback to basic OS info from Node's built-in os module
+		const platform = os.platform()
+		const release = os.release()
+		const type = os.type()
+
+		// Create a readable OS string based on platform
+		if (platform === "win32") {
+			operatingSystemInfo = `Windows ${release}`
+		} else if (platform === "darwin") {
+			operatingSystemInfo = `macOS ${release}`
+		} else if (platform === "linux") {
+			operatingSystemInfo = `Linux ${release}`
+		} else {
+			operatingSystemInfo = `${type} ${release}`
+		}
+	}
+
 	let details = `====
 
 SYSTEM INFORMATION
 
-Operating System: ${osName()}
+Operating System: ${operatingSystemInfo}
 Default Shell: ${getShell()}
 Home Directory: ${os.homedir().toPosix()}
 Current Workspace Directory: ${cwd.toPosix()}
