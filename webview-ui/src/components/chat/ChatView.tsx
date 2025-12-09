@@ -189,6 +189,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		inputValueRef.current = inputValue
 	}, [inputValue])
 
+	// Cancel auto-approval timeout when user starts typing
+	useEffect(() => {
+		// Only send cancel if there's actual input (user is typing)
+		// and we have a pending follow-up question
+		if (inputValue && inputValue.trim().length > 0 && clineAsk === "followup") {
+			vscode.postMessage({ type: "cancelAutoApproval" })
+		}
+	}, [inputValue, clineAsk])
+
 	useEffect(() => {
 		isMountedRef.current = true
 		return () => {
