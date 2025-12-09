@@ -1,5 +1,6 @@
 // npx vitest services/browser/__tests__/BrowserSession.spec.ts
 
+import * as path from "path"
 import { BrowserSession } from "../BrowserSession"
 import { discoverChromeHostUrl, tryChromeHostUrl } from "../browserDiscovery"
 
@@ -396,6 +397,9 @@ describe("cursor visualization", () => {
 	})
 
 	describe("saveScreenshot", () => {
+		// Use a cross-platform workspace path for testing
+		const testWorkspace = path.resolve("/workspace")
+
 		it("should save screenshot to specified path with png format", async () => {
 			const mockFs = await import("fs/promises")
 			const page: any = {
@@ -415,12 +419,12 @@ describe("cursor visualization", () => {
 			const session = new BrowserSession(mockCtx)
 			;(session as any).page = page
 
-			await session.saveScreenshot("screenshots/test.png", "/workspace")
+			await session.saveScreenshot("screenshots/test.png", testWorkspace)
 
-			expect(mockFs.mkdir).toHaveBeenCalledWith("/workspace/screenshots", { recursive: true })
+			expect(mockFs.mkdir).toHaveBeenCalledWith(path.join(testWorkspace, "screenshots"), { recursive: true })
 			expect(page.screenshot).toHaveBeenCalledWith(
 				expect.objectContaining({
-					path: "/workspace/screenshots/test.png",
+					path: path.join(testWorkspace, "screenshots", "test.png"),
 					type: "png",
 				}),
 			)
@@ -444,11 +448,11 @@ describe("cursor visualization", () => {
 			const session = new BrowserSession(mockCtx)
 			;(session as any).page = page
 
-			await session.saveScreenshot("screenshots/test.jpg", "/workspace")
+			await session.saveScreenshot("screenshots/test.jpg", testWorkspace)
 
 			expect(page.screenshot).toHaveBeenCalledWith(
 				expect.objectContaining({
-					path: "/workspace/screenshots/test.jpg",
+					path: path.join(testWorkspace, "screenshots", "test.jpg"),
 					type: "jpeg",
 					quality: 80,
 				}),
@@ -473,11 +477,11 @@ describe("cursor visualization", () => {
 			const session = new BrowserSession(mockCtx)
 			;(session as any).page = page
 
-			await session.saveScreenshot("test.webp", "/workspace")
+			await session.saveScreenshot("test.webp", testWorkspace)
 
 			expect(page.screenshot).toHaveBeenCalledWith(
 				expect.objectContaining({
-					path: "/workspace/test.webp",
+					path: path.join(testWorkspace, "test.webp"),
 					type: "webp",
 					quality: 75,
 				}),
@@ -485,6 +489,8 @@ describe("cursor visualization", () => {
 		})
 
 		it("should handle absolute file paths", async () => {
+			// Create a cross-platform absolute path for testing
+			const absolutePath = path.resolve("/absolute/path/screenshot.png")
 			const page: any = {
 				on: vi.fn(),
 				off: vi.fn(),
@@ -502,11 +508,11 @@ describe("cursor visualization", () => {
 			const session = new BrowserSession(mockCtx)
 			;(session as any).page = page
 
-			await session.saveScreenshot("/absolute/path/screenshot.png", "/workspace")
+			await session.saveScreenshot(absolutePath, testWorkspace)
 
 			expect(page.screenshot).toHaveBeenCalledWith(
 				expect.objectContaining({
-					path: "/absolute/path/screenshot.png",
+					path: absolutePath,
 					type: "png",
 				}),
 			)
