@@ -893,6 +893,8 @@ export async function presentAssistantMessage(cline: Task) {
 							toolProtocol,
 						})
 					}
+					// Save checkpoint after reading files to preserve context
+					await checkpointSaveAndMark(cline)
 					break
 				case "fetch_instructions":
 					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, {
