@@ -432,6 +432,7 @@ export const browserActions = [
 	"scroll_up",
 	"resize",
 	"close",
+	"screenshot",
 ] as const
 
 export type BrowserAction = (typeof browserActions)[number]

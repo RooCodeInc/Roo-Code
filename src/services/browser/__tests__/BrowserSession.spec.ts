@@ -395,6 +395,124 @@ describe("cursor visualization", () => {
 		expect(result.currentMousePosition).toBeUndefined()
 	})
 
+	describe("saveScreenshot", () => {
+		it("should save screenshot to specified path with png format", async () => {
+			const mockFs = await import("fs/promises")
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn(), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			await session.saveScreenshot("screenshots/test.png", "/workspace")
+
+			expect(mockFs.mkdir).toHaveBeenCalledWith("/workspace/screenshots", { recursive: true })
+			expect(page.screenshot).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: "/workspace/screenshots/test.png",
+					type: "png",
+				}),
+			)
+		})
+
+		it("should save screenshot with jpeg format for .jpg extension", async () => {
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn().mockReturnValue(80), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			await session.saveScreenshot("screenshots/test.jpg", "/workspace")
+
+			expect(page.screenshot).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: "/workspace/screenshots/test.jpg",
+					type: "jpeg",
+					quality: 80,
+				}),
+			)
+		})
+
+		it("should save screenshot with webp format", async () => {
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn().mockReturnValue(75), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			await session.saveScreenshot("test.webp", "/workspace")
+
+			expect(page.screenshot).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: "/workspace/test.webp",
+					type: "webp",
+					quality: 75,
+				}),
+			)
+		})
+
+		it("should handle absolute file paths", async () => {
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn(), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			await session.saveScreenshot("/absolute/path/screenshot.png", "/workspace")
+
+			expect(page.screenshot).toHaveBeenCalledWith(
+				expect.objectContaining({
+					path: "/absolute/path/screenshot.png",
+					type: "png",
+				}),
+			)
+		})
+	})
+
 	describe("getViewportSize", () => {
 		it("falls back to configured viewport when no page or last viewport is available", () => {
 			const localCtx: any = {

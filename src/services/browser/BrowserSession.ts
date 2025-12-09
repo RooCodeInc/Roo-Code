@@ -757,6 +757,45 @@ export class BrowserSession {
 	}
 
 	/**
+	 * Determines image type from file extension
+	 */
+	private getImageTypeFromPath(filePath: string): "png" | "jpeg" | "webp" {
+		const ext = path.extname(filePath).toLowerCase()
+		if (ext === ".jpg" || ext === ".jpeg") return "jpeg"
+		if (ext === ".webp") return "webp"
+		return "png"
+	}
+
+	/**
+	 * Takes a screenshot and saves it to the specified file path.
+	 * @param filePath - The destination file path (relative to workspace)
+	 * @param cwd - Current working directory for resolving relative paths
+	 * @returns BrowserActionResult with screenshot data and saved file path
+	 */
+	async saveScreenshot(filePath: string, cwd: string): Promise<BrowserActionResult> {
+		return this.doAction(async (page) => {
+			// Resolve the full path
+			const fullPath = path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath)
+
+			// Ensure directory exists
+			await fs.mkdir(path.dirname(fullPath), { recursive: true })
+
+			// Determine image type from extension
+			const imageType = this.getImageTypeFromPath(filePath)
+
+			// Take screenshot directly to file (more efficient than base64 for file saving)
+			await page.screenshot({
+				path: fullPath,
+				type: imageType,
+				quality:
+					imageType === "png"
+						? undefined
+						: ((this.context.globalState.get("screenshotQuality") as number | undefined) ?? 75),
+			})
+		})
+	}
+
+	/**
 	 * Draws a cursor indicator on the page at the specified position
 	 */
 	private async drawCursorIndicator(page: Page, coordinate: string): Promise<void> {
