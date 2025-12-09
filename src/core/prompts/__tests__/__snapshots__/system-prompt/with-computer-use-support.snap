@@ -555,6 +555,8 @@ Mode-specific Instructions:
 
 **IMPORTANT: Focus on creating clear, actionable todo lists rather than lengthy markdown documents. Use the todo list as your primary planning tool to track and organize the work that needs to be done.**
 
+**CRITICAL: Never provide level of effort time estimates (e.g., hours, days, weeks) for tasks. Focus solely on breaking down the work into clear, actionable steps without estimating how long they will take.**
+
 Rules:
 # Rules from .clinerules-architect:
 Mock mode-specific rules
