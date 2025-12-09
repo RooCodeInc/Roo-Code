@@ -98,9 +98,25 @@ export async function getOllamaModels(
 		} else {
 			console.error(`Error parsing Ollama models response: ${JSON.stringify(parsedResponse.error, null, 2)}`)
 		}
-	} catch (error) {
-		if (error.code === "ECONNREFUSED") {
-			console.warn(`Failed connecting to Ollama at ${baseUrl}`)
+	} catch (error: any) {
+		const errorCode = error.code || ""
+		const errorMessage = error.message || "Unknown error"
+
+		// DNS resolution failures - typically VPN-related for internal endpoints
+		if (errorCode === "ENOTFOUND" || errorMessage.includes("ENOTFOUND")) {
+			console.warn(
+				`Cannot resolve hostname for Ollama at ${baseUrl}. If this is an internal service, please connect to your corporate VPN.`,
+			)
+		}
+		// Connection refused - service is reachable but not accepting connections
+		else if (errorCode === "ECONNREFUSED" || errorMessage.includes("ECONNREFUSED")) {
+			console.warn(`Ollama service refused connection at ${baseUrl}. Please verify Ollama is running.`)
+		}
+		// Connection timeout - often indicates VPN or network stability issues
+		else if (errorCode === "ETIMEDOUT" || errorMessage.includes("ETIMEDOUT")) {
+			console.warn(
+				`Request to Ollama timed out at ${baseUrl}. If using an internal service, verify your VPN connection is stable.`,
+			)
 		} else {
 			console.error(
 				`Error fetching Ollama models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,

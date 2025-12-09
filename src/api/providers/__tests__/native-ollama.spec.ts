@@ -238,7 +238,7 @@ describe("NativeOllamaHandler", () => {
 				for await (const _ of stream) {
 					// consume stream
 				}
-			}).rejects.toThrow("Ollama service is not running")
+			}).rejects.toThrow("Ollama service refused connection")
 		})
 
 		it("should handle model not found errors", async () => {
