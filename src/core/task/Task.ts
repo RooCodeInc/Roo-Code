@@ -861,7 +861,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Validate and fix tool_result IDs against the previous assistant message
-		// Walk backwards to find the previous assistant message without creating intermediate arrays
 		let previousAssistantMessage: Anthropic.MessageParam | undefined
 		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
 			if (this.apiConversationHistory[i].role === "assistant") {
