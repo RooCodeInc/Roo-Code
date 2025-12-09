@@ -203,6 +203,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			let toolCallCounter = 0
 
 			for await (const chunk of result) {
+				// Track whether we processed any content from candidates in this chunk
+				let processedContent = false
+
 				// Track the final structured response (per SDK pattern: candidate.finishReason)
 				if (chunk.candidates && chunk.candidates[0]?.finishReason) {
 					finalResponse = chunk as { responseId?: string }
@@ -234,6 +237,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 								// This is a thinking/reasoning part
 								if (part.text) {
 									yield { type: "reasoning", text: part.text }
+									processedContent = true
 								}
 							} else if (part.functionCall) {
 								// Gemini sends complete function calls in a single chunk
@@ -260,18 +264,21 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 								}
 
 								toolCallCounter++
+								processedContent = true
 							} else {
 								// This is regular content
 								if (part.text) {
 									yield { type: "text", text: part.text }
+									processedContent = true
 								}
 							}
 						}
 					}
 				}
 
-				// Fallback to the original text property if no candidates structure
-				else if (chunk.text) {
+				// Fallback to the original text property only if no content was processed from candidates
+				// This prevents duplicate text emission when both candidates and text are present
+				if (!processedContent && chunk.text) {
 					yield { type: "text", text: chunk.text }
 				}
 
