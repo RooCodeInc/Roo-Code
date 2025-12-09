@@ -813,11 +813,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
 			// For user messages, validate and fix tool_result IDs against the previous assistant message
-			// This is a centralized catch-all that handles all tool_use/tool_result ID mismatches
-			const previousAssistantMessage = this.apiConversationHistory
-				.slice()
-				.reverse()
-				.find((msg) => msg.role === "assistant")
+			let previousAssistantMessage: Anthropic.MessageParam | undefined
+			for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
+				if (this.apiConversationHistory[i].role === "assistant") {
+					previousAssistantMessage = this.apiConversationHistory[i]
+					break
+				}
+			}
 			const validatedMessage = validateAndFixToolResultIds(message, previousAssistantMessage)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
@@ -859,10 +861,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Validate and fix tool_result IDs against the previous assistant message
-		const previousAssistantMessage = this.apiConversationHistory
-			.slice()
-			.reverse()
-			.find((msg) => msg.role === "assistant")
+		// Walk backwards to find the previous assistant message without creating intermediate arrays
+		let previousAssistantMessage: Anthropic.MessageParam | undefined
+		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
+			if (this.apiConversationHistory[i].role === "assistant") {
+				previousAssistantMessage = this.apiConversationHistory[i]
+				break
+			}
+		}
 		const validatedMessage = validateAndFixToolResultIds(userMessage, previousAssistantMessage)
 		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
