@@ -7,9 +7,9 @@ describe("SectionDivider Component", () => {
 		test("应该渲染简单的分隔线", () => {
 			const { container } = render(<SectionDivider />)
 
-			const divider = container.querySelector(".h-px.bg-vscode-input-border.my-1")
+			const divider = container.querySelector(".h-px.bg-vscode-input-border.my-0")
 			expect(divider).toBeInTheDocument()
-			expect(divider).toHaveClass("h-px", "bg-vscode-input-border", "my-1")
+			expect(divider).toHaveClass("h-px", "bg-vscode-input-border", "my-0")
 		})
 
 		test("应该应用自定义 className", () => {
@@ -58,7 +58,7 @@ describe("SectionDivider Component", () => {
 		test("应该应用自定义 className", () => {
 			render(<SectionDivider title="测试标题" className="custom-class" />)
 
-			const container = document.querySelector(".flex.items-center.gap-2.my-1.custom-class")
+			const container = document.querySelector(".flex.items-center.gap-1.my-0.custom-class")
 			expect(container).toBeInTheDocument()
 		})
 	})
@@ -67,7 +67,7 @@ describe("SectionDivider Component", () => {
 		test("容器应该有正确的布局类", () => {
 			render(<SectionDivider title="测试标题" />)
 
-			const container = document.querySelector(".flex.items-center.gap-2.my-1")
+			const container = document.querySelector(".flex.items-center.gap-1.my-0")
 			expect(container).toBeInTheDocument()
 		})
 

@@ -102,13 +102,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Performance monitoring log
 		this.abortController = new AbortController()
 		const requestId = uuidv7()
+		const workflowModes = ["strict", "plan"] as Array<string | undefined>
 		await this.updateModelInfo()
 		const fromWorkflow =
 			metadata?.zgsmWorkflowMode ||
-			metadata?.mode === "strict" ||
-			metadata?.rooTaskMode === "strict" ||
-			metadata?.parentTaskMode === "strict" ||
-			metadata?.zgsmCodeMode === "strict"
+			workflowModes.includes(metadata?.mode) ||
+			workflowModes.includes(metadata?.rooTaskMode) ||
+			workflowModes.includes(metadata?.parentTaskMode) ||
+			workflowModes.includes(metadata?.zgsmCodeMode)
 		this.apiResponseRenderModeInfo = getApiResponseRenderMode()
 		// 1. Cache calculation results and configuration
 		const { info: modelInfo, reasoning } = this.getModel()
@@ -168,9 +169,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				modelInfo,
 				metadata,
 			)
-			if (fromWorkflow) {
-				requestOptions.extra_body.prompt_mode = "strict"
-			}
+			requestOptions.extra_body.prompt_mode = fromWorkflow ? (metadata?.zgsmCodeMode ?? "vibe") : "vibe"
 			const isAuto = this.options.zgsmModelId === autoModeModelId
 			let stream: any
 			let selectedLLM: string | undefined = this.options.zgsmModelId
@@ -222,10 +221,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				modelInfo,
 				metadata,
 			)
-			if (fromWorkflow) {
-				requestOptions.extra_body.prompt_mode = "strict"
-			}
 			let response
+			requestOptions.extra_body.prompt_mode = fromWorkflow ? "strict" : "vibe"
 			try {
 				this.logger.info(`[RequestID]:`, requestId)
 				response = await this.client.chat.completions.create(

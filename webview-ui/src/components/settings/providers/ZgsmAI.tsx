@@ -129,14 +129,9 @@ export const ZgsmAI = ({
 
 		switch (message.type) {
 			case "zgsmModels": {
-				const { openAiModels: updatedModels = [], fullResponseData = [] } = message
+				const { fullResponseData = [] } = message
 				setOpenAiModels(
-					Object.fromEntries(
-						updatedModels.map((modelId) => [
-							modelId,
-							fullResponseData?.find(({ id }) => id === modelId) ?? zgsmModels.default,
-						]),
-					),
+					Object.fromEntries(fullResponseData.map((item) => [item.id, { ...(item ?? zgsmModels.default) }])),
 				)
 				break
 			}

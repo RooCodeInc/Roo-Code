@@ -13,6 +13,9 @@
 	"strict": {
 		"description": "Strict coding workflow: clarify requirements → design → task decomposition → test, self-verify, self-repair. Ideal for complex tasks (High token consumption)."
 	},
+	"plan": {
+		"description": "Strict programming workflow: planning → step-by-step implementation. Ideal for progressive development and task management, ensuring orderly project advancement."
+	},
 	"developmentMode": "Development Mode",
 	"commonFeatures": "Common Features",
 	"providerSignup": {

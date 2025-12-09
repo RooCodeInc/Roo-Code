@@ -19,6 +19,8 @@ CoStrict 是一款免费开源的AI辅助编程工具，支持企业私有化部
 
 </div>
 
+### Jetbrains 插件 (<a href="https://github.com/zgsm-ai/costrict-jetbrains-agent" target="_blank">仓库</a> | <a href="https://costrict.ai/download" target="_blank">下载</a>)
+
 ## 产品特性 Features
 
 - **严肃编程（Strcit Mode）：**

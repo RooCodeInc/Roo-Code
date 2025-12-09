@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName.long%",
 	"description": "%extension.description%",
 	"publisher": "zgsm-ai",
-	"version": "2.0.23",
+	"version": "2.0.24",
 	"icon": "assets/images/shenma_robot_logo_big.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -522,6 +522,14 @@
 				"mac": "cmd+alt+a",
 				"win": "ctrl+alt+a",
 				"linux": "ctrl+alt+a"
+			},
+			{
+				"command": "zgsm-completion.shortKeyCut",
+				"key": "alt+a",
+				"mac": "alt+a",
+				"win": "alt+a",
+				"linux": "alt+a",
+				"when": "editorTextFocus && !editorReadonly && !inlineSuggestionVisible"
 			}
 		],
 		"submenus": [
@@ -561,13 +569,6 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%intelligentCodeCompletion.inlineCompletion.description%"
-				},
-				"IntelligentCodeCompletion.shortCutKeys": {
-					"default": "alt+a",
-					"enum": [
-						"alt+a"
-					],
-					"description": "%intelligentCodeCompletion.shortCutKeys.description%"
 				},
 				"IntelligentCodeCompletion.disableLanguages": {
 					"type": "object",
@@ -882,6 +883,7 @@
 		"ps-tree": "^1.2.0",
 		"puppeteer-chromium-resolver": "^24.0.0",
 		"puppeteer-core": "^23.4.0",
+		"quick-lru": "^7.3.0",
 		"reconnecting-eventsource": "^1.6.4",
 		"safe-stable-stringify": "^2.5.0",
 		"sanitize-filename": "^1.6.3",
@@ -899,6 +901,7 @@
 		"tmp": "^0.2.3",
 		"tree-sitter-wasms": "^0.1.12",
 		"turndown": "^7.2.0",
+		"uri-js": "^4.4.1",
 		"uuid": "^11.1.0",
 		"vscode-material-icons": "^0.1.1",
 		"web-tree-sitter": "^0.25.6",

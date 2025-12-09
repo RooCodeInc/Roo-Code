@@ -867,10 +867,39 @@ export const webviewMessageHandler = async (
 		case "fixCodebase":
 			await provider.fixCodebase()
 			break
-		case "flushRouterModels":
+		case "flushRouterModels": {
+			const { apiConfiguration } = await provider.getState()
 			const routerNameFlush: RouterName = toRouterName(message.text)
-			await flushModels(routerNameFlush, true)
+
+			await flushModels(
+				routerNameFlush,
+				true,
+				apiConfiguration?.apiProvider === "zgsm"
+					? {
+							provider: "zgsm",
+							baseUrl: apiConfiguration?.zgsmBaseUrl,
+							apiKey: apiConfiguration?.zgsmAccessToken,
+							openAiHeaders: apiConfiguration?.openAiHeaders,
+						}
+					: undefined,
+				(models: ModelRecord) => {
+					if (apiConfiguration?.apiProvider === "zgsm") {
+						const openAiModels = [] as string[]
+						const fullResponseData = [] as ModelInfo[]
+						for (const [id, value] of Object.entries(models)) {
+							openAiModels.push(id)
+							fullResponseData.push(value)
+						}
+						provider.postMessageToWebview({
+							type: "zgsmModels",
+							openAiModels,
+							fullResponseData,
+						})
+					}
+				},
+			)
 			break
+		}
 		case "requestRouterModels":
 			const { apiConfiguration } = await provider.getState()
 

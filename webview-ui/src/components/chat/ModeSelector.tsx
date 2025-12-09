@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React from "react"
 import { Fzf } from "fzf"
 import { Check, X } from "lucide-react"
 
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, ToggleSwitch } from "@/components/ui"
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
+import { SelectDropdown } from "@/components/ui/select-dropdown"
 
 import { IconButton } from "./IconButton"
 
@@ -50,33 +51,43 @@ export const ModeSelector = ({
 	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, setZgsmCodeMode, apiConfiguration } =
 		useExtensionState()
 	const { t } = useAppTranslation()
-	const switchMode = useCallback(
-		(slug: ZgsmCodeMode) => {
+	const handleCodeModeChange = React.useCallback(
+		(newMode: string) => {
+			if (apiConfiguration?.apiProvider !== "zgsm") {
+				vscode.postMessage({
+					type: "zgsmProviderTip",
+					values: {
+						tipType: "info",
+						msg: t("settings:codebase.general.onlyCostrictProviderSupport"),
+					},
+				})
+				return
+			}
+
+			const slug = newMode as ZgsmCodeMode
 			setZgsmCodeMode(slug)
 			vscode.postMessage({
 				type: "zgsmCodeMode",
 				text: slug,
 			})
+
+			// Map the mode to the appropriate mode slug
+			let modeSlug: string
+			if (slug === "vibe") {
+				modeSlug = "code"
+			} else if (slug === "plan") {
+				modeSlug = "plan"
+			} else {
+				modeSlug = "strict"
+			}
+
 			vscode.postMessage({
 				type: "mode",
-				text: slug === "vibe" ? "code" : "strict",
+				text: modeSlug,
 			})
 		},
-		[setZgsmCodeMode],
+		[apiConfiguration?.apiProvider, setZgsmCodeMode, t],
 	)
-	const handleCodeModeToggle = React.useCallback(() => {
-		if (apiConfiguration.apiProvider !== "zgsm") {
-			vscode.postMessage({
-				type: "zgsmProviderTip",
-				values: {
-					tipType: "info",
-					msg: t("settings:codebase.general.onlyCostrictProviderSupport"),
-				},
-			})
-			return
-		}
-		switchMode(zgsmCodeMode === "vibe" ? "strict" : "vibe")
-	}, [apiConfiguration?.apiProvider, switchMode, t, zgsmCodeMode])
 	const trackModeSelectorOpened = React.useCallback(() => {
 		// Track telemetry every time the mode selector is opened.
 		telemetryClient.capture(TelemetryEventName.MODE_SELECTOR_OPENED)
@@ -92,7 +103,7 @@ export const ModeSelector = ({
 	const modes = React.useMemo(() => {
 		const allModes = filterModesByZgsmCodeMode(
 			getAllModes(customModes),
-			zgsmCodeMode,
+			zgsmCodeMode || "vibe",
 			apiConfiguration?.apiProvider,
 		)
 		return allModes.map((mode) => ({
@@ -326,7 +337,7 @@ export const ModeSelector = ({
 
 					{/* Bottom bar with buttons on left and title on right */}
 					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
-						<div className="flex flex-row gap-1">
+						<div className="flex flex-row gap-1 items-center">
 							{/* <IconButton
 								iconClass="codicon-extensions"
 								title={t("chat:modeSelector.marketplace")}
@@ -353,35 +364,19 @@ export const ModeSelector = ({
 									setOpen(false)
 								}}
 							/>
-							<label
-								className="flex items-center gap-2 cursor-pointer"
-								onClick={() => {
-									handleCodeModeToggle()
-								}}>
-								<span
-									className={cn(
-										"text-sm font-bold select-none",
-										zgsmCodeMode === "vibe"
-											? "text-vscode-foreground"
-											: "text-vscode-descriptionForeground opacity-50",
-									)}>
-									Vibe
-								</span>
-								<ToggleSwitch
-									checked={zgsmCodeMode === "strict"}
-									aria-label="Toggle auto-approval"
-									onChange={() => {}}
-								/>
-								<span
-									className={cn(
-										"text-sm font-bold select-none",
-										zgsmCodeMode === "strict"
-											? "text-vscode-foreground"
-											: "text-vscode-descriptionForeground opacity-50",
-									)}>
-									Strict
-								</span>
-							</label>
+							<SelectDropdown
+								value={zgsmCodeMode || "vibe"}
+								options={[
+									{ value: "vibe", label: "Vibe" },
+									{ value: "strict", label: "Strict" },
+									{ value: "plan", label: "Plan" },
+								]}
+								onChange={handleCodeModeChange}
+								disabled={apiConfiguration?.apiProvider !== "zgsm"}
+								triggerClassName="h-7 text-xs"
+								disableSearch={true}
+								placeholder="Select mode"
+							/>
 						</div>
 
 						{/* Info icon and title on the right - only show info icon when search bar is visible */}

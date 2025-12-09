@@ -1,3 +1,17 @@
+import { TextDocument, Position } from "vscode"
+/**
+ * Extract prefix and suffix from a document at a given position
+ */
+export function extractPrefixSuffix(document: TextDocument, position: Position): { prefix: string; suffix: string } {
+	const offset = document.offsetAt(position)
+	const text = document.getText()
+
+	return {
+		prefix: text.substring(0, offset),
+		suffix: text.substring(offset),
+	}
+}
+
 export function getDependencyImports(filePath: string, codeContent: string): string[] {
 	// Validate parameters
 	if (!filePath || !codeContent) {
@@ -114,8 +128,18 @@ export function getDependencyImports(filePath: string, codeContent: string): str
 			break
 
 		default:
-			throw new Error(`Unsupported file extension: ${fileExtension}`)
+			console.log(`Unsupported file extension: ${fileExtension}`)
+			break
 	}
 
 	return imports
+}
+
+const rx = /[\s.,/#!$%^&*;:{}=\-_`~()[\]]/g
+export function getSymbolsForSnippet(snippet: string): Set<string> {
+	const symbols = snippet
+		.split(rx)
+		.map((s) => s.trim())
+		.filter((s) => s !== "")
+	return new Set(symbols)
 }

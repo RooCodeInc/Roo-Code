@@ -13,6 +13,9 @@
 	"strict": {
 		"description": "严肃编程，遵从「需求澄清→设计→任务拆解→测试自校验自修复」流程。适配复杂任务 (Token消耗量大)。"
 	},
+	"plan": {
+		"description": "严肃编程，遵从「计划制定→分步实施」流程。适用于渐进式开发和任务管理，确保项目有序推进。"
+	},
 	"developmentMode": "开发模式",
 	"commonFeatures": "常用功能",
 	"providerSignup": {

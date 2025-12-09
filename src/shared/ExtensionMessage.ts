@@ -353,7 +353,7 @@ export type ExtensionState = Pick<
 	enableMcpServerCreation: boolean
 
 	mode: Mode
-	zgsmCodeMode?: "vibe" | "strict"
+	zgsmCodeMode?: "vibe" | "strict" | "raw" | "plan"
 	customModes: ModeConfig[]
 	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true} if diffEnabled)
 

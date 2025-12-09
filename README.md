@@ -19,6 +19,8 @@ Costrict is a **free, open-source AI-assisted programming tool** that supports p
 
 </div>
 
+### Jetbrains plugin (<a href="https://github.com/zgsm-ai/costrict-jetbrains-agent" target="_blank">repo</a> | <a href="https://costrict.ai/download" target="_blank">download</a>)
+
 ## Features
 
 - **Strcit Mode:**

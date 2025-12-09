@@ -16,6 +16,9 @@ vi.mock("@/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
 		hasOpenedModeSelector: false,
 		setHasOpenedModeSelector: vi.fn(),
+		zgsmCodeMode: "vibe",
+		setZgsmCodeMode: vi.fn(),
+		apiConfiguration: { apiProvider: "zgsm" },
 	}),
 }))
 

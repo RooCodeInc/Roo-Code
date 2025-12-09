@@ -17,7 +17,7 @@ import { EXPERIMENT_IDS } from "./experiments"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "./tools"
 
 export type Mode = string
-export type ZgsmCodeMode = "vibe" | "strict"
+export type ZgsmCodeMode = "vibe" | "strict" | "plan" | "raw"
 
 // Helper to extract group name regardless of format
 export function getGroupName(group: GroupEntry): ToolGroup {
@@ -117,11 +117,20 @@ export function filterModesByZgsmCodeMode(
 	apiProvider?: string,
 ): ModeConfig[] {
 	return modes.filter((mode) => {
-		if (mode.apiProvider != null && mode.apiProvider !== apiProvider) return false
+		if (apiProvider === "zgsm") {
+			const modelGroup = mode.zgsmCodeModeGroup ? mode.zgsmCodeModeGroup?.split(",") : []
 
-		if (zgsmCodeMode === "strict") return true
+			if (zgsmCodeMode === "vibe") return !mode.zgsmCodeModeGroup || modelGroup.includes(zgsmCodeMode)
+			return modelGroup.includes(zgsmCodeMode!) || mode.slug === "review"
+		}
 
-		return !mode.workflow
+		// if (mode.apiProvider != null && mode.apiProvider !== apiProvider) {
+		// 	return false
+		// }
+
+		// if (zgsmCodeMode === "strict") return true
+
+		return mode.apiProvider != null && mode.apiProvider !== apiProvider
 	})
 }
 

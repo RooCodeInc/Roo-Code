@@ -51,16 +51,13 @@ const RooTips = () => {
 
 	const tips = [
 		{
-			icon: "codicon-book",
 			click: (e: any) => {
 				e.preventDefault()
 				if (!apiProviderCheck("zgsm")) {
 					return
 				}
-				vscode.postMessage({
-					type: "mode",
-					text: "code",
-				})
+
+				switchMode("vibe", "code")
 				delay(() => {
 					vscode.postMessage({
 						type: "newTask",
@@ -75,7 +72,6 @@ const RooTips = () => {
 			descriptionKey: "rooTips.projectWiki.description",
 		},
 		{
-			icon: "codicon-book",
 			click: (e: any) => {
 				e.preventDefault()
 				if (!apiProviderCheck("zgsm")) {
@@ -96,7 +92,6 @@ const RooTips = () => {
 			descriptionKey: "rooTips.testGuide.description",
 		},
 		{
-			icon: "codicon-debug-all",
 			click: (e?: any) => {
 				e?.preventDefault()
 				vscode.postMessage({
@@ -120,15 +115,41 @@ const RooTips = () => {
 	const providers = [
 		{
 			name: "Vibe",
+			type: "divider",
+			layout: "full",
+			align: "center",
+		},
+		{
+			name: "Vibe",
 			slug: "vibe",
 			description: tWelcome("vibe.description"),
 			switchMode: (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 				e.stopPropagation()
 				switchMode("vibe")
 			},
+			layout: "full",
 		},
 		{
 			name: "Strict",
+			type: "divider",
+			layout: "full",
+			align: "center",
+		},
+		{
+			name: "Plan",
+			slug: "plan",
+			description: tWelcome("plan.description"),
+			switchMode: (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+				e.stopPropagation()
+				if (!apiProviderCheck("zgsm")) {
+					return
+				}
+				switchMode("plan", "plan")
+			},
+			layout: "half",
+		},
+		{
+			name: "Spec",
 			slug: "strict",
 			description: tWelcome("strict.description"),
 			switchMode: (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -138,27 +159,52 @@ const RooTips = () => {
 				}
 				switchMode("strict")
 			},
+			layout: "half",
 		},
-	]
+	] as {
+		name: string
+		slug: ZgsmCodeMode
+		description: string
+		switchMode: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void
+		layout: "full" | "half"
+		type?: "divider"
+		align?: "center"
+	}[]
 
 	return (
 		<div className="relative">
-			<SectionDivider title={tWelcome("developmentMode")} icon="codicon-settings-gear" />
-			<div className="flex flex-row sm:flex-row gap-4">
-				{providers.map((provider, index) => (
-					<div
-						key={`${index}${provider.slug}`}
-						onClick={provider.switchMode}
-						className={`flex-1 border border-vscode-panel-border hover:bg-secondary rounded-md py-3 px-4 flex flex-row gap-3 cursor-pointer transition-all no-underline text-inherit ${zgsmCodeMode === provider.slug ? "border border-vscode-focusBorder outline outline-vscode-focusBorder focus-visible:ring-vscode-focusBorder" : ""}`}>
-						<div>
-							<div className="text-base font-bold text-vscode-foreground">{provider.name}</div>
-							<div className="text-sm text-vscode-descriptionForeground">{provider.description}</div>
+			<SectionDivider title={tWelcome("developmentMode")} icon="codicon-settings-gear" hideLine />
+			<div className="flex flex-row flex-wrap gap-1">
+				{providers.map((provider, index) => {
+					const isFull = provider.layout === "full"
+					const isHalf = provider.layout === "half"
+
+					return provider.type === "divider" ? (
+						<SectionDivider title={provider.name} icon="" className="w-full" align={provider.align} />
+					) : (
+						<div
+							key={`${index}${provider.slug}`}
+							onClick={provider.switchMode}
+							className={[
+								"inline-flex border border-vscode-panel-border hover:bg-secondary rounded-md py-3 px-4 flex-row cursor-pointer transition-all no-underline text-inherit",
+								zgsmCodeMode === provider.slug
+									? "border border-vscode-focusBorder outline outline-vscode-focusBorder focus-visible:ring-vscode-focusBorder"
+									: "",
+								isFull ? "w-full" : "",
+								isHalf ? "w-[calc(50%-0.5rem)]" : "",
+							]
+								.filter(Boolean)
+								.join(" ")}>
+							<div>
+								<div className="text-base font-bold text-vscode-foreground">{provider.name}</div>
+								<div className="text-sm text-vscode-descriptionForeground">{provider.description}</div>
+							</div>
 						</div>
-					</div>
-				))}
+					)
+				})}
 			</div>
 			<SectionDivider title={tWelcome("commonFeatures")} icon="codicon-tools" />
-			<div className="flex flex-wrap gap-4">
+			<div className="flex flex-wrap gap-3">
 				{tips.map((tip, index) => (
 					<StandardTooltip key={`${index}${tip.titleKey}`} content={t(tip.descriptionKey)} maxWidth={200}>
 						<Button variant="outline" onClick={tip.click} className="flex-shrink-0">

@@ -11,7 +11,6 @@
  */
 
 // Re-export all modules
-export * from "./completion"
 export * from "./codelens"
 export * from "./base/common"
 export * from "./base/language"

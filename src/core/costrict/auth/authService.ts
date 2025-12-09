@@ -10,7 +10,7 @@ import { joinUrl } from "../../../utils/joinUrl"
 import { ZgsmAuthStatus, ZgsmAuthTokens, ZgsmLoginState, LoginTokenResponse } from "./types"
 import { generateNewSessionClientId, getClientId } from "../../../utils/getClientId"
 import { sendZgsmLogout } from "./ipc/client"
-import { CompletionStatusBar } from "../completion"
+import { CompletionStatusBar } from "../auto-complete"
 import { t } from "../../../i18n"
 
 let _loginState = ""
@@ -26,6 +26,7 @@ export class ZgsmAuthService {
 	private startLoginTokenPollInterval?: NodeJS.Timeout
 	private disposed = false
 	private userInfo = {} as ZgsmUserInfo
+	private statusBar = CompletionStatusBar.getInstance()
 
 	public static setProvider(clineProvider: ClineProvider): void {
 		ZgsmAuthService.clineProvider = clineProvider
@@ -393,8 +394,7 @@ export class ZgsmAuthService {
 		this.updateUserInfo(tokens.refresh_token)
 		vscode.window.showInformationMessage(`${this.userInfo.name} user logged in successfully`)
 		ZgsmAuthService.clineProvider?.postMessageToWebview?.({ type: "zgsmLogined" })
-		CompletionStatusBar.complete()
-		CompletionStatusBar.resetCommand()
+		this.statusBar.complete()
 	}
 
 	updateUserInfo(token: string) {

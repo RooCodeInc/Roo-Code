@@ -47,9 +47,9 @@
 
 	"intelligentCodeCompletion.enabled.description": "启用智能代码补全",
 	"intelligentCodeCompletion.betaMode.description": "启用测试版功能以获取早期访问权限。请查看版本说明了解功能列表。",
-	"intelligentCodeCompletion.inlineCompletion.description": "启用逐行补全（显示单行建议）",
 	"intelligentCodeCompletion.shortCutKeys.description": "手动触发的快捷键。要修改，请在命令面板中搜索'CoStrict代码补全快捷键'。",
 	"intelligentCodeCompletion.disableLanguages.description": "禁用特定语言的代码补全（将值设置为true以禁用）",
+	"intelligentCodeCompletion.inlineCompletion.description": "启用输入时的内联代码补全建议",
 	"functionQuickCommands.enabled.description": "启用函数快捷命令",
 	"functionQuickCommands.disableLanguages.description": "禁用特定语言的快捷命令（将值设置为true以禁用）",
 	"functionQuickCommands.quickCommandButtons.description": "配置函数上方的快捷命令按钮",

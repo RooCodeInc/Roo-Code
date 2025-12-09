@@ -1,5 +1,26 @@
 # CoStrict Change Log
 
+## [2.0.24]
+
+- Enhance model cache flushing mechanism to support optional configuration parameters
+- Add "Plan" development mode
+- Fix model cache race condition by preserving memory cache during refresh operations
+- Remove deprecated insert_content tool logic and prompts
+- Optimize apply-related tool validation to reduce errors from outdated monitoring rules
+- Optimize bash.exe command rules for double-slash parameter cases
+- Optimize tool invocation prompts for more flexible model tool usage
+- Optimize context compression summary to prevent key information truncation and context corruption loops
+- Optimize file editing behavior: treat identical AI edits as normal rather than errors to proceed with next steps
+- Optimize inline terminal execution/termination logic for conversation stability
+- Fix JetBrains shell integration compatibility (sync default shell changes from IDEA to plugin to avoid mismatched shell commands)
+- Add conversation button to editor opentab top for user-friendly guidance
+- Update gemini-cli gemini-3-pro-preview model
+- Optimize JetBrains shell integration
+- Improve JetBrains workflow compatibility
+- Optimize statistics performance
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/1f7e1ee6304ad16a6261a4be2f233b7c183be29c)
+- Fix known issues
+
 ## [2.0.23]
 
 - Fix welcome page login url

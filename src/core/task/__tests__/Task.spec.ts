@@ -103,6 +103,10 @@ vi.mock("vscode", async (importOriginal) => {
 				appendLine: vi.fn(),
 				show: vi.fn(),
 			}),
+			createStatusBarItem: vi.fn().mockReturnValue({
+				show: vi.fn(),
+				dispose: vi.fn(),
+			}),
 		},
 		workspace: {
 			workspaceFolders: [
@@ -133,6 +137,10 @@ vi.mock("vscode", async (importOriginal) => {
 			from: vi.fn(),
 		},
 		TabInputText: vi.fn(),
+		StatusBarAlignment: {
+			Left: 1,
+			Right: 2,
+		},
 	}
 })
 

@@ -6,7 +6,7 @@ import * as vscode from "vscode"
 import {
 	CoworkflowCodeLens,
 	CoworkflowCommandContext,
-	ContentExtractionContext,
+	// ContentExtractionContext,
 	CoworkflowDocumentType,
 	CoworkflowActionType,
 } from "./types"
@@ -16,7 +16,7 @@ import { type SupportPromptType } from "../../../shared/support-prompt"
 import { ClineProvider } from "../../webview/ClineProvider"
 import { SectionContentExtractor, createContentExtractionContext } from "./SectionContentExtractor"
 import { CospecDiffIntegration } from "./CospecDiffIntegration"
-import { CospecMetadata, CospecMetadataManager } from "./CospecMetadataManager"
+import { CospecMetadataManager } from "./CospecMetadataManager"
 import { SelectionAdapter } from "./SelectionAdapter"
 import path from "path"
 import * as fs from "fs/promises"
