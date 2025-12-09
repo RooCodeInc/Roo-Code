@@ -374,7 +374,6 @@ export function Run({ run }: { run: Run }) {
 		})
 
 		return metrics
-		// tokenUsage ref is stable; usageUpdatedAt triggers recomputation when Map contents change
 	}, [tasks, tokenUsage, usageUpdatedAt])
 
 	// Collect all unique tool names from all tasks and sort by total attempts
@@ -500,7 +499,6 @@ export function Run({ run }: { run: Run }) {
 
 		// If still running, use current time
 		return Date.now() - startTime
-		// usageUpdatedAt triggers recomputation for running tasks to update elapsed time
 	}, [tasks, run.createdAt, run.taskMetricsId, usageUpdatedAt])
 
 	return (

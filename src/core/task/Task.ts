@@ -1876,28 +1876,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	/**
 	 * Force emit a final token usage update, ignoring throttle.
 	 * Called before task completion or abort to ensure final stats are captured.
-	 *
-	 * This does two things:
-	 * 1. Flushes any pending debounced emit
-	 * 2. If no pending emit was flushed, directly checks and emits if there are changes
+	 * Triggers the debounce with current values and immediately flushes to ensure emit.
 	 */
 	public emitFinalTokenUsageUpdate(): void {
-		// First, flush any pending debounced emit
-		this.debouncedEmitTokenUsage.flush()
-
-		// Then check if there are any remaining changes that weren't captured
-		// (e.g., if tool usage changed but no message was saved to trigger debounce)
 		const tokenUsage = this.getTokenUsage()
-		const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
-		const toolChanged = hasToolUsageChanged(this.toolUsage, this.toolUsageSnapshot)
-
-		if (tokenChanged || toolChanged) {
-			this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
-			this.tokenUsageSnapshot = tokenUsage
-			this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
-			// Deep copy tool usage for snapshot
-			this.toolUsageSnapshot = JSON.parse(JSON.stringify(this.toolUsage))
-		}
+		this.debouncedEmitTokenUsage(tokenUsage, this.toolUsage)
+		this.debouncedEmitTokenUsage.flush()
 	}
 
 	public async abortTask(isAbandoned = false) {
