@@ -289,6 +289,7 @@ export type ExtensionState = Pick<
 	| "includeCurrentTime"
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"
+	| "preReadFileCheckpoint"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

@@ -22,6 +22,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxReadFileLine?: number
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
+	preReadFileCheckpoint?: boolean
 	maxConcurrentFileReads?: number
 	profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
@@ -39,6 +40,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxReadFileLine"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
+		| "preReadFileCheckpoint"
 		| "maxConcurrentFileReads"
 		| "profileThresholds"
 		| "includeDiagnosticMessages"
@@ -61,6 +63,7 @@ export const ContextManagementSettings = ({
 	maxReadFileLine,
 	maxImageFileSize,
 	maxTotalImageSize,
+	preReadFileCheckpoint,
 	maxConcurrentFileReads,
 	profileThresholds = {},
 	includeDiagnosticMessages,
