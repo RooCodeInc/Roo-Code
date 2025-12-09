@@ -18,6 +18,7 @@ import {
 	type ModelInfo,
 	type ProviderSettings,
 	type BedrockModelId,
+	type BedrockServiceTier,
 	bedrockDefaultModelId,
 	bedrockModels,
 	bedrockDefaultPromptRouterModelId,
@@ -27,6 +28,8 @@ import {
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
+	BEDROCK_SERVICE_TIER_MODEL_IDS,
+	BEDROCK_SERVICE_TIER_PRICING,
 } from "@roo-code/types"
 
 import { ApiStream } from "../transform/stream"
@@ -53,13 +56,14 @@ interface BedrockInferenceConfig {
 }
 
 // Define interface for Bedrock additional model request fields
-// This includes thinking configuration, 1M context beta, and other model-specific parameters
+// This includes thinking configuration, 1M context beta, service tier, and other model-specific parameters
 interface BedrockAdditionalModelFields {
 	thinking?: {
 		type: "enabled"
 		budget_tokens: number
 	}
 	anthropic_beta?: string[]
+	service_tier?: BedrockServiceTier
 	[key: string]: any // Add index signature to be compatible with DocumentType
 }
 
@@ -431,6 +435,19 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				additionalModelRequestFields = {} as BedrockAdditionalModelFields
 			}
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
+		}
+
+		// Add service tier if specified and model supports it
+		if (this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)) {
+			if (!additionalModelRequestFields) {
+				additionalModelRequestFields = {} as BedrockAdditionalModelFields
+			}
+			additionalModelRequestFields.service_tier = this.options.awsBedrockServiceTier
+			logger.info("Service tier specified for Bedrock request", {
+				ctx: "bedrock",
+				modelId: modelConfig.id,
+				serviceTier: this.options.awsBedrockServiceTier,
+			})
 		}
 
 		// Build tool configuration if native tools are enabled
@@ -1088,6 +1105,30 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			settings: this.options,
 			defaultTemperature: BEDROCK_DEFAULT_TEMPERATURE,
 		})
+
+		// Apply service tier pricing if specified and model supports it
+		const baseModelIdForTier = this.parseBaseModelId(modelConfig.id)
+		if (this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelIdForTier as any)) {
+			const pricingMultiplier = BEDROCK_SERVICE_TIER_PRICING[this.options.awsBedrockServiceTier]
+			if (pricingMultiplier && pricingMultiplier !== 1.0) {
+				// Apply pricing multiplier to all price fields
+				modelConfig.info = {
+					...modelConfig.info,
+					inputPrice: modelConfig.info.inputPrice
+						? modelConfig.info.inputPrice * pricingMultiplier
+						: undefined,
+					outputPrice: modelConfig.info.outputPrice
+						? modelConfig.info.outputPrice * pricingMultiplier
+						: undefined,
+					cacheWritesPrice: modelConfig.info.cacheWritesPrice
+						? modelConfig.info.cacheWritesPrice * pricingMultiplier
+						: undefined,
+					cacheReadsPrice: modelConfig.info.cacheReadsPrice
+						? modelConfig.info.cacheReadsPrice * pricingMultiplier
+						: undefined,
+				}
+			}
+		}
 
 		// Don't override maxTokens/contextWindow here; handled in getModelById (and includes user overrides)
 		return { ...modelConfig, ...params } as {
