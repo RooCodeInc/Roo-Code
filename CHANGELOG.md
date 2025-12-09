@@ -1,5 +1,11 @@
 # CoStrict Change Log
 
+## [2.0.25]
+
+- Refactor auto-completion
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/c103a4a639c54c67fb3e0210a0fe338c18496154)
+- Fix known issues
+
 ## [2.0.24]
 
 - Enhance model cache flushing mechanism to support optional configuration parameters

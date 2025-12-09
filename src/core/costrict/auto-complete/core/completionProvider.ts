@@ -78,6 +78,11 @@ export class CompletionProvider {
 	private suggestionsHistory: FillInAtCursorSuggestion[] = []
 	private debouncer = new AutocompleteDebouncer()
 	private loggingService = new AutocompleteLoggingService()
+	private serverHostInfo = {
+		protocol: "",
+		status: "",
+		port: "",
+	}
 	private serverHost: string = ""
 	private readonly onError: CompletionErrorHandler
 	constructor(
@@ -91,6 +96,11 @@ export class CompletionProvider {
 	private _getServerHostConfig(defaultValue?: ServiceConfig) {
 		const { services } = getWellKnownConfig()
 		const service = services.find((item: any) => item.name === "completion-agent")
+		if (service) {
+			this.serverHostInfo.port = service?.port || defaultValue?.port
+			this.serverHostInfo.protocol = service?.protocol || "http"
+			this.serverHostInfo.status = service?.status
+		}
 		return `${service?.protocol || "http"}://localhost:${service?.port || defaultValue?.port}`
 	}
 
@@ -223,6 +233,9 @@ export class CompletionProvider {
 			"zgsm-client-id": clientId,
 		}
 		const { prefix, suffix } = input.promptOptions
+		if (!this.serverHostInfo.port || !this.serverHostInfo.protocol) {
+			this.serverHost = this._getServerHostConfig()
+		}
 		const response = await fetch(`${this.serverHost}/completion-agent/api/v1/completions`, {
 			method: "post",
 			headers,
