@@ -9,7 +9,7 @@ import { ExecaTerminal } from "./ExecaTerminal"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
 import { isJetbrainsPlatform } from "../../utils/platform"
 import delay from "delay"
-
+const isWin32 = process.platform === "win32"
 // Although vscode.window.terminals provides a list of all open terminals,
 // there's no way to know whether they're busy or not (exitStatus does not
 // provide useful information for most commands). In order to prevent creating
@@ -102,6 +102,13 @@ export class TerminalRegistry {
 						)
 
 						return
+					}
+					if (!terminal.running) {
+						if (isWin32) {
+							await delay(500)
+						} else {
+							await delay(200)
+						}
 					}
 
 					if (!terminal.running) {

@@ -52,3 +52,6 @@ qdrant_storage/
 .cospec
 .roo/rules/generated_rules.md
 openspec
+
+# Architect plans
+plans/

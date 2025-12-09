@@ -485,6 +485,8 @@ Mode-specific Instructions:
 
 **CRITICAL: Never provide level of effort time estimates (e.g., hours, days, weeks) for tasks. Focus solely on breaking down the work into clear, actionable steps without estimating how long they will take.**
 
+Unless told otherwise, if you want to save a plan file, put it in the /plans directory
+
 Rules:
 # Rules from .clinerules-architect:
 Mock mode-specific rules
