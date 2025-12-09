@@ -3,6 +3,7 @@ import OpenAI from "openai"
 
 import { type XAIModelId, xaiDefaultModelId, xaiModels } from "@roo-code/types"
 
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
@@ -83,6 +84,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta?.content) {
 				yield {
@@ -108,6 +110,15 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 						name: toolCall.function?.name,
 						arguments: toolCall.function?.arguments,
 					}
+				}
+			}
+
+			// Process finish_reason to emit tool_call_end events
+			// This ensures tool calls are finalized even if the stream doesn't properly close
+			if (finishReason) {
+				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+				for (const event of endEvents) {
+					yield event
 				}
 			}
 
