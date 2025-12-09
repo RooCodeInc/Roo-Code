@@ -12,6 +12,7 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
+		defaultToolProtocol: "native",
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
 		cacheWritesPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
@@ -24,6 +25,7 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
+		defaultToolProtocol: "native",
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
 		cacheWritesPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
@@ -32,4 +34,5 @@ export const deepSeekModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
-export const DEEP_SEEK_DEFAULT_TEMPERATURE = 0.6
+// https://api-docs.deepseek.com/quick_start/parameter_settings
+export const DEEP_SEEK_DEFAULT_TEMPERATURE = 0
