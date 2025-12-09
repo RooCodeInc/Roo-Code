@@ -65,6 +65,7 @@ import {
 	CollapsibleTrigger,
 	CollapsibleContent,
 } from "@src/components/ui"
+import { StaticModelSelector } from "./StaticModelSelector"
 
 import {
 	Anthropic,
@@ -797,7 +798,7 @@ const ApiOptions = ({
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
-						<Select
+						<StaticModelSelector
 							value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
 							onValueChange={(value) => {
 								setApiConfigurationField("apiModelId", value)
@@ -812,21 +813,16 @@ const ApiOptions = ({
 								if (selectedProvider === "openai-native") {
 									setApiConfigurationField("reasoningEffort", undefined)
 								}
-							}}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder={t("settings:common.select")} />
-							</SelectTrigger>
-							<SelectContent>
-								{selectedProviderModels.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-								{selectedProvider === "bedrock" && (
-									<SelectItem value="custom-arn">{t("settings:labels.useCustomArn")}</SelectItem>
-								)}
-							</SelectContent>
-						</Select>
+							}}
+							options={[
+								...selectedProviderModels,
+								...(selectedProvider === "bedrock"
+									? [{ value: "custom-arn", label: t("settings:labels.useCustomArn") }]
+									: []),
+							]}
+							placeholder={t("settings:common.select")}
+							data-testid="static-model-selector"
+						/>
 					</div>
 
 					{/* Show error if a deprecated model is selected */}
