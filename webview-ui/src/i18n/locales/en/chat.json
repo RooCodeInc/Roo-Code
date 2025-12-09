@@ -310,7 +310,8 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Released",
+		"title": "Roo Code {{version}} Released",
+		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
 			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
