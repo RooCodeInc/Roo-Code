@@ -121,16 +121,10 @@ export function filterModesByZgsmCodeMode(
 			const modelGroup = mode.zgsmCodeModeGroup ? mode.zgsmCodeModeGroup?.split(",") : []
 
 			if (zgsmCodeMode === "vibe") return !mode.zgsmCodeModeGroup || modelGroup.includes(zgsmCodeMode)
-			return modelGroup.includes(zgsmCodeMode!) || mode.slug === "review"
+			return modelGroup.includes(zgsmCodeMode!)
 		}
 
-		// if (mode.apiProvider != null && mode.apiProvider !== apiProvider) {
-		// 	return false
-		// }
-
-		// if (zgsmCodeMode === "strict") return true
-
-		return mode.apiProvider != null && mode.apiProvider !== apiProvider
+		return !mode.apiProvider || mode.apiProvider === apiProvider
 	})
 }
 

@@ -92,8 +92,9 @@ export async function activate(
 	await initialize(provider, logger)
 	startIPCServer()
 	connectIPC()
-
-	registerAutoCompletionProvider(context, provider)
+	if (!isJetbrains) {
+		registerAutoCompletionProvider(context, provider)
+	}
 	const completionStatusBar = CompletionStatusBar.getInstance()
 
 	const zgsmAuthService = ZgsmAuthService.getInstance()
@@ -197,13 +198,15 @@ export async function activate(
 
 	// Get zgsmRefreshToken without webview resolve
 	const tokens = await ZgsmAuthStorage.getInstance().getTokens()
-	if (tokens?.access_token) {
-		// CompletionStatusBar.initByConfig()
-		completionStatusBar.setEnableState()
-	} else {
-		completionStatusBar.fail({
-			message: OPENAI_CLIENT_NOT_INITIALIZED,
-		})
+	if (!isJetbrains) {
+		if (tokens?.access_token) {
+			// CompletionStatusBar.initByConfig()
+			completionStatusBar.setEnableState()
+		} else {
+			completionStatusBar.fail({
+				message: OPENAI_CLIENT_NOT_INITIALIZED,
+			})
+		}
 	}
 	provider.getState().then((state) => {
 		const size = (state.taskHistory || []).reduce((p, c) => p + Number(c.size), 0)
