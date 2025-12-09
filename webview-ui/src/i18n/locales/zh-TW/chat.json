@@ -314,7 +314,7 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} 已發布",
+		"title": "Roo Code {{version}} 已發布",
 		"support": "請在 <githubLink>GitHub</githubLink> 上為我們按星支持 Roo Code。",
 		"stealthModel": {
 			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援圖像輸入的多功能代理程式編程模型，透過 Roo Code Cloud 提供。",

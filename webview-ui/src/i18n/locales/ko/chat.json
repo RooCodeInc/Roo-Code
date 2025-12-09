@@ -304,7 +304,7 @@
 		"countdownDisplay": "{{count}}초"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} 출시",
+		"title": "Roo Code {{version}} 출시",
 		"support": "<githubLink>GitHub</githubLink>에서 별표를 눌러 Roo Code를 응원해 주세요.",
 		"stealthModel": {
 			"feature": "<bold>기간 한정 무료 스텔스 모델</bold> - Code Supernova: 이제 <bold>1M 토큰 컨텍스트 윈도우</bold>로 업그레이드되었습니다! 이미지 입력을 지원하는 다목적 에이전틱 코딩 모델, Roo Code Cloud를 통해 이용 가능.",

@@ -304,7 +304,7 @@
 		"countdownDisplay": "{{count}}秒"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} リリース",
+		"title": "Roo Code {{version}} リリース",
 		"support": "<githubLink>GitHub</githubLink>でスターを付けてRoo Codeを応援してください。",
 		"stealthModel": {
 			"feature": "<bold>期間限定無料ステルスモデル</bold> - Code Supernova：<bold>1Mトークンコンテキストウィンドウ</bold>にアップグレード！画像入力をサポートする多目的エージェントコーディングモデル、Roo Code Cloud 経由で利用可能。",

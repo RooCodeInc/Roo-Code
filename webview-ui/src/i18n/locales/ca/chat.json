@@ -304,7 +304,7 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Llançat",
+		"title": "Roo Code {{version}} Llançat",
 		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",

@@ -316,7 +316,7 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Dirilis",
+		"title": "Roo Code {{version}} Dirilis",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
