@@ -511,7 +511,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Initialize debounced token usage emit function
 		// Uses debounce with maxWait to achieve throttle-like behavior:
 		// - leading: true  - Emit immediately on first call
-		// - trailing: true - Emit final state when updates stop (eliminates need for emitFinalTokenUsageUpdate logic)
+		// - trailing: true - Emit final state when updates stop
 		// - maxWait        - Ensures at most one emit per interval during rapid updates (throttle behavior)
 		this.debouncedEmitTokenUsage = debounce(
 			(tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
