@@ -129,18 +129,33 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Apply API-provided settings on top of base model info
 				// Settings allow the proxy to dynamically configure model-specific options
 				// like includedTools, excludedTools, reasoningEffort, etc.
-				// Settings can be versioned with minPluginVersion to gate features by plugin version:
-				// - Direct values: { includedTools: ['search_replace'] }
-				// - Versioned values: { includedTools: { value: ['search_replace'], minPluginVersion: '3.36.4' } }
+				//
+				// Two fields are used for backward compatibility:
+				// - `settings`: Plain values that work with all client versions (e.g., { includedTools: ['search_replace'] })
+				// - `versionedSettings`: Values gated by minPluginVersion (e.g., { includedTools: { value: ['search_replace'], minPluginVersion: '3.36.4' } })
+				//
+				// New clients process both fields - settings first, then overlay resolved versionedSettings.
+				// Old clients only see `settings` and ignore `versionedSettings`.
 				const apiSettings = model.settings as Record<string, unknown> | undefined
+				const apiVersionedSettings = model.versionedSettings as Record<string, unknown> | undefined
 
+				// Start with base model info
+				let modelInfo: ModelInfo = { ...baseModelInfo }
+
+				// Apply plain settings (backward compatible with old clients)
 				if (apiSettings) {
-					// Resolve versioned settings based on current plugin version
-					const resolvedSettings = resolveVersionedSettings(apiSettings) as Partial<ModelInfo>
-					models[modelId] = { ...baseModelInfo, ...resolvedSettings }
-				} else {
-					models[modelId] = baseModelInfo
+					modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
 				}
+
+				// Apply versioned settings (new clients only - resolved based on plugin version)
+				if (apiVersionedSettings) {
+					const resolvedVersionedSettings = resolveVersionedSettings(
+						apiVersionedSettings,
+					) as Partial<ModelInfo>
+					modelInfo = { ...modelInfo, ...resolvedVersionedSettings }
+				}
+
+				models[modelId] = modelInfo
 			}
 
 			return models

@@ -801,4 +801,140 @@ describe("getRooModels", () => {
 		expect(model.anotherSetting).toBe(42)
 		expect(model.nestedConfig).toEqual({ key: "value" })
 	})
+
+	it("should apply versioned settings on top of plain settings", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/versioned-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Versioned Settings",
+					description: "Model with versioned settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					// Plain settings for backward compatibility with old clients
+					settings: {
+						includedTools: ["apply_patch"],
+						excludedTools: ["write_to_file"],
+					},
+					// Versioned settings for new clients (low version requirement, always met)
+					versionedSettings: {
+						includedTools: {
+							value: ["apply_patch", "search_replace"],
+							minPluginVersion: "1.0.0", // Very low version - always met
+						},
+						excludedTools: {
+							value: ["apply_diff", "write_to_file"],
+							minPluginVersion: "1.0.0", // Very low version - always met
+						},
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		// Versioned settings should override plain settings
+		expect(models["test/versioned-model"].includedTools).toEqual(["apply_patch", "search_replace"])
+		expect(models["test/versioned-model"].excludedTools).toEqual(["apply_diff", "write_to_file"])
+	})
+
+	it("should use plain settings when versioned settings version requirement is not met", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/old-version-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model for Old Version",
+					description: "Model with versioned settings for newer version",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: ["tool-use"],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						includedTools: ["apply_patch"],
+					},
+					versionedSettings: {
+						// Very high version requirement - never met
+						includedTools: {
+							value: ["apply_patch", "search_replace"],
+							minPluginVersion: "99.0.0",
+						},
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+
+		// Should use plain settings since versioned requirement is not met
+		expect(models["test/old-version-model"].includedTools).toEqual(["apply_patch"])
+	})
+
+	it("should handle model with only versionedSettings and no plain settings", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/versioned-only-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Model with Only Versioned Settings",
+					description: "Model with only versioned settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					tags: [],
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					// No plain settings, only versionedSettings
+					versionedSettings: {
+						customFeature: {
+							value: true,
+							minPluginVersion: "1.0.0", // Low version, should always be met
+						},
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		const models = await getRooModels(baseUrl, apiKey)
+		const model = models["test/versioned-only-model"] as any
+
+		expect(model.customFeature).toBe(true)
+	})
 })

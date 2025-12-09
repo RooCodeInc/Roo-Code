@@ -6,12 +6,22 @@ import { Package } from "../../../shared/package"
  * Schema for a versioned setting value.
  * Allows settings to be gated behind a minimum plugin version.
  *
- * Example:
+ * These values should be placed in the `versionedSettings` field of the API response,
+ * separate from the plain `settings` field. This ensures backward compatibility:
+ * - Old clients read from `settings` (plain values only)
+ * - New clients read from both `settings` and `versionedSettings`
+ *
+ * Example API response:
  * ```
  * {
- *   includedTools: {
- *     value: ['search_replace'],
- *     minPluginVersion: '3.36.4',
+ *   settings: {
+ *     includedTools: ['search_replace']  // Plain value for old clients
+ *   },
+ *   versionedSettings: {
+ *     includedTools: {
+ *       value: ['search_replace', 'apply_diff'],  // Enhanced value for new clients
+ *       minPluginVersion: '3.36.4',
+ *     }
  *   }
  * }
  * ```
