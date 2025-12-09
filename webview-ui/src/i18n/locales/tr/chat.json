@@ -324,8 +324,7 @@
 			"description": "Ajanlar bulutta birlikte çalışır ve web'den veya Slack üzerinden tetiklenebilir.",
 			"tryButton": "Bulut Ajanlarını Dene"
 		},
-		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
-		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
+		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>"
 	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",

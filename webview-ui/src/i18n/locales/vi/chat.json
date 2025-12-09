@@ -324,8 +324,7 @@
 			"description": "Các agent làm việc cùng nhau trên đám mây và có thể được kích hoạt từ web hoặc qua Slack.",
 			"tryButton": "Dùng thử Agents trên Cloud"
 		},
-		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>",
-		"socialLinks": "Tham gia với chúng tôi trên <xLink>X</xLink>, <discordLink>Discord</discordLink>, hoặc <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>"
 	},
 	"browser": {
 		"session": "Phiên trình duyệt",

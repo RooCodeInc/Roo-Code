@@ -330,8 +330,7 @@
 			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
 			"tryButton": "Try Cloud Agents"
 		},
-		"careers": "Also, <careersLink>we're hiring!</careersLink>",
-		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Also, <careersLink>we're hiring!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Thinking",

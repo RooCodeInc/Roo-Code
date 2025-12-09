@@ -323,8 +323,7 @@
 			"description": "Agenci pracują razem w chmurze i mogą być uruchamiani z sieci lub przez Slack.",
 			"tryButton": "Wypróbuj agentów chmurowych"
 		},
-		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>",
-		"socialLinks": "Dołącz do nas na <xLink>X</xLink>, <discordLink>Discord</discordLink>, lub <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Dodatkowo, <careersLink>zatrudniamy!</careersLink>"
 	},
 	"browser": {
 		"session": "Sesja przeglądarki",

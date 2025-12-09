@@ -299,8 +299,7 @@
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
 		},
-		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
-		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Ook, <careersLink>we nemen aan!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",

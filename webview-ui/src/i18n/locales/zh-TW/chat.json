@@ -333,8 +333,7 @@
 			"description": "代理在雲端協同工作，可從網頁或透過 Slack 觸發。",
 			"tryButton": "試用雲端代理"
 		},
-		"careers": "此外，<careersLink>我們正在招募！</careersLink>",
-		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上關注我們 🚀"
+		"careers": "此外，<careersLink>我們正在招募！</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "思考中",

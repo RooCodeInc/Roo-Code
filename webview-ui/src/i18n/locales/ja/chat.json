@@ -323,8 +323,7 @@
 			"description": "エージェントはクラウドで連携して動作し、Web または Slack からトリガーできます。",
 			"tryButton": "クラウドエージェントを試す"
 		},
-		"careers": "また、<careersLink>採用中です！</careersLink>",
-		"socialLinks": "<xLink>X</xLink>、<discordLink>Discord</discordLink>、または<redditLink>r/RooCode</redditLink>でフォローしてください 🚀"
+		"careers": "また、<careersLink>採用中です！</careersLink>"
 	},
 	"browser": {
 		"session": "ブラウザセッション",

@@ -335,8 +335,7 @@
 			"description": "Agen bekerja bersama di cloud dan dapat dipicu dari web atau melalui Slack.",
 			"tryButton": "Coba Agen Cloud"
 		},
-		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
-		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Berpikir",

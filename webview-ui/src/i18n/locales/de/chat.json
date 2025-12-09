@@ -323,8 +323,7 @@
 			"description": "Die Agenten arbeiten zusammen in der Cloud und können vom Web oder über Slack ausgelöst werden.",
 			"tryButton": "Probiere Cloud-Agenten aus"
 		},
-		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>",
-		"socialLinks": "Folge uns auf <xLink>X</xLink>, <discordLink>Discord</discordLink> oder <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>"
 	},
 	"browser": {
 		"session": "Browser-Sitzung",

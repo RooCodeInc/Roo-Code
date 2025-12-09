@@ -323,8 +323,7 @@
 			"description": "Els agents treballen junts al núvol i es poden activar des del web o mitjançant Slack.",
 			"tryButton": "Prova els Agents al Núvol"
 		},
-		"careers": "A més, <careersLink>estem contractant!</careersLink>",
-		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "A més, <careersLink>estem contractant!</careersLink>"
 	},
 	"browser": {
 		"session": "Sessió del navegador",

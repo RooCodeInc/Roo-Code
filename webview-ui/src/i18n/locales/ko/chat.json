@@ -323,8 +323,7 @@
 			"description": "에이전트는 클라우드에서 함께 작동하며 웹 또는 Slack을 통해 트리거할 수 있습니다.",
 			"tryButton": "클라우드 에이전트 사용해보기"
 		},
-		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>",
-		"socialLinks": "<xLink>X</xLink>, <discordLink>Discord</discordLink>, 또는 <redditLink>r/RooCode</redditLink>에서 만나요 🚀"
+		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>"
 	},
 	"browser": {
 		"session": "브라우저 세션",

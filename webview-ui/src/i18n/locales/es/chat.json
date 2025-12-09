@@ -323,8 +323,7 @@
 			"description": "Los agentes trabajan juntos en la nube y se pueden activar desde la web o mediante Slack.",
 			"tryButton": "Prueba los Agentes en la Nube"
 		},
-		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
-		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>"
 	},
 	"browser": {
 		"session": "Sesión del navegador",

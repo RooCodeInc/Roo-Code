@@ -324,8 +324,7 @@
 			"description": "代理在云端协同工作，可从网页或通过 Slack 触发。",
 			"tryButton": "试用云代理"
 		},
-		"careers": "此外，<careersLink>我们正在招聘！</careersLink>",
-		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
+		"careers": "此外，<careersLink>我们正在招聘！</careersLink>"
 	},
 	"browser": {
 		"session": "浏览器会话",
