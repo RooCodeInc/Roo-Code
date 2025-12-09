@@ -8,6 +8,7 @@ import { AskIgnoredError } from "./AskIgnoredError"
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import debounce from "lodash.debounce"
 import delay from "delay"
 import pWaitFor from "p-wait-for"
 import { serializeError } from "serialize-error"
@@ -327,9 +328,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Tool Usage Cache
 	private toolUsageSnapshot?: ToolUsage
 
-	// Token Usage Throttling
-	private lastTokenUsageEmitTime?: number
+	// Token Usage Throttling - Debounced emit function
 	private readonly TOKEN_USAGE_EMIT_INTERVAL_MS = 2000 // 2 seconds
+	private debouncedEmitTokenUsage: ReturnType<typeof debounce>
 
 	// Cloud Sync Tracking
 	private cloudSyncedMessageTimestamps: Set<number> = new Set()
@@ -506,6 +507,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (initialTodos && initialTodos.length > 0) {
 			this.todoList = initialTodos
 		}
+
+		// Initialize debounced token usage emit function
+		// Uses debounce with maxWait to achieve throttle-like behavior:
+		// - leading: true  - Emit immediately on first call
+		// - trailing: true - Emit final state when updates stop (eliminates need for emitFinalTokenUsageUpdate logic)
+		// - maxWait        - Ensures at most one emit per interval during rapid updates (throttle behavior)
+		this.debouncedEmitTokenUsage = debounce(
+			(tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
+				const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
+				const toolChanged = hasToolUsageChanged(toolUsage, this.toolUsageSnapshot)
+
+				if (tokenChanged || toolChanged) {
+					this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, toolUsage)
+					this.tokenUsageSnapshot = tokenUsage
+					this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
+					// Deep copy tool usage for snapshot
+					this.toolUsageSnapshot = JSON.parse(JSON.stringify(toolUsage))
+				}
+			},
+			this.TOKEN_USAGE_EMIT_INTERVAL_MS,
+			{ leading: true, trailing: true, maxWait: this.TOKEN_USAGE_EMIT_INTERVAL_MS },
+		)
 
 		onCreated?.(this)
 
@@ -927,23 +950,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				initialStatus: this.initialStatus,
 			})
 
-			const now = Date.now()
-			const timeSinceLastEmit = this.lastTokenUsageEmitTime ? now - this.lastTokenUsageEmitTime : Infinity
-
-			const shouldEmitDueToThrottle = timeSinceLastEmit >= this.TOKEN_USAGE_EMIT_INTERVAL_MS
-
-			// Emit if throttle window allows AND either token usage or tool usage changed
-			const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
-			const toolChanged = hasToolUsageChanged(this.toolUsage, this.toolUsageSnapshot)
-
-			if (shouldEmitDueToThrottle && (tokenChanged || toolChanged)) {
-				this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
-				this.lastTokenUsageEmitTime = now
-				this.tokenUsageSnapshot = tokenUsage
-				this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
-				// Deep copy tool usage for snapshot
-				this.toolUsageSnapshot = JSON.parse(JSON.stringify(this.toolUsage))
-			}
+			// Emit token/tool usage updates using debounced function
+			// The debounce with maxWait ensures:
+			// - Immediate first emit (leading: true)
+			// - At most one emit per interval during rapid updates (maxWait)
+			// - Final state is emitted when updates stop (trailing: true)
+			this.debouncedEmitTokenUsage(tokenUsage, this.toolUsage)
 
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
 		} catch (error) {
@@ -1864,8 +1876,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	/**
 	 * Force emit a final token usage update, ignoring throttle.
 	 * Called before task completion or abort to ensure final stats are captured.
+	 *
+	 * This does two things:
+	 * 1. Flushes any pending debounced emit
+	 * 2. If no pending emit was flushed, directly checks and emits if there are changes
 	 */
 	public emitFinalTokenUsageUpdate(): void {
+		// First, flush any pending debounced emit
+		this.debouncedEmitTokenUsage.flush()
+
+		// Then check if there are any remaining changes that weren't captured
+		// (e.g., if tool usage changed but no message was saved to trigger debounce)
 		const tokenUsage = this.getTokenUsage()
 		const tokenChanged = hasTokenUsageChanged(tokenUsage, this.tokenUsageSnapshot)
 		const toolChanged = hasToolUsageChanged(this.toolUsage, this.toolUsageSnapshot)
@@ -1874,7 +1895,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.emit(RooCodeEventName.TaskTokenUsageUpdated, this.taskId, tokenUsage, this.toolUsage)
 			this.tokenUsageSnapshot = tokenUsage
 			this.tokenUsageSnapshotAt = this.clineMessages.at(-1)?.ts
-			this.lastTokenUsageEmitTime = Date.now()
 			// Deep copy tool usage for snapshot
 			this.toolUsageSnapshot = JSON.parse(JSON.stringify(this.toolUsage))
 		}
