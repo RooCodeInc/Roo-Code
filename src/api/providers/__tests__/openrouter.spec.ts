@@ -9,10 +9,27 @@ import OpenAI from "openai"
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { Package } from "../../../shared/package"
+import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 // Mock dependencies
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
+
+// Mock TelemetryService
+const mockCaptureEvent = vitest.fn()
+vitest.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureEvent: (...args: unknown[]) => mockCaptureEvent(...args),
+		},
+	},
+}))
+
+// Mock sanitizeErrorMessage - pass through the message unchanged for testing
+vitest.mock("../../../services/code-index/shared/validation-helpers", () => ({
+	sanitizeErrorMessage: (msg: string) => msg,
+}))
 vitest.mock("../fetchers/modelCache", () => ({
 	getModels: vitest.fn().mockImplementation(() => {
 		return Promise.resolve({
@@ -267,7 +284,7 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 
-		it("handles API errors", async () => {
+		it("handles API errors and captures telemetry", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 			const mockStream = {
 				async *[Symbol.asyncIterator]() {
@@ -282,6 +299,34 @@ describe("OpenRouterHandler", () => {
 
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
+
+			// Verify telemetry was captured
+			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+				provider: "OpenRouter",
+				modelId: mockOptions.openRouterModelId,
+				operation: "createMessage",
+				errorCode: 500,
+				errorMessage: "API Error",
+			})
+		})
+
+		it("captures telemetry when createMessage throws an exception", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("Connection failed"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow()
+
+			// Verify telemetry was captured
+			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+				provider: "OpenRouter",
+				modelId: mockOptions.openRouterModelId,
+				operation: "createMessage",
+				errorMessage: "Connection failed",
+			})
 		})
 
 		it("yields tool_call_end events when finish_reason is tool_calls", async () => {
@@ -384,7 +429,7 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 
-		it("handles API errors", async () => {
+		it("handles API errors and captures telemetry", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 			const mockError = {
 				error: {
@@ -399,9 +444,18 @@ describe("OpenRouterHandler", () => {
 			} as any
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("OpenRouter API Error 500: API Error")
+
+			// Verify telemetry was captured
+			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+				provider: "OpenRouter",
+				modelId: mockOptions.openRouterModelId,
+				operation: "completePrompt",
+				errorCode: 500,
+				errorMessage: "API Error",
+			})
 		})
 
-		it("handles unexpected errors", async () => {
+		it("handles unexpected errors and captures telemetry", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 			const mockCreate = vitest.fn().mockRejectedValue(new Error("Unexpected error"))
 			;(OpenAI as any).prototype.chat = {
@@ -409,6 +463,14 @@ describe("OpenRouterHandler", () => {
 			} as any
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
+
+			// Verify telemetry was captured
+			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+				provider: "OpenRouter",
+				modelId: mockOptions.openRouterModelId,
+				operation: "completePrompt",
+				errorMessage: "Unexpected error",
+			})
 		})
 	})
 })

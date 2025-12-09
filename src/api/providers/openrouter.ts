@@ -7,7 +7,11 @@ import {
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	TelemetryEventName,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
+
+import { sanitizeErrorMessage } from "../../services/code-index/shared/validation-helpers"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
@@ -224,6 +228,12 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
+			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+				provider: this.providerName,
+				modelId,
+				operation: "createMessage",
+				errorMessage: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)),
+			})
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -248,6 +258,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
+				TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+					provider: this.providerName,
+					modelId,
+					operation: "createMessage",
+					errorCode: error?.code,
+					errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
+				})
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
@@ -442,11 +459,24 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
+			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+				provider: this.providerName,
+				modelId,
+				operation: "completePrompt",
+				errorMessage: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)),
+			})
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
+			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+				provider: this.providerName,
+				modelId,
+				operation: "completePrompt",
+				errorCode: error?.code,
+				errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
+			})
 			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 		}
 
