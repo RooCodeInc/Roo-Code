@@ -571,6 +571,7 @@ export type BedrockServiceTier = "STANDARD" | "FLEX" | "PRIORITY"
 export const BEDROCK_SERVICE_TIER_MODEL_IDS = [
 	// Amazon Nova models
 	"amazon.nova-lite-v1:0",
+	"amazon.nova-2-lite-v1:0",
 	"amazon.nova-pro-v1:0",
 	"amazon.nova-pro-latency-optimized-v1:0",
 	// DeepSeek models
