@@ -9,26 +9,20 @@ import OpenAI from "openai"
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { Package } from "../../../shared/package"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { ApiProviderError } from "@roo-code/types"
 
 // Mock dependencies
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
 
 // Mock TelemetryService
-const mockCaptureEvent = vitest.fn()
+const mockCaptureException = vitest.fn()
 vitest.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
-			captureEvent: (...args: unknown[]) => mockCaptureEvent(...args),
+			captureException: (...args: unknown[]) => mockCaptureException(...args),
 		},
 	},
-}))
-
-// Mock sanitizeErrorMessage - pass through the message unchanged for testing
-vitest.mock("../../../services/code-index/shared/validation-helpers", () => ({
-	sanitizeErrorMessage: (msg: string) => msg,
 }))
 vitest.mock("../fetchers/modelCache", () => ({
 	getModels: vitest.fn().mockImplementation(() => {
@@ -301,12 +295,11 @@ describe("OpenRouterHandler", () => {
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
 
 			// Verify telemetry was captured
-			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
 				provider: "OpenRouter",
 				modelId: mockOptions.openRouterModelId,
 				operation: "createMessage",
 				errorCode: 500,
-				errorMessage: "API Error",
 			})
 		})
 
@@ -321,11 +314,10 @@ describe("OpenRouterHandler", () => {
 			await expect(generator.next()).rejects.toThrow()
 
 			// Verify telemetry was captured
-			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
 				provider: "OpenRouter",
 				modelId: mockOptions.openRouterModelId,
 				operation: "createMessage",
-				errorMessage: "Connection failed",
 			})
 		})
 
@@ -346,7 +338,7 @@ describe("OpenRouterHandler", () => {
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 429: Rate limit exceeded")
 
 			// Verify telemetry was NOT captured for 429 errors
-			expect(mockCaptureEvent).not.toHaveBeenCalled()
+			expect(mockCaptureException).not.toHaveBeenCalled()
 		})
 
 		it("yields tool_call_end events when finish_reason is tool_calls", async () => {
@@ -466,12 +458,11 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("OpenRouter API Error 500: API Error")
 
 			// Verify telemetry was captured
-			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
 				provider: "OpenRouter",
 				modelId: mockOptions.openRouterModelId,
 				operation: "completePrompt",
 				errorCode: 500,
-				errorMessage: "API Error",
 			})
 		})
 
@@ -485,11 +476,10 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
 
 			// Verify telemetry was captured
-			expect(mockCaptureEvent).toHaveBeenCalledWith(TelemetryEventName.API_ERROR, {
+			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
 				provider: "OpenRouter",
 				modelId: mockOptions.openRouterModelId,
 				operation: "completePrompt",
-				errorMessage: "Unexpected error",
 			})
 		})
 
@@ -512,7 +502,7 @@ describe("OpenRouterHandler", () => {
 			)
 
 			// Verify telemetry was NOT captured for 429 errors
-			expect(mockCaptureEvent).not.toHaveBeenCalled()
+			expect(mockCaptureException).not.toHaveBeenCalled()
 		})
 	})
 })

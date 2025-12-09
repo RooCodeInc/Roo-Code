@@ -7,12 +7,10 @@ import {
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
-	TelemetryEventName,
 	shouldReportApiErrorToTelemetry,
+	ApiProviderError,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-
-import { sanitizeErrorMessage } from "../../services/code-index/shared/validation-helpers"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
@@ -229,12 +227,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-				provider: this.providerName,
-				modelId,
-				operation: "createMessage",
-				errorMessage: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)),
-			})
+			TelemetryService.instance.captureException(
+				new ApiProviderError(
+					error instanceof Error ? error.message : String(error),
+					this.providerName,
+					modelId,
+					"createMessage",
+				),
+				{ provider: this.providerName, modelId, operation: "createMessage" },
+			)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -259,15 +260,17 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				// Only report unexpected errors to telemetry (skip 429 rate limit errors)
 				if (shouldReportApiErrorToTelemetry(error?.code)) {
-					TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-						provider: this.providerName,
-						modelId,
-						operation: "createMessage",
-						errorCode: error?.code,
-						errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
-					})
+					TelemetryService.instance.captureException(
+						new ApiProviderError(
+							error?.message ?? "Unknown error",
+							this.providerName,
+							modelId,
+							"createMessage",
+							error?.code,
+						),
+						{ provider: this.providerName, modelId, operation: "createMessage", errorCode: error?.code },
+					)
 				}
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
@@ -463,26 +466,31 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-				provider: this.providerName,
-				modelId,
-				operation: "completePrompt",
-				errorMessage: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)),
-			})
+			TelemetryService.instance.captureException(
+				new ApiProviderError(
+					error instanceof Error ? error.message : String(error),
+					this.providerName,
+					modelId,
+					"completePrompt",
+				),
+				{ provider: this.providerName, modelId, operation: "completePrompt" },
+			)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			// Only report unexpected errors to telemetry (skip 429 rate limit errors)
 			if (shouldReportApiErrorToTelemetry(error?.code)) {
-				TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-					provider: this.providerName,
-					modelId,
-					operation: "completePrompt",
-					errorCode: error?.code,
-					errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
-				})
+				TelemetryService.instance.captureException(
+					new ApiProviderError(
+						error?.message ?? "Unknown error",
+						this.providerName,
+						modelId,
+						"completePrompt",
+						error?.code,
+					),
+					{ provider: this.providerName, modelId, operation: "completePrompt", errorCode: error?.code },
+				)
 			}
 			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 		}

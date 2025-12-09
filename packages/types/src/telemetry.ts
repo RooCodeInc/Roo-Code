@@ -71,7 +71,6 @@ export enum TelemetryEventName {
 	SHELL_INTEGRATION_ERROR = "Shell Integration Error",
 	CONSECUTIVE_MISTAKE_ERROR = "Consecutive Mistake Error",
 	CODE_INDEX_ERROR = "Code Index Error",
-	API_ERROR = "API Error",
 	TELEMETRY_SETTINGS_CHANGED = "Telemetry Settings Changed",
 	MODEL_CACHE_EMPTY_RESPONSE = "Model Cache Empty Response",
 }
@@ -198,7 +197,6 @@ export const rooCodeTelemetryEventSchema = z.discriminatedUnion("type", [
 			TelemetryEventName.SHELL_INTEGRATION_ERROR,
 			TelemetryEventName.CONSECUTIVE_MISTAKE_ERROR,
 			TelemetryEventName.CODE_INDEX_ERROR,
-			TelemetryEventName.API_ERROR,
 			TelemetryEventName.MODEL_CACHE_EMPTY_RESPONSE,
 			TelemetryEventName.CONTEXT_CONDENSED,
 			TelemetryEventName.SLIDING_WINDOW_TRUNCATION,
@@ -287,4 +285,21 @@ export const EXPECTED_API_ERROR_CODES = new Set([
 export function shouldReportApiErrorToTelemetry(errorCode?: number): boolean {
 	if (errorCode === undefined) return true
 	return !EXPECTED_API_ERROR_CODES.has(errorCode)
+}
+
+/**
+ * Generic API provider error class for structured error tracking via PostHog.
+ * Can be reused by any API provider.
+ */
+export class ApiProviderError extends Error {
+	constructor(
+		message: string,
+		public readonly provider: string,
+		public readonly modelId: string,
+		public readonly operation: string,
+		public readonly errorCode?: number,
+	) {
+		super(message)
+		this.name = "ApiProviderError"
+	}
 }
