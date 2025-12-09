@@ -24,6 +24,7 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
+		defaultToolProtocol: "native", // DeepSeek R1 thinking mode works best with native tool calling
 		inputPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
 		outputPrice: 1.68, // $1.68 per million tokens - Updated Sept 5, 2025
 		cacheWritesPrice: 0.56, // $0.56 per million tokens (cache miss) - Updated Sept 5, 2025
