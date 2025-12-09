@@ -1,4 +1,4 @@
-import { memo, ReactNode, useState } from "react"
+import { memo, type ReactNode, useState } from "react"
 import { Trans } from "react-i18next"
 import { SiDiscord, SiReddit, SiX } from "react-icons/si"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
@@ -101,7 +101,7 @@ const SocialLink = ({ icon, label, href }: { icon: ReactNode; label: string; hre
 	</VSCodeLink>
 )
 
-const GitHubLink = ({ children }: { children?: React.ReactNode }) => (
+const GitHubLink = ({ children }: { children?: ReactNode }) => (
 	<VSCodeLink
 		href="https://github.com/RooCodeInc/Roo-Code"
 		onClick={(e) => {
@@ -112,7 +112,7 @@ const GitHubLink = ({ children }: { children?: React.ReactNode }) => (
 	</VSCodeLink>
 )
 
-const CareersLink = ({ children }: { children?: React.ReactNode }) => (
+const CareersLink = ({ children }: { children?: ReactNode }) => (
 	<VSCodeLink
 		href="https://careers.roocode.com"
 		onClick={(e) => {
