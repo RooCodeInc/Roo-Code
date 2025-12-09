@@ -452,7 +452,7 @@ describe("RooHandler", () => {
 	})
 
 	describe("temperature and model configuration", () => {
-		it("should use default temperature of 0.7", async () => {
+		it("should use default temperature of 0", async () => {
 			handler = new RooHandler(mockOptions)
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
@@ -461,7 +461,7 @@ describe("RooHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					temperature: 0.7,
+					temperature: 0,
 				}),
 				expect.objectContaining({
 					headers: expect.objectContaining({
