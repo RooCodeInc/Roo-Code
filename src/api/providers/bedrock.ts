@@ -56,14 +56,13 @@ interface BedrockInferenceConfig {
 }
 
 // Define interface for Bedrock additional model request fields
-// This includes thinking configuration, 1M context beta, service tier, and other model-specific parameters
+// This includes thinking configuration, 1M context beta, and other model-specific parameters
 interface BedrockAdditionalModelFields {
 	thinking?: {
 		type: "enabled"
 		budget_tokens: number
 	}
 	anthropic_beta?: string[]
-	service_tier?: BedrockServiceTier
 	[key: string]: any // Add index signature to be compatible with DocumentType
 }
 
@@ -76,6 +75,13 @@ interface BedrockPayload {
 	anthropic_version?: string
 	additionalModelRequestFields?: BedrockAdditionalModelFields
 	toolConfig?: ToolConfiguration
+}
+
+// Extended payload type that includes service_tier as a top-level parameter
+// AWS Bedrock service tiers (STANDARD, FLEX, PRIORITY) are specified at the top level
+// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
+type BedrockPayloadWithServiceTier = BedrockPayload & {
+	service_tier?: BedrockServiceTier
 }
 
 // Define specific types for content block events to avoid 'as any' usage
@@ -437,12 +443,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
 		}
 
-		// Add service tier if specified and model supports it
-		if (this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)) {
-			if (!additionalModelRequestFields) {
-				additionalModelRequestFields = {} as BedrockAdditionalModelFields
-			}
-			additionalModelRequestFields.service_tier = this.options.awsBedrockServiceTier
+		// Determine if service tier should be applied (checked later when building payload)
+		const useServiceTier =
+			this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)
+		if (useServiceTier) {
 			logger.info("Service tier specified for Bedrock request", {
 				ctx: "bedrock",
 				modelId: modelConfig.id,
@@ -459,7 +463,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		const payload: BedrockPayload = {
+		// Build payload with optional service_tier at top level
+		// Service tier is a top-level parameter per AWS documentation, NOT inside additionalModelRequestFields
+		// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
+		const payload: BedrockPayloadWithServiceTier = {
 			modelId: modelConfig.id,
 			messages: formatted.messages,
 			system: formatted.system,
@@ -468,6 +475,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// Add anthropic_version at top level when using thinking features
 			...(thinkingEnabled && { anthropic_version: "bedrock-2023-05-31" }),
 			...(toolConfig && { toolConfig }),
+			// Add service_tier as a top-level parameter (not inside additionalModelRequestFields)
+			...(useServiceTier && { service_tier: this.options.awsBedrockServiceTier }),
 		}
 
 		// Create AbortController with 10 minute timeout

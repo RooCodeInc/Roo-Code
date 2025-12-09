@@ -847,7 +847,7 @@ describe("AwsBedrockHandler", () => {
 		})
 
 		describe("service_tier parameter in API requests", () => {
-			it("should include service_tier in additionalModelRequestFields for supported models", async () => {
+			it("should include service_tier as top-level parameter for supported models", async () => {
 				const handler = new AwsBedrockHandler({
 					apiModelId: supportedModelId,
 					awsAccessKey: "test",
@@ -866,15 +866,21 @@ describe("AwsBedrockHandler", () => {
 				const generator = handler.createMessage("", messages)
 				await generator.next() // Start the generator
 
-				// Verify the command was created with service_tier
+				// Verify the command was created with service_tier at top level
+				// Per AWS documentation, service_tier must be a top-level parameter, not inside additionalModelRequestFields
+				// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
 				expect(mockConverseStreamCommand).toHaveBeenCalled()
 				const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-				expect(commandArg.additionalModelRequestFields).toBeDefined()
-				expect(commandArg.additionalModelRequestFields.service_tier).toBe("PRIORITY")
+				// service_tier should be at the top level of the payload
+				expect(commandArg.service_tier).toBe("PRIORITY")
+				// service_tier should NOT be in additionalModelRequestFields
+				if (commandArg.additionalModelRequestFields) {
+					expect(commandArg.additionalModelRequestFields.service_tier).toBeUndefined()
+				}
 			})
 
-			it("should include service_tier FLEX in additionalModelRequestFields", async () => {
+			it("should include service_tier FLEX as top-level parameter", async () => {
 				const handler = new AwsBedrockHandler({
 					apiModelId: supportedModelId,
 					awsAccessKey: "test",
@@ -896,8 +902,12 @@ describe("AwsBedrockHandler", () => {
 				expect(mockConverseStreamCommand).toHaveBeenCalled()
 				const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-				expect(commandArg.additionalModelRequestFields).toBeDefined()
-				expect(commandArg.additionalModelRequestFields.service_tier).toBe("FLEX")
+				// service_tier should be at the top level of the payload
+				expect(commandArg.service_tier).toBe("FLEX")
+				// service_tier should NOT be in additionalModelRequestFields
+				if (commandArg.additionalModelRequestFields) {
+					expect(commandArg.additionalModelRequestFields.service_tier).toBeUndefined()
+				}
 			})
 
 			it("should NOT include service_tier for unsupported models", async () => {
@@ -923,8 +933,8 @@ describe("AwsBedrockHandler", () => {
 				expect(mockConverseStreamCommand).toHaveBeenCalled()
 				const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-				// Service tier should NOT be included for unsupported models
-				// additionalModelRequestFields may be undefined or defined without service_tier
+				// Service tier should NOT be included for unsupported models (at top level or in additionalModelRequestFields)
+				expect(commandArg.service_tier).toBeUndefined()
 				if (commandArg.additionalModelRequestFields) {
 					expect(commandArg.additionalModelRequestFields.service_tier).toBeUndefined()
 				}
@@ -952,7 +962,8 @@ describe("AwsBedrockHandler", () => {
 				expect(mockConverseStreamCommand).toHaveBeenCalled()
 				const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-				// Service tier should NOT be included when not specified
+				// Service tier should NOT be included when not specified (at top level or in additionalModelRequestFields)
+				expect(commandArg.service_tier).toBeUndefined()
 				if (commandArg.additionalModelRequestFields) {
 					expect(commandArg.additionalModelRequestFields.service_tier).toBeUndefined()
 				}
