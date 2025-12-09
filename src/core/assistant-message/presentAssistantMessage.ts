@@ -523,7 +523,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					// Add tool_result with text content only
-					// Note: tool_use_id validation happens centrally in addToApiConversationHistory
 					cline.userMessageContent.push({
 						type: "tool_result",
 						tool_use_id: toolCallId,
