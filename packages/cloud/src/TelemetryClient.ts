@@ -69,6 +69,10 @@ abstract class BaseTelemetryClient implements TelemetryClient {
 
 	public abstract capture(event: TelemetryEvent): Promise<void>
 
+	public captureException(_error: Error, _additionalProperties?: Record<string, unknown>): void {
+		// No-op - exception capture is only supported by PostHog
+	}
+
 	public setProvider(provider: TelemetryPropertiesProvider): void {
 		this.providerRef = new WeakRef(provider)
 	}

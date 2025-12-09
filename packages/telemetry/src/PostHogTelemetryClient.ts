@@ -61,6 +61,22 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 		})
 	}
 
+	public override captureException(error: Error, additionalProperties?: Record<string, unknown>): void {
+		if (!this.isTelemetryEnabled()) {
+			if (this.debug) {
+				console.info(`[PostHogTelemetryClient#captureException] Skipping exception: ${error.message}`)
+			}
+
+			return
+		}
+
+		if (this.debug) {
+			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
+		}
+
+		this.client.captureException(error, this.distinctId, additionalProperties)
+	}
+
 	/**
 	 * Updates the telemetry state based on user preferences and VSCode settings.
 	 * Only enables telemetry if both VSCode global telemetry is enabled and

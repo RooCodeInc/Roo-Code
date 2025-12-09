@@ -1,4 +1,20 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import { TelemetryService } from "@roo-code/telemetry"
+
+/**
+ * Custom error class for tool result ID mismatches.
+ * Used for structured error tracking via PostHog.
+ */
+export class ToolResultIdMismatchError extends Error {
+	constructor(
+		message: string,
+		public readonly toolResultIds: string[],
+		public readonly toolUseIds: string[],
+	) {
+		super(message)
+		this.name = "ToolResultIdMismatchError"
+	}
+}
 
 /**
  * Validates and fixes tool_result IDs in a user message against the previous assistant message.
@@ -62,11 +78,25 @@ export function validateAndFixToolResultIds(
 	}
 
 	// We have mismatches - need to fix them
-	console.warn(
-		`[validateAndFixToolResultIds] Detected tool_result ID mismatch. ` +
-			`tool_result IDs: [${toolResults.map((r) => r.tool_use_id).join(", ")}], ` +
-			`tool_use IDs: [${toolUseBlocks.map((b) => b.id).join(", ")}]`,
-	)
+	const toolResultIdList = toolResults.map((r) => r.tool_use_id)
+	const toolUseIdList = toolUseBlocks.map((b) => b.id)
+
+	// Report the mismatch to PostHog error tracking
+	if (TelemetryService.hasInstance()) {
+		TelemetryService.instance.captureException(
+			new ToolResultIdMismatchError(
+				`Detected tool_result ID mismatch. tool_result IDs: [${toolResultIdList.join(", ")}], tool_use IDs: [${toolUseIdList.join(", ")}]`,
+				toolResultIdList,
+				toolUseIdList,
+			),
+			{
+				toolResultIds: toolResultIdList,
+				toolUseIds: toolUseIdList,
+				toolResultCount: toolResults.length,
+				toolUseCount: toolUseBlocks.length,
+			},
+		)
+	}
 
 	// Create a mapping of tool_result IDs to corrected IDs
 	// Strategy: Match by position (first tool_result -> first tool_use, etc.)
@@ -87,9 +117,6 @@ export function validateAndFixToolResultIds(
 		// Try to match by position - only fix if there's a corresponding tool_use
 		if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
 			const correctId = toolUseBlocks[toolResultIndex].id
-			console.warn(
-				`[validateAndFixToolResultIds] Correcting tool_use_id: "${block.tool_use_id}" -> "${correctId}"`,
-			)
 			return {
 				...block,
 				tool_use_id: correctId,
@@ -98,9 +125,6 @@ export function validateAndFixToolResultIds(
 
 		// No corresponding tool_use for this tool_result - leave it unchanged
 		// This can happen when there are more tool_results than tool_uses
-		console.warn(
-			`[validateAndFixToolResultIds] No matching tool_use for tool_result with id "${block.tool_use_id}" - leaving unchanged`,
-		)
 		return block
 	})
 

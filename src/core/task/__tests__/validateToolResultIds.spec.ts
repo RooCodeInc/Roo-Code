@@ -1,7 +1,22 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { validateAndFixToolResultIds } from "../validateToolResultIds"
+import { TelemetryService } from "@roo-code/telemetry"
+import { validateAndFixToolResultIds, ToolResultIdMismatchError } from "../validateToolResultIds"
+
+// Mock TelemetryService
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		hasInstance: vi.fn(() => true),
+		instance: {
+			captureException: vi.fn(),
+		},
+	},
+}))
 
 describe("validateAndFixToolResultIds", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
 	describe("when there is no previous assistant message", () => {
 		it("should return the user message unchanged", () => {
 			const userMessage: Anthropic.MessageParam = {
@@ -415,6 +430,90 @@ describe("validateAndFixToolResultIds", () => {
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
 			expect(resultContent.length).toBe(1)
 			expect(resultContent[0].tool_use_id).toBe("tool-1")
+		})
+	})
+
+	describe("telemetry", () => {
+		it("should call captureException when there is a mismatch", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "correct-id",
+						name: "read_file",
+						input: { path: "test.txt" },
+					},
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "wrong-id",
+						content: "Content",
+					},
+				],
+			}
+
+			validateAndFixToolResultIds(userMessage, assistantMessage)
+
+			expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(1)
+			expect(TelemetryService.instance.captureException).toHaveBeenCalledWith(
+				expect.any(ToolResultIdMismatchError),
+				expect.objectContaining({
+					toolResultIds: ["wrong-id"],
+					toolUseIds: ["correct-id"],
+					toolResultCount: 1,
+					toolUseCount: 1,
+				}),
+			)
+		})
+
+		it("should not call captureException when IDs match", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tool-123",
+						name: "read_file",
+						input: { path: "test.txt" },
+					},
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123",
+						content: "Content",
+					},
+				],
+			}
+
+			validateAndFixToolResultIds(userMessage, assistantMessage)
+
+			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("ToolResultIdMismatchError", () => {
+		it("should create error with correct properties", () => {
+			const error = new ToolResultIdMismatchError(
+				"Mismatch detected",
+				["result-1", "result-2"],
+				["use-1", "use-2"],
+			)
+
+			expect(error.name).toBe("ToolResultIdMismatchError")
+			expect(error.message).toBe("Mismatch detected")
+			expect(error.toolResultIds).toEqual(["result-1", "result-2"])
+			expect(error.toolUseIds).toEqual(["use-1", "use-2"])
 		})
 	})
 })
