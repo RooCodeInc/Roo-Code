@@ -813,13 +813,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
 			// For user messages, validate and fix tool_result IDs against the previous assistant message
-			let previousAssistantMessage: Anthropic.MessageParam | undefined
-			for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
-				if (this.apiConversationHistory[i].role === "assistant") {
-					previousAssistantMessage = this.apiConversationHistory[i]
-					break
-				}
-			}
+			const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
+			const previousAssistantMessage =
+				prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
 			const validatedMessage = validateAndFixToolResultIds(message, previousAssistantMessage)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
@@ -861,13 +857,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Validate and fix tool_result IDs against the previous assistant message
-		let previousAssistantMessage: Anthropic.MessageParam | undefined
-		for (let i = this.apiConversationHistory.length - 1; i >= 0; i--) {
-			if (this.apiConversationHistory[i].role === "assistant") {
-				previousAssistantMessage = this.apiConversationHistory[i]
-				break
-			}
-		}
+		const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
+		const previousAssistantMessage =
+			prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
 		const validatedMessage = validateAndFixToolResultIds(userMessage, previousAssistantMessage)
 		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
