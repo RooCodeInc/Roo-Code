@@ -8,6 +8,7 @@ import {
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	TelemetryEventName,
+	shouldReportApiErrorToTelemetry,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -258,13 +259,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-					provider: this.providerName,
-					modelId,
-					operation: "createMessage",
-					errorCode: error?.code,
-					errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
-				})
+				// Only report unexpected errors to telemetry (skip 429 rate limit errors)
+				if (shouldReportApiErrorToTelemetry(error?.code)) {
+					TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+						provider: this.providerName,
+						modelId,
+						operation: "createMessage",
+						errorCode: error?.code,
+						errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
+					})
+				}
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
@@ -470,13 +474,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
-				provider: this.providerName,
-				modelId,
-				operation: "completePrompt",
-				errorCode: error?.code,
-				errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
-			})
+			// Only report unexpected errors to telemetry (skip 429 rate limit errors)
+			if (shouldReportApiErrorToTelemetry(error?.code)) {
+				TelemetryService.instance.captureEvent(TelemetryEventName.API_ERROR, {
+					provider: this.providerName,
+					modelId,
+					operation: "completePrompt",
+					errorCode: error?.code,
+					errorMessage: sanitizeErrorMessage(error?.message ?? "Unknown error"),
+				})
+			}
 			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 		}
 

@@ -269,3 +269,22 @@ export interface TelemetryClient {
 	isTelemetryEnabled(): boolean
 	shutdown(): Promise<void>
 }
+
+/**
+ * Expected API error codes that should not be reported to telemetry.
+ * These are normal/expected errors that users can't do much about.
+ */
+export const EXPECTED_API_ERROR_CODES = new Set([
+	429, // Rate limit - expected when hitting API limits
+])
+
+/**
+ * Helper to check if an API error should be reported to telemetry.
+ * Filters out expected errors like rate limits.
+ * @param errorCode - The HTTP error code (if available)
+ * @returns true if the error should be reported, false if it should be filtered out
+ */
+export function shouldReportApiErrorToTelemetry(errorCode?: number): boolean {
+	if (errorCode === undefined) return true
+	return !EXPECTED_API_ERROR_CODES.has(errorCode)
+}

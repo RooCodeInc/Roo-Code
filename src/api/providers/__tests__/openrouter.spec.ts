@@ -329,6 +329,26 @@ describe("OpenRouterHandler", () => {
 			})
 		})
 
+		it("does NOT capture telemetry for 429 rate limit errors", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield { error: { message: "Rate limit exceeded", code: 429 } }
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 429: Rate limit exceeded")
+
+			// Verify telemetry was NOT captured for 429 errors
+			expect(mockCaptureEvent).not.toHaveBeenCalled()
+		})
+
 		it("yields tool_call_end events when finish_reason is tool_calls", async () => {
 			// Import NativeToolCallParser to set up state
 			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
@@ -471,6 +491,28 @@ describe("OpenRouterHandler", () => {
 				operation: "completePrompt",
 				errorMessage: "Unexpected error",
 			})
+		})
+
+		it("does NOT capture telemetry for 429 rate limit errors", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockError = {
+				error: {
+					message: "Rate limit exceeded",
+					code: 429,
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockError)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
+				"OpenRouter API Error 429: Rate limit exceeded",
+			)
+
+			// Verify telemetry was NOT captured for 429 errors
+			expect(mockCaptureEvent).not.toHaveBeenCalled()
 		})
 	})
 })
