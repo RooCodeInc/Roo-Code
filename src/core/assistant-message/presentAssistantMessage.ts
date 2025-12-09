@@ -75,6 +75,14 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
+	// Handle empty content case immediately
+	if (cline.assistantMessageContent.length === 0 && cline.didCompleteReadingStream) {
+		// If there's no content and streaming is complete, mark as ready
+		cline.userMessageContentReady = true
+		cline.presentAssistantMessageLocked = false
+		return
+	}
+
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
@@ -1123,11 +1131,19 @@ export async function presentAssistantMessage(cline: Task) {
 				cline.userMessageContentReady = true
 			}
 		}
+	} else if (block.partial && cline.presentAssistantMessageHasPendingUpdates) {
+		// Block is partial, but the read stream may have finished or has pending updates
+		presentAssistantMessage(cline)
 	}
 
-	// Block is partial, but the read stream may have finished.
-	if (cline.presentAssistantMessageHasPendingUpdates) {
-		presentAssistantMessage(cline)
+	// Additional safety check: If streaming is complete but we haven't set userMessageContentReady yet
+	// This can happen if the last block was partial and didn't trigger the normal completion flow
+	if (
+		cline.didCompleteReadingStream &&
+		!cline.userMessageContentReady &&
+		cline.assistantMessageContent.length === 0
+	) {
+		cline.userMessageContentReady = true
 	}
 }
 
