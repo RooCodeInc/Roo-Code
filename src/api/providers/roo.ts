@@ -58,6 +58,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			apiKey: sessionToken,
 			defaultProviderModelId: rooDefaultModelId,
 			providerModels: {},
+			defaultTemperature: 0.7,
 		})
 
 		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher

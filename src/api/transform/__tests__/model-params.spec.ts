@@ -275,7 +275,6 @@ describe("getModelParams", () => {
 
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
-			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should honor customMaxTokens for reasoning budget models", () => {
@@ -557,7 +556,6 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningEffort).toBeUndefined()
-			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should handle reasoning effort for openrouter format", () => {
@@ -624,7 +622,6 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningEffort).toBeUndefined()
-			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should include 'minimal' and 'none' for openrouter format", () => {
@@ -667,12 +664,12 @@ describe("getModelParams", () => {
 			expect(result.reasoning).toBeUndefined() // Anthropic doesn't support reasoning effort
 		})
 
-		it("should NOT use reasoningEffort if supportsReasoningEffort is false even if reasoningEffort is set", () => {
+		it("should use reasoningEffort if supportsReasoningEffort is false but reasoningEffort is set", () => {
 			const model: ModelInfo = {
 				...baseModel,
 				maxTokens: 3000, // 3000 is 18.75% of 16000, within 20% threshold
 				supportsReasoningEffort: false,
-				reasoningEffort: "medium", // This should be ignored without supportsReasoningEffort capability
+				reasoningEffort: "medium",
 			}
 
 			const result = getModelParams({
@@ -682,9 +679,8 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.maxTokens).toBe(3000)
-			// Without supportsReasoningEffort capability, reasoning should NOT be enabled
-			expect(result.reasoningEffort).toBeUndefined()
-			expect(result.reasoning).toBeUndefined()
+			// Now uses model.maxTokens since it's within 20% threshold
+			expect(result.reasoningEffort).toBe("medium")
 		})
 	})
 
@@ -737,7 +733,7 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningBudget).toBe(3200) // 80% of 4000
-			expect(result.reasoningEffort).toBeUndefined()
+			expect(result.reasoningEffort).toBeUndefined() // Budget takes precedence
 			expect(result.temperature).toBe(1.0)
 		})
 
@@ -891,8 +887,6 @@ describe("getModelParams", () => {
 				settings: {},
 				model,
 			})
-
-			expect(result.reasoning).toBeUndefined()
 		})
 	})
 

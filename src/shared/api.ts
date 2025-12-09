@@ -66,10 +66,6 @@ export const shouldUseReasoningEffort = ({
 	// Explicit off switch
 	if (settings?.enableReasoningEffort === false) return false
 
-	// Model must explicitly declare reasoning effort capability
-	// Having a reasoningEffort default alone is not sufficient
-	if (!model.supportsReasoningEffort) return false
-
 	// Selected effort from settings or model default
 	const selectedEffort = (settings?.reasoningEffort ?? (model as any).reasoningEffort) as
 		| "disable"
@@ -95,7 +91,16 @@ export const shouldUseReasoningEffort = ({
 		return !!selectedEffort
 	}
 
-	return false
+	// Not explicitly supported: only allow when the model itself defines a default effort
+	// Ignore settings-only selections when capability is absent/false
+	const modelDefaultEffort = (model as any).reasoningEffort as
+		| "none"
+		| "minimal"
+		| "low"
+		| "medium"
+		| "high"
+		| undefined
+	return !!modelDefaultEffort
 }
 
 export const DEFAULT_HYBRID_REASONING_MODEL_MAX_TOKENS = 16_384

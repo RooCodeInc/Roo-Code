@@ -372,19 +372,16 @@ describe("shouldUseReasoningBudget", () => {
 })
 
 describe("shouldUseReasoningEffort", () => {
-	test("should return false when model has reasoningEffort property but NO supportsReasoningEffort", () => {
+	test("should return true when model has reasoningEffort property", () => {
 		const model: ModelInfo = {
 			contextWindow: 200_000,
 			supportsPromptCache: true,
 			reasoningEffort: "medium",
-			// Note: NO supportsReasoningEffort property
 		}
 
-		// Without supportsReasoningEffort capability, reasoning should NOT be enabled
-		// even if the model has a default reasoningEffort value
-		expect(shouldUseReasoningEffort({ model })).toBe(false)
-		expect(shouldUseReasoningEffort({ model, settings: {} })).toBe(false)
-		expect(shouldUseReasoningEffort({ model, settings: { reasoningEffort: undefined } })).toBe(false)
+		expect(shouldUseReasoningEffort({ model })).toBe(true)
+		expect(shouldUseReasoningEffort({ model, settings: {} })).toBe(true)
+		expect(shouldUseReasoningEffort({ model, settings: { reasoningEffort: undefined } })).toBe(true)
 	})
 
 	test("should return false when enableReasoningEffort is false, even if reasoningEffort is set", () => {
@@ -446,7 +443,7 @@ describe("shouldUseReasoningEffort", () => {
 		expect(shouldUseReasoningEffort({ model })).toBe(false)
 	})
 
-	test("should return false when model doesn't support reasoning effort", () => {
+	test("should return false when model doesn't support reasoning effort and has no default", () => {
 		const model: ModelInfo = {
 			contextWindow: 200_000,
 			supportsPromptCache: true,
