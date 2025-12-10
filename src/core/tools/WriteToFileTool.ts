@@ -25,6 +25,7 @@ interface WriteToFileParams {
 
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
+	override readonly aliases = ["write_file"]
 
 	parseLegacy(params: Partial<Record<string, string>>): WriteToFileParams {
 		return {
