@@ -146,7 +146,8 @@
 			"403": "Yetkisiz. API anahtarınız geçerli ama sağlayıcı bu isteği tamamlamayı reddetti.",
 			"429": "Çok fazla istek. Sağlayıcı tarafından oran sınırlaması uygulanıyor. Lütfen sonraki API çağrısından önce biraz bekle.",
 			"500": "Sağlayıcı sunucu hatası. Sağlayıcı tarafında bir sorun var, isteğinizde sorun yok.",
-			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç."
+			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç.",
+			"connection": "Bağlantı hatası. Çalışan bir internet bağlantınız olduğundan emin olun."
 		}
 	},
 	"checkpoint": {
@@ -259,6 +260,11 @@
 		"hasQuestion": "Roo'nun bir sorusu var"
 	},
 	"taskCompleted": "Görev Tamamlandı",
+	"errorDetails": {
+		"title": "Hata Detayları",
+		"copyToClipboard": "Panoya Kopyala",
+		"copied": "Kopyalandı!"
+	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
 	},

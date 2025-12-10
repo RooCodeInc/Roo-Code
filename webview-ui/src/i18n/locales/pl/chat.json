@@ -146,7 +146,8 @@
 			"403": "Brak autoryzacji. Twój klucz API jest ważny, ale dostawca odmówił ukończenia tego żądania.",
 			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
-			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code."
+			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
+			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe."
 		}
 	},
 	"checkpoint": {
@@ -258,6 +259,11 @@
 		"hasQuestion": "Roo ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
+	"errorDetails": {
+		"title": "Szczegóły błędu",
+		"copyToClipboard": "Kopiuj do schowka",
+		"copied": "Skopiowano!"
+	},
 	"powershell": {
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"
 	},

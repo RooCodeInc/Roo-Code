@@ -146,7 +146,8 @@
 			"403": "无权限。您的 API 密钥有效，但提供商拒绝完成此请求。",
 			"429": "请求过于频繁。提供商已对您的请求进行速率限制。请在下一次 API 调用前稍候。",
 			"500": "提供商服务器错误。提供商端出现问题，您的请求无问题。",
-			"unknown": "未知 API 错误。请联系 Roo Code 支持。"
+			"unknown": "未知 API 错误。请联系 Roo Code 支持。",
+			"connection": "连接错误。确保您有可用的互联网连接。"
 		}
 	},
 	"checkpoint": {
@@ -259,6 +260,11 @@
 		"hasQuestion": "Roo有一个问题"
 	},
 	"taskCompleted": "任务完成",
+	"errorDetails": {
+		"title": "错误详情",
+		"copyToClipboard": "复制到剪贴板",
+		"copied": "已复制!"
+	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"
 	},

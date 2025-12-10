@@ -146,7 +146,8 @@
 			"403": "Não autorizado. Sua chave API é válida, mas o provedor se recusou a concluir esta solicitação.",
 			"429": "Muitas solicitações. Você está sendo limitado pelo provedor. Por favor, aguarde um pouco antes de sua próxima chamada de API.",
 			"500": "Erro do servidor do provedor. Algo está errado do lado do provedor, não há nada de errado com sua solicitação.",
-			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code."
+			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code.",
+			"connection": "Erro de conexão. Certifique-se de que você tem uma conexão de internet funcionando."
 		}
 	},
 	"checkpoint": {
@@ -258,6 +259,11 @@
 		"hasQuestion": "Roo tem uma pergunta"
 	},
 	"taskCompleted": "Tarefa concluída",
+	"errorDetails": {
+		"title": "Detalhes do erro",
+		"copyToClipboard": "Copiar para área de transferência",
+		"copied": "Copiado!"
+	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
 	},

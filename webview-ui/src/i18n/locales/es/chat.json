@@ -146,7 +146,8 @@
 			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
-			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code."
+			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
+			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional."
 		}
 	},
 	"checkpoint": {
@@ -258,6 +259,11 @@
 		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
+	"errorDetails": {
+		"title": "Detalles del error",
+		"copyToClipboard": "Copiar al portapapeles",
+		"copied": "¡Copiado!"
+	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
 	},

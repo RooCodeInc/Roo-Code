@@ -141,7 +141,8 @@
 			"403": "Niet geautoriseerd. Je API-sleutel is geldig, maar de provider weigerde dit verzoek in te willigen.",
 			"429": "Te veel verzoeken. Je bent rate-gelimiteerd door de provider. Wacht alsjeblieft even voor je volgende API-aanroep.",
 			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
-			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning."
+			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
+			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt."
 		}
 	},
 	"checkpoint": {
@@ -258,6 +259,11 @@
 		"title": "Bewerking mislukt"
 	},
 	"troubleMessage": "Roo ondervindt problemen...",
+	"errorDetails": {
+		"title": "Foutdetails",
+		"copyToClipboard": "Naar klembord kopiëren",
+		"copied": "Gekopieerd!"
+	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
 	},
