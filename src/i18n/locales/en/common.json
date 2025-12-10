@@ -101,7 +101,10 @@
 			"cannot_delete_invalid_timestamp": "Cannot delete message: invalid timestamp",
 			"message_not_found": "Message with timestamp {{messageTs}} not found",
 			"error_deleting_message": "Error deleting message: {{error}}",
-			"error_editing_message": "Error editing message: {{error}}"
+			"error_editing_message": "Error editing message: {{error}}",
+			"invalid_timestamp_for_fork": "Invalid timestamp for forking conversation",
+			"no_active_task_to_fork": "No active task to fork",
+			"error_forking_conversation": "Error forking conversation: {{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",
@@ -145,6 +148,7 @@
 		"share_link_copied": "Share link copied to clipboard",
 		"organization_share_link_copied": "Organization share link copied to clipboard!",
 		"public_share_link_copied": "Public share link copied to clipboard!",
+		"conversation_forked": "Conversation forked successfully",
 		"image_copied_to_clipboard": "Image data URI copied to clipboard",
 		"image_saved": "Image saved to {{path}}",
 		"mode_exported": "Mode '{{mode}}' exported successfully",

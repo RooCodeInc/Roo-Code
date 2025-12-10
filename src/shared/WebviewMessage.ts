@@ -92,6 +92,7 @@ export interface WebviewMessage {
 		| "deleteMessage"
 		| "deleteMessageConfirm"
 		| "submitEditedMessage"
+		| "forkConversation"
 		| "editMessageConfirm"
 		| "enableMcpServerCreation"
 		| "remoteControlEnabled"

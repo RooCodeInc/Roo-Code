@@ -59,6 +59,7 @@ import {
 	FolderTree,
 	TerminalSquare,
 	MessageCircle,
+	GitBranch,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -1226,6 +1227,22 @@ export const ChatRowContent = ({
 													handleEditClick()
 												}}>
 												<Edit className="w-4 shrink-0" aria-label="Edit message icon" />
+											</div>
+											<div
+												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+												style={{ visibility: isStreaming ? "hidden" : "visible" }}
+												onClick={(e) => {
+													e.stopPropagation()
+													vscode.postMessage({
+														type: "forkConversation",
+														messageTs: message.ts,
+													})
+												}}
+												title={t("chat:fork.tooltip")}>
+												<GitBranch
+													className="w-4 shrink-0"
+													aria-label="Fork conversation icon"
+												/>
 											</div>
 											<div
 												className="cursor-pointer shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
