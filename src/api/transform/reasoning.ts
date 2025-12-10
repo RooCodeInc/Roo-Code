@@ -26,6 +26,10 @@ const GEMINI_THINKING_LEVELS = ["minimal", "low", "medium", "high"] as const
 
 export type GeminiThinkingLevel = (typeof GEMINI_THINKING_LEVELS)[number]
 
+export function isGeminiThinkingLevel(value: unknown): value is GeminiThinkingLevel {
+	return typeof value === "string" && GEMINI_THINKING_LEVELS.includes(value as GeminiThinkingLevel)
+}
+
 export type GeminiReasoningParams = GenerateContentConfig["thinkingConfig"] & {
 	thinkingLevel?: GeminiThinkingLevel
 }
@@ -147,9 +151,9 @@ export const getGeminiReasoning = ({
 	}
 
 	// Effort-based models on Google GenAI support minimal/low/medium/high levels.
-	if (!GEMINI_THINKING_LEVELS.includes(selectedEffort as GeminiThinkingLevel)) {
+	if (!isGeminiThinkingLevel(selectedEffort)) {
 		return undefined
 	}
 
-	return { thinkingLevel: selectedEffort as GeminiThinkingLevel, includeThoughts: true }
+	return { thinkingLevel: selectedEffort, includeThoughts: true }
 }
