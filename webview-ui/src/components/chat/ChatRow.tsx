@@ -2,9 +2,15 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 import { useSize } from "react-use"
 import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeBadge, VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react"
 import { type SearchResult } from "./hooks/useChatSearch"
-import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
+import type {
+	ClineMessage,
+	FollowUpData,
+	MultipleChoiceData,
+	MultipleChoiceResponse,
+	SuggestionItem,
+} from "@roo-code/types"
 import { Mode } from "@roo/modes"
 
 import { ClineApiReqInfo, ClineAskUseMcpServer, ClineSayTool } from "@roo/ExtensionMessage"
@@ -34,6 +40,7 @@ import McpResourceRow from "../mcp/McpResourceRow"
 import { Mention } from "./Mention"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
+import { MultipleChoiceForm } from "./MultipleChoiceForm"
 import { BatchFilePermission } from "./BatchFilePermission"
 import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
@@ -113,10 +120,11 @@ interface ChatRowProps {
 	onToggleExpand: (ts: number) => void
 	onHeightChange: (isTaller: boolean) => void
 	onSuggestionClick?: (suggestion: SuggestionItem, event?: React.MouseEvent) => void
+	onMultipleChoiceSubmit?: (response: MultipleChoiceResponse) => void
 	onBatchFileResponse?: (response: { [key: string]: boolean }) => void
 	onFollowUpUnmount?: () => void
-	// isFollowUpAnswered?: boolean
 	isFollowUpAnswered?: boolean
+	isMultipleChoiceAnswered?: boolean
 	editable?: boolean
 	shouldHighlight?: boolean
 	searchResults?: SearchResult[]
@@ -179,9 +187,11 @@ export const ChatRowContent = ({
 	isStreaming,
 	onToggleExpand,
 	onSuggestionClick,
+	onMultipleChoiceSubmit,
 	onFollowUpUnmount,
 	onBatchFileResponse,
 	isFollowUpAnswered,
+	isMultipleChoiceAnswered,
 	// editable,
 	searchQuery,
 }: ChatRowContentProps) => {
@@ -390,6 +400,13 @@ export const ChatRowContent = ({
 					<MessageCircleQuestionMark className="w-4 shrink-0" aria-label="Question icon" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
 				]
+			case "multiple_choice":
+				return [
+					<MessageCircleQuestionMark className="w-4 shrink-0" aria-label="Multiple choice question icon" />,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>
+						{t("chat:multipleChoice.headerTitle")}
+					</span>,
+				]
 			default:
 				return [null, null]
 		}
@@ -430,6 +447,18 @@ export const ChatRowContent = ({
 		}
 		return null
 	}, [message.type, message.ask, message.partial, message.text])
+
+	const multipleChoiceData = useMemo(() => {
+		if (message.type === "ask" && message.ask === "multiple_choice" && !message.partial) {
+			const data = safeJsonParse<MultipleChoiceData>(message.text)
+			// Costrict: Merge saved user response for display on reload
+			if (data && message.userResponse) {
+				data.userResponse = message.userResponse as MultipleChoiceResponse
+			}
+			return data
+		}
+		return null
+	}, [message.type, message.ask, message.partial, message.text, message.userResponse])
 
 	const handleCopyErrorDetail = useCallback(
 		(message: string) => {
@@ -1809,8 +1838,38 @@ export const ChatRowContent = ({
 									ts={message?.ts}
 									onCancelAutoApproval={onFollowUpUnmount}
 									isAnswered={isFollowUpAnswered}
-									// isAnswered={isFollowUpAnswered}
 								/>
+							</div>
+						</>
+					)
+				case "multiple_choice":
+					if (!message.text || !message.text.trim()) {
+						return null
+					}
+					return (
+						<>
+							{title && (
+								<div style={headerStyle}>
+									{icon}
+									{title}
+								</div>
+							)}
+							<div className="flex flex-col gap-2 ml-6">
+								{message.partial ? (
+									<div className="flex items-center gap-2 py-2 text-vscode-descriptionForeground">
+										<VSCodeProgressRing className="size-4" />
+										<span className="text-sm">{t("chat:multipleChoice.loading")}</span>
+									</div>
+								) : (
+									multipleChoiceData &&
+									onMultipleChoiceSubmit && (
+										<MultipleChoiceForm
+											data={multipleChoiceData}
+											onSubmit={onMultipleChoiceSubmit}
+											isAnswered={isMultipleChoiceAnswered}
+										/>
+									)
+								)}
 							</div>
 						</>
 					)

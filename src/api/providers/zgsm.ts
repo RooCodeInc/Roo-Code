@@ -418,7 +418,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			content: systemPrompt,
 		}
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & { extra_body: any } = {
 			model: modelId,
 			messages: isDeepseekReasoner
 				? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
@@ -430,6 +430,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			...(metadata?.toolProtocol === "native" && {
 				parallel_tool_calls: metadata.parallelToolCalls ?? false,
 			}),
+			extra_body: {
+				prompt_mode: metadata?.mode,
+			},
 		}
 
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)

@@ -132,5 +132,19 @@
 	"autoMode": {
 		"selectedLLM": "Auto 模型：{{selectedLLM}}",
 		"selectReason": "选择原因：{{selectReason}}"
+	},
+	"multipleChoice": {
+		"confirm": "确认",
+		"skip": "跳过",
+		"singleSelect": "单选",
+		"multiSelect": "多选",
+		"questionnaire": "问卷调查",
+		"collapse": "收起",
+		"expand": "展开",
+		"headerTitle": "CoStrict 有如下问题需要您解答：",
+		"userSkipped": "已跳过",
+		"userConfirmed": "已确认",
+		"skipHint": "如果选项都不满足您的需求，可以点击\"跳过\"或在下方输入框直接说明您的需求",
+		"loading": "准备问题中..."
 	}
 }

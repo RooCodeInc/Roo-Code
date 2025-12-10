@@ -28,6 +28,7 @@ import { executeCommandTool } from "../tools/ExecuteCommandTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
+import { askMultipleChoiceTool } from "../tools/AskMultipleChoiceTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
@@ -410,6 +411,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.server_name}']`
 					case "ask_followup_question":
 						return `[${block.name} for '${block.params.question}']`
+					case "ask_multiple_choice":
+						return `[${block.name}${block.params.title ? ` - ${block.params.title}` : ""}]`
 					case "attempt_completion":
 						return `[${block.name}]`
 					case "switch_mode":
@@ -993,6 +996,15 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "ask_followup_question":
 					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "ask_multiple_choice":
+					await askMultipleChoiceTool.handle(cline, block as ToolUse<"ask_multiple_choice">, {
 						askApproval,
 						handleError,
 						pushToolResult,

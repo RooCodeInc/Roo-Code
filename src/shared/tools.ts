@@ -72,6 +72,8 @@ export const toolParamNames = [
 	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
+	"title", // ask_multiple_choice parameter
+	"questions", // ask_multiple_choice parameter
 	"file_path", // search_replace parameter
 	"old_string", // search_replace parameter
 	"new_string", // search_replace parameter
@@ -209,6 +211,11 @@ export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_questi
 	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
 }
 
+export interface AskMultipleChoiceToolUse extends ToolUse<"ask_multiple_choice"> {
+	name: "ask_multiple_choice"
+	params: Partial<Pick<Record<ToolParamName, string>, "title" | "questions">>
+}
+
 export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {
 	name: "attempt_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
@@ -257,6 +264,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
+	ask_multiple_choice: "ask multiple choice",
 	attempt_completion: "complete tasks",
 	switch_mode: "switch modes",
 	new_task: "create new task",
@@ -276,6 +284,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 			"list_files",
 			"list_code_definition_names",
 			"codebase_search",
+			"ask_multiple_choice",
 		],
 	},
 	edit: {

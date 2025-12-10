@@ -129,5 +129,19 @@
 	"autoMode": {
 		"selectedLLM": "Auto model: {{selectedLLM}}",
 		"selectReason": "Select reason: {{selectReason}}"
+	},
+	"multipleChoice": {
+		"confirm": "Confirm",
+		"skip": "Skip",
+		"singleSelect": "single select",
+		"multiSelect": "multiple select",
+		"questionnaire": "Questionnaire",
+		"collapse": "Collapse",
+		"expand": "Expand",
+		"headerTitle": "CoStrict has the following questions for you:",
+		"userSkipped": "Skipped",
+		"userConfirmed": "Confirmed",
+		"skipHint": "If none of the options meet your needs, you can click \"Skip\" or type your requirements in the input box below",
+		"loading": "Preparing questions..."
 	}
 }

@@ -1,10 +1,22 @@
 # CoStrict Change Log
 
+## [2.0.26]
+
+- Add multiple-choice question tool for structured user input collection
+- Enhance CoStrict provider with parallel tool calls support
+- Add MCP support to workflow modes (requirements, design, tasks, testing, code)
+- Improve terminal running state detection with platform-specific delays
+- Update architect mode instructions to use /plans directory
+- Add plans directory to .gitignore
+- Fix Gemini transformer to gracefully skip unsupported content blocks
+- Update system prompts and localization for multiple-choice feature
+- Update apply_diff BUFFER_LINES
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/24eb6ae984cf2fb4300839f4e615393bd90918ff)
+
 ## [2.0.25]
 
 - Refactor auto-completion
 - Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/c103a4a639c54c67fb3e0210a0fe338c18496154)
-- Fix known issues
 
 ## [2.0.24]
 

@@ -13,7 +13,7 @@ import { LRUCache } from "lru-cache"
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
 
-import type { ClineAsk, ClineMessage } from "@roo-code/types"
+import type { ClineAsk, ClineMessage, MultipleChoiceResponse } from "@roo-code/types"
 
 import { ClineSayTool, ExtensionMessage } from "@roo/ExtensionMessage"
 import { findLast } from "@roo/array"
@@ -190,7 +190,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const followUpAutoApproveTimeoutRef = useRef<number | undefined>()
 	// const userRespondedRef = useRef<boolean>(false)
-	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
+	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number>(-1)
 
 	const clineAskRef = useRef(clineAsk)
 	useEffect(() => {
@@ -296,6 +296,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// the text area is enabled which is undesirable.
 							// We have no buttons for this tool, so no problem having them "enabled"
 							// to workaround this issue.  See #1358.
+							setEnableButtons(true)
+							setPrimaryButtonText(undefined)
+							setSecondaryButtonText(undefined)
+							break
+						// Costrict: ask_multiple_choice tool
+						case "multiple_choice":
+							setSendingDisabled(isPartial)
+							setClineAsk("multiple_choice")
 							setEnableButtons(true)
 							setPrimaryButtonText(undefined)
 							setSecondaryButtonText(undefined)
@@ -462,7 +470,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// Reset UI states only when task changes
 		setExpandedRows({})
 		everVisibleMessagesTsRef.current.clear() // Clear for new task
-		setCurrentFollowUpTs(null) // Clear follow-up answered state for new task
+		setCurrentFollowUpTs(-1) // Clear follow-up answered state for new task
 		setIsCondensing(false) // Reset condensing state when switching tasks
 		// Note: sendingDisabled is not reset here as it's managed by message effects
 
@@ -555,7 +563,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [modifiedMessages, clineAsk, enableButtons, primaryButtonText])
 
 	const markFollowUpAsAnswered = useCallback(() => {
-		const lastFollowUpMessage = messagesRef.current.findLast((msg: ClineMessage) => msg.ask === "followup")
+		const lastFollowUpMessage = messagesRef.current.findLast((msg: ClineMessage) =>
+			["followup", "multiple_choice"].includes(msg.ask!),
+		)
 		if (lastFollowUpMessage) {
 			setCurrentFollowUpTs(lastFollowUpMessage.ts)
 		}
@@ -617,6 +627,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						clineAskRef.current // Use clineAskRef.current
 					) {
 						case "followup":
+						case "multiple_choice":
 						case "tool":
 						case "browser_action_launch":
 						case "command": // User can provide feedback to a tool or command use.
@@ -1253,6 +1264,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[setMode],
 	)
 
+	const handleMultipleChoiceSubmit = useCallback(
+		(response: MultipleChoiceResponse) => {
+			// 后端会在 handleWebviewAskResponse 中自动设置 isAnswered 和 userResponse
+			// 不需要前端处理，避免重复和耦合
+			vscode.postMessage({
+				type: "askResponse",
+				askResponse: "messageResponse",
+				text: JSON.stringify(response),
+			})
+
+			setSendingDisabled(true)
+			setClineAsk(undefined)
+			setEnableButtons(false)
+		},
+		[], // 移除不必要的依赖
+	)
+
 	const handleSuggestionClickInRow = useCallback(
 		(suggestion: SuggestionItem, event?: React.MouseEvent) => {
 			// Mark that user has responded if this is a manual click (not auto-approval)
@@ -1365,13 +1393,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onHeightChange={handleRowHeightChange}
 					isStreaming={isStreaming}
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
+					onMultipleChoiceSubmit={handleMultipleChoiceSubmit}
 					onBatchFileResponse={handleBatchFileResponse}
 					onFollowUpUnmount={handleFollowUpUnmount}
-					isFollowUpAnswered={
-						primaryButtonText === t("chat:resumeTask.title") ||
-						primaryButtonText === t("chat:cancel.title") ||
-						primaryButtonText === t("chat:startNewTask.title") ||
-						(currentFollowUpTs != null && messageOrGroup.ts <= currentFollowUpTs)
+					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts <= currentFollowUpTs}
+					// Costrict: ask_multiple_choice answered
+					isMultipleChoiceAnswered={
+						messageOrGroup.isAnswered === true || messageOrGroup.ts <= currentFollowUpTs
 					}
 					editable={
 						messageOrGroup.type === "ask" &&
@@ -1408,8 +1436,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSuggestionClickInRow,
 			handleBatchFileResponse,
 			handleFollowUpUnmount,
+			handleMultipleChoiceSubmit,
 			primaryButtonText,
-			t,
 			currentFollowUpTs,
 			shouldHighlight,
 			searchResults,
