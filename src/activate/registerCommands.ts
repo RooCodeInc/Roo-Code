@@ -395,7 +395,7 @@ export const openClineInNewTab = async ({
 	const targetCol = hasVisibleEditors ? Math.max(lastCol + 1, 1) : vscode.ViewColumn.Two
 
 	const newPanel = vscode.window.createWebviewPanel(
-		taskId ? `zgsm.task-${taskId}` : ClineProvider.tabPanelId,
+		ClineProvider.tabPanelId,
 		taskId ? `Task-${taskId}` : "CoStrict",
 		targetCol,
 		{
