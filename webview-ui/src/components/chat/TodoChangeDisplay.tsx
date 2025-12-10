@@ -55,38 +55,41 @@ function TodoList({ todos, status, keyPrefix, className }: TodoGroup) {
 export function TodoChangeDisplay({ previousTodos, newTodos }: TodoChangeDisplayProps) {
 	const isInitialState = previousTodos.length === 0
 
+	// Reverse the todos array to display in correct order (first to last)
+	const reversedTodos = [...newTodos].reverse()
+
 	// Determine which todos to display
 	let todoGroups: TodoGroup[]
 
-	if (isInitialState && newTodos.length > 0) {
+	if (isInitialState && reversedTodos.length > 0) {
 		// For initial state, show all todos grouped by status
 		todoGroups = [
 			{
-				todos: newTodos.filter((todo) => !todo.status || todo.status === "pending"),
+				todos: reversedTodos.filter((todo) => !todo.status || todo.status === "pending"),
 				status: null,
 				keyPrefix: "pending",
 			},
 			{
-				todos: newTodos.filter((todo) => todo.status === "in_progress"),
+				todos: reversedTodos.filter((todo) => todo.status === "in_progress"),
 				status: "in_progress",
 				keyPrefix: "in-progress",
 				className: "text-vscode-charts-yellow",
 			},
 			{
-				todos: newTodos.filter((todo) => todo.status === "completed"),
+				todos: reversedTodos.filter((todo) => todo.status === "completed"),
 				status: "completed",
 				keyPrefix: "completed",
 			},
 		]
 	} else {
 		// For updates, only show changes
-		const completedTodos = newTodos.filter((newTodo) => {
+		const completedTodos = reversedTodos.filter((newTodo) => {
 			if (newTodo.status !== "completed") return false
 			const previousTodo = previousTodos.find((p) => p.id === newTodo.id || p.content === newTodo.content)
 			return !previousTodo || previousTodo.status !== "completed"
 		})
 
-		const startedTodos = newTodos.filter((newTodo) => {
+		const startedTodos = reversedTodos.filter((newTodo) => {
 			if (newTodo.status !== "in_progress") return false
 			const previousTodo = previousTodos.find((p) => p.id === newTodo.id || p.content === newTodo.content)
 			return !previousTodo || previousTodo.status !== "in_progress"
