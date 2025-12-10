@@ -156,7 +156,6 @@ export class NativeToolCallParser {
 					id: tracked.id,
 				})
 			}
-			this.rawChunkTracker.clear()
 		}
 
 		return events
