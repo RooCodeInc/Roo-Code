@@ -87,11 +87,16 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 
 	// "disable" turns off reasoning entirely; "none" is a valid reasoning level.
 	// Both display as "None" in the UI but behave differently.
-	// Add "disable" option if reasoning effort is not required.
+	// Add "disable" option only when:
+	// 1. requiredReasoningEffort is not true, AND
+	// 2. supportsReasoningEffort is boolean true (not an explicit array)
+	// When the model provides an explicit array, respect those exact values.
 	type ReasoningEffortOption = ReasoningEffortWithMinimal | "none" | "disable"
-	const availableOptions: ReadonlyArray<ReasoningEffortOption> = modelInfo?.requiredReasoningEffort
-		? (baseAvailableOptions as ReadonlyArray<ReasoningEffortOption>)
-		: (["disable", ...baseAvailableOptions] as ReasoningEffortOption[])
+	const shouldAutoAddDisable =
+		!modelInfo?.requiredReasoningEffort && supports === true && !baseAvailableOptions.includes("disable" as any)
+	const availableOptions: ReadonlyArray<ReasoningEffortOption> = shouldAutoAddDisable
+		? (["disable", ...baseAvailableOptions] as ReasoningEffortOption[])
+		: (baseAvailableOptions as ReadonlyArray<ReasoningEffortOption>)
 
 	// Default reasoning effort - use model's default if available
 	// GPT-5 models have "medium" as their default in the model configuration
