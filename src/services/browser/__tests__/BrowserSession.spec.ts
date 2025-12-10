@@ -488,7 +488,7 @@ describe("cursor visualization", () => {
 			)
 		})
 
-		it("should handle absolute file paths", async () => {
+		it("should reject absolute file paths outside workspace", async () => {
 			// Create a cross-platform absolute path for testing
 			const absolutePath = path.resolve("/absolute/path/screenshot.png")
 			const page: any = {
@@ -508,11 +508,61 @@ describe("cursor visualization", () => {
 			const session = new BrowserSession(mockCtx)
 			;(session as any).page = page
 
-			await session.saveScreenshot(absolutePath, testWorkspace)
+			await expect(session.saveScreenshot(absolutePath, testWorkspace)).rejects.toThrow(/outside the workspace/)
+
+			expect(page.screenshot).not.toHaveBeenCalled()
+		})
+
+		it("should reject paths with .. that escape the workspace", async () => {
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn(), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			await expect(session.saveScreenshot("../../etc/passwd", testWorkspace)).rejects.toThrow(
+				/outside the workspace/,
+			)
+
+			expect(page.screenshot).not.toHaveBeenCalled()
+		})
+
+		it("should allow paths with .. that stay within workspace", async () => {
+			const mockFs = await import("fs/promises")
+			const page: any = {
+				on: vi.fn(),
+				off: vi.fn(),
+				screenshot: vi.fn().mockResolvedValue("mockScreenshotBase64"),
+				url: vi.fn().mockReturnValue("https://example.com"),
+				viewport: vi.fn().mockReturnValue({ width: 900, height: 600 }),
+				evaluate: vi.fn().mockResolvedValue(undefined),
+			}
+
+			const mockCtx: any = {
+				globalState: { get: vi.fn(), update: vi.fn() },
+				globalStorageUri: { fsPath: "/mock/global/storage/path" },
+				extensionUri: { fsPath: "/mock/extension/path" },
+			}
+			const session = new BrowserSession(mockCtx)
+			;(session as any).page = page
+
+			// Path like "subdir/../screenshot.png" should resolve to "screenshot.png" within workspace
+			await session.saveScreenshot("subdir/../screenshot.png", testWorkspace)
 
 			expect(page.screenshot).toHaveBeenCalledWith(
 				expect.objectContaining({
-					path: absolutePath,
+					path: path.join(testWorkspace, "screenshot.png"),
 					type: "png",
 				}),
 			)

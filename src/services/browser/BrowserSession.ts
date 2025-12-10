@@ -771,12 +771,22 @@ export class BrowserSession {
 	 * @param filePath - The destination file path (relative to workspace)
 	 * @param cwd - Current working directory for resolving relative paths
 	 * @returns BrowserActionResult with screenshot data and saved file path
+	 * @throws Error if the resolved path escapes the workspace directory
 	 */
 	async saveScreenshot(filePath: string, cwd: string): Promise<BrowserActionResult> {
-		return this.doAction(async (page) => {
-			// Resolve the full path
-			const fullPath = path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath)
+		// Always resolve the path against the workspace root
+		const normalizedCwd = path.resolve(cwd)
+		const fullPath = path.resolve(cwd, filePath)
 
+		// Validate that the resolved path stays within the workspace (before calling doAction)
+		if (!fullPath.startsWith(normalizedCwd + path.sep) && fullPath !== normalizedCwd) {
+			throw new Error(
+				`Screenshot path "${filePath}" resolves to "${fullPath}" which is outside the workspace "${normalizedCwd}". ` +
+					`Paths must be relative to the workspace and cannot escape it.`,
+			)
+		}
+
+		return this.doAction(async (page) => {
 			// Ensure directory exists
 			await fs.mkdir(path.dirname(fullPath), { recursive: true })
 
