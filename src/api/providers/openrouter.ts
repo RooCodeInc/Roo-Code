@@ -8,6 +8,7 @@ import {
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	shouldReportApiErrorToTelemetry,
+	getErrorStatusCode,
 	ApiProviderError,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -227,15 +228,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			TelemetryService.instance.captureException(
-				new ApiProviderError(
-					error instanceof Error ? error.message : String(error),
-					this.providerName,
-					modelId,
-					"createMessage",
-				),
-				{ provider: this.providerName, modelId, operation: "createMessage" },
-			)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const errorStatus = getErrorStatusCode(error)
+			if (shouldReportApiErrorToTelemetry(errorStatus, errorMessage)) {
+				TelemetryService.instance.captureException(
+					new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage", errorStatus),
+					{ provider: this.providerName, modelId, operation: "createMessage", errorCode: errorStatus },
+				)
+			}
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -260,7 +260,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				if (shouldReportApiErrorToTelemetry(error?.code)) {
+				if (shouldReportApiErrorToTelemetry(error?.code, error?.message)) {
 					TelemetryService.instance.captureException(
 						new ApiProviderError(
 							error?.message ?? "Unknown error",
@@ -466,21 +466,20 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			TelemetryService.instance.captureException(
-				new ApiProviderError(
-					error instanceof Error ? error.message : String(error),
-					this.providerName,
-					modelId,
-					"completePrompt",
-				),
-				{ provider: this.providerName, modelId, operation: "completePrompt" },
-			)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const errorStatus = getErrorStatusCode(error)
+			if (shouldReportApiErrorToTelemetry(errorStatus, errorMessage)) {
+				TelemetryService.instance.captureException(
+					new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt", errorStatus),
+					{ provider: this.providerName, modelId, operation: "completePrompt", errorCode: errorStatus },
+				)
+			}
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			if (shouldReportApiErrorToTelemetry(error?.code)) {
+			if (shouldReportApiErrorToTelemetry(error?.code, error?.message)) {
 				TelemetryService.instance.captureException(
 					new ApiProviderError(
 						error?.message ?? "Unknown error",

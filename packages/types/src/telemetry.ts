@@ -277,14 +277,74 @@ export const EXPECTED_API_ERROR_CODES = new Set([
 ])
 
 /**
+ * Patterns in error messages that indicate expected errors (rate limits, etc.)
+ * These are checked when no numeric error code is available.
+ */
+const EXPECTED_ERROR_MESSAGE_PATTERNS = [
+	/^429\b/, // Message starts with "429"
+	/rate limit/i, // Contains "rate limit" (case insensitive)
+]
+
+/**
+ * Interface for SDK errors that have HTTP status information.
+ * OpenAI SDK errors (APIError, AuthenticationError, RateLimitError, etc.)
+ * all extend this interface with a numeric status property.
+ */
+interface SdkErrorWithStatus {
+	status: number
+	code?: number | string
+	message: string
+}
+
+/**
+ * Type guard to check if an error object is an SDK error with status property.
+ * OpenAI SDK errors (APIError and subclasses) have: status, code, message properties.
+ */
+function isSdkErrorWithStatus(error: unknown): error is SdkErrorWithStatus {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"status" in error &&
+		typeof (error as SdkErrorWithStatus).status === "number"
+	)
+}
+
+/**
+ * Extracts the HTTP status code from an error object.
+ * Supports SDK errors that have a status property (e.g., OpenAI APIError).
+ * @param error - The error to extract status from
+ * @returns The status code if available, undefined otherwise
+ */
+export function getErrorStatusCode(error: unknown): number | undefined {
+	if (isSdkErrorWithStatus(error)) {
+		return error.status
+	}
+	return undefined
+}
+
+/**
  * Helper to check if an API error should be reported to telemetry.
- * Filters out expected errors like rate limits.
+ * Filters out expected errors like rate limits by checking both error codes and messages.
  * @param errorCode - The HTTP error code (if available)
+ * @param errorMessage - The error message (if available)
  * @returns true if the error should be reported, false if it should be filtered out
  */
-export function shouldReportApiErrorToTelemetry(errorCode?: number): boolean {
-	if (errorCode === undefined) return true
-	return !EXPECTED_API_ERROR_CODES.has(errorCode)
+export function shouldReportApiErrorToTelemetry(errorCode?: number, errorMessage?: string): boolean {
+	// Check numeric error code
+	if (errorCode !== undefined && EXPECTED_API_ERROR_CODES.has(errorCode)) {
+		return false
+	}
+
+	// Check error message for expected patterns (e.g., "429 Rate limit exceeded")
+	if (errorMessage) {
+		for (const pattern of EXPECTED_ERROR_MESSAGE_PATTERNS) {
+			if (pattern.test(errorMessage)) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 /**

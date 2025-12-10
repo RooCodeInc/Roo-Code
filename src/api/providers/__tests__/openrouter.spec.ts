@@ -321,6 +321,50 @@ describe("OpenRouterHandler", () => {
 			})
 		})
 
+		it("does NOT capture telemetry for SDK exceptions with status 429", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Rate limit exceeded: free-models-per-day") as any
+			error.status = 429
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("Rate limit exceeded")
+
+			// Verify telemetry was NOT captured for rate limit errors
+			expect(mockCaptureException).not.toHaveBeenCalled()
+		})
+
+		it("does NOT capture telemetry for SDK exceptions with 429 in message (fallback)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("429 Rate limit exceeded: free-models-per-day"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("429 Rate limit exceeded")
+
+			// Verify telemetry was NOT captured for rate limit errors (via message parsing)
+			expect(mockCaptureException).not.toHaveBeenCalled()
+		})
+
+		it("does NOT capture telemetry for SDK exceptions containing 'rate limit'", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("Request failed due to rate limit"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const generator = handler.createMessage("test", [])
+			await expect(generator.next()).rejects.toThrow("rate limit")
+
+			// Verify telemetry was NOT captured for rate limit errors
+			expect(mockCaptureException).not.toHaveBeenCalled()
+		})
+
 		it("does NOT capture telemetry for 429 rate limit errors", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 			const mockStream = {
@@ -481,6 +525,47 @@ describe("OpenRouterHandler", () => {
 				modelId: mockOptions.openRouterModelId,
 				operation: "completePrompt",
 			})
+		})
+
+		it("does NOT capture telemetry for SDK exceptions with status 429", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const error = new Error("Rate limit exceeded: free-models-per-day") as any
+			error.status = 429
+			const mockCreate = vitest.fn().mockRejectedValue(error)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Rate limit exceeded")
+
+			// Verify telemetry was NOT captured for rate limit errors
+			expect(mockCaptureException).not.toHaveBeenCalled()
+		})
+
+		it("does NOT capture telemetry for SDK exceptions with 429 in message (fallback)", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("429 Rate limit exceeded: free-models-per-day"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("429 Rate limit exceeded")
+
+			// Verify telemetry was NOT captured for rate limit errors (via message parsing)
+			expect(mockCaptureException).not.toHaveBeenCalled()
+		})
+
+		it("does NOT capture telemetry for SDK exceptions containing 'rate limit'", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+			const mockCreate = vitest.fn().mockRejectedValue(new Error("Request failed due to rate limit"))
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow("rate limit")
+
+			// Verify telemetry was NOT captured for rate limit errors
+			expect(mockCaptureException).not.toHaveBeenCalled()
 		})
 
 		it("does NOT capture telemetry for 429 rate limit errors", async () => {
