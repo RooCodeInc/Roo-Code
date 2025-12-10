@@ -6,6 +6,8 @@ import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
 import { searchAndReplaceTool } from "../../tools/SearchAndReplaceTool"
+import { writeToFileTool } from "../../tools/WriteToFileTool"
+import { applyDiffTool } from "../../tools/ApplyDiffTool"
 
 /**
  * Tool aliases registry - built from tools that define aliases.
@@ -67,6 +69,8 @@ function registerToolAliases(toolName: string, aliases: string[]): void {
 
 // Register all tool aliases from tool instances
 registerToolAliases(searchAndReplaceTool.name, searchAndReplaceTool.aliases)
+registerToolAliases(writeToFileTool.name, writeToFileTool.aliases)
+registerToolAliases(applyDiffTool.name, applyDiffTool.aliases)
 
 /**
  * Resolves a tool name to its canonical name.
