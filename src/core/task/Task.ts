@@ -129,7 +129,6 @@ import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHist
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
-import { validateAndFixToolResultIds } from "./validateToolResultIds"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -812,12 +811,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
-			// For user messages, validate and fix tool_result IDs against the previous assistant message
-			const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
-			const previousAssistantMessage =
-				prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
-			const validatedMessage = validateAndFixToolResultIds(message, previousAssistantMessage)
-			const messageWithTs = { ...validatedMessage, ts: Date.now() }
+			const messageWithTs = { ...message, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
 		}
 
@@ -856,12 +850,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			content: this.userMessageContent,
 		}
 
-		// Validate and fix tool_result IDs against the previous assistant message
-		const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
-		const previousAssistantMessage =
-			prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
-		const validatedMessage = validateAndFixToolResultIds(userMessage, previousAssistantMessage)
-		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
+		const userMessageWithTs = { ...userMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
 
 		await this.saveApiConversationHistory()
