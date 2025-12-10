@@ -39,6 +39,10 @@ Parameters:
         - Use with the \`size\` parameter to specify the new size.
     * scroll_down: Scroll down the page by one page height.
     * scroll_up: Scroll up the page by one page height.
+    * screenshot: Take a screenshot and save it to a file.
+        - Use with the \`path\` parameter to specify the destination file path.
+        - Supported formats: .png, .jpeg, .webp
+        - Example: \`<action>screenshot</action>\` with \`<path>screenshots/result.png</path>\`
     * close: Close the Puppeteer-controlled browser instance. This **must always be the final browser action**.
         - Example: \`<action>close</action>\`
 - url: (optional) Use this for providing the URL for the \`launch\` action.
@@ -56,6 +60,9 @@ Parameters:
     * Example: <size>1280,720</size>
 - text: (optional) Use this for providing the text for the \`type\` action.
     * Example: <text>Hello, world!</text>
+- path: (optional) File path for the \`screenshot\` action. Path is relative to the workspace.
+    * Supported formats: .png, .jpeg, .webp
+    * Example: <path>screenshots/my-screenshot.png</path>
 Usage:
 <browser_action>
 <action>Action to perform (e.g., launch, click, type, press, scroll_down, scroll_up, close)</action>
@@ -74,5 +81,11 @@ Example: Requesting to click on the element at coordinates 450,300 on a 1024x768
 <browser_action>
 <action>click</action>
 <coordinate>450,300@1024x768</coordinate>
+</browser_action>
+
+Example: Taking a screenshot and saving it to a file
+<browser_action>
+<action>screenshot</action>
+<path>screenshots/result.png</path>
 </browser_action>`
 }

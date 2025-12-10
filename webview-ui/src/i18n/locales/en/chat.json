@@ -315,7 +315,8 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Released",
+		"title": "Roo Code {{version}} Released",
+		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
 			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
@@ -334,8 +335,7 @@
 			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
 			"tryButton": "Try Cloud Agents"
 		},
-		"careers": "Also, <careersLink>we're hiring!</careersLink>",
-		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Also, <careersLink>we're hiring!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -361,13 +361,25 @@
 		"sessionStarted": "Browser Session Started",
 		"actions": {
 			"title": "Browser Action: ",
+			"launched": "Launched browser",
 			"launch": "Launch browser at {{url}}",
+			"clicked": "Clicked at: {{coordinate}}",
 			"click": "Click ({{coordinate}})",
+			"typed": "Typed: {{text}}",
 			"type": "Type \"{{text}}\"",
+			"pressed": "Pressed key: {{key}}",
 			"press": "Press {{key}}",
+			"scrolledDown": "Scrolled down",
 			"scrollDown": "Scroll down",
+			"scrolledUp": "Scrolled up",
 			"scrollUp": "Scroll up",
+			"hovered": "Hovered at: {{coordinate}}",
 			"hover": "Hover ({{coordinate}})",
+			"resized": "Resized to: {{size}}",
+			"resize": "Resize to {{size}}",
+			"screenshotSaved": "Screenshot saved",
+			"screenshot": "Save screenshot to {{path}}",
+			"closed": "Closed browser",
 			"close": "Close browser"
 		}
 	},

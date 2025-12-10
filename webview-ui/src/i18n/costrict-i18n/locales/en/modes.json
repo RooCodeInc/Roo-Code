@@ -10,6 +10,8 @@
 		"architect": "Plan and design before implementation",
 		"ask": "Get answers and explanations",
 		"debug": "Diagnose and fix software issues",
-		"orchestrator": "Coordinate tasks across multiple modes"
+		"orchestrator": "Coordinate tasks across multiple modes",
+		"plan-apply": "Write, modify, debug, and refactor code based on plans",
+		"plan": "Create detailed, actionable implementation plans through clarifying questions"
 	}
 }

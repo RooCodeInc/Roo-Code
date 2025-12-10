@@ -870,6 +870,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			role: "user",
 			content: this.userMessageContent,
 		}
+
 		const userMessageWithTs = { ...userMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
 

@@ -267,7 +267,44 @@ export interface TelemetryClient {
 
 	setProvider(provider: TelemetryPropertiesProvider): void
 	capture(options: TelemetryEvent): Promise<void>
+	captureException(error: Error, additionalProperties?: Record<string, unknown>): void
 	updateTelemetryState(isOptedIn: boolean): void
 	isTelemetryEnabled(): boolean
 	shutdown(): Promise<void>
+}
+
+/**
+ * Expected API error codes that should not be reported to telemetry.
+ * These are normal/expected errors that users can't do much about.
+ */
+export const EXPECTED_API_ERROR_CODES = new Set([
+	429, // Rate limit - expected when hitting API limits
+])
+
+/**
+ * Helper to check if an API error should be reported to telemetry.
+ * Filters out expected errors like rate limits.
+ * @param errorCode - The HTTP error code (if available)
+ * @returns true if the error should be reported, false if it should be filtered out
+ */
+export function shouldReportApiErrorToTelemetry(errorCode?: number): boolean {
+	if (errorCode === undefined) return true
+	return !EXPECTED_API_ERROR_CODES.has(errorCode)
+}
+
+/**
+ * Generic API provider error class for structured error tracking via PostHog.
+ * Can be reused by any API provider.
+ */
+export class ApiProviderError extends Error {
+	constructor(
+		message: string,
+		public readonly provider: string,
+		public readonly modelId: string,
+		public readonly operation: string,
+		public readonly errorCode?: number,
+	) {
+		super(message)
+		this.name = "ApiProviderError"
+	}
 }

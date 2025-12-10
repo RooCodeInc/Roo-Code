@@ -181,4 +181,8 @@ export class CostrictTelemetryClient extends BaseTelemetryClient {
 			this.stopReportTimer()
 		}
 	}
+
+	public captureException(_error: Error, _additionalProperties?: Record<string, unknown>): void {
+		// todo - exception capture
+	}
 }

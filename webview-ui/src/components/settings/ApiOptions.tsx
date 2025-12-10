@@ -479,13 +479,13 @@ const ApiOptions = ({
 	// Mirrors the simplified logic in resolveToolProtocol.ts:
 	// 1. User preference (toolProtocol) - handled by the select value binding
 	// 2. Model default - use if available
-	// 3. Native fallback
-	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.NATIVE
+	// 3. XML fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
 
-	// Show the tool protocol selector when model supports native tools
+	// Show the tool protocol selector when model supports native tools.
+	// For OpenAI Compatible providers we always show it so users can force XML/native explicitly.
 	const showToolProtocolSelector =
-		selectedModelInfo?.supportsNativeTools === true || apiConfiguration.apiProvider === "zgsm"
-
+		["openai", "zgsm"].includes(selectedProvider) || selectedModelInfo?.supportsNativeTools === true
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list

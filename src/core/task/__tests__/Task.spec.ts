@@ -999,7 +999,6 @@ describe("Cline", () => {
 					getState: vi.fn().mockResolvedValue({
 						apiConfiguration: mockApiConfig,
 					}),
-					getMcpHub: vi.fn().mockReturnValue(undefined),
 					say: vi.fn(),
 					log: vi.fn(),
 					postStateToWebview: vi.fn().mockResolvedValue(undefined),

@@ -191,7 +191,7 @@ export interface ListCodeDefinitionNamesToolUse extends ToolUse<"list_code_defin
 
 export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
 	name: "browser_action"
-	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size">>
+	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
 }
 
 export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
