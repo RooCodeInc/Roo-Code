@@ -115,8 +115,10 @@ export function validateAndFixToolResultIds(
 			return block
 		}
 
-		// Find which tool_result index this is (among all tool_results)
-		const toolResultIndex = toolResults.findIndex((r) => r.tool_use_id === block.tool_use_id)
+		// Find which tool_result index this block is by comparing references.
+		// This correctly handles duplicate tool_use_ids - we find the actual block's
+		// position among all tool_results, not the first block with a matching ID.
+		const toolResultIndex = toolResults.indexOf(block as Anthropic.ToolResultBlockParam)
 
 		// Try to match by position - only fix if there's a corresponding tool_use
 		if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
