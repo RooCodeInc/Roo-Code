@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { getRooModels } from "../roo"
+import { Package } from "../../../../shared/package"
 
 // Mock fetch globally
 const mockFetch = vi.fn()
@@ -975,5 +976,54 @@ describe("getRooModels", () => {
 
 		// Should use 3.0.0 version settings (highest that's <= current plugin version)
 		expect(model.feature).toBe("current")
+	})
+
+	it("should apply highest versionedSettings for nightly versions (0.0.x)", async () => {
+		const mockResponse = {
+			object: "list",
+			data: [
+				{
+					id: "test/nightly-version-model",
+					object: "model",
+					created: 1234567890,
+					owned_by: "test",
+					name: "Nightly Model",
+					description: "Model with multiple versioned settings",
+					context_window: 128000,
+					max_tokens: 8192,
+					type: "language",
+					pricing: {
+						input: "0.0001",
+						output: "0.0002",
+					},
+					settings: {
+						feature: "plain",
+					},
+					versionedSettings: {
+						"3.36.3": { feature: "v3" },
+						"2.0.0": { feature: "v2" },
+					},
+				},
+			],
+		}
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => mockResponse,
+		})
+
+		// Simulate nightly version (0.0.x)
+		const originalVersion = Package.version
+		;(Package as { version: string }).version = "0.0.7465"
+
+		try {
+			const models = await getRooModels(baseUrl, apiKey)
+			const model = models["test/nightly-version-model"] as Record<string, unknown>
+
+			// Should pick the highest available versionedSettings even though 3.36.3 > 0.0.7465
+			expect(model.feature).toBe("v3")
+		} finally {
+			;(Package as { version: string }).version = originalVersion
+		}
 	})
 })
