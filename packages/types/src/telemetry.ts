@@ -286,38 +286,65 @@ const EXPECTED_ERROR_MESSAGE_PATTERNS = [
 ]
 
 /**
- * Interface for SDK errors that have HTTP status information.
+ * Interface representing the error structure from OpenAI SDK.
  * OpenAI SDK errors (APIError, AuthenticationError, RateLimitError, etc.)
- * all extend this interface with a numeric status property.
+ * have a numeric `status` property and may contain nested error metadata.
+ *
+ * @see https://github.com/openai/openai-node/blob/master/src/error.ts
  */
-interface SdkErrorWithStatus {
+interface OpenAISdkError {
+	/** HTTP status code of the error response */
 	status: number
+	/** Optional error code (may be numeric or string) */
 	code?: number | string
+	/** Primary error message */
 	message: string
+	/** Nested error object containing additional details from the API response */
+	error?: {
+		message?: string
+		metadata?: {
+			/** Raw error message from upstream provider (e.g., OpenRouter upstream errors) */
+			raw?: string
+		}
+	}
 }
 
 /**
- * Type guard to check if an error object is an SDK error with status property.
+ * Type guard to check if an error object is an OpenAI SDK error.
  * OpenAI SDK errors (APIError and subclasses) have: status, code, message properties.
  */
-function isSdkErrorWithStatus(error: unknown): error is SdkErrorWithStatus {
+function isOpenAISdkError(error: unknown): error is OpenAISdkError {
 	return (
 		typeof error === "object" &&
 		error !== null &&
 		"status" in error &&
-		typeof (error as SdkErrorWithStatus).status === "number"
+		typeof (error as OpenAISdkError).status === "number"
 	)
 }
 
 /**
  * Extracts the HTTP status code from an error object.
- * Supports SDK errors that have a status property (e.g., OpenAI APIError).
+ * Supports OpenAI SDK errors that have a status property.
  * @param error - The error to extract status from
  * @returns The status code if available, undefined otherwise
  */
 export function getErrorStatusCode(error: unknown): number | undefined {
-	if (isSdkErrorWithStatus(error)) {
+	if (isOpenAISdkError(error)) {
 		return error.status
+	}
+	return undefined
+}
+
+/**
+ * Extracts the most descriptive error message from an OpenAI SDK error.
+ * Prioritizes nested metadata (upstream provider errors) over the standard message.
+ * @param error - The error to extract message from
+ * @returns The best available error message, or undefined if not an OpenAI SDK error
+ */
+export function getOpenAISdkErrorMessage(error: unknown): string | undefined {
+	if (isOpenAISdkError(error)) {
+		// Prioritize nested metadata which may contain upstream provider details
+		return error.error?.metadata?.raw || error.error?.message || error.message
 	}
 	return undefined
 }
