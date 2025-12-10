@@ -72,14 +72,12 @@ vi.mock("@roo-code/telemetry", () => ({
 		createInstance: vi.fn().mockReturnValue({
 			register: vi.fn(),
 			setProvider: vi.fn(),
-			setAppVersion: vi.fn(),
 			shutdown: vi.fn(),
 		}),
 		get instance() {
 			return {
 				register: vi.fn(),
 				setProvider: vi.fn(),
-				setAppVersion: vi.fn(),
 				shutdown: vi.fn(),
 			}
 		},
