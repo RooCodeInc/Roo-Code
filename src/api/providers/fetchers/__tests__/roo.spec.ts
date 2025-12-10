@@ -978,7 +978,7 @@ describe("getRooModels", () => {
 		expect(model.feature).toBe("current")
 	})
 
-	it("should apply highest versionedSettings for nightly versions (0.0.x)", async () => {
+	it("should apply highest versionedSettings for nightly builds (package name)", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -1012,9 +1012,9 @@ describe("getRooModels", () => {
 			json: async () => mockResponse,
 		})
 
-		// Simulate nightly version (0.0.x)
-		const originalVersion = Package.version
-		;(Package as { version: string }).version = "0.0.7465"
+		// Simulate nightly build via package name
+		const originalName = Package.name
+		;(Package as { name: string }).name = "roo-code-nightly"
 
 		try {
 			const models = await getRooModels(baseUrl, apiKey)
@@ -1023,7 +1023,7 @@ describe("getRooModels", () => {
 			// Should pick the highest available versionedSettings even though 3.36.3 > 0.0.7465
 			expect(model.feature).toBe("v3")
 		} finally {
-			;(Package as { version: string }).version = originalVersion
+			;(Package as { name: string }).name = originalName
 		}
 	})
 })

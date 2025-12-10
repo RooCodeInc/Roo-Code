@@ -2,8 +2,8 @@ import cmp from "semver-compare"
 
 import { Package } from "../../../shared/package"
 
-function isNightlyVersion(version: string): boolean {
-	return version.startsWith("0.0.")
+function isNightlyBuild(): boolean {
+	return Package.name.toLowerCase().includes("nightly")
 }
 
 /**
@@ -76,8 +76,8 @@ export function findHighestMatchingVersion(
 		return undefined
 	}
 
-	// Nightly builds (0.0.x) should always pick the highest available versioned settings
-	if (isNightlyVersion(currentVersion)) {
+	// Nightly builds should always pick the highest available versioned settings
+	if (isNightlyBuild()) {
 		versions.sort((a, b) => compareSemver(b, a))
 		return versions[0]
 	}

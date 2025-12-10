@@ -5,6 +5,7 @@ import {
 	resolveVersionedSettings,
 	type VersionedSettings,
 } from "../versionedSettings"
+import { Package } from "../../../../shared/package"
 
 describe("versionedSettings", () => {
 	describe("compareSemver", () => {
@@ -112,6 +113,23 @@ describe("versionedSettings", () => {
 
 			const result = findHighestMatchingVersion(versionedSettings, "3.36.4")
 			expect(result).toBeUndefined()
+		})
+
+		it("should treat nightly builds (by package name) as always eligible and pick highest version", () => {
+			const versionedSettings: VersionedSettings = {
+				"3.36.3": { feature: "v3" },
+				"2.0.0": { feature: "v2" },
+			}
+
+			const originalName = Package.name
+			;(Package as { name: string }).name = "roo-code-nightly"
+
+			try {
+				const result = findHighestMatchingVersion(versionedSettings, "1.0.0")
+				expect(result).toBe("3.36.3")
+			} finally {
+				;(Package as { name: string }).name = originalName
+			}
 		})
 	})
 
