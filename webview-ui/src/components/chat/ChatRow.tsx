@@ -65,7 +65,7 @@ import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
 
 // Helper function to get previous todos before a specific message
-function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
+export function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
 	// Find the previous updateTodoList message before the current one
 	// Search backwards through the original array to maintain order
 	for (let i = messages.length - 1; i >= 0; i--) {
