@@ -249,6 +249,8 @@ export class NativeToolCallParser {
 
 			// Resolve tool alias to canonical name
 			const resolvedName = resolveToolAlias(toolCall.name) as ToolName
+			// Preserve original name if it differs from resolved (i.e., it was an alias)
+			const originalName = toolCall.name !== resolvedName ? toolCall.name : undefined
 
 			// Create partial ToolUse with extracted values
 			return this.createPartialToolUse(
@@ -256,6 +258,7 @@ export class NativeToolCallParser {
 				resolvedName,
 				partialArgs || {},
 				true, // partial
+				originalName,
 			)
 		} catch {
 			// Even partial-json-parser can fail on severely malformed JSON
@@ -331,12 +334,14 @@ export class NativeToolCallParser {
 	/**
 	 * Create a partial ToolUse from currently parsed arguments.
 	 * Used during streaming to show progress.
+	 * @param originalName - The original tool name as called by the model (if different from canonical name)
 	 */
 	private static createPartialToolUse(
 		id: string,
 		name: ToolName,
 		partialArgs: Record<string, any>,
 		partial: boolean,
+		originalName?: string,
 	): ToolUse | null {
 		// Build legacy params for display
 		// NOTE: For streaming partial updates, we MUST populate params even for complex types
@@ -522,13 +527,20 @@ export class NativeToolCallParser {
 				break
 		}
 
-		return {
+		const result: ToolUse = {
 			type: "tool_use" as const,
 			name,
 			params,
 			partial,
 			nativeArgs,
 		}
+
+		// Preserve original name for API history when an alias was used
+		if (originalName) {
+			;(result as any).originalName = originalName
+		}
+
+		return result
 	}
 
 	/**
@@ -780,6 +792,11 @@ export class NativeToolCallParser {
 				params,
 				partial: false, // Native tool calls are always complete when yielded
 				nativeArgs,
+			}
+
+			// Preserve original name for API history when an alias was used
+			if (toolCall.name !== resolvedName) {
+				;(result as any).originalName = toolCall.name
 			}
 
 			return result

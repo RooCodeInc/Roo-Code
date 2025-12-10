@@ -3106,10 +3106,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								// nativeArgs is already in the correct API format for all tools
 								const input = toolUse.nativeArgs || toolUse.params
 
+								// Use originalName (alias) if present for API history consistency.
+								// When tool aliases are used (e.g., "edit_file" -> "search_and_replace"),
+								// we want the alias name in the conversation history to match what the model
+								// was told the tool was named, preventing confusion in multi-turn conversations.
+								const toolNameForHistory = (toolUse as any).originalName || toolUse.name
+
 								assistantContent.push({
 									type: "tool_use" as const,
 									id: toolCallId,
-									name: toolUse.name,
+									name: toolNameForHistory,
 									input,
 								})
 							}
