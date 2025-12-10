@@ -62,9 +62,9 @@ export function TodoChangeDisplay({ previousTodos, newTodos }: TodoChangeDisplay
 		// For initial state, show all todos grouped by status
 		todoGroups = [
 			{
-				todos: newTodos.filter((todo) => !todo.status || todo.status === "pending"),
-				status: null,
-				keyPrefix: "pending",
+				todos: newTodos.filter((todo) => todo.status === "completed"),
+				status: "completed",
+				keyPrefix: "completed",
 			},
 			{
 				todos: newTodos.filter((todo) => todo.status === "in_progress"),
@@ -73,9 +73,9 @@ export function TodoChangeDisplay({ previousTodos, newTodos }: TodoChangeDisplay
 				className: "text-vscode-charts-yellow",
 			},
 			{
-				todos: newTodos.filter((todo) => todo.status === "completed"),
-				status: "completed",
-				keyPrefix: "completed",
+				todos: newTodos.filter((todo) => !todo.status || todo.status === "pending"),
+				status: null,
+				keyPrefix: "pending",
 			},
 		]
 	} else {
