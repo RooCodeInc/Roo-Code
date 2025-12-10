@@ -1,7 +1,13 @@
 import { PostHog } from "posthog-node"
 import * as vscode from "vscode"
 
-import { TelemetryEventName, type TelemetryEvent } from "@roo-code/types"
+import {
+	TelemetryEventName,
+	type TelemetryEvent,
+	getErrorStatusCode,
+	getOpenAISdkErrorMessage,
+	shouldReportApiErrorToTelemetry,
+} from "@roo-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
 
@@ -67,6 +73,20 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 				console.info(`[PostHogTelemetryClient#captureException] Skipping exception: ${error.message}`)
 			}
 
+			return
+		}
+
+		// Extract error status code and message for filtering
+		const errorCode = getErrorStatusCode(error)
+		const errorMessage = getOpenAISdkErrorMessage(error) ?? error.message
+
+		// Filter out expected errors (e.g., 429 rate limits)
+		if (!shouldReportApiErrorToTelemetry(errorCode, errorMessage)) {
+			if (this.debug) {
+				console.info(
+					`[PostHogTelemetryClient#captureException] Filtering out expected error: ${errorCode} - ${errorMessage}`,
+				)
+			}
 			return
 		}
 

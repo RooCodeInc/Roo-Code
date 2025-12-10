@@ -7,8 +7,6 @@ import {
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
-	shouldReportApiErrorToTelemetry,
-	getErrorStatusCode,
 	ApiProviderError,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -228,14 +226,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const errorStatus = getErrorStatusCode(error)
-			if (shouldReportApiErrorToTelemetry(errorStatus, errorMessage)) {
-				TelemetryService.instance.captureException(
-					new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage", errorStatus),
-					{ provider: this.providerName, modelId, operation: "createMessage", errorCode: errorStatus },
-				)
-			}
+			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(
+					error instanceof Error ? error.message : String(error),
+					this.providerName,
+					modelId,
+					"createMessage",
+				),
+				{ provider: this.providerName, modelId, operation: "createMessage", originalError: error },
+			)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -260,18 +260,24 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				if (shouldReportApiErrorToTelemetry(error?.code, error?.message)) {
-					TelemetryService.instance.captureException(
-						new ApiProviderError(
-							error?.message ?? "Unknown error",
-							this.providerName,
-							modelId,
-							"createMessage",
-							error?.code,
-						),
-						{ provider: this.providerName, modelId, operation: "createMessage", errorCode: error?.code },
-					)
-				}
+				// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
+				// Create an error object with status property so the telemetry client can extract it
+				const errorWithStatus = Object.assign(
+					new ApiProviderError(
+						error?.message ?? "Unknown error",
+						this.providerName,
+						modelId,
+						"createMessage",
+						error?.code,
+					),
+					{ status: error?.code },
+				)
+				TelemetryService.instance.captureException(errorWithStatus, {
+					provider: this.providerName,
+					modelId,
+					operation: "createMessage",
+					errorCode: error?.code,
+				})
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
@@ -466,31 +472,39 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const errorStatus = getErrorStatusCode(error)
-			if (shouldReportApiErrorToTelemetry(errorStatus, errorMessage)) {
-				TelemetryService.instance.captureException(
-					new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt", errorStatus),
-					{ provider: this.providerName, modelId, operation: "completePrompt", errorCode: errorStatus },
-				)
-			}
+			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
+			TelemetryService.instance.captureException(
+				new ApiProviderError(
+					error instanceof Error ? error.message : String(error),
+					this.providerName,
+					modelId,
+					"completePrompt",
+				),
+				{ provider: this.providerName, modelId, operation: "completePrompt", originalError: error },
+			)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			if (shouldReportApiErrorToTelemetry(error?.code, error?.message)) {
-				TelemetryService.instance.captureException(
-					new ApiProviderError(
-						error?.message ?? "Unknown error",
-						this.providerName,
-						modelId,
-						"completePrompt",
-						error?.code,
-					),
-					{ provider: this.providerName, modelId, operation: "completePrompt", errorCode: error?.code },
-				)
-			}
+			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
+			// Create an error object with status property so the telemetry client can extract it
+			const errorWithStatus = Object.assign(
+				new ApiProviderError(
+					error?.message ?? "Unknown error",
+					this.providerName,
+					modelId,
+					"completePrompt",
+					error?.code,
+				),
+				{ status: error?.code },
+			)
+			TelemetryService.instance.captureException(errorWithStatus, {
+				provider: this.providerName,
+				modelId,
+				operation: "completePrompt",
+				errorCode: error?.code,
+			})
 			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 		}
 

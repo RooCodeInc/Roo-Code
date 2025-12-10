@@ -32,6 +32,7 @@ describe("PostHogTelemetryClient", () => {
 
 		mockPostHogClient = {
 			capture: vi.fn(),
+			captureException: vi.fn(),
 			optIn: vi.fn(),
 			optOut: vi.fn(),
 			shutdown: vi.fn().mockResolvedValue(undefined),
@@ -371,6 +372,102 @@ describe("PostHogTelemetryClient", () => {
 			const client = new PostHogTelemetryClient()
 			await client.shutdown()
 			expect(mockPostHogClient.shutdown).toHaveBeenCalled()
+		})
+	})
+
+	describe("captureException", () => {
+		it("should not capture exceptions when telemetry is disabled", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(false)
+
+			const error = new Error("Test error")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should capture exceptions when telemetry is enabled", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Test error")
+			client.captureException(error, { provider: "TestProvider" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "TestProvider",
+			})
+		})
+
+		it("should filter out 429 rate limit errors (via status property)", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an error with status property (like OpenAI SDK errors)
+			const error = Object.assign(new Error("Rate limit exceeded"), { status: 429 })
+			client.captureException(error)
+
+			// Should NOT capture 429 errors
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should filter out errors with '429' in message", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("429 Rate limit exceeded: free-models-per-day")
+			client.captureException(error)
+
+			// Should NOT capture errors with 429 in message
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should filter out errors containing 'rate limit' (case insensitive)", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Request failed due to Rate Limit")
+			client.captureException(error)
+
+			// Should NOT capture rate limit errors
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should capture non-rate-limit errors", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Internal server error")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should capture errors with non-429 status codes", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = Object.assign(new Error("Internal server error"), { status: 500 })
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should use nested error message from OpenAI SDK error structure", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an error with nested metadata (like OpenRouter upstream errors)
+			const error = Object.assign(new Error("Request failed"), {
+				status: 429,
+				error: {
+					message: "Error details",
+					metadata: { raw: "Rate limit exceeded: free-models-per-day" },
+				},
+			})
+			client.captureException(error)
+
+			// Should NOT capture - the nested metadata.raw contains rate limit message
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
 		})
 	})
 })
