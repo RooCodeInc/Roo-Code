@@ -6,6 +6,7 @@ import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@src/components/ui/dialog"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "../ui"
 
 /**
  * Unified error display component for all error types in the chat.
@@ -211,12 +212,17 @@ export const ErrorRow = memo(
 									</a>
 								)}
 								{errorDetails && (
-									<button
-										onClick={() => setIsDetailsDialogOpen(true)}
-										className="transition-opacity opacity-0 group-hover:opacity-100 cursor-pointer"
-										aria-label={t("chat:errorDetails.title")}>
-										<Info className="w-4 h-4 text-vscode-errorForeground" />
-									</button>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<button
+												onClick={() => setIsDetailsDialogOpen(true)}
+												className="transition-opacity opacity-0 group-hover:opacity-100 cursor-pointer"
+												aria-label={t("chat:errorDetails.title")}>
+												<Info className="size-4" />
+											</button>
+										</TooltipTrigger>
+										<TooltipContent>{t("chat:errorDetails.title")}</TooltipContent>
+									</Tooltip>
 								)}
 							</div>
 						</div>
@@ -240,28 +246,25 @@ export const ErrorRow = memo(
 							<DialogHeader>
 								<DialogTitle>{t("chat:errorDetails.title")}</DialogTitle>
 							</DialogHeader>
-							<div className="max-h-96 overflow-auto">
-								<pre className="font-mono text-sm whitespace-pre-wrap break-words bg-vscode-editor-background p-3 rounded border border-vscode-editorGroup-border">
+							<div className="max-h-96 overflow-auto px-3 bg-vscode-editor-background rounded-xl border border-vscode-editorGroup-border">
+								<pre className="font-mono text-sm whitespace-pre-wrap break-words bg-transparent">
 									{errorDetails}
 								</pre>
 							</div>
 							<DialogFooter>
-								<VSCodeButton
-									appearance="secondary"
-									onClick={handleCopyDetails}
-									className="flex items-center gap-2">
+								<Button variant="secondary" onClick={handleCopyDetails}>
 									{showDetailsCopySuccess ? (
 										<>
-											<Check className="w-4 h-4" />
+											<Check className="size-3" />
 											{t("chat:errorDetails.copied")}
 										</>
 									) : (
 										<>
-											<Copy className="w-4 h-4" />
+											<Copy className="size-3" />
 											{t("chat:errorDetails.copyToClipboard")}
 										</>
 									)}
-								</VSCodeButton>
+								</Button>
 							</DialogFooter>
 						</DialogContent>
 					</Dialog>

@@ -1137,10 +1137,12 @@ export const ChatRowContent = ({
 							)
 						} else {
 							// Non-HTTP-status-code error message - store full text as errorDetails
-							errorDetails = message.text
 							body = t("chat:apiRequest.errorMessage.unknown")
 							docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
 						}
+
+						// Always pass error details on
+						errorDetails = message.text ? message.text : undefined
 					}
 					return (
 						<ErrorRow
