@@ -82,12 +82,9 @@ function applyReplacement(
 	if (isNewFile) {
 		return newString
 	}
-	if (currentContent === null) {
-		return oldString === "" ? newString : ""
-	}
 	// If oldString is empty and it's not a new file, do not modify the content
-	if (oldString === "" && !isNewFile) {
-		return currentContent
+	if (oldString === "" || currentContent === null) {
+		return currentContent ?? ""
 	}
 
 	return safeLiteralReplace(currentContent, oldString, newString)
@@ -117,13 +114,6 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				task.consecutiveMistakeCount++
 				task.recordToolError("edit_file")
 				pushToolResult(await task.sayAndCreateMissingParamError("edit_file", "file_path"))
-				return
-			}
-
-			if (new_string === undefined) {
-				task.consecutiveMistakeCount++
-				task.recordToolError("edit_file")
-				pushToolResult(await task.sayAndCreateMissingParamError("edit_file", "new_string"))
 				return
 			}
 
