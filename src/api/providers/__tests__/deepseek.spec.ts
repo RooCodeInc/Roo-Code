@@ -122,7 +122,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId } from "@roo-code/types"
+import { deepSeekDefaultModelId, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -224,6 +224,27 @@ describe("DeepSeekHandler", () => {
 			expect(model.info.contextWindow).toBe(128_000)
 			expect(model.info.supportsImages).toBe(false)
 			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it("should have preserveReasoning enabled for deepseek-reasoner to support interleaved thinking", () => {
+			// This is critical for DeepSeek's interleaved thinking mode with tool calls.
+			// See: https://api-docs.deepseek.com/guides/thinking_mode
+			// The reasoning_content needs to be passed back during tool call continuation
+			// within the same turn for the model to continue reasoning properly.
+			const handlerWithReasoner = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-reasoner",
+			})
+			const model = handlerWithReasoner.getModel()
+			// Cast to ModelInfo to access preserveReasoning which is an optional property
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+		})
+
+		it("should NOT have preserveReasoning enabled for deepseek-chat", () => {
+			// deepseek-chat doesn't use thinking mode, so no need to preserve reasoning
+			const model = handler.getModel()
+			// Cast to ModelInfo to access preserveReasoning which is an optional property
+			expect((model.info as ModelInfo).preserveReasoning).toBeUndefined()
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
