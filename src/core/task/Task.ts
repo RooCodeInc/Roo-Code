@@ -3903,7 +3903,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
 				}
 
-				await this.say("api_req_retry_delayed", `${headerText}\n↻ ${i}s...`, undefined, true)
+				await this.say("api_req_retry_delayed", `${headerText}<retry_timer>${i}</retry_timer>`, undefined, true)
 				await delay(1000)
 			}
 
