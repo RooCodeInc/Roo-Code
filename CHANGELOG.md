@@ -1,5 +1,51 @@
 # Roo Code Changelog
 
+## [3.36.3] - 2025-12-09
+
+![3.36.3 Release](/releases/3.36.3-release.png)
+
+- Refactor: Unified context-management architecture with improved UX for better context control (PR #9795 by @hannesrudolph)
+- Add new `search_replace` native tool for single-replacement operations with improved editing precision (PR #9918 by @hannesrudolph)
+- Streaming tool stats and token usage throttling for better real-time feedback during generation (PR #9926 by @hannesrudolph)
+- Add versioned settings support with minPluginVersion gating for Roo provider (PR #9934 by @hannesrudolph)
+- Make Architect mode save plans to `/plans` directory and gitignore it (PR #9944 by @brunobergher)
+- Add announcement support CTA and social icons to UI (PR #9945 by @hannesrudolph)
+- Add ability to save screenshots from the browser tool (PR #9963 by @mrubens)
+- Refactor: Decouple tools from system prompt for cleaner architecture (PR #9784 by @daniel-lxs)
+- Update DeepSeek models to V3.2 with new pricing (PR #9962 by @hannesrudolph)
+- Add minimal and medium reasoning effort levels for Gemini models (PR #9973 by @hannesrudolph)
+- Update xAI models catalog with latest model options (PR #9872 by @hannesrudolph)
+- Add DeepSeek V3-2 support for Baseten provider (PR #9861 by @AlexKer)
+- Tweaks to Baseten model definitions for better defaults (PR #9866 by @mrubens)
+- Fix: Add xhigh reasoning effort support for gpt-5.1-codex-max (#9891 by @andrewginns, PR #9900 by @andrewginns)
+- Fix: Add Kimi, MiniMax, and Qwen model configurations for Bedrock (#9902 by @jbearak, PR #9905 by @app/roomote)
+- Configure tool preferences for xAI models (PR #9923 by @hannesrudolph)
+- Default to using native tools when supported on OpenRouter (PR #9878 by @mrubens)
+- Fix: Exclude apply_diff from native tools when diffEnabled is false (#9919 by @denis-kudelin, PR #9920 by @app/roomote)
+- Fix: Always show tool protocol selector for openai-compatible provider (#9965 by @bozoweed, PR #9966 by @hannesrudolph)
+- Fix: Respect explicit supportsReasoningEffort array values for proper model configuration (PR #9970 by @hannesrudolph)
+- Add timeout configuration to OpenAI Compatible Provider Client (PR #9898 by @dcbartlett)
+- Revert default tool protocol change from xml to native for stability (PR #9956 by @mrubens)
+- Remove defaultTemperature from Roo provider configuration (PR #9932 by @mrubens)
+- Improve OpenAI error messages to be more useful for debugging (PR #9639 by @mrubens)
+- Better error logs for parseToolCall exceptions (PR #9857 by @cte)
+- Improve cloud job error logging for RCC provider errors (PR #9924 by @cte)
+- Fix: Display actual API error message instead of generic text on retry (PR #9954 by @hannesrudolph)
+- Add API error telemetry to OpenRouter provider for better diagnostics (PR #9953 by @daniel-lxs)
+- Fix: Sanitize removed/invalid API providers to prevent infinite loop (PR #9869 by @hannesrudolph)
+- Fix: Use foreground color for context-management icons (PR #9912 by @hannesrudolph)
+- Fix: Suppress 'ask promise was ignored' error in handleError (PR #9914 by @daniel-lxs)
+- Fix: Process finish_reason to emit tool_call_end events properly (PR #9927 by @daniel-lxs)
+- Fix: Add finish_reason processing to xai.ts provider (PR #9929 by @daniel-lxs)
+- Fix: Validate and fix tool_result IDs before API requests (PR #9952 by @daniel-lxs)
+- Fix: Return undefined instead of 0 for disabled API timeout (PR #9960 by @hannesrudolph)
+- Stop making unnecessary count_tokens requests for better performance (PR #9884 by @mrubens)
+- Refactor: Consolidate ThinkingBudget components and fix disable handling (PR #9930 by @hannesrudolph)
+- Forbid time estimates in architect mode for more focused planning (PR #9931 by @app/roomote)
+- Web: Add product pages (PR #9865 by @brunobergher)
+- Make eval runs deleteable in the web UI (PR #9909 by @mrubens)
+- Feat: Change defaultToolProtocol default from xml to native (later reverted) (PR #9892 by @app/roomote)
+
 ## [3.36.2] - 2025-12-04
 
 ![3.36.2 Release - Dynamic API Settings](/releases/3.36.2-release.png)
@@ -243,7 +289,7 @@
 
 ## [3.33.0] - 2025-11-18
 
-![v3.33.0 Release - Twin Kangaroos and the Gemini Constellation](/releases/v3.33.0-release.png)
+![3.33.0 Release - Twin Kangaroos and the Gemini Constellation](/releases/3.33.0-release.png)
 
 - Add Gemini 3 Pro Preview model (PR #9357 by @hannesrudolph)
 - Improve Google Gemini defaults with better temperature and cost reporting (PR #9327 by @hannesrudolph)
