@@ -813,10 +813,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.apiConversationHistory.push(messageWithTs)
 		} else {
 			// For user messages, validate and fix tool_result IDs against the previous assistant message
-			const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
-			const previousAssistantMessage =
-				prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
-			const validatedMessage = validateAndFixToolResultIds(message, previousAssistantMessage)
+			const validatedMessage = validateAndFixToolResultIds(message, this.apiConversationHistory)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
 		}
@@ -857,10 +854,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Validate and fix tool_result IDs against the previous assistant message
-		const prevAssistantIdx = findLastIndex(this.apiConversationHistory, (msg) => msg.role === "assistant")
-		const previousAssistantMessage =
-			prevAssistantIdx !== -1 ? this.apiConversationHistory[prevAssistantIdx] : undefined
-		const validatedMessage = validateAndFixToolResultIds(userMessage, previousAssistantMessage)
+		const validatedMessage = validateAndFixToolResultIds(userMessage, this.apiConversationHistory)
 		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
 

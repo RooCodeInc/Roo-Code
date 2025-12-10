@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
+import { findLastIndex } from "../../shared/array"
 
 /**
  * Custom error class for tool result ID mismatches.
@@ -26,12 +27,12 @@ export class ToolResultIdMismatchError extends Error {
  * - Resume/delegation scenarios
  *
  * @param userMessage - The user message being added to history
- * @param previousAssistantMessage - The previous assistant message containing tool_use blocks
+ * @param apiConversationHistory - The conversation history to find the previous assistant message from
  * @returns The validated user message with corrected tool_use_ids
  */
 export function validateAndFixToolResultIds(
 	userMessage: Anthropic.MessageParam,
-	previousAssistantMessage: Anthropic.MessageParam | undefined,
+	apiConversationHistory: Anthropic.MessageParam[],
 ): Anthropic.MessageParam {
 	// Only process user messages with array content
 	if (userMessage.role !== "user" || !Array.isArray(userMessage.content)) {
@@ -48,10 +49,13 @@ export function validateAndFixToolResultIds(
 		return userMessage
 	}
 
-	// No previous assistant message to validate against
-	if (!previousAssistantMessage || previousAssistantMessage.role !== "assistant") {
+	// Find the previous assistant message from conversation history
+	const prevAssistantIdx = findLastIndex(apiConversationHistory, (msg) => msg.role === "assistant")
+	if (prevAssistantIdx === -1) {
 		return userMessage
 	}
+
+	const previousAssistantMessage = apiConversationHistory[prevAssistantIdx]
 
 	// Get tool_use blocks from the assistant message
 	const assistantContent = previousAssistantMessage.content

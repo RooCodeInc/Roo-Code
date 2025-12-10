@@ -30,7 +30,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, undefined)
+			const result = validateAndFixToolResultIds(userMessage, [])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -61,7 +61,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -101,7 +101,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -132,7 +132,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -175,7 +175,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -218,7 +218,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -256,7 +256,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
@@ -296,7 +296,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -323,7 +323,7 @@ describe("validateAndFixToolResultIds", () => {
 				content: "Just a plain text message",
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -347,7 +347,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(result).toEqual(userMessage)
 		})
@@ -383,7 +383,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -424,7 +424,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			const result = validateAndFixToolResultIds(userMessage, assistantMessage)
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
@@ -458,7 +458,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, assistantMessage)
+			validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(1)
 			expect(TelemetryService.instance.captureException).toHaveBeenCalledWith(
@@ -496,7 +496,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			validateAndFixToolResultIds(userMessage, assistantMessage)
+			validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
 		})
