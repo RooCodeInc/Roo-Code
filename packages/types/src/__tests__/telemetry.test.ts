@@ -1,10 +1,11 @@
-import { describe, it, expect } from "vitest"
-
 import {
 	getErrorStatusCode,
 	getOpenAISdkErrorMessage,
 	shouldReportApiErrorToTelemetry,
 	EXPECTED_API_ERROR_CODES,
+	ApiProviderError,
+	isApiProviderError,
+	extractApiProviderErrorProperties,
 } from "../telemetry.js"
 
 describe("telemetry error utilities", () => {
@@ -136,6 +137,107 @@ describe("telemetry error utilities", () => {
 		it("should return true for regular error messages without rate limit keywords", () => {
 			expect(shouldReportApiErrorToTelemetry(undefined, "Internal server error")).toBe(true)
 			expect(shouldReportApiErrorToTelemetry(undefined, "Connection timeout")).toBe(true)
+		})
+	})
+
+	describe("ApiProviderError", () => {
+		it("should create an error with correct properties", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 500)
+
+			expect(error.message).toBe("Test error")
+			expect(error.name).toBe("ApiProviderError")
+			expect(error.provider).toBe("OpenRouter")
+			expect(error.modelId).toBe("gpt-4")
+			expect(error.operation).toBe("createMessage")
+			expect(error.errorCode).toBe(500)
+		})
+
+		it("should work without optional errorCode", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+
+			expect(error.message).toBe("Test error")
+			expect(error.provider).toBe("OpenRouter")
+			expect(error.modelId).toBe("gpt-4")
+			expect(error.operation).toBe("createMessage")
+			expect(error.errorCode).toBeUndefined()
+		})
+
+		it("should be an instance of Error", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			expect(error).toBeInstanceOf(Error)
+		})
+	})
+
+	describe("isApiProviderError", () => {
+		it("should return true for ApiProviderError instances", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			expect(isApiProviderError(error)).toBe(true)
+		})
+
+		it("should return true for ApiProviderError with errorCode", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 429)
+			expect(isApiProviderError(error)).toBe(true)
+		})
+
+		it("should return false for regular Error instances", () => {
+			const error = new Error("Test error")
+			expect(isApiProviderError(error)).toBe(false)
+		})
+
+		it("should return false for null and undefined", () => {
+			expect(isApiProviderError(null)).toBe(false)
+			expect(isApiProviderError(undefined)).toBe(false)
+		})
+
+		it("should return false for non-error objects", () => {
+			expect(isApiProviderError({})).toBe(false)
+			expect(isApiProviderError({ provider: "test", modelId: "test", operation: "test" })).toBe(false)
+		})
+
+		it("should return false for Error with wrong name", () => {
+			const error = new Error("Test error")
+			error.name = "CustomError"
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			;(error as any).provider = "OpenRouter"
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			;(error as any).modelId = "gpt-4"
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			;(error as any).operation = "createMessage"
+			expect(isApiProviderError(error)).toBe(false)
+		})
+	})
+
+	describe("extractApiProviderErrorProperties", () => {
+		it("should extract all properties from ApiProviderError", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 500)
+			const properties = extractApiProviderErrorProperties(error)
+
+			expect(properties).toEqual({
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				errorCode: 500,
+			})
+		})
+
+		it("should not include errorCode when undefined", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			const properties = extractApiProviderErrorProperties(error)
+
+			expect(properties).toEqual({
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+			})
+			expect(properties).not.toHaveProperty("errorCode")
+		})
+
+		it("should include errorCode when it is 0", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 0)
+			const properties = extractApiProviderErrorProperties(error)
+
+			// errorCode of 0 is falsy but !== undefined, so it should be included
+			expect(properties).toHaveProperty("errorCode", 0)
 		})
 	})
 })

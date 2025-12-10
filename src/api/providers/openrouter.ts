@@ -233,8 +233,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					modelId,
 					"createMessage",
 				),
-				{ provider: this.providerName, modelId, operation: "createMessage", originalError: error },
 			)
+
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -259,22 +259,20 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				const errorWithStatus = Object.assign(
-					new ApiProviderError(
-						error?.message ?? "Unknown error",
-						this.providerName,
-						modelId,
-						"createMessage",
-						error?.code,
+
+				TelemetryService.instance.captureException(
+					Object.assign(
+						new ApiProviderError(
+							error?.message ?? "Unknown error",
+							this.providerName,
+							modelId,
+							"createMessage",
+							error?.code,
+						),
+						{ status: error?.code },
 					),
-					{ status: error?.code },
 				)
-				TelemetryService.instance.captureException(errorWithStatus, {
-					provider: this.providerName,
-					modelId,
-					operation: "createMessage",
-					errorCode: error?.code,
-				})
+
 				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 			}
 
@@ -466,6 +464,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			: undefined
 
 		let response
+
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
@@ -476,29 +475,28 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					modelId,
 					"completePrompt",
 				),
-				{ provider: this.providerName, modelId, operation: "completePrompt", originalError: error },
 			)
+
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			const errorWithStatus = Object.assign(
-				new ApiProviderError(
-					error?.message ?? "Unknown error",
-					this.providerName,
-					modelId,
-					"completePrompt",
-					error?.code,
+			console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
+
+			TelemetryService.instance.captureException(
+				Object.assign(
+					new ApiProviderError(
+						error?.message ?? "Unknown error",
+						this.providerName,
+						modelId,
+						"completePrompt",
+						error?.code,
+					),
+					{ status: error?.code },
 				),
-				{ status: error?.code },
 			)
-			TelemetryService.instance.captureException(errorWithStatus, {
-				provider: this.providerName,
-				modelId,
-				operation: "completePrompt",
-				errorCode: error?.code,
-			})
+
 			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
 		}
 

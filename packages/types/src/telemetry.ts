@@ -390,3 +390,30 @@ export class ApiProviderError extends Error {
 		this.name = "ApiProviderError"
 	}
 }
+
+/**
+ * Type guard to check if an error is an ApiProviderError.
+ * Used by telemetry to automatically extract structured properties.
+ */
+export function isApiProviderError(error: unknown): error is ApiProviderError {
+	return (
+		error instanceof Error &&
+		error.name === "ApiProviderError" &&
+		"provider" in error &&
+		"modelId" in error &&
+		"operation" in error
+	)
+}
+
+/**
+ * Extracts properties from an ApiProviderError for telemetry.
+ * Returns the structured properties that can be merged with additionalProperties.
+ */
+export function extractApiProviderErrorProperties(error: ApiProviderError): Record<string, unknown> {
+	return {
+		provider: error.provider,
+		modelId: error.modelId,
+		operation: error.operation,
+		...(error.errorCode !== undefined && { errorCode: error.errorCode }),
+	}
+}

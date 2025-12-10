@@ -5,7 +5,7 @@
 import * as vscode from "vscode"
 import { PostHog } from "posthog-node"
 
-import { type TelemetryPropertiesProvider, TelemetryEventName } from "@roo-code/types"
+import { type TelemetryPropertiesProvider, TelemetryEventName, ApiProviderError } from "@roo-code/types"
 
 import { PostHogTelemetryClient } from "../PostHogTelemetryClient"
 
@@ -468,6 +468,78 @@ describe("PostHogTelemetryClient", () => {
 
 			// Should NOT capture - the nested metadata.raw contains rate limit message
 			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should auto-extract properties from ApiProviderError", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 500)
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				errorCode: 500,
+			})
+		})
+
+		it("should auto-extract properties from ApiProviderError without errorCode", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "completePrompt")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "completePrompt",
+			})
+		})
+
+		it("should merge auto-extracted properties with additionalProperties", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			client.captureException(error, { customProperty: "value" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				customProperty: "value",
+			})
+		})
+
+		it("should allow additionalProperties to override auto-extracted properties", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			// Explicitly override the provider value
+			client.captureException(error, { provider: "OverriddenProvider" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OverriddenProvider", // additionalProperties takes precedence
+				modelId: "gpt-4",
+				operation: "createMessage",
+			})
+		})
+
+		it("should not auto-extract for non-ApiProviderError errors", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Regular error")
+			client.captureException(error, { customProperty: "value" })
+
+			// Should only have the additionalProperties, not any auto-extracted ones
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				customProperty: "value",
+			})
 		})
 	})
 })
