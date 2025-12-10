@@ -2,13 +2,12 @@ import { PostHog } from "posthog-node"
 import * as vscode from "vscode"
 
 import {
-	TelemetryEventName,
+	type TelemetryProperties,
 	type TelemetryEvent,
+	TelemetryEventName,
 	getErrorStatusCode,
 	getErrorMessage,
 	shouldReportApiErrorToTelemetry,
-	isApiProviderError,
-	extractApiProviderErrorProperties,
 } from "@roo-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
@@ -69,11 +68,10 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 		})
 	}
 
-	public override captureException(
+	public override async captureException(
 		error: Error,
-		appVersion: string,
 		additionalProperties?: Record<string, unknown>,
-	): void {
+	): Promise<void> {
 		if (!this.isTelemetryEnabled()) {
 			if (this.debug) {
 				console.info(`[PostHogTelemetryClient#captureException] Skipping exception: ${error.message}`)
@@ -100,21 +98,21 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
 		}
 
-		// Auto-extract properties from ApiProviderError and merge with additionalProperties.
-		// Explicit additionalProperties take precedence over auto-extracted properties.
-		let mergedProperties: Record<string, unknown> = { $app_version: appVersion }
+		const provider = this.providerRef?.deref()
+		let telemetryProperties: TelemetryProperties | undefined = undefined
 
-		if (isApiProviderError(error)) {
-			const extractedProperties = extractApiProviderErrorProperties(error)
-			mergedProperties = { ...extractedProperties, ...additionalProperties, $app_version: appVersion }
-		} else if (additionalProperties) {
-			mergedProperties = { ...additionalProperties, $app_version: appVersion }
+		if (provider) {
+			try {
+				telemetryProperties = await provider.getTelemetryProperties()
+			} catch (_error) {
+				// Ignore.
+			}
 		}
 
-		// Override the error message with the extracted error message.
-		error.message = errorMessage
-
-		this.client.captureException(error, this.distinctId, mergedProperties)
+		this.client.captureException(error, this.distinctId, {
+			...additionalProperties,
+			$app_version: telemetryProperties?.appVersion,
+		})
 	}
 
 	/**

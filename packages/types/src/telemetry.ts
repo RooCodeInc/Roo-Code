@@ -262,7 +262,7 @@ export interface TelemetryClient {
 
 	setProvider(provider: TelemetryPropertiesProvider): void
 	capture(options: TelemetryEvent): Promise<void>
-	captureException(error: Error, appVersion: string, additionalProperties?: Record<string, unknown>): void
+	captureException(error: Error, additionalProperties?: Record<string, unknown>): void
 	updateTelemetryState(isOptedIn: boolean): void
 	isTelemetryEnabled(): boolean
 	shutdown(): Promise<void>

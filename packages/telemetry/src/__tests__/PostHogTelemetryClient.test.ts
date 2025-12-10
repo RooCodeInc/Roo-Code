@@ -368,22 +368,35 @@ describe("PostHogTelemetryClient", () => {
 	})
 
 	describe("captureException", () => {
-		it("should not capture exceptions when telemetry is disabled", () => {
+		it("should not capture exceptions when telemetry is disabled", async () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(false)
 
 			const error = new Error("Test error")
-			client.captureException(error, "1.0.0")
+			await client.captureException(error)
 
 			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
 		})
 
-		it("should capture exceptions with app version", () => {
+		it("should capture exceptions with app version from provider", async () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
+			const mockProvider: TelemetryPropertiesProvider = {
+				getTelemetryProperties: vi.fn().mockResolvedValue({
+					appVersion: "1.0.0",
+					vscodeVersion: "1.60.0",
+					platform: "darwin",
+					editorName: "vscode",
+					language: "en",
+					mode: "code",
+				}),
+			}
+
+			client.setProvider(mockProvider)
+
 			const error = new Error("Test error")
-			client.captureException(error, "1.0.0", { customProp: "value" })
+			await client.captureException(error, { customProp: "value" })
 
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(
 				error,
@@ -395,15 +408,15 @@ describe("PostHogTelemetryClient", () => {
 			)
 		})
 
-		it("should capture exceptions with only app version (no additional properties)", () => {
+		it("should capture exceptions with undefined app version when no provider is set", async () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
 			const error = new Error("Test error")
-			client.captureException(error, "2.0.0")
+			await client.captureException(error)
 
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
-				$app_version: "2.0.0",
+				$app_version: undefined,
 			})
 		})
 	})

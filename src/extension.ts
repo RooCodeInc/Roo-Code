@@ -71,7 +71,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize telemetry service.
 	const telemetryService = TelemetryService.createInstance()
-	telemetryService.setAppVersion(Package.version)
 
 	try {
 		telemetryService.register(new PostHogTelemetryClient())
