@@ -32,6 +32,7 @@ describe("PostHogTelemetryClient", () => {
 
 		mockPostHogClient = {
 			capture: vi.fn(),
+			captureException: vi.fn(),
 			optIn: vi.fn(),
 			optOut: vi.fn(),
 			shutdown: vi.fn().mockResolvedValue(undefined),
@@ -363,6 +364,47 @@ describe("PostHogTelemetryClient", () => {
 			client.updateTelemetryState(true)
 			expect(client.isTelemetryEnabled()).toBe(false)
 			expect(mockPostHogClient.optOut).toHaveBeenCalled()
+		})
+	})
+
+	describe("captureException", () => {
+		it("should not capture exceptions when telemetry is disabled", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(false)
+
+			const error = new Error("Test error")
+			client.captureException(error, "1.0.0")
+
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should capture exceptions with app version", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Test error")
+			client.captureException(error, "1.0.0", { customProp: "value" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(
+				error,
+				"test-machine-id",
+				expect.objectContaining({
+					customProp: "value",
+					$app_version: "1.0.0",
+				}),
+			)
+		})
+
+		it("should capture exceptions with only app version (no additional properties)", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Test error")
+			client.captureException(error, "2.0.0")
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				$app_version: "2.0.0",
+			})
 		})
 	})
 

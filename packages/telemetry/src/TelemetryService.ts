@@ -13,10 +13,20 @@ import {
  * variables are loaded.
  */
 export class TelemetryService {
+	private appVersion: string = "unknown"
+
 	constructor(private clients: TelemetryClient[]) {}
 
 	public register(client: TelemetryClient): void {
 		this.clients.push(client)
+	}
+
+	/**
+	 * Sets the app version for exception tracking
+	 * @param version The app version string
+	 */
+	public setAppVersion(version: string): void {
+		this.appVersion = version
 	}
 
 	/**
@@ -75,7 +85,7 @@ export class TelemetryService {
 			return
 		}
 
-		this.clients.forEach((client) => client.captureException(error, additionalProperties))
+		this.clients.forEach((client) => client.captureException(error, this.appVersion, additionalProperties))
 	}
 
 	public captureTaskCreated(taskId: string): void {

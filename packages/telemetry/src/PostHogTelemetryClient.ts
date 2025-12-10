@@ -61,7 +61,11 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 		})
 	}
 
-	public override captureException(error: Error, additionalProperties?: Record<string, unknown>): void {
+	public override captureException(
+		error: Error,
+		appVersion: string,
+		additionalProperties?: Record<string, unknown>,
+	): void {
 		if (!this.isTelemetryEnabled()) {
 			if (this.debug) {
 				console.info(`[PostHogTelemetryClient#captureException] Skipping exception: ${error.message}`)
@@ -74,7 +78,10 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
 		}
 
-		this.client.captureException(error, this.distinctId, additionalProperties)
+		this.client.captureException(error, this.distinctId, {
+			...additionalProperties,
+			$app_version: appVersion,
+		})
 	}
 
 	/**

@@ -262,7 +262,7 @@ export interface TelemetryClient {
 
 	setProvider(provider: TelemetryPropertiesProvider): void
 	capture(options: TelemetryEvent): Promise<void>
-	captureException(error: Error, additionalProperties?: Record<string, unknown>): void
+	captureException(error: Error, appVersion: string, additionalProperties?: Record<string, unknown>): void
 	updateTelemetryState(isOptedIn: boolean): void
 	isTelemetryEnabled(): boolean
 	shutdown(): Promise<void>
@@ -273,6 +273,7 @@ export interface TelemetryClient {
  * These are normal/expected errors that users can't do much about.
  */
 export const EXPECTED_API_ERROR_CODES = new Set([
+	402, // Payment required - billing issues
 	429, // Rate limit - expected when hitting API limits
 ])
 
