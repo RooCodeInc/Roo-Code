@@ -179,4 +179,220 @@ describe("convertToR1Format", () => {
 
 		expect(convertToR1Format(input)).toEqual(expected)
 	})
+
+	describe("tool calls support for DeepSeek interleaved thinking", () => {
+		it("should convert assistant messages with tool_use to OpenAI format", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "What's the weather?" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Let me check the weather for you." },
+						{
+							type: "tool_use",
+							id: "call_123",
+							name: "get_weather",
+							input: { location: "San Francisco" },
+						},
+					],
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			expect(result).toHaveLength(2)
+			expect(result[0]).toEqual({ role: "user", content: "What's the weather?" })
+			expect(result[1]).toMatchObject({
+				role: "assistant",
+				content: "Let me check the weather for you.",
+				tool_calls: [
+					{
+						id: "call_123",
+						type: "function",
+						function: {
+							name: "get_weather",
+							arguments: '{"location":"San Francisco"}',
+						},
+					},
+				],
+			})
+		})
+
+		it("should convert user messages with tool_result to OpenAI tool messages", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "What's the weather?" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_123",
+							name: "get_weather",
+							input: { location: "San Francisco" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_123",
+							content: "72°F and sunny",
+						},
+					],
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			expect(result).toHaveLength(3)
+			expect(result[0]).toEqual({ role: "user", content: "What's the weather?" })
+			expect(result[1]).toMatchObject({
+				role: "assistant",
+				content: null,
+				tool_calls: expect.any(Array),
+			})
+			expect(result[2]).toEqual({
+				role: "tool",
+				tool_call_id: "call_123",
+				content: "72°F and sunny",
+			})
+		})
+
+		it("should handle tool_result with array content", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_456",
+							content: [
+								{ type: "text", text: "Line 1" },
+								{ type: "text", text: "Line 2" },
+							],
+						},
+					],
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "tool",
+				tool_call_id: "call_456",
+				content: "Line 1\nLine 2",
+			})
+		})
+
+		it("should preserve reasoning_content on assistant messages", () => {
+			const input = [
+				{ role: "user" as const, content: "Think about this" },
+				{
+					role: "assistant" as const,
+					content: "Here's my answer",
+					reasoning_content: "Let me analyze step by step...",
+				},
+			]
+
+			const result = convertToR1Format(input as Anthropic.Messages.MessageParam[])
+
+			expect(result).toHaveLength(2)
+			expect((result[1] as any).reasoning_content).toBe("Let me analyze step by step...")
+		})
+
+		it("should handle mixed tool_result and text in user message", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_789",
+							content: "Tool result",
+						},
+						{
+							type: "text",
+							text: "Please continue",
+						},
+					],
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			// Should produce two messages: tool message first, then user message
+			expect(result).toHaveLength(2)
+			expect(result[0]).toEqual({
+				role: "tool",
+				tool_call_id: "call_789",
+				content: "Tool result",
+			})
+			expect(result[1]).toEqual({
+				role: "user",
+				content: "Please continue",
+			})
+		})
+
+		it("should handle multiple tool calls in single assistant message", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_1",
+							name: "tool_a",
+							input: { param: "a" },
+						},
+						{
+							type: "tool_use",
+							id: "call_2",
+							name: "tool_b",
+							input: { param: "b" },
+						},
+					],
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			expect(result).toHaveLength(1)
+			expect((result[0] as any).tool_calls).toHaveLength(2)
+			expect((result[0] as any).tool_calls[0].id).toBe("call_1")
+			expect((result[0] as any).tool_calls[1].id).toBe("call_2")
+		})
+
+		it("should not merge assistant messages that have tool calls", () => {
+			const input: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_1",
+							name: "tool_a",
+							input: {},
+						},
+					],
+				},
+				{
+					role: "assistant",
+					content: "Follow up response",
+				},
+			]
+
+			const result = convertToR1Format(input)
+
+			// Should NOT merge because first message has tool calls
+			expect(result).toHaveLength(2)
+			expect((result[0] as any).tool_calls).toBeDefined()
+			expect(result[1]).toEqual({
+				role: "assistant",
+				content: "Follow up response",
+			})
+		})
+	})
 })
