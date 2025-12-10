@@ -518,7 +518,7 @@ describe("PostHogTelemetryClient", () => {
 			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
 		})
 
-		it("should capture errors with nested metadata without modifying error.message", () => {
+		it("should capture errors with nested metadata and override error.message with extracted message", () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
@@ -533,14 +533,14 @@ describe("PostHogTelemetryClient", () => {
 
 			client.captureException(error)
 
-			// The implementation does not modify error.message - it just uses getErrorMessage for filtering
-			expect(error.message).toBe("Generic request failed")
+			// The implementation overrides error.message with the extracted message from getErrorMessage
+			expect(error.message).toBe("Upstream provider error: model overloaded")
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
 				$app_version: undefined,
 			})
 		})
 
-		it("should capture errors with nested error.message without modifying error.message", () => {
+		it("should capture errors with nested error.message and override error.message with extracted message", () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
@@ -554,8 +554,8 @@ describe("PostHogTelemetryClient", () => {
 
 			client.captureException(error)
 
-			// The implementation does not modify error.message
-			expect(error.message).toBe("Generic request failed")
+			// The implementation overrides error.message with the extracted message from getErrorMessage
+			expect(error.message).toBe("Upstream provider: connection timeout")
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
 				$app_version: undefined,
 			})
@@ -579,27 +579,35 @@ describe("PostHogTelemetryClient", () => {
 			})
 		})
 
-		it("should capture ApiProviderError without auto-extracting properties", () => {
+		it("should capture ApiProviderError and auto-extract properties", () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
 			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 500)
 			client.captureException(error)
 
-			// The current implementation does not auto-extract properties from ApiProviderError
+			// The implementation auto-extracts properties from ApiProviderError
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				errorCode: 500,
 				$app_version: undefined,
 			})
 		})
 
-		it("should capture ApiProviderError with additionalProperties", () => {
+		it("should capture ApiProviderError with additionalProperties merged with auto-extracted properties", () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
 			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
 			client.captureException(error, { customProperty: "value" })
 
+			// additionalProperties take precedence over auto-extracted properties
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
 				customProperty: "value",
 				$app_version: undefined,
 			})
