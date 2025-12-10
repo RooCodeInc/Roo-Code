@@ -341,7 +341,7 @@ export function getErrorStatusCode(error: unknown): number | undefined {
  * @param error - The error to extract message from
  * @returns The best available error message, or undefined if not an OpenAI SDK error
  */
-export function getOpenAISdkErrorMessage(error: unknown): string | undefined {
+export function getErrorMessage(error: unknown): string | undefined {
 	if (isOpenAISdkError(error)) {
 		// Prioritize nested metadata which may contain upstream provider details
 		return error.error?.metadata?.raw || error.error?.message || error.message

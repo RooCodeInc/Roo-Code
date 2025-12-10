@@ -1,6 +1,5 @@
-// npx vitest run src/api/providers/__tests__/openrouter.spec.ts
+// pnpm --filter roo-cline test api/providers/__tests__/openrouter.spec.ts
 
-// Mock vscode first to avoid import errors
 vitest.mock("vscode", () => ({}))
 
 import { Anthropic } from "@anthropic-ai/sdk"
@@ -9,14 +8,12 @@ import OpenAI from "openai"
 import { OpenRouterHandler } from "../openrouter"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { Package } from "../../../shared/package"
-import { ApiProviderError } from "@roo-code/types"
 
-// Mock dependencies
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
 
-// Mock TelemetryService
 const mockCaptureException = vitest.fn()
+
 vitest.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
@@ -24,6 +21,7 @@ vitest.mock("@roo-code/telemetry", () => ({
 		},
 	},
 }))
+
 vitest.mock("../fetchers/modelCache", () => ({
 	getModels: vitest.fn().mockImplementation(() => {
 		return Promise.resolve({
@@ -294,13 +292,16 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 500: API Error")
 
-			// Verify telemetry was captured
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "createMessage",
-				errorCode: 500,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+					errorCode: 500,
+					status: 500,
+				}),
+			)
 		})
 
 		it("captures telemetry when createMessage throws an exception", async () => {
@@ -313,19 +314,21 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow()
 
-			// Verify telemetry was captured (filtering now happens inside PostHogTelemetryClient)
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "createMessage",
-				originalError: expect.any(Error),
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Connection failed",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions with status 429 to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 			const error = new Error("Rate limit exceeded: free-models-per-day") as any
 			error.status = 429
+
 			const mockCreate = vitest.fn().mockRejectedValue(error)
 			;(OpenAI as any).prototype.chat = {
 				completions: { create: mockCreate },
@@ -334,13 +337,14 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("Rate limit exceeded")
 
-			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "createMessage",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions with 429 in message to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -354,13 +358,14 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("429 Rate limit exceeded")
 
-			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "createMessage",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "429 Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions containing 'rate limit' to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -374,13 +379,14 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("rate limit")
 
-			// captureException is called, but PostHogTelemetryClient filters out rate limit errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "createMessage",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Request failed due to rate limit",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 
 		it("passes 429 rate limit errors from stream to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -399,19 +405,15 @@ describe("OpenRouterHandler", () => {
 			const generator = handler.createMessage("test", [])
 			await expect(generator.next()).rejects.toThrow("OpenRouter API Error 429: Rate limit exceeded")
 
-			// captureException is called with an error that has status property set
-			// PostHogTelemetryClient filters out 429 errors internally
 			expect(mockCaptureException).toHaveBeenCalledWith(
 				expect.objectContaining({
 					message: "Rate limit exceeded",
-					status: 429,
-				}),
-				{
 					provider: "OpenRouter",
 					modelId: mockOptions.openRouterModelId,
 					operation: "createMessage",
 					errorCode: 429,
-				},
+					status: 429,
+				}),
 			)
 		})
 
@@ -532,12 +534,16 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("OpenRouter API Error 500: API Error")
 
 			// Verify telemetry was captured
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				errorCode: 500,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+					errorCode: 500,
+					status: 500,
+				}),
+			)
 		})
 
 		it("handles unexpected errors and captures telemetry", async () => {
@@ -551,12 +557,14 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
 
 			// Verify telemetry was captured (filtering now happens inside PostHogTelemetryClient)
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Unexpected error",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions with status 429 to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -571,12 +579,14 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Rate limit exceeded")
 
 			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions with 429 in message to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -590,12 +600,14 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("429 Rate limit exceeded")
 
 			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "429 Rate limit exceeded: free-models-per-day",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
 		})
 
 		it("passes SDK exceptions containing 'rate limit' to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -609,12 +621,14 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("rate limit")
 
 			// captureException is called, but PostHogTelemetryClient filters out rate limit errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				originalError: error,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Request failed due to rate limit",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+				}),
+			)
 		})
 
 		it("passes 429 rate limit errors from response to telemetry (filtering happens in PostHogTelemetryClient)", async () => {
@@ -636,12 +650,16 @@ describe("OpenRouterHandler", () => {
 			)
 
 			// captureException is called, but PostHogTelemetryClient filters out 429 errors internally
-			expect(mockCaptureException).toHaveBeenCalledWith(expect.any(ApiProviderError), {
-				provider: "OpenRouter",
-				modelId: mockOptions.openRouterModelId,
-				operation: "completePrompt",
-				errorCode: 429,
-			})
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded",
+					provider: "OpenRouter",
+					modelId: mockOptions.openRouterModelId,
+					operation: "completePrompt",
+					errorCode: 429,
+					status: 429,
+				}),
+			)
 		})
 	})
 })

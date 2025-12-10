@@ -5,7 +5,7 @@ import {
 	TelemetryEventName,
 	type TelemetryEvent,
 	getErrorStatusCode,
-	getOpenAISdkErrorMessage,
+	getErrorMessage,
 	shouldReportApiErrorToTelemetry,
 	isApiProviderError,
 	extractApiProviderErrorProperties,
@@ -78,9 +78,9 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			return
 		}
 
-		// Extract error status code and message for filtering
+		// Extract error status code and message for filtering.
 		const errorCode = getErrorStatusCode(error)
-		const errorMessage = getOpenAISdkErrorMessage(error) ?? error.message
+		const errorMessage = getErrorMessage(error) ?? error.message
 
 		// Filter out expected errors (e.g., 429 rate limits)
 		if (!shouldReportApiErrorToTelemetry(errorCode, errorMessage)) {
@@ -104,6 +104,9 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			const extractedProperties = extractApiProviderErrorProperties(error)
 			mergedProperties = { ...extractedProperties, ...additionalProperties }
 		}
+
+		// Override the error message with the extracted error message.
+		error.message = errorMessage
 
 		this.client.captureException(error, this.distinctId, mergedProperties)
 	}

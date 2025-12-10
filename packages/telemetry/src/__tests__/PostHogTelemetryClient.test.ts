@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// npx vitest run src/__tests__/PostHogTelemetryClient.test.ts
+// pnpm --filter @roo-code/telemetry test src/__tests__/PostHogTelemetryClient.test.ts
 
 import * as vscode from "vscode"
 import { PostHog } from "posthog-node"
@@ -452,7 +452,7 @@ describe("PostHogTelemetryClient", () => {
 			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
 		})
 
-		it("should use nested error message from OpenAI SDK error structure", () => {
+		it("should use nested error message from OpenAI SDK error structure for filtering", () => {
 			const client = new PostHogTelemetryClient()
 			client.updateTelemetryState(true)
 
@@ -468,6 +468,61 @@ describe("PostHogTelemetryClient", () => {
 
 			// Should NOT capture - the nested metadata.raw contains rate limit message
 			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should modify error.message with extracted message from nested metadata.raw", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error with nested metadata (non-rate-limit error)
+			const error = Object.assign(new Error("Generic request failed"), {
+				status: 500,
+				error: {
+					message: "Nested error message",
+					metadata: { raw: "Upstream provider error: model overloaded" },
+				},
+			})
+
+			client.captureException(error)
+
+			// Verify error message was modified to use metadata.raw (highest priority)
+			expect(error.message).toBe("Upstream provider error: model overloaded")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should modify error.message with nested error.message when metadata.raw is not available", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error with nested message but no metadata.raw
+			const error = Object.assign(new Error("Generic request failed"), {
+				status: 500,
+				error: {
+					message: "Upstream provider: connection timeout",
+				},
+			})
+
+			client.captureException(error)
+
+			// Verify error message was modified to use nested error.message
+			expect(error.message).toBe("Upstream provider: connection timeout")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should use primary message when no nested error structure exists", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error without nested error object
+			const error = Object.assign(new Error("Primary error message"), {
+				status: 500,
+			})
+
+			client.captureException(error)
+
+			// Verify error message remains the primary message
+			expect(error.message).toBe("Primary error message")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
 		})
 
 		it("should auto-extract properties from ApiProviderError", () => {

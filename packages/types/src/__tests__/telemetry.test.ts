@@ -1,6 +1,8 @@
+// pnpm --filter @roo-code/types test src/__tests__/telemetry.test.ts
+
 import {
 	getErrorStatusCode,
-	getOpenAISdkErrorMessage,
+	getErrorMessage,
 	shouldReportApiErrorToTelemetry,
 	EXPECTED_API_ERROR_CODES,
 	ApiProviderError,
@@ -45,16 +47,16 @@ describe("telemetry error utilities", () => {
 		})
 	})
 
-	describe("getOpenAISdkErrorMessage", () => {
+	describe("getErrorMessage", () => {
 		it("should return undefined for non-OpenAI SDK errors", () => {
-			expect(getOpenAISdkErrorMessage(null)).toBeUndefined()
-			expect(getOpenAISdkErrorMessage(undefined)).toBeUndefined()
-			expect(getOpenAISdkErrorMessage({ message: "error" })).toBeUndefined()
+			expect(getErrorMessage(null)).toBeUndefined()
+			expect(getErrorMessage(undefined)).toBeUndefined()
+			expect(getErrorMessage({ message: "error" })).toBeUndefined()
 		})
 
 		it("should return the primary message for simple OpenAI SDK errors", () => {
 			const error = { status: 400, message: "Bad request" }
-			expect(getOpenAISdkErrorMessage(error)).toBe("Bad request")
+			expect(getErrorMessage(error)).toBe("Bad request")
 		})
 
 		it("should prioritize nested error.message over primary message", () => {
@@ -63,7 +65,7 @@ describe("telemetry error utilities", () => {
 				message: "Request failed",
 				error: { message: "Upstream provider error" },
 			}
-			expect(getOpenAISdkErrorMessage(error)).toBe("Upstream provider error")
+			expect(getErrorMessage(error)).toBe("Upstream provider error")
 		})
 
 		it("should prioritize metadata.raw over other messages", () => {
@@ -75,7 +77,7 @@ describe("telemetry error utilities", () => {
 					metadata: { raw: "Rate limit exceeded: free-models-per-day" },
 				},
 			}
-			expect(getOpenAISdkErrorMessage(error)).toBe("Rate limit exceeded: free-models-per-day")
+			expect(getErrorMessage(error)).toBe("Rate limit exceeded: free-models-per-day")
 		})
 
 		it("should fallback to nested error.message when metadata.raw is undefined", () => {
@@ -87,7 +89,7 @@ describe("telemetry error utilities", () => {
 					metadata: {},
 				},
 			}
-			expect(getOpenAISdkErrorMessage(error)).toBe("Detailed error message")
+			expect(getErrorMessage(error)).toBe("Detailed error message")
 		})
 
 		it("should fallback to primary message when no nested messages exist", () => {
@@ -96,7 +98,7 @@ describe("telemetry error utilities", () => {
 				message: "Forbidden",
 				error: {},
 			}
-			expect(getOpenAISdkErrorMessage(error)).toBe("Forbidden")
+			expect(getErrorMessage(error)).toBe("Forbidden")
 		})
 	})
 
