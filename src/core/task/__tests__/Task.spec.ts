@@ -1454,7 +1454,7 @@ describe("Cline", () => {
 				const claudeModelFormats = [
 					"claude-3-opus",
 					"Claude-3-Sonnet",
-					"CLAUDE-instant",
+					"CLAUDE-sonnet-4-5",
 					"anthropic/claude-3-haiku",
 					"some-provider/claude-model",
 				]
