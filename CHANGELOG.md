@@ -1,5 +1,14 @@
 # Roo Code Changelog
 
+## [3.36.4] - 2025-12-10
+
+![3.36.4 Release - Error Details Modal](/releases/3.36.4-release.png)
+
+- Add error details modal with on-demand display for improved error visibility when debugging issues (PR #9985 by @roomote)
+- Fix: Prevent premature rawChunkTracker clearing for MCP tools, improving reliability of MCP tool streaming (PR #9993 by @daniel-lxs)
+- Fix: Filter out 429 rate limit errors from API error telemetry for cleaner metrics (PR #9987 by @daniel-lxs)
+- Fix: Correct TODO list display order in chat view to show items in proper sequence (PR #9991 by @roomote)
+
 ## [3.36.3] - 2025-12-09
 
 ![3.36.3 Release](/releases/3.36.3-release.png)

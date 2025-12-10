@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// npx vitest run src/__tests__/PostHogTelemetryClient.test.ts
+// pnpm --filter @roo-code/telemetry test src/__tests__/PostHogTelemetryClient.test.ts
 
 import * as vscode from "vscode"
 import { PostHog } from "posthog-node"
 
-import { type TelemetryPropertiesProvider, TelemetryEventName } from "@roo-code/types"
+import { type TelemetryPropertiesProvider, TelemetryEventName, ApiProviderError } from "@roo-code/types"
 
 import { PostHogTelemetryClient } from "../PostHogTelemetryClient"
 
@@ -413,6 +413,229 @@ describe("PostHogTelemetryClient", () => {
 			const client = new PostHogTelemetryClient()
 			await client.shutdown()
 			expect(mockPostHogClient.shutdown).toHaveBeenCalled()
+		})
+	})
+
+	describe("captureException", () => {
+		it("should not capture exceptions when telemetry is disabled", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(false)
+
+			const error = new Error("Test error")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should capture exceptions when telemetry is enabled", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Test error")
+			client.captureException(error, { provider: "TestProvider" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "TestProvider",
+			})
+		})
+
+		it("should filter out 429 rate limit errors (via status property)", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an error with status property (like OpenAI SDK errors)
+			const error = Object.assign(new Error("Rate limit exceeded"), { status: 429 })
+			client.captureException(error)
+
+			// Should NOT capture 429 errors
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should filter out errors with '429' in message", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("429 Rate limit exceeded: free-models-per-day")
+			client.captureException(error)
+
+			// Should NOT capture errors with 429 in message
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should filter out errors containing 'rate limit' (case insensitive)", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Request failed due to Rate Limit")
+			client.captureException(error)
+
+			// Should NOT capture rate limit errors
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should capture non-rate-limit errors", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Internal server error")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should capture errors with non-429 status codes", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = Object.assign(new Error("Internal server error"), { status: 500 })
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should use nested error message from OpenAI SDK error structure for filtering", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an error with nested metadata (like OpenRouter upstream errors)
+			const error = Object.assign(new Error("Request failed"), {
+				status: 429,
+				error: {
+					message: "Error details",
+					metadata: { raw: "Rate limit exceeded: free-models-per-day" },
+				},
+			})
+			client.captureException(error)
+
+			// Should NOT capture - the nested metadata.raw contains rate limit message
+			expect(mockPostHogClient.captureException).not.toHaveBeenCalled()
+		})
+
+		it("should modify error.message with extracted message from nested metadata.raw", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error with nested metadata (non-rate-limit error)
+			const error = Object.assign(new Error("Generic request failed"), {
+				status: 500,
+				error: {
+					message: "Nested error message",
+					metadata: { raw: "Upstream provider error: model overloaded" },
+				},
+			})
+
+			client.captureException(error)
+
+			// Verify error message was modified to use metadata.raw (highest priority)
+			expect(error.message).toBe("Upstream provider error: model overloaded")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should modify error.message with nested error.message when metadata.raw is not available", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error with nested message but no metadata.raw
+			const error = Object.assign(new Error("Generic request failed"), {
+				status: 500,
+				error: {
+					message: "Upstream provider: connection timeout",
+				},
+			})
+
+			client.captureException(error)
+
+			// Verify error message was modified to use nested error.message
+			expect(error.message).toBe("Upstream provider: connection timeout")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should use primary message when no nested error structure exists", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			// Create an OpenAI SDK-like error without nested error object
+			const error = Object.assign(new Error("Primary error message"), {
+				status: 500,
+			})
+
+			client.captureException(error)
+
+			// Verify error message remains the primary message
+			expect(error.message).toBe("Primary error message")
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", undefined)
+		})
+
+		it("should auto-extract properties from ApiProviderError", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage", 500)
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				errorCode: 500,
+			})
+		})
+
+		it("should auto-extract properties from ApiProviderError without errorCode", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "completePrompt")
+			client.captureException(error)
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "completePrompt",
+			})
+		})
+
+		it("should merge auto-extracted properties with additionalProperties", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			client.captureException(error, { customProperty: "value" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OpenRouter",
+				modelId: "gpt-4",
+				operation: "createMessage",
+				customProperty: "value",
+			})
+		})
+
+		it("should allow additionalProperties to override auto-extracted properties", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			// Explicitly override the provider value
+			client.captureException(error, { provider: "OverriddenProvider" })
+
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				provider: "OverriddenProvider", // additionalProperties takes precedence
+				modelId: "gpt-4",
+				operation: "createMessage",
+			})
+		})
+
+		it("should not auto-extract for non-ApiProviderError errors", () => {
+			const client = new PostHogTelemetryClient()
+			client.updateTelemetryState(true)
+
+			const error = new Error("Regular error")
+			client.captureException(error, { customProperty: "value" })
+
+			// Should only have the additionalProperties, not any auto-extracted ones
+			expect(mockPostHogClient.captureException).toHaveBeenCalledWith(error, "test-machine-id", {
+				customProperty: "value",
+			})
 		})
 	})
 })
