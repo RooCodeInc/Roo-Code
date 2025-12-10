@@ -211,7 +211,19 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 		}
 
-		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		try {
+			await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		} catch (error: any) {
+			// Handle VS Code/Cursor file size limit error
+			if (error?.message?.includes("Files above") && error?.message?.includes("MB")) {
+				// File was saved successfully but VS Code can't display it due to size limit
+				// This is not a critical error - the file operation succeeded
+				console.warn(`File ${absolutePath} exceeds VS Code display size limit but was saved successfully`)
+			} else {
+				// Re-throw other errors
+				throw error
+			}
+		}
 		await this.closeAllDiffViews()
 
 		// Getting diagnostics before and after the file edit is a better approach than
@@ -436,10 +448,23 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 
 			if (this.documentWasOpen) {
-				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
-					preview: false,
-					preserveFocus: true,
-				})
+				try {
+					await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+						preview: false,
+						preserveFocus: true,
+					})
+				} catch (error: any) {
+					// Handle VS Code/Cursor file size limit error
+					if (error?.message?.includes("Files above") && error?.message?.includes("MB")) {
+						// File was reverted successfully but VS Code can't display it due to size limit
+						console.warn(
+							`File ${absolutePath} exceeds VS Code display size limit but was reverted successfully`,
+						)
+					} else {
+						// Re-throw other errors
+						throw error
+					}
+				}
 			}
 
 			await this.closeAllDiffViews()
@@ -698,10 +723,23 @@ export class DiffViewProvider {
 		// When openFile is false (PREVENT_FOCUS_DISRUPTION enabled), we only open in memory
 		if (openFile) {
 			// Show the document in the editor
-			await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
-				preview: false,
-				preserveFocus: true,
-			})
+			try {
+				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+					preview: false,
+					preserveFocus: true,
+				})
+			} catch (error: any) {
+				// Handle VS Code/Cursor file size limit error
+				if (error?.message?.includes("Files above") && error?.message?.includes("MB")) {
+					// File was saved successfully but VS Code can't display it due to size limit
+					// This is not a critical error - the file operation succeeded
+					console.warn(`File ${absolutePath} exceeds VS Code display size limit but was saved successfully`)
+					// Continue with diagnostics check even if we can't display the file
+				} else {
+					// Re-throw other errors
+					throw error
+				}
+			}
 		} else {
 			// Just open the document in memory to trigger diagnostics without showing it
 			const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(absolutePath))
