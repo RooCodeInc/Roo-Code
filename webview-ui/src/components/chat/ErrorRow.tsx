@@ -195,9 +195,7 @@ export const ErrorRow = memo(
 					{errorTitle && (
 						<div className={headerClassName || "flex items-center justify-between gap-2 break-words"}>
 							<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
-							<span className="text-vscode-errorForeground font-bold grow cursor-default">
-								{errorTitle}
-							</span>
+							<span className="font-bold grow cursor-default">{errorTitle}</span>
 							<div className="flex items-center gap-2">
 								{docsURL && (
 									<a
@@ -227,11 +225,11 @@ export const ErrorRow = memo(
 							</div>
 						</div>
 					)}
-					<div className="pl-6 py-1">
+					<div className="ml-2 pl-4 mt-1 pt-1 border-l border-vscode-errorForeground/50">
 						<p
 							className={
 								messageClassName ||
-								"my-0 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
+								"my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
 							}>
 							{message}
 						</p>

@@ -1148,8 +1148,8 @@ export const ChatRowContent = ({
 						retryInfo = retryTimer > 0 && (
 							<p
 								className={cn(
-									"mt-1 font-light text-xs text-vscode-errorForeground/80 cursor-default flex items-center gap-1 transition-all duration-1000",
-									retryTimer === 0 ? "opacity-0 max-h-0" : "max-h-4 opacity-100",
+									"mt-2 font-light text-xs  text-vscode-descriptionForeground cursor-default flex items-center gap-1 transition-all duration-1000",
+									retryTimer === 0 ? "opacity-0 max-h-0" : "max-h-2 opacity-100",
 								)}>
 								<Repeat2 className="size-3" strokeWidth={1.5} />
 								<span>{retryTimer}s</span>
