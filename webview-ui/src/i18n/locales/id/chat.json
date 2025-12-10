@@ -316,7 +316,8 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Dirilis",
+		"title": "Roo Code {{version}} Dirilis",
+		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
 			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
@@ -335,8 +336,7 @@
 			"description": "Agen bekerja bersama di cloud dan dapat dipicu dari web atau melalui Slack.",
 			"tryButton": "Coba Agen Cloud"
 		},
-		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>",
-		"socialLinks": "Bergabunglah dengan kami di <xLink>X</xLink>, <discordLink>Discord</discordLink>, atau <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Juga, <careersLink>kami sedang merekrut!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Berpikir",
@@ -362,13 +362,25 @@
 		"sessionStarted": "Sesi Browser Dimulai",
 		"actions": {
 			"title": "Aksi Browser: ",
+			"launched": "Browser diluncurkan",
 			"launch": "Luncurkan browser di {{url}}",
+			"clicked": "Diklik ({{coordinate}})",
 			"click": "Klik ({{coordinate}})",
+			"typed": "Diketik: {{text}}",
 			"type": "Ketik \"{{text}}\"",
+			"pressed": "Ditekan: {{key}}",
 			"press": "Tekan {{key}}",
+			"scrolledDown": "Digulir ke bawah",
 			"scrollDown": "Gulir ke bawah",
+			"scrolledUp": "Digulir ke atas",
 			"scrollUp": "Gulir ke atas",
+			"hovered": "Diarahkan ({{coordinate}})",
 			"hover": "Arahkan ({{coordinate}})",
+			"resized": "Ukuran diubah ke: {{size}}",
+			"resize": "Ubah ukuran ke {{size}}",
+			"screenshotSaved": "Screenshot disimpan",
+			"screenshot": "Simpan screenshot ke {{path}}",
+			"closed": "Browser ditutup",
 			"close": "Tutup browser"
 		}
 	},

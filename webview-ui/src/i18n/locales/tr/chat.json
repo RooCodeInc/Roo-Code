@@ -305,7 +305,8 @@
 		"countdownDisplay": "{{count}}sn"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Yayınlandı",
+		"title": "Roo Code {{version}} Yayınlandı",
+		"support": "<githubLink>GitHub</githubLink>'da yıldız vererek Roo Code'u destekle.",
 		"stealthModel": {
 			"feature": "<bold>Sınırlı süre ÜCRETSİZ gizli model</bold> - Code Supernova: Artık <bold>1M token bağlam penceresi</bold> ile yükseltildi! Görüntü girişlerini destekleyen çok amaçlı acentik kodlama modeli, Roo Code Cloud üzerinden kullanılabilir.",
 			"note": "(Not: istemler ve tamamlamalar model yaratıcısı tarafından kaydedilir ve modeli geliştirmek için kullanılır)",
@@ -324,8 +325,7 @@
 			"description": "Ajanlar bulutta birlikte çalışır ve web'den veya Slack üzerinden tetiklenebilir.",
 			"tryButton": "Bulut Ajanlarını Dene"
 		},
-		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>",
-		"socialLinks": "Bize <xLink>X</xLink>, <discordLink>Discord</discordLink>, veya <redditLink>r/RooCode</redditLink>'da katılın 🚀"
+		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>"
 	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",
@@ -342,13 +342,25 @@
 		"sessionStarted": "Tarayıcı Oturumu Başlatıldı",
 		"actions": {
 			"title": "Tarayıcı Eylemi: ",
+			"launched": "Tarayıcı başlatıldı",
 			"launch": "{{url}} adresinde tarayıcı başlat",
+			"clicked": "Tıklandı ({{coordinate}})",
 			"click": "Tıkla ({{coordinate}})",
+			"typed": "Yazıldı: {{text}}",
 			"type": "Yaz \"{{text}}\"",
+			"pressed": "Basıldı: {{key}}",
 			"press": "{{key}} tuşuna bas",
+			"scrolledDown": "Aşağı kaydırıldı",
 			"scrollDown": "Aşağı kaydır",
+			"scrolledUp": "Yukarı kaydırıldı",
 			"scrollUp": "Yukarı kaydır",
+			"hovered": "Üzerine gelinildi ({{coordinate}})",
 			"hover": "Üzerine gel ({{coordinate}})",
+			"resized": "Boyut değiştirildi: {{size}}",
+			"resize": "Boyutu değiştir {{size}}",
+			"screenshotSaved": "Ekran görüntüsü kaydedildi",
+			"screenshot": "Ekran görüntüsünü {{path}} yoluna kaydet",
+			"closed": "Tarayıcı kapatıldı",
 			"close": "Tarayıcıyı kapat"
 		}
 	},

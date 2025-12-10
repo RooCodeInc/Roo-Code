@@ -304,7 +304,8 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "🎉 Rilasciato Roo Code {{version}}",
+		"title": "Rilasciato Roo Code {{version}}",
+		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
 			"note": "(Nota: i prompt e le completazioni vengono registrati dal creatore del modello e utilizzati per migliorarlo)",
@@ -323,8 +324,7 @@
 			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
 			"tryButton": "Prova gli Agenti Cloud"
 		},
-		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>",
-		"socialLinks": "Unisciti a noi su <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>"
 	},
 	"browser": {
 		"session": "Sessione del browser",
@@ -341,13 +341,25 @@
 		"sessionStarted": "Sessione browser avviata",
 		"actions": {
 			"title": "Azione browser: ",
+			"launched": "Browser avviato",
 			"launch": "Avvia browser su {{url}}",
+			"clicked": "Cliccato su: {{coordinate}}",
 			"click": "Clic ({{coordinate}})",
+			"typed": "Digitato: {{text}}",
 			"type": "Digita \"{{text}}\"",
+			"pressed": "Premuto: {{key}}",
 			"press": "Premi {{key}}",
+			"scrolledDown": "Scorso verso il basso",
 			"scrollDown": "Scorri verso il basso",
+			"scrolledUp": "Scorso verso l'alto",
 			"scrollUp": "Scorri verso l'alto",
+			"hovered": "Passato il mouse su: {{coordinate}}",
 			"hover": "Passa il mouse ({{coordinate}})",
+			"resized": "Ridimensionato a: {{size}}",
+			"resize": "Ridimensiona a {{size}}",
+			"screenshotSaved": "Screenshot salvato",
+			"screenshot": "Salva screenshot in {{path}}",
+			"closed": "Browser chiuso",
 			"close": "Chiudi browser"
 		}
 	},

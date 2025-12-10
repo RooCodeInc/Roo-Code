@@ -280,7 +280,8 @@
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} uitgebracht",
+		"title": "Roo Code {{version}} uitgebracht",
+		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
 			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
@@ -299,8 +300,7 @@
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
 		},
-		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
-		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Ook, <careersLink>we nemen aan!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",
@@ -341,13 +341,25 @@
 		"sessionStarted": "Browsersessie gestart",
 		"actions": {
 			"title": "Browseractie: ",
+			"launched": "Browser gestart",
 			"launch": "Browser starten op {{url}}",
+			"clicked": "Geklikt ({{coordinate}})",
 			"click": "Klik ({{coordinate}})",
+			"typed": "Getypt: {{text}}",
 			"type": "Typ \"{{text}}\"",
+			"pressed": "Ingedrukt: {{key}}",
 			"press": "Druk op {{key}}",
+			"scrolledDown": "Naar beneden gescrolld",
 			"scrollDown": "Scroll naar beneden",
+			"scrolledUp": "Naar boven gescrolld",
 			"scrollUp": "Scroll naar boven",
+			"hovered": "Zweefde ({{coordinate}})",
 			"hover": "Zweven ({{coordinate}})",
+			"resized": "Grootte gewijzigd naar: {{size}}",
+			"resize": "Grootte wijzigen naar {{size}}",
+			"screenshotSaved": "Schermopname opgeslagen",
+			"screenshot": "Schermopname opslaan naar {{path}}",
+			"closed": "Browser gesloten",
 			"close": "Browser sluiten"
 		}
 	},

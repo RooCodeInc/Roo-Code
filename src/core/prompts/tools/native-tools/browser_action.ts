@@ -21,6 +21,8 @@ const SIZE_PARAMETER_DESCRIPTION = `Viewport dimensions for the resize action in
 
 const TEXT_PARAMETER_DESCRIPTION = `Text to type when performing the type action, or key name to press when performing the press action (e.g., 'Enter', 'Tab', 'Escape')`
 
+const PATH_PARAMETER_DESCRIPTION = `File path where the screenshot should be saved (relative to workspace). Required for screenshot action. Supports .png, .jpeg, and .webp extensions. Example: 'screenshots/result.png'`
+
 export default {
 	type: "function",
 	function: {
@@ -33,7 +35,18 @@ export default {
 				action: {
 					type: "string",
 					description: ACTION_PARAMETER_DESCRIPTION,
-					enum: ["launch", "click", "hover", "type", "press", "scroll_down", "scroll_up", "resize", "close"],
+					enum: [
+						"launch",
+						"click",
+						"hover",
+						"type",
+						"press",
+						"scroll_down",
+						"scroll_up",
+						"resize",
+						"close",
+						"screenshot",
+					],
 				},
 				url: {
 					type: ["string", "null"],
@@ -50,6 +63,10 @@ export default {
 				text: {
 					type: ["string", "null"],
 					description: TEXT_PARAMETER_DESCRIPTION,
+				},
+				path: {
+					type: ["string", "null"],
+					description: PATH_PARAMETER_DESCRIPTION,
 				},
 			},
 			required: ["action"],

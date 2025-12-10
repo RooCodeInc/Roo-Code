@@ -304,7 +304,8 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Llançat",
+		"title": "Roo Code {{version}} Llançat",
+		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
 			"note": "(Nota: els prompts i completacions són registrats pel creador del model i utilitzats per millorar-lo)",
@@ -323,8 +324,7 @@
 			"description": "Els agents treballen junts al núvol i es poden activar des del web o mitjançant Slack.",
 			"tryButton": "Prova els Agents al Núvol"
 		},
-		"careers": "A més, <careersLink>estem contractant!</careersLink>",
-		"socialLinks": "Uneix-te a nosaltres a <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "A més, <careersLink>estem contractant!</careersLink>"
 	},
 	"browser": {
 		"session": "Sessió del navegador",
@@ -341,13 +341,25 @@
 		"sessionStarted": "Sessió de navegador iniciada",
 		"actions": {
 			"title": "Acció del navegador: ",
+			"launched": "Navegador iniciat",
 			"launch": "Iniciar navegador a {{url}}",
+			"clicked": "Fet clic ({{coordinate}})",
 			"click": "Clic ({{coordinate}})",
+			"typed": "Escrit: {{text}}",
 			"type": "Escriure \"{{text}}\"",
+			"pressed": "Premut: {{key}}",
 			"press": "Prem {{key}}",
+			"scrolledDown": "Desplaçat avall",
 			"scrollDown": "Desplaçar avall",
+			"scrolledUp": "Desplaçat amunt",
 			"scrollUp": "Desplaçar amunt",
+			"hovered": "Planat sobre ({{coordinate}})",
 			"hover": "Plana sobre ({{coordinate}})",
+			"resized": "Mida canviada a: {{size}}",
+			"resize": "Canvia la mida a {{size}}",
+			"screenshotSaved": "Captura de pantalla guardada",
+			"screenshot": "Guarda la captura de pantalla a {{path}}",
+			"closed": "Navegador tancat",
 			"close": "Tancar navegador"
 		}
 	},

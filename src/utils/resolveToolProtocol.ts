@@ -6,7 +6,7 @@ import type { ProviderSettings, ModelInfo } from "@roo-code/types"
  *
  * 1. User Preference - Per-Profile (explicit profile setting)
  * 2. Model Default (defaultToolProtocol in ModelInfo)
- * 3. Native Fallback (final fallback)
+ * 3. XML Fallback (final fallback)
  *
  * Then check support: if protocol is "native" but model doesn't support it, use XML.
  *
@@ -31,6 +31,6 @@ export function resolveToolProtocol(providerSettings: ProviderSettings, modelInf
 		return modelInfo.defaultToolProtocol
 	}
 
-	// 3. Native Fallback
-	return TOOL_PROTOCOL.NATIVE
+	// 3. XML Fallback
+	return TOOL_PROTOCOL.XML
 }

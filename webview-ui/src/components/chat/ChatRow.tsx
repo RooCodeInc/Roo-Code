@@ -1113,8 +1113,9 @@ export const ChatRowContent = ({
 					let retryInfo, code, docsURL
 					if (message.text !== undefined) {
 						// Try to show richer error message for that code, if available
-						if (parseInt(message.text.substring(0, 3)) >= 400) {
-							code = parseInt(message.text)
+						const potentialCode = parseInt(message.text.substring(0, 3))
+						if (potentialCode >= 400) {
+							code = potentialCode
 							const stringForError = `chat:apiRequest.errorMessage.${code}`
 							if (i18n.exists(stringForError)) {
 								body = t(stringForError)
@@ -1134,6 +1135,9 @@ export const ChatRowContent = ({
 									{message.text.substring(4)}
 								</p>
 							)
+						} else {
+							// Non-HTTP-status-code error message - display the actual error text
+							body = message.text
 						}
 					}
 					return (

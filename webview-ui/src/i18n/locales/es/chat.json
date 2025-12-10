@@ -304,7 +304,8 @@
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} publicado",
+		"title": "Roo Code {{version}} publicado",
+		"support": "Por favor, apoya a Roo Code dándonos una estrella en <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modelo stealth GRATUITO por tiempo limitado</bold> - Code Supernova: ¡Ahora actualizado con una <bold>ventana de contexto de 1M tokens</bold>! Un modelo de codificación agéntica versátil que soporta entradas de imágenes, accesible a través de Roo Code Cloud.",
 			"note": "(Nota: los prompts y completaciones son registrados por el creador del modelo y utilizados para mejorarlo)",
@@ -323,8 +324,7 @@
 			"description": "Los agentes trabajan juntos en la nube y se pueden activar desde la web o mediante Slack.",
 			"tryButton": "Prueba los Agentes en la Nube"
 		},
-		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
-		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>"
 	},
 	"browser": {
 		"session": "Sesión del navegador",
@@ -341,13 +341,25 @@
 		"sessionStarted": "Sesión de navegador iniciada",
 		"actions": {
 			"title": "Acción del navegador: ",
+			"launched": "Navegador iniciado",
 			"launch": "Iniciar navegador en {{url}}",
+			"clicked": "Clic en: {{coordinate}}",
 			"click": "Clic ({{coordinate}})",
+			"typed": "Escrito: {{text}}",
 			"type": "Escribir \"{{text}}\"",
+			"pressed": "Pulsado: {{key}}",
 			"press": "Pulsar {{key}}",
+			"scrolledDown": "Desplazado hacia abajo",
 			"scrollDown": "Desplazar hacia abajo",
+			"scrolledUp": "Desplazado hacia arriba",
 			"scrollUp": "Desplazar hacia arriba",
+			"hovered": "Flotado en: {{coordinate}}",
 			"hover": "Flotar ({{coordinate}})",
+			"resized": "Tamaño cambiado a: {{size}}",
+			"resize": "Cambiar tamaño a {{size}}",
+			"screenshotSaved": "Captura de pantalla guardada",
+			"screenshot": "Guardar captura de pantalla en {{path}}",
+			"closed": "Navegador cerrado",
 			"close": "Cerrar navegador"
 		}
 	},

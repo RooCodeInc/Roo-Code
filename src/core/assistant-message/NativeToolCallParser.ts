@@ -406,6 +406,7 @@ export class NativeToolCallParser {
 						coordinate: partialArgs.coordinate,
 						size: partialArgs.size,
 						text: partialArgs.text,
+						path: partialArgs.path,
 					}
 				}
 				break
@@ -645,6 +646,7 @@ export class NativeToolCallParser {
 							coordinate: args.coordinate,
 							size: args.size,
 							text: args.text,
+							path: args.path,
 						} as NativeArgsFor<TName>
 					}
 					break
