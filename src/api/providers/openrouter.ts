@@ -226,7 +226,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
 			TelemetryService.instance.captureException(
 				new ApiProviderError(
 					error instanceof Error ? error.message : String(error),
@@ -260,8 +259,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			if ("error" in chunk) {
 				const error = chunk.error as { message?: string; code?: number }
 				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
-				// Create an error object with status property so the telemetry client can extract it
 				const errorWithStatus = Object.assign(
 					new ApiProviderError(
 						error?.message ?? "Unknown error",
@@ -472,7 +469,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
 			TelemetryService.instance.captureException(
 				new ApiProviderError(
 					error instanceof Error ? error.message : String(error),
@@ -487,8 +483,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		if ("error" in response) {
 			const error = response.error as { message?: string; code?: number }
-			// Capture exception - PostHogTelemetryClient handles filtering of expected errors (e.g., 429 rate limits)
-			// Create an error object with status property so the telemetry client can extract it
 			const errorWithStatus = Object.assign(
 				new ApiProviderError(
 					error?.message ?? "Unknown error",
