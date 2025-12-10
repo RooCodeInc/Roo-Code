@@ -48,6 +48,13 @@ export abstract class BaseTool<TName extends ToolName> {
 	abstract readonly name: TName
 
 	/**
+	 * Alias names for this tool.
+	 * When any tool in an alias group is allowed, all aliases are allowed.
+	 * Aliases must be unique across all tools.
+	 */
+	readonly aliases: string[] = []
+
+	/**
 	 * Parse XML/legacy string-based parameters into typed parameters.
 	 *
 	 * For XML protocol, this converts params.args (XML string) or params.path (legacy)

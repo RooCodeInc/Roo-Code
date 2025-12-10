@@ -5,6 +5,118 @@ import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
+import { searchAndReplaceTool } from "../../tools/SearchAndReplaceTool"
+
+/**
+ * Tool aliases registry - built from tools that define aliases.
+ * Maps canonical tool name to array of alias names.
+ */
+const TOOL_ALIASES: Map<string, string[]> = new Map()
+
+/**
+ * Reverse lookup - maps alias name to canonical tool name.
+ */
+const ALIAS_TO_CANONICAL: Map<string, string> = new Map()
+
+/**
+ * Get all tool names from TOOL_GROUPS (including regular tools and customTools).
+ */
+function getAllToolNames(): Set<string> {
+	const toolNames = new Set<string>()
+	for (const groupConfig of Object.values(TOOL_GROUPS)) {
+		groupConfig.tools.forEach((tool) => toolNames.add(tool))
+		if (groupConfig.customTools) {
+			groupConfig.customTools.forEach((tool) => toolNames.add(tool))
+		}
+	}
+	return toolNames
+}
+
+/**
+ * Register a tool's aliases. Validates for duplicate aliases and conflicts with tool names.
+ * @param toolName - The canonical tool name
+ * @param aliases - Array of alias names
+ * @throws Error if an alias is already registered or conflicts with a tool name
+ */
+function registerToolAliases(toolName: string, aliases: string[]): void {
+	if (aliases.length === 0) return
+
+	const allToolNames = getAllToolNames()
+
+	// Check for duplicate aliases and conflicts with tool names
+	for (const alias of aliases) {
+		if (ALIAS_TO_CANONICAL.has(alias)) {
+			throw new Error(
+				`Duplicate tool alias "${alias}" - already registered for tool "${ALIAS_TO_CANONICAL.get(alias)}"`,
+			)
+		}
+		if (TOOL_ALIASES.has(alias)) {
+			throw new Error(`Alias "${alias}" conflicts with canonical tool name in alias registry`)
+		}
+		if (allToolNames.has(alias)) {
+			throw new Error(`Alias "${alias}" conflicts with existing tool name`)
+		}
+	}
+
+	// Register the aliases
+	TOOL_ALIASES.set(toolName, aliases)
+	for (const alias of aliases) {
+		ALIAS_TO_CANONICAL.set(alias, toolName)
+	}
+}
+
+// Register all tool aliases from tool instances
+registerToolAliases(searchAndReplaceTool.name, searchAndReplaceTool.aliases)
+
+/**
+ * Resolves a tool name to its canonical name.
+ * If the tool name is an alias, returns the canonical tool name.
+ * If it's already a canonical name or unknown, returns as-is.
+ *
+ * @param toolName - The tool name to resolve (may be an alias)
+ * @returns The canonical tool name
+ */
+export function resolveToolAlias(toolName: string): string {
+	const canonical = ALIAS_TO_CANONICAL.get(toolName)
+	return canonical ?? toolName
+}
+
+/**
+ * Applies tool alias resolution to a set of allowed tools.
+ * Resolves any aliases to their canonical tool names.
+ *
+ * @param allowedTools - Set of tools that may contain aliases
+ * @returns Set with aliases resolved to canonical names
+ */
+export function applyToolAliases(allowedTools: Set<string>): Set<string> {
+	const result = new Set<string>()
+
+	for (const tool of allowedTools) {
+		// Resolve alias to canonical name
+		result.add(resolveToolAlias(tool))
+	}
+
+	return result
+}
+
+/**
+ * Gets all tools in an alias group (including the canonical tool).
+ *
+ * @param toolName - Any tool name in the alias group
+ * @returns Array of all tool names in the alias group, or just the tool if not aliased
+ */
+export function getToolAliasGroup(toolName: string): string[] {
+	// Check if it's a canonical tool with aliases
+	if (TOOL_ALIASES.has(toolName)) {
+		return [toolName, ...TOOL_ALIASES.get(toolName)!]
+	}
+	// Check if it's an alias
+	const canonical = ALIAS_TO_CANONICAL.get(toolName)
+	if (canonical) {
+		return [canonical, ...TOOL_ALIASES.get(canonical)!]
+	}
+	return [toolName]
+}
 
 /**
  * Apply model-specific tool customization to a set of allowed tools.
@@ -18,21 +130,33 @@ import type { McpHub } from "../../../services/mcp/McpHub"
  * @param modelInfo - Model configuration with tool customization
  * @returns Modified set of tools after applying model customization
  */
+/**
+ * Result of applying model tool customization.
+ * Contains the set of allowed tools and any alias renames to apply.
+ */
+interface ModelToolCustomizationResult {
+	allowedTools: Set<string>
+	/** Maps canonical tool name to alias name for tools that should be renamed */
+	aliasRenames: Map<string, string>
+}
+
 export function applyModelToolCustomization(
 	allowedTools: Set<string>,
 	modeConfig: ModeConfig,
 	modelInfo?: ModelInfo,
-): Set<string> {
+): ModelToolCustomizationResult {
 	if (!modelInfo) {
-		return allowedTools
+		return { allowedTools, aliasRenames: new Map() }
 	}
 
 	const result = new Set(allowedTools)
+	const aliasRenames = new Map<string, string>()
 
 	// Apply excluded tools (remove from allowed set)
 	if (modelInfo.excludedTools && modelInfo.excludedTools.length > 0) {
 		modelInfo.excludedTools.forEach((tool) => {
-			result.delete(tool)
+			const resolvedTool = resolveToolAlias(tool)
+			result.delete(resolvedTool)
 		})
 	}
 
@@ -59,16 +183,21 @@ export function applyModelToolCustomization(
 		)
 
 		// Add included tools only if they belong to an allowed group
-		// This includes both regular tools and customTools
+		// If the tool was specified as an alias, track the rename
 		modelInfo.includedTools.forEach((tool) => {
-			const toolGroup = toolToGroup.get(tool)
+			const resolvedTool = resolveToolAlias(tool)
+			const toolGroup = toolToGroup.get(resolvedTool)
 			if (toolGroup && allowedGroups.has(toolGroup)) {
-				result.add(tool)
+				result.add(resolvedTool)
+				// If the tool was specified as an alias, rename it in the API
+				if (tool !== resolvedTool) {
+					aliasRenames.set(resolvedTool, tool)
+				}
 			}
 		})
 	}
 
-	return result
+	return { allowedTools: result, aliasRenames }
 }
 
 /**
@@ -123,7 +252,15 @@ export function filterNativeToolsForMode(
 
 	// Apply model-specific tool customization
 	const modelInfo = settings?.modelInfo as ModelInfo | undefined
-	allowedToolNames = applyModelToolCustomization(allowedToolNames, modeConfig, modelInfo)
+	const { allowedTools: customizedTools, aliasRenames } = applyModelToolCustomization(
+		allowedToolNames,
+		modeConfig,
+		modelInfo,
+	)
+	allowedToolNames = customizedTools
+
+	// Apply tool aliases - if one tool in an alias group is allowed, all aliases are allowed
+	allowedToolNames = applyToolAliases(allowedToolNames)
 
 	// Conditionally exclude codebase_search if feature is disabled or not configured
 	if (
@@ -163,14 +300,33 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("access_mcp_resource")
 	}
 
-	// Filter native tools based on allowed tool names
-	return nativeTools.filter((tool) => {
+	// Filter native tools based on allowed tool names and apply alias renames
+	const filteredTools: OpenAI.Chat.ChatCompletionTool[] = []
+
+	for (const tool of nativeTools) {
 		// Handle both ChatCompletionTool and ChatCompletionCustomTool
 		if ("function" in tool && tool.function) {
-			return allowedToolNames.has(tool.function.name)
+			const toolName = tool.function.name
+			if (allowedToolNames.has(toolName)) {
+				// Check if this tool should be renamed to an alias
+				const aliasName = aliasRenames.get(toolName)
+				if (aliasName) {
+					// Clone the tool with the alias name
+					filteredTools.push({
+						...tool,
+						function: {
+							...tool.function,
+							name: aliasName,
+						},
+					})
+				} else {
+					filteredTools.push(tool)
+				}
+			}
 		}
-		return false
-	})
+	}
+
+	return filteredTools
 }
 
 /**
@@ -232,7 +388,18 @@ export function isToolAllowedInMode(
 	}
 
 	// Check if the tool is allowed by the mode's groups
-	return isToolAllowedForMode(toolName, modeSlug, customModes ?? [], undefined, undefined, experiments ?? {})
+	// Also check if any tool in the alias group is allowed
+	const aliasGroup = getToolAliasGroup(toolName)
+	return aliasGroup.some((aliasedTool) =>
+		isToolAllowedForMode(
+			aliasedTool as ToolName,
+			modeSlug,
+			customModes ?? [],
+			undefined,
+			undefined,
+			experiments ?? {},
+		),
+	)
 }
 
 /**

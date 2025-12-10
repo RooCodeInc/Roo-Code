@@ -695,7 +695,11 @@ export async function presentAssistantMessage(cline: Task) {
 			// potentially causing the stream to appear frozen.
 			if (!block.partial) {
 				const modelInfo = cline.api.getModel()
-				const includedTools = modelInfo?.info?.includedTools
+				// Resolve aliases in includedTools before validation
+				// e.g., "edit_file" should resolve to "search_and_replace"
+				const rawIncludedTools = modelInfo?.info?.includedTools
+				const { resolveToolAlias } = await import("../prompts/tools/filter-tools-for-mode")
+				const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))
 
 				try {
 					validateToolUse(

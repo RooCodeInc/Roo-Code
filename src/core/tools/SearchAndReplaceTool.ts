@@ -26,6 +26,7 @@ interface SearchAndReplaceParams {
 
 export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	readonly name = "search_and_replace" as const
+	override readonly aliases = ["edit_file"]
 
 	parseLegacy(params: Partial<Record<string, string>>): SearchAndReplaceParams {
 		// Parse operations from JSON string if provided

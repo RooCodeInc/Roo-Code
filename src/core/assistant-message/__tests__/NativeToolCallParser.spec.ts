@@ -238,4 +238,84 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("Tool Alias Resolution", () => {
+		it("should resolve edit_file alias to search_and_replace", () => {
+			const toolCall = {
+				id: "toolu_alias_123",
+				name: "edit_file" as any, // Alias that model might call
+				arguments: JSON.stringify({
+					path: "test.ts",
+					operations: [
+						{
+							search: "old text",
+							replace: "new text",
+						},
+					],
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				// The resolved name should be the canonical tool name
+				expect(result.name).toBe("search_and_replace")
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as {
+					path: string
+					operations: Array<{ search: string; replace: string }>
+				}
+				expect(nativeArgs.path).toBe("test.ts")
+				expect(nativeArgs.operations).toHaveLength(1)
+			}
+		})
+
+		it("should still work with canonical search_and_replace name", () => {
+			const toolCall = {
+				id: "toolu_canonical_123",
+				name: "search_and_replace" as const,
+				arguments: JSON.stringify({
+					path: "test.ts",
+					operations: [
+						{
+							search: "old",
+							replace: "new",
+						},
+					],
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.name).toBe("search_and_replace")
+			}
+		})
+
+		it("should resolve alias during streaming finalization", () => {
+			const id = "toolu_alias_streaming"
+			NativeToolCallParser.startStreamingToolCall(id, "edit_file")
+
+			// Add arguments
+			NativeToolCallParser.processStreamingChunk(
+				id,
+				JSON.stringify({
+					path: "streamed.ts",
+					operations: [{ search: "a", replace: "b" }],
+				}),
+			)
+
+			const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.name).toBe("search_and_replace")
+			}
+		})
+	})
 })

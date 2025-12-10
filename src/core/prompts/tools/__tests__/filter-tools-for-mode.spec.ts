@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import type OpenAI from "openai"
 import type { ModeConfig, ModelInfo } from "@roo-code/types"
-import { filterNativeToolsForMode, filterMcpToolsForMode, applyModelToolCustomization } from "../filter-tools-for-mode"
+import {
+	filterNativeToolsForMode,
+	filterMcpToolsForMode,
+	applyModelToolCustomization,
+	applyToolAliases,
+	getToolAliasGroup,
+	resolveToolAlias,
+} from "../filter-tools-for-mode"
 import * as toolsModule from "../../../../shared/tools"
 
 describe("filterNativeToolsForMode", () => {
@@ -487,7 +494,7 @@ describe("filterMcpToolsForMode", () => {
 		it("should return original tools when modelInfo is undefined", () => {
 			const tools = new Set(["read_file", "write_to_file", "apply_diff"])
 			const result = applyModelToolCustomization(tools, codeMode, undefined)
-			expect(result).toEqual(tools)
+			expect(result.allowedTools).toEqual(tools)
 		})
 
 		it("should exclude tools specified in excludedTools", () => {
@@ -498,9 +505,9 @@ describe("filterMcpToolsForMode", () => {
 				excludedTools: ["apply_diff"],
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(true)
-			expect(result.has("apply_diff")).toBe(false)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(true)
+			expect(result.allowedTools.has("apply_diff")).toBe(false)
 		})
 
 		it("should exclude multiple tools", () => {
@@ -511,10 +518,10 @@ describe("filterMcpToolsForMode", () => {
 				excludedTools: ["apply_diff", "write_to_file"],
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("execute_command")).toBe(true)
-			expect(result.has("write_to_file")).toBe(false)
-			expect(result.has("apply_diff")).toBe(false)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("execute_command")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(false)
+			expect(result.allowedTools.has("apply_diff")).toBe(false)
 		})
 
 		it("should include tools only if they belong to allowed groups", () => {
@@ -525,9 +532,9 @@ describe("filterMcpToolsForMode", () => {
 				includedTools: ["write_to_file", "apply_diff"], // Both in edit group
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(true)
-			expect(result.has("apply_diff")).toBe(true)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(true)
+			expect(result.allowedTools.has("apply_diff")).toBe(true)
 		})
 
 		it("should NOT include tools from groups not allowed by mode", () => {
@@ -539,9 +546,9 @@ describe("filterMcpToolsForMode", () => {
 			}
 			// Architect mode doesn't have edit group
 			const result = applyModelToolCustomization(tools, architectMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(false) // Not in allowed groups
-			expect(result.has("apply_diff")).toBe(false) // Not in allowed groups
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(false) // Not in allowed groups
+			expect(result.allowedTools.has("apply_diff")).toBe(false) // Not in allowed groups
 		})
 
 		it("should apply both exclude and include operations", () => {
@@ -553,10 +560,10 @@ describe("filterMcpToolsForMode", () => {
 				includedTools: ["search_and_replace"], // Another edit tool (customTool)
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(true)
-			expect(result.has("apply_diff")).toBe(false) // Excluded
-			expect(result.has("search_and_replace")).toBe(true) // Included
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(true)
+			expect(result.allowedTools.has("apply_diff")).toBe(false) // Excluded
+			expect(result.allowedTools.has("search_and_replace")).toBe(true) // Included
 		})
 
 		it("should handle empty excludedTools and includedTools arrays", () => {
@@ -568,7 +575,7 @@ describe("filterMcpToolsForMode", () => {
 				includedTools: [],
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result).toEqual(tools)
+			expect(result.allowedTools).toEqual(tools)
 		})
 
 		it("should ignore excluded tools that are not in the original set", () => {
@@ -579,9 +586,9 @@ describe("filterMcpToolsForMode", () => {
 				excludedTools: ["apply_diff", "nonexistent_tool"],
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(true)
-			expect(result.size).toBe(2)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(true)
+			expect(result.allowedTools.size).toBe(2)
 		})
 
 		it("should NOT include customTools by default", () => {
@@ -594,8 +601,8 @@ describe("filterMcpToolsForMode", () => {
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
 			// customTools should not be in the result unless explicitly included
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("write_to_file")).toBe(true)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("write_to_file")).toBe(true)
 		})
 
 		it("should NOT include tools that are not in any TOOL_GROUPS", () => {
@@ -606,8 +613,8 @@ describe("filterMcpToolsForMode", () => {
 				includedTools: ["my_custom_tool"], // Not in any tool group
 			}
 			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("my_custom_tool")).toBe(false)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("my_custom_tool")).toBe(false)
 		})
 
 		it("should NOT include undefined tools even with allowed groups", () => {
@@ -619,8 +626,8 @@ describe("filterMcpToolsForMode", () => {
 			}
 			// Even though architect mode has read group, undefined tools are not added
 			const result = applyModelToolCustomization(tools, architectMode, modelInfo)
-			expect(result.has("read_file")).toBe(true)
-			expect(result.has("custom_edit_tool")).toBe(false)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("custom_edit_tool")).toBe(false)
 		})
 
 		describe("with customTools defined in TOOL_GROUPS", () => {
@@ -647,9 +654,9 @@ describe("filterMcpToolsForMode", () => {
 					includedTools: ["special_edit_tool"], // customTool from edit group
 				}
 				const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-				expect(result.has("read_file")).toBe(true)
-				expect(result.has("write_to_file")).toBe(true)
-				expect(result.has("special_edit_tool")).toBe(true) // customTool should be included
+				expect(result.allowedTools.has("read_file")).toBe(true)
+				expect(result.allowedTools.has("write_to_file")).toBe(true)
+				expect(result.allowedTools.has("special_edit_tool")).toBe(true) // customTool should be included
 			})
 
 			it("should NOT include customTools when not specified in includedTools", () => {
@@ -660,9 +667,9 @@ describe("filterMcpToolsForMode", () => {
 					// No includedTools specified
 				}
 				const result = applyModelToolCustomization(tools, codeMode, modelInfo)
-				expect(result.has("read_file")).toBe(true)
-				expect(result.has("write_to_file")).toBe(true)
-				expect(result.has("special_edit_tool")).toBe(false) // customTool should NOT be included by default
+				expect(result.allowedTools.has("read_file")).toBe(true)
+				expect(result.allowedTools.has("write_to_file")).toBe(true)
+				expect(result.allowedTools.has("special_edit_tool")).toBe(false) // customTool should NOT be included by default
 			})
 
 			it("should NOT include customTools from groups not allowed by mode", () => {
@@ -674,8 +681,8 @@ describe("filterMcpToolsForMode", () => {
 				}
 				// Architect mode doesn't have edit group
 				const result = applyModelToolCustomization(tools, architectMode, modelInfo)
-				expect(result.has("read_file")).toBe(true)
-				expect(result.has("special_edit_tool")).toBe(false) // customTool should NOT be included
+				expect(result.allowedTools.has("read_file")).toBe(true)
+				expect(result.allowedTools.has("special_edit_tool")).toBe(false) // customTool should NOT be included
 			})
 		})
 	})
@@ -821,6 +828,178 @@ describe("filterMcpToolsForMode", () => {
 			expect(toolNames).toContain("write_to_file")
 			expect(toolNames).toContain("search_and_replace") // Included
 			expect(toolNames).not.toContain("apply_diff") // Excluded
+		})
+	})
+})
+
+describe("Tool Aliases", () => {
+	describe("resolveToolAlias", () => {
+		it("should resolve alias to canonical name", () => {
+			// edit_file is an alias for search_and_replace
+			expect(resolveToolAlias("edit_file")).toBe("search_and_replace")
+		})
+
+		it("should return canonical name as-is", () => {
+			expect(resolveToolAlias("search_and_replace")).toBe("search_and_replace")
+		})
+
+		it("should return unknown tool name as-is", () => {
+			expect(resolveToolAlias("read_file")).toBe("read_file")
+		})
+	})
+
+	describe("applyToolAliases", () => {
+		it("should keep canonical tool unchanged", () => {
+			const allowedTools = new Set(["search_and_replace"])
+			const result = applyToolAliases(allowedTools)
+			expect(result.has("search_and_replace")).toBe(true)
+			expect(result.size).toBe(1)
+		})
+
+		it("should resolve alias to canonical tool", () => {
+			const allowedTools = new Set(["edit_file"])
+			const result = applyToolAliases(allowedTools)
+			expect(result.has("search_and_replace")).toBe(true)
+			expect(result.has("edit_file")).toBe(false) // Alias resolved to canonical
+			expect(result.size).toBe(1)
+		})
+
+		it("should not modify tools without aliases", () => {
+			const allowedTools = new Set(["read_file", "write_to_file"])
+			const result = applyToolAliases(allowedTools)
+			expect(result.size).toBe(2)
+			expect(result.has("read_file")).toBe(true)
+			expect(result.has("write_to_file")).toBe(true)
+		})
+
+		it("should handle empty set", () => {
+			const allowedTools = new Set<string>()
+			const result = applyToolAliases(allowedTools)
+			expect(result.size).toBe(0)
+		})
+
+		it("should resolve aliases in mixed set", () => {
+			const allowedTools = new Set(["read_file", "edit_file", "write_to_file"])
+			const result = applyToolAliases(allowedTools)
+			expect(result.size).toBe(3)
+			expect(result.has("read_file")).toBe(true)
+			expect(result.has("write_to_file")).toBe(true)
+			expect(result.has("search_and_replace")).toBe(true) // Resolved from alias
+		})
+	})
+
+	describe("getToolAliasGroup", () => {
+		it("should return alias group for canonical tool", () => {
+			const group = getToolAliasGroup("search_and_replace")
+			expect(group).toContain("search_and_replace")
+			expect(group).toContain("edit_file")
+		})
+
+		it("should return alias group for alias tool", () => {
+			const group = getToolAliasGroup("edit_file")
+			expect(group).toContain("search_and_replace")
+			expect(group).toContain("edit_file")
+		})
+
+		it("should return single-item array for non-aliased tool", () => {
+			const group = getToolAliasGroup("read_file")
+			expect(group).toEqual(["read_file"])
+		})
+	})
+
+	describe("applyModelToolCustomization with aliases", () => {
+		const codeMode: ModeConfig = {
+			slug: "code",
+			name: "Code",
+			roleDefinition: "Test",
+			groups: ["read", "edit", "browser", "command", "mcp"] as const,
+		}
+
+		it("should resolve alias in includedTools to canonical name and track rename", () => {
+			const tools = new Set(["read_file"])
+			const modelInfo: ModelInfo = {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				includedTools: ["edit_file"], // Using alias
+			}
+			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("search_and_replace")).toBe(true) // Canonical added
+			expect(result.allowedTools.has("edit_file")).toBe(false) // Not the alias
+			// Should track the rename
+			expect(result.aliasRenames.get("search_and_replace")).toBe("edit_file")
+		})
+
+		it("should resolve alias in excludedTools to canonical name", () => {
+			const tools = new Set(["read_file", "search_and_replace"])
+			const modelInfo: ModelInfo = {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				excludedTools: ["edit_file"], // Using alias
+			}
+			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("search_and_replace")).toBe(false) // Excluded via alias
+		})
+	})
+
+	describe("filterNativeToolsForMode with aliases", () => {
+		it("should rename tool to alias when alias is specified in includedTools", () => {
+			const codeMode: ModeConfig = {
+				slug: "code",
+				name: "Code",
+				roleDefinition: "Test",
+				groups: ["read", "edit", "browser", "command", "mcp"] as const,
+			}
+
+			const mockToolsWithAliases: OpenAI.Chat.ChatCompletionTool[] = [
+				{
+					type: "function",
+					function: {
+						name: "search_and_replace",
+						description: "Search and replace",
+						parameters: {},
+					},
+				},
+			]
+
+			const modelInfo: ModelInfo = {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				includedTools: ["edit_file"], // Include via alias
+			}
+
+			const filtered = filterNativeToolsForMode(mockToolsWithAliases, "code", [codeMode], {}, undefined, {
+				modelInfo,
+			})
+
+			const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
+
+			// The tool should be renamed to the alias name
+			expect(toolNames).toContain("edit_file")
+			expect(toolNames).not.toContain("search_and_replace") // Renamed to alias
+		})
+
+		it("should exclude canonical tool when alias is specified in excludedTools", () => {
+			const codeMode: ModeConfig = {
+				slug: "code",
+				name: "Code",
+				roleDefinition: "Test",
+				groups: ["read", "edit", "browser", "command", "mcp"] as const,
+			}
+
+			// First add the canonical tool to the allowed set
+			const tools = new Set(["read_file", "search_and_replace"])
+			const modelInfo: ModelInfo = {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				excludedTools: ["edit_file"], // Exclude via alias
+			}
+
+			const result = applyModelToolCustomization(tools, codeMode, modelInfo)
+
+			expect(result.allowedTools.has("read_file")).toBe(true)
+			expect(result.allowedTools.has("search_and_replace")).toBe(false) // Excluded via alias
 		})
 	})
 })

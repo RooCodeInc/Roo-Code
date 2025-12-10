@@ -6,6 +6,7 @@ import {
 	toolParamNames,
 	type NativeToolArgs,
 } from "../../shared/tools"
+import { resolveToolAlias } from "../prompts/tools/filter-tools-for-mode"
 import { parseJSON } from "partial-json"
 import type {
 	ApiStreamToolCallStartChunk,
@@ -246,10 +247,13 @@ export class NativeToolCallParser {
 		try {
 			const partialArgs = parseJSON(toolCall.argumentsAccumulator)
 
+			// Resolve tool alias to canonical name
+			const resolvedName = resolveToolAlias(toolCall.name) as ToolName
+
 			// Create partial ToolUse with extracted values
 			return this.createPartialToolUse(
 				toolCall.id,
-				toolCall.name as ToolName,
+				resolvedName,
 				partialArgs || {},
 				true, // partial
 			)
@@ -505,7 +509,15 @@ export class NativeToolCallParser {
 				}
 				break
 
-			// Add other tools as needed
+			case "search_and_replace":
+				if (partialArgs.path !== undefined || partialArgs.operations !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						operations: partialArgs.operations,
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -535,9 +547,12 @@ export class NativeToolCallParser {
 			return this.parseDynamicMcpTool(toolCall)
 		}
 
-		// Validate tool name
-		if (!toolNames.includes(toolCall.name as ToolName)) {
-			console.error(`Invalid tool name: ${toolCall.name}`)
+		// Resolve tool alias to canonical name (e.g., "edit_file" -> "search_and_replace")
+		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
+
+		// Validate tool name (after alias resolution)
+		if (!toolNames.includes(resolvedName as ToolName)) {
+			console.error(`Invalid tool name: ${toolCall.name} (resolved: ${resolvedName})`)
 			console.error(`Valid tool names:`, toolNames)
 			return null
 		}
@@ -554,13 +569,13 @@ export class NativeToolCallParser {
 				// Skip complex parameters that have been migrated to nativeArgs.
 				// For read_file, the 'files' parameter is a FileEntry[] array that can't be
 				// meaningfully stringified. The properly typed data is in nativeArgs instead.
-				if (toolCall.name === "read_file" && key === "files") {
+				if (resolvedName === "read_file" && key === "files") {
 					continue
 				}
 
 				// Validate parameter name
 				if (!toolParamNames.includes(key as ToolParamName)) {
-					console.warn(`Unknown parameter '${key}' for tool '${toolCall.name}'`)
+					console.warn(`Unknown parameter '${key}' for tool '${resolvedName}'`)
 					console.warn(`Valid param names:`, toolParamNames)
 					continue
 				}
@@ -580,7 +595,7 @@ export class NativeToolCallParser {
 			// will fall back to legacy parameter parsing if supported.
 			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
 
-			switch (toolCall.name) {
+			switch (resolvedName) {
 				case "read_file":
 					if (args.files && Array.isArray(args.files)) {
 						nativeArgs = { files: this.convertFileEntries(args.files) } as NativeArgsFor<TName>
@@ -761,7 +776,7 @@ export class NativeToolCallParser {
 
 			const result: ToolUse<TName> = {
 				type: "tool_use" as const,
-				name: toolCall.name,
+				name: resolvedName,
 				params,
 				partial: false, // Native tool calls are always complete when yielded
 				nativeArgs,
