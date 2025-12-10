@@ -1,10 +1,11 @@
 import React, { useState, useCallback, memo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { BookOpenText, MessageCircleWarning } from "lucide-react"
+import { BookOpenText, MessageCircleWarning, Info, Copy, Check } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@src/components/ui/dialog"
 
 /**
  * Unified error display component for all error types in the chat.
@@ -61,7 +62,8 @@ export interface ErrorRowProps {
 	headerClassName?: string
 	messageClassName?: string
 	code?: number
-	docsURL?: string // NEW: Optional documentation link
+	docsURL?: string // Optional documentation link
+	errorDetails?: string // Optional detailed error message shown in modal
 }
 
 /**
@@ -80,10 +82,13 @@ export const ErrorRow = memo(
 		messageClassName,
 		docsURL,
 		code,
+		errorDetails,
 	}: ErrorRowProps) => {
 		const { t } = useTranslation()
 		const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 		const [showCopySuccess, setShowCopySuccess] = useState(false)
+		const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+		const [showDetailsCopySuccess, setShowDetailsCopySuccess] = useState(false)
 		const { copyWithFeedback } = useCopyToClipboard()
 
 		// Default titles for different error types
@@ -130,6 +135,22 @@ export const ErrorRow = memo(
 			[message, copyWithFeedback],
 		)
 
+		const handleCopyDetails = useCallback(
+			async (e: React.MouseEvent) => {
+				e.stopPropagation()
+				if (errorDetails) {
+					const success = await copyWithFeedback(errorDetails)
+					if (success) {
+						setShowDetailsCopySuccess(true)
+						setTimeout(() => {
+							setShowDetailsCopySuccess(false)
+						}, 1000)
+					}
+				}
+			},
+			[errorDetails, copyWithFeedback],
+		)
+
 		const errorTitle = getDefaultTitle()
 
 		// For diff_error type with expandable content
@@ -168,36 +189,84 @@ export const ErrorRow = memo(
 
 		// Standard error display
 		return (
-			<div className="group pr-2">
-				{errorTitle && (
-					<div className={headerClassName || "flex items-center justify-between gap-2 break-words"}>
-						<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
-						<span className="text-vscode-errorForeground font-bold grow cursor-default">{errorTitle}</span>
-						{docsURL && (
-							<a
-								href={docsURL}
-								className="text-sm flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
-								onClick={(e) => {
-									e.preventDefault()
-									vscode.postMessage({ type: "openExternal", url: docsURL })
-								}}>
-								<BookOpenText className="size-3 mt-[3px]" />
-								{t("chat:apiRequest.errorMessage.docs")}
-							</a>
-						)}
+			<>
+				<div className="group pr-2">
+					{errorTitle && (
+						<div className={headerClassName || "flex items-center justify-between gap-2 break-words"}>
+							<MessageCircleWarning className="w-4 text-vscode-errorForeground" />
+							<span className="text-vscode-errorForeground font-bold grow cursor-default">
+								{errorTitle}
+							</span>
+							<div className="flex items-center gap-2">
+								{docsURL && (
+									<a
+										href={docsURL}
+										className="text-sm flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
+										onClick={(e) => {
+											e.preventDefault()
+											vscode.postMessage({ type: "openExternal", url: docsURL })
+										}}>
+										<BookOpenText className="size-3 mt-[3px]" />
+										{t("chat:apiRequest.errorMessage.docs")}
+									</a>
+								)}
+								{errorDetails && (
+									<button
+										onClick={() => setIsDetailsDialogOpen(true)}
+										className="transition-opacity opacity-0 group-hover:opacity-100 cursor-pointer"
+										aria-label={t("chat:errorDetails.title")}>
+										<Info className="w-4 h-4 text-vscode-errorForeground" />
+									</button>
+								)}
+							</div>
+						</div>
+					)}
+					<div className="pl-6 py-1">
+						<p
+							className={
+								messageClassName ||
+								"my-0 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
+							}>
+							{message}
+						</p>
+						{additionalContent}
 					</div>
-				)}
-				<div className="pl-6 py-1">
-					<p
-						className={
-							messageClassName ||
-							"my-0 font-light whitespace-pre-wrap break-words text-vscode-errorForeground"
-						}>
-						{message}
-					</p>
-					{additionalContent}
 				</div>
-			</div>
+
+				{/* Error Details Dialog */}
+				{errorDetails && (
+					<Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+						<DialogContent className="max-w-2xl">
+							<DialogHeader>
+								<DialogTitle>{t("chat:errorDetails.title")}</DialogTitle>
+							</DialogHeader>
+							<div className="max-h-96 overflow-auto">
+								<pre className="font-mono text-sm whitespace-pre-wrap break-words bg-vscode-editor-background p-3 rounded border border-vscode-editorGroup-border">
+									{errorDetails}
+								</pre>
+							</div>
+							<DialogFooter>
+								<VSCodeButton
+									appearance="secondary"
+									onClick={handleCopyDetails}
+									className="flex items-center gap-2">
+									{showDetailsCopySuccess ? (
+										<>
+											<Check className="w-4 h-4" />
+											{t("chat:errorDetails.copied")}
+										</>
+									) : (
+										<>
+											<Copy className="w-4 h-4" />
+											{t("chat:errorDetails.copyToClipboard")}
+										</>
+									)}
+								</VSCodeButton>
+							</DialogFooter>
+						</DialogContent>
+					</Dialog>
+				)}
+			</>
 		)
 	},
 )

@@ -285,6 +285,11 @@
 	},
 	"taskCompleted": "Task Completed",
 	"error": "Error",
+	"errorDetails": {
+		"title": "Error Details",
+		"copyToClipboard": "Copy to Clipboard",
+		"copied": "Copied!"
+	},
 	"diffError": {
 		"title": "Edit Unsuccessful"
 	},

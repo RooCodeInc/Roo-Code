@@ -1110,7 +1110,7 @@ export const ChatRowContent = ({
 					)
 				case "api_req_retry_delayed":
 					let body = t(`chat:apiRequest.failed`)
-					let retryInfo, code, docsURL
+					let retryInfo, code, docsURL, errorDetails
 					if (message.text !== undefined) {
 						// Try to show richer error message for that code, if available
 						const potentialCode = parseInt(message.text.substring(0, 3))
@@ -1136,8 +1136,10 @@ export const ChatRowContent = ({
 								</p>
 							)
 						} else {
-							// Non-HTTP-status-code error message - display the actual error text
-							body = message.text
+							// Non-HTTP-status-code error message - store full text as errorDetails
+							errorDetails = message.text
+							body = t("chat:apiRequest.errorMessage.unknown")
+							docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
 						}
 					}
 					return (
@@ -1147,6 +1149,7 @@ export const ChatRowContent = ({
 							message={body}
 							docsURL={docsURL}
 							additionalContent={retryInfo}
+							errorDetails={errorDetails}
 						/>
 					)
 				case "api_req_finished":
@@ -1259,7 +1262,7 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
-					return <ErrorRow type="error" message={message.text || ""} />
+					return <ErrorRow type="error" message={t("chat:error")} errorDetails={message.text || undefined} />
 				case "completion_result":
 					return (
 						<>
