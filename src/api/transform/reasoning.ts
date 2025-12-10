@@ -21,8 +21,10 @@ export type AnthropicReasoningParams = BetaThinkingConfigParam
 
 export type OpenAiReasoningParams = { reasoning_effort: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"] }
 
+export type GeminiThinkingLevel = "minimal" | "low" | "medium" | "high"
+
 export type GeminiReasoningParams = GenerateContentConfig["thinkingConfig"] & {
-	thinkingLevel?: "low" | "high"
+	thinkingLevel?: GeminiThinkingLevel
 }
 
 export type GetModelReasoningOptions = {
@@ -116,6 +118,9 @@ export const getOpenAiReasoning = ({
 	}
 }
 
+// Valid Gemini thinking levels for effort-based reasoning
+const GEMINI_THINKING_LEVELS: readonly GeminiThinkingLevel[] = ["minimal", "low", "medium", "high"] as const
+
 export const getGeminiReasoning = ({
 	model,
 	reasoningBudget,
@@ -136,15 +141,15 @@ export const getGeminiReasoning = ({
 		| "disable"
 		| undefined
 
-	// Respect “off” / unset semantics from the effort selector itself.
+	// Respect "off" / unset semantics from the effort selector itself.
 	if (!selectedEffort || selectedEffort === "disable") {
 		return undefined
 	}
 
-	// Effort-based models on Google GenAI currently support only explicit low/high levels.
-	if (selectedEffort !== "low" && selectedEffort !== "high") {
+	// Effort-based models on Google GenAI support minimal/low/medium/high levels.
+	if (!GEMINI_THINKING_LEVELS.includes(selectedEffort as GeminiThinkingLevel)) {
 		return undefined
 	}
 
-	return { thinkingLevel: selectedEffort, includeThoughts: true }
+	return { thinkingLevel: selectedEffort as GeminiThinkingLevel, includeThoughts: true }
 }
