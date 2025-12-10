@@ -173,6 +173,7 @@
 			"service_unavailable": "服務不可用，請稍後重試。",
 			"api_provider_not_support": "當前 API 提供商不支持 Code Review 功能，請切換到 CoStrict API 提供商。",
 			"task_timeout": "任務執行超時，已自動取消",
+			"get_review_result_failed": "暫時無法獲取審查結果，請重試",
 			"no_changed_files": "沒有變更檔案，請確保當前工作空間是 git 倉庫，並且有變更檔案。",
 			"new_commit_notification": "你提交了：{{commitMessage}}，是否進行 review ？"
 		},

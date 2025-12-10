@@ -236,10 +236,9 @@ export class CodeReviewService {
 		})
 		this.prevMode = (await provider.getMode()) ?? "code"
 		const task = await provider.createTask(message, undefined, undefined, undefined, { mode: "review" })
-		provider.postMessageToWebview({
-			type: "action",
-			action: "codeReviewButtonClicked",
-		})
+
+		// 🔑 防止重复处理完成事件的标志
+		let completionHandled = false
 
 		const timeoutId = setTimeout(
 			() => {
@@ -250,43 +249,23 @@ export class CodeReviewService {
 
 		this.updateTaskState({ timeoutId })
 
-		const registerHandler = <K extends keyof TaskEvents>(
-			event: K,
-			handler: (...args: TaskEvents[K]) => void | Promise<void>,
-		) => {
-			task.on(event, handler as any)
-		}
-
-		registerHandler(RooCodeEventName.TaskStarted, () => {
-			this.updateTaskState({
-				isCompleted: false,
-				progress: 0.001, // use 0.001 to indicate running
-			})
-		})
-
-		registerHandler(RooCodeEventName.TaskAskResponded, () => {
-			const messageCount = task.clineMessages.length
-			let progress = 0
-			if (messageCount <= 10) {
-				progress = messageCount * 0.05
-			} else {
-				progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
+		// 统一的完成处理函数
+		const handleCompletion = async () => {
+			if (completionHandled) {
+				this.logger.info("[CodeReview] Completion already handled, skipping")
+				return
 			}
-			this.updateTaskState({
-				progress: Math.round(progress * 100) / 100,
-			})
-		})
+			completionHandled = true
 
-		registerHandler(RooCodeEventName.TaskCompleted, async () => {
 			try {
 				this.logger.info("[CodeReview] Review Task completed")
 
-				const message = [...task.clineMessages]
+				const reportMessage = [...task.clineMessages]
 					.reverse()
 					.find((msg) => msg.type === "say" && msg.text?.includes("I-AM-CODE-REVIEW-REPORT-V1"))
 
-				if (message?.text) {
-					const { issues, review_task_id } = await this.getIssues(message.text, targets)
+				if (reportMessage?.text) {
+					const { issues, review_task_id } = await this.getIssues(reportMessage.text, targets)
 					if (issues) {
 						const existsResults = await Promise.all(
 							issues.map((issue) => fileExistsAtPath(path.resolve(provider.cwd, issue.file_path))),
@@ -302,6 +281,8 @@ export class CodeReviewService {
 							error: undefined,
 						})
 					}
+				} else {
+					throw new Error(t("common:review.tip.get_review_result_failed"))
 				}
 			} catch (error) {
 				this.logger.error("[CodeReview] Failed to complete task:", error)
@@ -316,20 +297,64 @@ export class CodeReviewService {
 				await provider.handleModeSwitch(this.prevMode)
 				this.prevMode = ""
 			}
+		}
+
+		// 🔑 立即同步注册所有事件监听器（避免竞态条件）
+		// 方式1：通过 Message 事件检测 completion_result（最早触发）
+		task.on(RooCodeEventName.Message, ({ action, message: msg }) => {
+			if (action === "created" && msg.type === "say" && msg.say === "completion_result") {
+				this.logger.info("[CodeReview] Detected completion via Message event (completion_result)")
+				handleCompletion()
+			}
 		})
 
-		registerHandler(RooCodeEventName.TaskResumable, () => {
+		// 方式2：TaskCompleted 事件作为备份
+		task.on(RooCodeEventName.TaskCompleted, () => {
+			this.logger.info("[CodeReview] Detected completion via TaskCompleted event")
+			handleCompletion()
+		})
+
+		task.on(RooCodeEventName.TaskStarted, () => {
+			this.updateTaskState({
+				isCompleted: false,
+				progress: 0.001, // use 0.001 to indicate running
+			})
+		})
+
+		task.on(RooCodeEventName.TaskAskResponded, () => {
+			const messageCount = task.clineMessages.length
+			let progress = 0
+			if (messageCount <= 10) {
+				progress = messageCount * 0.05
+			} else {
+				progress = Math.min(0.5 + (messageCount - 10) * 0.02, 0.95)
+			}
+			this.updateTaskState({
+				progress: Math.round(progress * 100) / 100,
+			})
+		})
+
+		// 错误情况的处理
+		task.on(RooCodeEventName.TaskResumable, () => {
+			if (completionHandled) return
 			this.updateTaskState({
 				error: new Error(t("common:review.tip.service_unavailable")),
 				isCompleted: true,
 			})
 		})
 
-		registerHandler(RooCodeEventName.TaskIdle, () => {
+		task.on(RooCodeEventName.TaskIdle, () => {
+			if (completionHandled) return
 			this.updateTaskState({
 				error: new Error(t("common:review.tip.service_unavailable")),
 				isCompleted: true,
 			})
+		})
+
+		// 把 postMessageToWebview 移到事件注册之后
+		provider.postMessageToWebview({
+			type: "action",
+			action: "codeReviewButtonClicked",
 		})
 	}
 	// ===== Task Management Methods =====

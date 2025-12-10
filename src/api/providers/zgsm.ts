@@ -804,6 +804,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			| OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 		modelInfo: ModelInfo,
 	): void {
+		// Check if it's auto mode
+		const isAutoMode = modelInfo.id === "Auto" || modelInfo.id === "auto"
+
 		// Only add max_completion_tokens if includeMaxTokens is true
 		if (this.options.useZgsmCustomConfig) {
 			const maxTokens = this.options.modelMaxTokens || modelInfo.maxTokens
@@ -813,11 +816,26 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				Object.assign(requestOptions, {
 					[modelInfo.maxTokensKey || "max_completion_tokens"]: maxTokens,
 				})
+			} else {
+				Object.assign(requestOptions, {
+					max_tokens: modelInfo.maxTokens,
+					max_completion_tokens: modelInfo.maxTokens,
+				})
 			}
-		} else if (modelInfo.maxTokensKey) {
-			Object.assign(requestOptions, {
-				[modelInfo.maxTokensKey]: modelInfo.maxTokens,
-			})
+		} else {
+			// If maxTokensKey exists, use it directly
+			if (modelInfo.maxTokensKey) {
+				Object.assign(requestOptions, {
+					[modelInfo.maxTokensKey]: modelInfo.maxTokens,
+				})
+			} else if (!isAutoMode) {
+				// Logic for non-auto mode
+				// If maxTokensKey doesn't exist, use both max_tokens and max_completion_tokens
+				Object.assign(requestOptions, {
+					max_tokens: modelInfo.maxTokens,
+					max_completion_tokens: modelInfo.maxTokens,
+				})
+			}
 		}
 	}
 

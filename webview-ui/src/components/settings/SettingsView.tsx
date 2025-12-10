@@ -436,10 +436,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			// by the `updateSettings` message.
 			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
 			// vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
+			const finalApiConfig = { ...apiConfiguration, useZgsmCustomConfig, zgsmCodebaseIndexEnabled }
+
+			if (
+				finalApiConfig.useZgsmCustomConfig &&
+				finalApiConfig.includeMaxTokens === undefined &&
+				!Object.hasOwn(apiConfiguration, "includeMaxTokens")
+			) {
+				finalApiConfig.includeMaxTokens = true
+			}
 			vscode.postMessage({
 				type: "upsertApiConfiguration",
 				text: currentApiConfigName,
-				apiConfiguration: { ...apiConfiguration, useZgsmCustomConfig, zgsmCodebaseIndexEnabled },
+				apiConfiguration: finalApiConfig,
 			})
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 

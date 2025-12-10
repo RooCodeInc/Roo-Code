@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useEvent } from "react-use"
 import { Checkbox } from "vscrui"
 import { VSCodeButton, VSCodeCheckbox, VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
@@ -55,6 +55,9 @@ export const ZgsmAI = ({
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
 	const [openAiLegacyFormatSelected, setOpenAiLegacyFormatSelected] = useState(!!apiConfiguration?.openAiLegacyFormat)
 
+	// Use `ref` to track whether `includeMaxTokens` has been explicitly set by the user.
+	const includeMaxTokensInitializedRef = useRef(Object.hasOwn(apiConfiguration, "includeMaxTokens"))
+
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
@@ -107,6 +110,26 @@ export const ZgsmAI = ({
 
 		return () => clearTimeout(timer)
 	}, [customHeaders, setApiConfigurationField])
+
+	useEffect(() => {
+		// Set the default value only when useZgsmCustomConfig is first enabled and includeMaxTokens has never been set before.
+		// Use ref to track whether includeMaxTokens has been explicitly set by the user, avoiding overriding the user's explicit selection.
+		if (
+			useZgsmCustomConfig &&
+			!includeMaxTokensInitializedRef.current &&
+			apiConfiguration?.includeMaxTokens === undefined
+		) {
+			setApiConfigurationField("includeMaxTokens", true)
+			includeMaxTokensInitializedRef.current = true
+		}
+	}, [useZgsmCustomConfig, apiConfiguration?.includeMaxTokens, setApiConfigurationField])
+
+	// Marked as initialized when the user manually modifies includeMaxTokens.
+	useEffect(() => {
+		if (Object.hasOwn(apiConfiguration, "includeMaxTokens")) {
+			includeMaxTokensInitializedRef.current = true
+		}
+	}, [apiConfiguration])
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
@@ -229,7 +252,9 @@ export const ZgsmAI = ({
 					<div>
 						<Checkbox
 							checked={apiConfiguration?.includeMaxTokens ?? true}
-							onChange={handleInputChange("includeMaxTokens", noTransform)}>
+							onChange={(checked: boolean) => {
+								setApiConfigurationField("includeMaxTokens", checked)
+							}}>
 							{t("settings:includeMaxOutputTokens")}
 						</Checkbox>
 						<div className="text-sm text-vscode-descriptionForeground ml-6">
