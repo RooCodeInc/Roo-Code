@@ -8,6 +8,8 @@ import {
 	getErrorStatusCode,
 	getErrorMessage,
 	shouldReportApiErrorToTelemetry,
+	isApiProviderError,
+	extractApiProviderErrorProperties,
 } from "@roo-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
@@ -98,6 +100,18 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
 		}
 
+		// Auto-extract properties from ApiProviderError and merge with additionalProperties.
+		// Explicit additionalProperties take precedence over auto-extracted properties.
+		let mergedProperties = additionalProperties
+
+		if (isApiProviderError(error)) {
+			const extractedProperties = extractApiProviderErrorProperties(error)
+			mergedProperties = { ...extractedProperties, ...additionalProperties }
+		}
+
+		// Override the error message with the extracted error message.
+		error.message = errorMessage
+
 		const provider = this.providerRef?.deref()
 		let telemetryProperties: TelemetryProperties | undefined = undefined
 
@@ -110,7 +124,7 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 		}
 
 		this.client.captureException(error, this.distinctId, {
-			...additionalProperties,
+			...mergedProperties,
 			$app_version: telemetryProperties?.appVersion,
 		})
 	}
