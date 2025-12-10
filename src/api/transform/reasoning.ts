@@ -21,7 +21,10 @@ export type AnthropicReasoningParams = BetaThinkingConfigParam
 
 export type OpenAiReasoningParams = { reasoning_effort: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"] }
 
-export type GeminiThinkingLevel = "minimal" | "low" | "medium" | "high"
+// Valid Gemini thinking levels for effort-based reasoning
+const GEMINI_THINKING_LEVELS = ["minimal", "low", "medium", "high"] as const
+
+export type GeminiThinkingLevel = (typeof GEMINI_THINKING_LEVELS)[number]
 
 export type GeminiReasoningParams = GenerateContentConfig["thinkingConfig"] & {
 	thinkingLevel?: GeminiThinkingLevel
@@ -117,9 +120,6 @@ export const getOpenAiReasoning = ({
 		reasoning_effort: reasoningEffort as OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"],
 	}
 }
-
-// Valid Gemini thinking levels for effort-based reasoning
-const GEMINI_THINKING_LEVELS: readonly GeminiThinkingLevel[] = ["minimal", "low", "medium", "high"] as const
 
 export const getGeminiReasoning = ({
 	model,
