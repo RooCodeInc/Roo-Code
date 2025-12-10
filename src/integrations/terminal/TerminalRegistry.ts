@@ -105,9 +105,9 @@ export class TerminalRegistry {
 					}
 					if (!terminal.running) {
 						if (isWin32) {
-							await delay(500)
+							await delay(1000)
 						} else {
-							await delay(200)
+							await delay(300)
 						}
 					}
 
