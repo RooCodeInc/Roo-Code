@@ -26,6 +26,10 @@ export const deepSeekModels = {
 		supportsPromptCache: true,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
+		// preserveReasoning enables interleaved thinking mode for tool calls:
+		// DeepSeek requires reasoning_content to be passed back during tool call
+		// continuation within the same turn. See: https://api-docs.deepseek.com/guides/thinking_mode
+		preserveReasoning: true,
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
 		cacheWritesPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
