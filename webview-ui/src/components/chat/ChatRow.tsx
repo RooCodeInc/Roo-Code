@@ -67,29 +67,19 @@ import { PathTooltip } from "../ui/PathTooltip"
 // Helper function to get previous todos before a specific message
 function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
 	// Find the previous updateTodoList message before the current one
-	const previousUpdateIndex = messages
-		.slice()
-		.reverse()
-		.findIndex((msg) => {
-			if (msg.ts >= currentMessageTs) return false
-			if (msg.type === "ask" && msg.ask === "tool") {
-				try {
-					const tool = JSON.parse(msg.text || "{}")
-					return tool.tool === "updateTodoList"
-				} catch {
-					return false
+	// Search backwards through the original array to maintain order
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const msg = messages[i]
+		if (msg.ts >= currentMessageTs) continue
+		if (msg.type === "ask" && msg.ask === "tool") {
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				if (tool.tool === "updateTodoList") {
+					return tool.todos || []
 				}
+			} catch {
+				// Continue searching if parse fails
 			}
-			return false
-		})
-
-	if (previousUpdateIndex !== -1) {
-		const previousMessage = messages.slice().reverse()[previousUpdateIndex]
-		try {
-			const tool = JSON.parse(previousMessage.text || "{}")
-			return tool.todos || []
-		} catch {
-			return []
 		}
 	}
 
