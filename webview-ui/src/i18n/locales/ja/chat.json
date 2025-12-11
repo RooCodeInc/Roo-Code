@@ -198,8 +198,6 @@
 		"didViewTopLevel": "Rooはこのディレクトリのトップレベルファイルを表示しました",
 		"wantsToViewRecursive": "Rooはこのディレクトリのすべてのファイルを再帰的に表示したい",
 		"didViewRecursive": "Rooはこのディレクトリのすべてのファイルを再帰的に表示しました",
-		"wantsToViewDefinitions": "Rooはこのディレクトリで使用されているソースコード定義名を表示したい",
-		"didViewDefinitions": "Rooはこのディレクトリで使用されているソースコード定義名を表示しました",
 		"wantsToSearch": "Rooはこのディレクトリで <code>{{regex}}</code> を検索したい",
 		"didSearch": "Rooはこのディレクトリで <code>{{regex}}</code> を検索しました",
 		"wantsToSearchOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索したい",
@@ -207,9 +205,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
 		"didViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
 		"wantsToViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
-		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました",
-		"wantsToViewDefinitionsOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示したい",
-		"didViewDefinitionsOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で使用されているソースコード定義名を表示しました"
+		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました"
 	},
 	"commandOutput": "コマンド出力",
 	"commandExecution": {

@@ -198,8 +198,6 @@
 		"didViewTopLevel": "Roo ha vist els fitxers de nivell superior en aquest directori",
 		"wantsToViewRecursive": "Roo vol veure recursivament tots els fitxers en aquest directori",
 		"didViewRecursive": "Roo ha vist recursivament tots els fitxers en aquest directori",
-		"wantsToViewDefinitions": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori",
-		"didViewDefinitions": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori",
 		"wantsToSearch": "Roo vol cercar en aquest directori <code>{{regex}}</code>",
 		"didSearch": "Roo ha cercat en aquest directori <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo vol cercar en aquest directori (fora de l'espai de treball) <code>{{regex}}</code>",
@@ -207,9 +205,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo vol veure noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)",
-		"didViewDefinitionsOutsideWorkspace": "Roo ha vist noms de definicions de codi font utilitzats en aquest directori (fora de l'espai de treball)"
+		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)"
 	},
 	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {

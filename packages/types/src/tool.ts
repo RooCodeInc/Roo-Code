@@ -24,7 +24,6 @@ export const toolNames = [
 	"apply_patch",
 	"search_files",
 	"list_files",
-	"list_code_definition_names",
 	"browser_action",
 	"use_mcp_tool",
 	"access_mcp_resource",

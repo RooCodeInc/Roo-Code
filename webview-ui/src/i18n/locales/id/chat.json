@@ -222,8 +222,6 @@
 		"didViewTopLevel": "Roo melihat file tingkat atas di direktori ini",
 		"wantsToViewRecursive": "Roo ingin melihat semua file secara rekursif di direktori ini",
 		"didViewRecursive": "Roo melihat semua file secara rekursif di direktori ini",
-		"wantsToViewDefinitions": "Roo ingin melihat nama definisi source code yang digunakan di direktori ini",
-		"didViewDefinitions": "Roo melihat nama definisi source code yang digunakan di direktori ini",
 		"wantsToSearch": "Roo ingin mencari direktori ini untuk <code>{{regex}}</code>",
 		"didSearch": "Roo mencari direktori ini untuk <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo ingin mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
@@ -231,9 +229,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
 		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo ingin melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)",
-		"didViewDefinitionsOutsideWorkspace": "Roo melihat nama definisi source code yang digunakan di direktori ini (di luar workspace)"
+		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",

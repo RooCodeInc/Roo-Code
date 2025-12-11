@@ -102,7 +102,6 @@ export type NativeToolArgs = {
 	codebase_search: { query: string; path?: string }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
-	list_code_definition_names: { path: string }
 	run_slash_command: { command: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
@@ -184,11 +183,6 @@ export interface ListFilesToolUse extends ToolUse<"list_files"> {
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "recursive">>
 }
 
-export interface ListCodeDefinitionNamesToolUse extends ToolUse<"list_code_definition_names"> {
-	name: "list_code_definition_names"
-	params: Partial<Pick<Record<ToolParamName, string>, "path">>
-}
-
 export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
 	name: "browser_action"
 	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
@@ -252,7 +246,6 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
-	list_code_definition_names: "list definitions",
 	browser_action: "use a browser",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
@@ -269,14 +262,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: [
-			"read_file",
-			"fetch_instructions",
-			"search_files",
-			"list_files",
-			"list_code_definition_names",
-			"codebase_search",
-		],
+		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],

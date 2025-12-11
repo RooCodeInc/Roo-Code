@@ -198,8 +198,6 @@
 		"didViewTopLevel": "Roo ha visualizzato i file di primo livello in questa directory",
 		"wantsToViewRecursive": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory",
 		"didViewRecursive": "Roo ha visualizzato ricorsivamente tutti i file in questa directory",
-		"wantsToViewDefinitions": "Roo vuole visualizzare i nomi delle definizioni di codice sorgente utilizzate in questa directory",
-		"didViewDefinitions": "Roo ha visualizzato i nomi delle definizioni di codice sorgente utilizzate in questa directory",
 		"wantsToSearch": "Roo vuole cercare in questa directory <code>{{regex}}</code>",
 		"didSearch": "Roo ha cercato in questa directory <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo vuole cercare in questa directory (fuori dall'area di lavoro) <code>{{regex}}</code>",
@@ -207,9 +205,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vuole visualizzare i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha visualizzato i file di primo livello in questa directory (fuori dall'area di lavoro)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo vuole visualizzare i nomi delle definizioni di codice sorgente utilizzate in questa directory (fuori dall'area di lavoro)",
-		"didViewDefinitionsOutsideWorkspace": "Roo ha visualizzato i nomi delle definizioni di codice sorgente utilizzate in questa directory (fuori dall'area di lavoro)"
+		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)"
 	},
 	"commandOutput": "Output del Comando",
 	"commandExecution": {

@@ -193,8 +193,6 @@
 		"didViewTopLevel": "Roo heeft de bovenliggende bestanden in deze map bekeken",
 		"wantsToViewRecursive": "Roo wil alle bestanden in deze map recursief bekijken",
 		"didViewRecursive": "Roo heeft alle bestanden in deze map recursief bekeken",
-		"wantsToViewDefinitions": "Roo wil broncode-definitienamen bekijken die in deze map worden gebruikt",
-		"didViewDefinitions": "Roo heeft broncode-definitienamen bekeken die in deze map worden gebruikt",
 		"wantsToSearch": "Roo wil deze map doorzoeken op <code>{{regex}}</code>",
 		"didSearch": "Roo heeft deze map doorzocht op <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo wil deze map (buiten werkruimte) doorzoeken op <code>{{regex}}</code>",
@@ -202,9 +200,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken",
 		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken",
-		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo wil broncode-definitienamen bekijken die in deze map (buiten werkruimte) worden gebruikt",
-		"didViewDefinitionsOutsideWorkspace": "Roo heeft broncode-definitienamen bekeken die in deze map (buiten werkruimte) worden gebruikt"
+		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken"
 	},
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {

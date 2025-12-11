@@ -21,7 +21,6 @@ import { applyDiffTool } from "../tools/MultiApplyDiffTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
 import { searchReplaceTool } from "../tools/SearchReplaceTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
-import { listCodeDefinitionNamesTool } from "../tools/ListCodeDefinitionNamesTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
@@ -395,8 +394,6 @@ export async function presentAssistantMessage(cline: Task) {
 					case "apply_patch":
 						return `[${block.name}]`
 					case "list_files":
-						return `[${block.name} for '${block.params.path}']`
-					case "list_code_definition_names":
 						return `[${block.name} for '${block.params.path}']`
 					case "browser_action":
 						return `[${block.name} for '${block.params.action}']`
@@ -912,15 +909,6 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "codebase_search":
 					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
-				case "list_code_definition_names":
-					await listCodeDefinitionNamesTool.handle(cline, block as ToolUse<"list_code_definition_names">, {
 						askApproval,
 						handleError,
 						pushToolResult,

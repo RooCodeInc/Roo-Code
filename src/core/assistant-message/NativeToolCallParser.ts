@@ -437,14 +437,6 @@ export class NativeToolCallParser {
 				}
 				break
 
-			case "list_code_definition_names":
-				if (partialArgs.path !== undefined) {
-					nativeArgs = {
-						path: partialArgs.path,
-					}
-				}
-				break
-
 			case "run_slash_command":
 				if (partialArgs.command !== undefined) {
 					nativeArgs = {
@@ -673,14 +665,6 @@ export class NativeToolCallParser {
 							prompt: args.prompt,
 							path: args.path,
 							image: args.image,
-						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "list_code_definition_names":
-					if (args.path !== undefined) {
-						nativeArgs = {
-							path: args.path,
 						} as NativeArgsFor<TName>
 					}
 					break

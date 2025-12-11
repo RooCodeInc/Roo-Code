@@ -198,8 +198,6 @@
 		"didViewTopLevel": "Roo đã xem các tệp cấp cao nhất trong thư mục này",
 		"wantsToViewRecursive": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này",
 		"didViewRecursive": "Roo đã xem đệ quy tất cả các tệp trong thư mục này",
-		"wantsToViewDefinitions": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này",
-		"didViewDefinitions": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này",
 		"wantsToSearch": "Roo muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
 		"didSearch": "Roo đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
@@ -207,9 +205,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
 		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo muốn xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc)",
-		"didViewDefinitionsOutsideWorkspace": "Roo đã xem tên định nghĩa mã nguồn được sử dụng trong thư mục này (ngoài không gian làm việc)"
+		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)"
 	},
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {

@@ -706,32 +706,6 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
-			case "listCodeDefinitionNames":
-				return (
-					<>
-						<div style={headerStyle}>
-							{toolIcon("file-code")}
-							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? tool.isOutsideWorkspace
-										? t("chat:directoryOperations.wantsToViewDefinitionsOutsideWorkspace")
-										: t("chat:directoryOperations.wantsToViewDefinitions")
-									: tool.isOutsideWorkspace
-										? t("chat:directoryOperations.didViewDefinitionsOutsideWorkspace")
-										: t("chat:directoryOperations.didViewDefinitions")}
-							</span>
-						</div>
-						<div className="pl-6">
-							<CodeAccordian
-								path={tool.path}
-								code={tool.content}
-								language="markdown"
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-							/>
-						</div>
-					</>
-				)
 			case "searchFiles":
 				return (
 					<>
