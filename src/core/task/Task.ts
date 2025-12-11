@@ -1905,19 +1905,43 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.emit(RooCodeEventName.TaskAborted)
 
-		try {
-			this.dispose() // Call the centralized dispose method
-		} catch (error) {
-			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
-			// Don't rethrow - we want abort to always succeed
-		}
-		// Save the countdown message in the automatic retry or other content.
-		try {
-			// Save the countdown message in the automatic retry or other content.
-			await this.saveClineMessages()
-		} catch (error) {
-			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
-		}
+		// Run disposal and message saving with a timeout to prevent hanging
+		// This is crucial for unreachable endpoints that might cause network timeouts
+		const abortTasks = [
+			// Dispose task resources with timeout
+			// Wrap in Promise.resolve().then() to handle synchronous errors properly
+			Promise.race([
+				Promise.resolve().then(() => this.dispose()),
+				new Promise((resolve) =>
+					setTimeout(() => {
+						console.warn(`[abortTask] Disposal timed out for task ${this.taskId}.${this.instanceId}`)
+						resolve(undefined)
+					}, 2000),
+				), // 2 second timeout for disposal
+			]).catch((error) => {
+				console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
+				// Don't rethrow - we want abort to always succeed
+			}),
+
+			// Save messages with timeout
+			// Wrap in Promise.resolve().then() to handle synchronous errors properly
+			Promise.race([
+				Promise.resolve().then(() => this.saveClineMessages()),
+				new Promise((resolve) =>
+					setTimeout(() => {
+						console.warn(`[abortTask] Message saving timed out for task ${this.taskId}.${this.instanceId}`)
+						resolve(undefined)
+					}, 1000),
+				), // 1 second timeout for saving messages
+			]).catch((error) => {
+				console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+				// Don't rethrow - we want abort to always succeed
+			}),
+		]
+
+		// Wait for all abort tasks to complete (or timeout)
+		// Using allSettled ensures we wait for all operations regardless of success/failure
+		await Promise.allSettled(abortTasks)
 	}
 
 	public dispose(): void {
