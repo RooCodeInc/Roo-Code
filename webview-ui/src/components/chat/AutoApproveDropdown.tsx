@@ -238,7 +238,12 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 							</h4>
 							<div className="flex items-center gap-1">
 								<StandardTooltip content={helpTooltipContent} side="left" maxWidth={400}>
-									<HelpCircle className="inline mb-0.5 size-4 cursor-help text-vscode-descriptionForeground hover:text-vscode-foreground transition-colors" />
+									<button
+										type="button"
+										className="inline-flex items-center justify-center p-0 bg-transparent border-0 cursor-help focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder rounded"
+										aria-label={t("chat:autoApprove.helpTitle")}>
+										<HelpCircle className="size-4 text-vscode-descriptionForeground hover:text-vscode-foreground transition-colors" />
+									</button>
 								</StandardTooltip>
 								<Settings
 									className="inline mb-0.5 size-4 cursor-pointer text-vscode-descriptionForeground hover:text-vscode-foreground transition-colors"
@@ -251,7 +256,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 						</p>
 					</div>
 					<div className="grid grid-cols-1 min-[340px]:grid-cols-2 gap-x-2 gap-y-2 p-3">
-						{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
+						{settingsArray.map(({ key, labelKey, icon }) => {
 							const isEnabled = toggles[key]
 							return (
 								<Button

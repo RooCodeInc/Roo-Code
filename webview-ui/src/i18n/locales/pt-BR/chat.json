@@ -268,6 +268,7 @@
 		"tooltipManage": "Gerenciar configurações de aprovação automática",
 		"tooltipStatus": "Aprovação automática habilitada para: {{toggles}}",
 		"title": "Aprovação automática",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "Alternar aprovação automática",
 		"all": "Todos",
 		"none": "Nenhum",
