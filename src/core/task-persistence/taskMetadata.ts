@@ -119,7 +119,7 @@ export async function taskMetadata({
 		workspace,
 		mode,
 		...(toolProtocol && { toolProtocol }),
-		apiConfigName,
+		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
 		...(initialStatus && { status: initialStatus }),
 	}
 

@@ -4,8 +4,7 @@ import * as vscode from "vscode"
 import { TelemetryService } from "@roo-code/telemetry"
 import { ClineProvider } from "../ClineProvider"
 import { ContextProxy } from "../../config/ContextProxy"
-import { Task } from "../../task/Task"
-import type { HistoryItem, ProviderName } from "@roo-code/types"
+import type { HistoryItem } from "@roo-code/types"
 
 vi.mock("vscode", () => ({
 	ExtensionContext: vi.fn(),
@@ -433,8 +432,11 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			// Initialize task with history item
 			await provider.createTaskWithHistoryItem(historyItem)
 
-			// Verify provider profile was restored via activateProviderProfile
-			expect(activateProviderProfileSpy).toHaveBeenCalledWith({ name: "saved-profile" })
+			// Verify provider profile was restored via activateProviderProfile (restore-only: don't persist mode config)
+			expect(activateProviderProfileSpy).toHaveBeenCalledWith(
+				{ name: "saved-profile" },
+				{ persistModeConfig: false, persistTaskHistory: false },
+			)
 		})
 
 		it("should use current profile if history item has no saved apiConfigName", async () => {

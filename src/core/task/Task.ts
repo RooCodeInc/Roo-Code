@@ -1152,6 +1152,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				globalStoragePath: this.globalStoragePath,
 			})
 
+			if (this._taskApiConfigName === undefined) {
+				await this.taskApiConfigReady
+			}
+
 			const { historyItem, tokenUsage } = await taskMetadata({
 				taskId: this.taskId,
 				rootTaskId: this.rootTaskId,

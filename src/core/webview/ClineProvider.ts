@@ -925,7 +925,10 @@ export class ClineProvider
 
 			if (profile?.name) {
 				try {
-					await this.activateProviderProfile({ name: profile.name })
+					await this.activateProviderProfile(
+						{ name: profile.name },
+						{ persistModeConfig: false, persistTaskHistory: false },
+					)
 				} catch (error) {
 					// Log the error but continue with task restoration.
 					this.log(
@@ -1425,6 +1428,9 @@ export class ClineProvider
 				// Change the provider for the current task.
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
 				this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
+
+				// Keep the current task's sticky provider profile in sync with the newly-activated profile.
+				await this.persistStickyProviderProfileToCurrentTask(name)
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 			}
@@ -1464,8 +1470,41 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
-	async activateProviderProfile(args: { name: string } | { id: string }) {
+	private async persistStickyProviderProfileToCurrentTask(apiConfigName: string): Promise<void> {
+		const task = this.getCurrentTask()
+		if (!task) {
+			return
+		}
+
+		try {
+			const history = this.getGlobalState("taskHistory") ?? []
+			const taskHistoryItem = history.find((item) => item.id === task.taskId)
+
+			if (taskHistoryItem) {
+				taskHistoryItem.apiConfigName = apiConfigName
+				await this.updateTaskHistory(taskHistoryItem)
+			}
+
+			// Only update in-memory state after successful persistence.
+			task.setTaskApiConfigName(apiConfigName)
+		} catch (error) {
+			// If persistence fails, log the error but don't fail the profile switch.
+			this.log(
+				`Failed to persist provider profile switch for task ${task.taskId}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
+	}
+
+	async activateProviderProfile(
+		args: { name: string } | { id: string },
+		options?: { persistModeConfig?: boolean; persistTaskHistory?: boolean },
+	) {
 		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args)
+
+		const persistModeConfig = options?.persistModeConfig ?? true
+		const persistTaskHistory = options?.persistTaskHistory ?? true
 
 		// See `upsertProviderProfile` for a description of what this is doing.
 		await Promise.all([
@@ -1476,35 +1515,17 @@ export class ClineProvider
 
 		const { mode } = await this.getState()
 
-		if (id) {
+		if (id && persistModeConfig) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
 		}
+
 		// Change the provider for the current task.
 		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
 
-		// Update the current task's sticky provider profile if there's an active task.
-		// This ensures the task retains its designated provider profile and switching
-		// profiles in one workspace doesn't alter other tasks.
-		const task = this.getCurrentTask()
-		if (task) {
-			try {
-				// Update the task history with the new provider profile first.
-				const history = this.getGlobalState("taskHistory") ?? []
-				const taskHistoryItem = history.find((item) => item.id === task.taskId)
-
-				if (taskHistoryItem) {
-					taskHistoryItem.apiConfigName = name
-					await this.updateTaskHistory(taskHistoryItem)
-				}
-
-				// Only update the task's provider profile after successful persistence.
-				task.setTaskApiConfigName(name)
-			} catch (error) {
-				// If persistence fails, log the error but don't fail the profile switch.
-				this.log(
-					`Failed to persist provider profile switch for task ${task.taskId}: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
+		// Update the current task's sticky provider profile, unless this activation is
+		// being used purely as a non-persisting restoration (e.g., reopening a task from history).
+		if (persistTaskHistory) {
+			await this.persistStickyProviderProfileToCurrentTask(name)
 		}
 
 		await this.postStateToWebview()
