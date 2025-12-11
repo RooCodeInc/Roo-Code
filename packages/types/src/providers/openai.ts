@@ -28,6 +28,17 @@ export const openAiNativeModels = {
 		],
 		description: "GPT-5.2: Our flagship model for coding and agentic tasks across industries",
 	},
+	"gpt-5.2-chat-latest": {
+		maxTokens: 16_384,
+		contextWindow: 128_000,
+		supportsNativeTools: true,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 1.75,
+		outputPrice: 14.0,
+		cacheReadsPrice: 0.175,
+		description: "GPT-5.2 Chat: Optimized for conversational AI and chat use cases",
+	},
 	"gpt-5.1-codex-max": {
 		maxTokens: 128000,
 		contextWindow: 400000,
