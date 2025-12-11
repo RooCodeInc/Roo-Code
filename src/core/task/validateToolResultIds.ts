@@ -139,35 +139,48 @@ export function validateAndFixToolResultIds(
 		)
 	}
 
-	// Start with corrected content - fix invalid IDs
-	let correctedContent = userMessage.content.map((block) => {
-		if (block.type !== "tool_result") {
-			return block
-		}
+	// Create a mapping of tool_result IDs to corrected IDs
+	// Strategy: Match by position (first tool_result -> first tool_use, etc.)
+	// This handles most cases where the mismatch is due to ID confusion
+	//
+	// Track which tool_use IDs have been used to prevent duplicates
+	const usedToolUseIds = new Set<string>()
 
-		// If the ID is already valid, keep it
-		if (validToolUseIds.has(block.tool_use_id)) {
-			return block
-		}
-
-		// Find which tool_result index this block is by comparing references.
-		// This correctly handles duplicate tool_use_ids - we find the actual block's
-		// position among all tool_results, not the first block with a matching ID.
-		const toolResultIndex = toolResults.indexOf(block as Anthropic.ToolResultBlockParam)
-
-		// Try to match by position - only fix if there's a corresponding tool_use
-		if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
-			const correctId = toolUseBlocks[toolResultIndex].id
-			return {
-				...block,
-				tool_use_id: correctId,
+	const correctedContent = userMessage.content
+		.map((block) => {
+			if (block.type !== "tool_result") {
+				return block
 			}
-		}
 
-		// No corresponding tool_use for this tool_result - leave it unchanged
-		// This can happen when there are more tool_results than tool_uses
-		return block
-	})
+			// If the ID is already valid and not yet used, keep it
+			if (validToolUseIds.has(block.tool_use_id) && !usedToolUseIds.has(block.tool_use_id)) {
+				usedToolUseIds.add(block.tool_use_id)
+				return block
+			}
+
+			// Find which tool_result index this block is by comparing references.
+			// This correctly handles duplicate tool_use_ids - we find the actual block's
+			// position among all tool_results, not the first block with a matching ID.
+			const toolResultIndex = toolResults.indexOf(block as Anthropic.ToolResultBlockParam)
+
+			// Try to match by position - only fix if there's a corresponding tool_use
+			if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
+				const correctId = toolUseBlocks[toolResultIndex].id
+				// Only use this ID if it hasn't been used yet
+				if (!usedToolUseIds.has(correctId)) {
+					usedToolUseIds.add(correctId)
+					return {
+						...block,
+						tool_use_id: correctId,
+					}
+				}
+			}
+
+			// No corresponding tool_use for this tool_result, or the ID is already used
+			// Filter out this orphaned tool_result by returning null
+			return null
+		})
+		.filter((block): block is NonNullable<typeof block> => block !== null)
 
 	// Add missing tool_result blocks for any tool_use that doesn't have one
 	// After the ID correction above, recalculate which tool_use IDs are now covered
@@ -179,21 +192,19 @@ export function validateAndFixToolResultIds(
 
 	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.id))
 
-	if (stillMissingToolUseIds.length > 0) {
-		// Add placeholder tool_result blocks for missing tool_use IDs
-		const missingToolResults: Anthropic.ToolResultBlockParam[] = stillMissingToolUseIds.map((toolUse) => ({
-			type: "tool_result" as const,
-			tool_use_id: toolUse.id,
-			content: "Tool execution was interrupted before completion.",
-		}))
+	// Build final content: add missing tool_results at the beginning if any
+	const missingToolResults: Anthropic.ToolResultBlockParam[] = stillMissingToolUseIds.map((toolUse) => ({
+		type: "tool_result" as const,
+		tool_use_id: toolUse.id,
+		content: "Tool execution was interrupted before completion.",
+	}))
 
-		// Insert missing tool_results at the beginning of the content array
-		// This ensures they come before any text blocks that may summarize the results
-		correctedContent = [...missingToolResults, ...correctedContent]
-	}
+	// Insert missing tool_results at the beginning of the content array
+	// This ensures they come before any text blocks that may summarize the results
+	const finalContent = missingToolResults.length > 0 ? [...missingToolResults, ...correctedContent] : correctedContent
 
 	return {
 		...userMessage,
-		content: correctedContent,
+		content: finalContent,
 	}
 }
