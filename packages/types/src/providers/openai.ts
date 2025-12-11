@@ -3,9 +3,28 @@ import type { ModelInfo } from "../model.js"
 // https://openai.com/api/pricing/
 export type OpenAiNativeModelId = keyof typeof openAiNativeModels
 
-export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-5.2"
+export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-5.1-codex-max"
 
 export const openAiNativeModels = {
+	"gpt-5.1-codex-max": {
+		maxTokens: 128000,
+		contextWindow: 400000,
+		supportsNativeTools: true,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		supportsImages: true,
+		supportsPromptCache: true,
+		promptCacheRetention: "24h",
+		supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
+		reasoningEffort: "xhigh",
+		inputPrice: 1.25,
+		outputPrice: 10.0,
+		cacheReadsPrice: 0.125,
+		supportsTemperature: false,
+		tiers: [{ name: "priority", contextWindow: 400000, inputPrice: 2.5, outputPrice: 20.0, cacheReadsPrice: 0.25 }],
+		description:
+			"GPT-5.1 Codex Max: Our most intelligent coding model optimized for long-horizon, agentic coding tasks",
+	},
 	"gpt-5.2": {
 		maxTokens: 128000,
 		contextWindow: 400000,
@@ -38,25 +57,6 @@ export const openAiNativeModels = {
 		outputPrice: 14.0,
 		cacheReadsPrice: 0.175,
 		description: "GPT-5.2 Chat: Optimized for conversational AI and chat use cases",
-	},
-	"gpt-5.1-codex-max": {
-		maxTokens: 128000,
-		contextWindow: 400000,
-		supportsNativeTools: true,
-		includedTools: ["apply_patch"],
-		excludedTools: ["apply_diff", "write_to_file"],
-		supportsImages: true,
-		supportsPromptCache: true,
-		promptCacheRetention: "24h",
-		supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
-		reasoningEffort: "medium",
-		inputPrice: 1.25,
-		outputPrice: 10.0,
-		cacheReadsPrice: 0.125,
-		supportsTemperature: false,
-		tiers: [{ name: "priority", contextWindow: 400000, inputPrice: 2.5, outputPrice: 20.0, cacheReadsPrice: 0.25 }],
-		description:
-			"GPT-5.1 Codex Max: Our most intelligent coding model optimized for long-horizon, agentic coding tasks",
 	},
 	"gpt-5.1": {
 		maxTokens: 128000,
