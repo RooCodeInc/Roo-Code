@@ -2,6 +2,7 @@ import { type ClineAsk, type McpServerUse, type FollowUpData, isNonBlockingAsk }
 
 import type { ClineSayTool, ExtensionState } from "../../shared/ExtensionMessage"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
+import type { McpServer, McpTool } from "../../shared/mcp"
 
 import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
@@ -99,9 +100,18 @@ export async function checkAutoApproval({
 			const mcpServerUse = JSON.parse(text) as McpServerUse
 
 			if (mcpServerUse.type === "use_mcp_tool") {
-				return state.alwaysAllowMcp === true && isMcpToolAlwaysAllowed(mcpServerUse, state.mcpServers)
-					? { decision: "approve" }
-					: { decision: "ask" }
+				// Check if global MCP auto-approval is enabled
+				if (state.alwaysAllowMcp === true) {
+					// If the tool has explicit alwaysAllow set to false, respect that
+					const server = state.mcpServers?.find((s) => s.name === mcpServerUse.serverName)
+					const tool = server?.tools?.find((t) => t.name === mcpServerUse.toolName)
+					if (tool?.alwaysAllow === false) {
+						return { decision: "ask" }
+					}
+					// Otherwise auto-approve (including when alwaysAllow is true or undefined)
+					return { decision: "approve" }
+				}
+				return { decision: "ask" }
 			} else if (mcpServerUse.type === "access_mcp_resource") {
 				return state.alwaysAllowMcp === true ? { decision: "approve" } : { decision: "ask" }
 			}
