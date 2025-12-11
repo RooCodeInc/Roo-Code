@@ -139,7 +139,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				tools.push({ urlContext: {} })
 			}
 
-			if (this.options.enableGrounding) {
+			// Only enable Google Search if the model supports grounding
+			if (this.options.enableGrounding && info.supportsGrounding) {
 				tools.push({ googleSearch: {} })
 			}
 		}
@@ -385,7 +386,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			if (this.options.enableUrlContext) {
 				tools.push({ urlContext: {} })
 			}
-			if (this.options.enableGrounding) {
+			// Only enable Google Search if the model supports grounding
+			if (this.options.enableGrounding && info.supportsGrounding) {
 				tools.push({ googleSearch: {} })
 			}
 
