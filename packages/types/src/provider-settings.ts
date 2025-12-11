@@ -49,7 +49,6 @@ export const dynamicProviders = [
 	"io-intelligence",
 	"requesty",
 	"unbound",
-	"glama",
 	// "roo",
 	"chutes",
 ] as const
@@ -219,11 +218,6 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
 	claudeCodePath: z.string().optional(),
 	claudeCodeMaxOutputTokens: z.number().int().min(1).max(200000).optional(),
-})
-
-const glamaSchema = baseProviderSettingsSchema.extend({
-	glamaModelId: z.string().optional(),
-	glamaApiKey: z.string().optional(),
 })
 
 const openRouterSchema = baseProviderSettingsSchema.extend({
@@ -453,7 +447,6 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	zgsmSchema.merge(z.object({ apiProvider: z.literal("zgsm") })),
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
-	glamaSchema.merge(z.object({ apiProvider: z.literal("glama") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
 	vertexSchema.merge(z.object({ apiProvider: z.literal("vertex") })),
@@ -497,7 +490,6 @@ export const providerSettingsSchema = z.object({
 	...zgsmSchema.shape,
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
-	...glamaSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
 	...vertexSchema.shape,
@@ -564,7 +556,6 @@ export const PROVIDER_SETTINGS_KEYS = providerSettingsSchema.keyof().options
 export const modelIdKeys = [
 	"zgsmModelId",
 	"apiModelId",
-	"glamaModelId",
 	"openRouterModelId",
 	"openAiModelId",
 	"ollamaModelId",
@@ -599,7 +590,6 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	zgsm: "zgsmModelId",
 	anthropic: "apiModelId",
 	"claude-code": "apiModelId",
-	glama: "glamaModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
@@ -771,7 +761,6 @@ export const MODELS_BY_PROVIDER: Record<
 	baseten: { id: "baseten", label: "Baseten", models: Object.keys(basetenModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
-	glama: { id: "glama", label: "Glama", models: [] },
 	huggingface: { id: "huggingface", label: "Hugging Face", models: [] },
 	litellm: { id: "litellm", label: "LiteLLM", models: [] },
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },

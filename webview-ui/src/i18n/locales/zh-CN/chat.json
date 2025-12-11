@@ -107,6 +107,7 @@
 	"enhancePrompt": "增强提示词",
 	"addImages": "添加图片到消息",
 	"sendMessage": "发送消息",
+	"pressToSend": "按 {{keyCombination}} 发送",
 	"stopTts": "停止文本转语音",
 	"typeMessage": "输入消息...",
 	"typeTask": "在此处输入您的任务...",
@@ -148,7 +149,8 @@
 			"403": "无权限。您的 API 密钥有效，但提供商拒绝完成此请求。",
 			"429": "请求过于频繁。提供商已对您的请求进行速率限制。请在下一次 API 调用前稍候。",
 			"500": "提供商服务器错误。提供商端出现问题，您的请求无问题。",
-			"unknown": "未知 API 错误。请联系 CoStrict 支持。"
+			"unknown": "未知 API 错误。请联系 CoStrict 支持。",
+			"connection": "连接错误。确保您有可用的互联网连接。"
 		}
 	},
 	"checkpoint": {
@@ -200,8 +202,6 @@
 		"didViewTopLevel": "已查看目录文件列表",
 		"wantsToViewRecursive": "需要查看目录所有文件",
 		"didViewRecursive": "已查看目录所有文件",
-		"wantsToViewDefinitions": "Roo想查看此目录中使用的源代码定义名称",
-		"didViewDefinitions": "Roo已查看此目录中使用的源代码定义名称",
 		"wantsToSearch": "需要搜索内容: {{regex}}",
 		"didSearch": "已完成内容搜索: {{regex}}",
 		"wantsToSearchOutsideWorkspace": "需要搜索内容（工作区外）: {{regex}}",
@@ -209,9 +209,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "需要查看目录文件列表（工作区外）",
 		"didViewTopLevelOutsideWorkspace": "已查看目录文件列表（工作区外）",
 		"wantsToViewRecursiveOutsideWorkspace": "需要查看目录所有文件（工作区外）",
-		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo想查看此目录中使用的源代码定义名称（工作区外）",
-		"didViewDefinitionsOutsideWorkspace": "Roo已查看此目录中使用的源代码定义名称（工作区外）"
+		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）"
 	},
 	"commandOutput": "命令输出",
 	"commandExecution": {
@@ -264,6 +262,11 @@
 		"hasQuestion": "Roo有一个问题"
 	},
 	"taskCompleted": "任务完成",
+	"errorDetails": {
+		"title": "错误详情",
+		"copyToClipboard": "复制到剪贴板",
+		"copied": "已复制!"
+	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"
 	},

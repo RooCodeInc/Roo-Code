@@ -26,6 +26,85 @@ Always use the actual tool name as the XML tag name for proper parsing and execu
 
 # Tools
 
+## ask_multiple_choice
+Description: Interrupts the current workflow to present structured multiple-choice questions to the user. Forces selection from predefined options (no free-text). Use this tool when you need explicit user decisions or to resolve ambiguity before proceeding.
+
+Use this tool when:
+- You need to choose between mutually exclusive options (e.g., architecture patterns, frameworks).
+- You need to clarify user intent (e.g., "Add new file?" vs "Update existing?").
+- You want to collect multiple related decisions in a single interaction.
+
+CRITICAL: Every question and every option MUST have an id field - results cannot be matched without ids.
+
+Parameters:
+- title: (optional) A brief title for the decision group.
+- questions: (REQUIRED) An array of question objects (at least 1).
+  - id: (REQUIRED) A unique, program-friendly identifier (slug) for the question (e.g., "framework_choice").
+  - prompt: (REQUIRED) The text question to display to the user.
+  - options: (REQUIRED) An array of option objects (at least 2).
+    - id: (REQUIRED) A unique, program-friendly identifier (slug) for the option (e.g., "react", "vue").
+    - label: (REQUIRED) The user-facing display text.
+  - allow_multiple: (optional) Set to 'true' for checkboxes (multi-select), 'false' for radio buttons (single-select). Defaults to false.
+
+Usage:
+<ask_multiple_choice>
+  <title>Decision Title</title>
+  <questions>
+    <question>
+      <id>question_slug</id>
+      <prompt>Question text?</prompt>
+      <options>
+        <option>
+          <id>option_slug_1</id>
+          <label>Option 1 Label</label>
+        </option>
+        <option>
+          <id>option_slug_2</id>
+          <label>Option 2 Label</label>
+        </option>
+      </options>
+      <allow_multiple>false</allow_multiple>
+    </question>
+  </questions>
+</ask_multiple_choice>
+
+Example:
+<ask_multiple_choice>
+  <title>Project Setup</title>
+  <questions>
+    <question>
+      <id>framework</id>
+      <prompt>Which framework would you like to use?</prompt>
+      <options>
+        <option>
+          <id>react</id>
+          <label>React</label>
+        </option>
+        <option>
+          <id>vue</id>
+          <label>Vue.js</label>
+        </option>
+      </options>
+      <allow_multiple>false</allow_multiple>
+    </question>
+    <question>
+      <id>features</id>
+      <prompt>Select additional features:</prompt>
+      <options>
+        <option>
+          <id>typescript</id>
+          <label>TypeScript</label>
+        </option>
+        <option>
+          <id>linting</id>
+          <label>ESLint + Prettier</label>
+        </option>
+      </options>
+      <allow_multiple>true</allow_multiple>
+    </question>
+  </questions>
+</ask_multiple_choice>
+
 ## read_file
 Description: Request to read the contents of one or more files. The tool outputs line-numbered content (e.g. "1 | const x = 1") for easy reference when creating diffs or discussing code. Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.
 
@@ -148,106 +227,6 @@ Example: Requesting to list all files in the current directory
 <path>.</path>
 <recursive>false</recursive>
 </list_files>
-
-## list_code_definition_names
-Description: Request to list definition names (classes, functions, methods, etc.) from source code. This tool can analyze either a single file or all files at the top level of a specified directory. It provides insights into the codebase structure and important constructs, encapsulating high-level concepts and relationships that are crucial for understanding the overall architecture.
-Parameters:
-- path: (required) The path of the file or directory (relative to the current working directory /test/path) to analyze. When given a directory, it lists definitions from all top-level source files.
-Usage:
-<list_code_definition_names>
-<path>Directory path here</path>
-</list_code_definition_names>
-
-Examples:
-
-1. List definitions from a specific file:
-<list_code_definition_names>
-<path>src/main.ts</path>
-</list_code_definition_names>
-
-2. List definitions from all files in a directory:
-<list_code_definition_names>
-<path>src/</path>
-</list_code_definition_names>
-
-## ask_multiple_choice
-Description: Interrupts the current workflow to present structured multiple-choice questions to the user. Forces selection from predefined options (no free-text). Use this tool when you need explicit user decisions or to resolve ambiguity before proceeding.
-
-Use this tool when:
-- You need to choose between mutually exclusive options (e.g., architecture patterns, frameworks).
-- You need to clarify user intent (e.g., "Add new file?" vs "Update existing?").
-- You want to collect multiple related decisions in a single interaction.
-
-CRITICAL: Every question and every option MUST have an id field - results cannot be matched without ids.
-
-Parameters:
-- title: (optional) A brief title for the decision group.
-- questions: (REQUIRED) An array of question objects (at least 1).
-  - id: (REQUIRED) A unique, program-friendly identifier (slug) for the question (e.g., "framework_choice").
-  - prompt: (REQUIRED) The text question to display to the user.
-  - options: (REQUIRED) An array of option objects (at least 2).
-    - id: (REQUIRED) A unique, program-friendly identifier (slug) for the option (e.g., "react", "vue").
-    - label: (REQUIRED) The user-facing display text.
-  - allow_multiple: (optional) Set to 'true' for checkboxes (multi-select), 'false' for radio buttons (single-select). Defaults to false.
-
-Usage:
-<ask_multiple_choice>
-  <title>Decision Title</title>
-  <questions>
-    <question>
-      <id>question_slug</id>
-      <prompt>Question text?</prompt>
-      <options>
-        <option>
-          <id>option_slug_1</id>
-          <label>Option 1 Label</label>
-        </option>
-        <option>
-          <id>option_slug_2</id>
-          <label>Option 2 Label</label>
-        </option>
-      </options>
-      <allow_multiple>false</allow_multiple>
-    </question>
-  </questions>
-</ask_multiple_choice>
-
-Example:
-<ask_multiple_choice>
-  <title>Project Setup</title>
-  <questions>
-    <question>
-      <id>framework</id>
-      <prompt>Which framework would you like to use?</prompt>
-      <options>
-        <option>
-          <id>react</id>
-          <label>React</label>
-        </option>
-        <option>
-          <id>vue</id>
-          <label>Vue.js</label>
-        </option>
-      </options>
-      <allow_multiple>false</allow_multiple>
-    </question>
-    <question>
-      <id>features</id>
-      <prompt>Select additional features:</prompt>
-      <options>
-        <option>
-          <id>typescript</id>
-          <label>TypeScript</label>
-        </option>
-        <option>
-          <id>linting</id>
-          <label>ESLint + Prettier</label>
-        </option>
-      </options>
-      <allow_multiple>true</allow_multiple>
-    </question>
-  </questions>
-</ask_multiple_choice>
 
 ## ask_followup_question
 Description: Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively.

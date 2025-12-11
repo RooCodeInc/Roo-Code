@@ -2,6 +2,10 @@ import cmp from "semver-compare"
 
 import { Package } from "../../../shared/package"
 
+function isNightlyBuild(): boolean {
+	return Package.name.toLowerCase().includes("nightly")
+}
+
 /**
  * Type for versioned settings where the version is the key.
  * Each version key maps to a settings object that should be used
@@ -67,6 +71,16 @@ export function findHighestMatchingVersion(
 	currentVersion: string = Package.version,
 ): string | undefined {
 	const versions = Object.keys(versionedSettings)
+
+	if (versions.length === 0) {
+		return undefined
+	}
+
+	// Nightly builds should always pick the highest available versioned settings
+	if (isNightlyBuild()) {
+		versions.sort((a, b) => compareSemver(b, a))
+		return versions[0]
+	}
 
 	// Filter to versions that are <= currentVersion
 	const matchingVersions = versions.filter((version) => meetsMinimumVersion(version, currentVersion))

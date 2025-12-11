@@ -14,13 +14,6 @@ export const handleUri = async (uri: vscode.Uri) => {
 	}
 
 	switch (path) {
-		case "/glama": {
-			const code = query.get("code")
-			if (code) {
-				await visibleProvider.handleGlamaCallback(code)
-			}
-			break
-		}
 		case "/openrouter": {
 			const code = query.get("code")
 			if (code) {

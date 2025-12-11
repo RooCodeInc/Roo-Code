@@ -127,6 +127,7 @@
 	"enhancePromptDescription": "「強化提示詞」按鈕可透過提供額外內容、說明或改寫來協助改善您的提示詞。請試著在這裡輸入提示詞，然後再次點選按鈕，以了解其運作方式。",
 	"addImages": "新增圖片到訊息中",
 	"sendMessage": "傳送訊息",
+	"pressToSend": "按 {{keyCombination}} 傳送",
 	"stopTts": "停止文字轉語音",
 	"typeMessage": "輸入訊息...",
 	"typeTask": "在這裡輸入您的工作...",
@@ -154,7 +155,8 @@
 			"403": "無權存取。您的 API 金鑰有效，但提供商拒絕完成此請求。",
 			"429": "請求次數過多。提供商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "提供商伺服器錯誤。提供商端發生問題，您的請求沒有問題。",
-			"unknown": "未知 API 錯誤。請聯絡 CoStrict支援。"
+			"unknown": "未知 API 錯誤。請聯絡 CoStrict 支援。",
+			"connection": "連線錯誤。請確保您有可用的網際網路連線。"
 		}
 	},
 	"checkpoint": {
@@ -225,10 +227,6 @@
 		"didViewRecursive": "Roo 已遞迴檢視此目錄中的所有檔案",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo 想要遞迴檢視此目錄（工作區外）中的所有檔案",
 		"didViewRecursiveOutsideWorkspace": "Roo 已遞迴檢視此目錄（工作區外）中的所有檔案",
-		"wantsToViewDefinitions": "Roo 想要檢視此目錄中使用的原始碼定義名稱",
-		"didViewDefinitions": "Roo 已檢視此目錄中使用的原始碼定義名稱",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo 想要檢視此目錄（工作區外）中使用的原始碼定義名稱",
-		"didViewDefinitionsOutsideWorkspace": "Roo 已檢視此目錄（工作區外）中使用的原始碼定義名稱",
 		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
 		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
@@ -297,6 +295,11 @@
 		"title": "編輯失敗"
 	},
 	"troubleMessage": "Roo 遇到問題...",
+	"errorDetails": {
+		"title": "錯誤詳細資訊",
+		"copyToClipboard": "複製到剪貼簿",
+		"copied": "已複製！"
+	},
 	"powershell": {
 		"issues": "您似乎遇到了 Windows PowerShell 的問題，請參閱此說明文件"
 	},

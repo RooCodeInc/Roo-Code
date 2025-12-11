@@ -105,7 +105,7 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 						<MessageCircle className="size-4 text-vscode-descriptionForeground shrink-0" />
 						<span>
 							{t("settings:about.contact.label")}{" "}
-							<VSCodeLink href="mailto:support@roocode.com">zgsm@sangfor.com.cn</VSCodeLink>
+							<VSCodeLink href="mailto:zgsm@sangfor.com.cn">zgsm@sangfor.com.cn</VSCodeLink>
 						</span>
 					</div>
 					<div className="flex items-start gap-2">

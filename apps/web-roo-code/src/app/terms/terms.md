@@ -70,7 +70,7 @@ Customer may access and use the Service solely for its internal business purpose
 
 ## 6. Privacy & Data
 
-Roo Code's Privacy Notice ([https://roocode.com/privacy](https://roocode.com/privacy)) explains how Roo Code collects and handles personal information. If Customer requires a DPA, email [support@roocode.com](mailto:support@roocode.com).
+Roo Code's Privacy Notice ([https://roocode.com/privacy](https://roocode.com/privacy)) explains how Roo Code collects and handles personal information. If Customer requires a DPA, email [zgsm@sangfor.com.cn](mailto:zgsm@sangfor.com.cn).
 
 ## 7. Warranty Disclaimer
 
@@ -98,4 +98,4 @@ The caps in Section 2 apply to all claims under the Agreement, whether in contra
 
 **Roo Code, Inc.**  
 98 Graceland Dr, San Rafael, CA 94901 USA  
-Email: [support@roocode.com](mailto:support@roocode.com)
+Email: [zgsm@sangfor.com.cn](mailto:zgsm@sangfor.com.cn)

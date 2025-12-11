@@ -182,7 +182,7 @@ export class CostrictTelemetryClient extends BaseTelemetryClient {
 		}
 	}
 
-	public captureException(_error: Error, _additionalProperties?: Record<string, unknown>): void {
+	public async captureException(_error: Error, _additionalProperties?: Record<string, unknown>): Promise<void> {
 		// todo - exception capture
 	}
 }

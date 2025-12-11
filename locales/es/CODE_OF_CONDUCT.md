@@ -67,7 +67,7 @@ definida y aclarada aún más por los mantenedores del proyecto.
 ## Aplicación
 
 Los casos de comportamiento abusivo, acosador o de otro modo inaceptable pueden ser
-reportados contactando al equipo del proyecto en support@roocode.com. Todas las quejas
+reportados contactando al equipo del proyecto en zgsm@sangfor.com.cn. Todas las quejas
 serán revisadas e investigadas y resultarán en una respuesta que
 se considera necesaria y apropiada a las circunstancias. El equipo del proyecto está
 obligado a mantener la confidencialidad con respecto al informante de un incidente.

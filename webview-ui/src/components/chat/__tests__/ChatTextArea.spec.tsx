@@ -1115,6 +1115,72 @@ describe("ChatTextArea", () => {
 			//                   apiConfigDropdown.classList.contains("opacity-50")
 			// expect(isDisabled).toBe(true)
 		})
+
+		describe("enter key behavior", () => {
+			it("should send on Enter and allow newline on Shift+Enter in default mode", () => {
+				const onSend = vi.fn()
+
+				;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+					filePaths: [],
+					openedTabs: [],
+					taskHistory: [],
+					cwd: "/test/workspace",
+				})
+
+				const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} />)
+
+				const textarea = container.querySelector("textarea")!
+
+				fireEvent.keyDown(textarea, { key: "Enter" })
+				expect(onSend).toHaveBeenCalledTimes(1)
+
+				const shiftEnterEvent = new KeyboardEvent("keydown", { key: "Enter", shiftKey: true, bubbles: true })
+				fireEvent(textarea, shiftEnterEvent)
+				expect(onSend).toHaveBeenCalledTimes(1)
+				expect(shiftEnterEvent.defaultPrevented).toBe(false)
+			})
+
+			it("should treat Ctrl/Cmd/Shift+Enter as send and plain Enter as newline in newline mode", () => {
+				const onSend = vi.fn()
+
+				;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+					filePaths: [],
+					openedTabs: [],
+					taskHistory: [],
+					cwd: "/test/workspace",
+					enterBehavior: "newline",
+				})
+
+				const { container } = render(<ChatTextArea {...defaultProps} onSend={onSend} />)
+
+				const textarea = container.querySelector("textarea")!
+
+				const plainEnterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+				fireEvent(textarea, plainEnterEvent)
+				expect(onSend).not.toHaveBeenCalled()
+				expect(plainEnterEvent.defaultPrevented).toBe(false)
+
+				const ctrlEnterEvent = new KeyboardEvent("keydown", {
+					key: "Enter",
+					ctrlKey: true,
+					bubbles: true,
+					cancelable: true,
+				})
+				fireEvent(textarea, ctrlEnterEvent)
+				expect(onSend).toHaveBeenCalledTimes(1)
+				expect(ctrlEnterEvent.defaultPrevented).toBe(true)
+
+				const shiftEnterEvent = new KeyboardEvent("keydown", {
+					key: "Enter",
+					shiftKey: true,
+					bubbles: true,
+					cancelable: true,
+				})
+				fireEvent(textarea, shiftEnterEvent)
+				expect(onSend).toHaveBeenCalledTimes(2)
+				expect(shiftEnterEvent.defaultPrevented).toBe(true)
+			})
+		})
 	})
 
 	describe("send button visibility", () => {

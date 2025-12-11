@@ -45,11 +45,6 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
-		case "glama":
-			if (!apiConfiguration.glamaApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
 		case "unbound":
 			if (!apiConfiguration.unboundApiKey) {
 				return i18next.t("settings:validation.apiKey")

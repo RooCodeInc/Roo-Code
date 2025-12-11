@@ -8,7 +8,6 @@ import {
 	zgsmDefaultModelId,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,
-	glamaDefaultModelId,
 	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiModelInfoSaneDefaults,
@@ -173,13 +172,6 @@ const ProviderRenderer: React.FC<ProviderRendererProps> = ({
 			defaultModelId: requestyDefaultModelId,
 			serviceUrl: "https://requesty.ai",
 			models: routerModels?.requesty ?? {},
-		},
-		glama: {
-			modelIdKey: "glamaModelId",
-			serviceName: "Glama",
-			defaultModelId: glamaDefaultModelId,
-			serviceUrl: "https://glama.ai/models",
-			models: routerModels?.glama ?? {},
 		},
 		unbound: {
 			modelIdKey: "unboundModelId",

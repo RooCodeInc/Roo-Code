@@ -2563,9 +2563,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const stream = this.attemptApiRequest()
 				let assistantMessage = ""
 				let reasoningMessage = ""
+				let streamingFailedMessage = ""
 				let pendingGroundingSources: GroundingSource[] = []
 				this.isStreaming = true
-
+				let shouldStop = false
 				try {
 					const iterator = stream[Symbol.asyncIterator]()
 
@@ -3102,14 +3103,33 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (!this.abandoned) {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
-
-						let streamingFailedMessage = this.abort
+						const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
+						const requestId = error.headers?.get("x-request-id")
+						streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
-						const requestId = error.headers?.get("x-request-id")
+						// let shouldStop = false
+						if (isZgsm) {
+							const errorCodeManager = ErrorCodeManager.getInstance()
+							streamingFailedMessage = await errorCodeManager.parseResponse(
+								error,
+								isZgsm,
+								this.taskId,
+								this.instanceId,
+							)
 
-						if (this.apiConfiguration.apiProvider === "zgsm" && requestId) {
-							streamingFailedMessage += `\nRequestId: ${requestId ?? ""}\n`
+							if (requestId) {
+								// Store raw error
+								errorCodeManager.setRawError(requestId, error)
+							}
+
+							if (error.status === 401 || error.code === "ai-gateway.insufficient_quota") {
+								if (error.status === 401) {
+									ZgsmAuthService.openStatusBarLoginTip()
+								}
+
+								shouldStop = true
+							}
 						}
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
@@ -3152,9 +3172,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
 							})
-
 							// Continue to retry the request
-							continue
+							if (!shouldStop) {
+								continue
+							}
 						}
 					}
 				} finally {
@@ -3379,13 +3400,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.apiConversationHistory.pop()
 						}
 					}
-
+					// if (shouldStop)
 					// Check if we should auto-retry or prompt the user
 					let errorMsg = t("common:errors.unexpected_api_response")
 					// Reuse the state variable from above
 					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
 						// Auto-retry with backoff - don't persist failure message when retrying
-						if (requestId) {
+						if (shouldStop) {
+							errorMsg = streamingFailedMessage
+						} else if (requestId) {
 							errorMsg += `\n\nRequestId: ${requestId}\n\n`
 						}
 						await this.backoffAndAnnounce(
@@ -3414,9 +3437,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Continue to retry the request
 						continue
 					} else {
-						if (requestId) {
+						if (shouldStop) {
+							errorMsg = streamingFailedMessage
+						} else if (requestId) {
 							errorMsg += `\n\nRequestId: ${requestId}\n\n`
 						}
+
 						// Prompt the user for retry decision
 						const { response } = await this.ask("api_req_failed", errorMsg)
 
@@ -3444,7 +3470,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									content: currentUserContent,
 								})
 							}
-
+							if (shouldStop) {
+								errorMsg = streamingFailedMessage
+							} else if (requestId) {
+								errorMsg += `\n\nRequestId: ${requestId}\n\n`
+							}
 							await this.say("error", errorMsg)
 							this.providerRef.deref()?.log(errorMsg, "error")
 							await this.addToApiConversationHistory({
@@ -4131,8 +4161,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (this.abort) {
 					throw new Error(`[Task#${this.taskId}] Aborted during retry countdown`)
 				}
-
-				await this.say("api_req_retry_delayed", `${headerText}\n↻ ${i}s...`, undefined, true)
+				if (this.apiConfiguration.apiProvider === "zgsm") {
+					await this.say("api_req_retry_delayed", `${headerText}\n↻ ${i}s...`, undefined, true)
+				} else {
+					await this.say(
+						"api_req_retry_delayed",
+						`${headerText}<retry_timer>${i}</retry_timer>`,
+						undefined,
+						true,
+					)
+				}
 				await delay(1000)
 			}
 
