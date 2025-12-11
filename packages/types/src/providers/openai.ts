@@ -51,6 +51,8 @@ export const openAiNativeModels = {
 		maxTokens: 16_384,
 		contextWindow: 128_000,
 		supportsNativeTools: true,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
 		supportsPromptCache: true,
 		inputPrice: 1.75,
