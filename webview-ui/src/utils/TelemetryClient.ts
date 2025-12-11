@@ -20,6 +20,11 @@ class TelemetryClient {
 				capture_pageview: false,
 				capture_pageleave: false,
 				autocapture: false,
+				// Disable features that might use ServiceWorkers
+				disable_persistence: false, // Keep localStorage persistence but avoid advanced features
+				bootstrap: {}, // Avoid bootstrapping that might trigger ServiceWorker
+				// Disable session recording which might use ServiceWorkers
+				disable_session_recording: true,
 			})
 		} else {
 			TelemetryClient.telemetryEnabled = false
