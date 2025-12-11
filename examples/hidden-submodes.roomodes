@@ -1,0 +1,91 @@
+# Example .roomodes file demonstrating hidden submodes feature
+# Hidden modes are not shown in the mode selector dropdown but can be accessed
+# programmatically by their parent mode using the switch_mode tool
+
+customModes:
+  # Parent mode that can delegate to specialized submodes
+  - slug: complex-task-handler
+    name: 🎯 Complex Task Handler
+    roleDefinition: |-
+      You are a complex task handler that breaks down large tasks into specialized subtasks.
+      You can delegate specific work to hidden specialized submodes.
+    whenToUse: Use this mode for complex tasks that require multiple specialized approaches
+    description: Handles complex multi-step tasks
+    groups:
+      - read
+      - edit
+      - command
+    customInstructions: |-
+      When handling complex tasks:
+      1. Analyze the task requirements
+      2. Identify specialized subtasks
+      3. Use switch_mode to delegate to appropriate hidden submodes:
+         - data-analyzer: For data analysis tasks
+         - code-generator: For code generation tasks
+         - test-writer: For test writing tasks
+      4. Coordinate results from submodes
+      5. Provide comprehensive solution
+
+  # Hidden submode for data analysis (only accessible from complex-task-handler)
+  - slug: data-analyzer
+    name: 📊 Data Analyzer
+    roleDefinition: Specialized mode for analyzing data structures and patterns
+    description: Analyzes data and provides insights
+    groups:
+      - read
+    hidden: true
+    parent: complex-task-handler
+    customInstructions: |-
+      Focus exclusively on data analysis:
+      - Examine data structures
+      - Identify patterns
+      - Generate insights
+      - Return findings to parent mode
+
+  # Hidden submode for code generation (only accessible from complex-task-handler)
+  - slug: code-generator
+    name: ⚙️ Code Generator
+    roleDefinition: Specialized mode for generating optimized code
+    description: Generates code based on specifications
+    groups:
+      - read
+      - edit
+    hidden: true
+    parent: complex-task-handler
+    customInstructions: |-
+      Focus exclusively on code generation:
+      - Generate clean, efficient code
+      - Follow best practices
+      - Add appropriate comments
+      - Return to parent mode when complete
+
+  # Hidden submode for test writing (only accessible from complex-task-handler)
+  - slug: test-writer
+    name: 🧪 Test Writer
+    roleDefinition: Specialized mode for writing comprehensive tests
+    description: Writes unit and integration tests
+    groups:
+      - read
+      - edit
+    hidden: true
+    parent: complex-task-handler
+    customInstructions: |-
+      Focus exclusively on test creation:
+      - Write comprehensive test cases
+      - Cover edge cases
+      - Ensure good test coverage
+      - Return to parent mode when complete
+
+  # Regular visible mode (shown in dropdown)
+  - slug: documentation-mode
+    name: 📚 Documentation
+    roleDefinition: Mode for creating and updating documentation
+    description: Creates and maintains documentation
+    groups:
+      - read
+      - edit
+    customInstructions: |-
+      Focus on documentation tasks:
+      - Write clear, comprehensive docs
+      - Update existing documentation
+      - Create examples and tutorials
