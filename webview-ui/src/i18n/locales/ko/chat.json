@@ -1,472 +1,483 @@
 {
-	"greeting": "Roo Code에 오신 것을 환영합니다",
+	"greeting": "Roo Codeì— ì˜¤ì‹  ê²ƒì„ í™˜ì˜í•©ë‹ˆë‹¤",
 	"task": {
-		"title": "작업",
-		"expand": "작업 펼치기",
-		"collapse": "작업 접기",
-		"seeMore": "더 보기",
-		"seeLess": "줄여보기",
-		"tokens": "토큰",
-		"cache": "캐시",
-		"apiCost": "API 비용",
-		"size": "크기",
-		"contextWindow": "컨텍스트 창",
-		"closeAndStart": "작업 닫고 새 작업 시작",
-		"export": "작업 기록 내보내기",
-		"delete": "작업 삭제 (Shift + 클릭으로 확인 생략)",
-		"condenseContext": "컨텍스트 지능적으로 압축",
-		"share": "작업 공유",
-		"shareWithOrganization": "조직과 공유",
-		"shareWithOrganizationDescription": "조직 구성원만 액세스할 수 있습니다",
-		"sharePublicly": "공개적으로 공유",
-		"sharePubliclyDescription": "링크가 있는 누구나 액세스할 수 있습니다",
-		"connectToCloud": "클라우드에 연결",
-		"connectToCloudDescription": "작업을 공유하려면 Roo Code Cloud에 로그인하세요",
-		"sharingDisabledByOrganization": "조직에서 공유가 비활성화됨",
-		"shareSuccessOrganization": "조직 링크가 클립보드에 복사되었습니다",
-		"shareSuccessPublic": "공개 링크가 클립보드에 복사되었습니다",
-		"openInCloud": "Roo Code Cloud에서 작업 열기",
-		"openInCloudIntro": "어디서나 Roo를 계속 모니터링하거나 상호작용할 수 있습니다. 스캔, 클릭 또는 복사하여 열기.",
-		"openApiHistory": "API 기록 열기",
-		"openUiHistory": "UI 기록 열기"
+		"title": "ìž‘ì—…",
+		"expand": "ìž‘ì—… íŽ¼ì¹˜ê¸°",
+		"collapse": "ìž‘ì—… ì ‘ê¸°",
+		"seeMore": "ë” ë³´ê¸°",
+		"seeLess": "ì¤„ì—¬ë³´ê¸°",
+		"tokens": "í† í°",
+		"cache": "ìºì‹œ",
+		"apiCost": "API ë¹„ìš©",
+		"size": "í¬ê¸°",
+		"contextWindow": "ì»¨í…ìŠ¤íŠ¸ ì°½",
+		"closeAndStart": "ìž‘ì—… ë‹«ê³  ìƒˆ ìž‘ì—… ì‹œìž‘",
+		"export": "ìž‘ì—… ê¸°ë¡ ë‚´ë³´ë‚´ê¸°",
+		"delete": "ìž‘ì—… ì‚­ì œ (Shift + í´ë¦­ìœ¼ë¡œ í™•ì¸ ìƒëžµ)",
+		"condenseContext": "ì»¨í…ìŠ¤íŠ¸ ì§€ëŠ¥ì ìœ¼ë¡œ ì••ì¶•",
+		"share": "ìž‘ì—… ê³µìœ ",
+		"shareWithOrganization": "ì¡°ì§ê³¼ ê³µìœ ",
+		"shareWithOrganizationDescription": "ì¡°ì§ êµ¬ì„±ì›ë§Œ ì•¡ì„¸ìŠ¤í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤",
+		"sharePublicly": "ê³µê°œì ìœ¼ë¡œ ê³µìœ ",
+		"sharePubliclyDescription": "ë§í¬ê°€ ìžˆëŠ” ëˆ„êµ¬ë‚˜ ì•¡ì„¸ìŠ¤í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤",
+		"connectToCloud": "í´ë¼ìš°ë“œì— ì—°ê²°",
+		"connectToCloudDescription": "ìž‘ì—…ì„ ê³µìœ í•˜ë ¤ë©´ Roo Code Cloudì— ë¡œê·¸ì¸í•˜ì„¸ìš”",
+		"sharingDisabledByOrganization": "ì¡°ì§ì—ì„œ ê³µìœ ê°€ ë¹„í™œì„±í™”ë¨",
+		"shareSuccessOrganization": "ì¡°ì§ ë§í¬ê°€ í´ë¦½ë³´ë“œì— ë³µì‚¬ë˜ì—ˆìŠµë‹ˆë‹¤",
+		"shareSuccessPublic": "ê³µê°œ ë§í¬ê°€ í´ë¦½ë³´ë“œì— ë³µì‚¬ë˜ì—ˆìŠµë‹ˆë‹¤",
+		"openInCloud": "Roo Code Cloudì—ì„œ ìž‘ì—… ì—´ê¸°",
+		"openInCloudIntro": "ì–´ë””ì„œë‚˜ Rooë¥¼ ê³„ì† ëª¨ë‹ˆí„°ë§í•˜ê±°ë‚˜ ìƒí˜¸ìž‘ìš©í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ìŠ¤ìº”, í´ë¦­ ë˜ëŠ” ë³µì‚¬í•˜ì—¬ ì—´ê¸°.",
+		"openApiHistory": "API ê¸°ë¡ ì—´ê¸°",
+		"openUiHistory": "UI ê¸°ë¡ ì—´ê¸°"
 	},
-	"unpin": "고정 해제하기",
-	"pin": "고정하기",
+	"unpin": "ê³ ì • í•´ì œí•˜ê¸°",
+	"pin": "ê³ ì •í•˜ê¸°",
 	"tokenProgress": {
-		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
-		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
-		"reservedForResponse": "모델 응답용 예약: {{amount}} 토큰"
+		"availableSpace": "ì‚¬ìš© ê°€ëŠ¥í•œ ê³µê°„: {{amount}} í† í°",
+		"tokensUsed": "ì‚¬ìš©ëœ í† í°: {{used}} / {{total}}",
+		"reservedForResponse": "ëª¨ë¸ ì‘ë‹µìš© ì˜ˆì•½: {{amount}} í† í°"
 	},
 	"retry": {
-		"title": "다시 시도",
-		"tooltip": "작업 다시 시도"
+		"title": "ë‹¤ì‹œ ì‹œë„",
+		"tooltip": "ìž‘ì—… ë‹¤ì‹œ ì‹œë„"
 	},
 	"startNewTask": {
-		"title": "새 작업 시작",
-		"tooltip": "새 작업 시작하기"
+		"title": "ìƒˆ ìž‘ì—… ì‹œìž‘",
+		"tooltip": "ìƒˆ ìž‘ì—… ì‹œìž‘í•˜ê¸°"
 	},
 	"proceedAnyways": {
-		"title": "그래도 계속",
-		"tooltip": "명령 실행 중에도 계속 진행"
+		"title": "ê·¸ëž˜ë„ ê³„ì†",
+		"tooltip": "ëª…ë ¹ ì‹¤í–‰ ì¤‘ì—ë„ ê³„ì† ì§„í–‰"
 	},
 	"save": {
-		"title": "저장",
-		"tooltip": "메시지 변경사항 저장"
+		"title": "ì €ìž¥",
+		"tooltip": "ë©”ì‹œì§€ ë³€ê²½ì‚¬í•­ ì €ìž¥"
 	},
 	"reject": {
-		"title": "거부",
-		"tooltip": "이 작업 거부"
+		"title": "ê±°ë¶€",
+		"tooltip": "ì´ ìž‘ì—… ê±°ë¶€"
 	},
-	"completeSubtaskAndReturn": "하위 작업 완료 후 돌아가기",
+	"completeSubtaskAndReturn": "í•˜ìœ„ ìž‘ì—… ì™„ë£Œ í›„ ëŒì•„ê°€ê¸°",
 	"approve": {
-		"title": "승인",
-		"tooltip": "이 작업 승인"
+		"title": "ìŠ¹ì¸",
+		"tooltip": "ì´ ìž‘ì—… ìŠ¹ì¸"
 	},
 	"runCommand": {
-		"title": "명령",
-		"tooltip": "이 명령 실행"
+		"title": "ëª…ë ¹",
+		"tooltip": "ì´ ëª…ë ¹ ì‹¤í–‰"
 	},
 	"proceedWhileRunning": {
-		"title": "실행 중에도 계속",
-		"tooltip": "경고에도 불구하고 계속 진행"
+		"title": "ì‹¤í–‰ ì¤‘ì—ë„ ê³„ì†",
+		"tooltip": "ê²½ê³ ì—ë„ ë¶ˆêµ¬í•˜ê³  ê³„ì† ì§„í–‰"
 	},
 	"killCommand": {
-		"title": "명령 종료",
-		"tooltip": "현재 명령 종료"
+		"title": "ëª…ë ¹ ì¢…ë£Œ",
+		"tooltip": "í˜„ìž¬ ëª…ë ¹ ì¢…ë£Œ"
 	},
 	"resumeTask": {
-		"title": "작업 재개",
-		"tooltip": "현재 작업 계속하기"
+		"title": "ìž‘ì—… ìž¬ê°œ",
+		"tooltip": "í˜„ìž¬ ìž‘ì—… ê³„ì†í•˜ê¸°"
 	},
 	"terminate": {
-		"title": "종료",
-		"tooltip": "현재 작업 종료"
+		"title": "ì¢…ë£Œ",
+		"tooltip": "í˜„ìž¬ ìž‘ì—… ì¢…ë£Œ"
 	},
 	"cancel": {
-		"title": "취소",
-		"tooltip": "현재 작업 취소"
+		"title": "ì·¨ì†Œ",
+		"tooltip": "í˜„ìž¬ ìž‘ì—… ì·¨ì†Œ"
 	},
-	"scrollToBottom": "채팅 하단으로 스크롤",
-	"about": "Roo Code는 편집기 안에 있는 전체 AI 개발팀입니다.",
-	"docs": "더 알아보려면 <DocsLink>문서</DocsLink>를 확인하세요.",
-	"onboarding": "이 작업 공간의 작업 목록이 비어 있습니다.",
+	"scrollToBottom": "ì±„íŒ… í•˜ë‹¨ìœ¼ë¡œ ìŠ¤í¬ë¡¤",
+	"about": "Roo CodeëŠ” íŽ¸ì§‘ê¸° ì•ˆì— ìžˆëŠ” ì „ì²´ AI ê°œë°œíŒ€ìž…ë‹ˆë‹¤.",
+	"docs": "ë” ì•Œì•„ë³´ë ¤ë©´ \u003cDocsLink\u003eë¬¸ì„œ\u003c/DocsLink\u003eë¥¼ í™•ì¸í•˜ì„¸ìš”.",
+	"onboarding": "ì´ ìž‘ì—… ê³µê°„ì˜ ìž‘ì—… ëª©ë¡ì´ ë¹„ì–´ ìžˆìŠµë‹ˆë‹¤.",
 	"rooTips": {
 		"customizableModes": {
-			"title": "사용자 정의 가능한 모드",
-			"description": "작업에 집중하고 결과를 제공하는 전문화된 페르소나."
+			"title": "ì‚¬ìš©ìž ì •ì˜ ê°€ëŠ¥í•œ ëª¨ë“œ",
+			"description": "ìž‘ì—…ì— ì§‘ì¤‘í•˜ê³  ê²°ê³¼ë¥¼ ì œê³µí•˜ëŠ” ì „ë¬¸í™”ëœ íŽ˜ë¥´ì†Œë‚˜."
 		},
 		"modelAgnostic": {
-			"title": "자신만의 모델 가져오기",
-			"description": "자체 공급자 키를 사용하거나 로컬에서 추론을 실행하세요 — 마크업 없음, 종속 없음, 제한 없음"
+			"title": "ìžì‹ ë§Œì˜ ëª¨ë¸ ê°€ì ¸ì˜¤ê¸°",
+			"description": "ìžì²´ ê³µê¸‰ìž í‚¤ë¥¼ ì‚¬ìš©í•˜ê±°ë‚˜ ë¡œì»¬ì—ì„œ ì¶”ë¡ ì„ ì‹¤í–‰í•˜ì„¸ìš” â€” ë§ˆí¬ì—… ì—†ìŒ, ì¢…ì† ì—†ìŒ, ì œí•œ ì—†ìŒ"
 		}
 	},
-	"selectMode": "상호작용 모드 선택",
-	"selectApiConfig": "API 구성 선택",
-	"enhancePrompt": "추가 컨텍스트로 프롬프트 향상",
-	"addImages": "메시지에 이미지 추가",
-	"sendMessage": "메시지 보내기",
-	"pressToSend": "{{keyCombination}}를 눌러 전송",
-	"stopTts": "텍스트 음성 변환 중지",
-	"typeMessage": "메시지 입력...",
-	"typeTask": "여기에 작업 입력...",
-	"addContext": "컨텍스트 추가는 @, 명령어는 /",
-	"dragFiles": "파일을 드래그하려면 shift 키 누르기",
-	"dragFilesImages": "파일/이미지를 드래그하려면 shift 키 누르기",
-	"enhancePromptDescription": "'프롬프트 향상' 버튼은 추가 컨텍스트, 명확화 또는 재구성을 제공하여 요청을 개선합니다. 여기에 요청을 입력한 다음 버튼을 다시 클릭하여 작동 방식을 확인해보세요.",
+	"selectMode": "ìƒí˜¸ìž‘ìš© ëª¨ë“œ ì„ íƒ",
+	"selectApiConfig": "API êµ¬ì„± ì„ íƒ",
+	"enhancePrompt": "ì¶”ê°€ ì»¨í…ìŠ¤íŠ¸ë¡œ í”„ë¡¬í”„íŠ¸ í–¥ìƒ",
+	"addImages": "ë©”ì‹œì§€ì— ì´ë¯¸ì§€ ì¶”ê°€",
+	"sendMessage": "ë©”ì‹œì§€ ë³´ë‚´ê¸°",
+	"pressToSend": "{{keyCombination}}ë¥¼ ëˆŒëŸ¬ ì „ì†¡",
+	"stopTts": "í…ìŠ¤íŠ¸ ìŒì„± ë³€í™˜ ì¤‘ì§€",
+	"typeMessage": "ë©”ì‹œì§€ ìž…ë ¥...",
+	"typeTask": "ì—¬ê¸°ì— ìž‘ì—… ìž…ë ¥...",
+	"addContext": "ì»¨í…ìŠ¤íŠ¸ ì¶”ê°€ëŠ” @, ëª…ë ¹ì–´ëŠ” /",
+	"dragFiles": "íŒŒì¼ì„ ë“œëž˜ê·¸í•˜ë ¤ë©´ shift í‚¤ ëˆ„ë¥´ê¸°",
+	"dragFilesImages": "íŒŒì¼/ì´ë¯¸ì§€ë¥¼ ë“œëž˜ê·¸í•˜ë ¤ë©´ shift í‚¤ ëˆ„ë¥´ê¸°",
+	"enhancePromptDescription": "\u0027í”„ë¡¬í”„íŠ¸ í–¥ìƒ\u0027 ë²„íŠ¼ì€ ì¶”ê°€ ì»¨í…ìŠ¤íŠ¸, ëª…í™•í™” ë˜ëŠ” ìž¬êµ¬ì„±ì„ ì œê³µí•˜ì—¬ ìš”ì²­ì„ ê°œì„ í•©ë‹ˆë‹¤. ì—¬ê¸°ì— ìš”ì²­ì„ ìž…ë ¥í•œ ë‹¤ìŒ ë²„íŠ¼ì„ ë‹¤ì‹œ í´ë¦­í•˜ì—¬ ìž‘ë™ ë°©ì‹ì„ í™•ì¸í•´ë³´ì„¸ìš”.",
 	"modeSelector": {
-		"title": "모드",
-		"marketplace": "모드 마켓플레이스",
-		"settings": "모드 설정",
-		"description": "Roo의 행동을 맞춤화하는 전문화된 페르소나.",
-		"searchPlaceholder": "모드 검색...",
-		"noResults": "결과를 찾을 수 없습니다"
+		"title": "ëª¨ë“œ",
+		"marketplace": "ëª¨ë“œ ë§ˆì¼“í”Œë ˆì´ìŠ¤",
+		"settings": "ëª¨ë“œ ì„¤ì •",
+		"description": "Rooì˜ í–‰ë™ì„ ë§žì¶¤í™”í•˜ëŠ” ì „ë¬¸í™”ëœ íŽ˜ë¥´ì†Œë‚˜.",
+		"searchPlaceholder": "ëª¨ë“œ ê²€ìƒ‰...",
+		"noResults": "ê²°ê³¼ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤"
 	},
-	"errorReadingFile": "파일 읽기 오류",
-	"noValidImages": "처리된 유효한 이미지가 없습니다",
-	"separator": "구분자",
-	"edit": "편집...",
-	"forNextMode": "다음 모드용",
-	"forPreviousMode": "이전 모드용",
-	"error": "오류",
+	"errorReadingFile": "íŒŒì¼ ì½ê¸° ì˜¤ë¥˜",
+	"noValidImages": "ì²˜ë¦¬ëœ ìœ íš¨í•œ ì´ë¯¸ì§€ê°€ ì—†ìŠµë‹ˆë‹¤",
+	"separator": "êµ¬ë¶„ìž",
+	"edit": "íŽ¸ì§‘...",
+	"forNextMode": "ë‹¤ìŒ ëª¨ë“œìš©",
+	"forPreviousMode": "ì´ì „ ëª¨ë“œìš©",
+	"error": "ì˜¤ë¥˜",
 	"diffError": {
-		"title": "편집 실패"
+		"title": "íŽ¸ì§‘ ì‹¤íŒ¨"
 	},
-	"troubleMessage": "Roo에 문제가 발생했습니다...",
+	"troubleMessage": "Rooì— ë¬¸ì œê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤...",
 	"apiRequest": {
-		"title": "API 요청",
-		"failed": "API 요청 실패",
-		"streaming": "API 요청...",
-		"cancelled": "API 요청 취소됨",
-		"streamingFailed": "API 스트리밍 실패",
-		"errorTitle": "API 오류 {{code}}",
+		"title": "API ìš”ì²­",
+		"failed": "API ìš”ì²­ ì‹¤íŒ¨",
+		"streaming": "API ìš”ì²­...",
+		"cancelled": "API ìš”ì²­ ì·¨ì†Œë¨",
+		"streamingFailed": "API ìŠ¤íŠ¸ë¦¬ë° ì‹¤íŒ¨",
+		"errorTitle": "API ì˜¤ë¥˜ {{code}}",
 		"errorMessage": {
-			"docs": "문서",
-			"400": "공급자가 요청을 처리할 수 없습니다. 작업을 중지하고 다른 방법을 시도하세요.",
-			"401": "공급자로 인증할 수 없습니다. API 키 구성을 확인하세요.",
-			"402": "계정의 자금/크레딧이 부족한 것 같습니다. 공급자에게 가서 더 추가하세요.",
-			"403": "권한 없음. API 키는 유효하지만 공급자가 이 요청을 완료하기를 거부했습니다.",
-			"429": "너무 많은 요청입니다. 공급자에 의해 요청 제한이 적용되고 있습니다. 다음 API 호출 전에 잠깐 기다려주세요.",
-			"500": "공급자 서버 오류입니다. 공급자 쪽에 문제가 있으며 요청에는 문제가 없습니다.",
-			"unknown": "알 수 없는 API 오류입니다. Roo Code 지원팀에 문의하세요.",
-			"connection": "연결 오류입니다. 인터넷 연결이 제대로 작동하는지 확인하세요."
+			"docs": "ë¬¸ì„œ",
+			"400": "ê³µê¸‰ìžê°€ ìš”ì²­ì„ ì²˜ë¦¬í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ìž‘ì—…ì„ ì¤‘ì§€í•˜ê³  ë‹¤ë¥¸ ë°©ë²•ì„ ì‹œë„í•˜ì„¸ìš”.",
+			"401": "ê³µê¸‰ìžë¡œ ì¸ì¦í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. API í‚¤ êµ¬ì„±ì„ í™•ì¸í•˜ì„¸ìš”.",
+			"402": "ê³„ì •ì˜ ìžê¸ˆ/í¬ë ˆë”§ì´ ë¶€ì¡±í•œ ê²ƒ ê°™ìŠµë‹ˆë‹¤. ê³µê¸‰ìžì—ê²Œ ê°€ì„œ ë” ì¶”ê°€í•˜ì„¸ìš”.",
+			"403": "ê¶Œí•œ ì—†ìŒ. API í‚¤ëŠ” ìœ íš¨í•˜ì§€ë§Œ ê³µê¸‰ìžê°€ ì´ ìš”ì²­ì„ ì™„ë£Œí•˜ê¸°ë¥¼ ê±°ë¶€í–ˆìŠµë‹ˆë‹¤.",
+			"429": "ë„ˆë¬´ ë§Žì€ ìš”ì²­ìž…ë‹ˆë‹¤. ê³µê¸‰ìžì— ì˜í•´ ìš”ì²­ ì œí•œì´ ì ìš©ë˜ê³  ìžˆìŠµë‹ˆë‹¤. ë‹¤ìŒ API í˜¸ì¶œ ì „ì— ìž ê¹ ê¸°ë‹¤ë ¤ì£¼ì„¸ìš”.",
+			"500": "ê³µê¸‰ìž ì„œë²„ ì˜¤ë¥˜ìž…ë‹ˆë‹¤. ê³µê¸‰ìž ìª½ì— ë¬¸ì œê°€ ìžˆìœ¼ë©° ìš”ì²­ì—ëŠ” ë¬¸ì œê°€ ì—†ìŠµë‹ˆë‹¤.",
+			"unknown": "ì•Œ ìˆ˜ ì—†ëŠ” API ì˜¤ë¥˜ìž…ë‹ˆë‹¤. Roo Code ì§€ì›íŒ€ì— ë¬¸ì˜í•˜ì„¸ìš”.",
+			"connection": "ì—°ê²° ì˜¤ë¥˜ìž…ë‹ˆë‹¤. ì¸í„°ë„· ì—°ê²°ì´ ì œëŒ€ë¡œ ìž‘ë™í•˜ëŠ”ì§€ í™•ì¸í•˜ì„¸ìš”."
 		}
 	},
 	"checkpoint": {
-		"regular": "체크포인트",
-		"initializingWarning": "체크포인트 초기화 중... 시간이 너무 오래 걸리면 <settingsLink>설정</settingsLink>에서 체크포인트를 비활성화하고 작업을 다시 시작할 수 있습니다.",
+		"regular": "ì²´í¬í¬ì¸íŠ¸",
+		"initializingWarning": "ì²´í¬í¬ì¸íŠ¸ ì´ˆê¸°í™” ì¤‘... ì‹œê°„ì´ ë„ˆë¬´ ì˜¤ëž˜ ê±¸ë¦¬ë©´ \u003csettingsLink\u003eì„¤ì •\u003c/settingsLink\u003eì—ì„œ ì²´í¬í¬ì¸íŠ¸ë¥¼ ë¹„í™œì„±í™”í•˜ê³  ìž‘ì—…ì„ ë‹¤ì‹œ ì‹œìž‘í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
 		"menu": {
-			"viewDiff": "차이점 보기",
-			"more": "더 많은 옵션",
-			"viewDiffFromInit": "모든 변경 사항 보기",
-			"viewDiffWithCurrent": "이 체크포인트 이후 변경 사항 보기",
-			"restore": "체크포인트 복원",
-			"restoreFiles": "파일 복원",
-			"restoreFilesDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원합니다.",
-			"restoreFilesAndTask": "파일 및 작업 복원",
-			"confirm": "확인",
-			"cancel": "취소",
-			"cannotUndo": "이 작업은 취소할 수 없습니다.",
-			"restoreFilesAndTaskDescription": "프로젝트 파일을 이 시점에 찍힌 스냅샷으로 복원하고 이 지점 이후의 모든 메시지를 삭제합니다."
+			"viewDiff": "ì°¨ì´ì  ë³´ê¸°",
+			"more": "ë” ë§Žì€ ì˜µì…˜",
+			"viewDiffFromInit": "ëª¨ë“  ë³€ê²½ ì‚¬í•­ ë³´ê¸°",
+			"viewDiffWithCurrent": "ì´ ì²´í¬í¬ì¸íŠ¸ ì´í›„ ë³€ê²½ ì‚¬í•­ ë³´ê¸°",
+			"restore": "ì²´í¬í¬ì¸íŠ¸ ë³µì›",
+			"restoreFiles": "íŒŒì¼ ë³µì›",
+			"restoreFilesDescription": "í”„ë¡œì íŠ¸ íŒŒì¼ì„ ì´ ì‹œì ì— ì°ížŒ ìŠ¤ëƒ…ìƒ·ìœ¼ë¡œ ë³µì›í•©ë‹ˆë‹¤.",
+			"restoreFilesAndTask": "íŒŒì¼ ë° ìž‘ì—… ë³µì›",
+			"confirm": "í™•ì¸",
+			"cancel": "ì·¨ì†Œ",
+			"cannotUndo": "ì´ ìž‘ì—…ì€ ì·¨ì†Œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.",
+			"restoreFilesAndTaskDescription": "í”„ë¡œì íŠ¸ íŒŒì¼ì„ ì´ ì‹œì ì— ì°ížŒ ìŠ¤ëƒ…ìƒ·ìœ¼ë¡œ ë³µì›í•˜ê³  ì´ ì§€ì  ì´í›„ì˜ ëª¨ë“  ë©”ì‹œì§€ë¥¼ ì‚­ì œí•©ë‹ˆë‹¤."
 		},
-		"current": "현재"
+		"current": "í˜„ìž¬"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo는 현재 작업을 지원하기 위해 자세한 지침을 가져오려고 합니다"
+		"wantsToFetch": "RooëŠ” í˜„ìž¬ ìž‘ì—…ì„ ì§€ì›í•˜ê¸° ìœ„í•´ ìžì„¸í•œ ì§€ì¹¨ì„ ê°€ì ¸ì˜¤ë ¤ê³  í•©ë‹ˆë‹¤"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo가 이 파일을 읽고 싶어합니다",
-		"wantsToReadOutsideWorkspace": "Roo가 워크스페이스 외부의 이 파일을 읽고 싶어합니다",
-		"didRead": "Roo가 이 파일을 읽었습니다",
-		"wantsToEdit": "Roo가 이 파일을 편집하고 싶어합니다",
-		"wantsToEditOutsideWorkspace": "Roo가 워크스페이스 외부의 이 파일을 편집하고 싶어합니다",
-		"wantsToEditProtected": "Roo가 보호된 설정 파일을 편집하고 싶어합니다",
-		"wantsToCreate": "Roo가 새 파일을 만들고 싶어합니다",
-		"wantsToSearchReplace": "Roo가 이 파일에서 검색 및 바꾸기를 수행하고 싶어합니다",
-		"didSearchReplace": "Roo가 이 파일에서 검색 및 바꾸기를 수행했습니다",
-		"wantsToInsert": "Roo가 이 파일에 내용을 삽입하고 싶어합니다",
-		"wantsToInsertWithLineNumber": "Roo가 이 파일의 {{lineNumber}}번 줄에 내용을 삽입하고 싶어합니다",
-		"wantsToInsertAtEnd": "Roo가 이 파일의 끝에 내용을 추가하고 싶어합니다",
-		"wantsToReadAndXMore": "Roo가 이 파일과 {{count}}개의 파일을 더 읽으려고 합니다",
-		"wantsToReadMultiple": "Roo가 여러 파일을 읽으려고 합니다",
-		"wantsToApplyBatchChanges": "Roo가 여러 파일에 변경 사항을 적용하고 싶어합니다",
-		"wantsToGenerateImage": "Roo가 이미지를 생성하고 싶어합니다",
-		"wantsToGenerateImageOutsideWorkspace": "Roo가 워크스페이스 외부에서 이미지를 생성하고 싶어합니다",
-		"wantsToGenerateImageProtected": "Roo가 보호된 위치에서 이미지를 생성하고 싶어합니다",
-		"didGenerateImage": "Roo가 이미지를 생성했습니다"
+		"wantsToRead": "Rooê°€ ì´ íŒŒì¼ì„ ì½ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToReadOutsideWorkspace": "Rooê°€ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ì˜ ì´ íŒŒì¼ì„ ì½ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didRead": "Rooê°€ ì´ íŒŒì¼ì„ ì½ì—ˆìŠµë‹ˆë‹¤",
+		"wantsToEdit": "Rooê°€ ì´ íŒŒì¼ì„ íŽ¸ì§‘í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToEditOutsideWorkspace": "Rooê°€ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ì˜ ì´ íŒŒì¼ì„ íŽ¸ì§‘í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToEditProtected": "Rooê°€ ë³´í˜¸ëœ ì„¤ì • íŒŒì¼ì„ íŽ¸ì§‘í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToCreate": "Rooê°€ ìƒˆ íŒŒì¼ì„ ë§Œë“¤ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToSearchReplace": "Rooê°€ ì´ íŒŒì¼ì—ì„œ ê²€ìƒ‰ ë° ë°”ê¾¸ê¸°ë¥¼ ìˆ˜í–‰í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didSearchReplace": "Rooê°€ ì´ íŒŒì¼ì—ì„œ ê²€ìƒ‰ ë° ë°”ê¾¸ê¸°ë¥¼ ìˆ˜í–‰í–ˆìŠµë‹ˆë‹¤",
+		"wantsToInsert": "Rooê°€ ì´ íŒŒì¼ì— ë‚´ìš©ì„ ì‚½ìž…í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToInsertWithLineNumber": "Rooê°€ ì´ íŒŒì¼ì˜ {{lineNumber}}ë²ˆ ì¤„ì— ë‚´ìš©ì„ ì‚½ìž…í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToInsertAtEnd": "Rooê°€ ì´ íŒŒì¼ì˜ ëì— ë‚´ìš©ì„ ì¶”ê°€í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToReadAndXMore": "Rooê°€ ì´ íŒŒì¼ê³¼ {{count}}ê°œì˜ íŒŒì¼ì„ ë” ì½ìœ¼ë ¤ê³  í•©ë‹ˆë‹¤",
+		"wantsToReadMultiple": "Rooê°€ ì—¬ëŸ¬ íŒŒì¼ì„ ì½ìœ¼ë ¤ê³  í•©ë‹ˆë‹¤",
+		"wantsToApplyBatchChanges": "Rooê°€ ì—¬ëŸ¬ íŒŒì¼ì— ë³€ê²½ ì‚¬í•­ì„ ì ìš©í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToGenerateImage": "Rooê°€ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToGenerateImageOutsideWorkspace": "Rooê°€ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ì—ì„œ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToGenerateImageProtected": "Rooê°€ ë³´í˜¸ëœ ìœ„ì¹˜ì—ì„œ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didGenerateImage": "Rooê°€ ì´ë¯¸ì§€ë¥¼ ìƒì„±í–ˆìŠµë‹ˆë‹¤"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo가 이 디렉토리의 최상위 파일을 보고 싶어합니다",
-		"didViewTopLevel": "Roo가 이 디렉토리의 최상위 파일을 보았습니다",
-		"wantsToViewRecursive": "Roo가 이 디렉토리의 모든 파일을 재귀적으로 보고 싶어합니다",
-		"didViewRecursive": "Roo가 이 디렉토리의 모든 파일을 재귀적으로 보았습니다",
-		"wantsToSearch": "Roo가 이 디렉토리에서 <code>{{regex}}</code>을(를) 검색하고 싶어합니다",
-		"didSearch": "Roo가 이 디렉토리에서 <code>{{regex}}</code>을(를) 검색했습니다",
-		"wantsToSearchOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)에서 <code>{{regex}}</code>을(를) 검색하고 싶어합니다",
-		"didSearchOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)에서 <code>{{regex}}</code>을(를) 검색했습니다",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보고 싶어합니다",
-		"didViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보았습니다",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보고 싶어합니다",
-		"didViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보았습니다"
+		"wantsToViewTopLevel": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì˜ ìµœìƒìœ„ íŒŒì¼ì„ ë³´ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didViewTopLevel": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì˜ ìµœìƒìœ„ íŒŒì¼ì„ ë³´ì•˜ìŠµë‹ˆë‹¤",
+		"wantsToViewRecursive": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì˜ ëª¨ë“  íŒŒì¼ì„ ìž¬ê·€ì ìœ¼ë¡œ ë³´ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didViewRecursive": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì˜ ëª¨ë“  íŒŒì¼ì„ ìž¬ê·€ì ìœ¼ë¡œ ë³´ì•˜ìŠµë‹ˆë‹¤",
+		"wantsToSearch": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì—ì„œ \u003ccode\u003e{{regex}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didSearch": "Rooê°€ ì´ ë””ë ‰í† ë¦¬ì—ì„œ \u003ccode\u003e{{regex}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í–ˆìŠµë‹ˆë‹¤",
+		"wantsToSearchOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì—ì„œ \u003ccode\u003e{{regex}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didSearchOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì—ì„œ \u003ccode\u003e{{regex}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í–ˆìŠµë‹ˆë‹¤",
+		"wantsToViewTopLevelOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì˜ ìµœìƒìœ„ íŒŒì¼ì„ ë³´ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didViewTopLevelOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì˜ ìµœìƒìœ„ íŒŒì¼ì„ ë³´ì•˜ìŠµë‹ˆë‹¤",
+		"wantsToViewRecursiveOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì˜ ëª¨ë“  íŒŒì¼ì„ ìž¬ê·€ì ìœ¼ë¡œ ë³´ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didViewRecursiveOutsideWorkspace": "Rooê°€ ì´ ë””ë ‰í† ë¦¬(ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€)ì˜ ëª¨ë“  íŒŒì¼ì„ ìž¬ê·€ì ìœ¼ë¡œ ë³´ì•˜ìŠµë‹ˆë‹¤"
 	},
-	"commandOutput": "명령 출력",
+	"commandOutput": "ëª…ë ¹ ì¶œë ¥",
 	"commandExecution": {
-		"abort": "중단",
-		"running": "실행 중",
+		"abort": "ì¤‘ë‹¨",
+		"running": "ì‹¤í–‰ ì¤‘",
 		"pid": "PID: {{pid}}",
-		"exitStatus": "상태 {{exitCode}}(으)로 종료됨",
-		"manageCommands": "자동 승인된 명령",
-		"addToAllowed": "허용 목록에 추가",
-		"removeFromAllowed": "허용 목록에서 제거",
-		"addToDenied": "거부 목록에 추가",
-		"removeFromDenied": "거부 목록에서 제거",
-		"abortCommand": "명령 실행 중단",
-		"expandOutput": "출력 확장",
-		"collapseOutput": "출력 축소",
-		"expandManagement": "명령 관리 섹션 확장",
-		"collapseManagement": "명령 관리 섹션 축소"
+		"exitStatus": "ìƒíƒœ {{exitCode}}(ìœ¼)ë¡œ ì¢…ë£Œë¨",
+		"manageCommands": "ìžë™ ìŠ¹ì¸ëœ ëª…ë ¹",
+		"addToAllowed": "í—ˆìš© ëª©ë¡ì— ì¶”ê°€",
+		"removeFromAllowed": "í—ˆìš© ëª©ë¡ì—ì„œ ì œê±°",
+		"addToDenied": "ê±°ë¶€ ëª©ë¡ì— ì¶”ê°€",
+		"removeFromDenied": "ê±°ë¶€ ëª©ë¡ì—ì„œ ì œê±°",
+		"abortCommand": "ëª…ë ¹ ì‹¤í–‰ ì¤‘ë‹¨",
+		"expandOutput": "ì¶œë ¥ í™•ìž¥",
+		"collapseOutput": "ì¶œë ¥ ì¶•ì†Œ",
+		"expandManagement": "ëª…ë ¹ ê´€ë¦¬ ì„¹ì…˜ í™•ìž¥",
+		"collapseManagement": "ëª…ë ¹ ê´€ë¦¬ ì„¹ì…˜ ì¶•ì†Œ"
 	},
-	"response": "응답",
-	"arguments": "인수",
+	"response": "ì‘ë‹µ",
+	"arguments": "ì¸ìˆ˜",
 	"text": {
-		"rooSaid": "루가 말했다"
+		"rooSaid": "ë£¨ê°€ ë§í–ˆë‹¤"
 	},
 	"feedback": {
-		"youSaid": "당신은 말했다"
+		"youSaid": "ë‹¹ì‹ ì€ ë§í–ˆë‹¤"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo가 {{serverName}} MCP 서버에서 도구를 사용하고 싶어합니다",
-		"wantsToAccessResource": "Roo가 {{serverName}} MCP 서버에서 리소스에 접근하고 싶어합니다"
+		"wantsToUseTool": "Rooê°€ {{serverName}} MCP ì„œë²„ì—ì„œ ë„êµ¬ë¥¼ ì‚¬ìš©í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToAccessResource": "Rooê°€ {{serverName}} MCP ì„œë²„ì—ì„œ ë¦¬ì†ŒìŠ¤ì— ì ‘ê·¼í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo가 <code>{{mode}}</code> 모드로 전환하고 싶어합니다",
-		"wantsToSwitchWithReason": "Roo가 다음 이유로 <code>{{mode}}</code> 모드로 전환하고 싶어합니다: {{reason}}",
-		"didSwitch": "Roo가 <code>{{mode}}</code> 모드로 전환했습니다",
-		"didSwitchWithReason": "Roo가 다음 이유로 <code>{{mode}}</code> 모드로 전환했습니다: {{reason}}"
+		"wantsToSwitch": "Rooê°€ \u003ccode\u003e{{mode}}\u003c/code\u003e ëª¨ë“œë¡œ ì „í™˜í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToSwitchWithReason": "Rooê°€ ë‹¤ìŒ ì´ìœ ë¡œ \u003ccode\u003e{{mode}}\u003c/code\u003e ëª¨ë“œë¡œ ì „í™˜í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤: {{reason}}",
+		"didSwitch": "Rooê°€ \u003ccode\u003e{{mode}}\u003c/code\u003e ëª¨ë“œë¡œ ì „í™˜í–ˆìŠµë‹ˆë‹¤",
+		"didSwitchWithReason": "Rooê°€ ë‹¤ìŒ ì´ìœ ë¡œ \u003ccode\u003e{{mode}}\u003c/code\u003e ëª¨ë“œë¡œ ì „í™˜í–ˆìŠµë‹ˆë‹¤: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo가 <code>{{mode}}</code> 모드에서 새 하위 작업을 만들고 싶어합니다",
-		"wantsToFinish": "Roo가 이 하위 작업을 완료하고 싶어합니다",
-		"newTaskContent": "하위 작업 지침",
-		"completionContent": "하위 작업 완료",
-		"resultContent": "하위 작업 결과",
-		"defaultResult": "다음 작업을 계속 진행해주세요.",
-		"completionInstructions": "하위 작업 완료! 결과를 검토하고 수정 사항이나 다음 단계를 제안할 수 있습니다. 모든 것이 괜찮아 보이면, 부모 작업에 결과를 반환하기 위해 확인해주세요."
+		"wantsToCreate": "Rooê°€ \u003ccode\u003e{{mode}}\u003c/code\u003e ëª¨ë“œì—ì„œ ìƒˆ í•˜ìœ„ ìž‘ì—…ì„ ë§Œë“¤ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToFinish": "Rooê°€ ì´ í•˜ìœ„ ìž‘ì—…ì„ ì™„ë£Œí•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"newTaskContent": "í•˜ìœ„ ìž‘ì—… ì§€ì¹¨",
+		"completionContent": "í•˜ìœ„ ìž‘ì—… ì™„ë£Œ",
+		"resultContent": "í•˜ìœ„ ìž‘ì—… ê²°ê³¼",
+		"defaultResult": "ë‹¤ìŒ ìž‘ì—…ì„ ê³„ì† ì§„í–‰í•´ì£¼ì„¸ìš”.",
+		"completionInstructions": "í•˜ìœ„ ìž‘ì—… ì™„ë£Œ! ê²°ê³¼ë¥¼ ê²€í† í•˜ê³  ìˆ˜ì • ì‚¬í•­ì´ë‚˜ ë‹¤ìŒ ë‹¨ê³„ë¥¼ ì œì•ˆí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ëª¨ë“  ê²ƒì´ ê´œì°®ì•„ ë³´ì´ë©´, ë¶€ëª¨ ìž‘ì—…ì— ê²°ê³¼ë¥¼ ë°˜í™˜í•˜ê¸° ìœ„í•´ í™•ì¸í•´ì£¼ì„¸ìš”."
 	},
 	"questions": {
-		"hasQuestion": "Roo에게 질문이 있습니다"
+		"hasQuestion": "Rooì—ê²Œ ì§ˆë¬¸ì´ ìžˆìŠµë‹ˆë‹¤"
 	},
-	"taskCompleted": "작업 완료",
+	"taskCompleted": "ìž‘ì—… ì™„ë£Œ",
 	"errorDetails": {
-		"title": "오류 세부 정보",
-		"copyToClipboard": "클립보드에 복사",
-		"copied": "복사됨!"
+		"title": "ì˜¤ë¥˜ ì„¸ë¶€ ì •ë³´",
+		"copyToClipboard": "í´ë¦½ë³´ë“œì— ë³µì‚¬",
+		"copied": "ë³µì‚¬ë¨!"
 	},
 	"powershell": {
-		"issues": "Windows PowerShell에 문제가 있는 것 같습니다. 다음을 참조하세요"
+		"issues": "Windows PowerShellì— ë¬¸ì œê°€ ìžˆëŠ” ê²ƒ ê°™ìŠµë‹ˆë‹¤. ë‹¤ìŒì„ ì°¸ì¡°í•˜ì„¸ìš”"
 	},
 	"autoApprove": {
-		"tooltipManage": "자동 승인 설정 관리",
-		"tooltipStatus": "자동 승인 활성화됨: {{toggles}}",
-		"title": "자동 승인",
-		"toggle": "자동 승인 전환",
-		"all": "모두",
-		"none": "없음",
-		"description": "허가 없이 이러한 작업을 실행합니다. 전적으로 신뢰하는 작업에 대해서만 활성화하십시오.",
-		"selectOptionsFirst": "자동 승인을 활성화하려면 아래에서 하나 이상의 옵션을 선택하십시오",
-		"toggleAriaLabel": "자동 승인 전환",
-		"disabledAriaLabel": "자동 승인 비활성화됨 - 먼저 옵션을 선택하십시오",
-		"triggerLabelOff": "자동 승인 꺼짐",
-		"triggerLabelOffShort": "꺼짐",
-		"triggerLabel_zero": "0개 자동 승인됨",
-		"triggerLabel_one": "1개 자동 승인됨",
-		"triggerLabel_other": "{{count}}개 자동 승인됨",
+		"tooltipManage": "ìžë™ ìŠ¹ì¸ ì„¤ì • ê´€ë¦¬",
+		"tooltipStatus": "ìžë™ ìŠ¹ì¸ í™œì„±í™”ë¨: {{toggles}}",
+		"title": "ìžë™ ìŠ¹ì¸",
+		"toggle": "ìžë™ ìŠ¹ì¸ ì „í™˜",
+		"all": "ëª¨ë‘",
+		"none": "ì—†ìŒ",
+		"description": "í—ˆê°€ ì—†ì´ ì´ëŸ¬í•œ ìž‘ì—…ì„ ì‹¤í–‰í•©ë‹ˆë‹¤. ì „ì ìœ¼ë¡œ ì‹ ë¢°í•˜ëŠ” ìž‘ì—…ì— ëŒ€í•´ì„œë§Œ í™œì„±í™”í•˜ì‹­ì‹œì˜¤.",
+		"selectOptionsFirst": "ìžë™ ìŠ¹ì¸ì„ í™œì„±í™”í•˜ë ¤ë©´ ì•„ëž˜ì—ì„œ í•˜ë‚˜ ì´ìƒì˜ ì˜µì…˜ì„ ì„ íƒí•˜ì‹­ì‹œì˜¤",
+		"toggleAriaLabel": "ìžë™ ìŠ¹ì¸ ì „í™˜",
+		"disabledAriaLabel": "ìžë™ ìŠ¹ì¸ ë¹„í™œì„±í™”ë¨ - ë¨¼ì € ì˜µì…˜ì„ ì„ íƒí•˜ì‹­ì‹œì˜¤",
+		"triggerLabelOff": "ìžë™ ìŠ¹ì¸ êº¼ì§",
+		"triggerLabelOffShort": "êº¼ì§",
+		"triggerLabel_zero": "0ê°œ ìžë™ ìŠ¹ì¸ë¨",
+		"triggerLabel_one": "1ê°œ ìžë™ ìŠ¹ì¸ë¨",
+		"triggerLabel_other": "{{count}}ê°œ ìžë™ ìŠ¹ì¸ë¨",
 		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
-		"thinking": "생각 중",
-		"seconds": "{{count}}초"
+		"thinking": "ìƒê° ì¤‘",
+		"seconds": "{{count}}ì´ˆ"
 	},
 	"contextManagement": {
-		"tokens": "토큰",
+		"tokens": "í† í°",
 		"condensation": {
-			"title": "컨텍스트 요약됨",
-			"inProgress": "컨텍스트 압축 중...",
-			"errorHeader": "컨텍스트 압축 실패"
+			"title": "ì»¨í…ìŠ¤íŠ¸ ìš”ì•½ë¨",
+			"inProgress": "ì»¨í…ìŠ¤íŠ¸ ì••ì¶• ì¤‘...",
+			"errorHeader": "ì»¨í…ìŠ¤íŠ¸ ì••ì¶• ì‹¤íŒ¨"
 		},
 		"truncation": {
-			"title": "컨텍스트 잘림",
-			"inProgress": "컨텍스트 자르는 중...",
-			"messagesRemoved": "{{count}}개 메시지 제거됨",
-			"messagesRemoved_other": "{{count}}개 메시지 제거됨",
-			"description": "컨텍스트 윈도우 제한 내에 유지하기 위해 대화에서 오래된 메시지가 제거되었습니다. 이것은 압축에 비해 빠르지만 컨텍스트 보존 능력이 낮은 접근 방식입니다."
+			"title": "ì»¨í…ìŠ¤íŠ¸ ìž˜ë¦¼",
+			"inProgress": "ì»¨í…ìŠ¤íŠ¸ ìžë¥´ëŠ” ì¤‘...",
+			"messagesRemoved": "{{count}}ê°œ ë©”ì‹œì§€ ì œê±°ë¨",
+			"messagesRemoved_other": "{{count}}ê°œ ë©”ì‹œì§€ ì œê±°ë¨",
+			"description": "ì»¨í…ìŠ¤íŠ¸ ìœˆë„ìš° ì œí•œ ë‚´ì— ìœ ì§€í•˜ê¸° ìœ„í•´ ëŒ€í™”ì—ì„œ ì˜¤ëž˜ëœ ë©”ì‹œì§€ê°€ ì œê±°ë˜ì—ˆìŠµë‹ˆë‹¤. ì´ê²ƒì€ ì••ì¶•ì— ë¹„í•´ ë¹ ë¥´ì§€ë§Œ ì»¨í…ìŠ¤íŠ¸ ë³´ì¡´ ëŠ¥ë ¥ì´ ë‚®ì€ ì ‘ê·¼ ë°©ì‹ìž…ë‹ˆë‹¤."
 		}
 	},
 	"followUpSuggest": {
-		"copyToInput": "입력창에 복사 (또는 Shift + 클릭)",
-		"autoSelectCountdown": "{{count}}초 후 자동 선택",
-		"countdownDisplay": "{{count}}초"
+		"copyToInput": "ìž…ë ¥ì°½ì— ë³µì‚¬ (ë˜ëŠ” Shift + í´ë¦­)",
+		"autoSelectCountdown": "{{count}}ì´ˆ í›„ ìžë™ ì„ íƒ",
+		"countdownDisplay": "{{count}}ì´ˆ"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 출시",
-		"support": "<githubLink>GitHub</githubLink>에서 별표를 눌러 Roo Code를 응원해 주세요.",
+		"title": "Roo Code {{version}} ì¶œì‹œ",
+		"support": "\u003cgithubLink\u003eGitHub\u003c/githubLink\u003eì—ì„œ ë³„í‘œë¥¼ ëˆŒëŸ¬ Roo Codeë¥¼ ì‘ì›í•´ ì£¼ì„¸ìš”.",
 		"stealthModel": {
-			"feature": "<bold>기간 한정 무료 스텔스 모델</bold> - Code Supernova: 이제 <bold>1M 토큰 컨텍스트 윈도우</bold>로 업그레이드되었습니다! 이미지 입력을 지원하는 다목적 에이전틱 코딩 모델, Roo Code Cloud를 통해 이용 가능.",
-			"note": "(참고: 프롬프트와 완성은 모델 제작자에 의해 기록되고 모델 개선에 사용됩니다)",
-			"connectButton": "Roo Code Cloud에 연결",
-			"selectModel": "설정에서 Roo Code Cloud 제공업체의 <code>roo/code-supernova</code>를 선택하여 시작하세요.",
-			"goToSettingsButton": "설정으로 이동"
+			"feature": "\u003cbold\u003eê¸°ê°„ í•œì • ë¬´ë£Œ ìŠ¤í…”ìŠ¤ ëª¨ë¸\u003c/bold\u003e - Code Supernova: ì´ì œ \u003cbold\u003e1M í† í° ì»¨í…ìŠ¤íŠ¸ ìœˆë„ìš°\u003c/bold\u003eë¡œ ì—…ê·¸ë ˆì´ë“œë˜ì—ˆìŠµë‹ˆë‹¤! ì´ë¯¸ì§€ ìž…ë ¥ì„ ì§€ì›í•˜ëŠ” ë‹¤ëª©ì  ì—ì´ì „í‹± ì½”ë”© ëª¨ë¸, Roo Code Cloudë¥¼ í†µí•´ ì´ìš© ê°€ëŠ¥.",
+			"note": "(ì°¸ê³ : í”„ë¡¬í”„íŠ¸ì™€ ì™„ì„±ì€ ëª¨ë¸ ì œìž‘ìžì— ì˜í•´ ê¸°ë¡ë˜ê³  ëª¨ë¸ ê°œì„ ì— ì‚¬ìš©ë©ë‹ˆë‹¤)",
+			"connectButton": "Roo Code Cloudì— ì—°ê²°",
+			"selectModel": "ì„¤ì •ì—ì„œ Roo Code Cloud ì œê³µì—…ì²´ì˜ \u003ccode\u003eroo/code-supernova\u003c/code\u003eë¥¼ ì„ íƒí•˜ì—¬ ì‹œìž‘í•˜ì„¸ìš”.",
+			"goToSettingsButton": "ì„¤ì •ìœ¼ë¡œ ì´ë™"
 		},
 		"release": {
-			"heading": "이 버전의 새로운 기능:",
-			"contextRewind": "개선된 컨텍스트 압축을 통해 이제 체크포인트로 되감을 때 이전의 전체 컨텍스트를 복원할 수 있습니다",
-			"rooProvider": "Roo Code Cloud 제공자는 이제 추론 콘텐츠를 보존하고 더 나은 성능을 위해 기본적으로 네이티브 도구를 사용합니다"
+			"heading": "ì´ ë²„ì „ì˜ ìƒˆë¡œìš´ ê¸°ëŠ¥:",
+			"contextRewind": "ê°œì„ ëœ ì»¨í…ìŠ¤íŠ¸ ì••ì¶•ì„ í†µí•´ ì´ì œ ì²´í¬í¬ì¸íŠ¸ë¡œ ë˜ê°ì„ ë•Œ ì´ì „ì˜ ì „ì²´ ì»¨í…ìŠ¤íŠ¸ë¥¼ ë³µì›í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤",
+			"rooProvider": "Roo Code Cloud ì œê³µìžëŠ” ì´ì œ ì¶”ë¡  ì½˜í…ì¸ ë¥¼ ë³´ì¡´í•˜ê³  ë” ë‚˜ì€ ì„±ëŠ¥ì„ ìœ„í•´ ê¸°ë³¸ì ìœ¼ë¡œ ë„¤ì´í‹°ë¸Œ ë„êµ¬ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤"
 		},
 		"cloudAgents": {
-			"heading": "클라우드의 새로운 기능:",
-			"specialized": "<bold>Explainer</bold>, <bold>Planner</bold>, <bold>Coder</bold> 세 가지 전문 클라우드 에이전트를 소개합니다. 워크플로우를 향상시킵니다.",
-			"description": "에이전트는 클라우드에서 함께 작동하며 웹 또는 Slack을 통해 트리거할 수 있습니다.",
-			"tryButton": "클라우드 에이전트 사용해보기"
+			"heading": "í´ë¼ìš°ë“œì˜ ìƒˆë¡œìš´ ê¸°ëŠ¥:",
+			"specialized": "\u003cbold\u003eExplainer\u003c/bold\u003e, \u003cbold\u003ePlanner\u003c/bold\u003e, \u003cbold\u003eCoder\u003c/bold\u003e ì„¸ ê°€ì§€ ì „ë¬¸ í´ë¼ìš°ë“œ ì—ì´ì „íŠ¸ë¥¼ ì†Œê°œí•©ë‹ˆë‹¤. ì›Œí¬í”Œë¡œìš°ë¥¼ í–¥ìƒì‹œí‚µë‹ˆë‹¤.",
+			"description": "ì—ì´ì „íŠ¸ëŠ” í´ë¼ìš°ë“œì—ì„œ í•¨ê»˜ ìž‘ë™í•˜ë©° ì›¹ ë˜ëŠ” Slackì„ í†µí•´ íŠ¸ë¦¬ê±°í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+			"tryButton": "í´ë¼ìš°ë“œ ì—ì´ì „íŠ¸ ì‚¬ìš©í•´ë³´ê¸°"
 		},
-		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>"
+		"careers": "ê·¸ë¦¬ê³ , \u003ccareersLink\u003eì±„ìš© ì¤‘ìž…ë‹ˆë‹¤!\u003c/careersLink\u003e"
 	},
 	"browser": {
-		"session": "브라우저 세션",
-		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
-		"consoleLogs": "콘솔 로그",
-		"noNewLogs": "(새 로그 없음)",
-		"screenshot": "브라우저 스크린샷",
-		"cursor": "커서",
+		"session": "ë¸Œë¼ìš°ì € ì„¸ì…˜",
+		"rooWantsToUse": "Rooê°€ ë¸Œë¼ìš°ì €ë¥¼ ì‚¬ìš©í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"consoleLogs": "ì½˜ì†” ë¡œê·¸",
+		"noNewLogs": "(ìƒˆ ë¡œê·¸ ì—†ìŒ)",
+		"screenshot": "ë¸Œë¼ìš°ì € ìŠ¤í¬ë¦°ìƒ·",
+		"cursor": "ì»¤ì„œ",
 		"navigation": {
-			"step": "단계 {{current}} / {{total}}",
-			"previous": "이전",
-			"next": "다음"
+			"step": "ë‹¨ê³„ {{current}} / {{total}}",
+			"previous": "ì´ì „",
+			"next": "ë‹¤ìŒ"
 		},
-		"sessionStarted": "브라우저 세션 시작됨",
+		"sessionStarted": "ë¸Œë¼ìš°ì € ì„¸ì…˜ ì‹œìž‘ë¨",
 		"actions": {
-			"title": "브라우저 작업: ",
-			"launched": "브라우저 실행됨",
-			"launch": "{{url}}에서 브라우저 실행",
-			"clicked": "클릭함: {{coordinate}}",
-			"click": "클릭 ({{coordinate}})",
-			"typed": "입력함: {{text}}",
-			"type": "입력 \"{{text}}\"",
-			"pressed": "{{key}} 누름",
-			"press": "{{key}} 누르기",
-			"scrolledDown": "아래로 스크롤됨",
-			"scrollDown": "아래로 스크롤",
-			"scrolledUp": "위로 스크롤됨",
-			"scrollUp": "위로 스크롤",
-			"hovered": "가리킴: {{coordinate}}",
-			"hover": "가리키기 ({{coordinate}})",
-			"resized": "크기 조정됨: {{size}}",
-			"resize": "크기를 {{size}}로 조정",
-			"screenshotSaved": "스크린샷 저장됨",
-			"screenshot": "스크린샷을 {{path}}에 저장",
-			"closed": "브라우저 닫음",
-			"close": "브라우저 닫기"
+			"title": "ë¸Œë¼ìš°ì € ìž‘ì—…: ",
+			"launched": "ë¸Œë¼ìš°ì € ì‹¤í–‰ë¨",
+			"launch": "{{url}}ì—ì„œ ë¸Œë¼ìš°ì € ì‹¤í–‰",
+			"clicked": "í´ë¦­í•¨: {{coordinate}}",
+			"click": "í´ë¦­ ({{coordinate}})",
+			"typed": "ìž…ë ¥í•¨: {{text}}",
+			"type": "ìž…ë ¥ \"{{text}}\"",
+			"pressed": "{{key}} ëˆ„ë¦„",
+			"press": "{{key}} ëˆ„ë¥´ê¸°",
+			"scrolledDown": "ì•„ëž˜ë¡œ ìŠ¤í¬ë¡¤ë¨",
+			"scrollDown": "ì•„ëž˜ë¡œ ìŠ¤í¬ë¡¤",
+			"scrolledUp": "ìœ„ë¡œ ìŠ¤í¬ë¡¤ë¨",
+			"scrollUp": "ìœ„ë¡œ ìŠ¤í¬ë¡¤",
+			"hovered": "ê°€ë¦¬í‚´: {{coordinate}}",
+			"hover": "ê°€ë¦¬í‚¤ê¸° ({{coordinate}})",
+			"resized": "í¬ê¸° ì¡°ì •ë¨: {{size}}",
+			"resize": "í¬ê¸°ë¥¼ {{size}}ë¡œ ì¡°ì •",
+			"screenshotSaved": "ìŠ¤í¬ë¦°ìƒ· ì €ìž¥ë¨",
+			"screenshot": "ìŠ¤í¬ë¦°ìƒ·ì„ {{path}}ì— ì €ìž¥",
+			"closed": "ë¸Œë¼ìš°ì € ë‹«ìŒ",
+			"close": "ë¸Œë¼ìš°ì € ë‹«ê¸°"
 		}
 	},
 	"codeblock": {
 		"tooltips": {
-			"expand": "코드 블록 확장",
-			"collapse": "코드 블록 축소",
-			"copy_code": "코드 복사"
+			"expand": "ì½”ë“œ ë¸”ë¡ í™•ìž¥",
+			"collapse": "ì½”ë“œ ë¸”ë¡ ì¶•ì†Œ",
+			"copy_code": "ì½”ë“œ ë³µì‚¬"
 		}
 	},
-	"systemPromptWarning": "경고: 사용자 정의 시스템 프롬프트 재정의가 활성화되었습니다. 이로 인해 기능이 심각하게 손상되고 예측할 수 없는 동작이 발생할 수 있습니다.",
-	"profileViolationWarning": "현재 프로필이 조직 설정과 호환되지 않습니다",
+	"systemPromptWarning": "ê²½ê³ : ì‚¬ìš©ìž ì •ì˜ ì‹œìŠ¤í…œ í”„ë¡¬í”„íŠ¸ ìž¬ì •ì˜ê°€ í™œì„±í™”ë˜ì—ˆìŠµë‹ˆë‹¤. ì´ë¡œ ì¸í•´ ê¸°ëŠ¥ì´ ì‹¬ê°í•˜ê²Œ ì†ìƒë˜ê³  ì˜ˆì¸¡í•  ìˆ˜ ì—†ëŠ” ë™ìž‘ì´ ë°œìƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+	"profileViolationWarning": "í˜„ìž¬ í”„ë¡œí•„ì´ ì¡°ì§ ì„¤ì •ê³¼ í˜¸í™˜ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤",
 	"shellIntegration": {
-		"title": "명령 실행 경고",
-		"description": "명령이 VSCode 터미널 쉘 통합 없이 실행되고 있습니다. 이 경고를 숨기려면 <settingsLink>Roo Code 설정</settingsLink>의 <strong>Terminal</strong> 섹션에서 쉘 통합을 비활성화하거나 아래 링크를 사용하여 VSCode 터미널 통합 문제를 해결하세요.",
-		"troubleshooting": "쉘 통합 문서를 보려면 여기를 클릭하세요."
+		"title": "ëª…ë ¹ ì‹¤í–‰ ê²½ê³ ",
+		"description": "ëª…ë ¹ì´ VSCode í„°ë¯¸ë„ ì‰˜ í†µí•© ì—†ì´ ì‹¤í–‰ë˜ê³  ìžˆìŠµë‹ˆë‹¤. ì´ ê²½ê³ ë¥¼ ìˆ¨ê¸°ë ¤ë©´ \u003csettingsLink\u003eRoo Code ì„¤ì •\u003c/settingsLink\u003eì˜ \u003cstrong\u003eTerminal\u003c/strong\u003e ì„¹ì…˜ì—ì„œ ì‰˜ í†µí•©ì„ ë¹„í™œì„±í™”í•˜ê±°ë‚˜ ì•„ëž˜ ë§í¬ë¥¼ ì‚¬ìš©í•˜ì—¬ VSCode í„°ë¯¸ë„ í†µí•© ë¬¸ì œë¥¼ í•´ê²°í•˜ì„¸ìš”.",
+		"troubleshooting": "ì‰˜ í†µí•© ë¬¸ì„œë¥¼ ë³´ë ¤ë©´ ì—¬ê¸°ë¥¼ í´ë¦­í•˜ì„¸ìš”."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
-			"title": "자동 승인 요청 한도 도달",
-			"description": "Roo가 {{count}}개의 API 요청(들)에 대한 자동 승인 한도에 도달했습니다. 카운트를 재설정하고 작업을 계속하시겠습니까?",
-			"button": "재설정 후 계속"
+			"title": "ìžë™ ìŠ¹ì¸ ìš”ì²­ í•œë„ ë„ë‹¬",
+			"description": "Rooê°€ {{count}}ê°œì˜ API ìš”ì²­(ë“¤)ì— ëŒ€í•œ ìžë™ ìŠ¹ì¸ í•œë„ì— ë„ë‹¬í–ˆìŠµë‹ˆë‹¤. ì¹´ìš´íŠ¸ë¥¼ ìž¬ì„¤ì •í•˜ê³  ìž‘ì—…ì„ ê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
+			"button": "ìž¬ì„¤ì • í›„ ê³„ì†"
 		},
 		"autoApprovedCostLimitReached": {
-			"description": "Roo가 자동 승인된 비용 한도인 ${{count}}에 도달했습니다. 비용을 초기화하고 작업을 계속하시겠습니까?",
-			"title": "자동 승인 비용 한도에 도달함",
-			"button": "재설정 후 계속하기"
+			"description": "Rooê°€ ìžë™ ìŠ¹ì¸ëœ ë¹„ìš© í•œë„ì¸ ${{count}}ì— ë„ë‹¬í–ˆìŠµë‹ˆë‹¤. ë¹„ìš©ì„ ì´ˆê¸°í™”í•˜ê³  ìž‘ì—…ì„ ê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
+			"title": "ìžë™ ìŠ¹ì¸ ë¹„ìš© í•œë„ì— ë„ë‹¬í•¨",
+			"button": "ìž¬ì„¤ì • í›„ ê³„ì†í•˜ê¸°"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo가 코드베이스에서 <code>{{query}}</code>을(를) 검색하고 싶어합니다",
-		"wantsToSearchWithPath": "Roo가 <code>{{path}}</code>에서 <code>{{query}}</code>을(를) 검색하고 싶어합니다",
-		"didSearch_one": "1개의 결과를 찾았습니다",
-		"didSearch_other": "{{count}}개의 결과를 찾았습니다",
-		"resultTooltip": "유사도 점수: {{score}} (클릭하여 파일 열기)"
+		"wantsToSearch": "Rooê°€ ì½”ë“œë² ì´ìŠ¤ì—ì„œ \u003ccode\u003e{{query}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"wantsToSearchWithPath": "Rooê°€ \u003ccode\u003e{{path}}\u003c/code\u003eì—ì„œ \u003ccode\u003e{{query}}\u003c/code\u003eì„(ë¥¼) ê²€ìƒ‰í•˜ê³  ì‹¶ì–´í•©ë‹ˆë‹¤",
+		"didSearch_one": "1ê°œì˜ ê²°ê³¼ë¥¼ ì°¾ì•˜ìŠµë‹ˆë‹¤",
+		"didSearch_other": "{{count}}ê°œì˜ ê²°ê³¼ë¥¼ ì°¾ì•˜ìŠµë‹ˆë‹¤",
+		"resultTooltip": "ìœ ì‚¬ë„ ì ìˆ˜: {{score}} (í´ë¦­í•˜ì—¬ íŒŒì¼ ì—´ê¸°)"
 	},
 	"read-batch": {
 		"approve": {
-			"title": "모두 승인"
+			"title": "ëª¨ë‘ ìŠ¹ì¸"
 		},
 		"deny": {
-			"title": "모두 거부"
+			"title": "ëª¨ë‘ ê±°ë¶€"
 		}
 	},
 	"indexingStatus": {
-		"ready": "인덱스 준비됨",
-		"indexing": "인덱싱 중 {{percentage}}%",
-		"indexed": "인덱싱 완료",
-		"error": "인덱스 오류",
-		"status": "인덱스 상태"
+		"ready": "ì¸ë±ìŠ¤ ì¤€ë¹„ë¨",
+		"indexing": "ì¸ë±ì‹± ì¤‘ {{percentage}}%",
+		"indexed": "ì¸ë±ì‹± ì™„ë£Œ",
+		"error": "ì¸ë±ìŠ¤ ì˜¤ë¥˜",
+		"status": "ì¸ë±ìŠ¤ ìƒíƒœ"
 	},
 	"versionIndicator": {
-		"ariaLabel": "버전 {{version}} - 릴리스 노트를 보려면 클릭하세요"
+		"ariaLabel": "ë²„ì „ {{version}} - ë¦´ë¦¬ìŠ¤ ë…¸íŠ¸ë¥¼ ë³´ë ¤ë©´ í´ë¦­í•˜ì„¸ìš”"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud가 진화하고 있습니다!",
-		"description": "클라우드에서 원격 에이전트를 실행하고, 어디서나 작업에 액세스하고, 다른 사람들과 협업하는 등 다양한 기능을 이용하세요.",
-		"joinWaitlist": "최신 업데이트를 받으려면 가입하세요."
+		"title": "Roo Code Cloudê°€ ì§„í™”í•˜ê³  ìžˆìŠµë‹ˆë‹¤!",
+		"description": "í´ë¼ìš°ë“œì—ì„œ ì›ê²© ì—ì´ì „íŠ¸ë¥¼ ì‹¤í–‰í•˜ê³ , ì–´ë””ì„œë‚˜ ìž‘ì—…ì— ì•¡ì„¸ìŠ¤í•˜ê³ , ë‹¤ë¥¸ ì‚¬ëžŒë“¤ê³¼ í˜‘ì—…í•˜ëŠ” ë“± ë‹¤ì–‘í•œ ê¸°ëŠ¥ì„ ì´ìš©í•˜ì„¸ìš”.",
+		"joinWaitlist": "ìµœì‹  ì—…ë°ì´íŠ¸ë¥¼ ë°›ìœ¼ë ¤ë©´ ê°€ìž…í•˜ì„¸ìš”."
 	},
 	"editMessage": {
-		"placeholder": "메시지 편집..."
+		"placeholder": "ë©”ì‹œì§€ íŽ¸ì§‘..."
 	},
 	"command": {
-		"triggerDescription": "{{name}} 명령 트리거"
+		"triggerDescription": "{{name}} ëª…ë ¹ íŠ¸ë¦¬ê±°"
 	},
 	"slashCommands": {
-		"tooltip": "슬래시 명령 관리",
-		"title": "슬래시 명령",
-		"description": "내장 슬래시 명령을 사용하거나 자주 사용하는 프롬프트와 워크플로우에 빠르게 액세스할 수 있는 사용자 정의 슬래시 명령을 만듭니다. <DocsLink>문서</DocsLink>",
-		"manageCommands": "설정에서 슬래시 명령 관리",
-		"builtInCommands": "내장 명령",
-		"globalCommands": "전역 명령",
-		"workspaceCommands": "작업 공간 명령",
-		"globalCommand": "전역 명령",
-		"editCommand": "명령 편집",
-		"deleteCommand": "명령 삭제",
-		"newGlobalCommandPlaceholder": "새 전역 명령...",
-		"newWorkspaceCommandPlaceholder": "새 작업 공간 명령...",
+		"tooltip": "ìŠ¬ëž˜ì‹œ ëª…ë ¹ ê´€ë¦¬",
+		"title": "ìŠ¬ëž˜ì‹œ ëª…ë ¹",
+		"description": "ë‚´ìž¥ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì„ ì‚¬ìš©í•˜ê±°ë‚˜ ìžì£¼ ì‚¬ìš©í•˜ëŠ” í”„ë¡¬í”„íŠ¸ì™€ ì›Œí¬í”Œë¡œìš°ì— ë¹ ë¥´ê²Œ ì•¡ì„¸ìŠ¤í•  ìˆ˜ ìžˆëŠ” ì‚¬ìš©ìž ì •ì˜ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì„ ë§Œë“­ë‹ˆë‹¤. \u003cDocsLink\u003eë¬¸ì„œ\u003c/DocsLink\u003e",
+		"manageCommands": "ì„¤ì •ì—ì„œ ìŠ¬ëž˜ì‹œ ëª…ë ¹ ê´€ë¦¬",
+		"builtInCommands": "ë‚´ìž¥ ëª…ë ¹",
+		"globalCommands": "ì „ì—­ ëª…ë ¹",
+		"workspaceCommands": "ìž‘ì—… ê³µê°„ ëª…ë ¹",
+		"globalCommand": "ì „ì—­ ëª…ë ¹",
+		"editCommand": "ëª…ë ¹ íŽ¸ì§‘",
+		"deleteCommand": "ëª…ë ¹ ì‚­ì œ",
+		"newGlobalCommandPlaceholder": "ìƒˆ ì „ì—­ ëª…ë ¹...",
+		"newWorkspaceCommandPlaceholder": "ìƒˆ ìž‘ì—… ê³µê°„ ëª…ë ¹...",
 		"deleteDialog": {
-			"title": "명령 삭제",
-			"description": "\"{{name}}\" 명령을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-			"cancel": "취소",
-			"confirm": "삭제"
+			"title": "ëª…ë ¹ ì‚­ì œ",
+			"description": "\"{{name}}\" ëª…ë ¹ì„ ì‚­ì œí•˜ì‹œê² ìŠµë‹ˆê¹Œ? ì´ ìž‘ì—…ì€ ì·¨ì†Œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.",
+			"cancel": "ì·¨ì†Œ",
+			"confirm": "ì‚­ì œ"
 		}
 	},
 	"contextMenu": {
-		"noResults": "결과 없음",
-		"problems": "문제",
-		"terminal": "터미널",
-		"url": "콘텐츠를 가져올 URL 붙여넣기"
+		"noResults": "ê²°ê³¼ ì—†ìŒ",
+		"problems": "ë¬¸ì œ",
+		"terminal": "í„°ë¯¸ë„",
+		"url": "ì½˜í…ì¸ ë¥¼ ê°€ì ¸ì˜¬ URL ë¶™ì—¬ë„£ê¸°"
 	},
 	"queuedMessages": {
-		"title": "대기열 메시지",
-		"clickToEdit": "클릭하여 메시지 편집"
+		"title": "ëŒ€ê¸°ì—´ ë©”ì‹œì§€",
+		"clickToEdit": "í´ë¦­í•˜ì—¬ ë©”ì‹œì§€ íŽ¸ì§‘"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo가 슬래시 명령어를 실행하려고 합니다",
-		"didRun": "Roo가 슬래시 명령어를 실행했습니다"
+		"wantsToRun": "Rooê°€ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì–´ë¥¼ ì‹¤í–‰í•˜ë ¤ê³  í•©ë‹ˆë‹¤",
+		"didRun": "Rooê°€ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì–´ë¥¼ ì‹¤í–‰í–ˆìŠµë‹ˆë‹¤"
 	},
 	"todo": {
-		"partial": "{{total}}개의 할 일 중 {{completed}}개 완료",
-		"complete": "{{total}}개의 할 일 완료",
-		"updated": "할 일 목록을 업데이트했습니다",
-		"completed": "완료됨",
-		"started": "시작됨"
+		"partial": "{{total}}ê°œì˜ í•  ì¼ ì¤‘ {{completed}}ê°œ ì™„ë£Œ",
+		"complete": "{{total}}ê°œì˜ í•  ì¼ ì™„ë£Œ",
+		"updated": "í•  ì¼ ëª©ë¡ì„ ì—…ë°ì´íŠ¸í–ˆìŠµë‹ˆë‹¤",
+		"completed": "ì™„ë£Œë¨",
+		"started": "ì‹œìž‘ë¨"
+	},
+	"speechToText": {
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"notConfigured": "Add Deepgram API key in settings",
+		"close": "Close",
+		"connecting": "Connecting...",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"copyInstructions": "Copy Instructions",
+		"stopRecording": "Click to stop recording",
+		"startRecording": "Click to start voice input"
 	}
 }

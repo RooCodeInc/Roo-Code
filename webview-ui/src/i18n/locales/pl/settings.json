@@ -5,27 +5,27 @@
 		"cancel": "Anuluj",
 		"reset": "Resetuj",
 		"select": "Wybierz",
-		"add": "Dodaj nagłówek",
-		"remove": "Usuń"
+		"add": "Dodaj nagÅ‚Ã³wek",
+		"remove": "UsuÅ„"
 	},
 	"header": {
 		"title": "Ustawienia",
 		"saveButtonTooltip": "Zapisz zmiany",
-		"nothingChangedTooltip": "Nic się nie zmieniło",
-		"doneButtonTooltip": "Odrzuć niezapisane zmiany i zamknij panel ustawień"
+		"nothingChangedTooltip": "Nic siÄ™ nie zmieniÅ‚o",
+		"doneButtonTooltip": "OdrzuÄ‡ niezapisane zmiany i zamknij panel ustawieÅ„"
 	},
 	"unsavedChangesDialog": {
 		"title": "Niezapisane zmiany",
-		"description": "Czy chcesz odrzucić zmiany i kontynuować?",
+		"description": "Czy chcesz odrzuciÄ‡ zmiany i kontynuowaÄ‡?",
 		"cancelButton": "Anuluj",
-		"discardButton": "Odrzuć zmiany"
+		"discardButton": "OdrzuÄ‡ zmiany"
 	},
 	"sections": {
 		"providers": "Dostawcy",
 		"modes": "Tryby",
 		"mcp": "Serwery MCP",
 		"autoApprove": "Auto-zatwierdzanie",
-		"browser": "Dostęp komputera",
+		"browser": "DostÄ™p komputera",
 		"checkpoints": "Punkty kontrolne",
 		"notifications": "Powiadomienia",
 		"contextManagement": "Kontekst",
@@ -34,52 +34,52 @@
 		"prompts": "Podpowiedzi",
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
-		"language": "Język",
+		"language": "JÄ™zyk",
 		"about": "O Roo Code"
 	},
 	"about": {
 		"bugReport": {
-			"label": "Znalazłeś błąd?",
-			"link": "Zgłoś na GitHub"
+			"label": "ZnalazÅ‚eÅ› bÅ‚Ä…d?",
+			"link": "ZgÅ‚oÅ› na GitHub"
 		},
 		"featureRequest": {
-			"label": "Masz pomysł?",
-			"link": "Podziel się nim z nami"
+			"label": "Masz pomysÅ‚?",
+			"link": "Podziel siÄ™ nim z nami"
 		},
 		"securityIssue": {
-			"label": "Odkryłeś lukę w zabezpieczeniach?",
-			"link": "Postępuj zgodnie z naszym procesem ujawniania"
+			"label": "OdkryÅ‚eÅ› lukÄ™ w zabezpieczeniach?",
+			"link": "PostÄ™puj zgodnie z naszym procesem ujawniania"
 		},
 		"contact": {
-			"label": "Musisz z nami porozmawiać? Napisz"
+			"label": "Musisz z nami porozmawiaÄ‡? Napisz"
 		},
-		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami Roo Code? Dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Kontakt i Społeczność",
-		"manageSettings": "Zarządzaj Ustawieniami"
+		"community": "Chcesz wskazÃ³wek lub po prostu porozmawiaÄ‡ z innymi uÅ¼ytkownikami Roo Code? DoÅ‚Ä…cz do \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e lub \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
+		"contactAndCommunity": "Kontakt i SpoÅ‚ecznoÅ›Ä‡",
+		"manageSettings": "ZarzÄ…dzaj Ustawieniami"
 	},
 	"slashCommands": {
-		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
+		"description": "ZarzÄ…dzaj poleceniami slash, aby szybko wykonywaÄ‡ niestandardowe przepÅ‚ywy pracy i akcje. \u003cDocsLink\u003eDowiedz siÄ™ wiÄ™cej\u003c/DocsLink\u003e"
 	},
 	"prompts": {
-		"description": "Skonfiguruj podpowiedzi wsparcia używane do szybkich działań, takich jak ulepszanie podpowiedzi, wyjaśnianie kodu i rozwiązywanie problemów. Te podpowiedzi pomagają Roo zapewnić lepsze wsparcie dla typowych zadań programistycznych."
+		"description": "Skonfiguruj podpowiedzi wsparcia uÅ¼ywane do szybkich dziaÅ‚aÅ„, takich jak ulepszanie podpowiedzi, wyjaÅ›nianie kodu i rozwiÄ…zywanie problemÃ³w. Te podpowiedzi pomagajÄ… Roo zapewniÄ‡ lepsze wsparcie dla typowych zadaÅ„ programistycznych."
 	},
 	"codeIndex": {
 		"title": "Indeksowanie kodu",
-		"enableLabel": "Włącz indeksowanie kodu",
-		"enableDescription": "Włącz indeksowanie kodu, aby poprawić wyszukiwanie i zrozumienie kontekstu",
+		"enableLabel": "WÅ‚Ä…cz indeksowanie kodu",
+		"enableDescription": "WÅ‚Ä…cz indeksowanie kodu, aby poprawiÄ‡ wyszukiwanie i zrozumienie kontekstu",
 		"providerLabel": "Dostawca osadzania",
-		"selectProviderPlaceholder": "Wybierz dostawcę",
+		"selectProviderPlaceholder": "Wybierz dostawcÄ™",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
 		"geminiApiKeyLabel": "Klucz API:",
-		"geminiApiKeyPlaceholder": "Wprowadź swój klucz API Gemini",
+		"geminiApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API Gemini",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Klucz API:",
-		"mistralApiKeyPlaceholder": "Wprowadź swój klucz API Mistral",
+		"mistralApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API Mistral",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Klucz API",
-		"vercelAiGatewayApiKeyPlaceholder": "Wprowadź swój klucz API Vercel AI Gateway",
+		"vercelAiGatewayApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API Vercel AI Gateway",
 		"bedrockProvider": "Amazon Bedrock",
 		"bedrockRegionLabel": "Region AWS",
 		"bedrockRegionPlaceholder": "us-east-1",
@@ -88,67 +88,67 @@
 		"bedrockProfileDescription": "Nazwa profilu AWS z ~/.aws/credentials (wymagane).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Klucz API OpenRouter",
-		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
-		"openRouterProviderRoutingLabel": "Routing dostawców OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter kieruje żądania do najlepszych dostępnych dostawców dla Twojego modelu osadzania. Domyślnie żądania są równoważone między najlepszymi dostawcami, aby zmaksymalizować czas działania. Możesz jednak wybrać konkretnego dostawcę do użycia z tym modelem.",
+		"openRouterApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routing dostawcÃ³w OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter kieruje Å¼Ä…dania do najlepszych dostÄ™pnych dostawcÃ³w dla Twojego modelu osadzania. DomyÅ›lnie Å¼Ä…dania sÄ… rÃ³wnowaÅ¼one miÄ™dzy najlepszymi dostawcami, aby zmaksymalizowaÄ‡ czas dziaÅ‚ania. MoÅ¼esz jednak wybraÄ‡ konkretnego dostawcÄ™ do uÅ¼ycia z tym modelem.",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
-		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",
+		"openAiKeyPlaceholder": "WprowadÅº swÃ³j klucz API OpenAI",
 		"openAiCompatibleBaseUrlLabel": "Bazowy URL",
 		"openAiCompatibleApiKeyLabel": "Klucz API",
-		"openAiCompatibleApiKeyPlaceholder": "Wprowadź swój klucz API",
+		"openAiCompatibleApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API",
 		"openAiCompatibleModelDimensionLabel": "Wymiar Embeddingu:",
 		"modelDimensionLabel": "Wymiar modelu",
 		"openAiCompatibleModelDimensionPlaceholder": "np., 1536",
-		"openAiCompatibleModelDimensionDescription": "Wymiar embeddingu (rozmiar wyjściowy) dla twojego modelu. Sprawdź dokumentację swojego dostawcy, aby uzyskać tę wartość. Typowe wartości: 384, 768, 1536, 3072.",
+		"openAiCompatibleModelDimensionDescription": "Wymiar embeddingu (rozmiar wyjÅ›ciowy) dla twojego modelu. SprawdÅº dokumentacjÄ™ swojego dostawcy, aby uzyskaÄ‡ tÄ™ wartoÅ›Ä‡. Typowe wartoÅ›ci: 384, 768, 1536, 3072.",
 		"modelLabel": "Model",
 		"selectModelPlaceholder": "Wybierz model",
 		"ollamaUrlLabel": "URL Ollama:",
 		"qdrantUrlLabel": "URL Qdrant",
 		"qdrantKeyLabel": "Klucz Qdrant:",
 		"startIndexingButton": "Rozpocznij",
-		"clearIndexDataButton": "Wyczyść indeks",
-		"unsavedSettingsMessage": "Zapisz swoje ustawienia przed rozpoczęciem procesu indeksowania.",
+		"clearIndexDataButton": "WyczyÅ›Ä‡ indeks",
+		"unsavedSettingsMessage": "Zapisz swoje ustawienia przed rozpoczÄ™ciem procesu indeksowania.",
 		"clearDataDialog": {
-			"title": "Czy jesteś pewien?",
-			"description": "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie danych indeksu Twojego kodu.",
+			"title": "Czy jesteÅ› pewien?",
+			"description": "Tej akcji nie moÅ¼na cofnÄ…Ä‡. Spowoduje to trwaÅ‚e usuniÄ™cie danych indeksu Twojego kodu.",
 			"cancelButton": "Anuluj",
-			"confirmButton": "Wyczyść dane"
+			"confirmButton": "WyczyÅ›Ä‡ dane"
 		},
-		"description": "Skonfiguruj ustawienia indeksowania bazy kodu, aby włączyć wyszukiwanie semantyczne w swoim projekcie. <0>Dowiedz się więcej</0>",
+		"description": "Skonfiguruj ustawienia indeksowania bazy kodu, aby wÅ‚Ä…czyÄ‡ wyszukiwanie semantyczne w swoim projekcie. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e",
 		"statusTitle": "Status",
 		"settingsTitle": "Ustawienia indeksowania",
-		"disabledMessage": "Indeksowanie bazy kodu jest obecnie wyłączone. Włącz je w ustawieniach globalnych, aby skonfigurować opcje indeksowania.",
+		"disabledMessage": "Indeksowanie bazy kodu jest obecnie wyÅ‚Ä…czone. WÅ‚Ä…cz je w ustawieniach globalnych, aby skonfigurowaÄ‡ opcje indeksowania.",
 		"embedderProviderLabel": "Dostawca Embeddera",
-		"modelPlaceholder": "Wprowadź nazwę modelu",
+		"modelPlaceholder": "WprowadÅº nazwÄ™ modelu",
 		"selectModel": "Wybierz model",
 		"ollamaBaseUrlLabel": "Bazowy URL Ollama",
 		"qdrantApiKeyLabel": "Klucz API Qdrant",
-		"qdrantApiKeyPlaceholder": "Wprowadź swój klucz API Qdrant (opcjonalnie)",
+		"qdrantApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API Qdrant (opcjonalnie)",
 		"setupConfigLabel": "Konfiguracja",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "Nie udało się zapisać ustawień",
-		"modelDimensions": "({{dimension}} wymiarów)",
-		"saveSuccess": "Ustawienia zapisane pomyślnie",
+		"saveError": "Nie udaÅ‚o siÄ™ zapisaÄ‡ ustawieÅ„",
+		"modelDimensions": "({{dimension}} wymiarÃ³w)",
+		"saveSuccess": "Ustawienia zapisane pomyÅ›lnie",
 		"saving": "Zapisywanie...",
 		"saveSettings": "Zapisz",
 		"indexingStatuses": {
-			"standby": "Gotowość",
+			"standby": "GotowoÅ›Ä‡",
 			"indexing": "Indeksowanie",
 			"indexed": "Zaindeksowane",
-			"error": "Błąd"
+			"error": "BÅ‚Ä…d"
 		},
 		"close": "Zamknij",
 		"validation": {
-			"invalidQdrantUrl": "Nieprawidłowy URL Qdrant",
-			"invalidOllamaUrl": "Nieprawidłowy URL Ollama",
-			"invalidBaseUrl": "Nieprawidłowy podstawowy URL",
+			"invalidQdrantUrl": "NieprawidÅ‚owy URL Qdrant",
+			"invalidOllamaUrl": "NieprawidÅ‚owy URL Ollama",
+			"invalidBaseUrl": "NieprawidÅ‚owy podstawowy URL",
 			"qdrantUrlRequired": "Wymagany jest URL Qdrant",
 			"openaiApiKeyRequired": "Wymagany jest klucz API OpenAI",
-			"modelSelectionRequired": "Wymagany jest wybór modelu",
+			"modelSelectionRequired": "Wymagany jest wybÃ³r modelu",
 			"apiKeyRequired": "Wymagany jest klucz API",
 			"modelIdRequired": "Wymagane jest ID modelu",
 			"modelDimensionRequired": "Wymagany jest wymiar modelu",
@@ -159,157 +159,157 @@
 			"bedrockProfileRequired": "Profil AWS jest wymagany",
 			"ollamaBaseUrlRequired": "Wymagany jest bazowy adres URL Ollama",
 			"baseUrlRequired": "Wymagany jest bazowy adres URL",
-			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
+			"modelDimensionMinValue": "Wymiar modelu musi byÄ‡ wiÄ™kszy niÅ¼ 0",
 			"openRouterApiKeyRequired": "Wymagany jest klucz API OpenRouter"
 		},
 		"optional": "opcjonalny",
 		"advancedConfigLabel": "Konfiguracja zaawansowana",
-		"searchMinScoreLabel": "Próg wyniku wyszukiwania",
-		"searchMinScoreDescription": "Minimalny wynik podobieństwa (0.0-1.0) wymagany dla wyników wyszukiwania. Niższe wartości zwracają więcej wyników, ale mogą być mniej trafne. Wyższe wartości zwracają mniej wyników, ale bardziej trafnych.",
-		"searchMinScoreResetTooltip": "Zresetuj do wartości domyślnej (0.4)",
-		"searchMaxResultsLabel": "Maksymalna liczba wyników wyszukiwania",
-		"searchMaxResultsDescription": "Maksymalna liczba wyników wyszukiwania zwracanych podczas zapytania do indeksu bazy kodu. Wyższe wartości zapewniają więcej kontekstu, ale mogą zawierać mniej istotne wyniki.",
-		"resetToDefault": "Przywróć domyślne"
+		"searchMinScoreLabel": "PrÃ³g wyniku wyszukiwania",
+		"searchMinScoreDescription": "Minimalny wynik podobieÅ„stwa (0.0-1.0) wymagany dla wynikÃ³w wyszukiwania. NiÅ¼sze wartoÅ›ci zwracajÄ… wiÄ™cej wynikÃ³w, ale mogÄ… byÄ‡ mniej trafne. WyÅ¼sze wartoÅ›ci zwracajÄ… mniej wynikÃ³w, ale bardziej trafnych.",
+		"searchMinScoreResetTooltip": "Zresetuj do wartoÅ›ci domyÅ›lnej (0.4)",
+		"searchMaxResultsLabel": "Maksymalna liczba wynikÃ³w wyszukiwania",
+		"searchMaxResultsDescription": "Maksymalna liczba wynikÃ³w wyszukiwania zwracanych podczas zapytania do indeksu bazy kodu. WyÅ¼sze wartoÅ›ci zapewniajÄ… wiÄ™cej kontekstu, ale mogÄ… zawieraÄ‡ mniej istotne wyniki.",
+		"resetToDefault": "PrzywrÃ³Ä‡ domyÅ›lne"
 	},
 	"autoApprove": {
-		"toggleShortcut": "Możesz skonfigurować globalny skrót dla tego ustawienia <SettingsLink>w preferencjach swojego IDE</SettingsLink>.",
-		"description": "Pozwól Roo na automatyczne wykonywanie operacji bez wymagania zatwierdzenia. Włącz te ustawienia tylko jeśli w pełni ufasz AI i rozumiesz związane z tym zagrożenia bezpieczeństwa.",
-		"enabled": "Auto-zatwierdzanie włączone",
-		"toggleAriaLabel": "Przełącz automatyczne zatwierdzanie",
-		"disabledAriaLabel": "Automatyczne zatwierdzanie wyłączone - najpierw wybierz opcje",
+		"toggleShortcut": "MoÅ¼esz skonfigurowaÄ‡ globalny skrÃ³t dla tego ustawienia \u003cSettingsLink\u003ew preferencjach swojego IDE\u003c/SettingsLink\u003e.",
+		"description": "PozwÃ³l Roo na automatyczne wykonywanie operacji bez wymagania zatwierdzenia. WÅ‚Ä…cz te ustawienia tylko jeÅ›li w peÅ‚ni ufasz AI i rozumiesz zwiÄ…zane z tym zagroÅ¼enia bezpieczeÅ„stwa.",
+		"enabled": "Auto-zatwierdzanie wÅ‚Ä…czone",
+		"toggleAriaLabel": "PrzeÅ‚Ä…cz automatyczne zatwierdzanie",
+		"disabledAriaLabel": "Automatyczne zatwierdzanie wyÅ‚Ä…czone - najpierw wybierz opcje",
 		"readOnly": {
 			"label": "Odczyt",
-			"description": "Gdy włączone, Roo automatycznie będzie wyświetlać zawartość katalogów i czytać pliki bez konieczności klikania przycisku Zatwierdź.",
+			"description": "Gdy wÅ‚Ä…czone, Roo automatycznie bÄ™dzie wyÅ›wietlaÄ‡ zawartoÅ›Ä‡ katalogÃ³w i czytaÄ‡ pliki bez koniecznoÅ›ci klikania przycisku ZatwierdÅº.",
 			"outsideWorkspace": {
-				"label": "Uwzględnij pliki poza obszarem roboczym",
-				"description": "Pozwól Roo na odczyt plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
+				"label": "UwzglÄ™dnij pliki poza obszarem roboczym",
+				"description": "PozwÃ³l Roo na odczyt plikÃ³w poza bieÅ¼Ä…cym obszarem roboczym bez koniecznoÅ›ci zatwierdzania."
 			}
 		},
 		"write": {
 			"label": "Zapis",
-			"description": "Automatycznie twórz i edytuj pliki bez konieczności zatwierdzania",
-			"delayLabel": "Opóźnienie po zapisach, aby umożliwić diagnostyce wykrycie potencjalnych problemów",
+			"description": "Automatycznie twÃ³rz i edytuj pliki bez koniecznoÅ›ci zatwierdzania",
+			"delayLabel": "OpÃ³Åºnienie po zapisach, aby umoÅ¼liwiÄ‡ diagnostyce wykrycie potencjalnych problemÃ³w",
 			"outsideWorkspace": {
-				"label": "Uwzględnij pliki poza obszarem roboczym",
-				"description": "Pozwól Roo na tworzenie i edycję plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
+				"label": "UwzglÄ™dnij pliki poza obszarem roboczym",
+				"description": "PozwÃ³l Roo na tworzenie i edycjÄ™ plikÃ³w poza bieÅ¼Ä…cym obszarem roboczym bez koniecznoÅ›ci zatwierdzania."
 			},
 			"protected": {
-				"label": "Uwzględnij pliki chronione",
-				"description": "Pozwól Roo na tworzenie i edycję plików chronionych (takich jak .rooignore i pliki konfiguracyjne .roo/) bez konieczności zatwierdzania."
+				"label": "UwzglÄ™dnij pliki chronione",
+				"description": "PozwÃ³l Roo na tworzenie i edycjÄ™ plikÃ³w chronionych (takich jak .rooignore i pliki konfiguracyjne .roo/) bez koniecznoÅ›ci zatwierdzania."
 			}
 		},
 		"browser": {
-			"label": "Przeglądarka",
-			"description": "Automatycznie wykonuj akcje przeglądarki bez konieczności zatwierdzania. Uwaga: Dotyczy tylko gdy model obsługuje używanie komputera"
+			"label": "PrzeglÄ…darka",
+			"description": "Automatycznie wykonuj akcje przeglÄ…darki bez koniecznoÅ›ci zatwierdzania. Uwaga: Dotyczy tylko gdy model obsÅ‚uguje uÅ¼ywanie komputera"
 		},
 		"retry": {
-			"label": "Ponów",
-			"description": "Automatycznie ponawiaj nieudane żądania API, gdy serwer zwraca odpowiedź z błędem",
-			"delayLabel": "Opóźnienie przed ponowieniem żądania"
+			"label": "PonÃ³w",
+			"description": "Automatycznie ponawiaj nieudane Å¼Ä…dania API, gdy serwer zwraca odpowiedÅº z bÅ‚Ä™dem",
+			"delayLabel": "OpÃ³Åºnienie przed ponowieniem Å¼Ä…dania"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "Włącz automatyczne zatwierdzanie poszczególnych narzędzi MCP w widoku Serwerów MCP (wymaga zarówno tego ustawienia, jak i pola wyboru \"Zawsze zezwalaj\" narzędzia)"
+			"description": "WÅ‚Ä…cz automatyczne zatwierdzanie poszczegÃ³lnych narzÄ™dzi MCP w widoku SerwerÃ³w MCP (wymaga zarÃ³wno tego ustawienia, jak i pola wyboru \"Zawsze zezwalaj\" narzÄ™dzia)"
 		},
 		"modeSwitch": {
 			"label": "Tryb",
-			"description": "Automatycznie przełączaj między różnymi trybami bez konieczności zatwierdzania"
+			"description": "Automatycznie przeÅ‚Ä…czaj miÄ™dzy rÃ³Å¼nymi trybami bez koniecznoÅ›ci zatwierdzania"
 		},
 		"subtasks": {
 			"label": "Podzadania",
-			"description": "Zezwalaj na tworzenie i ukończenie podzadań bez konieczności zatwierdzania"
+			"description": "Zezwalaj na tworzenie i ukoÅ„czenie podzadaÅ„ bez koniecznoÅ›ci zatwierdzania"
 		},
 		"followupQuestions": {
 			"label": "Pytanie",
-			"description": "Automatycznie wybierz pierwszą sugerowaną odpowiedź na pytania uzupełniające po skonfigurowanym limicie czasu",
+			"description": "Automatycznie wybierz pierwszÄ… sugerowanÄ… odpowiedÅº na pytania uzupeÅ‚niajÄ…ce po skonfigurowanym limicie czasu",
 			"timeoutLabel": "Czas oczekiwania przed automatycznym wybraniem pierwszej odpowiedzi"
 		},
 		"execute": {
 			"label": "Wykonaj",
-			"description": "Automatycznie wykonuj dozwolone polecenia terminala bez konieczności zatwierdzania",
+			"description": "Automatycznie wykonuj dozwolone polecenia terminala bez koniecznoÅ›ci zatwierdzania",
 			"allowedCommands": "Dozwolone polecenia auto-wykonania",
-			"allowedCommandsDescription": "Prefiksy poleceń, które mogą być automatycznie wykonywane, gdy \"Zawsze zatwierdzaj operacje wykonania\" jest włączone. Dodaj * aby zezwolić na wszystkie polecenia (używaj z ostrożnością).",
+			"allowedCommandsDescription": "Prefiksy poleceÅ„, ktÃ³re mogÄ… byÄ‡ automatycznie wykonywane, gdy \"Zawsze zatwierdzaj operacje wykonania\" jest wÅ‚Ä…czone. Dodaj * aby zezwoliÄ‡ na wszystkie polecenia (uÅ¼ywaj z ostroÅ¼noÅ›ciÄ…).",
 			"deniedCommands": "Odrzucone polecenia",
-			"deniedCommandsDescription": "Prefiksy poleceń, które będą automatycznie odrzucane bez pytania o zatwierdzenie. W przypadku konfliktów z dozwolonymi poleceniami, najdłuższe dopasowanie prefiksu ma pierwszeństwo. Dodaj * aby odrzucić wszystkie polecenia.",
-			"commandPlaceholder": "Wprowadź prefiks polecenia (np. 'git ')",
-			"deniedCommandPlaceholder": "Wprowadź prefiks polecenia do odrzucenia (np. 'rm -rf')",
+			"deniedCommandsDescription": "Prefiksy poleceÅ„, ktÃ³re bÄ™dÄ… automatycznie odrzucane bez pytania o zatwierdzenie. W przypadku konfliktÃ³w z dozwolonymi poleceniami, najdÅ‚uÅ¼sze dopasowanie prefiksu ma pierwszeÅ„stwo. Dodaj * aby odrzuciÄ‡ wszystkie polecenia.",
+			"commandPlaceholder": "WprowadÅº prefiks polecenia (np. \u0027git \u0027)",
+			"deniedCommandPlaceholder": "WprowadÅº prefiks polecenia do odrzucenia (np. \u0027rm -rf\u0027)",
 			"addButton": "Dodaj",
-			"autoDenied": "Polecenia z prefiksem `{{prefix}}` zostały zabronione przez użytkownika. Nie obchodź tego ograniczenia uruchamiając inne polecenie."
+			"autoDenied": "Polecenia z prefiksem `{{prefix}}` zostaÅ‚y zabronione przez uÅ¼ytkownika. Nie obchodÅº tego ograniczenia uruchamiajÄ…c inne polecenie."
 		},
 		"updateTodoList": {
 			"label": "Todo",
-			"description": "Lista zadań jest automatycznie aktualizowana bez zatwierdzenia"
+			"description": "Lista zadaÅ„ jest automatycznie aktualizowana bez zatwierdzenia"
 		},
 		"apiRequestLimit": {
-			"title": "Maksymalna liczba żądań",
-			"description": "Automatycznie wykonaj tyle żądań API przed poproszeniem o zgodę na kontynuowanie zadania.",
+			"title": "Maksymalna liczba Å¼Ä…daÅ„",
+			"description": "Automatycznie wykonaj tyle Å¼Ä…daÅ„ API przed poproszeniem o zgodÄ™ na kontynuowanie zadania.",
 			"unlimited": "Bez limitu"
 		},
-		"selectOptionsFirst": "Wybierz co najmniej jedną opcję poniżej, aby włączyć automatyczne zatwierdzanie",
+		"selectOptionsFirst": "Wybierz co najmniej jednÄ… opcjÄ™ poniÅ¼ej, aby wÅ‚Ä…czyÄ‡ automatyczne zatwierdzanie",
 		"apiCostLimit": {
 			"title": "Maksymalny koszt",
 			"unlimited": "Bez limitu"
 		},
 		"maxLimits": {
-			"description": "Automatycznie składaj zapytania do tych limitów przed poproszeniem o zgodę na kontynuowanie."
+			"description": "Automatycznie skÅ‚adaj zapytania do tych limitÃ³w przed poproszeniem o zgodÄ™ na kontynuowanie."
 		}
 	},
 	"providers": {
 		"providerDocumentation": "Dokumentacja {{provider}}",
 		"configProfile": "Profil konfiguracji",
-		"description": "Zapisz różne konfiguracje API, aby szybko przełączać się między dostawcami i ustawieniami.",
+		"description": "Zapisz rÃ³Å¼ne konfiguracje API, aby szybko przeÅ‚Ä…czaÄ‡ siÄ™ miÄ™dzy dostawcami i ustawieniami.",
 		"apiProvider": "Dostawca API",
 		"model": "Model",
-		"nameEmpty": "Nazwa nie może być pusta",
-		"nameExists": "Profil o tej nazwie już istnieje",
-		"deleteProfile": "Usuń profil",
-		"invalidArnFormat": "Nieprawidłowy format ARN. Sprawdź powyższe przykłady.",
-		"enterNewName": "Wprowadź nową nazwę",
+		"nameEmpty": "Nazwa nie moÅ¼e byÄ‡ pusta",
+		"nameExists": "Profil o tej nazwie juÅ¼ istnieje",
+		"deleteProfile": "UsuÅ„ profil",
+		"invalidArnFormat": "NieprawidÅ‚owy format ARN. SprawdÅº powyÅ¼sze przykÅ‚ady.",
+		"enterNewName": "WprowadÅº nowÄ… nazwÄ™",
 		"addProfile": "Dodaj profil",
-		"renameProfile": "Zmień nazwę profilu",
+		"renameProfile": "ZmieÅ„ nazwÄ™ profilu",
 		"newProfile": "Nowy profil konfiguracji",
-		"enterProfileName": "Wprowadź nazwę profilu",
-		"createProfile": "Utwórz profil",
-		"cannotDeleteOnlyProfile": "Nie można usunąć jedynego profilu",
+		"enterProfileName": "WprowadÅº nazwÄ™ profilu",
+		"createProfile": "UtwÃ³rz profil",
+		"cannotDeleteOnlyProfile": "Nie moÅ¼na usunÄ…Ä‡ jedynego profilu",
 		"searchPlaceholder": "Szukaj profili",
-		"searchProviderPlaceholder": "Szukaj dostawców",
-		"noProviderMatchFound": "Nie znaleziono dostawców",
-		"noMatchFound": "Nie znaleziono pasujących profili",
-		"vscodeLmDescription": "Interfejs API modelu językowego VS Code umożliwia uruchamianie modeli dostarczanych przez inne rozszerzenia VS Code (w tym, ale nie tylko, GitHub Copilot). Najłatwiejszym sposobem na rozpoczęcie jest zainstalowanie rozszerzeń Copilot i Copilot Chat z VS Code Marketplace.",
-		"awsCustomArnUse": "Wprowadź prawidłowy Amazon Bedrock ARN dla modelu, którego chcesz użyć. Przykłady formatu:",
-		"awsCustomArnDesc": "Upewnij się, że region w ARN odpowiada wybranemu powyżej regionowi AWS.",
+		"searchProviderPlaceholder": "Szukaj dostawcÃ³w",
+		"noProviderMatchFound": "Nie znaleziono dostawcÃ³w",
+		"noMatchFound": "Nie znaleziono pasujÄ…cych profili",
+		"vscodeLmDescription": "Interfejs API modelu jÄ™zykowego VS Code umoÅ¼liwia uruchamianie modeli dostarczanych przez inne rozszerzenia VS Code (w tym, ale nie tylko, GitHub Copilot). NajÅ‚atwiejszym sposobem na rozpoczÄ™cie jest zainstalowanie rozszerzeÅ„ Copilot i Copilot Chat z VS Code Marketplace.",
+		"awsCustomArnUse": "WprowadÅº prawidÅ‚owy Amazon Bedrock ARN dla modelu, ktÃ³rego chcesz uÅ¼yÄ‡. PrzykÅ‚ady formatu:",
+		"awsCustomArnDesc": "Upewnij siÄ™, Å¼e region w ARN odpowiada wybranemu powyÅ¼ej regionowi AWS.",
 		"openRouterApiKey": "Klucz API OpenRouter",
 		"getOpenRouterApiKey": "Uzyskaj klucz API OpenRouter",
 		"vercelAiGatewayApiKey": "Klucz API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Uzyskaj klucz API Vercel AI Gateway",
-		"apiKeyStorageNotice": "Klucze API są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
-		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
-		"useReasoning": "Włącz rozumowanie",
-		"useHostHeader": "Użyj niestandardowego nagłówka Host",
-		"useLegacyFormat": "Użyj starszego formatu API OpenAI",
-		"customHeaders": "Niestandardowe nagłówki",
-		"headerName": "Nazwa nagłówka",
-		"headerValue": "Wartość nagłówka",
-		"noCustomHeaders": "Brak zdefiniowanych niestandardowych nagłówków. Kliknij przycisk +, aby dodać.",
+		"apiKeyStorageNotice": "Klucze API sÄ… bezpiecznie przechowywane w Tajnym Magazynie VSCode",
+		"useCustomBaseUrl": "UÅ¼yj niestandardowego URL bazowego",
+		"useReasoning": "WÅ‚Ä…cz rozumowanie",
+		"useHostHeader": "UÅ¼yj niestandardowego nagÅ‚Ã³wka Host",
+		"useLegacyFormat": "UÅ¼yj starszego formatu API OpenAI",
+		"customHeaders": "Niestandardowe nagÅ‚Ã³wki",
+		"headerName": "Nazwa nagÅ‚Ã³wka",
+		"headerValue": "WartoÅ›Ä‡ nagÅ‚Ã³wka",
+		"noCustomHeaders": "Brak zdefiniowanych niestandardowych nagÅ‚Ã³wkÃ³w. Kliknij przycisk +, aby dodaÄ‡.",
 		"requestyApiKey": "Klucz API Requesty",
 		"refreshModels": {
-			"label": "Odśwież modele",
-			"hint": "Proszę ponownie otworzyć ustawienia, aby zobaczyć najnowsze modele.",
-			"loading": "Odświeżanie listy modeli...",
-			"success": "Lista modeli została pomyślnie odświeżona!",
-			"error": "Nie udało się odświeżyć listy modeli. Spróbuj ponownie."
+			"label": "OdÅ›wieÅ¼ modele",
+			"hint": "ProszÄ™ ponownie otworzyÄ‡ ustawienia, aby zobaczyÄ‡ najnowsze modele.",
+			"loading": "OdÅ›wieÅ¼anie listy modeli...",
+			"success": "Lista modeli zostaÅ‚a pomyÅ›lnie odÅ›wieÅ¼ona!",
+			"error": "Nie udaÅ‚o siÄ™ odÅ›wieÅ¼yÄ‡ listy modeli. SprÃ³buj ponownie."
 		},
 		"getRequestyApiKey": "Uzyskaj klucz API Requesty",
 		"getRequestyBaseUrl": "Bazowy URL",
-		"requestyUseCustomBaseUrl": "Użyj niestandardowego bazowego URL",
-		"openRouterTransformsText": "Kompresuj podpowiedzi i łańcuchy wiadomości do rozmiaru kontekstu (<a>Transformacje OpenRouter</a>)",
+		"requestyUseCustomBaseUrl": "UÅ¼yj niestandardowego bazowego URL",
+		"openRouterTransformsText": "Kompresuj podpowiedzi i Å‚aÅ„cuchy wiadomoÅ›ci do rozmiaru kontekstu (\u003ca\u003eTransformacje OpenRouter\u003c/a\u003e)",
 		"anthropicApiKey": "Klucz API Anthropic",
 		"getAnthropicApiKey": "Uzyskaj klucz API Anthropic",
-		"anthropicUseAuthToken": "Przekaż klucz API Anthropic jako nagłówek Authorization zamiast X-Api-Key",
-		"anthropic1MContextBetaLabel": "Włącz okno kontekstowe 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4",
-		"awsBedrock1MContextBetaLabel": "Włącz okno kontekstowe 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4",
+		"anthropicUseAuthToken": "PrzekaÅ¼ klucz API Anthropic jako nagÅ‚Ã³wek Authorization zamiast X-Api-Key",
+		"anthropic1MContextBetaLabel": "WÅ‚Ä…cz okno kontekstowe 1M (Beta)",
+		"anthropic1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenÃ³w dla Claude Sonnet 4",
+		"awsBedrock1MContextBetaLabel": "WÅ‚Ä…cz okno kontekstowe 1M (Beta)",
+		"awsBedrock1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenÃ³w dla Claude Sonnet 4",
 		"basetenApiKey": "Klucz API Baseten",
 		"getBasetenApiKey": "Uzyskaj klucz API Baseten",
 		"cerebrasApiKey": "Klucz API Cerebras",
@@ -321,7 +321,7 @@
 		"featherlessApiKey": "Klucz API Featherless",
 		"getFeatherlessApiKey": "Uzyskaj klucz API Featherless",
 		"ioIntelligenceApiKey": "Klucz API IO Intelligence",
-		"ioIntelligenceApiKeyPlaceholder": "Wprowadź swój klucz API IO Intelligence",
+		"ioIntelligenceApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API IO Intelligence",
 		"getIoIntelligenceApiKey": "Uzyskaj klucz API IO Intelligence",
 		"deepSeekApiKey": "Klucz API DeepSeek",
 		"getDeepSeekApiKey": "Uzyskaj klucz API DeepSeek",
@@ -329,14 +329,14 @@
 		"getDoubaoApiKey": "Uzyskaj klucz API Doubao",
 		"moonshotApiKey": "Klucz API Moonshot",
 		"getMoonshotApiKey": "Uzyskaj klucz API Moonshot",
-		"moonshotBaseUrl": "Punkt wejścia Moonshot",
+		"moonshotBaseUrl": "Punkt wejÅ›cia Moonshot",
 		"zaiApiKey": "Klucz API Z AI",
 		"getZaiApiKey": "Uzyskaj klucz API Z AI",
-		"zaiEntrypoint": "Punkt wejścia Z AI",
-		"zaiEntrypointDescription": "Wybierz odpowiedni punkt wejścia API w zależności od swojej lokalizacji. Jeśli jesteś w Chinach, wybierz open.bigmodel.cn. W przeciwnym razie wybierz api.z.ai.",
+		"zaiEntrypoint": "Punkt wejÅ›cia Z AI",
+		"zaiEntrypointDescription": "Wybierz odpowiedni punkt wejÅ›cia API w zaleÅ¼noÅ›ci od swojej lokalizacji. JeÅ›li jesteÅ› w Chinach, wybierz open.bigmodel.cn. W przeciwnym razie wybierz api.z.ai.",
 		"minimaxApiKey": "Klucz API MiniMax",
 		"getMiniMaxApiKey": "Uzyskaj klucz API MiniMax",
-		"minimaxBaseUrl": "Punkt wejścia MiniMax",
+		"minimaxBaseUrl": "Punkt wejÅ›cia MiniMax",
 		"geminiApiKey": "Klucz API Gemini",
 		"getGroqApiKey": "Uzyskaj klucz API Groq",
 		"groqApiKey": "Klucz API Groq",
@@ -346,16 +346,16 @@
 		"getHuggingFaceApiKey": "Uzyskaj klucz API Hugging Face",
 		"huggingFaceApiKey": "Klucz API Hugging Face",
 		"huggingFaceModelId": "ID modelu",
-		"huggingFaceLoading": "Ładowanie...",
+		"huggingFaceLoading": "Åadowanie...",
 		"huggingFaceModelsCount": "({{count}} modeli)",
 		"huggingFaceSelectModel": "Wybierz model...",
 		"huggingFaceSearchModels": "Szukaj modeli...",
 		"huggingFaceNoModelsFound": "Nie znaleziono modeli",
 		"huggingFaceProvider": "Dostawca",
 		"huggingFaceProviderAuto": "Automatyczny",
-		"huggingFaceSelectProvider": "Wybierz dostawcę...",
-		"huggingFaceSearchProviders": "Szukaj dostawców...",
-		"huggingFaceNoProvidersFound": "Nie znaleziono dostawców",
+		"huggingFaceSelectProvider": "Wybierz dostawcÄ™...",
+		"huggingFaceSearchProviders": "Szukaj dostawcÃ³w...",
+		"huggingFaceNoProvidersFound": "Nie znaleziono dostawcÃ³w",
 		"apiKey": "Klucz API",
 		"openAiApiKey": "Klucz API OpenAI",
 		"openAiBaseUrl": "URL bazowy",
@@ -368,303 +368,307 @@
 		"getXaiApiKey": "Uzyskaj klucz API xAI",
 		"litellmApiKey": "Klucz API LiteLLM",
 		"litellmBaseUrl": "URL bazowy LiteLLM",
-		"awsCredentials": "Poświadczenia AWS",
+		"awsCredentials": "PoÅ›wiadczenia AWS",
 		"awsProfile": "Profil AWS",
 		"awsApiKey": "Klucz API Amazon Bedrock",
 		"awsProfileName": "Nazwa profilu AWS",
-		"awsAccessKey": "Klucz dostępu AWS",
+		"awsAccessKey": "Klucz dostÄ™pu AWS",
 		"awsSecretKey": "Klucz tajny AWS",
 		"awsSessionToken": "Token sesji AWS",
 		"awsRegion": "Region AWS",
-		"awsCrossRegion": "Użyj wnioskowania międzyregionalnego",
-		"awsGlobalInference": "Użyj globalnej inferencji (automatyczny wybór optymalnego regionu AWS)",
+		"awsCrossRegion": "UÅ¼yj wnioskowania miÄ™dzyregionalnego",
+		"awsGlobalInference": "UÅ¼yj globalnej inferencji (automatyczny wybÃ³r optymalnego regionu AWS)",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "Użyj niestandardowego punktu końcowego VPC",
-			"vpcEndpointUrlPlaceholder": "Wprowadź URL punktu końcowego VPC (opcjonalnie)",
-			"examples": "Przykłady:"
+			"useCustomVpcEndpoint": "UÅ¼yj niestandardowego punktu koÅ„cowego VPC",
+			"vpcEndpointUrlPlaceholder": "WprowadÅº URL punktu koÅ„cowego VPC (opcjonalnie)",
+			"examples": "PrzykÅ‚ady:"
 		},
-		"enablePromptCaching": "Włącz buforowanie podpowiedzi",
-		"enablePromptCachingTitle": "Włącz buforowanie podpowiedzi, aby poprawić wydajność i zmniejszyć koszty dla obsługiwanych modeli.",
-		"cacheUsageNote": "Uwaga: Jeśli nie widzisz użycia bufora, spróbuj wybrać inny model, a następnie ponownie wybrać żądany model.",
-		"vscodeLmModel": "Model językowy",
-		"vscodeLmWarning": "Uwaga: Modele dostępne przez interfejs VS Code Language Model API mogą być opakowane lub dostrojone przez dostawcę, dlatego ich działanie może różnić się od bezpośredniego użycia tego samego modelu u typowego dostawcy lub routera. Aby użyć modelu z listy «Language Model», najpierw przełącz się na ten model, a następnie kliknij «Akceptuj» w monicie Copilot Chat; w przeciwnym razie możesz zobaczyć błąd, np. 400 „The requested model is not supported”.",
+		"enablePromptCaching": "WÅ‚Ä…cz buforowanie podpowiedzi",
+		"enablePromptCachingTitle": "WÅ‚Ä…cz buforowanie podpowiedzi, aby poprawiÄ‡ wydajnoÅ›Ä‡ i zmniejszyÄ‡ koszty dla obsÅ‚ugiwanych modeli.",
+		"cacheUsageNote": "Uwaga: JeÅ›li nie widzisz uÅ¼ycia bufora, sprÃ³buj wybraÄ‡ inny model, a nastÄ™pnie ponownie wybraÄ‡ Å¼Ä…dany model.",
+		"vscodeLmModel": "Model jÄ™zykowy",
+		"vscodeLmWarning": "Uwaga: Modele dostÄ™pne przez interfejs VS Code Language Model API mogÄ… byÄ‡ opakowane lub dostrojone przez dostawcÄ™, dlatego ich dziaÅ‚anie moÅ¼e rÃ³Å¼niÄ‡ siÄ™ od bezpoÅ›redniego uÅ¼ycia tego samego modelu u typowego dostawcy lub routera. Aby uÅ¼yÄ‡ modelu z listy Â«Language ModelÂ», najpierw przeÅ‚Ä…cz siÄ™ na ten model, a nastÄ™pnie kliknij Â«AkceptujÂ» w monicie Copilot Chat; w przeciwnym razie moÅ¼esz zobaczyÄ‡ bÅ‚Ä…d, np. 400 â€žThe requested model is not supportedâ€.",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "Włącz kontekst URL",
-				"description": "Pozwala Gemini uzyskiwać dostęp i przetwarzać adresy URL w celu uzyskania dodatkowego kontekstu podczas generowania odpowiedzi. Przydatne w zadaniach wymagających analizy zawartości sieci Web."
+				"title": "WÅ‚Ä…cz kontekst URL",
+				"description": "Pozwala Gemini uzyskiwaÄ‡ dostÄ™p i przetwarzaÄ‡ adresy URL w celu uzyskania dodatkowego kontekstu podczas generowania odpowiedzi. Przydatne w zadaniach wymagajÄ…cych analizy zawartoÅ›ci sieci Web."
 			},
 			"groundingSearch": {
-				"title": "Włącz grounding przy użyciu wyszukiwarki Google",
-				"description": "Pozwala Gemini przeszukiwać Google w celu uzyskania aktualnych informacji i opierać odpowiedzi na danych w czasie rzeczywistym. Przydatne w zapytaniach wymagających najnowszych informacji."
+				"title": "WÅ‚Ä…cz grounding przy uÅ¼yciu wyszukiwarki Google",
+				"description": "Pozwala Gemini przeszukiwaÄ‡ Google w celu uzyskania aktualnych informacji i opieraÄ‡ odpowiedzi na danych w czasie rzeczywistym. Przydatne w zapytaniach wymagajÄ…cych najnowszych informacji."
 			}
 		},
 		"googleCloudSetup": {
-			"title": "Aby korzystać z Google Cloud Vertex AI, potrzebujesz:",
-			"step1": "1. Utworzyć konto Google Cloud, włączyć API Vertex AI i włączyć żądane modele Claude.",
-			"step2": "2. Zainstalować Google Cloud CLI i skonfigurować domyślne poświadczenia aplikacji.",
-			"step3": "3. Lub utworzyć konto usługi z poświadczeniami."
+			"title": "Aby korzystaÄ‡ z Google Cloud Vertex AI, potrzebujesz:",
+			"step1": "1. UtworzyÄ‡ konto Google Cloud, wÅ‚Ä…czyÄ‡ API Vertex AI i wÅ‚Ä…czyÄ‡ Å¼Ä…dane modele Claude.",
+			"step2": "2. ZainstalowaÄ‡ Google Cloud CLI i skonfigurowaÄ‡ domyÅ›lne poÅ›wiadczenia aplikacji.",
+			"step3": "3. Lub utworzyÄ‡ konto usÅ‚ugi z poÅ›wiadczeniami."
 		},
-		"googleCloudCredentials": "Poświadczenia Google Cloud",
-		"googleCloudKeyFile": "Ścieżka pliku klucza Google Cloud",
+		"googleCloudCredentials": "PoÅ›wiadczenia Google Cloud",
+		"googleCloudKeyFile": "ÅšcieÅ¼ka pliku klucza Google Cloud",
 		"googleCloudProjectId": "ID projektu Google Cloud",
 		"googleCloudRegion": "Region Google Cloud",
 		"lmStudio": {
 			"baseUrl": "URL bazowy (opcjonalnie)",
 			"modelId": "ID modelu",
-			"speculativeDecoding": "Włącz dekodowanie spekulacyjne",
+			"speculativeDecoding": "WÅ‚Ä…cz dekodowanie spekulacyjne",
 			"draftModelId": "ID modelu szkicu",
-			"draftModelDesc": "Aby dekodowanie spekulacyjne działało poprawnie, model szkicu musi pochodzić z tej samej rodziny modeli.",
+			"draftModelDesc": "Aby dekodowanie spekulacyjne dziaÅ‚aÅ‚o poprawnie, model szkicu musi pochodziÄ‡ z tej samej rodziny modeli.",
 			"selectDraftModel": "Wybierz model szkicu",
-			"noModelsFound": "Nie znaleziono modeli szkicu. Upewnij się, że LM Studio jest uruchomione z włączonym trybem serwera.",
-			"description": "LM Studio pozwala na lokalne uruchamianie modeli na twoim komputerze. Aby rozpocząć, zapoznaj się z ich <a>przewodnikiem szybkiego startu</a>. Będziesz również musiał uruchomić funkcję <b>serwera lokalnego</b> LM Studio, aby używać go z tym rozszerzeniem. <span>Uwaga:</span> Roo Code używa złożonych podpowiedzi i działa najlepiej z modelami Claude. Modele o niższych możliwościach mogą nie działać zgodnie z oczekiwaniami."
+			"noModelsFound": "Nie znaleziono modeli szkicu. Upewnij siÄ™, Å¼e LM Studio jest uruchomione z wÅ‚Ä…czonym trybem serwera.",
+			"description": "LM Studio pozwala na lokalne uruchamianie modeli na twoim komputerze. Aby rozpoczÄ…Ä‡, zapoznaj siÄ™ z ich \u003ca\u003eprzewodnikiem szybkiego startu\u003c/a\u003e. BÄ™dziesz rÃ³wnieÅ¼ musiaÅ‚ uruchomiÄ‡ funkcjÄ™ \u003cb\u003eserwera lokalnego\u003c/b\u003e LM Studio, aby uÅ¼ywaÄ‡ go z tym rozszerzeniem. \u003cspan\u003eUwaga:\u003c/span\u003e Roo Code uÅ¼ywa zÅ‚oÅ¼onych podpowiedzi i dziaÅ‚a najlepiej z modelami Claude. Modele o niÅ¼szych moÅ¼liwoÅ›ciach mogÄ… nie dziaÅ‚aÄ‡ zgodnie z oczekiwaniami."
 		},
 		"ollama": {
 			"baseUrl": "URL bazowy (opcjonalnie)",
 			"modelId": "ID modelu",
 			"apiKey": "Klucz API Ollama",
-			"apiKeyHelp": "Opcjonalny klucz API dla uwierzytelnionych instancji Ollama lub usług chmurowych. Pozostaw puste dla instalacji lokalnych.",
+			"apiKeyHelp": "Opcjonalny klucz API dla uwierzytelnionych instancji Ollama lub usÅ‚ug chmurowych. Pozostaw puste dla instalacji lokalnych.",
 			"numCtx": "Rozmiar okna kontekstu (num_ctx)",
-			"numCtxHelp": "Zastępuje domyślny rozmiar okna kontekstu modelu. Pozostaw puste, aby użyć konfiguracji Modelfile modelu. Minimalna wartość to 128.",
-			"description": "Ollama pozwala na lokalne uruchamianie modeli na twoim komputerze. Aby rozpocząć, zapoznaj się z przewodnikiem szybkiego startu.",
-			"warning": "Uwaga: Roo Code używa złożonych podpowiedzi i działa najlepiej z modelami Claude. Modele o niższych możliwościach mogą nie działać zgodnie z oczekiwaniami."
+			"numCtxHelp": "ZastÄ™puje domyÅ›lny rozmiar okna kontekstu modelu. Pozostaw puste, aby uÅ¼yÄ‡ konfiguracji Modelfile modelu. Minimalna wartoÅ›Ä‡ to 128.",
+			"description": "Ollama pozwala na lokalne uruchamianie modeli na twoim komputerze. Aby rozpoczÄ…Ä‡, zapoznaj siÄ™ z przewodnikiem szybkiego startu.",
+			"warning": "Uwaga: Roo Code uÅ¼ywa zÅ‚oÅ¼onych podpowiedzi i dziaÅ‚a najlepiej z modelami Claude. Modele o niÅ¼szych moÅ¼liwoÅ›ciach mogÄ… nie dziaÅ‚aÄ‡ zgodnie z oczekiwaniami."
 		},
 		"unboundApiKey": "Klucz API Unbound",
 		"getUnboundApiKey": "Uzyskaj klucz API Unbound",
-		"unboundRefreshModelsSuccess": "Lista modeli zaktualizowana! Możesz teraz wybierać spośród najnowszych modeli.",
-		"unboundInvalidApiKey": "Nieprawidłowy klucz API. Sprawdź swój klucz API i spróbuj ponownie.",
+		"unboundRefreshModelsSuccess": "Lista modeli zaktualizowana! MoÅ¼esz teraz wybieraÄ‡ spoÅ›rÃ³d najnowszych modeli.",
+		"unboundInvalidApiKey": "NieprawidÅ‚owy klucz API. SprawdÅº swÃ³j klucz API i sprÃ³buj ponownie.",
 		"humanRelay": {
-			"description": "Nie jest wymagany klucz API, ale użytkownik będzie musiał pomóc w kopiowaniu i wklejaniu informacji do czatu internetowego AI.",
-			"instructions": "Podczas użytkowania pojawi się okno dialogowe, a bieżąca wiadomość zostanie automatycznie skopiowana do schowka. Będziesz musiał wkleić ją do internetowych wersji AI (takich jak ChatGPT lub Claude), a następnie skopiować odpowiedź AI z powrotem do okna dialogowego i kliknąć przycisk potwierdzenia."
+			"description": "Nie jest wymagany klucz API, ale uÅ¼ytkownik bÄ™dzie musiaÅ‚ pomÃ³c w kopiowaniu i wklejaniu informacji do czatu internetowego AI.",
+			"instructions": "Podczas uÅ¼ytkowania pojawi siÄ™ okno dialogowe, a bieÅ¼Ä…ca wiadomoÅ›Ä‡ zostanie automatycznie skopiowana do schowka. BÄ™dziesz musiaÅ‚ wkleiÄ‡ jÄ… do internetowych wersji AI (takich jak ChatGPT lub Claude), a nastÄ™pnie skopiowaÄ‡ odpowiedÅº AI z powrotem do okna dialogowego i kliknÄ…Ä‡ przycisk potwierdzenia."
 		},
 		"roo": {
 			"authenticatedMessage": "Bezpiecznie uwierzytelniony przez twoje konto Roo Code Cloud.",
-			"connectButton": "Połącz z Roo Code Cloud"
+			"connectButton": "PoÅ‚Ä…cz z Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "Routing dostawców OpenRouter",
-				"description": "OpenRouter kieruje żądania do najlepszych dostępnych dostawców dla Twojego modelu. Domyślnie żądania są równoważone między najlepszymi dostawcami, aby zmaksymalizować czas działania. Możesz jednak wybrać konkretnego dostawcę do użycia z tym modelem.",
-				"learnMore": "Dowiedz się więcej o routingu dostawców"
+				"title": "Routing dostawcÃ³w OpenRouter",
+				"description": "OpenRouter kieruje Å¼Ä…dania do najlepszych dostÄ™pnych dostawcÃ³w dla Twojego modelu. DomyÅ›lnie Å¼Ä…dania sÄ… rÃ³wnowaÅ¼one miÄ™dzy najlepszymi dostawcami, aby zmaksymalizowaÄ‡ czas dziaÅ‚ania. MoÅ¼esz jednak wybraÄ‡ konkretnego dostawcÄ™ do uÅ¼ycia z tym modelem.",
+				"learnMore": "Dowiedz siÄ™ wiÄ™cej o routingu dostawcÃ³w"
 			}
 		},
 		"customModel": {
-			"capabilities": "Skonfiguruj możliwości i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostrożność podczas określania możliwości modelu, ponieważ mogą one wpływać na wydajność Roo Code.",
+			"capabilities": "Skonfiguruj moÅ¼liwoÅ›ci i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostroÅ¼noÅ›Ä‡ podczas okreÅ›lania moÅ¼liwoÅ›ci modelu, poniewaÅ¼ mogÄ… one wpÅ‚ywaÄ‡ na wydajnoÅ›Ä‡ Roo Code.",
 			"maxTokens": {
-				"label": "Maksymalna liczba tokenów wyjściowych",
-				"description": "Maksymalna liczba tokenów, które model może wygenerować w odpowiedzi. (Określ -1, aby pozwolić serwerowi ustawić maksymalną liczbę tokenów.)"
+				"label": "Maksymalna liczba tokenÃ³w wyjÅ›ciowych",
+				"description": "Maksymalna liczba tokenÃ³w, ktÃ³re model moÅ¼e wygenerowaÄ‡ w odpowiedzi. (OkreÅ›l -1, aby pozwoliÄ‡ serwerowi ustawiÄ‡ maksymalnÄ… liczbÄ™ tokenÃ³w.)"
 			},
 			"contextWindow": {
 				"label": "Rozmiar okna kontekstu",
-				"description": "Całkowita liczba tokenów (wejście + wyjście), które model może przetworzyć."
+				"description": "CaÅ‚kowita liczba tokenÃ³w (wejÅ›cie + wyjÅ›cie), ktÃ³re model moÅ¼e przetworzyÄ‡."
 			},
 			"imageSupport": {
-				"label": "Obsługa obrazów",
-				"description": "Czy model jest w stanie przetwarzać i rozumieć obrazy?"
+				"label": "ObsÅ‚uga obrazÃ³w",
+				"description": "Czy model jest w stanie przetwarzaÄ‡ i rozumieÄ‡ obrazy?"
 			},
 			"computerUse": {
-				"label": "Użycie komputera",
-				"description": "Czy model jest w stanie wchodzić w interakcję z przeglądarką?"
+				"label": "UÅ¼ycie komputera",
+				"description": "Czy model jest w stanie wchodziÄ‡ w interakcjÄ™ z przeglÄ…darkÄ…?"
 			},
 			"promptCache": {
 				"label": "Buforowanie podpowiedzi",
-				"description": "Czy model jest w stanie buforować podpowiedzi?"
+				"description": "Czy model jest w stanie buforowaÄ‡ podpowiedzi?"
 			},
 			"pricing": {
 				"input": {
-					"label": "Cena wejścia",
-					"description": "Koszt za milion tokenów wejściowych/podpowiedzi. Wpływa to na koszt wysyłania kontekstu i instrukcji do modelu."
+					"label": "Cena wejÅ›cia",
+					"description": "Koszt za milion tokenÃ³w wejÅ›ciowych/podpowiedzi. WpÅ‚ywa to na koszt wysyÅ‚ania kontekstu i instrukcji do modelu."
 				},
 				"output": {
-					"label": "Cena wyjścia",
-					"description": "Koszt za milion tokenów odpowiedzi modelu. Wpływa to na koszt generowanej treści i uzupełnień."
+					"label": "Cena wyjÅ›cia",
+					"description": "Koszt za milion tokenÃ³w odpowiedzi modelu. WpÅ‚ywa to na koszt generowanej treÅ›ci i uzupeÅ‚nieÅ„."
 				},
 				"cacheReads": {
-					"label": "Cena odczytów bufora",
-					"description": "Koszt za milion tokenów za odczyt z bufora. Ta cena jest naliczana przy otrzymywaniu zbuforowanej odpowiedzi."
+					"label": "Cena odczytÃ³w bufora",
+					"description": "Koszt za milion tokenÃ³w za odczyt z bufora. Ta cena jest naliczana przy otrzymywaniu zbuforowanej odpowiedzi."
 				},
 				"cacheWrites": {
-					"label": "Cena zapisów bufora",
-					"description": "Koszt za milion tokenów za zapis do bufora. Ta cena jest naliczana przy pierwszym buforowaniu podpowiedzi."
+					"label": "Cena zapisÃ³w bufora",
+					"description": "Koszt za milion tokenÃ³w za zapis do bufora. Ta cena jest naliczana przy pierwszym buforowaniu podpowiedzi."
 				}
 			},
-			"resetDefaults": "Przywróć domyślne"
+			"resetDefaults": "PrzywrÃ³Ä‡ domyÅ›lne"
 		},
 		"rateLimitSeconds": {
-			"label": "Limit szybkości",
-			"description": "Minimalny czas między żądaniami API."
+			"label": "Limit szybkoÅ›ci",
+			"description": "Minimalny czas miÄ™dzy Å¼Ä…daniami API."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "Limit błędów i powtórzeń",
-			"description": "Liczba kolejnych błędów lub powtórzonych akcji przed wyświetleniem okna dialogowego 'Roo ma problemy'. Ustaw na 0, aby wyłączyć ten mechanizm bezpieczeństwa (nigdy się nie uruchomi).",
-			"unlimitedDescription": "Włączono nieograniczone próby (automatyczne kontynuowanie). Okno dialogowe nigdy się nie pojawi.",
-			"warning": "⚠️ Ustawienie na 0 pozwala na nieograniczone próby, co może zużyć znaczną ilość API"
+			"label": "Limit bÅ‚Ä™dÃ³w i powtÃ³rzeÅ„",
+			"description": "Liczba kolejnych bÅ‚Ä™dÃ³w lub powtÃ³rzonych akcji przed wyÅ›wietleniem okna dialogowego \u0027Roo ma problemy\u0027. Ustaw na 0, aby wyÅ‚Ä…czyÄ‡ ten mechanizm bezpieczeÅ„stwa (nigdy siÄ™ nie uruchomi).",
+			"unlimitedDescription": "WÅ‚Ä…czono nieograniczone prÃ³by (automatyczne kontynuowanie). Okno dialogowe nigdy siÄ™ nie pojawi.",
+			"warning": "âš ï¸ Ustawienie na 0 pozwala na nieograniczone prÃ³by, co moÅ¼e zuÅ¼yÄ‡ znacznÄ… iloÅ›Ä‡ API"
 		},
 		"reasoningEffort": {
-			"label": "Wysiłek rozumowania modelu",
+			"label": "WysiÅ‚ek rozumowania modelu",
 			"none": "Brak",
 			"minimal": "Minimalny (najszybszy)",
 			"high": "Wysoki",
 			"xhigh": "Bardzo wysoki",
-			"medium": "Średni",
+			"medium": "Åšredni",
 			"low": "Niski"
 		},
 		"verbosity": {
-			"label": "Szczegółowość danych wyjściowych",
+			"label": "SzczegÃ³Å‚owoÅ›Ä‡ danych wyjÅ›ciowych",
 			"high": "Wysoka",
-			"medium": "Średnia",
+			"medium": "Åšrednia",
 			"low": "Niska",
-			"description": "Kontroluje, jak szczegółowe są odpowiedzi modelu. Niska szczegółowość generuje zwięzłe odpowiedzi, podczas gdy wysoka szczegółowość dostarcza dokładnych wyjaśnień."
+			"description": "Kontroluje, jak szczegÃ³Å‚owe sÄ… odpowiedzi modelu. Niska szczegÃ³Å‚owoÅ›Ä‡ generuje zwiÄ™zÅ‚e odpowiedzi, podczas gdy wysoka szczegÃ³Å‚owoÅ›Ä‡ dostarcza dokÅ‚adnych wyjaÅ›nieÅ„."
 		},
-		"setReasoningLevel": "Włącz wysiłek rozumowania",
+		"setReasoningLevel": "WÅ‚Ä…cz wysiÅ‚ek rozumowania",
 		"claudeCode": {
-			"pathLabel": "Ścieżka Claude Code",
-			"description": "Opcjonalna ścieżka do Twojego CLI Claude Code. Domyślnie 'claude', jeśli nie ustawiono.",
-			"placeholder": "Domyślnie: claude",
-			"maxTokensLabel": "Maksymalna liczba tokenów wyjściowych",
-			"maxTokensDescription": "Maksymalna liczba tokenów wyjściowych dla odpowiedzi Claude Code. Domyślnie 8000."
+			"pathLabel": "ÅšcieÅ¼ka Claude Code",
+			"description": "Opcjonalna Å›cieÅ¼ka do Twojego CLI Claude Code. DomyÅ›lnie \u0027claude\u0027, jeÅ›li nie ustawiono.",
+			"placeholder": "DomyÅ›lnie: claude",
+			"maxTokensLabel": "Maksymalna liczba tokenÃ³w wyjÅ›ciowych",
+			"maxTokensDescription": "Maksymalna liczba tokenÃ³w wyjÅ›ciowych dla odpowiedzi Claude Code. DomyÅ›lnie 8000."
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "Włącz narzędzie przeglądarki",
-			"description": "Gdy włączone, Roo może używać przeglądarki do interakcji ze stronami internetowymi podczas korzystania z modeli obsługujących używanie komputera. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz narzÄ™dzie przeglÄ…darki",
+			"description": "Gdy wÅ‚Ä…czone, Roo moÅ¼e uÅ¼ywaÄ‡ przeglÄ…darki do interakcji ze stronami internetowymi podczas korzystania z modeli obsÅ‚ugujÄ…cych uÅ¼ywanie komputera. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"viewport": {
 			"label": "Rozmiar viewportu",
-			"description": "Wybierz rozmiar viewportu dla interakcji przeglądarki. Wpływa to na sposób wyświetlania stron internetowych i interakcji z nimi.",
+			"description": "Wybierz rozmiar viewportu dla interakcji przeglÄ…darki. WpÅ‚ywa to na sposÃ³b wyÅ›wietlania stron internetowych i interakcji z nimi.",
 			"options": {
-				"largeDesktop": "Duży pulpit (1280x800)",
-				"smallDesktop": "Mały pulpit (900x600)",
+				"largeDesktop": "DuÅ¼y pulpit (1280x800)",
+				"smallDesktop": "MaÅ‚y pulpit (900x600)",
 				"tablet": "Tablet (768x1024)",
 				"mobile": "Telefon (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "Jakość zrzutów ekranu",
-			"description": "Dostosuj jakość WebP zrzutów ekranu przeglądarki. Wyższe wartości zapewniają wyraźniejsze zrzuty ekranu, ale zwiększają zużycie token."
+			"label": "JakoÅ›Ä‡ zrzutÃ³w ekranu",
+			"description": "Dostosuj jakoÅ›Ä‡ WebP zrzutÃ³w ekranu przeglÄ…darki. WyÅ¼sze wartoÅ›ci zapewniajÄ… wyraÅºniejsze zrzuty ekranu, ale zwiÄ™kszajÄ… zuÅ¼ycie token."
 		},
 		"remote": {
-			"label": "Użyj zdalnego połączenia przeglądarki",
-			"description": "Połącz się z przeglądarką Chrome uruchomioną z włączonym zdalnym debugowaniem (--remote-debugging-port=9222).",
+			"label": "UÅ¼yj zdalnego poÅ‚Ä…czenia przeglÄ…darki",
+			"description": "PoÅ‚Ä…cz siÄ™ z przeglÄ…darkÄ… Chrome uruchomionÄ… z wÅ‚Ä…czonym zdalnym debugowaniem (--remote-debugging-port=9222).",
 			"urlPlaceholder": "Niestandardowy URL (np. http://localhost:9222)",
-			"testButton": "Testuj połączenie",
+			"testButton": "Testuj poÅ‚Ä…czenie",
 			"testingButton": "Testowanie...",
-			"instructions": "Wprowadź adres hosta protokołu DevTools lub pozostaw puste, aby automatycznie wykryć lokalne instancje Chrome. Przycisk Test Połączenia spróbuje użyć niestandardowego URL, jeśli podany, lub automatycznie wykryje, jeśli pole jest puste."
+			"instructions": "WprowadÅº adres hosta protokoÅ‚u DevTools lub pozostaw puste, aby automatycznie wykryÄ‡ lokalne instancje Chrome. Przycisk Test PoÅ‚Ä…czenia sprÃ³buje uÅ¼yÄ‡ niestandardowego URL, jeÅ›li podany, lub automatycznie wykryje, jeÅ›li pole jest puste."
 		}
 	},
 	"checkpoints": {
 		"timeout": {
 			"label": "Limit czasu inicjalizacji punktu kontrolnego (sekundy)",
-			"description": "Maksymalny czas oczekiwania na inicjalizację usługi punktów kontrolnych. Domyślnie 15 sekund. Zakres: 10-60 sekund."
+			"description": "Maksymalny czas oczekiwania na inicjalizacjÄ™ usÅ‚ugi punktÃ³w kontrolnych. DomyÅ›lnie 15 sekund. Zakres: 10-60 sekund."
 		},
 		"enable": {
-			"label": "Włącz automatyczne punkty kontrolne",
-			"description": "Gdy włączone, Roo automatycznie utworzy punkty kontrolne podczas wykonywania zadań, ułatwiając przeglądanie zmian lub powrót do wcześniejszych stanów. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz automatyczne punkty kontrolne",
+			"description": "Gdy wÅ‚Ä…czone, Roo automatycznie utworzy punkty kontrolne podczas wykonywania zadaÅ„, uÅ‚atwiajÄ…c przeglÄ…danie zmian lub powrÃ³t do wczeÅ›niejszych stanÃ³w. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "Włącz efekty dźwiękowe",
-			"description": "Gdy włączone, Roo będzie odtwarzać efekty dźwiękowe dla powiadomień i zdarzeń.",
-			"volumeLabel": "Głośność"
+			"label": "WÅ‚Ä…cz efekty dÅºwiÄ™kowe",
+			"description": "Gdy wÅ‚Ä…czone, Roo bÄ™dzie odtwarzaÄ‡ efekty dÅºwiÄ™kowe dla powiadomieÅ„ i zdarzeÅ„.",
+			"volumeLabel": "GÅ‚oÅ›noÅ›Ä‡"
 		},
 		"tts": {
-			"label": "Włącz syntezę mowy",
-			"description": "Gdy włączone, Roo będzie czytać na głos swoje odpowiedzi za pomocą syntezy mowy.",
-			"speedLabel": "Szybkość"
+			"label": "WÅ‚Ä…cz syntezÄ™ mowy",
+			"description": "Gdy wÅ‚Ä…czone, Roo bÄ™dzie czytaÄ‡ na gÅ‚os swoje odpowiedzi za pomocÄ… syntezy mowy.",
+			"speedLabel": "SzybkoÅ›Ä‡"
 		}
 	},
 	"contextManagement": {
-		"description": "Kontroluj, jakie informacje są zawarte w oknie kontekstu AI, wpływając na zużycie token i jakość odpowiedzi",
+		"description": "Kontroluj, jakie informacje sÄ… zawarte w oknie kontekstu AI, wpÅ‚ywajÄ…c na zuÅ¼ycie token i jakoÅ›Ä‡ odpowiedzi",
 		"autoCondenseContextPercent": {
-			"label": "Próg wyzwalający inteligentną kondensację kontekstu",
-			"description": "Gdy okno kontekstu osiągnie ten próg, Roo automatycznie je skondensuje."
+			"label": "PrÃ³g wyzwalajÄ…cy inteligentnÄ… kondensacjÄ™ kontekstu",
+			"description": "Gdy okno kontekstu osiÄ…gnie ten prÃ³g, Roo automatycznie je skondensuje."
 		},
 		"condensingApiConfiguration": {
 			"label": "Konfiguracja API dla kondensacji kontekstu",
-			"description": "Wybierz, którą konfigurację API używać do operacji kondensacji kontekstu. Pozostaw niewybrane, aby użyć aktualnej aktywnej konfiguracji.",
-			"useCurrentConfig": "Domyślna"
+			"description": "Wybierz, ktÃ³rÄ… konfiguracjÄ™ API uÅ¼ywaÄ‡ do operacji kondensacji kontekstu. Pozostaw niewybrane, aby uÅ¼yÄ‡ aktualnej aktywnej konfiguracji.",
+			"useCurrentConfig": "DomyÅ›lna"
 		},
 		"customCondensingPrompt": {
 			"label": "Niestandardowy monit kondensacji kontekstu",
-			"description": "Niestandardowy monit systemowy dla kondensacji kontekstu. Pozostaw puste, aby użyć domyślnego monitu.",
-			"placeholder": "Wprowadź tutaj swój niestandardowy monit kondensacji...\n\nMożesz użyć tej samej struktury co domyślny monit:\n- Poprzednia rozmowa\n- Aktualna praca\n- Kluczowe koncepcje techniczne\n- Istotne pliki i kod\n- Rozwiązywanie problemów\n- Oczekujące zadania i następne kroki",
-			"reset": "Przywróć domyślne",
-			"hint": "Puste = użyj domyślnego monitu"
+			"description": "Niestandardowy monit systemowy dla kondensacji kontekstu. Pozostaw puste, aby uÅ¼yÄ‡ domyÅ›lnego monitu.",
+			"placeholder": "WprowadÅº tutaj swÃ³j niestandardowy monit kondensacji...\n\nMoÅ¼esz uÅ¼yÄ‡ tej samej struktury co domyÅ›lny monit:\n- Poprzednia rozmowa\n- Aktualna praca\n- Kluczowe koncepcje techniczne\n- Istotne pliki i kod\n- RozwiÄ…zywanie problemÃ³w\n- OczekujÄ…ce zadania i nastÄ™pne kroki",
+			"reset": "PrzywrÃ³Ä‡ domyÅ›lne",
+			"hint": "Puste = uÅ¼yj domyÅ›lnego monitu"
 		},
 		"autoCondenseContext": {
-			"name": "Automatycznie wyzwalaj inteligentną kondensację kontekstu",
-			"description": "Gdy włączone, Roo automatycznie skondensuje kontekst po osiągnięciu progu. Gdy wyłączone, nadal możesz ręcznie wyzwolić kondensację kontekstu."
+			"name": "Automatycznie wyzwalaj inteligentnÄ… kondensacjÄ™ kontekstu",
+			"description": "Gdy wÅ‚Ä…czone, Roo automatycznie skondensuje kontekst po osiÄ…gniÄ™ciu progu. Gdy wyÅ‚Ä…czone, nadal moÅ¼esz rÄ™cznie wyzwoliÄ‡ kondensacjÄ™ kontekstu."
 		},
 		"openTabs": {
 			"label": "Limit kontekstu otwartych kart",
-			"description": "Maksymalna liczba otwartych kart VSCode do uwzględnienia w kontekście. Wyższe wartości zapewniają więcej kontekstu, ale zwiększają zużycie token."
+			"description": "Maksymalna liczba otwartych kart VSCode do uwzglÄ™dnienia w kontekÅ›cie. WyÅ¼sze wartoÅ›ci zapewniajÄ… wiÄ™cej kontekstu, ale zwiÄ™kszajÄ… zuÅ¼ycie token."
 		},
 		"workspaceFiles": {
-			"label": "Limit kontekstu plików obszaru roboczego",
-			"description": "Maksymalna liczba plików do uwzględnienia w szczegółach bieżącego katalogu roboczego. Wyższe wartości zapewniają więcej kontekstu, ale zwiększają zużycie token."
+			"label": "Limit kontekstu plikÃ³w obszaru roboczego",
+			"description": "Maksymalna liczba plikÃ³w do uwzglÄ™dnienia w szczegÃ³Å‚ach bieÅ¼Ä…cego katalogu roboczego. WyÅ¼sze wartoÅ›ci zapewniajÄ… wiÄ™cej kontekstu, ale zwiÄ™kszajÄ… zuÅ¼ycie token."
 		},
 		"rooignore": {
-			"label": "Pokaż pliki .rooignore na listach i w wyszukiwaniach",
-			"description": "Gdy włączone, pliki pasujące do wzorców w .rooignore będą pokazywane na listach z symbolem kłódki. Gdy wyłączone, te pliki będą całkowicie ukryte z list plików i wyszukiwań."
+			"label": "PokaÅ¼ pliki .rooignore na listach i w wyszukiwaniach",
+			"description": "Gdy wÅ‚Ä…czone, pliki pasujÄ…ce do wzorcÃ³w w .rooignore bÄ™dÄ… pokazywane na listach z symbolem kÅ‚Ã³dki. Gdy wyÅ‚Ä…czone, te pliki bÄ™dÄ… caÅ‚kowicie ukryte z list plikÃ³w i wyszukiwaÅ„."
 		},
 		"maxReadFile": {
-			"label": "Próg automatycznego skracania odczytu pliku",
-			"description": "Roo odczytuje tę liczbę linii, gdy model nie określa wartości początkowej/końcowej. Jeśli ta liczba jest mniejsza niż całkowita liczba linii pliku, Roo generuje indeks numerów linii definicji kodu. Przypadki specjalne: -1 nakazuje Roo odczytać cały plik (bez indeksowania), a 0 nakazuje nie czytać żadnych linii i dostarczyć tylko indeksy linii dla minimalnego kontekstu. Niższe wartości minimalizują początkowe użycie kontekstu, umożliwiając późniejsze precyzyjne odczyty zakresów linii. Jawne żądania początku/końca nie są ograniczone tym ustawieniem.",
+			"label": "PrÃ³g automatycznego skracania odczytu pliku",
+			"description": "Roo odczytuje tÄ™ liczbÄ™ linii, gdy model nie okreÅ›la wartoÅ›ci poczÄ…tkowej/koÅ„cowej. JeÅ›li ta liczba jest mniejsza niÅ¼ caÅ‚kowita liczba linii pliku, Roo generuje indeks numerÃ³w linii definicji kodu. Przypadki specjalne: -1 nakazuje Roo odczytaÄ‡ caÅ‚y plik (bez indeksowania), a 0 nakazuje nie czytaÄ‡ Å¼adnych linii i dostarczyÄ‡ tylko indeksy linii dla minimalnego kontekstu. NiÅ¼sze wartoÅ›ci minimalizujÄ… poczÄ…tkowe uÅ¼ycie kontekstu, umoÅ¼liwiajÄ…c pÃ³Åºniejsze precyzyjne odczyty zakresÃ³w linii. Jawne Å¼Ä…dania poczÄ…tku/koÅ„ca nie sÄ… ograniczone tym ustawieniem.",
 			"lines": "linii",
-			"always_full_read": "Zawsze czytaj cały plik"
+			"always_full_read": "Zawsze czytaj caÅ‚y plik"
 		},
 		"maxConcurrentFileReads": {
-			"label": "Limit jednoczesnych odczytów",
-			"description": "Maksymalna liczba plików, które narzędzie 'read_file' może przetwarzać jednocześnie. Wyższe wartości mogą przyspieszyć odczyt wielu małych plików, ale zwiększają zużycie pamięci."
+			"label": "Limit jednoczesnych odczytÃ³w",
+			"description": "Maksymalna liczba plikÃ³w, ktÃ³re narzÄ™dzie \u0027read_file\u0027 moÅ¼e przetwarzaÄ‡ jednoczeÅ›nie. WyÅ¼sze wartoÅ›ci mogÄ… przyspieszyÄ‡ odczyt wielu maÅ‚ych plikÃ³w, ale zwiÄ™kszajÄ… zuÅ¼ycie pamiÄ™ci."
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "Automatycznie dołączaj diagnostykę do kontekstu",
-				"description": "Gdy włączone, komunikaty diagnostyczne (błędy) z edytowanych plików będą automatycznie dołączane do kontekstu. Zawsze możesz ręcznie dołączyć całą diagnostykę obszaru roboczego używając @problems."
+				"label": "Automatycznie doÅ‚Ä…czaj diagnostykÄ™ do kontekstu",
+				"description": "Gdy wÅ‚Ä…czone, komunikaty diagnostyczne (bÅ‚Ä™dy) z edytowanych plikÃ³w bÄ™dÄ… automatycznie doÅ‚Ä…czane do kontekstu. Zawsze moÅ¼esz rÄ™cznie doÅ‚Ä…czyÄ‡ caÅ‚Ä… diagnostykÄ™ obszaru roboczego uÅ¼ywajÄ…c @problems."
 			},
 			"maxMessages": {
-				"label": "Maksymalna liczba komunikatów diagnostycznych",
-				"description": "Maksymalna liczba komunikatów diagnostycznych dołączanych na plik. Ten limit dotyczy zarówno automatycznego dołączania (gdy pole wyboru jest włączone) jak i ręcznych wzmianek @problems. Wyższe wartości dostarczają więcej kontekstu, ale zwiększają zużycie tokenów.",
-				"resetTooltip": "Resetuj do wartości domyślnej (50)",
+				"label": "Maksymalna liczba komunikatÃ³w diagnostycznych",
+				"description": "Maksymalna liczba komunikatÃ³w diagnostycznych doÅ‚Ä…czanych na plik. Ten limit dotyczy zarÃ³wno automatycznego doÅ‚Ä…czania (gdy pole wyboru jest wÅ‚Ä…czone) jak i rÄ™cznych wzmianek @problems. WyÅ¼sze wartoÅ›ci dostarczajÄ… wiÄ™cej kontekstu, ale zwiÄ™kszajÄ… zuÅ¼ycie tokenÃ³w.",
+				"resetTooltip": "Resetuj do wartoÅ›ci domyÅ›lnej (50)",
 				"unlimited": "Nieograniczone komunikaty diagnostyczne",
 				"unlimitedLabel": "Nieograniczone"
 			},
 			"delayAfterWrite": {
-				"label": "Opóźnienie po zapisie, aby umożliwić diagnostyce wykrycie potencjalnych problemów",
-				"description": "Czas oczekiwania po zapisie plików przed kontynuowaniem, aby narzędzia diagnostyczne mogły przetworzyć zmiany i wykryć problemy."
+				"label": "OpÃ³Åºnienie po zapisie, aby umoÅ¼liwiÄ‡ diagnostyce wykrycie potencjalnych problemÃ³w",
+				"description": "Czas oczekiwania po zapisie plikÃ³w przed kontynuowaniem, aby narzÄ™dzia diagnostyczne mogÅ‚y przetworzyÄ‡ zmiany i wykryÄ‡ problemy."
 			}
 		},
 		"condensingThreshold": {
-			"label": "Próg wyzwalania kondensacji",
-			"selectProfile": "Skonfiguruj próg dla profilu",
-			"defaultProfile": "Globalny domyślny (wszystkie profile)",
-			"defaultDescription": "Gdy kontekst osiągnie ten procent, zostanie automatycznie skondensowany dla wszystkich profili, chyba że mają niestandardowe ustawienia",
-			"profileDescription": "Niestandardowy próg tylko dla tego profilu (zastępuje globalny domyślny)",
-			"inheritDescription": "Ten profil dziedziczy globalny domyślny próg ({{threshold}}%)",
-			"usesGlobal": "(używa globalnego {{threshold}}%)"
+			"label": "PrÃ³g wyzwalania kondensacji",
+			"selectProfile": "Skonfiguruj prÃ³g dla profilu",
+			"defaultProfile": "Globalny domyÅ›lny (wszystkie profile)",
+			"defaultDescription": "Gdy kontekst osiÄ…gnie ten procent, zostanie automatycznie skondensowany dla wszystkich profili, chyba Å¼e majÄ… niestandardowe ustawienia",
+			"profileDescription": "Niestandardowy prÃ³g tylko dla tego profilu (zastÄ™puje globalny domyÅ›lny)",
+			"inheritDescription": "Ten profil dziedziczy globalny domyÅ›lny prÃ³g ({{threshold}}%)",
+			"usesGlobal": "(uÅ¼ywa globalnego {{threshold}}%)"
 		},
 		"maxImageFileSize": {
 			"label": "Maksymalny rozmiar pliku obrazu",
 			"mb": "MB",
-			"description": "Maksymalny rozmiar (w MB) plików obrazów, które mogą być przetwarzane przez narzędzie do czytania plików."
+			"description": "Maksymalny rozmiar (w MB) plikÃ³w obrazÃ³w, ktÃ³re mogÄ… byÄ‡ przetwarzane przez narzÄ™dzie do czytania plikÃ³w."
 		},
 		"maxTotalImageSize": {
-			"label": "Maksymalny całkowity rozmiar obrazów",
+			"label": "Maksymalny caÅ‚kowity rozmiar obrazÃ³w",
 			"mb": "MB",
-			"description": "Maksymalny skumulowany limit rozmiaru (w MB) dla wszystkich obrazów przetwarzanych w jednej operacji read_file. Podczas odczytu wielu obrazów rozmiar każdego obrazu jest dodawany do sumy. Jeśli dołączenie kolejnego obrazu przekroczyłoby ten limit, zostanie on pominięty."
+			"description": "Maksymalny skumulowany limit rozmiaru (w MB) dla wszystkich obrazÃ³w przetwarzanych w jednej operacji read_file. Podczas odczytu wielu obrazÃ³w rozmiar kaÅ¼dego obrazu jest dodawany do sumy. JeÅ›li doÅ‚Ä…czenie kolejnego obrazu przekroczyÅ‚oby ten limit, zostanie on pominiÄ™ty."
 		},
 		"includeCurrentTime": {
-			"label": "Uwzględnij bieżący czas w kontekście",
-			"description": "Gdy włączone, bieżący czas i informacje o strefie czasowej zostaną uwzględnione w promptcie systemowym. Wyłącz, jeśli modele przestają działać z powodu problemów z czasem."
+			"label": "UwzglÄ™dnij bieÅ¼Ä…cy czas w kontekÅ›cie",
+			"description": "Gdy wÅ‚Ä…czone, bieÅ¼Ä…cy czas i informacje o strefie czasowej zostanÄ… uwzglÄ™dnione w promptcie systemowym. WyÅ‚Ä…cz, jeÅ›li modele przestajÄ… dziaÅ‚aÄ‡ z powodu problemÃ³w z czasem."
 		},
 		"includeCurrentCost": {
-			"label": "Uwzględnij bieżący koszt w kontekście",
-			"description": "Gdy włączone, bieżący koszt użycia API zostanie uwzględniony w promptcie systemowym. Wyłącz, jeśli modele przestają działać z powodu problemów z kosztami."
+			"label": "UwzglÄ™dnij bieÅ¼Ä…cy koszt w kontekÅ›cie",
+			"description": "Gdy wÅ‚Ä…czone, bieÅ¼Ä…cy koszt uÅ¼ycia API zostanie uwzglÄ™dniony w promptcie systemowym. WyÅ‚Ä…cz, jeÅ›li modele przestajÄ… dziaÅ‚aÄ‡ z powodu problemÃ³w z kosztami."
 		},
 		"maxGitStatusFiles": {
-			"label": "Git status maks. plików",
-			"description": "Maksymalna liczba wpisów plików do uwzględnienia w kontekście statusu git. Ustaw na 0, aby wyłączyć. Informacje o gałęzi i zatwierdzenia są zawsze pokazywane, gdy > 0."
+			"label": "Git status maks. plikÃ³w",
+			"description": "Maksymalna liczba wpisÃ³w plikÃ³w do uwzglÄ™dnienia w kontekÅ›cie statusu git. Ustaw na 0, aby wyÅ‚Ä…czyÄ‡. Informacje o gaÅ‚Ä™zi i zatwierdzenia sÄ… zawsze pokazywane, gdy \u003e 0."
 		}
 	},
 	"terminal": {
@@ -674,72 +678,72 @@
 		},
 		"advanced": {
 			"label": "Ustawienia terminala: Zaawansowane",
-			"description": "Te ustawienia mają zastosowanie tylko gdy 'Użyj terminala wbudowanego' jest wyłączone. Dotyczą tylko terminala VS Code i mogą wymagać ponownego uruchomienia IDE."
+			"description": "Te ustawienia majÄ… zastosowanie tylko gdy \u0027UÅ¼yj terminala wbudowanego\u0027 jest wyÅ‚Ä…czone. DotyczÄ… tylko terminala VS Code i mogÄ… wymagaÄ‡ ponownego uruchomienia IDE."
 		},
 		"outputLineLimit": {
-			"label": "Limit wyjścia terminala",
-			"description": "Zachowuje pierwsze i ostatnie linie i odrzuca środkowe, aby zmieścić się w limicie. Zmniejsz, aby oszczędzać tokeny; zwiększ, aby dać Roo więcej szczegółów ze środka. Roo widzi symbol zastępczy tam, gdzie treść jest pomijana.<0>Dowiedz się więcej</0>"
+			"label": "Limit wyjÅ›cia terminala",
+			"description": "Zachowuje pierwsze i ostatnie linie i odrzuca Å›rodkowe, aby zmieÅ›ciÄ‡ siÄ™ w limicie. Zmniejsz, aby oszczÄ™dzaÄ‡ tokeny; zwiÄ™ksz, aby daÄ‡ Roo wiÄ™cej szczegÃ³Å‚Ã³w ze Å›rodka. Roo widzi symbol zastÄ™pczy tam, gdzie treÅ›Ä‡ jest pomijana.\u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
-			"label": "Limit znaków terminala",
-			"description": "Zastępuje limit linii, aby zapobiec problemom z pamięcią, narzucając twardy limit rozmiaru wyjścia. W przypadku przekroczenia zachowuje początek i koniec i pokazuje symbol zastępczy Roo tam, gdzie treść jest pomijana. <0>Dowiedz się więcej</0>"
+			"label": "Limit znakÃ³w terminala",
+			"description": "ZastÄ™puje limit linii, aby zapobiec problemom z pamiÄ™ciÄ…, narzucajÄ…c twardy limit rozmiaru wyjÅ›cia. W przypadku przekroczenia zachowuje poczÄ…tek i koniec i pokazuje symbol zastÄ™pczy Roo tam, gdzie treÅ›Ä‡ jest pomijana. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
-			"label": "Limit czasu integracji powłoki terminala",
-			"description": "Jak długo czekać na integrację powłoki VS Code przed wykonaniem poleceń. Zwiększ, jeśli twoja powłoka wolno się uruchamia lub widzisz błędy 'Integracja Powłoki Niedostępna'. <0>Dowiedz się więcej</0>"
+			"label": "Limit czasu integracji powÅ‚oki terminala",
+			"description": "Jak dÅ‚ugo czekaÄ‡ na integracjÄ™ powÅ‚oki VS Code przed wykonaniem poleceÅ„. ZwiÄ™ksz, jeÅ›li twoja powÅ‚oka wolno siÄ™ uruchamia lub widzisz bÅ‚Ä™dy \u0027Integracja PowÅ‚oki NiedostÄ™pna\u0027. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
-			"label": "Użyj terminala wbudowanego (zalecane)",
-			"description": "Uruchamiaj polecenia w terminalu wbudowanym (czat), aby ominąć profile/integrację powłoki dla szybszych, bardziej niezawodnych uruchomień. Gdy wyłączony, Roo używa terminala VS Code z twoim profilem powłoki, monitami i wtyczkami. <0>Dowiedz się więcej</0>"
+			"label": "UÅ¼yj terminala wbudowanego (zalecane)",
+			"description": "Uruchamiaj polecenia w terminalu wbudowanym (czat), aby ominÄ…Ä‡ profile/integracjÄ™ powÅ‚oki dla szybszych, bardziej niezawodnych uruchomieÅ„. Gdy wyÅ‚Ä…czony, Roo uÅ¼ywa terminala VS Code z twoim profilem powÅ‚oki, monitami i wtyczkami. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"commandDelay": {
-			"label": "Opóźnienie polecenia terminala",
-			"description": "Dodaje krótką pauzę po każdym poleceniu, aby terminal VS Code mógł opróżnić całe wyjście (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Używaj tylko gdy widzisz brakujące wyjście końcowe; w przeciwnym razie zostaw na 0. <0>Dowiedz się więcej</0>"
+			"label": "OpÃ³Åºnienie polecenia terminala",
+			"description": "Dodaje krÃ³tkÄ… pauzÄ™ po kaÅ¼dym poleceniu, aby terminal VS Code mÃ³gÅ‚ oprÃ³Å¼niÄ‡ caÅ‚e wyjÅ›cie (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). UÅ¼ywaj tylko gdy widzisz brakujÄ…ce wyjÅ›cie koÅ„cowe; w przeciwnym razie zostaw na 0. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"compressProgressBar": {
-			"label": "Kompresuj wyjście paska postępu",
-			"description": "Zwija paski postępu/spinnery, aby zachować tylko stan końcowy (oszczędza tokeny). <0>Dowiedz się więcej</0>"
+			"label": "Kompresuj wyjÅ›cie paska postÄ™pu",
+			"description": "Zwija paski postÄ™pu/spinnery, aby zachowaÄ‡ tylko stan koÅ„cowy (oszczÄ™dza tokeny). \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"powershellCounter": {
-			"label": "Włącz obejście licznika PowerShell",
-			"description": "Włącz gdy brakuje lub jest zduplikowane wyjście PowerShell; dodaje mały licznik do każdego polecenia, aby ustabilizować wyjście. Pozostaw wyłączone, jeśli wyjście już wygląda poprawnie. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz obejÅ›cie licznika PowerShell",
+			"description": "WÅ‚Ä…cz gdy brakuje lub jest zduplikowane wyjÅ›cie PowerShell; dodaje maÅ‚y licznik do kaÅ¼dego polecenia, aby ustabilizowaÄ‡ wyjÅ›cie. Pozostaw wyÅ‚Ä…czone, jeÅ›li wyjÅ›cie juÅ¼ wyglÄ…da poprawnie. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
-			"label": "Wyczyść znacznik końca linii ZSH",
-			"description": "Włącz gdy widzisz zbłąkane % na końcu linii lub parsowanie wygląda nieprawidłowo; pomija znacznik końca linii (%) Zsh. <0>Dowiedz się więcej</0>"
+			"label": "WyczyÅ›Ä‡ znacznik koÅ„ca linii ZSH",
+			"description": "WÅ‚Ä…cz gdy widzisz zbÅ‚Ä…kane % na koÅ„cu linii lub parsowanie wyglÄ…da nieprawidÅ‚owo; pomija znacznik koÅ„ca linii (%) Zsh. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"zshOhMy": {
-			"label": "Włącz integrację Oh My Zsh",
-			"description": "Włącz gdy twój motyw/wtyczki Oh My Zsh oczekują integracji powłoki; ustawia ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Wyłącz, aby uniknąć ustawiania tej zmiennej. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz integracjÄ™ Oh My Zsh",
+			"description": "WÅ‚Ä…cz gdy twÃ³j motyw/wtyczki Oh My Zsh oczekujÄ… integracji powÅ‚oki; ustawia ITERM_SHELL_INTEGRATION_INSTALLED=Yes. WyÅ‚Ä…cz, aby uniknÄ…Ä‡ ustawiania tej zmiennej. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"zshP10k": {
-			"label": "Włącz integrację Powerlevel10k",
-			"description": "Włącz gdy używasz integracji powłoki Powerlevel10k. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz integracjÄ™ Powerlevel10k",
+			"description": "WÅ‚Ä…cz gdy uÅ¼ywasz integracji powÅ‚oki Powerlevel10k. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"zdotdir": {
-			"label": "Włącz obsługę ZDOTDIR",
-			"description": "Włącz gdy integracja powłoki zsh zawodzi lub jest w konflikcie z twoimi plikami dotfiles. <0>Dowiedz się więcej</0>"
+			"label": "WÅ‚Ä…cz obsÅ‚ugÄ™ ZDOTDIR",
+			"description": "WÅ‚Ä…cz gdy integracja powÅ‚oki zsh zawodzi lub jest w konflikcie z twoimi plikami dotfiles. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		},
 		"inheritEnv": {
-			"label": "Dziedzicz zmienne środowiskowe",
-			"description": "Włącz, aby dziedziczyć zmienne środowiskowe z procesu nadrzędnego VS Code. <0>Dowiedz się więcej</0>"
+			"label": "Dziedzicz zmienne Å›rodowiskowe",
+			"description": "WÅ‚Ä…cz, aby dziedziczyÄ‡ zmienne Å›rodowiskowe z procesu nadrzÄ™dnego VS Code. \u003c0\u003eDowiedz siÄ™ wiÄ™cej\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
 		"title": "Ustawienia zaawansowane"
 	},
 	"toolProtocol": {
-		"label": "Protokół wywołania narzędzia",
-		"description": "Wybierz, jak Roo komunikuje się z API. Natywny używa API wywołania funkcji dostawcy, podczas gdy XML używa definicji narzędzi w formacie XML.",
-		"default": "Domyślny",
+		"label": "ProtokÃ³Å‚ wywoÅ‚ania narzÄ™dzia",
+		"description": "Wybierz, jak Roo komunikuje siÄ™ z API. Natywny uÅ¼ywa API wywoÅ‚ania funkcji dostawcy, podczas gdy XML uÅ¼ywa definicji narzÄ™dzi w formacie XML.",
+		"default": "DomyÅ›lny",
 		"xml": "XML",
 		"native": "Natywny",
-		"currentDefault": "Domyślny: {{protocol}}"
+		"currentDefault": "DomyÅ›lny: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "Włącz edycję przez różnice",
-			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików",
+			"label": "WÅ‚Ä…cz edycjÄ™ przez rÃ³Å¼nice",
+			"description": "Gdy wÅ‚Ä…czone, Roo bÄ™dzie w stanie edytowaÄ‡ pliki szybciej i automatycznie odrzuci obciÄ™te peÅ‚ne zapisy plikÃ³w",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
@@ -749,127 +753,127 @@
 				},
 				"descriptions": {
 					"standard": "Standardowa strategia diff stosuje zmiany do jednego bloku kodu na raz.",
-					"unified": "Strategia diff ujednoliconego stosuje wiele podejść do zastosowania różnic i wybiera najlepsze podejście.",
-					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
+					"unified": "Strategia diff ujednoliconego stosuje wiele podejÅ›Ä‡ do zastosowania rÃ³Å¼nic i wybiera najlepsze podejÅ›cie.",
+					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizacjÄ™ wielu blokÃ³w kodu w pliku w jednym Å¼Ä…daniu."
 				}
 			},
 			"matchPrecision": {
 				"label": "Precyzja dopasowania",
-				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."
+				"description": "Ten suwak kontroluje, jak dokÅ‚adnie sekcje kodu muszÄ… pasowaÄ‡ podczas stosowania rÃ³Å¼nic. NiÅ¼sze wartoÅ›ci umoÅ¼liwiajÄ… bardziej elastyczne dopasowywanie, ale zwiÄ™kszajÄ… ryzyko nieprawidÅ‚owych zamian. UÅ¼ywaj wartoÅ›ci poniÅ¼ej 100% z najwyÅ¼szÄ… ostroÅ¼noÅ›ciÄ…."
 			}
 		},
 		"todoList": {
-			"label": "Włącz narzędzie listy zadań",
-			"description": "Po włączeniu Roo może tworzyć i zarządzać listami zadań do śledzenia postępu zadań. Pomaga to organizować złożone zadania w łatwe do zarządzania kroki."
+			"label": "WÅ‚Ä…cz narzÄ™dzie listy zadaÅ„",
+			"description": "Po wÅ‚Ä…czeniu Roo moÅ¼e tworzyÄ‡ i zarzÄ…dzaÄ‡ listami zadaÅ„ do Å›ledzenia postÄ™pu zadaÅ„. Pomaga to organizowaÄ‡ zÅ‚oÅ¼one zadania w Å‚atwe do zarzÄ…dzania kroki."
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "Użyj eksperymentalnej ujednoliconej strategii diff",
-			"description": "Włącz eksperymentalną ujednoliconą strategię diff. Ta strategia może zmniejszyć liczbę ponownych prób spowodowanych błędami modelu, ale może powodować nieoczekiwane zachowanie lub nieprawidłowe edycje. Włącz tylko jeśli rozumiesz ryzyko i jesteś gotów dokładnie przeglądać wszystkie zmiany."
+			"name": "UÅ¼yj eksperymentalnej ujednoliconej strategii diff",
+			"description": "WÅ‚Ä…cz eksperymentalnÄ… ujednoliconÄ… strategiÄ™ diff. Ta strategia moÅ¼e zmniejszyÄ‡ liczbÄ™ ponownych prÃ³b spowodowanych bÅ‚Ä™dami modelu, ale moÅ¼e powodowaÄ‡ nieoczekiwane zachowanie lub nieprawidÅ‚owe edycje. WÅ‚Ä…cz tylko jeÅ›li rozumiesz ryzyko i jesteÅ› gotÃ³w dokÅ‚adnie przeglÄ…daÄ‡ wszystkie zmiany."
 		},
 		"INSERT_BLOCK": {
-			"name": "Użyj eksperymentalnego narzędzia do wstawiania treści",
-			"description": "Włącz eksperymentalne narzędzie do wstawiania treści, umożliwiając Roo wstawianie treści w określonych numerach linii bez konieczności tworzenia diff."
+			"name": "UÅ¼yj eksperymentalnego narzÄ™dzia do wstawiania treÅ›ci",
+			"description": "WÅ‚Ä…cz eksperymentalne narzÄ™dzie do wstawiania treÅ›ci, umoÅ¼liwiajÄ…c Roo wstawianie treÅ›ci w okreÅ›lonych numerach linii bez koniecznoÅ›ci tworzenia diff."
 		},
 		"POWER_STEERING": {
-			"name": "Użyj eksperymentalnego trybu \"wspomagania kierownicy\"",
-			"description": "Po włączeniu, Roo będzie częściej przypominać modelowi o szczegółach jego bieżącej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji ról i niestandardowych instrukcji, ale będzie używać więcej tokenów na wiadomość."
+			"name": "UÅ¼yj eksperymentalnego trybu \"wspomagania kierownicy\"",
+			"description": "Po wÅ‚Ä…czeniu, Roo bÄ™dzie czÄ™Å›ciej przypominaÄ‡ modelowi o szczegÃ³Å‚ach jego bieÅ¼Ä…cej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji rÃ³l i niestandardowych instrukcji, ale bÄ™dzie uÅ¼ywaÄ‡ wiÄ™cej tokenÃ³w na wiadomoÅ›Ä‡."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "Użyj eksperymentalnego narzędzia diff wieloblokowego",
-			"description": "Po włączeniu, Roo użyje narzędzia diff wieloblokowego. Spróbuje to zaktualizować wiele bloków kodu w pliku w jednym żądaniu."
+			"name": "UÅ¼yj eksperymentalnego narzÄ™dzia diff wieloblokowego",
+			"description": "Po wÅ‚Ä…czeniu, Roo uÅ¼yje narzÄ™dzia diff wieloblokowego. SprÃ³buje to zaktualizowaÄ‡ wiele blokÃ³w kodu w pliku w jednym Å¼Ä…daniu."
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "Włącz jednoczesne odczytywanie plików",
-			"description": "Po włączeniu Roo może odczytać wiele plików w jednym żądaniu. Po wyłączeniu Roo musi odczytywać pliki pojedynczo. Wyłączenie może pomóc podczas pracy z mniej wydajnymi modelami lub gdy chcesz mieć większą kontrolę nad dostępem do plików."
+			"name": "WÅ‚Ä…cz jednoczesne odczytywanie plikÃ³w",
+			"description": "Po wÅ‚Ä…czeniu Roo moÅ¼e odczytaÄ‡ wiele plikÃ³w w jednym Å¼Ä…daniu. Po wyÅ‚Ä…czeniu Roo musi odczytywaÄ‡ pliki pojedynczo. WyÅ‚Ä…czenie moÅ¼e pomÃ³c podczas pracy z mniej wydajnymi modelami lub gdy chcesz mieÄ‡ wiÄ™kszÄ… kontrolÄ™ nad dostÄ™pem do plikÃ³w."
 		},
 		"MARKETPLACE": {
-			"name": "Włącz Marketplace",
-			"description": "Gdy włączone, możesz instalować MCP i niestandardowe tryby z Marketplace."
+			"name": "WÅ‚Ä…cz Marketplace",
+			"description": "Gdy wÅ‚Ä…czone, moÅ¼esz instalowaÄ‡ MCP i niestandardowe tryby z Marketplace."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Włącz równoczesne edycje plików",
-			"description": "Gdy włączone, Roo może edytować wiele plików w jednym żądaniu. Gdy wyłączone, Roo musi edytować pliki jeden po drugim. Wyłączenie tego może pomóc podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieć większą kontrolę nad modyfikacjami plików."
+			"name": "WÅ‚Ä…cz rÃ³wnoczesne edycje plikÃ³w",
+			"description": "Gdy wÅ‚Ä…czone, Roo moÅ¼e edytowaÄ‡ wiele plikÃ³w w jednym Å¼Ä…daniu. Gdy wyÅ‚Ä…czone, Roo musi edytowaÄ‡ pliki jeden po drugim. WyÅ‚Ä…czenie tego moÅ¼e pomÃ³c podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieÄ‡ wiÄ™kszÄ… kontrolÄ™ nad modyfikacjami plikÃ³w."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edycja w tle",
-			"description": "Zapobiega zakłócaniu fokusa edytora gdy włączone. Edycje plików odbywają się w tle bez otwierania widoków różnic lub kradzieży fokusa. Możesz kontynuować pracę bez przeszkód podczas gdy Roo wprowadza zmiany. Pliki mogą być otwierane bez fokusa aby przechwycić diagnostykę lub pozostać całkowicie zamknięte."
+			"description": "Zapobiega zakÅ‚Ã³caniu fokusa edytora gdy wÅ‚Ä…czone. Edycje plikÃ³w odbywajÄ… siÄ™ w tle bez otwierania widokÃ³w rÃ³Å¼nic lub kradzieÅ¼y fokusa. MoÅ¼esz kontynuowaÄ‡ pracÄ™ bez przeszkÃ³d podczas gdy Roo wprowadza zmiany. Pliki mogÄ… byÄ‡ otwierane bez fokusa aby przechwyciÄ‡ diagnostykÄ™ lub pozostaÄ‡ caÅ‚kowicie zamkniÄ™te."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "Użyj nowego parsera wiadomości",
-			"description": "Włącz eksperymentalny parser wiadomości w strumieniu, który przyspiesza długie odpowiedzi dzięki bardziej wydajnemu przetwarzaniu wiadomości."
+			"name": "UÅ¼yj nowego parsera wiadomoÅ›ci",
+			"description": "WÅ‚Ä…cz eksperymentalny parser wiadomoÅ›ci w strumieniu, ktÃ³ry przyspiesza dÅ‚ugie odpowiedzi dziÄ™ki bardziej wydajnemu przetwarzaniu wiadomoÅ›ci."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "Wymagaj listy 'todos' dla nowych zadań",
-			"description": "Gdy włączone, narzędzie new_task będzie wymagało podania parametru todos. Zapewnia to, że wszystkie nowe zadania rozpoczynają się od jasnej listy celów. Gdy wyłączone (domyślnie), parametr todos pozostaje opcjonalny dla zachowania kompatybilności wstecznej."
+			"name": "Wymagaj listy \u0027todos\u0027 dla nowych zadaÅ„",
+			"description": "Gdy wÅ‚Ä…czone, narzÄ™dzie new_task bÄ™dzie wymagaÅ‚o podania parametru todos. Zapewnia to, Å¼e wszystkie nowe zadania rozpoczynajÄ… siÄ™ od jasnej listy celÃ³w. Gdy wyÅ‚Ä…czone (domyÅ›lnie), parametr todos pozostaje opcjonalny dla zachowania kompatybilnoÅ›ci wstecznej."
 		},
 		"IMAGE_GENERATION": {
 			"providerLabel": "Dostawca",
-			"providerDescription": "Wybierz dostawcę do generowania obrazów.",
-			"name": "Włącz generowanie obrazów AI",
-			"description": "Gdy włączone, Roo może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
+			"providerDescription": "Wybierz dostawcÄ™ do generowania obrazÃ³w.",
+			"name": "WÅ‚Ä…cz generowanie obrazÃ³w AI",
+			"description": "Gdy wÅ‚Ä…czone, Roo moÅ¼e generowaÄ‡ obrazy z promptÃ³w tekstowych uÅ¼ywajÄ…c modeli generowania obrazÃ³w OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
 			"openRouterApiKeyLabel": "Klucz API OpenRouter",
-			"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
-			"getApiKeyText": "Uzyskaj swój klucz API od",
-			"modelSelectionLabel": "Model generowania obrazów",
-			"modelSelectionDescription": "Wybierz model do generowania obrazów",
-			"warningMissingKey": "⚠️ Klucz API OpenRouter jest wymagany do generowania obrazów. Skonfiguruj go powyżej.",
-			"successConfigured": "✓ Generowanie obrazów jest skonfigurowane i gotowe do użycia"
+			"openRouterApiKeyPlaceholder": "WprowadÅº swÃ³j klucz API OpenRouter",
+			"getApiKeyText": "Uzyskaj swÃ³j klucz API od",
+			"modelSelectionLabel": "Model generowania obrazÃ³w",
+			"modelSelectionDescription": "Wybierz model do generowania obrazÃ³w",
+			"warningMissingKey": "âš ï¸ Klucz API OpenRouter jest wymagany do generowania obrazÃ³w. Skonfiguruj go powyÅ¼ej.",
+			"successConfigured": "âœ“ Generowanie obrazÃ³w jest skonfigurowane i gotowe do uÅ¼ycia"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Włącz polecenia slash inicjowane przez model",
-			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
+			"name": "WÅ‚Ä…cz polecenia slash inicjowane przez model",
+			"description": "Gdy wÅ‚Ä…czone, Roo moÅ¼e uruchamiaÄ‡ twoje polecenia slash w celu wykonywania przepÅ‚ywÃ³w pracy."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Równoległe wywołania narzędzi",
-			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
+			"name": "RÃ³wnolegÅ‚e wywoÅ‚ania narzÄ™dzi",
+			"description": "Po wÅ‚Ä…czeniu protokÃ³Å‚ natywny moÅ¼e wykonywaÄ‡ wiele narzÄ™dzi w jednej turze wiadomoÅ›ci asystenta."
 		}
 	},
 	"promptCaching": {
-		"label": "Wyłącz buforowanie promptów",
-		"description": "Po zaznaczeniu, Roo nie będzie używać buforowania promptów dla tego modelu."
+		"label": "WyÅ‚Ä…cz buforowanie promptÃ³w",
+		"description": "Po zaznaczeniu, Roo nie bÄ™dzie uÅ¼ywaÄ‡ buforowania promptÃ³w dla tego modelu."
 	},
 	"temperature": {
-		"useCustom": "Użyj niestandardowej temperatury",
-		"description": "Kontroluje losowość w odpowiedziach modelu.",
-		"rangeDescription": "Wyższe wartości sprawiają, że wyjście jest bardziej losowe, niższe wartości czynią je bardziej deterministycznym."
+		"useCustom": "UÅ¼yj niestandardowej temperatury",
+		"description": "Kontroluje losowoÅ›Ä‡ w odpowiedziach modelu.",
+		"rangeDescription": "WyÅ¼sze wartoÅ›ci sprawiajÄ…, Å¼e wyjÅ›cie jest bardziej losowe, niÅ¼sze wartoÅ›ci czyniÄ… je bardziej deterministycznym."
 	},
 	"modelInfo": {
-		"supportsImages": "Obsługuje obrazy",
-		"noImages": "Nie obsługuje obrazów",
-		"supportsPromptCache": "Obsługuje buforowanie podpowiedzi",
-		"noPromptCache": "Nie obsługuje buforowania podpowiedzi",
+		"supportsImages": "ObsÅ‚uguje obrazy",
+		"noImages": "Nie obsÅ‚uguje obrazÃ³w",
+		"supportsPromptCache": "ObsÅ‚uguje buforowanie podpowiedzi",
+		"noPromptCache": "Nie obsÅ‚uguje buforowania podpowiedzi",
 		"contextWindow": "Okno kontekstowe:",
-		"maxOutput": "Maksymalne wyjście",
-		"inputPrice": "Cena wejścia",
-		"outputPrice": "Cena wyjścia",
-		"cacheReadsPrice": "Cena odczytów bufora",
-		"cacheWritesPrice": "Cena zapisów bufora",
-		"enableStreaming": "Włącz strumieniowanie",
-		"enableR1Format": "Włącz parametry modelu R1",
-		"enableR1FormatTips": "Należy włączyć podczas korzystania z modeli R1, takich jak QWQ, aby uniknąć błędu 400",
-		"useAzure": "Użyj Azure",
-		"azureApiVersion": "Ustaw wersję API Azure",
+		"maxOutput": "Maksymalne wyjÅ›cie",
+		"inputPrice": "Cena wejÅ›cia",
+		"outputPrice": "Cena wyjÅ›cia",
+		"cacheReadsPrice": "Cena odczytÃ³w bufora",
+		"cacheWritesPrice": "Cena zapisÃ³w bufora",
+		"enableStreaming": "WÅ‚Ä…cz strumieniowanie",
+		"enableR1Format": "WÅ‚Ä…cz parametry modelu R1",
+		"enableR1FormatTips": "NaleÅ¼y wÅ‚Ä…czyÄ‡ podczas korzystania z modeli R1, takich jak QWQ, aby uniknÄ…Ä‡ bÅ‚Ä™du 400",
+		"useAzure": "UÅ¼yj Azure",
+		"azureApiVersion": "Ustaw wersjÄ™ API Azure",
 		"gemini": {
-			"freeRequests": "* Darmowe do {{count}} zapytań na minutę. Po tym, rozliczanie zależy od rozmiaru podpowiedzi.",
-			"pricingDetails": "Więcej informacji znajdziesz w szczegółach cennika.",
-			"billingEstimate": "* Rozliczenie jest szacunkowe - dokładny koszt zależy od rozmiaru podpowiedzi."
+			"freeRequests": "* Darmowe do {{count}} zapytaÅ„ na minutÄ™. Po tym, rozliczanie zaleÅ¼y od rozmiaru podpowiedzi.",
+			"pricingDetails": "WiÄ™cej informacji znajdziesz w szczegÃ³Å‚ach cennika.",
+			"billingEstimate": "* Rozliczenie jest szacunkowe - dokÅ‚adny koszt zaleÅ¼y od rozmiaru podpowiedzi."
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Rozszerzenie automatycznie pobiera najnowszą listę modeli dostępnych w <serviceLink>{{serviceName}}</serviceLink>. Jeśli nie jesteś pewien, który model wybrać, Roo Code działa najlepiej z <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Możesz również wyszukać \"free\", aby znaleźć obecnie dostępne opcje bezpłatne.",
+		"automaticFetch": "Rozszerzenie automatycznie pobiera najnowszÄ… listÄ™ modeli dostÄ™pnych w \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003e. JeÅ›li nie jesteÅ› pewien, ktÃ³ry model wybraÄ‡, Roo Code dziaÅ‚a najlepiej z \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003e. MoÅ¼esz rÃ³wnieÅ¼ wyszukaÄ‡ \"free\", aby znaleÅºÄ‡ obecnie dostÄ™pne opcje bezpÅ‚atne.",
 		"label": "Model",
 		"searchPlaceholder": "Wyszukaj",
-		"noMatchFound": "Nie znaleziono dopasowań",
-		"useCustomModel": "Użyj niestandardowy: {{modelId}}",
-		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
+		"noMatchFound": "Nie znaleziono dopasowaÅ„",
+		"useCustomModel": "UÅ¼yj niestandardowy: {{modelId}}",
+		"simplifiedExplanation": "MoÅ¼na dostosowaÄ‡ szczegÃ³Å‚owe ustawienia modelu pÃ³Åºniej."
 	},
 	"footer": {
-		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "JeÅ›li masz jakiekolwiek pytania lub opinie, Å›miaÅ‚o otwÃ³rz zgÅ‚oszenie na \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003e lub doÅ‚Ä…cz do \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e lub \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
 		"telemetry": {
-			"label": "Zezwól na anonimowe raportowanie błędów i użycia",
-			"description": "Pomóż ulepszyć Roo Code, wysyłając anonimowe dane użytkowania i raporty błędów. Ta telemetria nie zbiera kodu, promptów ani danych osobowych. Zobacz naszą <privacyLink>politykę prywatności</privacyLink>, aby uzyskać więcej szczegółów. Możesz to wyłączyć w dowolnym momencie."
+			"label": "ZezwÃ³l na anonimowe raportowanie bÅ‚Ä™dÃ³w i uÅ¼ycia",
+			"description": "PomÃ³Å¼ ulepszyÄ‡ Roo Code, wysyÅ‚ajÄ…c anonimowe dane uÅ¼ytkowania i raporty bÅ‚Ä™dÃ³w. Ta telemetria nie zbiera kodu, promptÃ³w ani danych osobowych. Zobacz naszÄ… \u003cprivacyLink\u003epolitykÄ™ prywatnoÅ›ci\u003c/privacyLink\u003e, aby uzyskaÄ‡ wiÄ™cej szczegÃ³Å‚Ã³w. MoÅ¼esz to wyÅ‚Ä…czyÄ‡ w dowolnym momencie."
 		},
 		"settings": {
 			"import": "Importuj",
@@ -878,38 +882,38 @@
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "Maksymalna liczba tokenów",
-		"maxThinkingTokens": "Maksymalna liczba tokenów myślenia"
+		"maxTokens": "Maksymalna liczba tokenÃ³w",
+		"maxThinkingTokens": "Maksymalna liczba tokenÃ³w myÅ›lenia"
 	},
 	"validation": {
-		"apiKey": "Musisz podać prawidłowy klucz API.",
-		"awsRegion": "Musisz wybrać region, aby korzystać z Amazon Bedrock.",
-		"googleCloud": "Musisz podać prawidłowe ID projektu i region Google Cloud.",
-		"modelId": "Musisz podać prawidłowe ID modelu.",
-		"modelSelector": "Musisz podać prawidłowy selektor modelu.",
-		"openAi": "Musisz podać prawidłowy bazowy URL, klucz API i ID modelu.",
+		"apiKey": "Musisz podaÄ‡ prawidÅ‚owy klucz API.",
+		"awsRegion": "Musisz wybraÄ‡ region, aby korzystaÄ‡ z Amazon Bedrock.",
+		"googleCloud": "Musisz podaÄ‡ prawidÅ‚owe ID projektu i region Google Cloud.",
+		"modelId": "Musisz podaÄ‡ prawidÅ‚owe ID modelu.",
+		"modelSelector": "Musisz podaÄ‡ prawidÅ‚owy selektor modelu.",
+		"openAi": "Musisz podaÄ‡ prawidÅ‚owy bazowy URL, klucz API i ID modelu.",
 		"arn": {
-			"invalidFormat": "Nieprawidłowy format ARN. Sprawdź wymagania dotyczące formatu.",
-			"regionMismatch": "Ostrzeżenie: Region w Twoim ARN ({{arnRegion}}) nie zgadza się z wybranym regionem ({{region}}). Może to powodować problemy z dostępem. Dostawca użyje regionu z ARN."
+			"invalidFormat": "NieprawidÅ‚owy format ARN. SprawdÅº wymagania dotyczÄ…ce formatu.",
+			"regionMismatch": "OstrzeÅ¼enie: Region w Twoim ARN ({{arnRegion}}) nie zgadza siÄ™ z wybranym regionem ({{region}}). MoÅ¼e to powodowaÄ‡ problemy z dostÄ™pem. Dostawca uÅ¼yje regionu z ARN."
 		},
-		"modelAvailability": "Podane ID modelu ({{modelId}}) jest niedostępne. Wybierz inny model.",
-		"modelDeprecated": "Ten model nie jest już dostępny. Wybierz inny model.",
-		"providerNotAllowed": "Dostawca '{{provider}}' nie jest dozwolony przez Twoją organizację",
-		"modelNotAllowed": "Model '{{model}}' nie jest dozwolony dla dostawcy '{{provider}}' przez Twoją organizację",
-		"profileInvalid": "Ten profil zawiera dostawcę lub model, który nie jest dozwolony przez Twoją organizację",
-		"qwenCodeOauthPath": "Musisz podać prawidłową ścieżkę do poświadczeń OAuth"
+		"modelAvailability": "Podane ID modelu ({{modelId}}) jest niedostÄ™pne. Wybierz inny model.",
+		"modelDeprecated": "Ten model nie jest juÅ¼ dostÄ™pny. Wybierz inny model.",
+		"providerNotAllowed": "Dostawca \u0027{{provider}}\u0027 nie jest dozwolony przez TwojÄ… organizacjÄ™",
+		"modelNotAllowed": "Model \u0027{{model}}\u0027 nie jest dozwolony dla dostawcy \u0027{{provider}}\u0027 przez TwojÄ… organizacjÄ™",
+		"profileInvalid": "Ten profil zawiera dostawcÄ™ lub model, ktÃ³ry nie jest dozwolony przez TwojÄ… organizacjÄ™",
+		"qwenCodeOauthPath": "Musisz podaÄ‡ prawidÅ‚owÄ… Å›cieÅ¼kÄ™ do poÅ›wiadczeÅ„ OAuth"
 	},
 	"placeholders": {
-		"apiKey": "Wprowadź klucz API...",
-		"profileName": "Wprowadź nazwę profilu",
-		"accessKey": "Wprowadź klucz dostępu...",
-		"secretKey": "Wprowadź klucz tajny...",
-		"sessionToken": "Wprowadź token sesji...",
-		"credentialsJson": "Wprowadź JSON poświadczeń...",
-		"keyFilePath": "Wprowadź ścieżkę pliku klucza...",
-		"projectId": "Wprowadź ID projektu...",
-		"customArn": "Wprowadź ARN (np. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
-		"baseUrl": "Wprowadź podstawowy URL...",
+		"apiKey": "WprowadÅº klucz API...",
+		"profileName": "WprowadÅº nazwÄ™ profilu",
+		"accessKey": "WprowadÅº klucz dostÄ™pu...",
+		"secretKey": "WprowadÅº klucz tajny...",
+		"sessionToken": "WprowadÅº token sesji...",
+		"credentialsJson": "WprowadÅº JSON poÅ›wiadczeÅ„...",
+		"keyFilePath": "WprowadÅº Å›cieÅ¼kÄ™ pliku klucza...",
+		"projectId": "WprowadÅº ID projektu...",
+		"customArn": "WprowadÅº ARN (np. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
+		"baseUrl": "WprowadÅº podstawowy URL...",
 		"modelId": {
 			"lmStudio": "np. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "np. lmstudio-community/llama-3.2-1b-instruct",
@@ -924,41 +928,41 @@
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "Domyślnie: http://localhost:11434",
-		"lmStudioUrl": "Domyślnie: http://localhost:1234",
-		"geminiUrl": "Domyślnie: https://generativelanguage.googleapis.com"
+		"ollamaUrl": "DomyÅ›lnie: http://localhost:11434",
+		"lmStudioUrl": "DomyÅ›lnie: http://localhost:1234",
+		"geminiUrl": "DomyÅ›lnie: https://generativelanguage.googleapis.com"
 	},
 	"labels": {
 		"customArn": "Niestandardowy ARN",
-		"useCustomArn": "Użyj niestandardowego ARN..."
+		"useCustomArn": "UÅ¼yj niestandardowego ARN..."
 	},
-	"includeMaxOutputTokens": "Uwzględnij maksymalne tokeny wyjściowe",
-	"includeMaxOutputTokensDescription": "Wyślij parametr maksymalnych tokenów wyjściowych w żądaniach API. Niektórzy dostawcy mogą tego nie obsługiwać.",
-	"limitMaxTokensDescription": "Ogranicz maksymalną liczbę tokenów w odpowiedzi",
-	"maxOutputTokensLabel": "Maksymalne tokeny wyjściowe",
+	"includeMaxOutputTokens": "UwzglÄ™dnij maksymalne tokeny wyjÅ›ciowe",
+	"includeMaxOutputTokensDescription": "WyÅ›lij parametr maksymalnych tokenÃ³w wyjÅ›ciowych w Å¼Ä…daniach API. NiektÃ³rzy dostawcy mogÄ… tego nie obsÅ‚ugiwaÄ‡.",
+	"limitMaxTokensDescription": "Ogranicz maksymalnÄ… liczbÄ™ tokenÃ³w w odpowiedzi",
+	"maxOutputTokensLabel": "Maksymalne tokeny wyjÅ›ciowe",
 	"maxTokensGenerateDescription": "Maksymalne tokeny do wygenerowania w odpowiedzi",
 	"serviceTier": {
-		"label": "Poziom usług",
-		"tooltip": "Aby szybciej przetwarzać żądania API, wypróbuj priorytetowy poziom usług. Aby uzyskać niższe ceny przy wyższej latencji, wypróbuj elastyczny poziom usług.",
+		"label": "Poziom usÅ‚ug",
+		"tooltip": "Aby szybciej przetwarzaÄ‡ Å¼Ä…dania API, wyprÃ³buj priorytetowy poziom usÅ‚ug. Aby uzyskaÄ‡ niÅ¼sze ceny przy wyÅ¼szej latencji, wyprÃ³buj elastyczny poziom usÅ‚ug.",
 		"standard": "Standardowy",
 		"flex": "Elastyczny",
 		"priority": "Priorytetowy",
-		"pricingTableTitle": "Cennik według poziomu usług (cena za 1 mln tokenów)",
+		"pricingTableTitle": "Cennik wedÅ‚ug poziomu usÅ‚ug (cena za 1 mln tokenÃ³w)",
 		"columns": {
 			"tier": "Poziom",
-			"input": "Wejście",
-			"output": "Wyjście",
-			"cacheReads": "Odczyty z pamięci podręcznej"
+			"input": "WejÅ›cie",
+			"output": "WyjÅ›cie",
+			"cacheReads": "Odczyty z pamiÄ™ci podrÄ™cznej"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "Domyślnie zwijaj komunikaty o myśleniu",
-			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
+			"label": "DomyÅ›lnie zwijaj komunikaty o myÅ›leniu",
+			"description": "Gdy wÅ‚Ä…czone, bloki myÅ›lenia bÄ™dÄ… domyÅ›lnie zwiniÄ™te, dopÃ³ki nie wejdziesz z nimi w interakcjÄ™"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "Wymagaj {{primaryMod}}+Enter do wysyłania wiadomości",
-			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
+			"label": "Wymagaj {{primaryMod}}+Enter do wysyÅ‚ania wiadomoÅ›ci",
+			"description": "Po wÅ‚Ä…czeniu musisz nacisnÄ…Ä‡ {{primaryMod}}+Enter, aby wysÅ‚aÄ‡ wiadomoÅ›ci, zamiast tylko Enter"
 		}
 	}
 }

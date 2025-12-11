@@ -1,964 +1,968 @@
 {
 	"common": {
-		"save": "保存",
-		"done": "完了",
-		"cancel": "キャンセル",
-		"reset": "リセット",
-		"select": "選択",
-		"add": "ヘッダーを追加",
-		"remove": "削除"
+		"save": "ä¿å­˜",
+		"done": "å®Œäº†",
+		"cancel": "ã‚­ãƒ£ãƒ³ã‚»ãƒ«",
+		"reset": "ãƒªã‚»ãƒƒãƒˆ",
+		"select": "é¸æŠž",
+		"add": "ãƒ˜ãƒƒãƒ€ãƒ¼ã‚’è¿½åŠ ",
+		"remove": "å‰Šé™¤"
 	},
 	"header": {
-		"title": "設定",
-		"saveButtonTooltip": "変更を保存",
-		"nothingChangedTooltip": "変更なし",
-		"doneButtonTooltip": "未保存の変更を破棄して設定パネルを閉じる"
+		"title": "è¨­å®š",
+		"saveButtonTooltip": "å¤‰æ›´ã‚’ä¿å­˜",
+		"nothingChangedTooltip": "å¤‰æ›´ãªã—",
+		"doneButtonTooltip": "æœªä¿å­˜ã®å¤‰æ›´ã‚’ç ´æ£„ã—ã¦è¨­å®šãƒ‘ãƒãƒ«ã‚’é–‰ã˜ã‚‹"
 	},
 	"unsavedChangesDialog": {
-		"title": "未保存の変更",
-		"description": "変更を破棄して続行しますか？",
-		"cancelButton": "キャンセル",
-		"discardButton": "変更を破棄"
+		"title": "æœªä¿å­˜ã®å¤‰æ›´",
+		"description": "å¤‰æ›´ã‚’ç ´æ£„ã—ã¦ç¶šè¡Œã—ã¾ã™ã‹ï¼Ÿ",
+		"cancelButton": "ã‚­ãƒ£ãƒ³ã‚»ãƒ«",
+		"discardButton": "å¤‰æ›´ã‚’ç ´æ£„"
 	},
 	"sections": {
-		"providers": "プロバイダー",
-		"modes": "モード",
-		"mcp": "MCPサーバー",
-		"autoApprove": "自動承認",
-		"browser": "コンピューターアクセス",
-		"checkpoints": "チェックポイント",
-		"notifications": "通知",
-		"contextManagement": "コンテキスト",
-		"terminal": "ターミナル",
-		"slashCommands": "スラッシュコマンド",
-		"prompts": "プロンプト",
+		"providers": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+		"modes": "ãƒ¢ãƒ¼ãƒ‰",
+		"mcp": "MCPã‚µãƒ¼ãƒãƒ¼",
+		"autoApprove": "è‡ªå‹•æ‰¿èª",
+		"browser": "ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ã‚¢ã‚¯ã‚»ã‚¹",
+		"checkpoints": "ãƒã‚§ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒˆ",
+		"notifications": "é€šçŸ¥",
+		"contextManagement": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆ",
+		"terminal": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«",
+		"slashCommands": "ã‚¹ãƒ©ãƒƒã‚·ãƒ¥ã‚³ãƒžãƒ³ãƒ‰",
+		"prompts": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆ",
 		"ui": "UI",
-		"experimental": "実験的",
-		"language": "言語",
-		"about": "Roo Codeについて"
+		"experimental": "å®Ÿé¨“çš„",
+		"language": "è¨€èªž",
+		"about": "Roo Codeã«ã¤ã„ã¦"
 	},
 	"about": {
 		"bugReport": {
-			"label": "バグを見つけましたか？",
-			"link": "GitHubで報告"
+			"label": "ãƒã‚°ã‚’è¦‹ã¤ã‘ã¾ã—ãŸã‹ï¼Ÿ",
+			"link": "GitHubã§å ±å‘Š"
 		},
 		"featureRequest": {
-			"label": "アイデアがありますか？",
-			"link": "共有してください"
+			"label": "ã‚¢ã‚¤ãƒ‡ã‚¢ãŒã‚ã‚Šã¾ã™ã‹ï¼Ÿ",
+			"link": "å…±æœ‰ã—ã¦ãã ã•ã„"
 		},
 		"securityIssue": {
-			"label": "脆弱性を発見しましたか？",
-			"link": "開示プロセスに従ってください"
+			"label": "è„†å¼±æ€§ã‚’ç™ºè¦‹ã—ã¾ã—ãŸã‹ï¼Ÿ",
+			"link": "é–‹ç¤ºãƒ—ãƒ­ã‚»ã‚¹ã«å¾“ã£ã¦ãã ã•ã„"
 		},
 		"contact": {
-			"label": "お問い合わせが必要ですか？メールを送信"
+			"label": "ãŠå•ã„åˆã‚ã›ãŒå¿…è¦ã§ã™ã‹ï¼Ÿãƒ¡ãƒ¼ãƒ«ã‚’é€ä¿¡"
 		},
-		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
-		"contactAndCommunity": "お問い合わせとコミュニティ",
-		"manageSettings": "設定を管理"
+		"community": "ãƒ’ãƒ³ãƒˆãŒæ¬²ã—ã„ã§ã™ã‹ã€ã¾ãŸã¯ä»–ã®Roo Codeãƒ¦ãƒ¼ã‚¶ãƒ¼ã¨äº¤æµã—ãŸã„ã§ã™ã‹ï¼Ÿ\u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003eã¾ãŸã¯\u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003eã«å‚åŠ ã—ã¦ãã ã•ã„",
+		"contactAndCommunity": "ãŠå•ã„åˆã‚ã›ã¨ã‚³ãƒŸãƒ¥ãƒ‹ãƒ†ã‚£",
+		"manageSettings": "è¨­å®šã‚’ç®¡ç†"
 	},
 	"slashCommands": {
-		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
+		"description": "ã‚¹ãƒ©ãƒƒã‚·ãƒ¥ã‚³ãƒžãƒ³ãƒ‰ã‚’ç®¡ç†ã—ã¦ã€ã‚«ã‚¹ã‚¿ãƒ ãƒ¯ãƒ¼ã‚¯ãƒ•ãƒ­ãƒ¼ã‚„ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚’ç´ æ—©ãå®Ÿè¡Œã—ã¾ã™ã€‚\u003cDocsLink\u003eè©³ç´°ã¯ã“ã¡ã‚‰\u003c/DocsLink\u003e"
 	},
 	"prompts": {
-		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
+		"description": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®å¼·åŒ–ã€ã‚³ãƒ¼ãƒ‰ã®èª¬æ˜Žã€å•é¡Œã®ä¿®æ­£ãªã©ã®è¿…é€Ÿãªã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã«ä½¿ç”¨ã•ã‚Œã‚‹ã‚µãƒãƒ¼ãƒˆãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’è¨­å®šã—ã¾ã™ã€‚ã“ã‚Œã‚‰ã®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã¯ã€RooãŒä¸€èˆ¬çš„ãªé–‹ç™ºã‚¿ã‚¹ã‚¯ã§ã‚ˆã‚Šè‰¯ã„ã‚µãƒãƒ¼ãƒˆã‚’æä¾›ã™ã‚‹ã®ã«å½¹ç«‹ã¡ã¾ã™ã€‚"
 	},
 	"codeIndex": {
-		"title": "コードベースのインデックス作成",
-		"enableLabel": "コードベースのインデックス作成を有効化",
-		"enableDescription": "コードのインデックス作成を有効にして、検索とコンテキストの理解を向上させます",
-		"providerLabel": "埋め込みプロバイダー",
-		"selectProviderPlaceholder": "プロバイダーを選択",
+		"title": "ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä½œæˆ",
+		"enableLabel": "ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä½œæˆã‚’æœ‰åŠ¹åŒ–",
+		"enableDescription": "ã‚³ãƒ¼ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä½œæˆã‚’æœ‰åŠ¹ã«ã—ã¦ã€æ¤œç´¢ã¨ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã®ç†è§£ã‚’å‘ä¸Šã•ã›ã¾ã™",
+		"providerLabel": "åŸ‹ã‚è¾¼ã¿ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+		"selectProviderPlaceholder": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’é¸æŠž",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "APIキー：",
-		"geminiApiKeyPlaceholder": "Gemini APIキーを入力してください",
+		"geminiApiKeyLabel": "APIã‚­ãƒ¼ï¼š",
+		"geminiApiKeyPlaceholder": "Gemini APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "APIキー",
-		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI GatewayのAPIキーを入力してください",
+		"vercelAiGatewayApiKeyLabel": "APIã‚­ãƒ¼",
+		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gatewayã®APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
 		"bedrockProvider": "Amazon Bedrock",
-		"bedrockRegionLabel": "AWS リージョン",
+		"bedrockRegionLabel": "AWS ãƒªãƒ¼ã‚¸ãƒ§ãƒ³",
 		"bedrockRegionPlaceholder": "us-east-1",
-		"bedrockProfileLabel": "AWS プロファイル",
+		"bedrockProfileLabel": "AWS ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«",
 		"bedrockProfilePlaceholder": "default",
-		"bedrockProfileDescription": "~/.aws/credentials の AWS プロファイル名（必須）。",
+		"bedrockProfileDescription": "~/.aws/credentials ã® AWS ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«åï¼ˆå¿…é ˆï¼‰ã€‚",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "OpenRouter APIキー",
-		"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
-		"openRouterProviderRoutingLabel": "OpenRouterプロバイダールーティング",
-		"openRouterProviderRoutingDescription": "OpenRouterは、埋め込みモデルに最適な利用可能なプロバイダーにリクエストをルーティングします。デフォルトでは、稼働時間を最大化するために、リクエストはトッププロバイダー間で負荷分散されます。ただし、このモデルに使用する特定のプロバイダーを選択することもできます。",
+		"openRouterApiKeyLabel": "OpenRouter APIã‚­ãƒ¼",
+		"openRouterApiKeyPlaceholder": "OpenRouter APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"openRouterProviderRoutingLabel": "OpenRouterãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚°",
+		"openRouterProviderRoutingDescription": "OpenRouterã¯ã€åŸ‹ã‚è¾¼ã¿ãƒ¢ãƒ‡ãƒ«ã«æœ€é©ãªåˆ©ç”¨å¯èƒ½ãªãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã«ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚°ã—ã¾ã™ã€‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ã¯ã€ç¨¼åƒæ™‚é–“ã‚’æœ€å¤§åŒ–ã™ã‚‹ãŸã‚ã«ã€ãƒªã‚¯ã‚¨ã‚¹ãƒˆã¯ãƒˆãƒƒãƒ—ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼é–“ã§è² è·åˆ†æ•£ã•ã‚Œã¾ã™ã€‚ãŸã ã—ã€ã“ã®ãƒ¢ãƒ‡ãƒ«ã«ä½¿ç”¨ã™ã‚‹ç‰¹å®šã®ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’é¸æŠžã™ã‚‹ã“ã¨ã‚‚ã§ãã¾ã™ã€‚",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "APIキー:",
-		"mistralApiKeyPlaceholder": "Mistral APIキーを入力してください",
-		"openaiCompatibleProvider": "OpenAI互換",
-		"openAiKeyLabel": "OpenAI APIキー",
-		"openAiKeyPlaceholder": "OpenAI APIキーを入力してください",
-		"openAiCompatibleBaseUrlLabel": "ベースURL",
-		"openAiCompatibleApiKeyLabel": "APIキー",
-		"openAiCompatibleApiKeyPlaceholder": "APIキーを入力してください",
-		"openAiCompatibleModelDimensionLabel": "埋め込みディメンション：",
-		"modelDimensionLabel": "モデルディメンション",
-		"openAiCompatibleModelDimensionPlaceholder": "例：1536",
-		"openAiCompatibleModelDimensionDescription": "モデルの埋め込みディメンション（出力サイズ）。この値についてはプロバイダーのドキュメントを確認してください。一般的な値：384、768、1536、3072。",
-		"modelLabel": "モデル",
-		"selectModelPlaceholder": "モデルを選択",
-		"ollamaUrlLabel": "Ollama URL：",
+		"mistralApiKeyLabel": "APIã‚­ãƒ¼:",
+		"mistralApiKeyPlaceholder": "Mistral APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"openaiCompatibleProvider": "OpenAIäº’æ›",
+		"openAiKeyLabel": "OpenAI APIã‚­ãƒ¼",
+		"openAiKeyPlaceholder": "OpenAI APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"openAiCompatibleBaseUrlLabel": "ãƒ™ãƒ¼ã‚¹URL",
+		"openAiCompatibleApiKeyLabel": "APIã‚­ãƒ¼",
+		"openAiCompatibleApiKeyPlaceholder": "APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"openAiCompatibleModelDimensionLabel": "åŸ‹ã‚è¾¼ã¿ãƒ‡ã‚£ãƒ¡ãƒ³ã‚·ãƒ§ãƒ³ï¼š",
+		"modelDimensionLabel": "ãƒ¢ãƒ‡ãƒ«ãƒ‡ã‚£ãƒ¡ãƒ³ã‚·ãƒ§ãƒ³",
+		"openAiCompatibleModelDimensionPlaceholder": "ä¾‹ï¼š1536",
+		"openAiCompatibleModelDimensionDescription": "ãƒ¢ãƒ‡ãƒ«ã®åŸ‹ã‚è¾¼ã¿ãƒ‡ã‚£ãƒ¡ãƒ³ã‚·ãƒ§ãƒ³ï¼ˆå‡ºåŠ›ã‚µã‚¤ã‚ºï¼‰ã€‚ã“ã®å€¤ã«ã¤ã„ã¦ã¯ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã®ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚ä¸€èˆ¬çš„ãªå€¤ï¼š384ã€768ã€1536ã€3072ã€‚",
+		"modelLabel": "ãƒ¢ãƒ‡ãƒ«",
+		"selectModelPlaceholder": "ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠž",
+		"ollamaUrlLabel": "Ollama URLï¼š",
 		"qdrantUrlLabel": "Qdrant URL",
-		"qdrantKeyLabel": "Qdrantキー：",
-		"startIndexingButton": "開始",
-		"clearIndexDataButton": "インデックスクリア",
-		"unsavedSettingsMessage": "インデックス作成プロセスを開始する前に設定を保存してください。",
+		"qdrantKeyLabel": "Qdrantã‚­ãƒ¼ï¼š",
+		"startIndexingButton": "é–‹å§‹",
+		"clearIndexDataButton": "ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚¯ãƒªã‚¢",
+		"unsavedSettingsMessage": "ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä½œæˆãƒ—ãƒ­ã‚»ã‚¹ã‚’é–‹å§‹ã™ã‚‹å‰ã«è¨­å®šã‚’ä¿å­˜ã—ã¦ãã ã•ã„ã€‚",
 		"clearDataDialog": {
-			"title": "本当によろしいですか？",
-			"description": "この操作は元に戻せません。コードベースのインデックスデータが完全に削除されます。",
-			"cancelButton": "キャンセル",
-			"confirmButton": "データをクリア"
+			"title": "æœ¬å½“ã«ã‚ˆã‚ã—ã„ã§ã™ã‹ï¼Ÿ",
+			"description": "ã“ã®æ“ä½œã¯å…ƒã«æˆ»ã›ã¾ã›ã‚“ã€‚ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ãƒ‡ãƒ¼ã‚¿ãŒå®Œå…¨ã«å‰Šé™¤ã•ã‚Œã¾ã™ã€‚",
+			"cancelButton": "ã‚­ãƒ£ãƒ³ã‚»ãƒ«",
+			"confirmButton": "ãƒ‡ãƒ¼ã‚¿ã‚’ã‚¯ãƒªã‚¢"
 		},
-		"description": "プロジェクトのセマンティック検索を有効にするためのコードベースインデックス設定を構成します。<0>詳細はこちら</0>",
-		"statusTitle": "ステータス",
-		"settingsTitle": "インデックス設定",
-		"disabledMessage": "コードベースインデックスは現在無効になっています。グローバル設定で有効にしてインデックスオプションを構成してください。",
-		"embedderProviderLabel": "エンベッダープロバイダー",
-		"modelPlaceholder": "モデル名を入力",
-		"selectModel": "モデルを選択",
-		"ollamaBaseUrlLabel": "Ollama ベースURL",
-		"qdrantApiKeyLabel": "Qdrant APIキー",
-		"qdrantApiKeyPlaceholder": "Qdrant APIキーを入力（オプション）",
-		"setupConfigLabel": "設定",
+		"description": "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ã‚»ãƒžãƒ³ãƒ†ã‚£ãƒƒã‚¯æ¤œç´¢ã‚’æœ‰åŠ¹ã«ã™ã‚‹ãŸã‚ã®ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹è¨­å®šã‚’æ§‹æˆã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°ã¯ã“ã¡ã‚‰\u003c/0\u003e",
+		"statusTitle": "ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹",
+		"settingsTitle": "ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹è¨­å®š",
+		"disabledMessage": "ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¯ç¾åœ¨ç„¡åŠ¹ã«ãªã£ã¦ã„ã¾ã™ã€‚ã‚°ãƒ­ãƒ¼ãƒãƒ«è¨­å®šã§æœ‰åŠ¹ã«ã—ã¦ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’æ§‹æˆã—ã¦ãã ã•ã„ã€‚",
+		"embedderProviderLabel": "ã‚¨ãƒ³ãƒ™ãƒƒãƒ€ãƒ¼ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+		"modelPlaceholder": "ãƒ¢ãƒ‡ãƒ«åã‚’å…¥åŠ›",
+		"selectModel": "ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠž",
+		"ollamaBaseUrlLabel": "Ollama ãƒ™ãƒ¼ã‚¹URL",
+		"qdrantApiKeyLabel": "Qdrant APIã‚­ãƒ¼",
+		"qdrantApiKeyPlaceholder": "Qdrant APIã‚­ãƒ¼ã‚’å…¥åŠ›ï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰",
+		"setupConfigLabel": "è¨­å®š",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "設定の保存に失敗しました",
-		"modelDimensions": "({{dimension}} 次元)",
-		"saveSuccess": "設定が正常に保存されました",
-		"saving": "保存中...",
-		"saveSettings": "保存",
+		"saveError": "è¨­å®šã®ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸ",
+		"modelDimensions": "({{dimension}} æ¬¡å…ƒ)",
+		"saveSuccess": "è¨­å®šãŒæ­£å¸¸ã«ä¿å­˜ã•ã‚Œã¾ã—ãŸ",
+		"saving": "ä¿å­˜ä¸­...",
+		"saveSettings": "ä¿å­˜",
 		"indexingStatuses": {
-			"standby": "スタンバイ",
-			"indexing": "インデックス中",
-			"indexed": "インデックス済み",
-			"error": "エラー"
+			"standby": "ã‚¹ã‚¿ãƒ³ãƒã‚¤",
+			"indexing": "ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä¸­",
+			"indexed": "ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹æ¸ˆã¿",
+			"error": "ã‚¨ãƒ©ãƒ¼"
 		},
-		"close": "閉じる",
+		"close": "é–‰ã˜ã‚‹",
 		"validation": {
-			"invalidQdrantUrl": "無効なQdrant URL",
-			"invalidOllamaUrl": "無効なOllama URL",
-			"invalidBaseUrl": "無効なベースURL",
-			"qdrantUrlRequired": "Qdrant URL が必要です",
-			"openaiApiKeyRequired": "OpenAI APIキーが必要です",
-			"modelSelectionRequired": "モデルの選択が必要です",
-			"apiKeyRequired": "APIキーが必要です",
-			"modelIdRequired": "モデルIDが必要です",
-			"modelDimensionRequired": "モデルの次元が必要です",
-			"geminiApiKeyRequired": "Gemini APIキーが必要です",
-			"mistralApiKeyRequired": "Mistral APIキーが必要です",
-			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway APIキーが必要です",
-			"bedrockRegionRequired": "AWS リージョンは必須です",
-			"bedrockProfileRequired": "AWS プロファイルは必須です",
-			"ollamaBaseUrlRequired": "OllamaのベースURLが必要です",
-			"baseUrlRequired": "ベースURLが必要です",
-			"modelDimensionMinValue": "モデルの次元は0より大きくなければなりません",
-			"openRouterApiKeyRequired": "OpenRouter APIキーが必要です"
+			"invalidQdrantUrl": "ç„¡åŠ¹ãªQdrant URL",
+			"invalidOllamaUrl": "ç„¡åŠ¹ãªOllama URL",
+			"invalidBaseUrl": "ç„¡åŠ¹ãªãƒ™ãƒ¼ã‚¹URL",
+			"qdrantUrlRequired": "Qdrant URL ãŒå¿…è¦ã§ã™",
+			"openaiApiKeyRequired": "OpenAI APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™",
+			"modelSelectionRequired": "ãƒ¢ãƒ‡ãƒ«ã®é¸æŠžãŒå¿…è¦ã§ã™",
+			"apiKeyRequired": "APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™",
+			"modelIdRequired": "ãƒ¢ãƒ‡ãƒ«IDãŒå¿…è¦ã§ã™",
+			"modelDimensionRequired": "ãƒ¢ãƒ‡ãƒ«ã®æ¬¡å…ƒãŒå¿…è¦ã§ã™",
+			"geminiApiKeyRequired": "Gemini APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™",
+			"mistralApiKeyRequired": "Mistral APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™",
+			"bedrockRegionRequired": "AWS ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã¯å¿…é ˆã§ã™",
+			"bedrockProfileRequired": "AWS ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã¯å¿…é ˆã§ã™",
+			"ollamaBaseUrlRequired": "Ollamaã®ãƒ™ãƒ¼ã‚¹URLãŒå¿…è¦ã§ã™",
+			"baseUrlRequired": "ãƒ™ãƒ¼ã‚¹URLãŒå¿…è¦ã§ã™",
+			"modelDimensionMinValue": "ãƒ¢ãƒ‡ãƒ«ã®æ¬¡å…ƒã¯0ã‚ˆã‚Šå¤§ãããªã‘ã‚Œã°ãªã‚Šã¾ã›ã‚“",
+			"openRouterApiKeyRequired": "OpenRouter APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™"
 		},
-		"optional": "オプション",
-		"advancedConfigLabel": "詳細設定",
-		"searchMinScoreLabel": "検索スコアのしきい値",
-		"searchMinScoreDescription": "検索結果に必要な最小類似度スコア（0.0-1.0）。値を低くするとより多くの結果が返されますが、関連性が低くなる可能性があります。値を高くすると返される結果は少なくなりますが、より関連性が高くなります。",
-		"searchMinScoreResetTooltip": "デフォルト値（0.4）にリセット",
-		"searchMaxResultsLabel": "最大検索結果数",
-		"searchMaxResultsDescription": "コードベースインデックスをクエリする際に返される検索結果の最大数。値を高くするとより多くのコンテキストが提供されますが、関連性の低い結果が含まれる可能性があります。",
-		"resetToDefault": "デフォルトにリセット"
+		"optional": "ã‚ªãƒ—ã‚·ãƒ§ãƒ³",
+		"advancedConfigLabel": "è©³ç´°è¨­å®š",
+		"searchMinScoreLabel": "æ¤œç´¢ã‚¹ã‚³ã‚¢ã®ã—ãã„å€¤",
+		"searchMinScoreDescription": "æ¤œç´¢çµæžœã«å¿…è¦ãªæœ€å°é¡žä¼¼åº¦ã‚¹ã‚³ã‚¢ï¼ˆ0.0-1.0ï¼‰ã€‚å€¤ã‚’ä½Žãã™ã‚‹ã¨ã‚ˆã‚Šå¤šãã®çµæžœãŒè¿”ã•ã‚Œã¾ã™ãŒã€é–¢é€£æ€§ãŒä½Žããªã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚å€¤ã‚’é«˜ãã™ã‚‹ã¨è¿”ã•ã‚Œã‚‹çµæžœã¯å°‘ãªããªã‚Šã¾ã™ãŒã€ã‚ˆã‚Šé–¢é€£æ€§ãŒé«˜ããªã‚Šã¾ã™ã€‚",
+		"searchMinScoreResetTooltip": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ï¼ˆ0.4ï¼‰ã«ãƒªã‚»ãƒƒãƒˆ",
+		"searchMaxResultsLabel": "æœ€å¤§æ¤œç´¢çµæžœæ•°",
+		"searchMaxResultsDescription": "ã‚³ãƒ¼ãƒ‰ãƒ™ãƒ¼ã‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ã‚¯ã‚¨ãƒªã™ã‚‹éš›ã«è¿”ã•ã‚Œã‚‹æ¤œç´¢çµæžœã®æœ€å¤§æ•°ã€‚å€¤ã‚’é«˜ãã™ã‚‹ã¨ã‚ˆã‚Šå¤šãã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆãŒæä¾›ã•ã‚Œã¾ã™ãŒã€é–¢é€£æ€§ã®ä½Žã„çµæžœãŒå«ã¾ã‚Œã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚",
+		"resetToDefault": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ãƒªã‚»ãƒƒãƒˆ"
 	},
 	"autoApprove": {
-		"toggleShortcut": "<SettingsLink>IDEの環境設定</SettingsLink>で、この設定のグローバルショートカットを設定できます。",
-		"description": "Rooが承認なしで自動的に操作を実行できるようにします。AIを完全に信頼し、関連するセキュリティリスクを理解している場合にのみ、これらの設定を有効にしてください。",
-		"enabled": "自動承認が有効",
-		"toggleAriaLabel": "自動承認の切り替え",
-		"disabledAriaLabel": "自動承認が無効です - 最初にオプションを選択してください",
+		"toggleShortcut": "\u003cSettingsLink\u003eIDEã®ç’°å¢ƒè¨­å®š\u003c/SettingsLink\u003eã§ã€ã“ã®è¨­å®šã®ã‚°ãƒ­ãƒ¼ãƒãƒ«ã‚·ãƒ§ãƒ¼ãƒˆã‚«ãƒƒãƒˆã‚’è¨­å®šã§ãã¾ã™ã€‚",
+		"description": "RooãŒæ‰¿èªãªã—ã§è‡ªå‹•çš„ã«æ“ä½œã‚’å®Ÿè¡Œã§ãã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚AIã‚’å®Œå…¨ã«ä¿¡é ¼ã—ã€é–¢é€£ã™ã‚‹ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£ãƒªã‚¹ã‚¯ã‚’ç†è§£ã—ã¦ã„ã‚‹å ´åˆã«ã®ã¿ã€ã“ã‚Œã‚‰ã®è¨­å®šã‚’æœ‰åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚",
+		"enabled": "è‡ªå‹•æ‰¿èªãŒæœ‰åŠ¹",
+		"toggleAriaLabel": "è‡ªå‹•æ‰¿èªã®åˆ‡ã‚Šæ›¿ãˆ",
+		"disabledAriaLabel": "è‡ªå‹•æ‰¿èªãŒç„¡åŠ¹ã§ã™ - æœ€åˆã«ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’é¸æŠžã—ã¦ãã ã•ã„",
 		"readOnly": {
-			"label": "読み取り",
-			"description": "有効にすると、Rooは承認ボタンをクリックすることなく、自動的にディレクトリの内容を表示してファイルを読み取ります。",
+			"label": "èª­ã¿å–ã‚Š",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯æ‰¿èªãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹ã“ã¨ãªãã€è‡ªå‹•çš„ã«ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å†…å®¹ã‚’è¡¨ç¤ºã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿å–ã‚Šã¾ã™ã€‚",
 			"outsideWorkspace": {
-				"label": "ワークスペース外のファイルを含める",
-				"description": "Rooが承認なしで現在のワークスペース外のファイルを読み取ることを許可します。"
+				"label": "ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹å¤–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å«ã‚ã‚‹",
+				"description": "RooãŒæ‰¿èªãªã—ã§ç¾åœ¨ã®ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹å¤–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿å–ã‚‹ã“ã¨ã‚’è¨±å¯ã—ã¾ã™ã€‚"
 			}
 		},
 		"write": {
-			"label": "書き込み",
-			"description": "承認なしで自動的にファイルを作成・編集",
-			"delayLabel": "診断が潜在的な問題を検出できるよう、書き込み後に遅延を設ける",
+			"label": "æ›¸ãè¾¼ã¿",
+			"description": "æ‰¿èªãªã—ã§è‡ªå‹•çš„ã«ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆãƒ»ç·¨é›†",
+			"delayLabel": "è¨ºæ–­ãŒæ½œåœ¨çš„ãªå•é¡Œã‚’æ¤œå‡ºã§ãã‚‹ã‚ˆã†ã€æ›¸ãè¾¼ã¿å¾Œã«é…å»¶ã‚’è¨­ã‘ã‚‹",
 			"outsideWorkspace": {
-				"label": "ワークスペース外のファイルを含める",
-				"description": "Rooが承認なしで現在のワークスペース外のファイルを作成・編集することを許可します。"
+				"label": "ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹å¤–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å«ã‚ã‚‹",
+				"description": "RooãŒæ‰¿èªãªã—ã§ç¾åœ¨ã®ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹å¤–ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆãƒ»ç·¨é›†ã™ã‚‹ã“ã¨ã‚’è¨±å¯ã—ã¾ã™ã€‚"
 			},
 			"protected": {
-				"label": "保護されたファイルを含める",
-				"description": "Rooが保護されたファイル（.rooignoreや.roo/設定ファイルなど）を承認なしで作成・編集することを許可します。"
+				"label": "ä¿è­·ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ã‚’å«ã‚ã‚‹",
+				"description": "RooãŒä¿è­·ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆ.rooignoreã‚„.roo/è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ãªã©ï¼‰ã‚’æ‰¿èªãªã—ã§ä½œæˆãƒ»ç·¨é›†ã™ã‚‹ã“ã¨ã‚’è¨±å¯ã—ã¾ã™ã€‚"
 			}
 		},
 		"browser": {
-			"label": "ブラウザ",
-			"description": "承認なしで自動的にブラウザアクションを実行 — 注意：コンピューター使用をサポートするモデルを使用している場合のみ適用されます"
+			"label": "ãƒ–ãƒ©ã‚¦ã‚¶",
+			"description": "æ‰¿èªãªã—ã§è‡ªå‹•çš„ã«ãƒ–ãƒ©ã‚¦ã‚¶ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã‚’å®Ÿè¡Œ â€” æ³¨æ„ï¼šã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ä½¿ç”¨ã‚’ã‚µãƒãƒ¼ãƒˆã™ã‚‹ãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ç”¨ã—ã¦ã„ã‚‹å ´åˆã®ã¿é©ç”¨ã•ã‚Œã¾ã™"
 		},
 		"retry": {
-			"label": "再試行",
-			"description": "サーバーがエラーレスポンスを返した場合、自動的に失敗したAPIリクエストを再試行",
-			"delayLabel": "リクエスト再試行前の遅延"
+			"label": "å†è©¦è¡Œ",
+			"description": "ã‚µãƒ¼ãƒãƒ¼ãŒã‚¨ãƒ©ãƒ¼ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã‚’è¿”ã—ãŸå ´åˆã€è‡ªå‹•çš„ã«å¤±æ•—ã—ãŸAPIãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’å†è©¦è¡Œ",
+			"delayLabel": "ãƒªã‚¯ã‚¨ã‚¹ãƒˆå†è©¦è¡Œå‰ã®é…å»¶"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "MCPサーバービューで個々のMCPツールの自動承認を有効にします（この設定とツールの「常に許可」チェックボックスの両方が必要）"
+			"description": "MCPã‚µãƒ¼ãƒãƒ¼ãƒ“ãƒ¥ãƒ¼ã§å€‹ã€…ã®MCPãƒ„ãƒ¼ãƒ«ã®è‡ªå‹•æ‰¿èªã‚’æœ‰åŠ¹ã«ã—ã¾ã™ï¼ˆã“ã®è¨­å®šã¨ãƒ„ãƒ¼ãƒ«ã®ã€Œå¸¸ã«è¨±å¯ã€ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã®ä¸¡æ–¹ãŒå¿…è¦ï¼‰"
 		},
 		"modeSwitch": {
-			"label": "モード",
-			"description": "承認なしで自動的に異なるモード間を切り替え"
+			"label": "ãƒ¢ãƒ¼ãƒ‰",
+			"description": "æ‰¿èªãªã—ã§è‡ªå‹•çš„ã«ç•°ãªã‚‹ãƒ¢ãƒ¼ãƒ‰é–“ã‚’åˆ‡ã‚Šæ›¿ãˆ"
 		},
 		"subtasks": {
-			"label": "サブタスク",
-			"description": "承認なしでサブタスクの作成と完了を許可"
+			"label": "ã‚µãƒ–ã‚¿ã‚¹ã‚¯",
+			"description": "æ‰¿èªãªã—ã§ã‚µãƒ–ã‚¿ã‚¹ã‚¯ã®ä½œæˆã¨å®Œäº†ã‚’è¨±å¯"
 		},
 		"followupQuestions": {
-			"label": "質問",
-			"description": "設定された時間が経過すると、フォローアップ質問の最初の提案回答を自動的に選択します",
-			"timeoutLabel": "最初の回答を自動選択するまでの待機時間"
+			"label": "è³ªå•",
+			"description": "è¨­å®šã•ã‚ŒãŸæ™‚é–“ãŒçµŒéŽã™ã‚‹ã¨ã€ãƒ•ã‚©ãƒ­ãƒ¼ã‚¢ãƒƒãƒ—è³ªå•ã®æœ€åˆã®ææ¡ˆå›žç­”ã‚’è‡ªå‹•çš„ã«é¸æŠžã—ã¾ã™",
+			"timeoutLabel": "æœ€åˆã®å›žç­”ã‚’è‡ªå‹•é¸æŠžã™ã‚‹ã¾ã§ã®å¾…æ©Ÿæ™‚é–“"
 		},
 		"execute": {
-			"label": "実行",
-			"description": "承認なしで自動的に許可されたターミナルコマンドを実行",
-			"allowedCommands": "許可された自動実行コマンド",
-			"allowedCommandsDescription": "「実行操作を常に承認」が有効な場合に自動実行できるコマンドプレフィックス。すべてのコマンドを許可するには * を追加します（注意して使用してください）。",
-			"deniedCommands": "拒否されたコマンド",
-			"deniedCommandsDescription": "承認を求めることなく自動的に拒否されるコマンドプレフィックス。許可されたコマンドとの競合がある場合、最長プレフィックスマッチが優先されます。すべてのコマンドを拒否するには * を追加します。",
-			"commandPlaceholder": "コマンドプレフィックスを入力（例：'git '）",
-			"deniedCommandPlaceholder": "拒否するコマンドプレフィックスを入力（例：'rm -rf'）",
-			"addButton": "追加",
-			"autoDenied": "プレフィックス `{{prefix}}` を持つコマンドはユーザーによって禁止されています。別のコマンドを実行してこの制限を回避しないでください。"
+			"label": "å®Ÿè¡Œ",
+			"description": "æ‰¿èªãªã—ã§è‡ªå‹•çš„ã«è¨±å¯ã•ã‚ŒãŸã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œ",
+			"allowedCommands": "è¨±å¯ã•ã‚ŒãŸè‡ªå‹•å®Ÿè¡Œã‚³ãƒžãƒ³ãƒ‰",
+			"allowedCommandsDescription": "ã€Œå®Ÿè¡Œæ“ä½œã‚’å¸¸ã«æ‰¿èªã€ãŒæœ‰åŠ¹ãªå ´åˆã«è‡ªå‹•å®Ÿè¡Œã§ãã‚‹ã‚³ãƒžãƒ³ãƒ‰ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã€‚ã™ã¹ã¦ã®ã‚³ãƒžãƒ³ãƒ‰ã‚’è¨±å¯ã™ã‚‹ã«ã¯ * ã‚’è¿½åŠ ã—ã¾ã™ï¼ˆæ³¨æ„ã—ã¦ä½¿ç”¨ã—ã¦ãã ã•ã„ï¼‰ã€‚",
+			"deniedCommands": "æ‹’å¦ã•ã‚ŒãŸã‚³ãƒžãƒ³ãƒ‰",
+			"deniedCommandsDescription": "æ‰¿èªã‚’æ±‚ã‚ã‚‹ã“ã¨ãªãè‡ªå‹•çš„ã«æ‹’å¦ã•ã‚Œã‚‹ã‚³ãƒžãƒ³ãƒ‰ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã€‚è¨±å¯ã•ã‚ŒãŸã‚³ãƒžãƒ³ãƒ‰ã¨ã®ç«¶åˆãŒã‚ã‚‹å ´åˆã€æœ€é•·ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ãƒžãƒƒãƒãŒå„ªå…ˆã•ã‚Œã¾ã™ã€‚ã™ã¹ã¦ã®ã‚³ãƒžãƒ³ãƒ‰ã‚’æ‹’å¦ã™ã‚‹ã«ã¯ * ã‚’è¿½åŠ ã—ã¾ã™ã€‚",
+			"commandPlaceholder": "ã‚³ãƒžãƒ³ãƒ‰ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã‚’å…¥åŠ›ï¼ˆä¾‹ï¼š\u0027git \u0027ï¼‰",
+			"deniedCommandPlaceholder": "æ‹’å¦ã™ã‚‹ã‚³ãƒžãƒ³ãƒ‰ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã‚’å…¥åŠ›ï¼ˆä¾‹ï¼š\u0027rm -rf\u0027ï¼‰",
+			"addButton": "è¿½åŠ ",
+			"autoDenied": "ãƒ—ãƒ¬ãƒ•ã‚£ãƒƒã‚¯ã‚¹ `{{prefix}}` ã‚’æŒã¤ã‚³ãƒžãƒ³ãƒ‰ã¯ãƒ¦ãƒ¼ã‚¶ãƒ¼ã«ã‚ˆã£ã¦ç¦æ­¢ã•ã‚Œã¦ã„ã¾ã™ã€‚åˆ¥ã®ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œã—ã¦ã“ã®åˆ¶é™ã‚’å›žé¿ã—ãªã„ã§ãã ã•ã„ã€‚"
 		},
 		"updateTodoList": {
 			"label": "Todo",
-			"description": "承認なしで自動的にToDoリストを更新"
+			"description": "æ‰¿èªãªã—ã§è‡ªå‹•çš„ã«ToDoãƒªã‚¹ãƒˆã‚’æ›´æ–°"
 		},
 		"apiRequestLimit": {
-			"title": "最大リクエスト数",
-			"description": "タスクを続行するための承認を求める前に、自動的にこの数のAPIリクエストを行います。",
-			"unlimited": "無制限"
+			"title": "æœ€å¤§ãƒªã‚¯ã‚¨ã‚¹ãƒˆæ•°",
+			"description": "ã‚¿ã‚¹ã‚¯ã‚’ç¶šè¡Œã™ã‚‹ãŸã‚ã®æ‰¿èªã‚’æ±‚ã‚ã‚‹å‰ã«ã€è‡ªå‹•çš„ã«ã“ã®æ•°ã®APIãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’è¡Œã„ã¾ã™ã€‚",
+			"unlimited": "ç„¡åˆ¶é™"
 		},
-		"selectOptionsFirst": "自動承認を有効にするには、以下のオプションを少なくとも1つ選択してください",
+		"selectOptionsFirst": "è‡ªå‹•æ‰¿èªã‚’æœ‰åŠ¹ã«ã™ã‚‹ã«ã¯ã€ä»¥ä¸‹ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’å°‘ãªãã¨ã‚‚1ã¤é¸æŠžã—ã¦ãã ã•ã„",
 		"apiCostLimit": {
-			"unlimited": "無制限",
-			"title": "最大料金"
+			"unlimited": "ç„¡åˆ¶é™",
+			"title": "æœ€å¤§æ–™é‡‘"
 		},
 		"maxLimits": {
-			"description": "これらの上限まで自動的にリクエストを行い、その後継続の承認を求めます。"
+			"description": "ã“ã‚Œã‚‰ã®ä¸Šé™ã¾ã§è‡ªå‹•çš„ã«ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’è¡Œã„ã€ãã®å¾Œç¶™ç¶šã®æ‰¿èªã‚’æ±‚ã‚ã¾ã™ã€‚"
 		}
 	},
 	"providers": {
-		"providerDocumentation": "{{provider}}のドキュメント",
-		"configProfile": "設定プロファイル",
-		"description": "異なるAPI設定を保存して、プロバイダーと設定をすばやく切り替えることができます。",
-		"apiProvider": "APIプロバイダー",
-		"model": "モデル",
-		"nameEmpty": "名前を空にすることはできません",
-		"nameExists": "この名前のプロファイルは既に存在します",
-		"deleteProfile": "プロファイルを削除",
-		"invalidArnFormat": "無効なARN形式です。上記の例を確認してください。",
-		"enterNewName": "新しい名前を入力してください",
-		"addProfile": "プロファイルを追加",
-		"renameProfile": "プロファイル名を変更",
-		"newProfile": "新しい構成プロファイル",
-		"enterProfileName": "プロファイル名を入力",
-		"createProfile": "プロファイルを作成",
-		"cannotDeleteOnlyProfile": "唯一のプロファイルは削除できません",
-		"searchPlaceholder": "プロファイルを検索",
-		"searchProviderPlaceholder": "プロバイダーを検索",
-		"noProviderMatchFound": "プロバイダーが見つかりません",
-		"noMatchFound": "一致するプロファイルが見つかりません",
-		"vscodeLmDescription": "VS Code言語モデルAPIを使用すると、他のVS Code拡張機能（GitHub Copilotなど）が提供するモデルを実行できます。最も簡単な方法は、VS Code MarketplaceからCopilotおよびCopilot Chat拡張機能をインストールすることです。",
-		"awsCustomArnUse": "使用したいモデルの有効なAmazon Bedrock ARNを入力してください。形式の例:",
-		"awsCustomArnDesc": "ARN内のリージョンが上で選択したAWSリージョンと一致していることを確認してください。",
-		"openRouterApiKey": "OpenRouter APIキー",
-		"getOpenRouterApiKey": "OpenRouter APIキーを取得",
-		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
-		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
-		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
-		"useCustomBaseUrl": "カスタムベースURLを使用",
-		"useReasoning": "推論を有効化",
-		"useHostHeader": "カスタムHostヘッダーを使用",
-		"useLegacyFormat": "レガシーOpenAI API形式を使用",
-		"customHeaders": "カスタムヘッダー",
-		"headerName": "ヘッダー名",
-		"headerValue": "ヘッダー値",
-		"noCustomHeaders": "カスタムヘッダーが定義されていません。+ ボタンをクリックして追加してください。",
-		"requestyApiKey": "Requesty APIキー",
+		"providerDocumentation": "{{provider}}ã®ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆ",
+		"configProfile": "è¨­å®šãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«",
+		"description": "ç•°ãªã‚‹APIè¨­å®šã‚’ä¿å­˜ã—ã¦ã€ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã¨è¨­å®šã‚’ã™ã°ã‚„ãåˆ‡ã‚Šæ›¿ãˆã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚",
+		"apiProvider": "APIãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+		"model": "ãƒ¢ãƒ‡ãƒ«",
+		"nameEmpty": "åå‰ã‚’ç©ºã«ã™ã‚‹ã“ã¨ã¯ã§ãã¾ã›ã‚“",
+		"nameExists": "ã“ã®åå‰ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã¯æ—¢ã«å­˜åœ¨ã—ã¾ã™",
+		"deleteProfile": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤",
+		"invalidArnFormat": "ç„¡åŠ¹ãªARNå½¢å¼ã§ã™ã€‚ä¸Šè¨˜ã®ä¾‹ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚",
+		"enterNewName": "æ–°ã—ã„åå‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"addProfile": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã‚’è¿½åŠ ",
+		"renameProfile": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å¤‰æ›´",
+		"newProfile": "æ–°ã—ã„æ§‹æˆãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«",
+		"enterProfileName": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å…¥åŠ›",
+		"createProfile": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½œæˆ",
+		"cannotDeleteOnlyProfile": "å”¯ä¸€ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã¯å‰Šé™¤ã§ãã¾ã›ã‚“",
+		"searchPlaceholder": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ¤œç´¢",
+		"searchProviderPlaceholder": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’æ¤œç´¢",
+		"noProviderMatchFound": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“",
+		"noMatchFound": "ä¸€è‡´ã™ã‚‹ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“",
+		"vscodeLmDescription": "VS Codeè¨€èªžãƒ¢ãƒ‡ãƒ«APIã‚’ä½¿ç”¨ã™ã‚‹ã¨ã€ä»–ã®VS Codeæ‹¡å¼µæ©Ÿèƒ½ï¼ˆGitHub Copilotãªã©ï¼‰ãŒæä¾›ã™ã‚‹ãƒ¢ãƒ‡ãƒ«ã‚’å®Ÿè¡Œã§ãã¾ã™ã€‚æœ€ã‚‚ç°¡å˜ãªæ–¹æ³•ã¯ã€VS Code Marketplaceã‹ã‚‰CopilotãŠã‚ˆã³Copilot Chatæ‹¡å¼µæ©Ÿèƒ½ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹ã“ã¨ã§ã™ã€‚",
+		"awsCustomArnUse": "ä½¿ç”¨ã—ãŸã„ãƒ¢ãƒ‡ãƒ«ã®æœ‰åŠ¹ãªAmazon Bedrock ARNã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚å½¢å¼ã®ä¾‹:",
+		"awsCustomArnDesc": "ARNå†…ã®ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ãŒä¸Šã§é¸æŠžã—ãŸAWSãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã¨ä¸€è‡´ã—ã¦ã„ã‚‹ã“ã¨ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚",
+		"openRouterApiKey": "OpenRouter APIã‚­ãƒ¼",
+		"getOpenRouterApiKey": "OpenRouter APIã‚­ãƒ¼ã‚’å–å¾—",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway APIã‚­ãƒ¼",
+		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIã‚­ãƒ¼ã‚’å–å¾—",
+		"apiKeyStorageNotice": "APIã‚­ãƒ¼ã¯VSCodeã®ã‚·ãƒ¼ã‚¯ãƒ¬ãƒƒãƒˆã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸ã«å®‰å…¨ã«ä¿å­˜ã•ã‚Œã¾ã™",
+		"useCustomBaseUrl": "ã‚«ã‚¹ã‚¿ãƒ ãƒ™ãƒ¼ã‚¹URLã‚’ä½¿ç”¨",
+		"useReasoning": "æŽ¨è«–ã‚’æœ‰åŠ¹åŒ–",
+		"useHostHeader": "ã‚«ã‚¹ã‚¿ãƒ Hostãƒ˜ãƒƒãƒ€ãƒ¼ã‚’ä½¿ç”¨",
+		"useLegacyFormat": "ãƒ¬ã‚¬ã‚·ãƒ¼OpenAI APIå½¢å¼ã‚’ä½¿ç”¨",
+		"customHeaders": "ã‚«ã‚¹ã‚¿ãƒ ãƒ˜ãƒƒãƒ€ãƒ¼",
+		"headerName": "ãƒ˜ãƒƒãƒ€ãƒ¼å",
+		"headerValue": "ãƒ˜ãƒƒãƒ€ãƒ¼å€¤",
+		"noCustomHeaders": "ã‚«ã‚¹ã‚¿ãƒ ãƒ˜ãƒƒãƒ€ãƒ¼ãŒå®šç¾©ã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚+ ãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦è¿½åŠ ã—ã¦ãã ã•ã„ã€‚",
+		"requestyApiKey": "Requesty APIã‚­ãƒ¼",
 		"refreshModels": {
-			"label": "モデルを更新",
-			"hint": "最新のモデルを表示するには設定を再度開いてください。",
-			"loading": "モデルリストを更新中...",
-			"success": "モデルリストが正常に更新されました！",
-			"error": "モデルリストの更新に失敗しました。もう一度お試しください。"
+			"label": "ãƒ¢ãƒ‡ãƒ«ã‚’æ›´æ–°",
+			"hint": "æœ€æ–°ã®ãƒ¢ãƒ‡ãƒ«ã‚’è¡¨ç¤ºã™ã‚‹ã«ã¯è¨­å®šã‚’å†åº¦é–‹ã„ã¦ãã ã•ã„ã€‚",
+			"loading": "ãƒ¢ãƒ‡ãƒ«ãƒªã‚¹ãƒˆã‚’æ›´æ–°ä¸­...",
+			"success": "ãƒ¢ãƒ‡ãƒ«ãƒªã‚¹ãƒˆãŒæ­£å¸¸ã«æ›´æ–°ã•ã‚Œã¾ã—ãŸï¼",
+			"error": "ãƒ¢ãƒ‡ãƒ«ãƒªã‚¹ãƒˆã®æ›´æ–°ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚‚ã†ä¸€åº¦ãŠè©¦ã—ãã ã•ã„ã€‚"
 		},
-		"getRequestyApiKey": "Requesty APIキーを取得",
-		"getRequestyBaseUrl": "ベースURL",
-		"requestyUseCustomBaseUrl": "カスタムベースURLを使用する",
-		"openRouterTransformsText": "プロンプトとメッセージチェーンをコンテキストサイズに圧縮 (<a>OpenRouter Transforms</a>)",
-		"anthropicApiKey": "Anthropic APIキー",
-		"getAnthropicApiKey": "Anthropic APIキーを取得",
-		"anthropicUseAuthToken": "Anthropic APIキーをX-Api-Keyの代わりにAuthorizationヘッダーとして渡す",
-		"anthropic1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
-		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
-		"basetenApiKey": "Baseten APIキー",
-		"getBasetenApiKey": "Baseten APIキーを取得",
-		"cerebrasApiKey": "Cerebras APIキー",
-		"getCerebrasApiKey": "Cerebras APIキーを取得",
-		"chutesApiKey": "Chutes APIキー",
-		"getChutesApiKey": "Chutes APIキーを取得",
-		"fireworksApiKey": "Fireworks APIキー",
-		"getFireworksApiKey": "Fireworks APIキーを取得",
-		"featherlessApiKey": "Featherless APIキー",
-		"getFeatherlessApiKey": "Featherless APIキーを取得",
-		"ioIntelligenceApiKey": "IO Intelligence APIキー",
-		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence APIキーを入力してください",
-		"getIoIntelligenceApiKey": "IO Intelligence APIキーを取得",
-		"deepSeekApiKey": "DeepSeek APIキー",
-		"getDeepSeekApiKey": "DeepSeek APIキーを取得",
-		"doubaoApiKey": "Doubao APIキー",
-		"getDoubaoApiKey": "Doubao APIキーを取得",
-		"moonshotApiKey": "Moonshot APIキー",
-		"getMoonshotApiKey": "Moonshot APIキーを取得",
-		"moonshotBaseUrl": "Moonshot エントリーポイント",
-		"zaiApiKey": "Z AI APIキー",
-		"getZaiApiKey": "Z AI APIキーを取得",
-		"zaiEntrypoint": "Z AI エントリーポイント",
-		"zaiEntrypointDescription": "お住まいの地域に応じて適切な API エントリーポイントを選択してください。中国にお住まいの場合は open.bigmodel.cn を選択してください。それ以外の場合は api.z.ai を選択してください。",
-		"minimaxApiKey": "MiniMax APIキー",
-		"getMiniMaxApiKey": "MiniMax APIキーを取得",
-		"minimaxBaseUrl": "MiniMax エントリーポイント",
-		"geminiApiKey": "Gemini APIキー",
-		"getGroqApiKey": "Groq APIキーを取得",
-		"groqApiKey": "Groq APIキー",
-		"getSambaNovaApiKey": "SambaNova APIキーを取得",
-		"sambaNovaApiKey": "SambaNova APIキー",
-		"getHuggingFaceApiKey": "Hugging Face APIキーを取得",
-		"huggingFaceApiKey": "Hugging Face APIキー",
-		"huggingFaceModelId": "モデルID",
-		"huggingFaceLoading": "読み込み中...",
-		"huggingFaceModelsCount": "({{count}}個のモデル)",
-		"huggingFaceSelectModel": "モデルを選択...",
-		"huggingFaceSearchModels": "モデルを検索...",
-		"huggingFaceNoModelsFound": "モデルが見つかりません",
-		"huggingFaceProvider": "プロバイダー",
-		"huggingFaceProviderAuto": "自動",
-		"huggingFaceSelectProvider": "プロバイダーを選択...",
-		"huggingFaceSearchProviders": "プロバイダーを検索...",
-		"huggingFaceNoProvidersFound": "プロバイダーが見つかりません",
-		"getGeminiApiKey": "Gemini APIキーを取得",
-		"openAiApiKey": "OpenAI APIキー",
-		"apiKey": "APIキー",
-		"openAiBaseUrl": "ベースURL",
-		"getOpenAiApiKey": "OpenAI APIキーを取得",
-		"mistralApiKey": "Mistral APIキー",
-		"getMistralApiKey": "Mistral / Codestral APIキーを取得",
-		"codestralBaseUrl": "Codestral ベースURL（オプション）",
-		"codestralBaseUrlDesc": "Codestralモデルの代替URLを設定します。",
-		"xaiApiKey": "xAI APIキー",
-		"getXaiApiKey": "xAI APIキーを取得",
-		"litellmApiKey": "LiteLLM APIキー",
-		"litellmBaseUrl": "LiteLLM ベースURL",
-		"awsCredentials": "AWS認証情報",
-		"awsProfile": "AWSプロファイル",
-		"awsApiKey": "Amazon Bedrock APIキー",
-		"awsProfileName": "AWSプロファイル名",
-		"awsAccessKey": "AWSアクセスキー",
-		"awsSecretKey": "AWSシークレットキー",
-		"awsSessionToken": "AWSセッショントークン",
-		"awsRegion": "AWSリージョン",
-		"awsCrossRegion": "クロスリージョン推論を使用",
-		"awsGlobalInference": "グローバル推論を使用する（最適なAWSリージョンを自動選択）",
+		"getRequestyApiKey": "Requesty APIã‚­ãƒ¼ã‚’å–å¾—",
+		"getRequestyBaseUrl": "ãƒ™ãƒ¼ã‚¹URL",
+		"requestyUseCustomBaseUrl": "ã‚«ã‚¹ã‚¿ãƒ ãƒ™ãƒ¼ã‚¹URLã‚’ä½¿ç”¨ã™ã‚‹",
+		"openRouterTransformsText": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã¨ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒã‚§ãƒ¼ãƒ³ã‚’ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚µã‚¤ã‚ºã«åœ§ç¸® (\u003ca\u003eOpenRouter Transforms\u003c/a\u003e)",
+		"anthropicApiKey": "Anthropic APIã‚­ãƒ¼",
+		"getAnthropicApiKey": "Anthropic APIã‚­ãƒ¼ã‚’å–å¾—",
+		"anthropicUseAuthToken": "Anthropic APIã‚­ãƒ¼ã‚’X-Api-Keyã®ä»£ã‚ã‚Šã«Authorizationãƒ˜ãƒƒãƒ€ãƒ¼ã¨ã—ã¦æ¸¡ã™",
+		"anthropic1MContextBetaLabel": "1Mã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æœ‰åŠ¹ã«ã™ã‚‹ï¼ˆãƒ™ãƒ¼ã‚¿ç‰ˆï¼‰",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4ã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã«æ‹¡å¼µã—ã¾ã™",
+		"awsBedrock1MContextBetaLabel": "1Mã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’æœ‰åŠ¹ã«ã™ã‚‹ï¼ˆãƒ™ãƒ¼ã‚¿ç‰ˆï¼‰",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4ã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã«æ‹¡å¼µã—ã¾ã™",
+		"basetenApiKey": "Baseten APIã‚­ãƒ¼",
+		"getBasetenApiKey": "Baseten APIã‚­ãƒ¼ã‚’å–å¾—",
+		"cerebrasApiKey": "Cerebras APIã‚­ãƒ¼",
+		"getCerebrasApiKey": "Cerebras APIã‚­ãƒ¼ã‚’å–å¾—",
+		"chutesApiKey": "Chutes APIã‚­ãƒ¼",
+		"getChutesApiKey": "Chutes APIã‚­ãƒ¼ã‚’å–å¾—",
+		"fireworksApiKey": "Fireworks APIã‚­ãƒ¼",
+		"getFireworksApiKey": "Fireworks APIã‚­ãƒ¼ã‚’å–å¾—",
+		"featherlessApiKey": "Featherless APIã‚­ãƒ¼",
+		"getFeatherlessApiKey": "Featherless APIã‚­ãƒ¼ã‚’å–å¾—",
+		"ioIntelligenceApiKey": "IO Intelligence APIã‚­ãƒ¼",
+		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+		"getIoIntelligenceApiKey": "IO Intelligence APIã‚­ãƒ¼ã‚’å–å¾—",
+		"deepSeekApiKey": "DeepSeek APIã‚­ãƒ¼",
+		"getDeepSeekApiKey": "DeepSeek APIã‚­ãƒ¼ã‚’å–å¾—",
+		"doubaoApiKey": "Doubao APIã‚­ãƒ¼",
+		"getDoubaoApiKey": "Doubao APIã‚­ãƒ¼ã‚’å–å¾—",
+		"moonshotApiKey": "Moonshot APIã‚­ãƒ¼",
+		"getMoonshotApiKey": "Moonshot APIã‚­ãƒ¼ã‚’å–å¾—",
+		"moonshotBaseUrl": "Moonshot ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆ",
+		"zaiApiKey": "Z AI APIã‚­ãƒ¼",
+		"getZaiApiKey": "Z AI APIã‚­ãƒ¼ã‚’å–å¾—",
+		"zaiEntrypoint": "Z AI ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆ",
+		"zaiEntrypointDescription": "ãŠä½ã¾ã„ã®åœ°åŸŸã«å¿œã˜ã¦é©åˆ‡ãª API ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚ä¸­å›½ã«ãŠä½ã¾ã„ã®å ´åˆã¯ open.bigmodel.cn ã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚ãã‚Œä»¥å¤–ã®å ´åˆã¯ api.z.ai ã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚",
+		"minimaxApiKey": "MiniMax APIã‚­ãƒ¼",
+		"getMiniMaxApiKey": "MiniMax APIã‚­ãƒ¼ã‚’å–å¾—",
+		"minimaxBaseUrl": "MiniMax ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãƒã‚¤ãƒ³ãƒˆ",
+		"geminiApiKey": "Gemini APIã‚­ãƒ¼",
+		"getGroqApiKey": "Groq APIã‚­ãƒ¼ã‚’å–å¾—",
+		"groqApiKey": "Groq APIã‚­ãƒ¼",
+		"getSambaNovaApiKey": "SambaNova APIã‚­ãƒ¼ã‚’å–å¾—",
+		"sambaNovaApiKey": "SambaNova APIã‚­ãƒ¼",
+		"getHuggingFaceApiKey": "Hugging Face APIã‚­ãƒ¼ã‚’å–å¾—",
+		"huggingFaceApiKey": "Hugging Face APIã‚­ãƒ¼",
+		"huggingFaceModelId": "ãƒ¢ãƒ‡ãƒ«ID",
+		"huggingFaceLoading": "èª­ã¿è¾¼ã¿ä¸­...",
+		"huggingFaceModelsCount": "({{count}}å€‹ã®ãƒ¢ãƒ‡ãƒ«)",
+		"huggingFaceSelectModel": "ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠž...",
+		"huggingFaceSearchModels": "ãƒ¢ãƒ‡ãƒ«ã‚’æ¤œç´¢...",
+		"huggingFaceNoModelsFound": "ãƒ¢ãƒ‡ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“",
+		"huggingFaceProvider": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+		"huggingFaceProviderAuto": "è‡ªå‹•",
+		"huggingFaceSelectProvider": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’é¸æŠž...",
+		"huggingFaceSearchProviders": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’æ¤œç´¢...",
+		"huggingFaceNoProvidersFound": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“",
+		"getGeminiApiKey": "Gemini APIã‚­ãƒ¼ã‚’å–å¾—",
+		"openAiApiKey": "OpenAI APIã‚­ãƒ¼",
+		"apiKey": "APIã‚­ãƒ¼",
+		"openAiBaseUrl": "ãƒ™ãƒ¼ã‚¹URL",
+		"getOpenAiApiKey": "OpenAI APIã‚­ãƒ¼ã‚’å–å¾—",
+		"mistralApiKey": "Mistral APIã‚­ãƒ¼",
+		"getMistralApiKey": "Mistral / Codestral APIã‚­ãƒ¼ã‚’å–å¾—",
+		"codestralBaseUrl": "Codestral ãƒ™ãƒ¼ã‚¹URLï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰",
+		"codestralBaseUrlDesc": "Codestralãƒ¢ãƒ‡ãƒ«ã®ä»£æ›¿URLã‚’è¨­å®šã—ã¾ã™ã€‚",
+		"xaiApiKey": "xAI APIã‚­ãƒ¼",
+		"getXaiApiKey": "xAI APIã‚­ãƒ¼ã‚’å–å¾—",
+		"litellmApiKey": "LiteLLM APIã‚­ãƒ¼",
+		"litellmBaseUrl": "LiteLLM ãƒ™ãƒ¼ã‚¹URL",
+		"awsCredentials": "AWSèªè¨¼æƒ…å ±",
+		"awsProfile": "AWSãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«",
+		"awsApiKey": "Amazon Bedrock APIã‚­ãƒ¼",
+		"awsProfileName": "AWSãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«å",
+		"awsAccessKey": "AWSã‚¢ã‚¯ã‚»ã‚¹ã‚­ãƒ¼",
+		"awsSecretKey": "AWSã‚·ãƒ¼ã‚¯ãƒ¬ãƒƒãƒˆã‚­ãƒ¼",
+		"awsSessionToken": "AWSã‚»ãƒƒã‚·ãƒ§ãƒ³ãƒˆãƒ¼ã‚¯ãƒ³",
+		"awsRegion": "AWSãƒªãƒ¼ã‚¸ãƒ§ãƒ³",
+		"awsCrossRegion": "ã‚¯ãƒ­ã‚¹ãƒªãƒ¼ã‚¸ãƒ§ãƒ³æŽ¨è«–ã‚’ä½¿ç”¨",
+		"awsGlobalInference": "ã‚°ãƒ­ãƒ¼ãƒãƒ«æŽ¨è«–ã‚’ä½¿ç”¨ã™ã‚‹ï¼ˆæœ€é©ãªAWSãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã‚’è‡ªå‹•é¸æŠžï¼‰",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "カスタムVPCエンドポイントを使用",
-			"vpcEndpointUrlPlaceholder": "VPCエンドポイントURLを入力（任意）",
-			"examples": "例："
+			"useCustomVpcEndpoint": "ã‚«ã‚¹ã‚¿ãƒ VPCã‚¨ãƒ³ãƒ‰ãƒã‚¤ãƒ³ãƒˆã‚’ä½¿ç”¨",
+			"vpcEndpointUrlPlaceholder": "VPCã‚¨ãƒ³ãƒ‰ãƒã‚¤ãƒ³ãƒˆURLã‚’å…¥åŠ›ï¼ˆä»»æ„ï¼‰",
+			"examples": "ä¾‹ï¼š"
 		},
-		"enablePromptCaching": "プロンプトキャッシュを有効化",
-		"enablePromptCachingTitle": "サポートされているモデルのパフォーマンスを向上させ、コストを削減するためにプロンプトキャッシュを有効化します。",
-		"cacheUsageNote": "注意：キャッシュの使用が表示されない場合は、別のモデルを選択してから希望のモデルを再度選択してみてください。",
-		"vscodeLmModel": "言語モデル",
-		"vscodeLmWarning": "注意: VS Code Language Model API を通じて利用されるモデルは、プロバイダーによってラップまたは微調整されている場合があります。したがって、一般的なプロバイダーやルーターから同じモデルを直接使用する場合と挙動が異なることがあります。『Language Model』ドロップダウンのモデルを使用するには、まずそのモデルに切り替え、Copilot Chat のプロンプトで『承認』をクリックしてください。そうしないと、400『The requested model is not supported』などのエラーが表示されることがあります。",
+		"enablePromptCaching": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’æœ‰åŠ¹åŒ–",
+		"enablePromptCachingTitle": "ã‚µãƒãƒ¼ãƒˆã•ã‚Œã¦ã„ã‚‹ãƒ¢ãƒ‡ãƒ«ã®ãƒ‘ãƒ•ã‚©ãƒ¼ãƒžãƒ³ã‚¹ã‚’å‘ä¸Šã•ã›ã€ã‚³ã‚¹ãƒˆã‚’å‰Šæ¸›ã™ã‚‹ãŸã‚ã«ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’æœ‰åŠ¹åŒ–ã—ã¾ã™ã€‚",
+		"cacheUsageNote": "æ³¨æ„ï¼šã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®ä½¿ç”¨ãŒè¡¨ç¤ºã•ã‚Œãªã„å ´åˆã¯ã€åˆ¥ã®ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠžã—ã¦ã‹ã‚‰å¸Œæœ›ã®ãƒ¢ãƒ‡ãƒ«ã‚’å†åº¦é¸æŠžã—ã¦ã¿ã¦ãã ã•ã„ã€‚",
+		"vscodeLmModel": "è¨€èªžãƒ¢ãƒ‡ãƒ«",
+		"vscodeLmWarning": "æ³¨æ„: VS Code Language Model API ã‚’é€šã˜ã¦åˆ©ç”¨ã•ã‚Œã‚‹ãƒ¢ãƒ‡ãƒ«ã¯ã€ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã«ã‚ˆã£ã¦ãƒ©ãƒƒãƒ—ã¾ãŸã¯å¾®èª¿æ•´ã•ã‚Œã¦ã„ã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€‚ã—ãŸãŒã£ã¦ã€ä¸€èˆ¬çš„ãªãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚„ãƒ«ãƒ¼ã‚¿ãƒ¼ã‹ã‚‰åŒã˜ãƒ¢ãƒ‡ãƒ«ã‚’ç›´æŽ¥ä½¿ç”¨ã™ã‚‹å ´åˆã¨æŒ™å‹•ãŒç•°ãªã‚‹ã“ã¨ãŒã‚ã‚Šã¾ã™ã€‚ã€ŽLanguage Modelã€ãƒ‰ãƒ­ãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã®ãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ç”¨ã™ã‚‹ã«ã¯ã€ã¾ãšãã®ãƒ¢ãƒ‡ãƒ«ã«åˆ‡ã‚Šæ›¿ãˆã€Copilot Chat ã®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã§ã€Žæ‰¿èªã€ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ãã ã•ã„ã€‚ãã†ã—ãªã„ã¨ã€400ã€ŽThe requested model is not supportedã€ãªã©ã®ã‚¨ãƒ©ãƒ¼ãŒè¡¨ç¤ºã•ã‚Œã‚‹ã“ã¨ãŒã‚ã‚Šã¾ã™ã€‚",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "URLコンテキストを有効にする",
-				"description": "応答を生成する際に、追加のコンテキストとしてGeminiがURLにアクセスして処理できるようにします。Webコンテンツの分析を必要とするタスクに役立ちます。"
+				"title": "URLã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+				"description": "å¿œç­”ã‚’ç”Ÿæˆã™ã‚‹éš›ã«ã€è¿½åŠ ã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã¨ã—ã¦GeminiãŒURLã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦å‡¦ç†ã§ãã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚Webã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã®åˆ†æžã‚’å¿…è¦ã¨ã™ã‚‹ã‚¿ã‚¹ã‚¯ã«å½¹ç«‹ã¡ã¾ã™ã€‚"
 			},
 			"groundingSearch": {
-				"title": "Google検索でのグラウンディングを有効にする",
-				"description": "GeminiがGoogleを検索して最新情報を取得し、リアルタイムデータに基づいて応答をグラウンディングできるようにします。最新情報が必要なクエリに便利です。"
+				"title": "Googleæ¤œç´¢ã§ã®ã‚°ãƒ©ã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+				"description": "GeminiãŒGoogleã‚’æ¤œç´¢ã—ã¦æœ€æ–°æƒ…å ±ã‚’å–å¾—ã—ã€ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ãƒ‡ãƒ¼ã‚¿ã«åŸºã¥ã„ã¦å¿œç­”ã‚’ã‚°ãƒ©ã‚¦ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ã§ãã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚æœ€æ–°æƒ…å ±ãŒå¿…è¦ãªã‚¯ã‚¨ãƒªã«ä¾¿åˆ©ã§ã™ã€‚"
 			}
 		},
 		"googleCloudSetup": {
-			"title": "Google Cloud Vertex AIを使用するには：",
-			"step1": "1. Google Cloudアカウントを作成し、Vertex AI APIを有効にして、希望するClaudeモデルを有効にします。",
-			"step2": "2. Google Cloud CLIをインストールし、アプリケーションのデフォルト認証情報を設定します。",
-			"step3": "3. または、認証情報付きのサービスアカウントを作成します。"
+			"title": "Google Cloud Vertex AIã‚’ä½¿ç”¨ã™ã‚‹ã«ã¯ï¼š",
+			"step1": "1. Google Cloudã‚¢ã‚«ã‚¦ãƒ³ãƒˆã‚’ä½œæˆã—ã€Vertex AI APIã‚’æœ‰åŠ¹ã«ã—ã¦ã€å¸Œæœ›ã™ã‚‹Claudeãƒ¢ãƒ‡ãƒ«ã‚’æœ‰åŠ¹ã«ã—ã¾ã™ã€‚",
+			"step2": "2. Google Cloud CLIã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã—ã€ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆèªè¨¼æƒ…å ±ã‚’è¨­å®šã—ã¾ã™ã€‚",
+			"step3": "3. ã¾ãŸã¯ã€èªè¨¼æƒ…å ±ä»˜ãã®ã‚µãƒ¼ãƒ“ã‚¹ã‚¢ã‚«ã‚¦ãƒ³ãƒˆã‚’ä½œæˆã—ã¾ã™ã€‚"
 		},
-		"googleCloudCredentials": "Google Cloud認証情報",
-		"googleCloudKeyFile": "Google Cloudキーファイルパス",
-		"googleCloudProjectId": "Google Cloudプロジェクトid",
-		"googleCloudRegion": "Google Cloudリージョン",
+		"googleCloudCredentials": "Google Cloudèªè¨¼æƒ…å ±",
+		"googleCloudKeyFile": "Google Cloudã‚­ãƒ¼ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹",
+		"googleCloudProjectId": "Google Cloudãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆid",
+		"googleCloudRegion": "Google Cloudãƒªãƒ¼ã‚¸ãƒ§ãƒ³",
 		"lmStudio": {
-			"baseUrl": "ベースURL（オプション）",
-			"modelId": "モデルID",
-			"speculativeDecoding": "推論デコーディングを有効化",
-			"draftModelId": "ドラフトモデルID",
-			"draftModelDesc": "推論デコーディングが正しく機能するには、ドラフトモデルは同じモデルファミリーから選択する必要があります。",
-			"selectDraftModel": "ドラフトモデルを選択",
-			"noModelsFound": "ドラフトモデルが見つかりません。LM Studioがサーバーモードで実行されていることを確認してください。",
-			"description": "LM Studioを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、<a>クイックスタートガイド</a>をご覧ください。また、この拡張機能で使用するには、LM Studioの<b>ローカルサーバー</b>機能を起動する必要があります。<span>注意：</span>Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"baseUrl": "ãƒ™ãƒ¼ã‚¹URLï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰",
+			"modelId": "ãƒ¢ãƒ‡ãƒ«ID",
+			"speculativeDecoding": "æŽ¨è«–ãƒ‡ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚’æœ‰åŠ¹åŒ–",
+			"draftModelId": "ãƒ‰ãƒ©ãƒ•ãƒˆãƒ¢ãƒ‡ãƒ«ID",
+			"draftModelDesc": "æŽ¨è«–ãƒ‡ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ãŒæ­£ã—ãæ©Ÿèƒ½ã™ã‚‹ã«ã¯ã€ãƒ‰ãƒ©ãƒ•ãƒˆãƒ¢ãƒ‡ãƒ«ã¯åŒã˜ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ãƒŸãƒªãƒ¼ã‹ã‚‰é¸æŠžã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚",
+			"selectDraftModel": "ãƒ‰ãƒ©ãƒ•ãƒˆãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠž",
+			"noModelsFound": "ãƒ‰ãƒ©ãƒ•ãƒˆãƒ¢ãƒ‡ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚LM StudioãŒã‚µãƒ¼ãƒãƒ¼ãƒ¢ãƒ¼ãƒ‰ã§å®Ÿè¡Œã•ã‚Œã¦ã„ã‚‹ã“ã¨ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚",
+			"description": "LM Studioã‚’ä½¿ç”¨ã™ã‚‹ã¨ã€ãƒ­ãƒ¼ã‚«ãƒ«ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ã§ãƒ¢ãƒ‡ãƒ«ã‚’å®Ÿè¡Œã§ãã¾ã™ã€‚å§‹ã‚æ–¹ã«ã¤ã„ã¦ã¯ã€\u003ca\u003eã‚¯ã‚¤ãƒƒã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆã‚¬ã‚¤ãƒ‰\u003c/a\u003eã‚’ã”è¦§ãã ã•ã„ã€‚ã¾ãŸã€ã“ã®æ‹¡å¼µæ©Ÿèƒ½ã§ä½¿ç”¨ã™ã‚‹ã«ã¯ã€LM Studioã®\u003cb\u003eãƒ­ãƒ¼ã‚«ãƒ«ã‚µãƒ¼ãƒãƒ¼\u003c/b\u003eæ©Ÿèƒ½ã‚’èµ·å‹•ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚\u003cspan\u003eæ³¨æ„ï¼š\u003c/span\u003eRoo Codeã¯è¤‡é›‘ãªãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’ä½¿ç”¨ã—ã€Claudeãƒ¢ãƒ‡ãƒ«ã§æœ€é©ã«å‹•ä½œã—ã¾ã™ã€‚èƒ½åŠ›ã®ä½Žã„ãƒ¢ãƒ‡ãƒ«ã¯æœŸå¾…é€šã‚Šã«å‹•ä½œã—ãªã„å ´åˆãŒã‚ã‚Šã¾ã™ã€‚"
 		},
 		"ollama": {
-			"baseUrl": "ベースURL（オプション）",
-			"modelId": "モデルID",
-			"apiKey": "Ollama APIキー",
-			"apiKeyHelp": "認証されたOllamaインスタンスやクラウドサービス用のオプションAPIキー。ローカルインストールの場合は空のままにしてください。",
-			"numCtx": "コンテキストウィンドウサイズ (num_ctx)",
-			"numCtxHelp": "モデルのデフォルトのコンテキストウィンドウサイズを上書きします。モデルのModelfile構成を使用するには、空のままにします。最小値は128です。",
-			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
-			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"baseUrl": "ãƒ™ãƒ¼ã‚¹URLï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰",
+			"modelId": "ãƒ¢ãƒ‡ãƒ«ID",
+			"apiKey": "Ollama APIã‚­ãƒ¼",
+			"apiKeyHelp": "èªè¨¼ã•ã‚ŒãŸOllamaã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚„ã‚¯ãƒ©ã‚¦ãƒ‰ã‚µãƒ¼ãƒ“ã‚¹ç”¨ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³APIã‚­ãƒ¼ã€‚ãƒ­ãƒ¼ã‚«ãƒ«ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã®å ´åˆã¯ç©ºã®ã¾ã¾ã«ã—ã¦ãã ã•ã„ã€‚",
+			"numCtx": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚º (num_ctx)",
+			"numCtxHelp": "ãƒ¢ãƒ‡ãƒ«ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’ä¸Šæ›¸ãã—ã¾ã™ã€‚ãƒ¢ãƒ‡ãƒ«ã®Modelfileæ§‹æˆã‚’ä½¿ç”¨ã™ã‚‹ã«ã¯ã€ç©ºã®ã¾ã¾ã«ã—ã¾ã™ã€‚æœ€å°å€¤ã¯128ã§ã™ã€‚",
+			"description": "Ollamaã‚’ä½¿ç”¨ã™ã‚‹ã¨ã€ãƒ­ãƒ¼ã‚«ãƒ«ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ã§ãƒ¢ãƒ‡ãƒ«ã‚’å®Ÿè¡Œã§ãã¾ã™ã€‚å§‹ã‚æ–¹ã«ã¤ã„ã¦ã¯ã€ã‚¯ã‚¤ãƒƒã‚¯ã‚¹ã‚¿ãƒ¼ãƒˆã‚¬ã‚¤ãƒ‰ã‚’ã”è¦§ãã ã•ã„ã€‚",
+			"warning": "æ³¨æ„ï¼šRoo Codeã¯è¤‡é›‘ãªãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’ä½¿ç”¨ã—ã€Claudeãƒ¢ãƒ‡ãƒ«ã§æœ€é©ã«å‹•ä½œã—ã¾ã™ã€‚èƒ½åŠ›ã®ä½Žã„ãƒ¢ãƒ‡ãƒ«ã¯æœŸå¾…é€šã‚Šã«å‹•ä½œã—ãªã„å ´åˆãŒã‚ã‚Šã¾ã™ã€‚"
 		},
-		"unboundApiKey": "Unbound APIキー",
-		"getUnboundApiKey": "Unbound APIキーを取得",
-		"unboundRefreshModelsSuccess": "モデルリストが更新されました！最新のモデルから選択できます。",
-		"unboundInvalidApiKey": "無効なAPIキーです。APIキーを確認して、もう一度お試しください。",
+		"unboundApiKey": "Unbound APIã‚­ãƒ¼",
+		"getUnboundApiKey": "Unbound APIã‚­ãƒ¼ã‚’å–å¾—",
+		"unboundRefreshModelsSuccess": "ãƒ¢ãƒ‡ãƒ«ãƒªã‚¹ãƒˆãŒæ›´æ–°ã•ã‚Œã¾ã—ãŸï¼æœ€æ–°ã®ãƒ¢ãƒ‡ãƒ«ã‹ã‚‰é¸æŠžã§ãã¾ã™ã€‚",
+		"unboundInvalidApiKey": "ç„¡åŠ¹ãªAPIã‚­ãƒ¼ã§ã™ã€‚APIã‚­ãƒ¼ã‚’ç¢ºèªã—ã¦ã€ã‚‚ã†ä¸€åº¦ãŠè©¦ã—ãã ã•ã„ã€‚",
 		"humanRelay": {
-			"description": "APIキーは不要ですが、ユーザーはウェブチャットAIに情報をコピー＆ペーストする必要があります。",
-			"instructions": "使用中にダイアログボックスが表示され、現在のメッセージが自動的にクリップボードにコピーされます。これらをウェブ版のAI（ChatGPTやClaudeなど）に貼り付け、AIの返答をダイアログボックスにコピーして確認ボタンをクリックする必要があります。"
+			"description": "APIã‚­ãƒ¼ã¯ä¸è¦ã§ã™ãŒã€ãƒ¦ãƒ¼ã‚¶ãƒ¼ã¯ã‚¦ã‚§ãƒ–ãƒãƒ£ãƒƒãƒˆAIã«æƒ…å ±ã‚’ã‚³ãƒ”ãƒ¼ï¼†ãƒšãƒ¼ã‚¹ãƒˆã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚",
+			"instructions": "ä½¿ç”¨ä¸­ã«ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ãŒè¡¨ç¤ºã•ã‚Œã€ç¾åœ¨ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒè‡ªå‹•çš„ã«ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ã‚³ãƒ”ãƒ¼ã•ã‚Œã¾ã™ã€‚ã“ã‚Œã‚‰ã‚’ã‚¦ã‚§ãƒ–ç‰ˆã®AIï¼ˆChatGPTã‚„Claudeãªã©ï¼‰ã«è²¼ã‚Šä»˜ã‘ã€AIã®è¿”ç­”ã‚’ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã«ã‚³ãƒ”ãƒ¼ã—ã¦ç¢ºèªãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚"
 		},
 		"roo": {
-			"authenticatedMessage": "Roo Code Cloudアカウントを通じて安全に認証されています。",
-			"connectButton": "Roo Code Cloudに接続"
+			"authenticatedMessage": "Roo Code Cloudã‚¢ã‚«ã‚¦ãƒ³ãƒˆã‚’é€šã˜ã¦å®‰å…¨ã«èªè¨¼ã•ã‚Œã¦ã„ã¾ã™ã€‚",
+			"connectButton": "Roo Code Cloudã«æŽ¥ç¶š"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "OpenRouterプロバイダールーティング",
-				"description": "OpenRouterはあなたのモデルに最適な利用可能なプロバイダーにリクエストを転送します。デフォルトでは、稼働時間を最大化するために、リクエストはトッププロバイダー間でロードバランスされます。ただし、このモデルに使用する特定のプロバイダーを選択することもできます。",
-				"learnMore": "プロバイダールーティングについて詳しく知る"
+				"title": "OpenRouterãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚°",
+				"description": "OpenRouterã¯ã‚ãªãŸã®ãƒ¢ãƒ‡ãƒ«ã«æœ€é©ãªåˆ©ç”¨å¯èƒ½ãªãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã«ãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’è»¢é€ã—ã¾ã™ã€‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ã¯ã€ç¨¼åƒæ™‚é–“ã‚’æœ€å¤§åŒ–ã™ã‚‹ãŸã‚ã«ã€ãƒªã‚¯ã‚¨ã‚¹ãƒˆã¯ãƒˆãƒƒãƒ—ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼é–“ã§ãƒ­ãƒ¼ãƒ‰ãƒãƒ©ãƒ³ã‚¹ã•ã‚Œã¾ã™ã€‚ãŸã ã—ã€ã“ã®ãƒ¢ãƒ‡ãƒ«ã«ä½¿ç”¨ã™ã‚‹ç‰¹å®šã®ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’é¸æŠžã™ã‚‹ã“ã¨ã‚‚ã§ãã¾ã™ã€‚",
+				"learnMore": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚°ã«ã¤ã„ã¦è©³ã—ãçŸ¥ã‚‹"
 			}
 		},
 		"customModel": {
-			"capabilities": "カスタムOpenAI互換モデルの機能と価格を設定します。モデルの機能はRoo Codeのパフォーマンスに影響を与える可能性があるため、慎重に指定してください。",
+			"capabilities": "ã‚«ã‚¹ã‚¿ãƒ OpenAIäº’æ›ãƒ¢ãƒ‡ãƒ«ã®æ©Ÿèƒ½ã¨ä¾¡æ ¼ã‚’è¨­å®šã—ã¾ã™ã€‚ãƒ¢ãƒ‡ãƒ«ã®æ©Ÿèƒ½ã¯Roo Codeã®ãƒ‘ãƒ•ã‚©ãƒ¼ãƒžãƒ³ã‚¹ã«å½±éŸ¿ã‚’ä¸Žãˆã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ãŸã‚ã€æ…Žé‡ã«æŒ‡å®šã—ã¦ãã ã•ã„ã€‚",
 			"maxTokens": {
-				"label": "最大出力トークン",
-				"description": "モデルが生成できる応答の最大トークン数。（サーバーが最大トークンを設定できるようにするには-1を指定します。）"
+				"label": "æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³",
+				"description": "ãƒ¢ãƒ‡ãƒ«ãŒç”Ÿæˆã§ãã‚‹å¿œç­”ã®æœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³æ•°ã€‚ï¼ˆã‚µãƒ¼ãƒãƒ¼ãŒæœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³ã‚’è¨­å®šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ã«ã¯-1ã‚’æŒ‡å®šã—ã¾ã™ã€‚ï¼‰"
 			},
 			"contextWindow": {
-				"label": "コンテキストウィンドウサイズ",
-				"description": "モデルが処理できる総トークン数（入力＋出力）。"
+				"label": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚º",
+				"description": "ãƒ¢ãƒ‡ãƒ«ãŒå‡¦ç†ã§ãã‚‹ç·ãƒˆãƒ¼ã‚¯ãƒ³æ•°ï¼ˆå…¥åŠ›ï¼‹å‡ºåŠ›ï¼‰ã€‚"
 			},
 			"imageSupport": {
-				"label": "画像サポート",
-				"description": "このモデルは画像の処理と理解が可能ですか？"
+				"label": "ç”»åƒã‚µãƒãƒ¼ãƒˆ",
+				"description": "ã“ã®ãƒ¢ãƒ‡ãƒ«ã¯ç”»åƒã®å‡¦ç†ã¨ç†è§£ãŒå¯èƒ½ã§ã™ã‹ï¼Ÿ"
 			},
 			"computerUse": {
-				"label": "コンピューター使用",
-				"description": "このモデルはブラウザとの対話が可能ですか？"
+				"label": "ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ä½¿ç”¨",
+				"description": "ã“ã®ãƒ¢ãƒ‡ãƒ«ã¯ãƒ–ãƒ©ã‚¦ã‚¶ã¨ã®å¯¾è©±ãŒå¯èƒ½ã§ã™ã‹ï¼Ÿ"
 			},
 			"promptCache": {
-				"label": "プロンプトキャッシュ",
-				"description": "このモデルはプロンプトのキャッシュが可能ですか？"
+				"label": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥",
+				"description": "ã“ã®ãƒ¢ãƒ‡ãƒ«ã¯ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãŒå¯èƒ½ã§ã™ã‹ï¼Ÿ"
 			},
 			"pricing": {
 				"input": {
-					"label": "入力価格",
-					"description": "入力/プロンプトの100万トークンあたりのコスト。これはモデルにコンテキストと指示を送信するコストに影響します。"
+					"label": "å…¥åŠ›ä¾¡æ ¼",
+					"description": "å…¥åŠ›/ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã‚ãŸã‚Šã®ã‚³ã‚¹ãƒˆã€‚ã“ã‚Œã¯ãƒ¢ãƒ‡ãƒ«ã«ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã¨æŒ‡ç¤ºã‚’é€ä¿¡ã™ã‚‹ã‚³ã‚¹ãƒˆã«å½±éŸ¿ã—ã¾ã™ã€‚"
 				},
 				"output": {
-					"label": "出力価格",
-					"description": "モデルの応答の100万トークンあたりのコスト。これは生成されたコンテンツと補完のコストに影響します。"
+					"label": "å‡ºåŠ›ä¾¡æ ¼",
+					"description": "ãƒ¢ãƒ‡ãƒ«ã®å¿œç­”ã®100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã‚ãŸã‚Šã®ã‚³ã‚¹ãƒˆã€‚ã“ã‚Œã¯ç”Ÿæˆã•ã‚ŒãŸã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã¨è£œå®Œã®ã‚³ã‚¹ãƒˆã«å½±éŸ¿ã—ã¾ã™ã€‚"
 				},
 				"cacheReads": {
-					"label": "キャッシュ読み取り価格",
-					"description": "キャッシュからの読み取りの100万トークンあたりのコスト。これはキャッシュされた応答を取得する際に課金される価格です。"
+					"label": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥èª­ã¿å–ã‚Šä¾¡æ ¼",
+					"description": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‹ã‚‰ã®èª­ã¿å–ã‚Šã®100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã‚ãŸã‚Šã®ã‚³ã‚¹ãƒˆã€‚ã“ã‚Œã¯ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã•ã‚ŒãŸå¿œç­”ã‚’å–å¾—ã™ã‚‹éš›ã«èª²é‡‘ã•ã‚Œã‚‹ä¾¡æ ¼ã§ã™ã€‚"
 				},
 				"cacheWrites": {
-					"label": "キャッシュ書き込み価格",
-					"description": "キャッシュへの書き込みの100万トークンあたりのコスト。これはプロンプトが初めてキャッシュされる際に課金される価格です。"
+					"label": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ›¸ãè¾¼ã¿ä¾¡æ ¼",
+					"description": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã¸ã®æ›¸ãè¾¼ã¿ã®100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã‚ãŸã‚Šã®ã‚³ã‚¹ãƒˆã€‚ã“ã‚Œã¯ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆãŒåˆã‚ã¦ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã•ã‚Œã‚‹éš›ã«èª²é‡‘ã•ã‚Œã‚‹ä¾¡æ ¼ã§ã™ã€‚"
 				}
 			},
-			"resetDefaults": "デフォルトにリセット"
+			"resetDefaults": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ãƒªã‚»ãƒƒãƒˆ"
 		},
 		"rateLimitSeconds": {
-			"label": "レート制限",
-			"description": "APIリクエスト間の最小時間。"
+			"label": "ãƒ¬ãƒ¼ãƒˆåˆ¶é™",
+			"description": "APIãƒªã‚¯ã‚¨ã‚¹ãƒˆé–“ã®æœ€å°æ™‚é–“ã€‚"
 		},
 		"consecutiveMistakeLimit": {
-			"label": "エラーと繰り返しの制限",
-			"description": "「Rooが問題を抱えています」ダイアログを表示するまでの連続エラーまたは繰り返しアクションの数。この安全機構を無効にするには0に設定します（トリガーされません）。",
-			"unlimitedDescription": "無制限のリトライが有効です（自動進行）。ダイアログは表示されません。",
-			"warning": "⚠️ 0に設定すると無制限のリトライが可能になり、API使用量が大幅に増加する可能性があります"
+			"label": "ã‚¨ãƒ©ãƒ¼ã¨ç¹°ã‚Šè¿”ã—ã®åˆ¶é™",
+			"description": "ã€ŒRooãŒå•é¡Œã‚’æŠ±ãˆã¦ã„ã¾ã™ã€ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’è¡¨ç¤ºã™ã‚‹ã¾ã§ã®é€£ç¶šã‚¨ãƒ©ãƒ¼ã¾ãŸã¯ç¹°ã‚Šè¿”ã—ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã®æ•°ã€‚ã“ã®å®‰å…¨æ©Ÿæ§‹ã‚’ç„¡åŠ¹ã«ã™ã‚‹ã«ã¯0ã«è¨­å®šã—ã¾ã™ï¼ˆãƒˆãƒªã‚¬ãƒ¼ã•ã‚Œã¾ã›ã‚“ï¼‰ã€‚",
+			"unlimitedDescription": "ç„¡åˆ¶é™ã®ãƒªãƒˆãƒ©ã‚¤ãŒæœ‰åŠ¹ã§ã™ï¼ˆè‡ªå‹•é€²è¡Œï¼‰ã€‚ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã¯è¡¨ç¤ºã•ã‚Œã¾ã›ã‚“ã€‚",
+			"warning": "âš ï¸ 0ã«è¨­å®šã™ã‚‹ã¨ç„¡åˆ¶é™ã®ãƒªãƒˆãƒ©ã‚¤ãŒå¯èƒ½ã«ãªã‚Šã€APIä½¿ç”¨é‡ãŒå¤§å¹…ã«å¢—åŠ ã™ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™"
 		},
 		"reasoningEffort": {
-			"label": "モデル推論の労力",
-			"none": "なし",
-			"minimal": "最小 (最速)",
-			"high": "高",
-			"xhigh": "非常に高い",
-			"medium": "中",
-			"low": "低"
+			"label": "ãƒ¢ãƒ‡ãƒ«æŽ¨è«–ã®åŠ´åŠ›",
+			"none": "ãªã—",
+			"minimal": "æœ€å° (æœ€é€Ÿ)",
+			"high": "é«˜",
+			"xhigh": "éžå¸¸ã«é«˜ã„",
+			"medium": "ä¸­",
+			"low": "ä½Ž"
 		},
 		"verbosity": {
-			"label": "出力の冗長性",
-			"high": "高",
-			"medium": "中",
-			"low": "低",
-			"description": "モデルの応答の詳細度を制御します。冗長性が低いと簡潔な回答が生成され、高いと詳細な説明が提供されます。"
+			"label": "å‡ºåŠ›ã®å†—é•·æ€§",
+			"high": "é«˜",
+			"medium": "ä¸­",
+			"low": "ä½Ž",
+			"description": "ãƒ¢ãƒ‡ãƒ«ã®å¿œç­”ã®è©³ç´°åº¦ã‚’åˆ¶å¾¡ã—ã¾ã™ã€‚å†—é•·æ€§ãŒä½Žã„ã¨ç°¡æ½”ãªå›žç­”ãŒç”Ÿæˆã•ã‚Œã€é«˜ã„ã¨è©³ç´°ãªèª¬æ˜ŽãŒæä¾›ã•ã‚Œã¾ã™ã€‚"
 		},
-		"setReasoningLevel": "推論労力を有効にする",
+		"setReasoningLevel": "æŽ¨è«–åŠ´åŠ›ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
 		"claudeCode": {
-			"pathLabel": "クロードコードパス",
-			"description": "Claude Code CLIへのオプションパス。設定されていない場合、デフォルトは「claude」です。",
-			"placeholder": "デフォルト：claude",
-			"maxTokensLabel": "最大出力トークン",
-			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
+			"pathLabel": "ã‚¯ãƒ­ãƒ¼ãƒ‰ã‚³ãƒ¼ãƒ‰ãƒ‘ã‚¹",
+			"description": "Claude Code CLIã¸ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³ãƒ‘ã‚¹ã€‚è¨­å®šã•ã‚Œã¦ã„ãªã„å ´åˆã€ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯ã€Œclaudeã€ã§ã™ã€‚",
+			"placeholder": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼šclaude",
+			"maxTokensLabel": "æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³",
+			"maxTokensDescription": "Claude Codeãƒ¬ã‚¹ãƒãƒ³ã‚¹ã®æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³æ•°ã€‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯8000ã§ã™ã€‚"
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "ブラウザツールを有効化",
-			"description": "有効にすると、コンピューター使用をサポートするモデルを使用する際に、Rooはウェブサイトとのやり取りにブラウザを使用できます。 <0>詳細情報</0>"
+			"label": "ãƒ–ãƒ©ã‚¦ã‚¶ãƒ„ãƒ¼ãƒ«ã‚’æœ‰åŠ¹åŒ–",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ã‚³ãƒ³ãƒ”ãƒ¥ãƒ¼ã‚¿ãƒ¼ä½¿ç”¨ã‚’ã‚µãƒãƒ¼ãƒˆã™ã‚‹ãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ç”¨ã™ã‚‹éš›ã«ã€Rooã¯ã‚¦ã‚§ãƒ–ã‚µã‚¤ãƒˆã¨ã®ã‚„ã‚Šå–ã‚Šã«ãƒ–ãƒ©ã‚¦ã‚¶ã‚’ä½¿ç”¨ã§ãã¾ã™ã€‚ \u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"viewport": {
-			"label": "ビューポートサイズ",
-			"description": "ブラウザインタラクションのビューポートサイズを選択します。これはウェブサイトの表示方法とインタラクション方法に影響します。",
+			"label": "ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚µã‚¤ã‚º",
+			"description": "ãƒ–ãƒ©ã‚¦ã‚¶ã‚¤ãƒ³ã‚¿ãƒ©ã‚¯ã‚·ãƒ§ãƒ³ã®ãƒ“ãƒ¥ãƒ¼ãƒãƒ¼ãƒˆã‚µã‚¤ã‚ºã‚’é¸æŠžã—ã¾ã™ã€‚ã“ã‚Œã¯ã‚¦ã‚§ãƒ–ã‚µã‚¤ãƒˆã®è¡¨ç¤ºæ–¹æ³•ã¨ã‚¤ãƒ³ã‚¿ãƒ©ã‚¯ã‚·ãƒ§ãƒ³æ–¹æ³•ã«å½±éŸ¿ã—ã¾ã™ã€‚",
 			"options": {
-				"largeDesktop": "大型デスクトップ (1280x800)",
-				"smallDesktop": "小型デスクトップ (900x600)",
-				"tablet": "タブレット (768x1024)",
-				"mobile": "モバイル (360x640)"
+				"largeDesktop": "å¤§åž‹ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ— (1280x800)",
+				"smallDesktop": "å°åž‹ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ— (900x600)",
+				"tablet": "ã‚¿ãƒ–ãƒ¬ãƒƒãƒˆ (768x1024)",
+				"mobile": "ãƒ¢ãƒã‚¤ãƒ« (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "スクリーンショット品質",
-			"description": "ブラウザスクリーンショットのWebP品質を調整します。高い値はより鮮明なスクリーンショットを提供しますが、token使用量が増加します。"
+			"label": "ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆå“è³ª",
+			"description": "ãƒ–ãƒ©ã‚¦ã‚¶ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆã®WebPå“è³ªã‚’èª¿æ•´ã—ã¾ã™ã€‚é«˜ã„å€¤ã¯ã‚ˆã‚Šé®®æ˜Žãªã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã‚·ãƒ§ãƒƒãƒˆã‚’æä¾›ã—ã¾ã™ãŒã€tokenä½¿ç”¨é‡ãŒå¢—åŠ ã—ã¾ã™ã€‚"
 		},
 		"remote": {
-			"label": "リモートブラウザ接続を使用",
-			"description": "リモートデバッグを有効にして実行しているChromeブラウザに接続します（--remote-debugging-port=9222）。",
-			"urlPlaceholder": "カスタムURL（例：http://localhost:9222）",
-			"testButton": "接続テスト",
-			"testingButton": "テスト中...",
-			"instructions": "DevToolsプロトコルホストアドレスを入力するか、Chromeのローカルインスタンスを自動検出するために空のままにします。接続テストボタンは、提供されている場合はカスタムURLを試み、フィールドが空の場合は自動検出します。"
+			"label": "ãƒªãƒ¢ãƒ¼ãƒˆãƒ–ãƒ©ã‚¦ã‚¶æŽ¥ç¶šã‚’ä½¿ç”¨",
+			"description": "ãƒªãƒ¢ãƒ¼ãƒˆãƒ‡ãƒãƒƒã‚°ã‚’æœ‰åŠ¹ã«ã—ã¦å®Ÿè¡Œã—ã¦ã„ã‚‹Chromeãƒ–ãƒ©ã‚¦ã‚¶ã«æŽ¥ç¶šã—ã¾ã™ï¼ˆ--remote-debugging-port=9222ï¼‰ã€‚",
+			"urlPlaceholder": "ã‚«ã‚¹ã‚¿ãƒ URLï¼ˆä¾‹ï¼šhttp://localhost:9222ï¼‰",
+			"testButton": "æŽ¥ç¶šãƒ†ã‚¹ãƒˆ",
+			"testingButton": "ãƒ†ã‚¹ãƒˆä¸­...",
+			"instructions": "DevToolsãƒ—ãƒ­ãƒˆã‚³ãƒ«ãƒ›ã‚¹ãƒˆã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å…¥åŠ›ã™ã‚‹ã‹ã€Chromeã®ãƒ­ãƒ¼ã‚«ãƒ«ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’è‡ªå‹•æ¤œå‡ºã™ã‚‹ãŸã‚ã«ç©ºã®ã¾ã¾ã«ã—ã¾ã™ã€‚æŽ¥ç¶šãƒ†ã‚¹ãƒˆãƒœã‚¿ãƒ³ã¯ã€æä¾›ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ã‚«ã‚¹ã‚¿ãƒ URLã‚’è©¦ã¿ã€ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ãŒç©ºã®å ´åˆã¯è‡ªå‹•æ¤œå‡ºã—ã¾ã™ã€‚"
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "チェックポイント初期化タイムアウト（秒）",
-			"description": "チェックポイントサービスの初期化を待つ最大時間。デフォルトは15秒。範囲：10～60秒。"
+			"label": "ãƒã‚§ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒˆåˆæœŸåŒ–ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆï¼ˆç§’ï¼‰",
+			"description": "ãƒã‚§ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒˆã‚µãƒ¼ãƒ“ã‚¹ã®åˆæœŸåŒ–ã‚’å¾…ã¤æœ€å¤§æ™‚é–“ã€‚ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯15ç§’ã€‚ç¯„å›²ï¼š10ï½ž60ç§’ã€‚"
 		},
 		"enable": {
-			"label": "自動チェックポイントを有効化",
-			"description": "有効にすると、Rooはタスク実行中に自動的にチェックポイントを作成し、変更の確認や以前の状態への復帰を容易にします。 <0>詳細情報</0>"
+			"label": "è‡ªå‹•ãƒã‚§ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒˆã‚’æœ‰åŠ¹åŒ–",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ã‚¿ã‚¹ã‚¯å®Ÿè¡Œä¸­ã«è‡ªå‹•çš„ã«ãƒã‚§ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒˆã‚’ä½œæˆã—ã€å¤‰æ›´ã®ç¢ºèªã‚„ä»¥å‰ã®çŠ¶æ…‹ã¸ã®å¾©å¸°ã‚’å®¹æ˜“ã«ã—ã¾ã™ã€‚ \u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "サウンドエフェクトを有効化",
-			"description": "有効にすると、Rooは通知やイベントのためにサウンドエフェクトを再生します。",
-			"volumeLabel": "音量"
+			"label": "ã‚µã‚¦ãƒ³ãƒ‰ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’æœ‰åŠ¹åŒ–",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯é€šçŸ¥ã‚„ã‚¤ãƒ™ãƒ³ãƒˆã®ãŸã‚ã«ã‚µã‚¦ãƒ³ãƒ‰ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’å†ç”Ÿã—ã¾ã™ã€‚",
+			"volumeLabel": "éŸ³é‡"
 		},
 		"tts": {
-			"label": "音声合成を有効化",
-			"description": "有効にすると、Rooは音声合成を使用して応答を音声で読み上げます。",
-			"speedLabel": "速度"
+			"label": "éŸ³å£°åˆæˆã‚’æœ‰åŠ¹åŒ–",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯éŸ³å£°åˆæˆã‚’ä½¿ç”¨ã—ã¦å¿œç­”ã‚’éŸ³å£°ã§èª­ã¿ä¸Šã’ã¾ã™ã€‚",
+			"speedLabel": "é€Ÿåº¦"
 		}
 	},
 	"contextManagement": {
-		"description": "AIのコンテキストウィンドウに含まれる情報を制御し、token使用量とレスポンスの品質に影響します",
+		"description": "AIã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«å«ã¾ã‚Œã‚‹æƒ…å ±ã‚’åˆ¶å¾¡ã—ã€tokenä½¿ç”¨é‡ã¨ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã®å“è³ªã«å½±éŸ¿ã—ã¾ã™",
 		"autoCondenseContextPercent": {
-			"label": "インテリジェントなコンテキスト圧縮をトリガーするしきい値",
-			"description": "コンテキストウィンドウがこのしきい値に達すると、Rooは自動的に圧縮します。"
+			"label": "ã‚¤ãƒ³ãƒ†ãƒªã‚¸ã‚§ãƒ³ãƒˆãªã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ã‚’ãƒˆãƒªã‚¬ãƒ¼ã™ã‚‹ã—ãã„å€¤",
+			"description": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒã“ã®ã—ãã„å€¤ã«é”ã™ã‚‹ã¨ã€Rooã¯è‡ªå‹•çš„ã«åœ§ç¸®ã—ã¾ã™ã€‚"
 		},
 		"condensingApiConfiguration": {
-			"label": "コンテキスト圧縮用のAPI設定",
-			"description": "コンテキスト圧縮操作に使用するAPI設定を選択します。選択しない場合は現在のアクティブな設定が使用されます。",
-			"useCurrentConfig": "現在の設定を使用"
+			"label": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ç”¨ã®APIè¨­å®š",
+			"description": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®æ“ä½œã«ä½¿ç”¨ã™ã‚‹APIè¨­å®šã‚’é¸æŠžã—ã¾ã™ã€‚é¸æŠžã—ãªã„å ´åˆã¯ç¾åœ¨ã®ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªè¨­å®šãŒä½¿ç”¨ã•ã‚Œã¾ã™ã€‚",
+			"useCurrentConfig": "ç¾åœ¨ã®è¨­å®šã‚’ä½¿ç”¨"
 		},
 		"customCondensingPrompt": {
-			"label": "カスタムコンテキスト圧縮プロンプト",
-			"description": "コンテキスト圧縮に使用するシステムプロンプトをカスタマイズします。空のままにするとデフォルトのプロンプトが使用されます。",
-			"placeholder": "ここにカスタム圧縮プロンプトを入力してください...\n\nデフォルトプロンプトと同じ構造を使用できます：\n- 過去の会話\n- 現在の作業\n- 重要な技術的概念\n- 関連するファイルとコード\n- 問題解決\n- 保留中のタスクと次のステップ",
-			"reset": "デフォルトにリセット",
-			"hint": "空 = デフォルトプロンプトを使用"
+			"label": "ã‚«ã‚¹ã‚¿ãƒ ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆ",
+			"description": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ã«ä½¿ç”¨ã™ã‚‹ã‚·ã‚¹ãƒ†ãƒ ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’ã‚«ã‚¹ã‚¿ãƒžã‚¤ã‚ºã—ã¾ã™ã€‚ç©ºã®ã¾ã¾ã«ã™ã‚‹ã¨ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆãŒä½¿ç”¨ã•ã‚Œã¾ã™ã€‚",
+			"placeholder": "ã“ã“ã«ã‚«ã‚¹ã‚¿ãƒ åœ§ç¸®ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’å…¥åŠ›ã—ã¦ãã ã•ã„...\n\nãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã¨åŒã˜æ§‹é€ ã‚’ä½¿ç”¨ã§ãã¾ã™ï¼š\n- éŽåŽ»ã®ä¼šè©±\n- ç¾åœ¨ã®ä½œæ¥­\n- é‡è¦ãªæŠ€è¡“çš„æ¦‚å¿µ\n- é–¢é€£ã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã¨ã‚³ãƒ¼ãƒ‰\n- å•é¡Œè§£æ±º\n- ä¿ç•™ä¸­ã®ã‚¿ã‚¹ã‚¯ã¨æ¬¡ã®ã‚¹ãƒ†ãƒƒãƒ—",
+			"reset": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ãƒªã‚»ãƒƒãƒˆ",
+			"hint": "ç©º = ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚’ä½¿ç”¨"
 		},
 		"autoCondenseContext": {
-			"name": "インテリジェントなコンテキスト圧縮を自動的にトリガーする",
-			"description": "有効にすると、Rooは閾値に達したときに自動的にコンテキストを圧縮します。無効にすると、手動でコンテキスト圧縮をトリガーできます。"
+			"name": "ã‚¤ãƒ³ãƒ†ãƒªã‚¸ã‚§ãƒ³ãƒˆãªã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ã‚’è‡ªå‹•çš„ã«ãƒˆãƒªã‚¬ãƒ¼ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯é–¾å€¤ã«é”ã—ãŸã¨ãã«è‡ªå‹•çš„ã«ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’åœ§ç¸®ã—ã¾ã™ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã¨ã€æ‰‹å‹•ã§ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåœ§ç¸®ã‚’ãƒˆãƒªã‚¬ãƒ¼ã§ãã¾ã™ã€‚"
 		},
 		"openTabs": {
-			"label": "オープンタブコンテキスト制限",
-			"description": "コンテキストに含めるVSCodeオープンタブの最大数。高い値はより多くのコンテキストを提供しますが、token使用量が増加します。"
+			"label": "ã‚ªãƒ¼ãƒ—ãƒ³ã‚¿ãƒ–ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåˆ¶é™",
+			"description": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã‚ã‚‹VSCodeã‚ªãƒ¼ãƒ—ãƒ³ã‚¿ãƒ–ã®æœ€å¤§æ•°ã€‚é«˜ã„å€¤ã¯ã‚ˆã‚Šå¤šãã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’æä¾›ã—ã¾ã™ãŒã€tokenä½¿ç”¨é‡ãŒå¢—åŠ ã—ã¾ã™ã€‚"
 		},
 		"workspaceFiles": {
-			"label": "ワークスペースファイルコンテキスト制限",
-			"description": "現在の作業ディレクトリの詳細に含めるファイルの最大数。高い値はより多くのコンテキストを提供しますが、token使用量が増加します。"
+			"label": "ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆåˆ¶é™",
+			"description": "ç¾åœ¨ã®ä½œæ¥­ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®è©³ç´°ã«å«ã‚ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã®æœ€å¤§æ•°ã€‚é«˜ã„å€¤ã¯ã‚ˆã‚Šå¤šãã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’æä¾›ã—ã¾ã™ãŒã€tokenä½¿ç”¨é‡ãŒå¢—åŠ ã—ã¾ã™ã€‚"
 		},
 		"rooignore": {
-			"label": "リストと検索で.rooignoreファイルを表示",
-			"description": "有効にすると、.rooignoreのパターンに一致するファイルがロックシンボル付きでリストに表示されます。無効にすると、これらのファイルはファイルリストや検索から完全に非表示になります。"
+			"label": "ãƒªã‚¹ãƒˆã¨æ¤œç´¢ã§.rooignoreãƒ•ã‚¡ã‚¤ãƒ«ã‚’è¡¨ç¤º",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€.rooignoreã®ãƒ‘ã‚¿ãƒ¼ãƒ³ã«ä¸€è‡´ã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ãŒãƒ­ãƒƒã‚¯ã‚·ãƒ³ãƒœãƒ«ä»˜ãã§ãƒªã‚¹ãƒˆã«è¡¨ç¤ºã•ã‚Œã¾ã™ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã¨ã€ã“ã‚Œã‚‰ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯ãƒ•ã‚¡ã‚¤ãƒ«ãƒªã‚¹ãƒˆã‚„æ¤œç´¢ã‹ã‚‰å®Œå…¨ã«éžè¡¨ç¤ºã«ãªã‚Šã¾ã™ã€‚"
 		},
 		"maxReadFile": {
-			"label": "ファイル読み込み自動切り詰めしきい値",
-			"description": "モデルが開始/終了の値を指定しない場合、Rooはこの行数を読み込みます。この数がファイルの総行数より少ない場合、Rooはコード定義の行番号インデックスを生成します。特殊なケース：-1はRooにファイル全体を読み込むよう指示し（インデックス作成なし）、0は行を読み込まず最小限のコンテキストのために行インデックスのみを提供するよう指示します。低い値は初期コンテキスト使用量を最小限に抑え、後続の正確な行範囲の読み込みを可能にします。明示的な開始/終了の要求はこの設定による制限を受けません。",
-			"lines": "行",
-			"always_full_read": "常にファイル全体を読み込む"
+			"label": "ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿è‡ªå‹•åˆ‡ã‚Šè©°ã‚ã—ãã„å€¤",
+			"description": "ãƒ¢ãƒ‡ãƒ«ãŒé–‹å§‹/çµ‚äº†ã®å€¤ã‚’æŒ‡å®šã—ãªã„å ´åˆã€Rooã¯ã“ã®è¡Œæ•°ã‚’èª­ã¿è¾¼ã¿ã¾ã™ã€‚ã“ã®æ•°ãŒãƒ•ã‚¡ã‚¤ãƒ«ã®ç·è¡Œæ•°ã‚ˆã‚Šå°‘ãªã„å ´åˆã€Rooã¯ã‚³ãƒ¼ãƒ‰å®šç¾©ã®è¡Œç•ªå·ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ç”Ÿæˆã—ã¾ã™ã€‚ç‰¹æ®Šãªã‚±ãƒ¼ã‚¹ï¼š-1ã¯Rooã«ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’èª­ã¿è¾¼ã‚€ã‚ˆã†æŒ‡ç¤ºã—ï¼ˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ä½œæˆãªã—ï¼‰ã€0ã¯è¡Œã‚’èª­ã¿è¾¼ã¾ãšæœ€å°é™ã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã®ãŸã‚ã«è¡Œã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®ã¿ã‚’æä¾›ã™ã‚‹ã‚ˆã†æŒ‡ç¤ºã—ã¾ã™ã€‚ä½Žã„å€¤ã¯åˆæœŸã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆä½¿ç”¨é‡ã‚’æœ€å°é™ã«æŠ‘ãˆã€å¾Œç¶šã®æ­£ç¢ºãªè¡Œç¯„å›²ã®èª­ã¿è¾¼ã¿ã‚’å¯èƒ½ã«ã—ã¾ã™ã€‚æ˜Žç¤ºçš„ãªé–‹å§‹/çµ‚äº†ã®è¦æ±‚ã¯ã“ã®è¨­å®šã«ã‚ˆã‚‹åˆ¶é™ã‚’å—ã‘ã¾ã›ã‚“ã€‚",
+			"lines": "è¡Œ",
+			"always_full_read": "å¸¸ã«ãƒ•ã‚¡ã‚¤ãƒ«å…¨ä½“ã‚’èª­ã¿è¾¼ã‚€"
 		},
 		"maxConcurrentFileReads": {
-			"label": "同時ファイル読み取り制限",
-			"description": "read_file ツールが同時に処理できるファイルの最大数。値を高くすると複数の小さなファイルの読み取りが速くなる可能性がありますが、メモリ使用量が増加します。"
+			"label": "åŒæ™‚ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿å–ã‚Šåˆ¶é™",
+			"description": "read_file ãƒ„ãƒ¼ãƒ«ãŒåŒæ™‚ã«å‡¦ç†ã§ãã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã®æœ€å¤§æ•°ã€‚å€¤ã‚’é«˜ãã™ã‚‹ã¨è¤‡æ•°ã®å°ã•ãªãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿å–ã‚ŠãŒé€Ÿããªã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ãŒã€ãƒ¡ãƒ¢ãƒªä½¿ç”¨é‡ãŒå¢—åŠ ã—ã¾ã™ã€‚"
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "診断を自動的にコンテキストに含める",
-				"description": "有効にすると、編集されたファイルからの診断メッセージ（エラー）が自動的にコンテキストに含まれます。@problemsを使用して、いつでも手動ですべてのワークスペース診断を含めることができます。"
+				"label": "è¨ºæ–­ã‚’è‡ªå‹•çš„ã«ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã‚ã‚‹",
+				"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ç·¨é›†ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã®è¨ºæ–­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ï¼ˆã‚¨ãƒ©ãƒ¼ï¼‰ãŒè‡ªå‹•çš„ã«ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã¾ã‚Œã¾ã™ã€‚@problemsã‚’ä½¿ç”¨ã—ã¦ã€ã„ã¤ã§ã‚‚æ‰‹å‹•ã§ã™ã¹ã¦ã®ãƒ¯ãƒ¼ã‚¯ã‚¹ãƒšãƒ¼ã‚¹è¨ºæ–­ã‚’å«ã‚ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚"
 			},
 			"maxMessages": {
-				"label": "最大診断メッセージ数",
-				"description": "ファイルごとに含める診断メッセージの最大数。この制限は、自動インクルード（チェックボックスが有効な場合）と手動の@problemsメンションの両方に適用されます。値を高くするとより多くのコンテキストが提供されますが、トークンの使用量が増加します。",
-				"resetTooltip": "デフォルト値（50）にリセット",
-				"unlimited": "無制限の診断メッセージ",
-				"unlimitedLabel": "無制限"
+				"label": "æœ€å¤§è¨ºæ–­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æ•°",
+				"description": "ãƒ•ã‚¡ã‚¤ãƒ«ã”ã¨ã«å«ã‚ã‚‹è¨ºæ–­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®æœ€å¤§æ•°ã€‚ã“ã®åˆ¶é™ã¯ã€è‡ªå‹•ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ï¼ˆãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ãŒæœ‰åŠ¹ãªå ´åˆï¼‰ã¨æ‰‹å‹•ã®@problemsãƒ¡ãƒ³ã‚·ãƒ§ãƒ³ã®ä¸¡æ–¹ã«é©ç”¨ã•ã‚Œã¾ã™ã€‚å€¤ã‚’é«˜ãã™ã‚‹ã¨ã‚ˆã‚Šå¤šãã®ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆãŒæä¾›ã•ã‚Œã¾ã™ãŒã€ãƒˆãƒ¼ã‚¯ãƒ³ã®ä½¿ç”¨é‡ãŒå¢—åŠ ã—ã¾ã™ã€‚",
+				"resetTooltip": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ï¼ˆ50ï¼‰ã«ãƒªã‚»ãƒƒãƒˆ",
+				"unlimited": "ç„¡åˆ¶é™ã®è¨ºæ–­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸",
+				"unlimitedLabel": "ç„¡åˆ¶é™"
 			},
 			"delayAfterWrite": {
-				"label": "書き込み後に診断が潜在的な問題を検出できるように遅延させる",
-				"description": "ファイルの書き込み後に処理を続行するまでの待機時間。これにより、診断ツールが変更を処理して問題を検出できます。"
+				"label": "æ›¸ãè¾¼ã¿å¾Œã«è¨ºæ–­ãŒæ½œåœ¨çš„ãªå•é¡Œã‚’æ¤œå‡ºã§ãã‚‹ã‚ˆã†ã«é…å»¶ã•ã›ã‚‹",
+				"description": "ãƒ•ã‚¡ã‚¤ãƒ«ã®æ›¸ãè¾¼ã¿å¾Œã«å‡¦ç†ã‚’ç¶šè¡Œã™ã‚‹ã¾ã§ã®å¾…æ©Ÿæ™‚é–“ã€‚ã“ã‚Œã«ã‚ˆã‚Šã€è¨ºæ–­ãƒ„ãƒ¼ãƒ«ãŒå¤‰æ›´ã‚’å‡¦ç†ã—ã¦å•é¡Œã‚’æ¤œå‡ºã§ãã¾ã™ã€‚"
 			}
 		},
 		"condensingThreshold": {
-			"label": "圧縮トリガーしきい値",
-			"selectProfile": "プロファイルのしきい値を設定",
-			"defaultProfile": "グローバルデフォルト（全プロファイル）",
-			"defaultDescription": "コンテキストがこの割合に達すると、カスタム設定がない限り、すべてのプロファイルで自動的に圧縮されます",
-			"profileDescription": "このプロファイルのみのカスタムしきい値（グローバルデフォルトを上書き）",
-			"inheritDescription": "このプロファイルはグローバルデフォルトしきい値を継承します（{{threshold}}%）",
-			"usesGlobal": "（グローバル {{threshold}}% を使用）"
+			"label": "åœ§ç¸®ãƒˆãƒªã‚¬ãƒ¼ã—ãã„å€¤",
+			"selectProfile": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã®ã—ãã„å€¤ã‚’è¨­å®š",
+			"defaultProfile": "ã‚°ãƒ­ãƒ¼ãƒãƒ«ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼ˆå…¨ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ï¼‰",
+			"defaultDescription": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆãŒã“ã®å‰²åˆã«é”ã™ã‚‹ã¨ã€ã‚«ã‚¹ã‚¿ãƒ è¨­å®šãŒãªã„é™ã‚Šã€ã™ã¹ã¦ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã§è‡ªå‹•çš„ã«åœ§ç¸®ã•ã‚Œã¾ã™",
+			"profileDescription": "ã“ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿ã®ã‚«ã‚¹ã‚¿ãƒ ã—ãã„å€¤ï¼ˆã‚°ãƒ­ãƒ¼ãƒãƒ«ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã‚’ä¸Šæ›¸ãï¼‰",
+			"inheritDescription": "ã“ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã¯ã‚°ãƒ­ãƒ¼ãƒãƒ«ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã—ãã„å€¤ã‚’ç¶™æ‰¿ã—ã¾ã™ï¼ˆ{{threshold}}%ï¼‰",
+			"usesGlobal": "ï¼ˆã‚°ãƒ­ãƒ¼ãƒãƒ« {{threshold}}% ã‚’ä½¿ç”¨ï¼‰"
 		},
 		"maxImageFileSize": {
-			"label": "最大画像ファイルサイズ",
+			"label": "æœ€å¤§ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚º",
 			"mb": "MB",
-			"description": "read fileツールで処理できる画像ファイルの最大サイズ（MB単位）。"
+			"description": "read fileãƒ„ãƒ¼ãƒ«ã§å‡¦ç†ã§ãã‚‹ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã®æœ€å¤§ã‚µã‚¤ã‚ºï¼ˆMBå˜ä½ï¼‰ã€‚"
 		},
 		"maxTotalImageSize": {
-			"label": "最大合計画像サイズ",
+			"label": "æœ€å¤§åˆè¨ˆç”»åƒã‚µã‚¤ã‚º",
 			"mb": "MB",
-			"description": "単一のread_file操作で処理されるすべての画像の累積サイズ制限（MB単位）。複数の画像を読み取る際、各画像のサイズが合計に加算されます。別の画像を含めるとこの制限を超える場合、その画像はスキップされます。"
+			"description": "å˜ä¸€ã®read_fileæ“ä½œã§å‡¦ç†ã•ã‚Œã‚‹ã™ã¹ã¦ã®ç”»åƒã®ç´¯ç©ã‚µã‚¤ã‚ºåˆ¶é™ï¼ˆMBå˜ä½ï¼‰ã€‚è¤‡æ•°ã®ç”»åƒã‚’èª­ã¿å–ã‚‹éš›ã€å„ç”»åƒã®ã‚µã‚¤ã‚ºãŒåˆè¨ˆã«åŠ ç®—ã•ã‚Œã¾ã™ã€‚åˆ¥ã®ç”»åƒã‚’å«ã‚ã‚‹ã¨ã“ã®åˆ¶é™ã‚’è¶…ãˆã‚‹å ´åˆã€ãã®ç”»åƒã¯ã‚¹ã‚­ãƒƒãƒ—ã•ã‚Œã¾ã™ã€‚"
 		},
 		"includeCurrentTime": {
-			"label": "現在の時刻をコンテキストに含める",
-			"description": "有効にすると、現在の時刻とタイムゾーン情報がシステムプロンプトに含まれます。モデルが時間に関する懸念で動作を停止する場合は無効にしてください。"
+			"label": "ç¾åœ¨ã®æ™‚åˆ»ã‚’ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã‚ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ç¾åœ¨ã®æ™‚åˆ»ã¨ã‚¿ã‚¤ãƒ ã‚¾ãƒ¼ãƒ³æƒ…å ±ãŒã‚·ã‚¹ãƒ†ãƒ ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã«å«ã¾ã‚Œã¾ã™ã€‚ãƒ¢ãƒ‡ãƒ«ãŒæ™‚é–“ã«é–¢ã™ã‚‹æ‡¸å¿µã§å‹•ä½œã‚’åœæ­¢ã™ã‚‹å ´åˆã¯ç„¡åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚"
 		},
 		"includeCurrentCost": {
-			"label": "現在のコストをコンテキストに含める",
-			"description": "有効にすると、現在のAPI使用コストがシステムプロンプトに含まれます。モデルがコストに関する懸念で動作を停止する場合は無効にしてください。"
+			"label": "ç¾åœ¨ã®ã‚³ã‚¹ãƒˆã‚’ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã‚ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ç¾åœ¨ã®APIä½¿ç”¨ã‚³ã‚¹ãƒˆãŒã‚·ã‚¹ãƒ†ãƒ ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã«å«ã¾ã‚Œã¾ã™ã€‚ãƒ¢ãƒ‡ãƒ«ãŒã‚³ã‚¹ãƒˆã«é–¢ã™ã‚‹æ‡¸å¿µã§å‹•ä½œã‚’åœæ­¢ã™ã‚‹å ´åˆã¯ç„¡åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚"
 		},
 		"maxGitStatusFiles": {
-			"label": "Gitステータス最大ファイル数",
-			"description": "gitステータスコンテキストに含めるファイルエントリの最大数。無効にするには0に設定します。ブランチ情報とコミットは、> 0の場合に常に表示されます。"
+			"label": "Gitã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹æœ€å¤§ãƒ•ã‚¡ã‚¤ãƒ«æ•°",
+			"description": "gitã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã«å«ã‚ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã‚¨ãƒ³ãƒˆãƒªã®æœ€å¤§æ•°ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã«ã¯0ã«è¨­å®šã—ã¾ã™ã€‚ãƒ–ãƒ©ãƒ³ãƒæƒ…å ±ã¨ã‚³ãƒŸãƒƒãƒˆã¯ã€\u003e 0ã®å ´åˆã«å¸¸ã«è¡¨ç¤ºã•ã‚Œã¾ã™ã€‚"
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "ターミナル設定：基本",
-			"description": "基本的なターミナル設定"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«è¨­å®šï¼šåŸºæœ¬",
+			"description": "åŸºæœ¬çš„ãªã‚¿ãƒ¼ãƒŸãƒŠãƒ«è¨­å®š"
 		},
 		"advanced": {
-			"label": "ターミナル設定：詳細",
-			"description": "これらの設定は、「インラインターミナルを使用」が無効の場合にのみ適用されます。VS Code ターミナルのみに影響し、IDE の再起動が必要になる場合があります。"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«è¨­å®šï¼šè©³ç´°",
+			"description": "ã“ã‚Œã‚‰ã®è¨­å®šã¯ã€ã€Œã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚’ä½¿ç”¨ã€ãŒç„¡åŠ¹ã®å ´åˆã«ã®ã¿é©ç”¨ã•ã‚Œã¾ã™ã€‚VS Code ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã®ã¿ã«å½±éŸ¿ã—ã€IDE ã®å†èµ·å‹•ãŒå¿…è¦ã«ãªã‚‹å ´åˆãŒã‚ã‚Šã¾ã™ã€‚"
 		},
 		"outputLineLimit": {
-			"label": "ターミナル出力制限",
-			"description": "制限内に収めるため最初と最後の行を保持し、中間を削除します。トークンを節約するには下げる；Rooに中間の詳細を与えるには上げる。Rooはコンテンツがスキップされた箇所にプレースホルダーを表示します。<0>詳細情報</0>"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«å‡ºåŠ›åˆ¶é™",
+			"description": "åˆ¶é™å†…ã«åŽã‚ã‚‹ãŸã‚æœ€åˆã¨æœ€å¾Œã®è¡Œã‚’ä¿æŒã—ã€ä¸­é–“ã‚’å‰Šé™¤ã—ã¾ã™ã€‚ãƒˆãƒ¼ã‚¯ãƒ³ã‚’ç¯€ç´„ã™ã‚‹ã«ã¯ä¸‹ã’ã‚‹ï¼›Rooã«ä¸­é–“ã®è©³ç´°ã‚’ä¸Žãˆã‚‹ã«ã¯ä¸Šã’ã‚‹ã€‚Rooã¯ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ãŒã‚¹ã‚­ãƒƒãƒ—ã•ã‚ŒãŸç®‡æ‰€ã«ãƒ—ãƒ¬ãƒ¼ã‚¹ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’è¡¨ç¤ºã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
-			"label": "ターミナル文字制限",
-			"description": "出力サイズにハードキャップを適用してメモリ問題を防ぐため、行制限を上書きします。超過した場合、最初と最後を保持し、コンテンツがスキップされた箇所にRooにプレースホルダーを表示します。<0>詳細情報</0>"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«æ–‡å­—åˆ¶é™",
+			"description": "å‡ºåŠ›ã‚µã‚¤ã‚ºã«ãƒãƒ¼ãƒ‰ã‚­ãƒ£ãƒƒãƒ—ã‚’é©ç”¨ã—ã¦ãƒ¡ãƒ¢ãƒªå•é¡Œã‚’é˜²ããŸã‚ã€è¡Œåˆ¶é™ã‚’ä¸Šæ›¸ãã—ã¾ã™ã€‚è¶…éŽã—ãŸå ´åˆã€æœ€åˆã¨æœ€å¾Œã‚’ä¿æŒã—ã€ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ãŒã‚¹ã‚­ãƒƒãƒ—ã•ã‚ŒãŸç®‡æ‰€ã«Rooã«ãƒ—ãƒ¬ãƒ¼ã‚¹ãƒ›ãƒ«ãƒ€ãƒ¼ã‚’è¡¨ç¤ºã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
-			"label": "ターミナルシェル統合タイムアウト",
-			"description": "コマンドを実行する前�����VS Codeシェル統合を待機する時間。シェルが遅く起動する場合や「シェル統合が利用できません」というエラーが表示される場合は、この値を増やしてください。<0>詳細</0>"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚·ã‚§ãƒ«çµ±åˆã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆ",
+			"description": "ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œã™ã‚‹å‰ï¿½ï¿½ï¿½ï¿½ï¿½VS Codeã‚·ã‚§ãƒ«çµ±åˆã‚’å¾…æ©Ÿã™ã‚‹æ™‚é–“ã€‚ã‚·ã‚§ãƒ«ãŒé…ãèµ·å‹•ã™ã‚‹å ´åˆã‚„ã€Œã‚·ã‚§ãƒ«çµ±åˆãŒåˆ©ç”¨ã§ãã¾ã›ã‚“ã€ã¨ã„ã†ã‚¨ãƒ©ãƒ¼ãŒè¡¨ç¤ºã•ã‚Œã‚‹å ´åˆã¯ã€ã“ã®å€¤ã‚’å¢—ã‚„ã—ã¦ãã ã•ã„ã€‚\u003c0\u003eè©³ç´°\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
-			"label": "インラインターミナルを使用（推奨）",
-			"description": "より高速で信頼性の高い実行のため、シェルプロファイル/統合をバイパスしてインラインターミナル（チャット）でコマンドを実行します。無効にすると、Roo はシェルプロファイル、プロンプト、プラグインと共に VS Code ターミナルを使用します。<0>詳細情報</0>"
+			"label": "ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚’ä½¿ç”¨ï¼ˆæŽ¨å¥¨ï¼‰",
+			"description": "ã‚ˆã‚Šé«˜é€Ÿã§ä¿¡é ¼æ€§ã®é«˜ã„å®Ÿè¡Œã®ãŸã‚ã€ã‚·ã‚§ãƒ«ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«/çµ±åˆã‚’ãƒã‚¤ãƒ‘ã‚¹ã—ã¦ã‚¤ãƒ³ãƒ©ã‚¤ãƒ³ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ï¼ˆãƒãƒ£ãƒƒãƒˆï¼‰ã§ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œã—ã¾ã™ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã¨ã€Roo ã¯ã‚·ã‚§ãƒ«ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã€ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã€ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ã¨å…±ã« VS Code ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚’ä½¿ç”¨ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"commandDelay": {
-			"label": "ターミナルコマンド遅延",
-			"description": "VS Codeターミナルがすべての出力をフラッシュできるよう、各コマンド後に短い一時停止を追加します（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。末尾出力が欠落している場合のみ使用；それ以外は0のままにします。<0>詳細情報</0>"
+			"label": "ã‚¿ãƒ¼ãƒŸãƒŠãƒ«ã‚³ãƒžãƒ³ãƒ‰é…å»¶",
+			"description": "VS Codeã‚¿ãƒ¼ãƒŸãƒŠãƒ«ãŒã™ã¹ã¦ã®å‡ºåŠ›ã‚’ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ã§ãã‚‹ã‚ˆã†ã€å„ã‚³ãƒžãƒ³ãƒ‰å¾Œã«çŸ­ã„ä¸€æ™‚åœæ­¢ã‚’è¿½åŠ ã—ã¾ã™ï¼ˆbash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleepï¼‰ã€‚æœ«å°¾å‡ºåŠ›ãŒæ¬ è½ã—ã¦ã„ã‚‹å ´åˆã®ã¿ä½¿ç”¨ï¼›ãã‚Œä»¥å¤–ã¯0ã®ã¾ã¾ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"compressProgressBar": {
-			"label": "プログレスバー出力を圧���������",
-			"description": "プログレスバー/スピナーを折りたたんで、最終状態のみを保持します（トークンを節約します）。<0>詳細情報</0>"
+			"label": "ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼å‡ºåŠ›ã‚’åœ§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+			"description": "ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼/ã‚¹ãƒ”ãƒŠãƒ¼ã‚’æŠ˜ã‚ŠãŸãŸã‚“ã§ã€æœ€çµ‚çŠ¶æ…‹ã®ã¿ã‚’ä¿æŒã—ã¾ã™ï¼ˆãƒˆãƒ¼ã‚¯ãƒ³ã‚’ç¯€ç´„ã—ã¾ã™ï¼‰ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"powershellCounter": {
-			"label": "PowerShellカウンターの回避策を有効にする",
-			"description": "PowerShellの出力が欠落または重複している場合にこれをオンにします。出力を安定させるために各コマンドに小さなカウンターを追加します。出力がすでに正しい場合はオフのままにします。<0>詳細情報</0>"
+			"label": "PowerShellã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã®å›žé¿ç­–ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "PowerShellã®å‡ºåŠ›ãŒæ¬ è½ã¾ãŸã¯é‡è¤‡ã—ã¦ã„ã‚‹å ´åˆã«ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚å‡ºåŠ›ã‚’å®‰å®šã•ã›ã‚‹ãŸã‚ã«å„ã‚³ãƒžãƒ³ãƒ‰ã«å°ã•ãªã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã‚’è¿½åŠ ã—ã¾ã™ã€‚å‡ºåŠ›ãŒã™ã§ã«æ­£ã—ã„å ´åˆã¯ã‚ªãƒ•ã®ã¾ã¾ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
-			"label": "ZSH EOLマークをクリア",
-			"description": "行末に迷子の%が表示されたり、解析が間違っているように見える場合にこれをオンにします。Zshの行末マーク（%）を省略します。<0>詳細情報</0>"
+			"label": "ZSH EOLãƒžãƒ¼ã‚¯ã‚’ã‚¯ãƒªã‚¢",
+			"description": "è¡Œæœ«ã«è¿·å­ã®%ãŒè¡¨ç¤ºã•ã‚ŒãŸã‚Šã€è§£æžãŒé–“é•ã£ã¦ã„ã‚‹ã‚ˆã†ã«è¦‹ãˆã‚‹å ´åˆã«ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚Zshã®è¡Œæœ«ãƒžãƒ¼ã‚¯ï¼ˆ%ï¼‰ã‚’çœç•¥ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"zshOhMy": {
-			"label": "Oh My Zsh統合を有効にする",
-			"description": "Oh My Zshのテーマ/プラグインがシェル統合を期待している場合にこれをオンにします。ITERM_SHELL_INTEGRATION_INSTALLED=Yesを設定します。その変数を設定しないようにするにはオフにします。<0>詳細情報</0>"
+			"label": "Oh My Zshçµ±åˆã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "Oh My Zshã®ãƒ†ãƒ¼ãƒž/ãƒ—ãƒ©ã‚°ã‚¤ãƒ³ãŒã‚·ã‚§ãƒ«çµ±åˆã‚’æœŸå¾…ã—ã¦ã„ã‚‹å ´åˆã«ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚ITERM_SHELL_INTEGRATION_INSTALLED=Yesã‚’è¨­å®šã—ã¾ã™ã€‚ãã®å¤‰æ•°ã‚’è¨­å®šã—ãªã„ã‚ˆã†ã«ã™ã‚‹ã«ã¯ã‚ªãƒ•ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"zshP10k": {
-			"label": "Powerlevel10k統合を有効にする",
-			"description": "Powerlevel10kシェル統合を使用している場合にこれをオンにします。<0>詳細情報</0>"
+			"label": "Powerlevel10kçµ±åˆã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "Powerlevel10kã‚·ã‚§ãƒ«çµ±åˆã‚’ä½¿ç”¨ã—ã¦ã„ã‚‹å ´åˆã«ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"zdotdir": {
-			"label": "ZDOTDIR処理を有効にする",
-			"description": "zshシェル統合が失敗したり、ドットファイルと競合したりする場合にこれをオンにします。<0>詳細情報</0>"
+			"label": "ZDOTDIRå‡¦ç†ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "zshã‚·ã‚§ãƒ«çµ±åˆãŒå¤±æ•—ã—ãŸã‚Šã€ãƒ‰ãƒƒãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã¨ç«¶åˆã—ãŸã‚Šã™ã‚‹å ´åˆã«ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		},
 		"inheritEnv": {
-			"label": "環境変数を継承",
-			"description": "親VS Codeプロセスから環境変数を継承するには、これをオンにします。<0>詳細情報</0>"
+			"label": "ç’°å¢ƒå¤‰æ•°ã‚’ç¶™æ‰¿",
+			"description": "è¦ªVS Codeãƒ—ãƒ­ã‚»ã‚¹ã‹ã‚‰ç’°å¢ƒå¤‰æ•°ã‚’ç¶™æ‰¿ã™ã‚‹ã«ã¯ã€ã“ã‚Œã‚’ã‚ªãƒ³ã«ã—ã¾ã™ã€‚\u003c0\u003eè©³ç´°æƒ…å ±\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
-		"title": "詳細設定"
+		"title": "è©³ç´°è¨­å®š"
 	},
 	"toolProtocol": {
-		"label": "ツールコールプロトコル",
-		"description": "Roo が API と通信する方法を選択します。ネイティブはプロバイダーの関数呼び出し API を使用し、XML は XML 形式のツール定義を使用します。",
-		"default": "デフォルト",
+		"label": "ãƒ„ãƒ¼ãƒ«ã‚³ãƒ¼ãƒ«ãƒ—ãƒ­ãƒˆã‚³ãƒ«",
+		"description": "Roo ãŒ API ã¨é€šä¿¡ã™ã‚‹æ–¹æ³•ã‚’é¸æŠžã—ã¾ã™ã€‚ãƒã‚¤ãƒ†ã‚£ãƒ–ã¯ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã®é–¢æ•°å‘¼ã³å‡ºã— API ã‚’ä½¿ç”¨ã—ã€XML ã¯ XML å½¢å¼ã®ãƒ„ãƒ¼ãƒ«å®šç¾©ã‚’ä½¿ç”¨ã—ã¾ã™ã€‚",
+		"default": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ",
 		"xml": "XML",
-		"native": "ネイティブ",
-		"currentDefault": "デフォルト: {{protocol}}"
+		"native": "ãƒã‚¤ãƒ†ã‚£ãƒ–",
+		"currentDefault": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "diff経由の編集を有効化",
-			"description": "有効にすると、Rooはファイルをより迅速に編集でき、切り詰められた全ファイル書き込みを自動的に拒否します。",
+			"label": "diffçµŒç”±ã®ç·¨é›†ã‚’æœ‰åŠ¹åŒ–",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ã‚ˆã‚Šè¿…é€Ÿã«ç·¨é›†ã§ãã€åˆ‡ã‚Šè©°ã‚ã‚‰ã‚ŒãŸå…¨ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãè¾¼ã¿ã‚’è‡ªå‹•çš„ã«æ‹’å¦ã—ã¾ã™ã€‚",
 			"strategy": {
-				"label": "Diff戦略",
+				"label": "Diffæˆ¦ç•¥",
 				"options": {
-					"standard": "標準（単一ブロック）",
-					"multiBlock": "実験的：マルチブロックdiff",
-					"unified": "実験的：統合diff"
+					"standard": "æ¨™æº–ï¼ˆå˜ä¸€ãƒ–ãƒ­ãƒƒã‚¯ï¼‰",
+					"multiBlock": "å®Ÿé¨“çš„ï¼šãƒžãƒ«ãƒãƒ–ãƒ­ãƒƒã‚¯diff",
+					"unified": "å®Ÿé¨“çš„ï¼šçµ±åˆdiff"
 				},
 				"descriptions": {
-					"standard": "標準diff戦略は一度に1つのコードブロックに変更を適用します。",
-					"unified": "統合diff戦略はdiffを適用するための複数のアプローチを取り、最良のアプローチを選択します。",
-					"multiBlock": "マルチブロックdiff戦略は、1つのリクエストでファイル内の複数のコードブロックを更新できます。"
+					"standard": "æ¨™æº–diffæˆ¦ç•¥ã¯ä¸€åº¦ã«1ã¤ã®ã‚³ãƒ¼ãƒ‰ãƒ–ãƒ­ãƒƒã‚¯ã«å¤‰æ›´ã‚’é©ç”¨ã—ã¾ã™ã€‚",
+					"unified": "çµ±åˆdiffæˆ¦ç•¥ã¯diffã‚’é©ç”¨ã™ã‚‹ãŸã‚ã®è¤‡æ•°ã®ã‚¢ãƒ—ãƒ­ãƒ¼ãƒã‚’å–ã‚Šã€æœ€è‰¯ã®ã‚¢ãƒ—ãƒ­ãƒ¼ãƒã‚’é¸æŠžã—ã¾ã™ã€‚",
+					"multiBlock": "ãƒžãƒ«ãƒãƒ–ãƒ­ãƒƒã‚¯diffæˆ¦ç•¥ã¯ã€1ã¤ã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆã§ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®è¤‡æ•°ã®ã‚³ãƒ¼ãƒ‰ãƒ–ãƒ­ãƒƒã‚¯ã‚’æ›´æ–°ã§ãã¾ã™ã€‚"
 				}
 			},
 			"matchPrecision": {
-				"label": "マッチ精度",
-				"description": "このスライダーは、diffを適用する際にコードセクションがどれだけ正確に一致する必要があるかを制御します。低い値はより柔軟なマッチングを可能にしますが、誤った置換のリスクが高まります。100%未満の値は細心の注意を払って使用してください。"
+				"label": "ãƒžãƒƒãƒç²¾åº¦",
+				"description": "ã“ã®ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã¯ã€diffã‚’é©ç”¨ã™ã‚‹éš›ã«ã‚³ãƒ¼ãƒ‰ã‚»ã‚¯ã‚·ãƒ§ãƒ³ãŒã©ã‚Œã ã‘æ­£ç¢ºã«ä¸€è‡´ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã‹ã‚’åˆ¶å¾¡ã—ã¾ã™ã€‚ä½Žã„å€¤ã¯ã‚ˆã‚ŠæŸ”è»Ÿãªãƒžãƒƒãƒãƒ³ã‚°ã‚’å¯èƒ½ã«ã—ã¾ã™ãŒã€èª¤ã£ãŸç½®æ›ã®ãƒªã‚¹ã‚¯ãŒé«˜ã¾ã‚Šã¾ã™ã€‚100%æœªæº€ã®å€¤ã¯ç´°å¿ƒã®æ³¨æ„ã‚’æ‰•ã£ã¦ä½¿ç”¨ã—ã¦ãã ã•ã„ã€‚"
 			}
 		},
 		"todoList": {
-			"label": "ToDoリストツールを有効にする",
-			"description": "有効にすると、Rooはタスクの進捗を追跡するためのToDoリストを作成・管理できます。これにより、複雑なタスクを管理しやすいステップに整理できます。"
+			"label": "ToDoãƒªã‚¹ãƒˆãƒ„ãƒ¼ãƒ«ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ã‚¿ã‚¹ã‚¯ã®é€²æ—ã‚’è¿½è·¡ã™ã‚‹ãŸã‚ã®ToDoãƒªã‚¹ãƒˆã‚’ä½œæˆãƒ»ç®¡ç†ã§ãã¾ã™ã€‚ã“ã‚Œã«ã‚ˆã‚Šã€è¤‡é›‘ãªã‚¿ã‚¹ã‚¯ã‚’ç®¡ç†ã—ã‚„ã™ã„ã‚¹ãƒ†ãƒƒãƒ—ã«æ•´ç†ã§ãã¾ã™ã€‚"
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "実験的な統合diff戦略を使用する",
-			"description": "実験的な統合diff戦略を有効にします。この戦略はモデルエラーによる再試行の回数を減らす可能性がありますが、予期しない動作や不正確な編集を引き起こす可能性があります。リスクを理解し、すべての変更を注意深く確認する準備がある場合にのみ有効にしてください。"
+			"name": "å®Ÿé¨“çš„ãªçµ±åˆdiffæˆ¦ç•¥ã‚’ä½¿ç”¨ã™ã‚‹",
+			"description": "å®Ÿé¨“çš„ãªçµ±åˆdiffæˆ¦ç•¥ã‚’æœ‰åŠ¹ã«ã—ã¾ã™ã€‚ã“ã®æˆ¦ç•¥ã¯ãƒ¢ãƒ‡ãƒ«ã‚¨ãƒ©ãƒ¼ã«ã‚ˆã‚‹å†è©¦è¡Œã®å›žæ•°ã‚’æ¸›ã‚‰ã™å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ãŒã€äºˆæœŸã—ãªã„å‹•ä½œã‚„ä¸æ­£ç¢ºãªç·¨é›†ã‚’å¼•ãèµ·ã“ã™å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚ãƒªã‚¹ã‚¯ã‚’ç†è§£ã—ã€ã™ã¹ã¦ã®å¤‰æ›´ã‚’æ³¨æ„æ·±ãç¢ºèªã™ã‚‹æº–å‚™ãŒã‚ã‚‹å ´åˆã«ã®ã¿æœ‰åŠ¹ã«ã—ã¦ãã ã•ã„ã€‚"
 		},
 		"INSERT_BLOCK": {
-			"name": "実験的なコンテンツ挿入ツールを使用する",
-			"description": "実験的なコンテンツ挿入ツールを有効にし、Rooがdiffを作成せずに特定の行番号にコンテンツを挿入できるようにします。"
+			"name": "å®Ÿé¨“çš„ãªã‚³ãƒ³ãƒ†ãƒ³ãƒ„æŒ¿å…¥ãƒ„ãƒ¼ãƒ«ã‚’ä½¿ç”¨ã™ã‚‹",
+			"description": "å®Ÿé¨“çš„ãªã‚³ãƒ³ãƒ†ãƒ³ãƒ„æŒ¿å…¥ãƒ„ãƒ¼ãƒ«ã‚’æœ‰åŠ¹ã«ã—ã€RooãŒdiffã‚’ä½œæˆã›ãšã«ç‰¹å®šã®è¡Œç•ªå·ã«ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã‚’æŒ¿å…¥ã§ãã‚‹ã‚ˆã†ã«ã—ã¾ã™ã€‚"
 		},
 		"POWER_STEERING": {
-			"name": "実験的な「パワーステアリング」モードを使用する",
-			"description": "有効にすると、Rooはより頻繁にモデルに現在のモード定義の詳細を思い出させます。これにより、役割定義とカスタム指示へのより強い遵守が実現しますが、メッセージごとにより多くのtokenを使用します。"
+			"name": "å®Ÿé¨“çš„ãªã€Œãƒ‘ãƒ¯ãƒ¼ã‚¹ãƒ†ã‚¢ãƒªãƒ³ã‚°ã€ãƒ¢ãƒ¼ãƒ‰ã‚’ä½¿ç”¨ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ã‚ˆã‚Šé »ç¹ã«ãƒ¢ãƒ‡ãƒ«ã«ç¾åœ¨ã®ãƒ¢ãƒ¼ãƒ‰å®šç¾©ã®è©³ç´°ã‚’æ€ã„å‡ºã•ã›ã¾ã™ã€‚ã“ã‚Œã«ã‚ˆã‚Šã€å½¹å‰²å®šç¾©ã¨ã‚«ã‚¹ã‚¿ãƒ æŒ‡ç¤ºã¸ã®ã‚ˆã‚Šå¼·ã„éµå®ˆãŒå®Ÿç¾ã—ã¾ã™ãŒã€ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã”ã¨ã«ã‚ˆã‚Šå¤šãã®tokenã‚’ä½¿ç”¨ã—ã¾ã™ã€‚"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "実験的なマルチブロックdiffツールを使用する",
-			"description": "有効にすると、Rooはマルチブロックdiffツールを使用します。これにより、1つのリクエストでファイル内の複数のコードブロックを更新しようとします。"
+			"name": "å®Ÿé¨“çš„ãªãƒžãƒ«ãƒãƒ–ãƒ­ãƒƒã‚¯diffãƒ„ãƒ¼ãƒ«ã‚’ä½¿ç”¨ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ãƒžãƒ«ãƒãƒ–ãƒ­ãƒƒã‚¯diffãƒ„ãƒ¼ãƒ«ã‚’ä½¿ç”¨ã—ã¾ã™ã€‚ã“ã‚Œã«ã‚ˆã‚Šã€1ã¤ã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆã§ãƒ•ã‚¡ã‚¤ãƒ«å†…ã®è¤‡æ•°ã®ã‚³ãƒ¼ãƒ‰ãƒ–ãƒ­ãƒƒã‚¯ã‚’æ›´æ–°ã—ã‚ˆã†ã¨ã—ã¾ã™ã€‚"
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "並行ファイル読み取りを有効にする",
-			"description": "有効にすると、Rooは1回のリクエストで複数のファイル を読み取ることができます。無効にすると、Rooはファイルを1つずつ読み取る必要があります。能力の低いモデルで作業する場合や、ファイルアクセスをより細かく制御したい場合は、無効にすると役立ちます。"
+			"name": "ä¸¦è¡Œãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿å–ã‚Šã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯1å›žã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆã§è¤‡æ•°ã®ãƒ•ã‚¡ã‚¤ãƒ« ã‚’èª­ã¿å–ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ãƒ•ã‚¡ã‚¤ãƒ«ã‚’1ã¤ãšã¤èª­ã¿å–ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚èƒ½åŠ›ã®ä½Žã„ãƒ¢ãƒ‡ãƒ«ã§ä½œæ¥­ã™ã‚‹å ´åˆã‚„ã€ãƒ•ã‚¡ã‚¤ãƒ«ã‚¢ã‚¯ã‚»ã‚¹ã‚’ã‚ˆã‚Šç´°ã‹ãåˆ¶å¾¡ã—ãŸã„å ´åˆã¯ã€ç„¡åŠ¹ã«ã™ã‚‹ã¨å½¹ç«‹ã¡ã¾ã™ã€‚"
 		},
 		"MARKETPLACE": {
-			"name": "Marketplaceを有効にする",
-			"description": "有効にすると、MarketplaceからMCPとカスタムモードをインストールできます。"
+			"name": "Marketplaceã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Marketplaceã‹ã‚‰MCPã¨ã‚«ã‚¹ã‚¿ãƒ ãƒ¢ãƒ¼ãƒ‰ã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã§ãã¾ã™ã€‚"
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "同時ファイル編集を有効にする",
-			"description": "有効にすると、Rooは単一のリクエストで複数のファイルを編集できます。無効にすると、Rooはファイルを一つずつ編集する必要があります。これを無効にすることで、能力の低いモデルで作業する場合や、ファイル変更をより細かく制御したい場合に役立ちます。"
+			"name": "åŒæ™‚ãƒ•ã‚¡ã‚¤ãƒ«ç·¨é›†ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯å˜ä¸€ã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆã§è¤‡æ•°ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ç·¨é›†ã§ãã¾ã™ã€‚ç„¡åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¸€ã¤ãšã¤ç·¨é›†ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚ã“ã‚Œã‚’ç„¡åŠ¹ã«ã™ã‚‹ã“ã¨ã§ã€èƒ½åŠ›ã®ä½Žã„ãƒ¢ãƒ‡ãƒ«ã§ä½œæ¥­ã™ã‚‹å ´åˆã‚„ã€ãƒ•ã‚¡ã‚¤ãƒ«å¤‰æ›´ã‚’ã‚ˆã‚Šç´°ã‹ãåˆ¶å¾¡ã—ãŸã„å ´åˆã«å½¹ç«‹ã¡ã¾ã™ã€‚"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "バックグラウンド編集",
-			"description": "有効にすると、エディターのフォーカス中断を防ぎます。ファイル編集は差分ビューを開いたりフォーカスを奪ったりすることなく、バックグラウンドで行われます。Rooが変更を行っている間も中断されることなく作業を続けることができます。ファイルは診断をキャプチャするためにフォーカスなしで開くか、完全に閉じたままにできます。"
+			"name": "ãƒãƒƒã‚¯ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ç·¨é›†",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ã‚¨ãƒ‡ã‚£ã‚¿ãƒ¼ã®ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ä¸­æ–­ã‚’é˜²ãŽã¾ã™ã€‚ãƒ•ã‚¡ã‚¤ãƒ«ç·¨é›†ã¯å·®åˆ†ãƒ“ãƒ¥ãƒ¼ã‚’é–‹ã„ãŸã‚Šãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’å¥ªã£ãŸã‚Šã™ã‚‹ã“ã¨ãªãã€ãƒãƒƒã‚¯ã‚°ãƒ©ã‚¦ãƒ³ãƒ‰ã§è¡Œã‚ã‚Œã¾ã™ã€‚RooãŒå¤‰æ›´ã‚’è¡Œã£ã¦ã„ã‚‹é–“ã‚‚ä¸­æ–­ã•ã‚Œã‚‹ã“ã¨ãªãä½œæ¥­ã‚’ç¶šã‘ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚ãƒ•ã‚¡ã‚¤ãƒ«ã¯è¨ºæ–­ã‚’ã‚­ãƒ£ãƒ—ãƒãƒ£ã™ã‚‹ãŸã‚ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãªã—ã§é–‹ãã‹ã€å®Œå…¨ã«é–‰ã˜ãŸã¾ã¾ã«ã§ãã¾ã™ã€‚"
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "新しいメッセージパーサーを使う",
-			"description": "実験的なストリーミングメッセージパーサーを有効にします。長い回答をより効率的に処理し、遅延を減らします。"
+			"name": "æ–°ã—ã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ‘ãƒ¼ã‚µãƒ¼ã‚’ä½¿ã†",
+			"description": "å®Ÿé¨“çš„ãªã‚¹ãƒˆãƒªãƒ¼ãƒŸãƒ³ã‚°ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ‘ãƒ¼ã‚µãƒ¼ã‚’æœ‰åŠ¹ã«ã—ã¾ã™ã€‚é•·ã„å›žç­”ã‚’ã‚ˆã‚ŠåŠ¹çŽ‡çš„ã«å‡¦ç†ã—ã€é…å»¶ã‚’æ¸›ã‚‰ã—ã¾ã™ã€‚"
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "新しいタスクには'todos'リストを必須にする",
-			"description": "有効にすると、new_taskツールはtodosパラメータの提供が必須になります。これにより、すべての新しいタスクが明確な目的のリストで開始されることが保証されます。無効（デフォルト）の場合、下位互換性のためにtodosパラメータはオプションのままです。"
+			"name": "æ–°ã—ã„ã‚¿ã‚¹ã‚¯ã«ã¯\u0027todos\u0027ãƒªã‚¹ãƒˆã‚’å¿…é ˆã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€new_taskãƒ„ãƒ¼ãƒ«ã¯todosãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®æä¾›ãŒå¿…é ˆã«ãªã‚Šã¾ã™ã€‚ã“ã‚Œã«ã‚ˆã‚Šã€ã™ã¹ã¦ã®æ–°ã—ã„ã‚¿ã‚¹ã‚¯ãŒæ˜Žç¢ºãªç›®çš„ã®ãƒªã‚¹ãƒˆã§é–‹å§‹ã•ã‚Œã‚‹ã“ã¨ãŒä¿è¨¼ã•ã‚Œã¾ã™ã€‚ç„¡åŠ¹ï¼ˆãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼‰ã®å ´åˆã€ä¸‹ä½äº’æ›æ€§ã®ãŸã‚ã«todosãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã¯ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã®ã¾ã¾ã§ã™ã€‚"
 		},
 		"IMAGE_GENERATION": {
-			"providerLabel": "プロバイダー",
-			"providerDescription": "画像生成に使用するプロバイダーを選択",
-			"name": "AI画像生成を有効にする",
-			"description": "有効にすると、RooはOpenRouterの画像生成モデルを使用してテキストプロンプトから画像を生成できます。OpenRouter APIキーの設定が必要です。",
-			"openRouterApiKeyLabel": "OpenRouter APIキー",
-			"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
-			"getApiKeyText": "APIキーを取得する場所",
-			"modelSelectionLabel": "画像生成モデル",
-			"modelSelectionDescription": "画像生成に使用するモデルを選択",
-			"warningMissingKey": "⚠️ 画像生成にはOpenRouter APIキーが必要です。上記で設定してください。",
-			"successConfigured": "✓ 画像生成が設定され、使用準備完了です"
+			"providerLabel": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼",
+			"providerDescription": "ç”»åƒç”Ÿæˆã«ä½¿ç”¨ã™ã‚‹ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã‚’é¸æŠž",
+			"name": "AIç”»åƒç”Ÿæˆã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Rooã¯OpenRouterã®ç”»åƒç”Ÿæˆãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ç”¨ã—ã¦ãƒ†ã‚­ã‚¹ãƒˆãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‹ã‚‰ç”»åƒã‚’ç”Ÿæˆã§ãã¾ã™ã€‚OpenRouter APIã‚­ãƒ¼ã®è¨­å®šãŒå¿…è¦ã§ã™ã€‚",
+			"openRouterApiKeyLabel": "OpenRouter APIã‚­ãƒ¼",
+			"openRouterApiKeyPlaceholder": "OpenRouter APIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„",
+			"getApiKeyText": "APIã‚­ãƒ¼ã‚’å–å¾—ã™ã‚‹å ´æ‰€",
+			"modelSelectionLabel": "ç”»åƒç”Ÿæˆãƒ¢ãƒ‡ãƒ«",
+			"modelSelectionDescription": "ç”»åƒç”Ÿæˆã«ä½¿ç”¨ã™ã‚‹ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠž",
+			"warningMissingKey": "âš ï¸ ç”»åƒç”Ÿæˆã«ã¯OpenRouter APIã‚­ãƒ¼ãŒå¿…è¦ã§ã™ã€‚ä¸Šè¨˜ã§è¨­å®šã—ã¦ãã ã•ã„ã€‚",
+			"successConfigured": "âœ“ ç”»åƒç”ŸæˆãŒè¨­å®šã•ã‚Œã€ä½¿ç”¨æº–å‚™å®Œäº†ã§ã™"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "モデル開始スラッシュコマンドを有効にする",
-			"description": "有効にすると、Rooがワークフローを実行するためにあなたのスラッシュコマンドを実行できます。"
+			"name": "ãƒ¢ãƒ‡ãƒ«é–‹å§‹ã‚¹ãƒ©ãƒƒã‚·ãƒ¥ã‚³ãƒžãƒ³ãƒ‰ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€RooãŒãƒ¯ãƒ¼ã‚¯ãƒ•ãƒ­ãƒ¼ã‚’å®Ÿè¡Œã™ã‚‹ãŸã‚ã«ã‚ãªãŸã®ã‚¹ãƒ©ãƒƒã‚·ãƒ¥ã‚³ãƒžãƒ³ãƒ‰ã‚’å®Ÿè¡Œã§ãã¾ã™ã€‚"
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "並列ツール呼び出し",
-			"description": "有効にすると、ネイティブプロトコルは単一のアシスタントメッセージターンで複数のツールを実行できます。"
+			"name": "ä¸¦åˆ—ãƒ„ãƒ¼ãƒ«å‘¼ã³å‡ºã—",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€ãƒã‚¤ãƒ†ã‚£ãƒ–ãƒ—ãƒ­ãƒˆã‚³ãƒ«ã¯å˜ä¸€ã®ã‚¢ã‚·ã‚¹ã‚¿ãƒ³ãƒˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚¿ãƒ¼ãƒ³ã§è¤‡æ•°ã®ãƒ„ãƒ¼ãƒ«ã‚’å®Ÿè¡Œã§ãã¾ã™ã€‚"
 		}
 	},
 	"promptCaching": {
-		"label": "プロンプトキャッシュを無効化",
-		"description": "チェックすると、Rooはこのモデルに対してプロンプトキャッシュを使用しません。"
+		"label": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ç„¡åŠ¹åŒ–",
+		"description": "ãƒã‚§ãƒƒã‚¯ã™ã‚‹ã¨ã€Rooã¯ã“ã®ãƒ¢ãƒ‡ãƒ«ã«å¯¾ã—ã¦ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ä½¿ç”¨ã—ã¾ã›ã‚“ã€‚"
 	},
 	"temperature": {
-		"useCustom": "カスタム温度を使用",
-		"description": "モデルの応答のランダム性を制御します。",
-		"rangeDescription": "高い値は出力をよりランダムに、低い値はより決定論的にします。"
+		"useCustom": "ã‚«ã‚¹ã‚¿ãƒ æ¸©åº¦ã‚’ä½¿ç”¨",
+		"description": "ãƒ¢ãƒ‡ãƒ«ã®å¿œç­”ã®ãƒ©ãƒ³ãƒ€ãƒ æ€§ã‚’åˆ¶å¾¡ã—ã¾ã™ã€‚",
+		"rangeDescription": "é«˜ã„å€¤ã¯å‡ºåŠ›ã‚’ã‚ˆã‚Šãƒ©ãƒ³ãƒ€ãƒ ã«ã€ä½Žã„å€¤ã¯ã‚ˆã‚Šæ±ºå®šè«–çš„ã«ã—ã¾ã™ã€‚"
 	},
 	"modelInfo": {
-		"supportsImages": "画像をサポート",
-		"noImages": "画像をサポートしていません",
-		"supportsPromptCache": "プロンプトキャッシュをサポート",
-		"noPromptCache": "プロンプトキャッシュをサポートしていません",
-		"contextWindow": "コンテキストウィンドウ:",
-		"maxOutput": "最大出力",
-		"inputPrice": "入力価格",
-		"outputPrice": "出力価格",
-		"cacheReadsPrice": "キャッシュ読み取り価格",
-		"cacheWritesPrice": "キャッシュ書き込み価格",
-		"enableStreaming": "ストリーミングを有効化",
-		"enableR1Format": "R1モデルパラメータを有効にする",
-		"enableR1FormatTips": "QWQなどのR1モデルを使用する際には、有効にする必要があります。400エラーを防ぐために",
-		"useAzure": "Azureを使用",
-		"azureApiVersion": "Azure APIバージョンを設定",
+		"supportsImages": "ç”»åƒã‚’ã‚µãƒãƒ¼ãƒˆ",
+		"noImages": "ç”»åƒã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ã¾ã›ã‚“",
+		"supportsPromptCache": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ã‚µãƒãƒ¼ãƒˆ",
+		"noPromptCache": "ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ã¾ã›ã‚“",
+		"contextWindow": "ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦:",
+		"maxOutput": "æœ€å¤§å‡ºåŠ›",
+		"inputPrice": "å…¥åŠ›ä¾¡æ ¼",
+		"outputPrice": "å‡ºåŠ›ä¾¡æ ¼",
+		"cacheReadsPrice": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥èª­ã¿å–ã‚Šä¾¡æ ¼",
+		"cacheWritesPrice": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ›¸ãè¾¼ã¿ä¾¡æ ¼",
+		"enableStreaming": "ã‚¹ãƒˆãƒªãƒ¼ãƒŸãƒ³ã‚°ã‚’æœ‰åŠ¹åŒ–",
+		"enableR1Format": "R1ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æœ‰åŠ¹ã«ã™ã‚‹",
+		"enableR1FormatTips": "QWQãªã©ã®R1ãƒ¢ãƒ‡ãƒ«ã‚’ä½¿ç”¨ã™ã‚‹éš›ã«ã¯ã€æœ‰åŠ¹ã«ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™ã€‚400ã‚¨ãƒ©ãƒ¼ã‚’é˜²ããŸã‚ã«",
+		"useAzure": "Azureã‚’ä½¿ç”¨",
+		"azureApiVersion": "Azure APIãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚’è¨­å®š",
 		"gemini": {
-			"freeRequests": "* 1分間あたり{{count}}リクエストまで無料。それ以降は、プロンプトサイズに応じて課金されます。",
-			"pricingDetails": "詳細は価格情報をご覧ください。",
-			"billingEstimate": "* 課金は見積もりです - 正確な費用はプロンプトのサイズによって異なります。"
+			"freeRequests": "* 1åˆ†é–“ã‚ãŸã‚Š{{count}}ãƒªã‚¯ã‚¨ã‚¹ãƒˆã¾ã§ç„¡æ–™ã€‚ãã‚Œä»¥é™ã¯ã€ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã‚µã‚¤ã‚ºã«å¿œã˜ã¦èª²é‡‘ã•ã‚Œã¾ã™ã€‚",
+			"pricingDetails": "è©³ç´°ã¯ä¾¡æ ¼æƒ…å ±ã‚’ã”è¦§ãã ã•ã„ã€‚",
+			"billingEstimate": "* èª²é‡‘ã¯è¦‹ç©ã‚‚ã‚Šã§ã™ - æ­£ç¢ºãªè²»ç”¨ã¯ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã®ã‚µã‚¤ã‚ºã«ã‚ˆã£ã¦ç•°ãªã‚Šã¾ã™ã€‚"
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "拡張機能は<serviceLink>{{serviceName}}</serviceLink>で利用可能な最新のモデルリストを自動的に取得します。どのモデルを選ぶべきか迷っている場合、Roo Codeは<defaultModelLink>{{defaultModelId}}</defaultModelLink>で最適に動作します。また、「free」で検索すると、現在利用可能な無料オプションを見つけることができます。",
-		"label": "モデル",
-		"searchPlaceholder": "検索",
-		"noMatchFound": "一致するものが見つかりません",
-		"useCustomModel": "カスタムを使用: {{modelId}}",
-		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
+		"automaticFetch": "æ‹¡å¼µæ©Ÿèƒ½ã¯\u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003eã§åˆ©ç”¨å¯èƒ½ãªæœ€æ–°ã®ãƒ¢ãƒ‡ãƒ«ãƒªã‚¹ãƒˆã‚’è‡ªå‹•çš„ã«å–å¾—ã—ã¾ã™ã€‚ã©ã®ãƒ¢ãƒ‡ãƒ«ã‚’é¸ã¶ã¹ãã‹è¿·ã£ã¦ã„ã‚‹å ´åˆã€Roo Codeã¯\u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003eã§æœ€é©ã«å‹•ä½œã—ã¾ã™ã€‚ã¾ãŸã€ã€Œfreeã€ã§æ¤œç´¢ã™ã‚‹ã¨ã€ç¾åœ¨åˆ©ç”¨å¯èƒ½ãªç„¡æ–™ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’è¦‹ã¤ã‘ã‚‹ã“ã¨ãŒã§ãã¾ã™ã€‚",
+		"label": "ãƒ¢ãƒ‡ãƒ«",
+		"searchPlaceholder": "æ¤œç´¢",
+		"noMatchFound": "ä¸€è‡´ã™ã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“",
+		"useCustomModel": "ã‚«ã‚¹ã‚¿ãƒ ã‚’ä½¿ç”¨: {{modelId}}",
+		"simplifiedExplanation": "è©³ç´°ãªãƒ¢ãƒ‡ãƒ«è¨­å®šã¯å¾Œã§èª¿æ•´ã§ãã¾ã™ã€‚"
 	},
 	"footer": {
-		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"feedback": "è³ªå•ã‚„ãƒ•ã‚£ãƒ¼ãƒ‰ãƒãƒƒã‚¯ãŒã‚ã‚‹å ´åˆã¯ã€\u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003eã§å•é¡Œã‚’é–‹ãã‹ã€\u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003eã‚„\u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003eã«å‚åŠ ã—ã¦ãã ã•ã„",
 		"telemetry": {
-			"label": "匿名のエラーと使用状況レポートを許可",
-			"description": "匿名の使用データとエラーレポートを送信してRoo Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"
+			"label": "åŒ¿åã®ã‚¨ãƒ©ãƒ¼ã¨ä½¿ç”¨çŠ¶æ³ãƒ¬ãƒãƒ¼ãƒˆã‚’è¨±å¯",
+			"description": "åŒ¿åã®ä½¿ç”¨ãƒ‡ãƒ¼ã‚¿ã¨ã‚¨ãƒ©ãƒ¼ãƒ¬ãƒãƒ¼ãƒˆã‚’é€ä¿¡ã—ã¦Roo Codeã®æ”¹å–„ã«ã”å”åŠ›ãã ã•ã„ã€‚ã“ã®ãƒ†ãƒ¬ãƒ¡ãƒˆãƒªã¯ã‚³ãƒ¼ãƒ‰ã€ãƒ—ãƒ­ãƒ³ãƒ—ãƒˆã€å€‹äººæƒ…å ±ã‚’åŽé›†ã—ã¾ã›ã‚“ã€‚è©³ç´°ã«ã¤ã„ã¦ã¯\u003cprivacyLink\u003eãƒ—ãƒ©ã‚¤ãƒã‚·ãƒ¼ãƒãƒªã‚·ãƒ¼\u003c/privacyLink\u003eã‚’ã”è¦§ãã ã•ã„ã€‚"
 		},
 		"settings": {
-			"import": "インポート",
-			"export": "エクスポート",
-			"reset": "リセット"
+			"import": "ã‚¤ãƒ³ãƒãƒ¼ãƒˆ",
+			"export": "ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆ",
+			"reset": "ãƒªã‚»ãƒƒãƒˆ"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "最大 tokens",
-		"maxThinkingTokens": "最大思考 tokens"
+		"maxTokens": "æœ€å¤§ tokens",
+		"maxThinkingTokens": "æœ€å¤§æ€è€ƒ tokens"
 	},
 	"validation": {
-		"apiKey": "有効なAPIキーを入力してください。",
-		"awsRegion": "Amazon Bedrockを使用するにはリージョンを選択してください。",
-		"googleCloud": "有効なGoogle CloudプロジェクトIDとリージョンを入力してください。",
-		"modelId": "有効なモデルIDを入力してください。",
-		"modelSelector": "有効なモデルセレクターを入力してください。",
-		"openAi": "有効なベースURL、APIキー、モデルIDを入力してください。",
+		"apiKey": "æœ‰åŠ¹ãªAPIã‚­ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚",
+		"awsRegion": "Amazon Bedrockã‚’ä½¿ç”¨ã™ã‚‹ã«ã¯ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚",
+		"googleCloud": "æœ‰åŠ¹ãªGoogle Cloudãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆIDã¨ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚",
+		"modelId": "æœ‰åŠ¹ãªãƒ¢ãƒ‡ãƒ«IDã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚",
+		"modelSelector": "æœ‰åŠ¹ãªãƒ¢ãƒ‡ãƒ«ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚",
+		"openAi": "æœ‰åŠ¹ãªãƒ™ãƒ¼ã‚¹URLã€APIã‚­ãƒ¼ã€ãƒ¢ãƒ‡ãƒ«IDã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚",
 		"arn": {
-			"invalidFormat": "ARNの形式が無効です。フォーマット要件を確認してください。",
-			"regionMismatch": "警告：ARN内のリージョン（{{arnRegion}}）が選択したリージョン（{{region}}）と一致しません。これによりアクセスの問題が発生する可能性があります。プロバイダーはARNのリージョンを使用します。"
+			"invalidFormat": "ARNã®å½¢å¼ãŒç„¡åŠ¹ã§ã™ã€‚ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆè¦ä»¶ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚",
+			"regionMismatch": "è­¦å‘Šï¼šARNå†…ã®ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ï¼ˆ{{arnRegion}}ï¼‰ãŒé¸æŠžã—ãŸãƒªãƒ¼ã‚¸ãƒ§ãƒ³ï¼ˆ{{region}}ï¼‰ã¨ä¸€è‡´ã—ã¾ã›ã‚“ã€‚ã“ã‚Œã«ã‚ˆã‚Šã‚¢ã‚¯ã‚»ã‚¹ã®å•é¡ŒãŒç™ºç”Ÿã™ã‚‹å¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã¯ARNã®ãƒªãƒ¼ã‚¸ãƒ§ãƒ³ã‚’ä½¿ç”¨ã—ã¾ã™ã€‚"
 		},
-		"modelAvailability": "指定されたモデルID（{{modelId}}）は利用できません。別のモデルを選択してください。",
-		"modelDeprecated": "このモデルは利用できなくなりました。別のモデルを選択してください。",
-		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
-		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
-		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"modelAvailability": "æŒ‡å®šã•ã‚ŒãŸãƒ¢ãƒ‡ãƒ«IDï¼ˆ{{modelId}}ï¼‰ã¯åˆ©ç”¨ã§ãã¾ã›ã‚“ã€‚åˆ¥ã®ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚",
+		"modelDeprecated": "ã“ã®ãƒ¢ãƒ‡ãƒ«ã¯åˆ©ç”¨ã§ããªããªã‚Šã¾ã—ãŸã€‚åˆ¥ã®ãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠžã—ã¦ãã ã•ã„ã€‚",
+		"providerNotAllowed": "ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã€Œ{{provider}}ã€ã¯çµ„ç¹”ã«ã‚ˆã£ã¦è¨±å¯ã•ã‚Œã¦ã„ã¾ã›ã‚“",
+		"modelNotAllowed": "ãƒ¢ãƒ‡ãƒ«ã€Œ{{model}}ã€ã¯ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã€Œ{{provider}}ã€ã«å¯¾ã—ã¦çµ„ç¹”ã«ã‚ˆã£ã¦è¨±å¯ã•ã‚Œã¦ã„ã¾ã›ã‚“",
+		"profileInvalid": "ã“ã®ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«ã«ã¯ã€çµ„ç¹”ã«ã‚ˆã£ã¦è¨±å¯ã•ã‚Œã¦ã„ãªã„ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã¾ãŸã¯ãƒ¢ãƒ‡ãƒ«ãŒå«ã¾ã‚Œã¦ã„ã¾ã™",
+		"qwenCodeOauthPath": "æœ‰åŠ¹ãªOAuthèªè¨¼æƒ…å ±ã®ãƒ‘ã‚¹ã‚’æä¾›ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™"
 	},
 	"placeholders": {
-		"apiKey": "API キーを入力...",
-		"profileName": "プロファイル名を入力",
-		"accessKey": "アクセスキーを入力...",
-		"secretKey": "シークレットキーを入力...",
-		"sessionToken": "セッショントークンを入力...",
-		"credentialsJson": "認証情報 JSON を入力...",
-		"keyFilePath": "キーファイルのパスを入力...",
-		"projectId": "プロジェクト ID を入力...",
-		"customArn": "ARN を入力（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
-		"baseUrl": "ベース URL を入力...",
+		"apiKey": "API ã‚­ãƒ¼ã‚’å…¥åŠ›...",
+		"profileName": "ãƒ—ãƒ­ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å…¥åŠ›",
+		"accessKey": "ã‚¢ã‚¯ã‚»ã‚¹ã‚­ãƒ¼ã‚’å…¥åŠ›...",
+		"secretKey": "ã‚·ãƒ¼ã‚¯ãƒ¬ãƒƒãƒˆã‚­ãƒ¼ã‚’å…¥åŠ›...",
+		"sessionToken": "ã‚»ãƒƒã‚·ãƒ§ãƒ³ãƒˆãƒ¼ã‚¯ãƒ³ã‚’å…¥åŠ›...",
+		"credentialsJson": "èªè¨¼æƒ…å ± JSON ã‚’å…¥åŠ›...",
+		"keyFilePath": "ã‚­ãƒ¼ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹ã‚’å…¥åŠ›...",
+		"projectId": "ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ ID ã‚’å…¥åŠ›...",
+		"customArn": "ARN ã‚’å…¥åŠ›ï¼ˆä¾‹ï¼šarn:aws:bedrock:us-east-1:123456789012:foundation-model/my-modelï¼‰",
+		"baseUrl": "ãƒ™ãƒ¼ã‚¹ URL ã‚’å…¥åŠ›...",
 		"modelId": {
-			"lmStudio": "例：meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "例：llama3.1"
+			"lmStudio": "ä¾‹ï¼šmeta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "ä¾‹ï¼šlmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "ä¾‹ï¼šllama3.1"
 		},
 		"numbers": {
-			"maxTokens": "例：4096",
-			"contextWindow": "例：128000",
-			"inputPrice": "例：0.0001",
-			"outputPrice": "例：0.0002",
-			"cacheWritePrice": "例：0.00005"
+			"maxTokens": "ä¾‹ï¼š4096",
+			"contextWindow": "ä¾‹ï¼š128000",
+			"inputPrice": "ä¾‹ï¼š0.0001",
+			"outputPrice": "ä¾‹ï¼š0.0002",
+			"cacheWritePrice": "ä¾‹ï¼š0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "デフォルト：http://localhost:11434",
-		"lmStudioUrl": "デフォルト：http://localhost:1234",
-		"geminiUrl": "デフォルト：https://generativelanguage.googleapis.com"
+		"ollamaUrl": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼šhttp://localhost:11434",
+		"lmStudioUrl": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼šhttp://localhost:1234",
+		"geminiUrl": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼šhttps://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "カスタム ARN",
-		"useCustomArn": "カスタム ARN を使用..."
+		"customArn": "ã‚«ã‚¹ã‚¿ãƒ  ARN",
+		"useCustomArn": "ã‚«ã‚¹ã‚¿ãƒ  ARN ã‚’ä½¿ç”¨..."
 	},
-	"includeMaxOutputTokens": "最大出力トークンを含める",
-	"includeMaxOutputTokensDescription": "APIリクエストで最大出力トークンパラメータを送信します。一部のプロバイダーはこれをサポートしていない場合があります。",
-	"limitMaxTokensDescription": "レスポンスの最大トークン数を制限する",
-	"maxOutputTokensLabel": "最大出力トークン",
-	"maxTokensGenerateDescription": "レスポンスで生成する最大トークン数",
+	"includeMaxOutputTokens": "æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³ã‚’å«ã‚ã‚‹",
+	"includeMaxOutputTokensDescription": "APIãƒªã‚¯ã‚¨ã‚¹ãƒˆã§æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’é€ä¿¡ã—ã¾ã™ã€‚ä¸€éƒ¨ã®ãƒ—ãƒ­ãƒã‚¤ãƒ€ãƒ¼ã¯ã“ã‚Œã‚’ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ãªã„å ´åˆãŒã‚ã‚Šã¾ã™ã€‚",
+	"limitMaxTokensDescription": "ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã®æœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³æ•°ã‚’åˆ¶é™ã™ã‚‹",
+	"maxOutputTokensLabel": "æœ€å¤§å‡ºåŠ›ãƒˆãƒ¼ã‚¯ãƒ³",
+	"maxTokensGenerateDescription": "ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã§ç”Ÿæˆã™ã‚‹æœ€å¤§ãƒˆãƒ¼ã‚¯ãƒ³æ•°",
 	"serviceTier": {
-		"label": "サービスティア",
-		"tooltip": "APIリクエストをより速く処理するには、優先処理サービスティアをお試しください。低価格でレイテンシが高い場合は、フレックス処理ティアをお試しください。",
-		"standard": "標準",
-		"flex": "フレックス",
-		"priority": "優先",
-		"pricingTableTitle": "サービスティア別料金（100万トークンあたりの価格）",
+		"label": "ã‚µãƒ¼ãƒ“ã‚¹ãƒ†ã‚£ã‚¢",
+		"tooltip": "APIãƒªã‚¯ã‚¨ã‚¹ãƒˆã‚’ã‚ˆã‚Šé€Ÿãå‡¦ç†ã™ã‚‹ã«ã¯ã€å„ªå…ˆå‡¦ç†ã‚µãƒ¼ãƒ“ã‚¹ãƒ†ã‚£ã‚¢ã‚’ãŠè©¦ã—ãã ã•ã„ã€‚ä½Žä¾¡æ ¼ã§ãƒ¬ã‚¤ãƒ†ãƒ³ã‚·ãŒé«˜ã„å ´åˆã¯ã€ãƒ•ãƒ¬ãƒƒã‚¯ã‚¹å‡¦ç†ãƒ†ã‚£ã‚¢ã‚’ãŠè©¦ã—ãã ã•ã„ã€‚",
+		"standard": "æ¨™æº–",
+		"flex": "ãƒ•ãƒ¬ãƒƒã‚¯ã‚¹",
+		"priority": "å„ªå…ˆ",
+		"pricingTableTitle": "ã‚µãƒ¼ãƒ“ã‚¹ãƒ†ã‚£ã‚¢åˆ¥æ–™é‡‘ï¼ˆ100ä¸‡ãƒˆãƒ¼ã‚¯ãƒ³ã‚ãŸã‚Šã®ä¾¡æ ¼ï¼‰",
 		"columns": {
-			"tier": "ティア",
-			"input": "入力",
-			"output": "出力",
-			"cacheReads": "キャッシュ読み取り"
+			"tier": "ãƒ†ã‚£ã‚¢",
+			"input": "å…¥åŠ›",
+			"output": "å‡ºåŠ›",
+			"cacheReads": "ã‚­ãƒ£ãƒƒã‚·ãƒ¥èª­ã¿å–ã‚Š"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "デフォルトで思考メッセージを折りたたむ",
-			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
+			"label": "ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§æ€è€ƒãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æŠ˜ã‚ŠãŸãŸã‚€",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€æ“ä½œã™ã‚‹ã¾ã§æ€è€ƒãƒ–ãƒ­ãƒƒã‚¯ãŒãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§æŠ˜ã‚ŠãŸãŸã¾ã‚Œã¾ã™"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
-			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
+			"label": "ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ä¿¡ã™ã‚‹ã«ã¯{{primaryMod}}+EnterãŒå¿…è¦",
+			"description": "æœ‰åŠ¹ã«ã™ã‚‹ã¨ã€Enterã ã‘ã§ãªã{{primaryMod}}+Enterã‚’æŠ¼ã—ã¦ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ä¿¡ã™ã‚‹å¿…è¦ãŒã‚ã‚Šã¾ã™"
 		}
 	}
 }

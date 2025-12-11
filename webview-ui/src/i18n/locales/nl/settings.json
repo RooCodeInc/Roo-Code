@@ -53,12 +53,12 @@
 		"contact": {
 			"label": "Moet je met ons praten? Schrijf"
 		},
-		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Contact & Gemeenschap",
+		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e of \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
+		"contactAndCommunity": "Contact \u0026 Gemeenschap",
 		"manageSettings": "Instellingen Beheren"
 	},
 	"slashCommands": {
-		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
+		"description": "Beheer je slash-commando\u0027s om snel aangepaste workflows en acties uit te voeren. \u003cDocsLink\u003eMeer informatie\u003c/DocsLink\u003e"
 	},
 	"prompts": {
 		"description": "Configureer ondersteuningsprompts die worden gebruikt voor snelle acties zoals het verbeteren van prompts, het uitleggen van code en het oplossen van problemen. Deze prompts helpen Roo om betere ondersteuning te bieden voor veelvoorkomende ontwikkelingstaken."
@@ -115,7 +115,7 @@
 			"cancelButton": "Annuleren",
 			"confirmButton": "Gegevens wissen"
 		},
-		"description": "Configureer codebase-indexeringsinstellingen om semantisch zoeken voor je project in te schakelen. <0>Meer informatie</0>",
+		"description": "Configureer codebase-indexeringsinstellingen om semantisch zoeken voor je project in te schakelen. \u003c0\u003eMeer informatie\u003c/0\u003e",
 		"statusTitle": "Status",
 		"settingsTitle": "Indexeringsinstellingen",
 		"disabledMessage": "Codebase-indexering is momenteel uitgeschakeld. Schakel het in de algemene instellingen in om indexeringsopties te configureren.",
@@ -138,7 +138,7 @@
 		"indexingStatuses": {
 			"standby": "Stand-by",
 			"indexing": "Indexeren",
-			"indexed": "Geïndexeerd",
+			"indexed": "GeÃ¯ndexeerd",
 			"error": "Fout"
 		},
 		"close": "Sluiten",
@@ -172,8 +172,8 @@
 		"resetToDefault": "Reset naar standaard"
 	},
 	"autoApprove": {
-		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",
-		"description": "Sta Roo toe om automatisch handelingen uit te voeren zonder goedkeuring. Schakel deze instellingen alleen in als je de AI volledig vertrouwt en de bijbehorende beveiligingsrisico's begrijpt.",
+		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren \u003cSettingsLink\u003ein de voorkeuren van uw IDE\u003c/SettingsLink\u003e.",
+		"description": "Sta Roo toe om automatisch handelingen uit te voeren zonder goedkeuring. Schakel deze instellingen alleen in als je de AI volledig vertrouwt en de bijbehorende beveiligingsrisico\u0027s begrijpt.",
 		"enabled": "Auto-goedkeuren ingeschakeld",
 		"toggleAriaLabel": "Automatisch goedkeuren in-/uitschakelen",
 		"disabledAriaLabel": "Automatisch goedkeuren uitgeschakeld - selecteer eerst opties",
@@ -209,7 +209,7 @@
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "Automatische goedkeuring van individuele MCP-tools in het MCP-serversoverzicht inschakelen (vereist zowel deze instelling als het selectievakje 'Altijd toestaan' bij de tool)"
+			"description": "Automatische goedkeuring van individuele MCP-tools in het MCP-serversoverzicht inschakelen (vereist zowel deze instelling als het selectievakje \u0027Altijd toestaan\u0027 bij de tool)"
 		},
 		"modeSwitch": {
 			"label": "Modus",
@@ -226,15 +226,15 @@
 		},
 		"execute": {
 			"label": "Uitvoeren",
-			"description": "Automatisch toegestane terminalcommando's uitvoeren zonder goedkeuring",
-			"allowedCommands": "Toegestane automatisch uit te voeren commando's",
-			"allowedCommandsDescription": "Commando-prefixen die automatisch kunnen worden uitgevoerd als 'Altijd goedkeuren voor uitvoeren' is ingeschakeld. Voeg * toe om alle commando's toe te staan (gebruik met voorzichtigheid).",
-			"deniedCommands": "Geweigerde commando's",
-			"deniedCommandsDescription": "Commando-prefixen die automatisch worden geweigerd zonder om goedkeuring te vragen. Bij conflicten met toegestane commando's heeft de langste prefixovereenkomst voorrang. Voeg * toe om alle commando's te weigeren.",
-			"commandPlaceholder": "Voer commando-prefix in (bijv. 'git ')",
-			"deniedCommandPlaceholder": "Voer te weigeren commando-prefix in (bijv. 'rm -rf')",
+			"description": "Automatisch toegestane terminalcommando\u0027s uitvoeren zonder goedkeuring",
+			"allowedCommands": "Toegestane automatisch uit te voeren commando\u0027s",
+			"allowedCommandsDescription": "Commando-prefixen die automatisch kunnen worden uitgevoerd als \u0027Altijd goedkeuren voor uitvoeren\u0027 is ingeschakeld. Voeg * toe om alle commando\u0027s toe te staan (gebruik met voorzichtigheid).",
+			"deniedCommands": "Geweigerde commando\u0027s",
+			"deniedCommandsDescription": "Commando-prefixen die automatisch worden geweigerd zonder om goedkeuring te vragen. Bij conflicten met toegestane commando\u0027s heeft de langste prefixovereenkomst voorrang. Voeg * toe om alle commando\u0027s te weigeren.",
+			"commandPlaceholder": "Voer commando-prefix in (bijv. \u0027git \u0027)",
+			"deniedCommandPlaceholder": "Voer te weigeren commando-prefix in (bijv. \u0027rm -rf\u0027)",
 			"addButton": "Toevoegen",
-			"autoDenied": "Commando's met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren."
+			"autoDenied": "Commando\u0027s met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren."
 		},
 		"updateTodoList": {
 			"label": "Todo",
@@ -245,7 +245,7 @@
 			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",
 			"unlimited": "Onbeperkt"
 		},
-		"selectOptionsFirst": "Selecteer ten minste één optie hieronder om automatische goedkeuring in te schakelen",
+		"selectOptionsFirst": "Selecteer ten minste Ã©Ã©n optie hieronder om automatische goedkeuring in te schakelen",
 		"apiCostLimit": {
 			"title": "Max kosten",
 			"unlimited": "Onbeperkt"
@@ -302,13 +302,13 @@
 		"getRequestyApiKey": "Requesty API-sleutel ophalen",
 		"getRequestyBaseUrl": "Basis-URL",
 		"requestyUseCustomBaseUrl": "Gebruik aangepaste basis-URL",
-		"openRouterTransformsText": "Comprimeer prompts en berichtreeksen tot de contextgrootte (<a>OpenRouter Transforms</a>)",
+		"openRouterTransformsText": "Comprimeer prompts en berichtreeksen tot de contextgrootte (\u003ca\u003eOpenRouter Transforms\u003c/a\u003e)",
 		"anthropicApiKey": "Anthropic API-sleutel",
 		"getAnthropicApiKey": "Anthropic API-sleutel ophalen",
 		"anthropicUseAuthToken": "Anthropic API-sleutel als Authorization-header doorgeven in plaats van X-Api-Key",
-		"anthropic1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
+		"anthropic1MContextBetaLabel": "1M contextvenster inschakelen (bÃ¨ta)",
 		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
-		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
+		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bÃ¨ta)",
 		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"basetenApiKey": "Baseten API-sleutel",
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
@@ -387,11 +387,11 @@
 		"enablePromptCachingTitle": "Schakel prompt caching in om de prestaties te verbeteren en de kosten te verlagen voor ondersteunde modellen.",
 		"cacheUsageNote": "Let op: als je geen cachegebruik ziet, probeer dan een ander model te selecteren en vervolgens weer je gewenste model.",
 		"vscodeLmModel": "Taalmodel",
-		"vscodeLmWarning": "Let op: Modellen die via de VS Code Language Model API worden benaderd kunnen door de provider worden verpakt of fijn‑afgesteld, waardoor het gedrag kan afwijken van het rechtstreeks gebruiken van hetzelfde model bij een typische provider of router. Om een model uit de keuzelijst ‘Language Model’ te gebruiken, schakel eerst naar dat model en klik vervolgens op ‘Accepteren’ in de Copilot Chat‑prompt; anders kun je een fout zien zoals 400 ‘The requested model is not supported’.",
+		"vscodeLmWarning": "Let op: Modellen die via de VS Code Language Model API worden benaderd kunnen door de provider worden verpakt of fijnâ€‘afgesteld, waardoor het gedrag kan afwijken van het rechtstreeks gebruiken van hetzelfde model bij een typische provider of router. Om een model uit de keuzelijst â€˜Language Modelâ€™ te gebruiken, schakel eerst naar dat model en klik vervolgens op â€˜Accepterenâ€™ in de Copilot Chatâ€‘prompt; anders kun je een fout zien zoals 400 â€˜The requested model is not supportedâ€™.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL-context inschakelen",
-				"description": "Staat Gemini toe om URL's te openen en te verwerken voor extra context bij het genereren van antwoorden. Handig voor taken die webinhoudsanalyse vereisen."
+				"description": "Staat Gemini toe om URL\u0027s te openen en te verwerken voor extra context bij het genereren van antwoorden. Handig voor taken die webinhoudsanalyse vereisen."
 			},
 			"groundingSearch": {
 				"title": "Grounding met Google-zoekopdracht inschakelen",
@@ -416,7 +416,7 @@
 			"draftModelDesc": "Draft-model moet uit dezelfde modelfamilie komen voor correcte speculatieve decodering.",
 			"selectDraftModel": "Selecteer draft-model",
 			"noModelsFound": "Geen draft-modellen gevonden. Zorg dat LM Studio draait met Server Mode ingeschakeld.",
-			"description": "LM Studio laat je modellen lokaal op je computer draaien. Zie hun <a>quickstart-gids</a> voor instructies. Je moet ook de <b>lokale server</b>-functie van LM Studio starten om het met deze extensie te gebruiken. <span>Let op:</span> Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
+			"description": "LM Studio laat je modellen lokaal op je computer draaien. Zie hun \u003ca\u003equickstart-gids\u003c/a\u003e voor instructies. Je moet ook de \u003cb\u003elokale server\u003c/b\u003e-functie van LM Studio starten om het met deze extensie te gebruiken. \u003cspan\u003eLet op:\u003c/span\u003e Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
 		},
 		"ollama": {
 			"baseUrl": "Basis-URL (optioneel)",
@@ -433,8 +433,8 @@
 		"unboundRefreshModelsSuccess": "Modellenlijst bijgewerkt! U kunt nu kiezen uit de nieuwste modellen.",
 		"unboundInvalidApiKey": "Ongeldige API-sleutel. Controleer uw API-sleutel en probeer het opnieuw.",
 		"humanRelay": {
-			"description": "Geen API-sleutel vereist, maar de gebruiker moet helpen met kopiëren en plakken naar de webchat-AI.",
-			"instructions": "Tijdens gebruik verschijnt een dialoogvenster en wordt het huidige bericht automatisch naar het klembord gekopieerd. Je moet deze plakken in webversies van AI (zoals ChatGPT of Claude), vervolgens het antwoord van de AI terugkopiëren naar het dialoogvenster en op bevestigen klikken."
+			"description": "Geen API-sleutel vereist, maar de gebruiker moet helpen met kopiÃ«ren en plakken naar de webchat-AI.",
+			"instructions": "Tijdens gebruik verschijnt een dialoogvenster en wordt het huidige bericht automatisch naar het klembord gekopieerd. Je moet deze plakken in webversies van AI (zoals ChatGPT of Claude), vervolgens het antwoord van de AI terugkopiÃ«ren naar het dialoogvenster en op bevestigen klikken."
 		},
 		"roo": {
 			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
@@ -448,7 +448,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Roo Code beïnvloeden.",
+			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Roo Code beÃ¯nvloeden.",
 			"maxTokens": {
 				"label": "Maximaal aantal outputtokens",
 				"description": "Maximaal aantal tokens dat het model in een antwoord kan genereren. (Geef -1 op om de server het maximum te laten bepalen.)"
@@ -472,11 +472,11 @@
 			"pricing": {
 				"input": {
 					"label": "Invoerprijs",
-					"description": "Kosten per miljoen tokens in de input/prompt. Dit beïnvloedt de kosten van het verzenden van context en instructies naar het model."
+					"description": "Kosten per miljoen tokens in de input/prompt. Dit beÃ¯nvloedt de kosten van het verzenden van context en instructies naar het model."
 				},
 				"output": {
 					"label": "Uitvoerprijs",
-					"description": "Kosten per miljoen tokens in het antwoord van het model. Dit beïnvloedt de kosten van gegenereerde inhoud en voltooiingen."
+					"description": "Kosten per miljoen tokens in het antwoord van het model. Dit beÃ¯nvloedt de kosten van gegenereerde inhoud en voltooiingen."
 				},
 				"cacheReads": {
 					"label": "Cache-leesprijs",
@@ -494,10 +494,10 @@
 			"description": "Minimale tijd tussen API-verzoeken."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "Fout- & Herhalingslimiet",
-			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster 'Roo ondervindt problemen' wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
+			"label": "Fout- \u0026 Herhalingslimiet",
+			"description": "Aantal opeenvolgende fouten of herhaalde acties voordat het dialoogvenster \u0027Roo ondervindt problemen\u0027 wordt weergegeven. Zet op 0 om dit veiligheidsmechanisme uit te schakelen (wordt nooit geactiveerd).",
 			"unlimitedDescription": "Onbeperkt aantal nieuwe pogingen ingeschakeld (automatisch doorgaan). Het dialoogvenster zal nooit verschijnen.",
-			"warning": "⚠️ Instellen op 0 staat onbeperkte nieuwe pogingen toe, wat aanzienlijk API-gebruik kan verbruiken"
+			"warning": "âš ï¸ Instellen op 0 staat onbeperkte nieuwe pogingen toe, wat aanzienlijk API-gebruik kan verbruiken"
 		},
 		"reasoningEffort": {
 			"label": "Model redeneervermogen",
@@ -518,20 +518,24 @@
 		"setReasoningLevel": "Redeneervermogen inschakelen",
 		"claudeCode": {
 			"pathLabel": "Claude Code Pad",
-			"description": "Optioneel pad naar uw Claude Code CLI. Standaard 'claude' als niet ingesteld.",
+			"description": "Optioneel pad naar uw Claude Code CLI. Standaard \u0027claude\u0027 als niet ingesteld.",
 			"placeholder": "Standaard: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
 			"label": "Browserhulpmiddel inschakelen",
-			"description": "Indien ingeschakeld, kan Roo een browser gebruiken om te interageren met websites wanneer modellen computergebruik ondersteunen. <0>Meer informatie</0>"
+			"description": "Indien ingeschakeld, kan Roo een browser gebruiken om te interageren met websites wanneer modellen computergebruik ondersteunen. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"viewport": {
 			"label": "Viewport-grootte",
-			"description": "Selecteer de viewport-grootte voor browserinteracties. Dit beïnvloedt hoe websites worden weergegeven en gebruikt.",
+			"description": "Selecteer de viewport-grootte voor browserinteracties. Dit beÃ¯nvloedt hoe websites worden weergegeven en gebruikt.",
 			"options": {
 				"largeDesktop": "Groot bureaublad (1280x800)",
 				"smallDesktop": "Klein bureaublad (900x600)",
@@ -559,7 +563,7 @@
 		},
 		"enable": {
 			"label": "Automatische checkpoints inschakelen",
-			"description": "Indien ingeschakeld, maakt Roo automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. <0>Meer informatie</0>"
+			"description": "Indien ingeschakeld, maakt Roo automatisch checkpoints tijdens het uitvoeren van taken, zodat je eenvoudig wijzigingen kunt bekijken of terugzetten. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		}
 	},
 	"notifications": {
@@ -610,13 +614,13 @@
 		},
 		"maxReadFile": {
 			"label": "Automatisch afkappen bij bestandslezen",
-			"description": "Roo leest dit aantal regels wanneer het model geen begin/eindwaarden opgeeft. Als dit aantal lager is dan het totaal, genereert Roo een index van codelijnen. Speciale gevallen: -1 laat Roo het hele bestand lezen (zonder indexering), 0 leest geen regels en geeft alleen een minimale index. Lagere waarden minimaliseren het initiële contextgebruik en maken precieze vervolg-leesopdrachten mogelijk. Expliciete begin/eind-aanvragen worden niet door deze instelling beperkt.",
+			"description": "Roo leest dit aantal regels wanneer het model geen begin/eindwaarden opgeeft. Als dit aantal lager is dan het totaal, genereert Roo een index van codelijnen. Speciale gevallen: -1 laat Roo het hele bestand lezen (zonder indexering), 0 leest geen regels en geeft alleen een minimale index. Lagere waarden minimaliseren het initiÃ«le contextgebruik en maken precieze vervolg-leesopdrachten mogelijk. Expliciete begin/eind-aanvragen worden niet door deze instelling beperkt.",
 			"lines": "regels",
 			"always_full_read": "Altijd volledig bestand lezen"
 		},
 		"maxConcurrentFileReads": {
 			"label": "Limiet gelijktijdige bestandslezingen",
-			"description": "Maximum aantal bestanden dat de 'read_file' tool tegelijkertijd kan verwerken. Hogere waarden kunnen het lezen van meerdere kleine bestanden versnellen maar verhogen het geheugengebruik."
+			"description": "Maximum aantal bestanden dat de \u0027read_file\u0027 tool tegelijkertijd kan verwerken. Hogere waarden kunnen het lezen van meerdere kleine bestanden versnellen maar verhogen het geheugengebruik."
 		},
 		"maxImageFileSize": {
 			"label": "Maximum afbeeldingsbestandsgrootte",
@@ -626,7 +630,7 @@
 		"maxTotalImageSize": {
 			"label": "Maximale totale afbeeldingsgrootte",
 			"mb": "MB",
-			"description": "Maximale cumulatieve groottelimiet (in MB) voor alle afbeeldingen die in één read_file-bewerking worden verwerkt. Bij het lezen van meerdere afbeeldingen wordt de grootte van elke afbeelding bij het totaal opgeteld. Als het toevoegen van een andere afbeelding deze limiet zou overschrijden, wordt deze overgeslagen."
+			"description": "Maximale cumulatieve groottelimiet (in MB) voor alle afbeeldingen die in Ã©Ã©n read_file-bewerking worden verwerkt. Bij het lezen van meerdere afbeeldingen wordt de grootte van elke afbeelding bij het totaal opgeteld. Als het toevoegen van een andere afbeelding deze limiet zou overschrijden, wordt deze overgeslagen."
 		},
 		"diagnostics": {
 			"includeMessages": {
@@ -641,7 +645,7 @@
 				"unlimitedLabel": "Onbeperkt"
 			},
 			"delayAfterWrite": {
-				"label": "Vertraging na het schrijven om diagnostiek potentiële problemen te laten detecteren",
+				"label": "Vertraging na het schrijven om diagnostiek potentiÃ«le problemen te laten detecteren",
 				"description": "Wachttijd na het schrijven van bestanden voordat u doorgaat, zodat diagnostische hulpmiddelen wijzigingen kunnen verwerken en problemen kunnen detecteren."
 			}
 		},
@@ -664,7 +668,7 @@
 		},
 		"maxGitStatusFiles": {
 			"label": "Git status max bestanden",
-			"description": "Maximum aantal bestandsvermeldingen dat in de git-statuscontext moet worden opgenomen. Stel in op 0 om uit te schakelen. Branch-info en commits worden altijd getoond wanneer > 0."
+			"description": "Maximum aantal bestandsvermeldingen dat in de git-statuscontext moet worden opgenomen. Stel in op 0 om uit te schakelen. Branch-info en commits worden altijd getoond wanneer \u003e 0."
 		}
 	},
 	"terminal": {
@@ -674,55 +678,55 @@
 		},
 		"advanced": {
 			"label": "Terminalinstellingen: Geavanceerd",
-			"description": "Deze instellingen gelden alleen wanneer 'Inline Terminal gebruiken' is uitgeschakeld. Ze beïnvloeden alleen de VS Code-terminal en kunnen een IDE-herstart vereisen."
+			"description": "Deze instellingen gelden alleen wanneer \u0027Inline Terminal gebruiken\u0027 is uitgeschakeld. Ze beÃ¯nvloeden alleen de VS Code-terminal en kunnen een IDE-herstart vereisen."
 		},
 		"outputLineLimit": {
 			"label": "Terminaluitvoerlimiet",
-			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om Roo meer tussendetails te geven. Roo ziet een placeholder waar inhoud wordt overgeslagen.<0>Meer informatie</0>"
+			"description": "Behoudt eerste en laatste regels en verwijdert middelste om onder de limiet te blijven. Verlaag om tokens te besparen; verhoog om Roo meer tussendetails te geven. Roo ziet een placeholder waar inhoud wordt overgeslagen.\u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal-tekenlimiet",
-			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Roo waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
+			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Roo waar inhoud wordt overgeslagen. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal-shell-integratie timeout",
-			"description": "Hoe lang te wachten op VS Code-shell-integratie voordat commando's worden uitgevoerd. Verhoog als je shell traag opstart of je 'Shell-Integratie Niet Beschikbaar'-fouten ziet. <0>Meer informatie</0>"
+			"description": "Hoe lang te wachten op VS Code-shell-integratie voordat commando\u0027s worden uitgevoerd. Verhoog als je shell traag opstart of je \u0027Shell-Integratie Niet Beschikbaar\u0027-fouten ziet. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
 			"label": "Inline Terminal gebruiken (aanbevolen)",
-			"description": "Voer commando's uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Roo de VS Code-terminal met je shell-profiel, prompts en plugins. <0>Meer informatie</0>"
+			"description": "Voer commando\u0027s uit in de Inline Terminal (chat) om shell-profielen/integratie te omzeilen voor snellere, betrouwbaardere runs. Wanneer uitgeschakeld gebruikt Roo de VS Code-terminal met je shell-profiel, prompts en plugins. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
-			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. <0>Meer informatie</0>"
+			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"compressProgressBar": {
 			"label": "Voortgangsbalk-uitvoer comprimeren",
-			"description": "Klapt voortgangsbalken/spinners in zodat alleen eindstatus behouden blijft (bespaart tokens). <0>Meer informatie</0>"
+			"description": "Klapt voortgangsbalken/spinners in zodat alleen eindstatus behouden blijft (bespaart tokens). \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"powershellCounter": {
 			"label": "PowerShell-teller workaround inschakelen",
-			"description": "Schakel in wanneer PowerShell-uitvoer ontbreekt of gedupliceerd wordt; voegt kleine teller toe aan elk commando om uitvoer te stabiliseren. Laat uit als uitvoer al correct lijkt. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer PowerShell-uitvoer ontbreekt of gedupliceerd wordt; voegt kleine teller toe aan elk commando om uitvoer te stabiliseren. Laat uit als uitvoer al correct lijkt. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
 			"label": "ZSH-EOL-markering wissen",
-			"description": "Schakel in wanneer je verdwaalde % aan regeleinden ziet of parsing verkeerd lijkt; laat Zsh's einde-van-regel-markering (%) weg. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer je verdwaalde % aan regeleinden ziet of parsing verkeerd lijkt; laat Zsh\u0027s einde-van-regel-markering (%) weg. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"zshOhMy": {
 			"label": "Oh My Zsh-integratie inschakelen",
-			"description": "Schakel in wanneer je Oh My Zsh-thema/plugins shell-integratie verwachten; stelt ITERM_SHELL_INTEGRATION_INSTALLED=Yes in. Schakel uit om instellen van die variabele te vermijden. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer je Oh My Zsh-thema/plugins shell-integratie verwachten; stelt ITERM_SHELL_INTEGRATION_INSTALLED=Yes in. Schakel uit om instellen van die variabele te vermijden. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"zshP10k": {
 			"label": "Powerlevel10k-integratie inschakelen",
-			"description": "Schakel in wanneer je Powerlevel10k-shell-integratie gebruikt. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer je Powerlevel10k-shell-integratie gebruikt. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"zdotdir": {
 			"label": "ZDOTDIR-afhandeling inschakelen",
-			"description": "Schakel in wanneer zsh-shell-integratie mislukt of conflicteert met je dotfiles. <0>Meer informatie</0>"
+			"description": "Schakel in wanneer zsh-shell-integratie mislukt of conflicteert met je dotfiles. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		},
 		"inheritEnv": {
 			"label": "Omgevingsvariabelen overnemen",
-			"description": "Schakel in om omgevingsvariabelen over te nemen van het bovenliggende VS Code-proces. <0>Meer informatie</0>"
+			"description": "Schakel in om omgevingsvariabelen over te nemen van het bovenliggende VS Code-proces. \u003c0\u003eMeer informatie\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
@@ -743,14 +747,14 @@
 			"strategy": {
 				"label": "Diff-strategie",
 				"options": {
-					"standard": "Standaard (één blok)",
+					"standard": "Standaard (Ã©Ã©n blok)",
 					"multiBlock": "Experimenteel: Multi-block diff",
 					"unified": "Experimenteel: Unified diff"
 				},
 				"descriptions": {
-					"standard": "Standaard diff-strategie past wijzigingen toe op één codeblok tegelijk.",
+					"standard": "Standaard diff-strategie past wijzigingen toe op Ã©Ã©n codeblok tegelijk.",
 					"unified": "Unified diff-strategie gebruikt meerdere methoden om diffs toe te passen en kiest de beste aanpak.",
-					"multiBlock": "Multi-block diff-strategie laat toe om meerdere codeblokken in één verzoek bij te werken."
+					"multiBlock": "Multi-block diff-strategie laat toe om meerdere codeblokken in Ã©Ã©n verzoek bij te werken."
 				}
 			},
 			"matchPrecision": {
@@ -766,31 +770,31 @@
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Experimentele unified diff-strategie gebruiken",
-			"description": "Schakel de experimentele unified diff-strategie in. Deze strategie kan het aantal herhalingen door model fouten verminderen, maar kan onverwacht gedrag of onjuiste bewerkingen veroorzaken. Alleen inschakelen als je de risico's begrijpt en wijzigingen zorgvuldig wilt controleren."
+			"description": "Schakel de experimentele unified diff-strategie in. Deze strategie kan het aantal herhalingen door model fouten verminderen, maar kan onverwacht gedrag of onjuiste bewerkingen veroorzaken. Alleen inschakelen als je de risico\u0027s begrijpt en wijzigingen zorgvuldig wilt controleren."
 		},
 		"INSERT_BLOCK": {
 			"name": "Experimentele inhoud-invoeg-tool gebruiken",
 			"description": "Schakel de experimentele inhoud-invoeg-tool in, waarmee Roo inhoud op specifieke regelnummers kan invoegen zonder een diff te maken."
 		},
 		"POWER_STEERING": {
-			"name": "Experimentele 'power steering'-modus gebruiken",
+			"name": "Experimentele \u0027power steering\u0027-modus gebruiken",
 			"description": "Indien ingeschakeld, herinnert Roo het model vaker aan de details van de huidige modusdefinitie. Dit leidt tot sterkere naleving van roldefinities en aangepaste instructies, maar gebruikt meer tokens per bericht."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Experimentele multi-block diff-tool gebruiken",
-			"description": "Indien ingeschakeld, gebruikt Roo de multi-block diff-tool. Hiermee wordt geprobeerd meerdere codeblokken in het bestand in één verzoek bij te werken."
+			"description": "Indien ingeschakeld, gebruikt Roo de multi-block diff-tool. Hiermee wordt geprobeerd meerdere codeblokken in het bestand in Ã©Ã©n verzoek bij te werken."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Gelijktijdig lezen van bestanden inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in één verzoek lezen. Wanneer uitgeschakeld, moet Roo bestanden één voor één lezen. Uitschakelen kan helpen bij het werken met minder capabele modellen of wanneer u meer controle over bestandstoegang wilt."
+			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in Ã©Ã©n verzoek lezen. Wanneer uitgeschakeld, moet Roo bestanden Ã©Ã©n voor Ã©Ã©n lezen. Uitschakelen kan helpen bij het werken met minder capabele modellen of wanneer u meer controle over bestandstoegang wilt."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace inschakelen",
-			"description": "Wanneer ingeschakeld kun je MCP's en aangepaste modi uit de Marketplace installeren."
+			"description": "Wanneer ingeschakeld kun je MCP\u0027s en aangepaste modi uit de Marketplace installeren."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Gelijktijdige bestandsbewerkingen inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in één verzoek bewerken. Wanneer uitgeschakeld, moet Roo bestanden één voor één bewerken. Het uitschakelen hiervan kan helpen wanneer je werkt met minder capabele modellen of wanneer je meer controle wilt over bestandswijzigingen."
+			"description": "Wanneer ingeschakeld, kan Roo meerdere bestanden in Ã©Ã©n verzoek bewerken. Wanneer uitgeschakeld, moet Roo bestanden Ã©Ã©n voor Ã©Ã©n bewerken. Het uitschakelen hiervan kan helpen wanneer je werkt met minder capabele modellen of wanneer je meer controle wilt over bestandswijzigingen."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Achtergrondbewerking",
@@ -798,32 +802,32 @@
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Nieuwe berichtparser gebruiken",
-			"description": "Schakel de experimentele streaming-berichtparser in die lange antwoorden sneller maakt door berichten efficiënter te verwerken."
+			"description": "Schakel de experimentele streaming-berichtparser in die lange antwoorden sneller maakt door berichten efficiÃ«nter te verwerken."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "'todos'-lijst vereisen voor nieuwe taken",
+			"name": "\u0027todos\u0027-lijst vereisen voor nieuwe taken",
 			"description": "Wanneer ingeschakeld, vereist de new_task-tool dat een todos-parameter wordt opgegeven. Dit zorgt ervoor dat alle nieuwe taken beginnen met een duidelijke lijst met doelstellingen. Wanneer uitgeschakeld (standaard), blijft de todos-parameter optioneel voor achterwaartse compatibiliteit."
 		},
 		"IMAGE_GENERATION": {
 			"providerLabel": "Provider",
 			"providerDescription": "Selecteer de provider voor het genereren van afbeeldingen.",
 			"name": "AI-afbeeldingsgeneratie inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter's afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
+			"description": "Wanneer ingeschakeld, kan Roo afbeeldingen genereren van tekstprompts met behulp van OpenRouter\u0027s afbeeldingsgeneratiemodellen. Vereist een geconfigureerde OpenRouter API-sleutel.",
 			"openRouterApiKeyLabel": "OpenRouter API-sleutel",
 			"openRouterApiKeyPlaceholder": "Voer je OpenRouter API-sleutel in",
 			"getApiKeyText": "Haal je API-sleutel op van",
 			"modelSelectionLabel": "Afbeeldingsgeneratiemodel",
 			"modelSelectionDescription": "Selecteer het model voor afbeeldingsgeneratie",
-			"warningMissingKey": "⚠️ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
-			"successConfigured": "✓ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
+			"warningMissingKey": "âš ï¸ OpenRouter API-sleutel is vereist voor afbeeldingsgeneratie. Configureer deze hierboven.",
+			"successConfigured": "âœ“ Afbeeldingsgeneratie is geconfigureerd en klaar voor gebruik"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Model-geïnitieerde slash-commando's inschakelen",
-			"description": "Wanneer ingeschakeld, kan Roo je slash-commando's uitvoeren om workflows uit te voeren."
+			"name": "Model-geÃ¯nitieerde slash-commando\u0027s inschakelen",
+			"description": "Wanneer ingeschakeld, kan Roo je slash-commando\u0027s uitvoeren om workflows uit te voeren."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallelle tool-aanroepen",
-			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in één enkele assistent-berichtbeurt."
+			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in Ã©Ã©n enkele assistent-berichtbeurt."
 		}
 	},
 	"promptCaching": {
@@ -858,7 +862,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "De extensie haalt automatisch de nieuwste lijst met modellen op van <serviceLink>{{serviceName}}</serviceLink>. Weet je niet welk model je moet kiezen? Roo Code werkt het beste met <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Je kunt ook zoeken op 'free' voor gratis opties die nu beschikbaar zijn.",
+		"automaticFetch": "De extensie haalt automatisch de nieuwste lijst met modellen op van \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003e. Weet je niet welk model je moet kiezen? Roo Code werkt het beste met \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003e. Je kunt ook zoeken op \u0027free\u0027 voor gratis opties die nu beschikbaar zijn.",
 		"label": "Model",
 		"searchPlaceholder": "Zoeken",
 		"noMatchFound": "Geen overeenkomsten gevonden",
@@ -866,10 +870,10 @@
 		"simplifiedExplanation": "Je kunt later gedetailleerde modelinstellingen aanpassen."
 	},
 	"footer": {
-		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Heb je vragen of feedback? Open gerust een issue op \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003e of sluit je aan bij \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e of \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
-			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
+			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons \u003cprivacyLink\u003eprivacybeleid\u003c/privacyLink\u003e voor meer details."
 		},
 		"settings": {
 			"import": "Importeren",
@@ -894,8 +898,8 @@
 		},
 		"modelAvailability": "Het opgegeven model-ID ({{modelId}}) is niet beschikbaar. Kies een ander model.",
 		"modelDeprecated": "Dit model is niet meer beschikbaar. Kies een ander model.",
-		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
-		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
+		"providerNotAllowed": "Provider \u0027{{provider}}\u0027 is niet toegestaan door je organisatie",
+		"modelNotAllowed": "Model \u0027{{model}}\u0027 is niet toegestaan voor provider \u0027{{provider}}\u0027 door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
 		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
 	},

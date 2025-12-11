@@ -1,964 +1,968 @@
 {
 	"common": {
-		"save": "保存",
-		"done": "完成",
-		"cancel": "取消",
-		"reset": "恢复默认设置",
-		"select": "选择",
-		"add": "添加标头",
-		"remove": "移除"
+		"save": "ä¿å­˜",
+		"done": "å®Œæˆ",
+		"cancel": "å–æ¶ˆ",
+		"reset": "æ¢å¤é»˜è®¤è®¾ç½®",
+		"select": "é€‰æ‹©",
+		"add": "æ·»åŠ æ ‡å¤´",
+		"remove": "ç§»é™¤"
 	},
 	"header": {
-		"title": "设置",
-		"saveButtonTooltip": "保存更改",
-		"nothingChangedTooltip": "暂无更改",
-		"doneButtonTooltip": "放弃未保存的更改并关闭设置面板"
+		"title": "è®¾ç½®",
+		"saveButtonTooltip": "ä¿å­˜æ›´æ”¹",
+		"nothingChangedTooltip": "æš‚æ— æ›´æ”¹",
+		"doneButtonTooltip": "æ”¾å¼ƒæœªä¿å­˜çš„æ›´æ”¹å¹¶å…³é—­è®¾ç½®é¢æ¿"
 	},
 	"unsavedChangesDialog": {
-		"title": "未保存的更改",
-		"description": "是否放弃更改并继续？",
-		"cancelButton": "取消",
-		"discardButton": "放弃更改"
+		"title": "æœªä¿å­˜çš„æ›´æ”¹",
+		"description": "æ˜¯å¦æ”¾å¼ƒæ›´æ”¹å¹¶ç»§ç»­ï¼Ÿ",
+		"cancelButton": "å–æ¶ˆ",
+		"discardButton": "æ”¾å¼ƒæ›´æ”¹"
 	},
 	"sections": {
-		"providers": "提供商",
-		"modes": "模式",
-		"mcp": "MCP 服务",
-		"autoApprove": "自动批准",
-		"browser": "计算机交互",
-		"checkpoints": "存档点",
-		"notifications": "通知",
-		"contextManagement": "上下文",
-		"terminal": "终端",
-		"slashCommands": "斜杠命令",
-		"prompts": "提示词",
+		"providers": "æä¾›å•†",
+		"modes": "æ¨¡å¼",
+		"mcp": "MCP æœåŠ¡",
+		"autoApprove": "è‡ªåŠ¨æ‰¹å‡†",
+		"browser": "è®¡ç®—æœºäº¤äº’",
+		"checkpoints": "å­˜æ¡£ç‚¹",
+		"notifications": "é€šçŸ¥",
+		"contextManagement": "ä¸Šä¸‹æ–‡",
+		"terminal": "ç»ˆç«¯",
+		"slashCommands": "æ–œæ å‘½ä»¤",
+		"prompts": "æç¤ºè¯",
 		"ui": "UI",
-		"experimental": "实验性",
-		"language": "语言",
-		"about": "关于 Roo Code"
+		"experimental": "å®žéªŒæ€§",
+		"language": "è¯­è¨€",
+		"about": "å…³äºŽ Roo Code"
 	},
 	"about": {
 		"bugReport": {
-			"label": "发现 Bug？",
-			"link": "在 GitHub 报告"
+			"label": "å‘çŽ° Bugï¼Ÿ",
+			"link": "åœ¨ GitHub æŠ¥å‘Š"
 		},
 		"featureRequest": {
-			"label": "有想法？",
-			"link": "与我们分享"
+			"label": "æœ‰æƒ³æ³•ï¼Ÿ",
+			"link": "ä¸Žæˆ‘ä»¬åˆ†äº«"
 		},
 		"securityIssue": {
-			"label": "发现安全漏洞？",
-			"link": "遵循我们的披露流程"
+			"label": "å‘çŽ°å®‰å…¨æ¼æ´žï¼Ÿ",
+			"link": "éµå¾ªæˆ‘ä»¬çš„æŠ«éœ²æµç¨‹"
 		},
 		"contact": {
-			"label": "需要联系我们？请发送邮件至"
+			"label": "éœ€è¦è”ç³»æˆ‘ä»¬ï¼Ÿè¯·å‘é€é‚®ä»¶è‡³"
 		},
-		"community": "想要获取使用技巧或与其他 Roo Code 用户交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "联系与社区",
-		"manageSettings": "管理设置"
+		"community": "æƒ³è¦èŽ·å–ä½¿ç”¨æŠ€å·§æˆ–ä¸Žå…¶ä»– Roo Code ç”¨æˆ·äº¤æµï¼ŸåŠ å…¥ \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e æˆ– \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
+		"contactAndCommunity": "è”ç³»ä¸Žç¤¾åŒº",
+		"manageSettings": "ç®¡ç†è®¾ç½®"
 	},
 	"slashCommands": {
-		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>"
+		"description": "ç®¡ç†æ‚¨çš„æ–œæ å‘½ä»¤ï¼Œä»¥å¿«é€Ÿæ‰§è¡Œè‡ªå®šä¹‰å·¥ä½œæµå’Œæ“ä½œã€‚ \u003cDocsLink\u003eäº†è§£æ›´å¤š\u003c/DocsLink\u003e"
 	},
 	"prompts": {
-		"description": "配置用于快速操作的支持提示词，如增强提示词、解释代码和修复问题。这些提示词帮助 Roo 为常见开发任务提供更好的支持。"
+		"description": "é…ç½®ç”¨äºŽå¿«é€Ÿæ“ä½œçš„æ”¯æŒæç¤ºè¯ï¼Œå¦‚å¢žå¼ºæç¤ºè¯ã€è§£é‡Šä»£ç å’Œä¿®å¤é—®é¢˜ã€‚è¿™äº›æç¤ºè¯å¸®åŠ© Roo ä¸ºå¸¸è§å¼€å‘ä»»åŠ¡æä¾›æ›´å¥½çš„æ”¯æŒã€‚"
 	},
 	"codeIndex": {
-		"title": "代码库索引",
-		"description": "配置代码库索引设置以启用项目的语义搜索。<0>了解更多</0>",
-		"statusTitle": "状态",
-		"enableLabel": "启用代码库索引",
-		"enableDescription": "启用代码索引以改进搜索和上下文理解",
-		"settingsTitle": "索引设置",
-		"disabledMessage": "代码库索引当前已禁用。在全局设置中启用它以配置索引选项。",
-		"providerLabel": "嵌入提供商",
-		"embedderProviderLabel": "嵌入器提供商",
-		"selectProviderPlaceholder": "选择提供商",
+		"title": "ä»£ç åº“ç´¢å¼•",
+		"description": "é…ç½®ä»£ç åº“ç´¢å¼•è®¾ç½®ä»¥å¯ç”¨é¡¹ç›®çš„è¯­ä¹‰æœç´¢ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e",
+		"statusTitle": "çŠ¶æ€",
+		"enableLabel": "å¯ç”¨ä»£ç åº“ç´¢å¼•",
+		"enableDescription": "å¯ç”¨ä»£ç ç´¢å¼•ä»¥æ”¹è¿›æœç´¢å’Œä¸Šä¸‹æ–‡ç†è§£",
+		"settingsTitle": "ç´¢å¼•è®¾ç½®",
+		"disabledMessage": "ä»£ç åº“ç´¢å¼•å½“å‰å·²ç¦ç”¨ã€‚åœ¨å…¨å±€è®¾ç½®ä¸­å¯ç”¨å®ƒä»¥é…ç½®ç´¢å¼•é€‰é¡¹ã€‚",
+		"providerLabel": "åµŒå…¥æä¾›å•†",
+		"embedderProviderLabel": "åµŒå…¥å™¨æä¾›å•†",
+		"selectProviderPlaceholder": "é€‰æ‹©æä¾›å•†",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "API 密钥：",
-		"geminiApiKeyPlaceholder": "输入您的Gemini API密钥",
+		"geminiApiKeyLabel": "API å¯†é’¥ï¼š",
+		"geminiApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„Gemini APIå¯†é’¥",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "API 密钥",
-		"vercelAiGatewayApiKeyPlaceholder": "输入您的 Vercel AI Gateway API 密钥",
+		"vercelAiGatewayApiKeyLabel": "API å¯†é’¥",
+		"vercelAiGatewayApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„ Vercel AI Gateway API å¯†é’¥",
 		"bedrockProvider": "Amazon Bedrock",
-		"bedrockRegionLabel": "AWS 区域",
+		"bedrockRegionLabel": "AWS åŒºåŸŸ",
 		"bedrockRegionPlaceholder": "us-east-1",
-		"bedrockProfileLabel": "AWS 配置文件",
+		"bedrockProfileLabel": "AWS é…ç½®æ–‡ä»¶",
 		"bedrockProfilePlaceholder": "default",
-		"bedrockProfileDescription": "来自 ~/.aws/credentials 的 AWS 配置文件名称（必需）。",
+		"bedrockProfileDescription": "æ¥è‡ª ~/.aws/credentials çš„ AWS é…ç½®æ–‡ä»¶åç§°ï¼ˆå¿…éœ€ï¼‰ã€‚",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "OpenRouter API 密钥",
-		"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
-		"openRouterProviderRoutingLabel": "OpenRouter 提供商路由",
-		"openRouterProviderRoutingDescription": "OpenRouter 将请求路由到适合您嵌入模型的最佳可用提供商。默认情况下，请求会在顶级提供商之间进行负载均衡以最大化正常运行时间。但是，您可以为此模型选择特定的提供商。",
+		"openRouterApiKeyLabel": "OpenRouter API å¯†é’¥",
+		"openRouterApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„ OpenRouter API å¯†é’¥",
+		"openRouterProviderRoutingLabel": "OpenRouter æä¾›å•†è·¯ç”±",
+		"openRouterProviderRoutingDescription": "OpenRouter å°†è¯·æ±‚è·¯ç”±åˆ°é€‚åˆæ‚¨åµŒå…¥æ¨¡åž‹çš„æœ€ä½³å¯ç”¨æä¾›å•†ã€‚é»˜è®¤æƒ…å†µä¸‹ï¼Œè¯·æ±‚ä¼šåœ¨é¡¶çº§æä¾›å•†ä¹‹é—´è¿›è¡Œè´Ÿè½½å‡è¡¡ä»¥æœ€å¤§åŒ–æ­£å¸¸è¿è¡Œæ—¶é—´ã€‚ä½†æ˜¯ï¼Œæ‚¨å¯ä»¥ä¸ºæ­¤æ¨¡åž‹é€‰æ‹©ç‰¹å®šçš„æä¾›å•†ã€‚",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "API 密钥:",
-		"mistralApiKeyPlaceholder": "输入您的 Mistral API 密钥",
-		"openaiCompatibleProvider": "OpenAI 兼容",
-		"openAiKeyLabel": "OpenAI API 密钥",
-		"openAiKeyPlaceholder": "输入你的 OpenAI API 密钥",
-		"openAiCompatibleBaseUrlLabel": "基础 URL",
-		"openAiCompatibleApiKeyLabel": "API 密钥",
-		"openAiCompatibleApiKeyPlaceholder": "输入你的 API 密钥",
-		"openAiCompatibleModelDimensionLabel": "嵌入维度：",
-		"modelDimensionLabel": "模型维度",
-		"openAiCompatibleModelDimensionPlaceholder": "例如，1536",
-		"openAiCompatibleModelDimensionDescription": "模型的嵌入维度（输出大小）。请查阅您的提供商文档获取此值。常见值：384、768、1536、3072。",
-		"modelLabel": "模型",
-		"modelPlaceholder": "输入模型名称",
-		"selectModel": "选择模型",
-		"selectModelPlaceholder": "选择模型",
-		"ollamaUrlLabel": "Ollama URL：",
-		"ollamaBaseUrlLabel": "Ollama 基础 URL",
+		"mistralApiKeyLabel": "API å¯†é’¥:",
+		"mistralApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„ Mistral API å¯†é’¥",
+		"openaiCompatibleProvider": "OpenAI å…¼å®¹",
+		"openAiKeyLabel": "OpenAI API å¯†é’¥",
+		"openAiKeyPlaceholder": "è¾“å…¥ä½ çš„ OpenAI API å¯†é’¥",
+		"openAiCompatibleBaseUrlLabel": "åŸºç¡€ URL",
+		"openAiCompatibleApiKeyLabel": "API å¯†é’¥",
+		"openAiCompatibleApiKeyPlaceholder": "è¾“å…¥ä½ çš„ API å¯†é’¥",
+		"openAiCompatibleModelDimensionLabel": "åµŒå…¥ç»´åº¦ï¼š",
+		"modelDimensionLabel": "æ¨¡åž‹ç»´åº¦",
+		"openAiCompatibleModelDimensionPlaceholder": "ä¾‹å¦‚ï¼Œ1536",
+		"openAiCompatibleModelDimensionDescription": "æ¨¡åž‹çš„åµŒå…¥ç»´åº¦ï¼ˆè¾“å‡ºå¤§å°ï¼‰ã€‚è¯·æŸ¥é˜…æ‚¨çš„æä¾›å•†æ–‡æ¡£èŽ·å–æ­¤å€¼ã€‚å¸¸è§å€¼ï¼š384ã€768ã€1536ã€3072ã€‚",
+		"modelLabel": "æ¨¡åž‹",
+		"modelPlaceholder": "è¾“å…¥æ¨¡åž‹åç§°",
+		"selectModel": "é€‰æ‹©æ¨¡åž‹",
+		"selectModelPlaceholder": "é€‰æ‹©æ¨¡åž‹",
+		"ollamaUrlLabel": "Ollama URLï¼š",
+		"ollamaBaseUrlLabel": "Ollama åŸºç¡€ URL",
 		"qdrantUrlLabel": "Qdrant URL",
-		"qdrantKeyLabel": "Qdrant 密钥：",
-		"qdrantApiKeyLabel": "Qdrant API 密钥",
-		"qdrantApiKeyPlaceholder": "输入你的 Qdrant API 密钥（可选）",
-		"setupConfigLabel": "设置",
-		"startIndexingButton": "开始",
-		"clearIndexDataButton": "清除索引",
-		"unsavedSettingsMessage": "请先保存设置再开始索引过程。",
+		"qdrantKeyLabel": "Qdrant å¯†é’¥ï¼š",
+		"qdrantApiKeyLabel": "Qdrant API å¯†é’¥",
+		"qdrantApiKeyPlaceholder": "è¾“å…¥ä½ çš„ Qdrant API å¯†é’¥ï¼ˆå¯é€‰ï¼‰",
+		"setupConfigLabel": "è®¾ç½®",
+		"startIndexingButton": "å¼€å§‹",
+		"clearIndexDataButton": "æ¸…é™¤ç´¢å¼•",
+		"unsavedSettingsMessage": "è¯·å…ˆä¿å­˜è®¾ç½®å†å¼€å§‹ç´¢å¼•è¿‡ç¨‹ã€‚",
 		"clearDataDialog": {
-			"title": "确定要继续吗？",
-			"description": "此操作无法撤消。这将永久删除您的代码库索引数据。",
-			"cancelButton": "取消",
-			"confirmButton": "清除数据"
+			"title": "ç¡®å®šè¦ç»§ç»­å—ï¼Ÿ",
+			"description": "æ­¤æ“ä½œæ— æ³•æ’¤æ¶ˆã€‚è¿™å°†æ°¸ä¹…åˆ é™¤æ‚¨çš„ä»£ç åº“ç´¢å¼•æ•°æ®ã€‚",
+			"cancelButton": "å–æ¶ˆ",
+			"confirmButton": "æ¸…é™¤æ•°æ®"
 		},
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "保存设置失败",
-		"modelDimensions": "({{dimension}} 维度)",
-		"saveSuccess": "设置保存成功",
-		"saving": "保存中...",
-		"saveSettings": "保存",
+		"saveError": "ä¿å­˜è®¾ç½®å¤±è´¥",
+		"modelDimensions": "({{dimension}} ç»´åº¦)",
+		"saveSuccess": "è®¾ç½®ä¿å­˜æˆåŠŸ",
+		"saving": "ä¿å­˜ä¸­...",
+		"saveSettings": "ä¿å­˜",
 		"indexingStatuses": {
-			"standby": "待机",
-			"indexing": "索引中",
-			"indexed": "已索引",
-			"error": "错误"
+			"standby": "å¾…æœº",
+			"indexing": "ç´¢å¼•ä¸­",
+			"indexed": "å·²ç´¢å¼•",
+			"error": "é”™è¯¯"
 		},
-		"close": "关闭",
+		"close": "å…³é—­",
 		"validation": {
-			"invalidQdrantUrl": "无效的 Qdrant URL",
-			"invalidOllamaUrl": "无效的 Ollama URL",
-			"invalidBaseUrl": "无效的基础 URL",
-			"qdrantUrlRequired": "需要 Qdrant URL",
-			"openaiApiKeyRequired": "需要 OpenAI API 密钥",
-			"modelSelectionRequired": "需要选择模型",
-			"apiKeyRequired": "需要 API 密钥",
-			"modelIdRequired": "需要模型 ID",
-			"modelDimensionRequired": "需要模型维度",
-			"geminiApiKeyRequired": "需要 Gemini API 密钥",
-			"mistralApiKeyRequired": "需要 Mistral API 密钥",
-			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 密钥",
-			"bedrockRegionRequired": "AWS 区域为必填项",
-			"bedrockProfileRequired": "AWS 配置文件为必填项",
-			"ollamaBaseUrlRequired": "需要 Ollama 基础 URL",
-			"baseUrlRequired": "需要基础 URL",
-			"modelDimensionMinValue": "模型维度必须大于 0",
-			"openRouterApiKeyRequired": "OpenRouter API 密钥是必需的"
+			"invalidQdrantUrl": "æ— æ•ˆçš„ Qdrant URL",
+			"invalidOllamaUrl": "æ— æ•ˆçš„ Ollama URL",
+			"invalidBaseUrl": "æ— æ•ˆçš„åŸºç¡€ URL",
+			"qdrantUrlRequired": "éœ€è¦ Qdrant URL",
+			"openaiApiKeyRequired": "éœ€è¦ OpenAI API å¯†é’¥",
+			"modelSelectionRequired": "éœ€è¦é€‰æ‹©æ¨¡åž‹",
+			"apiKeyRequired": "éœ€è¦ API å¯†é’¥",
+			"modelIdRequired": "éœ€è¦æ¨¡åž‹ ID",
+			"modelDimensionRequired": "éœ€è¦æ¨¡åž‹ç»´åº¦",
+			"geminiApiKeyRequired": "éœ€è¦ Gemini API å¯†é’¥",
+			"mistralApiKeyRequired": "éœ€è¦ Mistral API å¯†é’¥",
+			"vercelAiGatewayApiKeyRequired": "éœ€è¦ Vercel AI Gateway API å¯†é’¥",
+			"bedrockRegionRequired": "AWS åŒºåŸŸä¸ºå¿…å¡«é¡¹",
+			"bedrockProfileRequired": "AWS é…ç½®æ–‡ä»¶ä¸ºå¿…å¡«é¡¹",
+			"ollamaBaseUrlRequired": "éœ€è¦ Ollama åŸºç¡€ URL",
+			"baseUrlRequired": "éœ€è¦åŸºç¡€ URL",
+			"modelDimensionMinValue": "æ¨¡åž‹ç»´åº¦å¿…é¡»å¤§äºŽ 0",
+			"openRouterApiKeyRequired": "OpenRouter API å¯†é’¥æ˜¯å¿…éœ€çš„"
 		},
-		"optional": "可选",
-		"advancedConfigLabel": "高级配置",
-		"searchMinScoreLabel": "搜索分数阈值",
-		"searchMinScoreDescription": "搜索结果所需的最低相似度分数（0.0-1.0）。较低的值返回更多结果，但可能不太相关。较高的值返回较少但更相关的结果。",
-		"searchMinScoreResetTooltip": "恢复默认值 (0.4)",
-		"searchMaxResultsLabel": "最大搜索结果数",
-		"searchMaxResultsDescription": "查询代码库索引时返回的最大搜索结果数。较高的值提供更多上下文，但可能包含相关性较低的结果。",
-		"resetToDefault": "恢复默认值"
+		"optional": "å¯é€‰",
+		"advancedConfigLabel": "é«˜çº§é…ç½®",
+		"searchMinScoreLabel": "æœç´¢åˆ†æ•°é˜ˆå€¼",
+		"searchMinScoreDescription": "æœç´¢ç»“æžœæ‰€éœ€çš„æœ€ä½Žç›¸ä¼¼åº¦åˆ†æ•°ï¼ˆ0.0-1.0ï¼‰ã€‚è¾ƒä½Žçš„å€¼è¿”å›žæ›´å¤šç»“æžœï¼Œä½†å¯èƒ½ä¸å¤ªç›¸å…³ã€‚è¾ƒé«˜çš„å€¼è¿”å›žè¾ƒå°‘ä½†æ›´ç›¸å…³çš„ç»“æžœã€‚",
+		"searchMinScoreResetTooltip": "æ¢å¤é»˜è®¤å€¼ (0.4)",
+		"searchMaxResultsLabel": "æœ€å¤§æœç´¢ç»“æžœæ•°",
+		"searchMaxResultsDescription": "æŸ¥è¯¢ä»£ç åº“ç´¢å¼•æ—¶è¿”å›žçš„æœ€å¤§æœç´¢ç»“æžœæ•°ã€‚è¾ƒé«˜çš„å€¼æä¾›æ›´å¤šä¸Šä¸‹æ–‡ï¼Œä½†å¯èƒ½åŒ…å«ç›¸å…³æ€§è¾ƒä½Žçš„ç»“æžœã€‚",
+		"resetToDefault": "æ¢å¤é»˜è®¤å€¼"
 	},
 	"autoApprove": {
-		"toggleShortcut": "您可以<SettingsLink>在 IDE 首选项中</SettingsLink>为此设置配置全局快捷方式。",
-		"description": "允许 Roo 自动执行操作而无需批准。只有在您完全信任 AI 并了解相关安全风险的情况下才启用这些设置。",
-		"enabled": "自动批准已启用",
-		"toggleAriaLabel": "切换自动批准",
-		"disabledAriaLabel": "自动批准已禁用 - 请先选择选项",
+		"toggleShortcut": "æ‚¨å¯ä»¥\u003cSettingsLink\u003eåœ¨ IDE é¦–é€‰é¡¹ä¸­\u003c/SettingsLink\u003eä¸ºæ­¤è®¾ç½®é…ç½®å…¨å±€å¿«æ·æ–¹å¼ã€‚",
+		"description": "å…è®¸ Roo è‡ªåŠ¨æ‰§è¡Œæ“ä½œè€Œæ— éœ€æ‰¹å‡†ã€‚åªæœ‰åœ¨æ‚¨å®Œå…¨ä¿¡ä»» AI å¹¶äº†è§£ç›¸å…³å®‰å…¨é£Žé™©çš„æƒ…å†µä¸‹æ‰å¯ç”¨è¿™äº›è®¾ç½®ã€‚",
+		"enabled": "è‡ªåŠ¨æ‰¹å‡†å·²å¯ç”¨",
+		"toggleAriaLabel": "åˆ‡æ¢è‡ªåŠ¨æ‰¹å‡†",
+		"disabledAriaLabel": "è‡ªåŠ¨æ‰¹å‡†å·²ç¦ç”¨ - è¯·å…ˆé€‰æ‹©é€‰é¡¹",
 		"readOnly": {
-			"label": "读取",
-			"description": "启用后，Roo 将自动浏览目录和读取文件内容，无需人工确认。",
+			"label": "è¯»å–",
+			"description": "å¯ç”¨åŽï¼ŒRoo å°†è‡ªåŠ¨æµè§ˆç›®å½•å’Œè¯»å–æ–‡ä»¶å†…å®¹ï¼Œæ— éœ€äººå·¥ç¡®è®¤ã€‚",
 			"outsideWorkspace": {
-				"label": "包含工作区外的文件",
-				"description": "允许 Roo 读取当前工作区外的文件，无需批准。"
+				"label": "åŒ…å«å·¥ä½œåŒºå¤–çš„æ–‡ä»¶",
+				"description": "å…è®¸ Roo è¯»å–å½“å‰å·¥ä½œåŒºå¤–çš„æ–‡ä»¶ï¼Œæ— éœ€æ‰¹å‡†ã€‚"
 			}
 		},
 		"write": {
-			"label": "写入",
-			"description": "自动创建和编辑文件，无需二次确认",
-			"delayLabel": "延迟一段时间再自动批准写入，可以在期间检查模型输出是否有问题",
+			"label": "å†™å…¥",
+			"description": "è‡ªåŠ¨åˆ›å»ºå’Œç¼–è¾‘æ–‡ä»¶ï¼Œæ— éœ€äºŒæ¬¡ç¡®è®¤",
+			"delayLabel": "å»¶è¿Ÿä¸€æ®µæ—¶é—´å†è‡ªåŠ¨æ‰¹å‡†å†™å…¥ï¼Œå¯ä»¥åœ¨æœŸé—´æ£€æŸ¥æ¨¡åž‹è¾“å‡ºæ˜¯å¦æœ‰é—®é¢˜",
 			"outsideWorkspace": {
-				"label": "包含工作区外的文件",
-				"description": "允许 Roo 创建和编辑当前工作区外的文件，无需批准。"
+				"label": "åŒ…å«å·¥ä½œåŒºå¤–çš„æ–‡ä»¶",
+				"description": "å…è®¸ Roo åˆ›å»ºå’Œç¼–è¾‘å½“å‰å·¥ä½œåŒºå¤–çš„æ–‡ä»¶ï¼Œæ— éœ€æ‰¹å‡†ã€‚"
 			},
 			"protected": {
-				"label": "包含受保护的文件",
-				"description": "允许 Roo 创建和编辑受保护的文件（如 .rooignore 和 .roo/ 配置文件），无需批准。"
+				"label": "åŒ…å«å—ä¿æŠ¤çš„æ–‡ä»¶",
+				"description": "å…è®¸ Roo åˆ›å»ºå’Œç¼–è¾‘å—ä¿æŠ¤çš„æ–‡ä»¶ï¼ˆå¦‚ .rooignore å’Œ .roo/ é…ç½®æ–‡ä»¶ï¼‰ï¼Œæ— éœ€æ‰¹å‡†ã€‚"
 			}
 		},
 		"browser": {
-			"label": "浏览器",
-			"description": "自动执行浏览器操作而无需批准 — 注意：仅当模型支持计算机功能调用时适用"
+			"label": "æµè§ˆå™¨",
+			"description": "è‡ªåŠ¨æ‰§è¡Œæµè§ˆå™¨æ“ä½œè€Œæ— éœ€æ‰¹å‡† â€” æ³¨æ„ï¼šä»…å½“æ¨¡åž‹æ”¯æŒè®¡ç®—æœºåŠŸèƒ½è°ƒç”¨æ—¶é€‚ç”¨"
 		},
 		"retry": {
-			"label": "重试",
-			"description": "当服务器返回错误响应时自动重试失败的 API 请求",
-			"delayLabel": "重试请求前的延迟"
+			"label": "é‡è¯•",
+			"description": "å½“æœåŠ¡å™¨è¿”å›žé”™è¯¯å“åº”æ—¶è‡ªåŠ¨é‡è¯•å¤±è´¥çš„ API è¯·æ±‚",
+			"delayLabel": "é‡è¯•è¯·æ±‚å‰çš„å»¶è¿Ÿ"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "允许自动调用MCP服务而无需批准"
+			"description": "å…è®¸è‡ªåŠ¨è°ƒç”¨MCPæœåŠ¡è€Œæ— éœ€æ‰¹å‡†"
 		},
 		"modeSwitch": {
-			"label": "模式",
-			"description": "自动在不同模式之间切换而无需批准"
+			"label": "æ¨¡å¼",
+			"description": "è‡ªåŠ¨åœ¨ä¸åŒæ¨¡å¼ä¹‹é—´åˆ‡æ¢è€Œæ— éœ€æ‰¹å‡†"
 		},
 		"subtasks": {
-			"label": "子任务",
-			"description": "允许创建和完成子任务而无需批准"
+			"label": "å­ä»»åŠ¡",
+			"description": "å…è®¸åˆ›å»ºå’Œå®Œæˆå­ä»»åŠ¡è€Œæ— éœ€æ‰¹å‡†"
 		},
 		"followupQuestions": {
-			"label": "问题",
-			"description": "在配置的超时时间后自动选择后续问题的第一个建议答案",
-			"timeoutLabel": "自动选择第一个答案前的等待时间"
+			"label": "é—®é¢˜",
+			"description": "åœ¨é…ç½®çš„è¶…æ—¶æ—¶é—´åŽè‡ªåŠ¨é€‰æ‹©åŽç»­é—®é¢˜çš„ç¬¬ä¸€ä¸ªå»ºè®®ç­”æ¡ˆ",
+			"timeoutLabel": "è‡ªåŠ¨é€‰æ‹©ç¬¬ä¸€ä¸ªç­”æ¡ˆå‰çš„ç­‰å¾…æ—¶é—´"
 		},
 		"execute": {
-			"label": "执行",
-			"description": "自动执行白名单中的命令而无需批准",
-			"allowedCommands": "命令白名单",
-			"allowedCommandsDescription": "当\"自动批准命令行操作\"启用时可以自动执行的命令前缀。添加 * 以允许所有命令（谨慎使用）。",
-			"deniedCommands": "拒绝的命令",
-			"deniedCommandsDescription": "将自动拒绝的命令前缀，无需用户批准。与允许命令冲突时，最长前缀匹配优先。添加 * 拒绝所有命令。",
-			"commandPlaceholder": "输入命令前缀（例如 'git '）",
-			"deniedCommandPlaceholder": "输入要拒绝的命令前缀（例如 'rm -rf'）",
-			"addButton": "添加",
-			"autoDenied": "前缀为 `{{prefix}}` 的命令已被用户禁止。不要通过运行其他命令来绕过此限制。"
+			"label": "æ‰§è¡Œ",
+			"description": "è‡ªåŠ¨æ‰§è¡Œç™½åå•ä¸­çš„å‘½ä»¤è€Œæ— éœ€æ‰¹å‡†",
+			"allowedCommands": "å‘½ä»¤ç™½åå•",
+			"allowedCommandsDescription": "å½“\"è‡ªåŠ¨æ‰¹å‡†å‘½ä»¤è¡Œæ“ä½œ\"å¯ç”¨æ—¶å¯ä»¥è‡ªåŠ¨æ‰§è¡Œçš„å‘½ä»¤å‰ç¼€ã€‚æ·»åŠ  * ä»¥å…è®¸æ‰€æœ‰å‘½ä»¤ï¼ˆè°¨æ…Žä½¿ç”¨ï¼‰ã€‚",
+			"deniedCommands": "æ‹’ç»çš„å‘½ä»¤",
+			"deniedCommandsDescription": "å°†è‡ªåŠ¨æ‹’ç»çš„å‘½ä»¤å‰ç¼€ï¼Œæ— éœ€ç”¨æˆ·æ‰¹å‡†ã€‚ä¸Žå…è®¸å‘½ä»¤å†²çªæ—¶ï¼Œæœ€é•¿å‰ç¼€åŒ¹é…ä¼˜å…ˆã€‚æ·»åŠ  * æ‹’ç»æ‰€æœ‰å‘½ä»¤ã€‚",
+			"commandPlaceholder": "è¾“å…¥å‘½ä»¤å‰ç¼€ï¼ˆä¾‹å¦‚ \u0027git \u0027ï¼‰",
+			"deniedCommandPlaceholder": "è¾“å…¥è¦æ‹’ç»çš„å‘½ä»¤å‰ç¼€ï¼ˆä¾‹å¦‚ \u0027rm -rf\u0027ï¼‰",
+			"addButton": "æ·»åŠ ",
+			"autoDenied": "å‰ç¼€ä¸º `{{prefix}}` çš„å‘½ä»¤å·²è¢«ç”¨æˆ·ç¦æ­¢ã€‚ä¸è¦é€šè¿‡è¿è¡Œå…¶ä»–å‘½ä»¤æ¥ç»•è¿‡æ­¤é™åˆ¶ã€‚"
 		},
 		"updateTodoList": {
-			"label": "待办",
-			"description": "无需批准即可自动更新待办清单"
+			"label": "å¾…åŠž",
+			"description": "æ— éœ€æ‰¹å‡†å³å¯è‡ªåŠ¨æ›´æ–°å¾…åŠžæ¸…å•"
 		},
 		"apiRequestLimit": {
-			"title": "最大请求数",
-			"description": "在请求批准以继续执行任务之前，自动发出此数量的 API 请求。",
-			"unlimited": "无限制"
+			"title": "æœ€å¤§è¯·æ±‚æ•°",
+			"description": "åœ¨è¯·æ±‚æ‰¹å‡†ä»¥ç»§ç»­æ‰§è¡Œä»»åŠ¡ä¹‹å‰ï¼Œè‡ªåŠ¨å‘å‡ºæ­¤æ•°é‡çš„ API è¯·æ±‚ã€‚",
+			"unlimited": "æ— é™åˆ¶"
 		},
-		"selectOptionsFirst": "请至少选择以下一个选项以启用自动批准",
+		"selectOptionsFirst": "è¯·è‡³å°‘é€‰æ‹©ä»¥ä¸‹ä¸€ä¸ªé€‰é¡¹ä»¥å¯ç”¨è‡ªåŠ¨æ‰¹å‡†",
 		"apiCostLimit": {
-			"title": "最高费用",
-			"unlimited": "无限"
+			"title": "æœ€é«˜è´¹ç”¨",
+			"unlimited": "æ— é™"
 		},
 		"maxLimits": {
-			"description": "在请求批准继续之前，自动发出请求，最多不超过这些限制。"
+			"description": "åœ¨è¯·æ±‚æ‰¹å‡†ç»§ç»­ä¹‹å‰ï¼Œè‡ªåŠ¨å‘å‡ºè¯·æ±‚ï¼Œæœ€å¤šä¸è¶…è¿‡è¿™äº›é™åˆ¶ã€‚"
 		}
 	},
 	"providers": {
-		"providerDocumentation": "{{provider}} 文档",
-		"configProfile": "配置文件",
-		"description": "保存多组API配置便于快速切换",
-		"apiProvider": "API提供商",
-		"model": "模型",
-		"nameEmpty": "名称不能为空",
-		"nameExists": "已存在同名的配置文件",
-		"deleteProfile": "删除配置文件",
-		"invalidArnFormat": "无效的 ARN 格式。请检查上面的示例。",
-		"enterNewName": "输入新名称",
-		"addProfile": "添加配置文件",
-		"renameProfile": "重命名配置文件",
-		"newProfile": "新建配置文件",
-		"enterProfileName": "输入新配置名称",
-		"createProfile": "创建配置",
-		"cannotDeleteOnlyProfile": "无法删除唯一的配置文件",
-		"searchPlaceholder": "搜索配置文件",
-		"searchProviderPlaceholder": "搜索提供商",
-		"noProviderMatchFound": "未找到提供商",
-		"noMatchFound": "未找到匹配的配置文件",
-		"vscodeLmDescription": "VS Code 语言模型 API 允许您运行由其他 VS Code 扩展（包括但不限于 GitHub Copilot）提供的模型。最简单的方法是从 VS Code 市场安装 Copilot 和 Copilot Chat 扩展。",
-		"awsCustomArnUse": "请输入有效的 Amazon Bedrock ARN（Amazon资源名称），格式示例：",
-		"awsCustomArnDesc": "请确保ARN中的区域与上方选择的AWS区域一致。",
-		"openRouterApiKey": "OpenRouter API 密钥",
-		"getOpenRouterApiKey": "获取 OpenRouter API 密钥",
-		"vercelAiGatewayApiKey": "Vercel AI Gateway API 密钥",
-		"getVercelAiGatewayApiKey": "获取 Vercel AI Gateway API 密钥",
-		"apiKeyStorageNotice": "API 密钥安全存储在 VSCode 的密钥存储中",
-		"useCustomBaseUrl": "使用自定义基础 URL",
-		"useReasoning": "启用推理",
-		"useHostHeader": "使用自定义 Host 标头",
-		"useLegacyFormat": "使用传统 OpenAI API 格式",
-		"customHeaders": "自定义标头",
-		"headerName": "标头名称",
-		"headerValue": "标头值",
-		"noCustomHeaders": "暂无自定义标头。点击 + 按钮添加。",
-		"requestyApiKey": "Requesty API 密钥",
+		"providerDocumentation": "{{provider}} æ–‡æ¡£",
+		"configProfile": "é…ç½®æ–‡ä»¶",
+		"description": "ä¿å­˜å¤šç»„APIé…ç½®ä¾¿äºŽå¿«é€Ÿåˆ‡æ¢",
+		"apiProvider": "APIæä¾›å•†",
+		"model": "æ¨¡åž‹",
+		"nameEmpty": "åç§°ä¸èƒ½ä¸ºç©º",
+		"nameExists": "å·²å­˜åœ¨åŒåçš„é…ç½®æ–‡ä»¶",
+		"deleteProfile": "åˆ é™¤é…ç½®æ–‡ä»¶",
+		"invalidArnFormat": "æ— æ•ˆçš„ ARN æ ¼å¼ã€‚è¯·æ£€æŸ¥ä¸Šé¢çš„ç¤ºä¾‹ã€‚",
+		"enterNewName": "è¾“å…¥æ–°åç§°",
+		"addProfile": "æ·»åŠ é…ç½®æ–‡ä»¶",
+		"renameProfile": "é‡å‘½åé…ç½®æ–‡ä»¶",
+		"newProfile": "æ–°å»ºé…ç½®æ–‡ä»¶",
+		"enterProfileName": "è¾“å…¥æ–°é…ç½®åç§°",
+		"createProfile": "åˆ›å»ºé…ç½®",
+		"cannotDeleteOnlyProfile": "æ— æ³•åˆ é™¤å”¯ä¸€çš„é…ç½®æ–‡ä»¶",
+		"searchPlaceholder": "æœç´¢é…ç½®æ–‡ä»¶",
+		"searchProviderPlaceholder": "æœç´¢æä¾›å•†",
+		"noProviderMatchFound": "æœªæ‰¾åˆ°æä¾›å•†",
+		"noMatchFound": "æœªæ‰¾åˆ°åŒ¹é…çš„é…ç½®æ–‡ä»¶",
+		"vscodeLmDescription": "VS Code è¯­è¨€æ¨¡åž‹ API å…è®¸æ‚¨è¿è¡Œç”±å…¶ä»– VS Code æ‰©å±•ï¼ˆåŒ…æ‹¬ä½†ä¸é™äºŽ GitHub Copilotï¼‰æä¾›çš„æ¨¡åž‹ã€‚æœ€ç®€å•çš„æ–¹æ³•æ˜¯ä»Ž VS Code å¸‚åœºå®‰è£… Copilot å’Œ Copilot Chat æ‰©å±•ã€‚",
+		"awsCustomArnUse": "è¯·è¾“å…¥æœ‰æ•ˆçš„ Amazon Bedrock ARNï¼ˆAmazonèµ„æºåç§°ï¼‰ï¼Œæ ¼å¼ç¤ºä¾‹ï¼š",
+		"awsCustomArnDesc": "è¯·ç¡®ä¿ARNä¸­çš„åŒºåŸŸä¸Žä¸Šæ–¹é€‰æ‹©çš„AWSåŒºåŸŸä¸€è‡´ã€‚",
+		"openRouterApiKey": "OpenRouter API å¯†é’¥",
+		"getOpenRouterApiKey": "èŽ·å– OpenRouter API å¯†é’¥",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API å¯†é’¥",
+		"getVercelAiGatewayApiKey": "èŽ·å– Vercel AI Gateway API å¯†é’¥",
+		"apiKeyStorageNotice": "API å¯†é’¥å®‰å…¨å­˜å‚¨åœ¨ VSCode çš„å¯†é’¥å­˜å‚¨ä¸­",
+		"useCustomBaseUrl": "ä½¿ç”¨è‡ªå®šä¹‰åŸºç¡€ URL",
+		"useReasoning": "å¯ç”¨æŽ¨ç†",
+		"useHostHeader": "ä½¿ç”¨è‡ªå®šä¹‰ Host æ ‡å¤´",
+		"useLegacyFormat": "ä½¿ç”¨ä¼ ç»Ÿ OpenAI API æ ¼å¼",
+		"customHeaders": "è‡ªå®šä¹‰æ ‡å¤´",
+		"headerName": "æ ‡å¤´åç§°",
+		"headerValue": "æ ‡å¤´å€¼",
+		"noCustomHeaders": "æš‚æ— è‡ªå®šä¹‰æ ‡å¤´ã€‚ç‚¹å‡» + æŒ‰é’®æ·»åŠ ã€‚",
+		"requestyApiKey": "Requesty API å¯†é’¥",
 		"refreshModels": {
-			"label": "刷新模型",
-			"hint": "请重新打开设置以查看最新模型。",
-			"loading": "正在刷新模型列表...",
-			"success": "模型列表刷新成功！",
-			"error": "刷新模型列表失败。请重试。"
+			"label": "åˆ·æ–°æ¨¡åž‹",
+			"hint": "è¯·é‡æ–°æ‰“å¼€è®¾ç½®ä»¥æŸ¥çœ‹æœ€æ–°æ¨¡åž‹ã€‚",
+			"loading": "æ­£åœ¨åˆ·æ–°æ¨¡åž‹åˆ—è¡¨...",
+			"success": "æ¨¡åž‹åˆ—è¡¨åˆ·æ–°æˆåŠŸï¼",
+			"error": "åˆ·æ–°æ¨¡åž‹åˆ—è¡¨å¤±è´¥ã€‚è¯·é‡è¯•ã€‚"
 		},
-		"getRequestyApiKey": "获取 Requesty API 密钥",
-		"getRequestyBaseUrl": "基础 URL",
-		"requestyUseCustomBaseUrl": "使用自定义基础 URL",
-		"openRouterTransformsText": "自动压缩提示词和消息链到上下文长度限制内 (<a>OpenRouter转换</a>)",
-		"anthropicApiKey": "Anthropic API 密钥",
-		"getAnthropicApiKey": "获取 Anthropic API 密钥",
-		"anthropicUseAuthToken": "将 Anthropic API 密钥作为 Authorization 标头传递，而不是 X-Api-Key",
-		"anthropic1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
-		"awsBedrock1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
-		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
-		"basetenApiKey": "Baseten API 密钥",
-		"getBasetenApiKey": "获取 Baseten API 密钥",
-		"cerebrasApiKey": "Cerebras API 密钥",
-		"getCerebrasApiKey": "获取 Cerebras API 密钥",
-		"chutesApiKey": "Chutes API 密钥",
-		"getChutesApiKey": "获取 Chutes API 密钥",
-		"fireworksApiKey": "Fireworks API 密钥",
-		"getFireworksApiKey": "获取 Fireworks API 密钥",
-		"featherlessApiKey": "Featherless API 密钥",
-		"getFeatherlessApiKey": "获取 Featherless API 密钥",
-		"ioIntelligenceApiKey": "IO Intelligence API 密钥",
-		"ioIntelligenceApiKeyPlaceholder": "输入您的 IO Intelligence API 密钥",
-		"getIoIntelligenceApiKey": "获取 IO Intelligence API 密钥",
-		"deepSeekApiKey": "DeepSeek API 密钥",
-		"getDeepSeekApiKey": "获取 DeepSeek API 密钥",
-		"doubaoApiKey": "豆包 API 密钥",
-		"getDoubaoApiKey": "获取豆包 API 密钥",
-		"moonshotApiKey": "Moonshot API 密钥",
-		"getMoonshotApiKey": "获取 Moonshot API 密钥",
-		"moonshotBaseUrl": "Moonshot 服务站点",
-		"minimaxApiKey": "MiniMax API 密钥",
-		"getMiniMaxApiKey": "获取 MiniMax API 密钥",
-		"minimaxBaseUrl": "MiniMax 服务站点",
-		"zaiApiKey": "Z AI API 密钥",
-		"getZaiApiKey": "获取 Z AI API 密钥",
-		"zaiEntrypoint": "Z AI 服务站点",
-		"zaiEntrypointDescription": "请根据您的位置选择适当的 API 服务站点。如果您在中国，请选择 open.bigmodel.cn。否则，请选择 api.z.ai。",
-		"geminiApiKey": "Gemini API 密钥",
-		"getGroqApiKey": "获取 Groq API 密钥",
-		"groqApiKey": "Groq API 密钥",
-		"getSambaNovaApiKey": "获取 SambaNova API 密钥",
-		"sambaNovaApiKey": "SambaNova API 密钥",
-		"getHuggingFaceApiKey": "获取 Hugging Face API 密钥",
-		"huggingFaceApiKey": "Hugging Face API 密钥",
-		"huggingFaceModelId": "模型 ID",
-		"huggingFaceLoading": "加载中...",
-		"huggingFaceModelsCount": "({{count}} 个模型)",
-		"huggingFaceSelectModel": "选择模型...",
-		"huggingFaceSearchModels": "搜索模型...",
-		"huggingFaceNoModelsFound": "未找到模型",
-		"huggingFaceProvider": "提供商",
-		"huggingFaceProviderAuto": "自动",
-		"huggingFaceSelectProvider": "选择提供商...",
-		"huggingFaceSearchProviders": "搜索提供商...",
-		"huggingFaceNoProvidersFound": "未找到提供商",
-		"getGeminiApiKey": "获取 Gemini API 密钥",
-		"openAiApiKey": "OpenAI API 密钥",
-		"apiKey": "API 密钥",
-		"openAiBaseUrl": "OpenAI 基础 URL",
-		"getOpenAiApiKey": "获取 OpenAI API 密钥",
-		"mistralApiKey": "Mistral API 密钥",
-		"getMistralApiKey": "获取 Mistral / Codestral API 密钥",
-		"codestralBaseUrl": "Codestral 基础 URL（可选）",
-		"codestralBaseUrlDesc": "为 Codestral 模型设置替代 URL。",
-		"xaiApiKey": "xAI API 密钥",
-		"getXaiApiKey": "获取 xAI API 密钥",
-		"litellmApiKey": "LiteLLM API 密钥",
-		"litellmBaseUrl": "LiteLLM 基础 URL",
-		"awsCredentials": "AWS 凭证",
-		"awsProfile": "AWS 配置文件",
-		"awsApiKey": "Amazon Bedrock API 密钥",
-		"awsProfileName": "AWS 配置文件名称",
-		"awsAccessKey": "AWS 访问密钥",
-		"awsSecretKey": "AWS 密钥",
-		"awsSessionToken": "AWS 会话Token",
-		"awsRegion": "AWS 区域",
-		"awsCrossRegion": "使用跨区域推理",
-		"awsGlobalInference": "使用全局推理（自动选择最佳 AWS 区域）",
+		"getRequestyApiKey": "èŽ·å– Requesty API å¯†é’¥",
+		"getRequestyBaseUrl": "åŸºç¡€ URL",
+		"requestyUseCustomBaseUrl": "ä½¿ç”¨è‡ªå®šä¹‰åŸºç¡€ URL",
+		"openRouterTransformsText": "è‡ªåŠ¨åŽ‹ç¼©æç¤ºè¯å’Œæ¶ˆæ¯é“¾åˆ°ä¸Šä¸‹æ–‡é•¿åº¦é™åˆ¶å†… (\u003ca\u003eOpenRouterè½¬æ¢\u003c/a\u003e)",
+		"anthropicApiKey": "Anthropic API å¯†é’¥",
+		"getAnthropicApiKey": "èŽ·å– Anthropic API å¯†é’¥",
+		"anthropicUseAuthToken": "å°† Anthropic API å¯†é’¥ä½œä¸º Authorization æ ‡å¤´ä¼ é€’ï¼Œè€Œä¸æ˜¯ X-Api-Key",
+		"anthropic1MContextBetaLabel": "å¯ç”¨ 1M ä¸Šä¸‹æ–‡çª—å£ (Beta)",
+		"anthropic1MContextBetaDescription": "ä¸º Claude Sonnet 4 å°†ä¸Šä¸‹æ–‡çª—å£æ‰©å±•è‡³ 100 ä¸‡ä¸ª token",
+		"awsBedrock1MContextBetaLabel": "å¯ç”¨ 1M ä¸Šä¸‹æ–‡çª—å£ (Beta)",
+		"awsBedrock1MContextBetaDescription": "ä¸º Claude Sonnet 4 å°†ä¸Šä¸‹æ–‡çª—å£æ‰©å±•è‡³ 100 ä¸‡ä¸ª token",
+		"basetenApiKey": "Baseten API å¯†é’¥",
+		"getBasetenApiKey": "èŽ·å– Baseten API å¯†é’¥",
+		"cerebrasApiKey": "Cerebras API å¯†é’¥",
+		"getCerebrasApiKey": "èŽ·å– Cerebras API å¯†é’¥",
+		"chutesApiKey": "Chutes API å¯†é’¥",
+		"getChutesApiKey": "èŽ·å– Chutes API å¯†é’¥",
+		"fireworksApiKey": "Fireworks API å¯†é’¥",
+		"getFireworksApiKey": "èŽ·å– Fireworks API å¯†é’¥",
+		"featherlessApiKey": "Featherless API å¯†é’¥",
+		"getFeatherlessApiKey": "èŽ·å– Featherless API å¯†é’¥",
+		"ioIntelligenceApiKey": "IO Intelligence API å¯†é’¥",
+		"ioIntelligenceApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„ IO Intelligence API å¯†é’¥",
+		"getIoIntelligenceApiKey": "èŽ·å– IO Intelligence API å¯†é’¥",
+		"deepSeekApiKey": "DeepSeek API å¯†é’¥",
+		"getDeepSeekApiKey": "èŽ·å– DeepSeek API å¯†é’¥",
+		"doubaoApiKey": "è±†åŒ… API å¯†é’¥",
+		"getDoubaoApiKey": "èŽ·å–è±†åŒ… API å¯†é’¥",
+		"moonshotApiKey": "Moonshot API å¯†é’¥",
+		"getMoonshotApiKey": "èŽ·å– Moonshot API å¯†é’¥",
+		"moonshotBaseUrl": "Moonshot æœåŠ¡ç«™ç‚¹",
+		"minimaxApiKey": "MiniMax API å¯†é’¥",
+		"getMiniMaxApiKey": "èŽ·å– MiniMax API å¯†é’¥",
+		"minimaxBaseUrl": "MiniMax æœåŠ¡ç«™ç‚¹",
+		"zaiApiKey": "Z AI API å¯†é’¥",
+		"getZaiApiKey": "èŽ·å– Z AI API å¯†é’¥",
+		"zaiEntrypoint": "Z AI æœåŠ¡ç«™ç‚¹",
+		"zaiEntrypointDescription": "è¯·æ ¹æ®æ‚¨çš„ä½ç½®é€‰æ‹©é€‚å½“çš„ API æœåŠ¡ç«™ç‚¹ã€‚å¦‚æžœæ‚¨åœ¨ä¸­å›½ï¼Œè¯·é€‰æ‹© open.bigmodel.cnã€‚å¦åˆ™ï¼Œè¯·é€‰æ‹© api.z.aiã€‚",
+		"geminiApiKey": "Gemini API å¯†é’¥",
+		"getGroqApiKey": "èŽ·å– Groq API å¯†é’¥",
+		"groqApiKey": "Groq API å¯†é’¥",
+		"getSambaNovaApiKey": "èŽ·å– SambaNova API å¯†é’¥",
+		"sambaNovaApiKey": "SambaNova API å¯†é’¥",
+		"getHuggingFaceApiKey": "èŽ·å– Hugging Face API å¯†é’¥",
+		"huggingFaceApiKey": "Hugging Face API å¯†é’¥",
+		"huggingFaceModelId": "æ¨¡åž‹ ID",
+		"huggingFaceLoading": "åŠ è½½ä¸­...",
+		"huggingFaceModelsCount": "({{count}} ä¸ªæ¨¡åž‹)",
+		"huggingFaceSelectModel": "é€‰æ‹©æ¨¡åž‹...",
+		"huggingFaceSearchModels": "æœç´¢æ¨¡åž‹...",
+		"huggingFaceNoModelsFound": "æœªæ‰¾åˆ°æ¨¡åž‹",
+		"huggingFaceProvider": "æä¾›å•†",
+		"huggingFaceProviderAuto": "è‡ªåŠ¨",
+		"huggingFaceSelectProvider": "é€‰æ‹©æä¾›å•†...",
+		"huggingFaceSearchProviders": "æœç´¢æä¾›å•†...",
+		"huggingFaceNoProvidersFound": "æœªæ‰¾åˆ°æä¾›å•†",
+		"getGeminiApiKey": "èŽ·å– Gemini API å¯†é’¥",
+		"openAiApiKey": "OpenAI API å¯†é’¥",
+		"apiKey": "API å¯†é’¥",
+		"openAiBaseUrl": "OpenAI åŸºç¡€ URL",
+		"getOpenAiApiKey": "èŽ·å– OpenAI API å¯†é’¥",
+		"mistralApiKey": "Mistral API å¯†é’¥",
+		"getMistralApiKey": "èŽ·å– Mistral / Codestral API å¯†é’¥",
+		"codestralBaseUrl": "Codestral åŸºç¡€ URLï¼ˆå¯é€‰ï¼‰",
+		"codestralBaseUrlDesc": "ä¸º Codestral æ¨¡åž‹è®¾ç½®æ›¿ä»£ URLã€‚",
+		"xaiApiKey": "xAI API å¯†é’¥",
+		"getXaiApiKey": "èŽ·å– xAI API å¯†é’¥",
+		"litellmApiKey": "LiteLLM API å¯†é’¥",
+		"litellmBaseUrl": "LiteLLM åŸºç¡€ URL",
+		"awsCredentials": "AWS å‡­è¯",
+		"awsProfile": "AWS é…ç½®æ–‡ä»¶",
+		"awsApiKey": "Amazon Bedrock API å¯†é’¥",
+		"awsProfileName": "AWS é…ç½®æ–‡ä»¶åç§°",
+		"awsAccessKey": "AWS è®¿é—®å¯†é’¥",
+		"awsSecretKey": "AWS å¯†é’¥",
+		"awsSessionToken": "AWS ä¼šè¯Token",
+		"awsRegion": "AWS åŒºåŸŸ",
+		"awsCrossRegion": "ä½¿ç”¨è·¨åŒºåŸŸæŽ¨ç†",
+		"awsGlobalInference": "ä½¿ç”¨å…¨å±€æŽ¨ç†ï¼ˆè‡ªåŠ¨é€‰æ‹©æœ€ä½³ AWS åŒºåŸŸï¼‰",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "使用自定义 VPC 端点",
-			"vpcEndpointUrlPlaceholder": "输入 VPC 端点 URL（可选）",
-			"examples": "示例："
+			"useCustomVpcEndpoint": "ä½¿ç”¨è‡ªå®šä¹‰ VPC ç«¯ç‚¹",
+			"vpcEndpointUrlPlaceholder": "è¾“å…¥ VPC ç«¯ç‚¹ URLï¼ˆå¯é€‰ï¼‰",
+			"examples": "ç¤ºä¾‹ï¼š"
 		},
-		"enablePromptCaching": "启用提示缓存",
-		"enablePromptCachingTitle": "开启提示缓存可提升性能并节省成本",
-		"cacheUsageNote": "提示：若未显示缓存使用情况，请切换模型后重新选择",
-		"vscodeLmModel": "VSCode LM 模型",
-		"vscodeLmWarning": "注意：通过 VS Code Language Model API 访问的模型可能由提供商进行封装或微调，因此其行为可能与直接从常见提供商或路由器使用同一模型时不同。要使用「Language Model」下拉列表中的模型，请先切换到该模型，然后在 Copilot Chat 提示中点击「接受」；否则可能会出现 400「The requested model is not supported」等错误。",
+		"enablePromptCaching": "å¯ç”¨æç¤ºç¼“å­˜",
+		"enablePromptCachingTitle": "å¼€å¯æç¤ºç¼“å­˜å¯æå‡æ€§èƒ½å¹¶èŠ‚çœæˆæœ¬",
+		"cacheUsageNote": "æç¤ºï¼šè‹¥æœªæ˜¾ç¤ºç¼“å­˜ä½¿ç”¨æƒ…å†µï¼Œè¯·åˆ‡æ¢æ¨¡åž‹åŽé‡æ–°é€‰æ‹©",
+		"vscodeLmModel": "VSCode LM æ¨¡åž‹",
+		"vscodeLmWarning": "æ³¨æ„ï¼šé€šè¿‡ VS Code Language Model API è®¿é—®çš„æ¨¡åž‹å¯èƒ½ç”±æä¾›å•†è¿›è¡Œå°è£…æˆ–å¾®è°ƒï¼Œå› æ­¤å…¶è¡Œä¸ºå¯èƒ½ä¸Žç›´æŽ¥ä»Žå¸¸è§æä¾›å•†æˆ–è·¯ç”±å™¨ä½¿ç”¨åŒä¸€æ¨¡åž‹æ—¶ä¸åŒã€‚è¦ä½¿ç”¨ã€ŒLanguage Modelã€ä¸‹æ‹‰åˆ—è¡¨ä¸­çš„æ¨¡åž‹ï¼Œè¯·å…ˆåˆ‡æ¢åˆ°è¯¥æ¨¡åž‹ï¼Œç„¶åŽåœ¨ Copilot Chat æç¤ºä¸­ç‚¹å‡»ã€ŒæŽ¥å—ã€ï¼›å¦åˆ™å¯èƒ½ä¼šå‡ºçŽ° 400ã€ŒThe requested model is not supportedã€ç­‰é”™è¯¯ã€‚",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "启用 URL 上下文",
-				"description": "让 Gemini 读取链接的页面以提取、比较和综合其内容，从而提供明智的答复。"
+				"title": "å¯ç”¨ URL ä¸Šä¸‹æ–‡",
+				"description": "è®© Gemini è¯»å–é“¾æŽ¥çš„é¡µé¢ä»¥æå–ã€æ¯”è¾ƒå’Œç»¼åˆå…¶å†…å®¹ï¼Œä»Žè€Œæä¾›æ˜Žæ™ºçš„ç­”å¤ã€‚"
 			},
 			"groundingSearch": {
-				"title": "启用 Google 搜索基础",
-				"description": "将 Gemini 连接到实时网络数据，以获得包含可验证引用的准确、最新的答案。"
+				"title": "å¯ç”¨ Google æœç´¢åŸºç¡€",
+				"description": "å°† Gemini è¿žæŽ¥åˆ°å®žæ—¶ç½‘ç»œæ•°æ®ï¼Œä»¥èŽ·å¾—åŒ…å«å¯éªŒè¯å¼•ç”¨çš„å‡†ç¡®ã€æœ€æ–°çš„ç­”æ¡ˆã€‚"
 			}
 		},
 		"googleCloudSetup": {
-			"title": "要使用 Google Cloud Vertex AI，您需要：",
-			"step1": "1. 注册Google Cloud账号并启用Vertex AI API",
-			"step2": "2. 安装配置Google Cloud CLI工具",
-			"step3": "3. 创建服务账号获取凭证"
+			"title": "è¦ä½¿ç”¨ Google Cloud Vertex AIï¼Œæ‚¨éœ€è¦ï¼š",
+			"step1": "1. æ³¨å†ŒGoogle Cloudè´¦å·å¹¶å¯ç”¨Vertex AI API",
+			"step2": "2. å®‰è£…é…ç½®Google Cloud CLIå·¥å…·",
+			"step3": "3. åˆ›å»ºæœåŠ¡è´¦å·èŽ·å–å‡­è¯"
 		},
-		"googleCloudCredentials": "Google Cloud 凭证",
-		"googleCloudKeyFile": "Google Cloud 密钥文件路径",
-		"googleCloudProjectId": "Google Cloud 项目 ID",
-		"googleCloudRegion": "Google Cloud 区域",
+		"googleCloudCredentials": "Google Cloud å‡­è¯",
+		"googleCloudKeyFile": "Google Cloud å¯†é’¥æ–‡ä»¶è·¯å¾„",
+		"googleCloudProjectId": "Google Cloud é¡¹ç›® ID",
+		"googleCloudRegion": "Google Cloud åŒºåŸŸ",
 		"lmStudio": {
-			"baseUrl": "基础 URL（可选）",
-			"modelId": "模型 ID",
-			"speculativeDecoding": "启用推测性解码",
-			"draftModelId": "草稿模型 ID",
-			"draftModelDesc": "草稿模型必须来自相同的模型系列，推测性解码才能正常工作。",
-			"selectDraftModel": "选择草稿模型",
-			"noModelsFound": "未找到草稿模型。请确保 LM Studio 已启用服务器模式运行。",
-			"description": "LM Studio 允许您在本地计算机上运行模型。要了解如何开始，请参阅他们的 <a>快速入门指南</a>。您还需要启动 LM Studio 的 <b>本地服务器</b> 功能，以便与此扩展一起使用。<span>注意：</span>Roo Code 使用复杂的提示，并且在 Claude 模型上效果最佳。功能较弱的模型可能无法正常工作。"
+			"baseUrl": "åŸºç¡€ URLï¼ˆå¯é€‰ï¼‰",
+			"modelId": "æ¨¡åž‹ ID",
+			"speculativeDecoding": "å¯ç”¨æŽ¨æµ‹æ€§è§£ç ",
+			"draftModelId": "è‰ç¨¿æ¨¡åž‹ ID",
+			"draftModelDesc": "è‰ç¨¿æ¨¡åž‹å¿…é¡»æ¥è‡ªç›¸åŒçš„æ¨¡åž‹ç³»åˆ—ï¼ŒæŽ¨æµ‹æ€§è§£ç æ‰èƒ½æ­£å¸¸å·¥ä½œã€‚",
+			"selectDraftModel": "é€‰æ‹©è‰ç¨¿æ¨¡åž‹",
+			"noModelsFound": "æœªæ‰¾åˆ°è‰ç¨¿æ¨¡åž‹ã€‚è¯·ç¡®ä¿ LM Studio å·²å¯ç”¨æœåŠ¡å™¨æ¨¡å¼è¿è¡Œã€‚",
+			"description": "LM Studio å…è®¸æ‚¨åœ¨æœ¬åœ°è®¡ç®—æœºä¸Šè¿è¡Œæ¨¡åž‹ã€‚è¦äº†è§£å¦‚ä½•å¼€å§‹ï¼Œè¯·å‚é˜…ä»–ä»¬çš„ \u003ca\u003eå¿«é€Ÿå…¥é—¨æŒ‡å—\u003c/a\u003eã€‚æ‚¨è¿˜éœ€è¦å¯åŠ¨ LM Studio çš„ \u003cb\u003eæœ¬åœ°æœåŠ¡å™¨\u003c/b\u003e åŠŸèƒ½ï¼Œä»¥ä¾¿ä¸Žæ­¤æ‰©å±•ä¸€èµ·ä½¿ç”¨ã€‚\u003cspan\u003eæ³¨æ„ï¼š\u003c/span\u003eRoo Code ä½¿ç”¨å¤æ‚çš„æç¤ºï¼Œå¹¶ä¸”åœ¨ Claude æ¨¡åž‹ä¸Šæ•ˆæžœæœ€ä½³ã€‚åŠŸèƒ½è¾ƒå¼±çš„æ¨¡åž‹å¯èƒ½æ— æ³•æ­£å¸¸å·¥ä½œã€‚"
 		},
 		"ollama": {
-			"baseUrl": "基础 URL（可选）",
-			"modelId": "模型 ID",
-			"apiKey": "Ollama API 密钥",
-			"apiKeyHelp": "用于已认证 Ollama 实例或云服务的可选 API 密钥。本地安装请留空。",
-			"numCtx": "上下文窗口大小 (num_ctx)",
-			"numCtxHelp": "覆盖模型的默认上下文窗口大小。留空以使用模型的 Modelfile 配置。最小值为 128。",
-			"description": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参阅其快速入门指南。",
-			"warning": "注意：Roo Code 使用复杂的提示，与 Claude 模型配合最佳。功能较弱的模型可能无法按预期工作。"
+			"baseUrl": "åŸºç¡€ URLï¼ˆå¯é€‰ï¼‰",
+			"modelId": "æ¨¡åž‹ ID",
+			"apiKey": "Ollama API å¯†é’¥",
+			"apiKeyHelp": "ç”¨äºŽå·²è®¤è¯ Ollama å®žä¾‹æˆ–äº‘æœåŠ¡çš„å¯é€‰ API å¯†é’¥ã€‚æœ¬åœ°å®‰è£…è¯·ç•™ç©ºã€‚",
+			"numCtx": "ä¸Šä¸‹æ–‡çª—å£å¤§å° (num_ctx)",
+			"numCtxHelp": "è¦†ç›–æ¨¡åž‹çš„é»˜è®¤ä¸Šä¸‹æ–‡çª—å£å¤§å°ã€‚ç•™ç©ºä»¥ä½¿ç”¨æ¨¡åž‹çš„ Modelfile é…ç½®ã€‚æœ€å°å€¼ä¸º 128ã€‚",
+			"description": "Ollama å…è®¸æ‚¨åœ¨æœ¬åœ°è®¡ç®—æœºä¸Šè¿è¡Œæ¨¡åž‹ã€‚æœ‰å…³å¦‚ä½•å¼€å§‹ä½¿ç”¨çš„è¯´æ˜Žï¼Œè¯·å‚é˜…å…¶å¿«é€Ÿå…¥é—¨æŒ‡å—ã€‚",
+			"warning": "æ³¨æ„ï¼šRoo Code ä½¿ç”¨å¤æ‚çš„æç¤ºï¼Œä¸Ž Claude æ¨¡åž‹é…åˆæœ€ä½³ã€‚åŠŸèƒ½è¾ƒå¼±çš„æ¨¡åž‹å¯èƒ½æ— æ³•æŒ‰é¢„æœŸå·¥ä½œã€‚"
 		},
-		"unboundApiKey": "Unbound API 密钥",
-		"getUnboundApiKey": "获取 Unbound API 密钥",
-		"unboundRefreshModelsSuccess": "模型列表已更新！您现在可以从最新模型中选择。",
-		"unboundInvalidApiKey": "无效的API密钥。请检查您的API密钥并重试。",
+		"unboundApiKey": "Unbound API å¯†é’¥",
+		"getUnboundApiKey": "èŽ·å– Unbound API å¯†é’¥",
+		"unboundRefreshModelsSuccess": "æ¨¡åž‹åˆ—è¡¨å·²æ›´æ–°ï¼æ‚¨çŽ°åœ¨å¯ä»¥ä»Žæœ€æ–°æ¨¡åž‹ä¸­é€‰æ‹©ã€‚",
+		"unboundInvalidApiKey": "æ— æ•ˆçš„APIå¯†é’¥ã€‚è¯·æ£€æŸ¥æ‚¨çš„APIå¯†é’¥å¹¶é‡è¯•ã€‚",
 		"humanRelay": {
-			"description": "不需要 API 密钥，但用户需要帮助将信息复制并粘贴到网页聊天 AI。",
-			"instructions": "使用期间，将弹出对话框并自动将当前消息复制到剪贴板。您需要将这些内容粘贴到 AI 的网页版本（如 ChatGPT 或 Claude），然后将 AI 的回复复制回对话框并点击确认按钮。"
+			"description": "ä¸éœ€è¦ API å¯†é’¥ï¼Œä½†ç”¨æˆ·éœ€è¦å¸®åŠ©å°†ä¿¡æ¯å¤åˆ¶å¹¶ç²˜è´´åˆ°ç½‘é¡µèŠå¤© AIã€‚",
+			"instructions": "ä½¿ç”¨æœŸé—´ï¼Œå°†å¼¹å‡ºå¯¹è¯æ¡†å¹¶è‡ªåŠ¨å°†å½“å‰æ¶ˆæ¯å¤åˆ¶åˆ°å‰ªè´´æ¿ã€‚æ‚¨éœ€è¦å°†è¿™äº›å†…å®¹ç²˜è´´åˆ° AI çš„ç½‘é¡µç‰ˆæœ¬ï¼ˆå¦‚ ChatGPT æˆ– Claudeï¼‰ï¼Œç„¶åŽå°† AI çš„å›žå¤å¤åˆ¶å›žå¯¹è¯æ¡†å¹¶ç‚¹å‡»ç¡®è®¤æŒ‰é’®ã€‚"
 		},
 		"roo": {
-			"authenticatedMessage": "已通过 Roo Code Cloud 账户安全认证。",
-			"connectButton": "连接到 Roo Code Cloud"
+			"authenticatedMessage": "å·²é€šè¿‡ Roo Code Cloud è´¦æˆ·å®‰å…¨è®¤è¯ã€‚",
+			"connectButton": "è¿žæŽ¥åˆ° Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "OpenRouter 提供商路由",
-				"description": "OpenRouter 将请求路由到适合您模型的最佳可用提供商。默认情况下，请求会在顶级提供商之间进行负载均衡以最大化正常运行时间。但是，您可以为此模型选择特定的提供商。",
-				"learnMore": "了解更多"
+				"title": "OpenRouter æä¾›å•†è·¯ç”±",
+				"description": "OpenRouter å°†è¯·æ±‚è·¯ç”±åˆ°é€‚åˆæ‚¨æ¨¡åž‹çš„æœ€ä½³å¯ç”¨æä¾›å•†ã€‚é»˜è®¤æƒ…å†µä¸‹ï¼Œè¯·æ±‚ä¼šåœ¨é¡¶çº§æä¾›å•†ä¹‹é—´è¿›è¡Œè´Ÿè½½å‡è¡¡ä»¥æœ€å¤§åŒ–æ­£å¸¸è¿è¡Œæ—¶é—´ã€‚ä½†æ˜¯ï¼Œæ‚¨å¯ä»¥ä¸ºæ­¤æ¨¡åž‹é€‰æ‹©ç‰¹å®šçš„æä¾›å•†ã€‚",
+				"learnMore": "äº†è§£æ›´å¤š"
 			}
 		},
 		"customModel": {
-			"capabilities": "自定义模型配置注意事项：\n• 确保兼容OpenAI接口规范\n• 错误配置可能导致功能异常\n• 价格参数影响费用统计",
+			"capabilities": "è‡ªå®šä¹‰æ¨¡åž‹é…ç½®æ³¨æ„äº‹é¡¹ï¼š\nâ€¢ ç¡®ä¿å…¼å®¹OpenAIæŽ¥å£è§„èŒƒ\nâ€¢ é”™è¯¯é…ç½®å¯èƒ½å¯¼è‡´åŠŸèƒ½å¼‚å¸¸\nâ€¢ ä»·æ ¼å‚æ•°å½±å“è´¹ç”¨ç»Ÿè®¡",
 			"maxTokens": {
-				"label": "最大输出Token数",
-				"description": "模型在响应中可以生成的最大Token数。（指定 -1 允许服务器设置最大Token数。）"
+				"label": "æœ€å¤§è¾“å‡ºTokenæ•°",
+				"description": "æ¨¡åž‹åœ¨å“åº”ä¸­å¯ä»¥ç”Ÿæˆçš„æœ€å¤§Tokenæ•°ã€‚ï¼ˆæŒ‡å®š -1 å…è®¸æœåŠ¡å™¨è®¾ç½®æœ€å¤§Tokenæ•°ã€‚ï¼‰"
 			},
 			"contextWindow": {
-				"label": "上下文窗口大小",
-				"description": "模型可以处理的总Token数（输入 + 输出）。"
+				"label": "ä¸Šä¸‹æ–‡çª—å£å¤§å°",
+				"description": "æ¨¡åž‹å¯ä»¥å¤„ç†çš„æ€»Tokenæ•°ï¼ˆè¾“å…¥ + è¾“å‡ºï¼‰ã€‚"
 			},
 			"imageSupport": {
-				"label": "图像支持",
-				"description": "此模型是否能够处理和理解图像？"
+				"label": "å›¾åƒæ”¯æŒ",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤Ÿå¤„ç†å’Œç†è§£å›¾åƒï¼Ÿ"
 			},
 			"computerUse": {
-				"label": "计算机功能调用",
-				"description": "此模型是否能够与浏览器交互？（例如 Claude Sonnet）。"
+				"label": "è®¡ç®—æœºåŠŸèƒ½è°ƒç”¨",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤Ÿä¸Žæµè§ˆå™¨äº¤äº’ï¼Ÿï¼ˆä¾‹å¦‚ Claude Sonnetï¼‰ã€‚"
 			},
 			"promptCache": {
-				"label": "提示缓存",
-				"description": "此模型是否能够缓存提示？"
+				"label": "æç¤ºç¼“å­˜",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤Ÿç¼“å­˜æç¤ºï¼Ÿ"
 			},
 			"pricing": {
 				"input": {
-					"label": "输入价格",
-					"description": "输入/提示中每百万Token的成本。这会影响向模型发送上下文和指令的成本。"
+					"label": "è¾“å…¥ä»·æ ¼",
+					"description": "è¾“å…¥/æç¤ºä¸­æ¯ç™¾ä¸‡Tokençš„æˆæœ¬ã€‚è¿™ä¼šå½±å“å‘æ¨¡åž‹å‘é€ä¸Šä¸‹æ–‡å’ŒæŒ‡ä»¤çš„æˆæœ¬ã€‚"
 				},
 				"output": {
-					"label": "输出价格",
-					"description": "模型响应中每百万Token的成本。这会影响生成内容和补全的成本。"
+					"label": "è¾“å‡ºä»·æ ¼",
+					"description": "æ¨¡åž‹å“åº”ä¸­æ¯ç™¾ä¸‡Tokençš„æˆæœ¬ã€‚è¿™ä¼šå½±å“ç”Ÿæˆå†…å®¹å’Œè¡¥å…¨çš„æˆæœ¬ã€‚"
 				},
 				"cacheReads": {
-					"label": "缓存读取价格",
-					"description": "从缓存读取每百万Token的成本。这是检索缓存响应时收取的费用。"
+					"label": "ç¼“å­˜è¯»å–ä»·æ ¼",
+					"description": "ä»Žç¼“å­˜è¯»å–æ¯ç™¾ä¸‡Tokençš„æˆæœ¬ã€‚è¿™æ˜¯æ£€ç´¢ç¼“å­˜å“åº”æ—¶æ”¶å–çš„è´¹ç”¨ã€‚"
 				},
 				"cacheWrites": {
-					"label": "缓存写入价格",
-					"description": "向缓存写入每百万Token的成本。这是首次缓存提示时收取的费用。"
+					"label": "ç¼“å­˜å†™å…¥ä»·æ ¼",
+					"description": "å‘ç¼“å­˜å†™å…¥æ¯ç™¾ä¸‡Tokençš„æˆæœ¬ã€‚è¿™æ˜¯é¦–æ¬¡ç¼“å­˜æç¤ºæ—¶æ”¶å–çš„è´¹ç”¨ã€‚"
 				}
 			},
-			"resetDefaults": "重置为默认值"
+			"resetDefaults": "é‡ç½®ä¸ºé»˜è®¤å€¼"
 		},
 		"rateLimitSeconds": {
-			"label": "API 请求频率限制",
-			"description": "设置API请求的最小间隔时间"
+			"label": "API è¯·æ±‚é¢‘çŽ‡é™åˆ¶",
+			"description": "è®¾ç½®APIè¯·æ±‚çš„æœ€å°é—´éš”æ—¶é—´"
 		},
 		"consecutiveMistakeLimit": {
-			"label": "错误和重复限制",
-			"description": "在显示“Roo遇到问题”对话框前允许的连续错误或重复操作次数。设置为 0 可禁用此安全机制（它将永远不会触发）。",
-			"unlimitedDescription": "已启用无限重试（自动继续）。对话框将永远不会出现。",
-			"warning": "⚠️ 设置为 0 允许无限重试，这可能会消耗大量 API 使用量"
+			"label": "é”™è¯¯å’Œé‡å¤é™åˆ¶",
+			"description": "åœ¨æ˜¾ç¤ºâ€œRooé‡åˆ°é—®é¢˜â€å¯¹è¯æ¡†å‰å…è®¸çš„è¿žç»­é”™è¯¯æˆ–é‡å¤æ“ä½œæ¬¡æ•°ã€‚è®¾ç½®ä¸º 0 å¯ç¦ç”¨æ­¤å®‰å…¨æœºåˆ¶ï¼ˆå®ƒå°†æ°¸è¿œä¸ä¼šè§¦å‘ï¼‰ã€‚",
+			"unlimitedDescription": "å·²å¯ç”¨æ— é™é‡è¯•ï¼ˆè‡ªåŠ¨ç»§ç»­ï¼‰ã€‚å¯¹è¯æ¡†å°†æ°¸è¿œä¸ä¼šå‡ºçŽ°ã€‚",
+			"warning": "âš ï¸ è®¾ç½®ä¸º 0 å…è®¸æ— é™é‡è¯•ï¼Œè¿™å¯èƒ½ä¼šæ¶ˆè€—å¤§é‡ API ä½¿ç”¨é‡"
 		},
 		"reasoningEffort": {
-			"label": "模型推理强度",
-			"none": "无",
-			"minimal": "最小 (最快)",
-			"high": "高",
-			"xhigh": "超高",
-			"medium": "中",
-			"low": "低"
+			"label": "æ¨¡åž‹æŽ¨ç†å¼ºåº¦",
+			"none": "æ— ",
+			"minimal": "æœ€å° (æœ€å¿«)",
+			"high": "é«˜",
+			"xhigh": "è¶…é«˜",
+			"medium": "ä¸­",
+			"low": "ä½Ž"
 		},
 		"verbosity": {
-			"label": "输出详细程度",
-			"high": "高",
-			"medium": "中",
-			"low": "低",
-			"description": "控制模型响应的详细程度。低详细度产生简洁的回答，而高详细度提供详尽的解释。"
+			"label": "è¾“å‡ºè¯¦ç»†ç¨‹åº¦",
+			"high": "é«˜",
+			"medium": "ä¸­",
+			"low": "ä½Ž",
+			"description": "æŽ§åˆ¶æ¨¡åž‹å“åº”çš„è¯¦ç»†ç¨‹åº¦ã€‚ä½Žè¯¦ç»†åº¦äº§ç”Ÿç®€æ´çš„å›žç­”ï¼Œè€Œé«˜è¯¦ç»†åº¦æä¾›è¯¦å°½çš„è§£é‡Šã€‚"
 		},
-		"setReasoningLevel": "启用推理工作量",
+		"setReasoningLevel": "å¯ç”¨æŽ¨ç†å·¥ä½œé‡",
 		"claudeCode": {
-			"pathLabel": "Claude Code 路径",
-			"description": "您的 Claude Code CLI 的可选路径。如果未设置，则默认为 “claude”。",
-			"placeholder": "默认：claude",
-			"maxTokensLabel": "最大输出 Token",
-			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
+			"pathLabel": "Claude Code è·¯å¾„",
+			"description": "æ‚¨çš„ Claude Code CLI çš„å¯é€‰è·¯å¾„ã€‚å¦‚æžœæœªè®¾ç½®ï¼Œåˆ™é»˜è®¤ä¸º â€œclaudeâ€ã€‚",
+			"placeholder": "é»˜è®¤ï¼šclaude",
+			"maxTokensLabel": "æœ€å¤§è¾“å‡º Token",
+			"maxTokensDescription": "Claude Code å“åº”çš„æœ€å¤§è¾“å‡º Token æ•°é‡ã€‚é»˜è®¤ä¸º 8000ã€‚"
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "启用浏览器工具",
-			"description": "启用后，若模型支持计算机功能调用，Roo 可以使用浏览器与网站交互。 <0>了解更多</0>"
+			"label": "å¯ç”¨æµè§ˆå™¨å·¥å…·",
+			"description": "å¯ç”¨åŽï¼Œè‹¥æ¨¡åž‹æ”¯æŒè®¡ç®—æœºåŠŸèƒ½è°ƒç”¨ï¼ŒRoo å¯ä»¥ä½¿ç”¨æµè§ˆå™¨ä¸Žç½‘ç«™äº¤äº’ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"viewport": {
-			"label": "视口大小",
-			"description": "选择浏览器交互的视口大小。这会影响网站的显示方式和交互方式。",
+			"label": "è§†å£å¤§å°",
+			"description": "é€‰æ‹©æµè§ˆå™¨äº¤äº’çš„è§†å£å¤§å°ã€‚è¿™ä¼šå½±å“ç½‘ç«™çš„æ˜¾ç¤ºæ–¹å¼å’Œäº¤äº’æ–¹å¼ã€‚",
 			"options": {
-				"largeDesktop": "大桌面 (1280x800)",
-				"smallDesktop": "小桌面 (900x600)",
-				"tablet": "平板 (768x1024)",
-				"mobile": "移动设备 (360x640)"
+				"largeDesktop": "å¤§æ¡Œé¢ (1280x800)",
+				"smallDesktop": "å°æ¡Œé¢ (900x600)",
+				"tablet": "å¹³æ¿ (768x1024)",
+				"mobile": "ç§»åŠ¨è®¾å¤‡ (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "截图质量",
-			"description": "调整浏览器的截图质量。更高的值提供更清晰的截图，但会增加 token 消耗。"
+			"label": "æˆªå›¾è´¨é‡",
+			"description": "è°ƒæ•´æµè§ˆå™¨çš„æˆªå›¾è´¨é‡ã€‚æ›´é«˜çš„å€¼æä¾›æ›´æ¸…æ™°çš„æˆªå›¾ï¼Œä½†ä¼šå¢žåŠ  token æ¶ˆè€—ã€‚"
 		},
 		"remote": {
-			"label": "使用远程浏览器连接",
-			"description": "连接到启用远程调试的 Chrome 浏览器 (--remote-debugging-port=9222)。",
-			"urlPlaceholder": "自定义 URL（例如 http://localhost:9222）",
-			"testButton": "测试连接",
-			"testingButton": "测试中...",
-			"instructions": "输入 DevTools 协议主机地址或留空以自动发现本地 Chrome 实例。测试连接按钮将尝试使用自定义 URL（如果提供），或者如果字段为空则自动发现。"
+			"label": "ä½¿ç”¨è¿œç¨‹æµè§ˆå™¨è¿žæŽ¥",
+			"description": "è¿žæŽ¥åˆ°å¯ç”¨è¿œç¨‹è°ƒè¯•çš„ Chrome æµè§ˆå™¨ (--remote-debugging-port=9222)ã€‚",
+			"urlPlaceholder": "è‡ªå®šä¹‰ URLï¼ˆä¾‹å¦‚ http://localhost:9222ï¼‰",
+			"testButton": "æµ‹è¯•è¿žæŽ¥",
+			"testingButton": "æµ‹è¯•ä¸­...",
+			"instructions": "è¾“å…¥ DevTools åè®®ä¸»æœºåœ°å€æˆ–ç•™ç©ºä»¥è‡ªåŠ¨å‘çŽ°æœ¬åœ° Chrome å®žä¾‹ã€‚æµ‹è¯•è¿žæŽ¥æŒ‰é’®å°†å°è¯•ä½¿ç”¨è‡ªå®šä¹‰ URLï¼ˆå¦‚æžœæä¾›ï¼‰ï¼Œæˆ–è€…å¦‚æžœå­—æ®µä¸ºç©ºåˆ™è‡ªåŠ¨å‘çŽ°ã€‚"
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "存档点初始化超时时间（秒）",
-			"description": "存档点服务初始化最长等待时间。默认 15 秒。范围：10-60 秒。"
+			"label": "å­˜æ¡£ç‚¹åˆå§‹åŒ–è¶…æ—¶æ—¶é—´ï¼ˆç§’ï¼‰",
+			"description": "å­˜æ¡£ç‚¹æœåŠ¡åˆå§‹åŒ–æœ€é•¿ç­‰å¾…æ—¶é—´ã€‚é»˜è®¤ 15 ç§’ã€‚èŒƒå›´ï¼š10-60 ç§’ã€‚"
 		},
 		"enable": {
-			"label": "启用自动存档点",
-			"description": "开启后自动创建任务存档点，方便回溯修改。 <0>了解更多</0>"
+			"label": "å¯ç”¨è‡ªåŠ¨å­˜æ¡£ç‚¹",
+			"description": "å¼€å¯åŽè‡ªåŠ¨åˆ›å»ºä»»åŠ¡å­˜æ¡£ç‚¹ï¼Œæ–¹ä¾¿å›žæº¯ä¿®æ”¹ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "启用声音通知",
-			"description": "启用后，Roo 将为通知和事件播放音效。",
-			"volumeLabel": "音量"
+			"label": "å¯ç”¨å£°éŸ³é€šçŸ¥",
+			"description": "å¯ç”¨åŽï¼ŒRoo å°†ä¸ºé€šçŸ¥å’Œäº‹ä»¶æ’­æ”¾éŸ³æ•ˆã€‚",
+			"volumeLabel": "éŸ³é‡"
 		},
 		"tts": {
-			"label": "启用文本转语音",
-			"description": "启用后，Roo 将使用文本转语音功能朗读其响应。",
-			"speedLabel": "速度"
+			"label": "å¯ç”¨æ–‡æœ¬è½¬è¯­éŸ³",
+			"description": "å¯ç”¨åŽï¼ŒRoo å°†ä½¿ç”¨æ–‡æœ¬è½¬è¯­éŸ³åŠŸèƒ½æœ—è¯»å…¶å“åº”ã€‚",
+			"speedLabel": "é€Ÿåº¦"
 		}
 	},
 	"contextManagement": {
-		"description": "管理AI上下文信息（影响token用量和回答质量）",
+		"description": "ç®¡ç†AIä¸Šä¸‹æ–‡ä¿¡æ¯ï¼ˆå½±å“tokenç”¨é‡å’Œå›žç­”è´¨é‡ï¼‰",
 		"autoCondenseContextPercent": {
-			"label": "触发智能上下文压缩的阈值",
-			"description": "当上下文窗口达到此阈值时，Roo 将自动压缩它。"
+			"label": "è§¦å‘æ™ºèƒ½ä¸Šä¸‹æ–‡åŽ‹ç¼©çš„é˜ˆå€¼",
+			"description": "å½“ä¸Šä¸‹æ–‡çª—å£è¾¾åˆ°æ­¤é˜ˆå€¼æ—¶ï¼ŒRoo å°†è‡ªåŠ¨åŽ‹ç¼©å®ƒã€‚"
 		},
 		"condensingApiConfiguration": {
-			"label": "上下文压缩的API配置",
-			"description": "选择用于上下文压缩操作的API配置。留空则使用当前活动的配置。",
-			"useCurrentConfig": "使用当前配置"
+			"label": "ä¸Šä¸‹æ–‡åŽ‹ç¼©çš„APIé…ç½®",
+			"description": "é€‰æ‹©ç”¨äºŽä¸Šä¸‹æ–‡åŽ‹ç¼©æ“ä½œçš„APIé…ç½®ã€‚ç•™ç©ºåˆ™ä½¿ç”¨å½“å‰æ´»åŠ¨çš„é…ç½®ã€‚",
+			"useCurrentConfig": "ä½¿ç”¨å½“å‰é…ç½®"
 		},
 		"customCondensingPrompt": {
-			"label": "自定义上下文压缩提示词",
-			"description": "自定义用于上下文压缩的系统提示词。留空则使用默认提示词。",
-			"placeholder": "在此输入您的自定义压缩提示词...\n\n您可以使用与默认提示词相同的结构：\n- 之前的对话\n- 当前工作\n- 关键技术概念\n- 相关文件和代码\n- 问题解决\n- 待处理任务和下一步",
-			"reset": "重置为默认值",
-			"hint": "留空 = 使用默认提示词"
+			"label": "è‡ªå®šä¹‰ä¸Šä¸‹æ–‡åŽ‹ç¼©æç¤ºè¯",
+			"description": "è‡ªå®šä¹‰ç”¨äºŽä¸Šä¸‹æ–‡åŽ‹ç¼©çš„ç³»ç»Ÿæç¤ºè¯ã€‚ç•™ç©ºåˆ™ä½¿ç”¨é»˜è®¤æç¤ºè¯ã€‚",
+			"placeholder": "åœ¨æ­¤è¾“å…¥æ‚¨çš„è‡ªå®šä¹‰åŽ‹ç¼©æç¤ºè¯...\n\næ‚¨å¯ä»¥ä½¿ç”¨ä¸Žé»˜è®¤æç¤ºè¯ç›¸åŒçš„ç»“æž„ï¼š\n- ä¹‹å‰çš„å¯¹è¯\n- å½“å‰å·¥ä½œ\n- å…³é”®æŠ€æœ¯æ¦‚å¿µ\n- ç›¸å…³æ–‡ä»¶å’Œä»£ç \n- é—®é¢˜è§£å†³\n- å¾…å¤„ç†ä»»åŠ¡å’Œä¸‹ä¸€æ­¥",
+			"reset": "é‡ç½®ä¸ºé»˜è®¤å€¼",
+			"hint": "ç•™ç©º = ä½¿ç”¨é»˜è®¤æç¤ºè¯"
 		},
 		"autoCondenseContext": {
-			"name": "自动触发智能上下文压缩",
-			"description": "启用时，Roo 将在达到阈值时自动压缩上下文。禁用时，您仍可以手动触发上下文压缩。"
+			"name": "è‡ªåŠ¨è§¦å‘æ™ºèƒ½ä¸Šä¸‹æ–‡åŽ‹ç¼©",
+			"description": "å¯ç”¨æ—¶ï¼ŒRoo å°†åœ¨è¾¾åˆ°é˜ˆå€¼æ—¶è‡ªåŠ¨åŽ‹ç¼©ä¸Šä¸‹æ–‡ã€‚ç¦ç”¨æ—¶ï¼Œæ‚¨ä»å¯ä»¥æ‰‹åŠ¨è§¦å‘ä¸Šä¸‹æ–‡åŽ‹ç¼©ã€‚"
 		},
 		"openTabs": {
-			"label": "标签页数量限制",
-			"description": "允许纳入上下文的最大标签页数（数值越大消耗token越多）"
+			"label": "æ ‡ç­¾é¡µæ•°é‡é™åˆ¶",
+			"description": "å…è®¸çº³å…¥ä¸Šä¸‹æ–‡çš„æœ€å¤§æ ‡ç­¾é¡µæ•°ï¼ˆæ•°å€¼è¶Šå¤§æ¶ˆè€—tokenè¶Šå¤šï¼‰"
 		},
 		"workspaceFiles": {
-			"label": "工作区文件限制",
-			"description": "允许纳入上下文的最大文件数（值越大消耗token越多）"
+			"label": "å·¥ä½œåŒºæ–‡ä»¶é™åˆ¶",
+			"description": "å…è®¸çº³å…¥ä¸Šä¸‹æ–‡çš„æœ€å¤§æ–‡ä»¶æ•°ï¼ˆå€¼è¶Šå¤§æ¶ˆè€—tokenè¶Šå¤šï¼‰"
 		},
 		"rooignore": {
-			"label": "在列表和搜索中显示 .rooignore 文件",
-			"description": "启用后，与 .rooignore 中模式匹配的文件将在列表中显示锁定符号。禁用时，这些文件将从文件列表和搜索中完全隐藏。"
+			"label": "åœ¨åˆ—è¡¨å’Œæœç´¢ä¸­æ˜¾ç¤º .rooignore æ–‡ä»¶",
+			"description": "å¯ç”¨åŽï¼Œä¸Ž .rooignore ä¸­æ¨¡å¼åŒ¹é…çš„æ–‡ä»¶å°†åœ¨åˆ—è¡¨ä¸­æ˜¾ç¤ºé”å®šç¬¦å·ã€‚ç¦ç”¨æ—¶ï¼Œè¿™äº›æ–‡ä»¶å°†ä»Žæ–‡ä»¶åˆ—è¡¨å’Œæœç´¢ä¸­å®Œå…¨éšè—ã€‚"
 		},
 		"maxReadFile": {
-			"label": "文件读取自动截断阈值",
-			"description": "自动读取文件行数设置：-1=完整读取 0=仅生成行号索引，较小值可节省token，支持后续使用行号进行读取。 <0>了解更多</0>",
-			"lines": "行",
-			"always_full_read": "始终读取整个文件"
+			"label": "æ–‡ä»¶è¯»å–è‡ªåŠ¨æˆªæ–­é˜ˆå€¼",
+			"description": "è‡ªåŠ¨è¯»å–æ–‡ä»¶è¡Œæ•°è®¾ç½®ï¼š-1=å®Œæ•´è¯»å– 0=ä»…ç”Ÿæˆè¡Œå·ç´¢å¼•ï¼Œè¾ƒå°å€¼å¯èŠ‚çœtokenï¼Œæ”¯æŒåŽç»­ä½¿ç”¨è¡Œå·è¿›è¡Œè¯»å–ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e",
+			"lines": "è¡Œ",
+			"always_full_read": "å§‹ç»ˆè¯»å–æ•´ä¸ªæ–‡ä»¶"
 		},
 		"maxConcurrentFileReads": {
-			"label": "并发文件读取限制",
-			"description": "read_file 工具可以同时处理的最大文件数。较高的值可能会加快读取多个小文件的速度，但会增加内存使用量。"
+			"label": "å¹¶å‘æ–‡ä»¶è¯»å–é™åˆ¶",
+			"description": "read_file å·¥å…·å¯ä»¥åŒæ—¶å¤„ç†çš„æœ€å¤§æ–‡ä»¶æ•°ã€‚è¾ƒé«˜çš„å€¼å¯èƒ½ä¼šåŠ å¿«è¯»å–å¤šä¸ªå°æ–‡ä»¶çš„é€Ÿåº¦ï¼Œä½†ä¼šå¢žåŠ å†…å­˜ä½¿ç”¨é‡ã€‚"
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "自动在上下文中包含诊断",
-				"description": "启用后，来自已编辑文件的诊断消息（错误）将自动包含在上下文中。您始终可以使用 @problems 手动包含所有工作区诊断。"
+				"label": "è‡ªåŠ¨åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«è¯Šæ–­",
+				"description": "å¯ç”¨åŽï¼Œæ¥è‡ªå·²ç¼–è¾‘æ–‡ä»¶çš„è¯Šæ–­æ¶ˆæ¯ï¼ˆé”™è¯¯ï¼‰å°†è‡ªåŠ¨åŒ…å«åœ¨ä¸Šä¸‹æ–‡ä¸­ã€‚æ‚¨å§‹ç»ˆå¯ä»¥ä½¿ç”¨ @problems æ‰‹åŠ¨åŒ…å«æ‰€æœ‰å·¥ä½œåŒºè¯Šæ–­ã€‚"
 			},
 			"maxMessages": {
-				"label": "最大诊断消息数",
-				"description": "每个文件包含的最大诊断消息数。此限制适用于自动包含（启用复选框时）和手动 @problems 提及。较高的值提供更多上下文，但会增加令牌使用量。",
-				"resetTooltip": "重置为默认值 (50)",
-				"unlimited": "无限制诊断消息",
-				"unlimitedLabel": "无限制"
+				"label": "æœ€å¤§è¯Šæ–­æ¶ˆæ¯æ•°",
+				"description": "æ¯ä¸ªæ–‡ä»¶åŒ…å«çš„æœ€å¤§è¯Šæ–­æ¶ˆæ¯æ•°ã€‚æ­¤é™åˆ¶é€‚ç”¨äºŽè‡ªåŠ¨åŒ…å«ï¼ˆå¯ç”¨å¤é€‰æ¡†æ—¶ï¼‰å’Œæ‰‹åŠ¨ @problems æåŠã€‚è¾ƒé«˜çš„å€¼æä¾›æ›´å¤šä¸Šä¸‹æ–‡ï¼Œä½†ä¼šå¢žåŠ ä»¤ç‰Œä½¿ç”¨é‡ã€‚",
+				"resetTooltip": "é‡ç½®ä¸ºé»˜è®¤å€¼ (50)",
+				"unlimited": "æ— é™åˆ¶è¯Šæ–­æ¶ˆæ¯",
+				"unlimitedLabel": "æ— é™åˆ¶"
 			},
 			"delayAfterWrite": {
-				"label": "写入后延迟以允许诊断程序检测潜在问题",
-				"description": "在继续之前写入文件后等待的时间，允许诊断工具处理更改并检测问题。"
+				"label": "å†™å…¥åŽå»¶è¿Ÿä»¥å…è®¸è¯Šæ–­ç¨‹åºæ£€æµ‹æ½œåœ¨é—®é¢˜",
+				"description": "åœ¨ç»§ç»­ä¹‹å‰å†™å…¥æ–‡ä»¶åŽç­‰å¾…çš„æ—¶é—´ï¼Œå…è®¸è¯Šæ–­å·¥å…·å¤„ç†æ›´æ”¹å¹¶æ£€æµ‹é—®é¢˜ã€‚"
 			}
 		},
 		"condensingThreshold": {
-			"label": "压缩触发阈值",
-			"selectProfile": "配置配置文件阈值",
-			"defaultProfile": "全局默认（所有配置文件）",
-			"defaultDescription": "当上下文达到此百分比时，将自动为所有配置文件压缩，除非它们有自定义设置",
-			"profileDescription": "仅此配置文件的自定义阈值（覆盖全局默认）",
-			"inheritDescription": "此配置文件继承全局默认阈值（{{threshold}}%）",
-			"usesGlobal": "（使用全局 {{threshold}}%）"
+			"label": "åŽ‹ç¼©è§¦å‘é˜ˆå€¼",
+			"selectProfile": "é…ç½®é…ç½®æ–‡ä»¶é˜ˆå€¼",
+			"defaultProfile": "å…¨å±€é»˜è®¤ï¼ˆæ‰€æœ‰é…ç½®æ–‡ä»¶ï¼‰",
+			"defaultDescription": "å½“ä¸Šä¸‹æ–‡è¾¾åˆ°æ­¤ç™¾åˆ†æ¯”æ—¶ï¼Œå°†è‡ªåŠ¨ä¸ºæ‰€æœ‰é…ç½®æ–‡ä»¶åŽ‹ç¼©ï¼Œé™¤éžå®ƒä»¬æœ‰è‡ªå®šä¹‰è®¾ç½®",
+			"profileDescription": "ä»…æ­¤é…ç½®æ–‡ä»¶çš„è‡ªå®šä¹‰é˜ˆå€¼ï¼ˆè¦†ç›–å…¨å±€é»˜è®¤ï¼‰",
+			"inheritDescription": "æ­¤é…ç½®æ–‡ä»¶ç»§æ‰¿å…¨å±€é»˜è®¤é˜ˆå€¼ï¼ˆ{{threshold}}%ï¼‰",
+			"usesGlobal": "ï¼ˆä½¿ç”¨å…¨å±€ {{threshold}}%ï¼‰"
 		},
 		"maxImageFileSize": {
-			"label": "最大图像文件大小",
+			"label": "æœ€å¤§å›¾åƒæ–‡ä»¶å¤§å°",
 			"mb": "MB",
-			"description": "read file工具可以处理的图像文件的最大大小（以MB为单位）。"
+			"description": "read fileå·¥å…·å¯ä»¥å¤„ç†çš„å›¾åƒæ–‡ä»¶çš„æœ€å¤§å¤§å°ï¼ˆä»¥MBä¸ºå•ä½ï¼‰ã€‚"
 		},
 		"maxTotalImageSize": {
-			"label": "图片总大小上限",
+			"label": "å›¾ç‰‡æ€»å¤§å°ä¸Šé™",
 			"mb": "MB",
-			"description": "单次 read_file 操作中处理的所有图片的最大累计大小限制（MB）。读取多张图片时，每张图片的大小会累加到总大小中。如果包含另一张图片会超过此限制，则会跳过该图片。"
+			"description": "å•æ¬¡ read_file æ“ä½œä¸­å¤„ç†çš„æ‰€æœ‰å›¾ç‰‡çš„æœ€å¤§ç´¯è®¡å¤§å°é™åˆ¶ï¼ˆMBï¼‰ã€‚è¯»å–å¤šå¼ å›¾ç‰‡æ—¶ï¼Œæ¯å¼ å›¾ç‰‡çš„å¤§å°ä¼šç´¯åŠ åˆ°æ€»å¤§å°ä¸­ã€‚å¦‚æžœåŒ…å«å¦ä¸€å¼ å›¾ç‰‡ä¼šè¶…è¿‡æ­¤é™åˆ¶ï¼Œåˆ™ä¼šè·³è¿‡è¯¥å›¾ç‰‡ã€‚"
 		},
 		"includeCurrentTime": {
-			"label": "在上下文中包含当前时间",
-			"description": "启用后，当前时间和时区信息将包含在系统提示中。如果模型因时间问题停止工作，请禁用此选项。"
+			"label": "åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«å½“å‰æ—¶é—´",
+			"description": "å¯ç”¨åŽï¼Œå½“å‰æ—¶é—´å’Œæ—¶åŒºä¿¡æ¯å°†åŒ…å«åœ¨ç³»ç»Ÿæç¤ºä¸­ã€‚å¦‚æžœæ¨¡åž‹å› æ—¶é—´é—®é¢˜åœæ­¢å·¥ä½œï¼Œè¯·ç¦ç”¨æ­¤é€‰é¡¹ã€‚"
 		},
 		"includeCurrentCost": {
-			"label": "在上下文中包含当前成本",
-			"description": "启用后，当前 API 使用成本将包含在系统提示中。如果模型因成本问题停止工作，请禁用此选项。"
+			"label": "åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«å½“å‰æˆæœ¬",
+			"description": "å¯ç”¨åŽï¼Œå½“å‰ API ä½¿ç”¨æˆæœ¬å°†åŒ…å«åœ¨ç³»ç»Ÿæç¤ºä¸­ã€‚å¦‚æžœæ¨¡åž‹å› æˆæœ¬é—®é¢˜åœæ­¢å·¥ä½œï¼Œè¯·ç¦ç”¨æ­¤é€‰é¡¹ã€‚"
 		},
 		"maxGitStatusFiles": {
-			"label": "Git 状态最大文件数",
-			"description": "git状态上下文中包含的最大文件条目数。设为0禁用。分支信息和提交在>0时始终显示。"
+			"label": "Git çŠ¶æ€æœ€å¤§æ–‡ä»¶æ•°",
+			"description": "gitçŠ¶æ€ä¸Šä¸‹æ–‡ä¸­åŒ…å«çš„æœ€å¤§æ–‡ä»¶æ¡ç›®æ•°ã€‚è®¾ä¸º0ç¦ç”¨ã€‚åˆ†æ”¯ä¿¡æ¯å’Œæäº¤åœ¨\u003e0æ—¶å§‹ç»ˆæ˜¾ç¤ºã€‚"
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "终端设置：基础",
-			"description": "基础终端设置"
+			"label": "ç»ˆç«¯è®¾ç½®ï¼šåŸºç¡€",
+			"description": "åŸºç¡€ç»ˆç«¯è®¾ç½®"
 		},
 		"advanced": {
-			"label": "终端设置：高级",
-			"description": "这些设置仅在「使用内联终端」禁用时适用。仅影响 VS Code 终端，可能需要重启 IDE。"
+			"label": "ç»ˆç«¯è®¾ç½®ï¼šé«˜çº§",
+			"description": "è¿™äº›è®¾ç½®ä»…åœ¨ã€Œä½¿ç”¨å†…è”ç»ˆç«¯ã€ç¦ç”¨æ—¶é€‚ç”¨ã€‚ä»…å½±å“ VS Code ç»ˆç«¯ï¼Œå¯èƒ½éœ€è¦é‡å¯ IDEã€‚"
 		},
 		"outputLineLimit": {
-			"label": "终端输出限制",
-			"description": "保留首尾行并丢弃中间行以保持在限制内。降低可节省 token；提高可为 Roo 提供更多中间细节。Roo 看到内容被跳过的占位符。<0>了解更多</0>"
+			"label": "ç»ˆç«¯è¾“å‡ºé™åˆ¶",
+			"description": "ä¿ç•™é¦–å°¾è¡Œå¹¶ä¸¢å¼ƒä¸­é—´è¡Œä»¥ä¿æŒåœ¨é™åˆ¶å†…ã€‚é™ä½Žå¯èŠ‚çœ tokenï¼›æé«˜å¯ä¸º Roo æä¾›æ›´å¤šä¸­é—´ç»†èŠ‚ã€‚Roo çœ‹åˆ°å†…å®¹è¢«è·³è¿‡çš„å ä½ç¬¦ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
-			"label": "终端字符限制",
-			"description": "通过强制限制输出大小来覆盖行限制以防止内存问题。如果超出，保留开头和结尾并向 Roo 显示内容被跳过的占位符。<0>了解更多</0>"
+			"label": "ç»ˆç«¯å­—ç¬¦é™åˆ¶",
+			"description": "é€šè¿‡å¼ºåˆ¶é™åˆ¶è¾“å‡ºå¤§å°æ¥è¦†ç›–è¡Œé™åˆ¶ä»¥é˜²æ­¢å†…å­˜é—®é¢˜ã€‚å¦‚æžœè¶…å‡ºï¼Œä¿ç•™å¼€å¤´å’Œç»“å°¾å¹¶å‘ Roo æ˜¾ç¤ºå†…å®¹è¢«è·³è¿‡çš„å ä½ç¬¦ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
-			"label": "终端 shell 集成超时",
-			"description": "运行命令前等待 VS Code shell 集成的时间。如果 shell 启动缓慢或看到 'Shell Integration Unavailable' 错误，请提高此值。<0>了解更多</0>"
+			"label": "ç»ˆç«¯ shell é›†æˆè¶…æ—¶",
+			"description": "è¿è¡Œå‘½ä»¤å‰ç­‰å¾… VS Code shell é›†æˆçš„æ—¶é—´ã€‚å¦‚æžœ shell å¯åŠ¨ç¼“æ…¢æˆ–çœ‹åˆ° \u0027Shell Integration Unavailable\u0027 é”™è¯¯ï¼Œè¯·æé«˜æ­¤å€¼ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
-			"label": "使用内联终端（推荐）",
-			"description": "在内联终端（聊天）中运行命令以绕过 shell 配置文件/集成，实现更快、更可靠的运行。禁用时，Roo 使用 VS Code 终端及您的 shell 配置文件、提示和插件。<0>了解更多</0>"
+			"label": "ä½¿ç”¨å†…è”ç»ˆç«¯ï¼ˆæŽ¨èï¼‰",
+			"description": "åœ¨å†…è”ç»ˆç«¯ï¼ˆèŠå¤©ï¼‰ä¸­è¿è¡Œå‘½ä»¤ä»¥ç»•è¿‡ shell é…ç½®æ–‡ä»¶/é›†æˆï¼Œå®žçŽ°æ›´å¿«ã€æ›´å¯é çš„è¿è¡Œã€‚ç¦ç”¨æ—¶ï¼ŒRoo ä½¿ç”¨ VS Code ç»ˆç«¯åŠæ‚¨çš„ shell é…ç½®æ–‡ä»¶ã€æç¤ºå’Œæ’ä»¶ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"commandDelay": {
-			"label": "终端命令延迟",
-			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。<0>了解更多</0>"
+			"label": "ç»ˆç«¯å‘½ä»¤å»¶è¿Ÿ",
+			"description": "åœ¨æ¯ä¸ªå‘½ä»¤åŽæ·»åŠ çŸ­æš‚æš‚åœï¼Œä»¥ä¾¿ VS Code ç»ˆç«¯åˆ·æ–°æ‰€æœ‰è¾“å‡ºï¼ˆbash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleepï¼‰ã€‚ä»…åœ¨çœ‹åˆ°ç¼ºå°‘å°¾éƒ¨è¾“å‡ºæ—¶ä½¿ç”¨ï¼›å¦åˆ™ä¿æŒä¸º 0ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"compressProgressBar": {
-			"label": "压缩进度条输出",
-			"description": "折叠进度条/旋转器，仅保留最终状态（节省 token）。<0>了解更多</0>"
+			"label": "åŽ‹ç¼©è¿›åº¦æ¡è¾“å‡º",
+			"description": "æŠ˜å è¿›åº¦æ¡/æ—‹è½¬å™¨ï¼Œä»…ä¿ç•™æœ€ç»ˆçŠ¶æ€ï¼ˆèŠ‚çœ tokenï¼‰ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"powershellCounter": {
-			"label": "启用 PowerShell 计数器解决方案",
-			"description": "当 PowerShell 输出丢失或重复时启用此选项；它会为每个命令附加一个小计数器以稳定输出。如果输出已正常，请保持关闭。<0>了解更多</0>"
+			"label": "å¯ç”¨ PowerShell è®¡æ•°å™¨è§£å†³æ–¹æ¡ˆ",
+			"description": "å½“ PowerShell è¾“å‡ºä¸¢å¤±æˆ–é‡å¤æ—¶å¯ç”¨æ­¤é€‰é¡¹ï¼›å®ƒä¼šä¸ºæ¯ä¸ªå‘½ä»¤é™„åŠ ä¸€ä¸ªå°è®¡æ•°å™¨ä»¥ç¨³å®šè¾“å‡ºã€‚å¦‚æžœè¾“å‡ºå·²æ­£å¸¸ï¼Œè¯·ä¿æŒå…³é—­ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
-			"label": "清除 ZSH EOL 标记",
-			"description": "当您在行尾看到零散的 % 或解析看起来错误时启用此选项；它会省略 Zsh 的行尾标记（%）。<0>了解更多</0>"
+			"label": "æ¸…é™¤ ZSH EOL æ ‡è®°",
+			"description": "å½“æ‚¨åœ¨è¡Œå°¾çœ‹åˆ°é›¶æ•£çš„ % æˆ–è§£æžçœ‹èµ·æ¥é”™è¯¯æ—¶å¯ç”¨æ­¤é€‰é¡¹ï¼›å®ƒä¼šçœç•¥ Zsh çš„è¡Œå°¾æ ‡è®°ï¼ˆ%ï¼‰ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshOhMy": {
-			"label": "启用 Oh My Zsh 集成",
-			"description": "当您的 Oh My Zsh 主题/插件期望 shell 集成时启用此选项；它会设置 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。关闭此选项以避免设置该变量。<0>了解更多</0>"
+			"label": "å¯ç”¨ Oh My Zsh é›†æˆ",
+			"description": "å½“æ‚¨çš„ Oh My Zsh ä¸»é¢˜/æ’ä»¶æœŸæœ› shell é›†æˆæ—¶å¯ç”¨æ­¤é€‰é¡¹ï¼›å®ƒä¼šè®¾ç½® ITERM_SHELL_INTEGRATION_INSTALLED=Yesã€‚å…³é—­æ­¤é€‰é¡¹ä»¥é¿å…è®¾ç½®è¯¥å˜é‡ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshP10k": {
-			"label": "启用 Powerlevel10k 集成",
-			"description": "使用 Powerlevel10k shell 集成时启用此选项。<0>了解更多</0>"
+			"label": "å¯ç”¨ Powerlevel10k é›†æˆ",
+			"description": "ä½¿ç”¨ Powerlevel10k shell é›†æˆæ—¶å¯ç”¨æ­¤é€‰é¡¹ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zdotdir": {
-			"label": "启用 ZDOTDIR 处理",
-			"description": "当 zsh shell 集成失败或与您的 dotfiles 冲突时启用此选项。<0>了解更多</0>"
+			"label": "å¯ç”¨ ZDOTDIR å¤„ç†",
+			"description": "å½“ zsh shell é›†æˆå¤±è´¥æˆ–ä¸Žæ‚¨çš„ dotfiles å†²çªæ—¶å¯ç”¨æ­¤é€‰é¡¹ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"inheritEnv": {
-			"label": "继承环境变量",
-			"description": "启用此选项以从父 VS Code 进程继承环境变量。<0>了解更多</0>"
+			"label": "ç»§æ‰¿çŽ¯å¢ƒå˜é‡",
+			"description": "å¯ç”¨æ­¤é€‰é¡¹ä»¥ä»Žçˆ¶ VS Code è¿›ç¨‹ç»§æ‰¿çŽ¯å¢ƒå˜é‡ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
-		"title": "高级设置"
+		"title": "é«˜çº§è®¾ç½®"
 	},
 	"toolProtocol": {
-		"label": "工具调用协议",
-		"description": "选择 Roo 如何与 API 通信。原生使用提供商的函数调用 API，而 XML 使用 XML 格式的工具定义。",
-		"default": "默认",
+		"label": "å·¥å…·è°ƒç”¨åè®®",
+		"description": "é€‰æ‹© Roo å¦‚ä½•ä¸Ž API é€šä¿¡ã€‚åŽŸç”Ÿä½¿ç”¨æä¾›å•†çš„å‡½æ•°è°ƒç”¨ APIï¼Œè€Œ XML ä½¿ç”¨ XML æ ¼å¼çš„å·¥å…·å®šä¹‰ã€‚",
+		"default": "é»˜è®¤",
 		"xml": "XML",
-		"native": "原生",
-		"currentDefault": "默认: {{protocol}}"
+		"native": "åŽŸç”Ÿ",
+		"currentDefault": "é»˜è®¤: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "启用diff更新",
-			"description": "启用后，Roo 将能够通过差异算法写入，避免模型输出完整文件，以降低Token消耗",
+			"label": "å¯ç”¨diffæ›´æ–°",
+			"description": "å¯ç”¨åŽï¼ŒRoo å°†èƒ½å¤Ÿé€šè¿‡å·®å¼‚ç®—æ³•å†™å…¥ï¼Œé¿å…æ¨¡åž‹è¾“å‡ºå®Œæ•´æ–‡ä»¶ï¼Œä»¥é™ä½ŽTokenæ¶ˆè€—",
 			"strategy": {
-				"label": "Diff 策略",
+				"label": "Diff ç­–ç•¥",
 				"options": {
-					"standard": "标准（单块）",
-					"multiBlock": "实验性：多块 diff",
-					"unified": "实验性：统一 diff"
+					"standard": "æ ‡å‡†ï¼ˆå•å—ï¼‰",
+					"multiBlock": "å®žéªŒæ€§ï¼šå¤šå— diff",
+					"unified": "å®žéªŒæ€§ï¼šç»Ÿä¸€ diff"
 				},
 				"descriptions": {
-					"standard": "标准 diff 策略一次对一个代码块应用更改。",
-					"unified": "统一 diff 策略采用多种方法应用差异并选择最佳方法。",
-					"multiBlock": "多块 diff 策略允许在一个请求中更新文件中的多个代码块。"
+					"standard": "æ ‡å‡† diff ç­–ç•¥ä¸€æ¬¡å¯¹ä¸€ä¸ªä»£ç å—åº”ç”¨æ›´æ”¹ã€‚",
+					"unified": "ç»Ÿä¸€ diff ç­–ç•¥é‡‡ç”¨å¤šç§æ–¹æ³•åº”ç”¨å·®å¼‚å¹¶é€‰æ‹©æœ€ä½³æ–¹æ³•ã€‚",
+					"multiBlock": "å¤šå— diff ç­–ç•¥å…è®¸åœ¨ä¸€ä¸ªè¯·æ±‚ä¸­æ›´æ–°æ–‡ä»¶ä¸­çš„å¤šä¸ªä»£ç å—ã€‚"
 				}
 			},
 			"matchPrecision": {
-				"label": "匹配精度",
-				"description": "控制代码匹配的精确程度。数值越低匹配越宽松（容错率高但风险大），建议保持100%以确保安全。"
+				"label": "åŒ¹é…ç²¾åº¦",
+				"description": "æŽ§åˆ¶ä»£ç åŒ¹é…çš„ç²¾ç¡®ç¨‹åº¦ã€‚æ•°å€¼è¶Šä½ŽåŒ¹é…è¶Šå®½æ¾ï¼ˆå®¹é”™çŽ‡é«˜ä½†é£Žé™©å¤§ï¼‰ï¼Œå»ºè®®ä¿æŒ100%ä»¥ç¡®ä¿å®‰å…¨ã€‚"
 			}
 		},
 		"todoList": {
-			"label": "启用任务清单工具",
-			"description": "启用后，Roo 可以创建和管理任务清单来跟踪任务进度。这有助于将复杂任务组织成可管理的步骤。"
+			"label": "å¯ç”¨ä»»åŠ¡æ¸…å•å·¥å…·",
+			"description": "å¯ç”¨åŽï¼ŒRoo å¯ä»¥åˆ›å»ºå’Œç®¡ç†ä»»åŠ¡æ¸…å•æ¥è·Ÿè¸ªä»»åŠ¡è¿›åº¦ã€‚è¿™æœ‰åŠ©äºŽå°†å¤æ‚ä»»åŠ¡ç»„ç»‡æˆå¯ç®¡ç†çš„æ­¥éª¤ã€‚"
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "启用diff更新工具",
-			"description": "可减少因模型错误导致的重复尝试，但可能引发意外操作。启用前请确保理解风险并会仔细检查所有修改。"
+			"name": "å¯ç”¨diffæ›´æ–°å·¥å…·",
+			"description": "å¯å‡å°‘å› æ¨¡åž‹é”™è¯¯å¯¼è‡´çš„é‡å¤å°è¯•ï¼Œä½†å¯èƒ½å¼•å‘æ„å¤–æ“ä½œã€‚å¯ç”¨å‰è¯·ç¡®ä¿ç†è§£é£Žé™©å¹¶ä¼šä»”ç»†æ£€æŸ¥æ‰€æœ‰ä¿®æ”¹ã€‚"
 		},
 		"INSERT_BLOCK": {
-			"name": "启用插入内容工具",
-			"description": "允许 Roo 在特定行号插入内容，无需处理差异。"
+			"name": "å¯ç”¨æ’å…¥å†…å®¹å·¥å…·",
+			"description": "å…è®¸ Roo åœ¨ç‰¹å®šè¡Œå·æ’å…¥å†…å®¹ï¼Œæ— éœ€å¤„ç†å·®å¼‚ã€‚"
 		},
 		"POWER_STEERING": {
-			"name": "启用增强导向模式",
-			"description": "开启后，Roo 将更频繁地向模型推送当前模式定义的详细信息，从而强化对角色设定和自定义指令的遵循力度。注意：此模式会提升每条消息的 token 消耗量。"
+			"name": "å¯ç”¨å¢žå¼ºå¯¼å‘æ¨¡å¼",
+			"description": "å¼€å¯åŽï¼ŒRoo å°†æ›´é¢‘ç¹åœ°å‘æ¨¡åž‹æŽ¨é€å½“å‰æ¨¡å¼å®šä¹‰çš„è¯¦ç»†ä¿¡æ¯ï¼Œä»Žè€Œå¼ºåŒ–å¯¹è§’è‰²è®¾å®šå’Œè‡ªå®šä¹‰æŒ‡ä»¤çš„éµå¾ªåŠ›åº¦ã€‚æ³¨æ„ï¼šæ­¤æ¨¡å¼ä¼šæå‡æ¯æ¡æ¶ˆæ¯çš„ token æ¶ˆè€—é‡ã€‚"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "允许批量搜索和替换",
-			"description": "启用后，Roo 将尝试在一个请求中进行批量搜索和替换。"
+			"name": "å…è®¸æ‰¹é‡æœç´¢å’Œæ›¿æ¢",
+			"description": "å¯ç”¨åŽï¼ŒRoo å°†å°è¯•åœ¨ä¸€ä¸ªè¯·æ±‚ä¸­è¿›è¡Œæ‰¹é‡æœç´¢å’Œæ›¿æ¢ã€‚"
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "启用并发文件读取",
-			"description": "启用后，Roo 可以在单个请求中读取多个文件。禁用后，Roo 必须逐个读取文件。在使用能力较弱的模型或希望对文件访问有更多控制时，禁用此功能可能会有所帮助。"
+			"name": "å¯ç”¨å¹¶å‘æ–‡ä»¶è¯»å–",
+			"description": "å¯ç”¨åŽï¼ŒRoo å¯ä»¥åœ¨å•ä¸ªè¯·æ±‚ä¸­è¯»å–å¤šä¸ªæ–‡ä»¶ã€‚ç¦ç”¨åŽï¼ŒRoo å¿…é¡»é€ä¸ªè¯»å–æ–‡ä»¶ã€‚åœ¨ä½¿ç”¨èƒ½åŠ›è¾ƒå¼±çš„æ¨¡åž‹æˆ–å¸Œæœ›å¯¹æ–‡ä»¶è®¿é—®æœ‰æ›´å¤šæŽ§åˆ¶æ—¶ï¼Œç¦ç”¨æ­¤åŠŸèƒ½å¯èƒ½ä¼šæœ‰æ‰€å¸®åŠ©ã€‚"
 		},
 		"MARKETPLACE": {
-			"name": "启用 Marketplace",
-			"description": "启用后，你可以从 Marketplace 安装 MCP 和自定义模式。"
+			"name": "å¯ç”¨ Marketplace",
+			"description": "å¯ç”¨åŽï¼Œä½ å¯ä»¥ä»Ž Marketplace å®‰è£… MCP å’Œè‡ªå®šä¹‰æ¨¡å¼ã€‚"
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "启用并发文件编辑",
-			"description": "启用后 Roo 可在单个请求中编辑多个文件。禁用后 Roo 必须逐个编辑文件。禁用此功能有助于使用能力较弱的模型或需要更精确控制文件修改时。"
+			"name": "å¯ç”¨å¹¶å‘æ–‡ä»¶ç¼–è¾‘",
+			"description": "å¯ç”¨åŽ Roo å¯åœ¨å•ä¸ªè¯·æ±‚ä¸­ç¼–è¾‘å¤šä¸ªæ–‡ä»¶ã€‚ç¦ç”¨åŽ Roo å¿…é¡»é€ä¸ªç¼–è¾‘æ–‡ä»¶ã€‚ç¦ç”¨æ­¤åŠŸèƒ½æœ‰åŠ©äºŽä½¿ç”¨èƒ½åŠ›è¾ƒå¼±çš„æ¨¡åž‹æˆ–éœ€è¦æ›´ç²¾ç¡®æŽ§åˆ¶æ–‡ä»¶ä¿®æ”¹æ—¶ã€‚"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "后台编辑",
-			"description": "启用后防止编辑器焦点干扰。文件编辑在后台进行，不会打开差异视图或抢夺焦点。你可以在 Roo 进行更改时继续不受干扰地工作。文件可以在不获取焦点的情况下打开以捕获诊断信息，或保持完全关闭状态。"
+			"name": "åŽå°ç¼–è¾‘",
+			"description": "å¯ç”¨åŽé˜²æ­¢ç¼–è¾‘å™¨ç„¦ç‚¹å¹²æ‰°ã€‚æ–‡ä»¶ç¼–è¾‘åœ¨åŽå°è¿›è¡Œï¼Œä¸ä¼šæ‰“å¼€å·®å¼‚è§†å›¾æˆ–æŠ¢å¤ºç„¦ç‚¹ã€‚ä½ å¯ä»¥åœ¨ Roo è¿›è¡Œæ›´æ”¹æ—¶ç»§ç»­ä¸å—å¹²æ‰°åœ°å·¥ä½œã€‚æ–‡ä»¶å¯ä»¥åœ¨ä¸èŽ·å–ç„¦ç‚¹çš„æƒ…å†µä¸‹æ‰“å¼€ä»¥æ•èŽ·è¯Šæ–­ä¿¡æ¯ï¼Œæˆ–ä¿æŒå®Œå…¨å…³é—­çŠ¶æ€ã€‚"
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "使用新的消息解析器",
-			"description": "启用实验性的流式消息解析器。通过更高效地处理消息，可显著提升长回复的性能。"
+			"name": "ä½¿ç”¨æ–°çš„æ¶ˆæ¯è§£æžå™¨",
+			"description": "å¯ç”¨å®žéªŒæ€§çš„æµå¼æ¶ˆæ¯è§£æžå™¨ã€‚é€šè¿‡æ›´é«˜æ•ˆåœ°å¤„ç†æ¶ˆæ¯ï¼Œå¯æ˜¾è‘—æå‡é•¿å›žå¤çš„æ€§èƒ½ã€‚"
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "要求新任务提供 'todos' 列表",
-			"description": "启用后，new_task 工具将需要提供 todos 参数。这可以确保所有新任务都以明确的目标列表开始。禁用时（默认），todos 参数保持可选，以实现向后兼容。"
+			"name": "è¦æ±‚æ–°ä»»åŠ¡æä¾› \u0027todos\u0027 åˆ—è¡¨",
+			"description": "å¯ç”¨åŽï¼Œnew_task å·¥å…·å°†éœ€è¦æä¾› todos å‚æ•°ã€‚è¿™å¯ä»¥ç¡®ä¿æ‰€æœ‰æ–°ä»»åŠ¡éƒ½ä»¥æ˜Žç¡®çš„ç›®æ ‡åˆ—è¡¨å¼€å§‹ã€‚ç¦ç”¨æ—¶ï¼ˆé»˜è®¤ï¼‰ï¼Œtodos å‚æ•°ä¿æŒå¯é€‰ï¼Œä»¥å®žçŽ°å‘åŽå…¼å®¹ã€‚"
 		},
 		"IMAGE_GENERATION": {
-			"providerLabel": "提供商",
-			"providerDescription": "选择用于图像生成的提供商。",
-			"name": "启用 AI 图像生成",
-			"description": "启用后，Roo 可以使用 OpenRouter 的图像生成模型从文本提示生成图像。需要配置 OpenRouter API 密钥。",
-			"openRouterApiKeyLabel": "OpenRouter API 密钥",
-			"openRouterApiKeyPlaceholder": "输入您的 OpenRouter API 密钥",
-			"getApiKeyText": "获取您的 API 密钥",
-			"modelSelectionLabel": "图像生成模型",
-			"modelSelectionDescription": "选择用于图像生成的模型",
-			"warningMissingKey": "⚠️ 图像生成需要 OpenRouter API 密钥。请在上方配置。",
-			"successConfigured": "✓ 图像生成已配置完成，可以使用"
+			"providerLabel": "æä¾›å•†",
+			"providerDescription": "é€‰æ‹©ç”¨äºŽå›¾åƒç”Ÿæˆçš„æä¾›å•†ã€‚",
+			"name": "å¯ç”¨ AI å›¾åƒç”Ÿæˆ",
+			"description": "å¯ç”¨åŽï¼ŒRoo å¯ä»¥ä½¿ç”¨ OpenRouter çš„å›¾åƒç”Ÿæˆæ¨¡åž‹ä»Žæ–‡æœ¬æç¤ºç”Ÿæˆå›¾åƒã€‚éœ€è¦é…ç½® OpenRouter API å¯†é’¥ã€‚",
+			"openRouterApiKeyLabel": "OpenRouter API å¯†é’¥",
+			"openRouterApiKeyPlaceholder": "è¾“å…¥æ‚¨çš„ OpenRouter API å¯†é’¥",
+			"getApiKeyText": "èŽ·å–æ‚¨çš„ API å¯†é’¥",
+			"modelSelectionLabel": "å›¾åƒç”Ÿæˆæ¨¡åž‹",
+			"modelSelectionDescription": "é€‰æ‹©ç”¨äºŽå›¾åƒç”Ÿæˆçš„æ¨¡åž‹",
+			"warningMissingKey": "âš ï¸ å›¾åƒç”Ÿæˆéœ€è¦ OpenRouter API å¯†é’¥ã€‚è¯·åœ¨ä¸Šæ–¹é…ç½®ã€‚",
+			"successConfigured": "âœ“ å›¾åƒç”Ÿæˆå·²é…ç½®å®Œæˆï¼Œå¯ä»¥ä½¿ç”¨"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "启用模型发起的斜杠命令",
-			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
+			"name": "å¯ç”¨æ¨¡åž‹å‘èµ·çš„æ–œæ å‘½ä»¤",
+			"description": "å¯ç”¨åŽ Roo å¯è¿è¡Œæ–œæ å‘½ä»¤æ‰§è¡Œå·¥ä½œæµç¨‹ã€‚"
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "并行工具调用",
-			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
+			"name": "å¹¶è¡Œå·¥å…·è°ƒç”¨",
+			"description": "å¯ç”¨åŽï¼ŒåŽŸç”Ÿåè®®å¯åœ¨å•ä¸ªåŠ©æ‰‹æ¶ˆæ¯è½®æ¬¡ä¸­æ‰§è¡Œå¤šä¸ªå·¥å…·ã€‚"
 		}
 	},
 	"promptCaching": {
-		"label": "禁用提示词缓存",
-		"description": "选中后，Roo 将不会为此模型使用提示词缓存。"
+		"label": "ç¦ç”¨æç¤ºè¯ç¼“å­˜",
+		"description": "é€‰ä¸­åŽï¼ŒRoo å°†ä¸ä¼šä¸ºæ­¤æ¨¡åž‹ä½¿ç”¨æç¤ºè¯ç¼“å­˜ã€‚"
 	},
 	"temperature": {
-		"useCustom": "使用自定义温度",
-		"description": "控制模型响应的随机性",
-		"rangeDescription": "值越高回答越多样，值越低越保守"
+		"useCustom": "ä½¿ç”¨è‡ªå®šä¹‰æ¸©åº¦",
+		"description": "æŽ§åˆ¶æ¨¡åž‹å“åº”çš„éšæœºæ€§",
+		"rangeDescription": "å€¼è¶Šé«˜å›žç­”è¶Šå¤šæ ·ï¼Œå€¼è¶Šä½Žè¶Šä¿å®ˆ"
 	},
 	"modelInfo": {
-		"supportsImages": "支持图像",
-		"noImages": "不支持图像",
-		"supportsPromptCache": "支持提示缓存",
-		"noPromptCache": "不支持提示缓存",
-		"contextWindow": "上下文窗口:",
-		"maxOutput": "最大输出",
-		"inputPrice": "输入价格",
-		"outputPrice": "输出价格",
-		"cacheReadsPrice": "缓存读取价格",
-		"cacheWritesPrice": "缓存写入价格",
-		"enableStreaming": "启用流式传输",
-		"enableR1Format": "启用 R1 模型参数",
-		"enableR1FormatTips": "使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误",
-		"useAzure": "使用 Azure 服务",
-		"azureApiVersion": "设置 Azure API 版本",
+		"supportsImages": "æ”¯æŒå›¾åƒ",
+		"noImages": "ä¸æ”¯æŒå›¾åƒ",
+		"supportsPromptCache": "æ”¯æŒæç¤ºç¼“å­˜",
+		"noPromptCache": "ä¸æ”¯æŒæç¤ºç¼“å­˜",
+		"contextWindow": "ä¸Šä¸‹æ–‡çª—å£:",
+		"maxOutput": "æœ€å¤§è¾“å‡º",
+		"inputPrice": "è¾“å…¥ä»·æ ¼",
+		"outputPrice": "è¾“å‡ºä»·æ ¼",
+		"cacheReadsPrice": "ç¼“å­˜è¯»å–ä»·æ ¼",
+		"cacheWritesPrice": "ç¼“å­˜å†™å…¥ä»·æ ¼",
+		"enableStreaming": "å¯ç”¨æµå¼ä¼ è¾“",
+		"enableR1Format": "å¯ç”¨ R1 æ¨¡åž‹å‚æ•°",
+		"enableR1FormatTips": "ä½¿ç”¨ QWQ ç­‰ R1 ç³»åˆ—æ¨¡åž‹æ—¶å¿…é¡»å¯ç”¨ï¼Œé¿å…å‡ºçŽ° 400 é”™è¯¯",
+		"useAzure": "ä½¿ç”¨ Azure æœåŠ¡",
+		"azureApiVersion": "è®¾ç½® Azure API ç‰ˆæœ¬",
 		"gemini": {
-			"freeRequests": "* 每分钟免费 {{count}} 个请求。之后，计费取决于提示大小。",
-			"pricingDetails": "有关更多信息，请参阅定价详情。",
-			"billingEstimate": "* 计费为估计值 - 具体费用取决于提示大小。"
+			"freeRequests": "* æ¯åˆ†é’Ÿå…è´¹ {{count}} ä¸ªè¯·æ±‚ã€‚ä¹‹åŽï¼Œè®¡è´¹å–å†³äºŽæç¤ºå¤§å°ã€‚",
+			"pricingDetails": "æœ‰å…³æ›´å¤šä¿¡æ¯ï¼Œè¯·å‚é˜…å®šä»·è¯¦æƒ…ã€‚",
+			"billingEstimate": "* è®¡è´¹ä¸ºä¼°è®¡å€¼ - å…·ä½“è´¹ç”¨å–å†³äºŽæç¤ºå¤§å°ã€‚"
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "自动获取 <serviceLink>{{serviceName}}</serviceLink> 上可用的最新模型列表。如果您不确定选择哪个模型，Roo Code 与 <defaultModelLink>{{defaultModelId}}</defaultModelLink> 配合最佳。您还可以搜索\"free\"以查找当前可用的免费选项。",
-		"label": "模型",
-		"searchPlaceholder": "搜索",
-		"noMatchFound": "未找到匹配项",
-		"useCustomModel": "使用自定义：{{modelId}}",
-		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
+		"automaticFetch": "è‡ªåŠ¨èŽ·å– \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003e ä¸Šå¯ç”¨çš„æœ€æ–°æ¨¡åž‹åˆ—è¡¨ã€‚å¦‚æžœæ‚¨ä¸ç¡®å®šé€‰æ‹©å“ªä¸ªæ¨¡åž‹ï¼ŒRoo Code ä¸Ž \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003e é…åˆæœ€ä½³ã€‚æ‚¨è¿˜å¯ä»¥æœç´¢\"free\"ä»¥æŸ¥æ‰¾å½“å‰å¯ç”¨çš„å…è´¹é€‰é¡¹ã€‚",
+		"label": "æ¨¡åž‹",
+		"searchPlaceholder": "æœç´¢",
+		"noMatchFound": "æœªæ‰¾åˆ°åŒ¹é…é¡¹",
+		"useCustomModel": "ä½¿ç”¨è‡ªå®šä¹‰ï¼š{{modelId}}",
+		"simplifiedExplanation": "ä½ å¯ä»¥ç¨åŽè°ƒæ•´è¯¦ç»†çš„æ¨¡åž‹è®¾ç½®ã€‚"
 	},
 	"footer": {
-		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "å¦‚æžœæ‚¨æœ‰ä»»ä½•é—®é¢˜æˆ–åé¦ˆï¼Œè¯·éšæ—¶åœ¨ \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003e ä¸Šæå‡ºé—®é¢˜æˆ–åŠ å…¥ \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e æˆ– \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
 		"telemetry": {
-			"label": "允许匿名数据收集",
-			"description": "通过发送匿名使用数据和错误报告来帮助改进 Roo Code。此遥测不会收集代码、提示 或个人信息。详细信息请参阅我们的<privacyLink>隐私政策</privacyLink>。您可以随时关闭此功能。"
+			"label": "å…è®¸åŒ¿åæ•°æ®æ”¶é›†",
+			"description": "é€šè¿‡å‘é€åŒ¿åä½¿ç”¨æ•°æ®å’Œé”™è¯¯æŠ¥å‘Šæ¥å¸®åŠ©æ”¹è¿› Roo Codeã€‚æ­¤é¥æµ‹ä¸ä¼šæ”¶é›†ä»£ç ã€æç¤º æˆ–ä¸ªäººä¿¡æ¯ã€‚è¯¦ç»†ä¿¡æ¯è¯·å‚é˜…æˆ‘ä»¬çš„\u003cprivacyLink\u003eéšç§æ”¿ç­–\u003c/privacyLink\u003eã€‚æ‚¨å¯ä»¥éšæ—¶å…³é—­æ­¤åŠŸèƒ½ã€‚"
 		},
 		"settings": {
-			"import": "导入",
-			"export": "导出",
-			"reset": "重置"
+			"import": "å¯¼å…¥",
+			"export": "å¯¼å‡º",
+			"reset": "é‡ç½®"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "最大Token数",
-		"maxThinkingTokens": "最大思考Token数"
+		"maxTokens": "æœ€å¤§Tokenæ•°",
+		"maxThinkingTokens": "æœ€å¤§æ€è€ƒTokenæ•°"
 	},
 	"validation": {
-		"apiKey": "您必须提供有效的 API 密钥。",
-		"awsRegion": "您必须选择一个区域来使用 Amazon Bedrock。",
-		"googleCloud": "您必须提供有效的 Google Cloud 项目 ID 和区域。",
-		"modelId": "您必须提供有效的模型 ID。",
-		"modelSelector": "您必须提供有效的模型选择器。",
-		"openAi": "您必须提供有效的基础 URL、API 密钥和模型 ID。",
+		"apiKey": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„ API å¯†é’¥ã€‚",
+		"awsRegion": "æ‚¨å¿…é¡»é€‰æ‹©ä¸€ä¸ªåŒºåŸŸæ¥ä½¿ç”¨ Amazon Bedrockã€‚",
+		"googleCloud": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„ Google Cloud é¡¹ç›® ID å’ŒåŒºåŸŸã€‚",
+		"modelId": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„æ¨¡åž‹ IDã€‚",
+		"modelSelector": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„æ¨¡åž‹é€‰æ‹©å™¨ã€‚",
+		"openAi": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„åŸºç¡€ URLã€API å¯†é’¥å’Œæ¨¡åž‹ IDã€‚",
 		"arn": {
-			"invalidFormat": "ARN 格式无效。请检查格式要求。",
-			"regionMismatch": "警告：您的 ARN 中的区域 ({{arnRegion}}) 与您选择的区域 ({{region}}) 不匹配。这可能会导致访问问题。提供程序将使用 ARN 中的区域。"
+			"invalidFormat": "ARN æ ¼å¼æ— æ•ˆã€‚è¯·æ£€æŸ¥æ ¼å¼è¦æ±‚ã€‚",
+			"regionMismatch": "è­¦å‘Šï¼šæ‚¨çš„ ARN ä¸­çš„åŒºåŸŸ ({{arnRegion}}) ä¸Žæ‚¨é€‰æ‹©çš„åŒºåŸŸ ({{region}}) ä¸åŒ¹é…ã€‚è¿™å¯èƒ½ä¼šå¯¼è‡´è®¿é—®é—®é¢˜ã€‚æä¾›ç¨‹åºå°†ä½¿ç”¨ ARN ä¸­çš„åŒºåŸŸã€‚"
 		},
-		"modelAvailability": "模型ID {{modelId}} 不可用，请重新选择",
-		"modelDeprecated": "此模型不再可用，请选择其他模型。",
-		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
-		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
-		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
-		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
+		"modelAvailability": "æ¨¡åž‹ID {{modelId}} ä¸å¯ç”¨ï¼Œè¯·é‡æ–°é€‰æ‹©",
+		"modelDeprecated": "æ­¤æ¨¡åž‹ä¸å†å¯ç”¨ï¼Œè¯·é€‰æ‹©å…¶ä»–æ¨¡åž‹ã€‚",
+		"providerNotAllowed": "æä¾›å•† \u0027{{provider}}\u0027 ä¸å…è®¸ç”¨äºŽæ‚¨çš„ç»„ç»‡",
+		"modelNotAllowed": "æ¨¡åž‹ \u0027{{model}}\u0027 ä¸å…è®¸ç”¨äºŽæä¾›å•† \u0027{{provider}}\u0027ï¼Œæ‚¨çš„ç»„ç»‡ä¸å…è®¸",
+		"profileInvalid": "æ­¤é…ç½®æ–‡ä»¶åŒ…å«æ‚¨çš„ç»„ç»‡ä¸å…è®¸çš„æä¾›å•†æˆ–æ¨¡åž‹",
+		"qwenCodeOauthPath": "æ‚¨å¿…é¡»æä¾›æœ‰æ•ˆçš„ OAuth å‡­è¯è·¯å¾„"
 	},
 	"placeholders": {
-		"apiKey": "请输入 API 密钥...",
-		"profileName": "请输入配置文件名称",
-		"accessKey": "请输入访问密钥...",
-		"secretKey": "请输入密钥...",
-		"sessionToken": "请输入会话Token...",
-		"credentialsJson": "请输入凭证 JSON...",
-		"keyFilePath": "请输入密钥文件路径...",
-		"projectId": "请输入项目 ID...",
-		"customArn": "请输入 ARN（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
-		"baseUrl": "请输入基础 URL...",
+		"apiKey": "è¯·è¾“å…¥ API å¯†é’¥...",
+		"profileName": "è¯·è¾“å…¥é…ç½®æ–‡ä»¶åç§°",
+		"accessKey": "è¯·è¾“å…¥è®¿é—®å¯†é’¥...",
+		"secretKey": "è¯·è¾“å…¥å¯†é’¥...",
+		"sessionToken": "è¯·è¾“å…¥ä¼šè¯Token...",
+		"credentialsJson": "è¯·è¾“å…¥å‡­è¯ JSON...",
+		"keyFilePath": "è¯·è¾“å…¥å¯†é’¥æ–‡ä»¶è·¯å¾„...",
+		"projectId": "è¯·è¾“å…¥é¡¹ç›® ID...",
+		"customArn": "è¯·è¾“å…¥ ARNï¼ˆä¾‹ï¼šarn:aws:bedrock:us-east-1:123456789012:foundation-model/my-modelï¼‰",
+		"baseUrl": "è¯·è¾“å…¥åŸºç¡€ URL...",
 		"modelId": {
-			"lmStudio": "例：meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "例：llama3.1"
+			"lmStudio": "ä¾‹ï¼šmeta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "ä¾‹ï¼šlmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "ä¾‹ï¼šllama3.1"
 		},
 		"numbers": {
-			"maxTokens": "例：4096",
-			"contextWindow": "例：128000",
-			"inputPrice": "例：0.0001",
-			"outputPrice": "例：0.0002",
-			"cacheWritePrice": "例：0.00005"
+			"maxTokens": "ä¾‹ï¼š4096",
+			"contextWindow": "ä¾‹ï¼š128000",
+			"inputPrice": "ä¾‹ï¼š0.0001",
+			"outputPrice": "ä¾‹ï¼š0.0002",
+			"cacheWritePrice": "ä¾‹ï¼š0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "默认值：http://localhost:11434",
-		"lmStudioUrl": "默认值：http://localhost:1234",
-		"geminiUrl": "默认值：https://generativelanguage.googleapis.com"
+		"ollamaUrl": "é»˜è®¤å€¼ï¼šhttp://localhost:11434",
+		"lmStudioUrl": "é»˜è®¤å€¼ï¼šhttp://localhost:1234",
+		"geminiUrl": "é»˜è®¤å€¼ï¼šhttps://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "自定义 ARN",
-		"useCustomArn": "使用自定义 ARN..."
+		"customArn": "è‡ªå®šä¹‰ ARN",
+		"useCustomArn": "ä½¿ç”¨è‡ªå®šä¹‰ ARN..."
 	},
-	"includeMaxOutputTokens": "包含最大输出 Token 数",
-	"includeMaxOutputTokensDescription": "在 API 请求中发送最大输出 Token 参数。某些提供商可能不支持此功能。",
-	"limitMaxTokensDescription": "限制响应中的最大 Token 数量",
-	"maxOutputTokensLabel": "最大输出 Token 数",
-	"maxTokensGenerateDescription": "响应中生成的最大 Token 数",
+	"includeMaxOutputTokens": "åŒ…å«æœ€å¤§è¾“å‡º Token æ•°",
+	"includeMaxOutputTokensDescription": "åœ¨ API è¯·æ±‚ä¸­å‘é€æœ€å¤§è¾“å‡º Token å‚æ•°ã€‚æŸäº›æä¾›å•†å¯èƒ½ä¸æ”¯æŒæ­¤åŠŸèƒ½ã€‚",
+	"limitMaxTokensDescription": "é™åˆ¶å“åº”ä¸­çš„æœ€å¤§ Token æ•°é‡",
+	"maxOutputTokensLabel": "æœ€å¤§è¾“å‡º Token æ•°",
+	"maxTokensGenerateDescription": "å“åº”ä¸­ç”Ÿæˆçš„æœ€å¤§ Token æ•°",
 	"serviceTier": {
-		"label": "服务等级",
-		"tooltip": "为加快API请求处理速度，请尝试优先处理服务等级。为获得更低价格但延迟较高，请尝试灵活处理等级。",
-		"standard": "标准",
-		"flex": "灵活",
-		"priority": "优先",
-		"pricingTableTitle": "按服务等级定价 (每百万Token价格)",
+		"label": "æœåŠ¡ç­‰çº§",
+		"tooltip": "ä¸ºåŠ å¿«APIè¯·æ±‚å¤„ç†é€Ÿåº¦ï¼Œè¯·å°è¯•ä¼˜å…ˆå¤„ç†æœåŠ¡ç­‰çº§ã€‚ä¸ºèŽ·å¾—æ›´ä½Žä»·æ ¼ä½†å»¶è¿Ÿè¾ƒé«˜ï¼Œè¯·å°è¯•çµæ´»å¤„ç†ç­‰çº§ã€‚",
+		"standard": "æ ‡å‡†",
+		"flex": "çµæ´»",
+		"priority": "ä¼˜å…ˆ",
+		"pricingTableTitle": "æŒ‰æœåŠ¡ç­‰çº§å®šä»· (æ¯ç™¾ä¸‡Tokenä»·æ ¼)",
 		"columns": {
-			"tier": "等级",
-			"input": "输入",
-			"output": "输出",
-			"cacheReads": "缓存读取"
+			"tier": "ç­‰çº§",
+			"input": "è¾“å…¥",
+			"output": "è¾“å‡º",
+			"cacheReads": "ç¼“å­˜è¯»å–"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "默认折叠「思考」消息",
-			"description": "启用后，「思考」块将默认折叠，直到您与其交互"
+			"label": "é»˜è®¤æŠ˜å ã€Œæ€è€ƒã€æ¶ˆæ¯",
+			"description": "å¯ç”¨åŽï¼Œã€Œæ€è€ƒã€å—å°†é»˜è®¤æŠ˜å ï¼Œç›´åˆ°æ‚¨ä¸Žå…¶äº¤äº’"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "需要 {{primaryMod}}+Enter 发送消息",
-			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
+			"label": "éœ€è¦ {{primaryMod}}+Enter å‘é€æ¶ˆæ¯",
+			"description": "å¯ç”¨åŽï¼Œå¿…é¡»æŒ‰ {{primaryMod}}+Enter å‘é€æ¶ˆæ¯ï¼Œè€Œä¸ä»…ä»…æ˜¯ Enter"
 		}
 	}
 }

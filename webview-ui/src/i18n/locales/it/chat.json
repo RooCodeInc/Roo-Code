@@ -1,9 +1,9 @@
 {
 	"greeting": "Benvenuto a Roo Code",
 	"task": {
-		"title": "Attività",
-		"expand": "Espandi attività",
-		"collapse": "Comprimi attività",
+		"title": "AttivitÃ ",
+		"expand": "Espandi attivitÃ ",
+		"collapse": "Comprimi attivitÃ ",
 		"seeMore": "Vedi altro",
 		"seeLess": "Vedi meno",
 		"tokens": "Tokens",
@@ -11,21 +11,21 @@
 		"apiCost": "Costo API",
 		"size": "Dimensione",
 		"contextWindow": "Lunghezza del contesto",
-		"closeAndStart": "Chiudi attività e iniziane una nuova",
-		"export": "Esporta cronologia attività",
-		"delete": "Elimina attività (Shift + Clic per saltare la conferma)",
+		"closeAndStart": "Chiudi attivitÃ  e iniziane una nuova",
+		"export": "Esporta cronologia attivitÃ ",
+		"delete": "Elimina attivitÃ  (Shift + Clic per saltare la conferma)",
 		"condenseContext": "Condensa contesto in modo intelligente",
-		"share": "Condividi attività",
-		"shareWithOrganization": "Condividi con l'organizzazione",
+		"share": "Condividi attivitÃ ",
+		"shareWithOrganization": "Condividi con l\u0027organizzazione",
 		"shareWithOrganizationDescription": "Solo i membri della tua organizzazione possono accedere",
 		"sharePublicly": "Condividi pubblicamente",
-		"sharePubliclyDescription": "Chiunque con il link può accedere",
+		"sharePubliclyDescription": "Chiunque con il link puÃ² accedere",
 		"connectToCloud": "Connetti al Cloud",
-		"connectToCloudDescription": "Accedi a Roo Code Cloud per condividere attività",
-		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
+		"connectToCloudDescription": "Accedi a Roo Code Cloud per condividere attivitÃ ",
+		"sharingDisabledByOrganization": "Condivisione disabilitata dall\u0027organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
-		"openInCloud": "Apri attività in Roo Code Cloud",
+		"openInCloud": "Apri attivitÃ  in Roo Code Cloud",
 		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI"
@@ -39,15 +39,15 @@
 	},
 	"retry": {
 		"title": "Riprova",
-		"tooltip": "Prova di nuovo l'operazione"
+		"tooltip": "Prova di nuovo l\u0027operazione"
 	},
 	"startNewTask": {
-		"title": "Inizia nuova attività",
-		"tooltip": "Inizia una nuova attività"
+		"title": "Inizia nuova attivitÃ ",
+		"tooltip": "Inizia una nuova attivitÃ "
 	},
 	"proceedAnyways": {
 		"title": "Procedi comunque",
-		"tooltip": "Continua mentre il comando è in esecuzione"
+		"tooltip": "Continua mentre il comando Ã¨ in esecuzione"
 	},
 	"save": {
 		"title": "Salva",
@@ -57,7 +57,7 @@
 		"title": "Rifiuta",
 		"tooltip": "Rifiuta questa azione"
 	},
-	"completeSubtaskAndReturn": "Completa sottoattività e torna indietro",
+	"completeSubtaskAndReturn": "Completa sottoattivitÃ  e torna indietro",
 	"approve": {
 		"title": "Approva",
 		"tooltip": "Approva questa azione"
@@ -67,7 +67,7 @@
 		"tooltip": "Esegui questo comando"
 	},
 	"proceedWhileRunning": {
-		"title": "Procedi durante l'esecuzione",
+		"title": "Procedi durante l\u0027esecuzione",
 		"tooltip": "Continua nonostante gli avvisi"
 	},
 	"killCommand": {
@@ -75,32 +75,32 @@
 		"tooltip": "Termina il comando corrente"
 	},
 	"resumeTask": {
-		"title": "Riprendi attività",
-		"tooltip": "Continua l'attività corrente"
+		"title": "Riprendi attivitÃ ",
+		"tooltip": "Continua l\u0027attivitÃ  corrente"
 	},
 	"terminate": {
 		"title": "Termina",
-		"tooltip": "Termina l'attività corrente"
+		"tooltip": "Termina l\u0027attivitÃ  corrente"
 	},
 	"cancel": {
 		"title": "Annulla",
-		"tooltip": "Annulla l'operazione corrente"
+		"tooltip": "Annulla l\u0027operazione corrente"
 	},
 	"scrollToBottom": "Scorri fino alla fine della chat",
-	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
-	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
-	"onboarding": "La tua lista di attività in questo spazio di lavoro è vuota.",
+	"about": "Roo Code Ã¨ un intero team di sviluppo AI nel tuo editor.",
+	"docs": "Consulta la nostra \u003cDocsLink\u003edocumentazione\u003c/DocsLink\u003e per saperne di piÃ¹.",
+	"onboarding": "La tua lista di attivitÃ  in questo spazio di lavoro Ã¨ vuota.",
 	"rooTips": {
 		"customizableModes": {
-			"title": "Modalità personalizzabili",
+			"title": "ModalitÃ  personalizzabili",
 			"description": "Personaggi specializzati che rimangono in tema e portano a termine il compito."
 		},
 		"modelAgnostic": {
 			"title": "Porta il tuo modello",
-			"description": "Usa la tua chiave provider o esegui l'inferenza locale — nessun ricarico, nessun vincolo, nessuna restrizione"
+			"description": "Usa la tua chiave provider o esegui l\u0027inferenza locale â€” nessun ricarico, nessun vincolo, nessuna restrizione"
 		}
 	},
-	"selectMode": "Seleziona modalità di interazione",
+	"selectMode": "Seleziona modalitÃ  di interazione",
 	"selectApiConfig": "Seleziona la configurazione API",
 	"enhancePrompt": "Migliora prompt con contesto aggiuntivo",
 	"addImages": "Aggiungi immagini al messaggio",
@@ -108,27 +108,27 @@
 	"pressToSend": "Premi {{keyCombination}} per inviare",
 	"stopTts": "Interrompi sintesi vocale",
 	"typeMessage": "Scrivi un messaggio...",
-	"typeTask": "Scrivi la tua attività qui...",
+	"typeTask": "Scrivi la tua attivitÃ  qui...",
 	"addContext": "@ per aggiungere contesto, / per i comandi",
 	"dragFiles": "tieni premuto shift per trascinare file",
 	"dragFilesImages": "tieni premuto shift per trascinare file/immagini",
-	"enhancePromptDescription": "Il pulsante 'Migliora prompt' aiuta a migliorare la tua richiesta fornendo contesto aggiuntivo, chiarimenti o riformulazioni. Prova a digitare una richiesta qui e fai di nuovo clic sul pulsante per vedere come funziona.",
+	"enhancePromptDescription": "Il pulsante \u0027Migliora prompt\u0027 aiuta a migliorare la tua richiesta fornendo contesto aggiuntivo, chiarimenti o riformulazioni. Prova a digitare una richiesta qui e fai di nuovo clic sul pulsante per vedere come funziona.",
 	"modeSelector": {
-		"title": "Modalità",
-		"marketplace": "Marketplace delle Modalità",
-		"settings": "Impostazioni Modalità",
-		"description": "Personalità specializzate che adattano il comportamento di Roo.",
-		"searchPlaceholder": "Cerca modalità...",
+		"title": "ModalitÃ ",
+		"marketplace": "Marketplace delle ModalitÃ ",
+		"settings": "Impostazioni ModalitÃ ",
+		"description": "PersonalitÃ  specializzate che adattano il comportamento di Roo.",
+		"searchPlaceholder": "Cerca modalitÃ ...",
 		"noResults": "Nessun risultato trovato"
 	},
 	"errorReadingFile": "Errore nella lettura del file",
-	"noValidImages": "Nessuna immagine valida è stata elaborata",
+	"noValidImages": "Nessuna immagine valida Ã¨ stata elaborata",
 	"separator": "Separatore",
 	"edit": "Modifica...",
-	"forNextMode": "per la prossima modalità",
-	"forPreviousMode": "per la modalità precedente",
+	"forNextMode": "per la prossima modalitÃ ",
+	"forPreviousMode": "per la modalitÃ  precedente",
 	"instructions": {
-		"wantsToFetch": "Roo vuole recuperare istruzioni dettagliate per aiutare con l'attività corrente"
+		"wantsToFetch": "Roo vuole recuperare istruzioni dettagliate per aiutare con l\u0027attivitÃ  corrente"
 	},
 	"error": "Errore",
 	"diffError": {
@@ -144,19 +144,19 @@
 		"errorTitle": "Errore API {{code}}",
 		"errorMessage": {
 			"docs": "Documentazione",
-			"400": "Il provider non ha potuto elaborare la richiesta come presentata. Interrompi l'attività e prova un approccio diverso.",
+			"400": "Il provider non ha potuto elaborare la richiesta come presentata. Interrompi l\u0027attivitÃ  e prova un approccio diverso.",
 			"401": "Impossibile autenticare con il provider. Verifica la configurazione della tua chiave API.",
 			"402": "Sembra che tu abbia esaurito i fondi/crediti nel tuo account. Vai al tuo provider e aggiungi altro per continuare.",
-			"403": "Non autorizzato. La tua chiave API è valida, ma il provider ha rifiutato di completare questa richiesta.",
-			"429": "Troppe richieste. Sei limitato dal provider. Attendi un po' prima della tua prossima chiamata API.",
-			"500": "Errore del server del provider. C'è qualcosa di sbagliato dal lato del provider, non c'è nulla di sbagliato nella tua richiesta.",
+			"403": "Non autorizzato. La tua chiave API Ã¨ valida, ma il provider ha rifiutato di completare questa richiesta.",
+			"429": "Troppe richieste. Sei limitato dal provider. Attendi un po\u0027 prima della tua prossima chiamata API.",
+			"500": "Errore del server del provider. C\u0027Ã¨ qualcosa di sbagliato dal lato del provider, non c\u0027Ã¨ nulla di sbagliato nella tua richiesta.",
 			"unknown": "Errore API sconosciuto. Contatta il supporto di Roo Code.",
 			"connection": "Errore di connessione. Assicurati di avere una connessione Internet funzionante."
 		}
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
-		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle <settingsLink>impostazioni</settingsLink> e riavviare l'attività.",
+		"initializingWarning": "Inizializzazione del checkpoint in corso... Se questa operazione richiede troppo tempo, puoi disattivare i checkpoint nelle \u003csettingsLink\u003eimpostazioni\u003c/settingsLink\u003e e riavviare l\u0027attivitÃ .",
 		"menu": {
 			"viewDiff": "Visualizza differenze",
 			"more": "Altre opzioni",
@@ -165,20 +165,20 @@
 			"restore": "Ripristina checkpoint",
 			"restoreFiles": "Ripristina file",
 			"restoreFilesDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto.",
-			"restoreFilesAndTask": "Ripristina file e attività",
+			"restoreFilesAndTask": "Ripristina file e attivitÃ ",
 			"confirm": "Conferma",
 			"cancel": "Annulla",
-			"cannotUndo": "Questa azione non può essere annullata.",
+			"cannotUndo": "Questa azione non puÃ² essere annullata.",
 			"restoreFilesAndTaskDescription": "Ripristina i file del tuo progetto a uno snapshot catturato in questo punto ed elimina tutti i messaggi successivi a questo punto."
 		},
 		"current": "Corrente"
 	},
 	"fileOperations": {
 		"wantsToRead": "Roo vuole leggere questo file",
-		"wantsToReadOutsideWorkspace": "Roo vuole leggere questo file al di fuori dell'area di lavoro",
+		"wantsToReadOutsideWorkspace": "Roo vuole leggere questo file al di fuori dell\u0027area di lavoro",
 		"didRead": "Roo ha letto questo file",
 		"wantsToEdit": "Roo vuole modificare questo file",
-		"wantsToEditOutsideWorkspace": "Roo vuole modificare questo file al di fuori dell'area di lavoro",
+		"wantsToEditOutsideWorkspace": "Roo vuole modificare questo file al di fuori dell\u0027area di lavoro",
 		"wantsToEditProtected": "Roo vuole modificare un file di configurazione protetto",
 		"wantsToCreate": "Roo vuole creare un nuovo file",
 		"wantsToSearchReplace": "Roo vuole eseguire ricerca e sostituzione in questo file",
@@ -187,26 +187,26 @@
 		"wantsToInsertWithLineNumber": "Roo vuole inserire contenuto in questo file alla riga {{lineNumber}}",
 		"wantsToInsertAtEnd": "Roo vuole aggiungere contenuto alla fine di questo file",
 		"wantsToReadAndXMore": "Roo vuole leggere questo file e altri {{count}}",
-		"wantsToReadMultiple": "Roo vuole leggere più file",
-		"wantsToApplyBatchChanges": "Roo vuole applicare modifiche a più file",
-		"wantsToGenerateImage": "Roo vuole generare un'immagine",
-		"wantsToGenerateImageOutsideWorkspace": "Roo vuole generare un'immagine fuori dall'area di lavoro",
-		"wantsToGenerateImageProtected": "Roo vuole generare un'immagine in una posizione protetta",
-		"didGenerateImage": "Roo ha generato un'immagine"
+		"wantsToReadMultiple": "Roo vuole leggere piÃ¹ file",
+		"wantsToApplyBatchChanges": "Roo vuole applicare modifiche a piÃ¹ file",
+		"wantsToGenerateImage": "Roo vuole generare un\u0027immagine",
+		"wantsToGenerateImageOutsideWorkspace": "Roo vuole generare un\u0027immagine fuori dall\u0027area di lavoro",
+		"wantsToGenerateImageProtected": "Roo vuole generare un\u0027immagine in una posizione protetta",
+		"didGenerateImage": "Roo ha generato un\u0027immagine"
 	},
 	"directoryOperations": {
 		"wantsToViewTopLevel": "Roo vuole visualizzare i file di primo livello in questa directory",
 		"didViewTopLevel": "Roo ha visualizzato i file di primo livello in questa directory",
 		"wantsToViewRecursive": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory",
 		"didViewRecursive": "Roo ha visualizzato ricorsivamente tutti i file in questa directory",
-		"wantsToSearch": "Roo vuole cercare in questa directory <code>{{regex}}</code>",
-		"didSearch": "Roo ha cercato in questa directory <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo vuole cercare in questa directory (fuori dall'area di lavoro) <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo ha cercato in questa directory (fuori dall'area di lavoro) <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo vuole visualizzare i file di primo livello in questa directory (fuori dall'area di lavoro)",
-		"didViewTopLevelOutsideWorkspace": "Roo ha visualizzato i file di primo livello in questa directory (fuori dall'area di lavoro)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall'area di lavoro)"
+		"wantsToSearch": "Roo vuole cercare in questa directory \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearch": "Roo ha cercato in questa directory \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToSearchOutsideWorkspace": "Roo vuole cercare in questa directory (fuori dall\u0027area di lavoro) \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearchOutsideWorkspace": "Roo ha cercato in questa directory (fuori dall\u0027area di lavoro) \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo vuole visualizzare i file di primo livello in questa directory (fuori dall\u0027area di lavoro)",
+		"didViewTopLevelOutsideWorkspace": "Roo ha visualizzato i file di primo livello in questa directory (fuori dall\u0027area di lavoro)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo vuole visualizzare ricorsivamente tutti i file in questa directory (fuori dall\u0027area di lavoro)",
+		"didViewRecursiveOutsideWorkspace": "Roo ha visualizzato ricorsivamente tutti i file in questa directory (fuori dall\u0027area di lavoro)"
 	},
 	"commandOutput": "Output del Comando",
 	"commandExecution": {
@@ -238,24 +238,24 @@
 		"wantsToAccessResource": "Roo vuole accedere a una risorsa sul server MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo vuole passare alla modalità <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo vuole passare alla modalità <code>{{mode}}</code> perché: {{reason}}",
-		"didSwitch": "Roo è passato alla modalità <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo è passato alla modalità <code>{{mode}}</code> perché: {{reason}}"
+		"wantsToSwitch": "Roo vuole passare alla modalitÃ  \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"wantsToSwitchWithReason": "Roo vuole passare alla modalitÃ  \u003ccode\u003e{{mode}}\u003c/code\u003e perchÃ©: {{reason}}",
+		"didSwitch": "Roo Ã¨ passato alla modalitÃ  \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"didSwitchWithReason": "Roo Ã¨ passato alla modalitÃ  \u003ccode\u003e{{mode}}\u003c/code\u003e perchÃ©: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo vuole creare una nuova sottoattività in modalità <code>{{mode}}</code>",
-		"wantsToFinish": "Roo vuole completare questa sottoattività",
-		"newTaskContent": "Istruzioni sottoattività",
-		"completionContent": "Sottoattività completata",
-		"resultContent": "Risultati sottoattività",
-		"defaultResult": "Per favore continua con la prossima attività.",
-		"completionInstructions": "Sottoattività completata! Puoi rivedere i risultati e suggerire correzioni o prossimi passi. Se tutto sembra a posto, conferma per restituire il risultato all'attività principale."
+		"wantsToCreate": "Roo vuole creare una nuova sottoattivitÃ  in modalitÃ  \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"wantsToFinish": "Roo vuole completare questa sottoattivitÃ ",
+		"newTaskContent": "Istruzioni sottoattivitÃ ",
+		"completionContent": "SottoattivitÃ  completata",
+		"resultContent": "Risultati sottoattivitÃ ",
+		"defaultResult": "Per favore continua con la prossima attivitÃ .",
+		"completionInstructions": "SottoattivitÃ  completata! Puoi rivedere i risultati e suggerire correzioni o prossimi passi. Se tutto sembra a posto, conferma per restituire il risultato all\u0027attivitÃ  principale."
 	},
 	"questions": {
 		"hasQuestion": "Roo ha una domanda"
 	},
-	"taskCompleted": "Attività completata",
+	"taskCompleted": "AttivitÃ  completata",
 	"errorDetails": {
 		"title": "Dettagli errore",
 		"copyToClipboard": "Copia negli appunti",
@@ -272,7 +272,7 @@
 		"all": "Tutti",
 		"none": "Nessuno",
 		"description": "Esegui queste azioni senza chiedere il permesso. Abilita solo per azioni di cui ti fidi completamente.",
-		"selectOptionsFirst": "Seleziona almeno un'opzione qui sotto per abilitare l'approvazione automatica",
+		"selectOptionsFirst": "Seleziona almeno un\u0027opzione qui sotto per abilitare l\u0027approvazione automatica",
 		"toggleAriaLabel": "Attiva/disattiva approvazione automatica",
 		"disabledAriaLabel": "Approvazione automatica disabilitata - seleziona prima le opzioni",
 		"triggerLabelOff": "Approvazione automatica disattivata",
@@ -298,36 +298,36 @@
 			"inProgress": "Troncamento del contesto...",
 			"messagesRemoved": "{{count}} messaggio rimosso",
 			"messagesRemoved_other": "{{count}} messaggi rimossi",
-			"description": "I messaggi più vecchi sono stati rimossi dalla conversazione per rimanere entro il limite della finestra di contesto. Questo è un approccio veloce ma meno conservativo del contesto rispetto alla condensazione."
+			"description": "I messaggi piÃ¹ vecchi sono stati rimossi dalla conversazione per rimanere entro il limite della finestra di contesto. Questo Ã¨ un approccio veloce ma meno conservativo del contesto rispetto alla condensazione."
 		}
 	},
 	"followUpSuggest": {
-		"copyToInput": "Copia nell'input (o Shift + clic)",
+		"copyToInput": "Copia nell\u0027input (o Shift + clic)",
 		"autoSelectCountdown": "Selezione automatica in {{count}}s",
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
 		"title": "Rilasciato Roo Code {{version}}",
-		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
+		"support": "Sostieni Roo Code lasciandoci una stella su \u003cgithubLink\u003eGitHub\u003c/githubLink\u003e.",
 		"stealthModel": {
-			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
+			"feature": "\u003cbold\u003eModello stealth GRATUITO per tempo limitato\u003c/bold\u003e - Code Supernova: Ora potenziato con una \u003cbold\u003efinestra di contesto da 1M token\u003c/bold\u003e! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
 			"note": "(Nota: i prompt e le completazioni vengono registrati dal creatore del modello e utilizzati per migliorarlo)",
 			"connectButton": "Connetti a Roo Code Cloud",
-			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
+			"selectModel": "Seleziona \u003ccode\u003eroo/code-supernova\u003c/code\u003e dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
 		"release": {
-			"heading": "Novità in questa versione:",
+			"heading": "NovitÃ  in questa versione:",
 			"contextRewind": "La condensazione migliorata del contesto ora ti consente di ripristinare il contesto precedente completo quando riavvolgi a un checkpoint",
 			"rooProvider": "Il provider Roo Code Cloud ora preserva il contenuto del ragionamento e utilizza gli strumenti nativi per impostazione predefinita per migliori prestazioni"
 		},
 		"cloudAgents": {
-			"heading": "Novità nel Cloud:",
-			"specialized": "Presentazione di <bold>Explainer</bold>, <bold>Planner</bold> e <bold>Coder</bold> - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
+			"heading": "NovitÃ  nel Cloud:",
+			"specialized": "Presentazione di \u003cbold\u003eExplainer\u003c/bold\u003e, \u003cbold\u003ePlanner\u003c/bold\u003e e \u003cbold\u003eCoder\u003c/bold\u003e - tre agenti cloud specializzati per migliorare i tuoi flussi di lavoro.",
 			"description": "Gli agenti lavorano insieme nel cloud e possono essere attivati dal web o tramite Slack.",
 			"tryButton": "Prova gli Agenti Cloud"
 		},
-		"careers": "Inoltre, <careersLink>stiamo assumendo!</careersLink>"
+		"careers": "Inoltre, \u003ccareersLink\u003estiamo assumendo!\u003c/careersLink\u003e"
 	},
 	"browser": {
 		"session": "Sessione del browser",
@@ -354,8 +354,8 @@
 			"press": "Premi {{key}}",
 			"scrolledDown": "Scorso verso il basso",
 			"scrollDown": "Scorri verso il basso",
-			"scrolledUp": "Scorso verso l'alto",
-			"scrollUp": "Scorri verso l'alto",
+			"scrolledUp": "Scorso verso l\u0027alto",
+			"scrollUp": "Scorri verso l\u0027alto",
 			"hovered": "Passato il mouse su: {{coordinate}}",
 			"hover": "Passa il mouse ({{coordinate}})",
 			"resized": "Ridimensionato a: {{size}}",
@@ -373,28 +373,28 @@
 			"copy_code": "Copia codice"
 		}
 	},
-	"systemPromptWarning": "ATTENZIONE: Sovrascrittura personalizzata delle istruzioni di sistema attiva. Questo può compromettere gravemente le funzionalità e causare comportamenti imprevedibili.",
-	"profileViolationWarning": "Il profilo corrente non è compatibile con le impostazioni della tua organizzazione",
+	"systemPromptWarning": "ATTENZIONE: Sovrascrittura personalizzata delle istruzioni di sistema attiva. Questo puÃ² compromettere gravemente le funzionalitÃ  e causare comportamenti imprevedibili.",
+	"profileViolationWarning": "Il profilo corrente non Ã¨ compatibile con le impostazioni della tua organizzazione",
 	"shellIntegration": {
 		"title": "Avviso di esecuzione comando",
-		"description": "Il tuo comando viene eseguito senza l'integrazione shell del terminale VSCode. Per sopprimere questo avviso puoi disattivare l'integrazione shell nella sezione <strong>Terminal</strong> delle <settingsLink>impostazioni di Roo Code</settingsLink> o risolvere i problemi di integrazione del terminale VSCode utilizzando il link qui sotto.",
-		"troubleshooting": "Clicca qui per la documentazione sull'integrazione shell."
+		"description": "Il tuo comando viene eseguito senza l\u0027integrazione shell del terminale VSCode. Per sopprimere questo avviso puoi disattivare l\u0027integrazione shell nella sezione \u003cstrong\u003eTerminal\u003c/strong\u003e delle \u003csettingsLink\u003eimpostazioni di Roo Code\u003c/settingsLink\u003e o risolvere i problemi di integrazione del terminale VSCode utilizzando il link qui sotto.",
+		"troubleshooting": "Clicca qui per la documentazione sull\u0027integrazione shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Limite di Richieste Auto-approvate Raggiunto",
-			"description": "Roo ha raggiunto il limite auto-approvato di {{count}} richiesta/e API. Vuoi reimpostare il contatore e procedere con l'attività?",
+			"description": "Roo ha raggiunto il limite auto-approvato di {{count}} richiesta/e API. Vuoi reimpostare il contatore e procedere con l\u0027attivitÃ ?",
 			"button": "Reimposta e Continua"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Limite di costo auto-approvato raggiunto",
 			"button": "Reimposta e Continua",
-			"description": "Roo ha raggiunto il limite di costo approvato automaticamente di ${{count}}. Vuoi reimpostare il costo e procedere con l'attività?"
+			"description": "Roo ha raggiunto il limite di costo approvato automaticamente di ${{count}}. Vuoi reimpostare il costo e procedere con l\u0027attivitÃ ?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo vuole cercare nella base di codice <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo vuole cercare nella base di codice <code>{{query}}</code> in <code>{{path}}</code>",
+		"wantsToSearch": "Roo vuole cercare nella base di codice \u003ccode\u003e{{query}}\u003c/code\u003e",
+		"wantsToSearchWithPath": "Roo vuole cercare nella base di codice \u003ccode\u003e{{query}}\u003c/code\u003e in \u003ccode\u003e{{path}}\u003c/code\u003e",
 		"didSearch_one": "Trovato 1 risultato",
 		"didSearch_other": "Trovati {{count}} risultati",
 		"resultTooltip": "Punteggio di somiglianza: {{score}} (clicca per aprire il file)"
@@ -419,7 +419,7 @@
 	},
 	"rooCloudCTA": {
 		"title": "Roo Code Cloud si sta evolvendo!",
-		"description": "Esegui agenti remoti nel cloud, accedi alle tue attività da qualsiasi luogo, collabora con altri e molto altro.",
+		"description": "Esegui agenti remoti nel cloud, accedi alle tue attivitÃ  da qualsiasi luogo, collabora con altri e molto altro.",
 		"joinWaitlist": "Registrati per ricevere gli ultimi aggiornamenti."
 	},
 	"editMessage": {
@@ -431,7 +431,7 @@
 	"slashCommands": {
 		"tooltip": "Gestisci comandi slash",
 		"title": "Comandi Slash",
-		"description": "Usa comandi slash integrati o crea personalizzati per accedere rapidamente a prompt e flussi di lavoro utilizzati frequentemente. <DocsLink>Documentazione</DocsLink>",
+		"description": "Usa comandi slash integrati o crea personalizzati per accedere rapidamente a prompt e flussi di lavoro utilizzati frequentemente. \u003cDocsLink\u003eDocumentazione\u003c/DocsLink\u003e",
 		"manageCommands": "Gestisci comandi slash nelle impostazioni",
 		"builtInCommands": "Comandi Integrati",
 		"globalCommands": "Comandi Globali",
@@ -443,7 +443,7 @@
 		"newWorkspaceCommandPlaceholder": "Nuovo comando dello spazio di lavoro...",
 		"deleteDialog": {
 			"title": "Elimina Comando",
-			"description": "Sei sicuro di voler eliminare il comando \"{{name}}\"? Questa azione non può essere annullata.",
+			"description": "Sei sicuro di voler eliminare il comando \"{{name}}\"? Questa azione non puÃ² essere annullata.",
 			"cancel": "Annulla",
 			"confirm": "Elimina"
 		}
@@ -452,7 +452,7 @@
 		"noResults": "Nessun risultato",
 		"problems": "Problemi",
 		"terminal": "Terminale",
-		"url": "Incolla l'URL per recuperare i contenuti"
+		"url": "Incolla l\u0027URL per recuperare i contenuti"
 	},
 	"queuedMessages": {
 		"title": "Messaggi in coda",
@@ -468,5 +468,16 @@
 		"updated": "Aggiornata la lista delle cose da fare",
 		"completed": "Completato",
 		"started": "Iniziato"
+	},
+	"speechToText": {
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"notConfigured": "Add Deepgram API key in settings",
+		"close": "Close",
+		"connecting": "Connecting...",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"copyInstructions": "Copy Instructions",
+		"stopRecording": "Click to stop recording",
+		"startRecording": "Click to start voice input"
 	}
 }

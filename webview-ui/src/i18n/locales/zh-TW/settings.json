@@ -1,964 +1,968 @@
 {
 	"common": {
-		"save": "儲存",
-		"done": "完成",
-		"cancel": "取消",
-		"reset": "重設",
-		"select": "選擇",
-		"add": "新增標頭",
-		"remove": "移除"
+		"save": "å„²å­˜",
+		"done": "å®Œæˆ",
+		"cancel": "å–æ¶ˆ",
+		"reset": "é‡è¨­",
+		"select": "é¸æ“‡",
+		"add": "æ–°å¢žæ¨™é ­",
+		"remove": "ç§»é™¤"
 	},
 	"header": {
-		"title": "設定",
-		"saveButtonTooltip": "儲存變更",
-		"nothingChangedTooltip": "無任何變更",
-		"doneButtonTooltip": "捨棄未儲存的變更並關閉設定面板"
+		"title": "è¨­å®š",
+		"saveButtonTooltip": "å„²å­˜è®Šæ›´",
+		"nothingChangedTooltip": "ç„¡ä»»ä½•è®Šæ›´",
+		"doneButtonTooltip": "æ¨æ£„æœªå„²å­˜çš„è®Šæ›´ä¸¦é—œé–‰è¨­å®šé¢æ¿"
 	},
 	"unsavedChangesDialog": {
-		"title": "未儲存的變更",
-		"description": "是否要取消變更並繼續？",
-		"cancelButton": "取消",
-		"discardButton": "取消變更"
+		"title": "æœªå„²å­˜çš„è®Šæ›´",
+		"description": "æ˜¯å¦è¦å–æ¶ˆè®Šæ›´ä¸¦ç¹¼çºŒï¼Ÿ",
+		"cancelButton": "å–æ¶ˆ",
+		"discardButton": "å–æ¶ˆè®Šæ›´"
 	},
 	"sections": {
-		"providers": "供應商",
-		"modes": "模式",
-		"mcp": "MCP 伺服器",
-		"autoApprove": "自動核准",
-		"browser": "電腦存取",
-		"checkpoints": "檢查點",
-		"notifications": "通知",
-		"contextManagement": "上下文",
-		"terminal": "終端機",
-		"slashCommands": "斜線命令",
-		"prompts": "提示詞",
+		"providers": "ä¾›æ‡‰å•†",
+		"modes": "æ¨¡å¼",
+		"mcp": "MCP ä¼ºæœå™¨",
+		"autoApprove": "è‡ªå‹•æ ¸å‡†",
+		"browser": "é›»è…¦å­˜å–",
+		"checkpoints": "æª¢æŸ¥é»ž",
+		"notifications": "é€šçŸ¥",
+		"contextManagement": "ä¸Šä¸‹æ–‡",
+		"terminal": "çµ‚ç«¯æ©Ÿ",
+		"slashCommands": "æ–œç·šå‘½ä»¤",
+		"prompts": "æç¤ºè©ž",
 		"ui": "UI",
-		"experimental": "實驗性",
-		"language": "語言",
-		"about": "關於 Roo Code"
+		"experimental": "å¯¦é©—æ€§",
+		"language": "èªžè¨€",
+		"about": "é—œæ–¼ Roo Code"
 	},
 	"about": {
 		"bugReport": {
-			"label": "發現錯誤？",
-			"link": "在 GitHub 回報"
+			"label": "ç™¼ç¾éŒ¯èª¤ï¼Ÿ",
+			"link": "åœ¨ GitHub å›žå ±"
 		},
 		"featureRequest": {
-			"label": "有想法？",
-			"link": "與我們分享"
+			"label": "æœ‰æƒ³æ³•ï¼Ÿ",
+			"link": "èˆ‡æˆ‘å€‘åˆ†äº«"
 		},
 		"securityIssue": {
-			"label": "發現安全漏洞？",
-			"link": "遵循我們的揭露流程"
+			"label": "ç™¼ç¾å®‰å…¨æ¼æ´žï¼Ÿ",
+			"link": "éµå¾ªæˆ‘å€‘çš„æ­éœ²æµç¨‹"
 		},
 		"contact": {
-			"label": "需要與我們聯絡？請寫信"
+			"label": "éœ€è¦èˆ‡æˆ‘å€‘è¯çµ¡ï¼Ÿè«‹å¯«ä¿¡"
 		},
-		"community": "想要獲取使用技巧或與其他 Roo Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "聯絡與社群",
-		"manageSettings": "管理設定"
+		"community": "æƒ³è¦ç²å–ä½¿ç”¨æŠ€å·§æˆ–èˆ‡å…¶ä»– Roo Code ä½¿ç”¨è€…äº¤æµï¼ŸåŠ å…¥ \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e æˆ– \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
+		"contactAndCommunity": "è¯çµ¡èˆ‡ç¤¾ç¾¤",
+		"manageSettings": "ç®¡ç†è¨­å®š"
 	},
 	"slashCommands": {
-		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
+		"description": "ç®¡ç†æ‚¨çš„æ–œç·šå‘½ä»¤ï¼Œä»¥ä¾¿å¿«é€ŸåŸ·è¡Œè‡ªè¨‚å·¥ä½œæµç¨‹å’Œå‹•ä½œã€‚ \u003cDocsLink\u003eäº†è§£æ›´å¤š\u003c/DocsLink\u003e"
 	},
 	"prompts": {
-		"description": "設定用於快速操作的支援提示詞，如增強提示詞、解釋程式碼和修復問題。這些提示詞幫助 Roo 為常見開發工作提供更好的支援。"
+		"description": "è¨­å®šç”¨æ–¼å¿«é€Ÿæ“ä½œçš„æ”¯æ´æç¤ºè©žï¼Œå¦‚å¢žå¼·æç¤ºè©žã€è§£é‡‹ç¨‹å¼ç¢¼å’Œä¿®å¾©å•é¡Œã€‚é€™äº›æç¤ºè©žå¹«åŠ© Roo ç‚ºå¸¸è¦‹é–‹ç™¼å·¥ä½œæä¾›æ›´å¥½çš„æ”¯æ´ã€‚"
 	},
 	"codeIndex": {
-		"title": "程式碼庫索引",
-		"enableLabel": "啟用程式碼庫索引",
-		"enableDescription": "啟用程式碼索引以改進搜尋和上下文理解",
-		"providerLabel": "嵌入提供者",
-		"selectProviderPlaceholder": "選擇提供者",
+		"title": "ç¨‹å¼ç¢¼åº«ç´¢å¼•",
+		"enableLabel": "å•Ÿç”¨ç¨‹å¼ç¢¼åº«ç´¢å¼•",
+		"enableDescription": "å•Ÿç”¨ç¨‹å¼ç¢¼ç´¢å¼•ä»¥æ”¹é€²æœå°‹å’Œä¸Šä¸‹æ–‡ç†è§£",
+		"providerLabel": "åµŒå…¥æä¾›è€…",
+		"selectProviderPlaceholder": "é¸æ“‡æä¾›è€…",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "API 金鑰：",
-		"geminiApiKeyPlaceholder": "輸入您的 Gemini API 金鑰",
+		"geminiApiKeyLabel": "API é‡‘é‘°ï¼š",
+		"geminiApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ Gemini API é‡‘é‘°",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "API 金鑰",
-		"vercelAiGatewayApiKeyPlaceholder": "輸入您的 Vercel AI Gateway API 金鑰",
+		"vercelAiGatewayApiKeyLabel": "API é‡‘é‘°",
+		"vercelAiGatewayApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ Vercel AI Gateway API é‡‘é‘°",
 		"bedrockProvider": "Amazon Bedrock",
-		"bedrockRegionLabel": "AWS 區域",
+		"bedrockRegionLabel": "AWS å€åŸŸ",
 		"bedrockRegionPlaceholder": "us-east-1",
-		"bedrockProfileLabel": "AWS 設定檔",
+		"bedrockProfileLabel": "AWS è¨­å®šæª”",
 		"bedrockProfilePlaceholder": "default",
-		"bedrockProfileDescription": "來自 ~/.aws/credentials 的 AWS 設定檔名稱（必需）。",
+		"bedrockProfileDescription": "ä¾†è‡ª ~/.aws/credentials çš„ AWS è¨­å®šæª”åç¨±ï¼ˆå¿…éœ€ï¼‰ã€‚",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "OpenRouter API 金鑰",
-		"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
-		"openRouterProviderRoutingLabel": "OpenRouter 供應商路由",
-		"openRouterProviderRoutingDescription": "OpenRouter 會將請求路由到適合您嵌入模型的最佳可用供應商。預設情況下，請求會在頂尖供應商之間進行負載平衡以最大化正常運作時間。您也可以為此模型選擇特定的供應商。",
+		"openRouterApiKeyLabel": "OpenRouter API é‡‘é‘°",
+		"openRouterApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ OpenRouter API é‡‘é‘°",
+		"openRouterProviderRoutingLabel": "OpenRouter ä¾›æ‡‰å•†è·¯ç”±",
+		"openRouterProviderRoutingDescription": "OpenRouter æœƒå°‡è«‹æ±‚è·¯ç”±åˆ°é©åˆæ‚¨åµŒå…¥æ¨¡åž‹çš„æœ€ä½³å¯ç”¨ä¾›æ‡‰å•†ã€‚é è¨­æƒ…æ³ä¸‹ï¼Œè«‹æ±‚æœƒåœ¨é ‚å°–ä¾›æ‡‰å•†ä¹‹é–“é€²è¡Œè² è¼‰å¹³è¡¡ä»¥æœ€å¤§åŒ–æ­£å¸¸é‹ä½œæ™‚é–“ã€‚æ‚¨ä¹Ÿå¯ä»¥ç‚ºæ­¤æ¨¡åž‹é¸æ“‡ç‰¹å®šçš„ä¾›æ‡‰å•†ã€‚",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "API 金鑰：",
-		"mistralApiKeyPlaceholder": "輸入您的 Mistral API 金鑰",
-		"openaiCompatibleProvider": "OpenAI 相容",
-		"openAiKeyLabel": "OpenAI API 金鑰",
-		"openAiKeyPlaceholder": "輸入您的 OpenAI API 金鑰",
-		"openAiCompatibleBaseUrlLabel": "基礎 URL",
-		"openAiCompatibleApiKeyLabel": "API 金鑰",
-		"openAiCompatibleApiKeyPlaceholder": "輸入您的 API 金鑰",
-		"openAiCompatibleModelDimensionLabel": "嵌入維度：",
-		"modelDimensionLabel": "模型維度",
-		"openAiCompatibleModelDimensionPlaceholder": "例如，1536",
-		"openAiCompatibleModelDimensionDescription": "模型的嵌入維度（輸出大小）。請查閱您的提供商文件以取得此值。常見值：384、768、1536、3072。",
-		"modelLabel": "模型",
-		"selectModelPlaceholder": "選擇模型",
+		"mistralApiKeyLabel": "API é‡‘é‘°ï¼š",
+		"mistralApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ Mistral API é‡‘é‘°",
+		"openaiCompatibleProvider": "OpenAI ç›¸å®¹",
+		"openAiKeyLabel": "OpenAI API é‡‘é‘°",
+		"openAiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ OpenAI API é‡‘é‘°",
+		"openAiCompatibleBaseUrlLabel": "åŸºç¤Ž URL",
+		"openAiCompatibleApiKeyLabel": "API é‡‘é‘°",
+		"openAiCompatibleApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ API é‡‘é‘°",
+		"openAiCompatibleModelDimensionLabel": "åµŒå…¥ç¶­åº¦ï¼š",
+		"modelDimensionLabel": "æ¨¡åž‹ç¶­åº¦",
+		"openAiCompatibleModelDimensionPlaceholder": "ä¾‹å¦‚ï¼Œ1536",
+		"openAiCompatibleModelDimensionDescription": "æ¨¡åž‹çš„åµŒå…¥ç¶­åº¦ï¼ˆè¼¸å‡ºå¤§å°ï¼‰ã€‚è«‹æŸ¥é–±æ‚¨çš„æä¾›å•†æ–‡ä»¶ä»¥å–å¾—æ­¤å€¼ã€‚å¸¸è¦‹å€¼ï¼š384ã€768ã€1536ã€3072ã€‚",
+		"modelLabel": "æ¨¡åž‹",
+		"selectModelPlaceholder": "é¸æ“‡æ¨¡åž‹",
 		"ollamaUrlLabel": "Ollama URL:",
 		"qdrantUrlLabel": "Qdrant URL",
-		"qdrantKeyLabel": "Qdrant 金鑰：",
-		"startIndexingButton": "開始",
-		"clearIndexDataButton": "清除索引",
-		"unsavedSettingsMessage": "請先儲存設定再開始索引程序。",
+		"qdrantKeyLabel": "Qdrant é‡‘é‘°ï¼š",
+		"startIndexingButton": "é–‹å§‹",
+		"clearIndexDataButton": "æ¸…é™¤ç´¢å¼•",
+		"unsavedSettingsMessage": "è«‹å…ˆå„²å­˜è¨­å®šå†é–‹å§‹ç´¢å¼•ç¨‹åºã€‚",
 		"clearDataDialog": {
-			"title": "確定要繼續嗎？",
-			"description": "此操作無法復原。這將永久刪除您的程式碼庫索引資料。",
-			"cancelButton": "取消",
-			"confirmButton": "清除資料"
+			"title": "ç¢ºå®šè¦ç¹¼çºŒå—Žï¼Ÿ",
+			"description": "æ­¤æ“ä½œç„¡æ³•å¾©åŽŸã€‚é€™å°‡æ°¸ä¹…åˆªé™¤æ‚¨çš„ç¨‹å¼ç¢¼åº«ç´¢å¼•è³‡æ–™ã€‚",
+			"cancelButton": "å–æ¶ˆ",
+			"confirmButton": "æ¸…é™¤è³‡æ–™"
 		},
-		"description": "設定程式碼庫索引設定以啟用專案的語意搜尋。<0>了解更多</0>",
-		"statusTitle": "狀態",
-		"settingsTitle": "索引設定",
-		"disabledMessage": "程式碼庫索引目前已停用。請在全域設定中啟用以設定索引選項。",
-		"embedderProviderLabel": "嵌入器提供者",
-		"modelPlaceholder": "輸入模型名稱",
-		"selectModel": "選擇模型",
-		"ollamaBaseUrlLabel": "Ollama 基礎 URL",
-		"qdrantApiKeyLabel": "Qdrant API 金鑰",
-		"qdrantApiKeyPlaceholder": "輸入您的 Qdrant API 金鑰（選用）",
-		"setupConfigLabel": "設定",
+		"description": "è¨­å®šç¨‹å¼ç¢¼åº«ç´¢å¼•è¨­å®šä»¥å•Ÿç”¨å°ˆæ¡ˆçš„èªžæ„æœå°‹ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e",
+		"statusTitle": "ç‹€æ…‹",
+		"settingsTitle": "ç´¢å¼•è¨­å®š",
+		"disabledMessage": "ç¨‹å¼ç¢¼åº«ç´¢å¼•ç›®å‰å·²åœç”¨ã€‚è«‹åœ¨å…¨åŸŸè¨­å®šä¸­å•Ÿç”¨ä»¥è¨­å®šç´¢å¼•é¸é …ã€‚",
+		"embedderProviderLabel": "åµŒå…¥å™¨æä¾›è€…",
+		"modelPlaceholder": "è¼¸å…¥æ¨¡åž‹åç¨±",
+		"selectModel": "é¸æ“‡æ¨¡åž‹",
+		"ollamaBaseUrlLabel": "Ollama åŸºç¤Ž URL",
+		"qdrantApiKeyLabel": "Qdrant API é‡‘é‘°",
+		"qdrantApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ Qdrant API é‡‘é‘°ï¼ˆé¸ç”¨ï¼‰",
+		"setupConfigLabel": "è¨­å®š",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "無法儲存設定",
-		"modelDimensions": "({{dimension}} 維度)",
-		"saveSuccess": "設定已成功儲存",
-		"saving": "儲存中...",
-		"saveSettings": "儲存",
+		"saveError": "ç„¡æ³•å„²å­˜è¨­å®š",
+		"modelDimensions": "({{dimension}} ç¶­åº¦)",
+		"saveSuccess": "è¨­å®šå·²æˆåŠŸå„²å­˜",
+		"saving": "å„²å­˜ä¸­...",
+		"saveSettings": "å„²å­˜",
 		"indexingStatuses": {
-			"standby": "待命",
-			"indexing": "索引中",
-			"indexed": "已索引",
-			"error": "錯誤"
+			"standby": "å¾…å‘½",
+			"indexing": "ç´¢å¼•ä¸­",
+			"indexed": "å·²ç´¢å¼•",
+			"error": "éŒ¯èª¤"
 		},
-		"close": "關閉",
+		"close": "é—œé–‰",
 		"validation": {
-			"invalidQdrantUrl": "無效的 Qdrant URL",
-			"invalidOllamaUrl": "無效的 Ollama URL",
-			"invalidBaseUrl": "無效的基礎 URL",
-			"qdrantUrlRequired": "需要 Qdrant URL",
-			"openaiApiKeyRequired": "需要 OpenAI API 金鑰",
-			"modelSelectionRequired": "需要選擇模型",
-			"apiKeyRequired": "需要 API 金鑰",
-			"modelIdRequired": "需要模型 ID",
-			"modelDimensionRequired": "需要模型維度",
-			"geminiApiKeyRequired": "需要 Gemini API 金鑰",
-			"mistralApiKeyRequired": "需要 Mistral API 金鑰",
-			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 金鑰",
-			"bedrockRegionRequired": "AWS 區域為必填",
-			"bedrockProfileRequired": "AWS 設定檔為必填",
-			"ollamaBaseUrlRequired": "需要 Ollama 基礎 URL",
-			"baseUrlRequired": "需要基礎 URL",
-			"modelDimensionMinValue": "模型維度必須大於 0",
-			"openRouterApiKeyRequired": "OpenRouter API 密鑰是必需的"
+			"invalidQdrantUrl": "ç„¡æ•ˆçš„ Qdrant URL",
+			"invalidOllamaUrl": "ç„¡æ•ˆçš„ Ollama URL",
+			"invalidBaseUrl": "ç„¡æ•ˆçš„åŸºç¤Ž URL",
+			"qdrantUrlRequired": "éœ€è¦ Qdrant URL",
+			"openaiApiKeyRequired": "éœ€è¦ OpenAI API é‡‘é‘°",
+			"modelSelectionRequired": "éœ€è¦é¸æ“‡æ¨¡åž‹",
+			"apiKeyRequired": "éœ€è¦ API é‡‘é‘°",
+			"modelIdRequired": "éœ€è¦æ¨¡åž‹ ID",
+			"modelDimensionRequired": "éœ€è¦æ¨¡åž‹ç¶­åº¦",
+			"geminiApiKeyRequired": "éœ€è¦ Gemini API é‡‘é‘°",
+			"mistralApiKeyRequired": "éœ€è¦ Mistral API é‡‘é‘°",
+			"vercelAiGatewayApiKeyRequired": "éœ€è¦ Vercel AI Gateway API é‡‘é‘°",
+			"bedrockRegionRequired": "AWS å€åŸŸç‚ºå¿…å¡«",
+			"bedrockProfileRequired": "AWS è¨­å®šæª”ç‚ºå¿…å¡«",
+			"ollamaBaseUrlRequired": "éœ€è¦ Ollama åŸºç¤Ž URL",
+			"baseUrlRequired": "éœ€è¦åŸºç¤Ž URL",
+			"modelDimensionMinValue": "æ¨¡åž‹ç¶­åº¦å¿…é ˆå¤§æ–¼ 0",
+			"openRouterApiKeyRequired": "OpenRouter API å¯†é‘°æ˜¯å¿…éœ€çš„"
 		},
-		"optional": "可選",
-		"advancedConfigLabel": "進階設定",
-		"searchMinScoreLabel": "搜尋分數閾值",
-		"searchMinScoreDescription": "搜尋結果所需的最低相似度分數（0.0-1.0）。較低的值會傳回更多結果，但可能較不相關。較高的值會傳回較少但更相關的結果。",
-		"searchMinScoreResetTooltip": "重設為預設值 (0.4)",
-		"searchMaxResultsLabel": "最大搜尋結果數",
-		"searchMaxResultsDescription": "查詢程式碼庫索引時傳回的最大搜尋結果數。較高的值提供更多上下文，但可能包含相關性較低的結果。",
-		"resetToDefault": "重設為預設值"
+		"optional": "å¯é¸",
+		"advancedConfigLabel": "é€²éšŽè¨­å®š",
+		"searchMinScoreLabel": "æœå°‹åˆ†æ•¸é–¾å€¼",
+		"searchMinScoreDescription": "æœå°‹çµæžœæ‰€éœ€çš„æœ€ä½Žç›¸ä¼¼åº¦åˆ†æ•¸ï¼ˆ0.0-1.0ï¼‰ã€‚è¼ƒä½Žçš„å€¼æœƒå‚³å›žæ›´å¤šçµæžœï¼Œä½†å¯èƒ½è¼ƒä¸ç›¸é—œã€‚è¼ƒé«˜çš„å€¼æœƒå‚³å›žè¼ƒå°‘ä½†æ›´ç›¸é—œçš„çµæžœã€‚",
+		"searchMinScoreResetTooltip": "é‡è¨­ç‚ºé è¨­å€¼ (0.4)",
+		"searchMaxResultsLabel": "æœ€å¤§æœå°‹çµæžœæ•¸",
+		"searchMaxResultsDescription": "æŸ¥è©¢ç¨‹å¼ç¢¼åº«ç´¢å¼•æ™‚å‚³å›žçš„æœ€å¤§æœå°‹çµæžœæ•¸ã€‚è¼ƒé«˜çš„å€¼æä¾›æ›´å¤šä¸Šä¸‹æ–‡ï¼Œä½†å¯èƒ½åŒ…å«ç›¸é—œæ€§è¼ƒä½Žçš„çµæžœã€‚",
+		"resetToDefault": "é‡è¨­ç‚ºé è¨­å€¼"
 	},
 	"autoApprove": {
-		"toggleShortcut": "您可以<SettingsLink>在 IDE 偏好設定中</SettingsLink>為此設定設定全域快捷鍵。",
-		"description": "允許 Roo 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
-		"enabled": "自動核准已啟用",
-		"toggleAriaLabel": "切換自動核准",
-		"disabledAriaLabel": "自動核准已停用 - 請先選取選項",
+		"toggleShortcut": "æ‚¨å¯ä»¥\u003cSettingsLink\u003eåœ¨ IDE åå¥½è¨­å®šä¸­\u003c/SettingsLink\u003eç‚ºæ­¤è¨­å®šè¨­å®šå…¨åŸŸå¿«æ·éµã€‚",
+		"description": "å…è¨± Roo ç„¡éœ€æ ¸å‡†å³åŸ·è¡Œæ“ä½œã€‚åƒ…åœ¨æ‚¨å®Œå…¨ä¿¡ä»» AI ä¸¦äº†è§£ç›¸é—œå®‰å…¨é¢¨éšªæ™‚å•Ÿç”¨é€™äº›è¨­å®šã€‚",
+		"enabled": "è‡ªå‹•æ ¸å‡†å·²å•Ÿç”¨",
+		"toggleAriaLabel": "åˆ‡æ›è‡ªå‹•æ ¸å‡†",
+		"disabledAriaLabel": "è‡ªå‹•æ ¸å‡†å·²åœç”¨ - è«‹å…ˆé¸å–é¸é …",
 		"readOnly": {
-			"label": "讀取",
-			"description": "啟用後，Roo 將自動檢視目錄內容並讀取檔案，無需點選核准按鈕。",
+			"label": "è®€å–",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡è‡ªå‹•æª¢è¦–ç›®éŒ„å…§å®¹ä¸¦è®€å–æª”æ¡ˆï¼Œç„¡éœ€é»žé¸æ ¸å‡†æŒ‰éˆ•ã€‚",
 			"outsideWorkspace": {
-				"label": "包含工作區外的檔案",
-				"description": "允許 Roo 讀取目前工作區外的檔案，無需核准。"
+				"label": "åŒ…å«å·¥ä½œå€å¤–çš„æª”æ¡ˆ",
+				"description": "å…è¨± Roo è®€å–ç›®å‰å·¥ä½œå€å¤–çš„æª”æ¡ˆï¼Œç„¡éœ€æ ¸å‡†ã€‚"
 			}
 		},
 		"write": {
-			"label": "寫入",
-			"description": "自動建立和編輯檔案而無需核准",
-			"delayLabel": "寫入後延遲以允許診斷偵測潛在問題",
+			"label": "å¯«å…¥",
+			"description": "è‡ªå‹•å»ºç«‹å’Œç·¨è¼¯æª”æ¡ˆè€Œç„¡éœ€æ ¸å‡†",
+			"delayLabel": "å¯«å…¥å¾Œå»¶é²ä»¥å…è¨±è¨ºæ–·åµæ¸¬æ½›åœ¨å•é¡Œ",
 			"outsideWorkspace": {
-				"label": "包含工作區外的檔案",
-				"description": "允許 Roo 在目前工作區外建立和編輯檔案，無需核准。"
+				"label": "åŒ…å«å·¥ä½œå€å¤–çš„æª”æ¡ˆ",
+				"description": "å…è¨± Roo åœ¨ç›®å‰å·¥ä½œå€å¤–å»ºç«‹å’Œç·¨è¼¯æª”æ¡ˆï¼Œç„¡éœ€æ ¸å‡†ã€‚"
 			},
 			"protected": {
-				"label": "包含受保護的檔案",
-				"description": "允許 Roo 建立和編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔），無需核准。"
+				"label": "åŒ…å«å—ä¿è­·çš„æª”æ¡ˆ",
+				"description": "å…è¨± Roo å»ºç«‹å’Œç·¨è¼¯å—ä¿è­·çš„æª”æ¡ˆï¼ˆå¦‚ .rooignore å’Œ .roo/ è¨­å®šæª”ï¼‰ï¼Œç„¡éœ€æ ¸å‡†ã€‚"
 			}
 		},
 		"browser": {
-			"label": "瀏覽器",
-			"description": "自動執行瀏覽器操作而無需核准 — 注意：僅適用於模型支援電腦使用時"
+			"label": "ç€è¦½å™¨",
+			"description": "è‡ªå‹•åŸ·è¡Œç€è¦½å™¨æ“ä½œè€Œç„¡éœ€æ ¸å‡† â€” æ³¨æ„ï¼šåƒ…é©ç”¨æ–¼æ¨¡åž‹æ”¯æ´é›»è…¦ä½¿ç”¨æ™‚"
 		},
 		"retry": {
-			"label": "重試",
-			"description": "當伺服器回傳錯誤回應時自動重試失敗的 API 請求",
-			"delayLabel": "重試請求前的延遲"
+			"label": "é‡è©¦",
+			"description": "ç•¶ä¼ºæœå™¨å›žå‚³éŒ¯èª¤å›žæ‡‰æ™‚è‡ªå‹•é‡è©¦å¤±æ•—çš„ API è«‹æ±‚",
+			"delayLabel": "é‡è©¦è«‹æ±‚å‰çš„å»¶é²"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "在 MCP 伺服器檢視中啟用個別 MCP 工具的自動核准（需要此設定和工具的「始終允許」核取方塊）"
+			"description": "åœ¨ MCP ä¼ºæœå™¨æª¢è¦–ä¸­å•Ÿç”¨å€‹åˆ¥ MCP å·¥å…·çš„è‡ªå‹•æ ¸å‡†ï¼ˆéœ€è¦æ­¤è¨­å®šå’Œå·¥å…·çš„ã€Œå§‹çµ‚å…è¨±ã€æ ¸å–æ–¹å¡Šï¼‰"
 		},
 		"modeSwitch": {
-			"label": "模式",
-			"description": "自動在不同模式之間切換而無需核准"
+			"label": "æ¨¡å¼",
+			"description": "è‡ªå‹•åœ¨ä¸åŒæ¨¡å¼ä¹‹é–“åˆ‡æ›è€Œç„¡éœ€æ ¸å‡†"
 		},
 		"subtasks": {
-			"label": "子工作",
-			"description": "允許建立和完成子工作而無需核准"
+			"label": "å­å·¥ä½œ",
+			"description": "å…è¨±å»ºç«‹å’Œå®Œæˆå­å·¥ä½œè€Œç„¡éœ€æ ¸å‡†"
 		},
 		"followupQuestions": {
-			"label": "問題",
-			"description": "在設定的逾時時間後自動選擇後續問題的第一個建議答案",
-			"timeoutLabel": "自動選擇第一個答案前的等待時間"
+			"label": "å•é¡Œ",
+			"description": "åœ¨è¨­å®šçš„é€¾æ™‚æ™‚é–“å¾Œè‡ªå‹•é¸æ“‡å¾ŒçºŒå•é¡Œçš„ç¬¬ä¸€å€‹å»ºè­°ç­”æ¡ˆ",
+			"timeoutLabel": "è‡ªå‹•é¸æ“‡ç¬¬ä¸€å€‹ç­”æ¡ˆå‰çš„ç­‰å¾…æ™‚é–“"
 		},
 		"execute": {
-			"label": "執行",
-			"description": "自動執行允許的終端機命令而無需核准",
-			"allowedCommands": "允許自動執行的命令",
-			"allowedCommandsDescription": "當「始終核准執行操作」啟用時可以自動執行的命令前綴。新增 * 以允許所有命令（請謹慎使用）。",
-			"deniedCommands": "拒絕的命令",
-			"deniedCommandsDescription": "將自動拒絕的命令前綴，無需使用者核准。與允許命令衝突時，最長前綴匹配優先。新增 * 拒絕所有命令。",
-			"commandPlaceholder": "輸入命令前綴（例如 'git '）",
-			"deniedCommandPlaceholder": "輸入要拒絕的命令前綴（例如 'rm -rf'）",
-			"addButton": "新增",
-			"autoDenied": "前綴為 `{{prefix}}` 的命令已被使用者禁止。不要透過執行其他命令來繞過此限制。"
+			"label": "åŸ·è¡Œ",
+			"description": "è‡ªå‹•åŸ·è¡Œå…è¨±çš„çµ‚ç«¯æ©Ÿå‘½ä»¤è€Œç„¡éœ€æ ¸å‡†",
+			"allowedCommands": "å…è¨±è‡ªå‹•åŸ·è¡Œçš„å‘½ä»¤",
+			"allowedCommandsDescription": "ç•¶ã€Œå§‹çµ‚æ ¸å‡†åŸ·è¡Œæ“ä½œã€å•Ÿç”¨æ™‚å¯ä»¥è‡ªå‹•åŸ·è¡Œçš„å‘½ä»¤å‰ç¶´ã€‚æ–°å¢ž * ä»¥å…è¨±æ‰€æœ‰å‘½ä»¤ï¼ˆè«‹è¬¹æ…Žä½¿ç”¨ï¼‰ã€‚",
+			"deniedCommands": "æ‹’çµ•çš„å‘½ä»¤",
+			"deniedCommandsDescription": "å°‡è‡ªå‹•æ‹’çµ•çš„å‘½ä»¤å‰ç¶´ï¼Œç„¡éœ€ä½¿ç”¨è€…æ ¸å‡†ã€‚èˆ‡å…è¨±å‘½ä»¤è¡çªæ™‚ï¼Œæœ€é•·å‰ç¶´åŒ¹é…å„ªå…ˆã€‚æ–°å¢ž * æ‹’çµ•æ‰€æœ‰å‘½ä»¤ã€‚",
+			"commandPlaceholder": "è¼¸å…¥å‘½ä»¤å‰ç¶´ï¼ˆä¾‹å¦‚ \u0027git \u0027ï¼‰",
+			"deniedCommandPlaceholder": "è¼¸å…¥è¦æ‹’çµ•çš„å‘½ä»¤å‰ç¶´ï¼ˆä¾‹å¦‚ \u0027rm -rf\u0027ï¼‰",
+			"addButton": "æ–°å¢ž",
+			"autoDenied": "å‰ç¶´ç‚º `{{prefix}}` çš„å‘½ä»¤å·²è¢«ä½¿ç”¨è€…ç¦æ­¢ã€‚ä¸è¦é€éŽåŸ·è¡Œå…¶ä»–å‘½ä»¤ä¾†ç¹žéŽæ­¤é™åˆ¶ã€‚"
 		},
 		"updateTodoList": {
-			"label": "待辦",
-			"description": "自動更新待辦清單無需核准"
+			"label": "å¾…è¾¦",
+			"description": "è‡ªå‹•æ›´æ–°å¾…è¾¦æ¸…å–®ç„¡éœ€æ ¸å‡†"
 		},
 		"apiRequestLimit": {
-			"title": "最大請求數",
-			"description": "在請求核准以繼續執行工作之前，自動發出此數量的 API 請求。",
-			"unlimited": "無限制"
+			"title": "æœ€å¤§è«‹æ±‚æ•¸",
+			"description": "åœ¨è«‹æ±‚æ ¸å‡†ä»¥ç¹¼çºŒåŸ·è¡Œå·¥ä½œä¹‹å‰ï¼Œè‡ªå‹•ç™¼å‡ºæ­¤æ•¸é‡çš„ API è«‹æ±‚ã€‚",
+			"unlimited": "ç„¡é™åˆ¶"
 		},
-		"selectOptionsFirst": "請至少選擇以下一個選項以啟用自動核准",
+		"selectOptionsFirst": "è«‹è‡³å°‘é¸æ“‡ä»¥ä¸‹ä¸€å€‹é¸é …ä»¥å•Ÿç”¨è‡ªå‹•æ ¸å‡†",
 		"apiCostLimit": {
-			"unlimited": "無限",
-			"title": "最高費用"
+			"unlimited": "ç„¡é™",
+			"title": "æœ€é«˜è²»ç”¨"
 		},
 		"maxLimits": {
-			"description": "在請求獲得繼續操作的核准前，自動發送請求直至達到這些限制。"
+			"description": "åœ¨è«‹æ±‚ç²å¾—ç¹¼çºŒæ“ä½œçš„æ ¸å‡†å‰ï¼Œè‡ªå‹•ç™¼é€è«‹æ±‚ç›´è‡³é”åˆ°é€™äº›é™åˆ¶ã€‚"
 		}
 	},
 	"providers": {
-		"providerDocumentation": "{{provider}} 說明文件",
-		"configProfile": "設定檔",
-		"description": "儲存不同的 API 設定以快速切換供應商和設定。",
-		"apiProvider": "API 供應商",
-		"model": "模型",
-		"nameEmpty": "名稱不能為空",
-		"nameExists": "已存在同名的設定檔",
-		"deleteProfile": "刪除設定檔",
-		"invalidArnFormat": "ARN 格式無效。請檢查上方示例。",
-		"enterNewName": "輸入新名稱",
-		"addProfile": "新增設定檔",
-		"renameProfile": "重新命名設定檔",
-		"newProfile": "新建設定檔",
-		"enterProfileName": "輸入設定檔名稱",
-		"createProfile": "建立設定檔",
-		"cannotDeleteOnlyProfile": "無法刪除唯一的設定檔",
-		"searchPlaceholder": "搜尋設定檔",
-		"searchProviderPlaceholder": "搜尋供應商",
-		"noProviderMatchFound": "找不到供應商",
-		"noMatchFound": "找不到符合的設定檔",
-		"vscodeLmDescription": "VS Code 語言模型 API 可以讓您使用其他擴充功能（如 GitHub Copilot）提供的模型。最簡單的方式是從 VS Code Marketplace 安裝 Copilot 和 Copilot Chat 擴充套件。",
-		"awsCustomArnUse": "輸入您要使用的模型的有效 Amazon Bedrock ARN。格式範例：",
-		"awsCustomArnDesc": "確保 ARN 中的區域與您上面選擇的 AWS 區域相符。",
-		"openRouterApiKey": "OpenRouter API 金鑰",
-		"getOpenRouterApiKey": "取得 OpenRouter API 金鑰",
-		"vercelAiGatewayApiKey": "Vercel AI Gateway API 金鑰",
-		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
-		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
-		"useCustomBaseUrl": "使用自訂基礎 URL",
-		"useReasoning": "啟用推理",
-		"useHostHeader": "使用自訂 Host 標頭",
-		"useLegacyFormat": "使用舊版 OpenAI API 格式",
-		"customHeaders": "自訂標頭",
-		"headerName": "標頭名稱",
-		"headerValue": "標頭值",
-		"noCustomHeaders": "尚未定義自訂標頭。點擊 + 按鈕以新增。",
-		"requestyApiKey": "Requesty API 金鑰",
+		"providerDocumentation": "{{provider}} èªªæ˜Žæ–‡ä»¶",
+		"configProfile": "è¨­å®šæª”",
+		"description": "å„²å­˜ä¸åŒçš„ API è¨­å®šä»¥å¿«é€Ÿåˆ‡æ›ä¾›æ‡‰å•†å’Œè¨­å®šã€‚",
+		"apiProvider": "API ä¾›æ‡‰å•†",
+		"model": "æ¨¡åž‹",
+		"nameEmpty": "åç¨±ä¸èƒ½ç‚ºç©º",
+		"nameExists": "å·²å­˜åœ¨åŒåçš„è¨­å®šæª”",
+		"deleteProfile": "åˆªé™¤è¨­å®šæª”",
+		"invalidArnFormat": "ARN æ ¼å¼ç„¡æ•ˆã€‚è«‹æª¢æŸ¥ä¸Šæ–¹ç¤ºä¾‹ã€‚",
+		"enterNewName": "è¼¸å…¥æ–°åç¨±",
+		"addProfile": "æ–°å¢žè¨­å®šæª”",
+		"renameProfile": "é‡æ–°å‘½åè¨­å®šæª”",
+		"newProfile": "æ–°å»ºè¨­å®šæª”",
+		"enterProfileName": "è¼¸å…¥è¨­å®šæª”åç¨±",
+		"createProfile": "å»ºç«‹è¨­å®šæª”",
+		"cannotDeleteOnlyProfile": "ç„¡æ³•åˆªé™¤å”¯ä¸€çš„è¨­å®šæª”",
+		"searchPlaceholder": "æœå°‹è¨­å®šæª”",
+		"searchProviderPlaceholder": "æœå°‹ä¾›æ‡‰å•†",
+		"noProviderMatchFound": "æ‰¾ä¸åˆ°ä¾›æ‡‰å•†",
+		"noMatchFound": "æ‰¾ä¸åˆ°ç¬¦åˆçš„è¨­å®šæª”",
+		"vscodeLmDescription": "VS Code èªžè¨€æ¨¡åž‹ API å¯ä»¥è®“æ‚¨ä½¿ç”¨å…¶ä»–æ“´å……åŠŸèƒ½ï¼ˆå¦‚ GitHub Copilotï¼‰æä¾›çš„æ¨¡åž‹ã€‚æœ€ç°¡å–®çš„æ–¹å¼æ˜¯å¾ž VS Code Marketplace å®‰è£ Copilot å’Œ Copilot Chat æ“´å……å¥—ä»¶ã€‚",
+		"awsCustomArnUse": "è¼¸å…¥æ‚¨è¦ä½¿ç”¨çš„æ¨¡åž‹çš„æœ‰æ•ˆ Amazon Bedrock ARNã€‚æ ¼å¼ç¯„ä¾‹ï¼š",
+		"awsCustomArnDesc": "ç¢ºä¿ ARN ä¸­çš„å€åŸŸèˆ‡æ‚¨ä¸Šé¢é¸æ“‡çš„ AWS å€åŸŸç›¸ç¬¦ã€‚",
+		"openRouterApiKey": "OpenRouter API é‡‘é‘°",
+		"getOpenRouterApiKey": "å–å¾— OpenRouter API é‡‘é‘°",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API é‡‘é‘°",
+		"getVercelAiGatewayApiKey": "å–å¾— Vercel AI Gateway API é‡‘é‘°",
+		"apiKeyStorageNotice": "API é‡‘é‘°å®‰å…¨å„²å­˜æ–¼ VSCode é‡‘é‘°å„²å­˜ä¸­",
+		"useCustomBaseUrl": "ä½¿ç”¨è‡ªè¨‚åŸºç¤Ž URL",
+		"useReasoning": "å•Ÿç”¨æŽ¨ç†",
+		"useHostHeader": "ä½¿ç”¨è‡ªè¨‚ Host æ¨™é ­",
+		"useLegacyFormat": "ä½¿ç”¨èˆŠç‰ˆ OpenAI API æ ¼å¼",
+		"customHeaders": "è‡ªè¨‚æ¨™é ­",
+		"headerName": "æ¨™é ­åç¨±",
+		"headerValue": "æ¨™é ­å€¼",
+		"noCustomHeaders": "å°šæœªå®šç¾©è‡ªè¨‚æ¨™é ­ã€‚é»žæ“Š + æŒ‰éˆ•ä»¥æ–°å¢žã€‚",
+		"requestyApiKey": "Requesty API é‡‘é‘°",
 		"refreshModels": {
-			"label": "重新整理模型",
-			"hint": "請重新開啟設定以查看最新模型。",
-			"loading": "正在重新整理模型列表...",
-			"success": "模型列表重新整理成功！",
-			"error": "重新整理模型列表失敗。請再試一次。"
+			"label": "é‡æ–°æ•´ç†æ¨¡åž‹",
+			"hint": "è«‹é‡æ–°é–‹å•Ÿè¨­å®šä»¥æŸ¥çœ‹æœ€æ–°æ¨¡åž‹ã€‚",
+			"loading": "æ­£åœ¨é‡æ–°æ•´ç†æ¨¡åž‹åˆ—è¡¨...",
+			"success": "æ¨¡åž‹åˆ—è¡¨é‡æ–°æ•´ç†æˆåŠŸï¼",
+			"error": "é‡æ–°æ•´ç†æ¨¡åž‹åˆ—è¡¨å¤±æ•—ã€‚è«‹å†è©¦ä¸€æ¬¡ã€‚"
 		},
-		"getRequestyApiKey": "取得 Requesty API 金鑰",
-		"getRequestyBaseUrl": "基礎 URL",
-		"requestyUseCustomBaseUrl": "使用自訂基礎 URL",
-		"openRouterTransformsText": "將提示和訊息鏈壓縮到上下文大小 (<a>OpenRouter 轉換</a>)",
-		"anthropicApiKey": "Anthropic API 金鑰",
-		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
-		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
-		"anthropic1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
-		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
-		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
-		"basetenApiKey": "Baseten API 金鑰",
-		"getBasetenApiKey": "取得 Baseten API 金鑰",
-		"cerebrasApiKey": "Cerebras API 金鑰",
-		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
-		"chutesApiKey": "Chutes API 金鑰",
-		"getChutesApiKey": "取得 Chutes API 金鑰",
-		"fireworksApiKey": "Fireworks API 金鑰",
-		"getFireworksApiKey": "取得 Fireworks API 金鑰",
-		"featherlessApiKey": "Featherless API 金鑰",
-		"getFeatherlessApiKey": "取得 Featherless API 金鑰",
-		"ioIntelligenceApiKey": "IO Intelligence API 金鑰",
-		"ioIntelligenceApiKeyPlaceholder": "輸入您的 IO Intelligence API 金鑰",
-		"getIoIntelligenceApiKey": "取得 IO Intelligence API 金鑰",
-		"deepSeekApiKey": "DeepSeek API 金鑰",
-		"getDeepSeekApiKey": "取得 DeepSeek API 金鑰",
-		"doubaoApiKey": "豆包 API 金鑰",
-		"getDoubaoApiKey": "取得豆包 API 金鑰",
-		"moonshotApiKey": "Moonshot API 金鑰",
-		"getMoonshotApiKey": "取得 Moonshot API 金鑰",
-		"moonshotBaseUrl": "Moonshot 服務端點",
-		"zaiApiKey": "Z AI API 金鑰",
-		"getZaiApiKey": "取得 Z AI API 金鑰",
-		"zaiEntrypoint": "Z AI 服務端點",
-		"zaiEntrypointDescription": "請根據您的位置選擇適當的 API 服務端點。如果您在中國，請選擇 open.bigmodel.cn。否則，請選擇 api.z.ai。",
-		"minimaxApiKey": "MiniMax API 金鑰",
-		"getMiniMaxApiKey": "取得 MiniMax API 金鑰",
-		"minimaxBaseUrl": "MiniMax 服務端點",
-		"geminiApiKey": "Gemini API 金鑰",
-		"getGroqApiKey": "取得 Groq API 金鑰",
-		"groqApiKey": "Groq API 金鑰",
-		"getSambaNovaApiKey": "取得 SambaNova API 金鑰",
-		"sambaNovaApiKey": "SambaNova API 金鑰",
-		"getHuggingFaceApiKey": "取得 Hugging Face API 金鑰",
-		"huggingFaceApiKey": "Hugging Face API 金鑰",
-		"huggingFaceModelId": "模型 ID",
-		"huggingFaceLoading": "載入中...",
-		"huggingFaceModelsCount": "({{count}} 個模型)",
-		"huggingFaceSelectModel": "選擇模型...",
-		"huggingFaceSearchModels": "搜尋模型...",
-		"huggingFaceNoModelsFound": "找不到模型",
-		"huggingFaceProvider": "提供者",
-		"huggingFaceProviderAuto": "自動",
-		"huggingFaceSelectProvider": "選擇提供者...",
-		"huggingFaceSearchProviders": "搜尋提供者...",
-		"huggingFaceNoProvidersFound": "找不到提供者",
-		"getGeminiApiKey": "取得 Gemini API 金鑰",
-		"openAiApiKey": "OpenAI API 金鑰",
-		"apiKey": "API 金鑰",
-		"openAiBaseUrl": "基礎 URL",
-		"getOpenAiApiKey": "取得 OpenAI API 金鑰",
-		"mistralApiKey": "Mistral API 金鑰",
-		"getMistralApiKey": "取得 Mistral/Codestral API 金鑰",
-		"codestralBaseUrl": "Codestral 基礎 URL（選用）",
-		"codestralBaseUrlDesc": "設定 Codestral 模型的替代 URL。",
-		"xaiApiKey": "xAI API 金鑰",
-		"getXaiApiKey": "取得 xAI API 金鑰",
-		"litellmApiKey": "LiteLLM API 金鑰",
-		"litellmBaseUrl": "LiteLLM 基礎 URL",
-		"awsCredentials": "AWS 認證",
+		"getRequestyApiKey": "å–å¾— Requesty API é‡‘é‘°",
+		"getRequestyBaseUrl": "åŸºç¤Ž URL",
+		"requestyUseCustomBaseUrl": "ä½¿ç”¨è‡ªè¨‚åŸºç¤Ž URL",
+		"openRouterTransformsText": "å°‡æç¤ºå’Œè¨Šæ¯éˆå£“ç¸®åˆ°ä¸Šä¸‹æ–‡å¤§å° (\u003ca\u003eOpenRouter è½‰æ›\u003c/a\u003e)",
+		"anthropicApiKey": "Anthropic API é‡‘é‘°",
+		"getAnthropicApiKey": "å–å¾— Anthropic API é‡‘é‘°",
+		"anthropicUseAuthToken": "å°‡ Anthropic API é‡‘é‘°ä½œç‚º Authorization æ¨™é ­å‚³éžï¼Œè€Œéžä½¿ç”¨ X-Api-Key",
+		"anthropic1MContextBetaLabel": "å•Ÿç”¨ 1M ä¸Šä¸‹æ–‡è¦–çª— (Beta)",
+		"anthropic1MContextBetaDescription": "ç‚º Claude Sonnet 4 å°‡ä¸Šä¸‹æ–‡è¦–çª—æ“´å±•è‡³ 100 è¬å€‹ token",
+		"awsBedrock1MContextBetaLabel": "å•Ÿç”¨ 1M ä¸Šä¸‹æ–‡è¦–çª— (Beta)",
+		"awsBedrock1MContextBetaDescription": "ç‚º Claude Sonnet 4 å°‡ä¸Šä¸‹æ–‡è¦–çª—æ“´å±•è‡³ 100 è¬å€‹ token",
+		"basetenApiKey": "Baseten API é‡‘é‘°",
+		"getBasetenApiKey": "å–å¾— Baseten API é‡‘é‘°",
+		"cerebrasApiKey": "Cerebras API é‡‘é‘°",
+		"getCerebrasApiKey": "å–å¾— Cerebras API é‡‘é‘°",
+		"chutesApiKey": "Chutes API é‡‘é‘°",
+		"getChutesApiKey": "å–å¾— Chutes API é‡‘é‘°",
+		"fireworksApiKey": "Fireworks API é‡‘é‘°",
+		"getFireworksApiKey": "å–å¾— Fireworks API é‡‘é‘°",
+		"featherlessApiKey": "Featherless API é‡‘é‘°",
+		"getFeatherlessApiKey": "å–å¾— Featherless API é‡‘é‘°",
+		"ioIntelligenceApiKey": "IO Intelligence API é‡‘é‘°",
+		"ioIntelligenceApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ IO Intelligence API é‡‘é‘°",
+		"getIoIntelligenceApiKey": "å–å¾— IO Intelligence API é‡‘é‘°",
+		"deepSeekApiKey": "DeepSeek API é‡‘é‘°",
+		"getDeepSeekApiKey": "å–å¾— DeepSeek API é‡‘é‘°",
+		"doubaoApiKey": "è±†åŒ… API é‡‘é‘°",
+		"getDoubaoApiKey": "å–å¾—è±†åŒ… API é‡‘é‘°",
+		"moonshotApiKey": "Moonshot API é‡‘é‘°",
+		"getMoonshotApiKey": "å–å¾— Moonshot API é‡‘é‘°",
+		"moonshotBaseUrl": "Moonshot æœå‹™ç«¯é»ž",
+		"zaiApiKey": "Z AI API é‡‘é‘°",
+		"getZaiApiKey": "å–å¾— Z AI API é‡‘é‘°",
+		"zaiEntrypoint": "Z AI æœå‹™ç«¯é»ž",
+		"zaiEntrypointDescription": "è«‹æ ¹æ“šæ‚¨çš„ä½ç½®é¸æ“‡é©ç•¶çš„ API æœå‹™ç«¯é»žã€‚å¦‚æžœæ‚¨åœ¨ä¸­åœ‹ï¼Œè«‹é¸æ“‡ open.bigmodel.cnã€‚å¦å‰‡ï¼Œè«‹é¸æ“‡ api.z.aiã€‚",
+		"minimaxApiKey": "MiniMax API é‡‘é‘°",
+		"getMiniMaxApiKey": "å–å¾— MiniMax API é‡‘é‘°",
+		"minimaxBaseUrl": "MiniMax æœå‹™ç«¯é»ž",
+		"geminiApiKey": "Gemini API é‡‘é‘°",
+		"getGroqApiKey": "å–å¾— Groq API é‡‘é‘°",
+		"groqApiKey": "Groq API é‡‘é‘°",
+		"getSambaNovaApiKey": "å–å¾— SambaNova API é‡‘é‘°",
+		"sambaNovaApiKey": "SambaNova API é‡‘é‘°",
+		"getHuggingFaceApiKey": "å–å¾— Hugging Face API é‡‘é‘°",
+		"huggingFaceApiKey": "Hugging Face API é‡‘é‘°",
+		"huggingFaceModelId": "æ¨¡åž‹ ID",
+		"huggingFaceLoading": "è¼‰å…¥ä¸­...",
+		"huggingFaceModelsCount": "({{count}} å€‹æ¨¡åž‹)",
+		"huggingFaceSelectModel": "é¸æ“‡æ¨¡åž‹...",
+		"huggingFaceSearchModels": "æœå°‹æ¨¡åž‹...",
+		"huggingFaceNoModelsFound": "æ‰¾ä¸åˆ°æ¨¡åž‹",
+		"huggingFaceProvider": "æä¾›è€…",
+		"huggingFaceProviderAuto": "è‡ªå‹•",
+		"huggingFaceSelectProvider": "é¸æ“‡æä¾›è€…...",
+		"huggingFaceSearchProviders": "æœå°‹æä¾›è€…...",
+		"huggingFaceNoProvidersFound": "æ‰¾ä¸åˆ°æä¾›è€…",
+		"getGeminiApiKey": "å–å¾— Gemini API é‡‘é‘°",
+		"openAiApiKey": "OpenAI API é‡‘é‘°",
+		"apiKey": "API é‡‘é‘°",
+		"openAiBaseUrl": "åŸºç¤Ž URL",
+		"getOpenAiApiKey": "å–å¾— OpenAI API é‡‘é‘°",
+		"mistralApiKey": "Mistral API é‡‘é‘°",
+		"getMistralApiKey": "å–å¾— Mistral/Codestral API é‡‘é‘°",
+		"codestralBaseUrl": "Codestral åŸºç¤Ž URLï¼ˆé¸ç”¨ï¼‰",
+		"codestralBaseUrlDesc": "è¨­å®š Codestral æ¨¡åž‹çš„æ›¿ä»£ URLã€‚",
+		"xaiApiKey": "xAI API é‡‘é‘°",
+		"getXaiApiKey": "å–å¾— xAI API é‡‘é‘°",
+		"litellmApiKey": "LiteLLM API é‡‘é‘°",
+		"litellmBaseUrl": "LiteLLM åŸºç¤Ž URL",
+		"awsCredentials": "AWS èªè­‰",
 		"awsProfile": "AWS Profile",
-		"awsApiKey": "Amazon Bedrock API 金鑰",
-		"awsProfileName": "AWS Profile 名稱",
+		"awsApiKey": "Amazon Bedrock API é‡‘é‘°",
+		"awsProfileName": "AWS Profile åç¨±",
 		"awsAccessKey": "AWS Access Key",
 		"awsSecretKey": "AWS Secret Key",
-		"awsSessionToken": "AWS 工作階段權杖",
-		"awsRegion": "AWS 區域",
-		"awsCrossRegion": "使用跨區域推論",
-		"awsGlobalInference": "使用全域推論 (自動選取最佳 AWS 區域)",
+		"awsSessionToken": "AWS å·¥ä½œéšŽæ®µæ¬Šæ–",
+		"awsRegion": "AWS å€åŸŸ",
+		"awsCrossRegion": "ä½¿ç”¨è·¨å€åŸŸæŽ¨è«–",
+		"awsGlobalInference": "ä½¿ç”¨å…¨åŸŸæŽ¨è«– (è‡ªå‹•é¸å–æœ€ä½³ AWS å€åŸŸ)",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "使用自訂 VPC 端點",
-			"vpcEndpointUrlPlaceholder": "輸入 VPC 端點 URL（選填）",
-			"examples": "範例："
+			"useCustomVpcEndpoint": "ä½¿ç”¨è‡ªè¨‚ VPC ç«¯é»ž",
+			"vpcEndpointUrlPlaceholder": "è¼¸å…¥ VPC ç«¯é»ž URLï¼ˆé¸å¡«ï¼‰",
+			"examples": "ç¯„ä¾‹ï¼š"
 		},
-		"enablePromptCaching": "啟用提示快取",
-		"enablePromptCachingTitle": "啟用提示快取以提升支援的模型效能並降低成本。",
-		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
-		"vscodeLmModel": "語言模型",
-		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點擊「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
+		"enablePromptCaching": "å•Ÿç”¨æç¤ºå¿«å–",
+		"enablePromptCachingTitle": "å•Ÿç”¨æç¤ºå¿«å–ä»¥æå‡æ”¯æ´çš„æ¨¡åž‹æ•ˆèƒ½ä¸¦é™ä½Žæˆæœ¬ã€‚",
+		"cacheUsageNote": "æ³¨æ„ï¼šå¦‚æžœæ‚¨æ²’æœ‰çœ‹åˆ°å¿«å–ä½¿ç”¨æƒ…æ³ï¼Œè«‹å˜—è©¦é¸æ“‡å…¶ä»–æ¨¡åž‹ï¼Œç„¶å¾Œé‡æ–°é¸æ“‡æ‚¨æƒ³è¦çš„æ¨¡åž‹ã€‚",
+		"vscodeLmModel": "èªžè¨€æ¨¡åž‹",
+		"vscodeLmWarning": "æ³¨æ„ï¼šé€éŽ VS Code Language Model API å­˜å–çš„æ¨¡åž‹å¯èƒ½ç”±ä¾›æ‡‰å•†å°è£æˆ–å¾®èª¿ï¼Œå› æ­¤å…¶è¡Œç‚ºå¯èƒ½èˆ‡ç›´æŽ¥å¾žä¸€èˆ¬ä¾›æ‡‰å•†æˆ–è·¯ç”±å™¨ä½¿ç”¨ç›¸åŒæ¨¡åž‹æ™‚ä¸åŒã€‚è¦ä½¿ç”¨ã€ŒLanguage Modelã€ä¸‹æ‹‰å¼é¸å–®ä¸­çš„æ¨¡åž‹ï¼Œè«‹å…ˆåˆ‡æ›åˆ°è©²æ¨¡åž‹ï¼Œç„¶å¾Œåœ¨ Copilot Chat æç¤ºä¸­é»žæ“Šã€ŒæŽ¥å—ã€ï¼›å¦å‰‡å¯èƒ½æœƒå‡ºç¾ 400ã€ŒThe requested model is not supportedã€ç­‰éŒ¯èª¤ã€‚",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "啟用 URL 上下文",
-				"description": "讓 Gemini 讀取連結的頁面以提取、比較和綜合其內容，從而提供明智的答覆。"
+				"title": "å•Ÿç”¨ URL ä¸Šä¸‹æ–‡",
+				"description": "è®“ Gemini è®€å–é€£çµçš„é é¢ä»¥æå–ã€æ¯”è¼ƒå’Œç¶œåˆå…¶å…§å®¹ï¼Œå¾žè€Œæä¾›æ˜Žæ™ºçš„ç­”è¦†ã€‚"
 			},
 			"groundingSearch": {
-				"title": "啟用 Google 搜尋基礎",
-				"description": "將 Gemini 連接到即時網路數據，以獲得包含可驗證引用的準確、最新的答案。"
+				"title": "å•Ÿç”¨ Google æœå°‹åŸºç¤Ž",
+				"description": "å°‡ Gemini é€£æŽ¥åˆ°å³æ™‚ç¶²è·¯æ•¸æ“šï¼Œä»¥ç²å¾—åŒ…å«å¯é©—è­‰å¼•ç”¨çš„æº–ç¢ºã€æœ€æ–°çš„ç­”æ¡ˆã€‚"
 			}
 		},
 		"googleCloudSetup": {
-			"title": "要使用 Google Cloud Vertex AI，您需要：",
-			"step1": "1. 建立 Google Cloud 帳戶，啟用 Vertex AI API 並啟用所需的 Claude 模型。",
-			"step2": "2. 安裝 Google Cloud CLI 並設定應用程式預設憑證。",
-			"step3": "3. 或建立具有憑證的服務帳戶。"
+			"title": "è¦ä½¿ç”¨ Google Cloud Vertex AIï¼Œæ‚¨éœ€è¦ï¼š",
+			"step1": "1. å»ºç«‹ Google Cloud å¸³æˆ¶ï¼Œå•Ÿç”¨ Vertex AI API ä¸¦å•Ÿç”¨æ‰€éœ€çš„ Claude æ¨¡åž‹ã€‚",
+			"step2": "2. å®‰è£ Google Cloud CLI ä¸¦è¨­å®šæ‡‰ç”¨ç¨‹å¼é è¨­æ†‘è­‰ã€‚",
+			"step3": "3. æˆ–å»ºç«‹å…·æœ‰æ†‘è­‰çš„æœå‹™å¸³æˆ¶ã€‚"
 		},
-		"googleCloudCredentials": "Google Cloud 憑證",
-		"googleCloudKeyFile": "Google Cloud 金鑰檔案路徑",
-		"googleCloudProjectId": "Google Cloud 專案 ID",
-		"googleCloudRegion": "Google Cloud 區域",
+		"googleCloudCredentials": "Google Cloud æ†‘è­‰",
+		"googleCloudKeyFile": "Google Cloud é‡‘é‘°æª”æ¡ˆè·¯å¾‘",
+		"googleCloudProjectId": "Google Cloud å°ˆæ¡ˆ ID",
+		"googleCloudRegion": "Google Cloud å€åŸŸ",
 		"lmStudio": {
-			"baseUrl": "基礎 URL（選用）",
-			"modelId": "模型 ID",
-			"speculativeDecoding": "啟用預測性解碼",
-			"draftModelId": "草稿模型 ID",
-			"draftModelDesc": "草稿模型必須來自相同模型系列才能正確運作。",
-			"selectDraftModel": "選擇草稿模型",
-			"noModelsFound": "未找到草稿模型。請確保 LM Studio 以伺服器模式執行。",
-			"description": "LM Studio 允許您在本機電腦執行模型。詳細資訊請參閱快速入門指南。您需要啟動 LM Studio 的本機伺服器功能才能與此擴充功能搭配使用。<span>注意：</span> Roo Code 使用複雜提示，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
+			"baseUrl": "åŸºç¤Ž URLï¼ˆé¸ç”¨ï¼‰",
+			"modelId": "æ¨¡åž‹ ID",
+			"speculativeDecoding": "å•Ÿç”¨é æ¸¬æ€§è§£ç¢¼",
+			"draftModelId": "è‰ç¨¿æ¨¡åž‹ ID",
+			"draftModelDesc": "è‰ç¨¿æ¨¡åž‹å¿…é ˆä¾†è‡ªç›¸åŒæ¨¡åž‹ç³»åˆ—æ‰èƒ½æ­£ç¢ºé‹ä½œã€‚",
+			"selectDraftModel": "é¸æ“‡è‰ç¨¿æ¨¡åž‹",
+			"noModelsFound": "æœªæ‰¾åˆ°è‰ç¨¿æ¨¡åž‹ã€‚è«‹ç¢ºä¿ LM Studio ä»¥ä¼ºæœå™¨æ¨¡å¼åŸ·è¡Œã€‚",
+			"description": "LM Studio å…è¨±æ‚¨åœ¨æœ¬æ©Ÿé›»è…¦åŸ·è¡Œæ¨¡åž‹ã€‚è©³ç´°è³‡è¨Šè«‹åƒé–±å¿«é€Ÿå…¥é–€æŒ‡å—ã€‚æ‚¨éœ€è¦å•Ÿå‹• LM Studio çš„æœ¬æ©Ÿä¼ºæœå™¨åŠŸèƒ½æ‰èƒ½èˆ‡æ­¤æ“´å……åŠŸèƒ½æ­é…ä½¿ç”¨ã€‚\u003cspan\u003eæ³¨æ„ï¼š\u003c/span\u003e Roo Code ä½¿ç”¨è¤‡é›œæç¤ºï¼Œèˆ‡ Claude æ¨¡åž‹æ­é…æœ€ä½³ã€‚åŠŸèƒ½è¼ƒå¼±çš„æ¨¡åž‹å¯èƒ½ç„¡æ³•æ­£å¸¸é‹ä½œã€‚"
 		},
 		"ollama": {
-			"baseUrl": "基礎 URL（選用）",
-			"modelId": "模型 ID",
-			"apiKey": "Ollama API 金鑰",
-			"apiKeyHelp": "用於已認證 Ollama 執行個體或雲端服務的選用 API 金鑰。本機安裝請留空。",
-			"numCtx": "上下文視窗大小 (num_ctx)",
-			"numCtxHelp": "覆寫模型的預設上下文視窗大小。留空以使用模型的 Modelfile 設定。最小值為 128。",
-			"description": "Ollama 允許您在本機電腦執行模型。請參閱快速入門指南。",
-			"warning": "注意：Roo Code 使用複雜提示，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
+			"baseUrl": "åŸºç¤Ž URLï¼ˆé¸ç”¨ï¼‰",
+			"modelId": "æ¨¡åž‹ ID",
+			"apiKey": "Ollama API é‡‘é‘°",
+			"apiKeyHelp": "ç”¨æ–¼å·²èªè­‰ Ollama åŸ·è¡Œå€‹é«”æˆ–é›²ç«¯æœå‹™çš„é¸ç”¨ API é‡‘é‘°ã€‚æœ¬æ©Ÿå®‰è£è«‹ç•™ç©ºã€‚",
+			"numCtx": "ä¸Šä¸‹æ–‡è¦–çª—å¤§å° (num_ctx)",
+			"numCtxHelp": "è¦†å¯«æ¨¡åž‹çš„é è¨­ä¸Šä¸‹æ–‡è¦–çª—å¤§å°ã€‚ç•™ç©ºä»¥ä½¿ç”¨æ¨¡åž‹çš„ Modelfile è¨­å®šã€‚æœ€å°å€¼ç‚º 128ã€‚",
+			"description": "Ollama å…è¨±æ‚¨åœ¨æœ¬æ©Ÿé›»è…¦åŸ·è¡Œæ¨¡åž‹ã€‚è«‹åƒé–±å¿«é€Ÿå…¥é–€æŒ‡å—ã€‚",
+			"warning": "æ³¨æ„ï¼šRoo Code ä½¿ç”¨è¤‡é›œæç¤ºï¼Œèˆ‡ Claude æ¨¡åž‹æ­é…æœ€ä½³ã€‚åŠŸèƒ½è¼ƒå¼±çš„æ¨¡åž‹å¯èƒ½ç„¡æ³•æ­£å¸¸é‹ä½œã€‚"
 		},
-		"unboundApiKey": "Unbound API 金鑰",
-		"getUnboundApiKey": "取得 Unbound API 金鑰",
-		"unboundRefreshModelsSuccess": "模型列表已更新！您現在可以從最新模型中選擇。",
-		"unboundInvalidApiKey": "無效的 API 金鑰。請檢查您的 API 金鑰並重試。",
+		"unboundApiKey": "Unbound API é‡‘é‘°",
+		"getUnboundApiKey": "å–å¾— Unbound API é‡‘é‘°",
+		"unboundRefreshModelsSuccess": "æ¨¡åž‹åˆ—è¡¨å·²æ›´æ–°ï¼æ‚¨ç¾åœ¨å¯ä»¥å¾žæœ€æ–°æ¨¡åž‹ä¸­é¸æ“‡ã€‚",
+		"unboundInvalidApiKey": "ç„¡æ•ˆçš„ API é‡‘é‘°ã€‚è«‹æª¢æŸ¥æ‚¨çš„ API é‡‘é‘°ä¸¦é‡è©¦ã€‚",
 		"humanRelay": {
-			"description": "不需要 API 金鑰，但使用者需要協助將資訊複製並貼上到網頁聊天 AI。",
-			"instructions": "使用期間會彈出對話框，並自動將目前訊息複製到剪貼簿。您需要將這些內容貼上到網頁版 AI（如 ChatGPT 或 Claude），然後將 AI 的回覆複製回對話框並點選確認按鈕。"
+			"description": "ä¸éœ€è¦ API é‡‘é‘°ï¼Œä½†ä½¿ç”¨è€…éœ€è¦å”åŠ©å°‡è³‡è¨Šè¤‡è£½ä¸¦è²¼ä¸Šåˆ°ç¶²é èŠå¤© AIã€‚",
+			"instructions": "ä½¿ç”¨æœŸé–“æœƒå½ˆå‡ºå°è©±æ¡†ï¼Œä¸¦è‡ªå‹•å°‡ç›®å‰è¨Šæ¯è¤‡è£½åˆ°å‰ªè²¼ç°¿ã€‚æ‚¨éœ€è¦å°‡é€™äº›å…§å®¹è²¼ä¸Šåˆ°ç¶²é ç‰ˆ AIï¼ˆå¦‚ ChatGPT æˆ– Claudeï¼‰ï¼Œç„¶å¾Œå°‡ AI çš„å›žè¦†è¤‡è£½å›žå°è©±æ¡†ä¸¦é»žé¸ç¢ºèªæŒ‰éˆ•ã€‚"
 		},
 		"roo": {
-			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
-			"connectButton": "連接到 Roo Code Cloud"
+			"authenticatedMessage": "å·²é€éŽ Roo Code Cloud å¸³æˆ¶å®‰å…¨èªè­‰ã€‚",
+			"connectButton": "é€£æŽ¥åˆ° Roo Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "OpenRouter 供應商路由",
-				"description": "OpenRouter 會將請求路由到適合您模型的最佳可用供應商。預設情況下，請求會在頂尖供應商之間進行負載平衡以最大化正常運作時間。您也可以為此模型選擇特定的供應商。",
-				"learnMore": "了解更多關於供應商路由的資訊"
+				"title": "OpenRouter ä¾›æ‡‰å•†è·¯ç”±",
+				"description": "OpenRouter æœƒå°‡è«‹æ±‚è·¯ç”±åˆ°é©åˆæ‚¨æ¨¡åž‹çš„æœ€ä½³å¯ç”¨ä¾›æ‡‰å•†ã€‚é è¨­æƒ…æ³ä¸‹ï¼Œè«‹æ±‚æœƒåœ¨é ‚å°–ä¾›æ‡‰å•†ä¹‹é–“é€²è¡Œè² è¼‰å¹³è¡¡ä»¥æœ€å¤§åŒ–æ­£å¸¸é‹ä½œæ™‚é–“ã€‚æ‚¨ä¹Ÿå¯ä»¥ç‚ºæ­¤æ¨¡åž‹é¸æ“‡ç‰¹å®šçš„ä¾›æ‡‰å•†ã€‚",
+				"learnMore": "äº†è§£æ›´å¤šé—œæ–¼ä¾›æ‡‰å•†è·¯ç”±çš„è³‡è¨Š"
 			}
 		},
 		"customModel": {
-			"capabilities": "設定自訂 OpenAI 相容模型的功能和定價。請謹慎設定模型功能，因為這會影響 Roo Code 的運作方式。",
+			"capabilities": "è¨­å®šè‡ªè¨‚ OpenAI ç›¸å®¹æ¨¡åž‹çš„åŠŸèƒ½å’Œå®šåƒ¹ã€‚è«‹è¬¹æ…Žè¨­å®šæ¨¡åž‹åŠŸèƒ½ï¼Œå› ç‚ºé€™æœƒå½±éŸ¿ Roo Code çš„é‹ä½œæ–¹å¼ã€‚",
 			"maxTokens": {
-				"label": "最大輸出 Token",
-				"description": "模型能在一則回應中產生的最大 Token 數量。（設為 -1 則由伺服器決定最大值）"
+				"label": "æœ€å¤§è¼¸å‡º Token",
+				"description": "æ¨¡åž‹èƒ½åœ¨ä¸€å‰‡å›žæ‡‰ä¸­ç”¢ç”Ÿçš„æœ€å¤§ Token æ•¸é‡ã€‚ï¼ˆè¨­ç‚º -1 å‰‡ç”±ä¼ºæœå™¨æ±ºå®šæœ€å¤§å€¼ï¼‰"
 			},
 			"contextWindow": {
-				"label": "上下文視窗大小",
-				"description": "模型能處理的總 Token 數量（包含輸入和輸出）"
+				"label": "ä¸Šä¸‹æ–‡è¦–çª—å¤§å°",
+				"description": "æ¨¡åž‹èƒ½è™•ç†çš„ç¸½ Token æ•¸é‡ï¼ˆåŒ…å«è¼¸å…¥å’Œè¼¸å‡ºï¼‰"
 			},
 			"imageSupport": {
-				"label": "影像支援",
-				"description": "此模型是否能夠處理和理解影像？"
+				"label": "å½±åƒæ”¯æ´",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤ è™•ç†å’Œç†è§£å½±åƒï¼Ÿ"
 			},
 			"computerUse": {
-				"label": "電腦使用",
-				"description": "此模型是否能夠與瀏覽器互動？（例如 Claude Sonnet）"
+				"label": "é›»è…¦ä½¿ç”¨",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤ èˆ‡ç€è¦½å™¨äº’å‹•ï¼Ÿï¼ˆä¾‹å¦‚ Claude Sonnetï¼‰"
 			},
 			"promptCache": {
-				"label": "提示快取",
-				"description": "此模型是否能夠快取提示？"
+				"label": "æç¤ºå¿«å–",
+				"description": "æ­¤æ¨¡åž‹æ˜¯å¦èƒ½å¤ å¿«å–æç¤ºï¼Ÿ"
 			},
 			"pricing": {
 				"input": {
-					"label": "輸入價格",
-					"description": "輸入/提示每百萬 Token 的費用。這會影響向模型傳送內容和指令時的費用。"
+					"label": "è¼¸å…¥åƒ¹æ ¼",
+					"description": "è¼¸å…¥/æç¤ºæ¯ç™¾è¬ Token çš„è²»ç”¨ã€‚é€™æœƒå½±éŸ¿å‘æ¨¡åž‹å‚³é€å…§å®¹å’ŒæŒ‡ä»¤æ™‚çš„è²»ç”¨ã€‚"
 				},
 				"output": {
-					"label": "輸出價格",
-					"description": "模型回應每百萬 Token 的費用。這會影響模型產生內容的費用。"
+					"label": "è¼¸å‡ºåƒ¹æ ¼",
+					"description": "æ¨¡åž‹å›žæ‡‰æ¯ç™¾è¬ Token çš„è²»ç”¨ã€‚é€™æœƒå½±éŸ¿æ¨¡åž‹ç”¢ç”Ÿå…§å®¹çš„è²»ç”¨ã€‚"
 				},
 				"cacheReads": {
-					"label": "快取讀取價格",
-					"description": "每百萬 Token 的快取讀取費用。當從快取中取得已儲存的回應時，會收取此費用。"
+					"label": "å¿«å–è®€å–åƒ¹æ ¼",
+					"description": "æ¯ç™¾è¬ Token çš„å¿«å–è®€å–è²»ç”¨ã€‚ç•¶å¾žå¿«å–ä¸­å–å¾—å·²å„²å­˜çš„å›žæ‡‰æ™‚ï¼Œæœƒæ”¶å–æ­¤è²»ç”¨ã€‚"
 				},
 				"cacheWrites": {
-					"label": "快取寫入價格",
-					"description": "每百萬 Token 的快取寫入費用。當提示首次被儲存至快取時，會收取此費用。"
+					"label": "å¿«å–å¯«å…¥åƒ¹æ ¼",
+					"description": "æ¯ç™¾è¬ Token çš„å¿«å–å¯«å…¥è²»ç”¨ã€‚ç•¶æç¤ºé¦–æ¬¡è¢«å„²å­˜è‡³å¿«å–æ™‚ï¼Œæœƒæ”¶å–æ­¤è²»ç”¨ã€‚"
 				}
 			},
-			"resetDefaults": "重設為預設值"
+			"resetDefaults": "é‡è¨­ç‚ºé è¨­å€¼"
 		},
 		"rateLimitSeconds": {
-			"label": "速率限制",
-			"description": "API 請求間的最短時間"
+			"label": "é€ŸçŽ‡é™åˆ¶",
+			"description": "API è«‹æ±‚é–“çš„æœ€çŸ­æ™‚é–“"
 		},
 		"consecutiveMistakeLimit": {
-			"label": "錯誤和重複限制",
-			"description": "在顯示「Roo 遇到問題」對話方塊前允許的連續錯誤或重複操作次數。設定為 0 可停用此安全機制（永不觸發）。",
-			"unlimitedDescription": "已啟用無限重試（自動繼續）。對話方塊將永遠不會出現。",
-			"warning": "⚠️ 設定為 0 允許無限重試，這可能會消耗大量 API 使用量"
+			"label": "éŒ¯èª¤å’Œé‡è¤‡é™åˆ¶",
+			"description": "åœ¨é¡¯ç¤ºã€ŒRoo é‡åˆ°å•é¡Œã€å°è©±æ–¹å¡Šå‰å…è¨±çš„é€£çºŒéŒ¯èª¤æˆ–é‡è¤‡æ“ä½œæ¬¡æ•¸ã€‚è¨­å®šç‚º 0 å¯åœç”¨æ­¤å®‰å…¨æ©Ÿåˆ¶ï¼ˆæ°¸ä¸è§¸ç™¼ï¼‰ã€‚",
+			"unlimitedDescription": "å·²å•Ÿç”¨ç„¡é™é‡è©¦ï¼ˆè‡ªå‹•ç¹¼çºŒï¼‰ã€‚å°è©±æ–¹å¡Šå°‡æ°¸é ä¸æœƒå‡ºç¾ã€‚",
+			"warning": "âš ï¸ è¨­å®šç‚º 0 å…è¨±ç„¡é™é‡è©¦ï¼Œé€™å¯èƒ½æœƒæ¶ˆè€—å¤§é‡ API ä½¿ç”¨é‡"
 		},
 		"reasoningEffort": {
-			"label": "模型推理強度",
-			"none": "無",
-			"minimal": "最小 (最快)",
-			"high": "高",
-			"xhigh": "超高",
-			"medium": "中",
-			"low": "低"
+			"label": "æ¨¡åž‹æŽ¨ç†å¼·åº¦",
+			"none": "ç„¡",
+			"minimal": "æœ€å° (æœ€å¿«)",
+			"high": "é«˜",
+			"xhigh": "è¶…é«˜",
+			"medium": "ä¸­",
+			"low": "ä½Ž"
 		},
 		"verbosity": {
-			"label": "輸出詳細程度",
-			"high": "高",
-			"medium": "中",
-			"low": "低",
-			"description": "控制模型回應的詳細程度。低詳細度產生簡潔的回答，而高詳細度提供詳盡的解釋。"
+			"label": "è¼¸å‡ºè©³ç´°ç¨‹åº¦",
+			"high": "é«˜",
+			"medium": "ä¸­",
+			"low": "ä½Ž",
+			"description": "æŽ§åˆ¶æ¨¡åž‹å›žæ‡‰çš„è©³ç´°ç¨‹åº¦ã€‚ä½Žè©³ç´°åº¦ç”¢ç”Ÿç°¡æ½”çš„å›žç­”ï¼Œè€Œé«˜è©³ç´°åº¦æä¾›è©³ç›¡çš„è§£é‡‹ã€‚"
 		},
-		"setReasoningLevel": "啟用推理工作量",
+		"setReasoningLevel": "å•Ÿç”¨æŽ¨ç†å·¥ä½œé‡",
 		"claudeCode": {
-			"pathLabel": "Claude Code 路徑",
-			"description": "可選的 Claude Code CLI 路徑。如果未設定，則預設為 'claude'。",
-			"placeholder": "預設：claude",
-			"maxTokensLabel": "最大輸出 Token",
-			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
+			"pathLabel": "Claude Code è·¯å¾‘",
+			"description": "å¯é¸çš„ Claude Code CLI è·¯å¾‘ã€‚å¦‚æžœæœªè¨­å®šï¼Œå‰‡é è¨­ç‚º \u0027claude\u0027ã€‚",
+			"placeholder": "é è¨­ï¼šclaude",
+			"maxTokensLabel": "æœ€å¤§è¼¸å‡º Token",
+			"maxTokensDescription": "Claude Code å›žæ‡‰çš„æœ€å¤§è¼¸å‡º Token æ•¸é‡ã€‚é è¨­ç‚º 8000ã€‚"
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "啟用瀏覽器工具",
-			"description": "啟用後，Roo 可在使用支援電腦使用的模型時使用瀏覽器與網站互動。 <0>了解更多</0>"
+			"label": "å•Ÿç”¨ç€è¦½å™¨å·¥å…·",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å¯åœ¨ä½¿ç”¨æ”¯æ´é›»è…¦ä½¿ç”¨çš„æ¨¡åž‹æ™‚ä½¿ç”¨ç€è¦½å™¨èˆ‡ç¶²ç«™äº’å‹•ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"viewport": {
-			"label": "視窗大小",
-			"description": "選擇瀏覽器互動的視窗大小。這會影響網站的顯示方式和互動方式。",
+			"label": "è¦–çª—å¤§å°",
+			"description": "é¸æ“‡ç€è¦½å™¨äº’å‹•çš„è¦–çª—å¤§å°ã€‚é€™æœƒå½±éŸ¿ç¶²ç«™çš„é¡¯ç¤ºæ–¹å¼å’Œäº’å‹•æ–¹å¼ã€‚",
 			"options": {
-				"largeDesktop": "大型桌面 (1280x800)",
-				"smallDesktop": "小型桌面 (900x600)",
-				"tablet": "平板 (768x1024)",
-				"mobile": "行動裝置 (360x640)"
+				"largeDesktop": "å¤§åž‹æ¡Œé¢ (1280x800)",
+				"smallDesktop": "å°åž‹æ¡Œé¢ (900x600)",
+				"tablet": "å¹³æ¿ (768x1024)",
+				"mobile": "è¡Œå‹•è£ç½® (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "截圖品質",
-			"description": "調整瀏覽器截圖的 WebP 品質。數值越高截圖越清晰，但會增加 token 用量。"
+			"label": "æˆªåœ–å“è³ª",
+			"description": "èª¿æ•´ç€è¦½å™¨æˆªåœ–çš„ WebP å“è³ªã€‚æ•¸å€¼è¶Šé«˜æˆªåœ–è¶Šæ¸…æ™°ï¼Œä½†æœƒå¢žåŠ  token ç”¨é‡ã€‚"
 		},
 		"remote": {
-			"label": "使用遠端瀏覽器連線",
-			"description": "連線到啟用遠端除錯的 Chrome 瀏覽器（--remote-debugging-port=9222）。",
-			"urlPlaceholder": "自訂 URL（例如 http://localhost:9222）",
-			"testButton": "測試連線",
-			"testingButton": "測試中...",
-			"instructions": "請輸入 DevTools Protocol 主機位址，或留空以自動偵測本機 Chrome 執行個體。「測試連線」按鈕將嘗試連線至您提供的自訂 URL，若未提供則會自動偵測。"
+			"label": "ä½¿ç”¨é ç«¯ç€è¦½å™¨é€£ç·š",
+			"description": "é€£ç·šåˆ°å•Ÿç”¨é ç«¯é™¤éŒ¯çš„ Chrome ç€è¦½å™¨ï¼ˆ--remote-debugging-port=9222ï¼‰ã€‚",
+			"urlPlaceholder": "è‡ªè¨‚ URLï¼ˆä¾‹å¦‚ http://localhost:9222ï¼‰",
+			"testButton": "æ¸¬è©¦é€£ç·š",
+			"testingButton": "æ¸¬è©¦ä¸­...",
+			"instructions": "è«‹è¼¸å…¥ DevTools Protocol ä¸»æ©Ÿä½å€ï¼Œæˆ–ç•™ç©ºä»¥è‡ªå‹•åµæ¸¬æœ¬æ©Ÿ Chrome åŸ·è¡Œå€‹é«”ã€‚ã€Œæ¸¬è©¦é€£ç·šã€æŒ‰éˆ•å°‡å˜—è©¦é€£ç·šè‡³æ‚¨æä¾›çš„è‡ªè¨‚ URLï¼Œè‹¥æœªæä¾›å‰‡æœƒè‡ªå‹•åµæ¸¬ã€‚"
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "檢查點初始化逾時（秒）",
-			"description": "檢查點服務初始化的最長等待時間。預設為 15 秒。範圍：10-60 秒。"
+			"label": "æª¢æŸ¥é»žåˆå§‹åŒ–é€¾æ™‚ï¼ˆç§’ï¼‰",
+			"description": "æª¢æŸ¥é»žæœå‹™åˆå§‹åŒ–çš„æœ€é•·ç­‰å¾…æ™‚é–“ã€‚é è¨­ç‚º 15 ç§’ã€‚ç¯„åœï¼š10-60 ç§’ã€‚"
 		},
 		"enable": {
-			"label": "啟用自動檢查點",
-			"description": "啟用後，Roo 將在工作執行期間自動建立檢查點，使審核變更或回到早期狀態變得容易。 <0>了解更多</0>"
+			"label": "å•Ÿç”¨è‡ªå‹•æª¢æŸ¥é»ž",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡åœ¨å·¥ä½œåŸ·è¡ŒæœŸé–“è‡ªå‹•å»ºç«‹æª¢æŸ¥é»žï¼Œä½¿å¯©æ ¸è®Šæ›´æˆ–å›žåˆ°æ—©æœŸç‹€æ…‹è®Šå¾—å®¹æ˜“ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "啟用音效",
-			"description": "啟用後，Roo 將為通知和事件播放音效。",
-			"volumeLabel": "音量"
+			"label": "å•Ÿç”¨éŸ³æ•ˆ",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡ç‚ºé€šçŸ¥å’Œäº‹ä»¶æ’­æ”¾éŸ³æ•ˆã€‚",
+			"volumeLabel": "éŸ³é‡"
 		},
 		"tts": {
-			"label": "啟用文字轉語音",
-			"description": "啟用後，Roo 將使用文字轉語音功能朗讀其回應。",
-			"speedLabel": "速度"
+			"label": "å•Ÿç”¨æ–‡å­—è½‰èªžéŸ³",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡ä½¿ç”¨æ–‡å­—è½‰èªžéŸ³åŠŸèƒ½æœ—è®€å…¶å›žæ‡‰ã€‚",
+			"speedLabel": "é€Ÿåº¦"
 		}
 	},
 	"contextManagement": {
-		"description": "控制 AI 上下文視窗中要包含哪些資訊，會影響 token 用量和回應品質",
+		"description": "æŽ§åˆ¶ AI ä¸Šä¸‹æ–‡è¦–çª—ä¸­è¦åŒ…å«å“ªäº›è³‡è¨Šï¼Œæœƒå½±éŸ¿ token ç”¨é‡å’Œå›žæ‡‰å“è³ª",
 		"autoCondenseContextPercent": {
-			"label": "觸發智慧上下文壓縮的閾值",
-			"description": "當上下文視窗達到此閾值時，Roo 將自動壓縮它。"
+			"label": "è§¸ç™¼æ™ºæ…§ä¸Šä¸‹æ–‡å£“ç¸®çš„é–¾å€¼",
+			"description": "ç•¶ä¸Šä¸‹æ–‡è¦–çª—é”åˆ°æ­¤é–¾å€¼æ™‚ï¼ŒRoo å°‡è‡ªå‹•å£“ç¸®å®ƒã€‚"
 		},
 		"condensingApiConfiguration": {
-			"label": "上下文壓縮的 API 設定",
-			"description": "選擇用於上下文壓縮操作的 API 設定。留空則使用目前啟用的設定。",
-			"useCurrentConfig": "使用目前設定"
+			"label": "ä¸Šä¸‹æ–‡å£“ç¸®çš„ API è¨­å®š",
+			"description": "é¸æ“‡ç”¨æ–¼ä¸Šä¸‹æ–‡å£“ç¸®æ“ä½œçš„ API è¨­å®šã€‚ç•™ç©ºå‰‡ä½¿ç”¨ç›®å‰å•Ÿç”¨çš„è¨­å®šã€‚",
+			"useCurrentConfig": "ä½¿ç”¨ç›®å‰è¨­å®š"
 		},
 		"customCondensingPrompt": {
-			"label": "自訂上下文壓縮提示",
-			"description": "自訂用於上下文壓縮的系統提示。留空則使用預設提示。",
-			"placeholder": "請在此輸入您的自訂上下文壓縮提示...\n\n您可以參考預設提示的結構：\n- 先前對話\n- 目前工作\n- 主要技術概念\n- 相關檔案與程式碼\n- 問題解決\n- 未完成的任務與後續步驟",
-			"reset": "重設為預設值",
-			"hint": "留空 = 使用預設提示"
+			"label": "è‡ªè¨‚ä¸Šä¸‹æ–‡å£“ç¸®æç¤º",
+			"description": "è‡ªè¨‚ç”¨æ–¼ä¸Šä¸‹æ–‡å£“ç¸®çš„ç³»çµ±æç¤ºã€‚ç•™ç©ºå‰‡ä½¿ç”¨é è¨­æç¤ºã€‚",
+			"placeholder": "è«‹åœ¨æ­¤è¼¸å…¥æ‚¨çš„è‡ªè¨‚ä¸Šä¸‹æ–‡å£“ç¸®æç¤º...\n\næ‚¨å¯ä»¥åƒè€ƒé è¨­æç¤ºçš„çµæ§‹ï¼š\n- å…ˆå‰å°è©±\n- ç›®å‰å·¥ä½œ\n- ä¸»è¦æŠ€è¡“æ¦‚å¿µ\n- ç›¸é—œæª”æ¡ˆèˆ‡ç¨‹å¼ç¢¼\n- å•é¡Œè§£æ±º\n- æœªå®Œæˆçš„ä»»å‹™èˆ‡å¾ŒçºŒæ­¥é©Ÿ",
+			"reset": "é‡è¨­ç‚ºé è¨­å€¼",
+			"hint": "ç•™ç©º = ä½¿ç”¨é è¨­æç¤º"
 		},
 		"autoCondenseContext": {
-			"name": "自動觸發智慧上下文壓縮",
-			"description": "啟用時，Roo 會在達到閾值時自動壓縮上下文。停用時，您仍可手動觸發上下文壓縮。"
+			"name": "è‡ªå‹•è§¸ç™¼æ™ºæ…§ä¸Šä¸‹æ–‡å£“ç¸®",
+			"description": "å•Ÿç”¨æ™‚ï¼ŒRoo æœƒåœ¨é”åˆ°é–¾å€¼æ™‚è‡ªå‹•å£“ç¸®ä¸Šä¸‹æ–‡ã€‚åœç”¨æ™‚ï¼Œæ‚¨ä»å¯æ‰‹å‹•è§¸ç™¼ä¸Šä¸‹æ–‡å£“ç¸®ã€‚"
 		},
 		"openTabs": {
-			"label": "開啟分頁的上下文限制",
-			"description": "上下文中最多包含多少個 VS Code 開啟的分頁。數值越高提供的上下文越多，但 token 用量也會增加。"
+			"label": "é–‹å•Ÿåˆ†é çš„ä¸Šä¸‹æ–‡é™åˆ¶",
+			"description": "ä¸Šä¸‹æ–‡ä¸­æœ€å¤šåŒ…å«å¤šå°‘å€‹ VS Code é–‹å•Ÿçš„åˆ†é ã€‚æ•¸å€¼è¶Šé«˜æä¾›çš„ä¸Šä¸‹æ–‡è¶Šå¤šï¼Œä½† token ç”¨é‡ä¹Ÿæœƒå¢žåŠ ã€‚"
 		},
 		"workspaceFiles": {
-			"label": "工作區檔案的上下文限制",
-			"description": "目前工作目錄中最多包含多少個檔案。數值越高提供的上下文越多，但 token 用量也會增加。"
+			"label": "å·¥ä½œå€æª”æ¡ˆçš„ä¸Šä¸‹æ–‡é™åˆ¶",
+			"description": "ç›®å‰å·¥ä½œç›®éŒ„ä¸­æœ€å¤šåŒ…å«å¤šå°‘å€‹æª”æ¡ˆã€‚æ•¸å€¼è¶Šé«˜æä¾›çš„ä¸Šä¸‹æ–‡è¶Šå¤šï¼Œä½† token ç”¨é‡ä¹Ÿæœƒå¢žåŠ ã€‚"
 		},
 		"rooignore": {
-			"label": "在列表和搜尋中顯示被 .rooignore 排除的檔案",
-			"description": "啟用後，符合 .rooignore 規則的檔案會在列表中顯示並標示鎖定圖示。停用後，這些檔案將完全從檔案列表和搜尋結果中隱藏。"
+			"label": "åœ¨åˆ—è¡¨å’Œæœå°‹ä¸­é¡¯ç¤ºè¢« .rooignore æŽ’é™¤çš„æª”æ¡ˆ",
+			"description": "å•Ÿç”¨å¾Œï¼Œç¬¦åˆ .rooignore è¦å‰‡çš„æª”æ¡ˆæœƒåœ¨åˆ—è¡¨ä¸­é¡¯ç¤ºä¸¦æ¨™ç¤ºéŽ–å®šåœ–ç¤ºã€‚åœç”¨å¾Œï¼Œé€™äº›æª”æ¡ˆå°‡å®Œå…¨å¾žæª”æ¡ˆåˆ—è¡¨å’Œæœå°‹çµæžœä¸­éš±è—ã€‚"
 		},
 		"maxReadFile": {
-			"label": "檔案讀取自動截斷閾值",
-			"description": "當模型未指定起始/結束值時，Roo 讀取的行數。如果此數值小於檔案總行數，Roo 將產生程式碼定義的行號索引。特殊情況：-1 指示 Roo 讀取整個檔案（不建立索引），0 指示不讀取任何行並僅提供行索引以取得最小上下文。較低的值可最小化初始上下文使用，允許後續精確的行範圍讀取。明確指定起始/結束的請求不受此設定限制。 <0>了解更多</0>",
-			"lines": "行",
-			"always_full_read": "始終讀取整個檔案"
+			"label": "æª”æ¡ˆè®€å–è‡ªå‹•æˆªæ–·é–¾å€¼",
+			"description": "ç•¶æ¨¡åž‹æœªæŒ‡å®šèµ·å§‹/çµæŸå€¼æ™‚ï¼ŒRoo è®€å–çš„è¡Œæ•¸ã€‚å¦‚æžœæ­¤æ•¸å€¼å°æ–¼æª”æ¡ˆç¸½è¡Œæ•¸ï¼ŒRoo å°‡ç”¢ç”Ÿç¨‹å¼ç¢¼å®šç¾©çš„è¡Œè™Ÿç´¢å¼•ã€‚ç‰¹æ®Šæƒ…æ³ï¼š-1 æŒ‡ç¤º Roo è®€å–æ•´å€‹æª”æ¡ˆï¼ˆä¸å»ºç«‹ç´¢å¼•ï¼‰ï¼Œ0 æŒ‡ç¤ºä¸è®€å–ä»»ä½•è¡Œä¸¦åƒ…æä¾›è¡Œç´¢å¼•ä»¥å–å¾—æœ€å°ä¸Šä¸‹æ–‡ã€‚è¼ƒä½Žçš„å€¼å¯æœ€å°åŒ–åˆå§‹ä¸Šä¸‹æ–‡ä½¿ç”¨ï¼Œå…è¨±å¾ŒçºŒç²¾ç¢ºçš„è¡Œç¯„åœè®€å–ã€‚æ˜Žç¢ºæŒ‡å®šèµ·å§‹/çµæŸçš„è«‹æ±‚ä¸å—æ­¤è¨­å®šé™åˆ¶ã€‚ \u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e",
+			"lines": "è¡Œ",
+			"always_full_read": "å§‹çµ‚è®€å–æ•´å€‹æª”æ¡ˆ"
 		},
 		"maxConcurrentFileReads": {
-			"label": "並行檔案讀取限制",
-			"description": "read_file 工具可以同時處理的最大檔案數。較高的值可能會加快讀取多個小檔案的速度，但會增加記憶體使用量。"
+			"label": "ä¸¦è¡Œæª”æ¡ˆè®€å–é™åˆ¶",
+			"description": "read_file å·¥å…·å¯ä»¥åŒæ™‚è™•ç†çš„æœ€å¤§æª”æ¡ˆæ•¸ã€‚è¼ƒé«˜çš„å€¼å¯èƒ½æœƒåŠ å¿«è®€å–å¤šå€‹å°æª”æ¡ˆçš„é€Ÿåº¦ï¼Œä½†æœƒå¢žåŠ è¨˜æ†¶é«”ä½¿ç”¨é‡ã€‚"
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "自動在上下文中包含診斷",
-				"description": "啟用後，來自已編輯檔案的診斷訊息（錯誤）將自動包含在上下文中。您隨時可以使用 @problems 手動包含所有工作區診斷。"
+				"label": "è‡ªå‹•åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«è¨ºæ–·",
+				"description": "å•Ÿç”¨å¾Œï¼Œä¾†è‡ªå·²ç·¨è¼¯æª”æ¡ˆçš„è¨ºæ–·è¨Šæ¯ï¼ˆéŒ¯èª¤ï¼‰å°‡è‡ªå‹•åŒ…å«åœ¨ä¸Šä¸‹æ–‡ä¸­ã€‚æ‚¨éš¨æ™‚å¯ä»¥ä½¿ç”¨ @problems æ‰‹å‹•åŒ…å«æ‰€æœ‰å·¥ä½œå€è¨ºæ–·ã€‚"
 			},
 			"maxMessages": {
-				"label": "最大診斷訊息數",
-				"description": "每個檔案包含的最大診斷訊息數。此限制適用於自動包含（當核取方塊啟用時）和手動 @problems 提及。較高的值提供更多上下文，但會增加權杖使用量。",
-				"resetTooltip": "重設為預設值 (50)",
-				"unlimited": "無限制診斷訊息",
-				"unlimitedLabel": "無限制"
+				"label": "æœ€å¤§è¨ºæ–·è¨Šæ¯æ•¸",
+				"description": "æ¯å€‹æª”æ¡ˆåŒ…å«çš„æœ€å¤§è¨ºæ–·è¨Šæ¯æ•¸ã€‚æ­¤é™åˆ¶é©ç”¨æ–¼è‡ªå‹•åŒ…å«ï¼ˆç•¶æ ¸å–æ–¹å¡Šå•Ÿç”¨æ™‚ï¼‰å’Œæ‰‹å‹• @problems æåŠã€‚è¼ƒé«˜çš„å€¼æä¾›æ›´å¤šä¸Šä¸‹æ–‡ï¼Œä½†æœƒå¢žåŠ æ¬Šæ–ä½¿ç”¨é‡ã€‚",
+				"resetTooltip": "é‡è¨­ç‚ºé è¨­å€¼ (50)",
+				"unlimited": "ç„¡é™åˆ¶è¨ºæ–·è¨Šæ¯",
+				"unlimitedLabel": "ç„¡é™åˆ¶"
 			},
 			"delayAfterWrite": {
-				"label": "寫入後延遲以允許診斷程式偵測潛在問題",
-				"description": "在繼續之前寫入檔案後等待的時間，允許診斷工具處理變更並偵測問題。"
+				"label": "å¯«å…¥å¾Œå»¶é²ä»¥å…è¨±è¨ºæ–·ç¨‹å¼åµæ¸¬æ½›åœ¨å•é¡Œ",
+				"description": "åœ¨ç¹¼çºŒä¹‹å‰å¯«å…¥æª”æ¡ˆå¾Œç­‰å¾…çš„æ™‚é–“ï¼Œå…è¨±è¨ºæ–·å·¥å…·è™•ç†è®Šæ›´ä¸¦åµæ¸¬å•é¡Œã€‚"
 			}
 		},
 		"condensingThreshold": {
-			"label": "壓縮觸發閾值",
-			"selectProfile": "設定檔案閾值",
-			"defaultProfile": "全域預設（所有檔案）",
-			"defaultDescription": "當上下文達到此百分比時，將自動為所有檔案壓縮，除非它們有自訂設定",
-			"profileDescription": "僅此檔案的自訂閾值（覆蓋全域預設）",
-			"inheritDescription": "此檔案繼承全域預設閾值（{{threshold}}%）",
-			"usesGlobal": "（使用全域 {{threshold}}%）"
+			"label": "å£“ç¸®è§¸ç™¼é–¾å€¼",
+			"selectProfile": "è¨­å®šæª”æ¡ˆé–¾å€¼",
+			"defaultProfile": "å…¨åŸŸé è¨­ï¼ˆæ‰€æœ‰æª”æ¡ˆï¼‰",
+			"defaultDescription": "ç•¶ä¸Šä¸‹æ–‡é”åˆ°æ­¤ç™¾åˆ†æ¯”æ™‚ï¼Œå°‡è‡ªå‹•ç‚ºæ‰€æœ‰æª”æ¡ˆå£“ç¸®ï¼Œé™¤éžå®ƒå€‘æœ‰è‡ªè¨‚è¨­å®š",
+			"profileDescription": "åƒ…æ­¤æª”æ¡ˆçš„è‡ªè¨‚é–¾å€¼ï¼ˆè¦†è“‹å…¨åŸŸé è¨­ï¼‰",
+			"inheritDescription": "æ­¤æª”æ¡ˆç¹¼æ‰¿å…¨åŸŸé è¨­é–¾å€¼ï¼ˆ{{threshold}}%ï¼‰",
+			"usesGlobal": "ï¼ˆä½¿ç”¨å…¨åŸŸ {{threshold}}%ï¼‰"
 		},
 		"maxImageFileSize": {
-			"label": "最大圖片檔案大小",
+			"label": "æœ€å¤§åœ–ç‰‡æª”æ¡ˆå¤§å°",
 			"mb": "MB",
-			"description": "read file 工具可以處理的圖像檔案的最大大小（以 MB 為單位）。"
+			"description": "read file å·¥å…·å¯ä»¥è™•ç†çš„åœ–åƒæª”æ¡ˆçš„æœ€å¤§å¤§å°ï¼ˆä»¥ MB ç‚ºå–®ä½ï¼‰ã€‚"
 		},
 		"maxTotalImageSize": {
-			"label": "圖片總大小上限",
+			"label": "åœ–ç‰‡ç¸½å¤§å°ä¸Šé™",
 			"mb": "MB",
-			"description": "單次 read_file 操作中處理的所有圖片的最大累計大小限制（MB）。讀取多張圖片時，每張圖片的大小會累加到總大小中。如果包含另一張圖片會超過此限制，則會跳過該圖片。"
+			"description": "å–®æ¬¡ read_file æ“ä½œä¸­è™•ç†çš„æ‰€æœ‰åœ–ç‰‡çš„æœ€å¤§ç´¯è¨ˆå¤§å°é™åˆ¶ï¼ˆMBï¼‰ã€‚è®€å–å¤šå¼µåœ–ç‰‡æ™‚ï¼Œæ¯å¼µåœ–ç‰‡çš„å¤§å°æœƒç´¯åŠ åˆ°ç¸½å¤§å°ä¸­ã€‚å¦‚æžœåŒ…å«å¦ä¸€å¼µåœ–ç‰‡æœƒè¶…éŽæ­¤é™åˆ¶ï¼Œå‰‡æœƒè·³éŽè©²åœ–ç‰‡ã€‚"
 		},
 		"includeCurrentTime": {
-			"label": "在上下文中包含目前時間",
-			"description": "啟用後，目前時間和時區資訊將包含在系統提示中。如果模型因時間問題停止工作，請停用此選項。"
+			"label": "åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«ç›®å‰æ™‚é–“",
+			"description": "å•Ÿç”¨å¾Œï¼Œç›®å‰æ™‚é–“å’Œæ™‚å€è³‡è¨Šå°‡åŒ…å«åœ¨ç³»çµ±æç¤ºä¸­ã€‚å¦‚æžœæ¨¡åž‹å› æ™‚é–“å•é¡Œåœæ­¢å·¥ä½œï¼Œè«‹åœç”¨æ­¤é¸é …ã€‚"
 		},
 		"includeCurrentCost": {
-			"label": "在上下文中包含目前成本",
-			"description": "啟用後，目前 API 使用成本將包含在系統提示中。如果模型因成本問題停止工作，請停用此選項。"
+			"label": "åœ¨ä¸Šä¸‹æ–‡ä¸­åŒ…å«ç›®å‰æˆæœ¬",
+			"description": "å•Ÿç”¨å¾Œï¼Œç›®å‰ API ä½¿ç”¨æˆæœ¬å°‡åŒ…å«åœ¨ç³»çµ±æç¤ºä¸­ã€‚å¦‚æžœæ¨¡åž‹å› æˆæœ¬å•é¡Œåœæ­¢å·¥ä½œï¼Œè«‹åœç”¨æ­¤é¸é …ã€‚"
 		},
 		"maxGitStatusFiles": {
-			"label": "Git 狀態最大檔案數",
-			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
+			"label": "Git ç‹€æ…‹æœ€å¤§æª”æ¡ˆæ•¸",
+			"description": "gitç‹€æ…‹ä¸Šä¸‹æ–‡ä¸­åŒ…å«çš„æœ€å¤§æª”æ¡ˆæ¢ç›®æ•¸ã€‚è¨­ç‚º0ç¦ç”¨ã€‚åˆ†æ”¯è³‡è¨Šå’Œæäº¤åœ¨\u003e0æ™‚å§‹çµ‚é¡¯ç¤ºã€‚"
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "終端機設定：基本",
-			"description": "基本終端機設定"
+			"label": "çµ‚ç«¯æ©Ÿè¨­å®šï¼šåŸºæœ¬",
+			"description": "åŸºæœ¬çµ‚ç«¯æ©Ÿè¨­å®š"
 		},
 		"advanced": {
-			"label": "終端機設定：進階",
-			"description": "這些設定僅在「使用內嵌終端機」停用時適用。僅影響 VS Code 終端機，可能需要重啟 IDE。"
+			"label": "çµ‚ç«¯æ©Ÿè¨­å®šï¼šé€²éšŽ",
+			"description": "é€™äº›è¨­å®šåƒ…åœ¨ã€Œä½¿ç”¨å…§åµŒçµ‚ç«¯æ©Ÿã€åœç”¨æ™‚é©ç”¨ã€‚åƒ…å½±éŸ¿ VS Code çµ‚ç«¯æ©Ÿï¼Œå¯èƒ½éœ€è¦é‡å•Ÿ IDEã€‚"
 		},
 		"outputLineLimit": {
-			"label": "終端機輸出限制",
-			"description": "保留首尾行並丟棄中間行以保持在限制內。降低可節省 token；提高可為 Roo 提供更多中間細節。Roo 看到內容被跳過的佔位符。<0>了解更多</0>"
+			"label": "çµ‚ç«¯æ©Ÿè¼¸å‡ºé™åˆ¶",
+			"description": "ä¿ç•™é¦–å°¾è¡Œä¸¦ä¸Ÿæ£„ä¸­é–“è¡Œä»¥ä¿æŒåœ¨é™åˆ¶å…§ã€‚é™ä½Žå¯ç¯€çœ tokenï¼›æé«˜å¯ç‚º Roo æä¾›æ›´å¤šä¸­é–“ç´°ç¯€ã€‚Roo çœ‹åˆ°å…§å®¹è¢«è·³éŽçš„ä½”ä½ç¬¦ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
-			"label": "終端機字元限制",
-			"description": "透過強制限制輸出大小來覆寫行限制以防止記憶體問題。如果超出，保留開頭和結尾並向 Roo 顯示內容被跳過的佔位符。<0>了解更多</0>"
+			"label": "çµ‚ç«¯æ©Ÿå­—å…ƒé™åˆ¶",
+			"description": "é€éŽå¼·åˆ¶é™åˆ¶è¼¸å‡ºå¤§å°ä¾†è¦†å¯«è¡Œé™åˆ¶ä»¥é˜²æ­¢è¨˜æ†¶é«”å•é¡Œã€‚å¦‚æžœè¶…å‡ºï¼Œä¿ç•™é–‹é ­å’Œçµå°¾ä¸¦å‘ Roo é¡¯ç¤ºå…§å®¹è¢«è·³éŽçš„ä½”ä½ç¬¦ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
-			"label": "終端機 shell 整合逾時",
-			"description": "執行命令前等待 VS Code shell 整合的時間。如果 shell 啟動緩慢或看到 'Shell Integration Unavailable' 錯誤，請提高此值。<0>了解更多</0>"
+			"label": "çµ‚ç«¯æ©Ÿ shell æ•´åˆé€¾æ™‚",
+			"description": "åŸ·è¡Œå‘½ä»¤å‰ç­‰å¾… VS Code shell æ•´åˆçš„æ™‚é–“ã€‚å¦‚æžœ shell å•Ÿå‹•ç·©æ…¢æˆ–çœ‹åˆ° \u0027Shell Integration Unavailable\u0027 éŒ¯èª¤ï¼Œè«‹æé«˜æ­¤å€¼ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
-			"label": "使用內嵌終端機（建議）",
-			"description": "在內嵌終端機（聊天）中執行命令以繞過 shell 設定檔/整合，實現更快、更可靠的執行。停用時，Roo 使用 VS Code 終端機及您的 shell 設定檔、提示和外掛程式。<0>了解更多</0>"
+			"label": "ä½¿ç”¨å…§åµŒçµ‚ç«¯æ©Ÿï¼ˆå»ºè­°ï¼‰",
+			"description": "åœ¨å…§åµŒçµ‚ç«¯æ©Ÿï¼ˆèŠå¤©ï¼‰ä¸­åŸ·è¡Œå‘½ä»¤ä»¥ç¹žéŽ shell è¨­å®šæª”/æ•´åˆï¼Œå¯¦ç¾æ›´å¿«ã€æ›´å¯é çš„åŸ·è¡Œã€‚åœç”¨æ™‚ï¼ŒRoo ä½¿ç”¨ VS Code çµ‚ç«¯æ©ŸåŠæ‚¨çš„ shell è¨­å®šæª”ã€æç¤ºå’Œå¤–æŽ›ç¨‹å¼ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"commandDelay": {
-			"label": "終端機命令延遲",
-			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。<0>了解更多</0>"
+			"label": "çµ‚ç«¯æ©Ÿå‘½ä»¤å»¶é²",
+			"description": "åœ¨æ¯å€‹å‘½ä»¤å¾Œæ–°å¢žçŸ­æš«æš«åœï¼Œä»¥ä¾¿ VS Code çµ‚ç«¯æ©Ÿåˆ·æ–°æ‰€æœ‰è¼¸å‡ºï¼ˆbash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleepï¼‰ã€‚åƒ…åœ¨çœ‹åˆ°ç¼ºå°‘å°¾éƒ¨è¼¸å‡ºæ™‚ä½¿ç”¨ï¼›å¦å‰‡ä¿æŒç‚º 0ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"compressProgressBar": {
-			"label": "壓縮進度條輸出",
-			"description": "折疊進度條/旋轉器，僅保留最終狀態（節省 token）。<0>了解更多</0>"
+			"label": "å£“ç¸®é€²åº¦æ¢è¼¸å‡º",
+			"description": "æŠ˜ç–Šé€²åº¦æ¢/æ—‹è½‰å™¨ï¼Œåƒ…ä¿ç•™æœ€çµ‚ç‹€æ…‹ï¼ˆç¯€çœ tokenï¼‰ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"powershellCounter": {
-			"label": "啟用 PowerShell 計數器解決方案",
-			"description": "當 PowerShell 輸出遺失或重複時啟用此選項；它會為每個命令附加一個小計數器以穩定輸出。如果輸出已正常，請保持關閉。<0>了解更多</0>"
+			"label": "å•Ÿç”¨ PowerShell è¨ˆæ•¸å™¨è§£æ±ºæ–¹æ¡ˆ",
+			"description": "ç•¶ PowerShell è¼¸å‡ºéºå¤±æˆ–é‡è¤‡æ™‚å•Ÿç”¨æ­¤é¸é …ï¼›å®ƒæœƒç‚ºæ¯å€‹å‘½ä»¤é™„åŠ ä¸€å€‹å°è¨ˆæ•¸å™¨ä»¥ç©©å®šè¼¸å‡ºã€‚å¦‚æžœè¼¸å‡ºå·²æ­£å¸¸ï¼Œè«‹ä¿æŒé—œé–‰ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
-			"label": "清除 ZSH EOL 標記",
-			"description": "當您在行尾看到零散的 % 或解析看起來錯誤時啟用此選項；它會省略 Zsh 的行尾標記（%）。<0>了解更多</0>"
+			"label": "æ¸…é™¤ ZSH EOL æ¨™è¨˜",
+			"description": "ç•¶æ‚¨åœ¨è¡Œå°¾çœ‹åˆ°é›¶æ•£çš„ % æˆ–è§£æžçœ‹èµ·ä¾†éŒ¯èª¤æ™‚å•Ÿç”¨æ­¤é¸é …ï¼›å®ƒæœƒçœç•¥ Zsh çš„è¡Œå°¾æ¨™è¨˜ï¼ˆ%ï¼‰ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshOhMy": {
-			"label": "啟用 Oh My Zsh 整合",
-			"description": "當您的 Oh My Zsh 主題/外掛程式期望 shell 整合時啟用此選項；它會設定 ITERM_SHELL_INTEGRATION_INSTALLED=Yes。關閉此選項以避免設定該變數。<0>了解更多</0>"
+			"label": "å•Ÿç”¨ Oh My Zsh æ•´åˆ",
+			"description": "ç•¶æ‚¨çš„ Oh My Zsh ä¸»é¡Œ/å¤–æŽ›ç¨‹å¼æœŸæœ› shell æ•´åˆæ™‚å•Ÿç”¨æ­¤é¸é …ï¼›å®ƒæœƒè¨­å®š ITERM_SHELL_INTEGRATION_INSTALLED=Yesã€‚é—œé–‰æ­¤é¸é …ä»¥é¿å…è¨­å®šè©²è®Šæ•¸ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zshP10k": {
-			"label": "啟用 Powerlevel10k 整合",
-			"description": "使用 Powerlevel10k shell 整合時啟用此選項。<0>了解更多</0>"
+			"label": "å•Ÿç”¨ Powerlevel10k æ•´åˆ",
+			"description": "ä½¿ç”¨ Powerlevel10k shell æ•´åˆæ™‚å•Ÿç”¨æ­¤é¸é …ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"zdotdir": {
-			"label": "啟用 ZDOTDIR 處理",
-			"description": "當 zsh shell 整合失敗或與您的 dotfiles 衝突時啟用此選項。<0>了解更多</0>"
+			"label": "å•Ÿç”¨ ZDOTDIR è™•ç†",
+			"description": "ç•¶ zsh shell æ•´åˆå¤±æ•—æˆ–èˆ‡æ‚¨çš„ dotfiles è¡çªæ™‚å•Ÿç”¨æ­¤é¸é …ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		},
 		"inheritEnv": {
-			"label": "繼承環境變數",
-			"description": "啟用此選項以從父 VS Code 程序繼承環境變數。<0>了解更多</0>"
+			"label": "ç¹¼æ‰¿ç’°å¢ƒè®Šæ•¸",
+			"description": "å•Ÿç”¨æ­¤é¸é …ä»¥å¾žçˆ¶ VS Code ç¨‹åºç¹¼æ‰¿ç’°å¢ƒè®Šæ•¸ã€‚\u003c0\u003eäº†è§£æ›´å¤š\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
-		"title": "進階設定"
+		"title": "é€²éšŽè¨­å®š"
 	},
 	"toolProtocol": {
-		"label": "工具呼叫協議",
-		"description": "選擇 Roo 如何與 API 通信。原生使用提供者的函數呼叫 API，而 XML 使用 XML 格式的工具定義。",
-		"default": "預設",
+		"label": "å·¥å…·å‘¼å«å”è­°",
+		"description": "é¸æ“‡ Roo å¦‚ä½•èˆ‡ API é€šä¿¡ã€‚åŽŸç”Ÿä½¿ç”¨æä¾›è€…çš„å‡½æ•¸å‘¼å« APIï¼Œè€Œ XML ä½¿ç”¨ XML æ ¼å¼çš„å·¥å…·å®šç¾©ã€‚",
+		"default": "é è¨­",
 		"xml": "XML",
-		"native": "原生",
-		"currentDefault": "預設: {{protocol}}"
+		"native": "åŽŸç”Ÿ",
+		"currentDefault": "é è¨­: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "透過差異比對編輯",
-			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫",
+			"label": "é€éŽå·®ç•°æ¯”å°ç·¨è¼¯",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å¯æ›´å¿«é€Ÿåœ°ç·¨è¼¯æª”æ¡ˆï¼Œä¸¦è‡ªå‹•æ‹’çµ•ä¸å®Œæ•´çš„æ•´æª”è¦†å¯«",
 			"strategy": {
-				"label": "差異比對策略",
+				"label": "å·®ç•°æ¯”å°ç­–ç•¥",
 				"options": {
-					"standard": "標準（單一區塊）",
-					"multiBlock": "實驗性：多區塊差異",
-					"unified": "實驗性：統一差異"
+					"standard": "æ¨™æº–ï¼ˆå–®ä¸€å€å¡Šï¼‰",
+					"multiBlock": "å¯¦é©—æ€§ï¼šå¤šå€å¡Šå·®ç•°",
+					"unified": "å¯¦é©—æ€§ï¼šçµ±ä¸€å·®ç•°"
 				},
 				"descriptions": {
-					"standard": "標準策略一次只修改一個程式碼區塊。",
-					"unified": "統一差異策略會嘗試多種比對方式，並選擇最佳方案。",
-					"multiBlock": "多區塊策略可在單一請求中更新檔案內的多個程式碼區塊。"
+					"standard": "æ¨™æº–ç­–ç•¥ä¸€æ¬¡åªä¿®æ”¹ä¸€å€‹ç¨‹å¼ç¢¼å€å¡Šã€‚",
+					"unified": "çµ±ä¸€å·®ç•°ç­–ç•¥æœƒå˜—è©¦å¤šç¨®æ¯”å°æ–¹å¼ï¼Œä¸¦é¸æ“‡æœ€ä½³æ–¹æ¡ˆã€‚",
+					"multiBlock": "å¤šå€å¡Šç­–ç•¥å¯åœ¨å–®ä¸€è«‹æ±‚ä¸­æ›´æ–°æª”æ¡ˆå…§çš„å¤šå€‹ç¨‹å¼ç¢¼å€å¡Šã€‚"
 				}
 			},
 			"matchPrecision": {
-				"label": "比對精確度",
-				"description": "此滑桿控制套用差異時程式碼區段的比對精確度。較低的數值允許更彈性的比對，但也會增加錯誤取代的風險。使用低於 100% 的數值時請特別謹慎。"
+				"label": "æ¯”å°ç²¾ç¢ºåº¦",
+				"description": "æ­¤æ»‘æ¡¿æŽ§åˆ¶å¥—ç”¨å·®ç•°æ™‚ç¨‹å¼ç¢¼å€æ®µçš„æ¯”å°ç²¾ç¢ºåº¦ã€‚è¼ƒä½Žçš„æ•¸å€¼å…è¨±æ›´å½ˆæ€§çš„æ¯”å°ï¼Œä½†ä¹Ÿæœƒå¢žåŠ éŒ¯èª¤å–ä»£çš„é¢¨éšªã€‚ä½¿ç”¨ä½Žæ–¼ 100% çš„æ•¸å€¼æ™‚è«‹ç‰¹åˆ¥è¬¹æ…Žã€‚"
 			}
 		},
 		"todoList": {
-			"label": "啟用待辦事項清單工具",
-			"description": "啟用後，Roo 可以建立和管理待辦事項清單來追蹤任務進度。這有助於將複雜任務組織成可管理的步驟。"
+			"label": "å•Ÿç”¨å¾…è¾¦äº‹é …æ¸…å–®å·¥å…·",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å¯ä»¥å»ºç«‹å’Œç®¡ç†å¾…è¾¦äº‹é …æ¸…å–®ä¾†è¿½è¹¤ä»»å‹™é€²åº¦ã€‚é€™æœ‰åŠ©æ–¼å°‡è¤‡é›œä»»å‹™çµ„ç¹”æˆå¯ç®¡ç†çš„æ­¥é©Ÿã€‚"
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "使用實驗性統一差異比對策略",
-			"description": "啟用實驗性的統一差異比對策略。此策略可能減少因模型錯誤而導致的重試次數，但也可能導致意外行為或錯誤的編輯。請務必了解風險，並願意仔細檢查所有變更後再啟用。"
+			"name": "ä½¿ç”¨å¯¦é©—æ€§çµ±ä¸€å·®ç•°æ¯”å°ç­–ç•¥",
+			"description": "å•Ÿç”¨å¯¦é©—æ€§çš„çµ±ä¸€å·®ç•°æ¯”å°ç­–ç•¥ã€‚æ­¤ç­–ç•¥å¯èƒ½æ¸›å°‘å› æ¨¡åž‹éŒ¯èª¤è€Œå°Žè‡´çš„é‡è©¦æ¬¡æ•¸ï¼Œä½†ä¹Ÿå¯èƒ½å°Žè‡´æ„å¤–è¡Œç‚ºæˆ–éŒ¯èª¤çš„ç·¨è¼¯ã€‚è«‹å‹™å¿…äº†è§£é¢¨éšªï¼Œä¸¦é¡˜æ„ä»”ç´°æª¢æŸ¥æ‰€æœ‰è®Šæ›´å¾Œå†å•Ÿç”¨ã€‚"
 		},
 		"INSERT_BLOCK": {
-			"name": "使用實驗性插入內容工具",
-			"description": "啟用實驗性的插入內容工具，允許 Roo 直接在指定行號插入內容，而無需產生差異比對。"
+			"name": "ä½¿ç”¨å¯¦é©—æ€§æ’å…¥å…§å®¹å·¥å…·",
+			"description": "å•Ÿç”¨å¯¦é©—æ€§çš„æ’å…¥å…§å®¹å·¥å…·ï¼Œå…è¨± Roo ç›´æŽ¥åœ¨æŒ‡å®šè¡Œè™Ÿæ’å…¥å…§å®¹ï¼Œè€Œç„¡éœ€ç”¢ç”Ÿå·®ç•°æ¯”å°ã€‚"
 		},
 		"POWER_STEERING": {
-			"name": "使用實驗性「動力輔助」模式",
-			"description": "啟用後，Roo 將更頻繁地提醒模型目前模式的詳細設定。這能讓模型更嚴格遵守角色定義和自訂指令，但每則訊息會使用更多 token。"
+			"name": "ä½¿ç”¨å¯¦é©—æ€§ã€Œå‹•åŠ›è¼”åŠ©ã€æ¨¡å¼",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡æ›´é »ç¹åœ°æé†’æ¨¡åž‹ç›®å‰æ¨¡å¼çš„è©³ç´°è¨­å®šã€‚é€™èƒ½è®“æ¨¡åž‹æ›´åš´æ ¼éµå®ˆè§’è‰²å®šç¾©å’Œè‡ªè¨‚æŒ‡ä»¤ï¼Œä½†æ¯å‰‡è¨Šæ¯æœƒä½¿ç”¨æ›´å¤š tokenã€‚"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "使用實驗性多區塊差異比對工具",
-			"description": "啟用後，Roo 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
+			"name": "ä½¿ç”¨å¯¦é©—æ€§å¤šå€å¡Šå·®ç•°æ¯”å°å·¥å…·",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å°‡ä½¿ç”¨å¤šå€å¡Šå·®ç•°æ¯”å°å·¥å…·ï¼Œå˜—è©¦åœ¨å–®ä¸€è«‹æ±‚ä¸­æ›´æ–°æª”æ¡ˆå…§çš„å¤šå€‹ç¨‹å¼ç¢¼å€å¡Šã€‚"
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "啟用並行檔案讀取",
-			"description": "啟用後，Roo 可以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，Roo 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
+			"name": "å•Ÿç”¨ä¸¦è¡Œæª”æ¡ˆè®€å–",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å¯ä»¥åœ¨å–®ä¸€è«‹æ±‚ä¸­è®€å–å¤šå€‹æª”æ¡ˆï¼ˆæœ€å¤š 15 å€‹æª”æ¡ˆï¼‰ã€‚åœç”¨å¾Œï¼ŒRoo å¿…é ˆé€ä¸€è®€å–æª”æ¡ˆã€‚åœ¨ä½¿ç”¨èƒ½åŠ›è¼ƒå¼±çš„æ¨¡åž‹æˆ–å¸Œæœ›å°æª”æ¡ˆå­˜å–æœ‰æ›´å¤šæŽ§åˆ¶æ™‚ï¼Œåœç”¨æ­¤åŠŸèƒ½å¯èƒ½æœƒæœ‰æ‰€å¹«åŠ©ã€‚"
 		},
 		"MARKETPLACE": {
-			"name": "啟用 Marketplace",
-			"description": "啟用後，您可以從 Marketplace 安裝 MCP 和自訂模式。"
+			"name": "å•Ÿç”¨ Marketplace",
+			"description": "å•Ÿç”¨å¾Œï¼Œæ‚¨å¯ä»¥å¾ž Marketplace å®‰è£ MCP å’Œè‡ªè¨‚æ¨¡å¼ã€‚"
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "啟用並行檔案編輯",
-			"description": "啟用後 Roo 可在單個請求中編輯多個檔案。停用後 Roo 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
+			"name": "å•Ÿç”¨ä¸¦è¡Œæª”æ¡ˆç·¨è¼¯",
+			"description": "å•Ÿç”¨å¾Œ Roo å¯åœ¨å–®å€‹è«‹æ±‚ä¸­ç·¨è¼¯å¤šå€‹æª”æ¡ˆã€‚åœç”¨å¾Œ Roo å¿…é ˆé€å€‹ç·¨è¼¯æª”æ¡ˆã€‚åœç”¨æ­¤åŠŸèƒ½æœ‰åŠ©æ–¼ä½¿ç”¨èƒ½åŠ›è¼ƒå¼±çš„æ¨¡åž‹æˆ–éœ€è¦æ›´ç²¾ç¢ºæŽ§åˆ¶æª”æ¡ˆä¿®æ”¹æ™‚ã€‚"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "背景編輯",
-			"description": "啟用後可防止編輯器焦點中斷。檔案編輯會在背景進行，不會開啟 diff 檢視或搶奪焦點。您可以在 Roo 進行變更時繼續不受干擾地工作。檔案可能會在不獲得焦點的情況下開啟以捕獲診斷，或保持完全關閉。"
+			"name": "èƒŒæ™¯ç·¨è¼¯",
+			"description": "å•Ÿç”¨å¾Œå¯é˜²æ­¢ç·¨è¼¯å™¨ç„¦é»žä¸­æ–·ã€‚æª”æ¡ˆç·¨è¼¯æœƒåœ¨èƒŒæ™¯é€²è¡Œï¼Œä¸æœƒé–‹å•Ÿ diff æª¢è¦–æˆ–æ¶å¥ªç„¦é»žã€‚æ‚¨å¯ä»¥åœ¨ Roo é€²è¡Œè®Šæ›´æ™‚ç¹¼çºŒä¸å—å¹²æ“¾åœ°å·¥ä½œã€‚æª”æ¡ˆå¯èƒ½æœƒåœ¨ä¸ç²å¾—ç„¦é»žçš„æƒ…æ³ä¸‹é–‹å•Ÿä»¥æ•ç²è¨ºæ–·ï¼Œæˆ–ä¿æŒå®Œå…¨é—œé–‰ã€‚"
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "使用全新訊息解析器",
-			"description": "啟用實驗性的串流訊息解析器。透過更有效率地處理訊息，能顯著提升長回覆的效能。"
+			"name": "ä½¿ç”¨å…¨æ–°è¨Šæ¯è§£æžå™¨",
+			"description": "å•Ÿç”¨å¯¦é©—æ€§çš„ä¸²æµè¨Šæ¯è§£æžå™¨ã€‚é€éŽæ›´æœ‰æ•ˆçŽ‡åœ°è™•ç†è¨Šæ¯ï¼Œèƒ½é¡¯è‘—æå‡é•·å›žè¦†çš„æ•ˆèƒ½ã€‚"
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "要求新工作提供 'todos' 列表",
-			"description": "啟用後，new_task 工具將需要提供 todos 參數。這可以確保所有新工作都以明確的目標列表開始。停用時（預設），todos 參數保持可選，以實現向後相容。"
+			"name": "è¦æ±‚æ–°å·¥ä½œæä¾› \u0027todos\u0027 åˆ—è¡¨",
+			"description": "å•Ÿç”¨å¾Œï¼Œnew_task å·¥å…·å°‡éœ€è¦æä¾› todos åƒæ•¸ã€‚é€™å¯ä»¥ç¢ºä¿æ‰€æœ‰æ–°å·¥ä½œéƒ½ä»¥æ˜Žç¢ºçš„ç›®æ¨™åˆ—è¡¨é–‹å§‹ã€‚åœç”¨æ™‚ï¼ˆé è¨­ï¼‰ï¼Œtodos åƒæ•¸ä¿æŒå¯é¸ï¼Œä»¥å¯¦ç¾å‘å¾Œç›¸å®¹ã€‚"
 		},
 		"IMAGE_GENERATION": {
-			"providerLabel": "提供商",
-			"providerDescription": "選擇用於圖像生成的提供商。",
-			"name": "啟用 AI 圖像生成",
-			"description": "啟用後，Roo 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。",
-			"openRouterApiKeyLabel": "OpenRouter API 金鑰",
-			"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
-			"getApiKeyText": "取得您的 API 金鑰從",
-			"modelSelectionLabel": "圖像生成模型",
-			"modelSelectionDescription": "選擇用於圖像生成的模型",
-			"warningMissingKey": "⚠️ 圖像生成需要 OpenRouter API 金鑰。請在上方設定。",
-			"successConfigured": "✓ 圖像生成已設定完成並準備使用"
+			"providerLabel": "æä¾›å•†",
+			"providerDescription": "é¸æ“‡ç”¨æ–¼åœ–åƒç”Ÿæˆçš„æä¾›å•†ã€‚",
+			"name": "å•Ÿç”¨ AI åœ–åƒç”Ÿæˆ",
+			"description": "å•Ÿç”¨å¾Œï¼ŒRoo å¯ä»¥ä½¿ç”¨ OpenRouter çš„åœ–åƒç”Ÿæˆæ¨¡åž‹å¾žæ–‡å­—æç¤ºç”Ÿæˆåœ–åƒã€‚éœ€è¦è¨­å®š OpenRouter API é‡‘é‘°ã€‚",
+			"openRouterApiKeyLabel": "OpenRouter API é‡‘é‘°",
+			"openRouterApiKeyPlaceholder": "è¼¸å…¥æ‚¨çš„ OpenRouter API é‡‘é‘°",
+			"getApiKeyText": "å–å¾—æ‚¨çš„ API é‡‘é‘°å¾ž",
+			"modelSelectionLabel": "åœ–åƒç”Ÿæˆæ¨¡åž‹",
+			"modelSelectionDescription": "é¸æ“‡ç”¨æ–¼åœ–åƒç”Ÿæˆçš„æ¨¡åž‹",
+			"warningMissingKey": "âš ï¸ åœ–åƒç”Ÿæˆéœ€è¦ OpenRouter API é‡‘é‘°ã€‚è«‹åœ¨ä¸Šæ–¹è¨­å®šã€‚",
+			"successConfigured": "âœ“ åœ–åƒç”Ÿæˆå·²è¨­å®šå®Œæˆä¸¦æº–å‚™ä½¿ç”¨"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "啟用模型啟動的斜線命令",
-			"description": "啟用時，Roo 可以執行您的斜線命令來執行工作流程。"
+			"name": "å•Ÿç”¨æ¨¡åž‹å•Ÿå‹•çš„æ–œç·šå‘½ä»¤",
+			"description": "å•Ÿç”¨æ™‚ï¼ŒRoo å¯ä»¥åŸ·è¡Œæ‚¨çš„æ–œç·šå‘½ä»¤ä¾†åŸ·è¡Œå·¥ä½œæµç¨‹ã€‚"
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "並行工具呼叫",
-			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
+			"name": "ä¸¦è¡Œå·¥å…·å‘¼å«",
+			"description": "å•Ÿç”¨å¾Œï¼ŒåŽŸç”Ÿå”å®šå¯åœ¨å–®å€‹åŠ©ç†è¨Šæ¯è¼ªæ¬¡ä¸­åŸ·è¡Œå¤šå€‹å·¥å…·ã€‚"
 		}
 	},
 	"promptCaching": {
-		"label": "停用提示詞快取",
-		"description": "勾選後，Roo 將不會為此模型使用提示詞快取。"
+		"label": "åœç”¨æç¤ºè©žå¿«å–",
+		"description": "å‹¾é¸å¾Œï¼ŒRoo å°‡ä¸æœƒç‚ºæ­¤æ¨¡åž‹ä½¿ç”¨æç¤ºè©žå¿«å–ã€‚"
 	},
 	"temperature": {
-		"useCustom": "使用自訂溫度",
-		"description": "控制模型回應的隨機性",
-		"rangeDescription": "較高值使輸出更隨機，較低值更確定"
+		"useCustom": "ä½¿ç”¨è‡ªè¨‚æº«åº¦",
+		"description": "æŽ§åˆ¶æ¨¡åž‹å›žæ‡‰çš„éš¨æ©Ÿæ€§",
+		"rangeDescription": "è¼ƒé«˜å€¼ä½¿è¼¸å‡ºæ›´éš¨æ©Ÿï¼Œè¼ƒä½Žå€¼æ›´ç¢ºå®š"
 	},
 	"modelInfo": {
-		"supportsImages": "支援影像",
-		"noImages": "不支援影像",
-		"supportsPromptCache": "支援提示快取",
-		"noPromptCache": "不支援提示快取",
-		"contextWindow": "上下文視窗:",
-		"maxOutput": "最大輸出",
-		"inputPrice": "輸入價格",
-		"outputPrice": "輸出價格",
-		"cacheReadsPrice": "快取讀取價格",
-		"cacheWritesPrice": "快取寫入價格",
-		"enableStreaming": "啟用串流輸出",
-		"enableR1Format": "啟用 R1 模型參數",
-		"enableR1FormatTips": "使用 QWQ 等 R1 模型時必須啟用，以避免發生 400 錯誤",
-		"useAzure": "使用 Azure",
-		"azureApiVersion": "設定 Azure API 版本",
+		"supportsImages": "æ”¯æ´å½±åƒ",
+		"noImages": "ä¸æ”¯æ´å½±åƒ",
+		"supportsPromptCache": "æ”¯æ´æç¤ºå¿«å–",
+		"noPromptCache": "ä¸æ”¯æ´æç¤ºå¿«å–",
+		"contextWindow": "ä¸Šä¸‹æ–‡è¦–çª—:",
+		"maxOutput": "æœ€å¤§è¼¸å‡º",
+		"inputPrice": "è¼¸å…¥åƒ¹æ ¼",
+		"outputPrice": "è¼¸å‡ºåƒ¹æ ¼",
+		"cacheReadsPrice": "å¿«å–è®€å–åƒ¹æ ¼",
+		"cacheWritesPrice": "å¿«å–å¯«å…¥åƒ¹æ ¼",
+		"enableStreaming": "å•Ÿç”¨ä¸²æµè¼¸å‡º",
+		"enableR1Format": "å•Ÿç”¨ R1 æ¨¡åž‹åƒæ•¸",
+		"enableR1FormatTips": "ä½¿ç”¨ QWQ ç­‰ R1 æ¨¡åž‹æ™‚å¿…é ˆå•Ÿç”¨ï¼Œä»¥é¿å…ç™¼ç”Ÿ 400 éŒ¯èª¤",
+		"useAzure": "ä½¿ç”¨ Azure",
+		"azureApiVersion": "è¨­å®š Azure API ç‰ˆæœ¬",
 		"gemini": {
-			"freeRequests": "* 每分鐘可免費使用 {{count}} 次請求，超過後將依提示大小計費。",
-			"pricingDetails": "詳細資訊請參閱定價說明。",
-			"billingEstimate": "* 費用為估算值 - 實際費用取決於提示大小。"
+			"freeRequests": "* æ¯åˆ†é˜å¯å…è²»ä½¿ç”¨ {{count}} æ¬¡è«‹æ±‚ï¼Œè¶…éŽå¾Œå°‡ä¾æç¤ºå¤§å°è¨ˆè²»ã€‚",
+			"pricingDetails": "è©³ç´°è³‡è¨Šè«‹åƒé–±å®šåƒ¹èªªæ˜Žã€‚",
+			"billingEstimate": "* è²»ç”¨ç‚ºä¼°ç®—å€¼ - å¯¦éš›è²»ç”¨å–æ±ºæ–¼æç¤ºå¤§å°ã€‚"
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "此擴充功能會自動從 <serviceLink>{{serviceName}}</serviceLink> 取得最新的可用模型清單。如果不確定要選哪個模型，建議使用 <defaultModelLink>{{defaultModelId}}</defaultModelLink>，這是與 Roo Code 最佳搭配的模型。您也可以搜尋「free」來檢視目前可用的免費選項。",
-		"label": "模型",
-		"searchPlaceholder": "搜尋",
-		"noMatchFound": "找不到符合的項目",
-		"useCustomModel": "使用自訂模型：{{modelId}}",
-		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
+		"automaticFetch": "æ­¤æ“´å……åŠŸèƒ½æœƒè‡ªå‹•å¾ž \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003e å–å¾—æœ€æ–°çš„å¯ç”¨æ¨¡åž‹æ¸…å–®ã€‚å¦‚æžœä¸ç¢ºå®šè¦é¸å“ªå€‹æ¨¡åž‹ï¼Œå»ºè­°ä½¿ç”¨ \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003eï¼Œé€™æ˜¯èˆ‡ Roo Code æœ€ä½³æ­é…çš„æ¨¡åž‹ã€‚æ‚¨ä¹Ÿå¯ä»¥æœå°‹ã€Œfreeã€ä¾†æª¢è¦–ç›®å‰å¯ç”¨çš„å…è²»é¸é …ã€‚",
+		"label": "æ¨¡åž‹",
+		"searchPlaceholder": "æœå°‹",
+		"noMatchFound": "æ‰¾ä¸åˆ°ç¬¦åˆçš„é …ç›®",
+		"useCustomModel": "ä½¿ç”¨è‡ªè¨‚æ¨¡åž‹ï¼š{{modelId}}",
+		"simplifiedExplanation": "ä½ å¯ä»¥ç¨å¾Œèª¿æ•´è©³ç´°çš„æ¨¡åž‹è¨­å®šã€‚"
 	},
 	"footer": {
-		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
+		"feedback": "è‹¥æ‚¨æœ‰ä»»ä½•å•é¡Œæˆ–å»ºè­°ï¼Œæ­¡è¿Žè‡³ \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003e æå‡º issueï¼Œæˆ–åŠ å…¥ \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e æˆ– \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e è¨Žè«–ã€‚",
 		"telemetry": {
-			"label": "允許匿名錯誤與使用情況回報",
-			"description": "透過發送匿名使用資料和錯誤回報來協助改善 Roo Code。此遙測不會收集程式碼、Prompt 或個人資訊。查看我們的<privacyLink>隱私政策</privacyLink>以了解更多詳情。您可以隨時關閉此功能。"
+			"label": "å…è¨±åŒ¿åéŒ¯èª¤èˆ‡ä½¿ç”¨æƒ…æ³å›žå ±",
+			"description": "é€éŽç™¼é€åŒ¿åä½¿ç”¨è³‡æ–™å’ŒéŒ¯èª¤å›žå ±ä¾†å”åŠ©æ”¹å–„ Roo Codeã€‚æ­¤é™æ¸¬ä¸æœƒæ”¶é›†ç¨‹å¼ç¢¼ã€Prompt æˆ–å€‹äººè³‡è¨Šã€‚æŸ¥çœ‹æˆ‘å€‘çš„\u003cprivacyLink\u003eéš±ç§æ”¿ç­–\u003c/privacyLink\u003eä»¥äº†è§£æ›´å¤šè©³æƒ…ã€‚æ‚¨å¯ä»¥éš¨æ™‚é—œé–‰æ­¤åŠŸèƒ½ã€‚"
 		},
 		"settings": {
-			"import": "匯入",
-			"export": "匯出",
-			"reset": "重設"
+			"import": "åŒ¯å…¥",
+			"export": "åŒ¯å‡º",
+			"reset": "é‡è¨­"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "最大 token 數",
-		"maxThinkingTokens": "最大思考 token 數"
+		"maxTokens": "æœ€å¤§ token æ•¸",
+		"maxThinkingTokens": "æœ€å¤§æ€è€ƒ token æ•¸"
 	},
 	"validation": {
-		"apiKey": "請提供有效的 API 金鑰。",
-		"awsRegion": "請選擇要用於 Amazon Bedrock 的區域。",
-		"googleCloud": "請提供有效的 Google Cloud 專案 ID 和區域。",
-		"modelId": "請提供有效的模型 ID。",
-		"modelSelector": "請提供有效的模型選擇器。",
-		"openAi": "請提供有效的基礎 URL、API 金鑰和模型 ID。",
+		"apiKey": "è«‹æä¾›æœ‰æ•ˆçš„ API é‡‘é‘°ã€‚",
+		"awsRegion": "è«‹é¸æ“‡è¦ç”¨æ–¼ Amazon Bedrock çš„å€åŸŸã€‚",
+		"googleCloud": "è«‹æä¾›æœ‰æ•ˆçš„ Google Cloud å°ˆæ¡ˆ ID å’Œå€åŸŸã€‚",
+		"modelId": "è«‹æä¾›æœ‰æ•ˆçš„æ¨¡åž‹ IDã€‚",
+		"modelSelector": "è«‹æä¾›æœ‰æ•ˆçš„æ¨¡åž‹é¸æ“‡å™¨ã€‚",
+		"openAi": "è«‹æä¾›æœ‰æ•ˆçš„åŸºç¤Ž URLã€API é‡‘é‘°å’Œæ¨¡åž‹ IDã€‚",
 		"arn": {
-			"invalidFormat": "ARN 格式無效，請檢查格式要求。",
-			"regionMismatch": "警告：您 ARN 中的區域 ({{arnRegion}}) 與您選擇的區域 ({{region}}) 不符，可能導致存取問題。系統將使用 ARN 中指定的區域。"
+			"invalidFormat": "ARN æ ¼å¼ç„¡æ•ˆï¼Œè«‹æª¢æŸ¥æ ¼å¼è¦æ±‚ã€‚",
+			"regionMismatch": "è­¦å‘Šï¼šæ‚¨ ARN ä¸­çš„å€åŸŸ ({{arnRegion}}) èˆ‡æ‚¨é¸æ“‡çš„å€åŸŸ ({{region}}) ä¸ç¬¦ï¼Œå¯èƒ½å°Žè‡´å­˜å–å•é¡Œã€‚ç³»çµ±å°‡ä½¿ç”¨ ARN ä¸­æŒ‡å®šçš„å€åŸŸã€‚"
 		},
-		"modelAvailability": "您指定的模型 ID ({{modelId}}) 目前無法使用，請選擇其他模型。",
-		"modelDeprecated": "此模型已停用，請選擇其他模型。",
-		"providerNotAllowed": "供應商 '{{provider}}' 不允許用於您的組織。",
-		"modelNotAllowed": "模型 '{{model}}' 不允許用於供應商 '{{provider}}'，您的組織不允許",
-		"profileInvalid": "此設定檔包含您的組織不允許的供應商或模型",
-		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑"
+		"modelAvailability": "æ‚¨æŒ‡å®šçš„æ¨¡åž‹ ID ({{modelId}}) ç›®å‰ç„¡æ³•ä½¿ç”¨ï¼Œè«‹é¸æ“‡å…¶ä»–æ¨¡åž‹ã€‚",
+		"modelDeprecated": "æ­¤æ¨¡åž‹å·²åœç”¨ï¼Œè«‹é¸æ“‡å…¶ä»–æ¨¡åž‹ã€‚",
+		"providerNotAllowed": "ä¾›æ‡‰å•† \u0027{{provider}}\u0027 ä¸å…è¨±ç”¨æ–¼æ‚¨çš„çµ„ç¹”ã€‚",
+		"modelNotAllowed": "æ¨¡åž‹ \u0027{{model}}\u0027 ä¸å…è¨±ç”¨æ–¼ä¾›æ‡‰å•† \u0027{{provider}}\u0027ï¼Œæ‚¨çš„çµ„ç¹”ä¸å…è¨±",
+		"profileInvalid": "æ­¤è¨­å®šæª”åŒ…å«æ‚¨çš„çµ„ç¹”ä¸å…è¨±çš„ä¾›æ‡‰å•†æˆ–æ¨¡åž‹",
+		"qwenCodeOauthPath": "æ‚¨å¿…é ˆæä¾›æœ‰æ•ˆçš„ OAuth æ†‘è­‰è·¯å¾‘"
 	},
 	"placeholders": {
-		"apiKey": "請輸入 API 金鑰...",
-		"profileName": "請輸入設定檔名稱",
-		"accessKey": "請輸入存取金鑰...",
-		"secretKey": "請輸入金鑰...",
-		"sessionToken": "請輸入工作階段權杖...",
-		"credentialsJson": "請輸入憑證 JSON...",
-		"keyFilePath": "請輸入金鑰檔案路徑...",
-		"projectId": "請輸入專案 ID...",
-		"customArn": "請輸入 ARN（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
-		"baseUrl": "請輸入基礎 URL...",
+		"apiKey": "è«‹è¼¸å…¥ API é‡‘é‘°...",
+		"profileName": "è«‹è¼¸å…¥è¨­å®šæª”åç¨±",
+		"accessKey": "è«‹è¼¸å…¥å­˜å–é‡‘é‘°...",
+		"secretKey": "è«‹è¼¸å…¥é‡‘é‘°...",
+		"sessionToken": "è«‹è¼¸å…¥å·¥ä½œéšŽæ®µæ¬Šæ–...",
+		"credentialsJson": "è«‹è¼¸å…¥æ†‘è­‰ JSON...",
+		"keyFilePath": "è«‹è¼¸å…¥é‡‘é‘°æª”æ¡ˆè·¯å¾‘...",
+		"projectId": "è«‹è¼¸å…¥å°ˆæ¡ˆ ID...",
+		"customArn": "è«‹è¼¸å…¥ ARNï¼ˆä¾‹ï¼šarn:aws:bedrock:us-east-1:123456789012:foundation-model/my-modelï¼‰",
+		"baseUrl": "è«‹è¼¸å…¥åŸºç¤Ž URL...",
 		"modelId": {
-			"lmStudio": "例：meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "例：llama3.1"
+			"lmStudio": "ä¾‹ï¼šmeta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "ä¾‹ï¼šlmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "ä¾‹ï¼šllama3.1"
 		},
 		"numbers": {
-			"maxTokens": "例：4096",
-			"contextWindow": "例：128000",
-			"inputPrice": "例：0.0001",
-			"outputPrice": "例：0.0002",
-			"cacheWritePrice": "例：0.00005"
+			"maxTokens": "ä¾‹ï¼š4096",
+			"contextWindow": "ä¾‹ï¼š128000",
+			"inputPrice": "ä¾‹ï¼š0.0001",
+			"outputPrice": "ä¾‹ï¼š0.0002",
+			"cacheWritePrice": "ä¾‹ï¼š0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "預設：http://localhost:11434",
-		"lmStudioUrl": "預設：http://localhost:1234",
-		"geminiUrl": "預設：https://generativelanguage.googleapis.com"
+		"ollamaUrl": "é è¨­ï¼šhttp://localhost:11434",
+		"lmStudioUrl": "é è¨­ï¼šhttp://localhost:1234",
+		"geminiUrl": "é è¨­ï¼šhttps://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "自訂 ARN",
-		"useCustomArn": "使用自訂 ARN..."
+		"customArn": "è‡ªè¨‚ ARN",
+		"useCustomArn": "ä½¿ç”¨è‡ªè¨‚ ARN..."
 	},
-	"includeMaxOutputTokens": "包含最大輸出 Token 數",
-	"includeMaxOutputTokensDescription": "在 API 請求中傳送最大輸出 Token 參數。某些提供商可能不支援此功能。",
-	"limitMaxTokensDescription": "限制回應中的最大 Token 數量",
-	"maxOutputTokensLabel": "最大輸出 Token 數",
-	"maxTokensGenerateDescription": "回應中產生的最大 Token 數",
+	"includeMaxOutputTokens": "åŒ…å«æœ€å¤§è¼¸å‡º Token æ•¸",
+	"includeMaxOutputTokensDescription": "åœ¨ API è«‹æ±‚ä¸­å‚³é€æœ€å¤§è¼¸å‡º Token åƒæ•¸ã€‚æŸäº›æä¾›å•†å¯èƒ½ä¸æ”¯æ´æ­¤åŠŸèƒ½ã€‚",
+	"limitMaxTokensDescription": "é™åˆ¶å›žæ‡‰ä¸­çš„æœ€å¤§ Token æ•¸é‡",
+	"maxOutputTokensLabel": "æœ€å¤§è¼¸å‡º Token æ•¸",
+	"maxTokensGenerateDescription": "å›žæ‡‰ä¸­ç”¢ç”Ÿçš„æœ€å¤§ Token æ•¸",
 	"serviceTier": {
-		"label": "服務層級",
-		"tooltip": "若需更快的 API 請求處理，請嘗試優先處理服務層級。若需較低價格但延遲較高，請嘗試彈性處理層級。",
-		"standard": "標準",
-		"flex": "彈性",
-		"priority": "優先",
-		"pricingTableTitle": "按服務層級定價（每百萬 Token 價格）",
+		"label": "æœå‹™å±¤ç´š",
+		"tooltip": "è‹¥éœ€æ›´å¿«çš„ API è«‹æ±‚è™•ç†ï¼Œè«‹å˜—è©¦å„ªå…ˆè™•ç†æœå‹™å±¤ç´šã€‚è‹¥éœ€è¼ƒä½Žåƒ¹æ ¼ä½†å»¶é²è¼ƒé«˜ï¼Œè«‹å˜—è©¦å½ˆæ€§è™•ç†å±¤ç´šã€‚",
+		"standard": "æ¨™æº–",
+		"flex": "å½ˆæ€§",
+		"priority": "å„ªå…ˆ",
+		"pricingTableTitle": "æŒ‰æœå‹™å±¤ç´šå®šåƒ¹ï¼ˆæ¯ç™¾è¬ Token åƒ¹æ ¼ï¼‰",
 		"columns": {
-			"tier": "層級",
-			"input": "輸入",
-			"output": "輸出",
-			"cacheReads": "快取讀取"
+			"tier": "å±¤ç´š",
+			"input": "è¼¸å…¥",
+			"output": "è¼¸å‡º",
+			"cacheReads": "å¿«å–è®€å–"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "預設折疊「思考」訊息",
-			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
+			"label": "é è¨­æŠ˜ç–Šã€Œæ€è€ƒã€è¨Šæ¯",
+			"description": "å•Ÿç”¨å¾Œï¼Œã€Œæ€è€ƒã€å¡Šå°‡é è¨­æŠ˜ç–Šï¼Œç›´åˆ°æ‚¨èˆ‡å…¶äº’å‹•"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "需要 {{primaryMod}}+Enter 傳送訊息",
-			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
+			"label": "éœ€è¦ {{primaryMod}}+Enter å‚³é€è¨Šæ¯",
+			"description": "å•Ÿç”¨å¾Œï¼Œå¿…é ˆæŒ‰ {{primaryMod}}+Enter å‚³é€è¨Šæ¯ï¼Œè€Œä¸åªæ˜¯ Enter"
 		}
 	}
 }

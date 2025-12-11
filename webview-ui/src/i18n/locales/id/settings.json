@@ -53,12 +53,12 @@
 		"contact": {
 			"label": "Perlu bicara dengan kami? Tulis"
 		},
-		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Kontak & Komunitas",
+		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e atau \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
+		"contactAndCommunity": "Kontak \u0026 Komunitas",
 		"manageSettings": "Kelola Pengaturan"
 	},
 	"slashCommands": {
-		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
+		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. \u003cDocsLink\u003ePelajari lebih lanjut\u003c/DocsLink\u003e"
 	},
 	"prompts": {
 		"description": "Konfigurasi support prompt yang digunakan untuk aksi cepat seperti meningkatkan prompt, menjelaskan kode, dan memperbaiki masalah. Prompt ini membantu Roo memberikan bantuan yang lebih baik untuk tugas pengembangan umum."
@@ -115,7 +115,7 @@
 			"cancelButton": "Batal",
 			"confirmButton": "Hapus Data"
 		},
-		"description": "Konfigurasi pengaturan pengindeksan codebase untuk mengaktifkan pencarian semantik proyek kamu. <0>Pelajari lebih lanjut</0>",
+		"description": "Konfigurasi pengaturan pengindeksan codebase untuk mengaktifkan pencarian semantik proyek kamu. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e",
 		"statusTitle": "Status",
 		"settingsTitle": "Pengaturan Pengindeksan",
 		"disabledMessage": "Pengindeksan codebase saat ini dinonaktifkan. Aktifkan di pengaturan global untuk mengkonfigurasi opsi pengindeksan.",
@@ -172,7 +172,7 @@
 		"resetToDefault": "Reset ke default"
 	},
 	"autoApprove": {
-		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini <SettingsLink>di preferensi IDE Anda</SettingsLink>.",
+		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini \u003cSettingsLink\u003edi preferensi IDE Anda\u003c/SettingsLink\u003e.",
 		"description": "Izinkan Roo untuk secara otomatis melakukan operasi tanpa memerlukan persetujuan. Aktifkan pengaturan ini hanya jika kamu sepenuhnya mempercayai AI dan memahami risiko keamanan yang terkait.",
 		"enabled": "Auto-Approve Diaktifkan",
 		"toggleAriaLabel": "Beralih persetujuan otomatis",
@@ -231,8 +231,8 @@
 			"allowedCommandsDescription": "Prefix perintah yang dapat di-auto-execute ketika \"Selalu setujui operasi eksekusi\" diaktifkan. Tambahkan * untuk mengizinkan semua perintah (gunakan dengan hati-hati).",
 			"deniedCommands": "Perintah yang ditolak",
 			"deniedCommandsDescription": "Prefix perintah yang akan ditolak secara otomatis tanpa memerlukan persetujuan. Dalam kasus konflik dengan perintah yang diizinkan, pencocokan prefix terpanjang diprioritaskan. Tambahkan * untuk menolak semua perintah.",
-			"commandPlaceholder": "Masukkan prefix perintah (misalnya, 'git ')",
-			"deniedCommandPlaceholder": "Masukkan prefix perintah untuk ditolak (misalnya, 'rm -rf')",
+			"commandPlaceholder": "Masukkan prefix perintah (misalnya, \u0027git \u0027)",
+			"deniedCommandPlaceholder": "Masukkan prefix perintah untuk ditolak (misalnya, \u0027rm -rf\u0027)",
 			"addButton": "Tambah",
 			"autoDenied": "Perintah dengan awalan `{{prefix}}` telah dilarang oleh pengguna. Jangan menghindari pembatasan ini dengan menjalankan perintah lain."
 		},
@@ -306,7 +306,7 @@
 		"getRequestyApiKey": "Dapatkan Requesty API Key",
 		"getRequestyBaseUrl": "Base URL",
 		"requestyUseCustomBaseUrl": "Gunakan URL dasar khusus",
-		"openRouterTransformsText": "Kompres prompt dan rantai pesan ke ukuran konteks (<a>OpenRouter Transforms</a>)",
+		"openRouterTransformsText": "Kompres prompt dan rantai pesan ke ukuran konteks (\u003ca\u003eOpenRouter Transforms\u003c/a\u003e)",
 		"anthropicApiKey": "Anthropic API Key",
 		"getAnthropicApiKey": "Dapatkan Anthropic API Key",
 		"anthropicUseAuthToken": "Kirim Anthropic API Key sebagai Authorization header alih-alih X-Api-Key",
@@ -391,7 +391,7 @@
 		"enablePromptCachingTitle": "Aktifkan prompt caching untuk meningkatkan performa dan mengurangi biaya untuk model yang didukung.",
 		"cacheUsageNote": "Catatan: Jika kamu tidak melihat penggunaan cache, coba pilih model yang berbeda lalu pilih model yang kamu inginkan lagi.",
 		"vscodeLmModel": "Model Bahasa",
-		"vscodeLmWarning": "Catatan: Model yang diakses melalui VS Code Language Model API dapat dibungkus atau disetel‑halus oleh penyedia, sehingga perilakunya dapat berbeda dibandingkan menggunakan model yang sama secara langsung dari penyedia atau router tipikal. Untuk menggunakan model dari menu tarik‑turun «Language Model», pertama beralihlah ke model tersebut lalu klik «Terima» pada prompt Copilot Chat; jika tidak, Anda mungkin melihat kesalahan seperti 400 «The requested model is not supported».",
+		"vscodeLmWarning": "Catatan: Model yang diakses melalui VS Code Language Model API dapat dibungkus atau disetelâ€‘halus oleh penyedia, sehingga perilakunya dapat berbeda dibandingkan menggunakan model yang sama secara langsung dari penyedia atau router tipikal. Untuk menggunakan model dari menu tarikâ€‘turun Â«Language ModelÂ», pertama beralihlah ke model tersebut lalu klik Â«TerimaÂ» pada prompt Copilot Chat; jika tidak, Anda mungkin melihat kesalahan seperti 400 Â«The requested model is not supportedÂ».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Aktifkan konteks URL",
@@ -404,8 +404,8 @@
 		},
 		"googleCloudSetup": {
 			"title": "Untuk menggunakan Google Cloud Vertex AI, kamu perlu:",
-			"step1": "1. Buat akun Google Cloud, aktifkan Vertex AI API & aktifkan model Claude yang diinginkan.",
-			"step2": "2. Instal Google Cloud CLI & konfigurasi application default credentials.",
+			"step1": "1. Buat akun Google Cloud, aktifkan Vertex AI API \u0026 aktifkan model Claude yang diinginkan.",
+			"step2": "2. Instal Google Cloud CLI \u0026 konfigurasi application default credentials.",
 			"step3": "3. Atau buat service account dengan credentials."
 		},
 		"googleCloudCredentials": "Google Cloud Credentials",
@@ -420,7 +420,7 @@
 			"draftModelDesc": "Draft model harus dari keluarga model yang sama agar speculative decoding bekerja dengan benar.",
 			"selectDraftModel": "Pilih Draft Model",
 			"noModelsFound": "Tidak ada draft model ditemukan. Pastikan LM Studio berjalan dengan Server Mode diaktifkan.",
-			"description": "LM Studio memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat <a>panduan quickstart</a> mereka. Kamu juga perlu memulai fitur <b>local server</b> LM Studio untuk menggunakannya dengan ekstensi ini. <span>Catatan:</span> Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
+			"description": "LM Studio memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat \u003ca\u003epanduan quickstart\u003c/a\u003e mereka. Kamu juga perlu memulai fitur \u003cb\u003elocal server\u003c/b\u003e LM Studio untuk menggunakannya dengan ekstensi ini. \u003cspan\u003eCatatan:\u003c/span\u003e Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
 		},
 		"ollama": {
 			"baseUrl": "Base URL (opsional)",
@@ -498,10 +498,10 @@
 			"description": "Waktu minimum antara permintaan API."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "Batas Kesalahan & Pengulangan",
-			"description": "Jumlah kesalahan berturut-turut atau tindakan berulang sebelum menampilkan dialog 'Roo mengalami masalah'. Atur ke 0 untuk menonaktifkan mekanisme keamanan ini (tidak akan pernah terpicu).",
+			"label": "Batas Kesalahan \u0026 Pengulangan",
+			"description": "Jumlah kesalahan berturut-turut atau tindakan berulang sebelum menampilkan dialog \u0027Roo mengalami masalah\u0027. Atur ke 0 untuk menonaktifkan mekanisme keamanan ini (tidak akan pernah terpicu).",
 			"unlimitedDescription": "Percobaan ulang tak terbatas diaktifkan (lanjut otomatis). Dialog tidak akan pernah muncul.",
-			"warning": "⚠️ Mengatur ke 0 memungkinkan percobaan ulang tak terbatas yang dapat menghabiskan penggunaan API yang signifikan"
+			"warning": "âš ï¸ Mengatur ke 0 memungkinkan percobaan ulang tak terbatas yang dapat menghabiskan penggunaan API yang signifikan"
 		},
 		"reasoningEffort": {
 			"label": "Upaya Reasoning Model",
@@ -522,16 +522,20 @@
 		"setReasoningLevel": "Aktifkan Upaya Reasoning",
 		"claudeCode": {
 			"pathLabel": "Jalur Kode Claude",
-			"description": "Jalur opsional ke Claude Code CLI Anda. Defaultnya adalah 'claude' jika tidak diatur.",
+			"description": "Jalur opsional ke Claude Code CLI Anda. Defaultnya adalah \u0027claude\u0027 jika tidak diatur.",
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
 			"label": "Aktifkan tool browser",
-			"description": "Ketika diaktifkan, Roo dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. <0>Pelajari lebih lanjut</0>"
+			"description": "Ketika diaktifkan, Roo dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"viewport": {
 			"label": "Ukuran viewport",
@@ -563,7 +567,7 @@
 		},
 		"enable": {
 			"label": "Aktifkan checkpoint otomatis",
-			"description": "Ketika diaktifkan, Roo akan secara otomatis membuat checkpoint selama eksekusi tugas, memudahkan untuk meninjau perubahan atau kembali ke state sebelumnya. <0>Pelajari lebih lanjut</0>"
+			"description": "Ketika diaktifkan, Roo akan secara otomatis membuat checkpoint selama eksekusi tugas, memudahkan untuk meninjau perubahan atau kembali ke state sebelumnya. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		}
 	},
 	"notifications": {
@@ -635,12 +639,12 @@
 			"description": "Jumlah maksimum file yang disertakan dalam detail direktori kerja saat ini. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi meningkatkan penggunaan token."
 		},
 		"rooignore": {
-			"label": "Tampilkan file .rooignore'd dalam daftar dan pencarian",
+			"label": "Tampilkan file .rooignore\u0027d dalam daftar dan pencarian",
 			"description": "Ketika diaktifkan, file yang cocok dengan pola di .rooignore akan ditampilkan dalam daftar dengan simbol kunci. Ketika dinonaktifkan, file ini akan sepenuhnya disembunyikan dari daftar file dan pencarian."
 		},
 		"maxConcurrentFileReads": {
 			"label": "Batas pembacaan file bersamaan",
-			"description": "Jumlah maksimum file yang dapat diproses oleh tool 'read_file' secara bersamaan. Nilai yang lebih tinggi dapat mempercepat pembacaan beberapa file kecil tetapi meningkatkan penggunaan memori."
+			"description": "Jumlah maksimum file yang dapat diproses oleh tool \u0027read_file\u0027 secara bersamaan. Nilai yang lebih tinggi dapat mempercepat pembacaan beberapa file kecil tetapi meningkatkan penggunaan memori."
 		},
 		"maxReadFile": {
 			"label": "Ambang batas auto-truncate pembacaan file",
@@ -668,7 +672,7 @@
 		},
 		"maxGitStatusFiles": {
 			"label": "Git status maks file",
-			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat > 0."
+			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat \u003e 0."
 		}
 	},
 	"terminal": {
@@ -678,55 +682,55 @@
 		},
 		"advanced": {
 			"label": "Pengaturan Terminal: Lanjutan",
-			"description": "Pengaturan ini hanya berlaku ketika 'Gunakan Terminal Inline' dinonaktifkan. Hanya mempengaruhi terminal VS Code dan mungkin memerlukan restart IDE."
+			"description": "Pengaturan ini hanya berlaku ketika \u0027Gunakan Terminal Inline\u0027 dinonaktifkan. Hanya mempengaruhi terminal VS Code dan mungkin memerlukan restart IDE."
 		},
 		"outputLineLimit": {
 			"label": "Batas keluaran terminal",
-			"description": "Menyimpan baris pertama dan terakhir dan membuang yang tengah agar tetap di bawah batas. Turunkan untuk menghemat token; naikkan untuk memberi Roo lebih banyak detail tengah. Roo melihat placeholder di mana konten dilewati.<0>Pelajari lebih lanjut</0>"
+			"description": "Menyimpan baris pertama dan terakhir dan membuang yang tengah agar tetap di bawah batas. Turunkan untuk menghemat token; naikkan untuk memberi Roo lebih banyak detail tengah. Roo melihat placeholder di mana konten dilewati.\u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
 			"label": "Batas karakter terminal",
-			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
+			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrasi shell terminal",
-			"description": "Waktu tunggu integrasi shell VS Code sebelum menjalankan perintah. Naikkan jika shell lambat start atau muncul error 'Shell Integration Unavailable'. <0>Pelajari lebih lanjut</0>"
+			"description": "Waktu tunggu integrasi shell VS Code sebelum menjalankan perintah. Naikkan jika shell lambat start atau muncul error \u0027Shell Integration Unavailable\u0027. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
 			"label": "Gunakan Terminal Inline (disarankan)",
-			"description": "Jalankan perintah di Terminal Inline (obrolan) untuk melewati profil/integrasi shell untuk proses lebih cepat dan andal. Saat dinonaktifkan, Roo menggunakan terminal VS Code dengan profil shell, prompt, dan plugin Anda. <0>Pelajari lebih lanjut</0>"
+			"description": "Jalankan perintah di Terminal Inline (obrolan) untuk melewati profil/integrasi shell untuk proses lebih cepat dan andal. Saat dinonaktifkan, Roo menggunakan terminal VS Code dengan profil shell, prompt, dan plugin Anda. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"commandDelay": {
 			"label": "Delay perintah terminal",
-			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. <0>Pelajari lebih lanjut</0>"
+			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"compressProgressBar": {
 			"label": "Kompres keluaran bilah kemajuan",
-			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). <0>Pelajari lebih lanjut</0>"
+			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"powershellCounter": {
 			"label": "Aktifkan solusi penghitung PowerShell",
-			"description": "Aktifkan saat keluaran PowerShell hilang atau digandakan; menambahkan penghitung kecil ke setiap perintah untuk menstabilkan keluaran. Biarkan nonaktif jika keluaran sudah terlihat benar. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat keluaran PowerShell hilang atau digandakan; menambahkan penghitung kecil ke setiap perintah untuk menstabilkan keluaran. Biarkan nonaktif jika keluaran sudah terlihat benar. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
 			"label": "Hapus tanda EOL ZSH",
-			"description": "Aktifkan saat Anda melihat % liar di akhir baris atau penguraian terlihat salah; menghilangkan tanda akhir baris (%) Zsh. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat Anda melihat % liar di akhir baris atau penguraian terlihat salah; menghilangkan tanda akhir baris (%) Zsh. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"zshOhMy": {
 			"label": "Aktifkan integrasi Oh My Zsh",
-			"description": "Aktifkan saat tema/plugin Oh My Zsh Anda mengharapkan integrasi shell; menyetel ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Nonaktifkan untuk menghindari penyetelan variabel tersebut. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat tema/plugin Oh My Zsh Anda mengharapkan integrasi shell; menyetel ITERM_SHELL_INTEGRATION_INSTALLED=Yes. Nonaktifkan untuk menghindari penyetelan variabel tersebut. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"zshP10k": {
 			"label": "Aktifkan integrasi Powerlevel10k",
-			"description": "Aktifkan saat menggunakan integrasi shell Powerlevel10k. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat menggunakan integrasi shell Powerlevel10k. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"zdotdir": {
 			"label": "Aktifkan penanganan ZDOTDIR",
-			"description": "Aktifkan saat integrasi shell zsh gagal atau bertentangan dengan dotfile Anda. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan saat integrasi shell zsh gagal atau bertentangan dengan dotfile Anda. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		},
 		"inheritEnv": {
 			"label": "Warisi variabel lingkungan",
-			"description": "Aktifkan untuk mewarisi variabel lingkungan dari proses induk VS Code. <0>Pelajari lebih lanjut</0>"
+			"description": "Aktifkan untuk mewarisi variabel lingkungan dari proses induk VS Code. \u003c0\u003ePelajari lebih lanjut\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
@@ -768,7 +772,7 @@
 		}
 	},
 	"experimental": {
-		"warning": "⚠️",
+		"warning": "âš ï¸",
 		"autoCondenseContextPercent": {
 			"label": "Ambang batas untuk memicu kondensasi konteks cerdas",
 			"description": "Ketika context window mencapai ambang batas ini, Roo akan secara otomatis mengondensasikannya."
@@ -830,7 +834,7 @@
 			"description": "Aktifkan parser pesan streaming eksperimental yang meningkatkan kinerja untuk respons panjang dengan memproses pesan lebih efisien."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "Membutuhkan daftar 'todos' untuk tugas baru",
+			"name": "Membutuhkan daftar \u0027todos\u0027 untuk tugas baru",
 			"description": "Ketika diaktifkan, alat new_task akan membutuhkan parameter todos untuk disediakan. Ini memastikan semua tugas baru dimulai dengan daftar tujuan yang jelas. Ketika dinonaktifkan (default), parameter todos tetap opsional untuk kompatibilitas mundur."
 		},
 		"IMAGE_GENERATION": {
@@ -843,8 +847,8 @@
 			"getApiKeyText": "Dapatkan kunci API Anda dari",
 			"modelSelectionLabel": "Model Pembuatan Gambar",
 			"modelSelectionDescription": "Pilih model untuk pembuatan gambar",
-			"warningMissingKey": "⚠️ Kunci API OpenRouter diperlukan untuk pembuatan gambar. Silakan konfigurasi di atas.",
-			"successConfigured": "✓ Pembuatan gambar dikonfigurasi dan siap digunakan"
+			"warningMissingKey": "âš ï¸ Kunci API OpenRouter diperlukan untuk pembuatan gambar. Silakan konfigurasi di atas.",
+			"successConfigured": "âœ“ Pembuatan gambar dikonfigurasi dan siap digunakan"
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
@@ -887,7 +891,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Ekstensi secara otomatis mengambil daftar model terbaru yang tersedia di <serviceLink>{{serviceName}}</serviceLink>. Jika kamu tidak yakin model mana yang harus dipilih, Roo Code bekerja terbaik dengan <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Kamu juga dapat mencoba mencari \"free\" untuk opsi tanpa biaya yang saat ini tersedia.",
+		"automaticFetch": "Ekstensi secara otomatis mengambil daftar model terbaru yang tersedia di \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003e. Jika kamu tidak yakin model mana yang harus dipilih, Roo Code bekerja terbaik dengan \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003e. Kamu juga dapat mencoba mencari \"free\" untuk opsi tanpa biaya yang saat ini tersedia.",
 		"label": "Model",
 		"searchPlaceholder": "Cari",
 		"noMatchFound": "Tidak ada yang cocok ditemukan",
@@ -895,10 +899,10 @@
 		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
 	"footer": {
-		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003e atau bergabung \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e atau \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003e",
 		"telemetry": {
 			"label": "Izinkan pelaporan error dan penggunaan anonim",
-			"description": "Bantu tingkatkan Roo Code dengan mengirimkan data penggunaan anonim dan laporan error. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Lihat <privacyLink>kebijakan privasi</privacyLink> kami untuk detail lebih lanjut. Anda dapat menonaktifkannya kapan saja."
+			"description": "Bantu tingkatkan Roo Code dengan mengirimkan data penggunaan anonim dan laporan error. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Lihat \u003cprivacyLink\u003ekebijakan privasi\u003c/privacyLink\u003e kami untuk detail lebih lanjut. Anda dapat menonaktifkannya kapan saja."
 		},
 		"settings": {
 			"import": "Impor",
@@ -923,8 +927,8 @@
 		},
 		"modelAvailability": "Model ID ({{modelId}}) yang kamu berikan tidak tersedia. Silakan pilih model yang berbeda.",
 		"modelDeprecated": "Model ini tidak lagi tersedia. Silakan pilih model yang berbeda.",
-		"providerNotAllowed": "Provider '{{provider}}' tidak diizinkan oleh organisasi kamu",
-		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
+		"providerNotAllowed": "Provider \u0027{{provider}}\u0027 tidak diizinkan oleh organisasi kamu",
+		"modelNotAllowed": "Model \u0027{{model}}\u0027 tidak diizinkan untuk provider \u0027{{provider}}\u0027 oleh organisasi kamu",
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
 		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
 	},

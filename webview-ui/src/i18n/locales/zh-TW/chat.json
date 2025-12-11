@@ -1,473 +1,484 @@
 {
-	"greeting": "歡迎使用 Roo Code！",
+	"greeting": "æ­¡è¿Žä½¿ç”¨ Roo Codeï¼",
 	"task": {
-		"title": "工作",
-		"expand": "展開工作",
-		"collapse": "收合工作",
-		"seeMore": "顯示更多",
-		"seeLess": "顯示較少",
+		"title": "å·¥ä½œ",
+		"expand": "å±•é–‹å·¥ä½œ",
+		"collapse": "æ”¶åˆå·¥ä½œ",
+		"seeMore": "é¡¯ç¤ºæ›´å¤š",
+		"seeLess": "é¡¯ç¤ºè¼ƒå°‘",
 		"tokens": "Token",
-		"cache": "快取",
-		"apiCost": "API 費用",
-		"size": "大小",
-		"condenseContext": "智慧壓縮內容",
-		"contextWindow": "上下文長度",
-		"closeAndStart": "關閉現有工作並開始新工作",
-		"export": "匯出工作記錄",
-		"share": "分享工作",
-		"delete": "刪除工作 (按住 Shift 並點選可跳過確認)",
-		"shareWithOrganization": "與組織分享",
-		"shareWithOrganizationDescription": "僅組織成員可存取",
-		"sharePublicly": "公開分享",
-		"sharePubliclyDescription": "任何擁有連結的人都可存取",
-		"connectToCloud": "連線至雲端",
-		"connectToCloudDescription": "登入 Roo Code Cloud 以分享工作",
-		"sharingDisabledByOrganization": "組織已停用分享功能",
-		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
-		"shareSuccessPublic": "公開連結已複製到剪貼簿",
-		"openInCloud": "在 Roo Code Cloud 中開啟工作",
-		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點擊或複製以開啟。",
-		"openApiHistory": "開啟 API 歷史紀錄",
-		"openUiHistory": "開啟 UI 歷史紀錄"
+		"cache": "å¿«å–",
+		"apiCost": "API è²»ç”¨",
+		"size": "å¤§å°",
+		"condenseContext": "æ™ºæ…§å£“ç¸®å…§å®¹",
+		"contextWindow": "ä¸Šä¸‹æ–‡é•·åº¦",
+		"closeAndStart": "é—œé–‰ç¾æœ‰å·¥ä½œä¸¦é–‹å§‹æ–°å·¥ä½œ",
+		"export": "åŒ¯å‡ºå·¥ä½œè¨˜éŒ„",
+		"share": "åˆ†äº«å·¥ä½œ",
+		"delete": "åˆªé™¤å·¥ä½œ (æŒ‰ä½ Shift ä¸¦é»žé¸å¯è·³éŽç¢ºèª)",
+		"shareWithOrganization": "èˆ‡çµ„ç¹”åˆ†äº«",
+		"shareWithOrganizationDescription": "åƒ…çµ„ç¹”æˆå“¡å¯å­˜å–",
+		"sharePublicly": "å…¬é–‹åˆ†äº«",
+		"sharePubliclyDescription": "ä»»ä½•æ“æœ‰é€£çµçš„äººéƒ½å¯å­˜å–",
+		"connectToCloud": "é€£ç·šè‡³é›²ç«¯",
+		"connectToCloudDescription": "ç™»å…¥ Roo Code Cloud ä»¥åˆ†äº«å·¥ä½œ",
+		"sharingDisabledByOrganization": "çµ„ç¹”å·²åœç”¨åˆ†äº«åŠŸèƒ½",
+		"shareSuccessOrganization": "çµ„ç¹”é€£çµå·²è¤‡è£½åˆ°å‰ªè²¼ç°¿",
+		"shareSuccessPublic": "å…¬é–‹é€£çµå·²è¤‡è£½åˆ°å‰ªè²¼ç°¿",
+		"openInCloud": "åœ¨ Roo Code Cloud ä¸­é–‹å•Ÿå·¥ä½œ",
+		"openInCloudIntro": "å¾žä»»ä½•åœ°æ–¹ç¹¼çºŒç›£æŽ§æˆ–èˆ‡ Roo äº’å‹•ã€‚æŽƒæã€é»žæ“Šæˆ–è¤‡è£½ä»¥é–‹å•Ÿã€‚",
+		"openApiHistory": "é–‹å•Ÿ API æ­·å²ç´€éŒ„",
+		"openUiHistory": "é–‹å•Ÿ UI æ­·å²ç´€éŒ„"
 	},
-	"unpin": "取消釘選",
-	"pin": "釘選",
+	"unpin": "å–æ¶ˆé‡˜é¸",
+	"pin": "é‡˜é¸",
 	"retry": {
-		"title": "重試",
-		"tooltip": "再次嘗試操作"
+		"title": "é‡è©¦",
+		"tooltip": "å†æ¬¡å˜—è©¦æ“ä½œ"
 	},
 	"startNewTask": {
-		"title": "開始新工作",
-		"tooltip": "開始一項新工作"
+		"title": "é–‹å§‹æ–°å·¥ä½œ",
+		"tooltip": "é–‹å§‹ä¸€é …æ–°å·¥ä½œ"
 	},
 	"proceedAnyways": {
-		"title": "仍要繼續",
-		"tooltip": "在命令執行時繼續"
+		"title": "ä»è¦ç¹¼çºŒ",
+		"tooltip": "åœ¨å‘½ä»¤åŸ·è¡Œæ™‚ç¹¼çºŒ"
 	},
 	"save": {
-		"title": "儲存",
-		"tooltip": "儲存訊息變更"
+		"title": "å„²å­˜",
+		"tooltip": "å„²å­˜è¨Šæ¯è®Šæ›´"
 	},
 	"tokenProgress": {
-		"availableSpace": "可用空間：{{amount}} Token",
-		"tokensUsed": "已使用 Token： {{used}} / {{total}}",
-		"reservedForResponse": "模型回應保留：{{amount}} Token"
+		"availableSpace": "å¯ç”¨ç©ºé–“ï¼š{{amount}} Token",
+		"tokensUsed": "å·²ä½¿ç”¨ Tokenï¼š {{used}} / {{total}}",
+		"reservedForResponse": "æ¨¡åž‹å›žæ‡‰ä¿ç•™ï¼š{{amount}} Token"
 	},
 	"reject": {
-		"title": "拒絕",
-		"tooltip": "拒絕此操作"
+		"title": "æ‹’çµ•",
+		"tooltip": "æ‹’çµ•æ­¤æ“ä½œ"
 	},
-	"completeSubtaskAndReturn": "完成子工作並返回",
+	"completeSubtaskAndReturn": "å®Œæˆå­å·¥ä½œä¸¦è¿”å›ž",
 	"approve": {
-		"title": "核准",
-		"tooltip": "核准此操作"
+		"title": "æ ¸å‡†",
+		"tooltip": "æ ¸å‡†æ­¤æ“ä½œ"
 	},
 	"read-batch": {
 		"approve": {
-			"title": "全部核准"
+			"title": "å…¨éƒ¨æ ¸å‡†"
 		},
 		"deny": {
-			"title": "全部拒絕"
+			"title": "å…¨éƒ¨æ‹’çµ•"
 		}
 	},
 	"runCommand": {
-		"title": "執行",
-		"tooltip": "執行此命令"
+		"title": "åŸ·è¡Œ",
+		"tooltip": "åŸ·è¡Œæ­¤å‘½ä»¤"
 	},
 	"proceedWhileRunning": {
-		"title": "執行時繼續",
-		"tooltip": "儘管有警告仍繼續執行"
+		"title": "åŸ·è¡Œæ™‚ç¹¼çºŒ",
+		"tooltip": "å„˜ç®¡æœ‰è­¦å‘Šä»ç¹¼çºŒåŸ·è¡Œ"
 	},
 	"killCommand": {
-		"title": "終止命令",
-		"tooltip": "終止目前的命令"
+		"title": "çµ‚æ­¢å‘½ä»¤",
+		"tooltip": "çµ‚æ­¢ç›®å‰çš„å‘½ä»¤"
 	},
 	"resumeTask": {
-		"title": "繼續工作",
-		"tooltip": "繼續目前的工作"
+		"title": "ç¹¼çºŒå·¥ä½œ",
+		"tooltip": "ç¹¼çºŒç›®å‰çš„å·¥ä½œ"
 	},
 	"terminate": {
-		"title": "終止",
-		"tooltip": "結束目前的工作"
+		"title": "çµ‚æ­¢",
+		"tooltip": "çµæŸç›®å‰çš„å·¥ä½œ"
 	},
 	"cancel": {
-		"title": "取消",
-		"tooltip": "取消目前操作"
+		"title": "å–æ¶ˆ",
+		"tooltip": "å–æ¶ˆç›®å‰æ“ä½œ"
 	},
 	"editMessage": {
-		"placeholder": "編輯您的訊息..."
+		"placeholder": "ç·¨è¼¯æ‚¨çš„è¨Šæ¯..."
 	},
-	"scrollToBottom": "捲動至聊天室底部",
-	"about": "Roo Code 是您編輯器中的整個 AI 開發團隊。",
-	"docs": "請參閱我們的<DocsLink>說明文件</DocsLink>以了解詳細資訊。",
-	"onboarding": "此工作區的工作清單是空的。",
+	"scrollToBottom": "æ²å‹•è‡³èŠå¤©å®¤åº•éƒ¨",
+	"about": "Roo Code æ˜¯æ‚¨ç·¨è¼¯å™¨ä¸­çš„æ•´å€‹ AI é–‹ç™¼åœ˜éšŠã€‚",
+	"docs": "è«‹åƒé–±æˆ‘å€‘çš„\u003cDocsLink\u003eèªªæ˜Žæ–‡ä»¶\u003c/DocsLink\u003eä»¥äº†è§£è©³ç´°è³‡è¨Šã€‚",
+	"onboarding": "æ­¤å·¥ä½œå€çš„å·¥ä½œæ¸…å–®æ˜¯ç©ºçš„ã€‚",
 	"rooTips": {
 		"customizableModes": {
-			"title": "可自訂模式",
-			"description": "專注於任務並交付成果的專業角色。"
+			"title": "å¯è‡ªè¨‚æ¨¡å¼",
+			"description": "å°ˆæ³¨æ–¼ä»»å‹™ä¸¦äº¤ä»˜æˆæžœçš„å°ˆæ¥­è§’è‰²ã€‚"
 		},
 		"modelAgnostic": {
-			"title": "自備模型",
-			"description": "使用您自己的提供商金鑰，甚至可以執行本地推斷 — 無需加價，無鎖定，無限制"
+			"title": "è‡ªå‚™æ¨¡åž‹",
+			"description": "ä½¿ç”¨æ‚¨è‡ªå·±çš„æä¾›å•†é‡‘é‘°ï¼Œç”šè‡³å¯ä»¥åŸ·è¡Œæœ¬åœ°æŽ¨æ–· â€” ç„¡éœ€åŠ åƒ¹ï¼Œç„¡éŽ–å®šï¼Œç„¡é™åˆ¶"
 		}
 	},
-	"selectMode": "選擇互動模式",
-	"selectApiConfig": "選取 API 設定",
-	"enhancePrompt": "使用額外內容強化提示詞",
+	"selectMode": "é¸æ“‡äº’å‹•æ¨¡å¼",
+	"selectApiConfig": "é¸å– API è¨­å®š",
+	"enhancePrompt": "ä½¿ç”¨é¡å¤–å…§å®¹å¼·åŒ–æç¤ºè©ž",
 	"modeSelector": {
-		"title": "模式",
-		"marketplace": "模式市集",
-		"settings": "模式設定",
-		"description": "專門量身打造 Roo 行為的角色。",
-		"searchPlaceholder": "搜尋模式...",
-		"noResults": "沒有找到結果"
+		"title": "æ¨¡å¼",
+		"marketplace": "æ¨¡å¼å¸‚é›†",
+		"settings": "æ¨¡å¼è¨­å®š",
+		"description": "å°ˆé–€é‡èº«æ‰“é€  Roo è¡Œç‚ºçš„è§’è‰²ã€‚",
+		"searchPlaceholder": "æœå°‹æ¨¡å¼...",
+		"noResults": "æ²’æœ‰æ‰¾åˆ°çµæžœ"
 	},
-	"enhancePromptDescription": "「強化提示詞」按鈕可透過提供額外內容、說明或改寫來協助改善您的提示詞。請試著在這裡輸入提示詞，然後再次點選按鈕，以了解其運作方式。",
-	"addImages": "新增圖片到訊息中",
-	"sendMessage": "傳送訊息",
-	"pressToSend": "按 {{keyCombination}} 傳送",
-	"stopTts": "停止文字轉語音",
-	"typeMessage": "輸入訊息...",
-	"typeTask": "在這裡輸入您的工作...",
-	"addContext": "輸入 @ 新增內容，/ 執行命令",
-	"dragFiles": "按住 Shift 鍵拖曳檔案",
-	"dragFilesImages": "按住 Shift 鍵拖曳檔案/圖片",
-	"errorReadingFile": "讀取檔案時發生錯誤",
-	"noValidImages": "未處理到任何有效圖片",
-	"separator": "分隔符號",
-	"edit": "編輯...",
-	"forNextMode": "用於下一個模式",
-	"forPreviousMode": "用於上一個模式",
+	"enhancePromptDescription": "ã€Œå¼·åŒ–æç¤ºè©žã€æŒ‰éˆ•å¯é€éŽæä¾›é¡å¤–å…§å®¹ã€èªªæ˜Žæˆ–æ”¹å¯«ä¾†å”åŠ©æ”¹å–„æ‚¨çš„æç¤ºè©žã€‚è«‹è©¦è‘—åœ¨é€™è£¡è¼¸å…¥æç¤ºè©žï¼Œç„¶å¾Œå†æ¬¡é»žé¸æŒ‰éˆ•ï¼Œä»¥äº†è§£å…¶é‹ä½œæ–¹å¼ã€‚",
+	"addImages": "æ–°å¢žåœ–ç‰‡åˆ°è¨Šæ¯ä¸­",
+	"sendMessage": "å‚³é€è¨Šæ¯",
+	"pressToSend": "æŒ‰ {{keyCombination}} å‚³é€",
+	"stopTts": "åœæ­¢æ–‡å­—è½‰èªžéŸ³",
+	"typeMessage": "è¼¸å…¥è¨Šæ¯...",
+	"typeTask": "åœ¨é€™è£¡è¼¸å…¥æ‚¨çš„å·¥ä½œ...",
+	"addContext": "è¼¸å…¥ @ æ–°å¢žå…§å®¹ï¼Œ/ åŸ·è¡Œå‘½ä»¤",
+	"dragFiles": "æŒ‰ä½ Shift éµæ‹–æ›³æª”æ¡ˆ",
+	"dragFilesImages": "æŒ‰ä½ Shift éµæ‹–æ›³æª”æ¡ˆ/åœ–ç‰‡",
+	"errorReadingFile": "è®€å–æª”æ¡ˆæ™‚ç™¼ç”ŸéŒ¯èª¤",
+	"noValidImages": "æœªè™•ç†åˆ°ä»»ä½•æœ‰æ•ˆåœ–ç‰‡",
+	"separator": "åˆ†éš”ç¬¦è™Ÿ",
+	"edit": "ç·¨è¼¯...",
+	"forNextMode": "ç”¨æ–¼ä¸‹ä¸€å€‹æ¨¡å¼",
+	"forPreviousMode": "ç”¨æ–¼ä¸Šä¸€å€‹æ¨¡å¼",
 	"apiRequest": {
-		"title": "API 請求",
-		"failed": "API 請求失敗",
-		"streaming": "正在處理 API 請求...",
-		"cancelled": "API 請求已取消",
-		"streamingFailed": "API 串流處理失敗",
-		"errorTitle": "API 錯誤 {{code}}",
+		"title": "API è«‹æ±‚",
+		"failed": "API è«‹æ±‚å¤±æ•—",
+		"streaming": "æ­£åœ¨è™•ç† API è«‹æ±‚...",
+		"cancelled": "API è«‹æ±‚å·²å–æ¶ˆ",
+		"streamingFailed": "API ä¸²æµè™•ç†å¤±æ•—",
+		"errorTitle": "API éŒ¯èª¤ {{code}}",
 		"errorMessage": {
-			"docs": "文件",
-			"400": "提供商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
-			"401": "無法向提供商進行身份驗證。請檢查您的 API 金鑰設定。",
-			"402": "您的帳戶資金/額度似乎已用盡。請前往提供商增加額度以繼續。",
-			"403": "無權存取。您的 API 金鑰有效，但提供商拒絕完成此請求。",
-			"429": "請求次數過多。提供商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
-			"500": "提供商伺服器錯誤。提供商端發生問題，您的請求沒有問題。",
-			"unknown": "未知 API 錯誤。請聯絡 Roo Code 支援。",
-			"connection": "連線錯誤。請確保您有可用的網際網路連線。"
+			"docs": "æ–‡ä»¶",
+			"400": "æä¾›å•†ç„¡æ³•æŒ‰ç…§æ­¤æ–¹å¼è™•ç†è«‹æ±‚ã€‚è«‹åœæ­¢å·¥ä½œä¸¦å˜—è©¦å…¶ä»–æ–¹æ³•ã€‚",
+			"401": "ç„¡æ³•å‘æä¾›å•†é€²è¡Œèº«ä»½é©—è­‰ã€‚è«‹æª¢æŸ¥æ‚¨çš„ API é‡‘é‘°è¨­å®šã€‚",
+			"402": "æ‚¨çš„å¸³æˆ¶è³‡é‡‘/é¡åº¦ä¼¼ä¹Žå·²ç”¨ç›¡ã€‚è«‹å‰å¾€æä¾›å•†å¢žåŠ é¡åº¦ä»¥ç¹¼çºŒã€‚",
+			"403": "ç„¡æ¬Šå­˜å–ã€‚æ‚¨çš„ API é‡‘é‘°æœ‰æ•ˆï¼Œä½†æä¾›å•†æ‹’çµ•å®Œæˆæ­¤è«‹æ±‚ã€‚",
+			"429": "è«‹æ±‚æ¬¡æ•¸éŽå¤šã€‚æä¾›å•†å·²å°æ‚¨çš„è«‹æ±‚é€²è¡Œé€ŸçŽ‡é™åˆ¶ã€‚è«‹åœ¨ä¸‹ä¸€æ¬¡ API å‘¼å«å‰ç¨å€™ã€‚",
+			"500": "æä¾›å•†ä¼ºæœå™¨éŒ¯èª¤ã€‚æä¾›å•†ç«¯ç™¼ç”Ÿå•é¡Œï¼Œæ‚¨çš„è«‹æ±‚æ²’æœ‰å•é¡Œã€‚",
+			"unknown": "æœªçŸ¥ API éŒ¯èª¤ã€‚è«‹è¯çµ¡ Roo Code æ”¯æ´ã€‚",
+			"connection": "é€£ç·šéŒ¯èª¤ã€‚è«‹ç¢ºä¿æ‚¨æœ‰å¯ç”¨çš„ç¶²éš›ç¶²è·¯é€£ç·šã€‚"
 		}
 	},
 	"checkpoint": {
-		"regular": "檢查點",
-		"initializingWarning": "正在初始化檢查點... 如果耗時過長，您可以在<settingsLink>設定</settingsLink>中停用檢查點並重新啟動工作。",
+		"regular": "æª¢æŸ¥é»ž",
+		"initializingWarning": "æ­£åœ¨åˆå§‹åŒ–æª¢æŸ¥é»ž... å¦‚æžœè€—æ™‚éŽé•·ï¼Œæ‚¨å¯ä»¥åœ¨\u003csettingsLink\u003eè¨­å®š\u003c/settingsLink\u003eä¸­åœç”¨æª¢æŸ¥é»žä¸¦é‡æ–°å•Ÿå‹•å·¥ä½œã€‚",
 		"menu": {
-			"viewDiff": "檢視差異",
-			"more": "更多選項",
-			"viewDiffFromInit": "檢視所有變更",
-			"viewDiffWithCurrent": "檢視自此檢查點以來的變更",
-			"restore": "還原檢查點",
-			"restoreFiles": "還原檔案",
-			"restoreFilesDescription": "將您的專案檔案還原到此時的快照。",
-			"restoreFilesAndTask": "還原檔案和工作",
-			"confirm": "確認",
-			"cancel": "取消",
-			"cannotUndo": "此操作無法復原。",
-			"restoreFilesAndTaskDescription": "將您的專案檔案還原到此時的快照，並刪除此點之後的所有訊息。"
+			"viewDiff": "æª¢è¦–å·®ç•°",
+			"more": "æ›´å¤šé¸é …",
+			"viewDiffFromInit": "æª¢è¦–æ‰€æœ‰è®Šæ›´",
+			"viewDiffWithCurrent": "æª¢è¦–è‡ªæ­¤æª¢æŸ¥é»žä»¥ä¾†çš„è®Šæ›´",
+			"restore": "é‚„åŽŸæª¢æŸ¥é»ž",
+			"restoreFiles": "é‚„åŽŸæª”æ¡ˆ",
+			"restoreFilesDescription": "å°‡æ‚¨çš„å°ˆæ¡ˆæª”æ¡ˆé‚„åŽŸåˆ°æ­¤æ™‚çš„å¿«ç…§ã€‚",
+			"restoreFilesAndTask": "é‚„åŽŸæª”æ¡ˆå’Œå·¥ä½œ",
+			"confirm": "ç¢ºèª",
+			"cancel": "å–æ¶ˆ",
+			"cannotUndo": "æ­¤æ“ä½œç„¡æ³•å¾©åŽŸã€‚",
+			"restoreFilesAndTaskDescription": "å°‡æ‚¨çš„å°ˆæ¡ˆæª”æ¡ˆé‚„åŽŸåˆ°æ­¤æ™‚çš„å¿«ç…§ï¼Œä¸¦åˆªé™¤æ­¤é»žä¹‹å¾Œçš„æ‰€æœ‰è¨Šæ¯ã€‚"
 		},
-		"current": "目前"
+		"current": "ç›®å‰"
 	},
 	"contextManagement": {
 		"tokens": "Token",
 		"condensation": {
-			"title": "上下文已壓縮",
-			"inProgress": "正在壓縮上下文...",
-			"errorHeader": "壓縮上下文失敗"
+			"title": "ä¸Šä¸‹æ–‡å·²å£“ç¸®",
+			"inProgress": "æ­£åœ¨å£“ç¸®ä¸Šä¸‹æ–‡...",
+			"errorHeader": "å£“ç¸®ä¸Šä¸‹æ–‡å¤±æ•—"
 		},
 		"truncation": {
-			"title": "上下文已截斷",
-			"inProgress": "正在截斷上下文...",
-			"messagesRemoved": "已移除 {{count}} 則訊息",
-			"messagesRemoved_other": "已移除 {{count}} 則訊息",
-			"description": "為保持在上下文視窗限制內，已從對話中移除較舊的訊息。與壓縮相比，這是一種快速但上下文保留較少的方法。"
+			"title": "ä¸Šä¸‹æ–‡å·²æˆªæ–·",
+			"inProgress": "æ­£åœ¨æˆªæ–·ä¸Šä¸‹æ–‡...",
+			"messagesRemoved": "å·²ç§»é™¤ {{count}} å‰‡è¨Šæ¯",
+			"messagesRemoved_other": "å·²ç§»é™¤ {{count}} å‰‡è¨Šæ¯",
+			"description": "ç‚ºä¿æŒåœ¨ä¸Šä¸‹æ–‡è¦–çª—é™åˆ¶å…§ï¼Œå·²å¾žå°è©±ä¸­ç§»é™¤è¼ƒèˆŠçš„è¨Šæ¯ã€‚èˆ‡å£“ç¸®ç›¸æ¯”ï¼Œé€™æ˜¯ä¸€ç¨®å¿«é€Ÿä½†ä¸Šä¸‹æ–‡ä¿ç•™è¼ƒå°‘çš„æ–¹æ³•ã€‚"
 		}
 	},
 	"instructions": {
-		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
+		"wantsToFetch": "Roo æƒ³è¦å–å¾—è©³ç´°æŒ‡ç¤ºä»¥å”åŠ©ç›®å‰å·¥ä½œ"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo 想要讀取此檔案",
-		"wantsToReadMultiple": "Roo 想要讀取多個檔案",
-		"wantsToReadAndXMore": "Roo 想要讀取此檔案以及另外 {{count}} 個檔案",
-		"wantsToReadOutsideWorkspace": "Roo 想要讀取此工作區外的檔案",
-		"didRead": "Roo 已讀取此檔案",
-		"wantsToEdit": "Roo 想要編輯此檔案",
-		"wantsToEditOutsideWorkspace": "Roo 想要編輯此工作區外的檔案",
-		"wantsToEditProtected": "Roo 想要編輯受保護的設定檔案",
-		"wantsToApplyBatchChanges": "Roo 想要對多個檔案套用變更",
-		"wantsToGenerateImage": "Roo 想要產生圖片",
-		"wantsToGenerateImageOutsideWorkspace": "Roo 想要在工作區外產生圖片",
-		"wantsToGenerateImageProtected": "Roo 想要在受保護位置產生圖片",
-		"didGenerateImage": "Roo 已產生圖片",
-		"wantsToCreate": "Roo 想要建立新檔案",
-		"wantsToSearchReplace": "Roo 想要在此檔案中搜尋和取代",
-		"didSearchReplace": "Roo 已在此檔案執行搜尋和取代",
-		"wantsToInsert": "Roo 想要在此檔案中插入內容",
-		"wantsToInsertWithLineNumber": "Roo 想要在此檔案第 {{lineNumber}} 行插入內容",
-		"wantsToInsertAtEnd": "Roo 想要在此檔案尾端新增內容"
+		"wantsToRead": "Roo æƒ³è¦è®€å–æ­¤æª”æ¡ˆ",
+		"wantsToReadMultiple": "Roo æƒ³è¦è®€å–å¤šå€‹æª”æ¡ˆ",
+		"wantsToReadAndXMore": "Roo æƒ³è¦è®€å–æ­¤æª”æ¡ˆä»¥åŠå¦å¤– {{count}} å€‹æª”æ¡ˆ",
+		"wantsToReadOutsideWorkspace": "Roo æƒ³è¦è®€å–æ­¤å·¥ä½œå€å¤–çš„æª”æ¡ˆ",
+		"didRead": "Roo å·²è®€å–æ­¤æª”æ¡ˆ",
+		"wantsToEdit": "Roo æƒ³è¦ç·¨è¼¯æ­¤æª”æ¡ˆ",
+		"wantsToEditOutsideWorkspace": "Roo æƒ³è¦ç·¨è¼¯æ­¤å·¥ä½œå€å¤–çš„æª”æ¡ˆ",
+		"wantsToEditProtected": "Roo æƒ³è¦ç·¨è¼¯å—ä¿è­·çš„è¨­å®šæª”æ¡ˆ",
+		"wantsToApplyBatchChanges": "Roo æƒ³è¦å°å¤šå€‹æª”æ¡ˆå¥—ç”¨è®Šæ›´",
+		"wantsToGenerateImage": "Roo æƒ³è¦ç”¢ç”Ÿåœ–ç‰‡",
+		"wantsToGenerateImageOutsideWorkspace": "Roo æƒ³è¦åœ¨å·¥ä½œå€å¤–ç”¢ç”Ÿåœ–ç‰‡",
+		"wantsToGenerateImageProtected": "Roo æƒ³è¦åœ¨å—ä¿è­·ä½ç½®ç”¢ç”Ÿåœ–ç‰‡",
+		"didGenerateImage": "Roo å·²ç”¢ç”Ÿåœ–ç‰‡",
+		"wantsToCreate": "Roo æƒ³è¦å»ºç«‹æ–°æª”æ¡ˆ",
+		"wantsToSearchReplace": "Roo æƒ³è¦åœ¨æ­¤æª”æ¡ˆä¸­æœå°‹å’Œå–ä»£",
+		"didSearchReplace": "Roo å·²åœ¨æ­¤æª”æ¡ˆåŸ·è¡Œæœå°‹å’Œå–ä»£",
+		"wantsToInsert": "Roo æƒ³è¦åœ¨æ­¤æª”æ¡ˆä¸­æ’å…¥å…§å®¹",
+		"wantsToInsertWithLineNumber": "Roo æƒ³è¦åœ¨æ­¤æª”æ¡ˆç¬¬ {{lineNumber}} è¡Œæ’å…¥å…§å®¹",
+		"wantsToInsertAtEnd": "Roo æƒ³è¦åœ¨æ­¤æª”æ¡ˆå°¾ç«¯æ–°å¢žå…§å®¹"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo 想要檢視此目錄中最上層的檔案",
-		"didViewTopLevel": "Roo 已檢視此目錄中最上層的檔案",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo 想要檢視此目錄（工作區外）中最上層的檔案",
-		"didViewTopLevelOutsideWorkspace": "Roo 已檢視此目錄（工作區外）中最上層的檔案",
-		"wantsToViewRecursive": "Roo 想要遞迴檢視此目錄中的所有檔案",
-		"didViewRecursive": "Roo 已遞迴檢視此目錄中的所有檔案",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo 想要遞迴檢視此目錄（工作區外）中的所有檔案",
-		"didViewRecursiveOutsideWorkspace": "Roo 已遞迴檢視此目錄（工作區外）中的所有檔案",
-		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
-		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
+		"wantsToViewTopLevel": "Roo æƒ³è¦æª¢è¦–æ­¤ç›®éŒ„ä¸­æœ€ä¸Šå±¤çš„æª”æ¡ˆ",
+		"didViewTopLevel": "Roo å·²æª¢è¦–æ­¤ç›®éŒ„ä¸­æœ€ä¸Šå±¤çš„æª”æ¡ˆ",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo æƒ³è¦æª¢è¦–æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­æœ€ä¸Šå±¤çš„æª”æ¡ˆ",
+		"didViewTopLevelOutsideWorkspace": "Roo å·²æª¢è¦–æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­æœ€ä¸Šå±¤çš„æª”æ¡ˆ",
+		"wantsToViewRecursive": "Roo æƒ³è¦éžè¿´æª¢è¦–æ­¤ç›®éŒ„ä¸­çš„æ‰€æœ‰æª”æ¡ˆ",
+		"didViewRecursive": "Roo å·²éžè¿´æª¢è¦–æ­¤ç›®éŒ„ä¸­çš„æ‰€æœ‰æª”æ¡ˆ",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo æƒ³è¦éžè¿´æª¢è¦–æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­çš„æ‰€æœ‰æª”æ¡ˆ",
+		"didViewRecursiveOutsideWorkspace": "Roo å·²éžè¿´æª¢è¦–æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­çš„æ‰€æœ‰æª”æ¡ˆ",
+		"wantsToSearch": "Roo æƒ³è¦åœ¨æ­¤ç›®éŒ„ä¸­æœå°‹ \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearch": "Roo å·²åœ¨æ­¤ç›®éŒ„ä¸­æœå°‹ \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToSearchOutsideWorkspace": "Roo æƒ³è¦åœ¨æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­æœå°‹ \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearchOutsideWorkspace": "Roo å·²åœ¨æ­¤ç›®éŒ„ï¼ˆå·¥ä½œå€å¤–ï¼‰ä¸­æœå°‹ \u003ccode\u003e{{regex}}\u003c/code\u003e"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
-		"didSearch_one": "找到 1 個結果",
-		"didSearch_other": "找到 {{count}} 個結果",
-		"resultTooltip": "相似度評分：{{score}} (點選開啟檔案)"
+		"wantsToSearch": "Roo æƒ³è¦åœ¨ç¨‹å¼ç¢¼åº«ä¸­æœå°‹ \u003ccode\u003e{{query}}\u003c/code\u003e",
+		"wantsToSearchWithPath": "Roo æƒ³è¦åœ¨ \u003ccode\u003e{{path}}\u003c/code\u003e ä¸­æœå°‹ç¨‹å¼ç¢¼åº« \u003ccode\u003e{{query}}\u003c/code\u003e",
+		"didSearch_one": "æ‰¾åˆ° 1 å€‹çµæžœ",
+		"didSearch_other": "æ‰¾åˆ° {{count}} å€‹çµæžœ",
+		"resultTooltip": "ç›¸ä¼¼åº¦è©•åˆ†ï¼š{{score}} (é»žé¸é–‹å•Ÿæª”æ¡ˆ)"
 	},
-	"commandOutput": "命令輸出",
+	"commandOutput": "å‘½ä»¤è¼¸å‡º",
 	"commandExecution": {
-		"running": "正在執行",
-		"abort": "中止",
+		"running": "æ­£åœ¨åŸ·è¡Œ",
+		"abort": "ä¸­æ­¢",
 		"pid": "PID: {{pid}}",
-		"exitStatus": "已結束，狀態碼 {{exitCode}}",
-		"manageCommands": "管理命令權限",
-		"commandManagementDescription": "管理命令權限：點選 ✓ 允許自動執行，點選 ✗ 拒絕執行。規則可以開啟/關閉或從清單中移除。<settingsLink>檢視所有設定</settingsLink>",
-		"addToAllowed": "新增至允許清單",
-		"removeFromAllowed": "從允許清單中移除",
-		"addToDenied": "新增至拒絕清單",
-		"removeFromDenied": "從拒絕清單中移除",
-		"abortCommand": "中止命令執行",
-		"expandOutput": "展開輸出",
-		"collapseOutput": "摺疊輸出",
-		"expandManagement": "展開命令管理部分",
-		"collapseManagement": "摺疊命令管理部分"
+		"exitStatus": "å·²çµæŸï¼Œç‹€æ…‹ç¢¼ {{exitCode}}",
+		"manageCommands": "ç®¡ç†å‘½ä»¤æ¬Šé™",
+		"commandManagementDescription": "ç®¡ç†å‘½ä»¤æ¬Šé™ï¼šé»žé¸ âœ“ å…è¨±è‡ªå‹•åŸ·è¡Œï¼Œé»žé¸ âœ— æ‹’çµ•åŸ·è¡Œã€‚è¦å‰‡å¯ä»¥é–‹å•Ÿ/é—œé–‰æˆ–å¾žæ¸…å–®ä¸­ç§»é™¤ã€‚\u003csettingsLink\u003eæª¢è¦–æ‰€æœ‰è¨­å®š\u003c/settingsLink\u003e",
+		"addToAllowed": "æ–°å¢žè‡³å…è¨±æ¸…å–®",
+		"removeFromAllowed": "å¾žå…è¨±æ¸…å–®ä¸­ç§»é™¤",
+		"addToDenied": "æ–°å¢žè‡³æ‹’çµ•æ¸…å–®",
+		"removeFromDenied": "å¾žæ‹’çµ•æ¸…å–®ä¸­ç§»é™¤",
+		"abortCommand": "ä¸­æ­¢å‘½ä»¤åŸ·è¡Œ",
+		"expandOutput": "å±•é–‹è¼¸å‡º",
+		"collapseOutput": "æ‘ºç–Šè¼¸å‡º",
+		"expandManagement": "å±•é–‹å‘½ä»¤ç®¡ç†éƒ¨åˆ†",
+		"collapseManagement": "æ‘ºç–Šå‘½ä»¤ç®¡ç†éƒ¨åˆ†"
 	},
-	"response": "回應",
-	"arguments": "參數",
+	"response": "å›žæ‡‰",
+	"arguments": "åƒæ•¸",
 	"text": {
-		"rooSaid": "Roo 說"
+		"rooSaid": "Roo èªª"
 	},
 	"feedback": {
-		"youSaid": "您說"
+		"youSaid": "æ‚¨èªª"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo 想要在 {{serverName}} MCP 伺服器上使用工具",
-		"wantsToAccessResource": "Roo 想要存取 {{serverName}} MCP 伺服器上的資源"
+		"wantsToUseTool": "Roo æƒ³è¦åœ¨ {{serverName}} MCP ä¼ºæœå™¨ä¸Šä½¿ç”¨å·¥å…·",
+		"wantsToAccessResource": "Roo æƒ³è¦å­˜å– {{serverName}} MCP ä¼ºæœå™¨ä¸Šçš„è³‡æº"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo 想要切換至 {{mode}} 模式",
-		"wantsToSwitchWithReason": "Roo 想要切換至 {{mode}} 模式，原因：{{reason}}",
-		"didSwitch": "Roo 已切換至 {{mode}} 模式",
-		"didSwitchWithReason": "Roo 已切換至 {{mode}} 模式，原因：{{reason}}"
+		"wantsToSwitch": "Roo æƒ³è¦åˆ‡æ›è‡³ {{mode}} æ¨¡å¼",
+		"wantsToSwitchWithReason": "Roo æƒ³è¦åˆ‡æ›è‡³ {{mode}} æ¨¡å¼ï¼ŒåŽŸå› ï¼š{{reason}}",
+		"didSwitch": "Roo å·²åˆ‡æ›è‡³ {{mode}} æ¨¡å¼",
+		"didSwitchWithReason": "Roo å·²åˆ‡æ›è‡³ {{mode}} æ¨¡å¼ï¼ŒåŽŸå› ï¼š{{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo 想要在 {{mode}} 模式下建立新的子工作",
-		"wantsToFinish": "Roo 想要完成此子工作",
-		"newTaskContent": "子工作指示",
-		"completionContent": "子工作已完成",
-		"resultContent": "子工作結果",
-		"defaultResult": "請繼續下一個工作。",
-		"completionInstructions": "子工作已完成！您可以檢閱結果並提出修正或後續步驟。如果一切順利，請確認以將結果回傳給主任務。"
+		"wantsToCreate": "Roo æƒ³è¦åœ¨ {{mode}} æ¨¡å¼ä¸‹å»ºç«‹æ–°çš„å­å·¥ä½œ",
+		"wantsToFinish": "Roo æƒ³è¦å®Œæˆæ­¤å­å·¥ä½œ",
+		"newTaskContent": "å­å·¥ä½œæŒ‡ç¤º",
+		"completionContent": "å­å·¥ä½œå·²å®Œæˆ",
+		"resultContent": "å­å·¥ä½œçµæžœ",
+		"defaultResult": "è«‹ç¹¼çºŒä¸‹ä¸€å€‹å·¥ä½œã€‚",
+		"completionInstructions": "å­å·¥ä½œå·²å®Œæˆï¼æ‚¨å¯ä»¥æª¢é–±çµæžœä¸¦æå‡ºä¿®æ­£æˆ–å¾ŒçºŒæ­¥é©Ÿã€‚å¦‚æžœä¸€åˆ‡é †åˆ©ï¼Œè«‹ç¢ºèªä»¥å°‡çµæžœå›žå‚³çµ¦ä¸»ä»»å‹™ã€‚"
 	},
 	"questions": {
-		"hasQuestion": "Roo 有一個問題"
+		"hasQuestion": "Roo æœ‰ä¸€å€‹å•é¡Œ"
 	},
-	"taskCompleted": "工作完成",
-	"error": "錯誤",
+	"taskCompleted": "å·¥ä½œå®Œæˆ",
+	"error": "éŒ¯èª¤",
 	"diffError": {
-		"title": "編輯失敗"
+		"title": "ç·¨è¼¯å¤±æ•—"
 	},
-	"troubleMessage": "Roo 遇到問題...",
+	"troubleMessage": "Roo é‡åˆ°å•é¡Œ...",
 	"errorDetails": {
-		"title": "錯誤詳細資訊",
-		"copyToClipboard": "複製到剪貼簿",
-		"copied": "已複製！"
+		"title": "éŒ¯èª¤è©³ç´°è³‡è¨Š",
+		"copyToClipboard": "è¤‡è£½åˆ°å‰ªè²¼ç°¿",
+		"copied": "å·²è¤‡è£½ï¼"
 	},
 	"powershell": {
-		"issues": "您似乎遇到了 Windows PowerShell 的問題，請參閱此說明文件"
+		"issues": "æ‚¨ä¼¼ä¹Žé‡åˆ°äº† Windows PowerShell çš„å•é¡Œï¼Œè«‹åƒé–±æ­¤èªªæ˜Žæ–‡ä»¶"
 	},
 	"autoApprove": {
-		"tooltipManage": "管理自動批准設定",
-		"tooltipStatus": "自動批准已啟用：{{toggles}}",
-		"title": "自動批准",
-		"toggle": "切換自動批准",
-		"all": "全部",
-		"none": "無",
-		"description": "無需請求權限即可執行這些操作。僅對您完全信任的操作啟用此功能。",
-		"selectOptionsFirst": "請至少選擇以下一個選項以啟用自動批准",
-		"toggleAriaLabel": "切換自動批准",
-		"disabledAriaLabel": "自動批准已禁用 - 請先選擇選項",
-		"triggerLabelOff": "自動批准已關閉",
-		"triggerLabelOffShort": "關閉",
-		"triggerLabel_zero": "0 個自動核准",
-		"triggerLabel_one": "1 個自動核准",
-		"triggerLabel_other": "{{count}} 個自動核准",
+		"tooltipManage": "ç®¡ç†è‡ªå‹•æ‰¹å‡†è¨­å®š",
+		"tooltipStatus": "è‡ªå‹•æ‰¹å‡†å·²å•Ÿç”¨ï¼š{{toggles}}",
+		"title": "è‡ªå‹•æ‰¹å‡†",
+		"toggle": "åˆ‡æ›è‡ªå‹•æ‰¹å‡†",
+		"all": "å…¨éƒ¨",
+		"none": "ç„¡",
+		"description": "ç„¡éœ€è«‹æ±‚æ¬Šé™å³å¯åŸ·è¡Œé€™äº›æ“ä½œã€‚åƒ…å°æ‚¨å®Œå…¨ä¿¡ä»»çš„æ“ä½œå•Ÿç”¨æ­¤åŠŸèƒ½ã€‚",
+		"selectOptionsFirst": "è«‹è‡³å°‘é¸æ“‡ä»¥ä¸‹ä¸€å€‹é¸é …ä»¥å•Ÿç”¨è‡ªå‹•æ‰¹å‡†",
+		"toggleAriaLabel": "åˆ‡æ›è‡ªå‹•æ‰¹å‡†",
+		"disabledAriaLabel": "è‡ªå‹•æ‰¹å‡†å·²ç¦ç”¨ - è«‹å…ˆé¸æ“‡é¸é …",
+		"triggerLabelOff": "è‡ªå‹•æ‰¹å‡†å·²é—œé–‰",
+		"triggerLabelOffShort": "é—œé–‰",
+		"triggerLabel_zero": "0 å€‹è‡ªå‹•æ ¸å‡†",
+		"triggerLabel_one": "1 å€‹è‡ªå‹•æ ¸å‡†",
+		"triggerLabel_other": "{{count}} å€‹è‡ªå‹•æ ¸å‡†",
 		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已發布",
-		"support": "請在 <githubLink>GitHub</githubLink> 上為我們按星支持 Roo Code。",
+		"title": "Roo Code {{version}} å·²ç™¼å¸ƒ",
+		"support": "è«‹åœ¨ \u003cgithubLink\u003eGitHub\u003c/githubLink\u003e ä¸Šç‚ºæˆ‘å€‘æŒ‰æ˜Ÿæ”¯æŒ Roo Codeã€‚",
 		"stealthModel": {
-			"feature": "<bold>限時免費隱形模型</bold> - Code Supernova：現已升級為 <bold>1M Token 上下文視窗</bold>！一個支援圖像輸入的多功能代理程式編程模型，透過 Roo Code Cloud 提供。",
-			"note": "(注意：提示和完成會被模型創建者記錄並用於改進模型)",
-			"connectButton": "連接到 Roo Code Cloud",
-			"selectModel": "在設定中從 Roo Code Cloud 提供商選擇 <code>roo/code-supernova</code> 開始使用。",
-			"goToSettingsButton": "前往設定"
+			"feature": "\u003cbold\u003eé™æ™‚å…è²»éš±å½¢æ¨¡åž‹\u003c/bold\u003e - Code Supernovaï¼šç¾å·²å‡ç´šç‚º \u003cbold\u003e1M Token ä¸Šä¸‹æ–‡è¦–çª—\u003c/bold\u003eï¼ä¸€å€‹æ”¯æ´åœ–åƒè¼¸å…¥çš„å¤šåŠŸèƒ½ä»£ç†ç¨‹å¼ç·¨ç¨‹æ¨¡åž‹ï¼Œé€éŽ Roo Code Cloud æä¾›ã€‚",
+			"note": "(æ³¨æ„ï¼šæç¤ºå’Œå®Œæˆæœƒè¢«æ¨¡åž‹å‰µå»ºè€…è¨˜éŒ„ä¸¦ç”¨æ–¼æ”¹é€²æ¨¡åž‹)",
+			"connectButton": "é€£æŽ¥åˆ° Roo Code Cloud",
+			"selectModel": "åœ¨è¨­å®šä¸­å¾ž Roo Code Cloud æä¾›å•†é¸æ“‡ \u003ccode\u003eroo/code-supernova\u003c/code\u003e é–‹å§‹ä½¿ç”¨ã€‚",
+			"goToSettingsButton": "å‰å¾€è¨­å®š"
 		},
 		"release": {
-			"heading": "最新功能：",
-			"contextRewind": "改進的上下文壓縮現在允許您在回到存檔點時恢復完整的先前上下文",
-			"rooProvider": "Roo Code Cloud 提供商現在保留推理內容，並預設使用原生工具以獲得更佳效能"
+			"heading": "æœ€æ–°åŠŸèƒ½ï¼š",
+			"contextRewind": "æ”¹é€²çš„ä¸Šä¸‹æ–‡å£“ç¸®ç¾åœ¨å…è¨±æ‚¨åœ¨å›žåˆ°å­˜æª”é»žæ™‚æ¢å¾©å®Œæ•´çš„å…ˆå‰ä¸Šä¸‹æ–‡",
+			"rooProvider": "Roo Code Cloud æä¾›å•†ç¾åœ¨ä¿ç•™æŽ¨ç†å…§å®¹ï¼Œä¸¦é è¨­ä½¿ç”¨åŽŸç”Ÿå·¥å…·ä»¥ç²å¾—æ›´ä½³æ•ˆèƒ½"
 		},
 		"cloudAgents": {
-			"heading": "雲端的新功能：",
-			"specialized": "推出 <bold>Explainer</bold>、<bold>Planner</bold> 和 <bold>Coder</bold> - 三個專業雲端代理來增強你的工作流程。",
-			"description": "代理在雲端協同工作，可從網頁或透過 Slack 觸發。",
-			"tryButton": "試用雲端代理"
+			"heading": "é›²ç«¯çš„æ–°åŠŸèƒ½ï¼š",
+			"specialized": "æŽ¨å‡º \u003cbold\u003eExplainer\u003c/bold\u003eã€\u003cbold\u003ePlanner\u003c/bold\u003e å’Œ \u003cbold\u003eCoder\u003c/bold\u003e - ä¸‰å€‹å°ˆæ¥­é›²ç«¯ä»£ç†ä¾†å¢žå¼·ä½ çš„å·¥ä½œæµç¨‹ã€‚",
+			"description": "ä»£ç†åœ¨é›²ç«¯å”åŒå·¥ä½œï¼Œå¯å¾žç¶²é æˆ–é€éŽ Slack è§¸ç™¼ã€‚",
+			"tryButton": "è©¦ç”¨é›²ç«¯ä»£ç†"
 		},
-		"careers": "此外，<careersLink>我們正在招募！</careersLink>"
+		"careers": "æ­¤å¤–ï¼Œ\u003ccareersLink\u003eæˆ‘å€‘æ­£åœ¨æ‹›å‹Ÿï¼\u003c/careersLink\u003e"
 	},
 	"reasoning": {
-		"thinking": "思考中",
-		"seconds": "{{count}} 秒"
+		"thinking": "æ€è€ƒä¸­",
+		"seconds": "{{count}} ç§’"
 	},
 	"followUpSuggest": {
-		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",
-		"autoSelectCountdown": "{{count}} 秒後自動選擇",
-		"countdownDisplay": "{{count}} 秒"
+		"copyToInput": "è¤‡è£½åˆ°è¼¸å…¥æ¡† (æˆ–æŒ‰ä½ Shift ä¸¦é»žé¸)",
+		"autoSelectCountdown": "{{count}} ç§’å¾Œè‡ªå‹•é¸æ“‡",
+		"countdownDisplay": "{{count}} ç§’"
 	},
 	"browser": {
-		"session": "瀏覽器會話",
-		"rooWantsToUse": "Roo 想要使用瀏覽器",
-		"consoleLogs": "主控台記錄",
-		"noNewLogs": "（沒有新記錄）",
-		"screenshot": "瀏覽器螢幕擷圖",
-		"cursor": "游標",
+		"session": "ç€è¦½å™¨æœƒè©±",
+		"rooWantsToUse": "Roo æƒ³è¦ä½¿ç”¨ç€è¦½å™¨",
+		"consoleLogs": "ä¸»æŽ§å°è¨˜éŒ„",
+		"noNewLogs": "ï¼ˆæ²’æœ‰æ–°è¨˜éŒ„ï¼‰",
+		"screenshot": "ç€è¦½å™¨èž¢å¹•æ“·åœ–",
+		"cursor": "æ¸¸æ¨™",
 		"navigation": {
-			"step": "步驟 {{current}} / {{total}}",
-			"previous": "上一步",
-			"next": "下一步"
+			"step": "æ­¥é©Ÿ {{current}} / {{total}}",
+			"previous": "ä¸Šä¸€æ­¥",
+			"next": "ä¸‹ä¸€æ­¥"
 		},
-		"sessionStarted": "瀏覽器工作階段已啟動",
+		"sessionStarted": "ç€è¦½å™¨å·¥ä½œéšŽæ®µå·²å•Ÿå‹•",
 		"actions": {
-			"title": "瀏覽器動作：",
-			"launched": "瀏覽器已啟動",
-			"launch": "在 {{url}} 啟動瀏覽器",
-			"clicked": "點選位置: {{coordinate}}",
-			"click": "點選 ({{coordinate}})",
-			"typed": "輸入: {{text}}",
-			"type": "輸入「{{text}}」",
-			"pressed": "已按下 {{key}}",
-			"press": "按下 {{key}}",
-			"scrolledDown": "已向下捲動",
-			"scrollDown": "向下捲動",
-			"scrolledUp": "已向上捲動",
-			"scrollUp": "向上捲動",
-			"hovered": "懸停位置: {{coordinate}}",
-			"hover": "懸停 ({{coordinate}})",
-			"resized": "大小已變更: {{size}}",
-			"resize": "調整大小為 {{size}}",
-			"screenshotSaved": "螢幕擷圖已儲存",
-			"screenshot": "將螢幕擷圖儲存至 {{path}}",
-			"closed": "瀏覽器已關閉",
-			"close": "關閉瀏覽器"
+			"title": "ç€è¦½å™¨å‹•ä½œï¼š",
+			"launched": "ç€è¦½å™¨å·²å•Ÿå‹•",
+			"launch": "åœ¨ {{url}} å•Ÿå‹•ç€è¦½å™¨",
+			"clicked": "é»žé¸ä½ç½®: {{coordinate}}",
+			"click": "é»žé¸ ({{coordinate}})",
+			"typed": "è¼¸å…¥: {{text}}",
+			"type": "è¼¸å…¥ã€Œ{{text}}ã€",
+			"pressed": "å·²æŒ‰ä¸‹ {{key}}",
+			"press": "æŒ‰ä¸‹ {{key}}",
+			"scrolledDown": "å·²å‘ä¸‹æ²å‹•",
+			"scrollDown": "å‘ä¸‹æ²å‹•",
+			"scrolledUp": "å·²å‘ä¸Šæ²å‹•",
+			"scrollUp": "å‘ä¸Šæ²å‹•",
+			"hovered": "æ‡¸åœä½ç½®: {{coordinate}}",
+			"hover": "æ‡¸åœ ({{coordinate}})",
+			"resized": "å¤§å°å·²è®Šæ›´: {{size}}",
+			"resize": "èª¿æ•´å¤§å°ç‚º {{size}}",
+			"screenshotSaved": "èž¢å¹•æ“·åœ–å·²å„²å­˜",
+			"screenshot": "å°‡èž¢å¹•æ“·åœ–å„²å­˜è‡³ {{path}}",
+			"closed": "ç€è¦½å™¨å·²é—œé–‰",
+			"close": "é—œé–‰ç€è¦½å™¨"
 		}
 	},
 	"codeblock": {
 		"tooltips": {
-			"expand": "展開程式碼區塊",
-			"collapse": "摺疊程式碼區塊",
-			"copy_code": "複製程式碼"
+			"expand": "å±•é–‹ç¨‹å¼ç¢¼å€å¡Š",
+			"collapse": "æ‘ºç–Šç¨‹å¼ç¢¼å€å¡Š",
+			"copy_code": "è¤‡è£½ç¨‹å¼ç¢¼"
 		}
 	},
-	"systemPromptWarning": "警告：自訂系統提示詞覆蓋已啟用。這可能嚴重破壞功能並導致不可預測的行為。",
-	"profileViolationWarning": "目前設定檔與您的組織設定不相容",
+	"systemPromptWarning": "è­¦å‘Šï¼šè‡ªè¨‚ç³»çµ±æç¤ºè©žè¦†è“‹å·²å•Ÿç”¨ã€‚é€™å¯èƒ½åš´é‡ç ´å£žåŠŸèƒ½ä¸¦å°Žè‡´ä¸å¯é æ¸¬çš„è¡Œç‚ºã€‚",
+	"profileViolationWarning": "ç›®å‰è¨­å®šæª”èˆ‡æ‚¨çš„çµ„ç¹”è¨­å®šä¸ç›¸å®¹",
 	"shellIntegration": {
-		"title": "命令執行警告",
-		"description": "您的命令正在沒有 VSCode 終端機 Shell 整合的情況下執行。若要隱藏此警告，您可以在 <settingsLink>Roo Code 設定</settingsLink> 的<strong>終端機</strong>區塊中停用 Shell 整合，或使用下方的連結來排解 VSCode 終端機整合問題。",
-		"troubleshooting": "點選此處查看 Shell 整合文件。"
+		"title": "å‘½ä»¤åŸ·è¡Œè­¦å‘Š",
+		"description": "æ‚¨çš„å‘½ä»¤æ­£åœ¨æ²’æœ‰ VSCode çµ‚ç«¯æ©Ÿ Shell æ•´åˆçš„æƒ…æ³ä¸‹åŸ·è¡Œã€‚è‹¥è¦éš±è—æ­¤è­¦å‘Šï¼Œæ‚¨å¯ä»¥åœ¨ \u003csettingsLink\u003eRoo Code è¨­å®š\u003c/settingsLink\u003e çš„\u003cstrong\u003eçµ‚ç«¯æ©Ÿ\u003c/strong\u003eå€å¡Šä¸­åœç”¨ Shell æ•´åˆï¼Œæˆ–ä½¿ç”¨ä¸‹æ–¹çš„é€£çµä¾†æŽ’è§£ VSCode çµ‚ç«¯æ©Ÿæ•´åˆå•é¡Œã€‚",
+		"troubleshooting": "é»žé¸æ­¤è™•æŸ¥çœ‹ Shell æ•´åˆæ–‡ä»¶ã€‚"
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
-			"title": "已達自動核准請求上限",
-			"description": "Roo 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
-			"button": "重設並繼續"
+			"title": "å·²é”è‡ªå‹•æ ¸å‡†è«‹æ±‚ä¸Šé™",
+			"description": "Roo å·²é”åˆ° {{count}} æ¬¡ API è«‹æ±‚çš„è‡ªå‹•æ ¸å‡†ä¸Šé™ã€‚æ‚¨æƒ³é‡è¨­è¨ˆæ•¸ä¸¦ç¹¼çºŒå·¥ä½œå—Žï¼Ÿ",
+			"button": "é‡è¨­ä¸¦ç¹¼çºŒ"
 		},
 		"autoApprovedCostLimitReached": {
-			"title": "已達自動核准費用上限",
-			"description": "Roo 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
-			"button": "重設並繼續"
+			"title": "å·²é”è‡ªå‹•æ ¸å‡†è²»ç”¨ä¸Šé™",
+			"description": "Roo å·²é”åˆ° ${{count}} çš„è‡ªå‹•æ ¸å‡†è²»ç”¨ä¸Šé™ã€‚æ‚¨æƒ³é‡è¨­è²»ç”¨ä¸¦ç¹¼çºŒå·¥ä½œå—Žï¼Ÿ",
+			"button": "é‡è¨­ä¸¦ç¹¼çºŒ"
 		}
 	},
 	"indexingStatus": {
-		"ready": "索引就緒",
-		"indexing": "索引中 {{percentage}}%",
-		"indexed": "已索引",
-		"error": "索引錯誤",
-		"status": "索引狀態"
+		"ready": "ç´¢å¼•å°±ç·’",
+		"indexing": "ç´¢å¼•ä¸­ {{percentage}}%",
+		"indexed": "å·²ç´¢å¼•",
+		"error": "ç´¢å¼•éŒ¯èª¤",
+		"status": "ç´¢å¼•ç‹€æ…‹"
 	},
 	"versionIndicator": {
-		"ariaLabel": "版本 {{version}} - 點選查看發布說明"
+		"ariaLabel": "ç‰ˆæœ¬ {{version}} - é»žé¸æŸ¥çœ‹ç™¼å¸ƒèªªæ˜Ž"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud 正在進化！",
-		"description": "在雲端執行 Roomote 遠端代理、隨時隨地存取您的工作、與他人協作等等。",
-		"joinWaitlist": "註冊以獲得最新更新。"
+		"title": "Roo Code Cloud æ­£åœ¨é€²åŒ–ï¼",
+		"description": "åœ¨é›²ç«¯åŸ·è¡Œ Roomote é ç«¯ä»£ç†ã€éš¨æ™‚éš¨åœ°å­˜å–æ‚¨çš„å·¥ä½œã€èˆ‡ä»–äººå”ä½œç­‰ç­‰ã€‚",
+		"joinWaitlist": "è¨»å†Šä»¥ç²å¾—æœ€æ–°æ›´æ–°ã€‚"
 	},
 	"command": {
-		"triggerDescription": "觸發 {{name}} 命令"
+		"triggerDescription": "è§¸ç™¼ {{name}} å‘½ä»¤"
 	},
 	"slashCommands": {
-		"tooltip": "管理斜線命令",
-		"title": "斜線命令",
-		"description": "使用內建斜線命令或建立自訂命令，以便快速存取常用的提示詞和工作流程。<DocsLink>說明文件</DocsLink>",
-		"manageCommands": "在設定中管理斜線命令",
-		"builtInCommands": "內建命令",
-		"globalCommands": "全域命令",
-		"workspaceCommands": "工作區命令",
-		"globalCommand": "全域命令",
-		"editCommand": "編輯命令",
-		"deleteCommand": "刪除命令",
-		"newGlobalCommandPlaceholder": "新增全域命令...",
-		"newWorkspaceCommandPlaceholder": "新增工作區命令...",
+		"tooltip": "ç®¡ç†æ–œç·šå‘½ä»¤",
+		"title": "æ–œç·šå‘½ä»¤",
+		"description": "ä½¿ç”¨å…§å»ºæ–œç·šå‘½ä»¤æˆ–å»ºç«‹è‡ªè¨‚å‘½ä»¤ï¼Œä»¥ä¾¿å¿«é€Ÿå­˜å–å¸¸ç”¨çš„æç¤ºè©žå’Œå·¥ä½œæµç¨‹ã€‚\u003cDocsLink\u003eèªªæ˜Žæ–‡ä»¶\u003c/DocsLink\u003e",
+		"manageCommands": "åœ¨è¨­å®šä¸­ç®¡ç†æ–œç·šå‘½ä»¤",
+		"builtInCommands": "å…§å»ºå‘½ä»¤",
+		"globalCommands": "å…¨åŸŸå‘½ä»¤",
+		"workspaceCommands": "å·¥ä½œå€å‘½ä»¤",
+		"globalCommand": "å…¨åŸŸå‘½ä»¤",
+		"editCommand": "ç·¨è¼¯å‘½ä»¤",
+		"deleteCommand": "åˆªé™¤å‘½ä»¤",
+		"newGlobalCommandPlaceholder": "æ–°å¢žå…¨åŸŸå‘½ä»¤...",
+		"newWorkspaceCommandPlaceholder": "æ–°å¢žå·¥ä½œå€å‘½ä»¤...",
 		"deleteDialog": {
-			"title": "刪除命令",
-			"description": "您確定要刪除「{{name}}」命令嗎？此操作無法復原。",
-			"cancel": "取消",
-			"confirm": "刪除"
+			"title": "åˆªé™¤å‘½ä»¤",
+			"description": "æ‚¨ç¢ºå®šè¦åˆªé™¤ã€Œ{{name}}ã€å‘½ä»¤å—Žï¼Ÿæ­¤æ“ä½œç„¡æ³•å¾©åŽŸã€‚",
+			"cancel": "å–æ¶ˆ",
+			"confirm": "åˆªé™¤"
 		}
 	},
 	"contextMenu": {
-		"noResults": "沒有結果",
-		"problems": "問題",
-		"terminal": "終端機",
-		"url": "貼上 URL 以擷取內容"
+		"noResults": "æ²’æœ‰çµæžœ",
+		"problems": "å•é¡Œ",
+		"terminal": "çµ‚ç«¯æ©Ÿ",
+		"url": "è²¼ä¸Š URL ä»¥æ“·å–å…§å®¹"
 	},
 	"queuedMessages": {
-		"title": "佇列中的訊息",
-		"clickToEdit": "點選以編輯訊息"
+		"title": "ä½‡åˆ—ä¸­çš„è¨Šæ¯",
+		"clickToEdit": "é»žé¸ä»¥ç·¨è¼¯è¨Šæ¯"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo 想要執行斜線指令",
-		"didRun": "Roo 執行了斜線指令"
+		"wantsToRun": "Roo æƒ³è¦åŸ·è¡Œæ–œç·šæŒ‡ä»¤",
+		"didRun": "Roo åŸ·è¡Œäº†æ–œç·šæŒ‡ä»¤"
 	},
 	"todo": {
-		"partial": "已完成 {{completed}} / {{total}} 個待辦事項",
-		"complete": "已完成 {{total}} 個待辦事項",
-		"updated": "已更新待辦事項列表",
-		"completed": "已完成",
-		"started": "已開始"
+		"partial": "å·²å®Œæˆ {{completed}} / {{total}} å€‹å¾…è¾¦äº‹é …",
+		"complete": "å·²å®Œæˆ {{total}} å€‹å¾…è¾¦äº‹é …",
+		"updated": "å·²æ›´æ–°å¾…è¾¦äº‹é …åˆ—è¡¨",
+		"completed": "å·²å®Œæˆ",
+		"started": "å·²é–‹å§‹"
+	},
+	"speechToText": {
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"notConfigured": "Add Deepgram API key in settings",
+		"close": "Close",
+		"connecting": "Connecting...",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"copyInstructions": "Copy Instructions",
+		"stopRecording": "Click to stop recording",
+		"startRecording": "Click to start voice input"
 	}
 }

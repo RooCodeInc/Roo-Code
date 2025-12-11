@@ -1,964 +1,968 @@
 {
 	"common": {
-		"save": "저장",
-		"done": "완료",
-		"cancel": "취소",
-		"reset": "초기화",
-		"select": "선택",
-		"add": "헤더 추가",
-		"remove": "삭제"
+		"save": "ì €ìž¥",
+		"done": "ì™„ë£Œ",
+		"cancel": "ì·¨ì†Œ",
+		"reset": "ì´ˆê¸°í™”",
+		"select": "ì„ íƒ",
+		"add": "í—¤ë” ì¶”ê°€",
+		"remove": "ì‚­ì œ"
 	},
 	"header": {
-		"title": "설정",
-		"saveButtonTooltip": "변경 사항 저장",
-		"nothingChangedTooltip": "변경 사항 없음",
-		"doneButtonTooltip": "저장되지 않은 변경 사항을 버리고 설정 패널 닫기"
+		"title": "ì„¤ì •",
+		"saveButtonTooltip": "ë³€ê²½ ì‚¬í•­ ì €ìž¥",
+		"nothingChangedTooltip": "ë³€ê²½ ì‚¬í•­ ì—†ìŒ",
+		"doneButtonTooltip": "ì €ìž¥ë˜ì§€ ì•Šì€ ë³€ê²½ ì‚¬í•­ì„ ë²„ë¦¬ê³  ì„¤ì • íŒ¨ë„ ë‹«ê¸°"
 	},
 	"unsavedChangesDialog": {
-		"title": "저장되지 않은 변경 사항",
-		"description": "변경 사항을 버리고 계속하시겠습니까?",
-		"cancelButton": "취소",
-		"discardButton": "변경 사항 버리기"
+		"title": "ì €ìž¥ë˜ì§€ ì•Šì€ ë³€ê²½ ì‚¬í•­",
+		"description": "ë³€ê²½ ì‚¬í•­ì„ ë²„ë¦¬ê³  ê³„ì†í•˜ì‹œê² ìŠµë‹ˆê¹Œ?",
+		"cancelButton": "ì·¨ì†Œ",
+		"discardButton": "ë³€ê²½ ì‚¬í•­ ë²„ë¦¬ê¸°"
 	},
 	"sections": {
-		"providers": "공급자",
-		"modes": "모드",
-		"mcp": "MCP 서버",
-		"autoApprove": "자동 승인",
-		"browser": "컴퓨터 접근",
-		"checkpoints": "체크포인트",
-		"notifications": "알림",
-		"contextManagement": "컨텍스트",
-		"terminal": "터미널",
-		"slashCommands": "슬래시 명령",
-		"prompts": "프롬프트",
+		"providers": "ê³µê¸‰ìž",
+		"modes": "ëª¨ë“œ",
+		"mcp": "MCP ì„œë²„",
+		"autoApprove": "ìžë™ ìŠ¹ì¸",
+		"browser": "ì»´í“¨í„° ì ‘ê·¼",
+		"checkpoints": "ì²´í¬í¬ì¸íŠ¸",
+		"notifications": "ì•Œë¦¼",
+		"contextManagement": "ì»¨í…ìŠ¤íŠ¸",
+		"terminal": "í„°ë¯¸ë„",
+		"slashCommands": "ìŠ¬ëž˜ì‹œ ëª…ë ¹",
+		"prompts": "í”„ë¡¬í”„íŠ¸",
 		"ui": "UI",
-		"experimental": "실험적",
-		"language": "언어",
-		"about": "Roo Code 정보"
+		"experimental": "ì‹¤í—˜ì ",
+		"language": "ì–¸ì–´",
+		"about": "Roo Code ì •ë³´"
 	},
 	"about": {
 		"bugReport": {
-			"label": "버그를 발견하셨나요?",
-			"link": "GitHub에서 보고"
+			"label": "ë²„ê·¸ë¥¼ ë°œê²¬í•˜ì…¨ë‚˜ìš”?",
+			"link": "GitHubì—ì„œ ë³´ê³ "
 		},
 		"featureRequest": {
-			"label": "아이디어가 있으신가요?",
-			"link": "공유해 주세요"
+			"label": "ì•„ì´ë””ì–´ê°€ ìžˆìœ¼ì‹ ê°€ìš”?",
+			"link": "ê³µìœ í•´ ì£¼ì„¸ìš”"
 		},
 		"securityIssue": {
-			"label": "취약점을 발견하셨나요?",
-			"link": "공개 프로세스 따르기"
+			"label": "ì·¨ì•½ì ì„ ë°œê²¬í•˜ì…¨ë‚˜ìš”?",
+			"link": "ê³µê°œ í”„ë¡œì„¸ìŠ¤ ë”°ë¥´ê¸°"
 		},
 		"contact": {
-			"label": "문의가 필요하신가요? 이메일 보내기"
+			"label": "ë¬¸ì˜ê°€ í•„ìš”í•˜ì‹ ê°€ìš”? ì´ë©”ì¼ ë³´ë‚´ê¸°"
 		},
-		"community": "팁을 얻거나 다른 Roo Code 사용자들과 교류하고 싶으신가요? <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 참여하세요",
-		"contactAndCommunity": "문의 및 커뮤니티",
-		"manageSettings": "설정 관리"
+		"community": "íŒì„ ì–»ê±°ë‚˜ ë‹¤ë¥¸ Roo Code ì‚¬ìš©ìžë“¤ê³¼ êµë¥˜í•˜ê³  ì‹¶ìœ¼ì‹ ê°€ìš”? \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e ë˜ëŠ” \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003eì— ì°¸ì—¬í•˜ì„¸ìš”",
+		"contactAndCommunity": "ë¬¸ì˜ ë° ì»¤ë®¤ë‹ˆí‹°",
+		"manageSettings": "ì„¤ì • ê´€ë¦¬"
 	},
 	"slashCommands": {
-		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
+		"description": "ì‚¬ìš©ìž ì§€ì • ì›Œí¬í”Œë¡œì™€ ìž‘ì—…ì„ ì‹ ì†í•˜ê²Œ ì‹¤í–‰í•˜ê¸° ìœ„í•´ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì„ ê´€ë¦¬í•©ë‹ˆë‹¤. \u003cDocsLink\u003eë” ì•Œì•„ë³´ê¸°\u003c/DocsLink\u003e"
 	},
 	"prompts": {
-		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Roo가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
+		"description": "í”„ë¡¬í”„íŠ¸ í–¥ìƒ, ì½”ë“œ ì„¤ëª…, ë¬¸ì œ í•´ê²°ê³¼ ê°™ì€ ë¹ ë¥¸ ìž‘ì—…ì— ì‚¬ìš©ë˜ëŠ” ì§€ì› í”„ë¡¬í”„íŠ¸ë¥¼ êµ¬ì„±í•©ë‹ˆë‹¤. ì´ëŸ¬í•œ í”„ë¡¬í”„íŠ¸ëŠ” Rooê°€ ì¼ë°˜ì ì¸ ê°œë°œ ìž‘ì—…ì— ëŒ€í•´ ë” ë‚˜ì€ ì§€ì›ì„ ì œê³µí•˜ëŠ” ë° ë„ì›€ì´ ë©ë‹ˆë‹¤."
 	},
 	"codeIndex": {
-		"title": "코드베이스 인덱싱",
-		"enableLabel": "코드베이스 인덱싱 활성화",
-		"enableDescription": "향상된 검색 및 컨텍스트 이해를 위해 코드 인덱싱 활성화",
-		"providerLabel": "임베딩 제공자",
-		"selectProviderPlaceholder": "제공자 선택",
+		"title": "ì½”ë“œë² ì´ìŠ¤ ì¸ë±ì‹±",
+		"enableLabel": "ì½”ë“œë² ì´ìŠ¤ ì¸ë±ì‹± í™œì„±í™”",
+		"enableDescription": "í–¥ìƒëœ ê²€ìƒ‰ ë° ì»¨í…ìŠ¤íŠ¸ ì´í•´ë¥¼ ìœ„í•´ ì½”ë“œ ì¸ë±ì‹± í™œì„±í™”",
+		"providerLabel": "ìž„ë² ë”© ì œê³µìž",
+		"selectProviderPlaceholder": "ì œê³µìž ì„ íƒ",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",
 		"geminiProvider": "Gemini",
-		"geminiApiKeyLabel": "API 키:",
-		"geminiApiKeyPlaceholder": "Gemini API 키를 입력하세요",
+		"geminiApiKeyLabel": "API í‚¤:",
+		"geminiApiKeyPlaceholder": "Gemini API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
 		"mistralProvider": "Mistral",
-		"mistralApiKeyLabel": "API 키:",
-		"mistralApiKeyPlaceholder": "Mistral API 키를 입력하세요",
+		"mistralApiKeyLabel": "API í‚¤:",
+		"mistralApiKeyPlaceholder": "Mistral API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
-		"vercelAiGatewayApiKeyLabel": "API 키",
-		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API 키를 입력하세요",
+		"vercelAiGatewayApiKeyLabel": "API í‚¤",
+		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
 		"bedrockProvider": "Amazon Bedrock",
-		"bedrockRegionLabel": "AWS 리전",
+		"bedrockRegionLabel": "AWS ë¦¬ì „",
 		"bedrockRegionPlaceholder": "us-east-1",
-		"bedrockProfileLabel": "AWS 프로필",
+		"bedrockProfileLabel": "AWS í”„ë¡œí•„",
 		"bedrockProfilePlaceholder": "default",
-		"bedrockProfileDescription": "~/.aws/credentials의 AWS 프로필 이름(필수).",
+		"bedrockProfileDescription": "~/.aws/credentialsì˜ AWS í”„ë¡œí•„ ì´ë¦„(í•„ìˆ˜).",
 		"openRouterProvider": "OpenRouter",
-		"openRouterApiKeyLabel": "OpenRouter API 키",
-		"openRouterApiKeyPlaceholder": "OpenRouter API 키를 입력하세요",
-		"openRouterProviderRoutingLabel": "OpenRouter 공급자 라우팅",
-		"openRouterProviderRoutingDescription": "OpenRouter는 임베딩 모델에 가장 적합한 공급자로 요청을 라우팅합니다. 기본적으로 요청은 가동 시간을 최대화하기 위해 상위 공급자 간에 로드 밸런싱됩니다. 그러나 이 모델에 사용할 특정 공급자를 선택할 수 있습니다.",
-		"openaiCompatibleProvider": "OpenAI 호환",
-		"openAiKeyLabel": "OpenAI API 키",
-		"openAiKeyPlaceholder": "OpenAI API 키를 입력하세요",
-		"openAiCompatibleBaseUrlLabel": "기본 URL",
-		"openAiCompatibleApiKeyLabel": "API 키",
-		"openAiCompatibleApiKeyPlaceholder": "API 키를 입력하세요",
-		"openAiCompatibleModelDimensionLabel": "임베딩 차원:",
-		"modelDimensionLabel": "모델 차원",
-		"openAiCompatibleModelDimensionPlaceholder": "예: 1536",
-		"openAiCompatibleModelDimensionDescription": "모델의 임베딩 차원(출력 크기)입니다. 이 값에 대해서는 제공업체의 문서를 확인하세요. 일반적인 값: 384, 768, 1536, 3072.",
-		"modelLabel": "모델",
-		"selectModelPlaceholder": "모델 선택",
+		"openRouterApiKeyLabel": "OpenRouter API í‚¤",
+		"openRouterApiKeyPlaceholder": "OpenRouter API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
+		"openRouterProviderRoutingLabel": "OpenRouter ê³µê¸‰ìž ë¼ìš°íŒ…",
+		"openRouterProviderRoutingDescription": "OpenRouterëŠ” ìž„ë² ë”© ëª¨ë¸ì— ê°€ìž¥ ì í•©í•œ ê³µê¸‰ìžë¡œ ìš”ì²­ì„ ë¼ìš°íŒ…í•©ë‹ˆë‹¤. ê¸°ë³¸ì ìœ¼ë¡œ ìš”ì²­ì€ ê°€ë™ ì‹œê°„ì„ ìµœëŒ€í™”í•˜ê¸° ìœ„í•´ ìƒìœ„ ê³µê¸‰ìž ê°„ì— ë¡œë“œ ë°¸ëŸ°ì‹±ë©ë‹ˆë‹¤. ê·¸ëŸ¬ë‚˜ ì´ ëª¨ë¸ì— ì‚¬ìš©í•  íŠ¹ì • ê³µê¸‰ìžë¥¼ ì„ íƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+		"openaiCompatibleProvider": "OpenAI í˜¸í™˜",
+		"openAiKeyLabel": "OpenAI API í‚¤",
+		"openAiKeyPlaceholder": "OpenAI API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
+		"openAiCompatibleBaseUrlLabel": "ê¸°ë³¸ URL",
+		"openAiCompatibleApiKeyLabel": "API í‚¤",
+		"openAiCompatibleApiKeyPlaceholder": "API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
+		"openAiCompatibleModelDimensionLabel": "ìž„ë² ë”© ì°¨ì›:",
+		"modelDimensionLabel": "ëª¨ë¸ ì°¨ì›",
+		"openAiCompatibleModelDimensionPlaceholder": "ì˜ˆ: 1536",
+		"openAiCompatibleModelDimensionDescription": "ëª¨ë¸ì˜ ìž„ë² ë”© ì°¨ì›(ì¶œë ¥ í¬ê¸°)ìž…ë‹ˆë‹¤. ì´ ê°’ì— ëŒ€í•´ì„œëŠ” ì œê³µì—…ì²´ì˜ ë¬¸ì„œë¥¼ í™•ì¸í•˜ì„¸ìš”. ì¼ë°˜ì ì¸ ê°’: 384, 768, 1536, 3072.",
+		"modelLabel": "ëª¨ë¸",
+		"selectModelPlaceholder": "ëª¨ë¸ ì„ íƒ",
 		"ollamaUrlLabel": "Ollama URL:",
 		"qdrantUrlLabel": "Qdrant URL",
-		"qdrantKeyLabel": "Qdrant 키:",
-		"startIndexingButton": "시작",
-		"clearIndexDataButton": "인덱스 지우기",
-		"unsavedSettingsMessage": "인덱싱 프로세스를 시작하기 전에 설정을 저장해 주세요.",
+		"qdrantKeyLabel": "Qdrant í‚¤:",
+		"startIndexingButton": "ì‹œìž‘",
+		"clearIndexDataButton": "ì¸ë±ìŠ¤ ì§€ìš°ê¸°",
+		"unsavedSettingsMessage": "ì¸ë±ì‹± í”„ë¡œì„¸ìŠ¤ë¥¼ ì‹œìž‘í•˜ê¸° ì „ì— ì„¤ì •ì„ ì €ìž¥í•´ ì£¼ì„¸ìš”.",
 		"clearDataDialog": {
-			"title": "확실합니까?",
-			"description": "이 작업은 취소할 수 없습니다. 코드베이스 인덱스 데이터가 영구적으로 삭제됩니다.",
-			"cancelButton": "취소",
-			"confirmButton": "데이터 지우기"
+			"title": "í™•ì‹¤í•©ë‹ˆê¹Œ?",
+			"description": "ì´ ìž‘ì—…ì€ ì·¨ì†Œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ì½”ë“œë² ì´ìŠ¤ ì¸ë±ìŠ¤ ë°ì´í„°ê°€ ì˜êµ¬ì ìœ¼ë¡œ ì‚­ì œë©ë‹ˆë‹¤.",
+			"cancelButton": "ì·¨ì†Œ",
+			"confirmButton": "ë°ì´í„° ì§€ìš°ê¸°"
 		},
-		"description": "프로젝트의 시맨틱 검색을 활성화하기 위한 코드베이스 인덱싱 설정을 구성합니다. <0>자세히 알아보기</0>",
-		"statusTitle": "상태",
-		"settingsTitle": "인덱싱 설정",
-		"disabledMessage": "코드베이스 인덱싱이 현재 비활성화되어 있습니다. 인덱싱 옵션을 구성하려면 전역 설정에서 활성화하세요.",
-		"embedderProviderLabel": "임베더 제공자",
-		"modelPlaceholder": "모델 이름을 입력하세요",
-		"selectModel": "모델 선택",
-		"ollamaBaseUrlLabel": "Ollama 기본 URL",
-		"qdrantApiKeyLabel": "Qdrant API 키",
-		"qdrantApiKeyPlaceholder": "Qdrant API 키를 입력하세요 (선택사항)",
-		"setupConfigLabel": "설정",
+		"description": "í”„ë¡œì íŠ¸ì˜ ì‹œë§¨í‹± ê²€ìƒ‰ì„ í™œì„±í™”í•˜ê¸° ìœ„í•œ ì½”ë“œë² ì´ìŠ¤ ì¸ë±ì‹± ì„¤ì •ì„ êµ¬ì„±í•©ë‹ˆë‹¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e",
+		"statusTitle": "ìƒíƒœ",
+		"settingsTitle": "ì¸ë±ì‹± ì„¤ì •",
+		"disabledMessage": "ì½”ë“œë² ì´ìŠ¤ ì¸ë±ì‹±ì´ í˜„ìž¬ ë¹„í™œì„±í™”ë˜ì–´ ìžˆìŠµë‹ˆë‹¤. ì¸ë±ì‹± ì˜µì…˜ì„ êµ¬ì„±í•˜ë ¤ë©´ ì „ì—­ ì„¤ì •ì—ì„œ í™œì„±í™”í•˜ì„¸ìš”.",
+		"embedderProviderLabel": "ìž„ë² ë” ì œê³µìž",
+		"modelPlaceholder": "ëª¨ë¸ ì´ë¦„ì„ ìž…ë ¥í•˜ì„¸ìš”",
+		"selectModel": "ëª¨ë¸ ì„ íƒ",
+		"ollamaBaseUrlLabel": "Ollama ê¸°ë³¸ URL",
+		"qdrantApiKeyLabel": "Qdrant API í‚¤",
+		"qdrantApiKeyPlaceholder": "Qdrant API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš” (ì„ íƒì‚¬í•­)",
+		"setupConfigLabel": "ì„¤ì •",
 		"ollamaUrlPlaceholder": "http://localhost:11434",
 		"openAiCompatibleBaseUrlPlaceholder": "https://api.example.com",
 		"modelDimensionPlaceholder": "1536",
 		"qdrantUrlPlaceholder": "http://localhost:6333",
-		"saveError": "설정을 저장하지 못했습니다",
-		"modelDimensions": "({{dimension}} 차원)",
-		"saveSuccess": "설정이 성공적으로 저장되었습니다",
-		"saving": "저장 중...",
-		"saveSettings": "저장",
+		"saveError": "ì„¤ì •ì„ ì €ìž¥í•˜ì§€ ëª»í–ˆìŠµë‹ˆë‹¤",
+		"modelDimensions": "({{dimension}} ì°¨ì›)",
+		"saveSuccess": "ì„¤ì •ì´ ì„±ê³µì ìœ¼ë¡œ ì €ìž¥ë˜ì—ˆìŠµë‹ˆë‹¤",
+		"saving": "ì €ìž¥ ì¤‘...",
+		"saveSettings": "ì €ìž¥",
 		"indexingStatuses": {
-			"standby": "대기",
-			"indexing": "인덱싱 중",
-			"indexed": "인덱싱됨",
-			"error": "오류"
+			"standby": "ëŒ€ê¸°",
+			"indexing": "ì¸ë±ì‹± ì¤‘",
+			"indexed": "ì¸ë±ì‹±ë¨",
+			"error": "ì˜¤ë¥˜"
 		},
-		"close": "닫기",
+		"close": "ë‹«ê¸°",
 		"validation": {
-			"invalidQdrantUrl": "잘못된 Qdrant URL",
-			"invalidOllamaUrl": "잘못된 Ollama URL",
-			"invalidBaseUrl": "잘못된 기본 URL",
-			"qdrantUrlRequired": "Qdrant URL이 필요합니다",
-			"openaiApiKeyRequired": "OpenAI API 키가 필요합니다",
-			"modelSelectionRequired": "모델 선택이 필요합니다",
-			"apiKeyRequired": "API 키가 필요합니다",
-			"modelIdRequired": "모델 ID가 필요합니다",
-			"modelDimensionRequired": "모델 차원이 필요합니다",
-			"geminiApiKeyRequired": "Gemini API 키가 필요합니다",
-			"mistralApiKeyRequired": "Mistral API 키가 필요합니다",
-			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API 키가 필요합니다",
-			"bedrockRegionRequired": "AWS 리전이 필요합니다",
-			"bedrockProfileRequired": "AWS 프로필이 필요합니다",
-			"ollamaBaseUrlRequired": "Ollama 기본 URL이 필요합니다",
-			"baseUrlRequired": "기본 URL이 필요합니다",
-			"modelDimensionMinValue": "모델 차원은 0보다 커야 합니다",
-			"openRouterApiKeyRequired": "OpenRouter API 키가 필요합니다"
+			"invalidQdrantUrl": "ìž˜ëª»ëœ Qdrant URL",
+			"invalidOllamaUrl": "ìž˜ëª»ëœ Ollama URL",
+			"invalidBaseUrl": "ìž˜ëª»ëœ ê¸°ë³¸ URL",
+			"qdrantUrlRequired": "Qdrant URLì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"openaiApiKeyRequired": "OpenAI API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"modelSelectionRequired": "ëª¨ë¸ ì„ íƒì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"apiKeyRequired": "API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"modelIdRequired": "ëª¨ë¸ IDê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"modelDimensionRequired": "ëª¨ë¸ ì°¨ì›ì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"geminiApiKeyRequired": "Gemini API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"mistralApiKeyRequired": "Mistral API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤",
+			"bedrockRegionRequired": "AWS ë¦¬ì „ì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"bedrockProfileRequired": "AWS í”„ë¡œí•„ì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"ollamaBaseUrlRequired": "Ollama ê¸°ë³¸ URLì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"baseUrlRequired": "ê¸°ë³¸ URLì´ í•„ìš”í•©ë‹ˆë‹¤",
+			"modelDimensionMinValue": "ëª¨ë¸ ì°¨ì›ì€ 0ë³´ë‹¤ ì»¤ì•¼ í•©ë‹ˆë‹¤",
+			"openRouterApiKeyRequired": "OpenRouter API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤"
 		},
-		"optional": "선택 사항",
-		"advancedConfigLabel": "고급 구성",
-		"searchMinScoreLabel": "검색 점수 임계값",
-		"searchMinScoreDescription": "검색 결과에 필요한 최소 유사도 점수(0.0-1.0). 값이 낮을수록 더 많은 결과가 반환되지만 관련성이 떨어질 수 있습니다. 값이 높을수록 결과는 적지만 관련성이 높은 결과가 반환됩니다.",
-		"searchMinScoreResetTooltip": "기본값(0.4)으로 재설정",
-		"searchMaxResultsLabel": "최대 검색 결과",
-		"searchMaxResultsDescription": "코드베이스 인덱스를 쿼리할 때 반환할 최대 검색 결과 수입니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 관련성이 낮은 결과가 포함될 수 있습니다.",
-		"resetToDefault": "기본값으로 재설정"
+		"optional": "ì„ íƒ ì‚¬í•­",
+		"advancedConfigLabel": "ê³ ê¸‰ êµ¬ì„±",
+		"searchMinScoreLabel": "ê²€ìƒ‰ ì ìˆ˜ ìž„ê³„ê°’",
+		"searchMinScoreDescription": "ê²€ìƒ‰ ê²°ê³¼ì— í•„ìš”í•œ ìµœì†Œ ìœ ì‚¬ë„ ì ìˆ˜(0.0-1.0). ê°’ì´ ë‚®ì„ìˆ˜ë¡ ë” ë§Žì€ ê²°ê³¼ê°€ ë°˜í™˜ë˜ì§€ë§Œ ê´€ë ¨ì„±ì´ ë–¨ì–´ì§ˆ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ê°’ì´ ë†’ì„ìˆ˜ë¡ ê²°ê³¼ëŠ” ì ì§€ë§Œ ê´€ë ¨ì„±ì´ ë†’ì€ ê²°ê³¼ê°€ ë°˜í™˜ë©ë‹ˆë‹¤.",
+		"searchMinScoreResetTooltip": "ê¸°ë³¸ê°’(0.4)ìœ¼ë¡œ ìž¬ì„¤ì •",
+		"searchMaxResultsLabel": "ìµœëŒ€ ê²€ìƒ‰ ê²°ê³¼",
+		"searchMaxResultsDescription": "ì½”ë“œë² ì´ìŠ¤ ì¸ë±ìŠ¤ë¥¼ ì¿¼ë¦¬í•  ë•Œ ë°˜í™˜í•  ìµœëŒ€ ê²€ìƒ‰ ê²°ê³¼ ìˆ˜ìž…ë‹ˆë‹¤. ê°’ì´ ë†’ì„ìˆ˜ë¡ ë” ë§Žì€ ì»¨í…ìŠ¤íŠ¸ë¥¼ ì œê³µí•˜ì§€ë§Œ ê´€ë ¨ì„±ì´ ë‚®ì€ ê²°ê³¼ê°€ í¬í•¨ë  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+		"resetToDefault": "ê¸°ë³¸ê°’ìœ¼ë¡œ ìž¬ì„¤ì •"
 	},
 	"autoApprove": {
-		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",
-		"description": "Roo가 승인 없이 자동으로 작업을 수행할 수 있도록 허용합니다. AI를 완전히 신뢰하고 관련 보안 위험을 이해하는 경우에만 이러한 설정을 활성화하세요.",
-		"enabled": "자동 승인 활성화됨",
-		"toggleAriaLabel": "자동 승인 전환",
-		"disabledAriaLabel": "자동 승인 비활성화됨 - 먼저 옵션을 선택하세요",
+		"toggleShortcut": "\u003cSettingsLink\u003eIDE í™˜ê²½ ì„¤ì •\u003c/SettingsLink\u003eì—ì„œ ì´ ì„¤ì •ì— ëŒ€í•œ ì „ì—­ ë°”ë¡œ ê°€ê¸°ë¥¼ êµ¬ì„±í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+		"description": "Rooê°€ ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ ìž‘ì—…ì„ ìˆ˜í–‰í•  ìˆ˜ ìžˆë„ë¡ í—ˆìš©í•©ë‹ˆë‹¤. AIë¥¼ ì™„ì „ížˆ ì‹ ë¢°í•˜ê³  ê´€ë ¨ ë³´ì•ˆ ìœ„í—˜ì„ ì´í•´í•˜ëŠ” ê²½ìš°ì—ë§Œ ì´ëŸ¬í•œ ì„¤ì •ì„ í™œì„±í™”í•˜ì„¸ìš”.",
+		"enabled": "ìžë™ ìŠ¹ì¸ í™œì„±í™”ë¨",
+		"toggleAriaLabel": "ìžë™ ìŠ¹ì¸ ì „í™˜",
+		"disabledAriaLabel": "ìžë™ ìŠ¹ì¸ ë¹„í™œì„±í™”ë¨ - ë¨¼ì € ì˜µì…˜ì„ ì„ íƒí•˜ì„¸ìš”",
 		"readOnly": {
-			"label": "읽기",
-			"description": "활성화되면 Roo는 승인 버튼을 클릭하지 않고도 자동으로 디렉토리 내용을 보고 파일을 읽습니다.",
+			"label": "ì½ê¸°",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ìŠ¹ì¸ ë²„íŠ¼ì„ í´ë¦­í•˜ì§€ ì•Šê³ ë„ ìžë™ìœ¼ë¡œ ë””ë ‰í† ë¦¬ ë‚´ìš©ì„ ë³´ê³  íŒŒì¼ì„ ì½ìŠµë‹ˆë‹¤.",
 			"outsideWorkspace": {
-				"label": "워크스페이스 외부 파일 포함",
-				"description": "Roo가 승인 없이 현재 워크스페이스 외부의 파일을 읽을 수 있도록 허용합니다."
+				"label": "ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ íŒŒì¼ í¬í•¨",
+				"description": "Rooê°€ ìŠ¹ì¸ ì—†ì´ í˜„ìž¬ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ì˜ íŒŒì¼ì„ ì½ì„ ìˆ˜ ìžˆë„ë¡ í—ˆìš©í•©ë‹ˆë‹¤."
 			}
 		},
 		"write": {
-			"label": "쓰기",
-			"description": "승인 없이 자동으로 파일 생성 및 편집",
-			"delayLabel": "진단이 잠재적 문제를 감지할 수 있도록 쓰기 후 지연",
+			"label": "ì“°ê¸°",
+			"description": "ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ íŒŒì¼ ìƒì„± ë° íŽ¸ì§‘",
+			"delayLabel": "ì§„ë‹¨ì´ ìž ìž¬ì  ë¬¸ì œë¥¼ ê°ì§€í•  ìˆ˜ ìžˆë„ë¡ ì“°ê¸° í›„ ì§€ì—°",
 			"outsideWorkspace": {
-				"label": "워크스페이스 외부 파일 포함",
-				"description": "Roo가 승인 없이 현재 워크스페이스 외부의 파일을 생성하고 편집할 수 있도록 허용합니다."
+				"label": "ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ íŒŒì¼ í¬í•¨",
+				"description": "Rooê°€ ìŠ¹ì¸ ì—†ì´ í˜„ìž¬ ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì™¸ë¶€ì˜ íŒŒì¼ì„ ìƒì„±í•˜ê³  íŽ¸ì§‘í•  ìˆ˜ ìžˆë„ë¡ í—ˆìš©í•©ë‹ˆë‹¤."
 			},
 			"protected": {
-				"label": "보호된 파일 포함",
-				"description": "Roo가 보호된 파일(.rooignore 및 .roo/ 구성 파일 등)을 승인 없이 생성하고 편집할 수 있도록 허용합니다."
+				"label": "ë³´í˜¸ëœ íŒŒì¼ í¬í•¨",
+				"description": "Rooê°€ ë³´í˜¸ëœ íŒŒì¼(.rooignore ë° .roo/ êµ¬ì„± íŒŒì¼ ë“±)ì„ ìŠ¹ì¸ ì—†ì´ ìƒì„±í•˜ê³  íŽ¸ì§‘í•  ìˆ˜ ìžˆë„ë¡ í—ˆìš©í•©ë‹ˆë‹¤."
 			}
 		},
 		"browser": {
-			"label": "브라우저",
-			"description": "승인 없이 자동으로 브라우저 작업 수행 — 참고: 모델이 컴퓨터 사용을 지원할 때만 적용됩니다"
+			"label": "ë¸Œë¼ìš°ì €",
+			"description": "ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ ë¸Œë¼ìš°ì € ìž‘ì—… ìˆ˜í–‰ â€” ì°¸ê³ : ëª¨ë¸ì´ ì»´í“¨í„° ì‚¬ìš©ì„ ì§€ì›í•  ë•Œë§Œ ì ìš©ë©ë‹ˆë‹¤"
 		},
 		"retry": {
-			"label": "재시도",
-			"description": "서버가 오류 응답을 반환할 때 자동으로 실패한 API 요청 재시도",
-			"delayLabel": "요청 재시도 전 지연"
+			"label": "ìž¬ì‹œë„",
+			"description": "ì„œë²„ê°€ ì˜¤ë¥˜ ì‘ë‹µì„ ë°˜í™˜í•  ë•Œ ìžë™ìœ¼ë¡œ ì‹¤íŒ¨í•œ API ìš”ì²­ ìž¬ì‹œë„",
+			"delayLabel": "ìš”ì²­ ìž¬ì‹œë„ ì „ ì§€ì—°"
 		},
 		"mcp": {
 			"label": "MCP",
-			"description": "MCP 서버 보기에서 개별 MCP 도구의 자동 승인 활성화(이 설정과 도구의 \"항상 허용\" 체크박스 모두 필요)"
+			"description": "MCP ì„œë²„ ë³´ê¸°ì—ì„œ ê°œë³„ MCP ë„êµ¬ì˜ ìžë™ ìŠ¹ì¸ í™œì„±í™”(ì´ ì„¤ì •ê³¼ ë„êµ¬ì˜ \"í•­ìƒ í—ˆìš©\" ì²´í¬ë°•ìŠ¤ ëª¨ë‘ í•„ìš”)"
 		},
 		"modeSwitch": {
-			"label": "모드",
-			"description": "승인 없이 자동으로 다양한 모드 간 전환"
+			"label": "ëª¨ë“œ",
+			"description": "ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ ë‹¤ì–‘í•œ ëª¨ë“œ ê°„ ì „í™˜"
 		},
 		"subtasks": {
-			"label": "하위 작업",
-			"description": "승인 없이 하위 작업 생성 및 완료 허용"
+			"label": "í•˜ìœ„ ìž‘ì—…",
+			"description": "ìŠ¹ì¸ ì—†ì´ í•˜ìœ„ ìž‘ì—… ìƒì„± ë° ì™„ë£Œ í—ˆìš©"
 		},
 		"followupQuestions": {
-			"label": "질문",
-			"description": "설정된 시간이 지나면 후속 질문에 대한 첫 번째 제안 답변을 자동으로 선택합니다",
-			"timeoutLabel": "첫 번째 답변을 자동 선택하기 전 대기 시간"
+			"label": "ì§ˆë¬¸",
+			"description": "ì„¤ì •ëœ ì‹œê°„ì´ ì§€ë‚˜ë©´ í›„ì† ì§ˆë¬¸ì— ëŒ€í•œ ì²« ë²ˆì§¸ ì œì•ˆ ë‹µë³€ì„ ìžë™ìœ¼ë¡œ ì„ íƒí•©ë‹ˆë‹¤",
+			"timeoutLabel": "ì²« ë²ˆì§¸ ë‹µë³€ì„ ìžë™ ì„ íƒí•˜ê¸° ì „ ëŒ€ê¸° ì‹œê°„"
 		},
 		"execute": {
-			"label": "실행",
-			"description": "승인 없이 자동으로 허용된 터미널 명령 실행",
-			"allowedCommands": "허용된 자동 실행 명령",
-			"allowedCommandsDescription": "\"실행 작업 항상 승인\"이 활성화되었을 때 자동 실행될 수 있는 명령 접두사. 모든 명령을 허용하려면 * 추가(주의해서 사용)",
-			"deniedCommands": "거부된 명령",
-			"deniedCommandsDescription": "승인을 요청하지 않고 자동으로 거부될 명령 접두사. 허용된 명령과 충돌하는 경우 가장 긴 접두사 일치가 우선됩니다. 모든 명령을 거부하려면 * 추가",
-			"commandPlaceholder": "명령 접두사 입력(예: 'git ')",
-			"deniedCommandPlaceholder": "거부할 명령 접두사 입력(예: 'rm -rf')",
-			"addButton": "추가",
-			"autoDenied": "접두사 `{{prefix}}`를 가진 명령어는 사용자에 의해 금지되었습니다. 다른 명령어를 실행하여 이 제한을 우회하지 마세요."
+			"label": "ì‹¤í–‰",
+			"description": "ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ í—ˆìš©ëœ í„°ë¯¸ë„ ëª…ë ¹ ì‹¤í–‰",
+			"allowedCommands": "í—ˆìš©ëœ ìžë™ ì‹¤í–‰ ëª…ë ¹",
+			"allowedCommandsDescription": "\"ì‹¤í–‰ ìž‘ì—… í•­ìƒ ìŠ¹ì¸\"ì´ í™œì„±í™”ë˜ì—ˆì„ ë•Œ ìžë™ ì‹¤í–‰ë  ìˆ˜ ìžˆëŠ” ëª…ë ¹ ì ‘ë‘ì‚¬. ëª¨ë“  ëª…ë ¹ì„ í—ˆìš©í•˜ë ¤ë©´ * ì¶”ê°€(ì£¼ì˜í•´ì„œ ì‚¬ìš©)",
+			"deniedCommands": "ê±°ë¶€ëœ ëª…ë ¹",
+			"deniedCommandsDescription": "ìŠ¹ì¸ì„ ìš”ì²­í•˜ì§€ ì•Šê³  ìžë™ìœ¼ë¡œ ê±°ë¶€ë  ëª…ë ¹ ì ‘ë‘ì‚¬. í—ˆìš©ëœ ëª…ë ¹ê³¼ ì¶©ëŒí•˜ëŠ” ê²½ìš° ê°€ìž¥ ê¸´ ì ‘ë‘ì‚¬ ì¼ì¹˜ê°€ ìš°ì„ ë©ë‹ˆë‹¤. ëª¨ë“  ëª…ë ¹ì„ ê±°ë¶€í•˜ë ¤ë©´ * ì¶”ê°€",
+			"commandPlaceholder": "ëª…ë ¹ ì ‘ë‘ì‚¬ ìž…ë ¥(ì˜ˆ: \u0027git \u0027)",
+			"deniedCommandPlaceholder": "ê±°ë¶€í•  ëª…ë ¹ ì ‘ë‘ì‚¬ ìž…ë ¥(ì˜ˆ: \u0027rm -rf\u0027)",
+			"addButton": "ì¶”ê°€",
+			"autoDenied": "ì ‘ë‘ì‚¬ `{{prefix}}`ë¥¼ ê°€ì§„ ëª…ë ¹ì–´ëŠ” ì‚¬ìš©ìžì— ì˜í•´ ê¸ˆì§€ë˜ì—ˆìŠµë‹ˆë‹¤. ë‹¤ë¥¸ ëª…ë ¹ì–´ë¥¼ ì‹¤í–‰í•˜ì—¬ ì´ ì œí•œì„ ìš°íšŒí•˜ì§€ ë§ˆì„¸ìš”."
 		},
 		"updateTodoList": {
 			"label": "Todo",
-			"description": "승인 없이 자동으로 할 일 목록이 업데이트됩니다"
+			"description": "ìŠ¹ì¸ ì—†ì´ ìžë™ìœ¼ë¡œ í•  ì¼ ëª©ë¡ì´ ì—…ë°ì´íŠ¸ë©ë‹ˆë‹¤"
 		},
 		"apiRequestLimit": {
-			"title": "최대 요청 수",
-			"description": "작업을 계속하기 위한 승인을 요청하기 전에 자동으로 이 수의 API 요청을 수행합니다.",
-			"unlimited": "무제한"
+			"title": "ìµœëŒ€ ìš”ì²­ ìˆ˜",
+			"description": "ìž‘ì—…ì„ ê³„ì†í•˜ê¸° ìœ„í•œ ìŠ¹ì¸ì„ ìš”ì²­í•˜ê¸° ì „ì— ìžë™ìœ¼ë¡œ ì´ ìˆ˜ì˜ API ìš”ì²­ì„ ìˆ˜í–‰í•©ë‹ˆë‹¤.",
+			"unlimited": "ë¬´ì œí•œ"
 		},
-		"selectOptionsFirst": "자동 승인을 활성화하려면 아래에서 하나 이상의 옵션을 선택하세요",
+		"selectOptionsFirst": "ìžë™ ìŠ¹ì¸ì„ í™œì„±í™”í•˜ë ¤ë©´ ì•„ëž˜ì—ì„œ í•˜ë‚˜ ì´ìƒì˜ ì˜µì…˜ì„ ì„ íƒí•˜ì„¸ìš”",
 		"apiCostLimit": {
-			"unlimited": "무제한",
-			"title": "최대 비용"
+			"unlimited": "ë¬´ì œí•œ",
+			"title": "ìµœëŒ€ ë¹„ìš©"
 		},
 		"maxLimits": {
-			"description": "이러한 한도까지 자동으로 요청을 수행한 후, 계속 진행하기 위한 승인을 요청합니다."
+			"description": "ì´ëŸ¬í•œ í•œë„ê¹Œì§€ ìžë™ìœ¼ë¡œ ìš”ì²­ì„ ìˆ˜í–‰í•œ í›„, ê³„ì† ì§„í–‰í•˜ê¸° ìœ„í•œ ìŠ¹ì¸ì„ ìš”ì²­í•©ë‹ˆë‹¤."
 		}
 	},
 	"providers": {
-		"providerDocumentation": "{{provider}} 문서",
-		"configProfile": "구성 프로필",
-		"description": "다양한 API 구성을 저장하여 제공자와 설정 간에 빠르게 전환할 수 있습니다.",
-		"apiProvider": "API 제공자",
-		"model": "모델",
-		"nameEmpty": "이름은 비워둘 수 없습니다",
-		"nameExists": "이 이름의 프로필이 이미 존재합니다",
-		"deleteProfile": "프로필 삭제",
-		"invalidArnFormat": "잘못된 ARN 형식입니다. 위의 예시를 확인하세요.",
-		"enterNewName": "새 이름 입력",
-		"addProfile": "프로필 추가",
-		"renameProfile": "프로필 이름 변경",
-		"newProfile": "새 구성 프로필",
-		"enterProfileName": "프로필 이름 입력",
-		"createProfile": "프로필 생성",
-		"cannotDeleteOnlyProfile": "유일한 프로필은 삭제할 수 없습니다",
-		"searchPlaceholder": "프로필 검색",
-		"searchProviderPlaceholder": "공급자 검색",
-		"noProviderMatchFound": "공급자를 찾을 수 없습니다",
-		"noMatchFound": "일치하는 프로필이 없습니다",
-		"vscodeLmDescription": "VS Code 언어 모델 API를 사용하면 GitHub Copilot을 포함한 기타 VS Code 확장 프로그램이 제공하는 모델을 실행할 수 있습니다. 시작하려면 VS Code 마켓플레이스에서 Copilot 및 Copilot Chat 확장 프로그램을 설치하는 것이 가장 쉽습니다.",
-		"awsCustomArnUse": "사용하려는 모델의 유효한 Amazon Bedrock ARN을 입력하세요. 형식 예시:",
-		"awsCustomArnDesc": "ARN의 리전이 위에서 선택한 AWS 리전과 일치하는지 확인하세요.",
-		"openRouterApiKey": "OpenRouter API 키",
-		"getOpenRouterApiKey": "OpenRouter API 키 받기",
-		"vercelAiGatewayApiKey": "Vercel AI Gateway API 키",
-		"getVercelAiGatewayApiKey": "Vercel AI Gateway API 키 받기",
-		"apiKeyStorageNotice": "API 키는 VSCode의 보안 저장소에 안전하게 저장됩니다",
-		"useCustomBaseUrl": "사용자 정의 기본 URL 사용",
-		"useReasoning": "추론 활성화",
-		"useHostHeader": "사용자 정의 Host 헤더 사용",
-		"useLegacyFormat": "레거시 OpenAI API 형식 사용",
-		"customHeaders": "사용자 정의 헤더",
-		"headerName": "헤더 이름",
-		"headerValue": "헤더 값",
-		"noCustomHeaders": "정의된 사용자 정의 헤더가 없습니다. + 버튼을 클릭하여 추가하세요.",
-		"requestyApiKey": "Requesty API 키",
+		"providerDocumentation": "{{provider}} ë¬¸ì„œ",
+		"configProfile": "êµ¬ì„± í”„ë¡œí•„",
+		"description": "ë‹¤ì–‘í•œ API êµ¬ì„±ì„ ì €ìž¥í•˜ì—¬ ì œê³µìžì™€ ì„¤ì • ê°„ì— ë¹ ë¥´ê²Œ ì „í™˜í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+		"apiProvider": "API ì œê³µìž",
+		"model": "ëª¨ë¸",
+		"nameEmpty": "ì´ë¦„ì€ ë¹„ì›Œë‘˜ ìˆ˜ ì—†ìŠµë‹ˆë‹¤",
+		"nameExists": "ì´ ì´ë¦„ì˜ í”„ë¡œí•„ì´ ì´ë¯¸ ì¡´ìž¬í•©ë‹ˆë‹¤",
+		"deleteProfile": "í”„ë¡œí•„ ì‚­ì œ",
+		"invalidArnFormat": "ìž˜ëª»ëœ ARN í˜•ì‹ìž…ë‹ˆë‹¤. ìœ„ì˜ ì˜ˆì‹œë¥¼ í™•ì¸í•˜ì„¸ìš”.",
+		"enterNewName": "ìƒˆ ì´ë¦„ ìž…ë ¥",
+		"addProfile": "í”„ë¡œí•„ ì¶”ê°€",
+		"renameProfile": "í”„ë¡œí•„ ì´ë¦„ ë³€ê²½",
+		"newProfile": "ìƒˆ êµ¬ì„± í”„ë¡œí•„",
+		"enterProfileName": "í”„ë¡œí•„ ì´ë¦„ ìž…ë ¥",
+		"createProfile": "í”„ë¡œí•„ ìƒì„±",
+		"cannotDeleteOnlyProfile": "ìœ ì¼í•œ í”„ë¡œí•„ì€ ì‚­ì œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤",
+		"searchPlaceholder": "í”„ë¡œí•„ ê²€ìƒ‰",
+		"searchProviderPlaceholder": "ê³µê¸‰ìž ê²€ìƒ‰",
+		"noProviderMatchFound": "ê³µê¸‰ìžë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤",
+		"noMatchFound": "ì¼ì¹˜í•˜ëŠ” í”„ë¡œí•„ì´ ì—†ìŠµë‹ˆë‹¤",
+		"vscodeLmDescription": "VS Code ì–¸ì–´ ëª¨ë¸ APIë¥¼ ì‚¬ìš©í•˜ë©´ GitHub Copilotì„ í¬í•¨í•œ ê¸°íƒ€ VS Code í™•ìž¥ í”„ë¡œê·¸ëž¨ì´ ì œê³µí•˜ëŠ” ëª¨ë¸ì„ ì‹¤í–‰í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì‹œìž‘í•˜ë ¤ë©´ VS Code ë§ˆì¼“í”Œë ˆì´ìŠ¤ì—ì„œ Copilot ë° Copilot Chat í™•ìž¥ í”„ë¡œê·¸ëž¨ì„ ì„¤ì¹˜í•˜ëŠ” ê²ƒì´ ê°€ìž¥ ì‰½ìŠµë‹ˆë‹¤.",
+		"awsCustomArnUse": "ì‚¬ìš©í•˜ë ¤ëŠ” ëª¨ë¸ì˜ ìœ íš¨í•œ Amazon Bedrock ARNì„ ìž…ë ¥í•˜ì„¸ìš”. í˜•ì‹ ì˜ˆì‹œ:",
+		"awsCustomArnDesc": "ARNì˜ ë¦¬ì „ì´ ìœ„ì—ì„œ ì„ íƒí•œ AWS ë¦¬ì „ê³¼ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸í•˜ì„¸ìš”.",
+		"openRouterApiKey": "OpenRouter API í‚¤",
+		"getOpenRouterApiKey": "OpenRouter API í‚¤ ë°›ê¸°",
+		"vercelAiGatewayApiKey": "Vercel AI Gateway API í‚¤",
+		"getVercelAiGatewayApiKey": "Vercel AI Gateway API í‚¤ ë°›ê¸°",
+		"apiKeyStorageNotice": "API í‚¤ëŠ” VSCodeì˜ ë³´ì•ˆ ì €ìž¥ì†Œì— ì•ˆì „í•˜ê²Œ ì €ìž¥ë©ë‹ˆë‹¤",
+		"useCustomBaseUrl": "ì‚¬ìš©ìž ì •ì˜ ê¸°ë³¸ URL ì‚¬ìš©",
+		"useReasoning": "ì¶”ë¡  í™œì„±í™”",
+		"useHostHeader": "ì‚¬ìš©ìž ì •ì˜ Host í—¤ë” ì‚¬ìš©",
+		"useLegacyFormat": "ë ˆê±°ì‹œ OpenAI API í˜•ì‹ ì‚¬ìš©",
+		"customHeaders": "ì‚¬ìš©ìž ì •ì˜ í—¤ë”",
+		"headerName": "í—¤ë” ì´ë¦„",
+		"headerValue": "í—¤ë” ê°’",
+		"noCustomHeaders": "ì •ì˜ëœ ì‚¬ìš©ìž ì •ì˜ í—¤ë”ê°€ ì—†ìŠµë‹ˆë‹¤. + ë²„íŠ¼ì„ í´ë¦­í•˜ì—¬ ì¶”ê°€í•˜ì„¸ìš”.",
+		"requestyApiKey": "Requesty API í‚¤",
 		"refreshModels": {
-			"label": "모델 새로고침",
-			"hint": "최신 모델을 보려면 설정을 다시 열어주세요.",
-			"loading": "모델 목록 새로고침 중...",
-			"success": "모델 목록이 성공적으로 새로고침되었습니다!",
-			"error": "모델 목록 새로고침에 실패했습니다. 다시 시도해 주세요."
+			"label": "ëª¨ë¸ ìƒˆë¡œê³ ì¹¨",
+			"hint": "ìµœì‹  ëª¨ë¸ì„ ë³´ë ¤ë©´ ì„¤ì •ì„ ë‹¤ì‹œ ì—´ì–´ì£¼ì„¸ìš”.",
+			"loading": "ëª¨ë¸ ëª©ë¡ ìƒˆë¡œê³ ì¹¨ ì¤‘...",
+			"success": "ëª¨ë¸ ëª©ë¡ì´ ì„±ê³µì ìœ¼ë¡œ ìƒˆë¡œê³ ì¹¨ë˜ì—ˆìŠµë‹ˆë‹¤!",
+			"error": "ëª¨ë¸ ëª©ë¡ ìƒˆë¡œê³ ì¹¨ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤. ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”."
 		},
-		"getRequestyApiKey": "Requesty API 키 받기",
-		"getRequestyBaseUrl": "기본 URL",
-		"requestyUseCustomBaseUrl": "사용자 정의 기본 URL 사용",
-		"openRouterTransformsText": "프롬프트와 메시지 체인을 컨텍스트 크기로 압축 (<a>OpenRouter Transforms</a>)",
-		"anthropicApiKey": "Anthropic API 키",
-		"getAnthropicApiKey": "Anthropic API 키 받기",
-		"anthropicUseAuthToken": "X-Api-Key 대신 Authorization 헤더로 Anthropic API 키 전달",
-		"anthropic1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
-		"awsBedrock1MContextBetaLabel": "1M 컨텍스트 창 활성화 (베타)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4의 컨텍스트 창을 100만 토큰으로 확장",
-		"basetenApiKey": "Baseten API 키",
-		"getBasetenApiKey": "Baseten API 키 가져오기",
-		"cerebrasApiKey": "Cerebras API 키",
-		"getCerebrasApiKey": "Cerebras API 키 가져오기",
-		"chutesApiKey": "Chutes API 키",
-		"getChutesApiKey": "Chutes API 키 받기",
-		"fireworksApiKey": "Fireworks API 키",
-		"getFireworksApiKey": "Fireworks API 키 받기",
-		"featherlessApiKey": "Featherless API 키",
-		"getFeatherlessApiKey": "Featherless API 키 받기",
-		"ioIntelligenceApiKey": "IO Intelligence API 키",
-		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence API 키를 입력하세요",
-		"getIoIntelligenceApiKey": "IO Intelligence API 키 받기",
-		"deepSeekApiKey": "DeepSeek API 키",
-		"getDeepSeekApiKey": "DeepSeek API 키 받기",
-		"doubaoApiKey": "Doubao API 키",
-		"getDoubaoApiKey": "Doubao API 키 받기",
-		"moonshotApiKey": "Moonshot API 키",
-		"getMoonshotApiKey": "Moonshot API 키 받기",
-		"moonshotBaseUrl": "Moonshot 엔트리포인트",
-		"zaiApiKey": "Z AI API 키",
-		"getZaiApiKey": "Z AI API 키 받기",
-		"zaiEntrypoint": "Z AI 엔트리포인트",
-		"zaiEntrypointDescription": "위치에 따라 적절한 API 엔트리포인트를 선택하세요. 중국에 있다면 open.bigmodel.cn을 선택하세요. 그렇지 않으면 api.z.ai를 선택하세요.",
-		"minimaxApiKey": "MiniMax API 키",
-		"getMiniMaxApiKey": "MiniMax API 키 받기",
-		"minimaxBaseUrl": "MiniMax 엔트리포인트",
-		"geminiApiKey": "Gemini API 키",
-		"getGroqApiKey": "Groq API 키 받기",
-		"groqApiKey": "Groq API 키",
-		"getSambaNovaApiKey": "SambaNova API 키 받기",
-		"sambaNovaApiKey": "SambaNova API 키",
-		"getGeminiApiKey": "Gemini API 키 받기",
-		"getHuggingFaceApiKey": "Hugging Face API 키 받기",
-		"huggingFaceApiKey": "Hugging Face API 키",
-		"huggingFaceModelId": "모델 ID",
-		"huggingFaceLoading": "로딩 중...",
-		"huggingFaceModelsCount": "({{count}}개 모델)",
-		"huggingFaceSelectModel": "모델 선택...",
-		"huggingFaceSearchModels": "모델 검색...",
-		"huggingFaceNoModelsFound": "모델을 찾을 수 없음",
-		"huggingFaceProvider": "제공자",
-		"huggingFaceProviderAuto": "자동",
-		"huggingFaceSelectProvider": "제공자 선택...",
-		"huggingFaceSearchProviders": "제공자 검색...",
-		"huggingFaceNoProvidersFound": "제공자를 찾을 수 없음",
-		"apiKey": "API 키",
-		"openAiApiKey": "OpenAI API 키",
-		"openAiBaseUrl": "기본 URL",
-		"getOpenAiApiKey": "OpenAI API 키 받기",
-		"mistralApiKey": "Mistral API 키",
-		"getMistralApiKey": "Mistral / Codestral API 키 받기",
-		"codestralBaseUrl": "Codestral 기본 URL (선택사항)",
-		"codestralBaseUrlDesc": "Codestral 모델의 대체 URL을 설정합니다.",
-		"xaiApiKey": "xAI API 키",
-		"getXaiApiKey": "xAI API 키 받기",
-		"litellmApiKey": "LiteLLM API 키",
-		"litellmBaseUrl": "LiteLLM 기본 URL",
-		"awsCredentials": "AWS 자격 증명",
-		"awsProfile": "AWS 프로필",
-		"awsApiKey": "Amazon Bedrock API 키",
-		"awsProfileName": "AWS 프로필 이름",
-		"awsAccessKey": "AWS 액세스 키",
-		"awsSecretKey": "AWS 시크릿 키",
-		"awsSessionToken": "AWS 세션 토큰",
-		"awsRegion": "AWS 리전",
-		"awsCrossRegion": "교차 리전 추론 사용",
-		"awsGlobalInference": "글로벌 추론 사용(최적의 AWS 리전 자동 선택)",
+		"getRequestyApiKey": "Requesty API í‚¤ ë°›ê¸°",
+		"getRequestyBaseUrl": "ê¸°ë³¸ URL",
+		"requestyUseCustomBaseUrl": "ì‚¬ìš©ìž ì •ì˜ ê¸°ë³¸ URL ì‚¬ìš©",
+		"openRouterTransformsText": "í”„ë¡¬í”„íŠ¸ì™€ ë©”ì‹œì§€ ì²´ì¸ì„ ì»¨í…ìŠ¤íŠ¸ í¬ê¸°ë¡œ ì••ì¶• (\u003ca\u003eOpenRouter Transforms\u003c/a\u003e)",
+		"anthropicApiKey": "Anthropic API í‚¤",
+		"getAnthropicApiKey": "Anthropic API í‚¤ ë°›ê¸°",
+		"anthropicUseAuthToken": "X-Api-Key ëŒ€ì‹  Authorization í—¤ë”ë¡œ Anthropic API í‚¤ ì „ë‹¬",
+		"anthropic1MContextBetaLabel": "1M ì»¨í…ìŠ¤íŠ¸ ì°½ í™œì„±í™” (ë² íƒ€)",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4ì˜ ì»¨í…ìŠ¤íŠ¸ ì°½ì„ 100ë§Œ í† í°ìœ¼ë¡œ í™•ìž¥",
+		"awsBedrock1MContextBetaLabel": "1M ì»¨í…ìŠ¤íŠ¸ ì°½ í™œì„±í™” (ë² íƒ€)",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4ì˜ ì»¨í…ìŠ¤íŠ¸ ì°½ì„ 100ë§Œ í† í°ìœ¼ë¡œ í™•ìž¥",
+		"basetenApiKey": "Baseten API í‚¤",
+		"getBasetenApiKey": "Baseten API í‚¤ ê°€ì ¸ì˜¤ê¸°",
+		"cerebrasApiKey": "Cerebras API í‚¤",
+		"getCerebrasApiKey": "Cerebras API í‚¤ ê°€ì ¸ì˜¤ê¸°",
+		"chutesApiKey": "Chutes API í‚¤",
+		"getChutesApiKey": "Chutes API í‚¤ ë°›ê¸°",
+		"fireworksApiKey": "Fireworks API í‚¤",
+		"getFireworksApiKey": "Fireworks API í‚¤ ë°›ê¸°",
+		"featherlessApiKey": "Featherless API í‚¤",
+		"getFeatherlessApiKey": "Featherless API í‚¤ ë°›ê¸°",
+		"ioIntelligenceApiKey": "IO Intelligence API í‚¤",
+		"ioIntelligenceApiKeyPlaceholder": "IO Intelligence API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
+		"getIoIntelligenceApiKey": "IO Intelligence API í‚¤ ë°›ê¸°",
+		"deepSeekApiKey": "DeepSeek API í‚¤",
+		"getDeepSeekApiKey": "DeepSeek API í‚¤ ë°›ê¸°",
+		"doubaoApiKey": "Doubao API í‚¤",
+		"getDoubaoApiKey": "Doubao API í‚¤ ë°›ê¸°",
+		"moonshotApiKey": "Moonshot API í‚¤",
+		"getMoonshotApiKey": "Moonshot API í‚¤ ë°›ê¸°",
+		"moonshotBaseUrl": "Moonshot ì—”íŠ¸ë¦¬í¬ì¸íŠ¸",
+		"zaiApiKey": "Z AI API í‚¤",
+		"getZaiApiKey": "Z AI API í‚¤ ë°›ê¸°",
+		"zaiEntrypoint": "Z AI ì—”íŠ¸ë¦¬í¬ì¸íŠ¸",
+		"zaiEntrypointDescription": "ìœ„ì¹˜ì— ë”°ë¼ ì ì ˆí•œ API ì—”íŠ¸ë¦¬í¬ì¸íŠ¸ë¥¼ ì„ íƒí•˜ì„¸ìš”. ì¤‘êµ­ì— ìžˆë‹¤ë©´ open.bigmodel.cnì„ ì„ íƒí•˜ì„¸ìš”. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ api.z.aië¥¼ ì„ íƒí•˜ì„¸ìš”.",
+		"minimaxApiKey": "MiniMax API í‚¤",
+		"getMiniMaxApiKey": "MiniMax API í‚¤ ë°›ê¸°",
+		"minimaxBaseUrl": "MiniMax ì—”íŠ¸ë¦¬í¬ì¸íŠ¸",
+		"geminiApiKey": "Gemini API í‚¤",
+		"getGroqApiKey": "Groq API í‚¤ ë°›ê¸°",
+		"groqApiKey": "Groq API í‚¤",
+		"getSambaNovaApiKey": "SambaNova API í‚¤ ë°›ê¸°",
+		"sambaNovaApiKey": "SambaNova API í‚¤",
+		"getGeminiApiKey": "Gemini API í‚¤ ë°›ê¸°",
+		"getHuggingFaceApiKey": "Hugging Face API í‚¤ ë°›ê¸°",
+		"huggingFaceApiKey": "Hugging Face API í‚¤",
+		"huggingFaceModelId": "ëª¨ë¸ ID",
+		"huggingFaceLoading": "ë¡œë”© ì¤‘...",
+		"huggingFaceModelsCount": "({{count}}ê°œ ëª¨ë¸)",
+		"huggingFaceSelectModel": "ëª¨ë¸ ì„ íƒ...",
+		"huggingFaceSearchModels": "ëª¨ë¸ ê²€ìƒ‰...",
+		"huggingFaceNoModelsFound": "ëª¨ë¸ì„ ì°¾ì„ ìˆ˜ ì—†ìŒ",
+		"huggingFaceProvider": "ì œê³µìž",
+		"huggingFaceProviderAuto": "ìžë™",
+		"huggingFaceSelectProvider": "ì œê³µìž ì„ íƒ...",
+		"huggingFaceSearchProviders": "ì œê³µìž ê²€ìƒ‰...",
+		"huggingFaceNoProvidersFound": "ì œê³µìžë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŒ",
+		"apiKey": "API í‚¤",
+		"openAiApiKey": "OpenAI API í‚¤",
+		"openAiBaseUrl": "ê¸°ë³¸ URL",
+		"getOpenAiApiKey": "OpenAI API í‚¤ ë°›ê¸°",
+		"mistralApiKey": "Mistral API í‚¤",
+		"getMistralApiKey": "Mistral / Codestral API í‚¤ ë°›ê¸°",
+		"codestralBaseUrl": "Codestral ê¸°ë³¸ URL (ì„ íƒì‚¬í•­)",
+		"codestralBaseUrlDesc": "Codestral ëª¨ë¸ì˜ ëŒ€ì²´ URLì„ ì„¤ì •í•©ë‹ˆë‹¤.",
+		"xaiApiKey": "xAI API í‚¤",
+		"getXaiApiKey": "xAI API í‚¤ ë°›ê¸°",
+		"litellmApiKey": "LiteLLM API í‚¤",
+		"litellmBaseUrl": "LiteLLM ê¸°ë³¸ URL",
+		"awsCredentials": "AWS ìžê²© ì¦ëª…",
+		"awsProfile": "AWS í”„ë¡œí•„",
+		"awsApiKey": "Amazon Bedrock API í‚¤",
+		"awsProfileName": "AWS í”„ë¡œí•„ ì´ë¦„",
+		"awsAccessKey": "AWS ì•¡ì„¸ìŠ¤ í‚¤",
+		"awsSecretKey": "AWS ì‹œí¬ë¦¿ í‚¤",
+		"awsSessionToken": "AWS ì„¸ì…˜ í† í°",
+		"awsRegion": "AWS ë¦¬ì „",
+		"awsCrossRegion": "êµì°¨ ë¦¬ì „ ì¶”ë¡  ì‚¬ìš©",
+		"awsGlobalInference": "ê¸€ë¡œë²Œ ì¶”ë¡  ì‚¬ìš©(ìµœì ì˜ AWS ë¦¬ì „ ìžë™ ì„ íƒ)",
 		"awsBedrockVpc": {
-			"useCustomVpcEndpoint": "사용자 지정 VPC 엔드포인트 사용",
-			"vpcEndpointUrlPlaceholder": "VPC 엔드포인트 URL 입력 (선택사항)",
-			"examples": "예시:"
+			"useCustomVpcEndpoint": "ì‚¬ìš©ìž ì§€ì • VPC ì—”ë“œí¬ì¸íŠ¸ ì‚¬ìš©",
+			"vpcEndpointUrlPlaceholder": "VPC ì—”ë“œí¬ì¸íŠ¸ URL ìž…ë ¥ (ì„ íƒì‚¬í•­)",
+			"examples": "ì˜ˆì‹œ:"
 		},
-		"enablePromptCaching": "프롬프트 캐시 활성화",
-		"enablePromptCachingTitle": "지원되는 모델의 성능을 향상시키고 비용을 절감하기 위해 프롬프트 캐시를 활성화합니다.",
-		"cacheUsageNote": "참고: 캐시 사용이 표시되지 않는 경우, 다른 모델을 선택한 다음 원하는 모델을 다시 선택해 보세요.",
-		"vscodeLmModel": "언어 모델",
-		"vscodeLmWarning": "참고: VS Code Language Model API를 통해 액세스되는 모델은 공급자가 래핑하거나 미세 조정했을 수 있어, 일반적인 공급자나 라우터에서 동일한 모델을 직접 사용할 때와 동작이 다를 수 있습니다. ‘Language Model’ 드롭다운의 모델을 사용하려면 먼저 해당 모델로 전환한 다음 Copilot Chat 프롬프트에서 ‘허용(수락)’을 클릭하세요. 그렇지 않으면 400 ‘The requested model is not supported’와 같은 오류가 발생할 수 있습니다.",
+		"enablePromptCaching": "í”„ë¡¬í”„íŠ¸ ìºì‹œ í™œì„±í™”",
+		"enablePromptCachingTitle": "ì§€ì›ë˜ëŠ” ëª¨ë¸ì˜ ì„±ëŠ¥ì„ í–¥ìƒì‹œí‚¤ê³  ë¹„ìš©ì„ ì ˆê°í•˜ê¸° ìœ„í•´ í”„ë¡¬í”„íŠ¸ ìºì‹œë¥¼ í™œì„±í™”í•©ë‹ˆë‹¤.",
+		"cacheUsageNote": "ì°¸ê³ : ìºì‹œ ì‚¬ìš©ì´ í‘œì‹œë˜ì§€ ì•ŠëŠ” ê²½ìš°, ë‹¤ë¥¸ ëª¨ë¸ì„ ì„ íƒí•œ ë‹¤ìŒ ì›í•˜ëŠ” ëª¨ë¸ì„ ë‹¤ì‹œ ì„ íƒí•´ ë³´ì„¸ìš”.",
+		"vscodeLmModel": "ì–¸ì–´ ëª¨ë¸",
+		"vscodeLmWarning": "ì°¸ê³ : VS Code Language Model APIë¥¼ í†µí•´ ì•¡ì„¸ìŠ¤ë˜ëŠ” ëª¨ë¸ì€ ê³µê¸‰ìžê°€ ëž˜í•‘í•˜ê±°ë‚˜ ë¯¸ì„¸ ì¡°ì •í–ˆì„ ìˆ˜ ìžˆì–´, ì¼ë°˜ì ì¸ ê³µê¸‰ìžë‚˜ ë¼ìš°í„°ì—ì„œ ë™ì¼í•œ ëª¨ë¸ì„ ì§ì ‘ ì‚¬ìš©í•  ë•Œì™€ ë™ìž‘ì´ ë‹¤ë¥¼ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. â€˜Language Modelâ€™ ë“œë¡­ë‹¤ìš´ì˜ ëª¨ë¸ì„ ì‚¬ìš©í•˜ë ¤ë©´ ë¨¼ì € í•´ë‹¹ ëª¨ë¸ë¡œ ì „í™˜í•œ ë‹¤ìŒ Copilot Chat í”„ë¡¬í”„íŠ¸ì—ì„œ â€˜í—ˆìš©(ìˆ˜ë½)â€™ì„ í´ë¦­í•˜ì„¸ìš”. ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ 400 â€˜The requested model is not supportedâ€™ì™€ ê°™ì€ ì˜¤ë¥˜ê°€ ë°œìƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
 		"geminiParameters": {
 			"urlContext": {
-				"title": "URL 컨텍스트 활성화",
-				"description": "응답을 생성할 때 추가 컨텍스트를 위해 Gemini가 URL에 액세스하고 처리할 수 있도록 합니다. 웹 콘텐츠 분석이 필요한 작업에 유용합니다."
+				"title": "URL ì»¨í…ìŠ¤íŠ¸ í™œì„±í™”",
+				"description": "ì‘ë‹µì„ ìƒì„±í•  ë•Œ ì¶”ê°€ ì»¨í…ìŠ¤íŠ¸ë¥¼ ìœ„í•´ Geminiê°€ URLì— ì•¡ì„¸ìŠ¤í•˜ê³  ì²˜ë¦¬í•  ìˆ˜ ìžˆë„ë¡ í•©ë‹ˆë‹¤. ì›¹ ì½˜í…ì¸  ë¶„ì„ì´ í•„ìš”í•œ ìž‘ì—…ì— ìœ ìš©í•©ë‹ˆë‹¤."
 			},
 			"groundingSearch": {
-				"title": "Google 검색과 함께 근거 지정 활성화",
-				"description": "Gemini가 최신 정보를 얻기 위해 Google을 검색하고 응답을 실시간 데이터에 근거하도록 합니다. 최신 정보가 필요한 쿼리에 유용합니다."
+				"title": "Google ê²€ìƒ‰ê³¼ í•¨ê»˜ ê·¼ê±° ì§€ì • í™œì„±í™”",
+				"description": "Geminiê°€ ìµœì‹  ì •ë³´ë¥¼ ì–»ê¸° ìœ„í•´ Googleì„ ê²€ìƒ‰í•˜ê³  ì‘ë‹µì„ ì‹¤ì‹œê°„ ë°ì´í„°ì— ê·¼ê±°í•˜ë„ë¡ í•©ë‹ˆë‹¤. ìµœì‹  ì •ë³´ê°€ í•„ìš”í•œ ì¿¼ë¦¬ì— ìœ ìš©í•©ë‹ˆë‹¤."
 			}
 		},
 		"googleCloudSetup": {
-			"title": "Google Cloud Vertex AI를 사용하려면:",
-			"step1": "1. Google Cloud 계정을 만들고, Vertex AI API를 활성화하고, 원하는 Claude 모델을 활성화하세요.",
-			"step2": "2. Google Cloud CLI를 설치하고 애플리케이션 기본 자격 증명을 구성하세요.",
-			"step3": "3. 또는 자격 증명이 있는 서비스 계정을 만드세요."
+			"title": "Google Cloud Vertex AIë¥¼ ì‚¬ìš©í•˜ë ¤ë©´:",
+			"step1": "1. Google Cloud ê³„ì •ì„ ë§Œë“¤ê³ , Vertex AI APIë¥¼ í™œì„±í™”í•˜ê³ , ì›í•˜ëŠ” Claude ëª¨ë¸ì„ í™œì„±í™”í•˜ì„¸ìš”.",
+			"step2": "2. Google Cloud CLIë¥¼ ì„¤ì¹˜í•˜ê³  ì• í”Œë¦¬ì¼€ì´ì…˜ ê¸°ë³¸ ìžê²© ì¦ëª…ì„ êµ¬ì„±í•˜ì„¸ìš”.",
+			"step3": "3. ë˜ëŠ” ìžê²© ì¦ëª…ì´ ìžˆëŠ” ì„œë¹„ìŠ¤ ê³„ì •ì„ ë§Œë“œì„¸ìš”."
 		},
-		"googleCloudCredentials": "Google Cloud 자격 증명",
-		"googleCloudKeyFile": "Google Cloud 키 파일 경로",
-		"googleCloudProjectId": "Google Cloud 프로젝트 ID",
-		"googleCloudRegion": "Google Cloud 리전",
+		"googleCloudCredentials": "Google Cloud ìžê²© ì¦ëª…",
+		"googleCloudKeyFile": "Google Cloud í‚¤ íŒŒì¼ ê²½ë¡œ",
+		"googleCloudProjectId": "Google Cloud í”„ë¡œì íŠ¸ ID",
+		"googleCloudRegion": "Google Cloud ë¦¬ì „",
 		"lmStudio": {
-			"baseUrl": "기본 URL (선택사항)",
-			"modelId": "모델 ID",
-			"speculativeDecoding": "추론 디코딩 활성화",
-			"draftModelId": "초안 모델 ID",
-			"draftModelDesc": "추론 디코딩이 올바르게 작동하려면 초안 모델이 동일한 모델 패밀리에서 와야 합니다.",
-			"selectDraftModel": "초안 모델 선택",
-			"noModelsFound": "초안 모델을 찾을 수 없습니다. LM Studio가 서버 모드로 실행 중인지 확인하세요.",
-			"description": "LM Studio를 사용하면 컴퓨터에서 로컬로 모델을 실행할 수 있습니다. 시작하는 방법은 <a>빠른 시작 가이드</a>를 참조하세요. 이 확장 프로그램과 함께 사용하려면 LM Studio의 <b>로컬 서버</b> 기능도 시작해야 합니다. <span>참고:</span> Roo Code는 복잡한 프롬프트를 사용하며 Claude 모델에서 가장 잘 작동합니다. 덜 강력한 모델은 예상대로 작동하지 않을 수 있습니다."
+			"baseUrl": "ê¸°ë³¸ URL (ì„ íƒì‚¬í•­)",
+			"modelId": "ëª¨ë¸ ID",
+			"speculativeDecoding": "ì¶”ë¡  ë””ì½”ë”© í™œì„±í™”",
+			"draftModelId": "ì´ˆì•ˆ ëª¨ë¸ ID",
+			"draftModelDesc": "ì¶”ë¡  ë””ì½”ë”©ì´ ì˜¬ë°”ë¥´ê²Œ ìž‘ë™í•˜ë ¤ë©´ ì´ˆì•ˆ ëª¨ë¸ì´ ë™ì¼í•œ ëª¨ë¸ íŒ¨ë°€ë¦¬ì—ì„œ ì™€ì•¼ í•©ë‹ˆë‹¤.",
+			"selectDraftModel": "ì´ˆì•ˆ ëª¨ë¸ ì„ íƒ",
+			"noModelsFound": "ì´ˆì•ˆ ëª¨ë¸ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. LM Studioê°€ ì„œë²„ ëª¨ë“œë¡œ ì‹¤í–‰ ì¤‘ì¸ì§€ í™•ì¸í•˜ì„¸ìš”.",
+			"description": "LM Studioë¥¼ ì‚¬ìš©í•˜ë©´ ì»´í“¨í„°ì—ì„œ ë¡œì»¬ë¡œ ëª¨ë¸ì„ ì‹¤í–‰í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì‹œìž‘í•˜ëŠ” ë°©ë²•ì€ \u003ca\u003eë¹ ë¥¸ ì‹œìž‘ ê°€ì´ë“œ\u003c/a\u003eë¥¼ ì°¸ì¡°í•˜ì„¸ìš”. ì´ í™•ìž¥ í”„ë¡œê·¸ëž¨ê³¼ í•¨ê»˜ ì‚¬ìš©í•˜ë ¤ë©´ LM Studioì˜ \u003cb\u003eë¡œì»¬ ì„œë²„\u003c/b\u003e ê¸°ëŠ¥ë„ ì‹œìž‘í•´ì•¼ í•©ë‹ˆë‹¤. \u003cspan\u003eì°¸ê³ :\u003c/span\u003e Roo CodeëŠ” ë³µìž¡í•œ í”„ë¡¬í”„íŠ¸ë¥¼ ì‚¬ìš©í•˜ë©° Claude ëª¨ë¸ì—ì„œ ê°€ìž¥ ìž˜ ìž‘ë™í•©ë‹ˆë‹¤. ëœ ê°•ë ¥í•œ ëª¨ë¸ì€ ì˜ˆìƒëŒ€ë¡œ ìž‘ë™í•˜ì§€ ì•Šì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"ollama": {
-			"baseUrl": "기본 URL (선택사항)",
-			"modelId": "모델 ID",
-			"apiKey": "Ollama API 키",
-			"apiKeyHelp": "인증된 Ollama 인스턴스나 클라우드 서비스용 선택적 API 키. 로컬 설치의 경우 비워두세요.",
-			"numCtx": "컨텍스트 창 크기(num_ctx)",
-			"numCtxHelp": "모델의 기본 컨텍스트 창 크기를 재정의합니다. 모델의 Modelfile 구성을 사용하려면 비워 둡니다. 최소값은 128입니다.",
-			"description": "Ollama를 사용하면 컴퓨터에서 로컬로 모델을 실행할 수 있습니다. 시작하는 방법은 빠른 시작 가이드를 참조하세요.",
-			"warning": "참고: Roo Code는 복잡한 프롬프트를 사용하며 Claude 모델에서 가장 잘 작동합니다. 덜 강력한 모델은 예상대로 작동하지 않을 수 있습니다."
+			"baseUrl": "ê¸°ë³¸ URL (ì„ íƒì‚¬í•­)",
+			"modelId": "ëª¨ë¸ ID",
+			"apiKey": "Ollama API í‚¤",
+			"apiKeyHelp": "ì¸ì¦ëœ Ollama ì¸ìŠ¤í„´ìŠ¤ë‚˜ í´ë¼ìš°ë“œ ì„œë¹„ìŠ¤ìš© ì„ íƒì  API í‚¤. ë¡œì»¬ ì„¤ì¹˜ì˜ ê²½ìš° ë¹„ì›Œë‘ì„¸ìš”.",
+			"numCtx": "ì»¨í…ìŠ¤íŠ¸ ì°½ í¬ê¸°(num_ctx)",
+			"numCtxHelp": "ëª¨ë¸ì˜ ê¸°ë³¸ ì»¨í…ìŠ¤íŠ¸ ì°½ í¬ê¸°ë¥¼ ìž¬ì •ì˜í•©ë‹ˆë‹¤. ëª¨ë¸ì˜ Modelfile êµ¬ì„±ì„ ì‚¬ìš©í•˜ë ¤ë©´ ë¹„ì›Œ ë‘¡ë‹ˆë‹¤. ìµœì†Œê°’ì€ 128ìž…ë‹ˆë‹¤.",
+			"description": "Ollamaë¥¼ ì‚¬ìš©í•˜ë©´ ì»´í“¨í„°ì—ì„œ ë¡œì»¬ë¡œ ëª¨ë¸ì„ ì‹¤í–‰í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì‹œìž‘í•˜ëŠ” ë°©ë²•ì€ ë¹ ë¥¸ ì‹œìž‘ ê°€ì´ë“œë¥¼ ì°¸ì¡°í•˜ì„¸ìš”.",
+			"warning": "ì°¸ê³ : Roo CodeëŠ” ë³µìž¡í•œ í”„ë¡¬í”„íŠ¸ë¥¼ ì‚¬ìš©í•˜ë©° Claude ëª¨ë¸ì—ì„œ ê°€ìž¥ ìž˜ ìž‘ë™í•©ë‹ˆë‹¤. ëœ ê°•ë ¥í•œ ëª¨ë¸ì€ ì˜ˆìƒëŒ€ë¡œ ìž‘ë™í•˜ì§€ ì•Šì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
-		"unboundApiKey": "Unbound API 키",
-		"getUnboundApiKey": "Unbound API 키 받기",
-		"unboundRefreshModelsSuccess": "모델 목록이 업데이트되었습니다! 이제 최신 모델에서 선택할 수 있습니다.",
-		"unboundInvalidApiKey": "잘못된 API 키입니다. API 키를 확인하고 다시 시도해 주세요.",
+		"unboundApiKey": "Unbound API í‚¤",
+		"getUnboundApiKey": "Unbound API í‚¤ ë°›ê¸°",
+		"unboundRefreshModelsSuccess": "ëª¨ë¸ ëª©ë¡ì´ ì—…ë°ì´íŠ¸ë˜ì—ˆìŠµë‹ˆë‹¤! ì´ì œ ìµœì‹  ëª¨ë¸ì—ì„œ ì„ íƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+		"unboundInvalidApiKey": "ìž˜ëª»ëœ API í‚¤ìž…ë‹ˆë‹¤. API í‚¤ë¥¼ í™•ì¸í•˜ê³  ë‹¤ì‹œ ì‹œë„í•´ ì£¼ì„¸ìš”.",
 		"humanRelay": {
-			"description": "API 키가 필요하지 않지만, 사용자가 웹 채팅 AI에 정보를 복사하여 붙여넣어야 합니다.",
-			"instructions": "사용 중에 대화 상자가 나타나고 현재 메시지가 자동으로 클립보드에 복사됩니다. 이를 웹 버전 AI(예: ChatGPT 또는 Claude)에 붙여넣은 다음, AI의 응답을 대화 상자에 복사하고 확인 버튼을 클릭해야 합니다."
+			"description": "API í‚¤ê°€ í•„ìš”í•˜ì§€ ì•Šì§€ë§Œ, ì‚¬ìš©ìžê°€ ì›¹ ì±„íŒ… AIì— ì •ë³´ë¥¼ ë³µì‚¬í•˜ì—¬ ë¶™ì—¬ë„£ì–´ì•¼ í•©ë‹ˆë‹¤.",
+			"instructions": "ì‚¬ìš© ì¤‘ì— ëŒ€í™” ìƒìžê°€ ë‚˜íƒ€ë‚˜ê³  í˜„ìž¬ ë©”ì‹œì§€ê°€ ìžë™ìœ¼ë¡œ í´ë¦½ë³´ë“œì— ë³µì‚¬ë©ë‹ˆë‹¤. ì´ë¥¼ ì›¹ ë²„ì „ AI(ì˜ˆ: ChatGPT ë˜ëŠ” Claude)ì— ë¶™ì—¬ë„£ì€ ë‹¤ìŒ, AIì˜ ì‘ë‹µì„ ëŒ€í™” ìƒìžì— ë³µì‚¬í•˜ê³  í™•ì¸ ë²„íŠ¼ì„ í´ë¦­í•´ì•¼ í•©ë‹ˆë‹¤."
 		},
 		"roo": {
-			"authenticatedMessage": "Roo Code Cloud 계정을 통해 안전하게 인증되었습니다.",
-			"connectButton": "Roo Code Cloud에 연결"
+			"authenticatedMessage": "Roo Code Cloud ê³„ì •ì„ í†µí•´ ì•ˆì „í•˜ê²Œ ì¸ì¦ë˜ì—ˆìŠµë‹ˆë‹¤.",
+			"connectButton": "Roo Code Cloudì— ì—°ê²°"
 		},
 		"openRouter": {
 			"providerRouting": {
-				"title": "OpenRouter 제공자 라우팅",
-				"description": "OpenRouter는 귀하의 모델에 가장 적합한 사용 가능한 제공자에게 요청을 전달합니다. 기본적으로 요청은 가동 시간을 최대화하기 위해 상위 제공자 간에 부하 분산됩니다. 그러나 이 모델에 사용할 특정 제공자를 선택할 수 있습니다.",
-				"learnMore": "제공자 라우팅에 대해 자세히 알아보기"
+				"title": "OpenRouter ì œê³µìž ë¼ìš°íŒ…",
+				"description": "OpenRouterëŠ” ê·€í•˜ì˜ ëª¨ë¸ì— ê°€ìž¥ ì í•©í•œ ì‚¬ìš© ê°€ëŠ¥í•œ ì œê³µìžì—ê²Œ ìš”ì²­ì„ ì „ë‹¬í•©ë‹ˆë‹¤. ê¸°ë³¸ì ìœ¼ë¡œ ìš”ì²­ì€ ê°€ë™ ì‹œê°„ì„ ìµœëŒ€í™”í•˜ê¸° ìœ„í•´ ìƒìœ„ ì œê³µìž ê°„ì— ë¶€í•˜ ë¶„ì‚°ë©ë‹ˆë‹¤. ê·¸ëŸ¬ë‚˜ ì´ ëª¨ë¸ì— ì‚¬ìš©í•  íŠ¹ì • ì œê³µìžë¥¼ ì„ íƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+				"learnMore": "ì œê³µìž ë¼ìš°íŒ…ì— ëŒ€í•´ ìžì„¸ížˆ ì•Œì•„ë³´ê¸°"
 			}
 		},
 		"customModel": {
-			"capabilities": "사용자 정의 OpenAI 호환 모델의 기능과 가격을 구성하세요. 모델 기능이 Roo Code의 성능에 영향을 미칠 수 있으므로 신중하게 지정하세요.",
+			"capabilities": "ì‚¬ìš©ìž ì •ì˜ OpenAI í˜¸í™˜ ëª¨ë¸ì˜ ê¸°ëŠ¥ê³¼ ê°€ê²©ì„ êµ¬ì„±í•˜ì„¸ìš”. ëª¨ë¸ ê¸°ëŠ¥ì´ Roo Codeì˜ ì„±ëŠ¥ì— ì˜í–¥ì„ ë¯¸ì¹  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì‹ ì¤‘í•˜ê²Œ ì§€ì •í•˜ì„¸ìš”.",
 			"maxTokens": {
-				"label": "최대 출력 토큰",
-				"description": "모델이 응답에서 생성할 수 있는 최대 토큰 수입니다. (서버가 최대 토큰을 설정하도록 하려면 -1을 지정하세요.)"
+				"label": "ìµœëŒ€ ì¶œë ¥ í† í°",
+				"description": "ëª¨ë¸ì´ ì‘ë‹µì—ì„œ ìƒì„±í•  ìˆ˜ ìžˆëŠ” ìµœëŒ€ í† í° ìˆ˜ìž…ë‹ˆë‹¤. (ì„œë²„ê°€ ìµœëŒ€ í† í°ì„ ì„¤ì •í•˜ë„ë¡ í•˜ë ¤ë©´ -1ì„ ì§€ì •í•˜ì„¸ìš”.)"
 			},
 			"contextWindow": {
-				"label": "컨텍스트 창 크기",
-				"description": "모델이 처리할 수 있는 총 토큰 수(입력 + 출력)입니다."
+				"label": "ì»¨í…ìŠ¤íŠ¸ ì°½ í¬ê¸°",
+				"description": "ëª¨ë¸ì´ ì²˜ë¦¬í•  ìˆ˜ ìžˆëŠ” ì´ í† í° ìˆ˜(ìž…ë ¥ + ì¶œë ¥)ìž…ë‹ˆë‹¤."
 			},
 			"imageSupport": {
-				"label": "이미지 지원",
-				"description": "이 모델이 이미지를 처리하고 이해할 수 있습니까?"
+				"label": "ì´ë¯¸ì§€ ì§€ì›",
+				"description": "ì´ ëª¨ë¸ì´ ì´ë¯¸ì§€ë¥¼ ì²˜ë¦¬í•˜ê³  ì´í•´í•  ìˆ˜ ìžˆìŠµë‹ˆê¹Œ?"
 			},
 			"computerUse": {
-				"label": "컴퓨터 사용",
-				"description": "이 모델이 브라우저와 상호 작용할 수 있습니까?"
+				"label": "ì»´í“¨í„° ì‚¬ìš©",
+				"description": "ì´ ëª¨ë¸ì´ ë¸Œë¼ìš°ì €ì™€ ìƒí˜¸ ìž‘ìš©í•  ìˆ˜ ìžˆìŠµë‹ˆê¹Œ?"
 			},
 			"promptCache": {
-				"label": "프롬프트 캐시",
-				"description": "이 모델이 프롬프트를 캐시할 수 있습니까?"
+				"label": "í”„ë¡¬í”„íŠ¸ ìºì‹œ",
+				"description": "ì´ ëª¨ë¸ì´ í”„ë¡¬í”„íŠ¸ë¥¼ ìºì‹œí•  ìˆ˜ ìžˆìŠµë‹ˆê¹Œ?"
 			},
 			"pricing": {
 				"input": {
-					"label": "입력 가격",
-					"description": "입력/프롬프트의 백만 토큰당 비용입니다. 이는 모델에 컨텍스트와 지침을 보내는 비용에 영향을 미칩니다."
+					"label": "ìž…ë ¥ ê°€ê²©",
+					"description": "ìž…ë ¥/í”„ë¡¬í”„íŠ¸ì˜ ë°±ë§Œ í† í°ë‹¹ ë¹„ìš©ìž…ë‹ˆë‹¤. ì´ëŠ” ëª¨ë¸ì— ì»¨í…ìŠ¤íŠ¸ì™€ ì§€ì¹¨ì„ ë³´ë‚´ëŠ” ë¹„ìš©ì— ì˜í–¥ì„ ë¯¸ì¹©ë‹ˆë‹¤."
 				},
 				"output": {
-					"label": "출력 가격",
-					"description": "모델 응답의 백만 토큰당 비용입니다. 이는 생성된 콘텐츠와 완성의 비용에 영향을 미칩니다."
+					"label": "ì¶œë ¥ ê°€ê²©",
+					"description": "ëª¨ë¸ ì‘ë‹µì˜ ë°±ë§Œ í† í°ë‹¹ ë¹„ìš©ìž…ë‹ˆë‹¤. ì´ëŠ” ìƒì„±ëœ ì½˜í…ì¸ ì™€ ì™„ì„±ì˜ ë¹„ìš©ì— ì˜í–¥ì„ ë¯¸ì¹©ë‹ˆë‹¤."
 				},
 				"cacheReads": {
-					"label": "캐시 읽기 가격",
-					"description": "캐시에서 읽기의 백만 토큰당 비용입니다. 이는 캐시된 응답을 검색할 때 청구되는 가격입니다."
+					"label": "ìºì‹œ ì½ê¸° ê°€ê²©",
+					"description": "ìºì‹œì—ì„œ ì½ê¸°ì˜ ë°±ë§Œ í† í°ë‹¹ ë¹„ìš©ìž…ë‹ˆë‹¤. ì´ëŠ” ìºì‹œëœ ì‘ë‹µì„ ê²€ìƒ‰í•  ë•Œ ì²­êµ¬ë˜ëŠ” ê°€ê²©ìž…ë‹ˆë‹¤."
 				},
 				"cacheWrites": {
-					"label": "캐시 쓰기 가격",
-					"description": "캐시에 쓰기의 백만 토큰당 비용입니다. 이는 프롬프트가 처음 캐시될 때 청구되는 가격입니다."
+					"label": "ìºì‹œ ì“°ê¸° ê°€ê²©",
+					"description": "ìºì‹œì— ì“°ê¸°ì˜ ë°±ë§Œ í† í°ë‹¹ ë¹„ìš©ìž…ë‹ˆë‹¤. ì´ëŠ” í”„ë¡¬í”„íŠ¸ê°€ ì²˜ìŒ ìºì‹œë  ë•Œ ì²­êµ¬ë˜ëŠ” ê°€ê²©ìž…ë‹ˆë‹¤."
 				}
 			},
-			"resetDefaults": "기본값으로 재설정"
+			"resetDefaults": "ê¸°ë³¸ê°’ìœ¼ë¡œ ìž¬ì„¤ì •"
 		},
 		"rateLimitSeconds": {
-			"label": "속도 제한",
-			"description": "API 요청 간 최소 시간."
+			"label": "ì†ë„ ì œí•œ",
+			"description": "API ìš”ì²­ ê°„ ìµœì†Œ ì‹œê°„."
 		},
 		"consecutiveMistakeLimit": {
-			"label": "오류 및 반복 제한",
-			"description": "'Roo에 문제가 발생했습니다' 대화 상자를 표시하기 전의 연속 오류 또는 반복 작업 수. 이 안전 메커니즘을 비활성화하려면 0으로 설정하세요(절대 트리거되지 않음).",
-			"unlimitedDescription": "무제한 재시도 활성화 (자동 진행). 대화 상자가 나타나지 않습니다.",
-			"warning": "⚠️ 0으로 설정하면 무제한 재시도가 허용되어 상당한 API 사용량이 발생할 수 있습니다"
+			"label": "ì˜¤ë¥˜ ë° ë°˜ë³µ ì œí•œ",
+			"description": "\u0027Rooì— ë¬¸ì œê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤\u0027 ëŒ€í™” ìƒìžë¥¼ í‘œì‹œí•˜ê¸° ì „ì˜ ì—°ì† ì˜¤ë¥˜ ë˜ëŠ” ë°˜ë³µ ìž‘ì—… ìˆ˜. ì´ ì•ˆì „ ë©”ì»¤ë‹ˆì¦˜ì„ ë¹„í™œì„±í™”í•˜ë ¤ë©´ 0ìœ¼ë¡œ ì„¤ì •í•˜ì„¸ìš”(ì ˆëŒ€ íŠ¸ë¦¬ê±°ë˜ì§€ ì•ŠìŒ).",
+			"unlimitedDescription": "ë¬´ì œí•œ ìž¬ì‹œë„ í™œì„±í™” (ìžë™ ì§„í–‰). ëŒ€í™” ìƒìžê°€ ë‚˜íƒ€ë‚˜ì§€ ì•ŠìŠµë‹ˆë‹¤.",
+			"warning": "âš ï¸ 0ìœ¼ë¡œ ì„¤ì •í•˜ë©´ ë¬´ì œí•œ ìž¬ì‹œë„ê°€ í—ˆìš©ë˜ì–´ ìƒë‹¹í•œ API ì‚¬ìš©ëŸ‰ì´ ë°œìƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤"
 		},
 		"reasoningEffort": {
-			"label": "모델 추론 노력",
-			"none": "없음",
-			"minimal": "최소 (가장 빠름)",
-			"high": "높음",
-			"xhigh": "매우 높음",
-			"medium": "중간",
-			"low": "낮음"
+			"label": "ëª¨ë¸ ì¶”ë¡  ë…¸ë ¥",
+			"none": "ì—†ìŒ",
+			"minimal": "ìµœì†Œ (ê°€ìž¥ ë¹ ë¦„)",
+			"high": "ë†’ìŒ",
+			"xhigh": "ë§¤ìš° ë†’ìŒ",
+			"medium": "ì¤‘ê°„",
+			"low": "ë‚®ìŒ"
 		},
 		"verbosity": {
-			"label": "출력 상세도",
-			"high": "높음",
-			"medium": "중간",
-			"low": "낮음",
-			"description": "모델 응답의 상세도를 제어합니다. 낮은 상세도는 간결한 답변을 생성하고, 높은 상세도는 상세한 설명을 제공합니다."
+			"label": "ì¶œë ¥ ìƒì„¸ë„",
+			"high": "ë†’ìŒ",
+			"medium": "ì¤‘ê°„",
+			"low": "ë‚®ìŒ",
+			"description": "ëª¨ë¸ ì‘ë‹µì˜ ìƒì„¸ë„ë¥¼ ì œì–´í•©ë‹ˆë‹¤. ë‚®ì€ ìƒì„¸ë„ëŠ” ê°„ê²°í•œ ë‹µë³€ì„ ìƒì„±í•˜ê³ , ë†’ì€ ìƒì„¸ë„ëŠ” ìƒì„¸í•œ ì„¤ëª…ì„ ì œê³µí•©ë‹ˆë‹¤."
 		},
-		"setReasoningLevel": "추론 노력 활성화",
+		"setReasoningLevel": "ì¶”ë¡  ë…¸ë ¥ í™œì„±í™”",
 		"claudeCode": {
-			"pathLabel": "클로드 코드 경로",
-			"description": "Claude Code CLI의 선택적 경로입니다. 설정하지 않으면 'claude'가 기본값입니다.",
-			"placeholder": "기본값: claude",
-			"maxTokensLabel": "최대 출력 토큰",
-			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
+			"pathLabel": "í´ë¡œë“œ ì½”ë“œ ê²½ë¡œ",
+			"description": "Claude Code CLIì˜ ì„ íƒì  ê²½ë¡œìž…ë‹ˆë‹¤. ì„¤ì •í•˜ì§€ ì•Šìœ¼ë©´ \u0027claude\u0027ê°€ ê¸°ë³¸ê°’ìž…ë‹ˆë‹¤.",
+			"placeholder": "ê¸°ë³¸ê°’: claude",
+			"maxTokensLabel": "ìµœëŒ€ ì¶œë ¥ í† í°",
+			"maxTokensDescription": "Claude Code ì‘ë‹µì˜ ìµœëŒ€ ì¶œë ¥ í† í° ìˆ˜. ê¸°ë³¸ê°’ì€ 8000ìž…ë‹ˆë‹¤."
+		},
+		"vscodeLmLocalCache": {
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes.",
+			"label": "Enable Local Prompt Caching"
 		}
 	},
 	"browser": {
 		"enable": {
-			"label": "브라우저 도구 활성화",
-			"description": "활성화되면 Roo는 컴퓨터 사용을 지원하는 모델을 사용할 때 웹사이트와 상호 작용하기 위해 브라우저를 사용할 수 있습니다. <0>더 알아보기</0>"
+			"label": "ë¸Œë¼ìš°ì € ë„êµ¬ í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ì»´í“¨í„° ì‚¬ìš©ì„ ì§€ì›í•˜ëŠ” ëª¨ë¸ì„ ì‚¬ìš©í•  ë•Œ ì›¹ì‚¬ì´íŠ¸ì™€ ìƒí˜¸ ìž‘ìš©í•˜ê¸° ìœ„í•´ ë¸Œë¼ìš°ì €ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. \u003c0\u003eë” ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"viewport": {
-			"label": "뷰포트 크기",
-			"description": "브라우저 상호 작용을 위한 뷰포트 크기를 선택하세요. 이는 웹사이트가 표시되고 상호 작용하는 방식에 영향을 미칩니다.",
+			"label": "ë·°í¬íŠ¸ í¬ê¸°",
+			"description": "ë¸Œë¼ìš°ì € ìƒí˜¸ ìž‘ìš©ì„ ìœ„í•œ ë·°í¬íŠ¸ í¬ê¸°ë¥¼ ì„ íƒí•˜ì„¸ìš”. ì´ëŠ” ì›¹ì‚¬ì´íŠ¸ê°€ í‘œì‹œë˜ê³  ìƒí˜¸ ìž‘ìš©í•˜ëŠ” ë°©ì‹ì— ì˜í–¥ì„ ë¯¸ì¹©ë‹ˆë‹¤.",
 			"options": {
-				"largeDesktop": "대형 데스크톱 (1280x800)",
-				"smallDesktop": "소형 데스크톱 (900x600)",
-				"tablet": "태블릿 (768x1024)",
-				"mobile": "모바일 (360x640)"
+				"largeDesktop": "ëŒ€í˜• ë°ìŠ¤í¬í†± (1280x800)",
+				"smallDesktop": "ì†Œí˜• ë°ìŠ¤í¬í†± (900x600)",
+				"tablet": "íƒœë¸”ë¦¿ (768x1024)",
+				"mobile": "ëª¨ë°”ì¼ (360x640)"
 			}
 		},
 		"screenshotQuality": {
-			"label": "스크린샷 품질",
-			"description": "브라우저 스크린샷의 WebP 품질을 조정합니다. 높은 값은 더 선명한 스크린샷을 제공하지만 token 사용량이 증가합니다."
+			"label": "ìŠ¤í¬ë¦°ìƒ· í’ˆì§ˆ",
+			"description": "ë¸Œë¼ìš°ì € ìŠ¤í¬ë¦°ìƒ·ì˜ WebP í’ˆì§ˆì„ ì¡°ì •í•©ë‹ˆë‹¤. ë†’ì€ ê°’ì€ ë” ì„ ëª…í•œ ìŠ¤í¬ë¦°ìƒ·ì„ ì œê³µí•˜ì§€ë§Œ token ì‚¬ìš©ëŸ‰ì´ ì¦ê°€í•©ë‹ˆë‹¤."
 		},
 		"remote": {
-			"label": "원격 브라우저 연결 사용",
-			"description": "원격 디버깅이 활성화된 Chrome 브라우저에 연결합니다(--remote-debugging-port=9222).",
-			"urlPlaceholder": "사용자 정의 URL(예: http://localhost:9222)",
-			"testButton": "연결 테스트",
-			"testingButton": "테스트 중...",
-			"instructions": "DevTools 프로토콜 호스트 주소를 입력하거나 Chrome 로컬 인스턴스를 자동으로 발견하기 위해 비워두세요. 연결 테스트 버튼은 제공된 경우 사용자 정의 URL을 시도하거나, 필드가 비어 있으면 자동으로 발견합니다."
+			"label": "ì›ê²© ë¸Œë¼ìš°ì € ì—°ê²° ì‚¬ìš©",
+			"description": "ì›ê²© ë””ë²„ê¹…ì´ í™œì„±í™”ëœ Chrome ë¸Œë¼ìš°ì €ì— ì—°ê²°í•©ë‹ˆë‹¤(--remote-debugging-port=9222).",
+			"urlPlaceholder": "ì‚¬ìš©ìž ì •ì˜ URL(ì˜ˆ: http://localhost:9222)",
+			"testButton": "ì—°ê²° í…ŒìŠ¤íŠ¸",
+			"testingButton": "í…ŒìŠ¤íŠ¸ ì¤‘...",
+			"instructions": "DevTools í”„ë¡œí† ì½œ í˜¸ìŠ¤íŠ¸ ì£¼ì†Œë¥¼ ìž…ë ¥í•˜ê±°ë‚˜ Chrome ë¡œì»¬ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìžë™ìœ¼ë¡œ ë°œê²¬í•˜ê¸° ìœ„í•´ ë¹„ì›Œë‘ì„¸ìš”. ì—°ê²° í…ŒìŠ¤íŠ¸ ë²„íŠ¼ì€ ì œê³µëœ ê²½ìš° ì‚¬ìš©ìž ì •ì˜ URLì„ ì‹œë„í•˜ê±°ë‚˜, í•„ë“œê°€ ë¹„ì–´ ìžˆìœ¼ë©´ ìžë™ìœ¼ë¡œ ë°œê²¬í•©ë‹ˆë‹¤."
 		}
 	},
 	"checkpoints": {
 		"timeout": {
-			"label": "체크포인트 초기화 타임아웃(초)",
-			"description": "체크포인트 서비스 초기화를 기다리는 최대 시간입니다. 기본값은 15초. 범위: 10~60초."
+			"label": "ì²´í¬í¬ì¸íŠ¸ ì´ˆê¸°í™” íƒ€ìž„ì•„ì›ƒ(ì´ˆ)",
+			"description": "ì²´í¬í¬ì¸íŠ¸ ì„œë¹„ìŠ¤ ì´ˆê¸°í™”ë¥¼ ê¸°ë‹¤ë¦¬ëŠ” ìµœëŒ€ ì‹œê°„ìž…ë‹ˆë‹¤. ê¸°ë³¸ê°’ì€ 15ì´ˆ. ë²”ìœ„: 10~60ì´ˆ."
 		},
 		"enable": {
-			"label": "자동 체크포인트 활성화",
-			"description": "활성화되면 Roo는 작업 실행 중에 자동으로 체크포인트를 생성하여 변경 사항을 검토하거나 이전 상태로 되돌리기 쉽게 합니다. <0>더 알아보기</0>"
+			"label": "ìžë™ ì²´í¬í¬ì¸íŠ¸ í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ìž‘ì—… ì‹¤í–‰ ì¤‘ì— ìžë™ìœ¼ë¡œ ì²´í¬í¬ì¸íŠ¸ë¥¼ ìƒì„±í•˜ì—¬ ë³€ê²½ ì‚¬í•­ì„ ê²€í† í•˜ê±°ë‚˜ ì´ì „ ìƒíƒœë¡œ ë˜ëŒë¦¬ê¸° ì‰½ê²Œ í•©ë‹ˆë‹¤. \u003c0\u003eë” ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		}
 	},
 	"notifications": {
 		"sound": {
-			"label": "사운드 효과 활성화",
-			"description": "활성화되면 Roo는 알림 및 이벤트에 대한 사운드 효과를 재생합니다.",
-			"volumeLabel": "볼륨"
+			"label": "ì‚¬ìš´ë“œ íš¨ê³¼ í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ì•Œë¦¼ ë° ì´ë²¤íŠ¸ì— ëŒ€í•œ ì‚¬ìš´ë“œ íš¨ê³¼ë¥¼ ìž¬ìƒí•©ë‹ˆë‹¤.",
+			"volumeLabel": "ë³¼ë¥¨"
 		},
 		"tts": {
-			"label": "음성 합성 활성화",
-			"description": "활성화되면 Roo는 음성 합성을 사용하여 응답을 소리내어 읽습니다.",
-			"speedLabel": "속도"
+			"label": "ìŒì„± í•©ì„± í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ìŒì„± í•©ì„±ì„ ì‚¬ìš©í•˜ì—¬ ì‘ë‹µì„ ì†Œë¦¬ë‚´ì–´ ì½ìŠµë‹ˆë‹¤.",
+			"speedLabel": "ì†ë„"
 		}
 	},
 	"contextManagement": {
-		"description": "AI의 컨텍스트 창에 포함되는 정보를 제어하여 token 사용량과 응답 품질에 영향을 미칩니다",
+		"description": "AIì˜ ì»¨í…ìŠ¤íŠ¸ ì°½ì— í¬í•¨ë˜ëŠ” ì •ë³´ë¥¼ ì œì–´í•˜ì—¬ token ì‚¬ìš©ëŸ‰ê³¼ ì‘ë‹µ í’ˆì§ˆì— ì˜í–¥ì„ ë¯¸ì¹©ë‹ˆë‹¤",
 		"autoCondenseContextPercent": {
-			"label": "지능적 컨텍스트 압축을 트리거하는 임계값",
-			"description": "컨텍스트 창이 이 임계값에 도달하면 Roo가 자동으로 압축합니다."
+			"label": "ì§€ëŠ¥ì  ì»¨í…ìŠ¤íŠ¸ ì••ì¶•ì„ íŠ¸ë¦¬ê±°í•˜ëŠ” ìž„ê³„ê°’",
+			"description": "ì»¨í…ìŠ¤íŠ¸ ì°½ì´ ì´ ìž„ê³„ê°’ì— ë„ë‹¬í•˜ë©´ Rooê°€ ìžë™ìœ¼ë¡œ ì••ì¶•í•©ë‹ˆë‹¤."
 		},
 		"condensingApiConfiguration": {
-			"label": "컨텍스트 압축을 위한 API 설정",
-			"description": "컨텍스트 압축 작업에 사용할 API 설정을 선택하세요. 선택하지 않으면 현재 활성화된 설정을 사용합니다.",
-			"useCurrentConfig": "기본값"
+			"label": "ì»¨í…ìŠ¤íŠ¸ ì••ì¶•ì„ ìœ„í•œ API ì„¤ì •",
+			"description": "ì»¨í…ìŠ¤íŠ¸ ì••ì¶• ìž‘ì—…ì— ì‚¬ìš©í•  API ì„¤ì •ì„ ì„ íƒí•˜ì„¸ìš”. ì„ íƒí•˜ì§€ ì•Šìœ¼ë©´ í˜„ìž¬ í™œì„±í™”ëœ ì„¤ì •ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.",
+			"useCurrentConfig": "ê¸°ë³¸ê°’"
 		},
 		"customCondensingPrompt": {
-			"label": "사용자 지정 컨텍스트 압축 프롬프트",
-			"description": "컨텍스트 압축을 위한 사용자 지정 시스템 프롬프트입니다. 기본 프롬프트를 사용하려면 비워 두세요.",
-			"placeholder": "여기에 사용자 정의 압축 프롬프트를 입력하세요...\n\n기본 프롬프트와 동일한 구조를 사용할 수 있습니다:\n- 이전 대화\n- 현재 작업\n- 주요 기술 개념\n- 관련 파일 및 코드\n- 문제 해결\n- 보류 중인 작업 및 다음 단계",
-			"reset": "기본값으로 재설정",
-			"hint": "비어있음 = 기본 프롬프트 사용"
+			"label": "ì‚¬ìš©ìž ì§€ì • ì»¨í…ìŠ¤íŠ¸ ì••ì¶• í”„ë¡¬í”„íŠ¸",
+			"description": "ì»¨í…ìŠ¤íŠ¸ ì••ì¶•ì„ ìœ„í•œ ì‚¬ìš©ìž ì§€ì • ì‹œìŠ¤í…œ í”„ë¡¬í”„íŠ¸ìž…ë‹ˆë‹¤. ê¸°ë³¸ í”„ë¡¬í”„íŠ¸ë¥¼ ì‚¬ìš©í•˜ë ¤ë©´ ë¹„ì›Œ ë‘ì„¸ìš”.",
+			"placeholder": "ì—¬ê¸°ì— ì‚¬ìš©ìž ì •ì˜ ì••ì¶• í”„ë¡¬í”„íŠ¸ë¥¼ ìž…ë ¥í•˜ì„¸ìš”...\n\nê¸°ë³¸ í”„ë¡¬í”„íŠ¸ì™€ ë™ì¼í•œ êµ¬ì¡°ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤:\n- ì´ì „ ëŒ€í™”\n- í˜„ìž¬ ìž‘ì—…\n- ì£¼ìš” ê¸°ìˆ  ê°œë…\n- ê´€ë ¨ íŒŒì¼ ë° ì½”ë“œ\n- ë¬¸ì œ í•´ê²°\n- ë³´ë¥˜ ì¤‘ì¸ ìž‘ì—… ë° ë‹¤ìŒ ë‹¨ê³„",
+			"reset": "ê¸°ë³¸ê°’ìœ¼ë¡œ ìž¬ì„¤ì •",
+			"hint": "ë¹„ì–´ìžˆìŒ = ê¸°ë³¸ í”„ë¡¬í”„íŠ¸ ì‚¬ìš©"
 		},
 		"autoCondenseContext": {
-			"name": "지능적 컨텍스트 압축 자동 트리거",
-			"description": "활성화되면 Roo는 임계값에 도달했을 때 자동으로 컨텍스트를 압축합니다. 비활성화되면 여전히 수동으로 컨텍스트 압축을 트리거할 수 있습니다."
+			"name": "ì§€ëŠ¥ì  ì»¨í…ìŠ¤íŠ¸ ì••ì¶• ìžë™ íŠ¸ë¦¬ê±°",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” ìž„ê³„ê°’ì— ë„ë‹¬í–ˆì„ ë•Œ ìžë™ìœ¼ë¡œ ì»¨í…ìŠ¤íŠ¸ë¥¼ ì••ì¶•í•©ë‹ˆë‹¤. ë¹„í™œì„±í™”ë˜ë©´ ì—¬ì „ížˆ ìˆ˜ë™ìœ¼ë¡œ ì»¨í…ìŠ¤íŠ¸ ì••ì¶•ì„ íŠ¸ë¦¬ê±°í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"openTabs": {
-			"label": "열린 탭 컨텍스트 제한",
-			"description": "컨텍스트에 포함할 VSCode 열린 탭의 최대 수. 높은 값은 더 많은 컨텍스트를 제공하지만 token 사용량이 증가합니다."
+			"label": "ì—´ë¦° íƒ­ ì»¨í…ìŠ¤íŠ¸ ì œí•œ",
+			"description": "ì»¨í…ìŠ¤íŠ¸ì— í¬í•¨í•  VSCode ì—´ë¦° íƒ­ì˜ ìµœëŒ€ ìˆ˜. ë†’ì€ ê°’ì€ ë” ë§Žì€ ì»¨í…ìŠ¤íŠ¸ë¥¼ ì œê³µí•˜ì§€ë§Œ token ì‚¬ìš©ëŸ‰ì´ ì¦ê°€í•©ë‹ˆë‹¤."
 		},
 		"workspaceFiles": {
-			"label": "작업 공간 파일 컨텍스트 제한",
-			"description": "현재 작업 디렉토리 세부 정보에 포함할 파일의 최대 수. 높은 값은 더 많은 컨텍스트를 제공하지만 token 사용량이 증가합니다."
+			"label": "ìž‘ì—… ê³µê°„ íŒŒì¼ ì»¨í…ìŠ¤íŠ¸ ì œí•œ",
+			"description": "í˜„ìž¬ ìž‘ì—… ë””ë ‰í† ë¦¬ ì„¸ë¶€ ì •ë³´ì— í¬í•¨í•  íŒŒì¼ì˜ ìµœëŒ€ ìˆ˜. ë†’ì€ ê°’ì€ ë” ë§Žì€ ì»¨í…ìŠ¤íŠ¸ë¥¼ ì œê³µí•˜ì§€ë§Œ token ì‚¬ìš©ëŸ‰ì´ ì¦ê°€í•©ë‹ˆë‹¤."
 		},
 		"rooignore": {
-			"label": "목록 및 검색에서 .rooignore 파일 표시",
-			"description": "활성화되면 .rooignore의 패턴과 일치하는 파일이 잠금 기호와 함께 목록에 표시됩니다. 비활성화되면 이러한 파일은 파일 목록 및 검색에서 완전히 숨겨집니다."
+			"label": "ëª©ë¡ ë° ê²€ìƒ‰ì—ì„œ .rooignore íŒŒì¼ í‘œì‹œ",
+			"description": "í™œì„±í™”ë˜ë©´ .rooignoreì˜ íŒ¨í„´ê³¼ ì¼ì¹˜í•˜ëŠ” íŒŒì¼ì´ ìž ê¸ˆ ê¸°í˜¸ì™€ í•¨ê»˜ ëª©ë¡ì— í‘œì‹œë©ë‹ˆë‹¤. ë¹„í™œì„±í™”ë˜ë©´ ì´ëŸ¬í•œ íŒŒì¼ì€ íŒŒì¼ ëª©ë¡ ë° ê²€ìƒ‰ì—ì„œ ì™„ì „ížˆ ìˆ¨ê²¨ì§‘ë‹ˆë‹¤."
 		},
 		"maxReadFile": {
-			"label": "파일 읽기 자동 축소 임계값",
-			"description": "모델이 시작/끝 값을 지정하지 않을 때 Roo가 읽는 줄 수입니다. 이 수가 파일의 총 줄 수보다 적으면 Roo는 코드 정의의 줄 번호 인덱스를 생성합니다. 특수한 경우: -1은 Roo에게 전체 파일을 읽도록 지시하고(인덱싱 없이), 0은 줄을 읽지 않고 최소한의 컨텍스트를 위해 줄 인덱스만 제공하도록 지시합니다. 낮은 값은 초기 컨텍스트 사용을 최소화하고, 이후 정확한 줄 범위 읽기를 가능하게 합니다. 명시적 시작/끝 요청은 이 설정의 제한을 받지 않습니다.",
-			"lines": "줄",
-			"always_full_read": "항상 전체 파일 읽기"
+			"label": "íŒŒì¼ ì½ê¸° ìžë™ ì¶•ì†Œ ìž„ê³„ê°’",
+			"description": "ëª¨ë¸ì´ ì‹œìž‘/ë ê°’ì„ ì§€ì •í•˜ì§€ ì•Šì„ ë•Œ Rooê°€ ì½ëŠ” ì¤„ ìˆ˜ìž…ë‹ˆë‹¤. ì´ ìˆ˜ê°€ íŒŒì¼ì˜ ì´ ì¤„ ìˆ˜ë³´ë‹¤ ì ìœ¼ë©´ RooëŠ” ì½”ë“œ ì •ì˜ì˜ ì¤„ ë²ˆí˜¸ ì¸ë±ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤. íŠ¹ìˆ˜í•œ ê²½ìš°: -1ì€ Rooì—ê²Œ ì „ì²´ íŒŒì¼ì„ ì½ë„ë¡ ì§€ì‹œí•˜ê³ (ì¸ë±ì‹± ì—†ì´), 0ì€ ì¤„ì„ ì½ì§€ ì•Šê³  ìµœì†Œí•œì˜ ì»¨í…ìŠ¤íŠ¸ë¥¼ ìœ„í•´ ì¤„ ì¸ë±ìŠ¤ë§Œ ì œê³µí•˜ë„ë¡ ì§€ì‹œí•©ë‹ˆë‹¤. ë‚®ì€ ê°’ì€ ì´ˆê¸° ì»¨í…ìŠ¤íŠ¸ ì‚¬ìš©ì„ ìµœì†Œí™”í•˜ê³ , ì´í›„ ì •í™•í•œ ì¤„ ë²”ìœ„ ì½ê¸°ë¥¼ ê°€ëŠ¥í•˜ê²Œ í•©ë‹ˆë‹¤. ëª…ì‹œì  ì‹œìž‘/ë ìš”ì²­ì€ ì´ ì„¤ì •ì˜ ì œí•œì„ ë°›ì§€ ì•ŠìŠµë‹ˆë‹¤.",
+			"lines": "ì¤„",
+			"always_full_read": "í•­ìƒ ì „ì²´ íŒŒì¼ ì½ê¸°"
 		},
 		"maxConcurrentFileReads": {
-			"label": "동시 파일 읽기 제한",
-			"description": "read_file 도구가 동시에 처리할 수 있는 최대 파일 수입니다. 높은 값은 여러 작은 파일을 읽는 속도를 높일 수 있지만 메모리 사용량이 증가합니다."
+			"label": "ë™ì‹œ íŒŒì¼ ì½ê¸° ì œí•œ",
+			"description": "read_file ë„êµ¬ê°€ ë™ì‹œì— ì²˜ë¦¬í•  ìˆ˜ ìžˆëŠ” ìµœëŒ€ íŒŒì¼ ìˆ˜ìž…ë‹ˆë‹¤. ë†’ì€ ê°’ì€ ì—¬ëŸ¬ ìž‘ì€ íŒŒì¼ì„ ì½ëŠ” ì†ë„ë¥¼ ë†’ì¼ ìˆ˜ ìžˆì§€ë§Œ ë©”ëª¨ë¦¬ ì‚¬ìš©ëŸ‰ì´ ì¦ê°€í•©ë‹ˆë‹¤."
 		},
 		"diagnostics": {
 			"includeMessages": {
-				"label": "진단을 자동으로 컨텍스트에 포함",
-				"description": "활성화되면 편집된 파일의 진단 메시지(오류)가 자동으로 컨텍스트에 포함됩니다. @problems를 사용하여 언제든지 모든 워크스페이스 진단을 수동으로 포함할 수 있습니다."
+				"label": "ì§„ë‹¨ì„ ìžë™ìœ¼ë¡œ ì»¨í…ìŠ¤íŠ¸ì— í¬í•¨",
+				"description": "í™œì„±í™”ë˜ë©´ íŽ¸ì§‘ëœ íŒŒì¼ì˜ ì§„ë‹¨ ë©”ì‹œì§€(ì˜¤ë¥˜)ê°€ ìžë™ìœ¼ë¡œ ì»¨í…ìŠ¤íŠ¸ì— í¬í•¨ë©ë‹ˆë‹¤. @problemsë¥¼ ì‚¬ìš©í•˜ì—¬ ì–¸ì œë“ ì§€ ëª¨ë“  ì›Œí¬ìŠ¤íŽ˜ì´ìŠ¤ ì§„ë‹¨ì„ ìˆ˜ë™ìœ¼ë¡œ í¬í•¨í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 			},
 			"maxMessages": {
-				"label": "최대 진단 메시지",
-				"description": "파일당 포함할 최대 진단 메시지 수입니다. 이 제한은 자동 포함(체크박스가 활성화된 경우)과 수동 @problems 언급 모두에 적용됩니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 토큰 사용량이 증가합니다.",
-				"resetTooltip": "기본값(50)으로 재설정",
-				"unlimited": "무제한 진단 메시지",
-				"unlimitedLabel": "무제한"
+				"label": "ìµœëŒ€ ì§„ë‹¨ ë©”ì‹œì§€",
+				"description": "íŒŒì¼ë‹¹ í¬í•¨í•  ìµœëŒ€ ì§„ë‹¨ ë©”ì‹œì§€ ìˆ˜ìž…ë‹ˆë‹¤. ì´ ì œí•œì€ ìžë™ í¬í•¨(ì²´í¬ë°•ìŠ¤ê°€ í™œì„±í™”ëœ ê²½ìš°)ê³¼ ìˆ˜ë™ @problems ì–¸ê¸‰ ëª¨ë‘ì— ì ìš©ë©ë‹ˆë‹¤. ê°’ì´ ë†’ì„ìˆ˜ë¡ ë” ë§Žì€ ì»¨í…ìŠ¤íŠ¸ë¥¼ ì œê³µí•˜ì§€ë§Œ í† í° ì‚¬ìš©ëŸ‰ì´ ì¦ê°€í•©ë‹ˆë‹¤.",
+				"resetTooltip": "ê¸°ë³¸ê°’(50)ìœ¼ë¡œ ìž¬ì„¤ì •",
+				"unlimited": "ë¬´ì œí•œ ì§„ë‹¨ ë©”ì‹œì§€",
+				"unlimitedLabel": "ë¬´ì œí•œ"
 			},
 			"delayAfterWrite": {
-				"label": "진단이 잠재적인 문제를 감지할 수 있도록 쓰기 후 지연",
-				"description": "파일 쓰기 후 계속 진행하기 전에 대기하는 시간으로, 진단 도구가 변경 사항을 처리하고 문제를 감지할 수 있도록 합니다."
+				"label": "ì§„ë‹¨ì´ ìž ìž¬ì ì¸ ë¬¸ì œë¥¼ ê°ì§€í•  ìˆ˜ ìžˆë„ë¡ ì“°ê¸° í›„ ì§€ì—°",
+				"description": "íŒŒì¼ ì“°ê¸° í›„ ê³„ì† ì§„í–‰í•˜ê¸° ì „ì— ëŒ€ê¸°í•˜ëŠ” ì‹œê°„ìœ¼ë¡œ, ì§„ë‹¨ ë„êµ¬ê°€ ë³€ê²½ ì‚¬í•­ì„ ì²˜ë¦¬í•˜ê³  ë¬¸ì œë¥¼ ê°ì§€í•  ìˆ˜ ìžˆë„ë¡ í•©ë‹ˆë‹¤."
 			}
 		},
 		"condensingThreshold": {
-			"label": "압축 트리거 임계값",
-			"selectProfile": "프로필 임계값 구성",
-			"defaultProfile": "글로벌 기본값 (모든 프로필)",
-			"defaultDescription": "컨텍스트가 이 비율에 도달하면 사용자 정의 설정이 없는 한 모든 프로필에 대해 자동으로 압축됩니다",
-			"profileDescription": "이 프로필만을 위한 사용자 정의 임계값 (글로벌 기본값 재정의)",
-			"inheritDescription": "이 프로필은 글로벌 기본 임계값을 상속합니다 ({{threshold}}%)",
-			"usesGlobal": "(글로벌 {{threshold}}% 사용)"
+			"label": "ì••ì¶• íŠ¸ë¦¬ê±° ìž„ê³„ê°’",
+			"selectProfile": "í”„ë¡œí•„ ìž„ê³„ê°’ êµ¬ì„±",
+			"defaultProfile": "ê¸€ë¡œë²Œ ê¸°ë³¸ê°’ (ëª¨ë“  í”„ë¡œí•„)",
+			"defaultDescription": "ì»¨í…ìŠ¤íŠ¸ê°€ ì´ ë¹„ìœ¨ì— ë„ë‹¬í•˜ë©´ ì‚¬ìš©ìž ì •ì˜ ì„¤ì •ì´ ì—†ëŠ” í•œ ëª¨ë“  í”„ë¡œí•„ì— ëŒ€í•´ ìžë™ìœ¼ë¡œ ì••ì¶•ë©ë‹ˆë‹¤",
+			"profileDescription": "ì´ í”„ë¡œí•„ë§Œì„ ìœ„í•œ ì‚¬ìš©ìž ì •ì˜ ìž„ê³„ê°’ (ê¸€ë¡œë²Œ ê¸°ë³¸ê°’ ìž¬ì •ì˜)",
+			"inheritDescription": "ì´ í”„ë¡œí•„ì€ ê¸€ë¡œë²Œ ê¸°ë³¸ ìž„ê³„ê°’ì„ ìƒì†í•©ë‹ˆë‹¤ ({{threshold}}%)",
+			"usesGlobal": "(ê¸€ë¡œë²Œ {{threshold}}% ì‚¬ìš©)"
 		},
 		"maxImageFileSize": {
-			"label": "최대 이미지 파일 크기",
+			"label": "ìµœëŒ€ ì´ë¯¸ì§€ íŒŒì¼ í¬ê¸°",
 			"mb": "MB",
-			"description": "read file 도구로 처리할 수 있는 이미지 파일의 최대 크기(MB 단위)입니다."
+			"description": "read file ë„êµ¬ë¡œ ì²˜ë¦¬í•  ìˆ˜ ìžˆëŠ” ì´ë¯¸ì§€ íŒŒì¼ì˜ ìµœëŒ€ í¬ê¸°(MB ë‹¨ìœ„)ìž…ë‹ˆë‹¤."
 		},
 		"maxTotalImageSize": {
-			"label": "최대 총 이미지 크기",
+			"label": "ìµœëŒ€ ì´ ì´ë¯¸ì§€ í¬ê¸°",
 			"mb": "MB",
-			"description": "단일 read_file 작업에서 처리되는 모든 이미지의 최대 누적 크기 제한(MB 단위)입니다. 여러 이미지를 읽을 때 각 이미지의 크기가 총계에 추가됩니다. 다른 이미지를 포함하면 이 제한을 초과하는 경우 해당 이미지는 건너뜁니다."
+			"description": "ë‹¨ì¼ read_file ìž‘ì—…ì—ì„œ ì²˜ë¦¬ë˜ëŠ” ëª¨ë“  ì´ë¯¸ì§€ì˜ ìµœëŒ€ ëˆ„ì  í¬ê¸° ì œí•œ(MB ë‹¨ìœ„)ìž…ë‹ˆë‹¤. ì—¬ëŸ¬ ì´ë¯¸ì§€ë¥¼ ì½ì„ ë•Œ ê° ì´ë¯¸ì§€ì˜ í¬ê¸°ê°€ ì´ê³„ì— ì¶”ê°€ë©ë‹ˆë‹¤. ë‹¤ë¥¸ ì´ë¯¸ì§€ë¥¼ í¬í•¨í•˜ë©´ ì´ ì œí•œì„ ì´ˆê³¼í•˜ëŠ” ê²½ìš° í•´ë‹¹ ì´ë¯¸ì§€ëŠ” ê±´ë„ˆëœë‹ˆë‹¤."
 		},
 		"includeCurrentTime": {
-			"label": "컨텍스트에 현재 시간 포함",
-			"description": "활성화하면 현재 시간과 시간대 정보가 시스템 프롬프트에 포함됩니다. 시간 문제로 모델이 작동을 멈추면 비활성화하세요."
+			"label": "ì»¨í…ìŠ¤íŠ¸ì— í˜„ìž¬ ì‹œê°„ í¬í•¨",
+			"description": "í™œì„±í™”í•˜ë©´ í˜„ìž¬ ì‹œê°„ê³¼ ì‹œê°„ëŒ€ ì •ë³´ê°€ ì‹œìŠ¤í…œ í”„ë¡¬í”„íŠ¸ì— í¬í•¨ë©ë‹ˆë‹¤. ì‹œê°„ ë¬¸ì œë¡œ ëª¨ë¸ì´ ìž‘ë™ì„ ë©ˆì¶”ë©´ ë¹„í™œì„±í™”í•˜ì„¸ìš”."
 		},
 		"includeCurrentCost": {
-			"label": "컨텍스트에 현재 비용 포함",
-			"description": "활성화하면 현재 API 사용 비용이 시스템 프롬프트에 포함됩니다. 비용 문제로 모델이 작동을 멈추면 비활성화하세요."
+			"label": "ì»¨í…ìŠ¤íŠ¸ì— í˜„ìž¬ ë¹„ìš© í¬í•¨",
+			"description": "í™œì„±í™”í•˜ë©´ í˜„ìž¬ API ì‚¬ìš© ë¹„ìš©ì´ ì‹œìŠ¤í…œ í”„ë¡¬í”„íŠ¸ì— í¬í•¨ë©ë‹ˆë‹¤. ë¹„ìš© ë¬¸ì œë¡œ ëª¨ë¸ì´ ìž‘ë™ì„ ë©ˆì¶”ë©´ ë¹„í™œì„±í™”í•˜ì„¸ìš”."
 		},
 		"maxGitStatusFiles": {
-			"label": "Git 상태 최대 파일",
-			"description": "git 상태 컨텍스트에 포함할 최대 파일 항목 수입니다. 비활성화하려면 0으로 설정하세요. 분기 정보와 커밋은 > 0일 때 항상 표시됩니다."
+			"label": "Git ìƒíƒœ ìµœëŒ€ íŒŒì¼",
+			"description": "git ìƒíƒœ ì»¨í…ìŠ¤íŠ¸ì— í¬í•¨í•  ìµœëŒ€ íŒŒì¼ í•­ëª© ìˆ˜ìž…ë‹ˆë‹¤. ë¹„í™œì„±í™”í•˜ë ¤ë©´ 0ìœ¼ë¡œ ì„¤ì •í•˜ì„¸ìš”. ë¶„ê¸° ì •ë³´ì™€ ì»¤ë°‹ì€ \u003e 0ì¼ ë•Œ í•­ìƒ í‘œì‹œë©ë‹ˆë‹¤."
 		}
 	},
 	"terminal": {
 		"basic": {
-			"label": "터미널 설정: 기본",
-			"description": "기본 터미널 설정"
+			"label": "í„°ë¯¸ë„ ì„¤ì •: ê¸°ë³¸",
+			"description": "ê¸°ë³¸ í„°ë¯¸ë„ ì„¤ì •"
 		},
 		"advanced": {
-			"label": "터미널 설정: 고급",
-			"description": "이 설정은 '인라인 터미널 사용'이 비활성화된 경우에만 적용됩니다. VS Code 터미널에만 영향을 미치며 IDE를 다시 시작해야 할 수 있습니다."
+			"label": "í„°ë¯¸ë„ ì„¤ì •: ê³ ê¸‰",
+			"description": "ì´ ì„¤ì •ì€ \u0027ì¸ë¼ì¸ í„°ë¯¸ë„ ì‚¬ìš©\u0027ì´ ë¹„í™œì„±í™”ëœ ê²½ìš°ì—ë§Œ ì ìš©ë©ë‹ˆë‹¤. VS Code í„°ë¯¸ë„ì—ë§Œ ì˜í–¥ì„ ë¯¸ì¹˜ë©° IDEë¥¼ ë‹¤ì‹œ ì‹œìž‘í•´ì•¼ í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"outputLineLimit": {
-			"label": "터미널 출력 제한",
-			"description": "제한 내로 유지하기 위해 첫 줄과 마지막 줄을 유지하고 중간을 삭제합니다. 토큰을 절약하려면 낮추고; Roo에게 더 많은 중간 세부 정보를 제공하려면 높입니다. Roo는 콘텐츠가 건너뛴 곳에 자리 표시자를 봅니다.<0>자세히 알아보기</0>"
+			"label": "í„°ë¯¸ë„ ì¶œë ¥ ì œí•œ",
+			"description": "ì œí•œ ë‚´ë¡œ ìœ ì§€í•˜ê¸° ìœ„í•´ ì²« ì¤„ê³¼ ë§ˆì§€ë§‰ ì¤„ì„ ìœ ì§€í•˜ê³  ì¤‘ê°„ì„ ì‚­ì œí•©ë‹ˆë‹¤. í† í°ì„ ì ˆì•½í•˜ë ¤ë©´ ë‚®ì¶”ê³ ; Rooì—ê²Œ ë” ë§Žì€ ì¤‘ê°„ ì„¸ë¶€ ì •ë³´ë¥¼ ì œê³µí•˜ë ¤ë©´ ë†’ìž…ë‹ˆë‹¤. RooëŠ” ì½˜í…ì¸ ê°€ ê±´ë„ˆë›´ ê³³ì— ìžë¦¬ í‘œì‹œìžë¥¼ ë´…ë‹ˆë‹¤.\u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"outputCharacterLimit": {
-			"label": "터미널 문자 제한",
-			"description": "출력 크기에 대한 엄격한 상한을 적용하여 메모리 문제를 방지하기 위해 줄 제한을 재정의합니다. 초과하면 시작과 끝을 유지하고 내용이 생략된 곳에 Roo에게 자리 표시자를 표시합니다. <0>자세히 알아보기</0>"
+			"label": "í„°ë¯¸ë„ ë¬¸ìž ì œí•œ",
+			"description": "ì¶œë ¥ í¬ê¸°ì— ëŒ€í•œ ì—„ê²©í•œ ìƒí•œì„ ì ìš©í•˜ì—¬ ë©”ëª¨ë¦¬ ë¬¸ì œë¥¼ ë°©ì§€í•˜ê¸° ìœ„í•´ ì¤„ ì œí•œì„ ìž¬ì •ì˜í•©ë‹ˆë‹¤. ì´ˆê³¼í•˜ë©´ ì‹œìž‘ê³¼ ëì„ ìœ ì§€í•˜ê³  ë‚´ìš©ì´ ìƒëžµëœ ê³³ì— Rooì—ê²Œ ìžë¦¬ í‘œì‹œìžë¥¼ í‘œì‹œí•©ë‹ˆë‹¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"shellIntegrationTimeout": {
-			"label": "터미널 셸 통합 시간 초과",
-			"description": "명령을 실행하기 전에 VS Code 셸 통합을 기다리는 시간입니다. 셸이 느리게 시작되거나 '셸 통합을 사용할 수 없음' 오류가 표시되면 이 값을 늘리십시오. <0>자세히 알아보기</0>"
+			"label": "í„°ë¯¸ë„ ì…¸ í†µí•© ì‹œê°„ ì´ˆê³¼",
+			"description": "ëª…ë ¹ì„ ì‹¤í–‰í•˜ê¸° ì „ì— VS Code ì…¸ í†µí•©ì„ ê¸°ë‹¤ë¦¬ëŠ” ì‹œê°„ìž…ë‹ˆë‹¤. ì…¸ì´ ëŠë¦¬ê²Œ ì‹œìž‘ë˜ê±°ë‚˜ \u0027ì…¸ í†µí•©ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìŒ\u0027 ì˜¤ë¥˜ê°€ í‘œì‹œë˜ë©´ ì´ ê°’ì„ ëŠ˜ë¦¬ì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"shellIntegrationDisabled": {
-			"label": "인라인 터미널 사용(권장)",
-			"description": "더 빠르고 안정적인 실행을 위해 셸 프로필/통합��� 우회하려면 인라인 터미널(채팅)에�� 명령을 실행하십시오. 비활성화하면 Roo는 셸 프로필, 프롬프트 및 플러그인과 함께 VS Code 터미널을 사용합니다. <0>자세히 알아보기</0>"
+			"label": "ì¸ë¼ì¸ í„°ë¯¸ë„ ì‚¬ìš©(ê¶Œìž¥)",
+			"description": "ë” ë¹ ë¥´ê³  ì•ˆì •ì ì¸ ì‹¤í–‰ì„ ìœ„í•´ ì…¸ í”„ë¡œí•„/í†µí•©ï¿½ï¿½ï¿½ ìš°íšŒí•˜ë ¤ë©´ ì¸ë¼ì¸ í„°ë¯¸ë„(ì±„íŒ…)ì—ï¿½ï¿½ ëª…ë ¹ì„ ì‹¤í–‰í•˜ì‹­ì‹œì˜¤. ë¹„í™œì„±í™”í•˜ë©´ RooëŠ” ì…¸ í”„ë¡œí•„, í”„ë¡¬í”„íŠ¸ ë° í”ŒëŸ¬ê·¸ì¸ê³¼ í•¨ê»˜ VS Code í„°ë¯¸ë„ì„ ì‚¬ìš©í•©ë‹ˆë‹¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"commandDelay": {
-			"label": "터미널 명령 지연",
-			"description": "VS Code 터미널이 모든 출력을 플러시할 수 있도록 각 명령 후에 짧은 일시 중지를 추가합니다(bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). 누락된 꼬리 출력이 표시되는 경우에만 사용하고, 그렇지 않으면 0으로 둡니다. <0>자세히 알아보기</0>"
+			"label": "í„°ë¯¸ë„ ëª…ë ¹ ì§€ì—°",
+			"description": "VS Code í„°ë¯¸ë„ì´ ëª¨ë“  ì¶œë ¥ì„ í”ŒëŸ¬ì‹œí•  ìˆ˜ ìžˆë„ë¡ ê° ëª…ë ¹ í›„ì— ì§§ì€ ì¼ì‹œ ì¤‘ì§€ë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤(bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). ëˆ„ë½ëœ ê¼¬ë¦¬ ì¶œë ¥ì´ í‘œì‹œë˜ëŠ” ê²½ìš°ì—ë§Œ ì‚¬ìš©í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ 0ìœ¼ë¡œ ë‘¡ë‹ˆë‹¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"compressProgressBar": {
-			"label": "진행률 표시줄 출력 압축",
-			"description": "진행률 표시줄/스피너를 축소하여 최종 상태만 유지합니다(토큰 절약). <0>자세히 알아보기</0>"
+			"label": "ì§„í–‰ë¥  í‘œì‹œì¤„ ì¶œë ¥ ì••ì¶•",
+			"description": "ì§„í–‰ë¥  í‘œì‹œì¤„/ìŠ¤í”¼ë„ˆë¥¼ ì¶•ì†Œí•˜ì—¬ ìµœì¢… ìƒíƒœë§Œ ìœ ì§€í•©ë‹ˆë‹¤(í† í° ì ˆì•½). \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"powershellCounter": {
-			"label": "PowerShell 카운터 해결 방법 활성화",
-			"description": "PowerShell 출력이 누락되거나 중복될 때 이 기능을 켜십시오. 출력을 안정화하기 위해 각 명령에 작은 카운터를 추가합니다. 출력이 이미 올바르게 표시되면 이 기능을 끄십시오. <0>자세히 알아보기</0>"
+			"label": "PowerShell ì¹´ìš´í„° í•´ê²° ë°©ë²• í™œì„±í™”",
+			"description": "PowerShell ì¶œë ¥ì´ ëˆ„ë½ë˜ê±°ë‚˜ ì¤‘ë³µë  ë•Œ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. ì¶œë ¥ì„ ì•ˆì •í™”í•˜ê¸° ìœ„í•´ ê° ëª…ë ¹ì— ìž‘ì€ ì¹´ìš´í„°ë¥¼ ì¶”ê°€í•©ë‹ˆë‹¤. ì¶œë ¥ì´ ì´ë¯¸ ì˜¬ë°”ë¥´ê²Œ í‘œì‹œë˜ë©´ ì´ ê¸°ëŠ¥ì„ ë„ì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"zshClearEolMark": {
-			"label": "ZSH EOL 표시 지우기",
-			"description": "줄 끝에 떠도는 %가 보이거나 구문 분석이 잘못된 것 같을 때 이 기능을 켜십시오. Zsh의 줄 끝 표시(%)를 생략합니다. <0>자세히 알아보기</0>"
+			"label": "ZSH EOL í‘œì‹œ ì§€ìš°ê¸°",
+			"description": "ì¤„ ëì— ë– ë„ëŠ” %ê°€ ë³´ì´ê±°ë‚˜ êµ¬ë¬¸ ë¶„ì„ì´ ìž˜ëª»ëœ ê²ƒ ê°™ì„ ë•Œ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. Zshì˜ ì¤„ ë í‘œì‹œ(%)ë¥¼ ìƒëžµí•©ë‹ˆë‹¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"zshOhMy": {
-			"label": "Oh My Zsh 통합 활성화",
-			"description": "Oh My Zsh 테마/플러그인이 셸 통합을 예상할 때 이 기능을 켜십시오. ITERM_SHELL_INTEGRATION_INSTALLED=Yes를 설정합니다. 해당 변수를 설정하지 않으려면 이 기능을 끄십시오. <0>자세히 알아보기</0>"
+			"label": "Oh My Zsh í†µí•© í™œì„±í™”",
+			"description": "Oh My Zsh í…Œë§ˆ/í”ŒëŸ¬ê·¸ì¸ì´ ì…¸ í†µí•©ì„ ì˜ˆìƒí•  ë•Œ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. ITERM_SHELL_INTEGRATION_INSTALLED=Yesë¥¼ ì„¤ì •í•©ë‹ˆë‹¤. í•´ë‹¹ ë³€ìˆ˜ë¥¼ ì„¤ì •í•˜ì§€ ì•Šìœ¼ë ¤ë©´ ì´ ê¸°ëŠ¥ì„ ë„ì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"zshP10k": {
-			"label": "Powerlevel10k 통합 활성화",
-			"description": "Powerlevel10k 셸 통합을 사용할 때 이 기능을 켜십시오. <0>자세히 알아보기</0>"
+			"label": "Powerlevel10k í†µí•© í™œì„±í™”",
+			"description": "Powerlevel10k ì…¸ í†µí•©ì„ ì‚¬ìš©í•  ë•Œ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"zdotdir": {
-			"label": "ZDOTDIR 처리 활성화",
-			"description": "zsh 셸 통합이 실패하거나 점 파일과 충돌할 때 이 기능을 켜십시오. <0>자세히 알아보기</0>"
+			"label": "ZDOTDIR ì²˜ë¦¬ í™œì„±í™”",
+			"description": "zsh ì…¸ í†µí•©ì´ ì‹¤íŒ¨í•˜ê±°ë‚˜ ì  íŒŒì¼ê³¼ ì¶©ëŒí•  ë•Œ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		},
 		"inheritEnv": {
-			"label": "환경 변수 상속",
-			"description": "부모 VS Code 프로세���에서 환경 변수를 상속하려면 이 기능을 켜십시오. <0>자세히 알아보기</0>"
+			"label": "í™˜ê²½ ë³€ìˆ˜ ìƒì†",
+			"description": "ë¶€ëª¨ VS Code í”„ë¡œì„¸ï¿½ï¿½ï¿½ì—ì„œ í™˜ê²½ ë³€ìˆ˜ë¥¼ ìƒì†í•˜ë ¤ë©´ ì´ ê¸°ëŠ¥ì„ ì¼œì‹­ì‹œì˜¤. \u003c0\u003eìžì„¸ížˆ ì•Œì•„ë³´ê¸°\u003c/0\u003e"
 		}
 	},
 	"advancedSettings": {
-		"title": "고급 설정"
+		"title": "ê³ ê¸‰ ì„¤ì •"
 	},
 	"toolProtocol": {
-		"label": "도구 호출 프로토콜",
-		"description": "Roo가 API와 통신하는 방법을 선택합니다. 네이티브는 공급자의 함수 호출 API를 사용하고 XML은 XML 형식의 도구 정의를 사용합니다.",
-		"default": "기본값",
+		"label": "ë„êµ¬ í˜¸ì¶œ í”„ë¡œí† ì½œ",
+		"description": "Rooê°€ APIì™€ í†µì‹ í•˜ëŠ” ë°©ë²•ì„ ì„ íƒí•©ë‹ˆë‹¤. ë„¤ì´í‹°ë¸ŒëŠ” ê³µê¸‰ìžì˜ í•¨ìˆ˜ í˜¸ì¶œ APIë¥¼ ì‚¬ìš©í•˜ê³  XMLì€ XML í˜•ì‹ì˜ ë„êµ¬ ì •ì˜ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.",
+		"default": "ê¸°ë³¸ê°’",
 		"xml": "XML",
-		"native": "네이티브",
-		"currentDefault": "기본값: {{protocol}}"
+		"native": "ë„¤ì´í‹°ë¸Œ",
+		"currentDefault": "ê¸°ë³¸ê°’: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
-			"label": "diff를 통한 편집 활성화",
-			"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다",
+			"label": "diffë¥¼ í†µí•œ íŽ¸ì§‘ í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ RooëŠ” íŒŒì¼ì„ ë” ë¹ ë¥´ê²Œ íŽ¸ì§‘í•  ìˆ˜ ìžˆìœ¼ë©° ìž˜ë¦° ì „ì²´ íŒŒì¼ ì“°ê¸°ë¥¼ ìžë™ìœ¼ë¡œ ê±°ë¶€í•©ë‹ˆë‹¤",
 			"strategy": {
-				"label": "Diff 전략",
+				"label": "Diff ì „ëžµ",
 				"options": {
-					"standard": "표준(단일 블록)",
-					"multiBlock": "실험적: 다중 블록 diff",
-					"unified": "실험적: 통합 diff"
+					"standard": "í‘œì¤€(ë‹¨ì¼ ë¸”ë¡)",
+					"multiBlock": "ì‹¤í—˜ì : ë‹¤ì¤‘ ë¸”ë¡ diff",
+					"unified": "ì‹¤í—˜ì : í†µí•© diff"
 				},
 				"descriptions": {
-					"standard": "표준 diff 전략은 한 번에 하나의 코드 블록에 변경 사항을 적용합니다.",
-					"unified": "통합 diff 전략은 diff를 적용하는 여러 접근 방식을 취하고 최상의 접근 방식을 선택합니다.",
-					"multiBlock": "다중 블록 diff 전략은 하나의 요청으로 파일의 여러 코드 블록을 업데이트할 수 있습니다."
+					"standard": "í‘œì¤€ diff ì „ëžµì€ í•œ ë²ˆì— í•˜ë‚˜ì˜ ì½”ë“œ ë¸”ë¡ì— ë³€ê²½ ì‚¬í•­ì„ ì ìš©í•©ë‹ˆë‹¤.",
+					"unified": "í†µí•© diff ì „ëžµì€ diffë¥¼ ì ìš©í•˜ëŠ” ì—¬ëŸ¬ ì ‘ê·¼ ë°©ì‹ì„ ì·¨í•˜ê³  ìµœìƒì˜ ì ‘ê·¼ ë°©ì‹ì„ ì„ íƒí•©ë‹ˆë‹¤.",
+					"multiBlock": "ë‹¤ì¤‘ ë¸”ë¡ diff ì „ëžµì€ í•˜ë‚˜ì˜ ìš”ì²­ìœ¼ë¡œ íŒŒì¼ì˜ ì—¬ëŸ¬ ì½”ë“œ ë¸”ë¡ì„ ì—…ë°ì´íŠ¸í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 				}
 			},
 			"matchPrecision": {
-				"label": "일치 정확도",
-				"description": "이 슬라이더는 diff를 적용할 때 코드 섹션이 얼마나 정확하게 일치해야 하는지 제어합니다. 낮은 값은 더 유연한 일치를 허용하지만 잘못된 교체 위험이 증가합니다. 100% 미만의 값은 극도로 주의해서 사용하세요."
+				"label": "ì¼ì¹˜ ì •í™•ë„",
+				"description": "ì´ ìŠ¬ë¼ì´ë”ëŠ” diffë¥¼ ì ìš©í•  ë•Œ ì½”ë“œ ì„¹ì…˜ì´ ì–¼ë§ˆë‚˜ ì •í™•í•˜ê²Œ ì¼ì¹˜í•´ì•¼ í•˜ëŠ”ì§€ ì œì–´í•©ë‹ˆë‹¤. ë‚®ì€ ê°’ì€ ë” ìœ ì—°í•œ ì¼ì¹˜ë¥¼ í—ˆìš©í•˜ì§€ë§Œ ìž˜ëª»ëœ êµì²´ ìœ„í—˜ì´ ì¦ê°€í•©ë‹ˆë‹¤. 100% ë¯¸ë§Œì˜ ê°’ì€ ê·¹ë„ë¡œ ì£¼ì˜í•´ì„œ ì‚¬ìš©í•˜ì„¸ìš”."
 			}
 		},
 		"todoList": {
-			"label": "할 일 목록 도구 활성화",
-			"description": "활성화하면 Roo가 작업 진행 상황을 추적하기 위한 할 일 목록을 만들고 관리할 수 있습니다. 이는 복잡한 작업을 관리 가능한 단계로 구성하는 데 도움이 됩니다."
+			"label": "í•  ì¼ ëª©ë¡ ë„êµ¬ í™œì„±í™”",
+			"description": "í™œì„±í™”í•˜ë©´ Rooê°€ ìž‘ì—… ì§„í–‰ ìƒí™©ì„ ì¶”ì í•˜ê¸° ìœ„í•œ í•  ì¼ ëª©ë¡ì„ ë§Œë“¤ê³  ê´€ë¦¬í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì´ëŠ” ë³µìž¡í•œ ìž‘ì—…ì„ ê´€ë¦¬ ê°€ëŠ¥í•œ ë‹¨ê³„ë¡œ êµ¬ì„±í•˜ëŠ” ë° ë„ì›€ì´ ë©ë‹ˆë‹¤."
 		}
 	},
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
-			"name": "실험적 통합 diff 전략 사용",
-			"description": "실험적 통합 diff 전략을 활성화합니다. 이 전략은 모델 오류로 인한 재시도 횟수를 줄일 수 있지만 예기치 않은 동작이나 잘못된 편집을 일으킬 수 있습니다. 위험을 이해하고 모든 변경 사항을 신중하게 검토할 의향이 있는 경우에만 활성화하십시오."
+			"name": "ì‹¤í—˜ì  í†µí•© diff ì „ëžµ ì‚¬ìš©",
+			"description": "ì‹¤í—˜ì  í†µí•© diff ì „ëžµì„ í™œì„±í™”í•©ë‹ˆë‹¤. ì´ ì „ëžµì€ ëª¨ë¸ ì˜¤ë¥˜ë¡œ ì¸í•œ ìž¬ì‹œë„ íšŸìˆ˜ë¥¼ ì¤„ì¼ ìˆ˜ ìžˆì§€ë§Œ ì˜ˆê¸°ì¹˜ ì•Šì€ ë™ìž‘ì´ë‚˜ ìž˜ëª»ëœ íŽ¸ì§‘ì„ ì¼ìœ¼í‚¬ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ìœ„í—˜ì„ ì´í•´í•˜ê³  ëª¨ë“  ë³€ê²½ ì‚¬í•­ì„ ì‹ ì¤‘í•˜ê²Œ ê²€í† í•  ì˜í–¥ì´ ìžˆëŠ” ê²½ìš°ì—ë§Œ í™œì„±í™”í•˜ì‹­ì‹œì˜¤."
 		},
 		"INSERT_BLOCK": {
-			"name": "실험적 콘텐츠 삽입 도구 사용",
-			"description": "실험적 콘텐츠 삽입 도구를 활성화하여 Roo가 diff를 만들 필요 없이 특정 줄 번호에 콘텐츠를 삽입할 수 있게 합니다."
+			"name": "ì‹¤í—˜ì  ì½˜í…ì¸  ì‚½ìž… ë„êµ¬ ì‚¬ìš©",
+			"description": "ì‹¤í—˜ì  ì½˜í…ì¸  ì‚½ìž… ë„êµ¬ë¥¼ í™œì„±í™”í•˜ì—¬ Rooê°€ diffë¥¼ ë§Œë“¤ í•„ìš” ì—†ì´ íŠ¹ì • ì¤„ ë²ˆí˜¸ì— ì½˜í…ì¸ ë¥¼ ì‚½ìž…í•  ìˆ˜ ìžˆê²Œ í•©ë‹ˆë‹¤."
 		},
 		"POWER_STEERING": {
-			"name": "실험적 \"파워 스티어링\" 모드 사용",
-			"description": "활성화하면 Roo가 현재 모드 정의의 세부 정보를 모델에 더 자주 상기시킵니다. 이로 인해 역할 정의 및 사용자 지정 지침에 대한 준수가 강화되지만 메시지당 더 많은 token이 사용됩니다."
+			"name": "ì‹¤í—˜ì  \"íŒŒì›Œ ìŠ¤í‹°ì–´ë§\" ëª¨ë“œ ì‚¬ìš©",
+			"description": "í™œì„±í™”í•˜ë©´ Rooê°€ í˜„ìž¬ ëª¨ë“œ ì •ì˜ì˜ ì„¸ë¶€ ì •ë³´ë¥¼ ëª¨ë¸ì— ë” ìžì£¼ ìƒê¸°ì‹œí‚µë‹ˆë‹¤. ì´ë¡œ ì¸í•´ ì—­í•  ì •ì˜ ë° ì‚¬ìš©ìž ì§€ì • ì§€ì¹¨ì— ëŒ€í•œ ì¤€ìˆ˜ê°€ ê°•í™”ë˜ì§€ë§Œ ë©”ì‹œì§€ë‹¹ ë” ë§Žì€ tokenì´ ì‚¬ìš©ë©ë‹ˆë‹¤."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
-			"name": "실험적 다중 블록 diff 도구 사용",
-			"description": "활성화하면 Roo가 다중 블록 diff 도구를 사용합니다. 이것은 하나의 요청에서 파일의 여러 코드 블록을 업데이트하려고 시도합니다."
+			"name": "ì‹¤í—˜ì  ë‹¤ì¤‘ ë¸”ë¡ diff ë„êµ¬ ì‚¬ìš©",
+			"description": "í™œì„±í™”í•˜ë©´ Rooê°€ ë‹¤ì¤‘ ë¸”ë¡ diff ë„êµ¬ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤. ì´ê²ƒì€ í•˜ë‚˜ì˜ ìš”ì²­ì—ì„œ íŒŒì¼ì˜ ì—¬ëŸ¬ ì½”ë“œ ë¸”ë¡ì„ ì—…ë°ì´íŠ¸í•˜ë ¤ê³  ì‹œë„í•©ë‹ˆë‹¤."
 		},
 		"CONCURRENT_FILE_READS": {
-			"name": "동시 파일 읽기 활성화",
-			"description": "활성화하면 Roo가 한 번의 요청으로 여러 파일 을 읽을 수 있습니다. 비활성화하면 Roo는 파일을 하나씩 읽어야 합니다. 성능이 낮은 모델로 작업하거나 파일 액세스를 더 제어하려는 경우 비활성화하면 도움이 될 수 있습니다."
+			"name": "ë™ì‹œ íŒŒì¼ ì½ê¸° í™œì„±í™”",
+			"description": "í™œì„±í™”í•˜ë©´ Rooê°€ í•œ ë²ˆì˜ ìš”ì²­ìœ¼ë¡œ ì—¬ëŸ¬ íŒŒì¼ ì„ ì½ì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ë¹„í™œì„±í™”í•˜ë©´ RooëŠ” íŒŒì¼ì„ í•˜ë‚˜ì”© ì½ì–´ì•¼ í•©ë‹ˆë‹¤. ì„±ëŠ¥ì´ ë‚®ì€ ëª¨ë¸ë¡œ ìž‘ì—…í•˜ê±°ë‚˜ íŒŒì¼ ì•¡ì„¸ìŠ¤ë¥¼ ë” ì œì–´í•˜ë ¤ëŠ” ê²½ìš° ë¹„í™œì„±í™”í•˜ë©´ ë„ì›€ì´ ë  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"MARKETPLACE": {
-			"name": "Marketplace 활성화",
-			"description": "활성화하면 Marketplace에서 MCP와 사용자 정의 모드를 설치할 수 있습니다."
+			"name": "Marketplace í™œì„±í™”",
+			"description": "í™œì„±í™”í•˜ë©´ Marketplaceì—ì„œ MCPì™€ ì‚¬ìš©ìž ì •ì˜ ëª¨ë“œë¥¼ ì„¤ì¹˜í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
-			"name": "동시 파일 편집 활성화",
-			"description": "활성화하면 Roo가 단일 요청으로 여러 파일을 편집할 수 있습니다. 비활성화하면 Roo는 파일을 하나씩 편집해야 합니다. 이 기능을 비활성화하면 덜 강력한 모델로 작업하거나 파일 수정에 대한 더 많은 제어가 필요할 때 도움이 됩니다."
+			"name": "ë™ì‹œ íŒŒì¼ íŽ¸ì§‘ í™œì„±í™”",
+			"description": "í™œì„±í™”í•˜ë©´ Rooê°€ ë‹¨ì¼ ìš”ì²­ìœ¼ë¡œ ì—¬ëŸ¬ íŒŒì¼ì„ íŽ¸ì§‘í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ë¹„í™œì„±í™”í•˜ë©´ RooëŠ” íŒŒì¼ì„ í•˜ë‚˜ì”© íŽ¸ì§‘í•´ì•¼ í•©ë‹ˆë‹¤. ì´ ê¸°ëŠ¥ì„ ë¹„í™œì„±í™”í•˜ë©´ ëœ ê°•ë ¥í•œ ëª¨ë¸ë¡œ ìž‘ì—…í•˜ê±°ë‚˜ íŒŒì¼ ìˆ˜ì •ì— ëŒ€í•œ ë” ë§Žì€ ì œì–´ê°€ í•„ìš”í•  ë•Œ ë„ì›€ì´ ë©ë‹ˆë‹¤."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
-			"name": "백그라운드 편집",
-			"description": "활성화하면 편집기 포커스 방해를 방지합니다. 파일 편집이 diff 뷰를 열거나 포커스를 빼앗지 않고 백그라운드에서 수행됩니다. Roo가 변경사항을 적용하는 동안 방해받지 않고 계속 작업할 수 있습니다. 파일은 진단을 캡처하기 위해 포커스 없이 열거나 완전히 닫힌 상태로 유지할 수 있습니다."
+			"name": "ë°±ê·¸ë¼ìš´ë“œ íŽ¸ì§‘",
+			"description": "í™œì„±í™”í•˜ë©´ íŽ¸ì§‘ê¸° í¬ì»¤ìŠ¤ ë°©í•´ë¥¼ ë°©ì§€í•©ë‹ˆë‹¤. íŒŒì¼ íŽ¸ì§‘ì´ diff ë·°ë¥¼ ì—´ê±°ë‚˜ í¬ì»¤ìŠ¤ë¥¼ ë¹¼ì•—ì§€ ì•Šê³  ë°±ê·¸ë¼ìš´ë“œì—ì„œ ìˆ˜í–‰ë©ë‹ˆë‹¤. Rooê°€ ë³€ê²½ì‚¬í•­ì„ ì ìš©í•˜ëŠ” ë™ì•ˆ ë°©í•´ë°›ì§€ ì•Šê³  ê³„ì† ìž‘ì—…í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. íŒŒì¼ì€ ì§„ë‹¨ì„ ìº¡ì²˜í•˜ê¸° ìœ„í•´ í¬ì»¤ìŠ¤ ì—†ì´ ì—´ê±°ë‚˜ ì™„ì „ížˆ ë‹«ížŒ ìƒíƒœë¡œ ìœ ì§€í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
-			"name": "새 메시지 파서 사용",
-			"description": "실험적 스트리밍 메시지 파서를 활성화합니다. 긴 응답을 더 효율적으로 처리해 지연을 줄입니다."
+			"name": "ìƒˆ ë©”ì‹œì§€ íŒŒì„œ ì‚¬ìš©",
+			"description": "ì‹¤í—˜ì  ìŠ¤íŠ¸ë¦¬ë° ë©”ì‹œì§€ íŒŒì„œë¥¼ í™œì„±í™”í•©ë‹ˆë‹¤. ê¸´ ì‘ë‹µì„ ë” íš¨ìœ¨ì ìœ¼ë¡œ ì²˜ë¦¬í•´ ì§€ì—°ì„ ì¤„ìž…ë‹ˆë‹¤."
 		},
 		"NEW_TASK_REQUIRE_TODOS": {
-			"name": "새 작업에 'todos' 목록 필요",
-			"description": "활성화하면 new_task 도구에 todos 매개변수를 제공해야 합니다. 이렇게 하면 모든 새 작업이 명확한 목표 목록으로 시작됩니다. 비활성화하면(기본값) 이전 버전과의 호환성을 위해 todos 매개변수는 선택 사항으로 유지됩니다."
+			"name": "ìƒˆ ìž‘ì—…ì— \u0027todos\u0027 ëª©ë¡ í•„ìš”",
+			"description": "í™œì„±í™”í•˜ë©´ new_task ë„êµ¬ì— todos ë§¤ê°œë³€ìˆ˜ë¥¼ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤. ì´ë ‡ê²Œ í•˜ë©´ ëª¨ë“  ìƒˆ ìž‘ì—…ì´ ëª…í™•í•œ ëª©í‘œ ëª©ë¡ìœ¼ë¡œ ì‹œìž‘ë©ë‹ˆë‹¤. ë¹„í™œì„±í™”í•˜ë©´(ê¸°ë³¸ê°’) ì´ì „ ë²„ì „ê³¼ì˜ í˜¸í™˜ì„±ì„ ìœ„í•´ todos ë§¤ê°œë³€ìˆ˜ëŠ” ì„ íƒ ì‚¬í•­ìœ¼ë¡œ ìœ ì§€ë©ë‹ˆë‹¤."
 		},
 		"IMAGE_GENERATION": {
-			"providerLabel": "제공업체",
-			"providerDescription": "이미지 생성에 사용할 제공업체를 선택하세요.",
-			"name": "AI 이미지 생성 활성화",
-			"description": "활성화하면 Roo는 OpenRouter의 이미지 생성 모델을 사용하여 텍스트 프롬프트에서 이미지를 생성할 수 있습니다. OpenRouter API 키 구성이 필요합니다.",
-			"openRouterApiKeyLabel": "OpenRouter API 키",
-			"openRouterApiKeyPlaceholder": "OpenRouter API 키를 입력하세요",
-			"getApiKeyText": "API 키를 받을 곳",
-			"modelSelectionLabel": "이미지 생성 모델",
-			"modelSelectionDescription": "이미지 생성에 사용할 모델을 선택하세요",
-			"warningMissingKey": "⚠️ 이미지 생성에는 OpenRouter API 키가 필요합니다. 위에서 설정해주세요.",
-			"successConfigured": "✓ 이미지 생성이 구성되었으며 사용할 준비가 되었습니다"
+			"providerLabel": "ì œê³µì—…ì²´",
+			"providerDescription": "ì´ë¯¸ì§€ ìƒì„±ì— ì‚¬ìš©í•  ì œê³µì—…ì²´ë¥¼ ì„ íƒí•˜ì„¸ìš”.",
+			"name": "AI ì´ë¯¸ì§€ ìƒì„± í™œì„±í™”",
+			"description": "í™œì„±í™”í•˜ë©´ RooëŠ” OpenRouterì˜ ì´ë¯¸ì§€ ìƒì„± ëª¨ë¸ì„ ì‚¬ìš©í•˜ì—¬ í…ìŠ¤íŠ¸ í”„ë¡¬í”„íŠ¸ì—ì„œ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. OpenRouter API í‚¤ êµ¬ì„±ì´ í•„ìš”í•©ë‹ˆë‹¤.",
+			"openRouterApiKeyLabel": "OpenRouter API í‚¤",
+			"openRouterApiKeyPlaceholder": "OpenRouter API í‚¤ë¥¼ ìž…ë ¥í•˜ì„¸ìš”",
+			"getApiKeyText": "API í‚¤ë¥¼ ë°›ì„ ê³³",
+			"modelSelectionLabel": "ì´ë¯¸ì§€ ìƒì„± ëª¨ë¸",
+			"modelSelectionDescription": "ì´ë¯¸ì§€ ìƒì„±ì— ì‚¬ìš©í•  ëª¨ë¸ì„ ì„ íƒí•˜ì„¸ìš”",
+			"warningMissingKey": "âš ï¸ ì´ë¯¸ì§€ ìƒì„±ì—ëŠ” OpenRouter API í‚¤ê°€ í•„ìš”í•©ë‹ˆë‹¤. ìœ„ì—ì„œ ì„¤ì •í•´ì£¼ì„¸ìš”.",
+			"successConfigured": "âœ“ ì´ë¯¸ì§€ ìƒì„±ì´ êµ¬ì„±ë˜ì—ˆìœ¼ë©° ì‚¬ìš©í•  ì¤€ë¹„ê°€ ë˜ì—ˆìŠµë‹ˆë‹¤"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "모델 시작 슬래시 명령 활성화",
-			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
+			"name": "ëª¨ë¸ ì‹œìž‘ ìŠ¬ëž˜ì‹œ ëª…ë ¹ í™œì„±í™”",
+			"description": "í™œì„±í™”ë˜ë©´ Rooê°€ ì›Œí¬í”Œë¡œë¥¼ ì‹¤í–‰í•˜ê¸° ìœ„í•´ ìŠ¬ëž˜ì‹œ ëª…ë ¹ì„ ì‹¤í–‰í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "병렬 도구 호출",
-			"description": "활성화되면 네이티브 프로토콜이 단일 어시스턴트 메시지 턴에서 여러 도구를 실행할 수 있습니다."
+			"name": "ë³‘ë ¬ ë„êµ¬ í˜¸ì¶œ",
+			"description": "í™œì„±í™”ë˜ë©´ ë„¤ì´í‹°ë¸Œ í”„ë¡œí† ì½œì´ ë‹¨ì¼ ì–´ì‹œìŠ¤í„´íŠ¸ ë©”ì‹œì§€ í„´ì—ì„œ ì—¬ëŸ¬ ë„êµ¬ë¥¼ ì‹¤í–‰í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 		}
 	},
 	"promptCaching": {
-		"label": "프롬프트 캐싱 비활성화",
-		"description": "체크하면 Roo가 이 모델에 대해 프롬프트 캐싱을 사용하지 않습니다."
+		"label": "í”„ë¡¬í”„íŠ¸ ìºì‹± ë¹„í™œì„±í™”",
+		"description": "ì²´í¬í•˜ë©´ Rooê°€ ì´ ëª¨ë¸ì— ëŒ€í•´ í”„ë¡¬í”„íŠ¸ ìºì‹±ì„ ì‚¬ìš©í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤."
 	},
 	"temperature": {
-		"useCustom": "사용자 정의 온도 사용",
-		"description": "모델 응답의 무작위성을 제어합니다.",
-		"rangeDescription": "높은 값은 출력을 더 무작위하게, 낮은 값은 더 결정적으로 만듭니다."
+		"useCustom": "ì‚¬ìš©ìž ì •ì˜ ì˜¨ë„ ì‚¬ìš©",
+		"description": "ëª¨ë¸ ì‘ë‹µì˜ ë¬´ìž‘ìœ„ì„±ì„ ì œì–´í•©ë‹ˆë‹¤.",
+		"rangeDescription": "ë†’ì€ ê°’ì€ ì¶œë ¥ì„ ë” ë¬´ìž‘ìœ„í•˜ê²Œ, ë‚®ì€ ê°’ì€ ë” ê²°ì •ì ìœ¼ë¡œ ë§Œë“­ë‹ˆë‹¤."
 	},
 	"modelInfo": {
-		"supportsImages": "이미지 지원",
-		"noImages": "이미지 지원 안 함",
-		"supportsPromptCache": "프롬프트 캐시 지원",
-		"noPromptCache": "프롬프트 캐시 지원 안 함",
-		"contextWindow": "컨텍스트 창:",
-		"maxOutput": "최대 출력",
-		"inputPrice": "입력 가격",
-		"outputPrice": "출력 가격",
-		"cacheReadsPrice": "캐시 읽기 가격",
-		"cacheWritesPrice": "캐시 쓰기 가격",
-		"enableStreaming": "스트리밍 활성화",
-		"enableR1Format": "R1 모델 매개변수 활성화",
-		"enableR1FormatTips": "QWQ와 같은 R1 모델을 사용할 때 활성화해야 하며, 400 오류를 방지합니다",
-		"useAzure": "Azure 사용",
-		"azureApiVersion": "Azure API 버전 설정",
+		"supportsImages": "ì´ë¯¸ì§€ ì§€ì›",
+		"noImages": "ì´ë¯¸ì§€ ì§€ì› ì•ˆ í•¨",
+		"supportsPromptCache": "í”„ë¡¬í”„íŠ¸ ìºì‹œ ì§€ì›",
+		"noPromptCache": "í”„ë¡¬í”„íŠ¸ ìºì‹œ ì§€ì› ì•ˆ í•¨",
+		"contextWindow": "ì»¨í…ìŠ¤íŠ¸ ì°½:",
+		"maxOutput": "ìµœëŒ€ ì¶œë ¥",
+		"inputPrice": "ìž…ë ¥ ê°€ê²©",
+		"outputPrice": "ì¶œë ¥ ê°€ê²©",
+		"cacheReadsPrice": "ìºì‹œ ì½ê¸° ê°€ê²©",
+		"cacheWritesPrice": "ìºì‹œ ì“°ê¸° ê°€ê²©",
+		"enableStreaming": "ìŠ¤íŠ¸ë¦¬ë° í™œì„±í™”",
+		"enableR1Format": "R1 ëª¨ë¸ ë§¤ê°œë³€ìˆ˜ í™œì„±í™”",
+		"enableR1FormatTips": "QWQì™€ ê°™ì€ R1 ëª¨ë¸ì„ ì‚¬ìš©í•  ë•Œ í™œì„±í™”í•´ì•¼ í•˜ë©°, 400 ì˜¤ë¥˜ë¥¼ ë°©ì§€í•©ë‹ˆë‹¤",
+		"useAzure": "Azure ì‚¬ìš©",
+		"azureApiVersion": "Azure API ë²„ì „ ì„¤ì •",
 		"gemini": {
-			"freeRequests": "* 분당 {{count}}개의 요청까지 무료. 이후에는 프롬프트 크기에 따라 요금이 부과됩니다.",
-			"pricingDetails": "자세한 내용은 가격 정보를 참조하세요.",
-			"billingEstimate": "* 요금은 추정치입니다 - 정확한 비용은 프롬프트 크기에 따라 달라집니다."
+			"freeRequests": "* ë¶„ë‹¹ {{count}}ê°œì˜ ìš”ì²­ê¹Œì§€ ë¬´ë£Œ. ì´í›„ì—ëŠ” í”„ë¡¬í”„íŠ¸ í¬ê¸°ì— ë”°ë¼ ìš”ê¸ˆì´ ë¶€ê³¼ë©ë‹ˆë‹¤.",
+			"pricingDetails": "ìžì„¸í•œ ë‚´ìš©ì€ ê°€ê²© ì •ë³´ë¥¼ ì°¸ì¡°í•˜ì„¸ìš”.",
+			"billingEstimate": "* ìš”ê¸ˆì€ ì¶”ì •ì¹˜ìž…ë‹ˆë‹¤ - ì •í™•í•œ ë¹„ìš©ì€ í”„ë¡¬í”„íŠ¸ í¬ê¸°ì— ë”°ë¼ ë‹¬ë¼ì§‘ë‹ˆë‹¤."
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "확장 프로그램은 <serviceLink>{{serviceName}}</serviceLink>에서 사용 가능한 최신 모델 목록을 자동으로 가져옵니다. 어떤 모델을 선택해야 할지 확실하지 않다면, Roo Code는 <defaultModelLink>{{defaultModelId}}</defaultModelLink>로 가장 잘 작동합니다. 현재 사용 가능한 무료 옵션을 찾으려면 \"free\"를 검색해 볼 수도 있습니다.",
-		"label": "모델",
-		"searchPlaceholder": "검색",
-		"noMatchFound": "일치하는 항목 없음",
-		"useCustomModel": "사용자 정의 사용: {{modelId}}",
-		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
+		"automaticFetch": "í™•ìž¥ í”„ë¡œê·¸ëž¨ì€ \u003cserviceLink\u003e{{serviceName}}\u003c/serviceLink\u003eì—ì„œ ì‚¬ìš© ê°€ëŠ¥í•œ ìµœì‹  ëª¨ë¸ ëª©ë¡ì„ ìžë™ìœ¼ë¡œ ê°€ì ¸ì˜µë‹ˆë‹¤. ì–´ë–¤ ëª¨ë¸ì„ ì„ íƒí•´ì•¼ í• ì§€ í™•ì‹¤í•˜ì§€ ì•Šë‹¤ë©´, Roo CodeëŠ” \u003cdefaultModelLink\u003e{{defaultModelId}}\u003c/defaultModelLink\u003eë¡œ ê°€ìž¥ ìž˜ ìž‘ë™í•©ë‹ˆë‹¤. í˜„ìž¬ ì‚¬ìš© ê°€ëŠ¥í•œ ë¬´ë£Œ ì˜µì…˜ì„ ì°¾ìœ¼ë ¤ë©´ \"free\"ë¥¼ ê²€ìƒ‰í•´ ë³¼ ìˆ˜ë„ ìžˆìŠµë‹ˆë‹¤.",
+		"label": "ëª¨ë¸",
+		"searchPlaceholder": "ê²€ìƒ‰",
+		"noMatchFound": "ì¼ì¹˜í•˜ëŠ” í•­ëª© ì—†ìŒ",
+		"useCustomModel": "ì‚¬ìš©ìž ì •ì˜ ì‚¬ìš©: {{modelId}}",
+		"simplifiedExplanation": "ë‚˜ì¤‘ì— ìžì„¸í•œ ëª¨ë¸ ì„¤ì •ì„ ì¡°ì •í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤."
 	},
 	"footer": {
-		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
+		"feedback": "ì§ˆë¬¸ì´ë‚˜ í”¼ë“œë°±ì´ ìžˆìœ¼ì‹œë©´ \u003cgithubLink\u003egithub.com/RooCodeInc/Roo-Code\u003c/githubLink\u003eì—ì„œ ì´ìŠˆë¥¼ ì—´ê±°ë‚˜ \u003credditLink\u003ereddit.com/r/RooCode\u003c/redditLink\u003e ë˜ëŠ” \u003cdiscordLink\u003ediscord.gg/roocode\u003c/discordLink\u003eì— ê°€ìž…í•˜ì„¸ìš”",
 		"telemetry": {
-			"label": "익명 오류 및 사용 보고 허용",
-			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Roo Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."
+			"label": "ìµëª… ì˜¤ë¥˜ ë° ì‚¬ìš© ë³´ê³  í—ˆìš©",
+			"description": "ìµëª… ì‚¬ìš© ë°ì´í„° ë° ì˜¤ë¥˜ ë³´ê³ ì„œë¥¼ ì „ì†¡í•˜ì—¬ Roo Code ê°œì„ ì— ë„ì›€ì„ ì£¼ì„¸ìš”. ì´ í…”ë ˆë©”íŠ¸ë¦¬ëŠ” ì½”ë“œ, í”„ë¡¬í”„íŠ¸ ë˜ëŠ” ê°œì¸ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ìžì„¸í•œ ë‚´ìš©ì€ \u003cprivacyLink\u003eê°œì¸ì •ë³´ ë³´í˜¸ì •ì±…\u003c/privacyLink\u003eì„ ì°¸ì¡°í•˜ì„¸ìš”."
 		},
 		"settings": {
-			"import": "가져오기",
-			"export": "내보내기",
-			"reset": "초기화"
+			"import": "ê°€ì ¸ì˜¤ê¸°",
+			"export": "ë‚´ë³´ë‚´ê¸°",
+			"reset": "ì´ˆê¸°í™”"
 		}
 	},
 	"thinkingBudget": {
-		"maxTokens": "최대 tokens",
-		"maxThinkingTokens": "최대 사고 tokens"
+		"maxTokens": "ìµœëŒ€ tokens",
+		"maxThinkingTokens": "ìµœëŒ€ ì‚¬ê³  tokens"
 	},
 	"validation": {
-		"apiKey": "유효한 API 키를 입력해야 합니다.",
-		"awsRegion": "Amazon Bedrock을 사용하려면 리전을 선택해야 합니다.",
-		"googleCloud": "유효한 Google Cloud 프로젝트 ID와 리전을 입력해야 합니다.",
-		"modelId": "유효한 모델 ID를 입력해야 합니다.",
-		"modelSelector": "유효한 모델 선택기를 입력해야 합니다.",
-		"openAi": "유효한 기본 URL, API 키, 모델 ID를 입력해야 합니다.",
+		"apiKey": "ìœ íš¨í•œ API í‚¤ë¥¼ ìž…ë ¥í•´ì•¼ í•©ë‹ˆë‹¤.",
+		"awsRegion": "Amazon Bedrockì„ ì‚¬ìš©í•˜ë ¤ë©´ ë¦¬ì „ì„ ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.",
+		"googleCloud": "ìœ íš¨í•œ Google Cloud í”„ë¡œì íŠ¸ IDì™€ ë¦¬ì „ì„ ìž…ë ¥í•´ì•¼ í•©ë‹ˆë‹¤.",
+		"modelId": "ìœ íš¨í•œ ëª¨ë¸ IDë¥¼ ìž…ë ¥í•´ì•¼ í•©ë‹ˆë‹¤.",
+		"modelSelector": "ìœ íš¨í•œ ëª¨ë¸ ì„ íƒê¸°ë¥¼ ìž…ë ¥í•´ì•¼ í•©ë‹ˆë‹¤.",
+		"openAi": "ìœ íš¨í•œ ê¸°ë³¸ URL, API í‚¤, ëª¨ë¸ IDë¥¼ ìž…ë ¥í•´ì•¼ í•©ë‹ˆë‹¤.",
 		"arn": {
-			"invalidFormat": "ARN 형식이 잘못되었습니다. 형식 요구사항을 확인하세요.",
-			"regionMismatch": "경고: ARN의 리전({{arnRegion}})이 선택한 리전({{region}})과 일치하지 않습니다. 접근 문제가 발생할 수 있습니다. 제공자는 ARN의 리전을 사용합니다."
+			"invalidFormat": "ARN í˜•ì‹ì´ ìž˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤. í˜•ì‹ ìš”êµ¬ì‚¬í•­ì„ í™•ì¸í•˜ì„¸ìš”.",
+			"regionMismatch": "ê²½ê³ : ARNì˜ ë¦¬ì „({{arnRegion}})ì´ ì„ íƒí•œ ë¦¬ì „({{region}})ê³¼ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤. ì ‘ê·¼ ë¬¸ì œê°€ ë°œìƒí•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤. ì œê³µìžëŠ” ARNì˜ ë¦¬ì „ì„ ì‚¬ìš©í•©ë‹ˆë‹¤."
 		},
-		"modelAvailability": "제공한 모델 ID({{modelId}})를 사용할 수 없습니다. 다른 모델을 선택하세요.",
-		"modelDeprecated": "이 모델은 더 이상 사용할 수 없습니다. 다른 모델을 선택하세요.",
-		"providerNotAllowed": "제공자 '{{provider}}'는 조직에서 허용되지 않습니다",
-		"modelNotAllowed": "모델 '{{model}}'은 제공자 '{{provider}}'에 대해 조직에서 허용되지 않습니다",
-		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
-		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다"
+		"modelAvailability": "ì œê³µí•œ ëª¨ë¸ ID({{modelId}})ë¥¼ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ë‹¤ë¥¸ ëª¨ë¸ì„ ì„ íƒí•˜ì„¸ìš”.",
+		"modelDeprecated": "ì´ ëª¨ë¸ì€ ë” ì´ìƒ ì‚¬ìš©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. ë‹¤ë¥¸ ëª¨ë¸ì„ ì„ íƒí•˜ì„¸ìš”.",
+		"providerNotAllowed": "ì œê³µìž \u0027{{provider}}\u0027ëŠ” ì¡°ì§ì—ì„œ í—ˆìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤",
+		"modelNotAllowed": "ëª¨ë¸ \u0027{{model}}\u0027ì€ ì œê³µìž \u0027{{provider}}\u0027ì— ëŒ€í•´ ì¡°ì§ì—ì„œ í—ˆìš©ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤",
+		"profileInvalid": "ì´ í”„ë¡œí•„ì—ëŠ” ì¡°ì§ì—ì„œ í—ˆìš©ë˜ì§€ ì•ŠëŠ” ì œê³µìž ë˜ëŠ” ëª¨ë¸ì´ í¬í•¨ë˜ì–´ ìžˆìŠµë‹ˆë‹¤",
+		"qwenCodeOauthPath": "ìœ íš¨í•œ OAuth ìžê²© ì¦ëª… ê²½ë¡œë¥¼ ì œê³µí•´ì•¼ í•©ë‹ˆë‹¤"
 	},
 	"placeholders": {
-		"apiKey": "API 키 입력...",
-		"profileName": "프로필 이름 입력",
-		"accessKey": "액세스 키 입력...",
-		"secretKey": "시크릿 키 입력...",
-		"sessionToken": "세션 토큰 입력...",
-		"credentialsJson": "인증 정보 JSON 입력...",
-		"keyFilePath": "키 파일 경로 입력...",
-		"projectId": "프로젝트 ID 입력...",
-		"customArn": "ARN 입력 (예: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
-		"baseUrl": "기본 URL 입력...",
+		"apiKey": "API í‚¤ ìž…ë ¥...",
+		"profileName": "í”„ë¡œí•„ ì´ë¦„ ìž…ë ¥",
+		"accessKey": "ì•¡ì„¸ìŠ¤ í‚¤ ìž…ë ¥...",
+		"secretKey": "ì‹œí¬ë¦¿ í‚¤ ìž…ë ¥...",
+		"sessionToken": "ì„¸ì…˜ í† í° ìž…ë ¥...",
+		"credentialsJson": "ì¸ì¦ ì •ë³´ JSON ìž…ë ¥...",
+		"keyFilePath": "í‚¤ íŒŒì¼ ê²½ë¡œ ìž…ë ¥...",
+		"projectId": "í”„ë¡œì íŠ¸ ID ìž…ë ¥...",
+		"customArn": "ARN ìž…ë ¥ (ì˜ˆ: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
+		"baseUrl": "ê¸°ë³¸ URL ìž…ë ¥...",
 		"modelId": {
-			"lmStudio": "예: meta-llama-3.1-8b-instruct",
-			"lmStudioDraft": "예: lmstudio-community/llama-3.2-1b-instruct",
-			"ollama": "예: llama3.1"
+			"lmStudio": "ì˜ˆ: meta-llama-3.1-8b-instruct",
+			"lmStudioDraft": "ì˜ˆ: lmstudio-community/llama-3.2-1b-instruct",
+			"ollama": "ì˜ˆ: llama3.1"
 		},
 		"numbers": {
-			"maxTokens": "예: 4096",
-			"contextWindow": "예: 128000",
-			"inputPrice": "예: 0.0001",
-			"outputPrice": "예: 0.0002",
-			"cacheWritePrice": "예: 0.00005"
+			"maxTokens": "ì˜ˆ: 4096",
+			"contextWindow": "ì˜ˆ: 128000",
+			"inputPrice": "ì˜ˆ: 0.0001",
+			"outputPrice": "ì˜ˆ: 0.0002",
+			"cacheWritePrice": "ì˜ˆ: 0.00005"
 		}
 	},
 	"defaults": {
-		"ollamaUrl": "기본값: http://localhost:11434",
-		"lmStudioUrl": "기본값: http://localhost:1234",
-		"geminiUrl": "기본값: https://generativelanguage.googleapis.com"
+		"ollamaUrl": "ê¸°ë³¸ê°’: http://localhost:11434",
+		"lmStudioUrl": "ê¸°ë³¸ê°’: http://localhost:1234",
+		"geminiUrl": "ê¸°ë³¸ê°’: https://generativelanguage.googleapis.com"
 	},
 	"labels": {
-		"customArn": "사용자 지정 ARN",
-		"useCustomArn": "사용자 지정 ARN 사용..."
+		"customArn": "ì‚¬ìš©ìž ì§€ì • ARN",
+		"useCustomArn": "ì‚¬ìš©ìž ì§€ì • ARN ì‚¬ìš©..."
 	},
-	"includeMaxOutputTokens": "최대 출력 토큰 포함",
-	"includeMaxOutputTokensDescription": "API 요청에서 최대 출력 토큰 매개변수를 전송합니다. 일부 제공업체는 이를 지원하지 않을 수 있습니다.",
-	"limitMaxTokensDescription": "응답에서 최대 토큰 수 제한",
-	"maxOutputTokensLabel": "최대 출력 토큰",
-	"maxTokensGenerateDescription": "응답에서 생성할 최대 토큰 수",
+	"includeMaxOutputTokens": "ìµœëŒ€ ì¶œë ¥ í† í° í¬í•¨",
+	"includeMaxOutputTokensDescription": "API ìš”ì²­ì—ì„œ ìµœëŒ€ ì¶œë ¥ í† í° ë§¤ê°œë³€ìˆ˜ë¥¼ ì „ì†¡í•©ë‹ˆë‹¤. ì¼ë¶€ ì œê³µì—…ì²´ëŠ” ì´ë¥¼ ì§€ì›í•˜ì§€ ì•Šì„ ìˆ˜ ìžˆìŠµë‹ˆë‹¤.",
+	"limitMaxTokensDescription": "ì‘ë‹µì—ì„œ ìµœëŒ€ í† í° ìˆ˜ ì œí•œ",
+	"maxOutputTokensLabel": "ìµœëŒ€ ì¶œë ¥ í† í°",
+	"maxTokensGenerateDescription": "ì‘ë‹µì—ì„œ ìƒì„±í•  ìµœëŒ€ í† í° ìˆ˜",
 	"serviceTier": {
-		"label": "서비스 등급",
-		"tooltip": "API 요청을 더 빠르게 처리하려면 우선 처리 서비스 등급을 사용해 보세요. 더 낮은 가격에 더 높은 지연 시간을 원하시면 플렉스 처리 등급을 사용해 보세요.",
-		"standard": "표준",
-		"flex": "플렉스",
-		"priority": "우선",
-		"pricingTableTitle": "서비스 등급별 가격 (100만 토큰당 가격)",
+		"label": "ì„œë¹„ìŠ¤ ë“±ê¸‰",
+		"tooltip": "API ìš”ì²­ì„ ë” ë¹ ë¥´ê²Œ ì²˜ë¦¬í•˜ë ¤ë©´ ìš°ì„  ì²˜ë¦¬ ì„œë¹„ìŠ¤ ë“±ê¸‰ì„ ì‚¬ìš©í•´ ë³´ì„¸ìš”. ë” ë‚®ì€ ê°€ê²©ì— ë” ë†’ì€ ì§€ì—° ì‹œê°„ì„ ì›í•˜ì‹œë©´ í”Œë ‰ìŠ¤ ì²˜ë¦¬ ë“±ê¸‰ì„ ì‚¬ìš©í•´ ë³´ì„¸ìš”.",
+		"standard": "í‘œì¤€",
+		"flex": "í”Œë ‰ìŠ¤",
+		"priority": "ìš°ì„ ",
+		"pricingTableTitle": "ì„œë¹„ìŠ¤ ë“±ê¸‰ë³„ ê°€ê²© (100ë§Œ í† í°ë‹¹ ê°€ê²©)",
 		"columns": {
-			"tier": "등급",
-			"input": "입력",
-			"output": "출력",
-			"cacheReads": "캐시 읽기"
+			"tier": "ë“±ê¸‰",
+			"input": "ìž…ë ¥",
+			"output": "ì¶œë ¥",
+			"cacheReads": "ìºì‹œ ì½ê¸°"
 		}
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "기본적으로 생각 메시지 접기",
-			"description": "활성화하면 상호 작용할 때까지 생각 블록이 기본적으로 접힙니다"
+			"label": "ê¸°ë³¸ì ìœ¼ë¡œ ìƒê° ë©”ì‹œì§€ ì ‘ê¸°",
+			"description": "í™œì„±í™”í•˜ë©´ ìƒí˜¸ ìž‘ìš©í•  ë•Œê¹Œì§€ ìƒê° ë¸”ë¡ì´ ê¸°ë³¸ì ìœ¼ë¡œ ì ‘íž™ë‹ˆë‹¤"
 		},
 		"requireCtrlEnterToSend": {
-			"label": "메시지를 보내려면 {{primaryMod}}+Enter가 필요",
-			"description": "활성화하면 Enter만으로는 안 되고 {{primaryMod}}+Enter를 눌러야 메시지를 보낼 수 있습니다"
+			"label": "ë©”ì‹œì§€ë¥¼ ë³´ë‚´ë ¤ë©´ {{primaryMod}}+Enterê°€ í•„ìš”",
+			"description": "í™œì„±í™”í•˜ë©´ Enterë§Œìœ¼ë¡œëŠ” ì•ˆ ë˜ê³  {{primaryMod}}+Enterë¥¼ ëˆŒëŸ¬ì•¼ ë©”ì‹œì§€ë¥¼ ë³´ë‚¼ ìˆ˜ ìžˆìŠµë‹ˆë‹¤"
 		}
 	}
 }

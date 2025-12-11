@@ -7,12 +7,13 @@ import {
 
 // Mock fetch globally
 const mockFetch = vi.fn()
-global.fetch = mockFetch
 
 describe("vscode-lm-model-fetcher", () => {
 	beforeEach(() => {
 		clearModelInfoCache()
-		vi.clearAllMocks()
+		mockFetch.mockReset()
+		// Ensure global.fetch is reset to the mock each time
+		global.fetch = mockFetch
 	})
 
 	describe("fetchModelInfo", () => {
@@ -246,10 +247,10 @@ describe("vscode-lm-model-fetcher", () => {
 				],
 			}
 
-			mockFetch.mockResolvedValueOnce({
+			mockFetch.mockImplementation(async () => ({
 				ok: true,
 				json: async () => mockResponse,
-			})
+			}))
 
 			const result = await fetchModelInfo("llama-3-70b")
 
