@@ -32,6 +32,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	private client: GoogleGenAI
 	private lastThoughtSignature?: string
 	private lastResponseId?: string
+	private recentTextChunks: string[] = []
+	private readonly maxRecentChunks = 5
+	private readonly repetitionThreshold = 3
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
 		super()
@@ -72,6 +75,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Reset per-request metadata that we persist into apiConversationHistory.
 		this.lastThoughtSignature = undefined
 		this.lastResponseId = undefined
+		// Reset repetition detection buffer for each new message
+		this.recentTextChunks = []
 
 		// For hybrid/budget reasoning models (e.g. Gemini 2.5 Pro), respect user-configured
 		// modelMaxTokens so the ThinkingBudget slider can control the cap. For effort-only or
@@ -263,7 +268,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							} else {
 								// This is regular content
 								if (part.text) {
-									yield { type: "text", text: part.text }
+									// Check for repetition before yielding
+									if (!this.isRepetitiveChunk(part.text)) {
+										yield { type: "text", text: part.text }
+										this.addToRecentChunks(part.text)
+									} else {
+										console.warn(
+											`Gemini: Filtered repetitive chunk: "${part.text.substring(0, 50)}..."`,
+										)
+									}
 								}
 							}
 						}
@@ -272,7 +285,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 				// Fallback to the original text property if no candidates structure
 				else if (chunk.text) {
-					yield { type: "text", text: chunk.text }
+					// Check for repetition before yielding
+					if (!this.isRepetitiveChunk(chunk.text)) {
+						yield { type: "text", text: chunk.text }
+						this.addToRecentChunks(chunk.text)
+					} else {
+						console.warn(`Gemini: Filtered repetitive chunk: "${chunk.text.substring(0, 50)}..."`)
+					}
 				}
 
 				if (chunk.usageMetadata) {
@@ -500,5 +519,32 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		return totalCost
+	}
+
+	/**
+	 * Check if a text chunk is repetitive based on recent chunks
+	 */
+	private isRepetitiveChunk(text: string): boolean {
+		if (!text || text.trim().length === 0) {
+			return false
+		}
+
+		// Count how many times this exact text appears in recent chunks
+		const occurrences = this.recentTextChunks.filter((chunk) => chunk === text).length
+
+		// If the text appears more than the threshold, it's considered repetitive
+		return occurrences >= this.repetitionThreshold
+	}
+
+	/**
+	 * Add a text chunk to the recent chunks buffer
+	 */
+	private addToRecentChunks(text: string): void {
+		this.recentTextChunks.push(text)
+
+		// Keep only the most recent chunks
+		if (this.recentTextChunks.length > this.maxRecentChunks) {
+			this.recentTextChunks.shift()
+		}
 	}
 }

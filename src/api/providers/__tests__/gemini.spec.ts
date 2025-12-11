@@ -102,6 +102,136 @@ describe("GeminiHandler", () => {
 				}
 			}).rejects.toThrow()
 		})
+
+		it("should filter out repetitive text chunks", async () => {
+			// Setup the mock to return repetitive text
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					// Simulate the repetitive output from the bug report
+					yield { text: "I will now run the test." }
+					yield { text: "I will now run the test." }
+					yield { text: "I will now run the test." }
+					yield { text: "I will now run the test." }
+					yield { text: "I will now run the test." }
+					yield { text: " Different text." }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have filtered out repetitive chunks
+			// First 3 occurrences should be kept (threshold is 3), rest filtered
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBe(4) // 3 repetitions + 1 different text
+			expect(textChunks[0]).toEqual({ type: "text", text: "I will now run the test." })
+			expect(textChunks[1]).toEqual({ type: "text", text: "I will now run the test." })
+			expect(textChunks[2]).toEqual({ type: "text", text: "I will now run the test." })
+			expect(textChunks[3]).toEqual({ type: "text", text: " Different text." })
+		})
+
+		it("should filter repetitive chunks from candidates structure", async () => {
+			// Setup mock with candidates structure containing repetitive text
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "Repeating message" }],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "Repeating message" }],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "Repeating message" }],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "Repeating message" }],
+								},
+							},
+						],
+					}
+					yield {
+						candidates: [
+							{
+								content: {
+									parts: [{ text: "New content" }],
+								},
+							},
+						],
+					}
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should filter repetitions beyond threshold
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks.length).toBe(4) // 3 repetitions (threshold) + 1 new content
+			expect(textChunks[0]).toEqual({ type: "text", text: "Repeating message" })
+			expect(textChunks[3]).toEqual({ type: "text", text: "New content" })
+		})
+
+		it("should reset repetition buffer for each new message", async () => {
+			// First message with repetitive text
+			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
+				[Symbol.asyncIterator]: async function* () {
+					yield { text: "Test" }
+					yield { text: "Test" }
+					yield { text: "Test" }
+					yield { usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }
+				},
+			})
+
+			const stream1 = handler.createMessage(systemPrompt, mockMessages)
+			const chunks1 = []
+			for await (const chunk of stream1) {
+				chunks1.push(chunk)
+			}
+
+			// Second message with same text should not be filtered (buffer reset)
+			const stream2 = handler.createMessage(systemPrompt, mockMessages)
+			const chunks2 = []
+			for await (const chunk of stream2) {
+				chunks2.push(chunk)
+			}
+
+			// Both messages should have the same chunks (buffer was reset)
+			const textChunks1 = chunks1.filter((c) => c.type === "text")
+			const textChunks2 = chunks2.filter((c) => c.type === "text")
+			expect(textChunks1.length).toBe(3)
+			expect(textChunks2.length).toBe(3)
+		})
 	})
 
 	describe("completePrompt", () => {
