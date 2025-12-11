@@ -400,7 +400,7 @@ const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
 
-export const zaiApiLineSchema = z.enum(["international_coding", "china_coding"])
+export const zaiApiLineSchema = z.enum(["international_coding", "china_coding", "international_api", "china_api"])
 
 export type ZaiApiLine = z.infer<typeof zaiApiLineSchema>
 

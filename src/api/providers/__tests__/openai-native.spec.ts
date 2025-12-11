@@ -205,7 +205,7 @@ describe("OpenAiNativeHandler", () => {
 				openAiNativeApiKey: "test-api-key",
 			})
 			const modelInfo = handlerWithoutModel.getModel()
-			expect(modelInfo.id).toBe("gpt-5.1") // Default model
+			expect(modelInfo.id).toBe("gpt-5.1-codex-max") // Default model
 			expect(modelInfo.info).toBeDefined()
 		})
 	})
