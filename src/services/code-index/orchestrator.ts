@@ -141,6 +141,10 @@ export class CodeIndexOrchestrator {
 			// If it does, we can skip the full scan and just start the watcher
 			const hasExistingData = await this.vectorStore.hasIndexedData()
 
+			console.log(
+				`[CodeIndexOrchestrator] Checking existing data: hasExistingData=${hasExistingData}, collectionCreated=${collectionCreated}`,
+			)
+
 			if (hasExistingData && !collectionCreated) {
 				// Collection exists with data - run incremental scan to catch any new/changed files
 				// This handles files added while workspace was closed or Qdrant was inactive
@@ -201,6 +205,9 @@ export class CodeIndexOrchestrator {
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
 			} else {
 				// No existing data or collection was just created - do a full scan
+				console.log(
+					`[CodeIndexOrchestrator] No existing data or collection was just created. Starting full workspace scan...`,
+				)
 				this.stateManager.setSystemState("Indexing", "Services ready. Starting workspace scan...")
 
 				// Mark as incomplete at the start of full scan

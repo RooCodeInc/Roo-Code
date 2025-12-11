@@ -588,10 +588,13 @@ export class QdrantVectorStore implements IVectorStore {
 		try {
 			const collectionInfo = await this.getCollectionInfo()
 			if (!collectionInfo) {
+				console.log("[QdrantVectorStore] hasIndexedData: No collection info found")
 				return false
 			}
 			// Check if the collection has any points indexed
 			const pointsCount = collectionInfo.points_count ?? 0
+			console.log(`[QdrantVectorStore] hasIndexedData: Collection has ${pointsCount} points`)
+
 			if (pointsCount === 0) {
 				return false
 			}
@@ -605,17 +608,21 @@ export class QdrantVectorStore implements IVectorStore {
 
 			// If marker exists, use it to determine completion status
 			if (metadataPoints.length > 0) {
-				return metadataPoints[0].payload?.indexing_complete === true
+				const isComplete = metadataPoints[0].payload?.indexing_complete === true
+				console.log(
+					`[QdrantVectorStore] hasIndexedData: Found metadata marker, indexing_complete=${isComplete}`,
+				)
+				return isComplete
 			}
 
 			// Backward compatibility: No marker exists (old index or pre-marker version)
 			// Fall back to old logic - assume complete if collection has points
 			console.log(
-				"[QdrantVectorStore] No indexing metadata marker found. Using backward compatibility mode (checking points_count > 0).",
+				`[QdrantVectorStore] hasIndexedData: No indexing metadata marker found. Using backward compatibility mode (returning ${pointsCount > 0} based on points_count)`,
 			)
 			return pointsCount > 0
 		} catch (error) {
-			console.warn("[QdrantVectorStore] Failed to check if collection has data:", error)
+			console.warn("[QdrantVectorStore] hasIndexedData: Failed to check if collection has data:", error)
 			return false
 		}
 	}
