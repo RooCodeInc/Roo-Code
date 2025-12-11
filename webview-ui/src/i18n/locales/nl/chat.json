@@ -79,8 +79,8 @@
 		"tooltip": "Ga door met de huidige taak"
 	},
 	"terminate": {
-		"title": "Beëindigen",
-		"tooltip": "Beëindig de huidige taak"
+		"title": "BeÃ«indigen",
+		"tooltip": "BeÃ«indig de huidige taak"
 	},
 	"cancel": {
 		"title": "Annuleren",
@@ -88,27 +88,27 @@
 	},
 	"scrollToBottom": "Scroll naar onderaan de chat",
 	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
-	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",
+	"docs": "Bekijk onze \u003cDocsLink\u003edocumentatie\u003c/DocsLink\u003e voor meer informatie.",
 	"onboarding": "Je takenlijst in deze werkruimte is leeg.",
 	"rooTips": {
 		"customizableModes": {
 			"title": "Aanpasbare modi",
-			"description": "Gespecialiseerde persona's die op schema blijven en presteren."
+			"description": "Gespecialiseerde persona\u0027s die op schema blijven en presteren."
 		},
 		"modelAgnostic": {
 			"title": "Breng je eigen model mee",
-			"description": "Gebruik je eigen providersleutel of voer zelfs lokale inferentie uit — geen opslag, geen lock-in, geen beperkingen"
+			"description": "Gebruik je eigen providersleutel of voer zelfs lokale inferentie uit â€” geen opslag, geen lock-in, geen beperkingen"
 		}
 	},
 	"selectMode": "Selecteer modus voor interactie",
 	"selectApiConfig": "Selecteer API-configuratie",
 	"enhancePrompt": "Prompt verbeteren met extra context",
-	"enhancePromptDescription": "De knop 'Prompt verbeteren' helpt je prompt te verbeteren door extra context, verduidelijking of herformulering te bieden. Probeer hier een prompt te typen en klik opnieuw op de knop om te zien hoe het werkt.",
+	"enhancePromptDescription": "De knop \u0027Prompt verbeteren\u0027 helpt je prompt te verbeteren door extra context, verduidelijking of herformulering te bieden. Probeer hier een prompt te typen en klik opnieuw op de knop om te zien hoe het werkt.",
 	"modeSelector": {
 		"title": "Modi",
 		"marketplace": "Modus Marktplaats",
 		"settings": "Modus Instellingen",
-		"description": "Gespecialiseerde persona's die het gedrag van Roo aanpassen.",
+		"description": "Gespecialiseerde persona\u0027s die het gedrag van Roo aanpassen.",
 		"searchPlaceholder": "Zoek modi...",
 		"noResults": "Geen resultaten gevonden"
 	},
@@ -118,7 +118,7 @@
 	"stopTts": "Stop tekst-naar-spraak",
 	"typeMessage": "Typ een bericht...",
 	"typeTask": "Typ hier je taak...",
-	"addContext": "@ om context toe te voegen, / voor commando's",
+	"addContext": "@ om context toe te voegen, / voor commando\u0027s",
 	"dragFiles": "houd shift ingedrukt om bestanden te slepen",
 	"dragFilesImages": "houd shift ingedrukt om bestanden/afbeeldingen te slepen",
 	"errorReadingFile": "Fout bij het lezen van bestand",
@@ -148,7 +148,7 @@
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
-		"initializingWarning": "Checkpoint wordt nog steeds geïnitialiseerd... Als dit te lang duurt, kun je checkpoints uitschakelen in de <settingsLink>instellingen</settingsLink> en je taak opnieuw starten.",
+		"initializingWarning": "Checkpoint wordt nog steeds geÃ¯nitialiseerd... Als dit te lang duurt, kun je checkpoints uitschakelen in de \u003csettingsLink\u003einstellingen\u003c/settingsLink\u003e en je taak opnieuw starten.",
 		"menu": {
 			"viewDiff": "Bekijk verschil",
 			"more": "Meer opties",
@@ -157,7 +157,7 @@
 			"restore": "Herstel checkpoint",
 			"restoreFiles": "Bestanden herstellen",
 			"restoreFilesDescription": "Herstelt de bestanden van je project naar een momentopname die op dit punt is gemaakt.",
-			"restoreFilesAndTask": "Bestanden & taak herstellen",
+			"restoreFilesAndTask": "Bestanden \u0026 taak herstellen",
 			"confirm": "Bevestigen",
 			"cancel": "Annuleren",
 			"cannotUndo": "Deze actie kan niet ongedaan worden gemaakt.",
@@ -194,10 +194,10 @@
 		"didViewTopLevel": "Roo heeft de bovenliggende bestanden in deze map bekeken",
 		"wantsToViewRecursive": "Roo wil alle bestanden in deze map recursief bekijken",
 		"didViewRecursive": "Roo heeft alle bestanden in deze map recursief bekeken",
-		"wantsToSearch": "Roo wil deze map doorzoeken op <code>{{regex}}</code>",
-		"didSearch": "Roo heeft deze map doorzocht op <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo wil deze map (buiten werkruimte) doorzoeken op <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo heeft deze map (buiten werkruimte) doorzocht op <code>{{regex}}</code>",
+		"wantsToSearch": "Roo wil deze map doorzoeken op \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearch": "Roo heeft deze map doorzocht op \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToSearchOutsideWorkspace": "Roo wil deze map (buiten werkruimte) doorzoeken op \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearchOutsideWorkspace": "Roo heeft deze map (buiten werkruimte) doorzocht op \u003ccode\u003e{{regex}}\u003c/code\u003e",
 		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken",
 		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken",
@@ -209,7 +209,7 @@
 		"abort": "Afbreken",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Afgesloten met status {{exitCode}}",
-		"manageCommands": "Automatisch goedgekeurde commando's",
+		"manageCommands": "Automatisch goedgekeurde commando\u0027s",
 		"addToAllowed": "Toevoegen aan toegestane lijst",
 		"removeFromAllowed": "Verwijderen van toegestane lijst",
 		"addToDenied": "Toevoegen aan geweigerde lijst",
@@ -217,8 +217,8 @@
 		"abortCommand": "Commando-uitvoering afbreken",
 		"expandOutput": "Uitvoer uitvouwen",
 		"collapseOutput": "Uitvoer samenvouwen",
-		"expandManagement": "Beheersectie voor commando's uitvouwen",
-		"collapseManagement": "Beheersectie voor commando's samenvouwen"
+		"expandManagement": "Beheersectie voor commando\u0027s uitvouwen",
+		"collapseManagement": "Beheersectie voor commando\u0027s samenvouwen"
 	},
 	"response": "Antwoord",
 	"arguments": "Argumenten",
@@ -258,7 +258,7 @@
 	"troubleMessage": "Roo ondervindt problemen...",
 	"errorDetails": {
 		"title": "Foutdetails",
-		"copyToClipboard": "Naar klembord kopiëren",
+		"copyToClipboard": "Naar klembord kopiÃ«ren",
 		"copied": "Gekopieerd!"
 	},
 	"powershell": {
@@ -272,7 +272,7 @@
 		"all": "Alles",
 		"none": "Geen",
 		"description": "Voer deze acties uit zonder om toestemming te vragen. Schakel dit alleen in voor acties die je volledig vertrouwt.",
-		"selectOptionsFirst": "Selecteer hieronder minstens één optie om automatische goedkeuring in te schakelen",
+		"selectOptionsFirst": "Selecteer hieronder minstens Ã©Ã©n optie om automatische goedkeuring in te schakelen",
 		"toggleAriaLabel": "Automatische goedkeuring in-/uitschakelen",
 		"disabledAriaLabel": "Automatische goedkeuring uitgeschakeld - selecteer eerst opties",
 		"triggerLabelOff": "Automatisch goedkeuren uit",
@@ -284,12 +284,12 @@
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} uitgebracht",
-		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
+		"support": "Steun Roo Code door ons een ster te geven op \u003cgithubLink\u003eGitHub\u003c/githubLink\u003e.",
 		"stealthModel": {
-			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
+			"feature": "\u003cbold\u003eBeperkt tijd GRATIS stealth model\u003c/bold\u003e - Code Supernova: Nu geÃ¼pgraded met een \u003cbold\u003e1M token contextvenster\u003c/bold\u003e! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
 			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
 			"connectButton": "Verbinden met Roo Code Cloud",
-			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
+			"selectModel": "Selecteer \u003ccode\u003eroo/code-supernova\u003c/code\u003e van de Roo Code Cloud provider in Instellingen om te beginnen.",
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
@@ -299,11 +299,11 @@
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
-			"specialized": "Introductie van <bold>Explainer</bold>, <bold>Planner</bold> en <bold>Coder</bold> - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
+			"specialized": "Introductie van \u003cbold\u003eExplainer\u003c/bold\u003e, \u003cbold\u003ePlanner\u003c/bold\u003e en \u003cbold\u003eCoder\u003c/bold\u003e - drie gespecialiseerde cloud-agents om je workflows te verbeteren.",
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
 		},
-		"careers": "Ook, <careersLink>we nemen aan!</careersLink>"
+		"careers": "Ook, \u003ccareersLink\u003ewe nemen aan!\u003c/careersLink\u003e"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",
@@ -325,7 +325,7 @@
 		}
 	},
 	"followUpSuggest": {
-		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
+		"copyToInput": "KopiÃ«ren naar invoer (zelfde als shift + klik)",
 		"autoSelectCountdown": "Automatische selectie in {{count}}s",
 		"countdownDisplay": "{{count}}s"
 	},
@@ -370,14 +370,14 @@
 		"tooltips": {
 			"expand": "Codeblok uitvouwen",
 			"collapse": "Codeblok samenvouwen",
-			"copy_code": "Code kopiëren"
+			"copy_code": "Code kopiÃ«ren"
 		}
 	},
 	"systemPromptWarning": "WAARSCHUWING: Aangepaste systeemprompt actief. Dit kan de functionaliteit ernstig verstoren en onvoorspelbaar gedrag veroorzaken.",
 	"profileViolationWarning": "Het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 	"shellIntegration": {
 		"title": "Waarschuwing commando-uitvoering",
-		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Roo Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
+		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte \u003cstrong\u003eTerminal\u003c/strong\u003e van de \u003csettingsLink\u003eRoo Code-instellingen\u003c/settingsLink\u003e of de VSCode-terminalintegratie oplossen via de onderstaande link.",
 		"troubleshooting": "Klik hier voor shell-integratie documentatie."
 	},
 	"ask": {
@@ -393,8 +393,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo wil de codebase doorzoeken op <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo wil de codebase doorzoeken op <code>{{query}}</code> in <code>{{path}}</code>",
+		"wantsToSearch": "Roo wil de codebase doorzoeken op \u003ccode\u003e{{query}}\u003c/code\u003e",
+		"wantsToSearchWithPath": "Roo wil de codebase doorzoeken op \u003ccode\u003e{{query}}\u003c/code\u003e in \u003ccode\u003e{{path}}\u003c/code\u003e",
 		"didSearch_one": "1 resultaat gevonden",
 		"didSearch_other": "{{count}} resultaten gevonden",
 		"resultTooltip": "Gelijkenisscore: {{score}} (klik om bestand te openen)"
@@ -410,7 +410,7 @@
 	"indexingStatus": {
 		"ready": "Index gereed",
 		"indexing": "Indexeren {{percentage}}%",
-		"indexed": "Geïndexeerd",
+		"indexed": "GeÃ¯ndexeerd",
 		"error": "Index fout",
 		"status": "Index status"
 	},
@@ -431,7 +431,7 @@
 	"slashCommands": {
 		"tooltip": "Slash-opdrachten beheren",
 		"title": "Slash-opdrachten",
-		"description": "Gebruik ingebouwde slash-opdrachten of maak aangepaste voor snelle toegang tot veelgebruikte prompts en workflows. <DocsLink>Documentatie</DocsLink>",
+		"description": "Gebruik ingebouwde slash-opdrachten of maak aangepaste voor snelle toegang tot veelgebruikte prompts en workflows. \u003cDocsLink\u003eDocumentatie\u003c/DocsLink\u003e",
 		"manageCommands": "Beheer slash-opdrachten in instellingen",
 		"builtInCommands": "Ingebouwde Opdrachten",
 		"globalCommands": "Globale Opdrachten",
@@ -463,10 +463,21 @@
 		"didRun": "Roo heeft een slash commando uitgevoerd"
 	},
 	"todo": {
-		"partial": "{{completed}} van {{total}} to-do's voltooid",
-		"complete": "{{total}} to-do's voltooid",
+		"partial": "{{completed}} van {{total}} to-do\u0027s voltooid",
+		"complete": "{{total}} to-do\u0027s voltooid",
 		"updated": "De to-do-lijst is bijgewerkt",
 		"completed": "Voltooid",
 		"started": "Gestart"
+	},
+	"speechToText": {
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"notConfigured": "Add Deepgram API key in settings",
+		"close": "Close",
+		"connecting": "Connecting...",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"copyInstructions": "Copy Instructions",
+		"stopRecording": "Click to stop recording",
+		"startRecording": "Click to start voice input"
 	}
 }

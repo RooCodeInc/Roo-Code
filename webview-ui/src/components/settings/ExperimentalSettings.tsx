@@ -13,6 +13,7 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
 import { ImageGenerationSettings } from "./ImageGenerationSettings"
+import { SpeechToTextSettings, SpeechToTextProvider } from "./SpeechToTextSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
@@ -25,6 +26,17 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setImageGenerationProvider?: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey?: (apiKey: string) => void
 	setImageGenerationSelectedModel?: (model: string) => void
+	// Speech-to-text settings
+	speechToTextEnabled?: boolean
+	speechToTextProvider?: SpeechToTextProvider
+	deepgramApiKey?: string
+	deepgramModel?: string
+	deepgramLanguage?: string
+	setSpeechToTextEnabled?: (enabled: boolean) => void
+	setSpeechToTextProvider?: (provider: SpeechToTextProvider) => void
+	setDeepgramApiKey?: (apiKey: string) => void
+	setDeepgramModel?: (model: string) => void
+	setDeepgramLanguage?: (language: string) => void
 }
 
 export const ExperimentalSettings = ({
@@ -38,6 +50,17 @@ export const ExperimentalSettings = ({
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
+	// Speech-to-text settings
+	speechToTextEnabled,
+	speechToTextProvider,
+	deepgramApiKey,
+	deepgramModel,
+	deepgramLanguage,
+	setSpeechToTextEnabled,
+	setSpeechToTextProvider,
+	setDeepgramApiKey,
+	setDeepgramModel,
+	setDeepgramLanguage,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -106,6 +129,22 @@ export const ExperimentalSettings = ({
 							/>
 						)
 					})}
+
+				{/* Speech-to-Text Settings */}
+				{setSpeechToTextEnabled && setDeepgramApiKey && setDeepgramModel && setDeepgramLanguage && (
+					<SpeechToTextSettings
+						enabled={speechToTextEnabled ?? false}
+						onChange={setSpeechToTextEnabled}
+						speechToTextProvider={speechToTextProvider}
+						deepgramApiKey={deepgramApiKey}
+						deepgramModel={deepgramModel}
+						deepgramLanguage={deepgramLanguage}
+						setSpeechToTextProvider={setSpeechToTextProvider}
+						setDeepgramApiKey={setDeepgramApiKey}
+						setDeepgramModel={setDeepgramModel}
+						setDeepgramLanguage={setDeepgramLanguage}
+					/>
+				)}
 			</Section>
 		</div>
 	)

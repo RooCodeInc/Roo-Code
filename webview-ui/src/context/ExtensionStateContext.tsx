@@ -280,6 +280,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		openRouterImageGenerationSelectedModel: "",
 		includeCurrentTime: true,
 		includeCurrentCost: true,
+		// Speech-to-text settings (Deepgram)
+		deepgramApiKey: "",
+		speechToTextEnabled: false,
+		speechToTextProvider: "deepgram",
+		deepgramModel: "nova-3",
+		deepgramLanguage: "en",
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

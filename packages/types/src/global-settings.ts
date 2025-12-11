@@ -198,6 +198,15 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	/**
+	 * Speech-to-text settings (Deepgram)
+	 */
+	speechToTextEnabled: z.boolean().optional(),
+	speechToTextProvider: z.enum(["deepgram"]).optional(), // Extensible for future providers
+	deepgramApiKey: z.string().optional(),
+	deepgramModel: z.string().optional(),
+	deepgramLanguage: z.string().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
@@ -259,6 +268,7 @@ export const SECRET_STATE_KEYS = [
 // Global secrets that are part of GlobalSettings (not ProviderSettings)
 export const GLOBAL_SECRET_KEYS = [
 	"openRouterImageApiKey", // For image generation
+	"deepgramApiKey", // For speech-to-text
 ] as const
 
 // Type for the actual secret storage keys

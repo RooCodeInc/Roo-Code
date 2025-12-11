@@ -460,5 +460,16 @@
 		"updated": "Updated the to-do list",
 		"completed": "Completed",
 		"started": "Started"
+	},
+	"speechToText": {
+		"notConfigured": "Add Deepgram API key in settings",
+		"stopRecording": "Click to stop recording",
+		"connecting": "Connecting...",
+		"startRecording": "Click to start voice input",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"copyInstructions": "Copy Instructions",
+		"close": "Close"
 	}
 }

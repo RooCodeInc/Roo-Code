@@ -61,6 +61,10 @@
 			"form-data": ">=4.0.4",
 			"bluebird": ">=3.7.2",
 			"glob": ">=11.1.0"
-		}
+		},
+		"ignoredBuiltDependencies": [
+			"naudiodon2",
+			"segfault-handler"
+		]
 	}
 }

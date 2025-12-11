@@ -1,473 +1,484 @@
 {
-	"greeting": "Chào mừng đến với Roo Code",
+	"greeting": "ChÃ o má»«ng Ä‘áº¿n vá»›i Roo Code",
 	"task": {
-		"title": "Nhiệm vụ",
-		"expand": "Mở rộng nhiệm vụ",
-		"collapse": "Thu gọn nhiệm vụ",
-		"seeMore": "Xem thêm",
-		"seeLess": "Thu gọn",
+		"title": "Nhiá»‡m vá»¥",
+		"expand": "Má»Ÿ rá»™ng nhiá»‡m vá»¥",
+		"collapse": "Thu gá»n nhiá»‡m vá»¥",
+		"seeMore": "Xem thÃªm",
+		"seeLess": "Thu gá»n",
 		"tokens": "Tokens",
-		"cache": "Bộ nhớ đệm",
-		"apiCost": "Chi phí API",
-		"size": "Kích thước",
-		"contextWindow": "Chiều dài bối cảnh",
-		"closeAndStart": "Đóng nhiệm vụ và bắt đầu nhiệm vụ mới",
-		"export": "Xuất lịch sử nhiệm vụ",
-		"delete": "Xóa nhiệm vụ (Shift + Click để bỏ qua xác nhận)",
-		"condenseContext": "Cô đọng ngữ cảnh thông minh",
-		"share": "Chia sẻ nhiệm vụ",
-		"shareWithOrganization": "Chia sẻ với tổ chức",
-		"shareWithOrganizationDescription": "Chỉ thành viên tổ chức của bạn mới có thể truy cập",
-		"sharePublicly": "Chia sẻ công khai",
-		"sharePubliclyDescription": "Bất kỳ ai có liên kết đều có thể truy cập",
-		"connectToCloud": "Kết nối với Cloud",
-		"connectToCloudDescription": "Đăng nhập vào Roo Code Cloud để chia sẻ tác vụ",
-		"sharingDisabledByOrganization": "Chia sẻ bị tổ chức vô hiệu hóa",
-		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
-		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
-		"openInCloud": "Mở tác vụ trong Roo Code Cloud",
-		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
-		"openApiHistory": "Mở lịch sử API",
-		"openUiHistory": "Mở lịch sử UI"
+		"cache": "Bá»™ nhá»› Ä‘á»‡m",
+		"apiCost": "Chi phÃ­ API",
+		"size": "KÃ­ch thÆ°á»›c",
+		"contextWindow": "Chiá»u dÃ i bá»‘i cáº£nh",
+		"closeAndStart": "ÄÃ³ng nhiá»‡m vá»¥ vÃ  báº¯t Ä‘áº§u nhiá»‡m vá»¥ má»›i",
+		"export": "Xuáº¥t lá»‹ch sá»­ nhiá»‡m vá»¥",
+		"delete": "XÃ³a nhiá»‡m vá»¥ (Shift + Click Ä‘á»ƒ bá» qua xÃ¡c nháº­n)",
+		"condenseContext": "CÃ´ Ä‘á»ng ngá»¯ cáº£nh thÃ´ng minh",
+		"share": "Chia sáº» nhiá»‡m vá»¥",
+		"shareWithOrganization": "Chia sáº» vá»›i tá»• chá»©c",
+		"shareWithOrganizationDescription": "Chá»‰ thÃ nh viÃªn tá»• chá»©c cá»§a báº¡n má»›i cÃ³ thá»ƒ truy cáº­p",
+		"sharePublicly": "Chia sáº» cÃ´ng khai",
+		"sharePubliclyDescription": "Báº¥t ká»³ ai cÃ³ liÃªn káº¿t Ä‘á»u cÃ³ thá»ƒ truy cáº­p",
+		"connectToCloud": "Káº¿t ná»‘i vá»›i Cloud",
+		"connectToCloudDescription": "ÄÄƒng nháº­p vÃ o Roo Code Cloud Ä‘á»ƒ chia sáº» tÃ¡c vá»¥",
+		"sharingDisabledByOrganization": "Chia sáº» bá»‹ tá»• chá»©c vÃ´ hiá»‡u hÃ³a",
+		"shareSuccessOrganization": "LiÃªn káº¿t tá»• chá»©c Ä‘Ã£ Ä‘Æ°á»£c sao chÃ©p vÃ o clipboard",
+		"shareSuccessPublic": "LiÃªn káº¿t cÃ´ng khai Ä‘Ã£ Ä‘Æ°á»£c sao chÃ©p vÃ o clipboard",
+		"openInCloud": "Má»Ÿ tÃ¡c vá»¥ trong Roo Code Cloud",
+		"openInCloudIntro": "Tiáº¿p tá»¥c theo dÃµi hoáº·c tÆ°Æ¡ng tÃ¡c vá»›i Roo tá»« báº¥t cá»© Ä‘Ã¢u. QuÃ©t, nháº¥p hoáº·c sao chÃ©p Ä‘á»ƒ má»Ÿ.",
+		"openApiHistory": "Má»Ÿ lá»‹ch sá»­ API",
+		"openUiHistory": "Má»Ÿ lá»‹ch sá»­ UI"
 	},
-	"unpin": "Bỏ ghim khỏi đầu",
-	"pin": "Ghim lên đầu",
+	"unpin": "Bá» ghim khá»i Ä‘áº§u",
+	"pin": "Ghim lÃªn Ä‘áº§u",
 	"tokenProgress": {
-		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
-		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
-		"reservedForResponse": "Dành riêng cho phản hồi mô hình: {{amount}} tokens"
+		"availableSpace": "KhÃ´ng gian kháº£ dá»¥ng: {{amount}} tokens",
+		"tokensUsed": "Tokens Ä‘Ã£ sá»­ dá»¥ng: {{used}} trong {{total}}",
+		"reservedForResponse": "DÃ nh riÃªng cho pháº£n há»“i mÃ´ hÃ¬nh: {{amount}} tokens"
 	},
 	"retry": {
-		"title": "Thử lại",
-		"tooltip": "Thử lại thao tác"
+		"title": "Thá»­ láº¡i",
+		"tooltip": "Thá»­ láº¡i thao tÃ¡c"
 	},
 	"startNewTask": {
-		"title": "Bắt đầu nhiệm vụ mới",
-		"tooltip": "Bắt đầu một nhiệm vụ mới"
+		"title": "Báº¯t Ä‘áº§u nhiá»‡m vá»¥ má»›i",
+		"tooltip": "Báº¯t Ä‘áº§u má»™t nhiá»‡m vá»¥ má»›i"
 	},
 	"proceedAnyways": {
-		"title": "Vẫn tiếp tục",
-		"tooltip": "Tiếp tục trong khi lệnh đang chạy"
+		"title": "Váº«n tiáº¿p tá»¥c",
+		"tooltip": "Tiáº¿p tá»¥c trong khi lá»‡nh Ä‘ang cháº¡y"
 	},
 	"save": {
-		"title": "Lưu",
-		"tooltip": "Lưu các thay đổi tin nhắn"
+		"title": "LÆ°u",
+		"tooltip": "LÆ°u cÃ¡c thay Ä‘á»•i tin nháº¯n"
 	},
 	"reject": {
-		"title": "Từ chối",
-		"tooltip": "Từ chối hành động này"
+		"title": "Tá»« chá»‘i",
+		"tooltip": "Tá»« chá»‘i hÃ nh Ä‘á»™ng nÃ y"
 	},
-	"completeSubtaskAndReturn": "Hoàn thành nhiệm vụ phụ và quay lại",
+	"completeSubtaskAndReturn": "HoÃ n thÃ nh nhiá»‡m vá»¥ phá»¥ vÃ  quay láº¡i",
 	"approve": {
-		"title": "Phê duyệt",
-		"tooltip": "Phê duyệt hành động này"
+		"title": "PhÃª duyá»‡t",
+		"tooltip": "PhÃª duyá»‡t hÃ nh Ä‘á»™ng nÃ y"
 	},
 	"runCommand": {
-		"title": "Lệnh",
-		"tooltip": "Thực thi lệnh này"
+		"title": "Lá»‡nh",
+		"tooltip": "Thá»±c thi lá»‡nh nÃ y"
 	},
 	"proceedWhileRunning": {
-		"title": "Tiếp tục trong khi chạy",
-		"tooltip": "Tiếp tục bất chấp cảnh báo"
+		"title": "Tiáº¿p tá»¥c trong khi cháº¡y",
+		"tooltip": "Tiáº¿p tá»¥c báº¥t cháº¥p cáº£nh bÃ¡o"
 	},
 	"killCommand": {
-		"title": "Dừng lệnh",
-		"tooltip": "Dừng lệnh hiện tại"
+		"title": "Dá»«ng lá»‡nh",
+		"tooltip": "Dá»«ng lá»‡nh hiá»‡n táº¡i"
 	},
 	"resumeTask": {
-		"title": "Tiếp tục nhiệm vụ",
-		"tooltip": "Tiếp tục nhiệm vụ hiện tại"
+		"title": "Tiáº¿p tá»¥c nhiá»‡m vá»¥",
+		"tooltip": "Tiáº¿p tá»¥c nhiá»‡m vá»¥ hiá»‡n táº¡i"
 	},
 	"terminate": {
-		"title": "Kết thúc",
-		"tooltip": "Kết thúc nhiệm vụ hiện tại"
+		"title": "Káº¿t thÃºc",
+		"tooltip": "Káº¿t thÃºc nhiá»‡m vá»¥ hiá»‡n táº¡i"
 	},
 	"cancel": {
-		"title": "Hủy",
-		"tooltip": "Hủy thao tác hiện tại"
+		"title": "Há»§y",
+		"tooltip": "Há»§y thao tÃ¡c hiá»‡n táº¡i"
 	},
-	"scrollToBottom": "Cuộn xuống cuối cuộc trò chuyện",
-	"about": "Roo Code là một đội ngũ phát triển AI đầy đủ trong trình chỉnh sửa của bạn.",
-	"docs": "Kiểm tra <DocsLink>tài liệu</DocsLink> của chúng tôi để tìm hiểu thêm.",
-	"onboarding": "Danh sách nhiệm vụ của bạn trong không gian làm việc này đang trống.",
+	"scrollToBottom": "Cuá»™n xuá»‘ng cuá»‘i cuá»™c trÃ² chuyá»‡n",
+	"about": "Roo Code lÃ  má»™t Ä‘á»™i ngÅ© phÃ¡t triá»ƒn AI Ä‘áº§y Ä‘á»§ trong trÃ¬nh chá»‰nh sá»­a cá»§a báº¡n.",
+	"docs": "Kiá»ƒm tra \u003cDocsLink\u003etÃ i liá»‡u\u003c/DocsLink\u003e cá»§a chÃºng tÃ´i Ä‘á»ƒ tÃ¬m hiá»ƒu thÃªm.",
+	"onboarding": "Danh sÃ¡ch nhiá»‡m vá»¥ cá»§a báº¡n trong khÃ´ng gian lÃ m viá»‡c nÃ y Ä‘ang trá»‘ng.",
 	"rooTips": {
 		"customizableModes": {
-			"title": "Chế độ có thể tùy chỉnh",
-			"description": "Các nhân vật chuyên biệt luôn bám sát nhiệm vụ và mang lại hiệu quả."
+			"title": "Cháº¿ Ä‘á»™ cÃ³ thá»ƒ tÃ¹y chá»‰nh",
+			"description": "CÃ¡c nhÃ¢n váº­t chuyÃªn biá»‡t luÃ´n bÃ¡m sÃ¡t nhiá»‡m vá»¥ vÃ  mang láº¡i hiá»‡u quáº£."
 		},
 		"modelAgnostic": {
-			"title": "Mang theo mô hình của riêng bạn",
-			"description": "Sử dụng khóa nhà cung cấp của riêng bạn hoặc thậm chí chạy suy luận cục bộ — không phụ phí, không khóa, không hạn chế"
+			"title": "Mang theo mÃ´ hÃ¬nh cá»§a riÃªng báº¡n",
+			"description": "Sá»­ dá»¥ng khÃ³a nhÃ  cung cáº¥p cá»§a riÃªng báº¡n hoáº·c tháº­m chÃ­ cháº¡y suy luáº­n cá»¥c bá»™ â€” khÃ´ng phá»¥ phÃ­, khÃ´ng khÃ³a, khÃ´ng háº¡n cháº¿"
 		}
 	},
-	"selectMode": "Chọn chế độ tương tác",
-	"selectApiConfig": "Chọn cấu hình API",
-	"enhancePrompt": "Nâng cao yêu cầu với ngữ cảnh bổ sung",
-	"addImages": "Thêm hình ảnh vào tin nhắn",
-	"sendMessage": "Gửi tin nhắn",
-	"pressToSend": "Nhấn {{keyCombination}} để gửi",
-	"stopTts": "Dừng chuyển văn bản thành giọng nói",
-	"typeMessage": "Nhập tin nhắn...",
-	"typeTask": "Nhập nhiệm vụ của bạn tại đây...",
-	"addContext": "@ để thêm ngữ cảnh, / cho lệnh",
-	"dragFiles": "giữ shift để kéo tệp",
-	"dragFilesImages": "giữ shift để kéo tệp/hình ảnh",
-	"enhancePromptDescription": "Nút 'Nâng cao yêu cầu' giúp cải thiện yêu cầu của bạn bằng cách cung cấp ngữ cảnh bổ sung, làm rõ hoặc diễn đạt lại. Hãy thử nhập yêu cầu tại đây và nhấp vào nút một lần nữa để xem cách thức hoạt động.",
+	"selectMode": "Chá»n cháº¿ Ä‘á»™ tÆ°Æ¡ng tÃ¡c",
+	"selectApiConfig": "Chá»n cáº¥u hÃ¬nh API",
+	"enhancePrompt": "NÃ¢ng cao yÃªu cáº§u vá»›i ngá»¯ cáº£nh bá»• sung",
+	"addImages": "ThÃªm hÃ¬nh áº£nh vÃ o tin nháº¯n",
+	"sendMessage": "Gá»­i tin nháº¯n",
+	"pressToSend": "Nháº¥n {{keyCombination}} Ä‘á»ƒ gá»­i",
+	"stopTts": "Dá»«ng chuyá»ƒn vÄƒn báº£n thÃ nh giá»ng nÃ³i",
+	"typeMessage": "Nháº­p tin nháº¯n...",
+	"typeTask": "Nháº­p nhiá»‡m vá»¥ cá»§a báº¡n táº¡i Ä‘Ã¢y...",
+	"addContext": "@ Ä‘á»ƒ thÃªm ngá»¯ cáº£nh, / cho lá»‡nh",
+	"dragFiles": "giá»¯ shift Ä‘á»ƒ kÃ©o tá»‡p",
+	"dragFilesImages": "giá»¯ shift Ä‘á»ƒ kÃ©o tá»‡p/hÃ¬nh áº£nh",
+	"enhancePromptDescription": "NÃºt \u0027NÃ¢ng cao yÃªu cáº§u\u0027 giÃºp cáº£i thiá»‡n yÃªu cáº§u cá»§a báº¡n báº±ng cÃ¡ch cung cáº¥p ngá»¯ cáº£nh bá»• sung, lÃ m rÃµ hoáº·c diá»…n Ä‘áº¡t láº¡i. HÃ£y thá»­ nháº­p yÃªu cáº§u táº¡i Ä‘Ã¢y vÃ  nháº¥p vÃ o nÃºt má»™t láº§n ná»¯a Ä‘á»ƒ xem cÃ¡ch thá»©c hoáº¡t Ä‘á»™ng.",
 	"modeSelector": {
-		"title": "Chế độ",
-		"marketplace": "Chợ Chế độ",
-		"settings": "Cài đặt Chế độ",
-		"description": "Các nhân cách chuyên biệt điều chỉnh hành vi của Roo.",
-		"searchPlaceholder": "Tìm kiếm chế độ...",
-		"noResults": "Không tìm thấy kết quả nào"
+		"title": "Cháº¿ Ä‘á»™",
+		"marketplace": "Chá»£ Cháº¿ Ä‘á»™",
+		"settings": "CÃ i Ä‘áº·t Cháº¿ Ä‘á»™",
+		"description": "CÃ¡c nhÃ¢n cÃ¡ch chuyÃªn biá»‡t Ä‘iá»u chá»‰nh hÃ nh vi cá»§a Roo.",
+		"searchPlaceholder": "TÃ¬m kiáº¿m cháº¿ Ä‘á»™...",
+		"noResults": "KhÃ´ng tÃ¬m tháº¥y káº¿t quáº£ nÃ o"
 	},
-	"errorReadingFile": "Lỗi khi đọc tệp",
-	"noValidImages": "Không có hình ảnh hợp lệ nào được xử lý",
-	"separator": "Dấu phân cách",
-	"edit": "Chỉnh sửa...",
-	"forNextMode": "cho chế độ tiếp theo",
-	"forPreviousMode": "cho chế độ trước đó",
-	"error": "Lỗi",
+	"errorReadingFile": "Lá»—i khi Ä‘á»c tá»‡p",
+	"noValidImages": "KhÃ´ng cÃ³ hÃ¬nh áº£nh há»£p lá»‡ nÃ o Ä‘Æ°á»£c xá»­ lÃ½",
+	"separator": "Dáº¥u phÃ¢n cÃ¡ch",
+	"edit": "Chá»‰nh sá»­a...",
+	"forNextMode": "cho cháº¿ Ä‘á»™ tiáº¿p theo",
+	"forPreviousMode": "cho cháº¿ Ä‘á»™ trÆ°á»›c Ä‘Ã³",
+	"error": "Lá»—i",
 	"diffError": {
-		"title": "Chỉnh sửa không thành công"
+		"title": "Chá»‰nh sá»­a khÃ´ng thÃ nh cÃ´ng"
 	},
-	"troubleMessage": "Roo đang gặp sự cố...",
+	"troubleMessage": "Roo Ä‘ang gáº·p sá»± cá»‘...",
 	"apiRequest": {
-		"title": "Yêu cầu API",
-		"failed": "Yêu cầu API thất bại",
-		"streaming": "Yêu cầu API...",
-		"cancelled": "Yêu cầu API đã hủy",
-		"streamingFailed": "Streaming API thất bại",
-		"errorTitle": "Lỗi API {{code}}",
+		"title": "YÃªu cáº§u API",
+		"failed": "YÃªu cáº§u API tháº¥t báº¡i",
+		"streaming": "YÃªu cáº§u API...",
+		"cancelled": "YÃªu cáº§u API Ä‘Ã£ há»§y",
+		"streamingFailed": "Streaming API tháº¥t báº¡i",
+		"errorTitle": "Lá»—i API {{code}}",
 		"errorMessage": {
-			"docs": "Tài liệu",
-			"400": "Nhà cung cấp không thể xử lý yêu cầu theo cách này. Hãy dừng nhiệm vụ và thử một cách tiếp cận khác.",
-			"401": "Không thể xác thực với nhà cung cấp. Vui lòng kiểm tra cấu hình khóa API của bạn.",
-			"402": "Có vẻ như bạn đã hết tiền/tín dụng trong tài khoản. Hãy truy cập nhà cung cấp và thêm tiền để tiếp tục.",
-			"403": "Truy cập bị từ chối. Khóa API của bạn hợp lệ, nhưng nhà cung cấp từ chối hoàn thành yêu cầu này.",
-			"429": "Quá nhiều yêu cầu. Nhà cung cấp đang giới hạn tốc độ yêu cầu của bạn. Vui lòng chờ một chút trước khi gọi API tiếp theo.",
-			"500": "Lỗi máy chủ của nhà cung cấp. Có sự cố ở phía nhà cung cấp, không có gì sai với yêu cầu của bạn.",
-			"unknown": "Lỗi API không xác định. Vui lòng liên hệ hỗ trợ Roo Code.",
-			"connection": "Lỗi kết nối. Đảm bảo rằng bạn có kết nối Internet hoạt động."
+			"docs": "TÃ i liá»‡u",
+			"400": "NhÃ  cung cáº¥p khÃ´ng thá»ƒ xá»­ lÃ½ yÃªu cáº§u theo cÃ¡ch nÃ y. HÃ£y dá»«ng nhiá»‡m vá»¥ vÃ  thá»­ má»™t cÃ¡ch tiáº¿p cáº­n khÃ¡c.",
+			"401": "KhÃ´ng thá»ƒ xÃ¡c thá»±c vá»›i nhÃ  cung cáº¥p. Vui lÃ²ng kiá»ƒm tra cáº¥u hÃ¬nh khÃ³a API cá»§a báº¡n.",
+			"402": "CÃ³ váº» nhÆ° báº¡n Ä‘Ã£ háº¿t tiá»n/tÃ­n dá»¥ng trong tÃ i khoáº£n. HÃ£y truy cáº­p nhÃ  cung cáº¥p vÃ  thÃªm tiá»n Ä‘á»ƒ tiáº¿p tá»¥c.",
+			"403": "Truy cáº­p bá»‹ tá»« chá»‘i. KhÃ³a API cá»§a báº¡n há»£p lá»‡, nhÆ°ng nhÃ  cung cáº¥p tá»« chá»‘i hoÃ n thÃ nh yÃªu cáº§u nÃ y.",
+			"429": "QuÃ¡ nhiá»u yÃªu cáº§u. NhÃ  cung cáº¥p Ä‘ang giá»›i háº¡n tá»‘c Ä‘á»™ yÃªu cáº§u cá»§a báº¡n. Vui lÃ²ng chá» má»™t chÃºt trÆ°á»›c khi gá»i API tiáº¿p theo.",
+			"500": "Lá»—i mÃ¡y chá»§ cá»§a nhÃ  cung cáº¥p. CÃ³ sá»± cá»‘ á»Ÿ phÃ­a nhÃ  cung cáº¥p, khÃ´ng cÃ³ gÃ¬ sai vá»›i yÃªu cáº§u cá»§a báº¡n.",
+			"unknown": "Lá»—i API khÃ´ng xÃ¡c Ä‘á»‹nh. Vui lÃ²ng liÃªn há»‡ há»— trá»£ Roo Code.",
+			"connection": "Lá»—i káº¿t ná»‘i. Äáº£m báº£o ráº±ng báº¡n cÃ³ káº¿t ná»‘i Internet hoáº¡t Ä‘á»™ng."
 		}
 	},
 	"checkpoint": {
-		"regular": "Điểm kiểm tra",
-		"initializingWarning": "Đang khởi tạo điểm kiểm tra... Nếu quá trình này mất quá nhiều thời gian, bạn có thể vô hiệu hóa điểm kiểm tra trong <settingsLink>cài đặt</settingsLink> và khởi động lại tác vụ của bạn.",
+		"regular": "Äiá»ƒm kiá»ƒm tra",
+		"initializingWarning": "Äang khá»Ÿi táº¡o Ä‘iá»ƒm kiá»ƒm tra... Náº¿u quÃ¡ trÃ¬nh nÃ y máº¥t quÃ¡ nhiá»u thá»i gian, báº¡n cÃ³ thá»ƒ vÃ´ hiá»‡u hÃ³a Ä‘iá»ƒm kiá»ƒm tra trong \u003csettingsLink\u003ecÃ i Ä‘áº·t\u003c/settingsLink\u003e vÃ  khá»Ÿi Ä‘á»™ng láº¡i tÃ¡c vá»¥ cá»§a báº¡n.",
 		"menu": {
-			"viewDiff": "Xem khác biệt",
-			"more": "Thêm tùy chọn",
-			"viewDiffFromInit": "Xem tất cả các thay đổi",
-			"viewDiffWithCurrent": "Xem các thay đổi kể từ điểm kiểm tra này",
-			"restore": "Khôi phục điểm kiểm tra",
-			"restoreFiles": "Khôi phục tệp",
-			"restoreFilesDescription": "Khôi phục các tệp dự án của bạn về bản chụp được thực hiện tại thời điểm này.",
-			"restoreFilesAndTask": "Khôi phục tệp & nhiệm vụ",
-			"confirm": "Xác nhận",
-			"cancel": "Hủy",
-			"cannotUndo": "Hành động này không thể hoàn tác.",
-			"restoreFilesAndTaskDescription": "Khôi phục các tệp dự án của bạn về bản chụp được thực hiện tại thời điểm này và xóa tất cả tin nhắn sau điểm này."
+			"viewDiff": "Xem khÃ¡c biá»‡t",
+			"more": "ThÃªm tÃ¹y chá»n",
+			"viewDiffFromInit": "Xem táº¥t cáº£ cÃ¡c thay Ä‘á»•i",
+			"viewDiffWithCurrent": "Xem cÃ¡c thay Ä‘á»•i ká»ƒ tá»« Ä‘iá»ƒm kiá»ƒm tra nÃ y",
+			"restore": "KhÃ´i phá»¥c Ä‘iá»ƒm kiá»ƒm tra",
+			"restoreFiles": "KhÃ´i phá»¥c tá»‡p",
+			"restoreFilesDescription": "KhÃ´i phá»¥c cÃ¡c tá»‡p dá»± Ã¡n cá»§a báº¡n vá» báº£n chá»¥p Ä‘Æ°á»£c thá»±c hiá»‡n táº¡i thá»i Ä‘iá»ƒm nÃ y.",
+			"restoreFilesAndTask": "KhÃ´i phá»¥c tá»‡p \u0026 nhiá»‡m vá»¥",
+			"confirm": "XÃ¡c nháº­n",
+			"cancel": "Há»§y",
+			"cannotUndo": "HÃ nh Ä‘á»™ng nÃ y khÃ´ng thá»ƒ hoÃ n tÃ¡c.",
+			"restoreFilesAndTaskDescription": "KhÃ´i phá»¥c cÃ¡c tá»‡p dá»± Ã¡n cá»§a báº¡n vá» báº£n chá»¥p Ä‘Æ°á»£c thá»±c hiá»‡n táº¡i thá»i Ä‘iá»ƒm nÃ y vÃ  xÃ³a táº¥t cáº£ tin nháº¯n sau Ä‘iá»ƒm nÃ y."
 		},
-		"current": "Hiện tại"
+		"current": "Hiá»‡n táº¡i"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo muốn lấy hướng dẫn chi tiết để hỗ trợ nhiệm vụ hiện tại"
+		"wantsToFetch": "Roo muá»‘n láº¥y hÆ°á»›ng dáº«n chi tiáº¿t Ä‘á»ƒ há»— trá»£ nhiá»‡m vá»¥ hiá»‡n táº¡i"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo muốn đọc tệp này",
-		"wantsToReadOutsideWorkspace": "Roo muốn đọc tệp này bên ngoài không gian làm việc",
-		"didRead": "Roo đã đọc tệp này",
-		"wantsToEdit": "Roo muốn chỉnh sửa tệp này",
-		"wantsToEditOutsideWorkspace": "Roo muốn chỉnh sửa tệp này bên ngoài không gian làm việc",
-		"wantsToEditProtected": "Roo muốn chỉnh sửa tệp cấu hình được bảo vệ",
-		"wantsToCreate": "Roo muốn tạo một tệp mới",
-		"wantsToSearchReplace": "Roo muốn thực hiện tìm kiếm và thay thế trong tệp này",
-		"didSearchReplace": "Roo đã thực hiện tìm kiếm và thay thế trong tệp này",
-		"wantsToInsert": "Roo muốn chèn nội dung vào tệp này",
-		"wantsToInsertWithLineNumber": "Roo muốn chèn nội dung vào dòng {{lineNumber}} của tệp này",
-		"wantsToInsertAtEnd": "Roo muốn thêm nội dung vào cuối tệp này",
-		"wantsToReadAndXMore": "Roo muốn đọc tệp này và {{count}} tệp khác",
-		"wantsToReadMultiple": "Roo muốn đọc nhiều tệp",
-		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp",
-		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh",
-		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc",
-		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ",
-		"didGenerateImage": "Roo đã tạo một hình ảnh"
+		"wantsToRead": "Roo muá»‘n Ä‘á»c tá»‡p nÃ y",
+		"wantsToReadOutsideWorkspace": "Roo muá»‘n Ä‘á»c tá»‡p nÃ y bÃªn ngoÃ i khÃ´ng gian lÃ m viá»‡c",
+		"didRead": "Roo Ä‘Ã£ Ä‘á»c tá»‡p nÃ y",
+		"wantsToEdit": "Roo muá»‘n chá»‰nh sá»­a tá»‡p nÃ y",
+		"wantsToEditOutsideWorkspace": "Roo muá»‘n chá»‰nh sá»­a tá»‡p nÃ y bÃªn ngoÃ i khÃ´ng gian lÃ m viá»‡c",
+		"wantsToEditProtected": "Roo muá»‘n chá»‰nh sá»­a tá»‡p cáº¥u hÃ¬nh Ä‘Æ°á»£c báº£o vá»‡",
+		"wantsToCreate": "Roo muá»‘n táº¡o má»™t tá»‡p má»›i",
+		"wantsToSearchReplace": "Roo muá»‘n thá»±c hiá»‡n tÃ¬m kiáº¿m vÃ  thay tháº¿ trong tá»‡p nÃ y",
+		"didSearchReplace": "Roo Ä‘Ã£ thá»±c hiá»‡n tÃ¬m kiáº¿m vÃ  thay tháº¿ trong tá»‡p nÃ y",
+		"wantsToInsert": "Roo muá»‘n chÃ¨n ná»™i dung vÃ o tá»‡p nÃ y",
+		"wantsToInsertWithLineNumber": "Roo muá»‘n chÃ¨n ná»™i dung vÃ o dÃ²ng {{lineNumber}} cá»§a tá»‡p nÃ y",
+		"wantsToInsertAtEnd": "Roo muá»‘n thÃªm ná»™i dung vÃ o cuá»‘i tá»‡p nÃ y",
+		"wantsToReadAndXMore": "Roo muá»‘n Ä‘á»c tá»‡p nÃ y vÃ  {{count}} tá»‡p khÃ¡c",
+		"wantsToReadMultiple": "Roo muá»‘n Ä‘á»c nhiá»u tá»‡p",
+		"wantsToApplyBatchChanges": "Roo muá»‘n Ã¡p dá»¥ng thay Ä‘á»•i cho nhiá»u tá»‡p",
+		"wantsToGenerateImage": "Roo muá»‘n táº¡o má»™t hÃ¬nh áº£nh",
+		"wantsToGenerateImageOutsideWorkspace": "Roo muá»‘n táº¡o hÃ¬nh áº£nh bÃªn ngoÃ i khÃ´ng gian lÃ m viá»‡c",
+		"wantsToGenerateImageProtected": "Roo muá»‘n táº¡o hÃ¬nh áº£nh á»Ÿ vá»‹ trÃ­ Ä‘Æ°á»£c báº£o vá»‡",
+		"didGenerateImage": "Roo Ä‘Ã£ táº¡o má»™t hÃ¬nh áº£nh"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này",
-		"didViewTopLevel": "Roo đã xem các tệp cấp cao nhất trong thư mục này",
-		"wantsToViewRecursive": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này",
-		"didViewRecursive": "Roo đã xem đệ quy tất cả các tệp trong thư mục này",
-		"wantsToSearch": "Roo muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
-		"didSearch": "Roo đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo đã tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
-		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)"
+		"wantsToViewTopLevel": "Roo muá»‘n xem cÃ¡c tá»‡p cáº¥p cao nháº¥t trong thÆ° má»¥c nÃ y",
+		"didViewTopLevel": "Roo Ä‘Ã£ xem cÃ¡c tá»‡p cáº¥p cao nháº¥t trong thÆ° má»¥c nÃ y",
+		"wantsToViewRecursive": "Roo muá»‘n xem Ä‘á»‡ quy táº¥t cáº£ cÃ¡c tá»‡p trong thÆ° má»¥c nÃ y",
+		"didViewRecursive": "Roo Ä‘Ã£ xem Ä‘á»‡ quy táº¥t cáº£ cÃ¡c tá»‡p trong thÆ° má»¥c nÃ y",
+		"wantsToSearch": "Roo muá»‘n tÃ¬m kiáº¿m trong thÆ° má»¥c nÃ y cho \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearch": "Roo Ä‘Ã£ tÃ¬m kiáº¿m trong thÆ° má»¥c nÃ y cho \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToSearchOutsideWorkspace": "Roo muá»‘n tÃ¬m kiáº¿m trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c) cho \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"didSearchOutsideWorkspace": "Roo Ä‘Ã£ tÃ¬m kiáº¿m trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c) cho \u003ccode\u003e{{regex}}\u003c/code\u003e",
+		"wantsToViewTopLevelOutsideWorkspace": "Roo muá»‘n xem cÃ¡c tá»‡p cáº¥p cao nháº¥t trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c)",
+		"didViewTopLevelOutsideWorkspace": "Roo Ä‘Ã£ xem cÃ¡c tá»‡p cáº¥p cao nháº¥t trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c)",
+		"wantsToViewRecursiveOutsideWorkspace": "Roo muá»‘n xem Ä‘á»‡ quy táº¥t cáº£ cÃ¡c tá»‡p trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c)",
+		"didViewRecursiveOutsideWorkspace": "Roo Ä‘Ã£ xem Ä‘á»‡ quy táº¥t cáº£ cÃ¡c tá»‡p trong thÆ° má»¥c nÃ y (ngoÃ i khÃ´ng gian lÃ m viá»‡c)"
 	},
-	"commandOutput": "Kết quả lệnh",
+	"commandOutput": "Káº¿t quáº£ lá»‡nh",
 	"commandExecution": {
-		"running": "Đang chạy",
-		"abort": "Hủy bỏ",
+		"running": "Äang cháº¡y",
+		"abort": "Há»§y bá»",
 		"pid": "PID: {{pid}}",
-		"exitStatus": "Đã thoát với trạng thái {{exitCode}}",
-		"manageCommands": "Quản lý quyền lệnh",
-		"commandManagementDescription": "Quản lý quyền lệnh: Nhấp vào ✓ để cho phép tự động thực thi, ✗ để từ chối thực thi. Các mẫu có thể được bật/tắt hoặc xóa khỏi danh sách. <settingsLink>Xem tất cả cài đặt</settingsLink>",
-		"addToAllowed": "Thêm vào danh sách cho phép",
-		"removeFromAllowed": "Xóa khỏi danh sách cho phép",
-		"addToDenied": "Thêm vào danh sách từ chối",
-		"removeFromDenied": "Xóa khỏi danh sách từ chối",
-		"abortCommand": "Hủy bỏ thực thi lệnh",
-		"expandOutput": "Mở rộng kết quả",
-		"collapseOutput": "Thu gọn kết quả",
-		"expandManagement": "Mở rộng phần quản lý lệnh",
-		"collapseManagement": "Thu gọn phần quản lý lệnh"
+		"exitStatus": "ÄÃ£ thoÃ¡t vá»›i tráº¡ng thÃ¡i {{exitCode}}",
+		"manageCommands": "Quáº£n lÃ½ quyá»n lá»‡nh",
+		"commandManagementDescription": "Quáº£n lÃ½ quyá»n lá»‡nh: Nháº¥p vÃ o âœ“ Ä‘á»ƒ cho phÃ©p tá»± Ä‘á»™ng thá»±c thi, âœ— Ä‘á»ƒ tá»« chá»‘i thá»±c thi. CÃ¡c máº«u cÃ³ thá»ƒ Ä‘Æ°á»£c báº­t/táº¯t hoáº·c xÃ³a khá»i danh sÃ¡ch. \u003csettingsLink\u003eXem táº¥t cáº£ cÃ i Ä‘áº·t\u003c/settingsLink\u003e",
+		"addToAllowed": "ThÃªm vÃ o danh sÃ¡ch cho phÃ©p",
+		"removeFromAllowed": "XÃ³a khá»i danh sÃ¡ch cho phÃ©p",
+		"addToDenied": "ThÃªm vÃ o danh sÃ¡ch tá»« chá»‘i",
+		"removeFromDenied": "XÃ³a khá»i danh sÃ¡ch tá»« chá»‘i",
+		"abortCommand": "Há»§y bá» thá»±c thi lá»‡nh",
+		"expandOutput": "Má»Ÿ rá»™ng káº¿t quáº£",
+		"collapseOutput": "Thu gá»n káº¿t quáº£",
+		"expandManagement": "Má»Ÿ rá»™ng pháº§n quáº£n lÃ½ lá»‡nh",
+		"collapseManagement": "Thu gá»n pháº§n quáº£n lÃ½ lá»‡nh"
 	},
-	"response": "Phản hồi",
-	"arguments": "Tham số",
+	"response": "Pháº£n há»“i",
+	"arguments": "Tham sá»‘",
 	"text": {
-		"rooSaid": "Roo đã nói"
+		"rooSaid": "Roo Ä‘Ã£ nÃ³i"
 	},
 	"feedback": {
-		"youSaid": "Bạn đã nói"
+		"youSaid": "Báº¡n Ä‘Ã£ nÃ³i"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
-		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"
+		"wantsToUseTool": "Roo muá»‘n sá»­ dá»¥ng má»™t cÃ´ng cá»¥ trÃªn mÃ¡y chá»§ MCP {{serverName}}",
+		"wantsToAccessResource": "Roo muá»‘n truy cáº­p má»™t tÃ i nguyÃªn trÃªn mÃ¡y chá»§ MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo muốn chuyển sang chế độ <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo muốn chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}",
-		"didSwitch": "Roo đã chuyển sang chế độ <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo đã chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}"
+		"wantsToSwitch": "Roo muá»‘n chuyá»ƒn sang cháº¿ Ä‘á»™ \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"wantsToSwitchWithReason": "Roo muá»‘n chuyá»ƒn sang cháº¿ Ä‘á»™ \u003ccode\u003e{{mode}}\u003c/code\u003e vÃ¬: {{reason}}",
+		"didSwitch": "Roo Ä‘Ã£ chuyá»ƒn sang cháº¿ Ä‘á»™ \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"didSwitchWithReason": "Roo Ä‘Ã£ chuyá»ƒn sang cháº¿ Ä‘á»™ \u003ccode\u003e{{mode}}\u003c/code\u003e vÃ¬: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo muốn tạo một nhiệm vụ phụ mới trong chế độ <code>{{mode}}</code>",
-		"wantsToFinish": "Roo muốn hoàn thành nhiệm vụ phụ này",
-		"newTaskContent": "Hướng dẫn nhiệm vụ phụ",
-		"completionContent": "Nhiệm vụ phụ đã hoàn thành",
-		"resultContent": "Kết quả nhiệm vụ phụ",
-		"defaultResult": "Vui lòng tiếp tục với nhiệm vụ tiếp theo.",
-		"completionInstructions": "Nhiệm vụ phụ đã hoàn thành! Bạn có thể xem lại kết quả và đề xuất các sửa đổi hoặc bước tiếp theo. Nếu mọi thứ có vẻ tốt, hãy xác nhận để trả kết quả về nhiệm vụ chính."
+		"wantsToCreate": "Roo muá»‘n táº¡o má»™t nhiá»‡m vá»¥ phá»¥ má»›i trong cháº¿ Ä‘á»™ \u003ccode\u003e{{mode}}\u003c/code\u003e",
+		"wantsToFinish": "Roo muá»‘n hoÃ n thÃ nh nhiá»‡m vá»¥ phá»¥ nÃ y",
+		"newTaskContent": "HÆ°á»›ng dáº«n nhiá»‡m vá»¥ phá»¥",
+		"completionContent": "Nhiá»‡m vá»¥ phá»¥ Ä‘Ã£ hoÃ n thÃ nh",
+		"resultContent": "Káº¿t quáº£ nhiá»‡m vá»¥ phá»¥",
+		"defaultResult": "Vui lÃ²ng tiáº¿p tá»¥c vá»›i nhiá»‡m vá»¥ tiáº¿p theo.",
+		"completionInstructions": "Nhiá»‡m vá»¥ phá»¥ Ä‘Ã£ hoÃ n thÃ nh! Báº¡n cÃ³ thá»ƒ xem láº¡i káº¿t quáº£ vÃ  Ä‘á» xuáº¥t cÃ¡c sá»­a Ä‘á»•i hoáº·c bÆ°á»›c tiáº¿p theo. Náº¿u má»i thá»© cÃ³ váº» tá»‘t, hÃ£y xÃ¡c nháº­n Ä‘á»ƒ tráº£ káº¿t quáº£ vá» nhiá»‡m vá»¥ chÃ­nh."
 	},
 	"questions": {
-		"hasQuestion": "Roo có một câu hỏi"
+		"hasQuestion": "Roo cÃ³ má»™t cÃ¢u há»i"
 	},
-	"taskCompleted": "Nhiệm vụ hoàn thành",
+	"taskCompleted": "Nhiá»‡m vá»¥ hoÃ n thÃ nh",
 	"errorDetails": {
-		"title": "Chi tiết lỗi",
-		"copyToClipboard": "Sao chép vào clipboard",
-		"copied": "Đã sao chép!"
+		"title": "Chi tiáº¿t lá»—i",
+		"copyToClipboard": "Sao chÃ©p vÃ o clipboard",
+		"copied": "ÄÃ£ sao chÃ©p!"
 	},
 	"powershell": {
-		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
+		"issues": "CÃ³ váº» nhÆ° báº¡n Ä‘ang gáº·p váº¥n Ä‘á» vá»›i Windows PowerShell, vui lÃ²ng xem"
 	},
 	"autoApprove": {
-		"tooltipManage": "Quản lý cài đặt tự động phê duyệt",
-		"tooltipStatus": "Tự động phê duyệt được bật cho: {{toggles}}",
-		"title": "Tự động phê duyệt",
-		"toggle": "Bật/tắt tự động phê duyệt",
-		"all": "Tất cả",
-		"none": "Không có",
-		"description": "Thực hiện các hành động này mà không cần xin phép. Chỉ bật tính năng này cho các hành động bạn hoàn toàn tin tưởng.",
-		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tính năng tự động phê duyệt",
-		"toggleAriaLabel": "Bật/tắt tự động phê duyệt",
-		"disabledAriaLabel": "Tự động phê duyệt đã tắt - trước tiên hãy chọn các tùy chọn",
-		"triggerLabelOff": "Tự động phê duyệt tắt",
-		"triggerLabelOffShort": "Tắt",
-		"triggerLabel_zero": "0 được tự động phê duyệt",
-		"triggerLabel_one": "1 được tự động phê duyệt",
-		"triggerLabel_other": "{{count}} được tự động phê duyệt",
+		"tooltipManage": "Quáº£n lÃ½ cÃ i Ä‘áº·t tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"tooltipStatus": "Tá»± Ä‘á»™ng phÃª duyá»‡t Ä‘Æ°á»£c báº­t cho: {{toggles}}",
+		"title": "Tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"toggle": "Báº­t/táº¯t tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"all": "Táº¥t cáº£",
+		"none": "KhÃ´ng cÃ³",
+		"description": "Thá»±c hiá»‡n cÃ¡c hÃ nh Ä‘á»™ng nÃ y mÃ  khÃ´ng cáº§n xin phÃ©p. Chá»‰ báº­t tÃ­nh nÄƒng nÃ y cho cÃ¡c hÃ nh Ä‘á»™ng báº¡n hoÃ n toÃ n tin tÆ°á»Ÿng.",
+		"selectOptionsFirst": "Chá»n Ã­t nháº¥t má»™t tÃ¹y chá»n bÃªn dÆ°á»›i Ä‘á»ƒ báº­t tÃ­nh nÄƒng tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"toggleAriaLabel": "Báº­t/táº¯t tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"disabledAriaLabel": "Tá»± Ä‘á»™ng phÃª duyá»‡t Ä‘Ã£ táº¯t - trÆ°á»›c tiÃªn hÃ£y chá»n cÃ¡c tÃ¹y chá»n",
+		"triggerLabelOff": "Tá»± Ä‘á»™ng phÃª duyá»‡t táº¯t",
+		"triggerLabelOffShort": "Táº¯t",
+		"triggerLabel_zero": "0 Ä‘Æ°á»£c tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"triggerLabel_one": "1 Ä‘Æ°á»£c tá»± Ä‘á»™ng phÃª duyá»‡t",
+		"triggerLabel_other": "{{count}} Ä‘Æ°á»£c tá»± Ä‘á»™ng phÃª duyá»‡t",
 		"triggerLabelAll": "YOLO"
 	},
 	"reasoning": {
-		"thinking": "Đang suy nghĩ",
-		"seconds": "{{count}} giây"
+		"thinking": "Äang suy nghÄ©",
+		"seconds": "{{count}} giÃ¢y"
 	},
 	"contextManagement": {
 		"tokens": "token",
 		"condensation": {
-			"title": "Ngữ cảnh đã tóm tắt",
-			"inProgress": "Đang cô đọng ngữ cảnh...",
-			"errorHeader": "Không thể cô đọng ngữ cảnh"
+			"title": "Ngá»¯ cáº£nh Ä‘Ã£ tÃ³m táº¯t",
+			"inProgress": "Äang cÃ´ Ä‘á»ng ngá»¯ cáº£nh...",
+			"errorHeader": "KhÃ´ng thá»ƒ cÃ´ Ä‘á»ng ngá»¯ cáº£nh"
 		},
 		"truncation": {
-			"title": "Ngữ cảnh đã cắt bớt",
-			"inProgress": "Đang cắt bớt ngữ cảnh...",
-			"messagesRemoved": "{{count}} tin nhắn đã xóa",
-			"messagesRemoved_other": "{{count}} tin nhắn đã xóa",
-			"description": "Các tin nhắn cũ hơn đã bị xóa khỏi cuộc trò chuyện để giữ trong giới hạn cửa sổ ngữ cảnh. Đây là cách tiếp cận nhanh nhưng ít bảo toàn ngữ cảnh hơn so với cô đọng."
+			"title": "Ngá»¯ cáº£nh Ä‘Ã£ cáº¯t bá»›t",
+			"inProgress": "Äang cáº¯t bá»›t ngá»¯ cáº£nh...",
+			"messagesRemoved": "{{count}} tin nháº¯n Ä‘Ã£ xÃ³a",
+			"messagesRemoved_other": "{{count}} tin nháº¯n Ä‘Ã£ xÃ³a",
+			"description": "CÃ¡c tin nháº¯n cÅ© hÆ¡n Ä‘Ã£ bá»‹ xÃ³a khá»i cuá»™c trÃ² chuyá»‡n Ä‘á»ƒ giá»¯ trong giá»›i háº¡n cá»­a sá»• ngá»¯ cáº£nh. ÄÃ¢y lÃ  cÃ¡ch tiáº¿p cáº­n nhanh nhÆ°ng Ã­t báº£o toÃ n ngá»¯ cáº£nh hÆ¡n so vá»›i cÃ´ Ä‘á»ng."
 		}
 	},
 	"followUpSuggest": {
-		"copyToInput": "Sao chép vào ô nhập liệu (hoặc Shift + nhấp chuột)",
-		"autoSelectCountdown": "Tự động chọn sau {{count}}s",
+		"copyToInput": "Sao chÃ©p vÃ o Ã´ nháº­p liá»‡u (hoáº·c Shift + nháº¥p chuá»™t)",
+		"autoSelectCountdown": "Tá»± Ä‘á»™ng chá»n sau {{count}}s",
 		"countdownDisplay": "{{count}}s"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Đã phát hành",
-		"support": "Hãy ủng hộ Roo Code bằng cách gắn sao cho chúng tôi trên <githubLink>GitHub</githubLink>.",
+		"title": "Roo Code {{version}} ÄÃ£ phÃ¡t hÃ nh",
+		"support": "HÃ£y á»§ng há»™ Roo Code báº±ng cÃ¡ch gáº¯n sao cho chÃºng tÃ´i trÃªn \u003cgithubLink\u003eGitHub\u003c/githubLink\u003e.",
 		"stealthModel": {
-			"feature": "<bold>Mô hình stealth MIỄN PHÍ có thời hạn</bold> - Code Supernova: Hiện đã được nâng cấp với <bold>cửa sổ ngữ cảnh 1M token</bold>! Một mô hình lập trình agentic đa năng hỗ trợ đầu vào hình ảnh, có sẵn qua Roo Code Cloud.",
-			"note": "(Lưu ý: các prompt và completion được ghi lại bởi người tạo mô hình và được sử dụng để cải thiện mô hình)",
-			"connectButton": "Kết nối với Roo Code Cloud",
-			"selectModel": "Chọn <code>roo/code-supernova</code> từ nhà cung cấp Roo Code Cloud trong Cài đặt để bắt đầu.",
-			"goToSettingsButton": "Đi tới Cài đặt"
+			"feature": "\u003cbold\u003eMÃ´ hÃ¬nh stealth MIá»„N PHÃ cÃ³ thá»i háº¡n\u003c/bold\u003e - Code Supernova: Hiá»‡n Ä‘Ã£ Ä‘Æ°á»£c nÃ¢ng cáº¥p vá»›i \u003cbold\u003ecá»­a sá»• ngá»¯ cáº£nh 1M token\u003c/bold\u003e! Má»™t mÃ´ hÃ¬nh láº­p trÃ¬nh agentic Ä‘a nÄƒng há»— trá»£ Ä‘áº§u vÃ o hÃ¬nh áº£nh, cÃ³ sáºµn qua Roo Code Cloud.",
+			"note": "(LÆ°u Ã½: cÃ¡c prompt vÃ  completion Ä‘Æ°á»£c ghi láº¡i bá»Ÿi ngÆ°á»i táº¡o mÃ´ hÃ¬nh vÃ  Ä‘Æ°á»£c sá»­ dá»¥ng Ä‘á»ƒ cáº£i thiá»‡n mÃ´ hÃ¬nh)",
+			"connectButton": "Káº¿t ná»‘i vá»›i Roo Code Cloud",
+			"selectModel": "Chá»n \u003ccode\u003eroo/code-supernova\u003c/code\u003e tá»« nhÃ  cung cáº¥p Roo Code Cloud trong CÃ i Ä‘áº·t Ä‘á»ƒ báº¯t Ä‘áº§u.",
+			"goToSettingsButton": "Äi tá»›i CÃ i Ä‘áº·t"
 		},
 		"release": {
-			"heading": "Mới trong phiên bản này:",
-			"contextRewind": "Nén ngữ cảnh được cải thiện hiện cho phép bạn khôi phục bối cảnh trước đó đầy đủ khi cuộn lại đến một điểm kiểm tra",
-			"rooProvider": "Nhà cung cấp Roo Code Cloud hiện giữ lại nội dung lý luận và sử dụng các công cụ gốc theo mặc định để có hiệu suất tốt hơn"
+			"heading": "Má»›i trong phiÃªn báº£n nÃ y:",
+			"contextRewind": "NÃ©n ngá»¯ cáº£nh Ä‘Æ°á»£c cáº£i thiá»‡n hiá»‡n cho phÃ©p báº¡n khÃ´i phá»¥c bá»‘i cáº£nh trÆ°á»›c Ä‘Ã³ Ä‘áº§y Ä‘á»§ khi cuá»™n láº¡i Ä‘áº¿n má»™t Ä‘iá»ƒm kiá»ƒm tra",
+			"rooProvider": "NhÃ  cung cáº¥p Roo Code Cloud hiá»‡n giá»¯ láº¡i ná»™i dung lÃ½ luáº­n vÃ  sá»­ dá»¥ng cÃ¡c cÃ´ng cá»¥ gá»‘c theo máº·c Ä‘á»‹nh Ä‘á»ƒ cÃ³ hiá»‡u suáº¥t tá»‘t hÆ¡n"
 		},
 		"cloudAgents": {
-			"heading": "Mới trên Cloud:",
-			"specialized": "Giới thiệu <bold>Explainer</bold>, <bold>Planner</bold> và <bold>Coder</bold> - ba agent đám mây chuyên biệt để nâng cao quy trình làm việc của bạn.",
-			"description": "Các agent làm việc cùng nhau trên đám mây và có thể được kích hoạt từ web hoặc qua Slack.",
-			"tryButton": "Dùng thử Agents trên Cloud"
+			"heading": "Má»›i trÃªn Cloud:",
+			"specialized": "Giá»›i thiá»‡u \u003cbold\u003eExplainer\u003c/bold\u003e, \u003cbold\u003ePlanner\u003c/bold\u003e vÃ  \u003cbold\u003eCoder\u003c/bold\u003e - ba agent Ä‘Ã¡m mÃ¢y chuyÃªn biá»‡t Ä‘á»ƒ nÃ¢ng cao quy trÃ¬nh lÃ m viá»‡c cá»§a báº¡n.",
+			"description": "CÃ¡c agent lÃ m viá»‡c cÃ¹ng nhau trÃªn Ä‘Ã¡m mÃ¢y vÃ  cÃ³ thá»ƒ Ä‘Æ°á»£c kÃ­ch hoáº¡t tá»« web hoáº·c qua Slack.",
+			"tryButton": "DÃ¹ng thá»­ Agents trÃªn Cloud"
 		},
-		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>"
+		"careers": "NgoÃ i ra, \u003ccareersLink\u003echÃºng tÃ´i Ä‘ang tuyá»ƒn dá»¥ng!\u003c/careersLink\u003e"
 	},
 	"browser": {
-		"session": "Phiên trình duyệt",
-		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
-		"consoleLogs": "Nhật ký bảng điều khiển",
-		"noNewLogs": "(Không có nhật ký mới)",
-		"screenshot": "Ảnh chụp màn hình trình duyệt",
-		"cursor": "con trỏ",
+		"session": "PhiÃªn trÃ¬nh duyá»‡t",
+		"rooWantsToUse": "Roo muá»‘n sá»­ dá»¥ng trÃ¬nh duyá»‡t",
+		"consoleLogs": "Nháº­t kÃ½ báº£ng Ä‘iá»u khiá»ƒn",
+		"noNewLogs": "(KhÃ´ng cÃ³ nháº­t kÃ½ má»›i)",
+		"screenshot": "áº¢nh chá»¥p mÃ n hÃ¬nh trÃ¬nh duyá»‡t",
+		"cursor": "con trá»",
 		"navigation": {
-			"step": "Bước {{current}} / {{total}}",
-			"previous": "Trước",
-			"next": "Tiếp"
+			"step": "BÆ°á»›c {{current}} / {{total}}",
+			"previous": "TrÆ°á»›c",
+			"next": "Tiáº¿p"
 		},
-		"sessionStarted": "Phiên trình duyệt đã bắt đầu",
+		"sessionStarted": "PhiÃªn trÃ¬nh duyá»‡t Ä‘Ã£ báº¯t Ä‘áº§u",
 		"actions": {
-			"title": "Hành động trình duyệt: ",
-			"launched": "Trình duyệt đã khởi chạy",
-			"launch": "Khởi chạy trình duyệt tại {{url}}",
-			"clicked": "Đã nhấp ({{coordinate}})",
-			"click": "Nhấp ({{coordinate}})",
-			"typed": "Đã gõ: {{text}}",
-			"type": "Gõ \"{{text}}\"",
-			"pressed": "Đã nhấn: {{key}}",
-			"press": "Nhấn {{key}}",
-			"scrolledDown": "Đã cuộn xuống",
-			"scrollDown": "Cuộn xuống",
-			"scrolledUp": "Đã cuộn lên",
-			"scrollUp": "Cuộn lên",
-			"hovered": "Đã di chuột ({{coordinate}})",
-			"hover": "Di chuột ({{coordinate}})",
-			"resized": "Đã thay đổi kích thước: {{size}}",
-			"resize": "Thay đổi kích thước thành {{size}}",
-			"screenshotSaved": "Ảnh chụp màn hình đã được lưu",
-			"screenshot": "Lưu ảnh chụp màn hình vào {{path}}",
-			"closed": "Trình duyệt đã đóng",
-			"close": "Đóng trình duyệt"
+			"title": "HÃ nh Ä‘á»™ng trÃ¬nh duyá»‡t: ",
+			"launched": "TrÃ¬nh duyá»‡t Ä‘Ã£ khá»Ÿi cháº¡y",
+			"launch": "Khá»Ÿi cháº¡y trÃ¬nh duyá»‡t táº¡i {{url}}",
+			"clicked": "ÄÃ£ nháº¥p ({{coordinate}})",
+			"click": "Nháº¥p ({{coordinate}})",
+			"typed": "ÄÃ£ gÃµ: {{text}}",
+			"type": "GÃµ \"{{text}}\"",
+			"pressed": "ÄÃ£ nháº¥n: {{key}}",
+			"press": "Nháº¥n {{key}}",
+			"scrolledDown": "ÄÃ£ cuá»™n xuá»‘ng",
+			"scrollDown": "Cuá»™n xuá»‘ng",
+			"scrolledUp": "ÄÃ£ cuá»™n lÃªn",
+			"scrollUp": "Cuá»™n lÃªn",
+			"hovered": "ÄÃ£ di chuá»™t ({{coordinate}})",
+			"hover": "Di chuá»™t ({{coordinate}})",
+			"resized": "ÄÃ£ thay Ä‘á»•i kÃ­ch thÆ°á»›c: {{size}}",
+			"resize": "Thay Ä‘á»•i kÃ­ch thÆ°á»›c thÃ nh {{size}}",
+			"screenshotSaved": "áº¢nh chá»¥p mÃ n hÃ¬nh Ä‘Ã£ Ä‘Æ°á»£c lÆ°u",
+			"screenshot": "LÆ°u áº£nh chá»¥p mÃ n hÃ¬nh vÃ o {{path}}",
+			"closed": "TrÃ¬nh duyá»‡t Ä‘Ã£ Ä‘Ã³ng",
+			"close": "ÄÃ³ng trÃ¬nh duyá»‡t"
 		}
 	},
 	"codeblock": {
 		"tooltips": {
-			"expand": "Mở rộng khối mã",
-			"collapse": "Thu gọn khối mã",
-			"copy_code": "Sao chép mã"
+			"expand": "Má»Ÿ rá»™ng khá»‘i mÃ£",
+			"collapse": "Thu gá»n khá»‘i mÃ£",
+			"copy_code": "Sao chÃ©p mÃ£"
 		}
 	},
-	"systemPromptWarning": "CẢNH BÁO: Đã kích hoạt ghi đè lệnh nhắc hệ thống tùy chỉnh. Điều này có thể phá vỡ nghiêm trọng chức năng và gây ra hành vi không thể dự đoán.",
-	"profileViolationWarning": "Hồ sơ hiện tại không tương thích với cài đặt của tổ chức của bạn",
+	"systemPromptWarning": "Cáº¢NH BÃO: ÄÃ£ kÃ­ch hoáº¡t ghi Ä‘Ã¨ lá»‡nh nháº¯c há»‡ thá»‘ng tÃ¹y chá»‰nh. Äiá»u nÃ y cÃ³ thá»ƒ phÃ¡ vá»¡ nghiÃªm trá»ng chá»©c nÄƒng vÃ  gÃ¢y ra hÃ nh vi khÃ´ng thá»ƒ dá»± Ä‘oÃ¡n.",
+	"profileViolationWarning": "Há»“ sÆ¡ hiá»‡n táº¡i khÃ´ng tÆ°Æ¡ng thÃ­ch vá»›i cÃ i Ä‘áº·t cá»§a tá»• chá»©c cá»§a báº¡n",
 	"shellIntegration": {
-		"title": "Cảnh báo thực thi lệnh",
-		"description": "Lệnh của bạn đang được thực thi mà không có tích hợp shell terminal VSCode. Để ẩn cảnh báo này, bạn có thể vô hiệu hóa tích hợp shell trong phần <strong>Terminal</strong> của <settingsLink>cài đặt Roo Code</settingsLink> hoặc khắc phục sự cố tích hợp terminal VSCode bằng liên kết bên dưới.",
-		"troubleshooting": "Nhấp vào đây để xem tài liệu tích hợp shell."
+		"title": "Cáº£nh bÃ¡o thá»±c thi lá»‡nh",
+		"description": "Lá»‡nh cá»§a báº¡n Ä‘ang Ä‘Æ°á»£c thá»±c thi mÃ  khÃ´ng cÃ³ tÃ­ch há»£p shell terminal VSCode. Äá»ƒ áº©n cáº£nh bÃ¡o nÃ y, báº¡n cÃ³ thá»ƒ vÃ´ hiá»‡u hÃ³a tÃ­ch há»£p shell trong pháº§n \u003cstrong\u003eTerminal\u003c/strong\u003e cá»§a \u003csettingsLink\u003ecÃ i Ä‘áº·t Roo Code\u003c/settingsLink\u003e hoáº·c kháº¯c phá»¥c sá»± cá»‘ tÃ­ch há»£p terminal VSCode báº±ng liÃªn káº¿t bÃªn dÆ°á»›i.",
+		"troubleshooting": "Nháº¥p vÃ o Ä‘Ã¢y Ä‘á»ƒ xem tÃ i liá»‡u tÃ­ch há»£p shell."
 	},
 	"ask": {
 		"autoApprovedRequestLimitReached": {
-			"title": "Đã Đạt Giới Hạn Yêu Cầu Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
-			"button": "Đặt lại và Tiếp tục"
+			"title": "ÄÃ£ Äáº¡t Giá»›i Háº¡n YÃªu Cáº§u Tá»± Äá»™ng PhÃª Duyá»‡t",
+			"description": "Roo Ä‘Ã£ Ä‘áº¡t Ä‘áº¿n giá»›i háº¡n tá»± Ä‘á»™ng phÃª duyá»‡t lÃ  {{count}} yÃªu cáº§u API. Báº¡n cÃ³ muá»‘n Ä‘áº·t láº¡i bá»™ Ä‘áº¿m vÃ  tiáº¿p tá»¥c nhiá»‡m vá»¥ khÃ´ng?",
+			"button": "Äáº·t láº¡i vÃ  Tiáº¿p tá»¥c"
 		},
 		"autoApprovedCostLimitReached": {
-			"button": "Đặt lại và Tiếp tục",
-			"title": "Đã Đạt Giới Hạn Chi Phí Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?"
+			"button": "Äáº·t láº¡i vÃ  Tiáº¿p tá»¥c",
+			"title": "ÄÃ£ Äáº¡t Giá»›i Háº¡n Chi PhÃ­ Tá»± Äá»™ng PhÃª Duyá»‡t",
+			"description": "Roo Ä‘Ã£ Ä‘áº¡t Ä‘áº¿n giá»›i háº¡n chi phÃ­ tá»± Ä‘á»™ng phÃª duyá»‡t lÃ  ${{count}}. Báº¡n cÃ³ muá»‘n Ä‘áº·t láº¡i chi phÃ­ vÃ  tiáº¿p tá»¥c vá»›i nhiá»‡m vá»¥ khÃ´ng?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>",
-		"didSearch_one": "Đã tìm thấy 1 kết quả",
-		"didSearch_other": "Đã tìm thấy {{count}} kết quả",
-		"resultTooltip": "Điểm tương tự: {{score}} (nhấp để mở tệp)"
+		"wantsToSearch": "Roo muá»‘n tÃ¬m kiáº¿m trong cÆ¡ sá»Ÿ mÃ£ cho \u003ccode\u003e{{query}}\u003c/code\u003e",
+		"wantsToSearchWithPath": "Roo muá»‘n tÃ¬m kiáº¿m trong cÆ¡ sá»Ÿ mÃ£ cho \u003ccode\u003e{{query}}\u003c/code\u003e trong \u003ccode\u003e{{path}}\u003c/code\u003e",
+		"didSearch_one": "ÄÃ£ tÃ¬m tháº¥y 1 káº¿t quáº£",
+		"didSearch_other": "ÄÃ£ tÃ¬m tháº¥y {{count}} káº¿t quáº£",
+		"resultTooltip": "Äiá»ƒm tÆ°Æ¡ng tá»±: {{score}} (nháº¥p Ä‘á»ƒ má»Ÿ tá»‡p)"
 	},
 	"read-batch": {
 		"approve": {
-			"title": "Chấp nhận tất cả"
+			"title": "Cháº¥p nháº­n táº¥t cáº£"
 		},
 		"deny": {
-			"title": "Từ chối tất cả"
+			"title": "Tá»« chá»‘i táº¥t cáº£"
 		}
 	},
 	"indexingStatus": {
-		"ready": "Chỉ mục sẵn sàng",
-		"indexing": "Đang lập chỉ mục {{percentage}}%",
-		"indexed": "Đã lập chỉ mục",
-		"error": "Lỗi chỉ mục",
-		"status": "Trạng thái chỉ mục"
+		"ready": "Chá»‰ má»¥c sáºµn sÃ ng",
+		"indexing": "Äang láº­p chá»‰ má»¥c {{percentage}}%",
+		"indexed": "ÄÃ£ láº­p chá»‰ má»¥c",
+		"error": "Lá»—i chá»‰ má»¥c",
+		"status": "Tráº¡ng thÃ¡i chá»‰ má»¥c"
 	},
 	"versionIndicator": {
-		"ariaLabel": "Phiên bản {{version}} - Nhấp để xem ghi chú phát hành"
+		"ariaLabel": "PhiÃªn báº£n {{version}} - Nháº¥p Ä‘á»ƒ xem ghi chÃº phÃ¡t hÃ nh"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud đang phát triển!",
-		"description": "Chạy các agent từ xa trên cloud, truy cập các tác vụ của bạn từ mọi nơi, cộng tác với người khác và nhiều hơn nữa.",
-		"joinWaitlist": "Đăng ký để nhận các cập nhật mới nhất."
+		"title": "Roo Code Cloud Ä‘ang phÃ¡t triá»ƒn!",
+		"description": "Cháº¡y cÃ¡c agent tá»« xa trÃªn cloud, truy cáº­p cÃ¡c tÃ¡c vá»¥ cá»§a báº¡n tá»« má»i nÆ¡i, cá»™ng tÃ¡c vá»›i ngÆ°á»i khÃ¡c vÃ  nhiá»u hÆ¡n ná»¯a.",
+		"joinWaitlist": "ÄÄƒng kÃ½ Ä‘á»ƒ nháº­n cÃ¡c cáº­p nháº­t má»›i nháº¥t."
 	},
 	"editMessage": {
-		"placeholder": "Chỉnh sửa tin nhắn của bạn..."
+		"placeholder": "Chá»‰nh sá»­a tin nháº¯n cá»§a báº¡n..."
 	},
 	"command": {
-		"triggerDescription": "Kích hoạt lệnh {{name}}"
+		"triggerDescription": "KÃ­ch hoáº¡t lá»‡nh {{name}}"
 	},
 	"slashCommands": {
-		"tooltip": "Quản lý lệnh gạch chéo",
-		"title": "Lệnh Gạch Chéo",
-		"description": "Sử dụng lệnh gạch chéo tích hợp sẵn hoặc tạo tùy chỉnh để truy cập nhanh vào các lời nhắc và quy trình làm việc thường dùng. <DocsLink>Tài liệu</DocsLink>",
-		"manageCommands": "Quản lý các lệnh slash trong cài đặt",
-		"builtInCommands": "Lệnh Tích Hợp",
-		"globalCommands": "Lệnh Toàn Cục",
-		"workspaceCommands": "Lệnh Không Gian Làm Việc",
-		"globalCommand": "Lệnh toàn cục",
-		"editCommand": "Chỉnh sửa lệnh",
-		"deleteCommand": "Xóa lệnh",
-		"newGlobalCommandPlaceholder": "Lệnh toàn cục mới...",
-		"newWorkspaceCommandPlaceholder": "Lệnh không gian làm việc mới...",
+		"tooltip": "Quáº£n lÃ½ lá»‡nh gáº¡ch chÃ©o",
+		"title": "Lá»‡nh Gáº¡ch ChÃ©o",
+		"description": "Sá»­ dá»¥ng lá»‡nh gáº¡ch chÃ©o tÃ­ch há»£p sáºµn hoáº·c táº¡o tÃ¹y chá»‰nh Ä‘á»ƒ truy cáº­p nhanh vÃ o cÃ¡c lá»i nháº¯c vÃ  quy trÃ¬nh lÃ m viá»‡c thÆ°á»ng dÃ¹ng. \u003cDocsLink\u003eTÃ i liá»‡u\u003c/DocsLink\u003e",
+		"manageCommands": "Quáº£n lÃ½ cÃ¡c lá»‡nh slash trong cÃ i Ä‘áº·t",
+		"builtInCommands": "Lá»‡nh TÃ­ch Há»£p",
+		"globalCommands": "Lá»‡nh ToÃ n Cá»¥c",
+		"workspaceCommands": "Lá»‡nh KhÃ´ng Gian LÃ m Viá»‡c",
+		"globalCommand": "Lá»‡nh toÃ n cá»¥c",
+		"editCommand": "Chá»‰nh sá»­a lá»‡nh",
+		"deleteCommand": "XÃ³a lá»‡nh",
+		"newGlobalCommandPlaceholder": "Lá»‡nh toÃ n cá»¥c má»›i...",
+		"newWorkspaceCommandPlaceholder": "Lá»‡nh khÃ´ng gian lÃ m viá»‡c má»›i...",
 		"deleteDialog": {
-			"title": "Xóa Lệnh",
-			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Hành động này không thể hoàn tác.",
-			"cancel": "Hủy",
-			"confirm": "Xóa"
+			"title": "XÃ³a Lá»‡nh",
+			"description": "Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a lá»‡nh \"{{name}}\" khÃ´ng? HÃ nh Ä‘á»™ng nÃ y khÃ´ng thá»ƒ hoÃ n tÃ¡c.",
+			"cancel": "Há»§y",
+			"confirm": "XÃ³a"
 		}
 	},
 	"contextMenu": {
-		"noResults": "Không có kết quả",
-		"problems": "Vấn đề",
+		"noResults": "KhÃ´ng cÃ³ káº¿t quáº£",
+		"problems": "Váº¥n Ä‘á»",
 		"terminal": "Terminal",
-		"url": "Dán URL để lấy nội dung"
+		"url": "DÃ¡n URL Ä‘á»ƒ láº¥y ná»™i dung"
 	},
 	"queuedMessages": {
-		"title": "Tin nhắn trong hàng đợi",
-		"clickToEdit": "Nhấp để chỉnh sửa tin nhắn"
+		"title": "Tin nháº¯n trong hÃ ng Ä‘á»£i",
+		"clickToEdit": "Nháº¥p Ä‘á»ƒ chá»‰nh sá»­a tin nháº¯n"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo muốn chạy lệnh slash",
-		"didRun": "Roo đã chạy lệnh slash"
+		"wantsToRun": "Roo muá»‘n cháº¡y lá»‡nh slash",
+		"didRun": "Roo Ä‘Ã£ cháº¡y lá»‡nh slash"
 	},
 	"todo": {
-		"partial": "{{completed}} trong tổng số {{total}} công việc đã hoàn thành",
-		"complete": "{{total}} công việc đã hoàn thành",
-		"updated": "Đã cập nhật danh sách công việc",
-		"completed": "Đã hoàn thành",
-		"started": "Đã bắt đầu"
+		"partial": "{{completed}} trong tá»•ng sá»‘ {{total}} cÃ´ng viá»‡c Ä‘Ã£ hoÃ n thÃ nh",
+		"complete": "{{total}} cÃ´ng viá»‡c Ä‘Ã£ hoÃ n thÃ nh",
+		"updated": "ÄÃ£ cáº­p nháº­t danh sÃ¡ch cÃ´ng viá»‡c",
+		"completed": "ÄÃ£ hoÃ n thÃ nh",
+		"started": "ÄÃ£ báº¯t Ä‘áº§u"
+	},
+	"speechToText": {
+		"setupRequired": "Speech-to-Text Setup Required",
+		"notConfiguredError": "Speech-to-text is not configured. Please add your Deepgram API key in settings.",
+		"notConfigured": "Add Deepgram API key in settings",
+		"close": "Close",
+		"connecting": "Connecting...",
+		"ffmpegRequired": "ffmpeg required - click for details",
+		"copyInstructions": "Copy Instructions",
+		"stopRecording": "Click to stop recording",
+		"startRecording": "Click to start voice input"
 	}
 }

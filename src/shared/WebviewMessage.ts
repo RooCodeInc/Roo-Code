@@ -175,6 +175,11 @@ export interface WebviewMessage {
 		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
+		| "startSpeechToText"
+		| "stopSpeechToText"
+		| "speechToTextTranscript"
+		| "speechToTextError"
+		| "speechToTextStateChange"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -227,6 +232,8 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	speechToTextState?: "idle" | "recording" | "connecting" | "error" // For speech-to-text state
+	isFinal?: boolean // For speech-to-text transcript
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

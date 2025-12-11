@@ -397,6 +397,10 @@
 		"cacheUsageNote": "Note: If you don't see cache usage, try selecting a different model and then selecting your desired model again.",
 		"vscodeLmModel": "Language Model",
 		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
+		"vscodeLmLocalCache": {
+			"label": "Enable Local Prompt Caching",
+			"description": "Cache responses locally to avoid re-sending identical prompts. Reduces API usage but uses more memory/CPU for hashing and storing responses. Cached responses expire after 30 minutes."
+		},
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Enable URL context",
@@ -832,6 +836,21 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallel tool calls",
 			"description": "When enabled, the native protocol can execute multiple tools in a single assistant message turn."
+		},
+		"SPEECH_TO_TEXT": {
+			"name": "Speech-to-Text",
+			"description": "Enable voice input for chat. Uses Deepgram API for real-time speech transcription. Requires ffmpeg to be installed on your system.",
+			"providerLabel": "Provider",
+			"providerDescription": "Select which provider to use for speech-to-text.",
+			"apiKeyLabel": "Deepgram API Key",
+			"apiKeyPlaceholder": "Enter your Deepgram API key",
+			"getApiKeyText": "Get your API key from",
+			"modelLabel": "Model",
+			"modelDescription": "Select the Deepgram model to use for transcription. Nova-3 is recommended for best accuracy.",
+			"languageLabel": "Language",
+			"languageDescription": "Select the language for speech recognition, or use auto-detect.",
+			"warningMissingKey": "⚠️ Deepgram API key is required for speech-to-text. Please configure it above.",
+			"successConfigured": "✓ Speech-to-text is configured and ready to use"
 		}
 	},
 	"promptCaching": {
