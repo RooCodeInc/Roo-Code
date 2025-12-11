@@ -249,6 +249,11 @@ export class CodeReviewService {
 
 		this.updateTaskState({ timeoutId })
 
+		const resetMode = async () => {
+			await provider.handleModeSwitch(this.prevMode)
+			this.prevMode = ""
+		}
+
 		// 统一的完成处理函数
 		const handleCompletion = async () => {
 			if (completionHandled) {
@@ -294,8 +299,7 @@ export class CodeReviewService {
 				clearTimeout(timeoutId)
 				await provider.removeClineFromStack()
 				await provider.refreshWorkspace()
-				await provider.handleModeSwitch(this.prevMode)
-				this.prevMode = ""
+				await resetMode()
 			}
 		}
 
@@ -335,20 +339,30 @@ export class CodeReviewService {
 		})
 
 		// 错误情况的处理
-		task.on(RooCodeEventName.TaskResumable, () => {
+		task.on(RooCodeEventName.TaskResumable, async () => {
 			if (completionHandled) return
 			this.updateTaskState({
 				error: new Error(t("common:review.tip.service_unavailable")),
 				isCompleted: true,
 			})
+			await resetMode()
 		})
 
-		task.on(RooCodeEventName.TaskIdle, () => {
+		task.on(RooCodeEventName.TaskIdle, async () => {
 			if (completionHandled) return
 			this.updateTaskState({
 				error: new Error(t("common:review.tip.service_unavailable")),
 				isCompleted: true,
 			})
+			await resetMode()
+		})
+		task.on(RooCodeEventName.TaskAborted, async () => {
+			if (completionHandled) return
+			this.updateTaskState({
+				error: new Error(t("common:review.tip.task_cancelled")),
+				isCompleted: true,
+			})
+			await resetMode()
 		})
 
 		// 把 postMessageToWebview 移到事件注册之后
@@ -420,8 +434,6 @@ export class CodeReviewService {
 		// Reset state
 		this.currentTask = null
 		this.currentActiveIssueId = null
-
-		// Note: No longer sending taskAborted message as per requirements
 	}
 
 	/**

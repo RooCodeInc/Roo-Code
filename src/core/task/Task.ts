@@ -3103,10 +3103,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
-						const streamingFailedMessage = this.abort
+						let streamingFailedMessage = this.abort
 							? undefined
 							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
+						const requestId = error.headers?.get("x-request-id")
 
+						if (this.apiConfiguration.apiProvider === "zgsm" && requestId) {
+							streamingFailedMessage += `\nRequestId: ${requestId ?? ""}\n`
+						}
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
 

@@ -173,6 +173,7 @@
 			"service_unavailable": "服务不可用，请稍后重试。",
 			"api_provider_not_support": "当前 API 提供商不支持 Code Review功能，请切换到 CoStrict API 提供商。",
 			"task_timeout": "任务执行超时，已自动取消",
+			"task_cancelled": "任务已取消，请新建任务进行 Code Review",
 			"get_review_result_failed": "暂时无法获取审查结果，请重试",
 			"no_changed_files": "没有变更文件，请确保当前工作空间是 git 仓库，并且有变更文件。",
 			"new_commit_notification": "你提交了：{{commitMessage}}，是否进行 review ？"

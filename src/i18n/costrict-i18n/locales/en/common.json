@@ -173,6 +173,7 @@
 			"service_unavailable": "Service unavailable, please try again later.",
 			"api_provider_not_support": "The current API provider does not support the Code Review function, please switch to the CoStrict API provider.",
 			"task_timeout": "Task execution timed out, has been automatically canceled",
+			"task_cancelled": "Task has been cancelled, please create a new task for Code Review",
 			"get_review_result_failed": "Unable to obtain review results, please try again",
 			"no_changed_files": "No changed files, please ensure that the current workspace is a git repository and has changed files.",
 			"new_commit_notification": "You committed: {{commitMessage}}, whether to perform review?"
