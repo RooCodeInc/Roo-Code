@@ -207,6 +207,57 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		// It's likely a ThinkingPart if it has value + (id or metadata) and isn't a tool call
 		return hasValue && hasIdOrMetadata && isNotToolCall
 	}
+	/**
+	 * Checks if an object is a LanguageModelChatMessage.
+	 * Uses duck-typing since instanceof doesn't work reliably with VS Code's mock objects.
+	 */
+	private isLanguageModelChatMessage(obj: unknown): obj is vscode.LanguageModelChatMessage {
+		if (!obj || typeof obj !== "object") {
+			return false
+		}
+		const msgObj = obj as Record<string, unknown>
+		return "role" in msgObj && "content" in msgObj
+	}
+
+	/**
+	 * Checks if a chunk is a LanguageModelTextPart using duck-typing.
+	 */
+	private isTextPart(chunk: unknown): chunk is vscode.LanguageModelTextPart {
+		if (!chunk || typeof chunk !== "object") {
+			return false
+		}
+		const chunkObj = chunk as Record<string, unknown>
+		return "value" in chunkObj && typeof chunkObj.value === "string" && !("callId" in chunkObj)
+	}
+
+	/**
+	 * Checks if a chunk is a LanguageModelToolCallPart using duck-typing.
+	 */
+	private isToolCallPart(chunk: unknown): chunk is vscode.LanguageModelToolCallPart {
+		if (!chunk || typeof chunk !== "object") {
+			return false
+		}
+		const chunkObj = chunk as Record<string, unknown>
+		return "callId" in chunkObj && "name" in chunkObj && "input" in chunkObj
+	}
+
+	/**
+	 * Extracts text from a LanguageModelChatMessage using duck-typing.
+	 */
+	private extractTextFromMessage(message: vscode.LanguageModelChatMessage): string {
+		let text = ""
+		if (Array.isArray(message.content)) {
+			for (const part of message.content) {
+				const partObj = part as unknown as Record<string, unknown>
+				if ("value" in partObj && typeof partObj.value === "string") {
+					text += partObj.value
+				}
+			}
+		} else if (typeof message.content === "string") {
+			text += message.content
+		}
+		return text
+	}
 
 	/**
 	 * Creates and streams a message using the VS Code Language Model API.
@@ -327,12 +378,12 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 		if (typeof text === "string") {
 			textContent = text
-		} else if (text instanceof vscode.LanguageModelChatMessage) {
+		} else if (this.isLanguageModelChatMessage(text)) {
 			// For chat messages, extract text content
 			if (!text.content || (Array.isArray(text.content) && text.content.length === 0)) {
 				return 0
 			}
-			textContent = extractTextCountFromMessage(text)
+			textContent = this.extractTextFromMessage(text)
 		} else {
 			return 0
 		}
@@ -473,7 +524,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 			// Consume the stream and handle both text and tool call chunks
 			for await (const chunk of response.stream) {
-				if (chunk instanceof vscode.LanguageModelTextPart) {
+				if (this.isTextPart(chunk)) {
 					// Validate text part value
 					if (typeof chunk.value !== "string") {
 						console.warn("Roo Code <Language Model API>: Invalid text part value received:", chunk.value)
@@ -485,7 +536,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 						type: "text",
 						text: chunk.value,
 					}
-				} else if (chunk instanceof vscode.LanguageModelToolCallPart) {
+				} else if (this.isToolCallPart(chunk)) {
 					try {
 						// Validate tool call parameters
 						if (!chunk.name || typeof chunk.name !== "string") {
@@ -732,12 +783,17 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 			let result = ""
 			for await (const chunk of response.stream) {
-				if (chunk instanceof vscode.LanguageModelTextPart) {
+				if (this.isTextPart(chunk)) {
 					result += chunk.value
 				}
 			}
 
 			return result
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(`VSCode LM completion error: ${error.message}`)
+			}
+			throw error
 		} finally {
 			this.ensureCleanState()
 		}
