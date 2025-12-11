@@ -305,6 +305,17 @@ description: "测试驱动开发"
 		description: "Perform an in-depth analysis of the project and create a comprehensive project wiki.",
 		content: PROJECT_WIKI_TEMPLATE("${workspaceFolder}/.cospec"),
 	},
+	dotest: {
+		name: "dotest",
+		description: "Run tests in the project.",
+		content: `使用 \`new_task\` 工具，选择 \`Code\` 模式，创建子任务。输入的 message 内容模板为
+\`\`\`markdown
+%do-test%
+
+{{当前任务对应 \${workspaceFolder}/.cospec/plan/changes/ 下的功能目录位置或用户需求描述}}
+\`\`\`
+`,
+	},
 	"openspec-init": {
 		name: "openspec-init",
 		description: "Openspec slash command init.",

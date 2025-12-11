@@ -192,7 +192,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 			'- When executing tests, there is no need to review the testing mechanism from scratch; instructions on how to test should be obtained from user guidelines or global rules. Once it is clear how to perform the tests, they can be executed directly without reading the test scripts. Do not include any explanatory statements.\n- When an error occurs during test execution, it is essential to distinguish whether the current error belongs to a "functional implementation" error or a "testing method" error.\n- "Testing method" errors mainly revolve around issues such as test case design errors, test script errors, configuration file errors, interface configuration errors, etc., and do not involve changes to existing functional code; "functional implementation" errors refer to specific situations where the code implementation does not meet the expectations set by the test design and require code modification.\n- In cases where the test cases do not match the actual code, whether to directly modify the code or to correct the test cases or test scripts, suggestions for modification can be provided, but it is necessary to ask the user how to proceed. Unless given permission by the user, unilateral modifications are prohibited.\n- When the user allows for issue resolution, make every effort to resolve the issues. For example, modify code, fix test scripts, etc., until the test can pass. During this process, any tools or other agents can be used to resolve the issues. It is prohibited to simply end the current task upon discovering a problem.\n- When designing test cases, one should not rely on existing data in the database. For example, when validating cases for updating data, consider adjusting the order of the cases by first executing the case that creates the data, followed by the update operation, to ensure that the data exists. After the execution of the cases, it is also necessary to consider performing data cleanup operations to restore the environment.\n- Interface test cases should not rely on existing data in the library, for example, "query" and "delete" operations should not depend on data that may not exist. To ensure the success of the test cases, consider placing the "create" operation upfront or adding an additional "create" operation.\n- After executing the test case suite, it is essential to consciously clean up the environment by deleting the generated test data.\nTest cases involving data uniqueness should consider using a strategy of deleting before using. For example, to create data A, one should first delete data A (regardless of the result) before creating data A.',
 		groups: ["read", "edit", "command", "mcp"],
 		source: "project",
-		zgsmCodeModeGroup: "strict,plan",
+		zgsmCodeModeGroup: "strict",
 		apiProvider: "zgsm",
 	},
 	{
@@ -203,7 +203,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		description: "Analyze and generate a testing plan",
 		groups: ["read", "edit", "command", "mcp"],
 		source: "project",
-		zgsmCodeModeGroup: "strict,plan",
+		zgsmCodeModeGroup: "strict,plan,vibe",
 		apiProvider: "zgsm",
 	},
 	{
