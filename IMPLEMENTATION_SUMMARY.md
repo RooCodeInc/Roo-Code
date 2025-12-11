@@ -33,6 +33,10 @@ Enhanced the VS Code Language Model API integration to **dynamically fetch** acc
 **Key Functions**:
 
 ```typescript
+// Synchronous - uses local registry only
+mergeModelInfoWithRegistry(modelId, apiMaxInputTokens, fallback): ModelInfo
+
+// Async - fetches from AI SDK providers
 fetchModelInfo(modelId: string): Promise<Partial<ModelInfo> | null>
 mergeModelInfoWithFetched(modelId, apiMaxInputTokens, fallback): Promise<ModelInfo>
 clearModelInfoCache(): void

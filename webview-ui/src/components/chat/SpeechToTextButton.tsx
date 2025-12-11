@@ -89,7 +89,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 
 	const startRecording = useCallback(() => {
 		if (!isConfigured) {
-			setErrorMessage("Speech-to-text is not configured. Please add your Deepgram API key in settings.")
+			setErrorMessage(t("chat:speechToText.notConfiguredError"))
 			setRecordingState("error")
 			return
 		}
@@ -98,7 +98,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 		setRecordingState("connecting")
 		setErrorMessage(null)
 		vscode.postMessage({ type: "startSpeechToText" })
-	}, [isConfigured])
+	}, [isConfigured, t])
 
 	const stopRecording = useCallback(() => {
 		console.log("Roo Code <STT>: Sending stopSpeechToText message to extension")
@@ -118,17 +118,17 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 	const hasError = recordingState === "error"
 
 	// For installation errors, show a short tooltip and offer to show details
-	const shortErrorMessage = isInstallationError ? "ffmpeg required - click for details" : errorMessage
+	const shortErrorMessage = isInstallationError ? t("chat:speechToText.ffmpegRequired") : errorMessage
 
 	const tooltipContent = !isConfigured
-		? t("chat:speechToText.notConfigured", { defaultValue: "Add Deepgram API key in settings" })
+		? t("chat:speechToText.notConfigured")
 		: isRecording
-			? t("chat:speechToText.stopRecording", { defaultValue: "Click to stop recording" })
+			? t("chat:speechToText.stopRecording")
 			: isLoading
-				? t("chat:speechToText.connecting", { defaultValue: "Connecting..." })
+				? t("chat:speechToText.connecting")
 				: hasError && shortErrorMessage
 					? shortErrorMessage
-					: t("chat:speechToText.startRecording", { defaultValue: "Click to start voice input" })
+					: t("chat:speechToText.startRecording")
 
 	return (
 		<>
@@ -171,7 +171,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 						className="bg-vscode-editor-background border border-vscode-panel-border rounded-lg p-6 max-w-lg mx-4 shadow-xl"
 						onClick={(e) => e.stopPropagation()}>
 						<h3 className="text-lg font-semibold text-vscode-foreground mb-4">
-							Speech-to-Text Setup Required
+							{t("chat:speechToText.setupRequired")}
 						</h3>
 						<pre className="text-sm text-vscode-foreground whitespace-pre-wrap font-mono bg-vscode-input-background p-4 rounded border border-vscode-input-border overflow-auto max-h-80">
 							{errorMessage}
@@ -182,7 +182,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 									navigator.clipboard.writeText(errorMessage)
 								}}
 								className="px-4 py-2 text-sm bg-vscode-button-secondaryBackground text-vscode-button-secondaryForeground rounded hover:bg-vscode-button-secondaryHoverBackground">
-								Copy Instructions
+								{t("chat:speechToText.copyInstructions")}
 							</button>
 							<button
 								onClick={() => {
@@ -191,7 +191,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ onTransc
 									setErrorMessage(null)
 								}}
 								className="px-4 py-2 text-sm bg-vscode-button-background text-vscode-button-foreground rounded hover:bg-vscode-button-hoverBackground">
-								Close
+								{t("chat:speechToText.close")}
 							</button>
 						</div>
 					</div>
