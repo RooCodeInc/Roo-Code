@@ -121,6 +121,12 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 export type OrganizationDefaultSettings = z.infer<typeof organizationDefaultSettingsSchema>
 
 /**
+ * WorkspaceTaskVisibility
+ */
+
+export type WorkspaceTaskVisibility = "all" | "list-only" | "full-lockdown"
+
+/**
  * OrganizationCloudSettings
  */
 
@@ -129,6 +135,7 @@ export const organizationCloudSettingsSchema = z.object({
 	enableTaskSharing: z.boolean().optional(),
 	taskShareExpirationDays: z.number().int().positive().optional(),
 	allowMembersViewAllTasks: z.boolean().optional(),
+	workspaceTaskVisibility: z.enum(["all", "list-only", "full-lockdown"]).optional(),
 })
 
 export type OrganizationCloudSettings = z.infer<typeof organizationCloudSettingsSchema>
