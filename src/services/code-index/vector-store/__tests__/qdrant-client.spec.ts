@@ -1065,6 +1065,10 @@ describe("QdrantVectorStore", () => {
 
 	describe("upsertPoints", () => {
 		it("should correctly call qdrantClient.upsert with processed points", async () => {
+			// Create a vector store with a small dimension for testing
+			const testVectorSize = 3
+			const testVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, testVectorSize, mockApiKey)
+
 			const mockPoints = [
 				{
 					id: "test-id-1",
@@ -1090,7 +1094,7 @@ describe("QdrantVectorStore", () => {
 
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
-			await vectorStore.upsertPoints(mockPoints)
+			await testVectorStore.upsertPoints(mockPoints)
 
 			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledTimes(1)
 			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledWith(expectedCollectionName, {
@@ -1131,6 +1135,10 @@ describe("QdrantVectorStore", () => {
 		})
 
 		it("should handle points without filePath in payload", async () => {
+			// Create a vector store with a small dimension for testing
+			const testVectorSize = 3
+			const testVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, testVectorSize, mockApiKey)
+
 			const mockPoints = [
 				{
 					id: "test-id-1",
@@ -1145,7 +1153,7 @@ describe("QdrantVectorStore", () => {
 
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
-			await vectorStore.upsertPoints(mockPoints)
+			await testVectorStore.upsertPoints(mockPoints)
 
 			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledWith(expectedCollectionName, {
 				points: [
@@ -1175,6 +1183,10 @@ describe("QdrantVectorStore", () => {
 		})
 
 		it("should correctly process pathSegments for nested file paths", async () => {
+			// Create a vector store with a small dimension for testing
+			const testVectorSize = 3
+			const testVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, testVectorSize, mockApiKey)
+
 			const mockPoints = [
 				{
 					id: "test-id-1",
@@ -1190,7 +1202,7 @@ describe("QdrantVectorStore", () => {
 
 			mockQdrantClientInstance.upsert.mockResolvedValue({} as any)
 
-			await vectorStore.upsertPoints(mockPoints)
+			await testVectorStore.upsertPoints(mockPoints)
 
 			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledWith(expectedCollectionName, {
 				points: [
@@ -1217,6 +1229,10 @@ describe("QdrantVectorStore", () => {
 		})
 
 		it("should handle error scenarios when qdrantClient.upsert fails", async () => {
+			// Create a vector store with a small dimension for testing
+			const testVectorSize = 3
+			const testVectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, testVectorSize, mockApiKey)
+
 			const mockPoints = [
 				{
 					id: "test-id-1",
@@ -1234,11 +1250,124 @@ describe("QdrantVectorStore", () => {
 			mockQdrantClientInstance.upsert.mockRejectedValue(upsertError)
 			vitest.spyOn(console, "error").mockImplementation(() => {})
 
-			await expect(vectorStore.upsertPoints(mockPoints)).rejects.toThrow(upsertError)
+			await expect(testVectorStore.upsertPoints(mockPoints)).rejects.toThrow(upsertError)
 
 			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledTimes(1)
 			expect(console.error).toHaveBeenCalledWith("Failed to upsert points:", upsertError)
 			;(console.error as any).mockRestore()
+		})
+
+		it("should sanitize vectors with null values by replacing them with 0", async () => {
+			const mockVectorSize = 5
+			const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+			const mockPoints = [
+				{
+					id: "test-id-1",
+					vector: [0.1, null, 0.3, undefined, NaN] as any as number[],
+					payload: {
+						filePath: "test/file.ts",
+						content: "test content",
+					},
+				},
+			]
+
+			mockQdrantClientInstance.upsert.mockResolvedValue(undefined)
+
+			const mockConsoleWarn = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+			await vectorStore.upsertPoints(mockPoints)
+
+			expect(mockConsoleWarn).toHaveBeenCalledWith(
+				expect.stringContaining("[QdrantVectorStore] Found invalid value in vector"),
+			)
+
+			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.objectContaining({
+					points: expect.arrayContaining([
+						expect.objectContaining({
+							id: "test-id-1",
+							vector: [0.1, 0, 0.3, 0, 0],
+							payload: expect.objectContaining({
+								filePath: "test/file.ts",
+							}),
+						}),
+					]),
+				}),
+			)
+
+			mockConsoleWarn.mockRestore()
+		})
+
+		it("should throw error if vector dimension doesn't match expected size", async () => {
+			const mockVectorSize = 5
+			const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+			const mockPoints = [
+				{
+					id: "test-id-1",
+					vector: [0.1, 0.2], // Wrong dimension - should be 5
+					payload: {
+						filePath: "test/file.ts",
+						content: "test content",
+					},
+				},
+			]
+
+			await expect(vectorStore.upsertPoints(mockPoints)).rejects.toThrow(
+				"Vector dimension mismatch for point test-id-1: expected 5, got 2",
+			)
+
+			expect(mockQdrantClientInstance.upsert).not.toHaveBeenCalled()
+		})
+
+		it("should handle multiple vectors with mixed valid and invalid values", async () => {
+			const mockVectorSize = 5
+			const vectorStore = new QdrantVectorStore(mockWorkspacePath, mockQdrantUrl, mockVectorSize, mockApiKey)
+
+			const mockPoints = [
+				{
+					id: "test-id-1",
+					vector: [0.1, null, 0.3, 0.4, 0.5] as any as number[],
+					payload: {
+						filePath: "test/file1.ts",
+						content: "test content 1",
+					},
+				},
+				{
+					id: "test-id-2",
+					vector: [0.6, 0.7, undefined, NaN, 1.0] as any as number[],
+					payload: {
+						filePath: "test/file2.ts",
+						content: "test content 2",
+					},
+				},
+			]
+
+			mockQdrantClientInstance.upsert.mockResolvedValue(undefined)
+
+			const mockConsoleWarn = vitest.spyOn(console, "warn").mockImplementation(() => {})
+
+			await vectorStore.upsertPoints(mockPoints)
+
+			expect(mockQdrantClientInstance.upsert).toHaveBeenCalledWith(
+				expect.any(String),
+				expect.objectContaining({
+					points: expect.arrayContaining([
+						expect.objectContaining({
+							id: "test-id-1",
+							vector: [0.1, 0, 0.3, 0.4, 0.5],
+						}),
+						expect.objectContaining({
+							id: "test-id-2",
+							vector: [0.6, 0.7, 0, 0, 1.0],
+						}),
+					]),
+				}),
+			)
+
+			mockConsoleWarn.mockRestore()
 		})
 	})
 
