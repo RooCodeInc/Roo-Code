@@ -171,12 +171,12 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			return
 		}
 
-		const fullPath = path.resolve(task.cwd, removeClosingTag("path", relPath))
+		const fullPath = path.resolve(task.cwd, relPath)
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 		const sharedMessageProps = {
 			tool: "generateImage" as const,
-			path: getReadablePath(task.cwd, removeClosingTag("path", relPath)),
+			path: getReadablePath(task.cwd, relPath),
 			content: prompt,
 			isOutsideWorkspace,
 			isProtected: isWriteProtected,
