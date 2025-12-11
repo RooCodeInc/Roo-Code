@@ -803,7 +803,7 @@ describe("getRooModels", () => {
 		expect(model.nestedConfig).toEqual({ key: "value" })
 	})
 
-	it("should apply versioned settings when version matches, overriding plain settings", async () => {
+	it("should apply versioned settings when version matches", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -845,63 +845,9 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		// Versioned settings should override the same properties from plain settings
+		// Versioned settings should be used instead of plain settings
 		expect(models["test/versioned-model"].includedTools).toEqual(["apply_patch", "search_replace"])
 		expect(models["test/versioned-model"].excludedTools).toEqual(["apply_diff", "write_to_file"])
-	})
-
-	it("should merge settings and versionedSettings, with versioned settings taking precedence", async () => {
-		const mockResponse = {
-			object: "list",
-			data: [
-				{
-					id: "test/merged-settings-model",
-					object: "model",
-					created: 1234567890,
-					owned_by: "test",
-					name: "Model with Merged Settings",
-					description: "Model with both settings and versionedSettings that should be merged",
-					context_window: 128000,
-					max_tokens: 8192,
-					type: "language",
-					tags: ["tool-use"],
-					pricing: {
-						input: "0.0001",
-						output: "0.0002",
-					},
-					// Plain settings - provides base configuration
-					settings: {
-						includedTools: ["apply_patch"],
-						excludedTools: ["apply_diff", "write_to_file"],
-						reasoningEffort: "medium",
-					},
-					// Versioned settings - adds version-specific overrides
-					versionedSettings: {
-						"1.0.0": {
-							supportsTemperature: false,
-							supportsReasoningEffort: ["none", "low", "medium", "high"],
-						},
-					},
-				},
-			],
-		}
-
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			json: async () => mockResponse,
-		})
-
-		const models = await getRooModels(baseUrl, apiKey)
-		const model = models["test/merged-settings-model"] as Record<string, unknown>
-
-		// Properties from plain settings should be present
-		expect(model.includedTools).toEqual(["apply_patch"])
-		expect(model.excludedTools).toEqual(["apply_diff", "write_to_file"])
-		expect(model.reasoningEffort).toBe("medium")
-
-		// Properties from versioned settings should also be present
-		expect(model.supportsTemperature).toBe(false)
-		expect(model.supportsReasoningEffort).toEqual(["none", "low", "medium", "high"])
 	})
 
 	it("should use plain settings when no versioned settings version matches", async () => {

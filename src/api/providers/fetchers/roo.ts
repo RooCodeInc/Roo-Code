@@ -130,30 +130,33 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 				// Settings allow the proxy to dynamically configure model-specific options
 				// like includedTools, excludedTools, reasoningEffort, etc.
 				//
-				// Two fields are used together:
-				// - `settings`: Base values that work with all client versions (e.g., { includedTools: ['search_replace'] })
-				// - `versionedSettings`: Version-keyed overrides (e.g., { '3.36.4': { supportsTemperature: false } })
+				// Two fields are used for backward compatibility:
+				// - `settings`: Plain values that work with all client versions (e.g., { includedTools: ['search_replace'] })
+				// - `versionedSettings`: Version-keyed settings (e.g., { '3.36.4': { includedTools: ['search_replace'] } })
 				//
-				// Settings are merged: `settings` provides the base, `versionedSettings` layers on top.
-				// This allows the proxy to set common configuration in `settings` and version-specific
-				// overrides in `versionedSettings`. Old clients only see `settings`.
+				// New clients check versionedSettings first - if a matching version is found, those settings are used.
+				// Otherwise, falls back to plain `settings`. Old clients only see `settings`.
 				const apiSettings = model.settings as Record<string, unknown> | undefined
 				const apiVersionedSettings = model.versionedSettings as VersionedSettings | undefined
 
 				// Start with base model info
 				let modelInfo: ModelInfo = { ...baseModelInfo }
 
-				// Apply plain settings first as the base configuration
-				if (apiSettings) {
-					modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
-				}
-
-				// Then layer versioned settings on top (can override plain settings)
+				// Try to resolve versioned settings first (finds highest version <= current plugin version)
+				// If versioned settings match, use them exclusively (they contain all necessary settings)
+				// Otherwise fall back to plain settings for backward compatibility
 				if (apiVersionedSettings) {
 					const resolvedVersionedSettings = resolveVersionedSettings<Partial<ModelInfo>>(apiVersionedSettings)
 					if (Object.keys(resolvedVersionedSettings).length > 0) {
+						// Versioned settings found - use them exclusively
 						modelInfo = { ...modelInfo, ...resolvedVersionedSettings }
+					} else if (apiSettings) {
+						// No matching versioned settings - fall back to plain settings
+						modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
 					}
+				} else if (apiSettings) {
+					// No versioned settings at all - use plain settings
+					modelInfo = { ...modelInfo, ...(apiSettings as Partial<ModelInfo>) }
 				}
 
 				models[modelId] = modelInfo
