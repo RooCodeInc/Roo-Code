@@ -827,6 +827,21 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Llamadas paralelas a herramientas",
 			"description": "Cuando estÃ¡ habilitado, el protocolo nativo puede ejecutar mÃºltiples herramientas en un solo turno de mensaje del asistente."
+		},
+		"SPEECH_TO_TEXT": {
+			"name": "Speech-to-Text",
+			"description": "Enable voice input for chat. Uses Deepgram API for real-time speech transcription. Requires ffmpeg to be installed on your system.",
+			"providerLabel": "Provider",
+			"providerDescription": "Select which provider to use for speech-to-text.",
+			"apiKeyLabel": "Deepgram API Key",
+			"apiKeyPlaceholder": "Enter your Deepgram API key",
+			"getApiKeyText": "Get your API key from",
+			"modelLabel": "Model",
+			"modelDescription": "Select the Deepgram model to use for transcription. Nova-3 is recommended for best accuracy.",
+			"languageLabel": "Language",
+			"languageDescription": "Select the language for speech recognition, or use auto-detect.",
+			"warningMissingKey": " Deepgram API key is required for speech-to-text. Please configure it above.",
+			"successConfigured": " Speech-to-text is configured and ready to use"
 		}
 	},
 	"promptCaching": {

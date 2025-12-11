@@ -828,6 +828,21 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "ÐŸÐ°Ñ€Ð°Ð»Ð»ÐµÐ»ÑŒÐ½Ñ‹Ðµ Ð²Ñ‹Ð·Ð¾Ð²Ñ‹ Ð¸Ð½ÑÑ‚Ñ€ÑƒÐ¼ÐµÐ½Ñ‚Ð¾Ð²",
 			"description": "ÐŸÑ€Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ð¸ Ð½Ð°Ñ‚Ð¸Ð²Ð½Ñ‹Ð¹ Ð¿Ñ€Ð¾Ñ‚Ð¾ÐºÐ¾Ð» Ð¼Ð¾Ð¶ÐµÑ‚ Ð²Ñ‹Ð¿Ð¾Ð»Ð½ÑÑ‚ÑŒ Ð½ÐµÑÐºÐ¾Ð»ÑŒÐºÐ¾ Ð¸Ð½ÑÑ‚Ñ€ÑƒÐ¼ÐµÐ½Ñ‚Ð¾Ð² Ð² Ð¾Ð´Ð½Ð¾Ð¼ Ñ…Ð¾Ð´Ðµ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ñ Ð°ÑÑÐ¸ÑÑ‚ÐµÐ½Ñ‚Ð°."
+		},
+		"SPEECH_TO_TEXT": {
+			"name": "Speech-to-Text",
+			"description": "Enable voice input for chat. Uses Deepgram API for real-time speech transcription. Requires ffmpeg to be installed on your system.",
+			"providerLabel": "Provider",
+			"providerDescription": "Select which provider to use for speech-to-text.",
+			"apiKeyLabel": "Deepgram API Key",
+			"apiKeyPlaceholder": "Enter your Deepgram API key",
+			"getApiKeyText": "Get your API key from",
+			"modelLabel": "Model",
+			"modelDescription": "Select the Deepgram model to use for transcription. Nova-3 is recommended for best accuracy.",
+			"languageLabel": "Language",
+			"languageDescription": "Select the language for speech recognition, or use auto-detect.",
+			"warningMissingKey": " Deepgram API key is required for speech-to-text. Please configure it above.",
+			"successConfigured": " Speech-to-text is configured and ready to use"
 		}
 	},
 	"promptCaching": {
