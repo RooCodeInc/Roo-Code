@@ -63,12 +63,12 @@ describe("ToggleSwitch", () => {
 		expect(onChange).not.toHaveBeenCalled()
 	})
 
-	it("has correct tabIndex when disabled", () => {
+	it("is disabled when disabled prop is true", () => {
 		const onChange = vi.fn()
 		render(<ToggleSwitch checked={false} onChange={onChange} disabled={true} aria-label="Test toggle" />)
 
 		const toggle = screen.getByRole("switch")
-		expect(toggle).toHaveAttribute("tabindex", "-1")
+		expect(toggle).toBeDisabled()
 	})
 
 	it("renders with custom data-testid", () => {
@@ -85,17 +85,37 @@ describe("ToggleSwitch", () => {
 
 		const toggle = screen.getByRole("switch")
 		expect(toggle).toBeInTheDocument()
-		// Medium size should be 20px x 10px
-		expect(toggle).toHaveStyle({ width: "20px", height: "10px" })
+		// Medium size should be 40px x 22px
+		expect(toggle).toHaveStyle({ width: "40px", height: "22px" })
 	})
 
-	it("defaults to small size", () => {
+	it("defaults to medium size", () => {
 		const onChange = vi.fn()
 		render(<ToggleSwitch checked={false} onChange={onChange} aria-label="Test toggle" />)
 
 		const toggle = screen.getByRole("switch")
 		expect(toggle).toBeInTheDocument()
-		// Small size should be 16px x 8px
-		expect(toggle).toHaveStyle({ width: "16px", height: "8px" })
+		// Default (medium) size should be 40px x 22px
+		expect(toggle).toHaveStyle({ width: "40px", height: "22px" })
+	})
+
+	it("supports small size", () => {
+		const onChange = vi.fn()
+		render(<ToggleSwitch checked={false} onChange={onChange} size="small" aria-label="Test toggle" />)
+
+		const toggle = screen.getByRole("switch")
+		expect(toggle).toBeInTheDocument()
+		// Small size should be 32px x 18px
+		expect(toggle).toHaveStyle({ width: "32px", height: "18px" })
+	})
+
+	it("supports large size", () => {
+		const onChange = vi.fn()
+		render(<ToggleSwitch checked={false} onChange={onChange} size="large" aria-label="Test toggle" />)
+
+		const toggle = screen.getByRole("switch")
+		expect(toggle).toBeInTheDocument()
+		// Large size should be 48px x 26px
+		expect(toggle).toHaveStyle({ width: "48px", height: "26px" })
 	})
 })
