@@ -47,16 +47,11 @@ export function convertAnthropicContentToGemini(
 		return [{ text: content }]
 	}
 
-	return content.flatMap((block): Part | Part[] => {
+	const parts = content.flatMap((block): Part | Part[] => {
 		// Handle thoughtSignature blocks first
 		if (isThoughtSignatureContentBlock(block)) {
-			if (includeThoughtSignatures && typeof block.thoughtSignature === "string") {
-				// The Google GenAI SDK currently exposes thoughtSignature as an
-				// extension field on Part; model it structurally without widening
-				// the upstream type.
-				return { thoughtSignature: block.thoughtSignature } as Part
-			}
-			// Explicitly omit thoughtSignature when not including it.
+			// We process thought signatures globally and attach them to the relevant parts
+			// or create a placeholder part if no other content exists.
 			return []
 		}
 
@@ -135,6 +130,24 @@ export function convertAnthropicContentToGemini(
 				return []
 		}
 	})
+
+	// Post-processing: Ensure thought signature is attached if required
+	if (includeThoughtSignatures && activeThoughtSignature) {
+		const hasSignature = parts.some((p) => "thoughtSignature" in p)
+
+		if (!hasSignature) {
+			if (parts.length > 0) {
+				// Attach to the first part (usually text)
+				// We cast to any to allow adding the property
+				;(parts[0] as any).thoughtSignature = activeThoughtSignature
+			} else {
+				// Create a placeholder part if no other content exists
+				parts.push({ text: "", thoughtSignature: activeThoughtSignature } as any as Part)
+			}
+		}
+	}
+
+	return parts
 }
 
 export function convertAnthropicMessageToGemini(
