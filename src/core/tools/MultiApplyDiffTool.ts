@@ -171,7 +171,45 @@ export async function applyDiffTool(
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
-			const detailedError = `Failed to parse apply_diff XML. This usually means:
+
+			// Check for truncation-specific errors
+			const isTruncationError =
+				errorMessage.includes("StopNode is not closed") ||
+				errorMessage.includes("unclosed") ||
+				errorMessage.includes("Unexpected end") ||
+				argsXmlTag?.endsWith("<") ||
+				argsXmlTag?.endsWith("</") ||
+				(argsXmlTag && !argsXmlTag.includes("</args>")) // Missing closing args tag indicates truncation
+
+			// Get model info for context-specific advice (outside the if block for scope)
+			const modelId = cline.api.getModel().id
+			const isGrokModel = modelId?.includes("grok")
+
+			let detailedError: string
+
+			if (isTruncationError) {
+				detailedError = `XML response was truncated (incomplete). This typically occurs when:
+1. The model's context window is too full (150k+ tokens)
+2. The response exceeds the model's output token limit
+
+${isGrokModel ? "Note: Grok-4.1-Fast is particularly susceptible to this issue with large contexts.\n" : ""}
+Suggested solutions:
+• Start a new conversation with less context  
+• Use the "Condense Context" feature to reduce conversation size
+• Break large operations into smaller chunks
+• Consider switching to a model with larger output limits
+
+Technical details:
+- Error: ${errorMessage}
+- XML appears to be cut off mid-tag
+- Last characters received: ${argsXmlTag ? argsXmlTag.slice(-100) : "N/A"}
+
+To continue:
+1. Try condensing the context using the UI button
+2. Copy essential context and start fresh
+3. Retry with smaller file edits`
+			} else {
+				detailedError = `Failed to parse apply_diff XML. This usually means:
 1. The XML structure is malformed or incomplete
 2. Missing required <file>, <path>, or <diff> tags
 3. Invalid characters or encoding in the XML
@@ -188,10 +226,18 @@ Expected structure:
 </args>
 
 Original error: ${errorMessage}`
+			}
+
 			cline.consecutiveMistakeCount++
 			cline.recordToolError("apply_diff")
 			TelemetryService.instance.captureDiffApplicationError(cline.taskId, cline.consecutiveMistakeCount)
-			await cline.say("diff_error", `Failed to parse apply_diff XML: ${errorMessage}`)
+
+			// Use a more descriptive error message for truncation issues
+			const userFacingMessage = isTruncationError
+				? `XML response truncated due to context/output limits. ${isGrokModel ? "(Known issue with Grok-4.1-Fast at 150k+ tokens) " : ""}Try condensing context or starting fresh.`
+				: `Failed to parse apply_diff XML: ${errorMessage}`
+
+			await cline.say("diff_error", userFacingMessage)
 			pushToolResult(detailedError)
 			cline.processQueuedMessages()
 			return
