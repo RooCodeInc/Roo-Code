@@ -5,12 +5,13 @@ describe("Built-in Commands", () => {
 		it("should return all built-in commands", async () => {
 			const commands = await getBuiltInCommands()
 
-			expect(commands).toHaveLength(8)
+			expect(commands).toHaveLength(9)
 			expect(commands.map((cmd) => cmd.name)).toEqual(
 				expect.arrayContaining([
 					"init",
 					"project-wiki",
 					"tdd",
+					"dotest",
 					"generate-rules",
 					"vibeplus-propsal",
 					"vibeplus-apply",
@@ -73,9 +74,10 @@ describe("Built-in Commands", () => {
 		it("should return all built-in command names", async () => {
 			const names = await getBuiltInCommandNames()
 
-			expect(names).toHaveLength(8)
+			expect(names).toHaveLength(9)
 			expect(names).toEqual(
 				expect.arrayContaining([
+					"dotest",
 					"generate-rules",
 					"init",
 					"openspec-init",
@@ -88,6 +90,7 @@ describe("Built-in Commands", () => {
 			)
 			// Order doesn't matter since it's based on filesystem order
 			expect(names.sort()).toEqual([
+				"dotest",
 				"generate-rules",
 				"init",
 				"openspec-init",
