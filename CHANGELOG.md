@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.36.5
+
+### Patch Changes
+
+- ![3.36.5 Release - Bug Fixes & Stability Improvements](/releases/3.36.5-release.png)
+
 ## [3.36.4] - 2025-12-10
 
 ![3.36.4 Release - Error Details Modal](/releases/3.36.4-release.png)
