@@ -29,6 +29,7 @@ import ErrorRow from "./ErrorRow"
 import McpResourceRow from "../mcp/McpResourceRow"
 
 import { Mention } from "./Mention"
+import { ToolApprovalButtons } from "./ToolApprovalButtons"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
 import { BatchFilePermission } from "./BatchFilePermission"
@@ -165,7 +166,15 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
+	const {
+		mcpServers,
+		alwaysAllowMcp,
+		currentCheckpoint,
+		mode,
+		apiConfiguration,
+		clineMessages,
+		autoApprovalEnabled,
+	} = useExtensionState()
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
@@ -403,6 +412,13 @@ export const ChatRowContent = ({
 								</span>
 							</div>
 							<BatchDiffApproval files={tool.batchDiffs} ts={message.ts} />
+							{!autoApprovalEnabled && !message.partial && (
+								<ToolApprovalButtons
+									messageTs={message.ts}
+									isProtected={false}
+									disabled={isStreaming}
+								/>
+							)}
 						</>
 					)
 				}
@@ -439,6 +455,13 @@ export const ChatRowContent = ({
 								diffStats={tool.diffStats}
 							/>
 						</div>
+						{message.type === "ask" && !autoApprovalEnabled && !message.partial && (
+							<ToolApprovalButtons
+								messageTs={message.ts}
+								isProtected={tool.isProtected}
+								disabled={isStreaming}
+							/>
+						)}
 					</>
 				)
 			case "insertContent":
@@ -477,6 +500,13 @@ export const ChatRowContent = ({
 								diffStats={tool.diffStats}
 							/>
 						</div>
+						{message.type === "ask" && !autoApprovalEnabled && !message.partial && (
+							<ToolApprovalButtons
+								messageTs={message.ts}
+								isProtected={tool.isProtected}
+								disabled={isStreaming}
+							/>
+						)}
 					</>
 				)
 			case "searchAndReplace":
@@ -511,6 +541,13 @@ export const ChatRowContent = ({
 								diffStats={tool.diffStats}
 							/>
 						</div>
+						{message.type === "ask" && !autoApprovalEnabled && !message.partial && (
+							<ToolApprovalButtons
+								messageTs={message.ts}
+								isProtected={tool.isProtected}
+								disabled={isStreaming}
+							/>
+						)}
 					</>
 				)
 			case "codebaseSearch": {
@@ -572,6 +609,13 @@ export const ChatRowContent = ({
 								diffStats={tool.diffStats}
 							/>
 						</div>
+						{message.type === "ask" && !autoApprovalEnabled && !message.partial && (
+							<ToolApprovalButtons
+								messageTs={message.ts}
+								isProtected={tool.isProtected}
+								disabled={isStreaming}
+							/>
+						)}
 					</>
 				)
 			case "readFile":
@@ -594,6 +638,13 @@ export const ChatRowContent = ({
 								}}
 								ts={message?.ts}
 							/>
+							{!autoApprovalEnabled && !message.partial && (
+								<ToolApprovalButtons
+									messageTs={message.ts}
+									isProtected={false}
+									disabled={isStreaming}
+								/>
+							)}
 						</>
 					)
 				}
@@ -634,6 +685,9 @@ export const ChatRowContent = ({
 								</ToolUseBlockHeader>
 							</ToolUseBlock>
 						</div>
+						{message.type === "ask" && !autoApprovalEnabled && !message.partial && (
+							<ToolApprovalButtons messageTs={message.ts} isProtected={false} disabled={isStreaming} />
+						)}
 					</>
 				)
 			case "fetchInstructions":
