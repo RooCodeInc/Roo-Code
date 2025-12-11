@@ -669,8 +669,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 *
 	 * ## Flow
 	 * 1. Attempts to fetch the current API config name from provider state
-	 * 2. Sets `_taskApiConfigName` to the fetched name or undefined if unavailable
-	 * 3. Handles errors gracefully by falling back to undefined
+	 * 2. Sets `_taskApiConfigName` to the fetched name or "default" if unavailable
+	 * 3. Handles errors gracefully by falling back to "default"
 	 * 4. Logs any initialization errors for debugging
 	 *
 	 * ## Error handling
@@ -678,7 +678,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * - Provider not yet initialized
 	 * - Invalid state structure
 	 *
-	 * All errors result in fallback to undefined to ensure task can proceed.
+	 * All errors result in fallback to "default" to ensure task can proceed.
 	 *
 	 * @private
 	 * @param provider - The ClineProvider instance to fetch state from
@@ -687,10 +687,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async initializeTaskApiConfigName(provider: ClineProvider): Promise<void> {
 		try {
 			const state = await provider.getState()
-			this._taskApiConfigName = state?.currentApiConfigName
+			this._taskApiConfigName = state?.currentApiConfigName ?? "default"
 		} catch (error) {
-			// If there's an error getting state, leave it undefined
-			this._taskApiConfigName = undefined
+			// If there's an error getting state, use the default profile
+			this._taskApiConfigName = "default"
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task API config name: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
