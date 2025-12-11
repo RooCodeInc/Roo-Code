@@ -916,6 +916,32 @@ export class ClineProvider
 			}
 		}
 
+		// If the history item has a saved API config name (provider profile), restore it.
+		// This overrides any mode-based config restoration above, because the task's
+		// specific provider profile takes precedence over mode defaults.
+		if (historyItem.apiConfigName) {
+			const listApiConfig = await this.providerSettingsManager.listConfig()
+			const profile = listApiConfig.find(({ name }) => name === historyItem.apiConfigName)
+
+			if (profile?.name) {
+				try {
+					await this.activateProviderProfile({ name: profile.name })
+				} catch (error) {
+					// Log the error but continue with task restoration.
+					this.log(
+						`Failed to restore API configuration '${historyItem.apiConfigName}' for task: ${
+							error instanceof Error ? error.message : String(error)
+						}. Continuing with current configuration.`,
+					)
+				}
+			} else {
+				// Profile no longer exists, log warning but continue
+				this.log(
+					`Provider profile '${historyItem.apiConfigName}' from history no longer exists. Using current configuration.`,
+				)
+			}
+		}
+
 		const {
 			apiConfiguration,
 			diffEnabled: enableDiff,
@@ -1455,6 +1481,31 @@ export class ClineProvider
 		}
 		// Change the provider for the current task.
 		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
+
+		// Update the current task's sticky provider profile if there's an active task.
+		// This ensures the task retains its designated provider profile and switching
+		// profiles in one workspace doesn't alter other tasks.
+		const task = this.getCurrentTask()
+		if (task) {
+			try {
+				// Update the task history with the new provider profile first.
+				const history = this.getGlobalState("taskHistory") ?? []
+				const taskHistoryItem = history.find((item) => item.id === task.taskId)
+
+				if (taskHistoryItem) {
+					taskHistoryItem.apiConfigName = name
+					await this.updateTaskHistory(taskHistoryItem)
+				}
+
+				// Only update the task's provider profile after successful persistence.
+				task.setTaskApiConfigName(name)
+			} catch (error) {
+				// If persistence fails, log the error but don't fail the profile switch.
+				this.log(
+					`Failed to persist provider profile switch for task ${task.taskId}: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
 
 		await this.postStateToWebview()
 
