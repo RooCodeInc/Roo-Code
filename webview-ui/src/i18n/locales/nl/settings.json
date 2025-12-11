@@ -955,6 +955,10 @@
 		"collapseThinking": {
 			"label": "Denkberichten standaard samenvouwen",
 			"description": "Indien ingeschakeld, worden denkblokken standaard samengevouwen totdat je ermee interageert"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
+			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
 		}
 	}
 }

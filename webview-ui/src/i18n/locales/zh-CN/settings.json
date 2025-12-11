@@ -953,8 +953,12 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "默认折叠“思考”消息",
-			"description": "启用后，“思考”块将默认折叠，直到您与其交互"
+			"label": "默认折叠「思考」消息",
+			"description": "启用后，「思考」块将默认折叠，直到您与其交互"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "需要 {{primaryMod}}+Enter 发送消息",
+			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
 		}
 	}
 }

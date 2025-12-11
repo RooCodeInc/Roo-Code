@@ -955,6 +955,10 @@
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
+			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		}
 	}
 }
