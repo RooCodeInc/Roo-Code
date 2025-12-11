@@ -120,6 +120,12 @@ export interface ToolUse<TName extends ToolName = ToolName> {
 	type: "tool_use"
 	id?: string // Optional ID to track tool calls
 	name: TName
+	/**
+	 * The original tool name as called by the model (e.g. an alias like "edit_file"),
+	 * if it differs from the canonical tool name used for execution.
+	 * Used to preserve tool names in API conversation history.
+	 */
+	originalName?: string
 	// params is a partial record, allowing only some or none of the possible parameters to be used
 	params: Partial<Record<ToolParamName, string>>
 	partial: boolean

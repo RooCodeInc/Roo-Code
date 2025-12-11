@@ -537,7 +537,7 @@ export class NativeToolCallParser {
 
 		// Preserve original name for API history when an alias was used
 		if (originalName) {
-			;(result as any).originalName = originalName
+			result.originalName = originalName
 		}
 
 		return result
@@ -559,7 +559,7 @@ export class NativeToolCallParser {
 			return this.parseDynamicMcpTool(toolCall)
 		}
 
-		// Resolve tool alias to canonical name (e.g., "edit_file" -> "search_and_replace")
+		// Resolve tool alias to canonical name (e.g., "edit_file" -> "apply_diff", "temp_edit_file" -> "search_and_replace")
 		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
 
 		// Validate tool name (after alias resolution)
@@ -796,7 +796,7 @@ export class NativeToolCallParser {
 
 			// Preserve original name for API history when an alias was used
 			if (toolCall.name !== resolvedName) {
-				;(result as any).originalName = toolCall.name
+				result.originalName = toolCall.name
 			}
 
 			return result

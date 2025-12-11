@@ -696,7 +696,7 @@ export async function presentAssistantMessage(cline: Task) {
 			if (!block.partial) {
 				const modelInfo = cline.api.getModel()
 				// Resolve aliases in includedTools before validation
-				// e.g., "edit_file" should resolve to "search_and_replace"
+				// e.g., "edit_file" should resolve to "apply_diff"
 				const rawIncludedTools = modelInfo?.info?.includedTools
 				const { resolveToolAlias } = await import("../prompts/tools/filter-tools-for-mode")
 				const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))

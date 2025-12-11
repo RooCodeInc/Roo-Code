@@ -218,7 +218,7 @@ export function filterNativeToolsForMode(
 	)
 	allowedToolNames = customizedTools
 
-	// Apply tool aliases - if one tool in an alias group is allowed, all aliases are allowed
+	// Resolve any aliases to canonical tool names for execution-time filtering
 	allowedToolNames = applyToolAliases(allowedToolNames)
 
 	// Conditionally exclude codebase_search if feature is disabled or not configured
