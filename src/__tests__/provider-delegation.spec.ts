@@ -2,6 +2,18 @@
 
 import { describe, it, expect, vi } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
+
+// Mock task-persistence to avoid undefined apiMessages error
+vi.mock("../core/task-persistence", () => ({
+	readApiMessages: vi.fn().mockResolvedValue([]),
+	saveApiMessages: vi.fn().mockResolvedValue(undefined),
+	saveTaskMessages: vi.fn().mockResolvedValue(undefined),
+	getPendingSubtasks: vi.fn().mockReturnValue([]),
+	appendToolResult: vi.fn().mockImplementation((msgs) => msgs),
+	getOtherToolResults: vi.fn().mockReturnValue([]),
+	hasPendingSubtasksInHistory: vi.fn().mockReturnValue(false),
+}))
+
 import { ClineProvider } from "../core/webview/ClineProvider"
 
 describe("ClineProvider.delegateParentAndOpenChild()", () => {
