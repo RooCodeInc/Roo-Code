@@ -14,6 +14,11 @@ type ReasoningContentBlock = {
 type ExtendedContentBlockParam = Anthropic.ContentBlockParam | ThoughtSignatureContentBlock | ReasoningContentBlock
 type ExtendedAnthropicContent = string | ExtendedContentBlockParam[]
 
+// Extension type to safely add thoughtSignature to Part
+type PartWithThoughtSignature = Part & {
+	thoughtSignature?: string
+}
+
 function isThoughtSignatureContentBlock(block: ExtendedContentBlockParam): block is ThoughtSignatureContentBlock {
 	return block.type === "thoughtSignature"
 }
@@ -138,11 +143,12 @@ export function convertAnthropicContentToGemini(
 		if (!hasSignature) {
 			if (parts.length > 0) {
 				// Attach to the first part (usually text)
-				// We cast to any to allow adding the property
-				;(parts[0] as any).thoughtSignature = activeThoughtSignature
+				// We use the intersection type to allow adding the property safely
+				;(parts[0] as PartWithThoughtSignature).thoughtSignature = activeThoughtSignature
 			} else {
 				// Create a placeholder part if no other content exists
-				parts.push({ text: "", thoughtSignature: activeThoughtSignature } as any as Part)
+				const placeholder: PartWithThoughtSignature = { text: "", thoughtSignature: activeThoughtSignature }
+				parts.push(placeholder)
 			}
 		}
 	}

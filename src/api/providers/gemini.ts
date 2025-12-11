@@ -291,13 +291,13 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			// If we had reasoning but no content, emit a placeholder text to prevent "Empty assistant response" errors.
 			// This typically happens when the model hits max output tokens while reasoning.
 			if (hasReasoning && !hasContent) {
-				let message = "(Thinking complete, but no output was generated.)"
+				let message = t("common:errors.gemini.thinking_complete_no_output")
 				if (finishReason === "MAX_TOKENS") {
-					message = "(Thinking complete, but output was truncated due to token limit.)"
+					message = t("common:errors.gemini.thinking_complete_truncated")
 				} else if (finishReason === "SAFETY") {
-					message = "(Thinking complete, but output was blocked due to safety settings.)"
+					message = t("common:errors.gemini.thinking_complete_safety")
 				} else if (finishReason === "RECITATION") {
-					message = "(Thinking complete, but output was blocked due to recitation check.)"
+					message = t("common:errors.gemini.thinking_complete_recitation")
 				}
 
 				yield { type: "text", text: message }
