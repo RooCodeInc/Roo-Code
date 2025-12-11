@@ -3,9 +3,31 @@ import type { ModelInfo } from "../model.js"
 // https://openai.com/api/pricing/
 export type OpenAiNativeModelId = keyof typeof openAiNativeModels
 
-export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-5.1"
+export const openAiNativeDefaultModelId: OpenAiNativeModelId = "gpt-5.2"
 
 export const openAiNativeModels = {
+	"gpt-5.2": {
+		maxTokens: 128000,
+		contextWindow: 400000,
+		supportsNativeTools: true,
+		includedTools: ["apply_patch"],
+		excludedTools: ["apply_diff", "write_to_file"],
+		supportsImages: true,
+		supportsPromptCache: true,
+		promptCacheRetention: "24h",
+		supportsReasoningEffort: ["none", "low", "medium", "high", "xhigh"],
+		reasoningEffort: "medium",
+		inputPrice: 1.75,
+		outputPrice: 14.0,
+		cacheReadsPrice: 0.175,
+		supportsVerbosity: true,
+		supportsTemperature: false,
+		tiers: [
+			{ name: "flex", contextWindow: 400000, inputPrice: 0.875, outputPrice: 7.0, cacheReadsPrice: 0.0875 },
+			{ name: "priority", contextWindow: 400000, inputPrice: 3.5, outputPrice: 28.0, cacheReadsPrice: 0.35 },
+		],
+		description: "GPT-5.2: Our flagship model for coding and agentic tasks across industries",
+	},
 	"gpt-5.1-codex-max": {
 		maxTokens: 128000,
 		contextWindow: 400000,
