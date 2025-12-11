@@ -293,6 +293,22 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"run_slash_command",
 ] as const
 
+/**
+ * Central registry of tool aliases.
+ * Maps alias name -> canonical tool name.
+ *
+ * This allows models to use alternative names for tools (e.g., "edit_file" instead of "apply_diff").
+ * When a model calls a tool by its alias, the system resolves it to the canonical name for execution,
+ * but preserves the alias in API conversation history for consistency.
+ *
+ * To add a new alias, simply add an entry here. No other files need to be modified.
+ */
+export const TOOL_ALIASES: Record<string, ToolName> = {
+	edit_file: "apply_diff",
+	write_file: "write_to_file",
+	temp_edit_file: "search_and_replace",
+} as const
+
 export type DiffResult =
 	| { success: true; content: string; failParts?: DiffResult[] }
 	| ({

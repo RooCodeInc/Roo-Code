@@ -23,7 +23,6 @@ interface ApplyDiffParams {
 
 export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 	readonly name = "apply_diff" as const
-	override readonly aliases = ["edit_file"]
 
 	parseLegacy(params: Partial<Record<string, string>>): ApplyDiffParams {
 		return {

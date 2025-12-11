@@ -1,76 +1,31 @@
 import type OpenAI from "openai"
 import type { ModeConfig, ToolName, ToolGroup, ModelInfo } from "@roo-code/types"
 import { getModeBySlug, getToolsForMode, isToolAllowedForMode } from "../../../shared/modes"
-import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../../shared/tools"
+import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
-import { searchAndReplaceTool } from "../../tools/SearchAndReplaceTool"
-import { writeToFileTool } from "../../tools/WriteToFileTool"
-import { applyDiffTool } from "../../tools/ApplyDiffTool"
 
 /**
- * Tool aliases registry - built from tools that define aliases.
- * Maps canonical tool name to array of alias names.
+ * Reverse lookup map - maps alias name to canonical tool name.
+ * Built once at module load from the central TOOL_ALIASES constant.
  */
-const TOOL_ALIASES: Map<string, string[]> = new Map()
+const ALIAS_TO_CANONICAL: Map<string, string> = new Map(
+	Object.entries(TOOL_ALIASES).map(([alias, canonical]) => [alias, canonical]),
+)
 
 /**
- * Reverse lookup - maps alias name to canonical tool name.
+ * Canonical to aliases map - maps canonical tool name to array of alias names.
+ * Built once at module load from the central TOOL_ALIASES constant.
  */
-const ALIAS_TO_CANONICAL: Map<string, string> = new Map()
+const CANONICAL_TO_ALIASES: Map<string, string[]> = new Map()
 
-/**
- * Get all tool names from TOOL_GROUPS (including regular tools and customTools).
- */
-function getAllToolNames(): Set<string> {
-	const toolNames = new Set<string>()
-	for (const groupConfig of Object.values(TOOL_GROUPS)) {
-		groupConfig.tools.forEach((tool) => toolNames.add(tool))
-		if (groupConfig.customTools) {
-			groupConfig.customTools.forEach((tool) => toolNames.add(tool))
-		}
-	}
-	return toolNames
+// Build the reverse mapping (canonical -> aliases)
+for (const [alias, canonical] of Object.entries(TOOL_ALIASES)) {
+	const existing = CANONICAL_TO_ALIASES.get(canonical) ?? []
+	existing.push(alias)
+	CANONICAL_TO_ALIASES.set(canonical, existing)
 }
-
-/**
- * Register a tool's aliases. Validates for duplicate aliases and conflicts with tool names.
- * @param toolName - The canonical tool name
- * @param aliases - Array of alias names
- * @throws Error if an alias is already registered or conflicts with a tool name
- */
-function registerToolAliases(toolName: string, aliases: string[]): void {
-	if (aliases.length === 0) return
-
-	const allToolNames = getAllToolNames()
-
-	// Check for duplicate aliases and conflicts with tool names
-	for (const alias of aliases) {
-		if (ALIAS_TO_CANONICAL.has(alias)) {
-			throw new Error(
-				`Duplicate tool alias "${alias}" - already registered for tool "${ALIAS_TO_CANONICAL.get(alias)}"`,
-			)
-		}
-		if (TOOL_ALIASES.has(alias)) {
-			throw new Error(`Alias "${alias}" conflicts with canonical tool name in alias registry`)
-		}
-		if (allToolNames.has(alias)) {
-			throw new Error(`Alias "${alias}" conflicts with existing tool name`)
-		}
-	}
-
-	// Register the aliases
-	TOOL_ALIASES.set(toolName, aliases)
-	for (const alias of aliases) {
-		ALIAS_TO_CANONICAL.set(alias, toolName)
-	}
-}
-
-// Register all tool aliases from tool instances
-registerToolAliases(searchAndReplaceTool.name, searchAndReplaceTool.aliases)
-registerToolAliases(writeToFileTool.name, writeToFileTool.aliases)
-registerToolAliases(applyDiffTool.name, applyDiffTool.aliases)
 
 /**
  * Resolves a tool name to its canonical name.
@@ -111,13 +66,13 @@ export function applyToolAliases(allowedTools: Set<string>): Set<string> {
  */
 export function getToolAliasGroup(toolName: string): string[] {
 	// Check if it's a canonical tool with aliases
-	if (TOOL_ALIASES.has(toolName)) {
-		return [toolName, ...TOOL_ALIASES.get(toolName)!]
+	if (CANONICAL_TO_ALIASES.has(toolName)) {
+		return [toolName, ...CANONICAL_TO_ALIASES.get(toolName)!]
 	}
 	// Check if it's an alias
 	const canonical = ALIAS_TO_CANONICAL.get(toolName)
 	if (canonical) {
-		return [canonical, ...TOOL_ALIASES.get(canonical)!]
+		return [canonical, ...CANONICAL_TO_ALIASES.get(canonical)!]
 	}
 	return [toolName]
 }
