@@ -14,6 +14,8 @@ import {
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
 
+export type FeatureFlagValue = string | boolean | undefined
+
 /**
  * PostHogTelemetryClient handles telemetry event tracking for the Roo Code extension.
  * Uses PostHog analytics to track user interactions and system events.
