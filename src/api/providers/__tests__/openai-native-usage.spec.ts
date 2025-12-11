@@ -361,7 +361,7 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 			return (handler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
 		}
 
-		it("should set prompt_cache_retention=24h for gpt-5.1 models that support prompt caching", () => {
+		it("should set prompt_cache_retention=24h for gpt-5.x models that support prompt caching", () => {
 			const body = buildRequestBodyForModel("gpt-5.1")
 			expect(body.prompt_cache_retention).toBe("24h")
 
@@ -370,6 +370,15 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 
 			const codexMiniBody = buildRequestBodyForModel("gpt-5.1-codex-mini")
 			expect(codexMiniBody.prompt_cache_retention).toBe("24h")
+
+			const gpt52Body = buildRequestBodyForModel("gpt-5.2")
+			expect(gpt52Body.prompt_cache_retention).toBe("24h")
+
+			const gpt52ChatBody = buildRequestBodyForModel("gpt-5.2-chat-latest")
+			expect(gpt52ChatBody.prompt_cache_retention).toBe("24h")
+
+			const gpt52ProBody = buildRequestBodyForModel("gpt-5.2-pro")
+			expect(gpt52ProBody.prompt_cache_retention).toBe("24h")
 		})
 
 		it("should not set prompt_cache_retention for non-gpt-5.1 models even if they support prompt caching", () => {
