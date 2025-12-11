@@ -735,6 +735,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (isStreaming) {
 				vscode.postMessage({ type: "cancelTask" })
 				setDidClickCancel(true)
+				// Reset UI state to prevent frozen UI after canceling
+				setSendingDisabled(true)
+				setClineAsk(undefined)
+				setEnableButtons(false)
 				return
 			}
 
