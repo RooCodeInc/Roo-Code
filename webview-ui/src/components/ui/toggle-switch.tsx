@@ -57,14 +57,11 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 				height: `${dimensions.height}px`,
 				backgroundColor: checked
 					? "var(--vscode-button-background)"
-					: "rgba(var(--vscode-titleBar-inactiveForeground-rgb, 128, 128, 128), 0.3)",
+					: "color-mix(in srgb, var(--vscode-titleBar-inactiveForeground) 30%, transparent)",
 				padding: `${dimensions.padding}px`,
 			}}>
 			<span
-				className={cn(
-					"inline-block rounded-full transition-transform duration-200 ease-in-out shadow-sm",
-					checked && "translate-x-full",
-				)}
+				className="inline-block rounded-full transition-transform duration-200 ease-in-out shadow-sm"
 				style={{
 					width: `${dimensions.dotSize}px`,
 					height: `${dimensions.dotSize}px`,
