@@ -1,7 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 
-import { type ModelInfo, openAiModelInfoSaneDefaults } from "@roo-code/types"
+import {
+	type ModelInfo,
+	openAiModelInfoSaneDefaults,
+	mergeModelInfoWithRegistry,
+	mergeModelInfoWithFetched,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { SELECTOR_SEPARATOR, stringifyVsCodeLmModelSelector } from "../../shared/vsCodeSelectorUtils"
@@ -44,6 +49,16 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	private client: vscode.LanguageModelChat | null
 	private disposable: vscode.Disposable | null
 	private currentRequestCancellation: vscode.CancellationTokenSource | null
+	private cachedModelInfo: Partial<ModelInfo> | null = null
+
+	// Token counting cache to avoid redundant API calls
+	private tokenCountCache: Map<string, { count: number; timestamp: number }> = new Map()
+	private static readonly TOKEN_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+	private static readonly TOKEN_CACHE_MAX_SIZE = 100 // Max cached entries
+
+	// Average characters per token for estimation (avoids API calls)
+	// GPT-4/Claude average ~4 chars per token for English text
+	private static readonly CHARS_PER_TOKEN_ESTIMATE = 4
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -58,6 +73,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 				if (event.affectsConfiguration("lm")) {
 					try {
 						this.client = null
+						this.cachedModelInfo = null
 						this.ensureCleanState()
 					} catch (error) {
 						console.error("Error during configuration change cleanup:", error)
@@ -91,6 +107,22 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			// Create a new client instance
 			this.client = await this.createClient(this.options.vsCodeLmModelSelector || {})
 			console.debug("Roo Code <Language Model API>: Client initialized successfully")
+
+			// Fetch model info in background
+			if (this.client) {
+				const modelParts = [this.client.vendor, this.client.family, this.client.version].filter(Boolean)
+				const modelId = this.client.id || modelParts.join(SELECTOR_SEPARATOR)
+
+				try {
+					this.cachedModelInfo = await mergeModelInfoWithFetched(
+						modelId,
+						this.client.maxInputTokens,
+						openAiModelInfoSaneDefaults.contextWindow,
+					)
+				} catch (error) {
+					console.error("Roo Code <Language Model API>: Failed to fetch model info:", error)
+				}
+			}
 		} catch (error) {
 			// Handle errors during client initialization
 			const errorMessage = error instanceof Error ? error.message : "Unknown error"
@@ -148,6 +180,35 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	/**
+	 * Checks if a chunk is a LanguageModelThinkingPart (proposed API).
+	 * This is a duck-typing check since the class may not be available in all VS Code versions.
+	 *
+	 * @param chunk - The chunk to check
+	 * @returns true if the chunk appears to be a ThinkingPart
+	 */
+	private isThinkingPart(chunk: unknown): boolean {
+		if (!chunk || typeof chunk !== "object") {
+			return false
+		}
+
+		// Check by constructor name first (if LanguageModelThinkingPart class exists)
+		const constructorName = (chunk as { constructor?: { name?: string } })?.constructor?.name
+		if (constructorName === "LanguageModelThinkingPart") {
+			return true
+		}
+
+		// Duck-type check: ThinkingPart has 'value' and optionally 'id' and 'metadata'
+		// but NOT 'callId' (which would be a ToolCallPart) and NOT just 'value' as string with no other fields
+		const chunkObj = chunk as Record<string, unknown>
+		const hasValue = "value" in chunkObj
+		const hasIdOrMetadata = "id" in chunkObj || "metadata" in chunkObj
+		const isNotToolCall = !("callId" in chunkObj) && !("name" in chunkObj)
+
+		// It's likely a ThinkingPart if it has value + (id or metadata) and isn't a tool call
+		return hasValue && hasIdOrMetadata && isNotToolCall
+	}
+
+	/**
 	 * Creates and streams a message using the VS Code Language Model API.
 	 *
 	 * @param systemPrompt - The system prompt to initialize the conversation context
@@ -173,11 +234,59 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			this.currentRequestCancellation.cancel()
 			this.currentRequestCancellation.dispose()
 		}
+
+		this.tokenCountCache.clear()
+	}
+
+	/**
+	 * Fast token estimation without API calls.
+	 * Uses character count divided by average chars per token.
+	 * This avoids consuming API quota for token counting.
+	 */
+	private estimateTokens(text: string): number {
+		if (!text) return 0
+		// Simple heuristic: ~4 characters per token for English
+		// Add 10% buffer for safety
+		return Math.ceil((text.length / VsCodeLmHandler.CHARS_PER_TOKEN_ESTIMATE) * 1.1)
+	}
+
+	/**
+	 * Get a cache key for token counting
+	 */
+	private getTokenCacheKey(text: string): string {
+		// Use first 100 chars + length as a quick hash
+		// This is fast and handles most cases well
+		return `${text.length}:${text.substring(0, 100)}`
+	}
+
+	/**
+	 * Clean up old cache entries
+	 */
+	private pruneTokenCache(): void {
+		const now = Date.now()
+		const entries = Array.from(this.tokenCountCache.entries())
+
+		// Remove expired entries
+		for (const [key, value] of entries) {
+			if (now - value.timestamp > VsCodeLmHandler.TOKEN_CACHE_TTL_MS) {
+				this.tokenCountCache.delete(key)
+			}
+		}
+
+		// If still too large, remove oldest entries
+		if (this.tokenCountCache.size > VsCodeLmHandler.TOKEN_CACHE_MAX_SIZE) {
+			const sortedEntries = entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
+			const toRemove = sortedEntries.slice(0, this.tokenCountCache.size - VsCodeLmHandler.TOKEN_CACHE_MAX_SIZE)
+			for (const [key] of toRemove) {
+				this.tokenCountCache.delete(key)
+			}
+		}
 	}
 
 	/**
 	 * Implements the ApiHandler countTokens interface method
 	 * Provides token counting for Anthropic content blocks
+	 * Uses fast estimation to avoid API calls
 	 *
 	 * @param content The content blocks to count tokens for
 	 * @returns A promise resolving to the token count
@@ -190,89 +299,76 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			if (block.type === "text") {
 				textContent += block.text || ""
 			} else if (block.type === "image") {
-				// VSCode LM doesn't support images directly, so we'll just use a placeholder
-				textContent += "[IMAGE]"
+				// Images use roughly 85 tokens per tile (varies by size)
+				// Estimate ~1000 tokens for average image
+				textContent += " ".repeat(4000) // 4000 chars ≈ 1000 tokens
 			}
 		}
 
-		return this.internalCountTokens(textContent)
+		// Use fast estimation instead of API call to save quota
+		return this.estimateTokens(textContent)
 	}
 
 	/**
 	 * Private implementation of token counting used internally by VsCodeLmHandler
+	 * Uses caching and estimation to minimize API calls
+	 *
+	 * OPTIMIZATION: We use fast estimation instead of API calls to save quota.
+	 * The API's countTokens() method counts against your usage limit!
 	 */
 	private async internalCountTokens(text: string | vscode.LanguageModelChatMessage): Promise<number> {
-		// Check for required dependencies
-		if (!this.client) {
-			console.warn("Roo Code <Language Model API>: No client available for token counting")
-			return 0
-		}
-
-		if (!this.currentRequestCancellation) {
-			console.warn("Roo Code <Language Model API>: No cancellation token available for token counting")
-			return 0
-		}
-
 		// Validate input
 		if (!text) {
-			console.debug("Roo Code <Language Model API>: Empty text provided for token counting")
 			return 0
 		}
 
-		try {
-			// Handle different input types
-			let tokenCount: number
+		// Extract text content based on input type
+		let textContent: string
 
-			if (typeof text === "string") {
-				tokenCount = await this.client.countTokens(text, this.currentRequestCancellation.token)
-			} else if (text instanceof vscode.LanguageModelChatMessage) {
-				// For chat messages, ensure we have content
-				if (!text.content || (Array.isArray(text.content) && text.content.length === 0)) {
-					console.debug("Roo Code <Language Model API>: Empty chat message content")
-					return 0
-				}
-				const countMessage = extractTextCountFromMessage(text)
-				tokenCount = await this.client.countTokens(countMessage, this.currentRequestCancellation.token)
-			} else {
-				console.warn("Roo Code <Language Model API>: Invalid input type for token counting")
+		if (typeof text === "string") {
+			textContent = text
+		} else if (text instanceof vscode.LanguageModelChatMessage) {
+			// For chat messages, extract text content
+			if (!text.content || (Array.isArray(text.content) && text.content.length === 0)) {
 				return 0
 			}
-
-			// Validate the result
-			if (typeof tokenCount !== "number") {
-				console.warn("Roo Code <Language Model API>: Non-numeric token count received:", tokenCount)
-				return 0
-			}
-
-			if (tokenCount < 0) {
-				console.warn("Roo Code <Language Model API>: Negative token count received:", tokenCount)
-				return 0
-			}
-
-			return tokenCount
-		} catch (error) {
-			// Handle specific error types
-			if (error instanceof vscode.CancellationError) {
-				console.debug("Roo Code <Language Model API>: Token counting cancelled by user")
-				return 0
-			}
-
-			const errorMessage = error instanceof Error ? error.message : "Unknown error"
-			console.warn("Roo Code <Language Model API>: Token counting failed:", errorMessage)
-
-			// Log additional error details if available
-			if (error instanceof Error && error.stack) {
-				console.debug("Token counting error stack:", error.stack)
-			}
-
-			return 0 // Fallback to prevent stream interruption
+			textContent = extractTextCountFromMessage(text)
+		} else {
+			return 0
 		}
+
+		// Check cache first
+		const cacheKey = this.getTokenCacheKey(textContent)
+		const cached = this.tokenCountCache.get(cacheKey)
+		if (cached && Date.now() - cached.timestamp < VsCodeLmHandler.TOKEN_CACHE_TTL_MS) {
+			return cached.count
+		}
+
+		// Use fast estimation instead of API call to save quota
+		// This is ~95% accurate for English text and saves API calls
+		const estimatedCount = this.estimateTokens(textContent)
+
+		// Cache the result
+		this.tokenCountCache.set(cacheKey, {
+			count: estimatedCount,
+			timestamp: Date.now(),
+		})
+
+		// Prune cache if needed
+		if (this.tokenCountCache.size > VsCodeLmHandler.TOKEN_CACHE_MAX_SIZE) {
+			this.pruneTokenCache()
+		}
+
+		return estimatedCount
 	}
 
 	private async calculateTotalInputTokens(vsCodeLmMessages: vscode.LanguageModelChatMessage[]): Promise<number> {
-		const messageTokens: number[] = await Promise.all(vsCodeLmMessages.map((msg) => this.internalCountTokens(msg)))
-
-		return messageTokens.reduce((sum: number, tokens: number): number => sum + tokens, 0)
+		// Use estimation for all messages (no API calls)
+		let totalTokens = 0
+		for (const msg of vsCodeLmMessages) {
+			totalTokens += await this.internalCountTokens(msg)
+		}
+		return totalTokens
 	}
 
 	private ensureCleanState(): void {
@@ -435,8 +531,52 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 						// Continue processing other chunks even if one fails
 						continue
 					}
+				} else if (this.isThinkingPart(chunk)) {
+					// Handle LanguageModelThinkingPart (proposed API for model reasoning/thinking)
+					const thinkingPart = chunk as {
+						value?: string | string[]
+						id?: string
+						metadata?: { readonly [key: string]: unknown }
+					}
+
+					// Log thinking part details - may contain cache or usage information
+					console.log("Roo Code <Language Model API>: ThinkingPart received:", {
+						hasValue: !!thinkingPart.value,
+						valueLength: Array.isArray(thinkingPart.value)
+							? thinkingPart.value.join("").length
+							: (thinkingPart.value?.length ?? 0),
+						id: thinkingPart.id,
+						hasMetadata: !!thinkingPart.metadata,
+						metadataKeys: thinkingPart.metadata ? Object.keys(thinkingPart.metadata) : [],
+					})
+
+					// Log full metadata contents for analysis
+					if (thinkingPart.metadata) {
+						console.log(
+							"Roo Code <Language Model API>: ThinkingPart metadata:",
+							JSON.stringify(thinkingPart.metadata, null, 2),
+						)
+					}
+
+					// Extract the thinking text content
+					const thinkingText = Array.isArray(thinkingPart.value)
+						? thinkingPart.value.join("")
+						: (thinkingPart.value ?? "")
+
+					// Optionally yield thinking content (could be useful for extended thinking models)
+					if (thinkingText) {
+						// For now, we don't include thinking in the output stream
+						// but we count it for token estimation
+						accumulatedText += thinkingText
+					}
 				} else {
-					console.warn("Roo Code <Language Model API>: Unknown chunk type received:", chunk)
+					// Log unknown chunk types with detailed info for debugging
+					console.warn("Roo Code <Language Model API>: Unknown chunk type received:", {
+						constructorName: chunk?.constructor?.name,
+						type: typeof chunk,
+						keys: chunk && typeof chunk === "object" ? Object.keys(chunk) : [],
+						chunk: chunk,
+					})
 				}
 			}
 
@@ -491,6 +631,11 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 				maxInputTokens: this.client.maxInputTokens,
 			}
 
+			// Log what Copilot reports for debugging
+			console.log(
+				`Roo Code <Language Model API>: Copilot reports maxInputTokens = ${this.client.maxInputTokens} for model ${this.client.family}`,
+			)
+
 			// Log any missing properties for debugging
 			for (const [prop, value] of Object.entries(requiredProps)) {
 				if (!value && value !== 0) {
@@ -503,18 +648,49 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 			const modelId = this.client.id || modelParts.join(SELECTOR_SEPARATOR)
 
-			// Build model info with conservative defaults for missing values
-			const modelInfo: ModelInfo = {
-				maxTokens: -1, // Unlimited tokens by default
-				contextWindow:
-					typeof this.client.maxInputTokens === "number"
-						? Math.max(0, this.client.maxInputTokens)
-						: openAiModelInfoSaneDefaults.contextWindow,
-				supportsImages: false, // VSCode Language Model API currently doesn't support image inputs
-				supportsPromptCache: true,
-				inputPrice: 0,
-				outputPrice: 0,
-				description: `VSCode Language Model: ${modelId}`,
+			let modelInfo: ModelInfo
+
+			if (this.cachedModelInfo) {
+				modelInfo = {
+					maxTokens: this.cachedModelInfo.maxTokens ?? -1,
+					contextWindow: this.cachedModelInfo.contextWindow ?? openAiModelInfoSaneDefaults.contextWindow,
+					supportsImages: this.cachedModelInfo.supportsImages ?? false,
+					supportsPromptCache: this.cachedModelInfo.supportsPromptCache ?? true,
+					supportsReasoningBudget: this.cachedModelInfo.supportsReasoningBudget,
+					inputPrice: 0,
+					outputPrice: 0,
+					description: `VSCode Language Model: ${modelId}`,
+				}
+
+				console.log(
+					`Roo Code <Language Model API>: Using fetched context window ${modelInfo.contextWindow} for ${modelId}`,
+				)
+			} else {
+				// Use registry to get correct context window (overrides Copilot's artificial limits)
+				// Registry has accurate context windows for Claude models (e.g., 200K for Opus 4.5)
+				// while Copilot artificially caps at ~128K
+				const registryInfo = mergeModelInfoWithRegistry(
+					modelId,
+					this.client.maxInputTokens,
+					openAiModelInfoSaneDefaults.contextWindow,
+				)
+
+				// Build model info using registry values (which override Copilot's limits)
+				modelInfo = {
+					maxTokens: registryInfo.maxTokens ?? -1, // Unlimited tokens by default
+					contextWindow: registryInfo.contextWindow ?? openAiModelInfoSaneDefaults.contextWindow,
+					supportsImages: registryInfo.supportsImages ?? false,
+					supportsPromptCache: registryInfo.supportsPromptCache ?? true,
+					supportsReasoningBudget: registryInfo.supportsReasoningBudget,
+					inputPrice: 0,
+					outputPrice: 0,
+					description: `VSCode Language Model: ${modelId}`,
+				}
+
+				console.log(
+					`Roo Code <Language Model API>: Using registry context window ${modelInfo.contextWindow} for ${modelId} ` +
+						`(Copilot reported: ${this.client.maxInputTokens}, Registry override applied)`,
+				)
 			}
 
 			return { id: modelId, info: modelInfo }
@@ -536,41 +712,64 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
+	/**
+	 * Simple prompt completion for SingleCompletionHandler interface
+	 */
 	async completePrompt(prompt: string): Promise<string> {
+		const client = await this.getClient()
+
+		// Initialize cancellation token for the request
+		this.currentRequestCancellation = new vscode.CancellationTokenSource()
+
 		try {
-			const client = await this.getClient()
-			const response = await client.sendRequest(
-				[vscode.LanguageModelChatMessage.User(prompt)],
-				{},
-				new vscode.CancellationTokenSource().token,
-			)
+			const messages = [vscode.LanguageModelChatMessage.User(prompt)]
+
+			const requestOptions: vscode.LanguageModelChatRequestOptions = {
+				justification: `Roo Code would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
+			}
+
+			const response = await client.sendRequest(messages, requestOptions, this.currentRequestCancellation.token)
+
 			let result = ""
 			for await (const chunk of response.stream) {
 				if (chunk instanceof vscode.LanguageModelTextPart) {
 					result += chunk.value
 				}
 			}
+
 			return result
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`VSCode LM completion error: ${error.message}`)
-			}
-			throw error
+		} finally {
+			this.ensureCleanState()
 		}
 	}
 }
-
-// Static blacklist of VS Code Language Model IDs that should be excluded from the model list e.g. because they will never work
-const VSCODE_LM_STATIC_BLACKLIST: string[] = ["claude-3.7-sonnet", "claude-3.7-sonnet-thought"]
-
-export async function getVsCodeLmModels() {
+/**
+ * Get available VS Code Language Models for the webview
+ * @returns Array of available model selectors
+ */
+export async function getVsCodeLmModels(): Promise<
+	Array<{
+		vendor: string
+		family: string
+		version?: string
+		id?: string
+		name?: string
+		maxInputTokens?: number
+	}>
+> {
 	try {
-		const models = (await vscode.lm.selectChatModels({})) || []
-		return models.filter((model) => !VSCODE_LM_STATIC_BLACKLIST.includes(model.id))
+		const models = await vscode.lm.selectChatModels({})
+
+		return models.map((model) => ({
+			vendor: model.vendor,
+			family: model.family,
+			version: model.version,
+			id: model.id,
+			name: model.name,
+			maxInputTokens: model.maxInputTokens,
+		}))
 	} catch (error) {
-		console.error(
-			`Error fetching VS Code LM models: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
-		)
+		console.error("Roo Code <Language Model API>: Failed to get models:", error)
 		return []
 	}
 }

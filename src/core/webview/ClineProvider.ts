@@ -1900,6 +1900,12 @@ export class ClineProvider
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
+			// Speech-to-text settings (Deepgram)
+			deepgramApiKey,
+			speechToTextEnabled,
+			speechToTextProvider,
+			deepgramModel,
+			deepgramLanguage,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2071,6 +2077,12 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			// Speech-to-text settings (Deepgram)
+			deepgramApiKey,
+			speechToTextEnabled: speechToTextEnabled ?? false,
+			speechToTextProvider: speechToTextProvider ?? "deepgram",
+			deepgramModel: deepgramModel ?? "nova-3",
+			deepgramLanguage: deepgramLanguage ?? "en",
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
 		}
 	}
@@ -2306,6 +2318,12 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			// Speech-to-text settings (Deepgram)
+			speechToTextEnabled: stateValues.speechToTextEnabled ?? false,
+			speechToTextProvider: stateValues.speechToTextProvider ?? "deepgram",
+			deepgramApiKey: stateValues.deepgramApiKey,
+			deepgramModel: stateValues.deepgramModel ?? "nova-3",
+			deepgramLanguage: stateValues.deepgramLanguage ?? "en",
 			featureRoomoteControlEnabled: (() => {
 				try {
 					const userSettings = CloudService.instance.getUserSettings()

@@ -132,6 +132,9 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "speechToTextTranscript"
+		| "speechToTextError"
+		| "speechToTextStateChange"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -217,6 +220,8 @@ export interface ExtensionMessage {
 	browserSessionMessages?: ClineMessage[] // For browser session panel updates
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
+	speechToTextState?: "idle" | "recording" | "connecting" | "error" // For speech-to-text state
+	isFinal?: boolean // For speech-to-text transcript
 }
 
 export type ExtensionState = Pick<
@@ -349,6 +354,12 @@ export type ExtensionState = Pick<
 	hasOpenedModeSelector: boolean
 	openRouterImageApiKey?: string
 	openRouterUseMiddleOutTransform?: boolean
+	// Speech-to-text settings (Deepgram)
+	deepgramApiKey?: string
+	speechToTextEnabled?: boolean
+	speechToTextProvider?: "deepgram"
+	deepgramModel?: string
+	deepgramLanguage?: string
 	messageQueue?: QueuedMessage[]
 	lastShownAnnouncementId?: string
 	apiModelId?: string

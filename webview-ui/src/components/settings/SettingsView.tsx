@@ -214,6 +214,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		// Speech-to-text settings (Deepgram)
+		speechToTextEnabled,
+		speechToTextProvider,
+		deepgramApiKey,
+		deepgramModel,
+		deepgramLanguage,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -329,6 +335,57 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
+	// Speech-to-text setters
+	const setSpeechToTextEnabled = useCallback((enabled: boolean) => {
+		setCachedState((prevState) => {
+			if (prevState.speechToTextEnabled !== enabled) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, speechToTextEnabled: enabled }
+		})
+	}, [])
+
+	const setSpeechToTextProvider = useCallback((provider: "deepgram") => {
+		setCachedState((prevState) => {
+			if (prevState.speechToTextProvider !== provider) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, speechToTextProvider: provider }
+		})
+	}, [])
+
+	const setDeepgramApiKey = useCallback((apiKey: string) => {
+		setCachedState((prevState) => {
+			if (prevState.deepgramApiKey !== apiKey) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, deepgramApiKey: apiKey }
+		})
+	}, [])
+
+	const setDeepgramModel = useCallback((model: string) => {
+		setCachedState((prevState) => {
+			if (prevState.deepgramModel !== model) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, deepgramModel: model }
+		})
+	}, [])
+
+	const setDeepgramLanguage = useCallback((language: string) => {
+		setCachedState((prevState) => {
+			if (prevState.deepgramLanguage !== language) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, deepgramLanguage: language }
+		})
+	}, [])
+
 	const setCustomSupportPromptsField = useCallback((prompts: Record<string, string | undefined>) => {
 		setCachedState((prevState) => {
 			const previousStr = JSON.stringify(prevState.customSupportPrompts)
@@ -422,6 +479,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					imageGenerationProvider,
 					openRouterImageApiKey,
 					openRouterImageGenerationSelectedModel,
+					// Speech-to-text settings
+					speechToTextEnabled: speechToTextEnabled ?? false,
+					speechToTextProvider: speechToTextProvider ?? "deepgram",
+					deepgramApiKey,
+					deepgramModel: deepgramModel ?? "nova-3",
+					deepgramLanguage: deepgramLanguage ?? "en",
 					experiments,
 					customSupportPrompts,
 				},
@@ -855,6 +918,17 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							setImageGenerationProvider={setImageGenerationProvider}
 							setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 							setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+							// Speech-to-text settings
+							speechToTextEnabled={speechToTextEnabled}
+							speechToTextProvider={speechToTextProvider as "deepgram" | undefined}
+							deepgramApiKey={deepgramApiKey as string | undefined}
+							deepgramModel={deepgramModel as string | undefined}
+							deepgramLanguage={deepgramLanguage as string | undefined}
+							setSpeechToTextEnabled={setSpeechToTextEnabled}
+							setSpeechToTextProvider={setSpeechToTextProvider}
+							setDeepgramApiKey={setDeepgramApiKey}
+							setDeepgramModel={setDeepgramModel}
+							setDeepgramLanguage={setDeepgramLanguage}
 						/>
 					)}
 

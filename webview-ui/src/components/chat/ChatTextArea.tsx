@@ -32,6 +32,7 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { SpeechToTextButton } from "./SpeechToTextButton"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -1289,6 +1290,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									<VolumeX className="w-4 h-4" />
 								</button>
 							</StandardTooltip>
+						)}
+						{!isEditMode && (
+							<SpeechToTextButton
+								onTranscript={(text, isFinal) => {
+									// Only commit final transcription results
+									if (isFinal && text.trim()) {
+										const needsSpace = inputValue.length > 0 && !inputValue.endsWith(" ")
+										setInputValue(inputValue + (needsSpace ? " " : "") + text.trim())
+									}
+								}}
+							/>
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}

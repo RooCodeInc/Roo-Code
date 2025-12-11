@@ -81,6 +81,7 @@ export const VSCodeLM = ({ apiConfiguration, setApiConfigurationField }: VSCodeL
 					</div>
 				)}
 			</div>
+
 			<div className="text-sm text-vscode-errorForeground">{t("settings:providers.vscodeLmWarning")}</div>
 		</>
 	)

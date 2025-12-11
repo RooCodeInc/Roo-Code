@@ -3094,6 +3094,54 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "startSpeechToText": {
+			const { AudioRecordingService } = await import("../../services/speech-to-text/AudioRecordingService")
+			const audioService = AudioRecordingService.getInstance()
+			const state = await provider.getState()
+			const apiKey = state.deepgramApiKey
+
+			if (!apiKey) {
+				await provider.postMessageToWebview({
+					type: "speechToTextError",
+					text: "Deepgram API key not configured. Please add it in settings.",
+				})
+				break
+			}
+
+			await audioService.startRecording({
+				apiKey,
+				model: state.deepgramModel || "nova-3",
+				language: state.deepgramLanguage || "en",
+				onTranscript: (text: string, isFinal: boolean) => {
+					provider.postMessageToWebview({
+						type: "speechToTextTranscript",
+						text,
+						isFinal,
+					})
+				},
+				onError: (error: string) => {
+					provider.postMessageToWebview({
+						type: "speechToTextError",
+						text: error,
+					})
+				},
+				onStateChange: (newState: "idle" | "recording" | "connecting" | "error") => {
+					provider.postMessageToWebview({
+						type: "speechToTextStateChange",
+						speechToTextState: newState,
+					})
+				},
+			})
+			break
+		}
+
+		case "stopSpeechToText": {
+			const { AudioRecordingService } = await import("../../services/speech-to-text/AudioRecordingService")
+			const audioService = AudioRecordingService.getInstance()
+			audioService.stopRecording()
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//

@@ -308,7 +308,25 @@ function getSelectedModel({
 				? `${apiConfiguration.vsCodeLmModelSelector.vendor}/${apiConfiguration.vsCodeLmModelSelector.family}`
 				: vscodeLlmDefaultModelId
 			const modelFamily = apiConfiguration?.vsCodeLmModelSelector?.family ?? vscodeLlmDefaultModelId
-			const info = vscodeLlmModels[modelFamily as keyof typeof vscodeLlmModels]
+
+			// Try exact match first, then normalized match (hyphens vs dots)
+			let info = vscodeLlmModels[modelFamily as keyof typeof vscodeLlmModels]
+
+			if (!info) {
+				// Try normalizing: convert hyphens to dots for version numbers (e.g., claude-opus-4-5 -> claude-opus-4.5)
+				const normalizedFamily = modelFamily.replace(/-(\d+)-(\d+)/g, "-$1.$2").replace(/-(\d+)$/, "-$1")
+				info = vscodeLlmModels[normalizedFamily as keyof typeof vscodeLlmModels]
+			}
+			if (!info) {
+				// Try finding a partial match
+				const familyLower = modelFamily.toLowerCase()
+				const matchingKey = Object.keys(vscodeLlmModels).find(
+					(key) => familyLower.includes(key.toLowerCase()) || key.toLowerCase().includes(familyLower),
+				)
+				if (matchingKey) {
+					info = vscodeLlmModels[matchingKey as keyof typeof vscodeLlmModels]
+				}
+			}
 			return { id, info: { ...openAiModelInfoSaneDefaults, ...info, supportsImages: false } } // VSCode LM API currently doesn't support images.
 		}
 		case "claude-code": {
