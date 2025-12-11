@@ -1,5 +1,5 @@
 import React from "react"
-import { ListChecks, LayoutList, Settings, CheckCheck, X } from "lucide-react"
+import { ListChecks, LayoutList, Settings, CheckCheck, X, HelpCircle } from "lucide-react"
 
 import { vscode } from "@/utils/vscode"
 
@@ -169,6 +169,22 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 						.join(", "),
 				})
 
+	// Build comprehensive help tooltip content
+	const helpTooltipContent = (
+		<div className="space-y-2 max-w-md">
+			<div className="font-semibold text-sm mb-2">{t("chat:autoApprove.helpTitle")}</div>
+			{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => (
+				<div key={key} className="flex gap-2 text-xs">
+					<span className={`codicon codicon-${icon} flex-shrink-0 mt-0.5`} />
+					<div>
+						<span className="font-medium">{t(labelKey)}:</span>{" "}
+						<span className="text-vscode-descriptionForeground">{t(descriptionKey)}</span>
+					</div>
+				</div>
+			))}
+		</div>
+	)
+
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="auto-approve-dropdown-root">
 			<StandardTooltip content={tooltipText}>
@@ -220,10 +236,15 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 							<h4 className="m-0 font-bold text-base text-vscode-foreground">
 								{t("chat:autoApprove.title")}
 							</h4>
-							<Settings
-								className="inline mb-0.5 mr-1 size-4 cursor-pointer"
-								onClick={handleOpenSettings}
-							/>
+							<div className="flex items-center gap-1">
+								<StandardTooltip content={helpTooltipContent} side="left" maxWidth={400}>
+									<HelpCircle className="inline mb-0.5 size-4 cursor-help text-vscode-descriptionForeground hover:text-vscode-foreground transition-colors" />
+								</StandardTooltip>
+								<Settings
+									className="inline mb-0.5 size-4 cursor-pointer text-vscode-descriptionForeground hover:text-vscode-foreground transition-colors"
+									onClick={handleOpenSettings}
+								/>
+							</div>
 						</div>
 						<p className="m-0 text-xs text-vscode-descriptionForeground">
 							{t("chat:autoApprove.description")}
@@ -233,23 +254,22 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 						{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
 							const isEnabled = toggles[key]
 							return (
-								<StandardTooltip key={key} content={t(descriptionKey)}>
-									<Button
-										variant={isEnabled ? "primary" : "secondary"}
-										onClick={() => onAutoApproveToggle(key, !isEnabled)}
-										className={cn(
-											"flex items-center gap-2 px-2 py-2 text-sm text-left justify-start h-auto",
-											"transition-all duration-150",
-											!effectiveAutoApprovalEnabled &&
-												"opacity-50 cursor-not-allowed hover:opacity-50",
-											!isEnabled && "bg-vscode-button-background/15",
-										)}
-										disabled={!effectiveAutoApprovalEnabled}
-										data-testid={`auto-approve-${key}`}>
-										<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
-										<span className="flex-1 truncate">{t(labelKey)}</span>
-									</Button>
-								</StandardTooltip>
+								<Button
+									key={key}
+									variant={isEnabled ? "primary" : "secondary"}
+									onClick={() => onAutoApproveToggle(key, !isEnabled)}
+									className={cn(
+										"flex items-center gap-2 px-2 py-2 text-sm text-left justify-start h-auto",
+										"transition-all duration-150",
+										!effectiveAutoApprovalEnabled &&
+											"opacity-50 cursor-not-allowed hover:opacity-50",
+										!isEnabled && "bg-vscode-button-background/15",
+									)}
+									disabled={!effectiveAutoApprovalEnabled}
+									data-testid={`auto-approve-${key}`}>
+									<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
+									<span className="flex-1 truncate">{t(labelKey)}</span>
+								</Button>
 							)
 						})}
 					</div>
