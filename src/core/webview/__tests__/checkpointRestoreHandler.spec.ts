@@ -48,6 +48,7 @@ describe("checkpointRestoreHandler", () => {
 		mockProvider = {
 			getCurrentTask: vi.fn(() => mockCline),
 			postMessageToWebview: vi.fn(),
+			postStateToWebview: vi.fn(), // Add this method to the mock
 			getTaskWithId: vi.fn(() => ({
 				historyItem: { id: "test-task-123", messages: mockCline.clineMessages },
 			})),
