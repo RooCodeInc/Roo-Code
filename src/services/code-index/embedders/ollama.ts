@@ -10,23 +10,30 @@ import { TelemetryEventName } from "@roo-code/types"
 // Timeout constants for Ollama API requests
 const OLLAMA_EMBEDDING_TIMEOUT_MS = 60000 // 60 seconds for embedding requests
 const OLLAMA_VALIDATION_TIMEOUT_MS = 30000 // 30 seconds for validation requests
+const OLLAMA_BASE_URL = "http://localhost:11434"
+const OLLAMA_DEFAULT_MODEL_ID = "nomic-embed-text:latest"
 
 /**
  * Implements the IEmbedder interface using a local Ollama instance.
  */
 export class CodeIndexOllamaEmbedder implements IEmbedder {
 	private readonly baseUrl: string
-	private readonly defaultModelId: string
+	private readonly modelId: string
+	private readonly embeddingTimeoutMs: number
+	private readonly validationTimeoutMs: number
 
 	constructor(options: ApiHandlerOptions) {
 		// Ensure ollamaBaseUrl and ollamaModelId exist on ApiHandlerOptions or add defaults
-		let baseUrl = options.ollamaBaseUrl || "http://localhost:11434"
+		let baseUrl = options.ollamaBaseUrl || OLLAMA_BASE_URL
 
 		// Normalize the baseUrl by removing all trailing slashes
 		baseUrl = baseUrl.replace(/\/+$/, "")
 
 		this.baseUrl = baseUrl
-		this.defaultModelId = options.ollamaModelId || "nomic-embed-text:latest"
+		this.modelId = options.ollamaModelId || OLLAMA_DEFAULT_MODEL_ID
+
+		this.embeddingTimeoutMs = options.ollamaEmbeddingTimeoutMs ?? OLLAMA_EMBEDDING_TIMEOUT_MS
+		this.validationTimeoutMs = options.ollamaValidationTimeoutMs ?? OLLAMA_VALIDATION_TIMEOUT_MS
 	}
 
 	/**
@@ -36,7 +43,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 	 * @returns A promise that resolves to an EmbeddingResponse containing the embeddings and usage data.
 	 */
 	async createEmbeddings(texts: string[], model?: string): Promise<EmbeddingResponse> {
-		const modelToUse = model || this.defaultModelId
+		const modelToUse = model || this.modelId
 		const url = `${this.baseUrl}/api/embed` // Endpoint as specified
 
 		// Apply model-specific query prefix if required
@@ -70,7 +77,12 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 
 			// Add timeout to prevent indefinite hanging
 			const controller = new AbortController()
-			const timeoutId = setTimeout(() => controller.abort(), OLLAMA_EMBEDDING_TIMEOUT_MS)
+			let embeddingTimeoutId = undefined
+			// If embeddingTimeoutMs <= 0, the timeout is disabled and requests may hang indefinitely.
+			// To enable the timeout, set embeddingTimeoutMs to a positive integer (milliseconds).
+			if (this.embeddingTimeoutMs > 0) {
+				embeddingTimeoutId = setTimeout(() => controller.abort(), this.embeddingTimeoutMs)
+			}
 
 			const response = await fetch(url, {
 				method: "POST",
@@ -83,7 +95,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 				}),
 				signal: controller.signal,
 			})
-			clearTimeout(timeoutId)
+			clearTimeout(embeddingTimeoutId)
 
 			if (!response.ok) {
 				let errorBody = t("embeddings:ollama.couldNotReadErrorBody")
@@ -149,7 +161,10 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 
 				// Add timeout to prevent indefinite hanging
 				const controller = new AbortController()
-				const timeoutId = setTimeout(() => controller.abort(), OLLAMA_VALIDATION_TIMEOUT_MS)
+				let validationTimeoutId = undefined
+				if (this.validationTimeoutMs > 0) {
+					validationTimeoutId = setTimeout(() => controller.abort(), this.validationTimeoutMs)
+				}
 
 				const modelsResponse = await fetch(modelsUrl, {
 					method: "GET",
@@ -158,7 +173,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 					},
 					signal: controller.signal,
 				})
-				clearTimeout(timeoutId)
+				clearTimeout(validationTimeoutId)
 
 				if (!modelsResponse.ok) {
 					if (modelsResponse.status === 404) {
@@ -184,9 +199,9 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 				const modelExists = models.some((m: any) => {
 					const modelName = m.name || ""
 					return (
-						modelName === this.defaultModelId ||
-						modelName === `${this.defaultModelId}:latest` ||
-						modelName === this.defaultModelId.replace(":latest", "")
+						modelName === this.modelId ||
+						modelName === `${this.modelId}:latest` ||
+						modelName === this.modelId.replace(":latest", "")
 					)
 				})
 
@@ -195,7 +210,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 					return {
 						valid: false,
 						error: t("embeddings:ollama.modelNotFound", {
-							modelId: this.defaultModelId,
+							modelId: this.modelId,
 							availableModels,
 						}),
 					}
@@ -206,7 +221,12 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 
 				// Add timeout for test request too
 				const testController = new AbortController()
-				const testTimeoutId = setTimeout(() => testController.abort(), OLLAMA_VALIDATION_TIMEOUT_MS)
+				let testTimeoutId = undefined
+				// If validationTimeoutMs is <= 0, the timeout is disabled (no abort will be triggered).
+				// Set validationTimeoutMs to a positive integer (milliseconds) to enable the timeout.
+				if (this.validationTimeoutMs > 0) {
+					testTimeoutId = setTimeout(() => testController.abort(), this.validationTimeoutMs)
+				}
 
 				const testResponse = await fetch(testUrl, {
 					method: "POST",
@@ -214,7 +234,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						model: this.defaultModelId,
+						model: this.modelId,
 						input: ["test"],
 					}),
 					signal: testController.signal,
@@ -224,7 +244,7 @@ export class CodeIndexOllamaEmbedder implements IEmbedder {
 				if (!testResponse.ok) {
 					return {
 						valid: false,
-						error: t("embeddings:ollama.modelNotEmbeddingCapable", { modelId: this.defaultModelId }),
+						error: t("embeddings:ollama.modelNotEmbeddingCapable", { modelId: this.modelId }),
 					}
 				}
 

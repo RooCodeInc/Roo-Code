@@ -87,6 +87,8 @@ describe("CodeIndexServiceFactory", () => {
 				modelId: testModelId,
 				ollamaOptions: {
 					ollamaBaseUrl: "http://localhost:11434",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
 				},
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
@@ -129,6 +131,8 @@ describe("CodeIndexServiceFactory", () => {
 				modelId: undefined,
 				ollamaOptions: {
 					ollamaBaseUrl: "http://localhost:11434",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
 				},
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
@@ -165,6 +169,8 @@ describe("CodeIndexServiceFactory", () => {
 				modelId: "nomic-embed-text:latest",
 				ollamaOptions: {
 					ollamaBaseUrl: undefined,
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
 				},
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
@@ -726,6 +732,8 @@ describe("CodeIndexServiceFactory", () => {
 				modelId: "nomic-embed-text",
 				ollamaOptions: {
 					ollamaBaseUrl: "http://localhost:11434",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
 				},
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)

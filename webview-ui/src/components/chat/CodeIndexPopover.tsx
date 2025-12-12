@@ -74,6 +74,10 @@ interface LocalCodeIndexSettings {
 	codebaseIndexBedrockRegion?: string
 	codebaseIndexBedrockProfile?: string
 
+	// Ollama-specific settings
+	codebaseIndexOllamaEmbeddingTimeoutMs?: number
+	codebaseIndexOllamaValidationTimeoutMs?: number
+
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
 	codeIndexQdrantApiKey?: string
@@ -113,6 +117,8 @@ const createValidationSchema = (provider: EmbedderProvider, t: any) => {
 					.min(1, t("settings:codeIndex.validation.ollamaBaseUrlRequired"))
 					.url(t("settings:codeIndex.validation.invalidOllamaUrl")),
 				codebaseIndexEmbedderModelId: z.string().min(1, t("settings:codeIndex.validation.modelIdRequired")),
+				codebaseIndexOllamaEmbeddingTimeoutMs: z.number().optional(),
+				codebaseIndexOllamaValidationTimeoutMs: z.number().optional(),
 				codebaseIndexEmbedderModelDimension: z
 					.number()
 					.min(1, t("settings:codeIndex.validation.modelDimensionRequired"))
@@ -219,6 +225,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
+		codebaseIndexOllamaEmbeddingTimeoutMs: undefined,
+		codebaseIndexOllamaValidationTimeoutMs: undefined,
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
@@ -258,6 +266,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
+				codebaseIndexOllamaEmbeddingTimeoutMs:
+					codebaseIndexConfig.codebaseIndexOllamaEmbeddingTimeoutMs || undefined,
+				codebaseIndexOllamaValidationTimeoutMs:
+					codebaseIndexConfig.codebaseIndexOllamaValidationTimeoutMs || undefined,
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
@@ -884,6 +896,66 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												{formErrors.codebaseIndexEmbedderModelId && (
 													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
 														{formErrors.codebaseIndexEmbedderModelId}
+													</p>
+												)}
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.ollamaEmbeddingTimeoutMsLabel")}
+												</label>
+												<VSCodeTextField
+													value={
+														currentSettings.codebaseIndexOllamaEmbeddingTimeoutMs?.toString() ||
+														""
+													}
+													onInput={(e: any) => {
+														const value = e.target.value
+															? parseInt(e.target.value, 10) || undefined
+															: undefined
+														updateSetting("codebaseIndexOllamaEmbeddingTimeoutMs", value)
+													}}
+													placeholder={t(
+														"settings:codeIndex.ollamaEmbeddingTimeoutMsPlaceholder",
+													)}
+													className={cn("w-full", {
+														"border-red-500":
+															formErrors.codebaseIndexOllamaEmbeddingTimeoutMs,
+													})}
+												/>
+												{formErrors.codebaseIndexOllamaEmbeddingTimeoutMs && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexOllamaEmbeddingTimeoutMs}
+													</p>
+												)}
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.ollamaValidationTimeoutMsLabel")}
+												</label>
+												<VSCodeTextField
+													value={
+														currentSettings.codebaseIndexOllamaValidationTimeoutMs?.toString() ||
+														""
+													}
+													onInput={(e: any) => {
+														const value = e.target.value
+															? parseInt(e.target.value, 10) || undefined
+															: undefined
+														updateSetting("codebaseIndexOllamaValidationTimeoutMs", value)
+													}}
+													placeholder={t(
+														"settings:codeIndex.ollamaValidationTimeoutMsPlaceholder",
+													)}
+													className={cn("w-full", {
+														"border-red-500":
+															formErrors.codebaseIndexOllamaValidationTimeoutMs,
+													})}
+												/>
+												{formErrors.codebaseIndexOllamaValidationTimeoutMs && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexOllamaValidationTimeoutMs}
 													</p>
 												)}
 											</div>
