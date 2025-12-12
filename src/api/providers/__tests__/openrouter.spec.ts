@@ -489,6 +489,90 @@ describe("OpenRouterHandler", () => {
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_openrouter_test")
 		})
+
+		it("uses R1 format for Mistral 2512 models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "mistralai/mistral-large-2512",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const systemPrompt = "test system prompt"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "message 1" },
+				{ role: "user", content: "message 2" },
+			]
+
+			await handler.createMessage(systemPrompt, messages).next()
+
+			// Verify that convertToR1Format was used by checking messages structure
+			// Consecutive user messages should be merged into a single user message
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: expect.arrayContaining([
+						expect.objectContaining({
+							role: "user",
+							// The system prompt and two user messages should be merged
+							content: expect.stringContaining("test system prompt"),
+						}),
+					]),
+				}),
+				undefined,
+			)
+
+			// Verify that messages were merged (should have fewer messages than original)
+			const callArgs = mockCreate.mock.calls[0][0]
+			// Original would have 3 messages (system converted to user + 2 user messages)
+			// After R1 format conversion, consecutive user messages should be merged into 1
+			expect(callArgs.messages).toHaveLength(1)
+		})
+
+		it("uses R1 format for Mistral devstral-2512 model", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "mistralai/devstral-2512",
+			})
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "test response" } }],
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const systemPrompt = "test system prompt"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "message 1" },
+				{ role: "user", content: "message 2" },
+			]
+
+			await handler.createMessage(systemPrompt, messages).next()
+
+			// Verify R1 format conversion was applied
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.messages).toHaveLength(1)
+			expect(callArgs.messages[0].role).toBe("user")
+		})
 	})
 
 	describe("completePrompt", () => {
