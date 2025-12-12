@@ -15,6 +15,7 @@ import { createReadFileTool } from "./read_file"
 import runSlashCommand from "./run_slash_command"
 import searchAndReplace from "./search_and_replace"
 import searchReplace from "./search_replace"
+import edit_file from "./edit_file"
 import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
@@ -47,6 +48,7 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		runSlashCommand,
 		searchAndReplace,
 		searchReplace,
+		edit_file,
 		searchFiles,
 		switchMode,
 		updateTodoList,
