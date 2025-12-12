@@ -200,27 +200,27 @@ describe("TerminalRegistry", () => {
 		})
 
 		it("should not destroy terminals when non-busy count is within limit", () => {
-			// Create 5 terminals (equal to max limit)
+			// Create 3 terminals (equal to max limit)
 			const terminals = []
-			for (let i = 0; i < 5; i++) {
+			for (let i = 0; i < 3; i++) {
 				const terminal = TerminalRegistry.createTerminal(`/test/path${i}`, "vscode")
 				terminal.busy = false
 				terminals.push(terminal)
 			}
 
 			// Simulate terminal execution completion
-			terminals.forEach(terminal => {
+			terminals.forEach((terminal) => {
 				terminal.shellExecutionComplete({ exitCode: 0 })
 			})
 
 			// Verify all terminals still exist
-			expect(TerminalRegistry.getTerminals(false).length).toBe(5)
+			expect(TerminalRegistry.getTerminals(false).length).toBe(3)
 		})
 
 		it("should destroy oldest terminal when non-busy count exceeds limit", () => {
-			// Create 6 terminals (exceeds max limit)
+			// Create 4 terminals (exceeds max limit)
 			const terminals = []
-			for (let i = 0; i < 6; i++) {
+			for (let i = 0; i < 4; i++) {
 				const terminal = TerminalRegistry.createTerminal(`/test/path${i}`, "vscode")
 				terminal.busy = false
 				terminals.push(terminal)
@@ -229,31 +229,29 @@ describe("TerminalRegistry", () => {
 			}
 
 			// Simulate terminal execution completion
-			terminals.forEach(terminal => {
+			terminals.forEach((terminal) => {
 				terminal.shellExecutionComplete({ exitCode: 0 })
 			})
 
 			// Manually trigger cleanup (because new terminals are also counted in total)
 			TerminalRegistry["checkAndCleanupNotBusyTerminals"]()
 
-			// Verify only 5 terminals exist
-			expect(TerminalRegistry.getTerminals(false).length).toBe(5)
+			// Verify only 3 terminals exist
+			expect(TerminalRegistry.getTerminals(false).length).toBe(3)
 
 			// Verify the oldest terminal was destroyed (terminal with ID 1 should be destroyed)
 			const remainingTerminals = TerminalRegistry.getTerminals(false)
-			const terminalIds = remainingTerminals.map(t => t.id)
+			const terminalIds = remainingTerminals.map((t) => t.id)
 			expect(terminalIds).not.toContain(1) // The oldest terminal should be destroyed
 			expect(terminalIds).toContain(2) // Other terminals should be preserved
 			expect(terminalIds).toContain(3)
 			expect(terminalIds).toContain(4)
-			expect(terminalIds).toContain(5)
-			expect(terminalIds).toContain(6)
 		})
 
 		it("should not destroy terminals with unretrieved output", () => {
-			// Create 6 terminals (exceeds max limit)
+			// Create 4 terminals (exceeds max limit)
 			const terminals = []
-			for (let i = 0; i < 6; i++) {
+			for (let i = 0; i < 4; i++) {
 				const terminal = TerminalRegistry.createTerminal(`/test/path${i}`, "vscode")
 				terminal.busy = false
 				terminals.push(terminal)
@@ -264,47 +262,47 @@ describe("TerminalRegistry", () => {
 			terminals[0].hasUnretrievedOutput = vi.fn().mockReturnValue(true)
 
 			// Simulate terminal execution completion
-			terminals.forEach(terminal => {
+			terminals.forEach((terminal) => {
 				terminal.shellExecutionComplete({ exitCode: 0 })
 			})
 
 			// Manually trigger cleanup
 			TerminalRegistry["checkAndCleanupNotBusyTerminals"]()
 
-			// Verify all 6 terminals still exist (because of unretrieved output)
-			expect(TerminalRegistry.getTerminals(false).length).toBe(6)
+			// Verify all 4 terminals still exist (because of unretrieved output)
+			expect(TerminalRegistry.getTerminals(false).length).toBe(4)
 		})
 
 		it("should handle mixed busy and non-busy terminals correctly", () => {
-			// Create 8 terminals
+			// Create 6 terminals
 			const terminals = []
-			for (let i = 0; i < 8; i++) {
+			for (let i = 0; i < 6; i++) {
 				const terminal = TerminalRegistry.createTerminal(`/test/path${i}`, "vscode")
 				terminals.push(terminal)
 				vi.advanceTimersByTime(10)
 			}
 
-			// Set first 4 as busy, last 4 as non-busy
-			terminals.slice(0, 4).forEach(terminal => {
+			// Set first 3 as busy, last 3 as non-busy
+			terminals.slice(0, 3).forEach((terminal) => {
 				terminal.busy = true
 			})
-			terminals.slice(4).forEach(terminal => {
+			terminals.slice(3).forEach((terminal) => {
 				terminal.busy = false
 			})
 
 			// Simulate non-busy terminal execution completion
-			terminals.slice(4).forEach(terminal => {
+			terminals.slice(3).forEach((terminal) => {
 				terminal.shellExecutionComplete({ exitCode: 0 })
 			})
 
 			// Manually trigger cleanup
 			TerminalRegistry["checkAndCleanupNotBusyTerminals"]()
 
-			// Verify only 4 non-busy terminals exist (within limit)
-			expect(TerminalRegistry.getTerminals(false).length).toBe(4)
+			// Verify only 3 non-busy terminals exist (within limit)
+			expect(TerminalRegistry.getTerminals(false).length).toBe(3)
 
 			// Verify all busy terminals still exist
-			expect(TerminalRegistry.getTerminals(true).length).toBe(4)
+			expect(TerminalRegistry.getTerminals(true).length).toBe(3)
 		})
 	})
 })
