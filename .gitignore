@@ -49,6 +49,9 @@ logs
 
 # Qdrant
 qdrant_storage/
-
 # Architect plans
 plans/
+
+# ignore temp background docs
+TEMP_OPENAI_BACKGROUND_TASK_DOCS.DM
+TEMP_DOCS/

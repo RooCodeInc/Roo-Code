@@ -279,6 +279,18 @@ export const clineMessageSchema = z.object({
 	isProtected: z.boolean().optional(),
 	apiProtocol: z.union([z.literal("openai"), z.literal("anthropic")]).optional(),
 	isAnswered: z.boolean().optional(),
+	/**
+	 * Optional metadata for API request tracking.
+	 * Used for background mode status display.
+	 */
+	metadata: z
+		.object({
+			background: z.boolean().optional(),
+			backgroundStatus: z
+				.enum(["queued", "in_progress", "reconnecting", "polling", "completed", "failed", "canceled"])
+				.optional(),
+		})
+		.optional(),
 })
 
 export type ClineMessage = z.infer<typeof clineMessageSchema>

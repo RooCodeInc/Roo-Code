@@ -389,6 +389,38 @@ describe("OpenAiNativeHandler - normalizeUsage", () => {
 		})
 	})
 
+	it("should produce identical usage chunk when background mode is enabled", () => {
+		const usage = {
+			input_tokens: 120,
+			output_tokens: 60,
+			cache_creation_input_tokens: 10,
+			cache_read_input_tokens: 30,
+		}
+
+		const baselineHandler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-5-pro-2025-10-06",
+		})
+		const backgroundHandler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeBackgroundMode: true,
+		})
+
+		const baselineUsage = (baselineHandler as any).normalizeUsage(usage, baselineHandler.getModel())
+		const backgroundUsage = (backgroundHandler as any).normalizeUsage(usage, backgroundHandler.getModel())
+
+		expect(baselineUsage).toMatchObject({
+			type: "usage",
+			inputTokens: 120,
+			outputTokens: 60,
+			cacheWriteTokens: 10,
+			cacheReadTokens: 30,
+			totalCost: expect.any(Number),
+		})
+		expect(backgroundUsage).toEqual(baselineUsage)
+	})
+
 	describe("cost calculation", () => {
 		it("should pass total input tokens to calculateApiCostOpenAI", () => {
 			const usage = {

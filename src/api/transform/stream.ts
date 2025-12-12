@@ -10,6 +10,7 @@ export type ApiStreamChunk =
 	| ApiStreamToolCallDeltaChunk
 	| ApiStreamToolCallEndChunk
 	| ApiStreamToolCallPartialChunk
+	| ApiStreamStatusChunk
 	| ApiStreamError
 
 export interface ApiStreamError {
@@ -84,4 +85,11 @@ export interface GroundingSource {
 	title: string
 	url: string
 	snippet?: string
+}
+
+export interface ApiStreamStatusChunk {
+	type: "status"
+	mode?: "background"
+	status: "queued" | "in_progress" | "completed" | "failed" | "canceled" | "reconnecting" | "polling"
+	responseId?: string
 }
