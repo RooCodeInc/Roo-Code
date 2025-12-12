@@ -226,6 +226,7 @@ const bedrockSchema = apiModelIdProviderModelSchema.extend({
 	awsApiKey: z.string().optional(),
 	awsUseApiKey: z.boolean().optional(),
 	awsCustomArn: z.string().optional(),
+	awsCustomArnEnableReasoning: z.boolean().optional(), // Enable reasoning for custom ARNs
 	awsModelContextWindow: z.number().optional(),
 	awsBedrockEndpointEnabled: z.boolean().optional(),
 	awsBedrockEndpoint: z.string().optional(),

@@ -226,6 +226,20 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 					</div>
 				</>
 			)}
+			{apiConfiguration?.awsCustomArn && (
+				<div>
+					<Checkbox
+						checked={apiConfiguration?.awsCustomArnEnableReasoning ?? false}
+						onChange={(checked: boolean) => {
+							setApiConfigurationField("awsCustomArnEnableReasoning", checked)
+						}}>
+						Enable Reasoning
+					</Checkbox>
+					<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
+						Enable extended thinking for this custom ARN. Only enable if the model supports reasoning.
+					</div>
+				</div>
+			)}
 		</>
 	)
 }

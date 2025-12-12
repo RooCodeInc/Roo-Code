@@ -384,7 +384,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			modelConfig.reasoning &&
 			modelConfig.reasoningBudget
 
-		if ((isThinkingExplicitlyEnabled || isThinkingEnabledBySettings) && modelConfig.info.supportsReasoningBudget) {
+		// For custom ARNs, only enable reasoning if explicitly enabled via the awsCustomArnEnableReasoning setting
+		// For regular models, use the standard logic
+		const shouldEnableThinking = this.options.awsCustomArn
+			? this.options.awsCustomArnEnableReasoning && modelConfig.info.supportsReasoningBudget
+			: (isThinkingExplicitlyEnabled || isThinkingEnabledBySettings) && modelConfig.info.supportsReasoningBudget
+
+		if (shouldEnableThinking) {
 			thinkingEnabled = true
 			additionalModelRequestFields = {
 				thinking: {
@@ -717,10 +723,15 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 			// For completePrompt, thinking is typically not used, but we should still check
 			// if thinking was somehow enabled in the model config
-			const thinkingEnabled =
+			// For custom ARNs, only enable if explicitly set via awsCustomArnEnableReasoning
+			const thinkingEnabledBySettings =
 				shouldUseReasoningBudget({ model: modelConfig.info, settings: this.options }) &&
 				modelConfig.reasoning &&
 				modelConfig.reasoningBudget
+
+			const thinkingEnabled = this.options.awsCustomArn
+				? this.options.awsCustomArnEnableReasoning && modelConfig.reasoning && modelConfig.reasoningBudget
+				: thinkingEnabledBySettings
 
 			const inferenceConfig: BedrockInferenceConfig = {
 				maxTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
