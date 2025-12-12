@@ -2147,4 +2147,227 @@ describe("McpHub", () => {
 			)
 		})
 	})
+
+	describe("URL normalization", () => {
+		let StdioClientTransport: ReturnType<typeof vi.fn>
+		let StreamableHTTPClientTransport: ReturnType<typeof vi.fn>
+		let SSEClientTransport: ReturnType<typeof vi.fn>
+		let Client: ReturnType<typeof vi.fn>
+
+		beforeEach(async () => {
+			// Reset mocks
+			vi.clearAllMocks()
+
+			// Get references to the mocked constructors
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+			Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			// Mock StreamableHTTPClientTransport
+			vi.mock("@modelcontextprotocol/sdk/client/streamableHttp.js", () => ({
+				StreamableHTTPClientTransport: vi.fn(),
+			}))
+			const streamableModule = await import("@modelcontextprotocol/sdk/client/streamableHttp.js")
+			StreamableHTTPClientTransport = streamableModule.StreamableHTTPClientTransport as ReturnType<typeof vi.fn>
+
+			// Mock SSEClientTransport
+			vi.mock("@modelcontextprotocol/sdk/client/sse.js", () => ({
+				SSEClientTransport: vi.fn(),
+			}))
+			const sseModule = await import("@modelcontextprotocol/sdk/client/sse.js")
+			SSEClientTransport = sseModule.SSEClientTransport as ReturnType<typeof vi.fn>
+		})
+
+		it("should remove trailing slash from streamable-http URLs", async () => {
+			// Mock StreamableHTTPClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				onerror: null,
+				onclose: null,
+			}
+
+			StreamableHTTPClientTransport.mockImplementation((url: URL, options: any) => {
+				// Verify that the trailing slash is removed
+				expect(url.toString()).toBe("https://api.githubcopilot.com/mcp")
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with URL containing trailing slash
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						github: {
+							type: "streamable-http",
+							url: "https://api.githubcopilot.com/mcp/",
+							headers: {
+								Authorization: "Bearer GITHUB_PAT",
+							},
+						},
+					},
+				}),
+			)
+
+			// Initialize servers (this will trigger connectToServer)
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify StreamableHTTPClientTransport was called with normalized URL
+			expect(StreamableHTTPClientTransport).toHaveBeenCalledWith(expect.any(URL), expect.any(Object))
+			const urlArg = StreamableHTTPClientTransport.mock.calls[0][0]
+			expect(urlArg.toString()).toBe("https://api.githubcopilot.com/mcp")
+		})
+
+		it("should remove multiple trailing slashes from streamable-http URLs", async () => {
+			// Mock StreamableHTTPClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				onerror: null,
+				onclose: null,
+			}
+
+			StreamableHTTPClientTransport.mockImplementation((url: URL, options: any) => {
+				// Verify that multiple trailing slashes are removed
+				expect(url.toString()).toBe("https://api.example.com/endpoint")
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with URL containing multiple trailing slashes
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"test-server": {
+							type: "streamable-http",
+							url: "https://api.example.com/endpoint///",
+						},
+					},
+				}),
+			)
+
+			// Initialize servers
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify StreamableHTTPClientTransport was called with normalized URL
+			expect(StreamableHTTPClientTransport).toHaveBeenCalledWith(expect.any(URL), expect.any(Object))
+			const urlArg = StreamableHTTPClientTransport.mock.calls[0][0]
+			expect(urlArg.toString()).toBe("https://api.example.com/endpoint")
+		})
+
+		it("should remove trailing slash from SSE URLs", async () => {
+			// Mock SSEClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				onerror: null,
+				onclose: null,
+			}
+
+			SSEClientTransport.mockImplementation((url: URL, options: any) => {
+				// Verify that the trailing slash is removed
+				expect(url.toString()).toBe("https://sse.example.com/events")
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with SSE URL containing trailing slash
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"sse-server": {
+							type: "sse",
+							url: "https://sse.example.com/events/",
+						},
+					},
+				}),
+			)
+
+			// Initialize servers
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify SSEClientTransport was called with normalized URL
+			expect(SSEClientTransport).toHaveBeenCalledWith(expect.any(URL), expect.any(Object))
+			const urlArg = SSEClientTransport.mock.calls[0][0]
+			expect(urlArg.toString()).toBe("https://sse.example.com/events")
+		})
+
+		it("should handle URLs without trailing slashes correctly", async () => {
+			// Mock StreamableHTTPClientTransport
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				onerror: null,
+				onclose: null,
+			}
+
+			StreamableHTTPClientTransport.mockImplementation((url: URL, options: any) => {
+				// Verify that URL without trailing slash remains unchanged
+				expect(url.toString()).toBe("https://api.example.com/path")
+				return mockTransport
+			})
+
+			// Mock Client
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			// Create a new McpHub instance
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Mock the config file read with URL without trailing slash
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"no-slash-server": {
+							type: "streamable-http",
+							url: "https://api.example.com/path",
+						},
+					},
+				}),
+			)
+
+			// Initialize servers
+			await mcpHub["initializeGlobalMcpServers"]()
+
+			// Verify URL remains unchanged
+			expect(StreamableHTTPClientTransport).toHaveBeenCalledWith(expect.any(URL), expect.any(Object))
+			const urlArg = StreamableHTTPClientTransport.mock.calls[0][0]
+			expect(urlArg.toString()).toBe("https://api.example.com/path")
+		})
+	})
 })
