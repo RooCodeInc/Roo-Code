@@ -12,15 +12,13 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			if (key === "chat:followUpSuggest.countdownDisplay" && options?.count !== undefined) {
 				return `${options.count}s`
 			}
-			if (key === "chat:followUpSuggest.autoSelectCountdown" && options?.count !== undefined) {
-				return `Auto-selecting in ${options.count} seconds`
-			}
 			if (key === "chat:followUpSuggest.copyToInput") {
 				return "Copy to input"
 			}
-			if (key === "chat:followUpSuggest.timerTooltip") {
-				return "Timer shown because Auto-Approve is enabled for Question"
+			if (key === "chat:followUpSuggest.timerPrefix" && options?.seconds !== undefined) {
+				return "Auto-approve enabled. Selecting in " + options.seconds + "s…"
 			}
+
 			return key
 		},
 	}),
@@ -96,8 +94,9 @@ describe("FollowUpSuggest", () => {
 			defaultTestState,
 		)
 
-		// Should show initial countdown (3 seconds)
+		// Should countdown and mention
 		expect(screen.getByText(/3s/)).toBeInTheDocument()
+		expect(screen.getByText(/Selecting in 3s/)).toBeInTheDocument()
 	})
 
 	it("should not display countdown timer when isAnswered is true", () => {
