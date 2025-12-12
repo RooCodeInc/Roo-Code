@@ -11,8 +11,8 @@ import {
 describe("insertMention", () => {
 	it("should insert mention at cursor position when no @ symbol exists", () => {
 		const result = insertMention("Hello world", 5, "test")
-		expect(result.newValue).toBe("Hello@test  world")
-		expect(result.mentionIndex).toBe(5)
+		expect(result.newValue).toBe("Hello @test  world")
+		expect(result.mentionIndex).toBe(6)
 	})
 
 	it("should replace text after last @ symbol", () => {
@@ -46,8 +46,20 @@ describe("insertMention", () => {
 
 	it("should handle insertion at the end", () => {
 		const result = insertMention("Hello", 5, "problems")
-		expect(result.newValue).toBe("Hello@problems ")
-		expect(result.mentionIndex).toBe(5)
+		expect(result.newValue).toBe("Hello @problems ")
+		expect(result.mentionIndex).toBe(6)
+	})
+
+	it("should insert space before @ when text doesn't end with space", () => {
+		const result = insertMention("Check", 5, "problems")
+		expect(result.newValue).toBe("Check @problems ")
+		expect(result.mentionIndex).toBe(6)
+	})
+
+	it("should not insert extra space when text already ends with space", () => {
+		const result = insertMention("Check ", 6, "problems")
+		expect(result.newValue).toBe("Check @problems ")
+		expect(result.mentionIndex).toBe(6)
 	})
 
 	it("should handle slash command replacement", () => {
