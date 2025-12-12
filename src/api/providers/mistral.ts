@@ -12,8 +12,18 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-// Type helper to handle thinking chunks from Mistral API
-// The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union
+/**
+ * Type helper to handle thinking chunks from Mistral API.
+ *
+ * Mistral Devstral 2 models support "thinking" mode where the model's reasoning process
+ * is streamed separately from the final response. This allows users to see the model's
+ * thought process in real-time.
+ *
+ * The SDK includes ThinkChunk but TypeScript has trouble with the discriminated union,
+ * so we define our own type here.
+ *
+ * @see https://docs.mistral.ai/models/devstral-2-25-12
+ */
 type ContentChunkWithThinking = {
 	type: string
 	text?: string
@@ -106,8 +116,23 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 					// Handle string content as text
 					yield { type: "text", text: delta.content }
 				} else if (Array.isArray(delta.content)) {
-					// Handle array of content chunks
-					// The SDK v1.9.18 supports ThinkChunk with type "thinking"
+					/**
+					 * Handle array of content chunks from Mistral API.
+					 *
+					 * Mistral Devstral 2 models support streaming "thinking" tokens that show
+					 * the model's reasoning process. These are streamed as separate chunks with
+					 * type "thinking" and are displayed to users as reasoning steps.
+					 *
+					 * The SDK v1.9.18+ supports ThinkChunk with type "thinking".
+					 *
+					 * Content chunk types:
+					 * - "thinking": Model's reasoning process (yielded as "reasoning" type)
+					 * - "text": Final response text (yielded as "text" type)
+					 *
+					 * This implementation ensures thinking tokens are properly streamed and
+					 * displayed in the UI, addressing performance concerns about showing
+					 * model progress during generation.
+					 */
 					for (const chunk of delta.content as ContentChunkWithThinking[]) {
 						if (chunk.type === "thinking" && chunk.thinking) {
 							// Handle thinking content as reasoning chunks
