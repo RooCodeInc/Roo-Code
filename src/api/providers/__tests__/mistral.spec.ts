@@ -251,11 +251,10 @@ describe("MistralHandler", () => {
 			},
 		]
 
-		it("should include tools in request when toolProtocol is native", async () => {
+		it("should include tools in request by default (native is default)", async () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			}
 
 			const iterator = handler.createMessage(systemPrompt, messages, metadata)
@@ -329,7 +328,6 @@ describe("MistralHandler", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			}
 
 			const iterator = handler.createMessage(systemPrompt, messages, metadata)
@@ -393,7 +391,6 @@ describe("MistralHandler", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			}
 
 			const iterator = handler.createMessage(systemPrompt, messages, metadata)
@@ -427,7 +424,6 @@ describe("MistralHandler", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: "auto", // This should be ignored
 			}
 
