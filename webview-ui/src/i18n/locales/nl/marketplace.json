@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Geïnstalleerd",
 		"settings": "Instellingen",
-		"browse": "Bladeren"
+		"browse": "Bladeren",
+		"slashCommands": "Slash-commando's"
 	},
 	"done": "Gereed",
 	"refresh": "Vernieuwen",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Marketplace-items zoeken...",
 			"placeholderMcp": "MCP's zoeken...",
-			"placeholderMode": "Modi zoeken..."
+			"placeholderMode": "Modi zoeken...",
+			"placeholderCommand": "Zoek slash-commando's..."
 		},
 		"installed": {
 			"label": "Filteren op status",
@@ -23,7 +25,8 @@
 			"label": "Filteren op type:",
 			"all": "Alle types",
 			"mode": "Modus",
-			"mcpServer": "MCP-server"
+			"mcpServer": "MCP-server",
+			"slashCommand": "Slash-commando"
 		},
 		"sort": {
 			"label": "Sorteren op:",
@@ -89,6 +92,7 @@
 		"title": "{{name}} installeren",
 		"titleMode": "{{name}} modus installeren",
 		"titleMcp": "{{name}} MCP installeren",
+		"titleCommand": "Slash-commando {{name}} installeren",
 		"scope": "Installatiebereik",
 		"project": "Project (huidige werkruimte)",
 		"global": "Globaal (alle werkruimtes)",
@@ -101,6 +105,7 @@
 		"installed": "Succesvol geïnstalleerd!",
 		"whatNextMcp": "Je kunt deze MCP-server nu configureren en gebruiken. Klik op het MCP-pictogram in de zijbalk om van tabblad te wisselen.",
 		"whatNextMode": "Je kunt deze modus nu gebruiken. Klik op het modi-pictogram in de zijbalk om van tabblad te wisselen.",
+		"whatNextCommand": "Je kunt dit slash-commando nu gebruiken door /{{name}} in de chat te typen.",
 		"done": "Gereed",
 		"goToMcp": "Ga naar MCP-tabblad",
 		"goToModes": "Ga naar Modi-instellingen",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "MCP-server verwijderen",
 			"message": "Weet je zeker dat je de MCP-server \"{{mcpName}}\" wilt verwijderen?"
+		},
+		"command": {
+			"title": "Slash-commando verwijderen",
+			"message": "Weet je zeker dat je het slash-commando \"{{commandName}}\" wilt verwijderen?"
 		},
 		"cancel": "Annuleren",
 		"confirm": "Verwijderen"

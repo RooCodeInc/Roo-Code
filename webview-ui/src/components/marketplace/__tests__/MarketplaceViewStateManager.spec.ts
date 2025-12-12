@@ -39,6 +39,14 @@ describe("MarketplaceViewStateManager", () => {
 			content: "test content",
 			tags: ["test", "server"],
 		},
+		{
+			id: "test-command-1",
+			name: "Test Command 1",
+			description: "A test slash command",
+			type: "command",
+			content: "# Test Command\n\n{args}",
+			tags: ["test", "command"],
+		},
 	]
 
 	beforeEach(() => {
@@ -307,6 +315,16 @@ describe("MarketplaceViewStateManager", () => {
 			expect(state.activeTab).toBe("mode")
 		})
 
+		it("should switch to command tab", async () => {
+			await stateManager.transition({
+				type: "SET_ACTIVE_TAB",
+				payload: { tab: "command" },
+			})
+
+			const state = stateManager.getState()
+			expect(state.activeTab).toBe("command")
+		})
+
 		it("should preserve items when switching tabs", async () => {
 			// Load items first
 			const message = {
@@ -326,6 +344,29 @@ describe("MarketplaceViewStateManager", () => {
 			const state = stateManager.getState()
 			expect(state.activeTab).toBe("mode")
 			expect(state.allItems).toEqual(mockMarketplaceItems)
+			expect(state.displayItems).toEqual(mockMarketplaceItems)
+		})
+
+		it("should preserve items when switching to command tab", async () => {
+			// Load items first
+			const message = {
+				type: "state",
+				state: {
+					marketplaceItems: mockMarketplaceItems,
+				},
+			}
+			await stateManager.handleMessage(message)
+
+			// Switch to command tab
+			await stateManager.transition({
+				type: "SET_ACTIVE_TAB",
+				payload: { tab: "command" },
+			})
+
+			const state = stateManager.getState()
+			expect(state.activeTab).toBe("command")
+			expect(state.allItems).toEqual(mockMarketplaceItems)
+			// displayItems should include all items (filtering by type happens in the view)
 			expect(state.displayItems).toEqual(mockMarketplaceItems)
 		})
 	})

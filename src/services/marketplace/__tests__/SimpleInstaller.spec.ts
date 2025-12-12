@@ -15,6 +15,7 @@ vi.mock("fs/promises", () => ({
 	writeFile: vi.fn(),
 	mkdir: vi.fn(),
 	rm: vi.fn(),
+	unlink: vi.fn(),
 }))
 vi.mock("os")
 vi.mock("vscode", () => ({
@@ -343,6 +344,108 @@ describe("SimpleInstaller", () => {
 
 			await expect(installerWithoutManager.removeItem(mockModeItem, { target: "project" })).rejects.toThrow(
 				"CustomModesManager is not available",
+			)
+		})
+	})
+
+	describe("installCommand", () => {
+		const mockCommandItem: MarketplaceItem = {
+			id: "explain",
+			name: "Explain",
+			description: "Get a detailed explanation of code, concepts, or errors",
+			type: "command",
+			content: `---
+description: "Get a detailed explanation of code, concepts, or errors"
+argument-hint: "<code|concept|error>"
+---
+
+# Explain Request
+
+Please provide a comprehensive explanation of the following:
+
+**Input:** {args}`,
+		}
+
+		it("should install command to project .roo/commands/ directory", async () => {
+			mockFs.writeFile.mockResolvedValueOnce(undefined as any)
+
+			const result = await installer.installItem(mockCommandItem, { target: "project" })
+
+			expect(result.filePath).toBe(path.join("/test/workspace", ".roo", "commands", "explain.md"))
+			expect(mockFs.mkdir).toHaveBeenCalledWith(expect.stringContaining(path.join(".roo", "commands")), {
+				recursive: true,
+			})
+			expect(mockFs.writeFile).toHaveBeenCalledWith(result.filePath, mockCommandItem.content, "utf-8")
+		})
+
+		it("should install command to global commands directory", async () => {
+			mockFs.writeFile.mockResolvedValueOnce(undefined as any)
+
+			const result = await installer.installItem(mockCommandItem, { target: "global" })
+
+			expect(result.filePath).toContain("commands")
+			expect(result.filePath).toContain("explain.md")
+			expect(mockFs.mkdir).toHaveBeenCalledWith(expect.any(String), { recursive: true })
+			expect(mockFs.writeFile).toHaveBeenCalledWith(result.filePath, mockCommandItem.content, "utf-8")
+		})
+
+		it("should throw error for missing content", async () => {
+			const noContentCommand: MarketplaceItem = {
+				...mockCommandItem,
+				content: undefined as any,
+			}
+
+			await expect(installer.installItem(noContentCommand, { target: "project" })).rejects.toThrow(
+				"Command item missing content",
+			)
+		})
+
+		it("should throw error for array content in command", async () => {
+			const arrayContentCommand: MarketplaceItem = {
+				...mockCommandItem,
+				content: ["content1", "content2"] as any,
+			}
+
+			await expect(installer.installItem(arrayContentCommand, { target: "project" })).rejects.toThrow(
+				"Command item missing content",
+			)
+		})
+	})
+
+	describe("removeCommand", () => {
+		const mockCommandItem: MarketplaceItem = {
+			id: "explain",
+			name: "Explain",
+			description: "Get a detailed explanation of code, concepts, or errors",
+			type: "command",
+			content: "# Explain\n\nContent here",
+		}
+
+		it("should remove command file from project directory", async () => {
+			mockFs.unlink.mockResolvedValueOnce(undefined as any)
+
+			await installer.removeItem(mockCommandItem, { target: "project" })
+
+			expect(mockFs.unlink).toHaveBeenCalledWith(
+				expect.stringContaining(path.join(".roo", "commands", "explain.md")),
+			)
+		})
+
+		it("should not throw error if command file does not exist", async () => {
+			const notFoundError = new Error("File not found") as any
+			notFoundError.code = "ENOENT"
+			mockFs.unlink.mockRejectedValueOnce(notFoundError)
+
+			await expect(installer.removeItem(mockCommandItem, { target: "project" })).resolves.not.toThrow()
+		})
+
+		it("should throw error for other file system errors", async () => {
+			const permissionError = new Error("Permission denied") as any
+			permissionError.code = "EPERM"
+			mockFs.unlink.mockRejectedValueOnce(permissionError)
+
+			await expect(installer.removeItem(mockCommandItem, { target: "project" })).rejects.toThrow(
+				"Permission denied",
 			)
 		})
 	})

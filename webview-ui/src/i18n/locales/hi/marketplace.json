@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "इंस्टॉल किया गया",
 		"settings": "सेटिंग्स",
-		"browse": "ब्राउज़ करें"
+		"browse": "ब्राउज़ करें",
+		"slashCommands": "Slash Commands"
 	},
 	"done": "पूर्ण",
 	"refresh": "रिफ्रेश करें",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Marketplace आइटम खोजें...",
 			"placeholderMcp": "MCP खोजें...",
-			"placeholderMode": "मोड खोजें..."
+			"placeholderMode": "मोड खोजें...",
+			"placeholderCommand": "Slash Commands खोजें..."
 		},
 		"installed": {
 			"label": "स्थिति के अनुसार फ़िल्टर करें",
@@ -23,7 +25,8 @@
 			"label": "प्रकार के अनुसार फ़िल्टर करें:",
 			"all": "सभी प्रकार",
 			"mode": "मोड",
-			"mcpServer": "MCP सर्वर"
+			"mcpServer": "MCP सर्वर",
+			"slashCommand": "Slash Command"
 		},
 		"sort": {
 			"label": "इसके अनुसार क्रमबद्ध करें:",
@@ -89,6 +92,7 @@
 		"title": "{{name}} इंस्टॉल करें",
 		"titleMode": "{{name}} मोड इंस्टॉल करें",
 		"titleMcp": "{{name}} MCP इंस्टॉल करें",
+		"titleCommand": "{{name}} Slash Command इंस्टॉल करें",
 		"scope": "इंस्टॉलेशन स्कोप",
 		"project": "प्रोजेक्ट (वर्तमान वर्कस्पेस)",
 		"global": "ग्लोबल (सभी वर्कस्पेस)",
@@ -101,6 +105,7 @@
 		"installed": "सफलतापूर्वक इंस्टॉल किया गया!",
 		"whatNextMcp": "अब आप इस MCP सर्वर को कॉन्फ़िगर और उपयोग कर सकते हैं। टैब स्विच करने के लिए साइडबार में MCP आइकन पर क्लिक करें।",
 		"whatNextMode": "अब आप इस मोड का उपयोग कर सकते हैं। टैब स्विच करने के लिए साइडबार में मोड आइकन पर क्लिक करें।",
+		"whatNextCommand": "अब तुम चैट में /{{name}} टाइप करके इस slash command का उपयोग कर सकते हो।",
 		"done": "पूर्ण",
 		"goToMcp": "MCP टैब पर जाएं",
 		"goToModes": "मोड सेटिंग्स पर जाएं",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "MCP सर्वर हटाएं",
 			"message": "क्या आप वाकई MCP सर्वर \"{{mcpName}}\" को हटाना चाहते हैं?"
+		},
+		"command": {
+			"title": "Slash Command हटाएं",
+			"message": "क्या तुम निश्चित हो कि तुम \"{{commandName}}\" slash command को हटाना चाहते हो?"
 		},
 		"cancel": "रद्द करें",
 		"confirm": "हटाएं"

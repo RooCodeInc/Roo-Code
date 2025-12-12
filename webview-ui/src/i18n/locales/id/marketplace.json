@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Terinstal",
 		"settings": "Pengaturan",
-		"browse": "Jelajahi"
+		"browse": "Jelajahi",
+		"slashCommands": "Perintah Slash"
 	},
 	"done": "Selesai",
 	"refresh": "Refresh",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Cari item marketplace...",
 			"placeholderMcp": "Cari MCP...",
-			"placeholderMode": "Cari Mode..."
+			"placeholderMode": "Cari Mode...",
+			"placeholderCommand": "Cari perintah Slash..."
 		},
 		"installed": {
 			"label": "Filter berdasarkan status",
@@ -23,7 +25,8 @@
 			"label": "Filter berdasarkan tipe:",
 			"all": "Semua tipe",
 			"mode": "Mode",
-			"mcpServer": "Server MCP"
+			"mcpServer": "Server MCP",
+			"slashCommand": "Perintah Slash"
 		},
 		"sort": {
 			"label": "Urutkan berdasarkan:",
@@ -89,6 +92,7 @@
 		"title": "Instal {{name}}",
 		"titleMode": "Instal Mode {{name}}",
 		"titleMcp": "Instal MCP {{name}}",
+		"titleCommand": "Pasang Perintah Slash {{name}}",
 		"scope": "Cakupan Instalasi",
 		"project": "Proyek (workspace saat ini)",
 		"global": "Global (semua workspace)",
@@ -102,6 +106,7 @@
 		"installed": "Berhasil diinstal!",
 		"whatNextMcp": "Anda sekarang dapat mengkonfigurasi dan menggunakan server MCP ini. Klik ikon MCP di sidebar untuk beralih tab.",
 		"whatNextMode": "Anda sekarang dapat menggunakan mode ini. Klik ikon Mode di sidebar untuk beralih tab.",
+		"whatNextCommand": "Kamu sekarang bisa menggunakan perintah slash ini dengan mengetik /{{name}} di chat.",
 		"done": "Selesai",
 		"goToMcp": "Ke Tab MCP",
 		"goToModes": "Ke Pengaturan Mode",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "Hapus Server MCP",
 			"message": "Apakah Anda yakin ingin menghapus server MCP \"{{mcpName}}\"?"
+		},
+		"command": {
+			"title": "Hapus Perintah Slash",
+			"message": "Apakah Anda yakin ingin menghapus perintah slash \"{{commandName}}\"?"
 		},
 		"cancel": "Batal",
 		"confirm": "Hapus"

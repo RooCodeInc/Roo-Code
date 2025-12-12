@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Installati",
 		"settings": "Impostazioni",
-		"browse": "Sfoglia"
+		"browse": "Sfoglia",
+		"slashCommands": "Comandi Slash"
 	},
 	"done": "Fatto",
 	"refresh": "Aggiorna",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Cerca elementi del Marketplace...",
 			"placeholderMcp": "Cerca MCP...",
-			"placeholderMode": "Cerca modalità..."
+			"placeholderMode": "Cerca modalità...",
+			"placeholderCommand": "Cerca comandi Slash..."
 		},
 		"installed": {
 			"label": "Filtra per stato",
@@ -23,7 +25,8 @@
 			"label": "Filtra per tipo:",
 			"all": "Tutti i tipi",
 			"mode": "Modalità",
-			"mcpServer": "Server MCP"
+			"mcpServer": "Server MCP",
+			"slashCommand": "Comando Slash"
 		},
 		"sort": {
 			"label": "Ordina per:",
@@ -89,6 +92,7 @@
 		"title": "Installa {{name}}",
 		"titleMode": "Installa modalità {{name}}",
 		"titleMcp": "Installa MCP {{name}}",
+		"titleCommand": "Installa comando Slash {{name}}",
 		"scope": "Ambito di installazione",
 		"project": "Progetto (area di lavoro corrente)",
 		"global": "Globale (tutte le aree di lavoro)",
@@ -101,6 +105,7 @@
 		"installed": "Installato con successo!",
 		"whatNextMcp": "Ora puoi configurare e utilizzare questo server MCP. Clicca sull'icona MCP nella barra laterale per cambiare scheda.",
 		"whatNextMode": "Ora puoi utilizzare questa modalità. Clicca sull'icona delle modalità nella barra laterale per cambiare scheda.",
+		"whatNextCommand": "Ora puoi usare questo comando slash digitando /{{name}} nella chat.",
 		"done": "Fatto",
 		"goToMcp": "Vai alla scheda MCP",
 		"goToModes": "Vai alle impostazioni Modalità",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "Rimuovi server MCP",
 			"message": "Sei sicuro di voler rimuovere il server MCP \"{{mcpName}}\"?"
+		},
+		"command": {
+			"title": "Rimuovi comando Slash",
+			"message": "Sei sicuro di voler rimuovere il comando slash \"{{commandName}}\"?"
 		},
 		"cancel": "Annulla",
 		"confirm": "Rimuovi"

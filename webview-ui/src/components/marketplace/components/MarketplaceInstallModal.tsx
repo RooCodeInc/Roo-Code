@@ -218,7 +218,9 @@ export const MarketplaceInstallModal: React.FC<MarketplaceInstallModalProps> = (
 							? t("marketplace:install.successTitle", { name: item.name })
 							: item.type === "mcp"
 								? t("marketplace:install.titleMcp", { name: item.name })
-								: t("marketplace:install.titleMode", { name: item.name })}
+								: item.type === "command"
+									? t("marketplace:install.titleCommand", { name: item.name })
+									: t("marketplace:install.titleMode", { name: item.name })}
 					</DialogTitle>
 					<DialogDescription>
 						{installationComplete ? (
@@ -243,7 +245,9 @@ export const MarketplaceInstallModal: React.FC<MarketplaceInstallModalProps> = (
 							<p className="text-sm text-muted-foreground">
 								{item.type === "mcp"
 									? t("marketplace:install.whatNextMcp")
-									: t("marketplace:install.whatNextMode")}
+									: item.type === "command"
+										? t("marketplace:install.whatNextCommand", { name: item.id })
+										: t("marketplace:install.whatNextMode")}
 							</p>
 						</div>
 					</div>
@@ -365,11 +369,13 @@ export const MarketplaceInstallModal: React.FC<MarketplaceInstallModalProps> = (
 							<Button variant="outline" onClick={onClose}>
 								{t("marketplace:install.done")}
 							</Button>
-							<Button onClick={() => handlePostInstallAction(item.type === "mcp" ? "mcp" : "modes")}>
-								{item.type === "mcp"
-									? t("marketplace:install.goToMcp")
-									: t("marketplace:install.goToModes")}
-							</Button>
+							{item.type !== "command" && (
+								<Button onClick={() => handlePostInstallAction(item.type === "mcp" ? "mcp" : "modes")}>
+									{item.type === "mcp"
+										? t("marketplace:install.goToMcp")
+										: t("marketplace:install.goToModes")}
+								</Button>
+							)}
 						</>
 					) : (
 						<>

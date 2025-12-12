@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "已安裝",
 		"settings": "設定",
-		"browse": "瀏覽"
+		"browse": "瀏覽",
+		"slashCommands": "Slash 指令"
 	},
 	"done": "完成",
 	"refresh": "重新整理",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "搜尋市集項目...",
 			"placeholderMcp": "搜尋 MCP...",
-			"placeholderMode": "搜尋模式..."
+			"placeholderMode": "搜尋模式...",
+			"placeholderCommand": "搜尋 Slash 指令..."
 		},
 		"installed": {
 			"label": "按狀態篩選",
@@ -23,7 +25,8 @@
 			"label": "依類型篩選：",
 			"all": "所有類型",
 			"mode": "模式",
-			"mcpServer": "MCP 伺服器"
+			"mcpServer": "MCP 伺服器",
+			"slashCommand": "Slash 指令"
 		},
 		"sort": {
 			"label": "排序方式：",
@@ -89,6 +92,7 @@
 		"title": "安裝 {{name}}",
 		"titleMode": "安裝 {{name}} 模式",
 		"titleMcp": "安裝 {{name}} MCP",
+		"titleCommand": "安裝 {{name}} Slash 指令",
 		"scope": "安裝範圍",
 		"project": "專案（目前工作區）",
 		"global": "全域（所有工作區）",
@@ -102,6 +106,7 @@
 		"installed": "安裝成功！",
 		"whatNextMcp": "您現在可以設定和使用此 MCP 伺服器。點選側邊欄的 MCP 圖示來切換分頁。",
 		"whatNextMode": "您現在可以使用此模式。點選側邊欄的模式圖示來切換分頁。",
+		"whatNextCommand": "您現在可以在聊天中輸入 /{{name}} 來使用這個 Slash 指令。",
 		"done": "完成",
 		"goToMcp": "前往 MCP 分頁",
 		"goToModes": "前往模式設定",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "移除 MCP 伺服器",
 			"message": "您確定要移除 MCP 伺服器「{{mcpName}}」嗎？"
+		},
+		"command": {
+			"title": "移除 Slash 指令",
+			"message": "您確定要移除 Slash 指令「{{commandName}}」嗎？"
 		},
 		"cancel": "取消",
 		"confirm": "移除"

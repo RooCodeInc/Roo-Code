@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Đã cài đặt",
 		"settings": "Cài đặt",
-		"browse": "Duyệt"
+		"browse": "Duyệt",
+		"slashCommands": "Lệnh Slash"
 	},
 	"done": "Hoàn thành",
 	"refresh": "Làm mới",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Tìm kiếm các mục marketplace...",
 			"placeholderMcp": "Tìm kiếm MCP...",
-			"placeholderMode": "Tìm kiếm Chế độ..."
+			"placeholderMode": "Tìm kiếm Chế độ...",
+			"placeholderCommand": "Tìm kiếm lệnh Slash..."
 		},
 		"installed": {
 			"label": "Lọc theo trạng thái",
@@ -23,7 +25,8 @@
 			"label": "Lọc theo loại:",
 			"all": "Tất cả loại",
 			"mode": "Chế độ",
-			"mcpServer": "Máy chủ MCP"
+			"mcpServer": "Máy chủ MCP",
+			"slashCommand": "Lệnh Slash"
 		},
 		"sort": {
 			"label": "Sắp xếp theo:",
@@ -89,6 +92,7 @@
 		"title": "Cài đặt {{name}}",
 		"titleMode": "Cài đặt Chế độ {{name}}",
 		"titleMcp": "Cài đặt MCP {{name}}",
+		"titleCommand": "Cài đặt lệnh Slash {{name}}",
 		"scope": "Phạm vi cài đặt",
 		"project": "Dự án (không gian làm việc hiện tại)",
 		"global": "Toàn cục (tất cả không gian làm việc)",
@@ -101,6 +105,7 @@
 		"installed": "Cài đặt thành công!",
 		"whatNextMcp": "Bây giờ bạn có thể cấu hình và sử dụng máy chủ MCP này. Nhấp vào biểu tượng MCP trong thanh bên để chuyển tab.",
 		"whatNextMode": "Bây giờ bạn có thể sử dụng chế độ này. Nhấp vào biểu tượng Chế độ trong thanh bên để chuyển tab.",
+		"whatNextCommand": "Bây giờ bạn có thể sử dụng lệnh slash này bằng cách gõ /{{name}} trong trò chuyện.",
 		"done": "Hoàn thành",
 		"goToMcp": "Đi đến Tab MCP",
 		"goToModes": "Đi đến Cài đặt Chế độ",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "Xóa máy chủ MCP",
 			"message": "Bạn có chắc chắn muốn xóa máy chủ MCP \"{{mcpName}}\" không?"
+		},
+		"command": {
+			"title": "Xóa lệnh Slash",
+			"message": "Bạn có chắc chắn muốn xóa lệnh slash \"{{commandName}}\" không?"
 		},
 		"cancel": "Hủy",
 		"confirm": "Xóa"

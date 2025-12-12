@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Yüklü",
 		"settings": "Ayarlar",
-		"browse": "Gözat"
+		"browse": "Gözat",
+		"slashCommands": "Slash Komutları"
 	},
 	"done": "Tamamlandı",
 	"refresh": "Yenile",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Marketplace öğelerini ara...",
 			"placeholderMcp": "MCP'leri ara...",
-			"placeholderMode": "Modları ara..."
+			"placeholderMode": "Modları ara...",
+			"placeholderCommand": "Slash komutlarını ara..."
 		},
 		"installed": {
 			"label": "Duruma göre filtrele",
@@ -23,7 +25,8 @@
 			"label": "Türe göre filtrele:",
 			"all": "Tüm türler",
 			"mode": "Mod",
-			"mcpServer": "MCP Sunucusu"
+			"mcpServer": "MCP Sunucusu",
+			"slashCommand": "Slash Komutu"
 		},
 		"sort": {
 			"label": "Sırala:",
@@ -89,6 +92,7 @@
 		"title": "{{name}} Yükle",
 		"titleMode": "{{name}} Modunu Yükle",
 		"titleMcp": "{{name}} MCP'sini Yükle",
+		"titleCommand": "{{name}} Slash Komutunu Yükle",
 		"scope": "Yükleme Kapsamı",
 		"project": "Proje (mevcut çalışma alanı)",
 		"global": "Global (tüm çalışma alanları)",
@@ -101,6 +105,7 @@
 		"installed": "Başarıyla yüklendi!",
 		"whatNextMcp": "Artık bu MCP sunucusunu yapılandırabilir ve kullanabilirsiniz. Sekmeleri değiştirmek için kenar çubuğundaki MCP simgesine tıklayın.",
 		"whatNextMode": "Artık bu modu kullanabilirsiniz. Sekmeleri değiştirmek için kenar çubuğundaki Modlar simgesine tıklayın.",
+		"whatNextCommand": "Artık sohbette /{{name}} yazarak bu slash komutunu kullanabilirsin.",
 		"done": "Tamamlandı",
 		"goToMcp": "MCP Sekmesine Git",
 		"goToModes": "Modlar Ayarlarına Git",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "MCP Sunucusunu Kaldır",
 			"message": "\"{{mcpName}}\" MCP sunucusunu kaldırmak istediğinizden emin misiniz?"
+		},
+		"command": {
+			"title": "Slash Komutunu Kaldır",
+			"message": "\"{{commandName}}\" slash komutunu kaldırmak istediğine emin misin?"
 		},
 		"cancel": "İptal",
 		"confirm": "Kaldır"
