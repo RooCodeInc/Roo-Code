@@ -109,6 +109,7 @@ interface ChatRowProps {
 	onBatchFileResponse?: (response: { [key: string]: boolean }) => void
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
+	isFollowUpAutoApprovalPaused?: boolean
 	editable?: boolean
 	hasCheckpoint?: boolean
 }
@@ -162,6 +163,7 @@ export const ChatRowContent = ({
 	onFollowUpUnmount,
 	onBatchFileResponse,
 	isFollowUpAnswered,
+	isFollowUpAutoApprovalPaused,
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
@@ -1544,6 +1546,7 @@ export const ChatRowContent = ({
 									ts={message?.ts}
 									onCancelAutoApproval={onFollowUpUnmount}
 									isAnswered={isFollowUpAnswered}
+									isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
 								/>
 							</div>
 						</>

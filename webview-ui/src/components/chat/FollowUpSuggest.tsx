@@ -17,6 +17,7 @@ interface FollowUpSuggestProps {
 	ts: number
 	onCancelAutoApproval?: () => void
 	isAnswered?: boolean
+	isFollowUpAutoApprovalPaused?: boolean
 }
 
 export const FollowUpSuggest = ({
@@ -25,6 +26,7 @@ export const FollowUpSuggest = ({
 	ts = 1,
 	onCancelAutoApproval,
 	isAnswered = false,
+	isFollowUpAutoApprovalPaused = false,
 }: FollowUpSuggestProps) => {
 	const { autoApprovalEnabled, alwaysAllowFollowupQuestions, followupAutoApproveTimeoutMs } = useExtensionState()
 	const [countdown, setCountdown] = useState<number | null>(null)
@@ -34,13 +36,14 @@ export const FollowUpSuggest = ({
 	// Start countdown timer when auto-approval is enabled for follow-up questions
 	useEffect(() => {
 		// Only start countdown if auto-approval is enabled for follow-up questions and no suggestion has been selected
-		// Also stop countdown if the question has been answered
+		// Also stop countdown if the question has been answered or auto-approval is paused (user is typing)
 		if (
 			autoApprovalEnabled &&
 			alwaysAllowFollowupQuestions &&
 			suggestions.length > 0 &&
 			!suggestionSelected &&
-			!isAnswered
+			!isAnswered &&
+			!isFollowUpAutoApprovalPaused
 		) {
 			// Start with the configured timeout in seconds
 			const timeoutMs =
@@ -80,6 +83,7 @@ export const FollowUpSuggest = ({
 		suggestionSelected,
 		onCancelAutoApproval,
 		isAnswered,
+		isFollowUpAutoApprovalPaused,
 	])
 	const handleSuggestionClick = useCallback(
 		(suggestion: SuggestionItem, event: React.MouseEvent) => {
