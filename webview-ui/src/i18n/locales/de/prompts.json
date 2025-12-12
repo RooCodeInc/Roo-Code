@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Neue Aufgabe starten",
 				"description": "Starte eine neue Aufgabe mit deiner Eingabe. Verfügbar in der Befehlspalette."
+			},
+			"CREATE_PR": {
+				"label": "Pull Request erstellen",
+				"description": "Erzeuge Anweisungen zum Stagen, Überprüfen und Erstellen eines PR mit dem GitHub CLI. Du kannst diese Vorlage anpassen."
 			}
 		}
 	},

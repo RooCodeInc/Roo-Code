@@ -140,6 +140,10 @@
 			"NEW_TASK": {
 				"label": "Bắt đầu tác vụ mới",
 				"description": "Bắt đầu tác vụ mới với nội dung đã nhập. Có sẵn trong bảng lệnh."
+			},
+			"CREATE_PR": {
+				"label": "Tạo Pull Request",
+				"description": "Tạo hướng dẫn để chuẩn bị, xem xét và tạo một PR bằng GitHub CLI. Bạn có thể tùy chỉnh mẫu này."
 			}
 		}
 	},

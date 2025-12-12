@@ -227,6 +227,19 @@ describe("Code Action Prompts", () => {
 		})
 	})
 
+	describe("CREATE_PR prompt", () => {
+		it("should return default template when no custom prompts provided", () => {
+			const template = supportPrompt.get(undefined, "CREATE_PR")
+			expect(template).toBe(supportPrompt.default.CREATE_PR)
+		})
+
+		it("should create CREATE_PR prompt containing key instructions", () => {
+			const prompt = supportPrompt.create("CREATE_PR", {}, undefined)
+			expect(prompt).toContain("Stage and commit")
+			expect(prompt).toContain("gh pr create")
+		})
+	})
+
 	describe("create with custom prompts", () => {
 		it("should use custom template when provided", () => {
 			const customTemplate = "Custom template for ${filePath}"

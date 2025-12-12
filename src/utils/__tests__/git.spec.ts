@@ -12,6 +12,7 @@ import {
 	extractRepositoryName,
 	getWorkspaceGitInfo,
 	convertGitUrlToHttps,
+	isGitHubRepository,
 	getGitStatus,
 } from "../git"
 import { truncateOutput } from "../../integrations/misc/extract-text"
@@ -34,6 +35,7 @@ vitest.mock("fs", () => ({
 	promises: {
 		access: vitest.fn(),
 		readFile: vitest.fn(),
+		stat: vitest.fn(),
 	},
 }))
 
@@ -471,6 +473,12 @@ describe("getGitRepositoryInfo", () => {
 		// Mock successful access to .git directory
 		vitest.mocked(fs.promises.access).mockResolvedValue(undefined)
 
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
+
 		// Mock git config file content
 		const mockConfig = `
 [core]
@@ -525,6 +533,12 @@ describe("getGitRepositoryInfo", () => {
 		// Mock successful access to .git directory
 		vitest.mocked(fs.promises.access).mockResolvedValue(undefined)
 
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
+
 		// Mock git config file without URL
 		const mockConfig = `
 [core]
@@ -562,6 +576,12 @@ describe("getGitRepositoryInfo", () => {
 		// Mock successful access to .git directory
 		vitest.mocked(fs.promises.access).mockResolvedValue(undefined)
 
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
+
 		// Setup the readFile mock to return different values based on the path
 		gitSpy.mockImplementation((path: any, encoding: any) => {
 			if (path === configPath) {
@@ -588,6 +608,12 @@ describe("getGitRepositoryInfo", () => {
 
 		// Mock successful access to .git directory
 		vitest.mocked(fs.promises.access).mockResolvedValue(undefined)
+
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
 
 		// Setup the readFile mock to return different values based on the path
 		gitSpy.mockImplementation((path: any, encoding: any) => {
@@ -619,6 +645,12 @@ describe("getGitRepositoryInfo", () => {
 
 		// Mock successful access to .git directory
 		vitest.mocked(fs.promises.access).mockResolvedValue(undefined)
+
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
 
 		// Mock git config file with SSH URL
 		const mockConfig = `
@@ -654,6 +686,99 @@ describe("getGitRepositoryInfo", () => {
 			repositoryName: "RooCodeInc/Roo-Code",
 			defaultBranch: "main",
 		})
+	})
+
+	it("should handle git worktrees where .git is a file", async () => {
+		// Clear previous mocks
+		vitest.clearAllMocks()
+
+		// Create a spy to track the implementation
+		const accessSpy = vitest.spyOn(fs.promises, "access")
+		const statSpy = vitest.spyOn(fs.promises, "stat")
+		const readFileSpy = vitest.spyOn(fs.promises, "readFile")
+
+		// Mock successful access to .git file (not directory)
+		accessSpy.mockResolvedValue(undefined)
+
+		// Mock stat to indicate .git is a file (worktree)
+		statSpy.mockResolvedValue({
+			isFile: () => true,
+			isDirectory: () => false,
+		} as any)
+
+		// Mock .git file content (worktree reference)
+		const gitFileContent = "gitdir: /path/to/main/repo/.git/worktrees/my-worktree"
+
+		// Mock git config file content from the actual git directory
+		const mockConfig = `
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+[remote "origin"]
+	url = https://github.com/RooCodeInc/Roo-Code.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+`
+		// Mock HEAD file content
+		const mockHead = "ref: refs/heads/feature-branch"
+
+		// Setup the readFile mock to return different values based on the path
+		readFileSpy.mockImplementation((filePath: any, encoding: any) => {
+			const pathStr = String(filePath)
+			if (pathStr.endsWith(".git")) {
+				// Reading the .git file itself
+				return Promise.resolve(gitFileContent)
+			} else if (pathStr.includes("config")) {
+				return Promise.resolve(mockConfig)
+			} else if (pathStr.includes("HEAD")) {
+				return Promise.resolve(mockHead)
+			}
+			return Promise.reject(new Error(`Unexpected path: ${pathStr}`))
+		})
+
+		const result = await getGitRepositoryInfo(workspaceRoot)
+
+		// Verify that the worktree was handled correctly
+		expect(result).toEqual({
+			repositoryUrl: "https://github.com/RooCodeInc/Roo-Code.git",
+			repositoryName: "RooCodeInc/Roo-Code",
+			defaultBranch: "main",
+		})
+
+		// Verify the .git file was read
+		expect(statSpy).toHaveBeenCalledWith(gitDir)
+		expect(readFileSpy).toHaveBeenCalledWith(gitDir, "utf8")
+	})
+
+	it("should return empty object if .git file has invalid format", async () => {
+		// Clear previous mocks
+		vitest.clearAllMocks()
+
+		// Create a spy to track the implementation
+		const accessSpy = vitest.spyOn(fs.promises, "access")
+		const statSpy = vitest.spyOn(fs.promises, "stat")
+		const readFileSpy = vitest.spyOn(fs.promises, "readFile")
+
+		// Mock successful access to .git file
+		accessSpy.mockResolvedValue(undefined)
+
+		// Mock stat to indicate .git is a file (worktree)
+		statSpy.mockResolvedValue({
+			isFile: () => true,
+			isDirectory: () => false,
+		} as any)
+
+		// Mock invalid .git file content
+		const gitFileContent = "invalid content without gitdir"
+
+		readFileSpy.mockResolvedValue(gitFileContent)
+
+		const result = await getGitRepositoryInfo(workspaceRoot)
+
+		expect(result).toEqual({})
 	})
 })
 
@@ -775,6 +900,60 @@ describe("extractRepositoryName", () => {
 	})
 })
 
+describe("isGitHubRepository", () => {
+	it("should return true for github.com HTTPS URLs", () => {
+		expect(isGitHubRepository("https://github.com/user/repo.git")).toBe(true)
+		expect(isGitHubRepository("https://github.com/user/repo")).toBe(true)
+	})
+
+	it("should return true for github.com SSH URLs", () => {
+		expect(isGitHubRepository("git@github.com:user/repo.git")).toBe(true)
+		expect(isGitHubRepository("ssh://git@github.com/user/repo.git")).toBe(true)
+	})
+
+	it("should return true for GitHub URLs with different casing", () => {
+		expect(isGitHubRepository("https://GitHub.com/user/repo.git")).toBe(true)
+		expect(isGitHubRepository("https://GITHUB.COM/user/repo.git")).toBe(true)
+	})
+
+	it("should return true for GitHub subdomains", () => {
+		expect(isGitHubRepository("https://gist.github.com/user/repo")).toBe(true)
+		expect(isGitHubRepository("https://api.github.com/repos/user/repo")).toBe(true)
+		expect(isGitHubRepository("git@gist.github.com:user/repo.git")).toBe(true)
+	})
+
+	it("should return false for non-GitHub URLs", () => {
+		expect(isGitHubRepository("https://gitlab.com/user/repo.git")).toBe(false)
+		expect(isGitHubRepository("https://bitbucket.org/user/repo.git")).toBe(false)
+		expect(isGitHubRepository("git@gitlab.com:user/repo.git")).toBe(false)
+	})
+
+	it("should return false for malicious URLs with github.com in hostname", () => {
+		// Security: These URLs have "github.com" as part of the hostname but are not GitHub
+		expect(isGitHubRepository("https://malicious-github.com/user/repo.git")).toBe(false)
+		expect(isGitHubRepository("https://github.com.evil.com/user/repo.git")).toBe(false)
+		expect(isGitHubRepository("https://fake-github.com/user/repo.git")).toBe(false)
+		expect(isGitHubRepository("git@malicious-github.com:user/repo.git")).toBe(false)
+		expect(isGitHubRepository("ssh://git@github.com.evil.com/user/repo.git")).toBe(false)
+	})
+
+	it("should return false for URLs with github.com in the path", () => {
+		// Security: These URLs have "github.com" in the path but not as the hostname
+		expect(isGitHubRepository("https://evil.com/github.com/malicious/repo.git")).toBe(false)
+		expect(isGitHubRepository("https://attacker.com/fake/github.com/path")).toBe(false)
+		expect(isGitHubRepository("git@evil.com:github.com/user/repo.git")).toBe(false)
+	})
+
+	it("should return false for undefined or empty URLs", () => {
+		expect(isGitHubRepository(undefined)).toBe(false)
+		expect(isGitHubRepository("")).toBe(false)
+	})
+
+	it("should handle sanitized GitHub URLs", () => {
+		expect(isGitHubRepository("https://github.com/user/repo")).toBe(true)
+	})
+})
+
 describe("getWorkspaceGitInfo", () => {
 	const workspaceRoot = "/test/workspace"
 
@@ -804,6 +983,12 @@ describe("getWorkspaceGitInfo", () => {
 
 		// Mock successful access to .git directory
 		gitSpy.mockResolvedValue(undefined)
+
+		// Mock stat to indicate .git is a directory (not a worktree file)
+		vitest.mocked(fs.promises.stat).mockResolvedValue({
+			isFile: () => false,
+			isDirectory: () => true,
+		} as any)
 
 		// Mock git config file content
 		const mockConfig = `

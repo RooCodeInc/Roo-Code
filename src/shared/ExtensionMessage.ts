@@ -358,6 +358,8 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	isGitRepository: boolean
+	isGithubRepository: boolean
 	debug?: boolean
 }
 
