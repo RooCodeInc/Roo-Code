@@ -101,10 +101,11 @@ export const ErrorRow = memo(
 			if (!errorDetails) return undefined
 
 			const metadata = [
+				`Date/time: ${new Date().toISOString()}`,
 				`Extension version: ${version}`,
 				`Provider: ${provider}`,
 				`Model: ${modelId}`,
-				`Repository: RooCodeInc/Roo-Code`,
+				"",
 				"",
 			].join("\n")
 
@@ -233,7 +234,7 @@ export const ErrorRow = memo(
 										<TooltipTrigger asChild>
 											<button
 												onClick={() => setIsDetailsDialogOpen(true)}
-												className="transition-opacity opacity-0 group-hover:opacity-100 cursor-pointer"
+												className="transition-opacity opacity-30 group-hover:opacity-100 cursor-pointer"
 												aria-label={t("chat:errorDetails.title")}>
 												<Info className="size-4" />
 											</button>
