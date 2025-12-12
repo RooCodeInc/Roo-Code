@@ -327,7 +327,146 @@ export const webviewMessageHandler = async (
 				}
 			}
 
-			// For non-checkpoint edits, remove the ORIGINAL user message being edited and all subsequent messages
+			// Check if this is a tool_result message in the API history
+			// A tool_result message is a user message containing tool_result blocks
+			// We need to edit it in place to preserve the tool_use_id
+			//
+			// IMPORTANT: clineMessages and apiConversationHistory have DIFFERENT timestamps
+			// for the same logical message. We can't rely on timestamp matching.
+			// Instead, if the clineMessage is user_feedback (responding to a tool like attempt_completion),
+			// we find the corresponding API message by looking for user messages with tool_result blocks.
+			let apiMessageIndex = apiConversationHistoryIndex
+			let apiMessage: ApiMessage | undefined =
+				apiConversationHistoryIndex !== -1
+					? currentCline.apiConversationHistory[apiConversationHistoryIndex]
+					: undefined
+
+			// If timestamp lookup failed, but target is user_feedback, search for tool_result by position
+			if (apiMessageIndex === -1 && targetMessage.say === "user_feedback") {
+				// Find position of this user_feedback in the clineMessages sequence
+				// Count how many user_feedback messages come before this one
+				let userFeedbackPosition = 0
+				for (let i = 0; i < messageIndex; i++) {
+					if (currentCline.clineMessages[i].say === "user_feedback") {
+						userFeedbackPosition++
+					}
+				}
+
+				// Find the corresponding tool_result user message in API history
+				// Count tool_result user messages until we reach the same position
+				let toolResultCount = 0
+				for (let i = 0; i < currentCline.apiConversationHistory.length; i++) {
+					const msg = currentCline.apiConversationHistory[i]
+					if (
+						msg.role === "user" &&
+						Array.isArray(msg.content) &&
+						msg.content.some((block: any) => block.type === "tool_result")
+					) {
+						if (toolResultCount === userFeedbackPosition) {
+							apiMessageIndex = i
+							apiMessage = msg
+							break
+						}
+						toolResultCount++
+					}
+				}
+			}
+
+			const isToolResultMessage =
+				apiMessage?.role === "user" &&
+				Array.isArray(apiMessage.content) &&
+				apiMessage.content.some((block: any) => block.type === "tool_result")
+
+			if (isToolResultMessage && apiMessageIndex !== -1 && apiMessage) {
+				// IN-PLACE EDIT: Preserve tool_use_id by editing content directly
+				// This is critical for native tool protocol - creating a new message would pick up the wrong tool_use_id
+				const apiMessageContent = apiMessage.content as any[]
+
+				// Update only the first tool_result content while preserving tool_use_id
+				// Important: If multiple tool_result blocks exist, we only update the first one
+				// to avoid overwriting unrelated tool results with the same content
+				for (const block of apiMessageContent) {
+					if (block.type === "tool_result") {
+						// Update the content - preserve images if they exist
+						if (images && images.length > 0) {
+							// Create content array with text and images
+							const newContent: any[] = [{ type: "text", text: editedContent }]
+							for (const image of images) {
+								newContent.push({
+									type: "image",
+									source: {
+										type: "base64",
+										media_type: "image/png",
+										data: image.replace(/^data:image\/\w+;base64,/, ""),
+									},
+								})
+							}
+							block.content = newContent
+						} else {
+							block.content = editedContent
+						}
+						// Only update the first tool_result block, then exit the loop
+						break
+					}
+				}
+
+				// Also update the corresponding clineMessage
+				if (targetMessage) {
+					targetMessage.text = editedContent
+					targetMessage.images = images
+				}
+
+				// Delete only messages AFTER the edited one (not including it)
+				const deleteFromClineIndex = messageIndex + 1
+				const deleteFromApiIndex = apiMessageIndex + 1
+
+				// Store checkpoints from messages that will be preserved (including the edited message)
+				const preservedCheckpoints = new Map<number, any>()
+				for (let i = 0; i <= messageIndex; i++) {
+					const msg = currentCline.clineMessages[i]
+					if (msg?.checkpoint && msg.ts) {
+						preservedCheckpoints.set(msg.ts, msg.checkpoint)
+					}
+				}
+
+				// Delete only subsequent messages and clean up orphaned references
+				// This mirrors the cleanup logic in removeMessagesThisAndSubsequent
+				if (deleteFromClineIndex < currentCline.clineMessages.length) {
+					await currentCline.overwriteClineMessages(currentCline.clineMessages.slice(0, deleteFromClineIndex))
+				}
+				if (deleteFromApiIndex < currentCline.apiConversationHistory.length) {
+					// Truncate API history and clean up orphaned condenseParent/truncationParent references
+					// This ensures messages that reference now-deleted summaries or truncation markers
+					// don't have dangling references
+					const truncatedApiHistory = currentCline.apiConversationHistory.slice(0, deleteFromApiIndex)
+					const cleanedApiHistory = cleanupAfterTruncation(truncatedApiHistory)
+					await currentCline.overwriteApiConversationHistory(cleanedApiHistory)
+				}
+
+				// Restore checkpoint associations
+				for (const [ts, checkpoint] of preservedCheckpoints) {
+					const msgIndex = currentCline.clineMessages.findIndex((msg) => msg.ts === ts)
+					if (msgIndex !== -1) {
+						currentCline.clineMessages[msgIndex].checkpoint = checkpoint
+					}
+				}
+
+				// Save changes
+				await saveTaskMessages({
+					messages: currentCline.clineMessages,
+					taskId: currentCline.taskId,
+					globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+				})
+
+				// Update UI
+				await provider.postStateToWebview()
+
+				// Resume the task loop - the edited message is already in history with preserved tool_use_id
+				await currentCline.resumeAfterMessageEdit()
+				return
+			}
+
+			// Remove the ORIGINAL user message being edited and all subsequent messages
 			// Determine the correct starting index to delete from (prefer the last preceding user_feedback message)
 			let deleteFromMessageIndex = messageIndex
 			let deleteFromApiIndex = apiConversationHistoryIndex
