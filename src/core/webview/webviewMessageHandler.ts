@@ -1542,6 +1542,56 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "submitEditedSubtask": {
+			// Handle editing of subtask instructions
+			const currentCline = provider.getCurrentTask()
+			if (currentCline && message.messageTs && message.editedSubtaskContent) {
+				// Find the message with the newTask tool
+				const messageIndex = currentCline.clineMessages.findIndex(
+					(msg: ClineMessage) => msg.ts === message.messageTs,
+				)
+
+				if (messageIndex !== -1) {
+					const targetMessage = currentCline.clineMessages[messageIndex]
+
+					// Parse the tool content to update it
+					if (targetMessage.ask === "tool" && targetMessage.text) {
+						try {
+							const tool = JSON.parse(targetMessage.text)
+							if (tool.tool === "newTask") {
+								// Update the content with the edited subtask instructions
+								tool.content = message.editedSubtaskContent
+
+								// Update the message with the new content
+								currentCline.clineMessages[messageIndex].text = JSON.stringify(tool)
+
+								// Save the updated messages
+								await saveTaskMessages({
+									messages: currentCline.clineMessages,
+									taskId: currentCline.taskId,
+									globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+								})
+
+								// Update the UI to reflect the changes
+								await provider.postStateToWebview()
+
+								// Now approve the subtask with the edited content
+								// This simulates the user clicking "Approve" after editing
+								currentCline.handleWebviewAskResponse("yesButtonClicked")
+							}
+						} catch (error) {
+							console.error("Error updating subtask instructions:", error)
+							vscode.window.showErrorMessage(
+								t("common:errors.message.error_editing_subtask", {
+									error: error instanceof Error ? error.message : String(error),
+								}),
+							)
+						}
+					}
+				}
+			}
+			break
+		}
 
 		case "hasOpenedModeSelector":
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
