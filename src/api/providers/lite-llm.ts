@@ -153,11 +153,34 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			let lastUsage
 
 			for await (const chunk of completion) {
-				const delta = chunk.choices[0]?.delta
+				// Handle chunks that might not have choices array (e.g., usage-only chunks)
+				const delta = chunk.choices?.[0]?.delta
 				const usage = chunk.usage as LiteLLMUsage
 
-				if (delta?.content) {
-					yield { type: "text", text: delta.content }
+				// Check for reasoning/thinking content in the delta
+				// LiteLLM may pass through reasoning content from underlying models
+				if (delta) {
+					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+						yield { type: "reasoning", text: delta.reasoning }
+					}
+
+					// Also check for thinking content (alternative field name)
+					if ("thinking" in delta && delta.thinking && typeof delta.thinking === "string") {
+						yield { type: "reasoning", text: delta.thinking }
+					}
+
+					// Check for reasoning_content (another possible field name)
+					if (
+						"reasoning_content" in delta &&
+						delta.reasoning_content &&
+						typeof delta.reasoning_content === "string"
+					) {
+						yield { type: "reasoning", text: delta.reasoning_content }
+					}
+
+					if (delta.content) {
+						yield { type: "text", text: delta.content }
+					}
 				}
 
 				// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
