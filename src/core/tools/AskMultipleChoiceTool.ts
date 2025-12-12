@@ -63,7 +63,9 @@ export class AskMultipleChoiceTool extends BaseTool<"ask_multiple_choice"> {
 
 			// Validate required fields: id and prompt
 			if (!q.id) {
-				throw new Error(`Question #${questionIndex} must have an id`)
+				throw new Error(
+					`Question #${questionIndex} must have a valid id following this exact format: <question>\n<id>question_slug</id>\n<prompt>Question text</prompt></question>`,
+				)
 			}
 
 			if (!q.prompt) {
@@ -88,11 +90,15 @@ export class AskMultipleChoiceTool extends BaseTool<"ask_multiple_choice"> {
 				const optionIndex = j + 1
 
 				if (!opt.id) {
-					throw new Error(`Question "${q.id}", option #${optionIndex} must have an id`)
+					throw new Error(
+						`Question "${q.id}", option #${optionIndex} must have a valid id following this exact format: <option>\n<id>option_slug_1</id>\n<label>Option 1 Label</label></option>`,
+					)
 				}
 
 				if (!opt.label) {
-					throw new Error(`Question "${q.id}", option "${opt.id}" must have a label`)
+					throw new Error(
+						`Question "${q.id}", option "${opt.id}" must have a valid id following this exact format: <option>\n<id>option_slug_1</id>\n<label>Option 1 Label</label></option>`,
+					)
 				}
 
 				options.push({

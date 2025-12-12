@@ -8,6 +8,7 @@ import { ClineProvider } from "../../webview/ClineProvider"
 import { TelemetryService } from "@roo-code/telemetry"
 import { ZgsmAuthConfig } from "../auth"
 import { getClientId } from "../../../utils/getClientId"
+import { ProviderSettings } from "@roo-code/types"
 
 export interface IErrorMap {
 	[code: string]: {
@@ -213,7 +214,7 @@ export class ErrorCodeManager {
 	 * @param apiConfiguration api config
 	 * @returns string
 	 */
-	private async handleInsufficientQuotaError(apiConfiguration: any): Promise<string> {
+	private async handleInsufficientQuotaError(apiConfiguration: ProviderSettings): Promise<string> {
 		const hash = await this.hashToken(apiConfiguration.zgsmAccessToken || "")
 		const baseurl = apiConfiguration.zgsmBaseUrl || ZgsmAuthConfig.getInstance().getDefaultLoginBaseUrl()
 

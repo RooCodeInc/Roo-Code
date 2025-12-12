@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from "react"
 import ReactMarkdown from "react-markdown"
+import rehypeSanitize from "rehype-sanitize"
 import styled from "styled-components"
 import { visit } from "unist-util-visit"
 import rehypeKatex from "rehype-katex"
@@ -304,30 +305,39 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 		[],
 	)
 
-	return (
-		<StyledMarkdown>
-			<ReactMarkdown
-				remarkPlugins={[
-					remarkGfm,
-					remarkMath,
-					() => {
-						return (tree: any) => {
-							visit(tree, "code", (node: any) => {
-								if (!node.lang) {
-									node.lang = "text"
-								} else if (node.lang.includes(".")) {
-									node.lang = node.lang.split(".").slice(-1)[0]
-								}
-							})
-						}
-					},
-				]}
-				rehypePlugins={[rehypeRaw, rehypeKatex as any]}
-				components={components}>
-				{markdown || ""}
-			</ReactMarkdown>
-		</StyledMarkdown>
-	)
+	try {
+		return (
+			<StyledMarkdown>
+				<ReactMarkdown
+					remarkPlugins={[
+						remarkGfm,
+						remarkMath,
+						() => {
+							return (tree: any) => {
+								visit(tree, "code", (node: any) => {
+									if (!node.lang) {
+										node.lang = "text"
+									} else if (node.lang.includes(".")) {
+										node.lang = node.lang.split(".").slice(-1)[0]
+									}
+								})
+							}
+						},
+					]}
+					rehypePlugins={[rehypeRaw, rehypeKatex as any, rehypeSanitize]}
+					components={components}>
+					{markdown || ""}
+				</ReactMarkdown>
+			</StyledMarkdown>
+		)
+	} catch (error) {
+		console.error("Markdown render failed, fallback to text:", error)
+		return <pre style={{ whiteSpace: "pre-wrap" }}>{safePlainText(markdown || "")}</pre>
+	}
 })
 
 export default MarkdownBlock
+
+function safePlainText(str: string) {
+	return str.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/&/g, "&amp;")
+}

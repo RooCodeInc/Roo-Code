@@ -1,5 +1,22 @@
 # CoStrict Change Log
 
+## [2.0.27]
+
+- Add tool result ID validation and fix mechanism to prevent ID mismatch issues in API requests
+- Enhance maxTokens handling in ZgsmAiHandler and SettingsView components
+- Improve code review event handling to prevent duplicate completions
+- Optimize code review mode handling using reset functions for task completion and error states
+- Enhance task error handling by including request IDs in streaming failure messages
+- Add /dotest shortcut command and update mode configuration
+- Reduce maximum non-busy terminal count from 5 to 3
+- Fix disable handling logic in reasoning budget component
+- Unify webview panel identifiers using consistent tabPanelId
+- Add minimum and medium reasoning effort levels for Gemini
+- Filter out non-Anthropic content blocks sent to Vertex API
+- Fix test cases in terminal registry to adapt to new terminal limits
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/f97b5155ac16290865af3016e2b7512e4bc9a389)
+- Fix known issues
+
 ## [2.0.26]
 
 - Add multiple-choice question tool for structured user input collection
