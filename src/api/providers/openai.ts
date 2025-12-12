@@ -1,6 +1,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI, { AzureOpenAI } from "openai"
 import axios from "axios"
+import * as https from "https"
+import * as http from "http"
 
 import {
 	type ModelInfo,
@@ -13,6 +15,7 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { XmlMatcher } from "../../utils/xml-matcher"
+import { isWSL } from "../../utils/wsl-detection"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -51,6 +54,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		const timeout = getApiRequestTimeout()
 
+		// Create custom httpAgent for WSL2 environments to handle SSL certificate issues
+		// WSL2 often has SSL certificate verification issues with certain APIs
+		const httpAgent = this._createHttpAgent(baseURL)
+
 		if (isAzureAiInference) {
 			// Azure AI Inference Service (e.g., for DeepSeek) uses a different path structure
 			this.client = new OpenAI({
@@ -59,7 +66,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				defaultHeaders: headers,
 				defaultQuery: { "api-version": this.options.azureApiVersion || "2024-05-01-preview" },
 				timeout,
-			})
+				// @ts-ignore - httpAgent is supported at runtime but not in types
+				httpAgent,
+			} as any)
 		} else if (isAzureOpenAi) {
 			// Azure API shape slightly differs from the core API shape:
 			// https://github.com/openai/openai-node?tab=readme-ov-file#microsoft-azure-openai
@@ -69,14 +78,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
 				defaultHeaders: headers,
 				timeout,
-			})
+				// @ts-ignore - httpAgent is supported at runtime but not in types
+				httpAgent,
+			} as any)
 		} else {
 			this.client = new OpenAI({
 				baseURL,
 				apiKey,
 				defaultHeaders: headers,
 				timeout,
-			})
+				// @ts-ignore - httpAgent is supported at runtime but not in types
+				httpAgent,
+			} as any)
 		}
 	}
 
@@ -512,6 +525,37 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Use user-configured modelMaxTokens if available, otherwise fall back to model's default maxTokens
 			// Using max_completion_tokens as max_tokens is deprecated
 			requestOptions.max_completion_tokens = this.options.modelMaxTokens || modelInfo.maxTokens
+		}
+	}
+
+	/**
+	 * Creates an HTTP/HTTPS agent with appropriate SSL configuration for the environment.
+	 * In WSL2 environments, SSL certificate verification can fail due to certificate store issues.
+	 * This method creates an agent that can handle these scenarios appropriately.
+	 *
+	 * @param baseURL - The base URL to determine if HTTPS is needed
+	 * @returns HTTP/HTTPS agent or undefined if default behavior is desired
+	 */
+	private _createHttpAgent(baseURL: string): https.Agent | http.Agent | undefined {
+		// Only create custom agent in WSL environments
+		if (!isWSL()) {
+			return undefined
+		}
+
+		const isHttps = baseURL.startsWith("https://")
+
+		if (isHttps) {
+			// In WSL2, we may need to disable SSL verification for certain APIs
+			// This is a known issue with WSL2 certificate stores
+			// See: https://github.com/microsoft/WSL/issues/8022
+			return new https.Agent({
+				rejectUnauthorized: false,
+				keepAlive: true,
+			})
+		} else {
+			return new http.Agent({
+				keepAlive: true,
+			})
 		}
 	}
 }
