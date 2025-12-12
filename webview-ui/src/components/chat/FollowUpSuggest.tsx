@@ -116,11 +116,13 @@ export const FollowUpSuggest = ({
 							aria-label={suggestion.answer}>
 							{suggestion.answer}
 							{isFirstSuggestion && countdown !== null && !suggestionSelected && !isAnswered && (
-								<span
-									className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-vscode-badge-background text-vscode-badge-foreground"
-									title={t("chat:followUpSuggest.autoSelectCountdown", { count: countdown })}>
-									{t("chat:followUpSuggest.countdownDisplay", { count: countdown })}
-								</span>
+								<StandardTooltip content={t("chat:followUpSuggest.timerTooltip")}>
+									<span
+										className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-vscode-badge-background text-vscode-badge-foreground"
+										title={t("chat:followUpSuggest.autoSelectCountdown", { count: countdown })}>
+										{t("chat:followUpSuggest.countdownDisplay", { count: countdown })}
+									</span>
+								</StandardTooltip>
 							)}
 						</Button>
 						{suggestion.mode && (

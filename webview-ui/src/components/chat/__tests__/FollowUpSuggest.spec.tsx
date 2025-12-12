@@ -18,6 +18,9 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 			if (key === "chat:followUpSuggest.copyToInput") {
 				return "Copy to input"
 			}
+			if (key === "chat:followUpSuggest.timerTooltip") {
+				return "Timer shown because Auto-Approve is enabled for Question"
+			}
 			return key
 		},
 	}),
