@@ -822,5 +822,31 @@ describe("filterMcpToolsForMode", () => {
 			expect(toolNames).toContain("search_and_replace") // Included
 			expect(toolNames).not.toContain("apply_diff") // Excluded
 		})
+
+		it("should rename tools to alias names when model includes aliases", () => {
+			const codeMode: ModeConfig = {
+				slug: "code",
+				name: "Code",
+				roleDefinition: "Test",
+				groups: ["read", "edit", "browser", "command", "mcp"] as const,
+			}
+
+			const modelInfo: ModelInfo = {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				includedTools: ["edit_file", "write_file"],
+			}
+
+			const filtered = filterNativeToolsForMode(mockNativeTools, "code", [codeMode], {}, undefined, {
+				modelInfo,
+			})
+
+			const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
+
+			expect(toolNames).toContain("edit_file")
+			expect(toolNames).toContain("write_file")
+			expect(toolNames).not.toContain("apply_diff")
+			expect(toolNames).not.toContain("write_to_file")
+		})
 	})
 })

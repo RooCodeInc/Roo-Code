@@ -221,6 +221,16 @@ export function filterNativeToolsForMode(
 	// Resolve any aliases to canonical tool names for execution-time filtering
 	allowedToolNames = applyToolAliases(allowedToolNames)
 
+	// Register alias renames for tools that are allowed and explicitly requested as aliases
+	if (modelInfo?.includedTools && modelInfo.includedTools.length > 0) {
+		for (const includedTool of modelInfo.includedTools) {
+			const canonical = resolveToolAlias(includedTool)
+			if (canonical !== includedTool && allowedToolNames.has(canonical)) {
+				aliasRenames.set(canonical, includedTool)
+			}
+		}
+	}
+
 	// Conditionally exclude codebase_search if feature is disabled or not configured
 	if (
 		!codeIndexManager ||
