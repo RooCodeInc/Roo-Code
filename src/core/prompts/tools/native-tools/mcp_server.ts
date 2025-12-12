@@ -1,5 +1,6 @@
 import type OpenAI from "openai"
 import { McpHub } from "../../../../services/mcp/McpHub"
+import { McpToolRegistry } from "../../../../services/mcp/McpToolRegistry"
 
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
@@ -30,8 +31,8 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			const toolInputRequired = (originalSchema?.required ?? []) as string[]
 
 			// Build parameters directly from the tool's input schema.
-			// The server_name and tool_name are encoded in the function name itself
-			// (e.g., mcp_serverName_toolName), so they don't need to be in the arguments.
+			// The server_name and tool_name are registered in McpToolRegistry,
+			// which returns an API-compatible name (e.g., mcp_0, mcp_1).
 			const parameters: OpenAI.FunctionParameters = {
 				type: "object",
 				properties: toolInputProps,
@@ -43,11 +44,13 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 				parameters.required = toolInputRequired
 			}
 
-			// Use mcp_ prefix to identify dynamic MCP tools
+			// Register tool in McpToolRegistry to get an API-compatible name.
+			// This avoids issues with dots in MCP tool names (e.g., "agent.describe")
+			// which violate Bedrock's [a-zA-Z0-9_-]+ constraint.
 			const toolDefinition: OpenAI.Chat.ChatCompletionTool = {
 				type: "function",
 				function: {
-					name: `mcp_${server.name}_${tool.name}`,
+					name: McpToolRegistry.register(server.name, tool.name),
 					description: tool.description,
 					parameters: parameters,
 				},

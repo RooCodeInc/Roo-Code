@@ -13,6 +13,7 @@ import type {
 	ApiStreamToolCallDeltaChunk,
 	ApiStreamToolCallEndChunk,
 } from "../../api/transform/stream"
+import { McpToolRegistry } from "../../services/mcp/McpToolRegistry"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -811,12 +812,12 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Parse dynamic MCP tools (named mcp_serverName_toolName).
-	 * These are generated dynamically by getMcpServerTools() and are returned
-	 * as McpToolUse objects that preserve the original tool name.
+	 * Parse dynamic MCP tools (named mcp_0, mcp_1, etc.).
+	 * These are generated dynamically by getMcpServerTools() using McpToolRegistry
+	 * and are returned as McpToolUse objects that preserve the original tool name.
 	 *
 	 * In native mode, MCP tools are NOT converted to use_mcp_tool - they keep
-	 * their original name so it appears correctly in API conversation history.
+	 * their registry name so it appears correctly in API conversation history.
 	 * The use_mcp_tool wrapper is only used in XML mode.
 	 */
 	public static parseDynamicMcpTool(toolCall: { id: string; name: string; arguments: string }): McpToolUse | null {
@@ -824,27 +825,19 @@ export class NativeToolCallParser {
 			// Parse the arguments - these are the actual tool arguments passed directly
 			const args = JSON.parse(toolCall.arguments || "{}")
 
-			// Extract server_name and tool_name from the tool name itself
-			// Format: mcp_serverName_toolName
-			const nameParts = toolCall.name.split("_")
-			if (nameParts.length < 3 || nameParts[0] !== "mcp") {
-				console.error(`Invalid dynamic MCP tool name format: ${toolCall.name}`)
+			// Look up the original server/tool names from the registry
+			const entry = McpToolRegistry.lookup(toolCall.name)
+			if (!entry) {
+				console.error(`Unknown MCP tool (not in registry): ${toolCall.name}`)
 				return null
 			}
 
-			// Server name is the second part, tool name is everything after
-			const serverName = nameParts[1]
-			const toolName = nameParts.slice(2).join("_")
-
-			if (!serverName || !toolName) {
-				console.error(`Could not extract server_name or tool_name from: ${toolCall.name}`)
-				return null
-			}
+			const { serverName, toolName } = entry
 
 			const result: McpToolUse = {
 				type: "mcp_tool_use" as const,
 				id: toolCall.id,
-				// Keep the original tool name (e.g., "mcp_serverName_toolName") for API history
+				// Keep the API name (e.g., "mcp_0") for API history
 				name: toolCall.name,
 				serverName,
 				toolName,

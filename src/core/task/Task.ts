@@ -76,6 +76,7 @@ import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { BrowserSession } from "../../services/browser/BrowserSession"
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
+import { McpToolRegistry } from "../../services/mcp/McpToolRegistry"
 import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 // integrations
@@ -2405,6 +2406,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Clear any leftover streaming tool call state from previous interrupted streams
 				NativeToolCallParser.clearAllStreamingToolCalls()
 				NativeToolCallParser.clearRawChunkState()
+				// Clear MCP tool registry to ensure fresh mappings for this request
+				McpToolRegistry.clear()
 
 				await this.diffViewProvider.reset()
 
