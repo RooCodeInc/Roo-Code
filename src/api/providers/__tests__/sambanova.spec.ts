@@ -113,7 +113,7 @@ describe("SambaNovaHandler", () => {
 		expect(firstChunk.value).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 20 })
 	})
 
-	it("createMessage should pass correct parameters to SambaNova client", async () => {
+	it("createMessage should pass correct parameters to SambaNova client without stream_options", async () => {
 		const modelId: SambaNovaModelId = "Meta-Llama-3.3-70B-Instruct"
 		const modelInfo = sambaNovaModels[modelId]
 		const handlerWithModel = new SambaNovaHandler({
@@ -137,6 +137,7 @@ describe("SambaNovaHandler", () => {
 		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
 		await messageGenerator.next()
 
+		// Verify that stream_options is NOT included in the request
 		expect(mockCreate).toHaveBeenCalledWith(
 			expect.objectContaining({
 				model: modelId,
@@ -144,9 +145,12 @@ describe("SambaNovaHandler", () => {
 				temperature: 0.7,
 				messages: expect.arrayContaining([{ role: "system", content: systemPrompt }]),
 				stream: true,
-				stream_options: { include_usage: true },
 			}),
 			undefined,
 		)
+
+		// Explicitly verify stream_options is not present
+		const callArgs = mockCreate.mock.calls[0][0]
+		expect(callArgs).not.toHaveProperty("stream_options")
 	})
 })
