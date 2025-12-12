@@ -68,6 +68,21 @@ export const bedrockModels = {
 		maxCachePoints: 1,
 		cachableFields: ["system"],
 	},
+	"amazon.nova-2-lite-v1:0": {
+		maxTokens: 5000,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsNativeTools: true,
+		inputPrice: 0.33,
+		outputPrice: 2.75,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.0825, // 75% less than input price
+		minTokensPerCachePoint: 1,
+		maxCachePoints: 1,
+		cachableFields: ["system"],
+		description: "Amazon Nova 2 Lite - Comparable to Claude Haiku 4.5",
+	},
 	"amazon.nova-micro-v1:0": {
 		maxTokens: 5000,
 		contextWindow: 128_000,
