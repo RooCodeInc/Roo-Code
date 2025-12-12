@@ -30,6 +30,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 
 	const {
 		autoApprovalEnabled,
+		browserToolEnabled,
 		setAutoApprovalEnabled,
 		alwaysApproveResubmit,
 		setAlwaysAllowReadOnly,
@@ -115,8 +116,12 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 	)
 
 	const handleSelectAll = React.useCallback(() => {
-		// Enable all options
-		Object.keys(autoApproveSettingsConfig).forEach((key) => {
+		// Enable all toggleable options (skip Browser toggle when browser tool is disabled)
+		const keys = Object.keys(autoApproveSettingsConfig).filter(
+			(k) => browserToolEnabled || k !== "alwaysAllowBrowser",
+		)
+
+		keys.forEach((key) => {
 			onAutoApproveToggle(key as AutoApproveSetting, true)
 		})
 		// Enable master auto-approval
@@ -124,14 +129,18 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 			setAutoApprovalEnabled(true)
 			vscode.postMessage({ type: "autoApprovalEnabled", bool: true })
 		}
-	}, [onAutoApproveToggle, autoApprovalEnabled, setAutoApprovalEnabled])
+	}, [onAutoApproveToggle, autoApprovalEnabled, setAutoApprovalEnabled, browserToolEnabled])
 
 	const handleSelectNone = React.useCallback(() => {
-		// Disable all options
-		Object.keys(autoApproveSettingsConfig).forEach((key) => {
+		// Disable all toggleable options (skip Browser toggle when browser tool is disabled)
+		const keys = Object.keys(autoApproveSettingsConfig).filter(
+			(k) => browserToolEnabled || k !== "alwaysAllowBrowser",
+		)
+
+		keys.forEach((key) => {
 			onAutoApproveToggle(key as AutoApproveSetting, false)
 		})
-	}, [onAutoApproveToggle])
+	}, [onAutoApproveToggle, browserToolEnabled])
 
 	const handleOpenSettings = React.useCallback(
 		() =>
@@ -146,16 +155,22 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 		vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 	}, [autoApprovalEnabled, setAutoApprovalEnabled])
 
-	// Calculate enabled and total counts as separate properties
-	const settingsArray = Object.values(autoApproveSettingsConfig)
+	// Show all settings but track which are toggleable (Browser is disabled when browser tool is off)
+	const allSettingsArray = React.useMemo(() => Object.values(autoApproveSettingsConfig), [])
+
+	// Keys that are toggleable (exclude Browser when browser tool is disabled)
+	const toggleableKeys = React.useMemo(
+		() => allSettingsArray.filter((s) => browserToolEnabled || s.key !== "alwaysAllowBrowser").map((s) => s.key),
+		[allSettingsArray, browserToolEnabled],
+	)
 
 	const enabledCount = React.useMemo(() => {
-		return Object.values(toggles).filter((value) => !!value).length
-	}, [toggles])
+		return toggleableKeys.filter((key) => !!toggles[key as keyof typeof toggles]).length
+	}, [toggleableKeys, toggles])
 
 	const totalCount = React.useMemo(() => {
-		return Object.keys(toggles).length
-	}, [toggles])
+		return toggleableKeys.length
+	}, [toggleableKeys])
 
 	const { effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
@@ -163,8 +178,11 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 		!effectiveAutoApprovalEnabled || enabledCount === 0
 			? t("chat:autoApprove.tooltipManage")
 			: t("chat:autoApprove.tooltipStatus", {
-					toggles: settingsArray
-						.filter((setting) => toggles[setting.key])
+					toggles: allSettingsArray
+						.filter(
+							(setting) =>
+								toggles[setting.key] && (browserToolEnabled || setting.key !== "alwaysAllowBrowser"),
+						)
 						.map((setting) => t(setting.labelKey))
 						.join(", "),
 				})
@@ -230,21 +248,28 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 						</p>
 					</div>
 					<div className="grid grid-cols-1 min-[340px]:grid-cols-2 gap-x-2 gap-y-2 p-3">
-						{settingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
+						{allSettingsArray.map(({ key, labelKey, descriptionKey, icon }) => {
 							const isEnabled = toggles[key]
+							const isBrowserToggleDisabled = key === "alwaysAllowBrowser" && !browserToolEnabled
+							const isDisabled = !effectiveAutoApprovalEnabled || isBrowserToggleDisabled
 							return (
-								<StandardTooltip key={key} content={t(descriptionKey)}>
+								<StandardTooltip
+									key={key}
+									content={
+										isBrowserToggleDisabled
+											? t("settings:autoApprove.browser.disabledTooltip")
+											: t(descriptionKey)
+									}>
 									<Button
-										variant={isEnabled ? "primary" : "secondary"}
+										variant={isEnabled && !isBrowserToggleDisabled ? "primary" : "secondary"}
 										onClick={() => onAutoApproveToggle(key, !isEnabled)}
 										className={cn(
 											"flex items-center gap-2 px-2 py-2 text-sm text-left justify-start h-auto",
 											"transition-all duration-150",
-											!effectiveAutoApprovalEnabled &&
-												"opacity-50 cursor-not-allowed hover:opacity-50",
-											!isEnabled && "bg-vscode-button-background/15",
+											isDisabled && "opacity-50 cursor-not-allowed hover:opacity-50",
+											(!isEnabled || isBrowserToggleDisabled) && "bg-vscode-button-background/15",
 										)}
-										disabled={!effectiveAutoApprovalEnabled}
+										disabled={isDisabled}
 										data-testid={`auto-approve-${key}`}>
 										<span className={`codicon codicon-${icon} text-sm flex-shrink-0`} />
 										<span className="flex-1 truncate">{t(labelKey)}</span>

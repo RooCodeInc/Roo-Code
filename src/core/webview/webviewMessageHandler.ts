@@ -1542,7 +1542,6 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-
 		case "hasOpenedModeSelector":
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()

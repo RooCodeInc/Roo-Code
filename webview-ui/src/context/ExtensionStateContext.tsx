@@ -238,7 +238,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
 		cwd: "",
-		browserToolEnabled: true,
+		browserToolEnabled: false,
 		telemetrySetting: "unset",
 		showRooIgnoredFiles: true, // Default to showing .rooignore'd files with lock symbol (current behavior).
 		renderContext: "sidebar",

@@ -208,7 +208,8 @@
 		},
 		"browser": {
 			"label": "Browser",
-			"description": "Automatically perform browser actions without requiring approval. Note: Only applies when the model supports computer use"
+			"description": "Automatically perform browser actions without requiring approval. Note: Only applies when the model supports computer use",
+			"disabledTooltip": "Enable the Browser tool in Settings > Browser to use this option"
 		},
 		"retry": {
 			"label": "Retry",

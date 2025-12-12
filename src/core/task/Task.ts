@@ -3366,7 +3366,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modelInfo = this.api.getModel().info
 			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
 
-			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? false)
 
 			// Resolve the tool protocol based on profile, model, and provider settings
 			const toolProtocol = resolveToolProtocol(apiConfiguration ?? this.apiConfiguration, modelInfo)
