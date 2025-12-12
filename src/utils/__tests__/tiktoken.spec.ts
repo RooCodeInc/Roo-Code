@@ -170,18 +170,18 @@ describe("tiktoken", () => {
 			expect(result).toBeGreaterThan(10)
 		})
 
-		it("should handle tool_use blocks with undefined input", async () => {
+		it("should handle tool_use blocks with empty input", async () => {
 			const content = [
 				{
 					type: "tool_use",
 					id: "tool_789",
 					name: "list_files",
-					input: undefined,
+					input: {},
 				},
-			] as any as Anthropic.Messages.ContentBlockParam[]
+			] as Anthropic.Messages.ContentBlockParam[]
 
 			const result = await tiktoken(content)
-			// Should still count the tool name
+			// Should still count the tool name (and empty args)
 			expect(result).toBeGreaterThan(0)
 		})
 	})

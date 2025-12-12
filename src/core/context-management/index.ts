@@ -324,8 +324,8 @@ export async function manageContext({
 			(msg) => !msg.truncationParent && !msg.isTruncationMarker,
 		)
 
-		// Include system prompt tokens to match how prevContextTokens is calculated
-		// (which comes from API response tokensIn that includes the system prompt)
+		// Include system prompt tokens so this value matches what we send to the API.
+		// Note: `prevContextTokens` is computed locally here (totalTokens + lastMessageTokens).
 		let newContextTokensAfterTruncation = await estimateTokenCount(
 			[{ type: "text", text: systemPrompt }],
 			apiHandler,

@@ -43,6 +43,8 @@ function serializeToolResult(block: Anthropic.Messages.ToolResultBlockParam): st
 				parts.push(item.text || "")
 			} else if (item.type === "image") {
 				parts.push("[Image content]")
+			} else {
+				parts.push(`[Unsupported content block: ${String((item as { type?: unknown }).type)}]`)
 			}
 		}
 	}
