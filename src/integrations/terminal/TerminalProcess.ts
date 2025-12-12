@@ -254,9 +254,11 @@ export class TerminalProcess extends BaseTerminalProcess {
 		// so that api request stalls to let diagnostics catch up").
 		this.stopHotTimer()
 		this.emit("completed", this.removeEscapeSequences(this.fullOutput))
+		this.emit("continue")
+		// Clear output buffer after all events have been emitted to avoid race conditions
+		// where listeners might try to access getUnretrievedOutput()
 		this.lastRetrievedIndex = this.fullOutput.length
 		this.trimRetrievedOutput()
-		this.emit("continue")
 	}
 
 	public override continue() {

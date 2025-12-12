@@ -148,9 +148,11 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		this.emitRemainingBufferIfListening()
 		this.stopHotTimer()
 		this.emit("completed", this.fullOutput)
+		this.emit("continue")
+		// Clear output buffer after all events have been emitted to avoid race conditions
+		// where listeners might try to access getUnretrievedOutput()
 		this.lastRetrievedIndex = this.fullOutput.length
 		this.trimRetrievedOutput()
-		this.emit("continue")
 		this.subprocess = undefined
 	}
 
