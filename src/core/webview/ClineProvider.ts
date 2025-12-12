@@ -921,6 +921,8 @@ export class ClineProvider
 		// specific provider profile takes precedence over mode defaults.
 		if (historyItem.apiConfigName) {
 			const listApiConfig = await this.providerSettingsManager.listConfig()
+			// Keep global state/UI in sync with latest profiles for parity with mode restoration above.
+			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
 			const profile = listApiConfig.find(({ name }) => name === historyItem.apiConfigName)
 
 			if (profile?.name) {
@@ -1477,6 +1479,10 @@ export class ClineProvider
 		}
 
 		try {
+			// Update in-memory state immediately so sticky behavior works even before the task has
+			// been persisted into taskHistory (it will be captured on the next save).
+			task.setTaskApiConfigName(apiConfigName)
+
 			const history = this.getGlobalState("taskHistory") ?? []
 			const taskHistoryItem = history.find((item) => item.id === task.taskId)
 
@@ -1484,9 +1490,6 @@ export class ClineProvider
 				taskHistoryItem.apiConfigName = apiConfigName
 				await this.updateTaskHistory(taskHistoryItem)
 			}
-
-			// Only update in-memory state after successful persistence.
-			task.setTaskApiConfigName(apiConfigName)
 		} catch (error) {
 			// If persistence fails, log the error but don't fail the profile switch.
 			this.log(

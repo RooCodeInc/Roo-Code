@@ -263,8 +263,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * 2. Falls back to undefined if not stored in history (for backward compatibility)
 	 *
 	 * ## Important
-	 * This property should NOT be accessed directly until `taskApiConfigReady` promise resolves.
-	 * Use `getTaskApiConfigName()` for async access or `taskApiConfigName` getter for sync access after initialization.
+	 * If you need a non-`undefined` provider profile (e.g., for profile-dependent operations),
+	 * wait for `taskApiConfigReady` first (or use `getTaskApiConfigName()`).
+	 * The sync `taskApiConfigName` getter may return `undefined` for backward compatibility.
 	 *
 	 * @private
 	 * @see {@link getTaskApiConfigName} - For safe async access
@@ -687,10 +688,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async initializeTaskApiConfigName(provider: ClineProvider): Promise<void> {
 		try {
 			const state = await provider.getState()
-			this._taskApiConfigName = state?.currentApiConfigName ?? "default"
+
+			// Avoid clobbering a newer value that may have been set while awaiting provider state
+			// (e.g., user switches provider profile immediately after task creation).
+			if (this._taskApiConfigName === undefined) {
+				this._taskApiConfigName = state?.currentApiConfigName ?? "default"
+			}
 		} catch (error) {
-			// If there's an error getting state, use the default profile
-			this._taskApiConfigName = "default"
+			// If there's an error getting state, use the default profile (unless a newer value was set).
+			if (this._taskApiConfigName === undefined) {
+				this._taskApiConfigName = "default"
+			}
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task API config name: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)

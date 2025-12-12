@@ -398,6 +398,49 @@ describe("ClineProvider - Sticky Provider Profile", () => {
 			// Verify task's _taskApiConfigName property was updated
 			expect(mockTask._taskApiConfigName).toBe("new-profile")
 		})
+
+		it("should update in-memory task profile even if task history item does not exist yet", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			const mockTask = {
+				taskId: "test-task-id",
+				_taskApiConfigName: "default-profile",
+				setTaskApiConfigName: vi.fn().mockImplementation(function (this: any, name: string) {
+					this._taskApiConfigName = name
+				}),
+				emit: vi.fn(),
+				saveClineMessages: vi.fn(),
+				clineMessages: [],
+				apiConversationHistory: [],
+				updateApiConfiguration: vi.fn(),
+			}
+
+			await provider.addClineToStack(mockTask as any)
+
+			// No history item exists yet
+			vi.spyOn(provider as any, "getGlobalState").mockReturnValue([])
+
+			const updateTaskHistorySpy = vi
+				.spyOn(provider, "updateTaskHistory")
+				.mockImplementation(() => Promise.resolve([]))
+
+			vi.spyOn(provider.providerSettingsManager, "activateProfile").mockResolvedValue({
+				name: "new-profile",
+				id: "new-profile-id",
+				apiProvider: "openrouter",
+			})
+
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ name: "new-profile", id: "new-profile-id", apiProvider: "openrouter" },
+			])
+
+			await provider.activateProviderProfile({ name: "new-profile" })
+
+			// In-memory should still update, even without a history item.
+			expect(mockTask._taskApiConfigName).toBe("new-profile")
+			// No history item => no updateTaskHistory call.
+			expect(updateTaskHistorySpy).not.toHaveBeenCalled()
+		})
 	})
 
 	describe("createTaskWithHistoryItem", () => {
