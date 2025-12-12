@@ -304,8 +304,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Sao chép vào ô nhập liệu (hoặc Shift + nhấp chuột)",
-		"autoSelectCountdown": "Tự động chọn sau {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Phê duyệt tự động được bật. Chọn trong {{seconds}}s…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Đã phát hành",

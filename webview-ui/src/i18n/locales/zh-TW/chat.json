@@ -345,8 +345,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",
-		"autoSelectCountdown": "{{count}} 秒後自動選擇",
-		"countdownDisplay": "{{count}} 秒"
+		"timerPrefix": "自動批准已啟用。{{seconds}}秒後選擇中…"
 	},
 	"browser": {
 		"session": "瀏覽器會話",

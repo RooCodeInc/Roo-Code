@@ -303,8 +303,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copier vers l'entrée (ou Shift + clic)",
-		"autoSelectCountdown": "Sélection automatique dans {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Approbation automatique activée. Sélection dans {{seconds}}s…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} est sortie",

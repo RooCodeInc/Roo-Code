@@ -303,8 +303,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a l'entrada (o Shift + clic)",
-		"autoSelectCountdown": "Selecció automàtica en {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Llançat",

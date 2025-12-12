@@ -347,8 +347,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Salin ke input (sama dengan shift + klik)",
-		"autoSelectCountdown": "Pemilihan otomatis dalam {{count}}dtk",
-		"countdownDisplay": "{{count}}dtk"
+		"timerPrefix": "Persetujuan otomatis diaktifkan. Memilih dalam {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Sesi Browser",

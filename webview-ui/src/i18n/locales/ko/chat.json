@@ -303,8 +303,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "입력창에 복사 (또는 Shift + 클릭)",
-		"autoSelectCountdown": "{{count}}초 후 자동 선택",
-		"countdownDisplay": "{{count}}초"
+		"timerPrefix": "자동 승인 활성화됨. {{seconds}}초 후 선택 중…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} 출시",

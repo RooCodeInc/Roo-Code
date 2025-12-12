@@ -303,8 +303,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "इनपुट में कॉपी करें (या Shift + क्लिक)",
-		"autoSelectCountdown": "{{count}}s में स्वचालित रूप से चयन हो रहा है",
-		"countdownDisplay": "{{count}}सेकंड"
+		"timerPrefix": "ऑटो-अनुमोदन सक्षम है। {{seconds}}s में चयन किया जा रहा है…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} रिलीज़ हुआ",

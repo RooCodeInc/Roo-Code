@@ -326,8 +326,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
-		"autoSelectCountdown": "Automatische selectie in {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Automatisch goedkeuren ingeschakeld. Selecteren in {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Browsersessie",

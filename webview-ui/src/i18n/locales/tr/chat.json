@@ -304,8 +304,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Giriş alanına kopyala (veya Shift + tıklama)",
-		"autoSelectCountdown": "{{count}}s içinde otomatik seçilecek",
-		"countdownDisplay": "{{count}}sn"
+		"timerPrefix": "Otomatik onay etkinleştirildi. {{seconds}}s içinde seçim yapılıyor…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Yayınlandı",

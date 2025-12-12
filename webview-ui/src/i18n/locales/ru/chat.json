@@ -327,8 +327,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Скопировать во ввод (то же, что shift + клик)",
-		"autoSelectCountdown": "Автовыбор через {{count}}с",
-		"countdownDisplay": "{{count}}с"
+		"timerPrefix": "Автоматическое одобрение включено. Выбор через {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Сеанс браузера",
