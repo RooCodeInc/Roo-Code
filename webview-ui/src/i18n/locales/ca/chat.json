@@ -268,6 +268,7 @@
 		"tooltipManage": "Gestiona la configuració d'aprovació automàtica",
 		"tooltipStatus": "Aprovació automàtica activada per a: {{toggles}}",
 		"title": "Aprovació automàtica",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "Commuta l'aprovació automàtica",
 		"all": "Tot",
 		"none": "Cap",

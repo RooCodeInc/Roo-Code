@@ -302,6 +302,7 @@
 		"tooltipManage": "管理自動批准設定",
 		"tooltipStatus": "自動批准已啟用：{{toggles}}",
 		"title": "自動批准",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "切換自動批准",
 		"all": "全部",
 		"none": "無",

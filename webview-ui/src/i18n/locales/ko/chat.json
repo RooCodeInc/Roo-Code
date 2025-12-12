@@ -268,6 +268,7 @@
 		"tooltipManage": "자동 승인 설정 관리",
 		"tooltipStatus": "자동 승인 활성화됨: {{toggles}}",
 		"title": "자동 승인",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "자동 승인 전환",
 		"all": "모두",
 		"none": "없음",

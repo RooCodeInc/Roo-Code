@@ -268,6 +268,7 @@
 		"tooltipManage": "自動承認設定を管理する",
 		"tooltipStatus": "自動承認が有効です: {{toggles}}",
 		"title": "自動承認",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "自動承認を切り替える",
 		"all": "すべて",
 		"none": "なし",

@@ -304,6 +304,7 @@
 		"tooltipManage": "Kelola pengaturan persetujuan otomatis",
 		"tooltipStatus": "Persetujuan otomatis diaktifkan untuk: {{toggles}}",
 		"title": "Setujui Otomatis",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "Beralih persetujuan otomatis",
 		"all": "Semua",
 		"none": "Tidak ada",
