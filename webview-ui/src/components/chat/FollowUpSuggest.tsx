@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react"
-import { ClipboardCopy } from "lucide-react"
+import { ClipboardCopy, Timer } from "lucide-react"
 
 import { Button, StandardTooltip } from "@/components/ui"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { SuggestionItem } from "@roo-code/types"
+import { cn } from "@/lib/utils"
 
-const DEFAULT_FOLLOWUP_TIMEOUT_MS = 60000
+const DEFAULT_FOLLOWUP_TIMEOUT_MS = 600000000
 const COUNTDOWN_INTERVAL_MS = 1000
 
 interface FollowUpSuggestProps {
@@ -111,20 +112,24 @@ export const FollowUpSuggest = ({
 					<div key={`${suggestion.answer}-${ts}`} className="w-full relative group">
 						<Button
 							variant="outline"
-							className="text-left whitespace-normal break-words w-full h-auto px-3 py-2 justify-start pr-8 rounded-xl"
+							className={cn(
+								"text-left whitespace-normal break-words w-full h-auto px-3 py-2 justify-start pr-8 rounded-xl",
+								isFirstSuggestion &&
+									countdown !== null &&
+									!suggestionSelected &&
+									!isAnswered &&
+									"border-vscode-foreground/60 border-b-dotted rounded-b-none -mb-1",
+							)}
 							onClick={(event) => handleSuggestionClick(suggestion, event)}
 							aria-label={suggestion.answer}>
 							{suggestion.answer}
-							{isFirstSuggestion && countdown !== null && !suggestionSelected && !isAnswered && (
-								<StandardTooltip content={t("chat:followUpSuggest.timerTooltip")}>
-									<span
-										className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-vscode-badge-background text-vscode-badge-foreground"
-										title={t("chat:followUpSuggest.autoSelectCountdown", { count: countdown })}>
-										{t("chat:followUpSuggest.countdownDisplay", { count: countdown })}
-									</span>
-								</StandardTooltip>
-							)}
 						</Button>
+						{isFirstSuggestion && countdown !== null && !suggestionSelected && !isAnswered && (
+							<p className="rounded-b-xl border-1 border-t-0 border-vscode-foreground/60 text-vscode-descriptionForeground text-xs m-0 mt-1 px-3 pt-2 pb-2">
+								<Timer className="size-3 inline-block -mt-0.5 mr-1 animate-pulse" />
+								{t("chat:followUpSuggest.timerPrefix", { seconds: countdown })}
+							</p>
+						)}
 						{suggestion.mode && (
 							<div className="absolute bottom-0 right-0 text-[10px] bg-vscode-badge-background text-vscode-badge-foreground px-1 py-0.5 border border-vscode-badge-background flex items-center gap-0.5">
 								<span className="codicon codicon-arrow-right" style={{ fontSize: "8px" }} />

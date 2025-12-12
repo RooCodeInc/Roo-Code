@@ -341,9 +341,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copy to input (same as shift + click)",
-		"autoSelectCountdown": "Auto-selecting in {{count}}s",
-		"countdownDisplay": "{{count}}s",
-		"timerTooltip": "Timer shown because Auto-Approve is enabled for Question"
+		"timerPrefix": "Auto-approve enabled. Selecting in {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Browser Session",
