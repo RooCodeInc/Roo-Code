@@ -28,6 +28,23 @@ for (const [alias, canonical] of Object.entries(TOOL_ALIASES)) {
 }
 
 /**
+ * Pre-computed alias groups map - maps any tool name (canonical or alias) to its full group.
+ * Built once at module load for O(1) lookup.
+ */
+const ALIAS_GROUPS: Map<string, readonly string[]> = new Map()
+
+// Build alias groups for all tools
+for (const [canonical, aliases] of CANONICAL_TO_ALIASES.entries()) {
+	const group = Object.freeze([canonical, ...aliases])
+	// Map canonical to group
+	ALIAS_GROUPS.set(canonical, group)
+	// Map each alias to the same group
+	for (const alias of aliases) {
+		ALIAS_GROUPS.set(alias, group)
+	}
+}
+
+/**
  * Resolves a tool name to its canonical name.
  * If the tool name is an alias, returns the canonical tool name.
  * If it's already a canonical name or unknown, returns as-is.
@@ -60,21 +77,13 @@ export function applyToolAliases(allowedTools: Set<string>): Set<string> {
 
 /**
  * Gets all tools in an alias group (including the canonical tool).
+ * Uses pre-computed ALIAS_GROUPS map for O(1) lookup.
  *
  * @param toolName - Any tool name in the alias group
  * @returns Array of all tool names in the alias group, or just the tool if not aliased
  */
-export function getToolAliasGroup(toolName: string): string[] {
-	// Check if it's a canonical tool with aliases
-	if (CANONICAL_TO_ALIASES.has(toolName)) {
-		return [toolName, ...CANONICAL_TO_ALIASES.get(toolName)!]
-	}
-	// Check if it's an alias
-	const canonical = ALIAS_TO_CANONICAL.get(toolName)
-	if (canonical) {
-		return [canonical, ...CANONICAL_TO_ALIASES.get(canonical)!]
-	}
-	return [toolName]
+export function getToolAliasGroup(toolName: string): readonly string[] {
+	return ALIAS_GROUPS.get(toolName) ?? [toolName]
 }
 
 /**
@@ -218,9 +227,6 @@ export function filterNativeToolsForMode(
 	)
 	allowedToolNames = customizedTools
 
-	// Resolve any aliases to canonical tool names for execution-time filtering
-	allowedToolNames = applyToolAliases(allowedToolNames)
-
 	// Register alias renames for tools that are allowed and explicitly requested as aliases
 	if (modelInfo?.includedTools && modelInfo.includedTools.length > 0) {
 		for (const includedTool of modelInfo.includedTools) {
@@ -357,17 +363,15 @@ export function isToolAllowedInMode(
 	}
 
 	// Check if the tool is allowed by the mode's groups
-	// Also check if any tool in the alias group is allowed
-	const aliasGroup = getToolAliasGroup(toolName)
-	return aliasGroup.some((aliasedTool) =>
-		isToolAllowedForMode(
-			aliasedTool as ToolName,
-			modeSlug,
-			customModes ?? [],
-			undefined,
-			undefined,
-			experiments ?? {},
-		),
+	// Resolve to canonical name and check that single value
+	const canonicalTool = resolveToolAlias(toolName)
+	return isToolAllowedForMode(
+		canonicalTool as ToolName,
+		modeSlug,
+		customModes ?? [],
+		undefined,
+		undefined,
+		experiments ?? {},
 	)
 }
 
