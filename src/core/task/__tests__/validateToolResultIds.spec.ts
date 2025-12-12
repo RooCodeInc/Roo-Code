@@ -358,7 +358,7 @@ describe("validateAndFixToolResultIds", () => {
 	})
 
 	describe("when there are more tool_results than tool_uses", () => {
-		it("should leave extra tool_results unchanged", () => {
+		it("should filter out orphaned tool_results with invalid IDs", () => {
 			const assistantMessage: Anthropic.MessageParam = {
 				role: "assistant",
 				content: [
@@ -391,9 +391,96 @@ describe("validateAndFixToolResultIds", () => {
 
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			// Only one tool_result should remain - the first one gets fixed to tool-1
+			expect(resultContent.length).toBe(1)
 			expect(resultContent[0].tool_use_id).toBe("tool-1")
-			// Extra tool_result should remain unchanged
-			expect(resultContent[1].tool_use_id).toBe("extra-id")
+		})
+
+		it("should filter out duplicate tool_results when one already has a valid ID", () => {
+			// This is the exact scenario from the PostHog error:
+			// 2 tool_results (call_08230257, call_55577629), 1 tool_use (call_55577629)
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "call_55577629",
+						name: "read_file",
+						input: { path: "test.txt" },
+					},
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "call_08230257", // Invalid ID
+						content: "Content from first result",
+					},
+					{
+						type: "tool_result",
+						tool_use_id: "call_55577629", // Valid ID
+						content: "Content from second result",
+					},
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			// Should only keep one tool_result since there's only one tool_use
+			// The first invalid one gets fixed to the valid ID, then the second one
+			// (which already has that ID) becomes a duplicate and is filtered out
+			expect(resultContent.length).toBe(1)
+			expect(resultContent[0].tool_use_id).toBe("call_55577629")
+		})
+
+		it("should preserve text blocks while filtering orphaned tool_results", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tool-1",
+						name: "read_file",
+						input: { path: "test.txt" },
+					},
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "wrong-1",
+						content: "Content 1",
+					},
+					{
+						type: "text",
+						text: "Some additional context",
+					},
+					{
+						type: "tool_result",
+						tool_use_id: "extra-id",
+						content: "Content 2",
+					},
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			// Should have tool_result + text block, orphaned tool_result filtered out
+			expect(resultContent.length).toBe(2)
+			expect(resultContent[0].type).toBe("tool_result")
+			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-1")
+			expect(resultContent[1].type).toBe("text")
+			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Some additional context")
 		})
 	})
 

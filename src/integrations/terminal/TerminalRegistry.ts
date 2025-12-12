@@ -24,7 +24,7 @@ export class TerminalRegistry {
 	private static nextTerminalId = 1
 	private static disposables: vscode.Disposable[] = []
 	private static isInitialized = false
-	private static maxNotBusyTerminals = 5 // Maximum number of non-busy terminals
+	private static maxNotBusyTerminals = 3 // Maximum number of non-busy terminals
 
 	public static initialize() {
 		if (this.isInitialized) {
