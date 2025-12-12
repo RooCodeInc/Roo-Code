@@ -272,7 +272,7 @@ export const DEFAULT_MODES: readonly modelType[] = [
 			"Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
 		description: "Write, modify, and refactor code",
 		groups: ["read", "edit", "browser", "command", "mcp"],
-		zgsmCodeModeGroup: "strict,vibe",
+		zgsmCodeModeGroup: "strict,vibe,plan",
 	},
 	{
 		slug: "architect",

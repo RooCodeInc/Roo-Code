@@ -14,6 +14,7 @@
 - Add minimum and medium reasoning effort levels for Gemini
 - Filter out non-Anthropic content blocks sent to Vertex API
 - Fix test cases in terminal registry to adapt to new terminal limits
+- Add rehype-sanitize and markdown error handling
 - Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/f97b5155ac16290865af3016e2b7512e4bc9a389)
 - Fix known issues
 
