@@ -708,6 +708,15 @@ export const webviewMessageHandler = async (
 		case "deleteTaskWithId":
 			provider.deleteTaskWithId(message.text!)
 			break
+		case "forkTask":
+			try {
+				await provider.forkCurrentTask()
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to fork task: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to fork conversation: ${errorMessage}`)
+			}
+			break
 		case "deleteMultipleTasksWithIds": {
 			const ids = message.ids
 

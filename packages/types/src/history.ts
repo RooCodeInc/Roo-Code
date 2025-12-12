@@ -25,6 +25,7 @@ export const historyItemSchema = z.object({
 	awaitingChildId: z.string().optional(), // Child currently awaited (set when delegated)
 	completedByChildId: z.string().optional(), // Child that completed and resumed this parent
 	completionResultSummary: z.string().optional(), // Summary from completed child
+	forkedFromTaskId: z.string().optional(), // ID of the task this was forked from
 })
 
 export type HistoryItem = z.infer<typeof historyItemSchema>

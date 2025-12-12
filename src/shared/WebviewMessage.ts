@@ -51,6 +51,7 @@ export interface WebviewMessage {
 		| "showTaskWithId"
 		| "deleteTaskWithId"
 		| "exportTaskWithId"
+		| "forkTask"
 		| "importSettings"
 		| "exportSettings"
 		| "resetState"

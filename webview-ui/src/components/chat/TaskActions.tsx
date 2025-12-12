@@ -10,7 +10,7 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
 import { ShareButton } from "./ShareButton"
 import { CloudTaskButton } from "./CloudTaskButton"
-import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
+import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon, GitBranchIcon } from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -30,6 +30,13 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 				icon={DownloadIcon}
 				title={t("chat:task.export")}
 				onClick={() => vscode.postMessage({ type: "exportCurrentTask" })}
+			/>
+
+			<LucideIconButton
+				icon={GitBranchIcon}
+				title={t("chat:task.fork")}
+				disabled={buttonsDisabled}
+				onClick={() => vscode.postMessage({ type: "forkTask" })}
 			/>
 
 			{item?.task && (
