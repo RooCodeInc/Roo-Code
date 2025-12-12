@@ -13,6 +13,7 @@ import type {
 	ApiStreamToolCallDeltaChunk,
 	ApiStreamToolCallEndChunk,
 } from "../../api/transform/stream"
+import { MCP_TOOL_PREFIX, MCP_TOOL_SEPARATOR, parseMcpToolName } from "../../utils/mcp-name"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -238,7 +239,8 @@ export class NativeToolCallParser {
 		toolCall.argumentsAccumulator += chunk
 
 		// For dynamic MCP tools, we don't return partial updates - wait for final
-		if (toolCall.name.startsWith("mcp_")) {
+		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
+		if (toolCall.name.startsWith(mcpPrefix)) {
 			return null
 		}
 
@@ -554,8 +556,9 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | McpToolUse | null {
-		// Check if this is a dynamic MCP tool (mcp_serverName_toolName)
-		if (typeof toolCall.name === "string" && toolCall.name.startsWith("mcp_")) {
+		// Check if this is a dynamic MCP tool (mcp--serverName--toolName)
+		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
+		if (typeof toolCall.name === "string" && toolCall.name.startsWith(mcpPrefix)) {
 			return this.parseDynamicMcpTool(toolCall)
 		}
 
@@ -811,7 +814,7 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Parse dynamic MCP tools (named mcp_serverName_toolName).
+	 * Parse dynamic MCP tools (named mcp--serverName--toolName).
 	 * These are generated dynamically by getMcpServerTools() and are returned
 	 * as McpToolUse objects that preserve the original tool name.
 	 *
@@ -825,26 +828,19 @@ export class NativeToolCallParser {
 			const args = JSON.parse(toolCall.arguments || "{}")
 
 			// Extract server_name and tool_name from the tool name itself
-			// Format: mcp_serverName_toolName
-			const nameParts = toolCall.name.split("_")
-			if (nameParts.length < 3 || nameParts[0] !== "mcp") {
+			// Format: mcp--serverName--toolName (using -- separator)
+			const parsed = parseMcpToolName(toolCall.name)
+			if (!parsed) {
 				console.error(`Invalid dynamic MCP tool name format: ${toolCall.name}`)
 				return null
 			}
 
-			// Server name is the second part, tool name is everything after
-			const serverName = nameParts[1]
-			const toolName = nameParts.slice(2).join("_")
-
-			if (!serverName || !toolName) {
-				console.error(`Could not extract server_name or tool_name from: ${toolCall.name}`)
-				return null
-			}
+			const { serverName, toolName } = parsed
 
 			const result: McpToolUse = {
 				type: "mcp_tool_use" as const,
 				id: toolCall.id,
-				// Keep the original tool name (e.g., "mcp_serverName_toolName") for API history
+				// Keep the original tool name (e.g., "mcp--serverName--toolName") for API history
 				name: toolCall.name,
 				serverName,
 				toolName,

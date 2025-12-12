@@ -1,6 +1,13 @@
-import { sanitizeMcpName, buildMcpToolName, parseMcpToolName } from "../mcp-name"
+import { sanitizeMcpName, buildMcpToolName, parseMcpToolName, MCP_TOOL_SEPARATOR, MCP_TOOL_PREFIX } from "../mcp-name"
 
 describe("mcp-name utilities", () => {
+	describe("constants", () => {
+		it("should have correct separator and prefix", () => {
+			expect(MCP_TOOL_SEPARATOR).toBe("--")
+			expect(MCP_TOOL_PREFIX).toBe("mcp")
+		})
+	})
+
 	describe("sanitizeMcpName", () => {
 		it("should return underscore placeholder for empty input", () => {
 			expect(sanitizeMcpName("")).toBe("_")
@@ -36,6 +43,12 @@ describe("mcp-name utilities", () => {
 			expect(sanitizeMcpName("Server")).toBe("Server")
 		})
 
+		it("should replace double-hyphen sequences with single hyphen to avoid separator conflicts", () => {
+			expect(sanitizeMcpName("server--name")).toBe("server-name")
+			expect(sanitizeMcpName("test---server")).toBe("test-server")
+			expect(sanitizeMcpName("my----tool")).toBe("my-tool")
+		})
+
 		it("should handle complex names with multiple issues", () => {
 			expect(sanitizeMcpName("My Server @ Home!")).toBe("My_Server__Home")
 			expect(sanitizeMcpName("123-test server")).toBe("_123-test_server")
@@ -49,16 +62,16 @@ describe("mcp-name utilities", () => {
 	})
 
 	describe("buildMcpToolName", () => {
-		it("should build tool name with mcp_ prefix", () => {
-			expect(buildMcpToolName("server", "tool")).toBe("mcp_server_tool")
+		it("should build tool name with mcp-- prefix and -- separators", () => {
+			expect(buildMcpToolName("server", "tool")).toBe("mcp--server--tool")
 		})
 
 		it("should sanitize both server and tool names", () => {
-			expect(buildMcpToolName("my server", "my tool")).toBe("mcp_my_server_my_tool")
+			expect(buildMcpToolName("my server", "my tool")).toBe("mcp--my_server--my_tool")
 		})
 
 		it("should handle names with special characters", () => {
-			expect(buildMcpToolName("server@name", "tool!name")).toBe("mcp_servername_toolname")
+			expect(buildMcpToolName("server@name", "tool!name")).toBe("mcp--servername--toolname")
 		})
 
 		it("should truncate long names to 64 characters", () => {
@@ -66,48 +79,60 @@ describe("mcp-name utilities", () => {
 			const longTool = "b".repeat(50)
 			const result = buildMcpToolName(longServer, longTool)
 			expect(result.length).toBeLessThanOrEqual(64)
-			expect(result.startsWith("mcp_")).toBe(true)
+			expect(result.startsWith("mcp--")).toBe(true)
 		})
 
 		it("should handle names starting with numbers", () => {
-			expect(buildMcpToolName("123server", "456tool")).toBe("mcp__123server__456tool")
+			expect(buildMcpToolName("123server", "456tool")).toBe("mcp--_123server--_456tool")
+		})
+
+		it("should preserve underscores in server and tool names", () => {
+			expect(buildMcpToolName("my_server", "my_tool")).toBe("mcp--my_server--my_tool")
 		})
 	})
 
 	describe("parseMcpToolName", () => {
 		it("should parse valid mcp tool names", () => {
-			expect(parseMcpToolName("mcp_server_tool")).toEqual({
+			expect(parseMcpToolName("mcp--server--tool")).toEqual({
 				serverName: "server",
 				toolName: "tool",
 			})
 		})
 
 		it("should return null for non-mcp tool names", () => {
-			expect(parseMcpToolName("server_tool")).toBeNull()
+			expect(parseMcpToolName("server--tool")).toBeNull()
 			expect(parseMcpToolName("tool")).toBeNull()
 		})
 
+		it("should return null for old underscore format", () => {
+			expect(parseMcpToolName("mcp_server_tool")).toBeNull()
+		})
+
 		it("should handle tool names with underscores", () => {
-			expect(parseMcpToolName("mcp_server_tool_name")).toEqual({
+			expect(parseMcpToolName("mcp--server--tool_name")).toEqual({
 				serverName: "server",
 				toolName: "tool_name",
 			})
 		})
 
-		it("should handle server names with underscores (edge case)", () => {
-			// Note: parseMcpToolName uses simple split, so it can't distinguish
-			// server_name_tool from server + name_tool
-			// The first underscore after 'mcp_' is treated as the server/tool separator
-			const result = parseMcpToolName("mcp_my_server_tool")
-			expect(result).toEqual({
-				serverName: "my",
-				toolName: "server_tool",
+		it("should correctly handle server names with underscores (fixed from old behavior)", () => {
+			// With the new -- separator, server names with underscores work correctly
+			expect(parseMcpToolName("mcp--my_server--tool")).toEqual({
+				serverName: "my_server",
+				toolName: "tool",
+			})
+		})
+
+		it("should handle both server and tool names with underscores", () => {
+			expect(parseMcpToolName("mcp--my_server--get_forecast")).toEqual({
+				serverName: "my_server",
+				toolName: "get_forecast",
 			})
 		})
 
 		it("should return null for malformed names", () => {
-			expect(parseMcpToolName("mcp_")).toBeNull()
-			expect(parseMcpToolName("mcp_server")).toBeNull()
+			expect(parseMcpToolName("mcp--")).toBeNull()
+			expect(parseMcpToolName("mcp--server")).toBeNull()
 		})
 	})
 
@@ -121,14 +146,32 @@ describe("mcp-name utilities", () => {
 			})
 		})
 
-		it("should preserve sanitized names through roundtrip", () => {
-			// Names with spaces become underscores, but roundtrip still works
-			// for the sanitized version
+		it("should preserve sanitized names through roundtrip with underscores", () => {
+			// Names with underscores now work correctly through roundtrip
 			const toolName = buildMcpToolName("my_server", "my_tool")
 			const parsed = parseMcpToolName(toolName)
 			expect(parsed).toEqual({
-				serverName: "my",
-				toolName: "server_my_tool",
+				serverName: "my_server",
+				toolName: "my_tool",
+			})
+		})
+
+		it("should handle spaces that get converted to underscores", () => {
+			// "my server" becomes "my_server" after sanitization
+			const toolName = buildMcpToolName("my server", "get tool")
+			const parsed = parseMcpToolName(toolName)
+			expect(parsed).toEqual({
+				serverName: "my_server",
+				toolName: "get_tool",
+			})
+		})
+
+		it("should handle complex server and tool names", () => {
+			const toolName = buildMcpToolName("Weather API", "get_current_forecast")
+			const parsed = parseMcpToolName(toolName)
+			expect(parsed).toEqual({
+				serverName: "Weather_API",
+				toolName: "get_current_forecast",
 			})
 		})
 	})
