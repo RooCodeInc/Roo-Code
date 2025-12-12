@@ -45,6 +45,46 @@ for (const [canonical, aliases] of CANONICAL_TO_ALIASES.entries()) {
 }
 
 /**
+ * Cache for renamed tool definitions.
+ * Maps "canonicalName:aliasName" to the pre-built tool definition.
+ * This avoids creating new objects via spread operators on every assistant message.
+ */
+const RENAMED_TOOL_CACHE: Map<string, OpenAI.Chat.ChatCompletionTool> = new Map()
+
+/**
+ * Gets or creates a renamed tool definition with the alias name.
+ * Uses RENAMED_TOOL_CACHE to avoid repeated object allocation.
+ *
+ * @param tool - The original tool definition
+ * @param aliasName - The alias name to use
+ * @returns Cached or newly created renamed tool definition
+ */
+function getOrCreateRenamedTool(
+	tool: OpenAI.Chat.ChatCompletionTool,
+	aliasName: string,
+): OpenAI.Chat.ChatCompletionTool {
+	if (!("function" in tool) || !tool.function) {
+		return tool
+	}
+
+	const cacheKey = `${tool.function.name}:${aliasName}`
+	let renamedTool = RENAMED_TOOL_CACHE.get(cacheKey)
+
+	if (!renamedTool) {
+		renamedTool = {
+			...tool,
+			function: {
+				...tool.function,
+				name: aliasName,
+			},
+		}
+		RENAMED_TOOL_CACHE.set(cacheKey, renamedTool)
+	}
+
+	return renamedTool
+}
+
+/**
  * Resolves a tool name to its canonical name.
  * If the tool name is an alias, returns the canonical tool name.
  * If it's already a canonical name or unknown, returns as-is.
@@ -286,14 +326,8 @@ export function filterNativeToolsForMode(
 				// Check if this tool should be renamed to an alias
 				const aliasName = aliasRenames.get(toolName)
 				if (aliasName) {
-					// Clone the tool with the alias name
-					filteredTools.push({
-						...tool,
-						function: {
-							...tool.function,
-							name: aliasName,
-						},
-					})
+					// Use cached renamed tool definition to avoid per-message object allocation
+					filteredTools.push(getOrCreateRenamedTool(tool, aliasName))
 				} else {
 					filteredTools.push(tool)
 				}
