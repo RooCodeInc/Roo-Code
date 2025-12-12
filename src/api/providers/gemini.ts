@@ -21,6 +21,7 @@ import { getModelParams } from "../transform/model-params"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
+import { setupGlobalProxyFetch, restoreOriginalFetch } from "../../utils/proxy-fetch"
 
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
@@ -41,6 +42,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const project = this.options.vertexProjectId ?? "not-provided"
 		const location = this.options.vertexRegion ?? "not-provided"
 		const apiKey = this.options.geminiApiKey ?? "not-provided"
+
+		// Setup proxy-aware fetch for GoogleGenAI client
+		// This ensures that the Gemini API client respects system proxy settings
+		try {
+			setupGlobalProxyFetch()
+		} catch (error) {
+			console.warn("Failed to setup proxy-aware fetch for Gemini:", error)
+		}
 
 		this.client = this.options.vertexJsonCredentials
 			? new GoogleGenAI({
