@@ -8,7 +8,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { SuggestionItem } from "@roo-code/types"
 import { cn } from "@/lib/utils"
 
-const DEFAULT_FOLLOWUP_TIMEOUT_MS = 600000000
+const DEFAULT_FOLLOWUP_TIMEOUT_MS = 6000
 const COUNTDOWN_INTERVAL_MS = 1000
 
 interface FollowUpSuggestProps {
