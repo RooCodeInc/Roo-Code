@@ -890,27 +890,31 @@ export class ClineProvider
 			await this.updateGlobalState("mode", historyItem.mode)
 
 			// Load the saved API config for the restored mode if it exists.
-			const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
-			const listApiConfig = await this.providerSettingsManager.listConfig()
+			// Skip mode-based profile activation if historyItem.apiConfigName exists,
+			// since the task's specific provider profile will override it anyway.
+			if (!historyItem.apiConfigName) {
+				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
+				const listApiConfig = await this.providerSettingsManager.listConfig()
 
-			// Update listApiConfigMeta first to ensure UI has latest data.
-			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
+				// Update listApiConfigMeta first to ensure UI has latest data.
+				await this.updateGlobalState("listApiConfigMeta", listApiConfig)
 
-			// If this mode has a saved config, use it.
-			if (savedConfigId) {
-				const profile = listApiConfig.find(({ id }) => id === savedConfigId)
+				// If this mode has a saved config, use it.
+				if (savedConfigId) {
+					const profile = listApiConfig.find(({ id }) => id === savedConfigId)
 
-				if (profile?.name) {
-					try {
-						await this.activateProviderProfile({ name: profile.name })
-					} catch (error) {
-						// Log the error but continue with task restoration.
-						this.log(
-							`Failed to restore API configuration for mode '${historyItem.mode}': ${
-								error instanceof Error ? error.message : String(error)
-							}. Continuing with default configuration.`,
-						)
-						// The task will continue with the current/default configuration.
+					if (profile?.name) {
+						try {
+							await this.activateProviderProfile({ name: profile.name })
+						} catch (error) {
+							// Log the error but continue with task restoration.
+							this.log(
+								`Failed to restore API configuration for mode '${historyItem.mode}': ${
+									error instanceof Error ? error.message : String(error)
+								}. Continuing with default configuration.`,
+							)
+							// The task will continue with the current/default configuration.
+						}
 					}
 				}
 			}
@@ -1487,8 +1491,7 @@ export class ClineProvider
 			const taskHistoryItem = history.find((item) => item.id === task.taskId)
 
 			if (taskHistoryItem) {
-				taskHistoryItem.apiConfigName = apiConfigName
-				await this.updateTaskHistory(taskHistoryItem)
+				await this.updateTaskHistory({ ...taskHistoryItem, apiConfigName })
 			}
 		} catch (error) {
 			// If persistence fails, log the error but don't fail the profile switch.
