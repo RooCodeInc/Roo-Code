@@ -241,6 +241,18 @@ export async function presentAssistantMessage(cline: Task) {
 				TelemetryService.instance.captureToolUsage(cline.taskId, "use_mcp_tool", toolProtocol)
 			}
 
+			// Resolve sanitized server name back to original server name
+			// The serverName from parsing is sanitized (e.g., "my_server" from "my server")
+			// We need the original name to find the actual MCP connection
+			const mcpHub = cline.providerRef.deref()?.getMcpHub()
+			let resolvedServerName = mcpBlock.serverName
+			if (mcpHub) {
+				const originalName = mcpHub.findServerNameBySanitizedName(mcpBlock.serverName)
+				if (originalName) {
+					resolvedServerName = originalName
+				}
+			}
+
 			// Execute the MCP tool using the same handler as use_mcp_tool
 			// Create a synthetic ToolUse block that the useMcpToolTool can handle
 			const syntheticToolUse: ToolUse<"use_mcp_tool"> = {
@@ -248,13 +260,13 @@ export async function presentAssistantMessage(cline: Task) {
 				id: mcpBlock.id,
 				name: "use_mcp_tool",
 				params: {
-					server_name: mcpBlock.serverName,
+					server_name: resolvedServerName,
 					tool_name: mcpBlock.toolName,
 					arguments: JSON.stringify(mcpBlock.arguments),
 				},
 				partial: mcpBlock.partial,
 				nativeArgs: {
-					server_name: mcpBlock.serverName,
+					server_name: resolvedServerName,
 					tool_name: mcpBlock.toolName,
 					arguments: mcpBlock.arguments,
 				},

@@ -33,6 +33,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { sanitizeMcpName } from "../../utils/mcp-name"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -154,6 +155,8 @@ export class McpHub {
 	private configChangeDebounceTimers: Map<string, NodeJS.Timeout> = new Map()
 	private isProgrammaticUpdate: boolean = false
 	private flagResetTimer?: NodeJS.Timeout
+	// Registry for O(1) lookup of original server names from sanitized names
+	private sanitizedNameRegistry: Map<string, string> = new Map()
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
@@ -627,6 +630,10 @@ export class McpHub {
 		// Remove existing connection if it exists with the same source
 		await this.deleteConnection(name, source)
 
+		// Register the sanitized name for O(1) lookup
+		const sanitizedName = sanitizeMcpName(name)
+		this.sanitizedNameRegistry.set(sanitizedName, name)
+
 		// Check if MCP is globally enabled
 		const mcpEnabled = await this.isMcpEnabled()
 		if (!mcpEnabled) {
@@ -910,6 +917,25 @@ export class McpHub {
 		)
 	}
 
+	/**
+	 * Find a connection by sanitized server name.
+	 * This is used when parsing MCP tool responses where the server name has been
+	 * sanitized (e.g., hyphens replaced with underscores) for API compliance.
+	 * Uses O(1) registry lookup instead of scanning all connections.
+	 * @param sanitizedServerName The sanitized server name from the API tool call
+	 * @returns The original server name if found, or null if no match
+	 */
+	public findServerNameBySanitizedName(sanitizedServerName: string): string | null {
+		// First try exact match (in case the original name was already valid)
+		const exactMatch = this.connections.find((conn) => conn.server.name === sanitizedServerName)
+		if (exactMatch) {
+			return exactMatch.server.name
+		}
+
+		// O(1) lookup using the sanitized name registry
+		return this.sanitizedNameRegistry.get(sanitizedServerName) ?? null
+	}
+
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
 		try {
 			// Use the helper method to find the connection
@@ -1027,6 +1053,13 @@ export class McpHub {
 			if (source && conn.server.source !== source) return true
 			return false
 		})
+
+		// Remove from sanitized name registry if no more connections with this name exist
+		const remainingConnections = this.connections.filter((conn) => conn.server.name === name)
+		if (remainingConnections.length === 0) {
+			const sanitizedName = sanitizeMcpName(name)
+			this.sanitizedNameRegistry.delete(sanitizedName)
+		}
 	}
 
 	async updateServerConnections(
