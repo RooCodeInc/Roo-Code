@@ -7,13 +7,24 @@ import { TerminalProcess } from "../TerminalProcess"
 import { Terminal } from "../Terminal"
 import { TerminalRegistry } from "../TerminalRegistry"
 
+class TestTerminalProcess extends TerminalProcess {
+	public callTrimRetrievedOutput(): void {
+		this.trimRetrievedOutput()
+	}
+}
+
 vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
 
 describe("TerminalProcess", () => {
-	let terminalProcess: TerminalProcess
+	let terminalProcess: TestTerminalProcess
 	let mockTerminal: any
+	type TestVscodeTerminal = vscode.Terminal & {
+		shellIntegration: {
+			executeCommand: any
+		}
+	}
 	let mockTerminalInfo: Terminal
 	let mockExecution: any
 	let mockStream: AsyncIterableIterator<string>
@@ -33,16 +44,12 @@ describe("TerminalProcess", () => {
 			hide: vi.fn(),
 			show: vi.fn(),
 			sendText: vi.fn(),
-		} as unknown as vscode.Terminal & {
-			shellIntegration: {
-				executeCommand: any
-			}
-		}
+		} as unknown as TestVscodeTerminal
 
 		mockTerminalInfo = new Terminal(1, mockTerminal, "./")
 
 		// Create a process for testing
-		terminalProcess = new TerminalProcess(mockTerminalInfo)
+		terminalProcess = new TestTerminalProcess(mockTerminalInfo)
 
 		TerminalRegistry["terminals"].push(mockTerminalInfo)
 
@@ -245,8 +252,7 @@ describe("TerminalProcess", () => {
 			terminalProcess["fullOutput"] = "test output data"
 			terminalProcess["lastRetrievedIndex"] = 16 // Same as fullOutput.length
 
-			// Access the protected method through type casting
-			;(terminalProcess as any).trimRetrievedOutput()
+			terminalProcess.callTrimRetrievedOutput()
 
 			expect(terminalProcess["fullOutput"]).toBe("")
 			expect(terminalProcess["lastRetrievedIndex"]).toBe(0)
@@ -256,7 +262,7 @@ describe("TerminalProcess", () => {
 			// Set up a scenario where not all output has been retrieved
 			terminalProcess["fullOutput"] = "test output data"
 			terminalProcess["lastRetrievedIndex"] = 5 // Less than fullOutput.length
-			;(terminalProcess as any).trimRetrievedOutput()
+			terminalProcess.callTrimRetrievedOutput()
 
 			// Buffer should NOT be cleared - there's still unretrieved content
 			expect(terminalProcess["fullOutput"]).toBe("test output data")
@@ -266,7 +272,7 @@ describe("TerminalProcess", () => {
 		it("does nothing when buffer is already empty", () => {
 			terminalProcess["fullOutput"] = ""
 			terminalProcess["lastRetrievedIndex"] = 0
-			;(terminalProcess as any).trimRetrievedOutput()
+			terminalProcess.callTrimRetrievedOutput()
 
 			expect(terminalProcess["fullOutput"]).toBe("")
 			expect(terminalProcess["lastRetrievedIndex"]).toBe(0)
@@ -276,7 +282,7 @@ describe("TerminalProcess", () => {
 			// Edge case: index is greater than current length (could happen if output was modified)
 			terminalProcess["fullOutput"] = "short"
 			terminalProcess["lastRetrievedIndex"] = 100
-			;(terminalProcess as any).trimRetrievedOutput()
+			terminalProcess.callTrimRetrievedOutput()
 
 			expect(terminalProcess["fullOutput"]).toBe("")
 			expect(terminalProcess["lastRetrievedIndex"]).toBe(0)
