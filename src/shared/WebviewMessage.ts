@@ -69,6 +69,7 @@ export interface WebviewMessage {
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
+		| "cancelAutoApproval"
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
 		| "vsCodeSetting"
@@ -161,7 +162,6 @@ export interface WebviewMessage {
 		| "zgsmProviderTip"
 		| "fetchZgsmInviteCode"
 		| "fixCodebase"
-		| "zgsmFollowupClearTimeout"
 		| "showTaskWithIdInNewTab"
 		// zgsm
 		| "shareTaskSuccess"

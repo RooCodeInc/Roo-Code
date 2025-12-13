@@ -126,6 +126,7 @@ interface ChatRowProps {
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
 	isMultipleChoiceAnswered?: boolean
+	isFollowUpAutoApprovalPaused?: boolean
 	editable?: boolean
 	shouldHighlight?: boolean
 	searchResults?: SearchResult[]
@@ -195,6 +196,7 @@ export const ChatRowContent = ({
 	isMultipleChoiceAnswered,
 	// editable,
 	searchQuery,
+	isFollowUpAutoApprovalPaused,
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
@@ -1825,6 +1827,7 @@ export const ChatRowContent = ({
 									ts={message?.ts}
 									onCancelAutoApproval={onFollowUpUnmount}
 									isAnswered={isFollowUpAnswered}
+									isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
 								/>
 							</div>
 						</>

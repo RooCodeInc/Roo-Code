@@ -1228,6 +1228,11 @@ export const webviewMessageHandler = async (
 		case "cancelTask":
 			await provider.cancelTask()
 			break
+		case "cancelAutoApproval":
+			// Cancel any pending auto-approval timeout for the current task
+			provider.getCurrentTask()?.cancelAutoApprovalTimeout()
+			await provider.postStateToWebview()
+			break
 		case "killBrowserSession":
 			{
 				const task = provider.getCurrentTask()
@@ -3256,16 +3261,6 @@ export const webviewMessageHandler = async (
 			} finally {
 				// Update UI status
 				await provider.postStateToWebview()
-			}
-			break
-		}
-		case "zgsmFollowupClearTimeout": {
-			const currentTask = provider?.getCurrentTask()
-			if (currentTask && typeof message.value === "number") {
-				const cleared = currentTask.clearAutoApprovalTimeout(message.value)
-				if (!cleared) {
-					provider?.log(`Failed to clear timeout with ID: ${message.value}`, "info")
-				}
 			}
 			break
 		}

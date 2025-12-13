@@ -56,7 +56,8 @@
 	},
 	"reject": {
 		"title": "拒绝",
-		"tooltip": "拒绝此操作"
+		"tooltip": "拒绝此操作",
+		"askNextStep": "请立即终止 “{{action}}” 操作，并等待我给出新的计划，然后再继续下一步。"
 	},
 	"completeSubtaskAndReturn": "完成子任务并返回",
 	"approve": {
@@ -309,8 +310,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "复制到输入框（或按住Shift点击）",
-		"autoSelectCountdown": "{{count}}秒后自动选择",
-		"countdownDisplay": "{{count}}秒"
+		"timerPrefix": "自动批准已启用。{{seconds}}秒后选择中…"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} 已发布",

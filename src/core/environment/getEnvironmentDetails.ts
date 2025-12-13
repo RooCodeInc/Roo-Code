@@ -41,11 +41,22 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 
 	// It could be useful for cline to know if the user went from one or no
 	// file to another between messages, so we always include this context.
-	const visibleFilePaths = vscode.window.visibleTextEditors
-		?.map((editor) => editor.document?.uri?.fsPath)
+	const visibleTabFilePaths = (vscode.window.visibleTextEditors || [])
+		.map((editor) => editor.document?.uri)
 		.filter(Boolean)
-		.map((absolutePath) => path.relative(cline.cwd, absolutePath))
-		.slice(0, maxWorkspaceFiles)
+
+	const existingVisibleFilePaths = await Promise.all(
+		visibleTabFilePaths.map(async (uri) => {
+			try {
+				await fs.stat(uri.fsPath)
+				const absolutePath = uri.fsPath
+				return path.relative(cline.cwd, absolutePath).toPosix()
+			} catch (error) {
+				return null
+			}
+		}),
+	)
+	const visibleFilePaths = existingVisibleFilePaths.filter((path) => path !== null).slice(0, maxWorkspaceFiles)
 
 	// Filter paths through rooIgnoreController
 	const allowedVisibleFiles = cline.rooIgnoreController
@@ -61,7 +72,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	const maxTabs = maxOpenTabsContext ?? 20
 
 	// 获取所有文本编辑器标签的文件路径
-	const tabUris = vscode.window.tabGroups.all
+	const tabUris = (vscode.window.tabGroups?.all || [])
 		.flatMap((group) => group.tabs)
 		.filter((tab) => tab.input instanceof vscode.TabInputText)
 		.map((tab) => (tab.input as vscode.TabInputText).uri)

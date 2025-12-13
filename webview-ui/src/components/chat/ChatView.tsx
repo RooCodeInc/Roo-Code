@@ -154,6 +154,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const inputValueRef = useRef(inputValue)
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
+	const [userFeedback, setUserFeedback] = useState("")
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
 
 	// We need to hold on to the ask because useEffect > lastMessage will always
@@ -187,9 +188,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			ttl: 1000 * 60 * 5,
 		}),
 	)
-	// const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const followUpAutoApproveTimeoutRef = useRef<number | undefined>()
-	// const userRespondedRef = useRef<boolean>(false)
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number>(-1)
 
 	const clineAskRef = useRef(clineAsk)
@@ -210,6 +208,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		inputValueRef.current = inputValue
 	}, [inputValue])
+
+	// Compute whether auto-approval is paused (user is typing in a followup)
+	const isFollowUpAutoApprovalPaused = useMemo(() => {
+		return !!(inputValue && inputValue.trim().length > 0 && clineAsk === "followup")
+	}, [inputValue, clineAsk])
+
+	// Cancel auto-approval timeout when user starts typing
+	useEffect(() => {
+		// Only send cancel if there's actual input (user is typing)
+		// and we have a pending follow-up question
+		if (isFollowUpAutoApprovalPaused) {
+			vscode.postMessage({ type: "cancelAutoApproval" })
+		}
+	}, [isFollowUpAutoApprovalPaused])
 
 	useEffect(() => {
 		isMountedRef.current = true
@@ -270,7 +282,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			switch (lastMessage.type) {
 				case "ask":
 					// Reset user response flag when a new ask arrives to allow auto-approval
-					// userRespondedRef.current = false
 					const isPartial = lastMessage.partial === true
 					switch (lastMessage.ask) {
 						case "api_req_failed":
@@ -320,6 +331,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "generateImage":
 									setPrimaryButtonText(t("chat:save.title"))
 									setSecondaryButtonText(t("chat:reject.title"))
+									setUserFeedback(t("chat:reject.askNextStep", { action: t("chat:save.title") }))
 									break
 								case "finishTask":
 									setPrimaryButtonText(t("chat:completeSubtaskAndReturn"))
@@ -353,6 +365,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setEnableButtons(!isPartial)
 							setPrimaryButtonText(t("chat:runCommand.title"))
 							setSecondaryButtonText(t("chat:reject.title"))
+							setUserFeedback(t("chat:reject.askNextStep", { action: t("chat:runCommand.title") }))
 							break
 						case "command_output":
 							setSendingDisabled(false)
@@ -474,13 +487,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setIsCondensing(false) // Reset condensing state when switching tasks
 		// Note: sendingDisabled is not reset here as it's managed by message effects
 
-		// Clear any pending auto-approval timeout from previous task
-		// if (autoApproveTimeoutRef.current) {
-		// 	clearTimeout(autoApproveTimeoutRef.current)
-		// 	autoApproveTimeoutRef.current = null
-		// }
 		// Reset user response flag for new task
-		// userRespondedRef.current = false
 	}, [task?.ts])
 
 	useEffect(() => {
@@ -613,7 +620,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 
 				// Mark that user has responded - this prevents any pending auto-approvals.
-				// userRespondedRef.current = true
 				const isCommandInput = clineAskRef.current === "command_output"
 				if (messagesRef.current.length === 0) {
 					vscode.postMessage({ type: "newTask", text, images, values: { chatType } })
@@ -700,7 +706,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handlePrimaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
-			// userRespondedRef.current = true
 
 			const trimmedInput = text?.trim()
 
@@ -774,7 +779,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSecondaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
 			// Mark that user has responded
-			// userRespondedRef.current = true
 
 			const trimmedInput = text?.trim()
 
@@ -806,8 +810,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						setInputValue("")
 						setSelectedImages([])
 					} else {
-						// Responds to the API with a "This operation failed" and lets it try again
-						vscode.postMessage({ type: "askResponse", askResponse: "noButtonClicked" })
+						if (["tool", "command"].includes(clineAsk) && userFeedback) {
+							vscode.postMessage({
+								type: "askResponse",
+								askResponse: "noButtonClicked",
+								text: userFeedback,
+							})
+							setUserFeedback("")
+						} else {
+							// Responds to the API with a "This operation failed" and lets it try again
+							vscode.postMessage({ type: "askResponse", askResponse: "noButtonClicked" })
+						}
 					}
 					break
 				case "command_output":
@@ -818,7 +831,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[isStreaming, clineAsk, startNewTask, userFeedback],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -832,10 +845,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			const message: ExtensionMessage = e.data
 
 			switch (message.type) {
-				case "zgsmFollowupClearTimeout": {
-					followUpAutoApproveTimeoutRef.current = message.value
-					break
-				}
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
@@ -1284,9 +1293,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSuggestionClickInRow = useCallback(
 		(suggestion: SuggestionItem, event?: React.MouseEvent) => {
 			// Mark that user has responded if this is a manual click (not auto-approval)
-			// if (event) {
-			// 	userRespondedRef.current = true
-			// }
 
 			// Mark the current follow-up question as answered when a suggestion is clicked
 			if (clineAsk === "followup" && !event?.shiftKey) {
@@ -1325,18 +1331,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		vscode.postMessage({ type: "askResponse", askResponse: "objectResponse", text: JSON.stringify(response) })
 	}, [])
 
-	// Handler for when FollowUpSuggest component unmounts
-	const handleFollowUpUnmount = useCallback(() => {
-		// Mark that user has responded
-		// userRespondedRef.current = true
-		if (Number.isInteger(followUpAutoApproveTimeoutRef.current)) {
-			vscode.postMessage({
-				type: "zgsmFollowupClearTimeout",
-				value: followUpAutoApproveTimeoutRef.current,
-			})
-		}
-		followUpAutoApproveTimeoutRef.current = undefined
-	}, [])
 	const shouldHighlight = useCallback(
 		(messageOrGroup?: ClineMessage, searchResults: SearchResult[] = [], showSearch?: boolean) => {
 			if (!searchQuery || !showSearch || !messageOrGroup || !searchResults || searchResults.length === 0) {
@@ -1395,7 +1389,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
 					onMultipleChoiceSubmit={handleMultipleChoiceSubmit}
 					onBatchFileResponse={handleBatchFileResponse}
-					onFollowUpUnmount={handleFollowUpUnmount}
+					isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts <= currentFollowUpTs}
 					// Costrict: ask_multiple_choice answered
 					isMultipleChoiceAnswered={
@@ -1435,7 +1429,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isStreaming,
 			handleSuggestionClickInRow,
 			handleBatchFileResponse,
-			handleFollowUpUnmount,
 			handleMultipleChoiceSubmit,
 			primaryButtonText,
 			currentFollowUpTs,
@@ -1443,6 +1436,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			searchResults,
 			showSearch,
 			searchQuery,
+			isFollowUpAutoApprovalPaused,
 			alwaysAllowUpdateTodoList,
 			enableButtons,
 		],

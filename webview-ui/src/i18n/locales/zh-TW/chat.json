@@ -56,7 +56,8 @@
 	},
 	"reject": {
 		"title": "拒絕",
-		"tooltip": "拒絕此操作"
+		"tooltip": "拒絕此操作",
+		"askNextStep": "請立即終止 “{{action}}” 操作，並等待我有新的計畫，然後再繼續下一步。"
 	},
 	"completeSubtaskAndReturn": "完成子工作並返回",
 	"approve": {
@@ -350,8 +351,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",
-		"autoSelectCountdown": "{{count}} 秒後自動選擇",
-		"countdownDisplay": "{{count}} 秒"
+		"timerPrefix": "自動批准已啟用。{{seconds}}秒後選擇中…"
 	},
 	"browser": {
 		"session": "瀏覽器會話",

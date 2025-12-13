@@ -56,7 +56,8 @@
 	},
 	"reject": {
 		"title": "Reject",
-		"tooltip": "Reject this action"
+		"tooltip": "Reject this action",
+		"askNextStep": "Please immediately terminate the '{{action}}' operation, and wait for me to provide a new plan before proceeding to the next step."
 	},
 	"completeSubtaskAndReturn": "Complete Subtask and Return",
 	"approve": {
@@ -346,8 +347,7 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copy to input (same as shift + click)",
-		"autoSelectCountdown": "Auto-selecting in {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Auto-approve enabled. Selecting in {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Browser Session",

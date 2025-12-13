@@ -180,9 +180,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	todoList?: TodoItem[]
 
-	private readonly timeoutMap = new Map<number, NodeJS.Timeout>()
-	private nextTimeoutId = 0
-
 	readonly rootTask: Task | undefined = undefined
 	readonly parentTask: Task | undefined = undefined
 	readonly taskNumber: number
@@ -295,6 +292,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private askResponseText?: string
 	private askResponseImages?: string[]
 	public lastMessageTs?: number
+	private autoApprovalTimeoutRef?: NodeJS.Timeout
 
 	// Tool Use
 	consecutiveMistakeCount: number = 0
@@ -1104,6 +1102,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
 
+		let timeouts: NodeJS.Timeout[] = []
+
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
@@ -1114,22 +1114,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else if (approval.decision === "deny") {
 			this.denyAsk()
 		} else if (approval.decision === "timeout") {
-			const timeoutId = this.nextTimeoutId++
-
-			const timer = setTimeout(() => {
+			// Store the auto-approval timeout so it can be cancelled if user interacts
+			this.autoApprovalTimeoutRef = setTimeout(() => {
 				const { askResponse, text, images } = approval.fn()
 				this.handleWebviewAskResponse(askResponse, text, images)
-				this.timeoutMap.delete(timeoutId)
+				this.autoApprovalTimeoutRef = undefined
 			}, approval.timeout)
-
-			this.timeoutMap.set(timeoutId, timer)
-
-			if (approval.askType === "followup") {
-				provider?.postMessageToWebview({
-					type: "zgsmFollowupClearTimeout",
-					value: timeoutId,
-				})
-			}
+			timeouts.push(this.autoApprovalTimeoutRef)
 		}
 
 		// The state is mutable if the message is complete and the task will
@@ -1146,20 +1137,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (isStatusMutable) {
 			console.log(`Task#ask: status is mutable -> type: ${type}`)
 			const statusMutationTimeout = 2_000
-			const statusMutationHandler = (task: Task, cb: (timeoutId: number) => any, timeout: number) => {
-				const timeoutId = this.nextTimeoutId++
-				const timer = setTimeout(() => {
-					cb(timeoutId)
-					task.timeoutMap.delete(timeoutId)
-				}, timeout)
-
-				task.timeoutMap.set(timeoutId, timer)
-			}
 
 			if (isInteractiveAsk(type)) {
-				statusMutationHandler(
-					this,
-					() => {
+				timeouts.push(
+					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
 						if (message) {
@@ -1167,34 +1148,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.emit(RooCodeEventName.TaskInteractive, this.taskId)
 							provider?.postMessageToWebview({ type: "interactionRequired" })
 						}
-					},
-					statusMutationTimeout,
+					}, statusMutationTimeout),
 				)
 			} else if (isResumableAsk(type)) {
-				statusMutationHandler(
-					this,
-					() => {
+				timeouts.push(
+					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
 						if (message) {
 							this.resumableAsk = message
 							this.emit(RooCodeEventName.TaskResumable, this.taskId)
 						}
-					},
-					statusMutationTimeout,
+					}, statusMutationTimeout),
 				)
 			} else if (isIdleAsk(type)) {
-				statusMutationHandler(
-					this,
-					() => {
+				timeouts.push(
+					setTimeout(() => {
 						const message = this.findMessageByTimestamp(askTs)
 
 						if (message) {
 							this.idleAsk = message
 							this.emit(RooCodeEventName.TaskIdle, this.taskId)
 						}
-					},
-					statusMutationTimeout,
+					}, statusMutationTimeout),
 				)
 			}
 		} else if (isMessageQueued) {
@@ -1243,7 +1219,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.askResponseImages = undefined
 
 		// Cancel the timeouts if they are still running.
-		this.clearAllAutoApprovalTimeouts()
+		timeouts.forEach((timeout) => clearTimeout(timeout))
 
 		// Switch back to an active state.
 		if (this.idleAsk || this.resumableAsk || this.interactiveAsk) {
@@ -1257,23 +1233,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return result
 	}
 
-	public clearAutoApprovalTimeout(timeoutId: number): boolean {
-		const timer = this.timeoutMap.get(timeoutId)
-		if (timer) {
-			clearTimeout(timer)
-			this.timeoutMap.delete(timeoutId)
-			return true
-		}
-		return false
-	}
-
-	public clearAllAutoApprovalTimeouts(): void {
-		for (const [timeoutId, timer] of this.timeoutMap) {
-			clearTimeout(timer)
-		}
-		this.timeoutMap.clear()
-	}
-
 	handleWebviewAskResponse(
 		askResponse: ClineAskResponse,
 		text?: string,
@@ -1281,6 +1240,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		chatType?: "system" | "user",
 		isCommandInput?: boolean,
 	) {
+		// Clear any pending auto-approval timeout when user responds
+		this.cancelAutoApprovalTimeout()
+
 		const provider = this.providerRef.deref()
 
 		if (isCommandInput && provider) {
@@ -1347,6 +1309,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				})
 
+			this.saveClineMessages().catch((e) => console.error("Failed to save multiple choice state:", e))
+		}
+	}
+
+	/**
+	 * Cancel any pending auto-approval timeout.
+	 * Called when user interacts (types, clicks buttons, etc.) to prevent the timeout from firing.
+	 */
+	public cancelAutoApprovalTimeout() {
+		if (this.autoApprovalTimeoutRef) {
+			clearTimeout(this.autoApprovalTimeoutRef)
+			this.autoApprovalTimeoutRef = undefined
+			this.clineMessages
+				.filter((msg) => msg.type === "ask" && msg.ask === "followup" && !msg.isAnswered)
+				.forEach((msg) => (msg.isAnswered = true))
 			this.saveClineMessages().catch((e) => console.error("Failed to save multiple choice state:", e))
 		}
 	}
@@ -2048,7 +2025,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.emitFinalTokenUsageUpdate()
 
 		this.emit(RooCodeEventName.TaskAborted)
-
+		this.clineMessages
+			.filter((msg) => msg.type === "ask" && msg.ask === "followup" && !msg.isAnswered)
+			.forEach((msg) => (msg.isAnswered = true))
 		try {
 			this.dispose() // Call the centralized dispose method
 		} catch (error) {
@@ -3400,7 +3379,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.apiConversationHistory.pop()
 						}
 					}
-					// if (shouldStop)
+
 					// Check if we should auto-retry or prompt the user
 					let errorMsg = t("common:errors.unexpected_api_response")
 					// Reuse the state variable from above
