@@ -18,6 +18,7 @@ import {
 	type ModelInfo,
 	type ProviderSettings,
 	type BedrockModelId,
+	type BedrockServiceTier,
 	bedrockDefaultModelId,
 	bedrockModels,
 	bedrockDefaultPromptRouterModelId,
@@ -27,6 +28,8 @@ import {
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
+	BEDROCK_SERVICE_TIER_MODEL_IDS,
+	BEDROCK_SERVICE_TIER_PRICING,
 } from "@roo-code/types"
 
 import { ApiStream } from "../transform/stream"
@@ -72,6 +75,13 @@ interface BedrockPayload {
 	anthropic_version?: string
 	additionalModelRequestFields?: BedrockAdditionalModelFields
 	toolConfig?: ToolConfiguration
+}
+
+// Extended payload type that includes service_tier as a top-level parameter
+// AWS Bedrock service tiers (STANDARD, FLEX, PRIORITY) are specified at the top level
+// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
+type BedrockPayloadWithServiceTier = BedrockPayload & {
+	service_tier?: BedrockServiceTier
 }
 
 // Define specific types for content block events to avoid 'as any' usage
@@ -433,6 +443,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
 		}
 
+		// Determine if service tier should be applied (checked later when building payload)
+		const useServiceTier =
+			this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)
+		if (useServiceTier) {
+			logger.info("Service tier specified for Bedrock request", {
+				ctx: "bedrock",
+				modelId: modelConfig.id,
+				serviceTier: this.options.awsBedrockServiceTier,
+			})
+		}
+
 		// Build tool configuration if native tools are enabled
 		let toolConfig: ToolConfiguration | undefined
 		if (useNativeTools && metadata?.tools) {
@@ -442,7 +463,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		const payload: BedrockPayload = {
+		// Build payload with optional service_tier at top level
+		// Service tier is a top-level parameter per AWS documentation, NOT inside additionalModelRequestFields
+		// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
+		const payload: BedrockPayloadWithServiceTier = {
 			modelId: modelConfig.id,
 			messages: formatted.messages,
 			system: formatted.system,
@@ -451,6 +475,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// Add anthropic_version at top level when using thinking features
 			...(thinkingEnabled && { anthropic_version: "bedrock-2023-05-31" }),
 			...(toolConfig && { toolConfig }),
+			// Add service_tier as a top-level parameter (not inside additionalModelRequestFields)
+			...(useServiceTier && { service_tier: this.options.awsBedrockServiceTier }),
 		}
 
 		// Create AbortController with 10 minute timeout
@@ -1088,6 +1114,30 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			settings: this.options,
 			defaultTemperature: BEDROCK_DEFAULT_TEMPERATURE,
 		})
+
+		// Apply service tier pricing if specified and model supports it
+		const baseModelIdForTier = this.parseBaseModelId(modelConfig.id)
+		if (this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelIdForTier as any)) {
+			const pricingMultiplier = BEDROCK_SERVICE_TIER_PRICING[this.options.awsBedrockServiceTier]
+			if (pricingMultiplier && pricingMultiplier !== 1.0) {
+				// Apply pricing multiplier to all price fields
+				modelConfig.info = {
+					...modelConfig.info,
+					inputPrice: modelConfig.info.inputPrice
+						? modelConfig.info.inputPrice * pricingMultiplier
+						: undefined,
+					outputPrice: modelConfig.info.outputPrice
+						? modelConfig.info.outputPrice * pricingMultiplier
+						: undefined,
+					cacheWritesPrice: modelConfig.info.cacheWritesPrice
+						? modelConfig.info.cacheWritesPrice * pricingMultiplier
+						: undefined,
+					cacheReadsPrice: modelConfig.info.cacheReadsPrice
+						? modelConfig.info.cacheReadsPrice * pricingMultiplier
+						: undefined,
+				}
+			}
+		}
 
 		// Don't override maxTokens/contextWindow here; handled in getModelById (and includes user overrides)
 		return { ...modelConfig, ...params } as {
