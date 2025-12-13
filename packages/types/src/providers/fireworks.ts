@@ -9,6 +9,7 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/deepseek-r1-0528"
 	| "accounts/fireworks/models/deepseek-v3"
 	| "accounts/fireworks/models/deepseek-v3p1"
+	| "accounts/fireworks/models/deepseek-v3p2"
 	| "accounts/fireworks/models/glm-4p5"
 	| "accounts/fireworks/models/glm-4p5-air"
 	| "accounts/fireworks/models/glm-4p6"
@@ -104,6 +105,18 @@ export const fireworksModels = {
 		outputPrice: 1.68,
 		description:
 			"DeepSeek v3.1 is an improved version of the v3 model with enhanced performance, better reasoning capabilities, and improved code generation. This Mixture-of-Experts (MoE) model maintains the same 671B total parameters with 37B activated per token.",
+	},
+	"accounts/fireworks/models/deepseek-v3p2": {
+		maxTokens: 16384,
+		contextWindow: 163840,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		supportsReasoningBinary: true,
+		inputPrice: 0.56,
+		outputPrice: 1.68,
+		description:
+			"DeepSeek v3.2 is the latest version of the DeepSeek V3 model series with further enhanced performance, improved reasoning capabilities, and better code generation. This Mixture-of-Experts (MoE) model maintains 671B total parameters with 37B activated per token.",
 	},
 	"accounts/fireworks/models/glm-4p5": {
 		maxTokens: 16384,
