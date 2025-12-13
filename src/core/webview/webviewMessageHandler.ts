@@ -632,7 +632,20 @@ export const webviewMessageHandler = async (
 			// Clear task resets the current session. Delegation flows are
 			// handled via metadata; parent resumption occurs through
 			// reopenParentFromDelegation, not via finishSubTask.
-			await provider.clearTask()
+			const task = provider.getCurrentTask()
+			if (task?.parentTaskId) {
+				const completionResultMessage = task.clineMessages.filter(
+					(msg) => msg.say === "completion_result" || msg.ask === "completion_result",
+				)
+				const lastCompletionMessage = completionResultMessage[completionResultMessage.length - 1]?.text
+				await provider.reopenParentFromDelegation({
+					parentTaskId: task.parentTaskId,
+					childTaskId: task.taskId,
+					completionResultSummary: lastCompletionMessage || t("common:tasks.canceled"),
+				})
+			} else {
+				await provider.clearTask()
+			}
 			await provider.postStateToWebview()
 			break
 		case "didShowAnnouncement":
