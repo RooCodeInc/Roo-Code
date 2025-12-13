@@ -22,7 +22,7 @@
 		"type": {
 			"label": "Nach Typ filtern:",
 			"all": "Alle Typen",
-			"mode": "Modus",
+			"agent": "Modus",
 			"mcpServer": "MCP-Server"
 		},
 		"sort": {
@@ -46,7 +46,7 @@
 		"marketplace": "Marktplatz"
 	},
 	"type-group": {
-		"modes": "Modi",
+		"agents": "Modi",
 		"mcps": "MCP-Server"
 	},
 	"items": {
@@ -140,7 +140,7 @@
 		}
 	},
 	"removeConfirm": {
-		"mode": {
+		"agent": {
 			"title": "Modus entfernen",
 			"message": "Bist du sicher, dass du den Modus „{{modeName}}“ entfernen möchtest?",
 			"rulesWarning": "Dadurch werden auch alle zugehörigen Regeldateien für diesen Modus entfernt."

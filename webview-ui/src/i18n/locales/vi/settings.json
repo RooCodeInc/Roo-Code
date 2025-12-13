@@ -22,7 +22,7 @@
 	},
 	"sections": {
 		"providers": "Nhà cung cấp",
-		"modes": "Chế độ",
+		"agents": "Chế độ",
 		"mcp": "Máy chủ MCP",
 		"autoApprove": "Phê duyệt",
 		"browser": "Trình duyệt",
@@ -387,7 +387,7 @@
 		"enablePromptCachingTitle": "Bật bộ nhớ đệm lời nhắc để cải thiện hiệu suất và giảm chi phí cho các mô hình được hỗ trợ.",
 		"cacheUsageNote": "Lưu ý: Nếu bạn không thấy việc sử dụng bộ nhớ đệm, hãy thử chọn một mô hình khác và sau đó chọn lại mô hình mong muốn của bạn.",
 		"vscodeLmModel": "Mô hình ngôn ngữ",
-		"vscodeLmWarning": "Lưu ý: Các mô hình truy cập qua VS Code Language Model API có thể được nhà cung cấp bao bọc hoặc tinh chỉnh, vì vậy hành vi có thể khác so với khi dùng trực tiếp cùng mô hình từ nhà cung cấp hoặc router thông thường. Để dùng một mô hình trong menu «Language Model», trước tiên hãy chuyển sang mô hình đó rồi nhấp «Chấp nhận» trong lời nhắc Copilot Chat; nếu không bạn có thể gặp lỗi như 400 «The requested model is not supported».",
+		"vscodeLmWarning": "Lưu ý: Các mô hình truy cập qua VS Code Language Agentl API có thể được nhà cung cấp bao bọc hoặc tinh chỉnh, vì vậy hành vi có thể khác so với khi dùng trực tiếp cùng mô hình từ nhà cung cấp hoặc router thông thường. Để dùng một mô hình trong menu «Language Agentl», trước tiên hãy chuyển sang mô hình đó rồi nhấp «Chấp nhận» trong lời nhắc Copilot Chat; nếu không bạn có thể gặp lỗi như 400 «The requested agentl is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Bật ngữ cảnh URL",
@@ -424,7 +424,7 @@
 			"apiKey": "Khóa API Ollama",
 			"apiKeyHelp": "Khóa API tùy chọn cho các phiên bản Ollama đã xác thực hoặc dịch vụ đám mây. Để trống cho cài đặt cục bộ.",
 			"numCtx": "Kích thước cửa sổ ngữ cảnh (num_ctx)",
-			"numCtxHelp": "Ghi đè kích thước cửa sổ ngữ cảnh mặc định của mô hình. Để trống để sử dụng cấu hình Modelfile của mô hình. Giá trị tối thiểu là 128.",
+			"numCtxHelp": "Ghi đè kích thước cửa sổ ngữ cảnh mặc định của mô hình. Để trống để sử dụng cấu hình Agentlfile của mô hình. Giá trị tối thiểu là 128.",
 			"description": "Ollama cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem hướng dẫn nhanh của họ.",
 			"warning": "Lưu ý: Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},

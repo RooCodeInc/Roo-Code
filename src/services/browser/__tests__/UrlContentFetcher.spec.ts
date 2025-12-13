@@ -141,7 +141,7 @@ describe("UrlContentFetcher", () => {
 				const stats = await vi.mocked(PCR).mock.results[0].value
 				expect(stats.puppeteer.launch).toHaveBeenCalledWith({
 					args: [
-						"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+						"--user-mode=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
 						"--disable-dev-shm-usage",
 						"--disable-accelerated-2d-canvas",
 						"--no-first-run",
@@ -177,7 +177,7 @@ describe("UrlContentFetcher", () => {
 				const stats = await vi.mocked(PCR).mock.results[vi.mocked(PCR).mock.results.length - 1].value
 				expect(stats.puppeteer.launch).toHaveBeenCalledWith({
 					args: [
-						"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+						"--user-mode=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
 						"--disable-dev-shm-usage",
 						"--disable-accelerated-2d-canvas",
 						"--no-first-run",

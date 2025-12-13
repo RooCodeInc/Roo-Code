@@ -44,7 +44,7 @@ export class FetchInstructionsTool extends BaseTool<"fetch_instructions"> {
 				return
 			}
 
-			// Now fetch the content and provide it to the agent.
+			// Now fetch the content and provide it to the mode.
 			const provider = task.providerRef.deref()
 			const mcpHub = provider?.getMcpHub()
 

@@ -35,7 +35,7 @@
 	"tokenProgress": {
 		"availableSpace": "Verfügbarer Speicher: {{amount}} Tokens",
 		"tokensUsed": "Verwendete Tokens: {{used}} von {{total}}",
-		"reservedForResponse": "Reserviert für Modellantwort: {{amount}} Tokens"
+		"reservedForResponse": "Reserviert für Agentllantwort: {{amount}} Tokens"
 	},
 	"retry": {
 		"title": "Wiederholen",
@@ -96,7 +96,7 @@
 			"description": "Spezialisierte Personas, die bei der Sache bleiben und liefern."
 		},
 		"modelAgnostic": {
-			"title": "Bring dein eigenes Modell mit",
+			"title": "Bring dein eigenes Agentll mit",
 			"description": "Verwende deinen eigenen Anbieter-Schlüssel oder führe sogar lokale Inferenz aus – kein Aufschlag, keine Bindung, keine Einschränkungen"
 		}
 	},
@@ -237,7 +237,7 @@
 		"wantsToUseTool": "Roo möchte ein Tool auf dem {{serverName}} MCP-Server verwenden",
 		"wantsToAccessResource": "Roo möchte auf eine Ressource auf dem {{serverName}} MCP-Server zugreifen"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo möchte zum <code>{{mode}}</code>-Modus wechseln",
 		"wantsToSwitchWithReason": "Roo möchte zum <code>{{mode}}</code>-Modus wechseln, weil: {{reason}}",
 		"didSwitch": "Roo hat zum <code>{{mode}}</code>-Modus gewechselt",
@@ -310,7 +310,7 @@
 		"support": "Bitte unterstütze Roo Code, indem du uns auf <githubLink>GitHub</githubLink> einen Stern gibst.",
 		"stealthModel": {
 			"feature": "<bold>Zeitlich begrenztes KOSTENLOSES Stealth-Modell</bold> - Code Supernova: Jetzt mit einem <bold>1M Token Kontextfenster</bold> erweitert! Ein vielseitiges agentisches Coding-Modell, das Bildeingaben unterstützt und über Roo Code Cloud zugänglich ist.",
-			"note": "(Hinweis: Prompts und Vervollständigungen werden vom Modellersteller protokolliert und zur Verbesserung des Modells verwendet)",
+			"note": "(Hinweis: Prompts und Vervollständigungen werden vom Agentllersteller protokolliert und zur Verbesserung des Agentlls verwendet)",
 			"connectButton": "Mit Roo Code Cloud verbinden",
 			"selectModel": "Wähle <code>roo/code-supernova</code> vom Roo Code Cloud-Provider in den Einstellungen aus, um zu beginnen.",
 			"goToSettingsButton": "Zu den Einstellungen"

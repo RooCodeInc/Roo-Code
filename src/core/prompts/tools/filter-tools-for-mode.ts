@@ -235,7 +235,7 @@ export function filterNativeToolsForMode(
 	let modeConfig = getModeBySlug(modeSlug, customModes)
 
 	// Fallback to default mode if current mode config is not found
-	// This ensures the agent always has functional tools even if a custom mode is deleted
+	// This ensures the mode always has functional tools even if a custom mode is deleted
 	// or configuration becomes corrupted
 	if (!modeConfig) {
 		modeConfig = getModeBySlug(defaultModeSlug, customModes)!

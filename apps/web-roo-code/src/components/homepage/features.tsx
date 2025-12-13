@@ -24,9 +24,9 @@ export interface Feature {
 export const features: Feature[] = [
 	{
 		icon: Users2,
-		title: "Specialized modes",
+		title: "Specialized agents",
 		description:
-			"Planning, Architecture, Debugging and beyond: Roo's modes stay on-task and deliver. They even know when to hand off work to other modes. Create your own or download from the marketplace.",
+			"Planning, Architecture, Debugging and beyond: Roo's agents stay on-task and deliver. They even know when to hand off work to other agents. Create your own or download from the marketplace.",
 	},
 	{
 		icon: ReplaceAll,
@@ -45,7 +45,7 @@ export const features: Feature[] = [
 		icon: Boxes,
 		title: "Large task coordination",
 		description:
-			"Orchestrator mode handles large tasks by coordinating tasks for other agents, running for hours and delivering.",
+			"Orchestrator agent handles large tasks by coordinating tasks for other agents, running for hours and delivering.",
 	},
 	{
 		icon: TextSearch,

@@ -11,7 +11,7 @@
 		"search": {
 			"placeholder": "Rechercher des éléments du marketplace...",
 			"placeholderMcp": "Rechercher des MCPs...",
-			"placeholderMode": "Rechercher des modes..."
+			"placeholderMode": "Rechercher des agents..."
 		},
 		"installed": {
 			"label": "Filtrer par statut",
@@ -22,7 +22,7 @@
 		"type": {
 			"label": "Filtrer par type :",
 			"all": "Tous les types",
-			"mode": "Mode",
+			"agent": "Agent",
 			"mcpServer": "Serveur MCP"
 		},
 		"sort": {
@@ -46,7 +46,7 @@
 		"marketplace": "Marché"
 	},
 	"type-group": {
-		"modes": "Modes",
+		"agents": "Agents",
 		"mcps": "Serveurs MCP"
 	},
 	"items": {
@@ -89,7 +89,7 @@
 	},
 	"install": {
 		"title": "Installer {{name}}",
-		"titleMode": "Installer le mode {{name}}",
+		"titleMode": "Installer le agent {{name}}",
 		"titleMcp": "Installer le MCP {{name}}",
 		"scope": "Portée d'installation",
 		"project": "Projet (espace de travail actuel)",
@@ -102,10 +102,10 @@
 		"successDescription": "Installation terminée avec succès",
 		"installed": "Installé avec succès !",
 		"whatNextMcp": "Vous pouvez maintenant configurer et utiliser ce serveur MCP. Cliquez sur l'icône MCP dans la barre latérale pour changer d'onglet.",
-		"whatNextMode": "Vous pouvez maintenant utiliser ce mode. Cliquez sur l'icône Modes dans la barre latérale pour changer d'onglet.",
+		"whatNextMode": "Vous pouvez maintenant utiliser ce agent. Cliquez sur l'icône Agents dans la barre latérale pour changer d'onglet.",
 		"done": "Terminé",
 		"goToMcp": "Aller à l'onglet MCP",
-		"goToModes": "Aller aux paramètres des Modes",
+		"goToModes": "Aller aux paramètres des Agents",
 		"moreInfoMcp": "Voir la documentation MCP de {{name}}",
 		"validationRequired": "Veuillez fournir une valeur pour {{paramName}}",
 		"prerequisites": "Prérequis"
@@ -140,10 +140,10 @@
 		}
 	},
 	"removeConfirm": {
-		"mode": {
-			"title": "Supprimer le mode",
-			"message": "Êtes-vous sûr de vouloir supprimer le mode « {{modeName}} » ?",
-			"rulesWarning": "Cela supprimera également tous les fichiers de règles associés à ce mode."
+		"agent": {
+			"title": "Supprimer le agent",
+			"message": "Êtes-vous sûr de vouloir supprimer le agent « {{modeName}} » ?",
+			"rulesWarning": "Cela supprimera également tous les fichiers de règles associés à ce agent."
 		},
 		"mcp": {
 			"title": "Supprimer le serveur MCP",

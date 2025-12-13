@@ -1,6 +1,6 @@
 {
 	"greeting": "Benvingut a Roo Code!",
-	"introduction": "Amb una gamma de Modes integrats i ampliables, Roo Code et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
+	"introduction": "Amb una gamma de Agents integrats i ampliables, Roo Code et permet planificar, arquitectar, codificar, depurar i augmentar la teva productivitat com mai abans.",
 	"notice": "Per començar, aquesta extensió necessita un proveïdor d'API.",
 	"start": "Som-hi!",
 	"routers": {
@@ -12,14 +12,14 @@
 			"description": "Una interfície unificada per a LLMs"
 		},
 		"roo": {
-			"description": "Els millors models gratuïts per començar",
+			"description": "Els millors agentls gratuïts per començar",
 			"incentive": "Prova Roo gratis"
 		}
 	},
 	"chooseProvider": "Per començar, necessites un proveïdor LLM:",
 	"providerSignup": {
 		"rooCloudProvider": "Proveïdor Roo Code Cloud",
-		"rooCloudDescription": "La manera més senzilla d'utilitzar Roo. Una combinació seleccionada de models gratuïts i de pagament a un cost baix",
+		"rooCloudDescription": "La manera més senzilla d'utilitzar Roo. Una combinació seleccionada de agentls gratuïts i de pagament a un cost baix",
 		"learnMore": "més informació",
 		"useAnotherProvider": "Utilitza un altre proveïdor",
 		"useAnotherProviderDescription": "Introdueix una clau API i comença.",

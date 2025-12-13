@@ -118,7 +118,7 @@ describe("PromptsView", () => {
 	it("resets role definition only for built-in modes", async () => {
 		const customMode = {
 			slug: "custom-mode",
-			name: "Custom Mode",
+			name: "Custom Agent",
 			roleDefinition: "Custom role",
 			groups: [],
 		}
@@ -164,7 +164,7 @@ describe("PromptsView", () => {
 	it("description section behavior for different mode types", async () => {
 		const customMode = {
 			slug: "custom-mode",
-			name: "Custom Mode",
+			name: "Custom Agent",
 			roleDefinition: "Custom role",
 			description: "Custom description",
 			groups: [],

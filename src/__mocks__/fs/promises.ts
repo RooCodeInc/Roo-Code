@@ -55,9 +55,9 @@ const mockFs = {
 
 		// Handle rule files
 		const ruleFiles: RuleFiles = {
-			".clinerules-code": "# Code Mode Rules\n1. Code specific rule",
-			".clinerules-ask": "# Ask Mode Rules\n1. Ask specific rule",
-			".clinerules-architect": "# Architect Mode Rules\n1. Architect specific rule",
+			".clinerules-code": "# Code Agent Rules\n1. Code specific rule",
+			".clinerules-ask": "# Ask Agent Rules\n1. Ask specific rule",
+			".clinerules-architect": "# Architect Agent Rules\n1. Architect specific rule",
 			".clinerules-test":
 				"# Test Engineer Rules\n1. Always write tests first\n2. Get approval before modifying non-test code",
 			".clinerules-review":

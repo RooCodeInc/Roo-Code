@@ -25,7 +25,7 @@ export function CodeExample() {
 			return () => clearTimeout(timer)
 		} else if (textIndex >= codeExamples[currentMode].code.length) {
 			setIsTyping(false)
-			// switch to next mode after a delay
+			// switch to next agent after a delay
 			const timer = setTimeout(() => {
 				const nextMode = currentMode === "code" ? "architect" : currentMode === "architect" ? "debug" : "code"
 				switchMode(nextMode)
@@ -34,14 +34,14 @@ export function CodeExample() {
 		}
 	}, [isTyping, textIndex, currentMode])
 
-	// switch modes with typing effect
-	const switchMode = (mode: "code" | "architect" | "debug") => {
-		setCurrentMode(mode)
+	// switch agents with typing effect
+	const switchMode = (agent: "code" | "architect" | "debug") => {
+		setCurrentMode(agent)
 		setCurrentText("")
 		setTextIndex(0)
 		setIsTyping(true)
 
-		// Reset scroll position when switching modes
+		// Reset scroll position when switching agents
 		if (codeContainerRef.current) {
 			codeContainerRef.current.scrollTop = 0
 		}
@@ -102,7 +102,7 @@ export function CodeExample() {
 
 const codeExamples = {
 	code: {
-		code: `// Code Mode
+		code: `// Code Agent
 You: Generate a React component for a user profile card
 
 Roo: Here's a React component for a user profile card:
@@ -161,7 +161,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 };`,
 	},
 	architect: {
-		code: `// Architect Mode
+		code: `// Architect Agent
 // Project: E-commerce Platform
 // Request: Design the authentication system
 
@@ -199,7 +199,7 @@ auth/
 Would you like me to generate any of these files?`,
 	},
 	debug: {
-		code: `// Debug Mode
+		code: `// Debug Agent
 // Analyzing error: TypeError: Cannot read property 'map' of undefined
 
 Roo has analyzed your code and found 3 issues:

@@ -1,7 +1,7 @@
 {
 	"title": "모드",
 	"done": "완료",
-	"modes": {
+	"agents": {
 		"title": "모드",
 		"createNewMode": "새 모드 만들기",
 		"importMode": "모드 가져오기",

@@ -7,7 +7,7 @@ import { type ModeConfig, customModesSettingsSchema } from "@roo-code/types"
 describe("CustomModesSettings", () => {
 	const validMode = {
 		slug: "123e4567-e89b-12d3-a456-426614174000",
-		name: "Test Mode",
+		name: "Test Agent",
 		roleDefinition: "Test role definition",
 		groups: ["read"] as const,
 	} satisfies ModeConfig
@@ -40,7 +40,7 @@ describe("CustomModesSettings", () => {
 					{
 						...validMode,
 						slug: "987fcdeb-51a2-43e7-89ab-cdef01234567",
-						name: "Another Mode",
+						name: "Another Agent",
 					},
 				],
 			}

@@ -99,7 +99,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 				customModes: [
 					{
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Test Role",
 						groups: ["read"],
 					},
@@ -152,7 +152,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 				customModes: [
 					{
 						slug: "root-mode",
-						name: "Root Mode",
+						name: "Root Agent",
 						roleDefinition: "Root Role",
 						groups: ["read"],
 					},
@@ -209,7 +209,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 				customModes: [
 					{
 						slug: "new-slug-name", // Changed slug
-						name: "Imported Mode",
+						name: "Imported Agent",
 						roleDefinition: "Imported Role",
 						groups: ["read"],
 						rulesFiles: [
@@ -269,7 +269,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 				customModes: [
 					{
 						slug: "new-slug-name", // Changed slug
-						name: "Imported Mode",
+						name: "Imported Agent",
 						roleDefinition: "Imported Role",
 						groups: ["read"],
 						rulesFiles: [
@@ -325,7 +325,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 				customModes: [
 					{
 						slug: "mixed-mode",
-						name: "Mixed Mode",
+						name: "Mixed Agent",
 						roleDefinition: "Mixed Role",
 						groups: ["read"],
 						rulesFiles: [
@@ -379,7 +379,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 			// Step 1: Set up a mode with rules
 			const originalMode = {
 				slug: "original-mode",
-				name: "Original Mode",
+				name: "Original Agent",
 				roleDefinition: "Original Role",
 				groups: ["read"],
 			}
@@ -409,7 +409,7 @@ describe("CustomModesManager - Export/Import with Slug Changes", () => {
 			// Step 3: Modify the exported YAML to change the slug
 			const exportData = yaml.parse(exportResult.yaml!)
 			exportData.customModes[0].slug = "renamed-mode"
-			exportData.customModes[0].name = "Renamed Mode"
+			exportData.customModes[0].name = "Renamed Agent"
 			const modifiedYaml = yaml.stringify(exportData)
 
 			// Step 4: Import with the new slug

@@ -315,7 +315,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return
 				}
 
-				if (type === ContextMenuOptionType.Mode && value) {
+				if (type === ContextMenuOptionType.Agent && value) {
 					// Handle mode selection.
 					setMode(value)
 					setInputValue("")
@@ -379,7 +379,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}
 
 					// Determine if this is a slash command selection
-					const isSlashCommand = type === ContextMenuOptionType.Mode || type === ContextMenuOptionType.Command
+					const isSlashCommand =
+						type === ContextMenuOptionType.Agent || type === ContextMenuOptionType.Command
 
 					const { newValue, mentionIndex } = insertMention(
 						textAreaRef.current.value,

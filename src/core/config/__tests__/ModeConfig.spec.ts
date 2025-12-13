@@ -13,7 +13,7 @@ describe("CustomModeSchema", () => {
 		test("accepts valid mode configuration", () => {
 			const validMode = {
 				slug: "test",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role definition",
 				groups: ["read"] as const,
 			} satisfies ModeConfig
@@ -24,7 +24,7 @@ describe("CustomModeSchema", () => {
 		test("accepts mode with multiple groups", () => {
 			const validMode = {
 				slug: "test",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role definition",
 				groups: ["read", "edit", "browser"] as const,
 			} satisfies ModeConfig
@@ -35,7 +35,7 @@ describe("CustomModeSchema", () => {
 		test("accepts mode with optional customInstructions", () => {
 			const validMode = {
 				slug: "test",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role definition",
 				customInstructions: "Custom instructions",
 				groups: ["read"] as const,
@@ -62,7 +62,7 @@ describe("CustomModeSchema", () => {
 		test("rejects invalid slug format", () => {
 			const invalidMode = {
 				slug: "not@a@valid@slug",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role definition",
 				groups: ["read"] as const,
 			} satisfies Omit<ModeConfig, "slug"> & { slug: string }
@@ -81,7 +81,7 @@ describe("CustomModeSchema", () => {
 
 			const emptyRoleMode = {
 				slug: "123e4567-e89b-12d3-a456-426614174000",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "",
 				groups: ["read"] as const,
 			} satisfies ModeConfig
@@ -93,7 +93,7 @@ describe("CustomModeSchema", () => {
 		test("rejects invalid group configurations", () => {
 			const invalidGroupMode = {
 				slug: "123e4567-e89b-12d3-a456-426614174000",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role definition",
 				groups: ["not-a-valid-group"] as any,
 			}
@@ -178,7 +178,7 @@ describe("CustomModeSchema", () => {
 
 	const validBaseMode = {
 		slug: "123e4567-e89b-12d3-a456-426614174000",
-		name: "Test Mode",
+		name: "Test Agent",
 		roleDefinition: "Test role definition",
 	}
 

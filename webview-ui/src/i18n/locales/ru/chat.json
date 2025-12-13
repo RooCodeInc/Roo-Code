@@ -233,7 +233,7 @@
 		"wantsToUseTool": "Roo хочет использовать инструмент на сервере MCP {{serverName}}",
 		"wantsToAccessResource": "Roo хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo хочет переключиться в режим {{mode}}",
 		"wantsToSwitchWithReason": "Roo хочет переключиться в режим {{mode}}, потому что: {{reason}}",
 		"didSwitch": "Roo переключился в режим {{mode}}",

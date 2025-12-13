@@ -22,7 +22,7 @@
 		"type": {
 			"label": "Filteren op type:",
 			"all": "Alle types",
-			"mode": "Modus",
+			"agent": "Modus",
 			"mcpServer": "MCP-server"
 		},
 		"sort": {
@@ -46,7 +46,7 @@
 		"marketplace": "Marktplaats"
 	},
 	"type-group": {
-		"modes": "Modi",
+		"agents": "Modi",
 		"mcps": "MCP-servers"
 	},
 	"items": {
@@ -138,7 +138,7 @@
 		}
 	},
 	"removeConfirm": {
-		"mode": {
+		"agent": {
 			"title": "Modus verwijderen",
 			"message": "Weet je zeker dat je de modus \"{{modeName}}\" wilt verwijderen?",
 			"rulesWarning": "Dit verwijdert ook alle bijbehorende regelbestanden voor deze modus."

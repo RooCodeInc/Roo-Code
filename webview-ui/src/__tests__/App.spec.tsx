@@ -68,7 +68,7 @@ vi.mock("@src/components/mcp/McpView", () => ({
 vi.mock("@src/components/modes/ModesView", () => ({
 	__esModule: true,
 	default: function ModesView() {
-		return <div data-testid="prompts-view">Modes View</div>
+		return <div data-testid="prompts-view">Agents View</div>
 	},
 }))
 

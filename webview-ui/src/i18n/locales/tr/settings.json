@@ -22,7 +22,7 @@
 	},
 	"sections": {
 		"providers": "Sağlayıcılar",
-		"modes": "Modlar",
+		"agents": "Modlar",
 		"mcp": "MCP Sunucuları",
 		"autoApprove": "Oto-Onay",
 		"browser": "Bilgisayar Erişimi",
@@ -90,7 +90,7 @@
 		"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
 		"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
 		"openRouterProviderRoutingLabel": "OpenRouter Sağlayıcı Yönlendirmesi",
-		"openRouterProviderRoutingDescription": "OpenRouter, gömme modeliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu model için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
+		"openRouterProviderRoutingDescription": "OpenRouter, gömme agentliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu agentl için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
 		"openaiCompatibleProvider": "OpenAI Uyumlu",
 		"openAiKeyLabel": "OpenAI API Anahtarı",
 		"openAiKeyPlaceholder": "OpenAI API anahtarınızı girin",
@@ -121,7 +121,7 @@
 		"disabledMessage": "Kod tabanı indeksleme şu anda devre dışı. İndeksleme seçeneklerini yapılandırmak için genel ayarlarda etkinleştirin.",
 		"embedderProviderLabel": "Gömücü Sağlayıcı",
 		"modelPlaceholder": "Model adını girin",
-		"selectModel": "Bir model seçin",
+		"selectModel": "Bir agentl seçin",
 		"ollamaBaseUrlLabel": "Ollama Temel URL",
 		"qdrantApiKeyLabel": "Qdrant API Anahtarı",
 		"qdrantApiKeyPlaceholder": "Qdrant API anahtarınızı girin (isteğe bağlı)",
@@ -200,7 +200,7 @@
 		},
 		"browser": {
 			"label": "Tarayıcı",
-			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca model bilgisayar kullanımını desteklediğinde geçerlidir"
+			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca agentl bilgisayar kullanımını desteklediğinde geçerlidir"
 		},
 		"retry": {
 			"label": "Yeniden Dene",
@@ -275,8 +275,8 @@
 		"searchProviderPlaceholder": "Sağlayıcıları ara",
 		"noProviderMatchFound": "Eşleşen sağlayıcı bulunamadı",
 		"noMatchFound": "Eşleşen profil bulunamadı",
-		"vscodeLmDescription": "VS Code Dil Modeli API'si, diğer VS Code uzantıları tarafından sağlanan modelleri çalıştırmanıza olanak tanır (GitHub Copilot dahil ancak bunlarla sınırlı değildir). Başlamanın en kolay yolu, VS Code Marketplace'ten Copilot ve Copilot Chat uzantılarını yüklemektir.",
-		"awsCustomArnUse": "Kullanmak istediğiniz model için geçerli bir Amazon Bedrock ARN'si girin. Format örnekleri:",
+		"vscodeLmDescription": "VS Code Dil Agentli API'si, diğer VS Code uzantıları tarafından sağlanan agentlleri çalıştırmanıza olanak tanır (GitHub Copilot dahil ancak bunlarla sınırlı değildir). Başlamanın en kolay yolu, VS Code Marketplace'ten Copilot ve Copilot Chat uzantılarını yüklemektir.",
+		"awsCustomArnUse": "Kullanmak istediğiniz agentl için geçerli bir Amazon Bedrock ARN'si girin. Format örnekleri:",
 		"awsCustomArnDesc": "ARN içindeki bölgenin yukarıda seçilen AWS Bölgesiyle eşleştiğinden emin olun.",
 		"openRouterApiKey": "OpenRouter API Anahtarı",
 		"getOpenRouterApiKey": "OpenRouter API Anahtarı Al",
@@ -294,7 +294,7 @@
 		"requestyApiKey": "Requesty API Anahtarı",
 		"refreshModels": {
 			"label": "Modelleri Yenile",
-			"hint": "En son modelleri görmek için lütfen ayarları yeniden açın.",
+			"hint": "En son agentlleri görmek için lütfen ayarları yeniden açın.",
 			"loading": "Model listesi yenileniyor...",
 			"success": "Model listesi başarıyla yenilendi!",
 			"error": "Model listesi yenilenemedi. Lütfen tekrar deneyin."
@@ -346,8 +346,8 @@
 		"huggingFaceApiKey": "Hugging Face API Anahtarı",
 		"huggingFaceModelId": "Model ID",
 		"huggingFaceLoading": "Yükleniyor...",
-		"huggingFaceModelsCount": "({{count}} model)",
-		"huggingFaceSelectModel": "Bir model seç...",
+		"huggingFaceModelsCount": "({{count}} agentl)",
+		"huggingFaceSelectModel": "Bir agentl seç...",
 		"huggingFaceSearchModels": "Modelleri ara...",
 		"huggingFaceNoModelsFound": "Model bulunamadı",
 		"huggingFaceProvider": "Sağlayıcı",
@@ -363,7 +363,7 @@
 		"mistralApiKey": "Mistral API Anahtarı",
 		"getMistralApiKey": "Mistral / Codestral API Anahtarı Al",
 		"codestralBaseUrl": "Codestral Temel URL (İsteğe bağlı)",
-		"codestralBaseUrlDesc": "Codestral modeli için alternatif URL ayarlayın.",
+		"codestralBaseUrlDesc": "Codestral agentli için alternatif URL ayarlayın.",
 		"xaiApiKey": "xAI API Anahtarı",
 		"getXaiApiKey": "xAI API Anahtarı Al",
 		"litellmApiKey": "LiteLLM API Anahtarı",
@@ -384,10 +384,10 @@
 			"examples": "Örnekler:"
 		},
 		"enablePromptCaching": "İstem önbelleğini etkinleştir",
-		"enablePromptCachingTitle": "Desteklenen modeller için performansı artırmak ve maliyetleri azaltmak için istem önbelleğini etkinleştir.",
-		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir model seçip ardından istediğiniz modeli tekrar seçmeyi deneyin.",
-		"vscodeLmModel": "Dil Modeli",
-		"vscodeLmWarning": "Not: VS Code Language Model API üzerinden erişilen modeller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı modelin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Model» açılır menüsünden bir model kullanmak için önce o modele geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested model is not supported» gibi bir hata görebilirsiniz.",
+		"enablePromptCachingTitle": "Desteklenen agentller için performansı artırmak ve maliyetleri azaltmak için istem önbelleğini etkinleştir.",
+		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir agentl seçip ardından istediğiniz agentli tekrar seçmeyi deneyin.",
+		"vscodeLmModel": "Dil Agentli",
+		"vscodeLmWarning": "Not: VS Code Language Agentl API üzerinden erişilen agentller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı agentlin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Agentl» açılır menüsünden bir agentl kullanmak için önce o agentle geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested agentl is not supported» gibi bir hata görebilirsiniz.",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "URL bağlamını etkinleştir",
@@ -400,7 +400,7 @@
 		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI'yi kullanmak için şunları yapmanız gerekir:",
-			"step1": "1. Google Cloud hesabı oluşturun, Vertex AI API'sini etkinleştirin ve istediğiniz Claude modellerini etkinleştirin.",
+			"step1": "1. Google Cloud hesabı oluşturun, Vertex AI API'sini etkinleştirin ve istediğiniz Claude agentllerini etkinleştirin.",
 			"step2": "2. Google Cloud CLI'yi yükleyin ve uygulama varsayılan kimlik bilgilerini yapılandırın.",
 			"step3": "3. Veya kimlik bilgileriyle bir hizmet hesabı oluşturun."
 		},
@@ -412,11 +412,11 @@
 			"baseUrl": "Temel URL (İsteğe bağlı)",
 			"modelId": "Model Kimliği",
 			"speculativeDecoding": "Spekülatif Kod Çözmeyi Etkinleştir",
-			"draftModelId": "Taslak Model Kimliği",
-			"draftModelDesc": "Spekülatif kod çözmenin doğru çalışması için taslak model aynı model ailesinden olmalıdır.",
-			"selectDraftModel": "Taslak Model Seç",
-			"noModelsFound": "Taslak model bulunamadı. Lütfen LM Studio'nun Sunucu Modu etkinken çalıştığından emin olun.",
-			"description": "LM Studio, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için <a>hızlı başlangıç kılavuzlarına</a> bakın. Bu uzantıyla kullanmak için LM Studio'nun <b>yerel sunucu</b> özelliğini de başlatmanız gerekecektir. <span>Not:</span> Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
+			"draftModelId": "Taslak Agentl Kimliği",
+			"draftModelDesc": "Spekülatif kod çözmenin doğru çalışması için taslak agentl aynı agentl ailesinden olmalıdır.",
+			"selectDraftModel": "Taslak Agentl Seç",
+			"noModelsFound": "Taslak agentl bulunamadı. Lütfen LM Studio'nun Sunucu Modu etkinken çalıştığından emin olun.",
+			"description": "LM Studio, agentlleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için <a>hızlı başlangıç kılavuzlarına</a> bakın. Bu uzantıyla kullanmak için LM Studio'nun <b>yerel sunucu</b> özelliğini de başlatmanız gerekecektir. <span>Not:</span> Roo Code karmaşık istemler kullanır ve Claude agentlleriyle en iyi şekilde çalışır. Daha az yetenekli agentller beklendiği gibi çalışmayabilir."
 		},
 		"ollama": {
 			"baseUrl": "Temel URL (İsteğe bağlı)",
@@ -424,13 +424,13 @@
 			"apiKey": "Ollama API Anahtarı",
 			"apiKeyHelp": "Kimlik doğrulamalı Ollama örnekleri veya bulut hizmetleri için isteğe bağlı API anahtarı. Yerel kurulumlar için boş bırakın.",
 			"numCtx": "Bağlam Penceresi Boyutu (num_ctx)",
-			"numCtxHelp": "Modelin varsayılan bağlam penceresi boyutunu geçersiz kılar. Modelin Modelfile yapılandırmasını kullanmak için boş bırakın. Minimum değer 128'dir.",
-			"description": "Ollama, modelleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için hızlı başlangıç kılavuzlarına bakın.",
-			"warning": "Not: Roo Code karmaşık istemler kullanır ve Claude modelleriyle en iyi şekilde çalışır. Daha az yetenekli modeller beklendiği gibi çalışmayabilir."
+			"numCtxHelp": "Modelin varsayılan bağlam penceresi boyutunu geçersiz kılar. Agentlin Agentlfile yapılandırmasını kullanmak için boş bırakın. Minimum değer 128'dir.",
+			"description": "Ollama, agentlleri bilgisayarınızda yerel olarak çalıştırmanıza olanak tanır. Başlamak için hızlı başlangıç kılavuzlarına bakın.",
+			"warning": "Not: Roo Code karmaşık istemler kullanır ve Claude agentlleriyle en iyi şekilde çalışır. Daha az yetenekli agentller beklendiği gibi çalışmayabilir."
 		},
 		"unboundApiKey": "Unbound API Anahtarı",
 		"getUnboundApiKey": "Unbound API Anahtarı Al",
-		"unboundRefreshModelsSuccess": "Model listesi güncellendi! Artık en son modeller arasından seçim yapabilirsiniz.",
+		"unboundRefreshModelsSuccess": "Model listesi güncellendi! Artık en son agentller arasından seçim yapabilirsiniz.",
 		"unboundInvalidApiKey": "Geçersiz API anahtarı. Lütfen API anahtarınızı kontrol edin ve tekrar deneyin.",
 		"humanRelay": {
 			"description": "API anahtarı gerekmez, ancak kullanıcının bilgileri web sohbet yapay zekasına kopyalayıp yapıştırması gerekir.",
@@ -443,12 +443,12 @@
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter Sağlayıcı Yönlendirmesi",
-				"description": "OpenRouter, modeliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu model için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
+				"description": "OpenRouter, agentliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu agentl için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
 				"learnMore": "Sağlayıcı yönlendirmesi hakkında daha fazla bilgi edinin"
 			}
 		},
 		"customModel": {
-			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",
+			"capabilities": "Özel OpenAI uyumlu agentlinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Agentl yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",
 			"maxTokens": {
 				"label": "Maksimum Çıktı Token'ları",
 				"description": "Modelin bir yanıtta üretebileceği maksimum token sayısı. (Sunucunun maksimum token'ları ayarlamasına izin vermek için -1 belirtin.)"
@@ -459,20 +459,20 @@
 			},
 			"imageSupport": {
 				"label": "Görüntü Desteği",
-				"description": "Bu model görüntüleri işleyip anlayabilir mi?"
+				"description": "Bu agentl görüntüleri işleyip anlayabilir mi?"
 			},
 			"computerUse": {
 				"label": "Bilgisayar Kullanımı",
-				"description": "Bu model bir tarayıcıyla etkileşim kurabilir mi?"
+				"description": "Bu agentl bir tarayıcıyla etkileşim kurabilir mi?"
 			},
 			"promptCache": {
 				"label": "İstem Önbelleği",
-				"description": "Bu model istemleri önbelleğe alabilir mi?"
+				"description": "Bu agentl istemleri önbelleğe alabilir mi?"
 			},
 			"pricing": {
 				"input": {
 					"label": "Giriş Fiyatı",
-					"description": "Giriş/istem başına milyon token maliyeti. Bu, modele bağlam ve talimatlar gönderme maliyetini etkiler."
+					"description": "Giriş/istem başına milyon token maliyeti. Bu, agentle bağlam ve talimatlar gönderme maliyetini etkiler."
 				},
 				"output": {
 					"label": "Çıkış Fiyatı",
@@ -527,7 +527,7 @@
 	"browser": {
 		"enable": {
 			"label": "Tarayıcı aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
+			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen agentller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
 		},
 		"viewport": {
 			"label": "Görünüm alanı boyutu",
@@ -656,11 +656,11 @@
 		},
 		"includeCurrentTime": {
 			"label": "Mevcut zamanı bağlama dahil et",
-			"description": "Etkinleştirildiğinde, mevcut zaman ve saat dilimi bilgileri sistem istemine dahil edilecektir. Modeller zaman endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
+			"description": "Etkinleştirildiğinde, mevcut zaman ve saat dilimi bilgileri sistem istemine dahil edilecektir. Agentller zaman endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
 		},
 		"includeCurrentCost": {
 			"label": "Mevcut maliyeti bağlama dahil et",
-			"description": "Etkinleştirildiğinde, mevcut API kullanım maliyeti sistem istemine dahil edilecektir. Modeller maliyet endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
+			"description": "Etkinleştirildiğinde, mevcut API kullanım maliyeti sistem istemine dahil edilecektir. Agentller maliyet endişeleri nedeniyle çalışmayı durdurursa bunu devre dışı bırakın."
 		},
 		"maxGitStatusFiles": {
 			"label": "Git durumu maks. dosya",
@@ -766,7 +766,7 @@
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Deneysel birleştirilmiş diff stratejisini kullan",
-			"description": "Deneysel birleştirilmiş diff stratejisini etkinleştir. Bu strateji, model hatalarından kaynaklanan yeniden deneme sayısını azaltabilir, ancak beklenmeyen davranışlara veya hatalı düzenlemelere neden olabilir. Yalnızca riskleri anlıyorsanız ve tüm değişiklikleri dikkatlice incelemeye istekliyseniz etkinleştirin."
+			"description": "Deneysel birleştirilmiş diff stratejisini etkinleştir. Bu strateji, agentl hatalarından kaynaklanan yeniden deneme sayısını azaltabilir, ancak beklenmeyen davranışlara veya hatalı düzenlemelere neden olabilir. Yalnızca riskleri anlıyorsanız ve tüm değişiklikleri dikkatlice incelemeye istekliyseniz etkinleştirin."
 		},
 		"INSERT_BLOCK": {
 			"name": "Deneysel içerik ekleme aracını kullan",
@@ -774,7 +774,7 @@
 		},
 		"POWER_STEERING": {
 			"name": "Deneysel \"güç direksiyon\" modunu kullan",
-			"description": "Etkinleştirildiğinde, Roo modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
+			"description": "Etkinleştirildiğinde, Roo agentle geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Deneysel çoklu blok diff aracını kullan",
@@ -782,7 +782,7 @@
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Eşzamanlı dosya okumayı etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Roo dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Roo dosyaları birer birer okumalıdır. Daha az yetenekli agentllerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace'i Etkinleştir",
@@ -790,7 +790,7 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Eşzamanlı dosya düzenlemelerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli agentllerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Arka plan düzenleme",
@@ -808,12 +808,12 @@
 			"providerLabel": "Sağlayıcı",
 			"providerDescription": "Görüntü oluşturma için kullanılacak sağlayıcıyı seçin.",
 			"name": "AI görüntü üretimini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
+			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim agentllerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
 			"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
 			"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
 			"getApiKeyText": "API anahtarınızı alın",
-			"modelSelectionLabel": "Görüntü Üretim Modeli",
-			"modelSelectionDescription": "Görüntü üretimi için kullanılacak modeli seçin",
+			"modelSelectionLabel": "Görüntü Üretim Agentli",
+			"modelSelectionDescription": "Görüntü üretimi için kullanılacak agentli seçin",
 			"warningMissingKey": "⚠️ Görüntü üretimi için OpenRouter API anahtarı gereklidir. Lütfen yukarıda yapılandırın.",
 			"successConfigured": "✓ Görüntü üretimi yapılandırılmış ve kullanıma hazır"
 		},
@@ -828,7 +828,7 @@
 	},
 	"promptCaching": {
 		"label": "Prompt önbelleğini devre dışı bırak",
-		"description": "İşaretlendiğinde, Roo bu model için prompt önbelleğini kullanmayacaktır."
+		"description": "İşaretlendiğinde, Roo bu agentl için prompt önbelleğini kullanmayacaktır."
 	},
 	"temperature": {
 		"useCustom": "Özel sıcaklık kullan",
@@ -847,8 +847,8 @@
 		"cacheReadsPrice": "Önbellek okuma fiyatı",
 		"cacheWritesPrice": "Önbellek yazma fiyatı",
 		"enableStreaming": "Akışı etkinleştir",
-		"enableR1Format": "R1 model parametrelerini etkinleştir",
-		"enableR1FormatTips": "QWQ gibi R1 modelleri kullanıldığında etkinleştirilmelidir, 400 hatası alınmaması için",
+		"enableR1Format": "R1 agentl parametrelerini etkinleştir",
+		"enableR1FormatTips": "QWQ gibi R1 agentlleri kullanıldığında etkinleştirilmelidir, 400 hatası alınmaması için",
 		"useAzure": "Azure kullan",
 		"azureApiVersion": "Azure API sürümünü ayarla",
 		"gemini": {
@@ -858,12 +858,12 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Uzantı <serviceLink>{{serviceName}}</serviceLink> üzerinde bulunan mevcut modellerin en güncel listesini otomatik olarak alır. Hangi modeli seçeceğinizden emin değilseniz, Roo Code <defaultModelLink>{{defaultModelId}}</defaultModelLink> ile en iyi şekilde çalışır. Şu anda mevcut olan ücretsiz seçenekleri bulmak için \"free\" araması da yapabilirsiniz.",
+		"automaticFetch": "Uzantı <serviceLink>{{serviceName}}</serviceLink> üzerinde bulunan mevcut agentllerin en güncel listesini otomatik olarak alır. Hangi agentli seçeceğinizden emin değilseniz, Roo Code <defaultModelLink>{{defaultModelId}}</defaultModelLink> ile en iyi şekilde çalışır. Şu anda mevcut olan ücretsiz seçenekleri bulmak için \"free\" araması da yapabilirsiniz.",
 		"label": "Model",
 		"searchPlaceholder": "Ara",
 		"noMatchFound": "Eşleşme bulunamadı",
 		"useCustomModel": "Özel kullan: {{modelId}}",
-		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
+		"simplifiedExplanation": "Ayrıntılı agentl ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
@@ -885,18 +885,18 @@
 		"apiKey": "Geçerli bir API anahtarı sağlamalısınız.",
 		"awsRegion": "Amazon Bedrock kullanmak için bir bölge seçmelisiniz.",
 		"googleCloud": "Geçerli bir Google Cloud proje kimliği ve bölge sağlamalısınız.",
-		"modelId": "Geçerli bir model kimliği sağlamalısınız.",
-		"modelSelector": "Geçerli bir model seçici sağlamalısınız.",
-		"openAi": "Geçerli bir temel URL, API anahtarı ve model kimliği sağlamalısınız.",
+		"modelId": "Geçerli bir agentl kimliği sağlamalısınız.",
+		"modelSelector": "Geçerli bir agentl seçici sağlamalısınız.",
+		"openAi": "Geçerli bir temel URL, API anahtarı ve agentl kimliği sağlamalısınız.",
 		"arn": {
 			"invalidFormat": "Geçersiz ARN formatı. Lütfen format gereksinimlerini kontrol edin.",
 			"regionMismatch": "Uyarı: ARN'nizdeki bölge ({{arnRegion}}) seçtiğiniz bölge ({{region}}) ile eşleşmiyor. Bu erişim sorunlarına neden olabilir. Sağlayıcı, ARN'deki bölgeyi kullanacak."
 		},
-		"modelAvailability": "Sağladığınız model kimliği ({{modelId}}) kullanılamıyor. Lütfen başka bir model seçin.",
-		"modelDeprecated": "Bu model artık kullanılamıyor. Lütfen farklı bir model seçin.",
+		"modelAvailability": "Sağladığınız agentl kimliği ({{modelId}}) kullanılamıyor. Lütfen başka bir agentl seçin.",
+		"modelDeprecated": "Bu agentl artık kullanılamıyor. Lütfen farklı bir agentl seçin.",
 		"providerNotAllowed": "Sağlayıcı '{{provider}}' kuruluşunuz tarafından izin verilmiyor",
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
-		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
+		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya agentl içeriyor",
 		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın"
 	},
 	"placeholders": {

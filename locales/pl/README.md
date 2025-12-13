@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Code dostosowuje się do Twojego sposobu pracy, a nie odwrotnie:
 - Tryby niestandardowe: buduj specjalistyczne tryby dla swojego zespołu lub przepływu pracy
 - Roomote Control: Roomote Control pozwala zdalnie sterować zadaniami uruchomionymi na twojej lokalnej instancji VS Code.
 
-Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-modes) • [Tryby niestandardowe](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Więcej: [Korzystanie z trybów](https://docs.roocode.com/basic-usage/using-agents) • [Tryby niestandardowe](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Filmy instruktażowe i prezentujące funkcje
 

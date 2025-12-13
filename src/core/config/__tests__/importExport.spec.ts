@@ -368,8 +368,8 @@ describe("importExport", () => {
 			;(vscode.window.showOpenDialog as Mock).mockResolvedValue([{ fsPath: "/mock/path/settings.json" }])
 
 			const customModes = [
-				{ slug: "mode1", name: "Mode One", roleDefinition: "Custom role one", groups: [] },
-				{ slug: "mode2", name: "Mode Two", roleDefinition: "Custom role two", groups: [] },
+				{ slug: "mode1", name: "Agent One", roleDefinition: "Custom role one", groups: [] },
+				{ slug: "mode2", name: "Agent Two", roleDefinition: "Custom role two", groups: [] },
 			]
 
 			const mockFileContent = JSON.stringify({

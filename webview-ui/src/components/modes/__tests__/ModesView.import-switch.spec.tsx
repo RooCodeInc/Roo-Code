@@ -49,7 +49,7 @@ describe("ModesView Import Auto-Switch", () => {
 		const customModes = [
 			{
 				slug: importedModeSlug,
-				name: "Custom Test Mode",
+				name: "Custom Test Agent",
 				roleDefinition: "Test role",
 				groups: [],
 			},

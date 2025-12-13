@@ -22,7 +22,7 @@
 		"type": {
 			"label": "유형별 필터:",
 			"all": "모든 유형",
-			"mode": "모드",
+			"agent": "모드",
 			"mcpServer": "MCP 서버"
 		},
 		"sort": {
@@ -46,7 +46,7 @@
 		"marketplace": "마켓플레이스"
 	},
 	"type-group": {
-		"modes": "모드",
+		"agents": "모드",
 		"mcps": "MCP 서버"
 	},
 	"items": {
@@ -138,7 +138,7 @@
 		}
 	},
 	"removeConfirm": {
-		"mode": {
+		"agent": {
 			"title": "모드 제거",
 			"message": "정말로 '{{modeName}}' 모드를 제거하시겠습니까?",
 			"rulesWarning": "이렇게 하면 이 모드와 관련된 모든 규칙 파일도 제거됩니다."

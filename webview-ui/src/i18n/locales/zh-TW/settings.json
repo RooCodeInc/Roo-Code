@@ -22,7 +22,7 @@
 	},
 	"sections": {
 		"providers": "供應商",
-		"modes": "模式",
+		"agents": "模式",
 		"mcp": "MCP 伺服器",
 		"autoApprove": "自動核准",
 		"browser": "電腦存取",
@@ -387,7 +387,7 @@
 		"enablePromptCachingTitle": "啟用提示快取以提升支援的模型效能並降低成本。",
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
-		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點擊「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
+		"vscodeLmWarning": "注意：透過 VS Code Language Agentl API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Agentl」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點擊「接受」；否則可能會出現 400「The requested agentl is not supported」等錯誤。",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "啟用 URL 上下文",
@@ -424,7 +424,7 @@
 			"apiKey": "Ollama API 金鑰",
 			"apiKeyHelp": "用於已認證 Ollama 執行個體或雲端服務的選用 API 金鑰。本機安裝請留空。",
 			"numCtx": "上下文視窗大小 (num_ctx)",
-			"numCtxHelp": "覆寫模型的預設上下文視窗大小。留空以使用模型的 Modelfile 設定。最小值為 128。",
+			"numCtxHelp": "覆寫模型的預設上下文視窗大小。留空以使用模型的 Agentlfile 設定。最小值為 128。",
 			"description": "Ollama 允許您在本機電腦執行模型。請參閱快速入門指南。",
 			"warning": "注意：Roo Code 使用複雜提示，與 Claude 模型搭配最佳。功能較弱的模型可能無法正常運作。"
 		},

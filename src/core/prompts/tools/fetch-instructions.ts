@@ -17,7 +17,7 @@ export function getFetchInstructionsDescription(enableMcpServerCreation?: boolea
 <fetch_instructions>
 <task>create_mcp_server</task>
 </fetch_instructions>`
-			: `Example: Requesting instructions to create a Mode
+			: `Example: Requesting instructions to create a Agent
 
 <fetch_instructions>
 <task>create_mode</task>

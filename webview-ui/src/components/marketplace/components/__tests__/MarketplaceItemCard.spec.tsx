@@ -28,7 +28,7 @@ vi.mock("@/i18n/TranslationContext", () => ({
 				return `by ${params.author}`
 			}
 			const translations: Record<string, any> = {
-				"marketplace:filters.type.mode": "Mode",
+				"marketplace:filters.type.mode": "Agent",
 				"marketplace:filters.type.mcpServer": "MCP Server",
 				"marketplace:filters.tags.clear": "Remove filter",
 				"marketplace:filters.tags.clickToFilter": "Add filter",

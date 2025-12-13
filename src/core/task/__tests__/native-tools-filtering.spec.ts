@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import type { ModeConfig } from "@roo-code/types"
 
-describe("Native Tools Filtering by Mode", () => {
+describe("Native Tools Filtering by Agent", () => {
 	describe("attemptApiRequest native tool filtering", () => {
 		it("should filter native tools based on mode restrictions", async () => {
 			// This test verifies that when using native protocol, tools are filtered
@@ -83,24 +83,24 @@ describe("Native Tools Filtering by Mode", () => {
 		it("should filter MCP tools based on use_mcp_tool permission", async () => {
 			const modeWithMcp: ModeConfig = {
 				slug: "test-mode-with-mcp",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test",
 				groups: ["read", "mcp"] as const,
 			}
 
 			const modeWithoutMcp: ModeConfig = {
 				slug: "test-mode-no-mcp",
-				name: "Test Mode No MCP",
+				name: "Test Agent No MCP",
 				roleDefinition: "Test",
 				groups: ["read"] as const,
 			}
 
 			const { isToolAllowedForMode } = await import("../../../shared/modes")
 
-			// Mode with MCP group should allow use_mcp_tool
+			// Agent with MCP group should allow use_mcp_tool
 			expect(isToolAllowedForMode("use_mcp_tool", "test-mode-with-mcp", [modeWithMcp])).toBe(true)
 
-			// Mode without MCP group should NOT allow use_mcp_tool
+			// Agent without MCP group should NOT allow use_mcp_tool
 			expect(isToolAllowedForMode("use_mcp_tool", "test-mode-no-mcp", [modeWithoutMcp])).toBe(false)
 		})
 

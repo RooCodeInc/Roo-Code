@@ -51,7 +51,7 @@
 	"tokenProgress": {
 		"availableSpace": "Beschikbare ruimte: {{amount}} tokens",
 		"tokensUsed": "Gebruikte tokens: {{used}} van {{total}}",
-		"reservedForResponse": "Gereserveerd voor modelantwoord: {{amount}} tokens"
+		"reservedForResponse": "Gereserveerd voor agentlantwoord: {{amount}} tokens"
 	},
 	"reject": {
 		"title": "Weigeren",
@@ -96,7 +96,7 @@
 			"description": "Gespecialiseerde persona's die op schema blijven en presteren."
 		},
 		"modelAgnostic": {
-			"title": "Breng je eigen model mee",
+			"title": "Breng je eigen agentl mee",
 			"description": "Gebruik je eigen providersleutel of voer zelfs lokale inferentie uit — geen opslag, geen lock-in, geen beperkingen"
 		}
 	},
@@ -232,7 +232,7 @@
 		"wantsToUseTool": "Roo wil een tool gebruiken op de {{serverName}} MCP-server",
 		"wantsToAccessResource": "Roo wil een bron benaderen op de {{serverName}} MCP-server"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo wil overschakelen naar {{mode}} modus",
 		"wantsToSwitchWithReason": "Roo wil overschakelen naar {{mode}} modus omdat: {{reason}}",
 		"didSwitch": "Roo is overgeschakeld naar {{mode}} modus",
@@ -286,8 +286,8 @@
 		"title": "Roo Code {{version}} uitgebracht",
 		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
-			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
+			"feature": "<bold>Beperkt tijd GRATIS stealth agentl</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
+			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de agentlmaker en gebruikt om het agentl te verbeteren)",
 			"connectButton": "Verbinden met Roo Code Cloud",
 			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
 			"goToSettingsButton": "Ga naar Instellingen"

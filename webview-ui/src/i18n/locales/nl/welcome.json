@@ -12,14 +12,14 @@
 			"description": "Een uniforme interface voor LLM's"
 		},
 		"roo": {
-			"description": "De beste gratis modellen om mee te beginnen",
+			"description": "De beste gratis agentllen om mee te beginnen",
 			"incentive": "Probeer Roo gratis uit"
 		}
 	},
 	"chooseProvider": "Om te beginnen heb je een LLM-provider nodig:",
 	"providerSignup": {
 		"rooCloudProvider": "Roo Code Cloud Provider",
-		"rooCloudDescription": "De eenvoudigste manier om Roo te gebruiken. Een samengestelde mix van gratis en betaalde modellen tegen lage kosten",
+		"rooCloudDescription": "De eenvoudigste manier om Roo te gebruiken. Een samengestelde mix van gratis en betaalde agentllen tegen lage kosten",
 		"learnMore": "meer informatie",
 		"useAnotherProvider": "Gebruik een andere provider",
 		"useAnotherProviderDescription": "Voer een API-sleutel in en ga aan de slag.",

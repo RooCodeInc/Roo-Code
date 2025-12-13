@@ -9,7 +9,7 @@ vi.mock("react-i18next", () => ({
 			const translations: Record<string, string> = {
 				"cloud:cloudBenefitsTitle": "Try Roo Code Cloud",
 				"cloud:cloudBenefitProvider": "Access free and paid models that work great with Roo",
-				"cloud:cloudBenefitCloudAgents": "Give tasks to autonomous Cloud agents",
+				"cloud:cloudBenefitCloudAgents": "Give tasks to autonomous Cloud modes",
 				"cloud:cloudBenefitTriggers": "Get code reviews on Github, start tasks from Slack and more",
 				"cloud:cloudBenefitWalkaway": "Follow and control tasks from anywhere (including your phone)",
 				"cloud:cloudBenefitHistory": "Access your task history from anywhere and share them with others",
@@ -34,7 +34,7 @@ describe("CloudUpsellDialog", () => {
 
 		expect(screen.getByText("Try Roo Code Cloud")).toBeInTheDocument()
 		expect(screen.getByText("Access free and paid models that work great with Roo")).toBeInTheDocument()
-		expect(screen.getByText("Give tasks to autonomous Cloud agents")).toBeInTheDocument()
+		expect(screen.getByText("Give tasks to autonomous Cloud modes")).toBeInTheDocument()
 		expect(screen.getByText("Get code reviews on Github, start tasks from Slack and more")).toBeInTheDocument()
 		expect(screen.getByText("Follow and control tasks from anywhere (including your phone)")).toBeInTheDocument()
 		expect(

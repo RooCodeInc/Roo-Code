@@ -51,7 +51,7 @@ export class UrlContentFetcher {
 		}
 		const stats = await this.ensureChromiumExists()
 		const args = [
-			"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+			"--user-mode=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
 			"--disable-dev-shm-usage",
 			"--disable-accelerated-2d-canvas",
 			"--no-first-run",
@@ -66,7 +66,7 @@ export class UrlContentFetcher {
 			args,
 			executablePath: stats.executablePath,
 		})
-		// (latest version of puppeteer does not add headless to user agent)
+		// (latest version of puppeteer does not add headless to user mode)
 		this.page = await this.browser?.newPage()
 
 		// Set additional page configurations to improve loading success

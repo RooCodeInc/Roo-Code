@@ -240,7 +240,7 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 	const modelInfo = cline.api.getModel().info
 	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo)
 
-	details += `\n\n# Current Mode\n`
+	details += `\n\n# Current Agent\n`
 	details += `<slug>${currentMode}</slug>\n`
 	details += `<name>${modeDetails.name}</name>\n`
 	details += `<model>${modelId}</model>\n`

@@ -1,6 +1,6 @@
 {
 	"greeting": "Selamat datang di Roo Code!",
-	"introduction": "Dengan berbagai Mode bawaan dan dapat diperluas, Roo Code memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
+	"introduction": "Dengan berbagai Agent bawaan dan dapat diperluas, Roo Code memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
 	"notice": "Untuk memulai, ekstensi ini memerlukan provider API.",
 	"start": "Ayo mulai!",
 	"routers": {
@@ -19,7 +19,7 @@
 	"chooseProvider": "Untuk memulai, kamu memerlukan penyedia LLM:",
 	"providerSignup": {
 		"rooCloudProvider": "Penyedia Roo Code Cloud",
-		"rooCloudDescription": "Cara termudah untuk menggunakan Roo. Campuran model gratis dan berbayar yang dikurasi dengan biaya rendah",
+		"rooCloudDescription": "Cara termudah untuk menggunakan Roo. Campuran agentl gratis dan berbayar yang dikurasi dengan biaya rendah",
 		"learnMore": "pelajari lebih lanjut",
 		"useAnotherProvider": "Gunakan penyedia lain",
 		"useAnotherProviderDescription": "Masukkan kunci API dan mulai.",

@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Code thích ứng với cách bạn làm việc, chứ không phải ngượ
 - Chế độ Tùy chỉnh: xây dựng các chế độ chuyên biệt cho nhóm hoặc quy trình làm việc của bạn
 - Roomote Control: Roomote Control cho phép bạn điều khiển từ xa các tác vụ đang chạy trên VS Code cục bộ của bạn.
 
-Xem thêm: [Sử dụng Chế độ](https://docs.roocode.com/basic-usage/using-modes) • [Chế độ tùy chỉnh](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Xem thêm: [Sử dụng Chế độ](https://docs.roocode.com/basic-usage/using-agents) • [Chế độ tùy chỉnh](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Video hướng dẫn & tính năng
 

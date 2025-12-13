@@ -24,7 +24,7 @@ describe("MarketplaceViewStateManager", () => {
 		},
 		{
 			id: "test-mode-1",
-			name: "Test Mode 1",
+			name: "Test Agent 1",
 			description: "A test mode",
 			type: "mode",
 			content: "test content",
@@ -258,7 +258,7 @@ describe("MarketplaceViewStateManager", () => {
 		it("should handle search filters correctly", async () => {
 			await stateManager.transition({
 				type: "UPDATE_FILTERS",
-				payload: { filters: { search: "Mode" } },
+				payload: { filters: { search: "Agent" } },
 			})
 
 			// Simulate state message to trigger filtering
@@ -272,7 +272,7 @@ describe("MarketplaceViewStateManager", () => {
 
 			const state = stateManager.getState()
 			expect(state.displayItems?.length).toBe(1)
-			expect(state.displayItems?.[0].name).toBe("Test Mode 1")
+			expect(state.displayItems?.[0].name).toBe("Test Agent 1")
 		})
 
 		it("should handle tag filters correctly", async () => {

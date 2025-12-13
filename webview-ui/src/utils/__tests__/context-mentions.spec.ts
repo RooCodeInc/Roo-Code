@@ -478,7 +478,7 @@ describe("getContextMenuOptions", () => {
 
 		// Should have section header first, then mode results
 		expect(result[0].type).toBe(ContextMenuOptionType.SectionHeader)
-		expect(result[1].type).toBe(ContextMenuOptionType.Mode)
+		expect(result[1].type).toBe(ContextMenuOptionType.Agent)
 		expect(result[1].value).toBe("code")
 	})
 
@@ -488,7 +488,7 @@ describe("getContextMenuOptions", () => {
 		const result = getContextMenuOptions("/nonexistentquery", null, [], [])
 
 		// Should not process as a mode command
-		expect(result[0].type).not.toBe(ContextMenuOptionType.Mode)
+		expect(result[0].type).not.toBe(ContextMenuOptionType.Agent)
 		// Should return NoResults since it won't match anything
 		expect(result[0].type).toBe(ContextMenuOptionType.NoResults)
 	})

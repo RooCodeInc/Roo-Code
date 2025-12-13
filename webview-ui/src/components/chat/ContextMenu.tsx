@@ -86,7 +86,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						{option.label}
 					</span>
 				)
-			case ContextMenuOptionType.Mode:
+			case ContextMenuOptionType.Agent:
 				return (
 					<div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
 						<div style={{ lineHeight: "1.2" }}>
@@ -212,7 +212,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	const getIconForOption = (option: ContextMenuQueryItem): string => {
 		switch (option.type) {
-			case ContextMenuOptionType.Mode:
+			case ContextMenuOptionType.Agent:
 				return "symbol-misc"
 			case ContextMenuOptionType.Command:
 				return "play"
@@ -381,7 +381,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 									option.type === ContextMenuOptionType.OpenedFile) && (
 									<img
 										src={getMaterialIconForOption(option)}
-										alt="Mode"
+										alt="Agent"
 										style={{
 											marginRight: "6px",
 											flexShrink: 0,
@@ -390,7 +390,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 										}}
 									/>
 								)}
-								{option.type !== ContextMenuOptionType.Mode &&
+								{option.type !== ContextMenuOptionType.Agent &&
 									option.type !== ContextMenuOptionType.Command &&
 									option.type !== ContextMenuOptionType.File &&
 									option.type !== ContextMenuOptionType.Folder &&

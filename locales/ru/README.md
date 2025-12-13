@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Code адаптируется к вашему стилю работы, а н
 - Пользовательские режимы: создавайте специализированные режимы для вашей команды или рабочего процесса
 - Roomote Control: Roomote Control позволяет удаленно управлять задачами, запущенными в вашей локальной инстансе VS Code.
 
-Подробнее: [Использование режимов](https://docs.roocode.com/basic-usage/using-modes) • [Пользовательские режимы](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Подробнее: [Использование режимов](https://docs.roocode.com/basic-usage/using-agents) • [Пользовательские режимы](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Обучающие видео и видео о функциях
 

@@ -410,7 +410,7 @@ export class CustomModesManager {
 					.map((err) => `${err.path.join(".")}: ${err.message}`)
 					.join(", ")
 				const errorMessage = `Invalid mode configuration: ${errorMessages}`
-				logger.error("Mode validation failed", { slug, errors: validationResult.error.errors })
+				logger.error("Agent validation failed", { slug, errors: validationResult.error.errors })
 				vscode.window.showErrorMessage(t("common:customModes.errors.updateFailed", { error: errorMessage }))
 				throw new Error(errorMessage)
 			}
@@ -643,7 +643,7 @@ export class CustomModesManager {
 						// Check if this specific mode exists in .roomodes
 						const modeInRoomodes = roomodesModes.find((m: any) => m.slug === slug)
 						if (!modeInRoomodes) {
-							return false // Mode not found anywhere
+							return false // Agent not found anywhere
 						}
 					} else {
 						return false // No .roomodes file and not in custom modes
@@ -750,7 +750,7 @@ export class CustomModesManager {
 						// Use the built-in mode as the base
 						mode = { ...builtInMode }
 					} else {
-						return { success: false, error: "Mode not found" }
+						return { success: false, error: "Agent not found" }
 					}
 				}
 			}

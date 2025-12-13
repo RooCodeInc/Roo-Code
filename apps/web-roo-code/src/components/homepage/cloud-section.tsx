@@ -39,7 +39,7 @@ export function CloudSection() {
 						<h4 className="text-lg font-semibold mb-2">Zero Drift via Role Constraints</h4>
 						<p className="text-muted-foreground mb-6">
 							Fear of agents going haywire is solved by architecture, not prompt engineering. Cloud Agents
-							enforce the strict Modes you use locally.
+							enforce the strict Agents you use locally.
 						</p>
 						<ul className="space-y-4">
 							<li className="flex gap-3 items-start">

@@ -503,7 +503,7 @@ describe("addCustomInstructions", () => {
 		expect(result).toContain("Español") // Check for language name
 		expect(result).toContain("(es)") // Check for language code in parentheses
 		expect(result).toContain("Global Instructions:\nglobal instructions")
-		expect(result).toContain("Mode-specific Instructions:\nmode instructions")
+		expect(result).toContain("Agent-specific Instructions:\nmode instructions")
 		expect(result).toContain("Rules from .roorules-test-mode:\nmode specific rules")
 	})
 
@@ -639,7 +639,7 @@ describe("addCustomInstructions", () => {
 		)
 
 		expect(result).toContain("Global Instructions:\nglobal instructions")
-		expect(result).toContain("Mode-specific Instructions:\nmode instructions")
+		expect(result).toContain("Agent-specific Instructions:\nmode instructions")
 		expect(result).not.toContain("# Agent Rules Standard (AGENTS.md):")
 	})
 
@@ -710,7 +710,7 @@ describe("addCustomInstructions", () => {
 		readlinkMock.mockImplementation((filePath: PathLike) => {
 			const pathStr = filePath.toString()
 			if (pathStr.endsWith("AGENTS.md")) {
-				return Promise.resolve("../actual-agents-file.md")
+				return Promise.resolve("../actual-modes-file.md")
 			}
 			return Promise.reject({ code: "ENOENT" })
 		})
@@ -719,7 +719,7 @@ describe("addCustomInstructions", () => {
 		statMock.mockImplementation((filePath: PathLike) => {
 			const pathStr = filePath.toString()
 			const normalizedPath = pathStr.replace(/\\/g, "/")
-			if (normalizedPath.endsWith("actual-agents-file.md")) {
+			if (normalizedPath.endsWith("actual-modes-file.md")) {
 				return Promise.resolve({
 					isFile: vi.fn().mockReturnValue(true),
 				})
@@ -731,7 +731,7 @@ describe("addCustomInstructions", () => {
 		readFileMock.mockImplementation((filePath: PathLike) => {
 			const pathStr = filePath.toString()
 			const normalizedPath = pathStr.replace(/\\/g, "/")
-			if (normalizedPath.endsWith("actual-agents-file.md")) {
+			if (normalizedPath.endsWith("actual-modes-file.md")) {
 				return Promise.resolve("Agent rules from symlinked file")
 			}
 			return Promise.reject({ code: "ENOENT" })
@@ -762,7 +762,7 @@ describe("addCustomInstructions", () => {
 		expect(readlinkMock).toHaveBeenCalledWith(expect.stringContaining("AGENTS.md"))
 
 		// Verify the resolved path was read
-		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("actual-agents-file.md"), "utf-8")
+		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("actual-modes-file.md"), "utf-8")
 	})
 
 	it("should handle AGENTS.md as a regular file when not a symlink", async () => {
@@ -935,7 +935,7 @@ describe("addCustomInstructions", () => {
 		)
 
 		expect(result).toContain("Global Instructions:")
-		expect(result).toContain("Mode-specific Instructions:")
+		expect(result).toContain("Agent-specific Instructions:")
 		expect(result).not.toContain("Rules from .clinerules-test-mode")
 	})
 
@@ -990,7 +990,7 @@ describe("addCustomInstructions", () => {
 		)
 
 		expect(result).toContain("Global Instructions:\nglobal instructions")
-		expect(result).toContain("Mode-specific Instructions:\nmode instructions")
+		expect(result).toContain("Agent-specific Instructions:\nmode instructions")
 		expect(result).not.toContain("Rules from .clinerules-test-mode")
 	})
 

@@ -154,7 +154,7 @@ describe("getEnvironmentDetails", () => {
 		expect(result).toContain("# Current Time")
 		expect(result).not.toContain("# Git Status") // Git status is disabled by default (maxGitStatusFiles = 0)
 		expect(result).toContain("# Current Cost")
-		expect(result).toContain("# Current Mode")
+		expect(result).toContain("# Current Agent")
 		expect(result).toContain("<model>test-model</model>")
 
 		expect(mockProvider.getState).toHaveBeenCalled()

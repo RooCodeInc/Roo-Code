@@ -140,7 +140,7 @@ describe("Settings Migration", () => {
 		// Clear all previous mocks to ensure clean test environment
 		vitest.clearAllMocks()
 
-		const testJsonContent = JSON.stringify({ customModes: [{ slug: "test-mode", name: "Test Mode" }] })
+		const testJsonContent = JSON.stringify({ customModes: [{ slug: "test-mode", name: "Test Agent" }] })
 
 		// Setup mock functions
 		const mockWrite = vitest.mocked(fs.writeFile).mockResolvedValue(undefined)

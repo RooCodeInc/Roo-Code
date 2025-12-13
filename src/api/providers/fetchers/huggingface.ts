@@ -121,7 +121,7 @@ export async function getHuggingFaceModels(): Promise<ModelRecord> {
 			headers: {
 				"Upgrade-Insecure-Requests": "1",
 				"Sec-Fetch-Dest": "document",
-				"Sec-Fetch-Mode": "navigate",
+				"Sec-Fetch-Agent": "navigate",
 				"Sec-Fetch-Site": "none",
 				"Sec-Fetch-User": "?1",
 				Priority: "u=0, i",
@@ -229,7 +229,7 @@ export async function getHuggingFaceModelsWithMetadata(): Promise<HuggingFaceMod
 			headers: {
 				"Upgrade-Insecure-Requests": "1",
 				"Sec-Fetch-Dest": "document",
-				"Sec-Fetch-Mode": "navigate",
+				"Sec-Fetch-Agent": "navigate",
 				"Sec-Fetch-Site": "none",
 				"Sec-Fetch-User": "?1",
 				Priority: "u=0, i",

@@ -51,7 +51,7 @@
 	"tokenProgress": {
 		"availableSpace": "Available space: {{amount}} tokens",
 		"tokensUsed": "Tokens used: {{used}} of {{total}}",
-		"reservedForResponse": "Reserved for model response: {{amount}} tokens"
+		"reservedForResponse": "Reserved for agentl response: {{amount}} tokens"
 	},
 	"reject": {
 		"title": "Reject",
@@ -103,23 +103,23 @@
 	"onboarding": "What would you like to do?",
 	"rooTips": {
 		"customizableModes": {
-			"title": "Customizable modes that don't swerve",
+			"title": "Customizable agents that don't swerve",
 			"description": "Specialized personas that stay on-task and deliver."
 		},
 		"modelAgnostic": {
-			"title": "Bring your own model, no markup or lock-in",
+			"title": "Bring your own agentl, no markup or lock-in",
 			"description": "Use your own provider key or even run local inference — Roo doesn't charge for it"
 		}
 	},
-	"selectMode": "Select mode for interaction",
+	"selectMode": "Select agent for interaction",
 	"selectApiConfig": "Select API configuration",
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
-		"title": "Modes",
-		"marketplace": "Mode Marketplace",
-		"settings": "Mode Settings",
+		"title": "Agents",
+		"marketplace": "Agent Marketplace",
+		"settings": "Agent Settings",
 		"description": "Specialized personas that tailor Roo's behavior.",
-		"searchPlaceholder": "Search modes...",
+		"searchPlaceholder": "Search agents...",
 		"noResults": "No results found"
 	},
 	"enhancePromptDescription": "The 'Enhance Prompt' button helps improve your prompt by providing additional context, clarification, or rephrasing. Try typing a prompt in here and clicking the button again to see how it works.",
@@ -136,8 +136,8 @@
 	"noValidImages": "No valid images were processed",
 	"separator": "Separator",
 	"edit": "Edit...",
-	"forNextMode": "for next mode",
-	"forPreviousMode": "for previous mode",
+	"forNextMode": "for next agent",
+	"forPreviousMode": "for previous agent",
 	"apiRequest": {
 		"title": "API Request",
 		"failed": "API Request Failed",
@@ -263,14 +263,14 @@
 		"wantsToUseTool": "Roo wants to use a tool on the {{serverName}} MCP server",
 		"wantsToAccessResource": "Roo wants to access a resource on the {{serverName}} MCP server"
 	},
-	"modes": {
-		"wantsToSwitch": "Roo wants to switch to {{mode}} mode",
-		"wantsToSwitchWithReason": "Roo wants to switch to {{mode}} mode because: {{reason}}",
-		"didSwitch": "Roo switched to {{mode}} mode",
-		"didSwitchWithReason": "Roo switched to {{mode}} mode because: {{reason}}"
+	"agents": {
+		"wantsToSwitch": "Roo wants to switch to {{mode}} agent",
+		"wantsToSwitchWithReason": "Roo wants to switch to {{mode}} agent because: {{reason}}",
+		"didSwitch": "Roo switched to {{mode}} agent",
+		"didSwitchWithReason": "Roo switched to {{mode}} agent because: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} mode",
+		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} agent",
 		"wantsToFinish": "Roo wants to finish this subtask",
 		"newTaskContent": "Subtask Instructions",
 		"completionContent": "Subtask Completed",
@@ -316,8 +316,8 @@
 		"title": "Roo Code {{version}} Released",
 		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
-			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
+			"feature": "<bold>Limited-time FREE stealth agentl</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding agentl that supports image inputs, accessible through Roo Code Cloud.",
+			"note": "(Note: prompts and completions are logged by the agentl creator and used to improve the agentl)",
 			"connectButton": "Connect to Roo Code Cloud",
 			"selectModel": "Select <code>roo/code-supernova</code> from the Roo Code Cloud provider in Settings to get started.",
 			"goToSettingsButton": "Go to Settings"

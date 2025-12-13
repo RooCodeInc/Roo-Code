@@ -238,7 +238,7 @@
 		"wantsToUseTool": "Roo想在{{serverName}} MCP上使用工具",
 		"wantsToAccessResource": "Roo想访问{{serverName}} MCP服务上的资源"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "即将切换至{{mode}}模式",
 		"wantsToSwitchWithReason": "即将切换至{{mode}}模式（原因：{{reason}}）",
 		"didSwitch": "已切换至{{mode}}模式",

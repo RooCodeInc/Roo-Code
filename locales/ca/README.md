@@ -35,41 +35,41 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
 ## Què pot fer Roo Code per TU?
 
 - Generar codi a partir de descripcions en llenguatge natural
-- Adaptar-se amb modes: Codi, Arquitecte, Pregunta, Depuració i Modes personalitzats
+- Adaptar-se amb agents: Codi, Arquitecte, Pregunta, Depuració i Agents personalitzats
 - Refactoritzar i depurar codi existent
 - Escriure i actualitzar documentació
 - Respondre preguntes sobre la teva base de codi
 - Automatitzar tasques repetitives
 - Utilitzar servidors MCP
 
-## Modes
+## Agents
 
 Roo Code s'adapta a la teva manera de treballar, no a l'inrevés:
 
-- Mode Codi: codificació diària, edicions i operacions de fitxers
-- Mode Arquitecte: planificar sistemes, especificacions i migracions
-- Mode Pregunta: respostes ràpides, explicacions i documents
-- Mode Depuració: rastrejar problemes, afegir registres, aïllar les causes arrel
-- Modes personalitzats: crea modes especialitzats per al teu equip o flux de treball
+- Agent Codi: codificació diària, edicions i operacions de fitxers
+- Agent Arquitecte: planificar sistemes, especificacions i migracions
+- Agent Pregunta: respostes ràpides, explicacions i documents
+- Agent Depuració: rastrejar problemes, afegir registres, aïllar les causes arrel
+- Agents personalitzats: crea agents especialitzats per al teu equip o flux de treball
 - Roomote Control: Roomote Control et permet controlar a distància tasques que s'executen a la teva instància local de VS Code.
 
-Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personalitzats](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Més informació: [Ús de Agents](https://docs.roocode.com/basic-usage/using-agents) • [Agents personalitzats](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Tutorials i vídeos de funcionalitats
 
 <div align="center">
 
-|                                                                                                                                                                            |                                                                                                                                                                           |                                                                                                                                                                                    |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instal·lant Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurant perfils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexació de la base de codi</b> |
-| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modes personalitzats</b> |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punts de control</b>   |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Llistes de tasques</b>      |
+|                                                                                                                                                                             |                                                                                                                                                                           |                                                                                                                                                                                    |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instal·lant Roo Code</b>  | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurant perfils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexació de la base de codi</b> |
+| <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Agents personalitzats</b> |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punts de control</b>   |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Llistes de tasques</b>      |
 
 </div>
 <p align="center">
@@ -105,7 +105,7 @@ pnpm install
 
 Hi ha diverses maneres d'executar l'extensió Roo Code:
 
-### Mode de desenvolupament (F5)
+### Agent de desenvolupament (F5)
 
 Per al desenvolupament actiu, utilitza la depuració integrada de VSCode:
 

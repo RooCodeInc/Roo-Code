@@ -120,7 +120,7 @@ describe("newTaskTool", () => {
 		mockAskApproval.mockResolvedValue(true) // Default to approved
 		vi.mocked(getModeBySlug).mockReturnValue({
 			slug: "code",
-			name: "Code Mode",
+			name: "Code Agent",
 			roleDefinition: "Test role definition",
 			groups: ["command", "read", "edit"],
 		}) // Default valid mode

@@ -12,14 +12,14 @@
 			"description": "LLM'ler için birleşik bir arayüz"
 		},
 		"roo": {
-			"description": "Başlamak için en iyi ücretsiz modeller",
+			"description": "Başlamak için en iyi ücretsiz agentller",
 			"incentive": "Roo'yu ücretsiz dene"
 		}
 	},
 	"chooseProvider": "Başlamak için bir LLM sağlayıcısına ihtiyacın var:",
 	"providerSignup": {
 		"rooCloudProvider": "Roo Code Cloud Sağlayıcısı",
-		"rooCloudDescription": "Roo'yu kullanmanın en basit yolu. Düşük maliyetle seçilmiş ücretsiz ve ücretli modellerin karışımı",
+		"rooCloudDescription": "Roo'yu kullanmanın en basit yolu. Düşük maliyetle seçilmiş ücretsiz ve ücretli agentllerin karışımı",
 		"learnMore": "daha fazla bilgi",
 		"useAnotherProvider": "Başka bir sağlayıcı kullan",
 		"useAnotherProviderDescription": "Bir API anahtarı gir ve başla.",

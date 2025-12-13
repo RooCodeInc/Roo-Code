@@ -35,7 +35,7 @@
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
-		"reservedForResponse": "Reservat per a resposta del model: {{amount}} tokens"
+		"reservedForResponse": "Reservat per a resposta del agentl: {{amount}} tokens"
 	},
 	"retry": {
 		"title": "Tornar a intentar",
@@ -96,11 +96,11 @@
 			"description": "Persones especialitzades que es mantenen en la tasca i compleixen."
 		},
 		"modelAgnostic": {
-			"title": "Porta el teu propi model",
+			"title": "Porta el teu propi agentl",
 			"description": "Fes servir la teva pròpia clau de proveïdor o fins i tot executa inferència local — sense sobrepreus, sense bloquejos, sense restriccions"
 		}
 	},
-	"selectMode": "Selecciona el mode d'interacció",
+	"selectMode": "Selecciona el agent d'interacció",
 	"selectApiConfig": "Seleccioneu la configuració de l'API",
 	"enhancePrompt": "Millora la sol·licitud amb context addicional",
 	"addImages": "Afegeix imatges al missatge",
@@ -114,19 +114,19 @@
 	"dragFilesImages": "manté premut shift per arrossegar fitxers/imatges",
 	"enhancePromptDescription": "El botó 'Millora la sol·licitud' ajuda a millorar la teva sol·licitud proporcionant context addicional, aclariments o reformulacions. Prova d'escriure una sol·licitud aquí i fes clic al botó de nou per veure com funciona.",
 	"modeSelector": {
-		"title": "Modes",
-		"marketplace": "Marketplace de Modes",
-		"settings": "Configuració de Modes",
+		"title": "Agents",
+		"marketplace": "Marketplace de Agents",
+		"settings": "Configuració de Agents",
 		"description": "Personalitats especialitzades que adapten el comportament de Roo.",
-		"searchPlaceholder": "Cerca modes...",
+		"searchPlaceholder": "Cerca agents...",
 		"noResults": "No s'han trobat resultats"
 	},
 	"errorReadingFile": "Error en llegir el fitxer",
 	"noValidImages": "No s'ha processat cap imatge vàlida",
 	"separator": "Separador",
 	"edit": "Edita...",
-	"forNextMode": "per al següent mode",
-	"forPreviousMode": "per al mode anterior",
+	"forNextMode": "per al següent agent",
+	"forPreviousMode": "per al agent anterior",
 	"error": "Error",
 	"diffError": {
 		"title": "Edició fallida"
@@ -237,14 +237,14 @@
 		"wantsToUseTool": "Roo vol utilitzar una eina al servidor MCP {{serverName}}",
 		"wantsToAccessResource": "Roo vol accedir a un recurs al servidor MCP {{serverName}}"
 	},
-	"modes": {
-		"wantsToSwitch": "Roo vol canviar a mode <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo vol canviar a mode <code>{{mode}}</code> perquè: {{reason}}",
-		"didSwitch": "Roo ha canviat a mode <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo ha canviat a mode <code>{{mode}}</code> perquè: {{reason}}"
+	"agents": {
+		"wantsToSwitch": "Roo vol canviar a agent <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "Roo vol canviar a agent <code>{{mode}}</code> perquè: {{reason}}",
+		"didSwitch": "Roo ha canviat a agent <code>{{mode}}</code>",
+		"didSwitchWithReason": "Roo ha canviat a agent <code>{{mode}}</code> perquè: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo vol crear una nova subtasca en mode <code>{{mode}}</code>",
+		"wantsToCreate": "Roo vol crear una nova subtasca en agent <code>{{mode}}</code>",
 		"wantsToFinish": "Roo vol finalitzar aquesta subtasca",
 		"newTaskContent": "Instruccions de la subtasca",
 		"completionContent": "Subtasca completada",
@@ -309,8 +309,8 @@
 		"title": "Roo Code {{version}} Llançat",
 		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
-			"note": "(Nota: els prompts i completacions són registrats pel creador del model i utilitzats per millorar-lo)",
+			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un agentl de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
+			"note": "(Nota: els prompts i completacions són registrats pel creador del agentl i utilitzats per millorar-lo)",
 			"connectButton": "Connectar a Roo Code Cloud",
 			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
 			"goToSettingsButton": "Anar a Configuració"

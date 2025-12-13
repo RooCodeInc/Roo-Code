@@ -86,7 +86,7 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		// Event emission (provider-level)
 		expect(providerEmit).toHaveBeenCalledWith(RooCodeEventName.TaskDelegated, "parent-1", "child-1")
 
-		// Mode switch
+		// Agent switch
 		expect(handleModeSwitch).toHaveBeenCalledWith("code")
 	})
 })

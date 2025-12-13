@@ -237,7 +237,7 @@
 		"wantsToUseTool": "Roo {{serverName}} MCP सर्वर पर एक टूल का उपयोग करना चाहता है",
 		"wantsToAccessResource": "Roo {{serverName}} MCP सर्वर पर एक संसाधन का उपयोग करना चाहता है"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo <code>{{mode}}</code> मोड में स्विच करना चाहता है",
 		"wantsToSwitchWithReason": "Roo <code>{{mode}}</code> मोड में स्विच करना चाहता है क्योंकि: {{reason}}",
 		"didSwitch": "Roo <code>{{mode}}</code> मोड में स्विच कर गया",

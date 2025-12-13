@@ -24,7 +24,7 @@ describe("getFetchInstructionsDescription", () => {
 
 		expect(description).not.toContain("create_mcp_server")
 		expect(description).toContain("create_mode")
-		expect(description).toContain("Example: Requesting instructions to create a Mode")
+		expect(description).toContain("Example: Requesting instructions to create a Agent")
 		expect(description).toContain("<task>create_mode</task>")
 		expect(description).not.toContain("Example: Requesting instructions to create an MCP Server")
 	})

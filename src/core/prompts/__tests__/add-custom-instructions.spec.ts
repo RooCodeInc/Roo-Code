@@ -97,7 +97,7 @@ __setMockImplementation(
 
 		// Add mode-specific instructions after
 		if (modeCustomInstructions?.trim()) {
-			sections.push(`Mode-specific Instructions:\n${modeCustomInstructions}`)
+			sections.push(`Agent-specific Instructions:\n${modeCustomInstructions}`)
 		}
 
 		// Add rules
@@ -406,7 +406,7 @@ describe("addCustomInstructions", () => {
 
 	it("should combine global and mode-specific instructions", async () => {
 		const instructions = await addCustomInstructions(
-			"Mode-specific instructions",
+			"Agent-specific instructions",
 			"Global instructions",
 			"/test/path",
 			defaultModeSlug,

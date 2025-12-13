@@ -92,34 +92,34 @@ describe("MarketplaceManager", () => {
 			const items: MarketplaceItem[] = [
 				{
 					id: "test-mode",
-					name: "Test Mode",
+					name: "Test Agent",
 					description: "A test mode for testing",
 					type: "mode",
-					content: "# Test Mode\nThis is a test mode.",
+					content: "# Test Agent\nThis is a test mode.",
 				},
 				{
 					id: "other-mode",
-					name: "Other Mode",
+					name: "Other Agent",
 					description: "Another mode",
 					type: "mode",
-					content: "# Other Mode\nThis is another mode.",
+					content: "# Other Agent\nThis is another mode.",
 				},
 			]
 
 			const filtered = manager.filterItems(items, { search: "test" })
 
 			expect(filtered).toHaveLength(1)
-			expect(filtered[0].name).toBe("Test Mode")
+			expect(filtered[0].name).toBe("Test Agent")
 		})
 
 		it("should filter items by type", () => {
 			const items: MarketplaceItem[] = [
 				{
 					id: "test-mode",
-					name: "Test Mode",
+					name: "Test Agent",
 					description: "A test mode",
 					type: "mode",
-					content: "# Test Mode",
+					content: "# Test Agent",
 				},
 				{
 					id: "test-mcp",
@@ -141,10 +141,10 @@ describe("MarketplaceManager", () => {
 			const items: MarketplaceItem[] = [
 				{
 					id: "test-mode",
-					name: "Test Mode",
+					name: "Test Agent",
 					description: "A test mode",
 					type: "mode",
-					content: "# Test Mode",
+					content: "# Test Agent",
 				},
 			]
 
@@ -160,10 +160,10 @@ describe("MarketplaceManager", () => {
 			const mockItems: MarketplaceItem[] = [
 				{
 					id: "test-mode",
-					name: "Test Mode",
+					name: "Test Agent",
 					description: "A test mode",
 					type: "mode",
-					content: "# Test Mode",
+					content: "# Test Agent",
 				},
 			]
 
@@ -173,7 +173,7 @@ describe("MarketplaceManager", () => {
 			const result = await manager.getMarketplaceItems()
 
 			expect(result.marketplaceItems).toHaveLength(1)
-			expect(result.marketplaceItems[0].name).toBe("Test Mode")
+			expect(result.marketplaceItems[0].name).toBe("Test Agent")
 			expect(result.organizationMcps).toHaveLength(0)
 		})
 
@@ -307,10 +307,10 @@ describe("MarketplaceManager", () => {
 		it("should install a mode item", async () => {
 			const item: MarketplaceItem = {
 				id: "test-mode",
-				name: "Test Mode",
+				name: "Test Agent",
 				description: "A test mode",
 				type: "mode",
-				content: "# Test Mode\nThis is a test mode.",
+				content: "# Test Agent\nThis is a test mode.",
 			}
 
 			// Mock the installer
@@ -352,10 +352,10 @@ describe("MarketplaceManager", () => {
 		it("should remove a mode item", async () => {
 			const item: MarketplaceItem = {
 				id: "test-mode",
-				name: "Test Mode",
+				name: "Test Agent",
 				description: "A test mode",
 				type: "mode",
-				content: "# Test Mode",
+				content: "# Test Agent",
 			}
 
 			// Mock the installer

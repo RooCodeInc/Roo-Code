@@ -57,7 +57,7 @@
 	"tokenProgress": {
 		"availableSpace": "Ruang tersedia: {{amount}} token",
 		"tokensUsed": "Token digunakan: {{used}} dari {{total}}",
-		"reservedForResponse": "Dicadangkan untuk respons model: {{amount}} token"
+		"reservedForResponse": "Dicadangkan untuk respons agentl: {{amount}} token"
 	},
 	"reject": {
 		"title": "Tolak",
@@ -110,20 +110,20 @@
 			"description": "Persona khusus yang tetap mengerjakan tugas dan memberikan hasil."
 		},
 		"modelAgnostic": {
-			"title": "Bawa model Anda sendiri",
+			"title": "Bawa agentl Anda sendiri",
 			"description": "Gunakan kunci penyedia Anda sendiri atau bahkan jalankan inferensi lokal — tanpa markup, tanpa lock-in, tanpa batasan"
 		}
 	},
-	"selectMode": "Pilih mode untuk interaksi",
+	"selectMode": "Pilih agent untuk interaksi",
 	"selectApiConfig": "Pilih konfigurasi API",
 	"enhancePrompt": "Tingkatkan prompt dengan konteks tambahan",
 	"enhancePromptDescription": "Tombol 'Tingkatkan Prompt' membantu memperbaiki prompt kamu dengan memberikan konteks tambahan, klarifikasi, atau penyusunan ulang. Coba ketik prompt di sini dan klik tombol lagi untuk melihat cara kerjanya.",
 	"modeSelector": {
-		"title": "Mode",
-		"marketplace": "Marketplace Mode",
-		"settings": "Pengaturan Mode",
+		"title": "Agent",
+		"marketplace": "Marketplace Agent",
+		"settings": "Pengaturan Agent",
 		"description": "Persona khusus yang menyesuaikan perilaku Roo.",
-		"searchPlaceholder": "Cari mode...",
+		"searchPlaceholder": "Cari agent...",
 		"noResults": "Tidak ada hasil yang ditemukan"
 	},
 	"addImages": "Tambahkan gambar ke pesan",
@@ -139,8 +139,8 @@
 	"noValidImages": "Tidak ada gambar valid yang diproses",
 	"separator": "Pemisah",
 	"edit": "Edit...",
-	"forNextMode": "untuk mode selanjutnya",
-	"forPreviousMode": "untuk mode sebelumnya",
+	"forNextMode": "untuk agent selanjutnya",
+	"forPreviousMode": "untuk agent sebelumnya",
 	"apiRequest": {
 		"title": "Permintaan API",
 		"failed": "Permintaan API Gagal",
@@ -268,14 +268,14 @@
 		"wantsToUseTool": "Roo ingin menggunakan tool di server MCP {{serverName}}",
 		"wantsToAccessResource": "Roo ingin mengakses resource di server MCP {{serverName}}"
 	},
-	"modes": {
-		"wantsToSwitch": "Roo ingin beralih ke mode {{mode}}",
-		"wantsToSwitchWithReason": "Roo ingin beralih ke mode {{mode}} karena: {{reason}}",
-		"didSwitch": "Roo beralih ke mode {{mode}}",
-		"didSwitchWithReason": "Roo beralih ke mode {{mode}} karena: {{reason}}"
+	"agents": {
+		"wantsToSwitch": "Roo ingin beralih ke agent {{mode}}",
+		"wantsToSwitchWithReason": "Roo ingin beralih ke agent {{mode}} karena: {{reason}}",
+		"didSwitch": "Roo beralih ke agent {{mode}}",
+		"didSwitchWithReason": "Roo beralih ke agent {{mode}} karena: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo ingin membuat subtugas baru dalam mode {{mode}}",
+		"wantsToCreate": "Roo ingin membuat subtugas baru dalam agent {{mode}}",
 		"wantsToFinish": "Roo ingin menyelesaikan subtugas ini",
 		"newTaskContent": "Instruksi Subtugas",
 		"completionContent": "Subtugas Selesai",
@@ -322,8 +322,8 @@
 		"title": "Roo Code {{version}} Dirilis",
 		"support": "Dukung Roo Code dengan memberi kami bintang di <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Model coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
-			"note": "(Catatan: prompt dan completion dicatat oleh pembuat model dan digunakan untuk meningkatkan model)",
+			"feature": "<bold>Model stealth GRATIS waktu terbatas</bold> - Code Supernova: Sekarang diupgrade dengan <bold>jendela konteks 1M token</bold>! Agentl coding agentik serbaguna yang mendukung input gambar, tersedia melalui Roo Code Cloud.",
+			"note": "(Catatan: prompt dan completion dicatat oleh pembuat agentl dan digunakan untuk meningkatkan agentl)",
 			"connectButton": "Hubungkan ke Roo Code Cloud",
 			"selectModel": "Pilih <code>roo/code-supernova</code> dari penyedia Roo Code Cloud di Pengaturan untuk memulai.",
 			"goToSettingsButton": "Pergi ke Pengaturan"

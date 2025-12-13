@@ -1,7 +1,7 @@
 {
 	"title": "मोड्स",
 	"done": "हो गया",
-	"modes": {
+	"agents": {
 		"title": "मोड्स",
 		"createNewMode": "नया मोड बनाएँ",
 		"importMode": "मोड आयात करें",

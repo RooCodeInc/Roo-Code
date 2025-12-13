@@ -1,7 +1,7 @@
 {
 	"title": "Modi",
 	"done": "Fatto",
-	"modes": {
+	"agents": {
 		"title": "Modalità",
 		"createNewMode": "Crea nuova modalità",
 		"importMode": "Importa modalità",
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Definizione del ruolo",
 		"resetToDefault": "Ripristina predefiniti",
-		"description": "Definisci l'esperienza e la personalità di Roo per questa modalità. Questa descrizione modella come Roo si presenta e affronta i compiti."
+		"description": "Definisci l'esperienza e la personalità di Roo per questa modalità. Questa descrizione agentlla come Roo si presenta e affronta i compiti."
 	},
 	"description": {
 		"title": "Descrizione breve (per umani)",

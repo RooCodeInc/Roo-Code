@@ -85,7 +85,7 @@ export default function Privacy() {
 						<li>
 							<strong>
 								Your source code does not transit Roo Code servers unless you explicitly choose Roo Code
-								as a model provider (proxy mode).
+								as a model provider (proxy agent).
 							</strong>{" "}
 							When Roo Code Cloud is your model provider, your code briefly transits Roo Code servers only
 							to forward it to the upstream model, is not stored, and is deleted immediately after
@@ -127,7 +127,7 @@ export default function Privacy() {
 										Workspace Configuration
 									</td>
 									<td className="border border-border px-4 py-2">
-										Org settings, allow‑lists, rules files, modes, dashboards
+										Org settings, allow‑lists, rules files, agents, dashboards
 									</td>
 									<td className="border border-border px-4 py-2">You / Extension (when signed in)</td>
 								</tr>
@@ -214,10 +214,10 @@ export default function Privacy() {
 									</td>
 									<td className="border border-border px-4 py-2">
 										Your chosen model provider (direct client → provider TLS), or Roo Code (proxy
-										mode; transit‑only) when you select Roo Code as the provider
+										agent; transit‑only) when you select Roo Code as the provider
 									</td>
 									<td className="border border-border px-4 py-2">
-										Roo Code servers (except proxy mode; transit‑only, no storage); ad networks;
+										Roo Code servers (except proxy agent; transit‑only, no storage); ad networks;
 										model‑training pipelines
 									</td>
 								</tr>

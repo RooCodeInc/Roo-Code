@@ -6,7 +6,7 @@ Parameters:
 - reason: (optional) The reason for switching modes
 Usage:
 <switch_mode>
-<mode_slug>Mode slug here</mode_slug>
+<mode_slug>Agent slug here</mode_slug>
 <reason>Reason for switching here</reason>
 </switch_mode>
 

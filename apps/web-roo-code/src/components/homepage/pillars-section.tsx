@@ -17,22 +17,22 @@ const MODEL_LOGOS = [
 ]
 const MODE_EXAMPLES = [
 	{
-		name: "Architect",
+		name: "Planner",
 		description: "Plans complex changes without making changes.",
 		icon: Map,
 	},
 	{
-		name: "Code",
+		name: "Coder",
 		description: "Implements, refactors and optimizes code.",
 		icon: Code,
 	},
 	{
-		name: "Ask",
+		name: "Explainer",
 		description: "Explains functionality and program behavior.",
 		icon: MessageCircleQuestion,
 	},
 	{
-		name: "Debug",
+		name: "Debugger",
 		description: "Diagnoses issues, traces failures, and proposes targeted, reliable fixes.",
 		icon: Bug,
 	},
@@ -109,7 +109,7 @@ export function PillarsSection() {
 								<Users2 className="size-8 text-violet-600 shrink-0 mt-1" strokeWidth={1.5} />
 							</div>
 							<div>
-								<h3 className="text-2xl font-bold mb-1">Role-specific Modes</h3>
+								<h3 className="text-2xl font-bold mb-1">Role-specific Agents</h3>
 								<h4 className="font-semibold text-lg">On-task and under control.</h4>
 								<div className="text-muted-foreground my-4 space-y-1">
 									<p>
@@ -117,29 +117,29 @@ export function PillarsSection() {
 										real damage.
 									</p>
 									<p>
-										Roo&apos;s Modes keep models focused on a given task and limit their access to
+										Roo&apos;s Agents keep models focused on a given task and limit their access to
 										tools which are relevant to their role, keeping the context window clearer and
 										avoiding surprises.
 									</p>
 									<p>
-										Modes are even smart enough to ask to switch to another when stepping outside
+										Agents are even smart enough to ask to switch to another when stepping outside
 										their responsibilities.
 									</p>
 								</div>
 								<div className="mt-6">
 									<span className="text-muted-foreground text-sm">Some examples</span>
 									<ul className="flex gap-2 flex-wrap mt-2">
-										{MODE_EXAMPLES.map((mode) => {
-											const Icon = mode.icon
+										{MODE_EXAMPLES.map((agent) => {
+											const Icon = agent.icon
 											return (
 												<li
-													key={mode.name}
+													key={agent.name}
 													className="rounded-lg border bg-border/40 w-full md:w-[30%] min-w-[200px] text-sm px-3 py-2 flex gap-1">
 													<Icon className="text-muted-foreground size-4 shrink-0 mt-0.5" />
 													<div>
-														<p className="font-semibold">{mode.name}</p>
+														<p className="font-semibold">{agent.name}</p>
 														<p className="text-muted-foreground text-xs">
-															{mode.description}
+															{agent.description}
 														</p>
 													</div>
 												</li>

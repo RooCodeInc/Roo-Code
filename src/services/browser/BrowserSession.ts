@@ -74,7 +74,7 @@ export class BrowserSession {
 		const stats = await this.ensureChromiumExists()
 		this.browser = await stats.puppeteer.launch({
 			args: [
-				"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+				"--user-mode=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
 			],
 			executablePath: stats.executablePath,
 			defaultViewport: this.getViewport(),

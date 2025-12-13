@@ -1,6 +1,6 @@
 {
 	"greeting": "Welcome to Roo Code!",
-	"introduction": "With a range of built-in and extensible Modes, Roo Code lets you plan, architect, code, debug and boost your productivity like never before.",
+	"introduction": "With a range of built-in and extensible Agents, Roo Code lets you plan, architect, code, debug and boost your productivity like never before.",
 	"notice": "To get started, this extension needs an API provider.",
 	"start": "Let's go!",
 	"routers": {
@@ -12,14 +12,14 @@
 			"description": "A unified interface for LLMs"
 		},
 		"roo": {
-			"description": "The best free models to get started",
+			"description": "The best free agentls to get started",
 			"incentive": "Try Roo out for free"
 		}
 	},
 	"chooseProvider": "Roo needs an LLM provider to work. Choose yours:",
 	"providerSignup": {
 		"rooCloudProvider": "Roo Code Cloud Provider",
-		"rooCloudDescription": "The simplest way to use Roo. A curated mix of free and paid models at a low cost",
+		"rooCloudDescription": "The simplest way to use Roo. A curated mix of free and paid agentls at a low cost",
 		"learnMore": "learn more",
 		"useAnotherProvider": "Use another provider",
 		"useAnotherProviderDescription": "Enter an API key and get going.",

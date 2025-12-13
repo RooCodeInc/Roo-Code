@@ -1,7 +1,7 @@
 {
 	"title": "Modi",
 	"done": "Fertig",
-	"modes": {
+	"agents": {
 		"title": "Modi",
 		"createNewMode": "Neuen Modus erstellen",
 		"importMode": "Modus importieren",

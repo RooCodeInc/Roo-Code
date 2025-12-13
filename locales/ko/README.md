@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Code는 당신의 작업 방식에 맞춰 적응합니다.
 - 사용자 지정 모드: 팀이나 워크플로우를 위한 특수 모드 구축
 - Roomote Control: Roomote Control은 로컬 VS Code 인스턴스에서 실행 중인 작업을 원격으로 제어할 수 있어.
 
-자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-modes) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-agents) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## 튜토리얼 및 기능 비디오
 

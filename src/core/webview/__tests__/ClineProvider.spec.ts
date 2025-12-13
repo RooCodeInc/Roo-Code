@@ -243,26 +243,26 @@ vi.mock("../../../shared/modes", () => ({
 	modes: [
 		{
 			slug: "code",
-			name: "Code Mode",
+			name: "Code Agent",
 			roleDefinition: "You are a code assistant",
 			groups: ["read", "edit", "browser"],
 		},
 		{
 			slug: "architect",
-			name: "Architect Mode",
+			name: "Architect Agent",
 			roleDefinition: "You are an architect",
 			groups: ["read", "edit"],
 		},
 		{
 			slug: "ask",
-			name: "Ask Mode",
+			name: "Ask Agent",
 			roleDefinition: "You are a helpful assistant",
 			groups: ["read"],
 		},
 	],
 	getModeBySlug: vi.fn().mockReturnValue({
 		slug: "code",
-		name: "Code Mode",
+		name: "Code Agent",
 		roleDefinition: "You are a code assistant",
 		groups: ["read", "edit", "browser"],
 	}),
@@ -1700,7 +1700,7 @@ describe("ClineProvider", () => {
 				getCustomModes: vi.fn().mockResolvedValue([
 					{
 						slug: "existing-mode",
-						name: "Existing Mode",
+						name: "Existing Agent",
 						roleDefinition: "Test role",
 						groups: ["read"] as const,
 					},
@@ -1715,7 +1715,7 @@ describe("ClineProvider", () => {
 				.mockReturnValueOnce(undefined) // First call returns undefined (mode doesn't exist)
 				.mockReturnValue({
 					slug: "code",
-					name: "Code Mode",
+					name: "Code Agent",
 					roleDefinition: "You are a code assistant",
 					groups: ["read", "edit", "browser"],
 				}) // Subsequent calls return default mode
@@ -1751,7 +1751,7 @@ describe("ClineProvider", () => {
 			// Verify fallback to default mode
 			expect(mockContext.globalState.update).toHaveBeenCalledWith("mode", "code")
 			expect(logSpy).toHaveBeenCalledWith(
-				"Mode 'non-existent-mode' from history no longer exists. Falling back to default mode 'code'.",
+				"Agent 'non-existent-mode' from history no longer exists. Falling back to default mode 'code'.",
 			)
 
 			// Verify history item was updated with default mode
@@ -1766,7 +1766,7 @@ describe("ClineProvider", () => {
 				getCustomModes: vi.fn().mockResolvedValue([
 					{
 						slug: "custom-mode",
-						name: "Custom Mode",
+						name: "Custom Agent",
 						roleDefinition: "Custom role",
 						groups: ["read", "edit"] as const,
 					},
@@ -1779,7 +1779,7 @@ describe("ClineProvider", () => {
 			const { getModeBySlug } = await import("../../../shared/modes")
 			vi.mocked(getModeBySlug).mockReturnValue({
 				slug: "custom-mode",
-				name: "Custom Mode",
+				name: "Custom Agent",
 				roleDefinition: "Custom role",
 				groups: ["read", "edit"],
 			})
@@ -1839,7 +1839,7 @@ describe("ClineProvider", () => {
 			const { getModeBySlug } = await import("../../../shared/modes")
 			vi.mocked(getModeBySlug).mockReturnValue({
 				slug: "architect",
-				name: "Architect Mode",
+				name: "Architect Agent",
 				roleDefinition: "You are an architect",
 				groups: ["read", "edit"],
 			})
@@ -1914,7 +1914,7 @@ describe("ClineProvider", () => {
 			const { getModeBySlug } = await import("../../../shared/modes")
 			vi.mocked(getModeBySlug).mockReturnValue({
 				slug: "code",
-				name: "Code Mode",
+				name: "Code Agent",
 				roleDefinition: "You are a code assistant",
 				groups: ["read", "edit", "browser"],
 			})
@@ -1964,7 +1964,7 @@ describe("ClineProvider", () => {
 				getCustomModes: vi.fn().mockResolvedValue([
 					{
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Updated role definition",
 						groups: ["read"] as const,
 					},
@@ -1977,7 +1977,7 @@ describe("ClineProvider", () => {
 				type: "updateCustomMode",
 				modeConfig: {
 					slug: "test-mode",
-					name: "Test Mode",
+					name: "Test Agent",
 					roleDefinition: "Updated role definition",
 					groups: ["read"] as const,
 				},
@@ -1994,7 +1994,7 @@ describe("ClineProvider", () => {
 
 			// Verify state was updated
 			expect(mockContext.globalState.update).toHaveBeenCalledWith("customModes", [
-				{ groups: ["read"], name: "Test Mode", roleDefinition: "Updated role definition", slug: "test-mode" },
+				{ groups: ["read"], name: "Test Agent", roleDefinition: "Updated role definition", slug: "test-mode" },
 			])
 
 			// Verify state was posted to webview

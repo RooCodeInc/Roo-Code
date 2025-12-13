@@ -1,7 +1,7 @@
 {
 	"title": "模式",
 	"done": "完成",
-	"modes": {
+	"agents": {
 		"title": "模式",
 		"createNewMode": "建立新模式",
 		"importMode": "匯入模式",

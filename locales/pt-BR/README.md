@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ O Roo Code se adapta à sua maneira de trabalhar, e não o contrário:
 - Modos Personalizados: crie modos especializados para sua equipe ou fluxo de trabalho
 - Roomote Control: O Roomote Control permite controlar remotamente tarefas em execução na sua instância local do VS Code.
 
-Saiba mais: [Usar Modos](https://docs.roocode.com/basic-usage/using-modes) • [Modos personalizados](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Saiba mais: [Usar Modos](https://docs.roocode.com/basic-usage/using-agents) • [Modos personalizados](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Vídeos de tutorial e recursos
 

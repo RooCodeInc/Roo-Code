@@ -35,32 +35,32 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
 ## Apa yang Bisa Roo Code Lakukan Untuk ANDA?
 
 - Menghasilkan Kode dari deskripsi bahasa alami
-- Beradaptasi dengan Mode: Kode, Arsitek, Tanya, Debug, dan Mode Kustom
+- Beradaptasi dengan Agent: Kode, Arsitek, Tanya, Debug, dan Agent Kustom
 - Refactor & Debug kode yang ada
 - Menulis & Memperbarui dokumentasi
 - Menjawab Pertanyaan tentang basis kode Anda
 - Mengotomatiskan tugas-tugas yang berulang
 - Memanfaatkan Server MCP
 
-## Mode
+## Agent
 
 Roo Code beradaptasi dengan cara Anda bekerja, bukan sebaliknya:
 
-- Mode Kode: pengkodean sehari-hari, pengeditan, dan operasi file
-- Mode Arsitek: merencanakan sistem, spesifikasi, dan migrasi
-- Mode Tanya: jawaban cepat, penjelasan, dan dokumen
-- Mode Debug: melacak masalah, menambahkan log, mengisolasi akar penyebab
-- Mode Kustom: buat mode khusus untuk tim atau alur kerja Anda
+- Agent Kode: pengkodean sehari-hari, pengeditan, dan operasi file
+- Agent Arsitek: merencanakan sistem, spesifikasi, dan migrasi
+- Agent Tanya: jawaban cepat, penjelasan, dan dokumen
+- Agent Debug: melacak masalah, menambahkan log, mengisolasi akar penyebab
+- Agent Kustom: buat agent khusus untuk tim atau alur kerja Anda
 - Roomote Control: Roomote Control memungkinkan kamu mengontrol dari jarak jauh tugas yang berjalan di VS Code lokalmu.
 
-Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/using-modes) • [Mode Kustom](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Pelajari lebih lanjut: [Menggunakan Agent](https://docs.roocode.com/basic-usage/using-agents) • [Agent Kustom](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## Video Tutorial & Fitur
 
@@ -69,7 +69,7 @@ Pelajari lebih lanjut: [Menggunakan Mode](https://docs.roocode.com/basic-usage/u
 |                                                                                                                                                                           |                                                                                                                                                                             |                                                                                                                                                                               |
 | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Menginstal Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Mengonfigurasi Profil</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Pengindeksan Basis Kode</b> |
-|     <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Mode Kustom</b>     |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Pos Pemeriksaan</b>    |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Daftar Tugas</b>       |
+|    <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Agent Kustom</b>     |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Pos Pemeriksaan</b>    |      <a href="https://www.youtube.com/watch?v=6h5vB9PpoPk"><img src="https://img.youtube.com/vi/6h5vB9PpoPk/maxresdefault.jpg" width="100%"></a><br><b>Daftar Tugas</b>       |
 
 </div>
 <p align="center">
@@ -105,7 +105,7 @@ pnpm install
 
 Ada beberapa cara untuk menjalankan ekstensi Roo Code:
 
-### Mode Pengembangan (F5)
+### Agent Pengembangan (F5)
 
 Untuk pengembangan aktif, gunakan debugging bawaan VSCode:
 

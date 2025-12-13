@@ -80,7 +80,7 @@ const pricingTiers: PricingTier[] = [
 		price: "Free",
 		priceSuffix: "inference",
 		description: "The best local coding agent",
-		features: ["Unlimited local use", "Bring your own model", "Powerful, extensible modes", "Community support"],
+		features: ["Unlimited local use", "Bring your own model", "Powerful, extensible agents", "Community support"],
 		cta: {
 			text: "Install Now",
 			href: EXTERNAL_LINKS.MARKETPLACE,

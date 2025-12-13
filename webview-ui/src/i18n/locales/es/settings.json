@@ -22,7 +22,7 @@
 	},
 	"sections": {
 		"providers": "Proveedores",
-		"modes": "Modos",
+		"agents": "Modos",
 		"mcp": "Servidores MCP",
 		"autoApprove": "Auto-aprobación",
 		"browser": "Acceso al ordenador",
@@ -92,7 +92,7 @@
 		"openRouterApiKeyLabel": "Clave de API de OpenRouter",
 		"openRouterApiKeyPlaceholder": "Introduce tu clave de API de OpenRouter",
 		"openRouterProviderRoutingLabel": "Enrutamiento de proveedores de OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su modelo de embedding. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este modelo.",
+		"openRouterProviderRoutingDescription": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su agentlo de embedding. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este agentlo.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Clave API:",
 		"mistralApiKeyPlaceholder": "Introduce tu clave de API de Mistral",
@@ -103,13 +103,13 @@
 		"openAiCompatibleApiKeyLabel": "Clave API",
 		"openAiCompatibleApiKeyPlaceholder": "Introduce tu clave API",
 		"openAiCompatibleModelDimensionLabel": "Dimensión de Embedding:",
-		"modelDimensionLabel": "Dimensión del modelo",
+		"modelDimensionLabel": "Dimensión del agentlo",
 		"openAiCompatibleModelDimensionPlaceholder": "ej., 1536",
-		"openAiCompatibleModelDimensionDescription": "La dimensión de embedding (tamaño de salida) para tu modelo. Consulta la documentación de tu proveedor para este valor. Valores comunes: 384, 768, 1536, 3072.",
+		"openAiCompatibleModelDimensionDescription": "La dimensión de embedding (tamaño de salida) para tu agentlo. Consulta la documentación de tu proveedor para este valor. Valores comunes: 384, 768, 1536, 3072.",
 		"modelLabel": "Modelo",
-		"modelPlaceholder": "Introduce el nombre del modelo",
-		"selectModel": "Seleccionar un modelo",
-		"selectModelPlaceholder": "Seleccionar modelo",
+		"modelPlaceholder": "Introduce el nombre del agentlo",
+		"selectModel": "Seleccionar un agentlo",
+		"selectModelPlaceholder": "Seleccionar agentlo",
 		"ollamaUrlLabel": "URL de Ollama:",
 		"ollamaBaseUrlLabel": "URL base de Ollama",
 		"qdrantUrlLabel": "URL de Qdrant",
@@ -148,10 +148,10 @@
 			"invalidBaseUrl": "URL base no válida",
 			"qdrantUrlRequired": "Se requiere la URL de Qdrant",
 			"openaiApiKeyRequired": "Se requiere la clave API de OpenAI",
-			"modelSelectionRequired": "Se requiere la selección de un modelo",
+			"modelSelectionRequired": "Se requiere la selección de un agentlo",
 			"apiKeyRequired": "Se requiere la clave API",
-			"modelIdRequired": "Se requiere el ID del modelo",
-			"modelDimensionRequired": "Se requiere la dimensión del modelo",
+			"modelIdRequired": "Se requiere el ID del agentlo",
+			"modelDimensionRequired": "Se requiere la dimensión del agentlo",
 			"geminiApiKeyRequired": "Se requiere la clave API de Gemini",
 			"mistralApiKeyRequired": "Se requiere la clave de API de Mistral",
 			"vercelAiGatewayApiKeyRequired": "Se requiere la clave API de Vercel AI Gateway",
@@ -159,7 +159,7 @@
 			"bedrockProfileRequired": "Se requiere el perfil de AWS",
 			"ollamaBaseUrlRequired": "Se requiere la URL base de Ollama",
 			"baseUrlRequired": "Se requiere la URL base",
-			"modelDimensionMinValue": "La dimensión del modelo debe ser mayor que 0",
+			"modelDimensionMinValue": "La dimensión del agentlo debe ser mayor que 0",
 			"openRouterApiKeyRequired": "Se requiere la clave API de OpenRouter"
 		},
 		"optional": "opcional",
@@ -200,7 +200,7 @@
 		},
 		"browser": {
 			"label": "Navegador",
-			"description": "Realizar acciones del navegador automáticamente sin requerir aprobación. Nota: Solo se aplica cuando el modelo admite el uso del ordenador"
+			"description": "Realizar acciones del navegador automáticamente sin requerir aprobación. Nota: Solo se aplica cuando el agentlo admite el uso del ordenador"
 		},
 		"retry": {
 			"label": "Reintentar",
@@ -275,8 +275,8 @@
 		"searchProviderPlaceholder": "Buscar proveedores",
 		"noProviderMatchFound": "No se encontraron proveedores",
 		"noMatchFound": "No se encontraron perfiles coincidentes",
-		"vscodeLmDescription": "La API del Modelo de Lenguaje de VS Code le permite ejecutar modelos proporcionados por otras extensiones de VS Code (incluido, entre otros, GitHub Copilot). La forma más sencilla de empezar es instalar las extensiones Copilot y Copilot Chat desde el VS Code Marketplace.",
-		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el modelo que desea utilizar. Ejemplos de formato:",
+		"vscodeLmDescription": "La API del Agentlo de Lenguaje de VS Code le permite ejecutar agentlos proporcionados por otras extensiones de VS Code (incluido, entre otros, GitHub Copilot). La forma más sencilla de empezar es instalar las extensiones Copilot y Copilot Chat desde el VS Code Marketplace.",
+		"awsCustomArnUse": "Ingrese un ARN de Amazon Bedrock válido para el agentlo que desea utilizar. Ejemplos de formato:",
 		"awsCustomArnDesc": "Asegúrese de que la región en el ARN coincida con la región de AWS seleccionada anteriormente.",
 		"openRouterApiKey": "Clave API de OpenRouter",
 		"getOpenRouterApiKey": "Obtener clave API de OpenRouter",
@@ -293,11 +293,11 @@
 		"noCustomHeaders": "No hay encabezados personalizados definidos. Haga clic en el botón + para añadir uno.",
 		"requestyApiKey": "Clave API de Requesty",
 		"refreshModels": {
-			"label": "Actualizar modelos",
-			"hint": "Por favor, vuelve a abrir la configuración para ver los modelos más recientes.",
-			"loading": "Actualizando lista de modelos...",
-			"success": "¡Lista de modelos actualizada correctamente!",
-			"error": "Error al actualizar la lista de modelos. Por favor, inténtalo de nuevo."
+			"label": "Actualizar agentlos",
+			"hint": "Por favor, vuelve a abrir la configuración para ver los agentlos más recientes.",
+			"loading": "Actualizando lista de agentlos...",
+			"success": "¡Lista de agentlos actualizada correctamente!",
+			"error": "Error al actualizar la lista de agentlos. Por favor, inténtalo de nuevo."
 		},
 		"getRequestyApiKey": "Obtener clave API de Requesty",
 		"getRequestyBaseUrl": "URL base",
@@ -344,12 +344,12 @@
 		"sambaNovaApiKey": "Clave API de SambaNova",
 		"getHuggingFaceApiKey": "Obtener clave API de Hugging Face",
 		"huggingFaceApiKey": "Clave API de Hugging Face",
-		"huggingFaceModelId": "ID del modelo",
+		"huggingFaceModelId": "ID del agentlo",
 		"huggingFaceLoading": "Cargando...",
-		"huggingFaceModelsCount": "({{count}} modelos)",
-		"huggingFaceSelectModel": "Seleccionar un modelo...",
-		"huggingFaceSearchModels": "Buscar modelos...",
-		"huggingFaceNoModelsFound": "No se encontraron modelos",
+		"huggingFaceModelsCount": "({{count}} agentlos)",
+		"huggingFaceSelectModel": "Seleccionar un agentlo...",
+		"huggingFaceSearchModels": "Buscar agentlos...",
+		"huggingFaceNoModelsFound": "No se encontraron agentlos",
 		"huggingFaceProvider": "Proveedor",
 		"huggingFaceProviderAuto": "Automático",
 		"huggingFaceSelectProvider": "Seleccionar un proveedor...",
@@ -363,7 +363,7 @@
 		"mistralApiKey": "Clave API de Mistral",
 		"getMistralApiKey": "Obtener clave API de Mistral / Codestral",
 		"codestralBaseUrl": "URL base de Codestral (Opcional)",
-		"codestralBaseUrlDesc": "Establecer una URL alternativa para el modelo Codestral.",
+		"codestralBaseUrlDesc": "Establecer una URL alternativa para el agentlo Codestral.",
 		"xaiApiKey": "Clave API de xAI",
 		"getXaiApiKey": "Obtener clave API de xAI",
 		"litellmApiKey": "Clave API de LiteLLM",
@@ -384,10 +384,10 @@
 			"examples": "Ejemplos:"
 		},
 		"enablePromptCaching": "Habilitar caché de prompts",
-		"enablePromptCachingTitle": "Habilitar el caché de prompts para mejorar el rendimiento y reducir costos para modelos compatibles.",
-		"cacheUsageNote": "Nota: Si no ve el uso del caché, intente seleccionar un modelo diferente y luego seleccionar nuevamente su modelo deseado.",
+		"enablePromptCachingTitle": "Habilitar el caché de prompts para mejorar el rendimiento y reducir costos para agentlos compatibles.",
+		"cacheUsageNote": "Nota: Si no ve el uso del caché, intente seleccionar un agentlo diferente y luego seleccionar nuevamente su agentlo deseado.",
 		"vscodeLmModel": "Modelo de lenguaje",
-		"vscodeLmWarning": "Nota: Los modelos a los que se accede a través de la API de modelos de lenguaje de VS Code pueden estar envueltos o ajustados por el proveedor, por lo que su comportamiento puede diferir del uso directo del mismo modelo desde un proveedor o enrutador típico. Para usar un modelo del menú desplegable «Language Model», primero cambia a ese modelo y luego haz clic en «Aceptar» en el aviso de Copilot Chat; de lo contrario, puedes ver un error como 400 «The requested model is not supported».",
+		"vscodeLmWarning": "Nota: Los agentlos a los que se accede a través de la API de agentlos de lenguaje de VS Code pueden estar envueltos o ajustados por el proveedor, por lo que su comportamiento puede diferir del uso directo del mismo agentlo desde un proveedor o enrutador típico. Para usar un agentlo del menú desplegable «Language Agentl», primero cambia a ese agentlo y luego haz clic en «Aceptar» en el aviso de Copilot Chat; de lo contrario, puedes ver un error como 400 «The requested agentl is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Habilitar contexto de URL",
@@ -400,7 +400,7 @@
 		},
 		"googleCloudSetup": {
 			"title": "Para usar Google Cloud Vertex AI, necesita:",
-			"step1": "1. Crear una cuenta de Google Cloud, habilitar la API de Vertex AI y habilitar los modelos Claude deseados.",
+			"step1": "1. Crear una cuenta de Google Cloud, habilitar la API de Vertex AI y habilitar los agentlos Claude deseados.",
 			"step2": "2. Instalar Google Cloud CLI y configurar las credenciales predeterminadas de la aplicación.",
 			"step3": "3. O crear una cuenta de servicio con credenciales."
 		},
@@ -410,27 +410,27 @@
 		"googleCloudRegion": "Región de Google Cloud",
 		"lmStudio": {
 			"baseUrl": "URL base (opcional)",
-			"modelId": "ID del modelo",
+			"modelId": "ID del agentlo",
 			"speculativeDecoding": "Habilitar decodificación especulativa",
-			"draftModelId": "ID del modelo borrador",
-			"draftModelDesc": "El modelo borrador debe ser de la misma familia de modelos para que la decodificación especulativa funcione correctamente.",
-			"selectDraftModel": "Seleccionar modelo borrador",
-			"noModelsFound": "No se encontraron modelos borrador. Asegúrese de que LM Studio esté ejecutándose con el Modo Servidor habilitado.",
-			"description": "LM Studio le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte su <a>guía de inicio rápido</a>. También necesitará iniciar la función de <b>servidor local</b> de LM Studio para usarlo con esta extensión. <span>Nota:</span> Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
+			"draftModelId": "ID del agentlo borrador",
+			"draftModelDesc": "El agentlo borrador debe ser de la misma familia de agentlos para que la decodificación especulativa funcione correctamente.",
+			"selectDraftModel": "Seleccionar agentlo borrador",
+			"noModelsFound": "No se encontraron agentlos borrador. Asegúrese de que LM Studio esté ejecutándose con el Modo Servidor habilitado.",
+			"description": "LM Studio le permite ejecutar agentlos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte su <a>guía de inicio rápido</a>. También necesitará iniciar la función de <b>servidor local</b> de LM Studio para usarlo con esta extensión. <span>Nota:</span> Roo Code utiliza prompts complejos y funciona mejor con agentlos Claude. Los agentlos menos capaces pueden no funcionar como se espera."
 		},
 		"ollama": {
 			"baseUrl": "URL base (opcional)",
-			"modelId": "ID del modelo",
+			"modelId": "ID del agentlo",
 			"apiKey": "Clave API de Ollama",
 			"apiKeyHelp": "Clave API opcional para instancias de Ollama autenticadas o servicios en la nube. Deja vacío para instalaciones locales.",
 			"numCtx": "Tamaño de la ventana de contexto (num_ctx)",
-			"numCtxHelp": "Sobrescribe el tamaño de la ventana de contexto predeterminado del modelo. Déjelo vacío para usar la configuración del Modelfile del modelo. El valor mínimo es 128.",
-			"description": "Ollama le permite ejecutar modelos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
-			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con modelos Claude. Los modelos menos capaces pueden no funcionar como se espera."
+			"numCtxHelp": "Sobrescribe el tamaño de la ventana de contexto predeterminado del agentlo. Déjelo vacío para usar la configuración del Agentlfile del agentlo. El valor mínimo es 128.",
+			"description": "Ollama le permite ejecutar agentlos localmente en su computadora. Para obtener instrucciones sobre cómo comenzar, consulte la guía de inicio rápido.",
+			"warning": "Nota: Roo Code utiliza prompts complejos y funciona mejor con agentlos Claude. Los agentlos menos capaces pueden no funcionar como se espera."
 		},
 		"unboundApiKey": "Clave API de Unbound",
 		"getUnboundApiKey": "Obtener clave API de Unbound",
-		"unboundRefreshModelsSuccess": "¡Lista de modelos actualizada! Ahora puede seleccionar entre los últimos modelos.",
+		"unboundRefreshModelsSuccess": "¡Lista de agentlos actualizada! Ahora puede seleccionar entre los últimos agentlos.",
 		"unboundInvalidApiKey": "Clave API inválida. Por favor, verifique su clave API e inténtelo de nuevo.",
 		"humanRelay": {
 			"description": "No se requiere clave API, pero el usuario necesita ayudar a copiar y pegar la información en el chat web de IA.",
@@ -443,40 +443,40 @@
 		"openRouter": {
 			"providerRouting": {
 				"title": "Enrutamiento de Proveedores de OpenRouter",
-				"description": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su modelo. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este modelo.",
+				"description": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su agentlo. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este agentlo.",
 				"learnMore": "Más información sobre el enrutamiento de proveedores"
 			}
 		},
 		"customModel": {
-			"capabilities": "Configure las capacidades y precios para su modelo personalizado compatible con OpenAI. Tenga cuidado al especificar las capacidades del modelo, ya que pueden afectar cómo funciona Roo Code.",
+			"capabilities": "Configure las capacidades y precios para su agentlo personalizado compatible con OpenAI. Tenga cuidado al especificar las capacidades del agentlo, ya que pueden afectar cómo funciona Roo Code.",
 			"maxTokens": {
 				"label": "Tokens máximos de salida",
-				"description": "Número máximo de tokens que el modelo puede generar en una respuesta. (Especifique -1 para permitir que el servidor establezca los tokens máximos.)"
+				"description": "Número máximo de tokens que el agentlo puede generar en una respuesta. (Especifique -1 para permitir que el servidor establezca los tokens máximos.)"
 			},
 			"contextWindow": {
 				"label": "Tamaño de ventana de contexto",
-				"description": "Total de tokens (entrada + salida) que el modelo puede procesar."
+				"description": "Total de tokens (entrada + salida) que el agentlo puede procesar."
 			},
 			"imageSupport": {
 				"label": "Soporte de imágenes",
-				"description": "¿Es este modelo capaz de procesar y entender imágenes?"
+				"description": "¿Es este agentlo capaz de procesar y entender imágenes?"
 			},
 			"computerUse": {
 				"label": "Uso del ordenador",
-				"description": "¿Es este modelo capaz de interactuar con un navegador?"
+				"description": "¿Es este agentlo capaz de interactuar con un navegador?"
 			},
 			"promptCache": {
 				"label": "Caché de prompts",
-				"description": "¿Es este modelo capaz de almacenar prompts en caché?"
+				"description": "¿Es este agentlo capaz de almacenar prompts en caché?"
 			},
 			"pricing": {
 				"input": {
 					"label": "Precio de entrada",
-					"description": "Costo por millón de tokens en la entrada/prompt. Esto afecta el costo de enviar contexto e instrucciones al modelo."
+					"description": "Costo por millón de tokens en la entrada/prompt. Esto afecta el costo de enviar contexto e instrucciones al agentlo."
 				},
 				"output": {
 					"label": "Precio de salida",
-					"description": "Costo por millón de tokens en la respuesta del modelo. Esto afecta el costo del contenido generado y las completaciones."
+					"description": "Costo por millón de tokens en la respuesta del agentlo. Esto afecta el costo del contenido generado y las completaciones."
 				},
 				"cacheReads": {
 					"label": "Precio de lecturas de caché",
@@ -500,7 +500,7 @@
 			"warning": "⚠️ Establecer en 0 permite reintentos ilimitados que pueden consumir un uso significativo de la API"
 		},
 		"reasoningEffort": {
-			"label": "Esfuerzo de razonamiento del modelo",
+			"label": "Esfuerzo de razonamiento del agentlo",
 			"none": "Ninguno",
 			"minimal": "Mínimo (el más rápido)",
 			"high": "Alto",
@@ -513,7 +513,7 @@
 			"high": "Alta",
 			"medium": "Media",
 			"low": "Baja",
-			"description": "Controla qué tan detalladas son las respuestas del modelo. La verbosidad baja produce respuestas concisas, mientras que la verbosidad alta proporciona explicaciones exhaustivas."
+			"description": "Controla qué tan detalladas son las respuestas del agentlo. La verbosidad baja produce respuestas concisas, mientras que la verbosidad alta proporciona explicaciones exhaustivas."
 		},
 		"setReasoningLevel": "Habilitar esfuerzo de razonamiento",
 		"claudeCode": {
@@ -527,7 +527,7 @@
 	"browser": {
 		"enable": {
 			"label": "Habilitar herramienta de navegador",
-			"description": "Cuando está habilitado, Roo puede usar un navegador para interactuar con sitios web cuando se utilizan modelos que admiten el uso del ordenador. <0>Más información</0>"
+			"description": "Cuando está habilitado, Roo puede usar un navegador para interactuar con sitios web cuando se utilizan agentlos que admiten el uso del ordenador. <0>Más información</0>"
 		},
 		"viewport": {
 			"label": "Tamaño del viewport",
@@ -610,7 +610,7 @@
 		},
 		"maxReadFile": {
 			"label": "Umbral de auto-truncado de lectura de archivos",
-			"description": "Roo lee este número de líneas cuando el modelo omite valores de inicio/fin. Si este número es menor que el total del archivo, Roo genera un índice de números de línea de las definiciones de código. Casos especiales: -1 indica a Roo que lea el archivo completo (sin indexación), y 0 indica que no lea líneas y proporcione solo índices de línea para un contexto mínimo. Valores más bajos minimizan el uso inicial de contexto, permitiendo lecturas posteriores de rangos de líneas precisos. Las solicitudes con inicio/fin explícitos no están limitadas por esta configuración.",
+			"description": "Roo lee este número de líneas cuando el agentlo omite valores de inicio/fin. Si este número es menor que el total del archivo, Roo genera un índice de números de línea de las definiciones de código. Casos especiales: -1 indica a Roo que lea el archivo completo (sin indexación), y 0 indica que no lea líneas y proporcione solo índices de línea para un contexto mínimo. Valores más bajos minimizan el uso inicial de contexto, permitiendo lecturas posteriores de rangos de líneas precisos. Las solicitudes con inicio/fin explícitos no están limitadas por esta configuración.",
 			"lines": "líneas",
 			"always_full_read": "Siempre leer el archivo completo"
 		},
@@ -655,11 +655,11 @@
 		},
 		"includeCurrentTime": {
 			"label": "Incluir hora actual en el contexto",
-			"description": "Cuando está habilitado, la hora actual y la información de la zona horaria se incluirán en el prompt del sistema. Deshabilítelo si los modelos dejan de funcionar por problemas de tiempo."
+			"description": "Cuando está habilitado, la hora actual y la información de la zona horaria se incluirán en el prompt del sistema. Deshabilítelo si los agentlos dejan de funcionar por problemas de tiempo."
 		},
 		"includeCurrentCost": {
 			"label": "Incluir costo actual en el contexto",
-			"description": "Cuando está habilitado, el costo de uso actual de la API se incluirá en el prompt del sistema. Deshabilítelo si los modelos dejan de funcionar por problemas de costos."
+			"description": "Cuando está habilitado, el costo de uso actual de la API se incluirá en el prompt del sistema. Deshabilítelo si los agentlos dejan de funcionar por problemas de costos."
 		},
 		"maxGitStatusFiles": {
 			"label": "Git status máx. archivos",
@@ -765,7 +765,7 @@
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Usar estrategia de diff unificada experimental",
-			"description": "Habilitar la estrategia de diff unificada experimental. Esta estrategia podría reducir el número de reintentos causados por errores del modelo, pero puede causar comportamientos inesperados o ediciones incorrectas. Habilítela solo si comprende los riesgos y está dispuesto a revisar cuidadosamente todos los cambios."
+			"description": "Habilitar la estrategia de diff unificada experimental. Esta estrategia podría reducir el número de reintentos causados por errores del agentlo, pero puede causar comportamientos inesperados o ediciones incorrectas. Habilítela solo si comprende los riesgos y está dispuesto a revisar cuidadosamente todos los cambios."
 		},
 		"INSERT_BLOCK": {
 			"name": "Usar herramienta experimental de inserción de contenido",
@@ -773,7 +773,7 @@
 		},
 		"POWER_STEERING": {
 			"name": "Usar modo experimental de \"dirección asistida\"",
-			"description": "Cuando está habilitado, Roo recordará al modelo los detalles de su definición de modo actual con más frecuencia. Esto llevará a una mayor adherencia a las definiciones de roles e instrucciones personalizadas, pero usará más tokens por mensaje."
+			"description": "Cuando está habilitado, Roo recordará al agentlo los detalles de su definición de modo actual con más frecuencia. Esto llevará a una mayor adherencia a las definiciones de roles e instrucciones personalizadas, pero usará más tokens por mensaje."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usar herramienta experimental de diff de bloques múltiples",
@@ -781,7 +781,7 @@
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Habilitar lectura concurrente de archivos",
-			"description": "Cuando está habilitado, Roo puede leer múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe leer archivos uno a la vez. Deshabilitarlo puede ayudar cuando se trabaja con modelos menos capaces o cuando deseas más control sobre el acceso a archivos."
+			"description": "Cuando está habilitado, Roo puede leer múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe leer archivos uno a la vez. Deshabilitarlo puede ayudar cuando se trabaja con agentlos menos capaces o cuando deseas más control sobre el acceso a archivos."
 		},
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
@@ -789,7 +789,7 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilitar ediciones de archivos concurrentes",
-			"description": "Cuando está habilitado, Roo puede editar múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe editar archivos de uno en uno. Deshabilitar esto puede ayudar cuando trabajas con modelos menos capaces o cuando quieres más control sobre las modificaciones de archivos."
+			"description": "Cuando está habilitado, Roo puede editar múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe editar archivos de uno en uno. Deshabilitar esto puede ayudar cuando trabajas con agentlos menos capaces o cuando quieres más control sobre las modificaciones de archivos."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edición en segundo plano",
@@ -807,17 +807,17 @@
 			"name": "Habilitar generación de imágenes con IA",
 			"providerLabel": "Proveedor",
 			"providerDescription": "Selecciona el proveedor para la generación de imágenes.",
-			"description": "Cuando esté habilitado, Roo puede generar imágenes a partir de prompts de texto usando los modelos de generación de imágenes de OpenRouter. Requiere que se configure una clave de API de OpenRouter.",
+			"description": "Cuando esté habilitado, Roo puede generar imágenes a partir de prompts de texto usando los agentlos de generación de imágenes de OpenRouter. Requiere que se configure una clave de API de OpenRouter.",
 			"openRouterApiKeyLabel": "Clave API de OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introduce tu clave API de OpenRouter",
 			"getApiKeyText": "Obtén tu clave API de",
 			"modelSelectionLabel": "Modelo de generación de imágenes",
-			"modelSelectionDescription": "Selecciona el modelo para la generación de imágenes",
+			"modelSelectionDescription": "Selecciona el agentlo para la generación de imágenes",
 			"warningMissingKey": "⚠️ La clave API de OpenRouter es requerida para la generación de imágenes. Por favor, configúrala arriba.",
 			"successConfigured": "✓ La generación de imágenes está configurada y lista para usar"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Habilitar comandos slash iniciados por el modelo",
+			"name": "Habilitar comandos slash iniciados por el agentlo",
 			"description": "Cuando está habilitado, Roo puede ejecutar tus comandos slash para ejecutar flujos de trabajo."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
@@ -827,11 +827,11 @@
 	},
 	"promptCaching": {
 		"label": "Desactivar caché de prompts",
-		"description": "Cuando está marcado, Roo no utilizará el caché de prompts para este modelo."
+		"description": "Cuando está marcado, Roo no utilizará el caché de prompts para este agentlo."
 	},
 	"temperature": {
 		"useCustom": "Usar temperatura personalizada",
-		"description": "Controla la aleatoriedad en las respuestas del modelo.",
+		"description": "Controla la aleatoriedad en las respuestas del agentlo.",
 		"rangeDescription": "Valores más altos hacen que la salida sea más aleatoria, valores más bajos la hacen más determinista."
 	},
 	"modelInfo": {
@@ -846,8 +846,8 @@
 		"cacheReadsPrice": "Precio de lecturas de caché",
 		"cacheWritesPrice": "Precio de escrituras de caché",
 		"enableStreaming": "Habilitar streaming",
-		"enableR1Format": "Habilitar parámetros del modelo R1",
-		"enableR1FormatTips": "Debe habilitarse al utilizar modelos R1 como QWQ, para evitar el error 400",
+		"enableR1Format": "Habilitar parámetros del agentlo R1",
+		"enableR1FormatTips": "Debe habilitarse al utilizar agentlos R1 como QWQ, para evitar el error 400",
 		"useAzure": "Usar Azure",
 		"azureApiVersion": "Establecer versión de API de Azure",
 		"gemini": {
@@ -857,12 +857,12 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "La extensión obtiene automáticamente la lista más reciente de modelos disponibles en <serviceLink>{{serviceName}}</serviceLink>. Si no está seguro de qué modelo elegir, Roo Code funciona mejor con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. También puede buscar \"free\" para opciones sin costo actualmente disponibles.",
+		"automaticFetch": "La extensión obtiene automáticamente la lista más reciente de agentlos disponibles en <serviceLink>{{serviceName}}</serviceLink>. Si no está seguro de qué agentlo elegir, Roo Code funciona mejor con <defaultModelLink>{{defaultModelId}}</defaultModelLink>. También puede buscar \"free\" para opciones sin costo actualmente disponibles.",
 		"label": "Modelo",
 		"searchPlaceholder": "Buscar",
 		"noMatchFound": "No se encontraron coincidencias",
 		"useCustomModel": "Usar personalizado: {{modelId}}",
-		"simplifiedExplanation": "Puedes ajustar la configuración detallada del modelo más tarde."
+		"simplifiedExplanation": "Puedes ajustar la configuración detallada del agentlo más tarde."
 	},
 	"footer": {
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
@@ -884,18 +884,18 @@
 		"apiKey": "Debe proporcionar una clave API válida.",
 		"awsRegion": "Debe elegir una región para usar con Amazon Bedrock.",
 		"googleCloud": "Debe proporcionar un ID de proyecto y región de Google Cloud válidos.",
-		"modelId": "Debe proporcionar un ID de modelo válido.",
-		"modelSelector": "Debe proporcionar un selector de modelo válido.",
-		"openAi": "Debe proporcionar una URL base, clave API y ID de modelo válidos.",
+		"modelId": "Debe proporcionar un ID de agentlo válido.",
+		"modelSelector": "Debe proporcionar un selector de agentlo válido.",
+		"openAi": "Debe proporcionar una URL base, clave API y ID de agentlo válidos.",
 		"arn": {
 			"invalidFormat": "Formato de ARN no válido. Por favor, verifique los requisitos de formato.",
 			"regionMismatch": "Advertencia: La región en su ARN ({{arnRegion}}) no coincide con su región seleccionada ({{region}}). Esto puede causar problemas de acceso. El proveedor usará la región del ARN."
 		},
-		"modelAvailability": "El ID de modelo ({{modelId}}) que proporcionó no está disponible. Por favor, elija un modelo diferente.",
-		"modelDeprecated": "Este modelo ya no está disponible. Por favor, elija un modelo diferente.",
+		"modelAvailability": "El ID de agentlo ({{modelId}}) que proporcionó no está disponible. Por favor, elija un agentlo diferente.",
+		"modelDeprecated": "Este agentlo ya no está disponible. Por favor, elija un agentlo diferente.",
 		"providerNotAllowed": "El proveedor '{{provider}}' no está permitido por su organización",
-		"modelNotAllowed": "El modelo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
-		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
+		"modelNotAllowed": "El agentlo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
+		"profileInvalid": "Este perfil contiene un proveedor o agentlo que no está permitido por su organización",
 		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth"
 	},
 	"placeholders": {

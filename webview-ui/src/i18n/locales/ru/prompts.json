@@ -1,7 +1,7 @@
 {
 	"title": "Режимы",
 	"done": "Готово",
-	"modes": {
+	"agents": {
 		"title": "Режимы",
 		"createNewMode": "Создать новый режим",
 		"importMode": "Импортировать режим",

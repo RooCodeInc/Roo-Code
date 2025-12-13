@@ -95,9 +95,9 @@ describe("CustomModesManager", () => {
 
 	describe("getCustomModes", () => {
 		it("should handle valid YAML in .roomodes file and JSON for global customModes", async () => {
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 
-			const roomodesModes = [{ slug: "mode2", name: "Mode 2", roleDefinition: "Role 2", groups: ["read"] }]
+			const roomodesModes = [{ slug: "mode2", name: "Agent 2", roleDefinition: "Role 2", groups: ["read"] }]
 
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
@@ -116,13 +116,13 @@ describe("CustomModesManager", () => {
 
 		it("should merge modes with .roomodes taking precedence", async () => {
 			const settingsModes = [
-				{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] },
-				{ slug: "mode2", name: "Mode 2", roleDefinition: "Role 2", groups: ["read"] },
+				{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] },
+				{ slug: "mode2", name: "Agent 2", roleDefinition: "Role 2", groups: ["read"] },
 			]
 
 			const roomodesModes = [
-				{ slug: "mode2", name: "Mode 2 Override", roleDefinition: "Role 2 Override", groups: ["read"] },
-				{ slug: "mode3", name: "Mode 3", roleDefinition: "Role 3", groups: ["read"] },
+				{ slug: "mode2", name: "Agent 2 Override", roleDefinition: "Role 2 Override", groups: ["read"] },
+				{ slug: "mode3", name: "Agent 3", roleDefinition: "Role 3", groups: ["read"] },
 			]
 
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
@@ -143,12 +143,12 @@ describe("CustomModesManager", () => {
 
 			// mode2 should come from .roomodes since it takes precedence
 			const mode2 = modes.find((m) => m.slug === "mode2")
-			expect(mode2?.name).toBe("Mode 2 Override")
+			expect(mode2?.name).toBe("Agent 2 Override")
 			expect(mode2?.roleDefinition).toBe("Role 2 Override")
 		})
 
 		it("should handle missing .roomodes file", async () => {
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockSettingsPath
@@ -167,7 +167,7 @@ describe("CustomModesManager", () => {
 		})
 
 		it("should handle invalid YAML in .roomodes", async () => {
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
@@ -188,7 +188,7 @@ describe("CustomModesManager", () => {
 
 		it("should memoize results for 10 seconds", async () => {
 			// Setup test data
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
 					return yaml.stringify({ customModes: settingsModes })
@@ -230,7 +230,7 @@ describe("CustomModesManager", () => {
 
 		it("should invalidate cache when modes are updated", async () => {
 			// Setup initial data
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
 					return yaml.stringify({ customModes: settingsModes })
@@ -248,7 +248,7 @@ describe("CustomModesManager", () => {
 			// Update a mode
 			const updatedMode: ModeConfig = {
 				slug: "mode1",
-				name: "Updated Mode 1",
+				name: "Updated Agent 1",
 				roleDefinition: "Updated Role 1",
 				groups: ["read"],
 				source: "global",
@@ -276,7 +276,7 @@ describe("CustomModesManager", () => {
 
 		it("should invalidate cache when modes are deleted", async () => {
 			// Setup initial data
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
 					return yaml.stringify({ customModes: settingsModes })
@@ -312,7 +312,7 @@ describe("CustomModesManager", () => {
 
 		it("should invalidate cache when modes are updated (simulating file changes)", async () => {
 			// Setup initial data
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
 					return yaml.stringify({ customModes: settingsModes })
@@ -333,7 +333,7 @@ describe("CustomModesManager", () => {
 			// Setup for update
 			const updatedMode: ModeConfig = {
 				slug: "mode1",
-				name: "Updated Mode 1",
+				name: "Updated Agent 1",
 				roleDefinition: "Updated Role 1",
 				groups: ["read"],
 				source: "global",
@@ -373,7 +373,7 @@ describe("CustomModesManager", () => {
 
 		it("should refresh cache after TTL expires", async () => {
 			// Setup test data
-			const settingsModes = [{ slug: "mode1", name: "Mode 1", roleDefinition: "Role 1", groups: ["read"] }]
+			const settingsModes = [{ slug: "mode1", name: "Agent 1", roleDefinition: "Role 1", groups: ["read"] }]
 			;(fs.readFile as Mock).mockImplementation(async (path: string) => {
 				if (path === mockSettingsPath) {
 					return yaml.stringify({ customModes: settingsModes })
@@ -442,7 +442,7 @@ describe("CustomModesManager", () => {
 		it("should update mode in settings file while preserving .roomodes precedence", async () => {
 			const newMode: ModeConfig = {
 				slug: "mode1",
-				name: "Updated Mode 1",
+				name: "Updated Agent 1",
 				roleDefinition: "Updated Role 1",
 				groups: ["read"],
 				source: "global",
@@ -451,7 +451,7 @@ describe("CustomModesManager", () => {
 			const roomodesModes = [
 				{
 					slug: "mode1",
-					name: "Roomodes Mode 1",
+					name: "Roomodes Agent 1",
 					roleDefinition: "Role 1",
 					groups: ["read"],
 					source: "project",
@@ -459,7 +459,7 @@ describe("CustomModesManager", () => {
 			]
 
 			const existingModes = [
-				{ slug: "mode2", name: "Mode 2", roleDefinition: "Role 2", groups: ["read"], source: "global" },
+				{ slug: "mode2", name: "Agent 2", roleDefinition: "Role 2", groups: ["read"], source: "global" },
 			]
 
 			let settingsContent = { customModes: existingModes }
@@ -495,7 +495,7 @@ describe("CustomModesManager", () => {
 			expect(content.customModes).toContainEqual(
 				expect.objectContaining({
 					slug: "mode1",
-					name: "Updated Mode 1",
+					name: "Updated Agent 1",
 					roleDefinition: "Updated Role 1",
 					source: "global",
 				}),
@@ -507,7 +507,7 @@ describe("CustomModesManager", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						slug: "mode1",
-						name: "Roomodes Mode 1", // .roomodes version should take precedence
+						name: "Roomodes Agent 1", // .roomodes version should take precedence
 						source: "project",
 					}),
 				]),
@@ -520,7 +520,7 @@ describe("CustomModesManager", () => {
 		it("creates .roomodes file when adding project-specific mode", async () => {
 			const projectMode: ModeConfig = {
 				slug: "project-mode",
-				name: "Project Mode",
+				name: "Project Agent",
 				roleDefinition: "Project Role",
 				groups: ["read"],
 				source: "project",
@@ -568,7 +568,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					expect.objectContaining({
 						slug: "project-mode",
-						name: "Project Mode",
+						name: "Project Agent",
 						roleDefinition: "Project Role",
 						source: "project",
 					}),
@@ -579,14 +579,14 @@ describe("CustomModesManager", () => {
 		it("queues write operations", async () => {
 			const mode1: ModeConfig = {
 				slug: "mode1",
-				name: "Mode 1",
+				name: "Agent 1",
 				roleDefinition: "Role 1",
 				groups: ["read"],
 				source: "global",
 			}
 			const mode2: ModeConfig = {
 				slug: "mode2",
-				name: "Mode 2",
+				name: "Agent 2",
 				roleDefinition: "Role 2",
 				groups: ["read"],
 				source: "global",
@@ -611,8 +611,8 @@ describe("CustomModesManager", () => {
 
 			// Verify final state in settings file
 			expect(settingsContent.customModes).toHaveLength(2)
-			expect(settingsContent.customModes.map((m: ModeConfig) => m.name)).toContain("Mode 1")
-			expect(settingsContent.customModes.map((m: ModeConfig) => m.name)).toContain("Mode 2")
+			expect(settingsContent.customModes.map((m: ModeConfig) => m.name)).toContain("Agent 1")
+			expect(settingsContent.customModes.map((m: ModeConfig) => m.name)).toContain("Agent 2")
 
 			// Verify global state was updated
 			expect(mockContext.globalState.update).toHaveBeenCalledWith(
@@ -620,12 +620,12 @@ describe("CustomModesManager", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						slug: "mode1",
-						name: "Mode 1",
+						name: "Agent 1",
 						source: "global",
 					}),
 					expect.objectContaining({
 						slug: "mode2",
-						name: "Mode 2",
+						name: "Agent 2",
 						source: "global",
 					}),
 				]),
@@ -720,7 +720,7 @@ describe("CustomModesManager", () => {
 		it("deletes mode from settings file", async () => {
 			const existingMode = {
 				slug: "mode-to-delete",
-				name: "Mode To Delete",
+				name: "Agent To Delete",
 				roleDefinition: "Test role",
 				groups: ["read"],
 				source: "global",
@@ -778,7 +778,7 @@ describe("CustomModesManager", () => {
 
 			const newMode: ModeConfig = {
 				slug: "test-mode",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test Role",
 				groups: ["read"],
 				source: "global",
@@ -793,7 +793,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					expect.objectContaining({
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Test Role",
 					}),
 				],
@@ -825,7 +825,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "test-mode",
-							name: "Test Mode",
+							name: "Test Agent",
 							roleDefinition: "Test Role",
 							groups: ["read"],
 						},
@@ -843,7 +843,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "imported-mode",
-							name: "Imported Mode",
+							name: "Imported Agent",
 							roleDefinition: "Imported Role",
 							groups: ["read", "edit"],
 						},
@@ -882,7 +882,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "imported-mode",
-							name: "Imported Mode",
+							name: "Imported Agent",
 							roleDefinition: "Imported Role",
 							groups: ["read"],
 							rulesFiles: [
@@ -952,19 +952,19 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "mode1",
-							name: "Mode 1",
+							name: "Agent 1",
 							roleDefinition: "Role 1",
 							groups: ["read"],
 						},
 						{
 							slug: "mode2",
-							name: "Mode 2",
+							name: "Agent 2",
 							roleDefinition: "Role 2",
 							groups: ["edit"],
 							rulesFiles: [
 								{
 									relativePath: "rules-mode2/rule.md",
-									content: "Mode 2 rules",
+									content: "Agent 2 rules",
 								},
 							],
 						},
@@ -1001,7 +1001,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "test-mode",
-							name: "Test Mode",
+							name: "Test Agent",
 							roleDefinition: "Test Role",
 							groups: ["read"],
 							rulesFiles: [
@@ -1042,7 +1042,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "test-mode",
-							name: "Test Mode",
+							name: "Test Agent",
 							roleDefinition: "Test Role",
 							groups: ["read"],
 							rulesFiles: [
@@ -1099,7 +1099,7 @@ describe("CustomModesManager", () => {
 				const malformedYaml = `
 	customModes:
 			- slug: test-mode
-			  name: Test Mode
+			  name: Test Agent
 			  roleDefinition: Test Role
 			  groups: [read
 			    invalid yaml here
@@ -1134,7 +1134,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "test-mode",
-							name: "Test Mode",
+							name: "Test Agent",
 							roleDefinition: "Test Role",
 							groups: ["read"],
 							// No rulesFiles property - this mode has no rules
@@ -1183,7 +1183,7 @@ describe("CustomModesManager", () => {
 					customModes: [
 						{
 							slug: "test-mode",
-							name: "Test Mode",
+							name: "Test Agent",
 							roleDefinition: "Test Role",
 							groups: ["read"],
 							rulesFiles: [
@@ -1248,7 +1248,7 @@ describe("CustomModesManager", () => {
 		})
 
 		it("should return false when mode is not in .roomodes file", async () => {
-			const roomodesContent = { customModes: [{ slug: "other-mode", name: "Other Mode" }] }
+			const roomodesContent = { customModes: [{ slug: "other-mode", name: "Other Agent" }] }
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
 			})
@@ -1281,7 +1281,7 @@ describe("CustomModesManager", () => {
 		})
 
 		it("should return false when rules directory doesn't exist", async () => {
-			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Mode" }] }
+			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Agent" }] }
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
 			})
@@ -1299,7 +1299,7 @@ describe("CustomModesManager", () => {
 		})
 
 		it("should return false when rules directory is empty", async () => {
-			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Mode" }] }
+			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Agent" }] }
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
 			})
@@ -1318,7 +1318,7 @@ describe("CustomModesManager", () => {
 		})
 
 		it("should return true when rules directory has content files", async () => {
-			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Mode" }] }
+			const roomodesContent = { customModes: [{ slug: "test-mode", name: "Test Agent" }] }
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
 			})
@@ -1343,7 +1343,7 @@ describe("CustomModesManager", () => {
 
 		it("should work with global custom modes when .roomodes doesn't exist", async () => {
 			const settingsContent = {
-				customModes: [{ slug: "test-mode", name: "Test Mode", groups: ["read"], roleDefinition: "Test Role" }],
+				customModes: [{ slug: "test-mode", name: "Test Agent", groups: ["read"], roleDefinition: "Test Role" }],
 			}
 
 			// Create a fresh manager instance to avoid cache issues
@@ -1391,7 +1391,7 @@ describe("CustomModesManager", () => {
 			const result = await freshManager.exportModeWithRules("test-mode")
 
 			expect(result.success).toBe(false)
-			expect(result.error).toBe("Mode not found")
+			expect(result.error).toBe("Agent not found")
 		})
 
 		it("should return error when mode is not found", async () => {
@@ -1408,12 +1408,12 @@ describe("CustomModesManager", () => {
 			const result = await manager.exportModeWithRules("test-mode")
 
 			expect(result.success).toBe(false)
-			expect(result.error).toBe("Mode not found")
+			expect(result.error).toBe("Agent not found")
 		})
 
 		it("should successfully export mode without rules when rules directory doesn't exist", async () => {
 			const roomodesContent = {
-				customModes: [{ slug: "test-mode", name: "Test Mode", roleDefinition: "Test Role", groups: ["read"] }],
+				customModes: [{ slug: "test-mode", name: "Test Agent", roleDefinition: "Test Role", groups: ["read"] }],
 			}
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
@@ -1430,12 +1430,12 @@ describe("CustomModesManager", () => {
 
 			expect(result.success).toBe(true)
 			expect(result.yaml).toContain("test-mode")
-			expect(result.yaml).toContain("Test Mode")
+			expect(result.yaml).toContain("Test Agent")
 		})
 
 		it("should successfully export mode without rules when no rule files are found", async () => {
 			const roomodesContent = {
-				customModes: [{ slug: "test-mode", name: "Test Mode", roleDefinition: "Test Role", groups: ["read"] }],
+				customModes: [{ slug: "test-mode", name: "Test Agent", roleDefinition: "Test Role", groups: ["read"] }],
 			}
 			;(fileExistsAtPath as Mock).mockImplementation(async (path: string) => {
 				return path === mockRoomodes
@@ -1460,7 +1460,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					{
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Test Role",
 						groups: ["read"],
 						customInstructions: "Existing instructions",
@@ -1500,7 +1500,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					{
 						slug: "code",
-						name: "Custom Code Mode",
+						name: "Custom Code Agent",
 						roleDefinition: "Custom Role",
 						groups: ["read"],
 					},
@@ -1530,7 +1530,7 @@ describe("CustomModesManager", () => {
 			const result = await manager.exportModeWithRules("code")
 
 			expect(result.success).toBe(true)
-			expect(result.yaml).toContain("Custom Code Mode")
+			expect(result.yaml).toContain("Custom Code Agent")
 			expect(result.yaml).toContain("Custom rules for code mode")
 			// Should NOT delete the rules directory
 			expect(fs.rm).not.toHaveBeenCalled()
@@ -1541,7 +1541,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					{
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Test Role",
 						groups: ["read"],
 					},
@@ -1576,7 +1576,7 @@ describe("CustomModesManager", () => {
 			// Mock a global mode
 			const globalMode = {
 				slug: "global-test-mode",
-				name: "Global Test Mode",
+				name: "Global Test Agent",
 				roleDefinition: "Global Test Role",
 				groups: ["read"],
 				source: "global",
@@ -1614,7 +1614,7 @@ describe("CustomModesManager", () => {
 
 			expect(result.success).toBe(true)
 			expect(result.yaml).toContain("global-test-mode")
-			expect(result.yaml).toContain("Global Test Mode")
+			expect(result.yaml).toContain("Global Test Agent")
 			expect(result.yaml).toContain("Global rule content")
 		})
 
@@ -1622,7 +1622,7 @@ describe("CustomModesManager", () => {
 			// Mock a global mode
 			const globalMode = {
 				slug: "global-test-mode",
-				name: "Global Test Mode",
+				name: "Global Test Agent",
 				roleDefinition: "Global Test Role",
 				groups: ["read"],
 				source: "global",
@@ -1646,7 +1646,7 @@ describe("CustomModesManager", () => {
 
 			expect(result.success).toBe(true)
 			expect(result.yaml).toContain("global-test-mode")
-			expect(result.yaml).toContain("Global Test Mode")
+			expect(result.yaml).toContain("Global Test Agent")
 			// Should not contain rulesFiles since no rules directory exists
 			expect(result.yaml).not.toContain("rulesFiles")
 		})
@@ -1655,7 +1655,7 @@ describe("CustomModesManager", () => {
 			// Mock a global mode
 			const globalMode = {
 				slug: "global-test-mode",
-				name: "Global Test Mode",
+				name: "Global Test Agent",
 				roleDefinition: "Global Test Role",
 				groups: ["read"],
 				source: "global",
@@ -1705,7 +1705,7 @@ describe("CustomModesManager", () => {
 				customModes: [
 					{
 						slug: "test-mode",
-						name: "Test Mode",
+						name: "Test Agent",
 						roleDefinition: "Test Role",
 						groups: ["read"],
 					},

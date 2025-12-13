@@ -28,7 +28,7 @@ describe("isToolAllowedForMode", () => {
 		},
 		{
 			slug: "test-exp-mode",
-			name: "Test Exp Mode",
+			name: "Test Exp Agent",
 			roleDefinition: "You are an experimental tester",
 			groups: ["read", "edit", "browser"],
 		},
@@ -317,7 +317,7 @@ describe("isToolAllowedForMode", () => {
 		const customModesWithEditGroup: ModeConfig[] = [
 			{
 				slug: "test-custom-tools",
-				name: "Test Custom Tools Mode",
+				name: "Test Custom Tools Agent",
 				roleDefinition: "You are a test mode",
 				groups: ["read", "edit", "browser"],
 			},
@@ -349,7 +349,7 @@ describe("isToolAllowedForMode", () => {
 			const customModesWithoutEdit: ModeConfig[] = [
 				{
 					slug: "no-edit-mode",
-					name: "No Edit Mode",
+					name: "No Edit Agent",
 					roleDefinition: "You have no edit powers",
 					groups: ["read", "browser"], // No edit group
 				},
@@ -400,7 +400,7 @@ describe("FileRestrictionError", () => {
 			expect(debugMode).toBeDefined()
 			expect(debugMode).toMatchObject({
 				slug: "debug",
-				name: "🪲 Debug",
+				name: "🪲 Debugger",
 				roleDefinition:
 					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
 				groups: ["read", "edit", "browser", "command", "mcp"],
@@ -421,7 +421,7 @@ describe("FileRestrictionError", () => {
 			const result = await getFullModeDetails("debug")
 			expect(result).toMatchObject({
 				slug: "debug",
-				name: "🪲 Debug",
+				name: "🪲 Debugger",
 				roleDefinition:
 					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
 			})
@@ -514,14 +514,14 @@ describe("getModeSelection", () => {
 	const customModesList: ModeConfig[] = [
 		{
 			slug: "code", // Override
-			name: "Custom Code Mode",
+			name: "Custom Code Agent",
 			roleDefinition: "Custom Code Role",
 			customInstructions: "Custom Code Instructions",
 			groups: ["read"],
 		},
 		{
 			slug: "new-custom",
-			name: "New Custom Mode",
+			name: "New Custom Agent",
 			roleDefinition: "New Custom Role",
 			customInstructions: "New Custom Instructions",
 			groups: ["edit"],
@@ -604,7 +604,7 @@ describe("getModeSelection", () => {
 		const modesWithoutCustomInstructions: ModeConfig[] = [
 			{
 				slug: "no-instr",
-				name: "No Instructions Mode",
+				name: "No Instructions Agent",
 				roleDefinition: "Role for no instructions",
 				groups: ["read"],
 				// customInstructions is undefined
@@ -619,7 +619,7 @@ describe("getModeSelection", () => {
 		const modesWithEmptyRoleDef: ModeConfig[] = [
 			{
 				slug: "empty-role",
-				name: "Empty Role Mode",
+				name: "Empty Role Agent",
 				roleDefinition: "",
 				customInstructions: "Instructions for empty role",
 				groups: ["read"],
@@ -632,7 +632,7 @@ describe("getModeSelection", () => {
 		const modesWithUndefinedRoleDef: ModeConfig[] = [
 			{
 				slug: "undefined-role",
-				name: "Undefined Role Mode",
+				name: "Undefined Role Agent",
 				roleDefinition: "", // Test undefined explicitly by using an empty string
 				customInstructions: "Instructions for undefined role",
 				groups: ["read"],

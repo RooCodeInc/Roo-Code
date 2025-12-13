@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Code 适应您的工作方式，而不是相反：
 - 自定义模式：为您的团队或工作流程构建专门的模式
 - Roomote Control：Roomote Control 允许你远程控制在本地 VS Code 实例中运行的任务。
 
-了解更多：[使用模式](https://docs.roocode.com/basic-usage/using-modes) • [自定义模式](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+了解更多：[使用模式](https://docs.roocode.com/basic-usage/using-agents) • [自定义模式](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## 教程和功能视频
 

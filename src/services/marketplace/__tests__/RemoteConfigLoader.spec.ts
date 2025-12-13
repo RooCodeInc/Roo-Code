@@ -27,7 +27,7 @@ describe("RemoteConfigLoader", () => {
 		it("should fetch and combine modes and MCPs from API", async () => {
 			const mockModesYaml = `items:
   - id: "test-mode"
-    name: "Test Mode"
+    name: "Test Agent"
     description: "A test mode"
     content: "customModes:\\n  - slug: test\\n    name: Test"`
 
@@ -76,7 +76,7 @@ describe("RemoteConfigLoader", () => {
 			expect(items[0]).toEqual({
 				type: "mode",
 				id: "test-mode",
-				name: "Test Mode",
+				name: "Test Agent",
 				description: "A test mode",
 				content: "customModes:\n  - slug: test\n    name: Test",
 			})
@@ -93,7 +93,7 @@ describe("RemoteConfigLoader", () => {
 		it("should use cache on subsequent calls", async () => {
 			const mockModesYaml = `items:
   - id: "test-mode"
-    name: "Test Mode"
+    name: "Test Agent"
     description: "A test mode"
     content: "test content"`
 
@@ -128,7 +128,7 @@ describe("RemoteConfigLoader", () => {
 		it("should retry on network failures", async () => {
 			const mockModesYaml = `items:
   - id: "test-mode"
-    name: "Test Mode"
+    name: "Test Agent"
     description: "A test mode"
     content: "test content"`
 
@@ -204,7 +204,7 @@ describe("RemoteConfigLoader", () => {
 		it("should find specific item by id and type", async () => {
 			const mockModesYaml = `items:
   - id: "target-mode"
-    name: "Target Mode"
+    name: "Target Agent"
     description: "The mode we want"
     content: "test content"`
 
@@ -232,7 +232,7 @@ describe("RemoteConfigLoader", () => {
 			expect(modeItem).toEqual({
 				type: "mode",
 				id: "target-mode",
-				name: "Target Mode",
+				name: "Target Agent",
 				description: "The mode we want",
 				content: "test content",
 			})
@@ -254,7 +254,7 @@ describe("RemoteConfigLoader", () => {
 		it("should clear cache and force fresh API calls", async () => {
 			const mockModesYaml = `items:
   - id: "test-mode"
-    name: "Test Mode"
+    name: "Test Agent"
     description: "A test mode"
     content: "test content"`
 
@@ -291,7 +291,7 @@ describe("RemoteConfigLoader", () => {
 		it("should expire cache after 5 minutes", async () => {
 			const mockModesYaml = `items:
   - id: "test-mode"
-    name: "Test Mode"
+    name: "Test Agent"
     description: "A test mode"
     content: "test content"`
 

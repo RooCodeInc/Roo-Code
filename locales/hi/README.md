@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@
 - कस्टम मोड: अपनी टीम या वर्कफ़्लो के लिए विशेष मोड बनाएं
 - Roomote Control: Roomote Control से तुम अपनी लोकल VS Code इंस्टेंस में चल रही टास्क को रिमोट से कंट्रोल कर सकते हो।
 
-और जानो: [मोड्स का इस्तेमाल](https://docs.roocode.com/basic-usage/using-modes) • [कस्टम मोड्स](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+और जानो: [मोड्स का इस्तेमाल](https://docs.roocode.com/basic-usage/using-agents) • [कस्टम मोड्स](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## ट्यूटोरियल और फ़ीचर वीडियो
 

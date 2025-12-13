@@ -29,11 +29,11 @@ Please analyze this codebase and create an AGENTS.md file containing:
     - Essential for avoiding mistakes or following project conventions
     
     Usage notes:
-    - The file you create will be given to agentic coding agents (such as yourself) that operate in this repository
+    - The file you create will be given to agentic coding modes (such as yourself) that operate in this repository
     - Keep the main AGENTS.md concise - aim for about 20 lines, but use more if the project complexity requires it
     - If there's already an AGENTS.md, improve it
     - If there are Claude Code rules (in CLAUDE.md), Cursor rules (in .cursor/rules/ or .cursorrules), or Copilot rules (in .github/copilot-instructions.md), make sure to include them
-    - Be sure to prefix the file with: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
+    - Be sure to prefix the file with: "# AGENTS.md\\n\\nThis file provides guidance to modes when working with code in this repository."
   </purpose>
   
   <todo_list_creation>
@@ -148,7 +148,7 @@ Please analyze this codebase and create an AGENTS.md file containing:
     - Goal: File should be SHORTER and MORE VALUABLE
     
     Content should include:
-    - Header: "# AGENTS.md\\n\\nThis file provides guidance to agents when working with code in this repository."
+    - Header: "# AGENTS.md\\n\\nThis file provides guidance to modes when working with code in this repository."
     - Build/lint/test commands - ONLY if they differ from standard package.json scripts
     - Code style - ONLY project-specific rules not covered by linter configs
     - Custom utilities or patterns discovered by reading the code

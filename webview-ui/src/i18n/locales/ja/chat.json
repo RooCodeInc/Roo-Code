@@ -237,7 +237,7 @@
 		"wantsToUseTool": "RooはMCPサーバー{{serverName}}でツールを使用したい",
 		"wantsToAccessResource": "RooはMCPサーバー{{serverName}}のリソースにアクセスしたい"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Rooは<code>{{mode}}</code>モードに切り替えたい",
 		"wantsToSwitchWithReason": "Rooは次の理由で<code>{{mode}}</code>モードに切り替えたい: {{reason}}",
 		"didSwitch": "Rooは<code>{{mode}}</code>モードに切り替えました",

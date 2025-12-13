@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+    </details>
 
 ---
 
@@ -60,7 +60,7 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 - カスタムモード：チームやワークフローに特化したモードの構築
 - Roomote Control: Roomote Control はローカルの VS Code で実行中のタスクをリモート操作できます。
 
-詳しくは: [モードの使い方](https://docs.roocode.com/basic-usage/using-modes) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+詳しくは: [モードの使い方](https://docs.roocode.com/basic-usage/using-agents) • [カスタムモード](https://docs.roocode.com/advanced-usage/custom-agents) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
 ## チュートリアルと機能のビデオ
 

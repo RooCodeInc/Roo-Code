@@ -22,7 +22,7 @@
 		"type": {
 			"label": "Türe göre filtrele:",
 			"all": "Tüm türler",
-			"mode": "Mod",
+			"agent": "Mod",
 			"mcpServer": "MCP Sunucusu"
 		},
 		"sort": {
@@ -46,7 +46,7 @@
 		"marketplace": "Marketplace"
 	},
 	"type-group": {
-		"modes": "Modlar",
+		"agents": "Modlar",
 		"mcps": "MCP Sunucuları"
 	},
 	"items": {
@@ -138,7 +138,7 @@
 		}
 	},
 	"removeConfirm": {
-		"mode": {
+		"agent": {
 			"title": "Modu Kaldır",
 			"message": "\"{{modeName}}\" modunu kaldırmak istediğinizden emin misiniz?",
 			"rulesWarning": "Bu, bu mod için ilişkili tüm kural dosyalarını da kaldıracaktır."

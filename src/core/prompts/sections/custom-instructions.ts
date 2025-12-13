@@ -256,7 +256,7 @@ async function loadAgentRulesFile(cwd: string): Promise<string> {
 				return `# Agent Rules Standard (${filename}):\n${content}`
 			}
 		} catch (err) {
-			// Silently ignore errors - agent rules files are optional
+			// Silently ignore errors - mode rules files are optional
 		}
 	}
 	return ""
@@ -330,7 +330,7 @@ export async function addCustomInstructions(
 
 	// Add mode-specific instructions after
 	if (typeof modeCustomInstructions === "string" && modeCustomInstructions.trim()) {
-		sections.push(`Mode-specific Instructions:\n${modeCustomInstructions.trim()}`)
+		sections.push(`Agent-specific Instructions:\n${modeCustomInstructions.trim()}`)
 	}
 
 	// Add rules - include both mode-specific and generic rules if they exist

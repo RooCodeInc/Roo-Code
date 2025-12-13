@@ -2803,7 +2803,7 @@ export class ClineProvider
 		})
 	}
 
-	// Modes
+	// Agents
 
 	public async getModes(): Promise<{ slug: string; name: string }[]> {
 		try {

@@ -1,7 +1,7 @@
 {
 	"title": "Tryby",
 	"done": "Gotowe",
-	"modes": {
+	"agents": {
 		"title": "Tryby",
 		"createNewMode": "Utwórz nowy tryb",
 		"importMode": "Importuj tryb",

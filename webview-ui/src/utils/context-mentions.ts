@@ -106,7 +106,7 @@ export enum ContextMenuOptionType {
 	URL = "url",
 	Git = "git",
 	NoResults = "noResults",
-	Mode = "mode", // Add mode type
+	Agent = "mode", // Add mode type
 	Command = "command", // Add command type
 	SectionHeader = "sectionHeader", // Add section header type
 }
@@ -191,13 +191,13 @@ export function getContextMenuOptions(
 			// Get fuzzy matching items
 			const matchingModes = slashQuery
 				? fzf.find(slashQuery).map((result) => ({
-						type: ContextMenuOptionType.Mode,
+						type: ContextMenuOptionType.Agent,
 						value: result.item.original.slug,
 						slashCommand: `/${result.item.original.slug}`,
 						description: getModeDescription(result.item.original),
 					}))
 				: modes.map((mode) => ({
-						type: ContextMenuOptionType.Mode,
+						type: ContextMenuOptionType.Agent,
 						value: mode.slug,
 						slashCommand: `/${mode.slug}`,
 						description: getModeDescription(mode),
@@ -206,7 +206,7 @@ export function getContextMenuOptions(
 			if (matchingModes.length > 0) {
 				results.push({
 					type: ContextMenuOptionType.SectionHeader,
-					label: "Modes",
+					label: "Agents",
 				})
 				results.push(...matchingModes)
 			}

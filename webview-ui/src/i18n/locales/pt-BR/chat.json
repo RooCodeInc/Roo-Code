@@ -35,7 +35,7 @@
 	"tokenProgress": {
 		"availableSpace": "Espaço disponível: {{amount}} tokens",
 		"tokensUsed": "Tokens usados: {{used}} de {{total}}",
-		"reservedForResponse": "Reservado para resposta do modelo: {{amount}} tokens"
+		"reservedForResponse": "Reservado para resposta do agentlo: {{amount}} tokens"
 	},
 	"retry": {
 		"title": "Tentar novamente",
@@ -96,7 +96,7 @@
 			"description": "Personas especializadas que mantêm o foco na tarefa e entregam resultados."
 		},
 		"modelAgnostic": {
-			"title": "Traga seu próprio modelo",
+			"title": "Traga seu próprio agentlo",
 			"description": "Use sua própria chave de provedor ou até mesmo execute inferência local — sem acréscimos, sem aprisionamento, sem restrições"
 		}
 	},
@@ -237,7 +237,7 @@
 		"wantsToUseTool": "Roo quer usar uma ferramenta no servidor MCP {{serverName}}",
 		"wantsToAccessResource": "Roo quer acessar um recurso no servidor MCP {{serverName}}"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo quer mudar para o modo <code>{{mode}}</code>",
 		"wantsToSwitchWithReason": "Roo quer mudar para o modo <code>{{mode}}</code> porque: {{reason}}",
 		"didSwitch": "Roo mudou para o modo <code>{{mode}}</code>",
@@ -309,8 +309,8 @@
 		"title": "Roo Code {{version}} Lançado",
 		"support": "Apoie o Roo Code nos dando uma estrela no <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um modelo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Roo Code Cloud.",
-			"note": "(Nota: prompts e completações são registrados pelo criador do modelo e usados para melhorá-lo)",
+			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um agentlo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Roo Code Cloud.",
+			"note": "(Nota: prompts e completações são registrados pelo criador do agentlo e usados para melhorá-lo)",
 			"connectButton": "Conectar ao Roo Code Cloud",
 			"selectModel": "Selecione <code>roo/code-supernova</code> do provedor Roo Code Cloud em Configurações para começar.",
 			"goToSettingsButton": "Ir para Configurações"

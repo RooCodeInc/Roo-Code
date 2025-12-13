@@ -18,7 +18,7 @@ export const MAX_FILE_SIZE_FOR_TOKENIZATION = 5_000_000 // 5MB
 
 /**
  * Size of preview to read from files that exceed MAX_FILE_SIZE_FOR_TOKENIZATION.
- * This allows the agent to see the beginning of large files without crashing.
+ * This allows the mode to see the beginning of large files without crashing.
  */
 export const PREVIEW_SIZE_FOR_LARGE_FILES = 100_000 // 100KB
 

@@ -35,7 +35,7 @@
 	"tokenProgress": {
 		"availableSpace": "Dostępne miejsce: {{amount}} tokenów",
 		"tokensUsed": "Wykorzystane tokeny: {{used}} z {{total}}",
-		"reservedForResponse": "Zarezerwowane dla odpowiedzi modelu: {{amount}} tokenów"
+		"reservedForResponse": "Zarezerwowane dla odpowiedzi agentlu: {{amount}} tokenów"
 	},
 	"retry": {
 		"title": "Ponów",
@@ -96,7 +96,7 @@
 			"description": "Wyspecjalizowane persony, które trzymają się zadania i dostarczają."
 		},
 		"modelAgnostic": {
-			"title": "Przynieś własny model",
+			"title": "Przynieś własny agentl",
 			"description": "Użyj własnego klucza dostawcy lub nawet uruchom lokalne wnioskowanie — bez narzutów, bez blokad, bez ograniczeń"
 		}
 	},
@@ -237,7 +237,7 @@
 		"wantsToUseTool": "Roo chce użyć narzędzia na serwerze MCP {{serverName}}",
 		"wantsToAccessResource": "Roo chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo chce przełączyć się na tryb <code>{{mode}}</code>",
 		"wantsToSwitchWithReason": "Roo chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
 		"didSwitch": "Roo przełączył się na tryb <code>{{mode}}</code>",
@@ -309,8 +309,8 @@
 		"title": "Roo Code {{version}} wydany",
 		"support": "Wesprzyj Roo Code, dając nam gwiazdkę na <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Darmowy model stealth na ograniczony czas</bold> - Code Supernova: Teraz ulepszony z <bold>oknem kontekstu 1M tokenów</bold>! Wszechstronny model kodowania agentowego, który obsługuje wprowadzanie obrazów, dostępny przez Roo Code Cloud.",
-			"note": "(Uwaga: prompty i uzupełnienia są rejestrowane przez twórcę modelu i używane do jego ulepszania)",
+			"feature": "<bold>Darmowy agentl stealth na ograniczony czas</bold> - Code Supernova: Teraz ulepszony z <bold>oknem kontekstu 1M tokenów</bold>! Wszechstronny agentl kodowania agentowego, który obsługuje wprowadzanie obrazów, dostępny przez Roo Code Cloud.",
+			"note": "(Uwaga: prompty i uzupełnienia są rejestrowane przez twórcę agentlu i używane do jego ulepszania)",
 			"connectButton": "Połącz z Roo Code Cloud",
 			"selectModel": "Wybierz <code>roo/code-supernova</code> od dostawcy Roo Code Cloud w Ustawieniach, aby rozpocząć.",
 			"goToSettingsButton": "Przejdź do Ustawień"

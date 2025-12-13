@@ -238,7 +238,7 @@
 		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
 		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo muốn chuyển sang chế độ <code>{{mode}}</code>",
 		"wantsToSwitchWithReason": "Roo muốn chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}",
 		"didSwitch": "Roo đã chuyển sang chế độ <code>{{mode}}</code>",

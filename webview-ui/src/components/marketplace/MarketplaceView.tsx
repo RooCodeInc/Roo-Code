@@ -135,7 +135,7 @@ export function MarketplaceView({ stateManager, onDone, targetTab }: Marketplace
 								onClick={() =>
 									manager.transition({ type: "SET_ACTIVE_TAB", payload: { tab: "mode" } })
 								}>
-								Modes
+								Agents
 							</button>
 						</div>
 					</div>

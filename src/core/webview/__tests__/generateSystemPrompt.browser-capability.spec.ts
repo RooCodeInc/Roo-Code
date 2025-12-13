@@ -30,7 +30,7 @@ vi.mock("../../../api", () => ({
 const mockCustomModes = [
 	{
 		slug: "test-mode",
-		name: "Test Mode",
+		name: "Test Agent",
 		roleDefinition: "Test role",
 		description: "",
 		groups: ["browser"], // critical: include browser group

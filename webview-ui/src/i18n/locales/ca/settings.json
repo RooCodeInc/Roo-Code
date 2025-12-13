@@ -22,7 +22,7 @@
 	},
 	"sections": {
 		"providers": "Proveïdors",
-		"modes": "Modes",
+		"agents": "Agents",
 		"mcp": "Servidors MCP",
 		"autoApprove": "Auto-aprovació",
 		"browser": "Accés a l'ordinador",
@@ -90,7 +90,7 @@
 		"openRouterApiKeyLabel": "Clau de l'API d'OpenRouter",
 		"openRouterApiKeyPlaceholder": "Introduïu la vostra clau de l'API d'OpenRouter",
 		"openRouterProviderRoutingLabel": "Encaminament de proveïdors d'OpenRouter",
-		"openRouterProviderRoutingDescription": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre model d'embedding. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest model.",
+		"openRouterProviderRoutingDescription": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre agentl d'embedding. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest agentl.",
 		"openaiCompatibleProvider": "Compatible amb OpenAI",
 		"openAiKeyLabel": "Clau API OpenAI",
 		"openAiKeyPlaceholder": "Introduïu la vostra clau API OpenAI",
@@ -98,11 +98,11 @@
 		"openAiCompatibleApiKeyLabel": "Clau API",
 		"openAiCompatibleApiKeyPlaceholder": "Introduïu la vostra clau API",
 		"openAiCompatibleModelDimensionLabel": "Dimensió d'Embedding:",
-		"modelDimensionLabel": "Dimensió del model",
+		"modelDimensionLabel": "Dimensió del agentl",
 		"openAiCompatibleModelDimensionPlaceholder": "p. ex., 1536",
-		"openAiCompatibleModelDimensionDescription": "La dimensió d'embedding (mida de sortida) per al teu model. Consulta la documentació del teu proveïdor per a aquest valor. Valors comuns: 384, 768, 1536, 3072.",
+		"openAiCompatibleModelDimensionDescription": "La dimensió d'embedding (mida de sortida) per al teu agentl. Consulta la documentació del teu proveïdor per a aquest valor. Valors comuns: 384, 768, 1536, 3072.",
 		"modelLabel": "Model",
-		"selectModelPlaceholder": "Seleccionar model",
+		"selectModelPlaceholder": "Seleccionar agentl",
 		"ollamaUrlLabel": "URL d'Ollama:",
 		"qdrantUrlLabel": "URL de Qdrant",
 		"qdrantKeyLabel": "Clau de Qdrant:",
@@ -120,8 +120,8 @@
 		"settingsTitle": "Configuració d'indexació",
 		"disabledMessage": "La indexació de la base de codi està actualment deshabilitada. Habiliteu-la a la configuració global per configurar les opcions d'indexació.",
 		"embedderProviderLabel": "Proveïdor d'embeddings",
-		"modelPlaceholder": "Introduïu el nom del model",
-		"selectModel": "Seleccioneu un model",
+		"modelPlaceholder": "Introduïu el nom del agentl",
+		"selectModel": "Seleccioneu un agentl",
 		"ollamaBaseUrlLabel": "URL base d'Ollama",
 		"qdrantApiKeyLabel": "Clau API de Qdrant",
 		"qdrantApiKeyPlaceholder": "Introduïu la vostra clau API de Qdrant (opcional)",
@@ -148,10 +148,10 @@
 			"invalidBaseUrl": "URL de base no vàlida",
 			"qdrantUrlRequired": "Cal una URL de Qdrant",
 			"openaiApiKeyRequired": "Cal una clau d'API d'OpenAI",
-			"modelSelectionRequired": "Cal seleccionar un model",
+			"modelSelectionRequired": "Cal seleccionar un agentl",
 			"apiKeyRequired": "Cal una clau d'API",
-			"modelIdRequired": "Cal un ID de model",
-			"modelDimensionRequired": "Cal una dimensió de model",
+			"modelIdRequired": "Cal un ID de agentl",
+			"modelDimensionRequired": "Cal una dimensió de agentl",
 			"geminiApiKeyRequired": "Cal una clau d'API de Gemini",
 			"mistralApiKeyRequired": "La clau de l'API de Mistral és requerida",
 			"vercelAiGatewayApiKeyRequired": "Es requereix la clau API de Vercel AI Gateway",
@@ -159,7 +159,7 @@
 			"bedrockProfileRequired": "Es requereix el perfil d'AWS",
 			"ollamaBaseUrlRequired": "Cal una URL base d'Ollama",
 			"baseUrlRequired": "Cal una URL base",
-			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0",
+			"modelDimensionMinValue": "La dimensió del agentl ha de ser superior a 0",
 			"openRouterApiKeyRequired": "Clau API d'OpenRouter és requerida"
 		},
 		"optional": "opcional",
@@ -200,7 +200,7 @@
 		},
 		"browser": {
 			"label": "Navegador",
-			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el model admet l'ús de l'ordinador"
+			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el agentl admet l'ús de l'ordinador"
 		},
 		"retry": {
 			"label": "Reintentar",
@@ -212,8 +212,8 @@
 			"description": "Habilitar l'aprovació automàtica d'eines MCP individuals a la vista de Servidors MCP (requereix tant aquesta configuració com la casella \"Permetre sempre\" de l'eina)"
 		},
 		"modeSwitch": {
-			"label": "Mode",
-			"description": "Canviar automàticament entre diferents modes sense requerir aprovació"
+			"label": "Agent",
+			"description": "Canviar automàticament entre diferents agents sense requerir aprovació"
 		},
 		"subtasks": {
 			"label": "Subtasques",
@@ -275,8 +275,8 @@
 		"searchProviderPlaceholder": "Cerca proveïdors",
 		"noProviderMatchFound": "No s'han trobat proveïdors",
 		"noMatchFound": "No s'han trobat perfils coincidents",
-		"vscodeLmDescription": "L'API del model de llenguatge de VS Code us permet executar models proporcionats per altres extensions de VS Code (incloent-hi, però no limitat a, GitHub Copilot). La manera més senzilla de començar és instal·lar les extensions Copilot i Copilot Chat des del VS Code Marketplace.",
-		"awsCustomArnUse": "Introduïu un ARN vàlid d'Amazon Bedrock per al model que voleu utilitzar. Exemples de format:",
+		"vscodeLmDescription": "L'API del agentl de llenguatge de VS Code us permet executar agentls proporcionats per altres extensions de VS Code (incloent-hi, però no limitat a, GitHub Copilot). La manera més senzilla de començar és instal·lar les extensions Copilot i Copilot Chat des del VS Code Marketplace.",
+		"awsCustomArnUse": "Introduïu un ARN vàlid d'Amazon Bedrock per al agentl que voleu utilitzar. Exemples de format:",
 		"awsCustomArnDesc": "Assegureu-vos que la regió a l'ARN coincideix amb la regió d'AWS seleccionada anteriorment.",
 		"openRouterApiKey": "Clau API d'OpenRouter",
 		"getOpenRouterApiKey": "Obtenir clau API d'OpenRouter",
@@ -293,11 +293,11 @@
 		"noCustomHeaders": "No hi ha capçaleres personalitzades definides. Feu clic al botó + per afegir-ne una.",
 		"requestyApiKey": "Clau API de Requesty",
 		"refreshModels": {
-			"label": "Actualitzar models",
-			"hint": "Si us plau, torneu a obrir la configuració per veure els models més recents.",
-			"loading": "Actualitzant la llista de models...",
-			"success": "Llista de models actualitzada correctament!",
-			"error": "No s'ha pogut actualitzar la llista de models. Si us plau, torneu-ho a provar."
+			"label": "Actualitzar agentls",
+			"hint": "Si us plau, torneu a obrir la configuració per veure els agentls més recents.",
+			"loading": "Actualitzant la llista de agentls...",
+			"success": "Llista de agentls actualitzada correctament!",
+			"error": "No s'ha pogut actualitzar la llista de agentls. Si us plau, torneu-ho a provar."
 		},
 		"getRequestyApiKey": "Obtenir clau API de Requesty",
 		"getRequestyBaseUrl": "URL base",
@@ -344,12 +344,12 @@
 		"sambaNovaApiKey": "Clau API de SambaNova",
 		"getHuggingFaceApiKey": "Obtenir clau API de Hugging Face",
 		"huggingFaceApiKey": "Clau API de Hugging Face",
-		"huggingFaceModelId": "ID del model",
+		"huggingFaceModelId": "ID del agentl",
 		"huggingFaceLoading": "Carregant...",
-		"huggingFaceModelsCount": "({{count}} models)",
-		"huggingFaceSelectModel": "Selecciona un model...",
-		"huggingFaceSearchModels": "Cerca models...",
-		"huggingFaceNoModelsFound": "No s'han trobat models",
+		"huggingFaceModelsCount": "({{count}} agentls)",
+		"huggingFaceSelectModel": "Selecciona un agentl...",
+		"huggingFaceSearchModels": "Cerca agentls...",
+		"huggingFaceNoModelsFound": "No s'han trobat agentls",
 		"huggingFaceProvider": "Proveïdor",
 		"huggingFaceProviderAuto": "Automàtic",
 		"huggingFaceSelectProvider": "Selecciona un proveïdor...",
@@ -363,7 +363,7 @@
 		"mistralApiKey": "Clau API de Mistral",
 		"getMistralApiKey": "Obtenir clau API de Mistral / Codestral",
 		"codestralBaseUrl": "URL base de Codestral (opcional)",
-		"codestralBaseUrlDesc": "Establir una URL alternativa per al model Codestral.",
+		"codestralBaseUrlDesc": "Establir una URL alternativa per al agentl Codestral.",
 		"xaiApiKey": "Clau API de xAI",
 		"getXaiApiKey": "Obtenir clau API de xAI",
 		"litellmApiKey": "Clau API de LiteLLM",
@@ -384,10 +384,10 @@
 			"examples": "Exemples:"
 		},
 		"enablePromptCaching": "Habilitar emmagatzematge en caché de prompts",
-		"enablePromptCachingTitle": "Habilitar l'emmagatzematge en caché de prompts per millorar el rendiment i reduir els costos per als models compatibles.",
-		"cacheUsageNote": "Nota: Si no veieu l'ús de la caché, proveu de seleccionar un model diferent i després tornar a seleccionar el model desitjat.",
+		"enablePromptCachingTitle": "Habilitar l'emmagatzematge en caché de prompts per millorar el rendiment i reduir els costos per als agentls compatibles.",
+		"cacheUsageNote": "Nota: Si no veieu l'ús de la caché, proveu de seleccionar un agentl diferent i després tornar a seleccionar el agentl desitjat.",
 		"vscodeLmModel": "Model de llenguatge",
-		"vscodeLmWarning": "Nota: Els models accessibles a través de l’API VS Code Language Model poden estar encapsulats o ajustats pel proveïdor; per tant, el comportament pot diferir de l’ús directe del mateix model des d’un proveïdor o enrutador típic. Per utilitzar un model del desplegable «Language Model», primer canvia a aquest model i després fes clic a «Acceptar» a l’avís de Copilot Chat; en cas contrari pots veure un error com 400 «The requested model is not supported».",
+		"vscodeLmWarning": "Nota: Els agentls accessibles a través de l’API VS Code Language Agentl poden estar encapsulats o ajustats pel proveïdor; per tant, el comportament pot diferir de l’ús directe del mateix agentl des d’un proveïdor o enrutador típic. Per utilitzar un agentl del desplegable «Language Agentl», primer canvia a aquest agentl i després fes clic a «Acceptar» a l’avís de Copilot Chat; en cas contrari pots veure un error com 400 «The requested agentl is not supported».",
 		"geminiParameters": {
 			"urlContext": {
 				"title": "Activa el context d'URL",
@@ -400,7 +400,7 @@
 		},
 		"googleCloudSetup": {
 			"title": "Per utilitzar Google Cloud Vertex AI, necessiteu:",
-			"step1": "1. Crear un compte de Google Cloud, habilitar l'API de Vertex AI i habilitar els models Claude necessaris.",
+			"step1": "1. Crear un compte de Google Cloud, habilitar l'API de Vertex AI i habilitar els agentls Claude necessaris.",
 			"step2": "2. Instal·lar Google Cloud CLI i configurar les credencials d'aplicació per defecte.",
 			"step3": "3. O crear un compte de servei amb credencials."
 		},
@@ -410,27 +410,27 @@
 		"googleCloudRegion": "Regió de Google Cloud",
 		"lmStudio": {
 			"baseUrl": "URL base (opcional)",
-			"modelId": "ID del model",
+			"modelId": "ID del agentl",
 			"speculativeDecoding": "Habilitar descodificació especulativa",
-			"draftModelId": "ID del model d'esborrany",
-			"draftModelDesc": "El model d'esborrany ha de ser de la mateixa família de models perquè la descodificació especulativa funcioni correctament.",
-			"selectDraftModel": "Seleccionar model d'esborrany",
-			"noModelsFound": "No s'han trobat models d'esborrany. Assegureu-vos que LM Studio s'està executant amb el mode servidor habilitat.",
-			"description": "LM Studio permet executar models localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la seva <a>Guia d'inici ràpid</a>. També necessitareu iniciar la funció de <b>Servidor Local</b> de LM Studio per utilitzar-la amb aquesta extensió. <span>Nota:</span> Roo Code utilitza prompts complexos i funciona millor amb models Claude. Els models menys capaços poden no funcionar com s'espera."
+			"draftModelId": "ID del agentl d'esborrany",
+			"draftModelDesc": "El agentl d'esborrany ha de ser de la mateixa família de agentls perquè la descodificació especulativa funcioni correctament.",
+			"selectDraftModel": "Seleccionar agentl d'esborrany",
+			"noModelsFound": "No s'han trobat agentls d'esborrany. Assegureu-vos que LM Studio s'està executant amb el agent servidor habilitat.",
+			"description": "LM Studio permet executar agentls localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la seva <a>Guia d'inici ràpid</a>. També necessitareu iniciar la funció de <b>Servidor Local</b> de LM Studio per utilitzar-la amb aquesta extensió. <span>Nota:</span> Roo Code utilitza prompts complexos i funciona millor amb agentls Claude. Els agentls menys capaços poden no funcionar com s'espera."
 		},
 		"ollama": {
 			"baseUrl": "URL base (opcional)",
-			"modelId": "ID del model",
+			"modelId": "ID del agentl",
 			"apiKey": "Clau API d'Ollama",
 			"apiKeyHelp": "Clau API opcional per a instàncies d'Ollama autenticades o serveis al núvol. Deixa-ho buit per a instal·lacions locals.",
 			"numCtx": "Mida de la finestra de context (num_ctx)",
-			"numCtxHelp": "Sobreescriu la mida de la finestra de context per defecte del model. Deixeu-ho en blanc per utilitzar la configuració del Modelfile del model. El valor mínim és 128.",
-			"description": "Ollama permet executar models localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la Guia d'inici ràpid.",
-			"warning": "Nota: Roo Code utilitza prompts complexos i funciona millor amb models Claude. Els models menys capaços poden no funcionar com s'espera."
+			"numCtxHelp": "Sobreescriu la mida de la finestra de context per defecte del agentl. Deixeu-ho en blanc per utilitzar la configuració del Agentlfile del agentl. El valor mínim és 128.",
+			"description": "Ollama permet executar agentls localment al vostre ordinador. Per a instruccions sobre com començar, consulteu la Guia d'inici ràpid.",
+			"warning": "Nota: Roo Code utilitza prompts complexos i funciona millor amb agentls Claude. Els agentls menys capaços poden no funcionar com s'espera."
 		},
 		"unboundApiKey": "Clau API d'Unbound",
 		"getUnboundApiKey": "Obtenir clau API d'Unbound",
-		"unboundRefreshModelsSuccess": "Llista de models actualitzada! Ara podeu seleccionar entre els últims models.",
+		"unboundRefreshModelsSuccess": "Llista de agentls actualitzada! Ara podeu seleccionar entre els últims agentls.",
 		"unboundInvalidApiKey": "Clau API no vàlida. Si us plau, comproveu la vostra clau API i torneu-ho a provar.",
 		"humanRelay": {
 			"description": "No es requereix clau API, però l'usuari necessita ajuda per copiar i enganxar informació al xat d'IA web.",
@@ -443,40 +443,40 @@
 		"openRouter": {
 			"providerRouting": {
 				"title": "Encaminament de Proveïdors d'OpenRouter",
-				"description": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre model. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest model.",
+				"description": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre agentl. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest agentl.",
 				"learnMore": "Més informació sobre l'encaminament de proveïdors"
 			}
 		},
 		"customModel": {
-			"capabilities": "Configureu les capacitats i preus per al vostre model personalitzat compatible amb OpenAI. Tingueu cura en especificar les capacitats del model, ja que poden afectar com funciona Roo Code.",
+			"capabilities": "Configureu les capacitats i preus per al vostre agentl personalitzat compatible amb OpenAI. Tingueu cura en especificar les capacitats del agentl, ja que poden afectar com funciona Roo Code.",
 			"maxTokens": {
 				"label": "Màxim de tokens de sortida",
-				"description": "El nombre màxim de tokens que el model pot generar en una resposta. (Establiu -1 per permetre que el servidor estableixi el màxim de tokens.)"
+				"description": "El nombre màxim de tokens que el agentl pot generar en una resposta. (Establiu -1 per permetre que el servidor estableixi el màxim de tokens.)"
 			},
 			"contextWindow": {
 				"label": "Mida de la finestra de context",
-				"description": "Total de tokens (entrada + sortida) que el model pot processar."
+				"description": "Total de tokens (entrada + sortida) que el agentl pot processar."
 			},
 			"imageSupport": {
 				"label": "Suport d'imatges",
-				"description": "Aquest model és capaç de processar i entendre imatges?"
+				"description": "Aquest agentl és capaç de processar i entendre imatges?"
 			},
 			"computerUse": {
 				"label": "Ús de l'ordinador",
-				"description": "Aquest model és capaç d'interactuar amb un navegador?"
+				"description": "Aquest agentl és capaç d'interactuar amb un navegador?"
 			},
 			"promptCache": {
 				"label": "Emmagatzematge en caché de prompts",
-				"description": "Aquest model és capaç d'emmagatzemar prompts en caché?"
+				"description": "Aquest agentl és capaç d'emmagatzemar prompts en caché?"
 			},
 			"pricing": {
 				"input": {
 					"label": "Preu d'entrada",
-					"description": "Cost per milió de tokens en l'entrada/prompt. Això afecta el cost d'enviar context i instruccions al model."
+					"description": "Cost per milió de tokens en l'entrada/prompt. Això afecta el cost d'enviar context i instruccions al agentl."
 				},
 				"output": {
 					"label": "Preu de sortida",
-					"description": "Cost per milió de tokens en la resposta del model. Això afecta el cost del contingut generat i les completions."
+					"description": "Cost per milió de tokens en la resposta del agentl. Això afecta el cost del contingut generat i les completions."
 				},
 				"cacheReads": {
 					"label": "Preu de lectures de caché",
@@ -500,7 +500,7 @@
 			"warning": "⚠️ Establir a 0 permet reintents il·limitats que poden consumir un ús significatiu de l'API"
 		},
 		"reasoningEffort": {
-			"label": "Esforç de raonament del model",
+			"label": "Esforç de raonament del agentl",
 			"none": "Cap",
 			"minimal": "Mínim (el més ràpid)",
 			"high": "Alt",
@@ -513,7 +513,7 @@
 			"high": "Alta",
 			"medium": "Mitjana",
 			"low": "Baixa",
-			"description": "Controla el nivell de detall de les respostes del model. La verbositat baixa produeix respostes concises, mentre que la verbositat alta proporciona explicacions exhaustives."
+			"description": "Controla el nivell de detall de les respostes del agentl. La verbositat baixa produeix respostes concises, mentre que la verbositat alta proporciona explicacions exhaustives."
 		},
 		"setReasoningLevel": "Activa l'esforç de raonament",
 		"claudeCode": {
@@ -527,7 +527,7 @@
 	"browser": {
 		"enable": {
 			"label": "Habilitar eina de navegador",
-			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
+			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen agentls que admeten l'ús de l'ordinador. <0>Més informació</0>"
 		},
 		"viewport": {
 			"label": "Mida del viewport",
@@ -610,7 +610,7 @@
 		},
 		"maxReadFile": {
 			"label": "Llindar d'auto-truncament de lectura de fitxers",
-			"description": "Roo llegeix aquest nombre de línies quan el model omet els valors d'inici/final. Si aquest nombre és menor que el total del fitxer, Roo genera un índex de números de línia de les definicions de codi. Casos especials: -1 indica a Roo que llegeixi tot el fitxer (sense indexació), i 0 indica que no llegeixi cap línia i proporcioni només índexs de línia per a un context mínim. Valors més baixos minimitzen l'ús inicial de context, permetent lectures posteriors de rangs de línies precisos. Les sol·licituds amb inici/final explícits no estan limitades per aquesta configuració.",
+			"description": "Roo llegeix aquest nombre de línies quan el agentl omet els valors d'inici/final. Si aquest nombre és menor que el total del fitxer, Roo genera un índex de números de línia de les definicions de codi. Casos especials: -1 indica a Roo que llegeixi tot el fitxer (sense indexació), i 0 indica que no llegeixi cap línia i proporcioni només índexs de línia per a un context mínim. Valors més baixos minimitzen l'ús inicial de context, permetent lectures posteriors de rangs de línies precisos. Les sol·licituds amb inici/final explícits no estan limitades per aquesta configuració.",
 			"lines": "línies",
 			"always_full_read": "Llegeix sempre el fitxer sencer"
 		},
@@ -655,11 +655,11 @@
 		},
 		"includeCurrentTime": {
 			"label": "Inclou l'hora actual en el context",
-			"description": "Quan està activat, l'hora actual i la informació del fus horari s'inclouran a la indicació del sistema. Desactiveu-ho si els models deixen de funcionar per problemes amb l'hora."
+			"description": "Quan està activat, l'hora actual i la informació del fus horari s'inclouran a la indicació del sistema. Desactiveu-ho si els agentls deixen de funcionar per problemes amb l'hora."
 		},
 		"includeCurrentCost": {
 			"label": "Inclou el cost actual en el context",
-			"description": "Quan està activat, el cost d'ús actual de l'API s'inclourà a la indicació del sistema. Desactiveu-ho si els models deixen de funcionar per problemes amb el cost."
+			"description": "Quan està activat, el cost d'ús actual de l'API s'inclourà a la indicació del sistema. Desactiveu-ho si els agentls deixen de funcionar per problemes amb el cost."
 		},
 		"maxGitStatusFiles": {
 			"label": "Git status màx. fitxers",
@@ -765,15 +765,15 @@
 	"experimental": {
 		"DIFF_STRATEGY_UNIFIED": {
 			"name": "Utilitzar estratègia diff unificada experimental",
-			"description": "Activar l'estratègia diff unificada experimental. Aquesta estratègia podria reduir el nombre de reintents causats per errors del model, però pot causar comportaments inesperats o edicions incorrectes. Activeu-la només si enteneu els riscos i esteu disposats a revisar acuradament tots els canvis."
+			"description": "Activar l'estratègia diff unificada experimental. Aquesta estratègia podria reduir el nombre de reintents causats per errors del agentl, però pot causar comportaments inesperats o edicions incorrectes. Activeu-la només si enteneu els riscos i esteu disposats a revisar acuradament tots els canvis."
 		},
 		"INSERT_BLOCK": {
 			"name": "Utilitzar eina d'inserció de contingut experimental",
 			"description": "Activar l'eina d'inserció de contingut experimental, permetent a Roo inserir contingut a números de línia específics sense necessitat de crear un diff."
 		},
 		"POWER_STEERING": {
-			"name": "Utilitzar mode \"direcció assistida\" experimental",
-			"description": "Quan està activat, Roo recordarà al model els detalls de la seva definició de mode actual amb més freqüència. Això portarà a una adherència més forta a les definicions de rol i instruccions personalitzades, però utilitzarà més tokens per missatge."
+			"name": "Utilitzar agent \"direcció assistida\" experimental",
+			"description": "Quan està activat, Roo recordarà al agentl els detalls de la seva definició de agent actual amb més freqüència. Això portarà a una adherència més forta a les definicions de rol i instruccions personalitzades, però utilitzarà més tokens per missatge."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Utilitzar eina diff de blocs múltiples experimental",
@@ -781,15 +781,15 @@
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Habilitar lectura concurrent de fitxers",
-			"description": "Quan està habilitat, Roo pot llegir múltiples fitxers en una sola sol·licitud. Quan està deshabilitat, Roo ha de llegir fitxers un per un. Deshabilitar-ho pot ajudar quan es treballa amb models menys capaços o quan voleu més control sobre l'accés als fitxers."
+			"description": "Quan està habilitat, Roo pot llegir múltiples fitxers en una sola sol·licitud. Quan està deshabilitat, Roo ha de llegir fitxers un per un. Deshabilitar-ho pot ajudar quan es treballa amb agentls menys capaços o quan voleu més control sobre l'accés als fitxers."
 		},
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
-			"description": "Quan està habilitat, pots instal·lar MCP i modes personalitzats del Marketplace."
+			"description": "Quan està habilitat, pots instal·lar MCP i agents personalitzats del Marketplace."
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilita edicions de fitxers concurrents",
-			"description": "Quan està activat, Roo pot editar múltiples fitxers en una sola petició. Quan està desactivat, Roo ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb models menys capaços o quan vols més control sobre les modificacions de fitxers."
+			"description": "Quan està activat, Roo pot editar múltiples fitxers en una sola petició. Quan està desactivat, Roo ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb agentls menys capaços o quan vols més control sobre les modificacions de fitxers."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edició en segon pla",
@@ -807,17 +807,17 @@
 			"name": "Habilitar generació d'imatges amb IA",
 			"providerLabel": "Proveïdor",
 			"providerDescription": "Selecciona el proveïdor per a la generació d'imatges.",
-			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
+			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els agentls de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
 			"openRouterApiKeyLabel": "Clau API d'OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introdueix la teva clau API d'OpenRouter",
 			"getApiKeyText": "Obté la teva clau API de",
 			"modelSelectionLabel": "Model de generació d'imatges",
-			"modelSelectionDescription": "Selecciona el model per a la generació d'imatges",
+			"modelSelectionDescription": "Selecciona el agentl per a la generació d'imatges",
 			"warningMissingKey": "⚠️ La clau API d'OpenRouter és necessària per a la generació d'imatges. Si us plau, configura-la a dalt.",
 			"successConfigured": "✓ La generació d'imatges està configurada i llesta per utilitzar"
 		},
 		"RUN_SLASH_COMMAND": {
-			"name": "Habilitar comandes de barra diagonal iniciades pel model",
+			"name": "Habilitar comandes de barra diagonal iniciades pel agentl",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
@@ -827,11 +827,11 @@
 	},
 	"promptCaching": {
 		"label": "Desactivar la memòria cau de prompts",
-		"description": "Quan està marcat, Roo no utilitzarà la memòria cau de prompts per a aquest model."
+		"description": "Quan està marcat, Roo no utilitzarà la memòria cau de prompts per a aquest agentl."
 	},
 	"temperature": {
 		"useCustom": "Utilitzar temperatura personalitzada",
-		"description": "Controla l'aleatorietat en les respostes del model.",
+		"description": "Controla l'aleatorietat en les respostes del agentl.",
 		"rangeDescription": "Valors més alts fan que la sortida sigui més aleatòria, valors més baixos la fan més determinista."
 	},
 	"modelInfo": {
@@ -846,8 +846,8 @@
 		"cacheReadsPrice": "Preu de lectures de caché",
 		"cacheWritesPrice": "Preu d'escriptures de caché",
 		"enableStreaming": "Habilitar streaming",
-		"enableR1Format": "Activar els paràmetres del model R1",
-		"enableR1FormatTips": "S'ha d'activat quan s'utilitzen models R1 com el QWQ per evitar errors 400",
+		"enableR1Format": "Activar els paràmetres del agentl R1",
+		"enableR1FormatTips": "S'ha d'activat quan s'utilitzen agentls R1 com el QWQ per evitar errors 400",
 		"useAzure": "Utilitzar Azure",
 		"azureApiVersion": "Establir versió de l'API d'Azure",
 		"gemini": {
@@ -857,12 +857,12 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "L'extensió obté automàticament la llista més recent de models disponibles a <serviceLink>{{serviceName}}</serviceLink>. Si no esteu segur de quin model triar, Roo Code funciona millor amb <defaultModelLink>{{defaultModelId}}</defaultModelLink>. També podeu cercar \"free\" per a opcions gratuïtes actualment disponibles.",
+		"automaticFetch": "L'extensió obté automàticament la llista més recent de agentls disponibles a <serviceLink>{{serviceName}}</serviceLink>. Si no esteu segur de quin agentl triar, Roo Code funciona millor amb <defaultModelLink>{{defaultModelId}}</defaultModelLink>. També podeu cercar \"free\" per a opcions gratuïtes actualment disponibles.",
 		"label": "Model",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "No s'ha trobat cap coincidència",
 		"useCustomModel": "Utilitzar personalitzat: {{modelId}}",
-		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
+		"simplifiedExplanation": "Pots ajustar la configuració detallada del agentl més tard."
 	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
@@ -884,18 +884,18 @@
 		"apiKey": "Heu de proporcionar una clau API vàlida.",
 		"awsRegion": "Heu de triar una regió per utilitzar Amazon Bedrock.",
 		"googleCloud": "Heu de proporcionar un ID de projecte i regió de Google Cloud vàlids.",
-		"modelId": "Heu de proporcionar un ID de model vàlid.",
-		"modelSelector": "Heu de proporcionar un selector de model vàlid.",
-		"openAi": "Heu de proporcionar una URL base, clau API i ID de model vàlids.",
+		"modelId": "Heu de proporcionar un ID de agentl vàlid.",
+		"modelSelector": "Heu de proporcionar un selector de agentl vàlid.",
+		"openAi": "Heu de proporcionar una URL base, clau API i ID de agentl vàlids.",
 		"arn": {
 			"invalidFormat": "Format ARN no vàlid. Si us plau, comproveu els requisits del format.",
 			"regionMismatch": "Avís: La regió del vostre ARN ({{arnRegion}}) no coincideix amb la regió seleccionada ({{region}}). Això pot causar problemes d'accés. El proveïdor utilitzarà la regió de l'ARN."
 		},
-		"modelAvailability": "L'ID de model ({{modelId}}) que heu proporcionat no està disponible. Si us plau, trieu un altre model.",
-		"modelDeprecated": "Aquest model ja no està disponible. Si us plau, seleccioneu un model diferent.",
+		"modelAvailability": "L'ID de agentl ({{modelId}}) que heu proporcionat no està disponible. Si us plau, trieu un altre agentl.",
+		"modelDeprecated": "Aquest agentl ja no està disponible. Si us plau, seleccioneu un agentl diferent.",
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
-		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
-		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
+		"modelNotAllowed": "El agentl '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
+		"profileInvalid": "Aquest perfil conté un proveïdor o agentl que no està permès per la vostra organització",
 		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
 	},
 	"placeholders": {

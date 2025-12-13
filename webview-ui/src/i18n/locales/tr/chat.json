@@ -96,7 +96,7 @@
 			"description": "Göreve odaklanan ve sonuç veren özel kişilikler."
 		},
 		"modelAgnostic": {
-			"title": "Kendi modelinizi getirin",
+			"title": "Kendi agentlinizi getirin",
 			"description": "Kendi sağlayıcı anahtarınızı kullanın veya hatta yerel çıkarım yapın — ek ücret yok, kilitlenme yok, kısıtlama yok"
 		}
 	},
@@ -238,7 +238,7 @@
 		"wantsToUseTool": "Roo {{serverName}} MCP sunucusunda bir araç kullanmak istiyor",
 		"wantsToAccessResource": "Roo {{serverName}} MCP sunucusundaki bir kaynağa erişmek istiyor"
 	},
-	"modes": {
+	"agents": {
 		"wantsToSwitch": "Roo <code>{{mode}}</code> moduna geçmek istiyor",
 		"wantsToSwitchWithReason": "Roo <code>{{mode}}</code> moduna geçmek istiyor çünkü: {{reason}}",
 		"didSwitch": "Roo <code>{{mode}}</code> moduna geçti",
@@ -310,8 +310,8 @@
 		"title": "Roo Code {{version}} Yayınlandı",
 		"support": "<githubLink>GitHub</githubLink>'da yıldız vererek Roo Code'u destekle.",
 		"stealthModel": {
-			"feature": "<bold>Sınırlı süre ÜCRETSİZ gizli model</bold> - Code Supernova: Artık <bold>1M token bağlam penceresi</bold> ile yükseltildi! Görüntü girişlerini destekleyen çok amaçlı acentik kodlama modeli, Roo Code Cloud üzerinden kullanılabilir.",
-			"note": "(Not: istemler ve tamamlamalar model yaratıcısı tarafından kaydedilir ve modeli geliştirmek için kullanılır)",
+			"feature": "<bold>Sınırlı süre ÜCRETSİZ gizli agentl</bold> - Code Supernova: Artık <bold>1M token bağlam penceresi</bold> ile yükseltildi! Görüntü girişlerini destekleyen çok amaçlı acentik kodlama agentli, Roo Code Cloud üzerinden kullanılabilir.",
+			"note": "(Not: istemler ve tamamlamalar agentl yaratıcısı tarafından kaydedilir ve agentli geliştirmek için kullanılır)",
 			"connectButton": "Roo Code Cloud'a bağlan",
 			"selectModel": "Başlamak için Ayarlar'da Roo Code Cloud sağlayıcısından <code>roo/code-supernova</code>'yı seçin.",
 			"goToSettingsButton": "Ayarlar'a Git"

@@ -57,7 +57,7 @@ describe("mode-validator", () => {
 				const customModes: ModeConfig[] = [
 					{
 						slug: "custom-mode",
-						name: "Custom Mode",
+						name: "Custom Agent",
 						roleDefinition: "Custom role",
 						groups: ["read", "edit"] as const,
 					},
@@ -73,7 +73,7 @@ describe("mode-validator", () => {
 				const customModes: ModeConfig[] = [
 					{
 						slug: codeMode,
-						name: "Custom Code Mode",
+						name: "Custom Code Agent",
 						roleDefinition: "Custom role",
 						groups: ["read"] as const,
 					},
@@ -88,7 +88,7 @@ describe("mode-validator", () => {
 				const customModes: ModeConfig[] = [
 					{
 						slug: "custom-mode",
-						name: "Custom Mode",
+						name: "Custom Agent",
 						roleDefinition: "Custom role",
 						groups: ["edit"] as const,
 					},
@@ -114,7 +114,7 @@ describe("mode-validator", () => {
 				const customModes: ModeConfig[] = [
 					{
 						slug: "no-mcp-mode",
-						name: "No MCP Mode",
+						name: "No MCP Agent",
 						roleDefinition: "Custom role",
 						groups: ["read", "edit"] as const,
 					},
@@ -128,7 +128,7 @@ describe("mode-validator", () => {
 				const customModes: ModeConfig[] = [
 					{
 						slug: "custom-mcp-mode",
-						name: "Custom MCP Mode",
+						name: "Custom MCP Agent",
 						roleDefinition: "Custom role",
 						groups: ["read", "mcp"] as const,
 					},

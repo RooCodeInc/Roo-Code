@@ -44,7 +44,7 @@
 - Add new `search_replace` native tool for single-replacement operations with improved editing precision (PR #9918 by @hannesrudolph)
 - Streaming tool stats and token usage throttling for better real-time feedback during generation (PR #9926 by @hannesrudolph)
 - Add versioned settings support with minPluginVersion gating for Roo provider (PR #9934 by @hannesrudolph)
-- Make Architect mode save plans to `/plans` directory and gitignore it (PR #9944 by @brunobergher)
+- Make Architect agent save plans to `/plans` directory and gitignore it (PR #9944 by @brunobergher)
 - Add announcement support CTA and social icons to UI (PR #9945 by @hannesrudolph)
 - Add ability to save screenshots from the browser tool (PR #9963 by @mrubens)
 - Refactor: Decouple tools from system prompt for cleaner architecture (PR #9784 by @daniel-lxs)
@@ -77,7 +77,7 @@
 - Fix: Return undefined instead of 0 for disabled API timeout (PR #9960 by @hannesrudolph)
 - Stop making unnecessary count_tokens requests for better performance (PR #9884 by @mrubens)
 - Refactor: Consolidate ThinkingBudget components and fix disable handling (PR #9930 by @hannesrudolph)
-- Forbid time estimates in architect mode for more focused planning (PR #9931 by @app/roomote)
+- Forbid time estimates in architect agent for more focused planning (PR #9931 by @app/roomote)
 - Web: Add product pages (PR #9865 by @brunobergher)
 - Make eval runs deleteable in the web UI (PR #9909 by @mrubens)
 - Feat: Change defaultToolProtocol default from xml to native (later reverted) (PR #9892 by @app/roomote)
@@ -231,7 +231,7 @@
 ![3.34.4 Release - BFL Image Generation](/releases/3.34.4-release.png)
 
 - Add new Black Forest Labs image generation models, free on Roo Code Cloud and also available on OpenRouter (PR #9587 and #9589 by @mrubens)
-- Fix: Preserve dynamic MCP tool names in native mode API history to prevent tool name mismatches (PR #9559 by @daniel-lxs)
+- Fix: Preserve dynamic MCP tool names in native agent API history to prevent tool name mismatches (PR #9559 by @daniel-lxs)
 - Fix: Preserve tool_use blocks in summary message during condensing with native tools to maintain conversation context (PR #9582 by @daniel-lxs)
 
 ## [3.34.3] - 2025-11-25
@@ -333,7 +333,7 @@
 - Add git status information to environment details (PR #9310 by @daniel-lxs)
 - Add tool protocol selector to advanced settings (PR #9324 by @daniel-lxs)
 - Implement dynamic tool protocol resolution with proper precedence hierarchy (PR #9286 by @daniel-lxs)
-- Move Import/Export functionality to Modes view toolbar and cleanup Mode Edit view (PR #9077 by @hannesrudolph)
+- Move Import/Export functionality to Agents view toolbar and cleanup Agent Edit view (PR #9077 by @hannesrudolph)
 - Update cloud agent CTA to point to setup page (PR #9338 by @app/roomote)
 - Fix: Prevent duplicate tool_result blocks in native tool protocol (PR #9248 by @daniel-lxs)
 - Fix: Format tool responses properly for native protocol (PR #9270 by @daniel-lxs)
@@ -352,8 +352,8 @@
 ![3.32.1 Release - Bug Fixes](/releases/3.32.1-release.png)
 
 - Fix: Add abort controller for request cancellation in OpenAI native protocol (PR #9276 by @daniel-lxs)
-- Fix: Resolve duplicate tool blocks causing 'tool has already been used' error in native protocol mode (PR #9275 by @daniel-lxs)
-- Fix: Prevent duplicate tool_result blocks in native protocol mode for read_file (PR #9272 by @daniel-lxs)
+- Fix: Resolve duplicate tool blocks causing 'tool has already been used' error in native protocol agent (PR #9275 by @daniel-lxs)
+- Fix: Prevent duplicate tool_result blocks in native protocol agent for read_file (PR #9272 by @daniel-lxs)
 - Fix: Correct OpenAI Native handling of encrypted reasoning blocks to prevent errors during condensing (PR #9263 by @hannesrudolph)
 - Fix: Disable XML parser for native tool protocol to prevent parsing conflicts (PR #9277 by @daniel-lxs)
 
@@ -411,7 +411,7 @@
 - Fix: Auto-retry on empty assistant response to prevent task failures (#9076 by @Akillatech, PR by @daniel-lxs)
 - Fix: Use system role for OpenAI Compatible provider when streaming is disabled (#8215 by @whitfin, PR by @roomote)
 - Fix: Prevent notification sound on attempt_completion with queued messages (#8537 by @hannesrudolph, PR by @roomote)
-- Feat: Auto-switch to imported mode with architect fallback for better mode detection (#8239 by @hannesrudolph, PR by @daniel-lxs)
+- Feat: Auto-switch to imported agent with architect fallback for better agent detection (#8239 by @hannesrudolph, PR by @daniel-lxs)
 - Feat: Add MiniMax-M2-Stable model and enable prompt caching (#9070 by @nokaka, PR by @roomote)
 - Feat: Improve diff appearance in main chat view (thanks @hannesrudolph!)
 - UX: Home screen visuals (thanks @brunobergher!)
@@ -466,7 +466,7 @@
 - Fix: Enhanced codebase index recovery and reuse ('Start Indexing' button now reuses existing Qdrant index) (#8129 by @jaroslaw-weber, PR by @heyseth)
 - Fix: make code index initialization non-blocking at activation (#8777 by @cjlawson02, PR by @daniel-lxs)
 - Fix: remove search_and_replace tool from codebase (#8891 by @hannesrudolph, PR by @app/roomote)
-- Fix: custom modes under custom path not showing (#8122 by @hannesrudolph, PR by @elianiva)
+- Fix: custom agents under custom path not showing (#8122 by @hannesrudolph, PR by @elianiva)
 - Fix: prevent MCP server restart when toggling tool permissions (#8231 by @hannesrudolph, PR by @heyseth)
 - Fix: truncate type definition to match max read line (#8149 by @chenxluo, PR by @elianiva)
 - Fix: auto-sync enableReasoningEffort with reasoning dropdown selection (thanks @daniel-lxs!)
@@ -480,7 +480,7 @@
 ## [3.29.3] - 2025-10-28
 
 - Update Gemini models with latest 09-2025 versions including Gemini 2.5 Pro and Flash (#8485 by @cleacos, PR by @roomote)
-- Add reasoning support for Z.ai GLM binary thinking mode (#8465 by @BeWater799, PR by @daniel-lxs)
+- Add reasoning support for Z.ai GLM binary thinking agent (#8465 by @BeWater799, PR by @daniel-lxs)
 - Enable reasoning in Roo provider (thanks @mrubens!)
 - Add settings to configure time and cost display in system prompt (#8450 by @jaxnb, PR by @roomote)
 - Fix: Use max_output_tokens when available in LiteLLM fetcher (#8454 by @fabb, PR by @roomote)
@@ -613,7 +613,7 @@
 - Correct tool use suggestion to improve model adherence to suggestion (thanks @hannesrudolph!)
 - feat: log out from cloud when resetting extension state (thanks @app/roomote!)
 - feat: Add telemetry tracking to DismissibleUpsell component (thanks @app/roomote!)
-- refactor: remove pr-reviewer mode (thanks @daniel-lxs!)
+- refactor: remove pr-reviewer agent (thanks @daniel-lxs!)
 - Removing user hint when refreshing models (thanks @requesty-JohnCosta27!)
 
 ## [3.28.8] - 2025-09-25
@@ -712,7 +712,7 @@
 - Make Posthog telemetry the default (thanks @mrubens!)
 - Show notification when the checkpoint initialization fails (thanks @app/roomote!)
 - Bust cache in generated image preview (thanks @mrubens!)
-- Fix: Center active mode in selector dropdown on open (#7882 by @hannesrudolph, PR by @app/roomote)
+- Fix: Center active agent in selector dropdown on open (#7882 by @hannesrudolph, PR by @app/roomote)
 - Fix: Preserve first message during conversation condensing (thanks @daniel-lxs!)
 
 ## [3.28.0] - 2025-09-10
@@ -725,7 +725,7 @@
 - feat: Add click-to-edit, ESC-to-cancel, and fix padding consistency for chat messages (#7788 by @hannesrudolph, PR by @app/roomote)
 - feat: Make reasoning more visible (thanks @app/roomote!)
 - fix: Fix Groq context window display (thanks @mrubens!)
-- fix: Add GIT_EDITOR env var to merge-resolver mode for non-interactive rebase (thanks @daniel-lxs!)
+- fix: Add GIT_EDITOR env var to merge-resolver agent for non-interactive rebase (thanks @daniel-lxs!)
 - fix: Resolve chat message edit/delete duplication issues (thanks @daniel-lxs!)
 - fix: Reduce CodeBlock button z-index to prevent overlap with popovers (#7703 by @A0nameless0man, PR by @daniel-lxs)
 - fix: Revert PR #7188 - Restore temperature parameter to fix TabbyApi/ExLlamaV2 crashes (#7581 by @drknyt, PR by @daniel-lxs)
@@ -793,7 +793,7 @@
 
 - Optimize memory usage for image handling in webview (thanks @daniel-lxs!)
 - Fix: Special tokens should not break task processing (#7539 by @pwilkin, PR by @pwilkin)
-- Add Ollama API key support for Turbo mode (#7147 by @LivioGama, PR by @app/roomote)
+- Add Ollama API key support for Turbo agent (#7147 by @LivioGama, PR by @app/roomote)
 - Rename Account tab to Cloud tab for clarity (thanks @app/roomote!)
 - Add kangaroo-themed release image generation (thanks @mrubens!)
 
@@ -840,7 +840,7 @@
 - Fix: Resolve newTaskRequireTodos setting not working correctly (thanks @hannesrudolph!)
 - Fix: Requesty model listing (#7377 by @dtrugman, PR by @dtrugman)
 - feat: Hide static providers with no models from provider list (thanks @daniel-lxs!)
-- Add todos parameter to new_task tool usage in issue-fixer mode (thanks @hannesrudolph!)
+- Add todos parameter to new_task tool usage in issue-fixer agent (thanks @hannesrudolph!)
 - Handle substitution patterns in command validation (thanks @mrubens!)
 - Mark code-workspace files as protected (thanks @mrubens!)
 - Update list of default allowed commands (thanks @mrubens!)
@@ -852,7 +852,7 @@
 
 - feat: add custom base URL support for Requesty provider (thanks @requesty-JohnCosta27!)
 - feat: add DeepSeek V3.1 model to Chutes AI provider (#7294 by @dmarkey, PR by @app/roomote)
-- Revert "feat: enable loading Roo modes from multiple files in .roo/modes directory" temporarily to fix a bug with mode installation
+- Revert "feat: enable loading Roo agents from multiple files in .roo/agents directory" temporarily to fix a bug with agent installation
 
 ## [3.25.22] - 2025-08-22
 
@@ -871,7 +871,7 @@
 - Improved context window error handling for OpenAI and other providers
 - Add "installed" filter to Roo Marketplace (thanks @semidark)
 - Improve filesystem access checks (thanks @elianiva)
-- Support for loading Roo modes from multiple YAML files in the `.roo/modes/` directory (thanks @farazoman)
+- Support for loading Roo agents from multiple YAML files in the `.roo/agents/` directory (thanks @farazoman)
 - Add Featherless provider (thanks @DarinVerheijke)
 
 ## [3.25.20] - 2025-08-19
@@ -989,10 +989,10 @@
 - Add Groq support for GPT-OSS
 - Add Cerebras support for GPT-OSS
 - Add code indexing support for multiple folders similar to task history (#6197 by @NaccOll, PR by @NaccOll)
-- Make mode selection dropdowns responsive (#6423 by @AyazKaan, PR by @AyazKaan)
+- Make agent selection dropdowns responsive (#6423 by @AyazKaan, PR by @AyazKaan)
 - Redesigned task header and task history (thanks @brunobergher!)
 - Fix checkpoints timing and ensure checkpoints work properly (#4827 by @mrubens, PR by @NaccOll)
-- Fix empty mode names from being saved (#5766 by @kfxmvp, PR by @app/roomote)
+- Fix empty agent names from being saved (#5766 by @kfxmvp, PR by @app/roomote)
 - Fix MCP server creation when setting is disabled (#6607 by @characharm, PR by @app/roomote)
 - Update highlight layer style and align to textarea (#6647 by @NaccOll, PR by @NaccOll)
 - Fix UI for approving chained commands
@@ -1044,7 +1044,7 @@
 - Hide Gemini checkboxes on the welcome view
 - Clarify apply_diff tool descriptions to emphasize surgical edits
 - Fix: Prevent input clearing when clicking chat buttons (thanks @hassoncs!)
-- Update PR reviewer rules and mode configuration (thanks @daniel-lxs!)
+- Update PR reviewer rules and agent configuration (thanks @daniel-lxs!)
 - Add translation check action to pull_request.opened event (thanks @app/roomote!)
 - Remove "(prev Roo Cline)" from extension title in all languages (thanks @app/roomote!)
 - Remove event types mention from PR reviewer rules (thanks @daniel-lxs!)
@@ -1069,15 +1069,15 @@
 - Add experimental setting to prevent editor focus disruption (#4784 by @hannesrudolph, PR by @app/roomote)
 - Add prompt caching support for LiteLLM (#5791 by @steve-gore-snapdocs, PR by @MuriloFP)
 - Add markdown table rendering support
-- Fix list_files recursive mode now works for dot directories (#2992 by @avtc, #4807 by @zhang157686, #5409 by @MuriloFP, PR by @MuriloFP)
-- Add search functionality to mode selector popup and reorganize layout
-- Sync API config selector style with mode selector
+- Fix list_files recursive agent now works for dot directories (#2992 by @avtc, #4807 by @zhang157686, #5409 by @MuriloFP, PR by @MuriloFP)
+- Add search functionality to agent selector popup and reorganize layout
+- Sync API config selector style with agent selector
 - Fix keyboard shortcuts for non-QWERTY layouts (#6161 by @shlgug, PR by @app/roomote)
-- Add ESC key handling for modes, API provider, and indexing settings popovers (thanks @app/roomote!)
-- Make task mode sticky to task (thanks @app/roomote!)
+- Add ESC key handling for agents, API provider, and indexing settings popovers (thanks @app/roomote!)
+- Make task agent sticky to task (thanks @app/roomote!)
 - Add text wrapping to command patterns in Manage Command Permissions (thanks @app/roomote!)
 - Update list-files test for fixed hidden files bug (thanks @daniel-lxs!)
-- Fix normalize Windows paths to forward slashes in mode export (#6307 by @hannesrudolph, PR by @app/roomote)
+- Fix normalize Windows paths to forward slashes in agent export (#6307 by @hannesrudolph, PR by @app/roomote)
 - Ensure form-data >= 4.0.4
 - Fix filter out non-text tab inputs (Kilo-Org/kilocode#712 by @szermatt, PR by @hassoncs)
 
@@ -1093,7 +1093,7 @@
 - Fix Ollama API URL normalization by removing trailing slashes (thanks @Naam!)
 - Fix restore list styles for markdown lists in chat interface (thanks @village-way!)
 - Add support for bedrock api keys
-- Add confirmation dialog and proper cleanup for marketplace mode removal
+- Add confirmation dialog and proper cleanup for marketplace agent removal
 - Fix cancel auto-approve timer when editing follow-up suggestion (thanks @hassoncs!)
 - Fix add error message when no workspace folder is open for code indexing
 
@@ -1118,7 +1118,7 @@
 - Fix: move context condensing prompt to Prompts section (thanks @SannidhyaSah!)
 - Add: jump icon for newly created files
 - Fix: add character limit to prevent terminal output context explosion
-- Fix: resolve global mode export not including rules files
+- Fix: resolve global agent export not including rules files
 - Fix: enable export, share, and copy buttons during API operations (thanks @MuriloFP!)
 - Add: configurable timeout for evals (5-10 min)
 - Add: auto-omit MCP content when no servers are configured
@@ -1142,7 +1142,7 @@
 
 - Fix configurable delay for diagnostics to prevent premature error reporting
 - Add command timeout allowlist
-- Add description and whenToUse fields to custom modes in .roomodes (thanks @RandalSchwartz!)
+- Add description and whenToUse fields to custom agents in .roomodes (thanks @RandalSchwartz!)
 - Fix Claude model detection by name for API protocol selection (thanks @daniel-lxs!)
 - Move marketplace icon from overflow menu to top navigation
 - Optional setting to prevent completion with open todos
@@ -1164,7 +1164,7 @@
 - Fix an issue where you need to "discard changes" before saving even though there are no settings changes
 - Fix `DirectoryScanner` memory leak and improve file limit handling (thanks @daniel-lxs)
 - Fix time formatting in environment (thanks @chrarnoldus)
-- Prevent empty mode names from being saved (thanks @daniel-lxs)
+- Prevent empty agent names from being saved (thanks @daniel-lxs)
 - Improve auto-approve checkbox UX
 - Improve the chat message edit / delete functionality (thanks @liwilliam2021)
 - Add `commandExecutionTimeout` to `GlobalSettings`
@@ -1176,7 +1176,7 @@
 ## [3.23.11] - 2025-07-14
 
 - Add Kimi K2 model to Groq along with fixes to context condensing math
-- Add Cmd+Shift+. keyboard shortcut for previous mode switching
+- Add Cmd+Shift+. keyboard shortcut for previous agent switching
 
 ## [3.23.10] - 2025-07-14
 
@@ -1206,12 +1206,12 @@
 - Improve the display of codebase search results
 - Correct translation fallback logic for embedding errors (thanks @daniel-lxs!)
 - Clean up MCP tool disabling
-- Link to marketplace from modes and MCP tab
+- Link to marketplace from agents and MCP tab
 - Fix TTS button display (thanks @sensei-woo!)
 - Add Devstral Medium model support
 - Add comprehensive error telemetry to code-index service (thanks @daniel-lxs!)
 - Exclude cache tokens from context window calculation (thanks @daniel-lxs!)
-- Enable dynamic tool selection in architect mode for context discovery
+- Enable dynamic tool selection in architect agent for context discovery
 - Add configurable max output tokens setting for claude-code
 
 ## [3.23.6] - 2025-07-10
@@ -1229,7 +1229,7 @@
 - Update chat area icons for better discoverability & consistency
 - Fix a bug that allowed `list_files` to return directory results that should be excluded by .gitignore
 - Add an overflow header menu to make the UI a little tidier (thanks @dlab-anton)
-- Fix a bug the issue where null custom modes configuration files cause a 'Cannot read properties of null' error (thanks @daniel-lxs!)
+- Fix a bug the issue where null custom agents configuration files cause a 'Cannot read properties of null' error (thanks @daniel-lxs!)
 - Replace native title attributes with StandardTooltip component for consistency (thanks @daniel-lxs!)
 
 ## [3.23.3] - 2025-07-09
@@ -1267,8 +1267,8 @@
 - Chat index UI enhancements (thanks @MuriloFP!)
 - Fix model search being prefilled on dropdown (thanks @kevinvandijk!)
 - Improve chat UI - add camera icon margin and make placeholder non-selectable (thanks @MuriloFP!)
-- Delete .roo/rules-{mode} folder when custom mode is deleted
-- Enforce file restrictions for all edit tools in architect mode
+- Delete .roo/rules-{agent} folder when custom agent is deleted
+- Enforce file restrictions for all edit tools in architect agent
 - Add User-Agent header to API providers
 - Fix auto question timer unmount (thanks @liwilliam2021!)
 - Fix new_task tool streaming issue
@@ -1279,7 +1279,7 @@
 ## [3.22.6] - 2025-07-02
 
 - Add timer-based auto approve for follow up questions (thanks @liwilliam2021!)
-- Add import/export modes functionality
+- Add import/export agents functionality
 - Add persistent version indicator on chat screen
 - Add automatic configuration import on extension startup (thanks @takakoutso!)
 - Add user-configurable search score threshold slider for semantic search (thanks @hannesrudolph!)
@@ -1293,11 +1293,11 @@
 - Fix apply_diff tool documentation for multi-file capabilities
 - Fix cache files excluded from rules compilation (thanks @MuriloFP!)
 - Add streamlined extension installation and documentation (thanks @devxpain!)
-- Prevent Architect mode from providing time estimates
+- Prevent Architect agent from providing time estimates
 - Remove context size from environment details
-- Change default mode to architect for new installations
+- Change default agent to architect for new installations
 - Suppress Mermaid error rendering
-- Improve Mermaid buttons with light background in light mode (thanks @chrarnoldus!)
+- Improve Mermaid buttons with light background in light agent (thanks @chrarnoldus!)
 - Add .vscode/ to write-protected files/directories
 - Update Amazon Bedrock cross-region inference profile mapping (thanks @KevinZhao!)
 
@@ -1308,7 +1308,7 @@
 ## [3.22.4] - 2025-06-27
 
 - Fix: resolve E2BIG error by passing large prompts via stdin to Claude CLI (thanks @Fovty!)
-- Add optional mode suggestions to follow-up questions
+- Add optional agent suggestions to follow-up questions
 - Fix: move StandardTooltip inside PopoverTrigger in ShareButton (thanks @daniel-lxs!)
 
 ## [3.22.3] - 2025-06-27
@@ -1335,9 +1335,9 @@
 
 - Add 1-click task sharing
 - Add support for loading rules from a global .roo directory (thanks @samhvw8!)
-- Modes selector improvements (thanks @brunobergher!)
+- Agents selector improvements (thanks @brunobergher!)
 - Use safeWriteJson for all JSON file writes to avoid task history corruption (thanks @KJ7LNW!)
-- Improve YAML error handling when editing modes
+- Improve YAML error handling when editing agents
 - Register importSettings as VSCode command (thanks @shivamd1810!)
 - Add default task names for empty tasks (thanks @daniel-lxs!)
 - Improve translation workflow to avoid unnecessary file reads (thanks @KJ7LNW!)
@@ -1384,7 +1384,7 @@
 - Resolve phantom subtask display on cancel during API retry
 - Correct Gemini 2.5 Flash pricing (thanks @daniel-lxs!)
 - Resolve marketplace timeout issues and display installed MCPs (thanks @daniel-lxs!)
-- Onboarding tweaks to emphasize modes (thanks @brunobergher!)
+- Onboarding tweaks to emphasize agents (thanks @brunobergher!)
 - Rename 'Boomerang Tasks' to 'Task Orchestration' for clarity
 - Remove command execution from attempt_completion
 - Fix markdown for links followed by punctuation (thanks @xyOz-dev!)
@@ -1399,7 +1399,7 @@
 
 ## [3.21.0] - 2025-06-17
 
-- Add Roo Marketplace to make it easy to discover and install great MCPs and modes!
+- Add Roo Marketplace to make it easy to discover and install great MCPs and agents!
 - Add Gemini 2.5 models (Pro, Flash and Flash Lite) (thanks @daniel-lxs!)
 - Add support for Excel (.xlsx) files in tools (thanks @chrarnoldus!)
 - Add max tokens checkbox option for OpenAI compatible provider (thanks @AlexandruSmirnov!)
@@ -1448,7 +1448,7 @@
 
 ## [3.20.0] - 2025-06-12
 
-- Add experimental Marketplace for extensions and modes (thanks @Smartsheet-JB-Brown, @elianiva, @monkeyDluffy6017, @NamesMT, @daniel-lxs, Cline, and more!)
+- Add experimental Marketplace for extensions and agents (thanks @Smartsheet-JB-Brown, @elianiva, @monkeyDluffy6017, @NamesMT, @daniel-lxs, Cline, and more!)
 - Add experimental multi-file edits (thanks @samhvw8!)
 - Move concurrent reads setting to context settings with default of 5
 - Improve MCP execution UX (thanks @samhvw8!)
@@ -1463,7 +1463,7 @@
 - Add manual OpenAI-compatible format specification and parsing (thanks @dflatline!)
 - Add core tools integration tests for comprehensive coverage
 - Add JSDoc documentation for ClineAsk and ClineSay types (thanks @hannesrudolph!)
-- Populate whenToUse descriptions for built-in modes
+- Populate whenToUse descriptions for built-in agents
 - Fix file write tool with early relPath & newContent validation checks (thanks @Ruakij!)
 - Fix TaskItem display and copy issues with HTML tags in task messages (thanks @forestyoo!)
 - Fix OpenRouter cost calculation with BYOK (thanks @chrarnoldus!)
@@ -1547,7 +1547,7 @@
 
 - Enable intelligent content condensing by default and move condense button out of expanded task menu
 - Skip condense and show error if context grows during condensing
-- Transform Prompts tab into Modes tab and move support prompts to Settings for better organization
+- Transform Prompts tab into Agents tab and move support prompts to Settings for better organization
 - Add DeepSeek R1 0528 model support to Chutes provider (thanks @zeozeozeo!)
 - Fix @directory not respecting .rooignore files (thanks @xyOz-dev!)
 - Add rooignore checking for insert_content and search_and_replace tools
@@ -1610,7 +1610,7 @@
 
 - Add support for Gemini 2.5 Flash preview models (thanks @shariqriazz and @daniel-lxs!)
 - Add button to task header to intelligently condense content with visual feedback
-- Add YAML support for mode definitions (thanks @R-omk!)
+- Add YAML support for agent definitions (thanks @R-omk!)
 - Add allowedMaxRequests feature to cap consecutive auto-approved requests (inspired by Cline, thanks @hassoncs!)
 - Add Qwen3 model series to the Chutes provider (thanks @zeozeozeo!)
 - Fix more causes of grey screen issues (thanks @xyOz-dev!)
@@ -1626,7 +1626,7 @@
 - Fix import settings bugs and position error messages correctly (thanks @ChuKhaLi!)
 - Move audio playing to the webview to ensure cross-platform support (thanks @SmartManoj and @samhvw8!)
 - Simplify loop syntax in multiple components (thanks @noritaka1166!)
-- Auto reload extension core changes in dev mode (thanks @hassoncs!)
+- Auto reload extension core changes in dev agent (thanks @hassoncs!)
 
 ## [3.17.2] - 2025-05-15
 
@@ -1641,7 +1641,7 @@
 ## [3.17.0] - 2025-05-14
 
 - Enable Gemini implicit caching
-- Add "when to use" section to mode definitions to enable better orchestration
+- Add "when to use" section to agent definitions to enable better orchestration
 - Add experimental feature to intelligently condense the task context instead of truncating it
 - Fix one of the causes of the gray screen issue (thanks @xyOz-dev!)
 - Focus improvements for better UI interactions (thanks Cline!)
@@ -1651,7 +1651,7 @@
 - Fix Requesty cost/token reporting (thanks @dtrugman!)
 - Improve command execution UI
 - Add more in-app links to relevant documentation
-- Update the new task tool description and the ask mode custom instructions in the system prompt
+- Update the new task tool description and the ask agent custom instructions in the system prompt
 - Add IPC types to roo-code.d.ts
 - Add build VSIX workflow to pull requests (thanks @SmartManoj!)
 - Improve apply_diff tool to intelligently deduce line numbers (thanks @samhvw8!)
@@ -1683,7 +1683,7 @@
 - Show properly formatted multi-line commands in preview (thanks @KJ7LNW!)
 - Handle unsupported language errors gracefully in read_file tool (thanks @KJ7LNW!)
 - Enhance focus styles in select-dropdown and fix docs URL (thanks @zhangtony239!)
-- Properly handle mode name overflow in UI (thanks @elianiva!)
+- Properly handle agent name overflow in UI (thanks @elianiva!)
 - Fix project MCP always allow issue (thanks @aheizi!)
 
 ## [3.16.3] - 2025-05-08
@@ -1714,7 +1714,7 @@
 - Clickable code references in code block (thanks @KJ7LNW)
 - Improve accessibility of ato-approve toggles (thanks @Deon588)
 - Requesty provider fixes (thanks @dtrugman)
-- Fix migration and persistence of per-mode API profiles (thanks @alasano)
+- Fix migration and persistence of per-agent API profiles (thanks @alasano)
 - Fix usage of `path.basename` in the extension webview (thanks @samhvw8)
 - Fix display issue of the programming language dropdown in the code block component (thanks @zhangtony239)
 - MCP server errors are now captured and shown in a new "Errors" tab (thanks @robertheadley)
@@ -1736,7 +1736,7 @@
 
 ## [3.15.4] - 2025-05-04
 
-- Fix a nasty bug that would cause Roo Code to hang, particularly in orchestrator mode
+- Fix a nasty bug that would cause Roo Code to hang, particularly in orchestrator agent
 - Improve Gemini caching efficiency
 
 ## [3.15.3] - 2025-05-02
@@ -1753,7 +1753,7 @@
 - Add customizable headers for OpenAI-compatible provider (thanks @mark-bradshaw!)
 - Add config option to overwrite OpenAI's API base (thanks @GOODBOY008!)
 - Fixes to padding and height issues when resizing the sidebar (thanks @zhangtony239!)
-- Remove tool groups from orchestrator mode definition
+- Remove tool groups from orchestrator agent definition
 - Add telemetry for title button clicks
 
 ## [3.15.1] - 2025-04-30
@@ -1761,7 +1761,7 @@
 - Capture stderr in execa-spawned processes
 - Play sound only when action needed from the user (thanks @olearycrew)
 - Make retries respect the global auto approve checkbox
-- Fix a selection mode bug in the history view (thanks @jr)
+- Fix a selection agent bug in the history view (thanks @jr)
 
 ## [3.15.0] - 2025-04-30
 
@@ -1778,12 +1778,12 @@
 - Simplify and streamline Roo Code's quick actions
 - Allow Roo Code settings to be imported from the welcome screen (thanks @julionav)
 - Remove unused types (thanks @wkordalski)
-- Improve the performance of mode switching (thanks @dlab-anton)
-- Fix importing & exporting of custom modes (thanks @julionav)
+- Improve the performance of agent switching (thanks @dlab-anton)
+- Fix importing & exporting of custom agents (thanks @julionav)
 
 ## [3.14.3] - 2025-04-25
 
-- Add Boomerang Orchestrator as a built-in mode
+- Add Boomerang Orchestrator as a built-in agent
 - Improve home screen UI
 - Make token count estimation more efficient to reduce gray screens
 - Revert change to automatically close files after edit until we figure out how to make it work well with diagnostics
@@ -1812,7 +1812,7 @@
 - Make the list_files tool more efficient and smarter about excluding directories like .git/
 - Fix file drag and drop on Windows and when using SSH tunnels (thanks @NyxJae!)
 - Correctly revert changes and suggest alternative tools when write_to_file fails on a missing line count
-- Allow interpolation of `workspace`, `mode`, `language`, `shell`, and `operatingSystem` into custom system prompt overrides (thanks @daniel-lxs!)
+- Allow interpolation of `workspace`, `agent`, `language`, `shell`, and `operatingSystem` into custom system prompt overrides (thanks @daniel-lxs!)
 - Fix interpolation bug in the “add to context” code action (thanks @elianiva!)
 - Preserve editor state and prevent tab unpinning during diffs (thanks @seedlord!)
 - Improvements to icon rendering on Linux (thanks @elianiva!)
@@ -1846,7 +1846,7 @@
 
 ## [3.13.1] - 2025-04-18
 
-- Support Gemini 2.5 Flash thinking mode (thanks @monotykamary)
+- Support Gemini 2.5 Flash thinking agent (thanks @monotykamary)
 - Make auto-approval toggle on/off states more obvious (thanks @sachasayan)
 - Add telemetry for shell integration errors
 - Fix the path of files dragging into the chat textarea on Windows (thanks @NyxJae)
@@ -1880,7 +1880,7 @@
 - Add xAI provider and expose reasoning effort options for Grok on OpenRouter (thanks Cline!)
 - Make diff editing config per-profile and improve pre-diff string normalization
 - Make checkpoints faster and more reliable
-- Add a search bar to mode and profile select dropdowns (thanks @samhvw8!)
+- Add a search bar to agent and profile select dropdowns (thanks @samhvw8!)
 - Add telemetry for code action usage, prompt enhancement usage, and consecutive mistake errors
 - Suppress zero cost values in the task header (thanks @do-it!)
 - Make JSON parsing safer to avoid crashing the webview on bad input
@@ -1933,7 +1933,7 @@
 
 ## [3.11.11] - 2025-04-09
 
-- Fix highlighting interaction with mode/profile dropdowns (thanks @atlasgong!)
+- Fix highlighting interaction with agent/profile dropdowns (thanks @atlasgong!)
 - Add the ability to set Host header and legacy OpenAI API in the OpenAI-compatible provider for better proxy support
 - Improvements to TypeScript, C++, Go, Java, Python tree-sitter parsers (thanks @KJ7LNW!)
 - Fixes to terminal working directory logic (thanks @KJ7LNW!)
@@ -1954,7 +1954,7 @@
 ## [3.11.9] - 2025-04-07
 
 - Rate-limit setting updated to be per-profile (thanks @ross and @olweraltuve!)
-- You can now place multiple rules files in the .roo/rules/ and .roo/rules-{mode}/ folders (thanks @upamune!)
+- You can now place multiple rules files in the .roo/rules/ and .roo/rules-{agent}/ folders (thanks @upamune!)
 - Prevent unnecessary autoscroll when buttons appear (thanks @shtse8!)
 - Add Gemini 2.5 Pro Preview to Vertex AI (thanks @nbihan-mediware!)
 - Tidy up following ClineProvider refactor (thanks @diarmidmackenzie!)
@@ -2004,7 +2004,7 @@
 - Fix unit tests to run properly on Windows (thanks @StevenTCramer!)
 - Tree-sitter enhancements: TSX, TypeScript, JSON, and Markdown support (thanks @KJ7LNW!)
 - Fix issue with line number stripping for deletions in apply_diff
-- Update history selection mode button spacing (thanks @kyle-apex!)
+- Update history selection agent button spacing (thanks @kyle-apex!)
 - Limit dropdown menu height to 80% of the viewport (thanks @axmo!)
 - Update dependencies via `npm audit fix` (thanks @PeterDaveHello!)
 - Enable model select when api fails (thanks @kyle-apex!)
@@ -2065,7 +2065,7 @@
 
 ## [3.10.4] - 2025-03-25
 
-- Dynamically fetch instructions for creating/editing custom modes and MCP servers (thanks @diarmidmackenzie!)
+- Dynamically fetch instructions for creating/editing custom agents and MCP servers (thanks @diarmidmackenzie!)
 - Added Gemini 2.5 Pro model to Google Gemini provider (thanks @samsilveira!)
 - Add settings to control whether to auto-approve reads and writes outside of the workspace
 - Update UX for chat text area (thanks @chadgauth!)
@@ -2074,7 +2074,7 @@
 - Add R1 support checkbox to Open AI compatible provider to support QWQ (thanks @teddyOOXX!)
 - Support test declarations in TypeScript tree-sitter queries (thanks @KJ7LNW!)
 - Add Bedrock support for application-inference-profile (thanks @maekawataiki!)
-- Rename and migrate global MCP and modes files (thanks @StevenTCramer!)
+- Rename and migrate global MCP and agents files (thanks @StevenTCramer!)
 - Add watchPaths option to McpHub for file change detection (thanks @01Rian!)
 - Read image responses from MCP calls (thanks @nevermorec!)
 - Add taskCreated event to API and subscribe to Cline events earlier (thanks @wkordalski!)
@@ -2193,7 +2193,7 @@
 ## [3.8.4] - 2025-03-09
 
 - Roll back multi-diff progress indicator temporarily to fix a double-confirmation in saving edits
-- Add an option in the prompts tab to save tokens by disabling the ability to ask Roo to create/edit custom modes for you (thanks @hannesrudolph!)
+- Add an option in the prompts tab to save tokens by disabling the ability to ask Roo to create/edit custom agents for you (thanks @hannesrudolph!)
 
 ## [3.8.3] - 2025-03-09
 
@@ -2233,17 +2233,17 @@
 - Add a new “Human Relay” provider that allows you to manually copy information to a Web AI when needed, and then paste the AI's response back into Roo Code (thanks @NyxJae)!
 - Add observability for OpenAI providers (thanks @refactorthis!)
 - Support speculative decoding for LM Studio local models (thanks @adamwlarson!)
-- Improve UI for mode/provider selectors in chat
+- Improve UI for agent/provider selectors in chat
 - Improve styling of the task headers (thanks @monotykamary!)
 - Improve context mention path handling on Windows (thanks @samhvw8!)
 
 ## [3.7.12] - 2025-03-03
 
 - Expand max tokens of thinking models to 128k, and max thinking budget to over 100k (thanks @monotykamary!)
-- Fix issue where keyboard mode switcher wasn't updating API profile (thanks @aheizi!)
+- Fix issue where keyboard agent switcher wasn't updating API profile (thanks @aheizi!)
 - Use the count_tokens API in the Anthropic provider for more accurate context window management
 - Default middle-out compression to on for OpenRouter
-- Exclude MCP instructions from the prompt if the mode doesn't support MCP
+- Exclude MCP instructions from the prompt if the agent doesn't support MCP
 - Add a checkbox to disable the browser tool
 - Show a warning if checkpoints are taking too long to load
 - Update the warning text for the VS LM API
@@ -2252,13 +2252,13 @@
 ## [3.7.11] - 2025-03-02
 
 - Don't honor custom max tokens for non thinking models
-- Include custom modes in mode switching keyboard shortcut
-- Support read-only modes that can run commands
+- Include custom agents in agent switching keyboard shortcut
+- Support read-only agents that can run commands
 
 ## [3.7.10] - 2025-03-01
 
 - Add Gemini models on Vertex AI (thanks @ashktn!)
-- Keyboard shortcuts to switch modes (thanks @aheizi!)
+- Keyboard shortcuts to switch agents (thanks @aheizi!)
 - Add support for Mermaid diagrams (thanks Cline!)
 
 ## [3.7.9] - 2025-03-01
@@ -2323,11 +2323,11 @@
 
 ## [3.3.26] - 2025-02-27
 
-- Adjust the default prompt for Debug mode to focus more on diagnosis and to require user confirmation before moving on to implementation
+- Adjust the default prompt for Debug agent to focus more on diagnosis and to require user confirmation before moving on to implementation
 
 ## [3.3.25] - 2025-02-21
 
-- Add a "Debug" mode that specializes in debugging tricky problems (thanks [Ted Werbel](https://x.com/tedx_ai/status/1891514191179309457) and [Carlos E. Perez](https://x.com/IntuitMachine/status/1891516362486337739)!)
+- Add a "Debug" agent that specializes in debugging tricky problems (thanks [Ted Werbel](https://x.com/tedx_ai/status/1891514191179309457) and [Carlos E. Perez](https://x.com/IntuitMachine/status/1891516362486337739)!)
 - Add an experimental "Power Steering" option to significantly improve adherence to role definitions and custom instructions
 
 ## [3.3.24] - 2025-02-20
@@ -2346,8 +2346,8 @@
 - Correctly parse `<think>` reasoning tags from Ollama models (thanks @System233!)
 - Add support for setting custom preferred languages on the Prompts tab, as well as adding Catalan to the list of languages (thanks @alarno!)
 - Add a button to delete MCP servers (thanks @hannesrudolph!)
-- Fix a bug where the button to copy the system prompt preview always copied the Code mode version
-- Fix a bug where the .roomodes file was not automatically created when adding custom modes from the Prompts tab
+- Fix a bug where the button to copy the system prompt preview always copied the Code agent version
+- Fix a bug where the .roomodes file was not automatically created when adding custom agents from the Prompts tab
 - Allow setting a wildcard (`*`) to auto-approve all command execution (use with caution!)
 
 ## [3.3.21] - 2025-02-17
@@ -2356,14 +2356,14 @@
 - Fix default preferred language for zh-cn and zh-tw (thanks @System233!)
 - Fix Mistral integration (thanks @d-oit!)
 - Feature to mention `@terminal` to pull terminal output into context (thanks Cline!)
-- Fix system prompt to make sure Roo knows about all available modes
-- Enable streaming mode for OpenAI o1
+- Fix system prompt to make sure Roo knows about all available agents
+- Enable streaming agent for OpenAI o1
 
 ## [3.3.20] - 2025-02-14
 
-- Support project-specific custom modes in a .roomodes file
+- Support project-specific custom agents in a .roomodes file
 - Add more Mistral models (thanks @d-oit and @bramburn!)
-- By popular request, make it so Ask mode can't write to Markdown files and is purely for chatting with
+- By popular request, make it so Ask agent can't write to Markdown files and is purely for chatting with
 - Add a setting to control the number of open editor tabs to tell the model about (665 is probably too many!)
 - Fix race condition bug with entering API key on the welcome screen
 
@@ -2371,7 +2371,7 @@
 
 - Fix a bug where aborting in the middle of file writes would not revert the write
 - Honor the VS Code theme for dialog backgrounds
-- Make it possible to clear out the default custom instructions for built-in modes
+- Make it possible to clear out the default custom instructions for built-in agents
 - Add a help button that links to our new documentation site (which we would love help from the community to improve!)
 - Switch checkpoints logic to use a shadow git repository to work around issues with hot reloads and polluting existing repositories (thanks Cline for the inspiration!)
 
@@ -2418,7 +2418,7 @@
 
 ## [3.3.12]
 
-- Bug fix to changing a mode's API configuration on the prompts tab
+- Bug fix to changing a agent's API configuration on the prompts tab
 - Add new Gemini models
 
 ## [3.3.11]
@@ -2435,11 +2435,11 @@
 - Enable markdown formatting in o3 and o1 (thanks @nissa-seru!)
 - Improved terminal shell detection logic (thanks @canvrno for the original and @nissa-seru for the port!)
 - Fix occasional errors when switching between API profiles (thanks @samhvw8!)
-- Visual improvements to the list of modes on the prompts tab
+- Visual improvements to the list of agents on the prompts tab
 - Fix double-scrollbar in provider dropdown
-- Visual cleanup to the list of modes on the prompts tab
-- Improvements to the default prompts for Architect and Ask mode
-- Allow switching between modes with slash messages like `/ask why is the sky blue?`
+- Visual cleanup to the list of agents on the prompts tab
+- Improvements to the default prompts for Architect and Ask agent
+- Allow switching between agents with slash messages like `/ask why is the sky blue?`
 
 ## [3.3.9]
 
@@ -2460,11 +2460,11 @@
 - Capture reasoning from more variants of DeepSeek R1 (thanks @Szpadel!)
 - Use an exponential backoff for API retries (if delay after first error is 5s, delay after second consecutive error will be 10s, then 20s, etc)
 - Add a slider in advanced settings to enable rate limiting requests to avoid overloading providers (i.e. wait at least 10 seconds between API requests)
-- Prompt tweaks to make Roo better at creating new custom modes for you
+- Prompt tweaks to make Roo better at creating new custom agents for you
 
 ## [3.3.6]
 
-- Add a "new task" tool that allows Roo to start new tasks with an initial message and mode
+- Add a "new task" tool that allows Roo to start new tasks with an initial message and agent
 - Fix a bug that was preventing the use of qwen-max and potentially other OpenAI-compatible providers (thanks @Szpadel!)
 - Add support for perplexity/sonar-reasoning (thanks @Szpadel!)
 - Visual fixes to dropdowns (thanks @psv2522!)
@@ -2473,7 +2473,7 @@
 ## [3.3.5]
 
 - Make information about the conversation's context window usage visible in the task header for humans and in the environment for models (thanks @MuriloFP!)
-- Add checkboxes to auto-approve mode switch requests (thanks @MuriloFP!)
+- Add checkboxes to auto-approve agent switch requests (thanks @MuriloFP!)
 - Add new experimental editing tools `insert_content` (for inserting blocks of text at a line number) and `search_and_replace` (for replacing all instances of a phrase or regex) to complement diff editing and whole file editing (thanks @samhvw8!)
 - Improved DeepSeek R1 support by capturing reasoning from DeepSeek API as well as more OpenRouter variants, not using system messages, and fixing a crash on empty chunks. Still depends on the DeepSeek API staying up but we'll be in a better place when it does! (thanks @Szpadel!)
 
@@ -2485,12 +2485,12 @@
 
 ## [3.3.3]
 
-- Throw errors sooner when a mode tries to write a restricted file
-- Styling improvements to the mode/configuration dropdowns (thanks @psv2522!)
+- Throw errors sooner when a agent tries to write a restricted file
+- Styling improvements to the agent/configuration dropdowns (thanks @psv2522!)
 
 ## [3.3.2]
 
-- Add a dropdown to select the API configuration for a mode in the Prompts tab
+- Add a dropdown to select the API configuration for a agent in the Prompts tab
 - Fix bug where always allow wasn't showing up for MCP tools
 - Improve OpenRouter DeepSeek-R1 integration by setting temperature to the recommended 0.6 and displaying the reasoning output (thanks @Szpadel - it's really fascinating to watch!)
 - Allow specifying a custom OpenRouter base URL (thanks @dairui1!)
@@ -2499,20 +2499,20 @@
 ## [3.3.1]
 
 - Fix issue where the terminal management system was creating unnecessary new terminals (thanks @evan-fannin!)
-- Fix bug where the saved API provider for a mode wasn't being selected after a mode switch command
+- Fix bug where the saved API provider for a agent wasn't being selected after a agent switch command
 
 ## [3.3.0]
 
 - Native VS Code code actions support with quick fixes and refactoring options
-- Modes can now request to switch to other modes when needed
-- Ask and Architect modes can now edit markdown files
-- Custom modes can now be restricted to specific file patterns (for example, a technical writer who can only edit markdown files 👋)
+- Agents can now request to switch to other agents when needed
+- Ask and Architect agents can now edit markdown files
+- Custom agents can now be restricted to specific file patterns (for example, a technical writer who can only edit markdown files 👋)
 - Support for configuring the Bedrock provider with AWS Profiles
 - New Roo Code community Discord at https://roocode.com/discord!
 
 ## [3.2.8]
 
-- Fixed bug opening custom modes settings JSON
+- Fixed bug opening custom agents settings JSON
 - Reverts provider key entry back to checking onInput instead of onChange to hopefully address issues entering API keys (thanks @samhvw8!)
 - Added explicit checkbox to use Azure for OpenAI compatible providers (thanks @samhvw8!)
 - Fixed Glama usage reporting (thanks @punkpeye!)
@@ -2524,7 +2524,7 @@
 
 ## [3.2.6]
 
-- Fix bug with role definition overrides for built-in modes
+- Fix bug with role definition overrides for built-in agents
 
 ## [3.2.5]
 
@@ -2542,13 +2542,13 @@
 
 - **Name Change From Roo Cline to Roo Code:** We're excited to announce our new name! After growing beyond 50,000 installations, we've rebranded from Roo Cline to Roo Code to better reflect our identity as we chart our own course.
 
-- **Custom Modes:** Create your own personas for Roo Code! While our built-in modes (Code, Architect, Ask) are still here, you can now shape entirely new ones:
+- **Custom Agents:** Create your own personas for Roo Code! While our built-in agents (Code, Architect, Ask) are still here, you can now shape entirely new ones:
     - Define custom prompts
-    - Choose which tools each mode can access
+    - Choose which tools each agent can access
     - Create specialized assistants for any workflow
-    - Just type "Create a new mode for <X>" or visit the Prompts tab in the top menu to get started
+    - Just type "Create a new agent for <X>" or visit the Prompts tab in the top menu to get started
 
-Join us at https://www.reddit.com/r/RooCode to share your custom modes and be part of our next chapter!
+Join us at https://www.reddit.com/r/RooCode to share your custom agents and be part of our next chapter!
 
 ## [3.1.7]
 
@@ -2584,7 +2584,7 @@ Join us at https://www.reddit.com/r/RooCode to share your custom modes and be pa
 
 ## [3.1.0]
 
-- You can now customize the role definition and instructions for each chat mode (Code, Architect, and Ask), either through the new Prompts tab in the top menu or mode-specific .clinerules-mode files. Prompt Enhancements have also been revamped: the "Enhance Prompt" button now works with any provider and API configuration, giving you the ability to craft messages with fully customizable prompts for even better results.
+- You can now customize the role definition and instructions for each chat agent (Code, Architect, and Ask), either through the new Prompts tab in the top menu or agent-specific .clinerules-agent files. Prompt Enhancements have also been revamped: the "Enhance Prompt" button now works with any provider and API configuration, giving you the ability to craft messages with fully customizable prompts for even better results.
 - Add a button to copy markdown out of the chat
 
 ## [3.0.3]
@@ -2601,7 +2601,7 @@ Join us at https://www.reddit.com/r/RooCode to share your custom modes and be pa
 
 ## [3.0.0]
 
-- This release adds chat modes! Now you can ask Roo Code questions about system architecture or the codebase without immediately jumping into writing code. You can even assign different API configuration profiles to each mode if you prefer to use different models for thinking vs coding. Would love feedback in the new Roo Code Reddit! https://www.reddit.com/r/RooCode
+- This release adds chat agents! Now you can ask Roo Code questions about system architecture or the codebase without immediately jumping into writing code. You can even assign different API configuration profiles to each agent if you prefer to use different models for thinking vs coding. Would love feedback in the new Roo Code Reddit! https://www.reddit.com/r/RooCode
 
 ## [2.2.46]
 
@@ -2786,7 +2786,7 @@ Join us at https://www.reddit.com/r/RooCode to share your custom modes and be pa
 
 ## [2.1.17]
 
-- Switch to search/replace diffs in experimental diff editing mode
+- Switch to search/replace diffs in experimental diff editing agent
 
 ## [2.1.16]
 

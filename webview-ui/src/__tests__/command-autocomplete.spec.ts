@@ -146,7 +146,7 @@ describe("Command Autocomplete", () => {
 		it("should return both modes and commands for slash commands", () => {
 			const options = getContextMenuOptions("/", null, mockQueryItems, [], mockModes, mockCommands)
 
-			const modeOptions = options.filter((option) => option.type === ContextMenuOptionType.Mode)
+			const modeOptions = options.filter((option) => option.type === ContextMenuOptionType.Agent)
 			const commandOptions = options.filter((option) => option.type === ContextMenuOptionType.Command)
 
 			expect(modeOptions.length).toBe(2)
@@ -157,7 +157,7 @@ describe("Command Autocomplete", () => {
 			const options = getContextMenuOptions("/co", null, mockQueryItems, [], mockModes, mockCommands)
 
 			// Should match 'code' mode and possibly some commands (fuzzy search may match)
-			const modeOptions = options.filter((option) => option.type === ContextMenuOptionType.Mode)
+			const modeOptions = options.filter((option) => option.type === ContextMenuOptionType.Agent)
 			const commandOptions = options.filter((option) => option.type === ContextMenuOptionType.Command)
 
 			expect(modeOptions.length).toBe(1)

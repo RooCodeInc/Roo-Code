@@ -36,12 +36,12 @@ export class SimpleInstaller {
 		target: "project" | "global",
 	): Promise<{ filePath: string; line?: number }> {
 		if (!item.content) {
-			throw new Error("Mode item missing content")
+			throw new Error("Agent item missing content")
 		}
 
-		// Modes should always have string content, not array
+		// Agents should always have string content, not array
 		if (Array.isArray(item.content)) {
-			throw new Error("Mode content should not be an array")
+			throw new Error("Agent content should not be an array")
 		}
 
 		// If CustomModesManager is available, use importModeWithRules
@@ -316,7 +316,7 @@ export class SimpleInstaller {
 		}
 
 		if (!modeSlug) {
-			throw new Error("Mode missing slug identifier")
+			throw new Error("Agent missing slug identifier")
 		}
 
 		// Get the current modes to determine the source

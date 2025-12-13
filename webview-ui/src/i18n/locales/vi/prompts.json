@@ -1,7 +1,7 @@
 {
 	"title": "Chế độ",
 	"done": "Hoàn thành",
-	"modes": {
+	"agents": {
 		"title": "Chế độ",
 		"createNewMode": "Tạo chế độ mới",
 		"importMode": "Nhập chế độ",

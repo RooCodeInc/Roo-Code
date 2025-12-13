@@ -18,7 +18,7 @@ describe("loadSystemPromptFile", () => {
 		workspace: "/path/to/workspace",
 	}
 	const mockCwd = "/mock/cwd"
-	const mockMode: Mode = "test" // Use Mode type, e.g., 'test'
+	const mockMode: Mode = "test" // Use Agent type, e.g., 'test'
 	// Corrected expected file path format
 	const expectedFilePath = path.join(mockCwd, ".roo", `system-prompt-${mockMode}`)
 

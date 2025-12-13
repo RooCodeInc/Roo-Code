@@ -12,14 +12,14 @@
 			"description": "Una interfaz unificada para LLMs"
 		},
 		"roo": {
-			"description": "Los mejores modelos gratuitos para empezar",
+			"description": "Los mejores agentlos gratuitos para empezar",
 			"incentive": "Prueba Roo gratis"
 		}
 	},
 	"chooseProvider": "Roo necesita un proveedor de LLM. Elige el tuyo:",
 	"providerSignup": {
 		"rooCloudProvider": "Proveedor Roo Code Cloud",
-		"rooCloudDescription": "La forma más sencilla de usar Roo. Una mezcla seleccionada de modelos gratuitos y de pago a bajo costo",
+		"rooCloudDescription": "La forma más sencilla de usar Roo. Una mezcla seleccionada de agentlos gratuitos y de pago a bajo costo",
 		"learnMore": "más información",
 		"useAnotherProvider": "Usar otro proveedor",
 		"useAnotherProviderDescription": "Introduce una clave API y comienza.",

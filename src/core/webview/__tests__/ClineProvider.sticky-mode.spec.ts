@@ -123,20 +123,20 @@ vi.mock("../../../shared/modes", () => ({
 	modes: [
 		{
 			slug: "code",
-			name: "Code Mode",
+			name: "Code Agent",
 			roleDefinition: "You are a code assistant",
 			groups: ["read", "edit", "browser"],
 		},
 		{
 			slug: "architect",
-			name: "Architect Mode",
+			name: "Architect Agent",
 			roleDefinition: "You are an architect",
 			groups: ["read", "edit"],
 		},
 	],
 	getModeBySlug: vi.fn().mockReturnValue({
 		slug: "code",
-		name: "Code Mode",
+		name: "Code Agent",
 		roleDefinition: "You are a code assistant",
 		groups: ["read", "edit", "browser"],
 	}),
@@ -184,7 +184,7 @@ vi.mock("@roo-code/telemetry", () => ({
 	},
 }))
 
-describe("ClineProvider - Sticky Mode", () => {
+describe("ClineProvider - Sticky Agent", () => {
 	let provider: ClineProvider
 	let mockContext: vscode.ExtensionContext
 	let mockOutputChannel: vscode.OutputChannel
@@ -744,7 +744,7 @@ describe("ClineProvider - Sticky Mode", () => {
 				cacheWrites: 0,
 				cacheReads: 0,
 				totalCost: 0.001,
-				mode: "deleted-mode", // Mode that doesn't exist
+				mode: "deleted-mode", // Agent that doesn't exist
 			}
 
 			// Mock getModeBySlug to return undefined for deleted mode
@@ -889,7 +889,7 @@ describe("ClineProvider - Sticky Mode", () => {
 		})
 	})
 
-	describe("Mode switch failure scenarios", () => {
+	describe("Agent switch failure scenarios", () => {
 		it("should handle invalid mode gracefully", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 

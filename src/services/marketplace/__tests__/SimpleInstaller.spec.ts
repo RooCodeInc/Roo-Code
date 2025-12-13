@@ -61,12 +61,12 @@ describe("SimpleInstaller", () => {
 	describe("installMode", () => {
 		const mockModeItem: MarketplaceItem = {
 			id: "test-mode",
-			name: "Test Mode",
+			name: "Test Agent",
 			description: "A test mode for testing",
 			type: "mode",
 			content: yaml.stringify({
 				slug: "test",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role",
 				groups: ["read"],
 			}),
@@ -107,7 +107,7 @@ describe("SimpleInstaller", () => {
 			}
 
 			await expect(installer.installItem(arrayContentMode, { target: "project" })).rejects.toThrow(
-				"Mode content should not be an array",
+				"Agent content should not be an array",
 			)
 		})
 
@@ -118,7 +118,7 @@ describe("SimpleInstaller", () => {
 			}
 
 			await expect(installer.installItem(noContentMode, { target: "project" })).rejects.toThrow(
-				"Mode item missing content",
+				"Agent item missing content",
 			)
 		})
 
@@ -206,12 +206,12 @@ describe("SimpleInstaller", () => {
 	describe("removeMode", () => {
 		const mockModeItem: MarketplaceItem = {
 			id: "test-mode",
-			name: "Test Mode",
+			name: "Test Agent",
 			description: "A test mode for testing",
 			type: "mode",
 			content: yaml.stringify({
 				slug: "test",
-				name: "Test Mode",
+				name: "Test Agent",
 				roleDefinition: "Test role",
 				groups: ["read"],
 			}),
@@ -220,7 +220,7 @@ describe("SimpleInstaller", () => {
 		it("should use CustomModesManager to delete mode and clean up rules folder", async () => {
 			// Mock that the mode exists with project source
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Agent", source: "project" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "project" })
@@ -235,7 +235,7 @@ describe("SimpleInstaller", () => {
 		it("should handle global mode removal with rules cleanup", async () => {
 			// Mock that the mode exists with global source
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "global" } as any,
+				{ slug: "test", name: "Test Agent", source: "global" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "global" })
@@ -250,7 +250,7 @@ describe("SimpleInstaller", () => {
 		it("should handle case when rules folder does not exist", async () => {
 			// Mock that the mode exists
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Agent", source: "project" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "project" })
@@ -265,7 +265,7 @@ describe("SimpleInstaller", () => {
 		it("should throw error if deleteCustomMode fails", async () => {
 			// Mock that the mode exists
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Agent", source: "project" } as any,
 			])
 			// Mock that deleteCustomMode fails
 			mockCustomModesManager.deleteCustomMode = vi.fn().mockRejectedValueOnce(new Error("Permission denied"))
@@ -305,14 +305,14 @@ describe("SimpleInstaller", () => {
 			const noSlugModeItem: MarketplaceItem = {
 				...mockModeItem,
 				content: yaml.stringify({
-					name: "Test Mode",
+					name: "Test Agent",
 					roleDefinition: "Test role",
 					groups: ["read"],
 				}),
 			}
 
 			await expect(installer.removeItem(noSlugModeItem, { target: "project" })).rejects.toThrow(
-				"Mode missing slug identifier",
+				"Agent missing slug identifier",
 			)
 
 			expect(mockCustomModesManager.deleteCustomMode).not.toHaveBeenCalled()
@@ -325,7 +325,7 @@ describe("SimpleInstaller", () => {
 					{
 						content: yaml.stringify({
 							slug: "test-array",
-							name: "Test Array Mode",
+							name: "Test Array Agent",
 							roleDefinition: "Test role",
 							groups: ["read"],
 						}),

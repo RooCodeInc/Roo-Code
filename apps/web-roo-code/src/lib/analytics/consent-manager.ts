@@ -64,9 +64,9 @@ export function handleConsentAccept(): void {
 
 /**
  * Handle user rejecting cookies
- * Switches PostHog to cookieless (memory-only) mode
+ * Switches PostHog to cookieless (memory-only) agent
  */
 export function handleConsentReject(): void {
-	// User rejected - stick to cookieless mode
+	// User rejected - stick to cookieless agent
 	dispatchConsentEvent(false)
 }
