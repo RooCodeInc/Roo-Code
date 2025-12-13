@@ -334,9 +334,16 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.ollamaModelId || ""
+		// Try exact match first, then lowercase for case-insensitive lookup
+		let modelInfo = this.models[modelId]
+		if (!modelInfo && modelId) {
+			// Try case-insensitive lookup
+			const lowerModelId = modelId.toLowerCase()
+			modelInfo = this.models[lowerModelId]
+		}
 		return {
 			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
+			info: modelInfo || openAiModelInfoSaneDefaults,
 		}
 	}
 
