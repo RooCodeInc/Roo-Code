@@ -42,6 +42,7 @@ describe("SimpleInstaller", () => {
 		mockContext = {} as vscode.ExtensionContext
 		mockCustomModesManager = {
 			deleteCustomMode: vi.fn().mockResolvedValue(undefined),
+			deleteCustomModeForSource: vi.fn().mockResolvedValue(undefined),
 			importModeWithRules: vi.fn().mockResolvedValue({ success: true }),
 			getCustomModes: vi.fn().mockResolvedValue([]),
 		} as any
@@ -220,13 +221,13 @@ describe("SimpleInstaller", () => {
 		it("should use CustomModesManager to delete mode and clean up rules folder", async () => {
 			// Mock that the mode exists with project source
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Mode", source: "project", installedFromMarketplace: true, marketplaceItemId: "test-mode" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "project" })
 
-			// Should call deleteCustomMode with fromMarketplace flag set to true
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test", true)
+			// Should call scoped deletion for the selected source with fromMarketplace flag set to true
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).toHaveBeenCalledWith("test", "project", true)
 			// The rules folder deletion is now handled by CustomModesManager, not SimpleInstaller
 			expect(fileExistsAtPath).not.toHaveBeenCalled()
 			expect(mockFs.rm).not.toHaveBeenCalled()
@@ -235,13 +236,13 @@ describe("SimpleInstaller", () => {
 		it("should handle global mode removal with rules cleanup", async () => {
 			// Mock that the mode exists with global source
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "global" } as any,
+				{ slug: "test", name: "Test Mode", source: "global", installedFromMarketplace: true, marketplaceItemId: "test-mode" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "global" })
 
-			// Should call deleteCustomMode with fromMarketplace flag set to true
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test", true)
+			// Should call scoped deletion for the selected source with fromMarketplace flag set to true
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).toHaveBeenCalledWith("test", "global", true)
 			// The rules folder deletion is now handled by CustomModesManager, not SimpleInstaller
 			expect(fileExistsAtPath).not.toHaveBeenCalled()
 			expect(mockFs.rm).not.toHaveBeenCalled()
@@ -250,13 +251,13 @@ describe("SimpleInstaller", () => {
 		it("should handle case when rules folder does not exist", async () => {
 			// Mock that the mode exists
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Mode", source: "project", installedFromMarketplace: true, marketplaceItemId: "test-mode" } as any,
 			])
 
 			await installer.removeItem(mockModeItem, { target: "project" })
 
-			// Should call deleteCustomMode with fromMarketplace flag set to true
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test", true)
+			// Should call scoped deletion for the selected source with fromMarketplace flag set to true
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).toHaveBeenCalledWith("test", "project", true)
 			// The rules folder deletion is now handled by CustomModesManager, not SimpleInstaller
 			expect(fileExistsAtPath).not.toHaveBeenCalled()
 			expect(mockFs.rm).not.toHaveBeenCalled()
@@ -265,27 +266,26 @@ describe("SimpleInstaller", () => {
 		it("should throw error if deleteCustomMode fails", async () => {
 			// Mock that the mode exists
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
-				{ slug: "test", name: "Test Mode", source: "project" } as any,
+				{ slug: "test", name: "Test Mode", source: "project", installedFromMarketplace: true, marketplaceItemId: "test-mode" } as any,
 			])
-			// Mock that deleteCustomMode fails
-			mockCustomModesManager.deleteCustomMode = vi.fn().mockRejectedValueOnce(new Error("Permission denied"))
+			// Mock that scoped deletion fails
+			;(mockCustomModesManager as any).deleteCustomModeForSource = vi
+				.fn()
+				.mockRejectedValueOnce(new Error("Permission denied"))
 
-			// Should throw the error from deleteCustomMode
+			// Should throw the error from scoped deletion
 			await expect(installer.removeItem(mockModeItem, { target: "project" })).rejects.toThrow("Permission denied")
 
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test", true)
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).toHaveBeenCalledWith("test", "project", true)
 		})
 
-		it("should handle mode not found in custom modes list", async () => {
+		it("should throw when mode is not marketplace-installed for selected target", async () => {
 			// Mock that the mode doesn't exist in the list
 			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([])
 
-			await installer.removeItem(mockModeItem, { target: "project" })
+			await expect(installer.removeItem(mockModeItem, { target: "project" })).rejects.toThrow(/(Mode not found|customModes\.errors\.modeNotFound)/)
 
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test", true)
-			// Should not attempt to delete rules folder
-			expect(fileExistsAtPath).not.toHaveBeenCalled()
-			expect(mockFs.rm).not.toHaveBeenCalled()
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).not.toHaveBeenCalled()
 		})
 
 		it("should throw error when mode content is invalid YAML", async () => {
@@ -333,9 +333,14 @@ describe("SimpleInstaller", () => {
 				] as any,
 			}
 
+			// Mock installed marketplace mode with matching marketplaceItemId and source
+			vi.mocked(mockCustomModesManager.getCustomModes).mockResolvedValueOnce([
+				{ slug: "test-array", name: "Test Array Mode", source: "project", installedFromMarketplace: true, marketplaceItemId: "test-mode" } as any,
+			])
+
 			await installer.removeItem(arrayContentItem, { target: "project" })
 
-			expect(mockCustomModesManager.deleteCustomMode).toHaveBeenCalledWith("test-array", true)
+			expect((mockCustomModesManager as any).deleteCustomModeForSource).toHaveBeenCalledWith("test-array", "project", true)
 		})
 
 		it("should throw error when CustomModesManager is not available", async () => {
