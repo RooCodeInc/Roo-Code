@@ -237,6 +237,72 @@ describe("AnthropicHandler", () => {
 			expect(model.info.supportsPromptCache).toBe(true)
 		})
 
+		describe("Azure Foundry support", () => {
+			it("should use Azure deployment name when Azure Foundry mode is enabled", () => {
+				const handler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-3-5-sonnet-20241022",
+					anthropicUseAzureFoundry: true,
+					anthropicAzureDeploymentName: "my-claude-deployment",
+				})
+				const model = handler.getModel()
+				expect(model.id).toBe("my-claude-deployment")
+				// Should still use the original model info
+				expect(model.info.maxTokens).toBe(8192)
+				expect(model.info.contextWindow).toBe(200_000)
+			})
+
+			it("should use original model ID when Azure Foundry is enabled but no deployment name provided", () => {
+				const handler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-3-5-sonnet-20241022",
+					anthropicUseAzureFoundry: true,
+				})
+				const model = handler.getModel()
+				expect(model.id).toBe("claude-3-5-sonnet-20241022")
+			})
+
+			it("should use original model ID when Azure Foundry is disabled even with deployment name", () => {
+				const handler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-3-5-sonnet-20241022",
+					anthropicUseAzureFoundry: false,
+					anthropicAzureDeploymentName: "my-claude-deployment",
+				})
+				const model = handler.getModel()
+				expect(model.id).toBe("claude-3-5-sonnet-20241022")
+			})
+
+			it("should handle Azure deployment name with thinking model", () => {
+				const handler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-3-7-sonnet-20250219:thinking",
+					anthropicUseAzureFoundry: true,
+					anthropicAzureDeploymentName: "azure-thinking-model",
+				})
+				const model = handler.getModel()
+				expect(model.id).toBe("azure-thinking-model")
+				// Should still have the thinking model betas
+				expect(model.betas).toEqual(["output-128k-2025-02-19"])
+			})
+
+			it("should work with Azure Foundry and 1M context beta together", () => {
+				const handler = new AnthropicHandler({
+					apiKey: "test-api-key",
+					apiModelId: "claude-sonnet-4-5",
+					anthropicUseAzureFoundry: true,
+					anthropicAzureDeploymentName: "azure-sonnet-4-5",
+					anthropicBeta1MContext: true,
+				})
+				const model = handler.getModel()
+				expect(model.id).toBe("azure-sonnet-4-5")
+				// Should still apply 1M context settings
+				expect(model.info.contextWindow).toBe(1000000)
+				expect(model.info.inputPrice).toBe(6.0)
+				expect(model.info.outputPrice).toBe(22.5)
+			})
+		})
+
 		it("honors custom maxTokens for thinking models", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",

@@ -198,6 +198,8 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+	anthropicUseAzureFoundry: z.boolean().optional(), // Enable Azure AI Foundry mode
+	anthropicAzureDeploymentName: z.string().optional(), // Override model ID with Azure deployment name
 })
 
 const claudeCodeSchema = apiModelIdProviderModelSchema.extend({

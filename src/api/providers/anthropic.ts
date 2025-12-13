@@ -336,8 +336,16 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
 		// suffix.
+		const baseId = id === "claude-3-7-sonnet-20250219:thinking" ? "claude-3-7-sonnet-20250219" : id
+
+		// If Azure Foundry mode is enabled and a deployment name is provided, use it
+		const finalId =
+			this.options.anthropicUseAzureFoundry && this.options.anthropicAzureDeploymentName
+				? this.options.anthropicAzureDeploymentName
+				: baseId
+
 		return {
-			id: id === "claude-3-7-sonnet-20250219:thinking" ? "claude-3-7-sonnet-20250219" : id,
+			id: finalId,
 			info,
 			betas: id === "claude-3-7-sonnet-20250219:thinking" ? ["output-128k-2025-02-19"] : undefined,
 			...params,
