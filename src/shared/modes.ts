@@ -68,13 +68,26 @@ export const defaultModeSlug = modes[0].slug
 
 // Helper functions
 export function getModeBySlug(slug: string, customModes?: ModeConfig[]): ModeConfig | undefined {
-	// Check custom modes first
+	// First try exact match in custom modes
 	const customMode = customModes?.find((mode) => mode.slug === slug)
 	if (customMode) {
 		return customMode
 	}
-	// Then check built-in modes
-	return modes.find((mode) => mode.slug === slug)
+
+	// Then try exact match in built-in modes
+	const builtInMode = modes.find((mode) => mode.slug === slug)
+	if (builtInMode) {
+		return builtInMode
+	}
+
+	// If no exact match and slug contains '/', try to find as compound slug (parent/child)
+	if (slug.includes("/")) {
+		// For compound slugs, search in both custom and built-in modes
+		const allModes = [...(customModes || []), ...modes]
+		return allModes.find((mode) => mode.slug === slug)
+	}
+
+	return undefined
 }
 
 export function getModeConfig(slug: string, customModes?: ModeConfig[]): ModeConfig {
@@ -86,7 +99,7 @@ export function getModeConfig(slug: string, customModes?: ModeConfig[]): ModeCon
 }
 
 // Get all available modes, with custom modes overriding built-in modes
-export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
+export function getAllModes(customModes?: ModeConfig[], includeHidden: boolean = false): ModeConfig[] {
 	if (!customModes?.length) {
 		return [...modes]
 	}
@@ -106,7 +119,29 @@ export function getAllModes(customModes?: ModeConfig[]): ModeConfig[] {
 		}
 	})
 
+	// Filter out hidden modes unless explicitly requested
+	if (!includeHidden) {
+		return allModes.filter((mode) => !mode.hidden)
+	}
+
 	return allModes
+}
+
+// Get visible modes for dropdown selector (excludes hidden submodes)
+export function getVisibleModes(customModes?: ModeConfig[]): ModeConfig[] {
+	const allModes = getAllModes(customModes)
+	// Filter out hidden modes (submodes)
+	return allModes.filter((mode) => !mode.hidden)
+}
+
+// Get submodes for a parent mode
+export function getSubmodes(parentSlug: string, customModes?: ModeConfig[]): ModeConfig[] {
+	// Include hidden modes because submodes are commonly hidden from the selector
+	const allModes = getAllModes(customModes, true)
+	// Return modes that have this parent or compound slugs starting with parent/
+	return allModes.filter(
+		(mode) => mode.parent === parentSlug || (mode.slug.includes("/") && mode.slug.startsWith(`${parentSlug}/`)),
+	)
 }
 
 // Check if a mode is custom or an override
@@ -301,11 +336,14 @@ export const defaultPrompts: Readonly<CustomModePrompts> = Object.freeze(
 )
 
 // Helper function to get all modes with their prompt overrides from extension state
-export async function getAllModesWithPrompts(context: vscode.ExtensionContext): Promise<ModeConfig[]> {
+export async function getAllModesWithPrompts(
+	context: vscode.ExtensionContext,
+	includeHidden: boolean = false,
+): Promise<ModeConfig[]> {
 	const customModes = (await context.globalState.get<ModeConfig[]>("customModes")) || []
 	const customModePrompts = (await context.globalState.get<CustomModePrompts>("customModePrompts")) || {}
 
-	const allModes = getAllModes(customModes)
+	const allModes = getAllModes(customModes, includeHidden)
 	return allModes.map((mode) => ({
 		...mode,
 		roleDefinition: customModePrompts[mode.slug]?.roleDefinition ?? mode.roleDefinition,
