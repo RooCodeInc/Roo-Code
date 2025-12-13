@@ -147,8 +147,9 @@
 			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
-			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
-			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional."
+			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
+			"internalRateLimit": "Esperando entre solicitudes. Este retraso está configurado en la configuración de tu proveedor.",
+			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code."
 		}
 	},
 	"checkpoint": {

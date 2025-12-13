@@ -1109,6 +1109,10 @@ export const ChatRowContent = ({
 							}
 						} else if (message.text.indexOf("Connection error") === 0) {
 							body = t("chat:apiRequest.errorMessage.connection")
+						} else if (message.text.toLowerCase().startsWith("rate limiting")) {
+							// Internal rate limiting (user-configured delay between requests)
+							// This is not an error - it's the configured rate limit working as expected
+							body = t("chat:apiRequest.errorMessage.internalRateLimit")
 						} else {
 							// Non-HTTP-status-code error message - store full text as errorDetails
 							body = t("chat:apiRequest.errorMessage.unknown")
