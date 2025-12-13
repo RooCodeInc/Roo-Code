@@ -12,7 +12,7 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -201,7 +201,11 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		await this.ensureAuthenticated()
 		const client = this.ensureClient()
 		const model = this.getModel()
@@ -220,6 +224,18 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			max_completion_tokens: model.info.maxTokens,
+			// Add tools support only for native protocol
+			...(metadata?.toolProtocol === "native" &&
+				metadata?.tools && {
+					tools: this.convertToolsForOpenAI(metadata.tools),
+				}),
+			...(metadata?.toolProtocol === "native" &&
+				metadata?.tool_choice && {
+					tool_choice: metadata.tool_choice,
+				}),
+			...(metadata?.toolProtocol === "native" && {
+				parallel_tool_calls: metadata.parallelToolCalls ?? false,
+			}),
 		}
 
 		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
@@ -271,6 +287,19 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 				yield {
 					type: "reasoning",
 					text: (delta.reasoning_content as string | undefined) || "",
+				}
+			}
+
+			// Handle tool calls in the response
+			if (delta.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					yield {
+						type: "tool_call_partial",
+						index: toolCall.index,
+						id: toolCall.id,
+						name: toolCall.function?.name,
+						arguments: toolCall.function?.arguments,
+					}
 				}
 			}
 
