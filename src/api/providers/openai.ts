@@ -25,6 +25,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { hasKimiEmbeddedToolCalls, extractKimiToolCalls, isKimiThinkingModel } from "./utils/kimi-tool-call-extractor"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -195,6 +196,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let lastUsage
 
+			// For Kimi K2 Thinking model, accumulate reasoning content to extract embedded tool calls
+			const isKimiThinking = isKimiThinkingModel(modelId)
+			let accumulatedReasoningContent = ""
+			let hasReceivedToolCalls = false
+
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
 
@@ -205,13 +211,21 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				if ("reasoning_content" in delta && delta.reasoning_content) {
+					const reasoningText = (delta.reasoning_content as string | undefined) || ""
+
+					// Accumulate reasoning content for Kimi thinking model to extract tool calls later
+					if (isKimiThinking) {
+						accumulatedReasoningContent += reasoningText
+					}
+
 					yield {
 						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+						text: reasoningText,
 					}
 				}
 
 				if (delta.tool_calls) {
+					hasReceivedToolCalls = true
 					for (const toolCall of delta.tool_calls) {
 						yield {
 							type: "tool_call_partial",
@@ -225,6 +239,24 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (chunk.usage) {
 					lastUsage = chunk.usage
+				}
+			}
+
+			// For Kimi K2 Thinking model: extract tool calls from accumulated reasoning content
+			// if no standard tool_calls were received but reasoning contains embedded tool calls
+			if (isKimiThinking && !hasReceivedToolCalls && hasKimiEmbeddedToolCalls(accumulatedReasoningContent)) {
+				const { toolCalls } = extractKimiToolCalls(accumulatedReasoningContent)
+
+				for (let index = 0; index < toolCalls.length; index++) {
+					const toolCall = toolCalls[index]
+					// Emit as complete tool call since we have all the data
+					yield {
+						type: "tool_call_partial",
+						index,
+						id: toolCall.id,
+						name: toolCall.function.name,
+						arguments: toolCall.function.arguments,
+					}
 				}
 			}
 
@@ -265,7 +297,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const message = response.choices?.[0]?.message
 
-			if (message?.tool_calls) {
+			// Check for Kimi K2 Thinking model embedded tool calls in reasoning_content
+			const isKimiThinking = isKimiThinkingModel(modelId)
+			const reasoningContent = (message as any)?.reasoning_content as string | undefined
+
+			// Emit reasoning content if present
+			if (reasoningContent) {
+				yield {
+					type: "reasoning",
+					text: reasoningContent,
+				}
+			}
+
+			// Handle standard tool calls or extract from Kimi embedded format
+			if (message?.tool_calls && message.tool_calls.length > 0) {
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
 						yield {
@@ -274,6 +319,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							name: toolCall.function.name,
 							arguments: toolCall.function.arguments,
 						}
+					}
+				}
+			} else if (isKimiThinking && reasoningContent && hasKimiEmbeddedToolCalls(reasoningContent)) {
+				// Extract embedded tool calls from Kimi K2 Thinking model's reasoning_content
+				const { toolCalls } = extractKimiToolCalls(reasoningContent)
+
+				for (const toolCall of toolCalls) {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.function.name,
+						arguments: toolCall.function.arguments,
 					}
 				}
 			}
