@@ -256,10 +256,36 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
-			TelemetryService.instance.captureException(apiError)
-			throw handleOpenAIError(error, this.providerName)
+			// Check if error has OpenRouter-specific metadata.raw property
+			const errorObj = error as any
+			const hasMetadataRaw = errorObj?.metadata?.raw
+
+			if (hasMetadataRaw) {
+				const openRouterError = error as OpenRouterErrorResponse
+				const rawErrorMessage = openRouterError.metadata?.raw || openRouterError.message
+
+				const apiError = Object.assign(
+					new ApiProviderError(
+						rawErrorMessage ?? "Unknown error",
+						this.providerName,
+						modelId,
+						"createMessage",
+						openRouterError.code,
+					),
+					{
+						status: openRouterError.code,
+						error: { message: openRouterError.message, metadata: openRouterError.metadata },
+					},
+				)
+
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			} else {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			}
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
@@ -476,10 +502,36 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
-			TelemetryService.instance.captureException(apiError)
-			throw handleOpenAIError(error, this.providerName)
+			// Check if error has OpenRouter-specific metadata.raw property
+			const errorObj = error as any
+			const hasMetadataRaw = errorObj?.metadata?.raw
+
+			if (hasMetadataRaw) {
+				const openRouterError = error as OpenRouterErrorResponse
+				const rawErrorMessage = openRouterError.metadata?.raw || openRouterError.message
+
+				const apiError = Object.assign(
+					new ApiProviderError(
+						rawErrorMessage ?? "Unknown error",
+						this.providerName,
+						modelId,
+						"completePrompt",
+						openRouterError.code,
+					),
+					{
+						status: openRouterError.code,
+						error: { message: openRouterError.message, metadata: openRouterError.metadata },
+					},
+				)
+
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			} else {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			}
 		}
 
 		if ("error" in response) {
