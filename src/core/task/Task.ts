@@ -2959,7 +2959,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
 							const stateForBackoff = await this.providerRef.deref()?.getState()
-							if (stateForBackoff?.autoApprovalEnabled && stateForBackoff?.alwaysApproveResubmit) {
+							if (stateForBackoff?.autoApprovalEnabled) {
 								await this.backoffAndAnnounce(
 									currentItem.retryAttempt ?? 0,
 									error,
@@ -3216,7 +3216,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should auto-retry or prompt the user
 					// Reuse the state variable from above
-					if (state?.autoApprovalEnabled && state?.alwaysApproveResubmit) {
+					if (state?.autoApprovalEnabled) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						const errorMsg =
 							"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
@@ -3509,7 +3509,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const {
 			apiConfiguration,
 			autoApprovalEnabled,
-			alwaysApproveResubmit,
 			requestDelaySeconds,
 			mode,
 			autoCondenseContext = true,
@@ -3811,7 +3810,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-			if (autoApprovalEnabled && alwaysApproveResubmit) {
+			if (autoApprovalEnabled) {
 				let errorMsg
 
 				if (error.error?.metadata?.raw) {

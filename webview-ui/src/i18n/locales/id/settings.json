@@ -202,11 +202,6 @@
 			"label": "Browser",
 			"description": "Secara otomatis melakukan aksi browser tanpa memerlukan persetujuan. Catatan: Hanya berlaku ketika model mendukung computer use"
 		},
-		"retry": {
-			"label": "Coba Lagi",
-			"description": "Secara otomatis mencoba ulang permintaan API yang gagal ketika server mengembalikan respons error",
-			"delayLabel": "Delay sebelum mencoba ulang permintaan"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Aktifkan auto-approval tool MCP individual di tampilan Server MCP (memerlukan pengaturan ini dan checkbox \"Selalu izinkan\" tool tersebut)"
@@ -239,10 +234,6 @@
 		"showMenu": {
 			"label": "Tampilkan menu auto-approve di tampilan chat",
 			"description": "Ketika diaktifkan, menu auto-approve akan ditampilkan di bagian bawah tampilan chat, memungkinkan akses cepat ke pengaturan auto-approve"
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Daftar tugas diperbarui secara otomatis tanpa persetujuan"
 		},
 		"apiRequestLimit": {
 			"title": "Permintaan Maks",

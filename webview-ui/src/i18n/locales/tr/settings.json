@@ -202,11 +202,6 @@
 			"label": "Tarayıcı",
 			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca model bilgisayar kullanımını desteklediğinde geçerlidir"
 		},
-		"retry": {
-			"label": "Yeniden Dene",
-			"description": "Sunucu bir hata yanıtı döndürdüğünde başarısız API isteklerini otomatik olarak yeniden dene",
-			"delayLabel": "İsteği yeniden denemeden önce gecikme"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCP Sunucuları görünümünde bireysel MCP araçlarının otomatik onayını etkinleştir (hem bu ayar hem de aracın \"Her zaman izin ver\" onay kutusu gerekir)"
@@ -235,10 +230,6 @@
 			"deniedCommandPlaceholder": "Reddetmek için komut öneki girin (örn. 'rm -rf')",
 			"addButton": "Ekle",
 			"autoDenied": "`{{prefix}}` önekli komutlar kullanıcı tarafından yasaklandı. Başka bir komut çalıştırarak bu kısıtlamayı aşma."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Yapılacaklar listesi onay gerektirmeden otomatik olarak güncellenir"
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
