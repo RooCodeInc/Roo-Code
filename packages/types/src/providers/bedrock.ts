@@ -485,6 +485,26 @@ export const bedrockModels = {
 		outputPrice: 1.8,
 		description: "Qwen3 Coder 480B (MoE model with 35B active parameters)",
 	},
+	"mistral.mistral-large-3-675b-instruct": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: false,
+		inputPrice: 0.5,
+		outputPrice: 1.5,
+		description: "Mistral Large 3 (675B)",
+	},
+	"mistral.magistral-small-2509": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: false,
+		inputPrice: 0.5,
+		outputPrice: 1.5,
+		description: "Magistral Small 1.2",
+	},
 } as const satisfies Record<string, ModelInfo>
 
 export const BEDROCK_DEFAULT_TEMPERATURE = 0.3

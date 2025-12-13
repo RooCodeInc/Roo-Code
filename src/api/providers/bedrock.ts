@@ -1150,18 +1150,19 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	private convertToolsForBedrock(tools: OpenAI.Chat.ChatCompletionTool[]): Tool[] {
 		return tools
 			.filter((tool) => tool.type === "function")
-			.map(
-				(tool) =>
-					({
-						toolSpec: {
-							name: tool.function.name,
-							description: tool.function.description,
-							inputSchema: {
-								json: tool.function.parameters as Record<string, unknown>,
-							},
+			.map((tool) => {
+				// Destructure to exclude 'strict' property which Bedrock doesn't support
+				const { strict: _strict, ...functionWithoutStrict } = tool.function as any
+				return {
+					toolSpec: {
+						name: functionWithoutStrict.name,
+						description: functionWithoutStrict.description,
+						inputSchema: {
+							json: functionWithoutStrict.parameters as Record<string, unknown>,
 						},
-					}) as Tool,
-			)
+					},
+				} as Tool
+			})
 	}
 
 	/**

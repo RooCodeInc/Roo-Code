@@ -755,4 +755,101 @@ describe("AwsBedrockHandler", () => {
 			expect(commandArg.modelId).toBe(`us.${BEDROCK_1M_CONTEXT_MODEL_IDS[0]}`)
 		})
 	})
+
+	describe("native tools", () => {
+		it("should strip the strict parameter from tool functions when converting to Bedrock format", () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Access private method using type casting
+			const convertToolsForBedrock = (handler as any).convertToolsForBedrock.bind(handler)
+
+			// Create tools with strict parameter (which Bedrock doesn't support)
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "test_tool",
+						description: "A test tool",
+						parameters: {
+							type: "object",
+							properties: {
+								param1: { type: "string" },
+							},
+							required: ["param1"],
+						},
+						strict: false, // This parameter should be stripped
+					},
+				},
+			]
+
+			const convertedTools = convertToolsForBedrock(tools)
+
+			// Verify the tool was converted correctly
+			expect(convertedTools).toHaveLength(1)
+			expect(convertedTools[0].toolSpec.name).toBe("test_tool")
+			expect(convertedTools[0].toolSpec.description).toBe("A test tool")
+			expect(convertedTools[0].toolSpec.inputSchema.json).toEqual({
+				type: "object",
+				properties: {
+					param1: { type: "string" },
+				},
+				required: ["param1"],
+			})
+
+			// Verify that the strict parameter was not included in the converted tool
+			// The toolSpec should not have any 'strict' property
+			expect(convertedTools[0].toolSpec).not.toHaveProperty("strict")
+			expect(convertedTools[0]).not.toHaveProperty("strict")
+		})
+
+		it("should handle tools without strict parameter correctly", () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Access private method using type casting
+			const convertToolsForBedrock = (handler as any).convertToolsForBedrock.bind(handler)
+
+			// Create tools without strict parameter
+			const tools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "test_tool",
+						description: "A test tool",
+						parameters: {
+							type: "object",
+							properties: {
+								param1: { type: "string" },
+							},
+							required: ["param1"],
+						},
+						// No strict parameter here
+					},
+				},
+			]
+
+			const convertedTools = convertToolsForBedrock(tools)
+
+			// Verify the tool was converted correctly
+			expect(convertedTools).toHaveLength(1)
+			expect(convertedTools[0].toolSpec.name).toBe("test_tool")
+			expect(convertedTools[0].toolSpec.description).toBe("A test tool")
+			expect(convertedTools[0].toolSpec.inputSchema.json).toEqual({
+				type: "object",
+				properties: {
+					param1: { type: "string" },
+				},
+				required: ["param1"],
+			})
+		})
+	})
 })
