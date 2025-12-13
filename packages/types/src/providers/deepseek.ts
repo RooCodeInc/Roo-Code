@@ -22,7 +22,7 @@ export const deepSeekModels = {
 	"deepseek-reasoner": {
 		maxTokens: 8192, // 8K max output
 		contextWindow: 128_000,
-		// includedTools: ["search_replace"],
+		includedTools: ["edit_file"],
 		// excludedTools: ["apply_diff"],
 		supportsImages: false,
 		supportsPromptCache: true,
