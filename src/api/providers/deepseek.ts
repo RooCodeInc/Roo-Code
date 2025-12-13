@@ -86,7 +86,7 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 		let stream
 		try {
-			stream = await this.getClient().chat.completions.create(requestOptions)
+			stream = await this.client.chat.completions.create(requestOptions)
 		} catch (error) {
 			const { handleOpenAIError } = await import("./utils/openai-error-handler")
 			throw handleOpenAIError(error, "DeepSeek")
@@ -152,16 +152,6 @@ export class DeepSeekHandler extends OpenAiHandler {
 		if (lastUsage) {
 			yield this.processUsageMetrics(lastUsage, modelInfo)
 		}
-	}
-
-	/**
-	 * Get the OpenAI client instance for making API calls.
-	 * This is needed because the client is private in the parent class.
-	 */
-	private getClient(): OpenAI {
-		// Access the client through the parent class
-		// @ts-ignore - accessing private member for necessary functionality
-		return this.client
 	}
 
 	// Override to handle DeepSeek's usage metrics, including caching.

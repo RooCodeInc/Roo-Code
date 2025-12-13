@@ -183,8 +183,8 @@ export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
 						lastMessage.content = `${lastContent}\n${assistantMessage.content}`
 					}
 					// Preserve reasoning_content from the new message if present
-					if (reasoningContent) {
-						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = reasoningContent
+					if (finalReasoning) {
+						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = finalReasoning
 					}
 				} else {
 					result.push(assistantMessage)
