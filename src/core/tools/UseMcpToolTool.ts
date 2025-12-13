@@ -5,6 +5,9 @@ import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import * as path from "path"
+import * as fs from "fs/promises"
+import { getWorkspacePath } from "../../utils/path"
 
 interface UseMcpToolParams {
 	server_name: string
@@ -268,24 +271,76 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		})
 	}
 
-	private processToolContent(toolResult: any): string {
+	private processToolContent(toolResult: any): { text: string; images: string[] } {
 		if (!toolResult?.content || toolResult.content.length === 0) {
-			return ""
+			return { text: "", images: [] }
 		}
 
-		return toolResult.content
-			.map((item: any) => {
-				if (item.type === "text") {
-					return item.text
+		const textParts: string[] = []
+		const images: string[] = []
+
+		toolResult.content.forEach((item: any) => {
+			if (item.type === "text") {
+				textParts.push(item.text)
+			} else if (item.type === "resource") {
+				const { blob: _, ...rest } = item.resource
+				textParts.push(JSON.stringify(rest, null, 2))
+			} else if (item.type === "image" && item.data && item.mimeType) {
+				// Handle image content from MCP tool response
+				let imageDataUrl: string
+				if (item.data.startsWith("data:")) {
+					imageDataUrl = item.data
+				} else {
+					// Construct data URL from base64 data and mimeType
+					imageDataUrl = `data:${item.mimeType};base64,${item.data}`
 				}
-				if (item.type === "resource") {
-					const { blob: _, ...rest } = item.resource
-					return JSON.stringify(rest, null, 2)
-				}
-				return ""
-			})
-			.filter(Boolean)
-			.join("\n\n")
+				images.push(imageDataUrl)
+			}
+		})
+
+		return {
+			text: textParts.filter(Boolean).join("\n\n"),
+			images,
+		}
+	}
+
+	private async saveImageToFile(dataUrl: string, index: number): Promise<string | null> {
+		try {
+			// Parse the data URL
+			const matches = dataUrl.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/)
+			if (!matches) {
+				console.error("Invalid image data URL format")
+				return null
+			}
+
+			const [, format, base64Data] = matches
+			const imageBuffer = Buffer.from(base64Data, "base64")
+
+			// Get workspace path or use temp directory
+			const workspacePath = getWorkspacePath()
+			const saveDir = workspacePath || require("os").tmpdir()
+
+			// Create images directory if it doesn't exist
+			const imagesDir = path.join(saveDir, "mcp-images")
+			await fs.mkdir(imagesDir, { recursive: true })
+
+			// Generate filename with timestamp
+			const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
+			const filename = `mcp-image-${timestamp}-${index}.${format}`
+			const filePath = path.join(imagesDir, filename)
+
+			// Write the image file
+			await fs.writeFile(filePath, imageBuffer)
+
+			// Return relative path if in workspace, absolute path otherwise
+			if (workspacePath) {
+				return path.relative(workspacePath, filePath)
+			}
+			return filePath
+		} catch (error) {
+			console.error("Error saving image to file:", error)
+			return null
+		}
 	}
 
 	private async executeToolAndProcessResult(
@@ -309,18 +364,41 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		const toolResult = await task.providerRef.deref()?.getMcpHub()?.callTool(serverName, toolName, parsedArguments)
 
 		let toolResultPretty = "(No response)"
+		let images: string[] = []
+		let savedImagePaths: string[] = []
 
 		if (toolResult) {
-			const outputText = this.processToolContent(toolResult)
+			const processedContent = this.processToolContent(toolResult)
+			const outputText = processedContent.text
+			images = processedContent.images
 
-			if (outputText) {
+			// Save images to local file system
+			if (images.length > 0) {
+				for (let i = 0; i < images.length; i++) {
+					const savedPath = await this.saveImageToFile(images[i], i + 1)
+					if (savedPath) {
+						savedImagePaths.push(savedPath)
+					}
+				}
+			}
+
+			if (outputText || images.length > 0) {
+				// Include saved image paths in the output text
+				let responseText = outputText
+				if (savedImagePaths.length > 0) {
+					const imagePathsText = savedImagePaths
+						.map((path, index) => `Image ${index + 1} saved to: ${path}`)
+						.join("\n")
+					responseText = outputText ? `${outputText}\n\n${imagePathsText}` : imagePathsText
+				}
+
 				await this.sendExecutionStatus(task, {
 					executionId,
 					status: "output",
-					response: outputText,
+					response: responseText,
 				})
 
-				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + outputText
+				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + responseText
 			}
 
 			// Send completion status
@@ -339,8 +417,9 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			})
 		}
 
-		await task.say("mcp_server_response", toolResultPretty)
-		pushToolResult(formatResponse.toolResult(toolResultPretty))
+		// Pass images to task.say and formatResponse.toolResult for display in UI
+		await task.say("mcp_server_response", toolResultPretty, images)
+		pushToolResult(formatResponse.toolResult(toolResultPretty, images))
 	}
 }
 
