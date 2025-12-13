@@ -163,8 +163,30 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
 			: info.defaultTemperature
 
+		// Check if the model is a Gemma 3 model
+		const isGemma3 = model.includes("gemma-3")
+
+		// Prepend system instruction to the first user message if it's a Gemma 3 model,
+		// as they don't support the system instruction parameter.
+		if (isGemma3 && systemInstruction) {
+			if (contents.length > 0 && contents[0].role === "user") {
+				const firstMessage = contents[0]
+				// Create a new text part for the system instruction
+				const systemPart = { text: systemInstruction }
+				// Prepend it to the existing parts
+				firstMessage.parts = [systemPart, ...firstMessage.parts]
+			} else {
+				// If no messages or first message is not user (e.g. starts with model),
+				// prepend a new user message with the system instruction.
+				contents.unshift({
+					role: "user",
+					parts: [{ text: systemInstruction }],
+				})
+			}
+		}
+
 		const config: GenerateContentConfig = {
-			systemInstruction,
+			...(isGemma3 ? {} : { systemInstruction }),
 			httpOptions: this.options.googleGeminiBaseUrl ? { baseUrl: this.options.googleGeminiBaseUrl } : undefined,
 			thinkingConfig,
 			maxOutputTokens,
@@ -337,6 +359,19 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
+				// Parse "limit: 15000, model: gemma-3-27b\nPlease retry in 31.714908887s"
+				// Use a more flexible regex to handle potential variations in spacing or text
+				const match = error.message.match(/limit:\s*(\d+)\s*,\s*model:\s*([^,\n]+).*?retry in\s*([\d.]+)/s)
+				if (match) {
+					const [, limit, model, retry] = match
+					throw new Error(
+						t("common:errors.gemini.resource_exhausted", {
+							limit,
+							model: model.trim(),
+							retry: Math.round(Number(retry)),
+						}),
+					)
+				}
 				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
 			}
 
