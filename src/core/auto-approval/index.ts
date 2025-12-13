@@ -7,18 +7,17 @@ import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
 import { isMcpToolAlwaysAllowed } from "./mcp"
 import { getCommandDecision } from "./commands"
 
-// We have 10 different actions that can be auto-approved.
+// We have 8 different actions that can be auto-approved.
+// Note: Retry (resubmit) and updateTodoList are always implicitly approved.
 export type AutoApprovalState =
 	| "alwaysAllowReadOnly"
 	| "alwaysAllowWrite"
 	| "alwaysAllowBrowser"
-	| "alwaysApproveResubmit"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
 	| "alwaysAllowFollowupQuestions"
-	| "alwaysAllowUpdateTodoList"
 
 // Some of these actions have additional settings associated with them.
 export type AutoApprovalStateOptions =
@@ -143,8 +142,9 @@ export async function checkAutoApproval({
 			return { decision: "ask" }
 		}
 
+		// updateTodoList is always implicitly approved when auto-approval is enabled
 		if (tool.tool === "updateTodoList") {
-			return state.alwaysAllowUpdateTodoList === true ? { decision: "approve" } : { decision: "ask" }
+			return { decision: "approve" }
 		}
 
 		if (tool?.tool === "fetchInstructions") {

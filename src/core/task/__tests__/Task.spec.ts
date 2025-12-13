@@ -697,9 +697,9 @@ describe("Cline", () => {
 					return mockSuccessStream
 				})
 
-				// Set alwaysApproveResubmit and requestDelaySeconds
+				// Set autoApprovalEnabled and requestDelaySeconds (retry is always enabled when auto-approval is on)
 				mockProvider.getState = vi.fn().mockResolvedValue({
-					alwaysApproveResubmit: true,
+					autoApprovalEnabled: true,
 					requestDelaySeconds: 3,
 				})
 
@@ -821,9 +821,9 @@ describe("Cline", () => {
 					return mockSuccessStream
 				})
 
-				// Set alwaysApproveResubmit and requestDelaySeconds
+				// Set autoApprovalEnabled and requestDelaySeconds (retry is always enabled when auto-approval is on)
 				mockProvider.getState = vi.fn().mockResolvedValue({
-					alwaysApproveResubmit: true,
+					autoApprovalEnabled: true,
 					requestDelaySeconds: 3,
 				})
 

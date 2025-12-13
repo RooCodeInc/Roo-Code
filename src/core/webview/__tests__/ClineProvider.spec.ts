@@ -848,14 +848,6 @@ describe("ClineProvider", () => {
 		expect(state.requestDelaySeconds).toBe(10)
 	})
 
-	test("alwaysApproveResubmit defaults to false", async () => {
-		// Mock globalState.get to return undefined for alwaysApproveResubmit
-		;(mockContext.globalState.get as any).mockReturnValue(undefined)
-
-		const state = await provider.getState()
-		expect(state.alwaysApproveResubmit).toBe(false)
-	})
-
 	test("autoCondenseContext defaults to true", async () => {
 		// Mock globalState.get to return undefined for autoCondenseContext
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
@@ -1029,12 +1021,6 @@ describe("ClineProvider", () => {
 	test("handles request delay settings messages", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-
-		// Test alwaysApproveResubmit
-		await messageHandler({ type: "updateSettings", updatedSettings: { alwaysApproveResubmit: true } })
-		expect(updateGlobalStateSpy).toHaveBeenCalledWith("alwaysApproveResubmit", true)
-		expect(mockContext.globalState.update).toHaveBeenCalledWith("alwaysApproveResubmit", true)
-		expect(mockPostMessage).toHaveBeenCalled()
 
 		// Test requestDelaySeconds
 		await messageHandler({ type: "updateSettings", updatedSettings: { requestDelaySeconds: 10 } })
