@@ -214,6 +214,7 @@ describe("FireworksHandler", () => {
 				contextWindow: 163840,
 				supportsImages: false,
 				supportsPromptCache: false,
+				supportsReasoningBinary: true,
 				inputPrice: 0.56,
 				outputPrice: 1.68,
 				description: expect.stringContaining("DeepSeek v3.1 is an improved version"),
