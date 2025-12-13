@@ -179,7 +179,7 @@
 	"contextManagement": {
 		"tokens": "tokens",
 		"condensation": {
-			"title": "Context Condensed",
+			"title": "context condensed",
 			"inProgress": "Condensing context...",
 			"errorHeader": "Failed to condense context"
 		},
