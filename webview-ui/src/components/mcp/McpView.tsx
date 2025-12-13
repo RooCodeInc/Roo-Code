@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Trans } from "react-i18next"
 import {
 	VSCodeCheckbox,
@@ -205,6 +205,14 @@ const ServerRow = ({ server, alwaysAllowMcp }: { server: McpServer; alwaysAllowM
 		const configTimeout = JSON.parse(server.config)?.timeout
 		return configTimeout ?? 60 // Default 1 minute (60 seconds)
 	})
+
+	// Update timeoutValue when server.config changes
+	useEffect(() => {
+		const configTimeout = JSON.parse(server.config)?.timeout
+		if (configTimeout !== undefined) {
+			setTimeoutValue(configTimeout)
+		}
+	}, [server.config])
 
 	// Computed property to check if server is expandable
 	const isExpandable = server.status === "connected" && !server.disabled

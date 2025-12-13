@@ -44,6 +44,13 @@ type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
 	reasoning?: OpenRouterReasoningParams
 }
 
+// OpenRouter error structure that may include metadata.raw with actual upstream error
+interface OpenRouterErrorResponse {
+	message?: string
+	code?: number
+	metadata?: { raw?: string }
+}
+
 // See `OpenAI.Chat.Completions.ChatCompletionChunk["usage"]`
 // `CompletionsAPI.CompletionUsage`
 // See also: https://openrouter.ai/docs/use-cases/usage-accounting
@@ -109,6 +116,29 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	getReasoningDetails(): any[] | undefined {
 		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
+	}
+
+	/**
+	 * Handle OpenRouter streaming error response and report to telemetry.
+	 * OpenRouter may include metadata.raw with the actual upstream provider error.
+	 */
+	private handleStreamingError(error: OpenRouterErrorResponse, modelId: string, operation: string): never {
+		const rawErrorMessage = error?.metadata?.raw || error?.message
+
+		const apiError = Object.assign(
+			new ApiProviderError(
+				rawErrorMessage ?? "Unknown error",
+				this.providerName,
+				modelId,
+				operation,
+				error?.code,
+			),
+			{ status: error?.code, error: { message: error?.message, metadata: error?.metadata } },
+		)
+
+		TelemetryService.instance.captureException(apiError)
+
+		throw new Error(`OpenRouter API Error ${error?.code}: ${rawErrorMessage}`)
 	}
 
 	override async *createMessage(
@@ -228,15 +258,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			TelemetryService.instance.captureException(
-				new ApiProviderError(
-					error instanceof Error ? error.message : String(error),
-					this.providerName,
-					modelId,
-					"createMessage",
-				),
-			)
-
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
@@ -259,23 +283,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
 			if ("error" in chunk) {
-				const error = chunk.error as { message?: string; code?: number }
-				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-
-				TelemetryService.instance.captureException(
-					Object.assign(
-						new ApiProviderError(
-							error?.message ?? "Unknown error",
-							this.providerName,
-							modelId,
-							"createMessage",
-							error?.code,
-						),
-						{ status: error?.code },
-					),
-				)
-
-				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
+				this.handleStreamingError(chunk.error as OpenRouterErrorResponse, modelId, "createMessage")
 			}
 
 			const delta = chunk.choices[0]?.delta
@@ -473,36 +481,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				signal: metadata?.signal,
 			})
 		} catch (error) {
-			TelemetryService.instance.captureException(
-				new ApiProviderError(
-					error instanceof Error ? error.message : String(error),
-					this.providerName,
-					modelId,
-					"completePrompt",
-				),
-			)
-
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		if ("error" in response) {
-			const error = response.error as { message?: string; code?: number }
-			console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-
-			TelemetryService.instance.captureException(
-				Object.assign(
-					new ApiProviderError(
-						error?.message ?? "Unknown error",
-						this.providerName,
-						modelId,
-						"completePrompt",
-						error?.code,
-					),
-					{ status: error?.code },
-				),
-			)
-
-			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
+			this.handleStreamingError(response.error as OpenRouterErrorResponse, modelId, "completePrompt")
 		}
 
 		const completion = response as OpenAI.Chat.ChatCompletion

@@ -31,6 +31,7 @@ import {
 	ioIntelligenceModels,
 	basetenModels,
 	qwenCodeModels,
+	litellmDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
@@ -196,7 +197,7 @@ function getSelectedModel({
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
-			const info = routerModels.litellm?.[id]
+			const info = routerModels.litellm?.[id] ?? litellmDefaultModelInfo
 			return { id, info }
 		}
 		case "xai": {
