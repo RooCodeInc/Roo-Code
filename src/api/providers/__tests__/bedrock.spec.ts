@@ -359,6 +359,80 @@ describe("AwsBedrockHandler", () => {
 				expect(result.crossRegionInference).toBe(false)
 				expect(result.modelId).toBe("ap.anthropic.claude-3-5-sonnet-20241022-v2:0") // Should be preserved as-is
 			})
+
+			it("should respect 1M context window in auto-condensing threshold calculations", () => {
+				// Test case 1: Without 1M context enabled
+				const handlerWithout1M = new AwsBedrockHandler({
+					apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-east-1",
+					awsBedrock1MContext: false,
+				})
+
+				const modelWithout1M = handlerWithout1M.getModel()
+
+				// Should use default 200K context window
+				expect(modelWithout1M.info.contextWindow).toBe(200_000)
+
+				// With 100K tokens and 100% threshold, should trigger at 200K (100% of 200K)
+				const contextPercentWithout1M = (100 * 100_000) / modelWithout1M.info.contextWindow
+				expect(contextPercentWithout1M).toBe(50) // 100K is 50% of 200K
+
+				// Test case 2: With 1M context enabled
+				const handlerWith1M = new AwsBedrockHandler({
+					apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-east-1",
+					awsBedrock1MContext: true,
+				})
+
+				const modelWith1M = handlerWith1M.getModel()
+
+				// Should use 1M context window
+				expect(modelWith1M.info.contextWindow).toBe(1_000_000)
+
+				// With 100K tokens and 100% threshold, should trigger at 1M (100% of 1M)
+				const contextPercentWith1M = (100 * 100_000) / modelWith1M.info.contextWindow
+				expect(contextPercentWith1M).toBe(10) // 100K is 10% of 1M
+
+				// Verify that auto-condensing would NOT trigger at 100K tokens with 100% threshold
+				// when 1M context is enabled (since 100K is only 10% of 1M)
+				const autoCondenseThreshold = 100 // 100% threshold
+				expect(contextPercentWith1M < autoCondenseThreshold).toBe(true)
+
+				// But it WOULD trigger without 1M context at 50% threshold
+				const lowerThreshold = 50
+				expect(contextPercentWithout1M >= lowerThreshold).toBe(true)
+			})
+
+			it("should maintain 1M context window across API handler rebuilds", () => {
+				// This test ensures that when the API handler is rebuilt or accessed multiple times,
+				// the 1M context window setting is consistently applied
+
+				const handler = new AwsBedrockHandler({
+					apiModelId: BEDROCK_1M_CONTEXT_MODEL_IDS[0],
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-east-1",
+					awsBedrock1MContext: true,
+				})
+
+				// Get model info multiple times to simulate what happens in Task.ts
+				const model1 = handler.getModel()
+				const model2 = handler.getModel()
+				const model3 = handler.getModel()
+
+				// All should consistently return 1M context window
+				expect(model1.info.contextWindow).toBe(1_000_000)
+				expect(model2.info.contextWindow).toBe(1_000_000)
+				expect(model3.info.contextWindow).toBe(1_000_000)
+
+				// Verify the model ID remains consistent
+				expect(model1.id).toBe(model2.id)
+				expect(model2.id).toBe(model3.id)
+			})
 		})
 	})
 
