@@ -202,11 +202,6 @@
 			"label": "ブラウザ",
 			"description": "承認なしで自動的にブラウザアクションを実行 — 注意：コンピューター使用をサポートするモデルを使用している場合のみ適用されます"
 		},
-		"retry": {
-			"label": "再試行",
-			"description": "サーバーがエラーレスポンスを返した場合、自動的に失敗したAPIリクエストを再試行",
-			"delayLabel": "リクエスト再試行前の遅延"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCPサーバービューで個々のMCPツールの自動承認を有効にします（この設定とツールの「常に許可」チェックボックスの両方が必要）"
@@ -235,10 +230,6 @@
 			"deniedCommandPlaceholder": "拒否するコマンドプレフィックスを入力（例：'rm -rf'）",
 			"addButton": "追加",
 			"autoDenied": "プレフィックス `{{prefix}}` を持つコマンドはユーザーによって禁止されています。別のコマンドを実行してこの制限を回避しないでください。"
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "承認なしで自動的にToDoリストを更新"
 		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",

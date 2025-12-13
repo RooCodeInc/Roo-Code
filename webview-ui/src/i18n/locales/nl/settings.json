@@ -202,11 +202,6 @@
 			"label": "Browser",
 			"description": "Automatisch browseracties uitvoeren zonder goedkeuring. Let op: geldt alleen als het model computergebruik ondersteunt."
 		},
-		"retry": {
-			"label": "Opnieuw proberen",
-			"description": "Automatisch mislukte API-verzoeken opnieuw proberen wanneer de server een foutmelding geeft",
-			"delayLabel": "Vertraging voordat het verzoek opnieuw wordt geprobeerd"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Automatische goedkeuring van individuele MCP-tools in het MCP-serversoverzicht inschakelen (vereist zowel deze instelling als het selectievakje 'Altijd toestaan' bij de tool)"
@@ -235,10 +230,6 @@
 			"deniedCommandPlaceholder": "Voer te weigeren commando-prefix in (bijv. 'rm -rf')",
 			"addButton": "Toevoegen",
 			"autoDenied": "Commando's met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "De takenlijst wordt automatisch bijgewerkt zonder goedkeuring"
 		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",

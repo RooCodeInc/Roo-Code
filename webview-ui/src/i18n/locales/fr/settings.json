@@ -203,11 +203,6 @@
 			"label": "Navigateur",
 			"description": "Effectuer automatiquement des actions du navigateur sans nécessiter d'approbation. Remarque : S'applique uniquement lorsque le modèle prend en charge l'utilisation de l'ordinateur"
 		},
-		"retry": {
-			"label": "Réessayer",
-			"description": "Réessayer automatiquement les requêtes API échouées lorsque le serveur renvoie une réponse d'erreur",
-			"delayLabel": "Délai avant de réessayer la requête"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Activer l'approbation automatique des outils MCP individuels dans la vue des serveurs MCP (nécessite à la fois ce paramètre et la case à cocher \"Toujours autoriser\" de l'outil)"
@@ -236,10 +231,6 @@
 			"deniedCommandPlaceholder": "Entrez le préfixe de commande à refuser (ex. 'rm -rf')",
 			"addButton": "Ajouter",
 			"autoDenied": "Les commandes avec le préfixe `{{prefix}}` ont été interdites par l'utilisateur. Ne contourne pas cette restriction en exécutant une autre commande."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "La liste de tâches est mise à jour automatiquement sans approbation"
 		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",
