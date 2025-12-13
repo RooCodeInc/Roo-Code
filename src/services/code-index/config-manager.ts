@@ -1,3 +1,4 @@
+import * as vscode from "vscode"
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
@@ -27,7 +28,10 @@ export class CodeIndexConfigManager {
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
-	constructor(private readonly contextProxy: ContextProxy) {
+	constructor(
+		private readonly contextProxy: ContextProxy,
+		private readonly workspacePath?: string,
+	) {
 		// Initialize with current configuration to avoid false restart triggers
 		this._loadAndSetConfiguration()
 	}
@@ -44,6 +48,19 @@ export class CodeIndexConfigManager {
 	 * This eliminates code duplication between initializeWithCurrentConfig() and loadConfiguration().
 	 */
 	private _loadAndSetConfiguration(): void {
+		// Check workspace-level setting first
+		let workspaceIndexingEnabled: boolean | undefined
+		if (this.workspacePath) {
+			const workspaceFolder = vscode.workspace.workspaceFolders?.find(
+				(folder) => folder.uri.fsPath === this.workspacePath,
+			)
+			if (workspaceFolder) {
+				workspaceIndexingEnabled = vscode.workspace
+					.getConfiguration("roo-cline", workspaceFolder.uri)
+					.get<boolean>("enableCodebaseIndexing")
+			}
+		}
+
 		// Load configuration from storage
 		const codebaseIndexConfig = this.contextProxy?.getGlobalState("codebaseIndexConfig") ?? {
 			codebaseIndexEnabled: false,
@@ -81,7 +98,8 @@ export class CodeIndexConfigManager {
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
 
 		// Update instance variables with configuration
-		this.codebaseIndexEnabled = codebaseIndexEnabled ?? false
+		// Use workspace setting if available, otherwise fall back to global setting
+		this.codebaseIndexEnabled = workspaceIndexingEnabled ?? codebaseIndexEnabled ?? false
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
