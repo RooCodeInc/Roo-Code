@@ -18,6 +18,7 @@ import {
 	mistralModels,
 	moonshotModels,
 	openAiNativeModels,
+	poeModels,
 	qwenCodeModels,
 	sambaNovaModels,
 	vertexModels,
@@ -134,6 +135,7 @@ export const providerNames = [
 	"moonshot",
 	"minimax",
 	"openai-native",
+	"poe",
 	"qwen-code",
 	"roo",
 	"sambanova",
@@ -424,6 +426,10 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
+const poeSchema = apiModelIdProviderModelSchema.extend({
+	poeApiKey: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -436,6 +442,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	vertexSchema.merge(z.object({ apiProvider: z.literal("vertex") })),
 	openAiSchema.merge(z.object({ apiProvider: z.literal("openai") })),
 	ollamaSchema.merge(z.object({ apiProvider: z.literal("ollama") })),
+	poeSchema.merge(z.object({ apiProvider: z.literal("poe") })),
 	vsCodeLmSchema.merge(z.object({ apiProvider: z.literal("vscode-lm") })),
 	lmStudioSchema.merge(z.object({ apiProvider: z.literal("lmstudio") })),
 	geminiSchema.merge(z.object({ apiProvider: z.literal("gemini") })),
@@ -478,6 +485,7 @@ export const providerSettingsSchema = z.object({
 	...vertexSchema.shape,
 	...openAiSchema.shape,
 	...ollamaSchema.shape,
+	...poeSchema.shape,
 	...vsCodeLmSchema.shape,
 	...lmStudioSchema.shape,
 	...geminiSchema.shape,
@@ -567,6 +575,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	vertex: "apiModelId",
 	"openai-native": "openAiModelId",
 	ollama: "ollamaModelId",
+	poe: "apiModelId",
 	lmstudio: "lmStudioModelId",
 	gemini: "apiModelId",
 	"gemini-cli": "apiModelId",
@@ -715,6 +724,7 @@ export const MODELS_BY_PROVIDER: Record<
 	xai: { id: "xai", label: "xAI (Grok)", models: Object.keys(xaiModels) },
 	zai: { id: "zai", label: "Z.ai", models: Object.keys(internationalZAiModels) },
 	baseten: { id: "baseten", label: "Baseten", models: Object.keys(basetenModels) },
+	poe: { id: "poe", label: "Poe", models: Object.keys(poeModels) },
 
 	// Dynamic providers; models pulled from remote APIs.
 	huggingface: { id: "huggingface", label: "Hugging Face", models: [] },
