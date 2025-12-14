@@ -316,44 +316,6 @@ export function Run({ run }: { run: Run }) {
 		return () => document.removeEventListener("keydown", handleKeyDown)
 	}, [selectedTask])
 
-	const onViewTaskLog = useCallback(
-		async (task: Task) => {
-			// Only allow viewing logs for tasks that have started.
-			// Note: we treat presence of DB task metrics as evidence of a started task,
-			// since this page may be rendered without streaming `tokenUsage` populated.
-			const hasStarted = !!task.startedAt || !!tokenUsage.get(task.id) || !!task.taskMetrics
-			if (!hasStarted) {
-				toast.error("Task has not started yet")
-				return
-			}
-
-			setSelectedTask(task)
-			setIsLoadingLog(true)
-			setTaskLog(null)
-
-			try {
-				const response = await fetch(`/api/runs/${run.id}/logs/${task.id}`)
-
-				if (!response.ok) {
-					const error = await response.json()
-					toast.error(error.error || "Failed to load log")
-					setSelectedTask(null)
-					return
-				}
-
-				const data = await response.json()
-				setTaskLog(data.logContent)
-			} catch (error) {
-				console.error("Error loading task log:", error)
-				toast.error("Failed to load log")
-				setSelectedTask(null)
-			} finally {
-				setIsLoadingLog(false)
-			}
-		},
-		[run.id, tokenUsage],
-	)
-
 	const taskMetrics: Record<number, TaskMetrics> = useMemo(() => {
 		// Reference usageUpdatedAt to trigger recomputation when Map contents change
 		void usageUpdatedAt
@@ -394,6 +356,44 @@ export function Run({ run }: { run: Run }) {
 
 		return metrics
 	}, [tasks, tokenUsage, usageUpdatedAt])
+
+	const onViewTaskLog = useCallback(
+		async (task: Task) => {
+			// Only allow viewing logs for tasks that have started.
+			// Note: we treat presence of derived metrics as evidence of a started task,
+			// since this page may be rendered without streaming `tokenUsage` populated.
+			const hasStarted = !!task.startedAt || !!tokenUsage.get(task.id) || !!taskMetrics[task.id]
+			if (!hasStarted) {
+				toast.error("Task has not started yet")
+				return
+			}
+
+			setSelectedTask(task)
+			setIsLoadingLog(true)
+			setTaskLog(null)
+
+			try {
+				const response = await fetch(`/api/runs/${run.id}/logs/${task.id}`)
+
+				if (!response.ok) {
+					const error = await response.json()
+					toast.error(error.error || "Failed to load log")
+					setSelectedTask(null)
+					return
+				}
+
+				const data = await response.json()
+				setTaskLog(data.logContent)
+			} catch (error) {
+				console.error("Error loading task log:", error)
+				toast.error("Failed to load log")
+				setSelectedTask(null)
+			} finally {
+				setIsLoadingLog(false)
+			}
+		},
+		[run.id, tokenUsage, taskMetrics],
+	)
 
 	// Collect all unique tool names from all tasks and sort by total attempts
 	const toolColumns = useMemo<ToolName[]>(() => {
