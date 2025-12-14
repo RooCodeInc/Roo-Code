@@ -432,6 +432,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
+		// For OpenAI models via OpenRouter, exclude write_to_file and apply_diff, and include apply_patch
+		// This matches the behavior of the native OpenAI provider
+		if (id.startsWith("openai/")) {
+			info = {
+				...info,
+				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
+				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
+			}
+		}
+
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 
 		const params = getModelParams({
