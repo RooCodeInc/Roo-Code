@@ -6,6 +6,7 @@
 	"views.activitybar.title": "Roo Code",
 	"views.sidebar.name": "Roo Code",
 	"command.newTask.title": "新しいタスク",
+	"command.newTask.noPrompt.title": "新しいタスク（Prompt なし）",
 	"command.history.title": "タスク履歴",
 	"command.marketplace.title": "マーケットプレイス",
 	"command.openInEditor.title": "エディタで開く",

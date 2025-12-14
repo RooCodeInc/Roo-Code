@@ -2,6 +2,7 @@
 	"extension.displayName": "Roo Code",
 	"extension.description": "Un intero team di sviluppo di agenti IA nel tuo editor.",
 	"command.newTask.title": "Nuovo Task",
+	"command.newTask.noPrompt.title": "Nuovo Task (Senza Prompt)",
 	"command.explainCode.title": "Spiega Codice",
 	"command.fixCode.title": "Correggi Codice",
 	"command.improveCode.title": "Migliora Codice",

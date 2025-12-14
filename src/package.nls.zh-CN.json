@@ -2,6 +2,7 @@
 	"extension.displayName": "Roo Code",
 	"extension.description": "在你的编辑器中提供完整的 AI 代理开发团队。",
 	"command.newTask.title": "新建任务",
+	"command.newTask.noPrompt.title": "新建任务（无 Prompt）",
 	"command.explainCode.title": "解释代码",
 	"command.fixCode.title": "修复代码",
 	"command.improveCode.title": "改进代码",

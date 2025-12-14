@@ -169,7 +169,12 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
-			}
+			},
+            {
+                "command": "roo-cline.newTask.noPrompt",
+                "title": "%command.newTask.noPrompt.title%",
+                "category": "%configuration.title%"
+            }
 		],
 		"menus": {
 			"editor/context": [
@@ -292,7 +297,13 @@
 				"mac": "cmd+alt+a",
 				"win": "ctrl+alt+a",
 				"linux": "ctrl+alt+a"
-			}
+			},
+            {
+                "command": "roo-cline.newTask.noPrompt",
+                "key": "ctrl+m ctrl+n",
+                "mac": "cmd+m cmd+n",
+                "when": "roo-cline.sidebar.visible"
+            }
 		],
 		"submenus": [
 			{
