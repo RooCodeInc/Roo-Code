@@ -2,7 +2,7 @@
 	"extension.displayName": "Roo Code",
 	"extension.description": "에디터에서 작동하는 AI 에이전트 개발팀.",
 	"command.newTask.title": "새 작업",
-	"command.newTask.noPrompt.title": "새 작업(Prompt 없음)",
+	"command.newTaskWithoutPrompt.title": "새 작업(Prompt 없음)",
 	"command.explainCode.title": "코드 설명",
 	"command.fixCode.title": "코드 수정",
 	"command.improveCode.title": "코드 개선",

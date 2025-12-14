@@ -2,7 +2,7 @@
 	"extension.displayName": "Roo Code",
 	"extension.description": "Düzenleyicinde tam bir AI ajanları geliştirme ekibi.",
 	"command.newTask.title": "Yeni Görev",
-	"command.newTask.noPrompt.title": "Yeni Görev (Prompt olmadan)",
+	"command.newTaskWithoutPrompt.title": "Yeni Görev (Prompt olmadan)",
 	"command.explainCode.title": "Kodu Açıkla",
 	"command.fixCode.title": "Kodu Düzelt",
 	"command.improveCode.title": "Kodu İyileştir",

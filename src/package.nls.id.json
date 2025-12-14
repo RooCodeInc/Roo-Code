@@ -6,7 +6,7 @@
 	"views.activitybar.title": "Roo Code",
 	"views.sidebar.name": "Roo Code",
 	"command.newTask.title": "Tugas Baru",
-	"command.newTask.noPrompt.title": "Tugas Baru (Tanpa Prompt)",
+	"command.newTaskWithoutPrompt.title": "Tugas Baru (Tanpa Prompt)",
 	"command.history.title": "Riwayat Tugas",
 	"command.marketplace.title": "Marketplace",
 	"command.openInEditor.title": "Buka di Editor",

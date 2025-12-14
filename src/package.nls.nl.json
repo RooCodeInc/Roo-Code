@@ -6,7 +6,7 @@
 	"views.activitybar.title": "Roo Code",
 	"views.sidebar.name": "Roo Code",
 	"command.newTask.title": "Nieuwe Taak",
-	"command.newTask.noPrompt.title": "Nieuwe Taak (Zonder Prompt)",
+	"command.newTaskWithoutPrompt.title": "Nieuwe Taak (Zonder Prompt)",
 	"command.history.title": "Taakgeschiedenis",
 	"command.marketplace.title": "Marktplaats",
 	"command.openInEditor.title": "Openen in Editor",
