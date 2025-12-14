@@ -24,12 +24,22 @@ export const formatTokens = (tokens: number) => {
 
 	if (tokens < 1000000) {
 		// No decimal for thousands (e.g., 72k not 72.5k)
-		return `${Math.round(tokens / 1000)}k`
+		const rounded = Math.round(tokens / 1000)
+		// If rounding crosses the boundary to 1000k, show as 1.0M instead
+		if (rounded >= 1000) {
+			return "1.0M"
+		}
+		return `${rounded}k`
 	}
 
 	if (tokens < 1000000000) {
 		// Keep decimal for millions (e.g., 3.2M)
-		return `${(tokens / 1000000).toFixed(1)}M`
+		const rounded = Math.round(tokens / 100000) / 10 // Round to 1 decimal
+		// If rounding crosses the boundary to 1000M, show as 1.0B instead
+		if (rounded >= 1000) {
+			return "1.0B"
+		}
+		return `${rounded.toFixed(1)}M`
 	}
 
 	return `${(tokens / 1000000000).toFixed(1)}B`
