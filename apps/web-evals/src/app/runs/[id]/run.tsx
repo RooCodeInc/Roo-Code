@@ -554,20 +554,23 @@ export function Run({ run }: { run: Run }) {
 		return groups
 	}, [tasks, groupByStatus, getTaskStatusCategory])
 
-	const statusLabels: Record<TaskStatusCategory, { label: string; className: string; count: number }> = {
-		failed: { label: "Failed", className: "text-red-500", count: groupedTasks?.failed.length ?? 0 },
-		in_progress: {
-			label: "In Progress",
-			className: "text-yellow-500",
-			count: groupedTasks?.in_progress.length ?? 0,
-		},
-		passed: { label: "Passed", className: "text-green-500", count: groupedTasks?.passed.length ?? 0 },
-		not_started: {
-			label: "Not Started",
-			className: "text-muted-foreground",
-			count: groupedTasks?.not_started.length ?? 0,
-		},
-	}
+	const statusLabels = useMemo(
+		(): Record<TaskStatusCategory, { label: string; className: string; count: number }> => ({
+			failed: { label: "Failed", className: "text-red-500", count: groupedTasks?.failed.length ?? 0 },
+			in_progress: {
+				label: "In Progress",
+				className: "text-yellow-500",
+				count: groupedTasks?.in_progress.length ?? 0,
+			},
+			passed: { label: "Passed", className: "text-green-500", count: groupedTasks?.passed.length ?? 0 },
+			not_started: {
+				label: "Not Started",
+				className: "text-muted-foreground",
+				count: groupedTasks?.not_started.length ?? 0,
+			},
+		}),
+		[groupedTasks],
+	)
 
 	const statusOrder: TaskStatusCategory[] = ["failed", "in_progress", "passed", "not_started"]
 
