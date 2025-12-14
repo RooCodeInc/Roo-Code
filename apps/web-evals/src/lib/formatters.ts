@@ -11,21 +11,10 @@ export const formatDuration = (durationMs: number) => {
 	const minutes = Math.floor((seconds % 3600) / 60)
 	const remainingSeconds = seconds % 60
 
-	const parts = []
-
-	if (hours > 0) {
-		parts.push(`${hours}h`)
-	}
-
-	if (minutes > 0) {
-		parts.push(`${minutes}m`)
-	}
-
-	if (remainingSeconds > 0 || parts.length === 0) {
-		parts.push(`${remainingSeconds}s`)
-	}
-
-	return parts.join(" ")
+	// Format as H:MM:SS
+	const mm = minutes.toString().padStart(2, "0")
+	const ss = remainingSeconds.toString().padStart(2, "0")
+	return `${hours}:${mm}:${ss}`
 }
 
 export const formatTokens = (tokens: number) => {
@@ -34,10 +23,12 @@ export const formatTokens = (tokens: number) => {
 	}
 
 	if (tokens < 1000000) {
-		return `${(tokens / 1000).toFixed(1)}k`
+		// No decimal for thousands (e.g., 72k not 72.5k)
+		return `${Math.round(tokens / 1000)}k`
 	}
 
 	if (tokens < 1000000000) {
+		// Keep decimal for millions (e.g., 3.2M)
 		return `${(tokens / 1000000).toFixed(1)}M`
 	}
 
