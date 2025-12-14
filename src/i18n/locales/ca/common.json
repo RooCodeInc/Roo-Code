@@ -112,7 +112,8 @@
 			"thinking_complete_no_output": "(Pensament completat, però no s'ha generat cap sortida.)",
 			"thinking_complete_truncated": "(Pensament completat, però la sortida s'ha truncat a causa del límit de fitxes.)",
 			"thinking_complete_safety": "(Pensament completat, però la sortida s'ha bloquejat a causa de la configuració de seguretat.)",
-			"thinking_complete_recitation": "(Pensament completat, però la sortida s'ha bloquejat a causa de la comprovació de recitació.)"
+			"thinking_complete_recitation": "(Pensament completat, però la sortida s'ha bloquejat a causa de la comprovació de recitació.)",
+			"resource_exhausted": "S'ha arribat al límit de velocitat per a {{model}}. El límit és de {{limit}} sol·licituds per minut. Torneu-ho a provar d'aquí a {{retry}} segons."
 		},
 		"cerebras": {
 			"authenticationFailed": "Ha fallat l'autenticació de l'API de Cerebras. Comproveu que la vostra clau d'API sigui vàlida i no hagi caducat.",

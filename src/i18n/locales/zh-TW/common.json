@@ -108,7 +108,8 @@
 			"thinking_complete_no_output": "（思考完成，但未產生輸出。）",
 			"thinking_complete_truncated": "（思考完成，但由於 Token 限制輸出被截斷。）",
 			"thinking_complete_safety": "（思考完成，但由於安全設定輸出被阻止。）",
-			"thinking_complete_recitation": "（思考完成，但由於引用檢查輸出被阻止。）"
+			"thinking_complete_recitation": "（思考完成，但由於引用檢查輸出被阻止。）",
+			"resource_exhausted": "已達到 {{model}} 的速率限制。限制為每分鐘 {{limit}} 個請求。請在 {{retry}} 秒後重試。"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API 驗證失敗。請檢查您的 API 金鑰是否有效且未過期。",

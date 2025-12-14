@@ -114,7 +114,8 @@
 			"thinking_complete_no_output": "（思考完成，但未生成输出。）",
 			"thinking_complete_truncated": "（思考完成，但由于 Token 限制输出被截断。）",
 			"thinking_complete_safety": "（思考完成，但由于安全设置输出被阻止。）",
-			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）"
+			"thinking_complete_recitation": "（思考完成，但由于引用检查输出被阻止。）",
+			"resource_exhausted": "已达到 {{model}} 的速率限制。限制为每分钟 {{limit}} 个请求。请在 {{retry}} 秒后重试。"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API 身份验证失败。请检查你的 API 密钥是否有效且未过期。",

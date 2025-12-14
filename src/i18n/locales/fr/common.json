@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Réflexion terminée, mais aucune sortie générée.)",
 			"thinking_complete_truncated": "(Réflexion terminée, mais la sortie a été tronquée en raison de la limite de jetons.)",
 			"thinking_complete_safety": "(Réflexion terminée, mais la sortie a été bloquée en raison des paramètres de sécurité.)",
-			"thinking_complete_recitation": "(Réflexion terminée, mais la sortie a été bloquée en raison de la vérification de récitation.)"
+			"thinking_complete_recitation": "(Réflexion terminée, mais la sortie a été bloquée en raison de la vérification de récitation.)",
+			"resource_exhausted": "Limite de débit atteinte pour {{model}}. La limite est de {{limit}} requêtes par minute. Veuillez réessayer dans {{retry}} secondes."
 		},
 		"cerebras": {
 			"authenticationFailed": "Échec de l'authentification de l'API Cerebras. Vérifiez que votre clé API est valide et n'a pas expiré.",
