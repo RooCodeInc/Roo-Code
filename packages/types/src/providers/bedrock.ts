@@ -69,7 +69,7 @@ export const bedrockModels = {
 		cachableFields: ["system"],
 	},
 	"amazon.nova-2-lite-v1:0": {
-		maxTokens: 5000,
+		maxTokens: 65_535,
 		contextWindow: 1_000_000,
 		supportsImages: true,
 		supportsPromptCache: true,
