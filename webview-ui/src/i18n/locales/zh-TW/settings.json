@@ -203,11 +203,6 @@
 			"label": "瀏覽器",
 			"description": "自動執行瀏覽器操作而無需核准 — 注意：僅適用於模型支援電腦使用時"
 		},
-		"retry": {
-			"label": "重試",
-			"description": "當伺服器回傳錯誤回應時自動重試失敗的 API 請求",
-			"delayLabel": "重試請求前的延遲"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "在 MCP 伺服器檢視中啟用個別 MCP 工具的自動核准（需要此設定和工具的「始終允許」核取方塊）"
@@ -236,10 +231,6 @@
 			"deniedCommandPlaceholder": "輸入要拒絕的命令前綴（例如 'rm -rf'）",
 			"addButton": "新增",
 			"autoDenied": "前綴為 `{{prefix}}` 的命令已被使用者禁止。不要透過執行其他命令來繞過此限制。"
-		},
-		"updateTodoList": {
-			"label": "待辦",
-			"description": "自動更新待辦清單無需核准"
 		},
 		"apiRequestLimit": {
 			"title": "最大請求數",

@@ -581,7 +581,6 @@ describe("ClineProvider", () => {
 			fuzzyMatchThreshold: 1.0,
 			mcpEnabled: true,
 			enableMcpServerCreation: false,
-			requestDelaySeconds: 5,
 			mode: defaultModeSlug,
 			customModes: [],
 			experiments: experimentDefault,
@@ -864,27 +863,6 @@ describe("ClineProvider", () => {
 		expect(mockPostMessage).toHaveBeenCalled()
 	})
 
-	test("requestDelaySeconds defaults to 3 seconds", async () => {
-		// Mock globalState.get to return undefined for requestDelaySeconds
-		;(mockContext.globalState.get as any).mockImplementation((key: string) => {
-			if (key === "requestDelaySeconds") {
-				return undefined
-			}
-			return null
-		})
-
-		const state = await provider.getState()
-		expect(state.requestDelaySeconds).toBe(3)
-	})
-
-	test("alwaysApproveResubmit defaults to false", async () => {
-		// Mock globalState.get to return undefined for alwaysApproveResubmit
-		;(mockContext.globalState.get as any).mockReturnValue(undefined)
-
-		const state = await provider.getState()
-		expect(state.alwaysApproveResubmit).toBe(false)
-	})
-
 	test("autoCondenseContext defaults to true", async () => {
 		// Mock globalState.get to return undefined for autoCondenseContext
 		;(mockContext.globalState.get as any).mockImplementation((key: string) =>
@@ -1053,22 +1031,6 @@ describe("ClineProvider", () => {
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("showRooIgnoredFiles", false)
 		expect(mockPostMessage).toHaveBeenCalled()
 		expect((await provider.getState()).showRooIgnoredFiles).toBe(false)
-	})
-
-	test("handles request delay settings messages", async () => {
-		await provider.resolveWebviewView(mockWebviewView)
-		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
-
-		// Test alwaysApproveResubmit
-		await messageHandler({ type: "updateSettings", updatedSettings: { alwaysApproveResubmit: true } })
-		expect(updateGlobalStateSpy).toHaveBeenCalledWith("alwaysApproveResubmit", true)
-		expect(mockContext.globalState.update).toHaveBeenCalledWith("alwaysApproveResubmit", true)
-		expect(mockPostMessage).toHaveBeenCalled()
-
-		// Test requestDelaySeconds
-		await messageHandler({ type: "updateSettings", updatedSettings: { requestDelaySeconds: 10 } })
-		expect(mockContext.globalState.update).toHaveBeenCalledWith("requestDelaySeconds", 10)
-		expect(mockPostMessage).toHaveBeenCalled()
 	})
 
 	test("handles updatePrompt message correctly", async () => {

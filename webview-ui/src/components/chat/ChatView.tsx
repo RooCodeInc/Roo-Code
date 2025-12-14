@@ -98,7 +98,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		mode,
 		setMode,
 		alwaysAllowModeSwitch,
-		alwaysAllowUpdateTodoList,
 		customModes,
 		// telemetrySetting,
 		hasSystemPromptOverride,
@@ -1407,9 +1406,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									tool = { tool: "updateTodoList" }
 								}
 							}
-							if (tool.tool === "updateTodoList" && alwaysAllowUpdateTodoList) {
-								return false
-							}
 							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
 						})()
 					}
@@ -1437,7 +1433,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			showSearch,
 			searchQuery,
 			isFollowUpAutoApprovalPaused,
-			alwaysAllowUpdateTodoList,
 			enableButtons,
 		],
 	)

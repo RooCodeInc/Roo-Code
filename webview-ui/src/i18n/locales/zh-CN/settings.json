@@ -203,11 +203,6 @@
 			"label": "浏览器",
 			"description": "自动执行浏览器操作而无需批准 — 注意：仅当模型支持计算机功能调用时适用"
 		},
-		"retry": {
-			"label": "重试",
-			"description": "当服务器返回错误响应时自动重试失败的 API 请求",
-			"delayLabel": "重试请求前的延迟"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "允许自动调用MCP服务而无需批准"
@@ -236,10 +231,6 @@
 			"deniedCommandPlaceholder": "输入要拒绝的命令前缀（例如 'rm -rf'）",
 			"addButton": "添加",
 			"autoDenied": "前缀为 `{{prefix}}` 的命令已被用户禁止。不要通过运行其他命令来绕过此限制。"
-		},
-		"updateTodoList": {
-			"label": "待办",
-			"description": "无需批准即可自动更新待办清单"
 		},
 		"apiRequestLimit": {
 			"title": "最大请求数",
