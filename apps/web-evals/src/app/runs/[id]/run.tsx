@@ -318,8 +318,11 @@ export function Run({ run }: { run: Run }) {
 
 	const onViewTaskLog = useCallback(
 		async (task: Task) => {
-			// Only allow viewing logs for tasks that have started
-			if (!task.startedAt && !tokenUsage.get(task.id)) {
+			// Only allow viewing logs for tasks that have started.
+			// Note: we treat presence of DB task metrics as evidence of a started task,
+			// since this page may be rendered without streaming `tokenUsage` populated.
+			const hasStarted = !!task.startedAt || !!tokenUsage.get(task.id) || !!task.taskMetrics
+			if (!hasStarted) {
 				toast.error("Task has not started yet")
 				return
 			}
