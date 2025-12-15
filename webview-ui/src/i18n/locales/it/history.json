@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Attività recenti",
 	"history": "Cronologia",
+	"import": "Importa",
+	"importTask": "Importa attività da file markdown esportato",
 	"exitSelectionMode": "Esci dalla modalità selezione",
 	"enterSelectionMode": "Entra in modalità selezione",
 	"done": "Fatto",

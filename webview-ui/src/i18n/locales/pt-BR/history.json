@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Tarefas recentes",
 	"history": "Histórico",
+	"import": "Importar",
+	"importTask": "Importar tarefa de arquivo markdown exportado",
 	"exitSelectionMode": "Sair do modo de seleção",
 	"enterSelectionMode": "Entrar no modo de seleção",
 	"done": "Concluído",

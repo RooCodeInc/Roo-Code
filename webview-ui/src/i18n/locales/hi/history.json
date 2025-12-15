@@ -1,6 +1,8 @@
 {
 	"recentTasks": "हाल के कार्य",
 	"history": "इतिहास",
+	"import": "आयात",
+	"importTask": "निर्यात की गई मार्कडाउन फ़ाइल से कार्य आयात करें",
 	"exitSelectionMode": "चयन मोड से बाहर निकलें",
 	"enterSelectionMode": "चयन मोड में प्रवेश करें",
 	"done": "पूर्ण",

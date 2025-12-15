@@ -5,6 +5,8 @@
 	"cache": "Cache: +{{writes}} → {{reads}}",
 	"apiCost": "Biaya API: ${{cost}}",
 	"history": "Riwayat",
+	"import": "Impor",
+	"importTask": "Impor tugas dari file markdown yang diekspor",
 	"exitSelectionMode": "Keluar Mode Seleksi",
 	"enterSelectionMode": "Masuk Mode Seleksi",
 	"done": "Selesai",

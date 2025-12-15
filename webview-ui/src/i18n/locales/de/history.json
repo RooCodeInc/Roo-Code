@@ -5,6 +5,8 @@
 	"cache": "Cache: +{{writes}} → {{reads}}",
 	"apiCost": "API-Kosten: ${{cost}}",
 	"history": "Verlauf",
+	"import": "Importieren",
+	"importTask": "Aufgabe aus exportierter Markdown-Datei importieren",
 	"exitSelectionMode": "Auswahlmodus beenden",
 	"enterSelectionMode": "Auswahlmodus starten",
 	"done": "Fertig",

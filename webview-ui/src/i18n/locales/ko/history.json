@@ -1,6 +1,8 @@
 {
 	"recentTasks": "최근 작업",
 	"history": "기록",
+	"import": "가져오기",
+	"importTask": "내보낸 마크다운 파일에서 작업 가져오기",
 	"exitSelectionMode": "선택 모드 종료",
 	"enterSelectionMode": "선택 모드 진입",
 	"done": "완료",

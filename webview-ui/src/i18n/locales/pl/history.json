@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Ostatnie zadania",
 	"history": "Historia",
+	"import": "Importuj",
+	"importTask": "Importuj zadanie z wyeksportowanego pliku markdown",
 	"exitSelectionMode": "Wyłącz tryb wyboru",
 	"enterSelectionMode": "Włącz tryb wyboru",
 	"done": "Gotowe",

@@ -1,6 +1,8 @@
 {
 	"recentTasks": "最近のタスク",
 	"history": "履歴",
+	"import": "インポート",
+	"importTask": "エクスポートされたマークダウンファイルからタスクをインポート",
 	"exitSelectionMode": "選択モードを終了",
 	"enterSelectionMode": "選択モードに入る",
 	"done": "完了",

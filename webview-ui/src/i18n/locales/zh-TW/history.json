@@ -1,6 +1,8 @@
 {
 	"recentTasks": "最近工作",
 	"history": "歷史紀錄",
+	"import": "匯入",
+	"importTask": "從匯出的 markdown 檔案匯入工作",
 	"exitSelectionMode": "離開選擇模式",
 	"enterSelectionMode": "進入選擇模式",
 	"done": "完成",
