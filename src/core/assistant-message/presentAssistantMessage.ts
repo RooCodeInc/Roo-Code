@@ -738,6 +738,7 @@ export async function presentAssistantMessage(cline: Task) {
 						block.params,
 						stateExperiments,
 						includedTools,
+						block.nativeArgs,
 					)
 				} catch (error) {
 					cline.consecutiveMistakeCount++

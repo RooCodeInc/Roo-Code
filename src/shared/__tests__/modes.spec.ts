@@ -300,6 +300,191 @@ describe("isToolAllowedForMode", () => {
 				}),
 			).toThrow(/Markdown files only/)
 		})
+
+		it("applies restrictions to apply_diff with native protocol multi-file format (nativeArgs.files)", () => {
+			// Test apply_diff with nativeArgs.files (native protocol multi-file format)
+			// This simulates the multi_apply_diff schema used with native protocol
+
+			// Should allow markdown files in architect mode
+			expect(
+				isToolAllowedForMode(
+					"apply_diff",
+					"architect",
+					[],
+					undefined,
+					{}, // toolParams is empty for native protocol
+					undefined,
+					undefined,
+					{ files: [{ path: "test.md", diff: "- old\n+ new" }] },
+				),
+			).toBe(true)
+
+			// Test with non-markdown file - should throw error
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					files: [{ path: "test.py", diff: "- old\n+ new" }],
+				}),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					files: [{ path: "test.py", diff: "- old\n+ new" }],
+				}),
+			).toThrow(/Markdown files only/)
+
+			// Test with multiple markdown files - should allow
+			expect(
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					files: [
+						{ path: "readme.md", diff: "- old\n+ new" },
+						{ path: "docs.md", diff: "- old\n+ new" },
+					],
+				}),
+			).toBe(true)
+
+			// Test with mixed file types - should throw error for non-markdown
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					files: [
+						{ path: "readme.md", diff: "- old\n+ new" },
+						{ path: "script.py", diff: "- old\n+ new" },
+					],
+				}),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					files: [
+						{ path: "readme.md", diff: "- old\n+ new" },
+						{ path: "script.py", diff: "- old\n+ new" },
+					],
+				}),
+			).toThrow(/Markdown files only/)
+		})
+
+		it("applies restrictions to apply_diff with native protocol single-file format (nativeArgs.path)", () => {
+			// Test apply_diff with nativeArgs.path (native protocol single-file format)
+			// This simulates the apply_diff schema used with native protocol
+
+			// Should allow markdown files in architect mode
+			expect(
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					path: "test.md",
+					diff: "- old\n+ new",
+				}),
+			).toBe(true)
+
+			// Test with non-markdown file - should throw error
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					path: "test.py",
+					diff: "- old\n+ new",
+				}),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode("apply_diff", "architect", [], undefined, {}, undefined, undefined, {
+					path: "test.py",
+					diff: "- old\n+ new",
+				}),
+			).toThrow(/Markdown files only/)
+		})
+
+		it("applies native protocol file restrictions to custom modes with fileRegex", () => {
+			// Test that custom mode file restrictions work with native protocol formats
+			const customModesWithRegex: ModeConfig[] = [
+				{
+					slug: "ts-editor",
+					name: "TypeScript Editor",
+					roleDefinition: "You are a TypeScript editor",
+					groups: [
+						"read",
+						["edit", { fileRegex: "\\.tsx?$", description: "TypeScript files only" }],
+						"browser",
+					],
+				},
+			]
+
+			// Test native multi-file format with valid TS files
+			expect(
+				isToolAllowedForMode(
+					"apply_diff",
+					"ts-editor",
+					customModesWithRegex,
+					undefined,
+					{},
+					undefined,
+					undefined,
+					{
+						files: [
+							{ path: "app.ts", diff: "- old\n+ new" },
+							{ path: "component.tsx", diff: "- old\n+ new" },
+						],
+					},
+				),
+			).toBe(true)
+
+			// Test native multi-file format with invalid file
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_diff",
+					"ts-editor",
+					customModesWithRegex,
+					undefined,
+					{},
+					undefined,
+					undefined,
+					{
+						files: [
+							{ path: "app.ts", diff: "- old\n+ new" },
+							{ path: "styles.css", diff: "- old\n+ new" },
+						],
+					},
+				),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_diff",
+					"ts-editor",
+					customModesWithRegex,
+					undefined,
+					{},
+					undefined,
+					undefined,
+					{
+						files: [
+							{ path: "app.ts", diff: "- old\n+ new" },
+							{ path: "styles.css", diff: "- old\n+ new" },
+						],
+					},
+				),
+			).toThrow(/TypeScript files only/)
+
+			// Test native single-file format with valid TS file
+			expect(
+				isToolAllowedForMode(
+					"apply_diff",
+					"ts-editor",
+					customModesWithRegex,
+					undefined,
+					{},
+					undefined,
+					undefined,
+					{ path: "app.ts", diff: "- old\n+ new" },
+				),
+			).toBe(true)
+
+			// Test native single-file format with invalid file
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_diff",
+					"ts-editor",
+					customModesWithRegex,
+					undefined,
+					{},
+					undefined,
+					undefined,
+					{ path: "styles.css", diff: "- old\n+ new" },
+				),
+			).toThrow(FileRestrictionError)
+		})
 	})
 
 	it("handles non-existent modes", () => {

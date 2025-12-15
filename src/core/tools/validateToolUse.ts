@@ -32,6 +32,7 @@ export function validateToolUse(
 	toolParams?: Record<string, unknown>,
 	experiments?: Record<string, boolean>,
 	includedTools?: string[],
+	nativeArgs?: Record<string, unknown>,
 ): void {
 	// First, check if the tool name is actually a valid/known tool
 	// This catches completely invalid tool names like "edit_file" that don't exist
@@ -51,6 +52,7 @@ export function validateToolUse(
 			toolParams,
 			experiments,
 			includedTools,
+			nativeArgs,
 		)
 	) {
 		throw new Error(`Tool "${toolName}" is not allowed in ${mode} mode.`)
@@ -81,6 +83,7 @@ export function isToolAllowedForMode(
 	toolParams?: Record<string, any>, // All tool parameters
 	experiments?: Record<string, boolean>,
 	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
+	nativeArgs?: Record<string, any>, // Native protocol arguments (e.g., nativeArgs.files for multi-file apply_diff)
 ): boolean {
 	// Always allow these tools
 	if (ALWAYS_AVAILABLE_TOOLS.includes(tool as any)) {
@@ -186,6 +189,37 @@ export function isToolAllowedForMode(
 					}
 					// If XML parsing fails, log the error but don't block the operation
 					console.warn(`Failed to parse XML args for file restriction validation: ${error}`)
+				}
+			}
+
+			// Handle native protocol multi-file format (nativeArgs.files from multi_apply_diff schema)
+			if (nativeArgs?.files && Array.isArray(nativeArgs.files)) {
+				for (const file of nativeArgs.files) {
+					const filePath = file?.path
+					if (filePath && typeof filePath === "string") {
+						if (!doesFileMatchRegex(filePath, options.fileRegex)) {
+							throw new FileRestrictionError(
+								mode.name,
+								options.fileRegex,
+								options.description,
+								filePath,
+								tool,
+							)
+						}
+					}
+				}
+			}
+
+			// Handle native protocol single-file format (nativeArgs.path from apply_diff schema)
+			if (nativeArgs?.path && typeof nativeArgs.path === "string" && nativeArgs?.diff) {
+				if (!doesFileMatchRegex(nativeArgs.path, options.fileRegex)) {
+					throw new FileRestrictionError(
+						mode.name,
+						options.fileRegex,
+						options.description,
+						nativeArgs.path,
+						tool,
+					)
 				}
 			}
 		}
