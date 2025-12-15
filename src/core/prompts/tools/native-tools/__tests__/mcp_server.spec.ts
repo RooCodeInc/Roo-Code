@@ -78,16 +78,16 @@ describe("getMcpServerTools", () => {
 			"project",
 		)
 
-		// Project servers come before global servers (as per McpHub.notifyWebviewOfServerChanges sorting)
-		const mockHub = createMockMcpHub([projectServer, globalServer])
+		// First occurrence wins - in this test, global comes first
+		const mockHub = createMockMcpHub([globalServer, projectServer])
 
 		const result = getMcpServerTools(mockHub as McpHub)
 
 		// Should only have one tool, not two
 		expect(result).toHaveLength(1)
 		expect(getFunction(result[0]).name).toBe("mcp--context7--resolve-library-id")
-		// Project server takes priority (comes first in the list)
-		expect(getFunction(result[0]).description).toBe("Project description")
+		// First occurrence wins (global in this case)
+		expect(getFunction(result[0]).description).toBe("Global description")
 	})
 
 	it("should allow tools with different names from the same server", () => {

@@ -5,7 +5,7 @@ import { buildMcpToolName } from "../../../../utils/mcp-name"
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
  * Deduplicates tools by name to prevent API errors when the same server is defined in both
- * global and project configs. Project servers take priority over global servers.
+ * global and project configs. First occurrence wins (based on McpHub.getServers() order).
  *
  * @param mcpHub The McpHub instance containing connected servers.
  * @returns An array of OpenAI.Chat.ChatCompletionTool definitions.
