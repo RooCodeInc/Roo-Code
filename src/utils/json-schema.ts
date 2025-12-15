@@ -1,8 +1,8 @@
 import { z } from "zod"
+import traverse from "json-schema-traverse"
 
 /**
  * Type representing a JSON Schema structure
- * Defined first so we can reference it in the Zod schema
  */
 export interface JsonSchema {
 	type?: "string" | "number" | "integer" | "boolean" | "null" | "object" | "array"
@@ -85,7 +85,7 @@ export type ValidationResult<T> = { success: true; data: T } | { success: false;
  *   const transformed = JsonSchemaUtils.addAdditionalPropertiesFalse(result.data)
  * }
  *
- * // Or transform directly (throws on invalid schema)
+ * // Or transform directly
  * const transformed = JsonSchemaUtils.addAdditionalPropertiesFalse(schema)
  * ```
  */
@@ -119,7 +119,9 @@ export class JsonSchemaUtils {
 	 * Recursively adds `additionalProperties: false` to all object schemas.
 	 * This is required by some API providers (e.g., OpenAI) for strict function calling.
 	 *
-	 * @param schema - The JSON Schema to transform (can be unvalidated, will be coerced)
+	 * Uses `json-schema-traverse` library for robust schema traversal.
+	 *
+	 * @param schema - The JSON Schema to transform
 	 * @returns A new schema with `additionalProperties: false` on all object schemas
 	 *
 	 * @example
@@ -143,65 +145,20 @@ export class JsonSchemaUtils {
 			return schema
 		}
 
-		// Create a shallow copy to avoid mutating the original
-		const result: Record<string, unknown> = { ...schema }
+		// Deep clone to avoid mutating the original
+		const cloned = JSON.parse(JSON.stringify(schema)) as Record<string, unknown>
 
-		// If this is an object schema, add additionalProperties: false
-		if (result.type === "object") {
-			result.additionalProperties = false
-		}
-
-		// Recursively process properties
-		if (result.properties && typeof result.properties === "object") {
-			const properties = result.properties as Record<string, unknown>
-			const newProperties: Record<string, unknown> = {}
-			for (const key of Object.keys(properties)) {
-				const value = properties[key]
-				if (typeof value === "object" && value !== null) {
-					newProperties[key] = this.addAdditionalPropertiesFalse(value as Record<string, unknown>)
-				} else {
-					newProperties[key] = value
+		// Use json-schema-traverse to visit all schemas and add additionalProperties: false to objects
+		traverse(cloned, {
+			allKeys: true,
+			cb: (subSchema: Record<string, unknown>) => {
+				if (subSchema.type === "object") {
+					subSchema.additionalProperties = false
 				}
-			}
-			result.properties = newProperties
-		}
+			},
+		})
 
-		// Recursively process items (for arrays)
-		if (result.items && typeof result.items === "object") {
-			if (Array.isArray(result.items)) {
-				result.items = result.items.map((item) =>
-					typeof item === "object" && item !== null
-						? this.addAdditionalPropertiesFalse(item as Record<string, unknown>)
-						: item,
-				)
-			} else {
-				result.items = this.addAdditionalPropertiesFalse(result.items as Record<string, unknown>)
-			}
-		}
-
-		// Recursively process anyOf, oneOf, allOf
-		for (const keyword of ["anyOf", "oneOf", "allOf"] as const) {
-			if (Array.isArray(result[keyword])) {
-				result[keyword] = (result[keyword] as unknown[]).map((subSchema) =>
-					typeof subSchema === "object" && subSchema !== null
-						? this.addAdditionalPropertiesFalse(subSchema as Record<string, unknown>)
-						: subSchema,
-				)
-			}
-		}
-
-		// Recursively process additionalProperties if it's a schema (not just true/false)
-		if (
-			result.additionalProperties &&
-			typeof result.additionalProperties === "object" &&
-			result.additionalProperties !== null
-		) {
-			result.additionalProperties = this.addAdditionalPropertiesFalse(
-				result.additionalProperties as Record<string, unknown>,
-			)
-		}
-
-		return result
+		return cloned
 	}
 
 	/**
