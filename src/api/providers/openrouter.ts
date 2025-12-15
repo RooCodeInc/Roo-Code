@@ -226,9 +226,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Convert Anthropic messages to OpenAI format.
+		// Pass modelId to normalize tool call IDs for Mistral compatibility
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, { modelId }),
 		]
 
 		// DeepSeek highly recommends using user instead of system role.

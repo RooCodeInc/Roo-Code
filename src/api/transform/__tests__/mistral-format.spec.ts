@@ -3,6 +3,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import { convertToMistralMessages } from "../mistral-format"
+import { normalizeToolCallId } from "../openai-format"
 
 describe("convertToMistralMessages", () => {
 	it("should convert simple text messages for user and assistant roles", () => {
@@ -87,7 +88,7 @@ describe("convertToMistralMessages", () => {
 		const mistralMessages = convertToMistralMessages(anthropicMessages)
 		expect(mistralMessages).toHaveLength(1)
 		expect(mistralMessages[0].role).toBe("tool")
-		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe("weather-123")
+		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe(normalizeToolCallId("weather-123"))
 		expect(mistralMessages[0].content).toBe("Current temperature in London: 20°C")
 	})
 
@@ -124,7 +125,7 @@ describe("convertToMistralMessages", () => {
 
 		// Only the tool result should be present
 		expect(mistralMessages[0].role).toBe("tool")
-		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe("weather-123")
+		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe(normalizeToolCallId("weather-123"))
 		expect(mistralMessages[0].content).toBe("Current temperature in London: 20°C")
 	})
 
@@ -265,7 +266,7 @@ describe("convertToMistralMessages", () => {
 
 		// Tool result message
 		expect(mistralMessages[2].role).toBe("tool")
-		expect((mistralMessages[2] as { toolCallId?: string }).toolCallId).toBe("search-123")
+		expect((mistralMessages[2] as { toolCallId?: string }).toolCallId).toBe(normalizeToolCallId("search-123"))
 		expect(mistralMessages[2].content).toBe("Found information about different mountain types.")
 
 		// Final assistant message

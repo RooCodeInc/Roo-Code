@@ -4,6 +4,8 @@ import { SystemMessage } from "@mistralai/mistralai/models/components/systemmess
 import { ToolMessage } from "@mistralai/mistralai/models/components/toolmessage"
 import { UserMessage } from "@mistralai/mistralai/models/components/usermessage"
 
+import { normalizeToolCallId } from "./openai-format"
+
 export type MistralMessage =
 	| (SystemMessage & { role: "system" })
 	| (UserMessage & { role: "user" })
@@ -67,7 +69,7 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 
 						mistralMessages.push({
 							role: "tool",
-							toolCallId: toolResult.tool_use_id,
+							toolCallId: normalizeToolCallId(toolResult.tool_use_id),
 							content: resultContent,
 						} as ToolMessage & { role: "tool" })
 					}
@@ -122,7 +124,7 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 				let toolCalls: MistralToolCallMessage[] | undefined
 				if (toolMessages.length > 0) {
 					toolCalls = toolMessages.map((toolUse) => ({
-						id: toolUse.id,
+						id: normalizeToolCallId(toolUse.id),
 						type: "function" as const,
 						function: {
 							name: toolUse.name,
