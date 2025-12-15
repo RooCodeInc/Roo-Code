@@ -21,7 +21,7 @@
  * ```
  */
 
-import type { ZodType, infer as ZodInfer, z } from "zod/v4"
+import type { ZodType, z } from "zod/v4"
 
 import { TaskLike } from "./task.js"
 
@@ -93,7 +93,7 @@ export interface SerializedCustomToolDefinition {
 export interface TypedCustomToolDefinition<T extends CustomToolParametersSchema>
 	extends Omit<CustomToolDefinition, "execute" | "parameters"> {
 	parameters?: T
-	execute: (args: ZodInfer<T>, context: CustomToolContext) => Promise<string>
+	execute: (args: z.infer<T>, context: CustomToolContext) => Promise<string>
 }
 
 /**
