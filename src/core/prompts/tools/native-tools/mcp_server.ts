@@ -1,6 +1,7 @@
 import type OpenAI from "openai"
 import { McpHub } from "../../../../services/mcp/McpHub"
 import { buildMcpToolName } from "../../../../utils/mcp-name"
+import { addAdditionalPropertiesFalse } from "../../../../utils/json-schema"
 
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
@@ -41,8 +42,12 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			seenToolNames.add(toolName)
 
 			const originalSchema = tool.inputSchema as Record<string, any> | undefined
-			const toolInputProps = originalSchema?.properties ?? {}
 			const toolInputRequired = (originalSchema?.required ?? []) as string[]
+
+			// Transform the schema to ensure all nested object schemas have additionalProperties: false
+			// This is required by some API providers (e.g., OpenAI) for strict function calling
+			const transformedSchema = originalSchema ? addAdditionalPropertiesFalse(originalSchema) : {}
+			const toolInputProps = (transformedSchema as Record<string, any>)?.properties ?? {}
 
 			// Build parameters directly from the tool's input schema.
 			// The server_name and tool_name are encoded in the function name itself
