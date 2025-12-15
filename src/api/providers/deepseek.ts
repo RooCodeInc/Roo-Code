@@ -1,7 +1,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
+import {
+	deepSeekModels,
+	deepSeekDefaultModelId,
+	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	OPENAI_AZURE_AI_INFERENCE_PATH,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -84,9 +89,15 @@ export class DeepSeekHandler extends OpenAiHandler {
 		// Add max_tokens if needed
 		this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
+		// Check if base URL is Azure AI Inference (for DeepSeek via Azure)
+		const isAzureAiInference = this._isAzureAiInference(this.options.deepSeekBaseUrl)
+
 		let stream
 		try {
-			stream = await this.client.chat.completions.create(requestOptions)
+			stream = await this.client.chat.completions.create(
+				requestOptions,
+				isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+			)
 		} catch (error) {
 			const { handleOpenAIError } = await import("./utils/openai-error-handler")
 			throw handleOpenAIError(error, "DeepSeek")

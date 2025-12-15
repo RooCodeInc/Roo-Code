@@ -455,10 +455,12 @@ describe("DeepSeekHandler", () => {
 			}
 
 			// Verify that the thinking parameter was passed to the API
+			// Note: mockCreate receives two arguments - request options and path options
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					thinking: { type: "enabled" },
 				}),
+				{}, // Empty path options for non-Azure URLs
 			)
 		})
 

@@ -478,7 +478,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	private _getUrlHost(baseUrl?: string): string {
+	protected _getUrlHost(baseUrl?: string): string {
 		try {
 			return new URL(baseUrl ?? "").host
 		} catch (error) {
@@ -491,7 +491,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		return urlHost.includes("x.ai")
 	}
 
-	private _isAzureAiInference(baseUrl?: string): boolean {
+	protected _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
 	}
