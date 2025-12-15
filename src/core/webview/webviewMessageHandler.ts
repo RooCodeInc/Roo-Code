@@ -654,6 +654,9 @@ export const webviewMessageHandler = async (
 				provider.exportTaskWithId(currentTaskId)
 			}
 			break
+		case "importTask":
+			await provider.importTaskFromMarkdown()
+			break
 		case "shareCurrentTask":
 			const shareTaskId = provider.getCurrentTask()?.taskId
 			const clineMessages = provider.getCurrentTask()?.clineMessages
@@ -1090,9 +1093,11 @@ export const webviewMessageHandler = async (
 				await provider.cancelTask()
 
 				try {
-					await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 3_000 })
+					// Reduced timeout for faster checkpoint restore
+					await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 1_000 })
 				} catch (error) {
 					vscode.window.showErrorMessage(t("common:errors.checkpoint_timeout"))
+					break // Exit early if initialization failed
 				}
 
 				try {

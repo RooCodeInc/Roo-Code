@@ -61,6 +61,7 @@ import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { downloadTask } from "../../integrations/misc/export-markdown"
+import { importTask } from "../../integrations/misc/import-markdown"
 import { getTheme } from "../../integrations/theme/getTheme"
 import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 
@@ -145,6 +146,10 @@ export class ClineProvider
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
 	private static readonly PENDING_OPERATION_TIMEOUT_MS = 30000 // 30 seconds
+
+	// Lock to prevent concurrent cancelTask/checkpointRestore operations
+	private taskOperationLock: Promise<void> = Promise.resolve()
+	private isTaskOperationInProgress = false
 
 	private cloudOrganizationsCache: CloudOrganizationMembership[] | null = null
 	private cloudOrganizationsCacheTimestamp: number | null = null
@@ -1603,6 +1608,68 @@ export class ClineProvider
 		await downloadTask(historyItem.ts, apiConversationHistory)
 	}
 
+	/**
+	 * Import a task from a previously exported Markdown file
+	 */
+	async importTaskFromMarkdown() {
+		const result = await importTask()
+
+		if (!result.success || !result.clineMessages) {
+			if (result.error) {
+				vscode.window.showErrorMessage(result.error)
+			}
+			return
+		}
+
+		try {
+			// Get current state for task creation
+			const {
+				apiConfiguration,
+				diffEnabled: enableDiff,
+				enableCheckpoints,
+				checkpointTimeout,
+				fuzzyMatchThreshold,
+				experiments,
+				cloudUserInfo,
+				remoteControlEnabled,
+			} = await this.getState()
+
+			// Clear any existing task
+			await this.removeClineFromStack()
+
+			// Create a new task with the imported conversation
+			const task = new Task({
+				provider: this,
+				apiConfiguration,
+				enableDiff,
+				enableCheckpoints,
+				checkpointTimeout,
+				fuzzyMatchThreshold,
+				consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
+				task: result.taskDescription || "[Imported Task]",
+				experiments,
+				taskNumber: this.clineStack.length + 1,
+				onCreated: this.taskCreationCallback,
+				enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
+			})
+
+			// Set the imported clineMessages directly
+			task.clineMessages = result.clineMessages
+
+			await this.addClineToStack(task)
+
+			vscode.window.showInformationMessage(
+				`Successfully imported task with ${result.clineMessages.length} messages`,
+			)
+
+			await this.postStateToWebview()
+		} catch (error) {
+			vscode.window.showErrorMessage(
+				`Failed to create task from imported data: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
 	/* Condenses a task's message history to use fewer tokens. */
 	async condenseTaskContext(taskId: string) {
 		let task: Task | undefined
@@ -2706,74 +2773,88 @@ export class ClineProvider
 	}
 
 	public async cancelTask(): Promise<void> {
+		// Use lock to prevent concurrent cancelTask calls causing race conditions
+		if (this.isTaskOperationInProgress) {
+			console.log(`[cancelTask] Operation already in progress, skipping`)
+			return
+		}
+
 		const task = this.getCurrentTask()
 
 		if (!task) {
 			return
 		}
 
-		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
+		// Set lock immediately
+		this.isTaskOperationInProgress = true
 
-		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
+		try {
+			console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
-		// Preserve parent and root task information for history item.
-		const rootTask = task.rootTask
-		const parentTask = task.parentTask
+			// Capture the current instance to detect if rehydrate already occurred elsewhere
+			const originalInstanceId = task.instanceId
 
-		// Mark this as a user-initiated cancellation so provider-only rehydration can occur
-		task.abortReason = "user_cancelled"
+			// Mark this as a user-initiated cancellation so provider-only rehydration can occur
+			task.abortReason = "user_cancelled"
 
-		// Capture the current instance to detect if rehydrate already occurred elsewhere
-		const originalInstanceId = task.instanceId
+			// Immediately cancel the underlying HTTP request if one is in progress
+			// This ensures the stream fails quickly rather than waiting for network timeout
+			task.cancelCurrentRequest()
 
-		// Immediately cancel the underlying HTTP request if one is in progress
-		// This ensures the stream fails quickly rather than waiting for network timeout
-		task.cancelCurrentRequest()
+			// Begin abort and WAIT for messages to be saved - this is critical to prevent content loss
+			await task.abortTask()
 
-		// Begin abort (non-blocking)
-		task.abortTask()
+			// Immediately mark the original instance as abandoned to prevent any residual activity
+			task.abandoned = true
 
-		// Immediately mark the original instance as abandoned to prevent any residual activity
-		task.abandoned = true
+			// Get history item for rehydration (do this after abort to ensure messages are saved)
+			const { historyItem } = await this.getTaskWithId(task.taskId)
 
-		await pWaitFor(
-			() =>
-				this.getCurrentTask()! === undefined ||
-				this.getCurrentTask()!.isStreaming === false ||
-				this.getCurrentTask()!.didFinishAbortingStream ||
-				// If only the first chunk is processed, then there's no
-				// need to wait for graceful abort (closes edits, browser,
-				// etc).
-				this.getCurrentTask()!.isWaitingForFirstChunk,
-			{
-				timeout: 3_000,
-			},
-		).catch(() => {
-			console.error("Failed to abort task")
-		})
+			// Preserve parent and root task information for history item.
+			const rootTask = task.rootTask
+			const parentTask = task.parentTask
 
-		// Defensive safeguard: if current instance already changed, skip rehydrate
-		const current = this.getCurrentTask()
-		if (current && current.instanceId !== originalInstanceId) {
-			this.log(
-				`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
-			)
-			return
-		}
+			// Reduced timeout for faster cancellation - only wait briefly for stream to stop
+			await pWaitFor(
+				() =>
+					this.getCurrentTask()! === undefined ||
+					this.getCurrentTask()!.isStreaming === false ||
+					this.getCurrentTask()!.didFinishAbortingStream ||
+					this.getCurrentTask()!.isWaitingForFirstChunk,
+				{
+					timeout: 500, // Reduced from 3000ms to 500ms for faster cancellation
+				},
+			).catch(() => {
+				// Timeout is OK - we'll force proceed anyway
+				console.log("[cancelTask] Timeout waiting for stream abort, forcing proceed")
+			})
 
-		// Final race check before rehydrate to avoid duplicate rehydration
-		{
-			const currentAfterCheck = this.getCurrentTask()
-			if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+			// Defensive safeguard: if current instance already changed, skip rehydrate
+			const current = this.getCurrentTask()
+			if (current && current.instanceId !== originalInstanceId) {
 				this.log(
-					`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					`[cancelTask] Skipping rehydrate: current instance ${current.instanceId} != original ${originalInstanceId}`,
 				)
 				return
 			}
-		}
 
-		// Clears task again, so we need to abortTask manually above.
-		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+			// Final race check before rehydrate to avoid duplicate rehydration
+			{
+				const currentAfterCheck = this.getCurrentTask()
+				if (currentAfterCheck && currentAfterCheck.instanceId !== originalInstanceId) {
+					this.log(
+						`[cancelTask] Skipping rehydrate after final check: current instance ${currentAfterCheck.instanceId} != original ${originalInstanceId}`,
+					)
+					return
+				}
+			}
+
+			// Clears task again, so we need to abortTask manually above.
+			await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+		} finally {
+			// Always release the lock
+			this.isTaskOperationInProgress = false
+		}
 	}
 
 	// Clear the current task without treating it as a subtask.
