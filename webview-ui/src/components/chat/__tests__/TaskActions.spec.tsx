@@ -34,6 +34,7 @@ vi.mock("react-i18next", () => ({
 			const translations: Record<string, string> = {
 				"chat:task.share": "Share task",
 				"chat:task.export": "Export task history",
+				"chat:task.fork": "Fork conversation (create copy at this point)",
 				"chat:task.delete": "Delete Task (Shift + Click to skip confirmation)",
 				"chat:task.shareWithOrganization": "Share with Organization",
 				"chat:task.shareWithOrganizationDescription": "Only members of your organization can access",
@@ -333,6 +334,36 @@ describe("TaskActions", () => {
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "exportCurrentTask",
 			})
+		})
+
+		it("renders fork button", () => {
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const forkButton = screen.getByLabelText("Fork conversation (create copy at this point)")
+			expect(forkButton).toBeInTheDocument()
+		})
+
+		it("sends forkTask message when fork button is clicked", () => {
+			render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			const forkButton = screen.getByLabelText("Fork conversation (create copy at this point)")
+			fireEvent.click(forkButton)
+
+			expect(mockPostMessage).toHaveBeenCalledWith({
+				type: "forkTask",
+			})
+		})
+
+		it("fork button respects buttonsDisabled state", () => {
+			const { rerender } = render(<TaskActions item={mockItem} buttonsDisabled={false} />)
+
+			let forkButton = screen.getByLabelText("Fork conversation (create copy at this point)")
+			expect(forkButton).not.toBeDisabled()
+
+			rerender(<TaskActions item={mockItem} buttonsDisabled={true} />)
+
+			forkButton = screen.getByLabelText("Fork conversation (create copy at this point)")
+			expect(forkButton).toBeDisabled()
 		})
 
 		it("renders delete button when item has size", () => {

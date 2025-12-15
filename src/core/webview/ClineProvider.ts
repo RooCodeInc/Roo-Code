@@ -1674,6 +1674,111 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
+	/**
+	 * Fork the current task, creating an exact copy with all conversation history and state.
+	 * This enables exploring multiple task paths without reloading context.
+	 *
+	 * Implements atomic copy-then-switch for safety:
+	 * 1. Creates new task directory and copies all data
+	 * 2. Creates new history item with forkedFromTaskId reference
+	 * 3. Only switches to the fork after all data is persisted
+	 *
+	 * @returns The new forked task ID
+	 */
+	async forkCurrentTask(): Promise<string> {
+		const currentTask = this.getCurrentTask()
+		if (!currentTask) {
+			throw new Error("No current task to fork")
+		}
+
+		const currentTaskId = currentTask.taskId
+		const { historyItem } = await this.getTaskWithId(currentTaskId)
+
+		// Generate new unique task ID
+		const newTaskId = Date.now().toString()
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+
+		try {
+			// ATOMIC COPY PHASE: Copy all task data before switching
+
+			// 1. Read current task's UI messages
+			const uiMessages = await readTaskMessages({
+				taskId: currentTaskId,
+				globalStoragePath,
+			})
+
+			// 2. Read current task's API messages
+			const apiMessages = await readApiMessages({
+				taskId: currentTaskId,
+				globalStoragePath,
+			})
+
+			// 3. Create new task directory and save messages atomically
+			await saveTaskMessages({
+				messages: uiMessages,
+				taskId: newTaskId,
+				globalStoragePath,
+			})
+
+			await saveApiMessages({
+				messages: apiMessages,
+				taskId: newTaskId,
+				globalStoragePath,
+			})
+
+			// 4. Create new history item with all metadata preserved
+			const newHistoryItem: HistoryItem = {
+				...historyItem,
+				id: newTaskId,
+				ts: Date.now(),
+				forkedFromTaskId: currentTaskId,
+				// Reset delegation fields for the fork
+				status: undefined,
+				delegatedToId: undefined,
+				awaitingChildId: undefined,
+				completedByChildId: undefined,
+				completionResultSummary: undefined,
+				// Preserve parent/root relationships
+				parentTaskId: historyItem.parentTaskId,
+				rootTaskId: historyItem.rootTaskId,
+				// Note: childIds not copied - fork starts fresh without children
+			}
+
+			// 5. Add new history item to state
+			await this.updateTaskHistory(newHistoryItem)
+
+			this.log(`[forkCurrentTask] Successfully forked task ${currentTaskId} to ${newTaskId}`)
+
+			// SWITCH PHASE: Only after all data is safely persisted
+			// 6. Switch to the newly forked task
+			await this.createTaskWithHistoryItem(newHistoryItem)
+
+			// 7. Post success message to webview
+			await this.postMessageToWebview({
+				type: "taskForked",
+				taskId: newTaskId,
+				forkedFromTaskId: currentTaskId,
+			})
+
+			return newTaskId
+		} catch (error) {
+			// Clean up partial fork on error
+			try {
+				await this.deleteTaskWithId(newTaskId)
+			} catch (cleanupError) {
+				this.log(
+					`[forkCurrentTask] Failed to clean up partial fork ${newTaskId}: ${
+						cleanupError instanceof Error ? cleanupError.message : String(cleanupError)
+					}`,
+				)
+			}
+
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			this.log(`[forkCurrentTask] Failed to fork task ${currentTaskId}: ${errorMessage}`)
+			throw new Error(`Failed to fork task: ${errorMessage}`)
+		}
+	}
+
 	async refreshWorkspace() {
 		this.currentWorkspacePath = getWorkspacePath()
 		await this.postStateToWebview()

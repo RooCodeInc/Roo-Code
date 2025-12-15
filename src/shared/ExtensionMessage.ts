@@ -132,6 +132,7 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "taskForked"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -217,6 +218,8 @@ export interface ExtensionMessage {
 	browserSessionMessages?: ClineMessage[] // For browser session panel updates
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
+	taskId?: string // For taskForked: the new forked task ID
+	forkedFromTaskId?: string // For taskForked: the original task ID
 }
 
 export type ExtensionState = Pick<

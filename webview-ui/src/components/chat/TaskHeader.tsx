@@ -12,6 +12,7 @@ import {
 	HardDriveUpload,
 	FoldVertical,
 	Globe,
+	GitBranchIcon,
 } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -61,7 +62,8 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive, taskHistory } =
+		useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -109,6 +111,14 @@ const TaskHeader = ({
 
 	const showBrowserGlobe = browserSessionStartIndex !== -1 || !!isBrowserSessionActive
 
+	// Find parent task if this is a forked task
+	const parentTask = useMemo(() => {
+		if (!currentTaskItem?.forkedFromTaskId || !taskHistory) {
+			return null
+		}
+		return taskHistory.find((item) => item.id === currentTaskItem.forkedFromTaskId)
+	}, [currentTaskItem?.forkedFromTaskId, taskHistory])
+
 	const condenseButton = (
 		<LucideIconButton
 			title={t("chat:task.condenseContext")}
@@ -130,6 +140,25 @@ const TaskHeader = ({
 					variant="banner">
 					{t("cloud:upsell.longRunningTask")}
 				</DismissibleUpsell>
+			)}
+			{/* Forked from indicator */}
+			{parentTask && (
+				<div className="mb-2 px-3 py-2 bg-vscode-input-background rounded-lg border border-vscode-sideBar-background">
+					<div className="flex items-center gap-2 text-sm text-vscode-descriptionForeground">
+						<GitBranchIcon className="size-3.5 shrink-0" />
+						<span className="font-medium">{t("chat:task.forkedFrom")}</span>
+						<StandardTooltip content={t("chat:task.openParentTask")}>
+							<button
+								onClick={(e) => {
+									e.stopPropagation()
+									vscode.postMessage({ type: "showTaskWithId", text: parentTask.id })
+								}}
+								className="text-vscode-textLink hover:text-vscode-textLink/80 underline max-w-[200px] truncate">
+								{parentTask.task}
+							</button>
+						</StandardTooltip>
+					</div>
+				</div>
 			)}
 			<div
 				className={cn(
