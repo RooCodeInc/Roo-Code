@@ -35,8 +35,8 @@ export interface JsonSchema {
 const JsonSchemaPrimitiveTypeSchema = z.enum(["string", "number", "integer", "boolean", "null"])
 
 /**
- * Zod schema for validating JSON Schema structures
- * Uses z.lazy for recursive definition with explicit type casting
+ * Zod schema for validating JSON Schema structures.
+ * Uses z.lazy for recursive definition with explicit type annotation.
  */
 export const JsonSchemaSchema: z.ZodType<JsonSchema> = z.lazy(() =>
 	z
@@ -67,145 +67,128 @@ export const JsonSchemaSchema: z.ZodType<JsonSchema> = z.lazy(() =>
 )
 
 /**
- * Result of schema validation
+ * Callback function for schema transformation
  */
-export type ValidationResult<T> = { success: true; data: T } | { success: false; error: z.ZodError }
+export type SchemaTransformCallback = (subSchema: Record<string, unknown>) => void
 
 /**
- * JSON Schema utility class for validation and transformation
+ * Validates that an object is a valid JSON Schema.
+ *
+ * @param schema - The object to validate
+ * @returns The validated schema if valid, null otherwise
  *
  * @example
  * ```typescript
  * const schema = { type: "object", properties: { name: { type: "string" } } }
- *
- * // Validate schema
- * const result = JsonSchemaUtils.validate(schema)
- * if (result.success) {
- *   // Use validated schema
- *   const transformed = JsonSchemaUtils.addAdditionalPropertiesFalse(result.data)
+ * const validated = validateJsonSchema(schema)
+ * if (validated) {
+ *   // schema is valid, use it
  * }
- *
- * // Or transform directly
- * const transformed = JsonSchemaUtils.addAdditionalPropertiesFalse(schema)
  * ```
  */
-export class JsonSchemaUtils {
-	/**
-	 * Validates that an object conforms to JSON Schema structure
-	 *
-	 * @param schema - The object to validate
-	 * @returns Validation result with typed data or error
-	 */
-	static validate(schema: unknown): ValidationResult<JsonSchema> {
-		const result = JsonSchemaSchema.safeParse(schema)
-		if (result.success) {
-			return { success: true, data: result.data }
-		}
-		return { success: false, error: result.error }
-	}
-
-	/**
-	 * Validates and throws if invalid
-	 *
-	 * @param schema - The object to validate
-	 * @returns Validated JSON Schema
-	 * @throws ZodError if validation fails
-	 */
-	static validateOrThrow(schema: unknown): JsonSchema {
-		return JsonSchemaSchema.parse(schema)
-	}
-
-	/**
-	 * Recursively adds `additionalProperties: false` to all object schemas.
-	 * This is required by some API providers (e.g., OpenAI) for strict function calling.
-	 *
-	 * Uses `json-schema-traverse` library for robust schema traversal.
-	 *
-	 * @param schema - The JSON Schema to transform
-	 * @returns A new schema with `additionalProperties: false` on all object schemas
-	 *
-	 * @example
-	 * ```typescript
-	 * const schema = {
-	 *   type: "object",
-	 *   properties: {
-	 *     users: {
-	 *       type: "array",
-	 *       items: { type: "object", properties: { name: { type: "string" } } }
-	 *     }
-	 *   }
-	 * }
-	 *
-	 * const result = JsonSchemaUtils.addAdditionalPropertiesFalse(schema)
-	 * // Result: all object schemas now have additionalProperties: false
-	 * ```
-	 */
-	static addAdditionalPropertiesFalse(schema: Record<string, unknown>): Record<string, unknown> {
-		if (typeof schema !== "object" || schema === null) {
-			return schema
-		}
-
-		// Deep clone to avoid mutating the original
-		const cloned = JSON.parse(JSON.stringify(schema)) as Record<string, unknown>
-
-		// Use json-schema-traverse to visit all schemas and add additionalProperties: false to objects
-		traverse(cloned, {
-			allKeys: true,
-			cb: (subSchema: Record<string, unknown>) => {
-				if (subSchema.type === "object") {
-					subSchema.additionalProperties = false
-				}
-			},
-		})
-
-		return cloned
-	}
-
-	/**
-	 * Validates schema and then adds `additionalProperties: false` to all object schemas.
-	 * Throws if schema is invalid.
-	 *
-	 * @param schema - The JSON Schema to validate and transform
-	 * @returns A validated and transformed schema
-	 * @throws ZodError if validation fails
-	 */
-	static validateAndAddAdditionalPropertiesFalse(schema: unknown): Record<string, unknown> {
-		this.validateOrThrow(schema)
-		return this.addAdditionalPropertiesFalse(schema as Record<string, unknown>)
-	}
-
-	/**
-	 * Strips unknown/unsupported properties from a schema, keeping only known JSON Schema fields
-	 *
-	 * @param schema - The JSON Schema to clean
-	 * @returns A new schema with only known JSON Schema fields
-	 */
-	static stripUnknownFields(schema: unknown): JsonSchema | null {
-		const result = JsonSchemaSchema.safeParse(schema)
-		if (!result.success) {
-			return null
-		}
-		return result.data
-	}
-
-	/**
-	 * Checks if a schema is valid JSON Schema
-	 *
-	 * @param schema - The object to check
-	 * @returns true if valid JSON Schema, false otherwise
-	 */
-	static isValid(schema: unknown): schema is JsonSchema {
-		return JsonSchemaSchema.safeParse(schema).success
-	}
+export function validateJsonSchema(schema: unknown): JsonSchema | null {
+	const result = JsonSchemaSchema.safeParse(schema)
+	return result.success ? result.data : null
 }
 
 /**
- * Standalone function for adding additionalProperties: false
- * (for backwards compatibility and simpler imports)
+ * Type guard to check if a value is a valid JSON Schema.
  *
- * @param schema - The JSON Schema object to transform
- * @returns A new schema object with `additionalProperties: false` added to all object schemas
+ * @param schema - The value to check
+ * @returns true if the value is a valid JSON Schema
+ */
+export function isJsonSchema(schema: unknown): schema is JsonSchema {
+	return JsonSchemaSchema.safeParse(schema).success
+}
+
+/**
+ * Transforms a JSON Schema by visiting all sub-schemas and applying a callback.
+ * Uses `json-schema-traverse` for robust traversal of all JSON Schema constructs.
+ *
+ * @param schema - The JSON Schema to transform
+ * @param callback - Function to call on each sub-schema (can mutate the sub-schema)
+ * @returns A new transformed schema (original is not mutated)
+ *
+ * @example
+ * ```typescript
+ * // Add a custom property to all object schemas
+ * const result = transformJsonSchema(schema, (subSchema) => {
+ *   if (subSchema.type === "object") {
+ *     subSchema.myCustomProp = true
+ *   }
+ * })
+ * ```
+ */
+export function transformJsonSchema(
+	schema: Record<string, unknown>,
+	callback: SchemaTransformCallback,
+): Record<string, unknown> {
+	if (typeof schema !== "object" || schema === null) {
+		return schema
+	}
+
+	// Deep clone to avoid mutating the original
+	const cloned = JSON.parse(JSON.stringify(schema)) as Record<string, unknown>
+
+	// Use json-schema-traverse to visit all sub-schemas
+	traverse(cloned, {
+		allKeys: true,
+		cb: callback,
+	})
+
+	return cloned
+}
+
+/**
+ * Recursively adds `additionalProperties: false` to all object schemas.
+ * This is required by some API providers (e.g., OpenAI) for strict function calling.
+ *
+ * @param schema - The JSON Schema to transform
+ * @returns A new schema with `additionalProperties: false` on all object schemas
+ *
+ * @example
+ * ```typescript
+ * const schema = {
+ *   type: "object",
+ *   properties: {
+ *     users: {
+ *       type: "array",
+ *       items: { type: "object", properties: { name: { type: "string" } } }
+ *     }
+ *   }
+ * }
+ *
+ * const result = addAdditionalPropertiesFalse(schema)
+ * // All nested object schemas now have additionalProperties: false
+ * ```
  */
 export function addAdditionalPropertiesFalse(schema: Record<string, unknown>): Record<string, unknown> {
-	return JsonSchemaUtils.addAdditionalPropertiesFalse(schema)
+	return transformJsonSchema(schema, (subSchema) => {
+		if (subSchema.type === "object") {
+			subSchema.additionalProperties = false
+		}
+	})
+}
+
+/**
+ * Validates a schema and then transforms it to add `additionalProperties: false`.
+ * Throws if the schema is invalid.
+ *
+ * @param schema - The schema to validate and transform
+ * @returns The validated and transformed schema
+ * @throws ZodError if the schema is invalid
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   const result = validateAndAddAdditionalPropertiesFalse(schema)
+ *   // Use the validated and transformed schema
+ * } catch (error) {
+ *   // Handle invalid schema
+ * }
+ * ```
+ */
+export function validateAndAddAdditionalPropertiesFalse(schema: unknown): Record<string, unknown> {
+	JsonSchemaSchema.parse(schema) // Throws if invalid
+	return addAdditionalPropertiesFalse(schema as Record<string, unknown>)
 }
