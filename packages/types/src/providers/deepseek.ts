@@ -1,6 +1,9 @@
 import type { ModelInfo } from "../model.js"
 
 // https://platform.deepseek.com/docs/api
+// preserveReasoning enables interleaved thinking mode for tool calls:
+// DeepSeek requires reasoning_content to be passed back during tool call
+// continuation within the same turn. See: https://api-docs.deepseek.com/guides/thinking_mode
 export type DeepSeekModelId = keyof typeof deepSeekModels
 
 export const deepSeekDefaultModelId: DeepSeekModelId = "deepseek-chat"
@@ -12,10 +15,6 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		// preserveReasoning enables interleaved thinking mode for tool calls:
-		// DeepSeek requires reasoning_content to be passed back during tool call
-		// continuation within the same turn. See: https://api-docs.deepseek.com/guides/thinking_mode
-		preserveReasoning: true,
 		defaultToolProtocol: "native",
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
@@ -30,9 +29,6 @@ export const deepSeekModels = {
 		supportsPromptCache: true,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
-		// preserveReasoning enables interleaved thinking mode for tool calls:
-		// DeepSeek requires reasoning_content to be passed back during tool call
-		// continuation within the same turn. See: https://api-docs.deepseek.com/guides/thinking_mode
 		preserveReasoning: true,
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
