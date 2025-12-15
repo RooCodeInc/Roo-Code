@@ -99,6 +99,28 @@ vitest.mock("../fetchers/modelCache", () => ({
 				cacheReadsPrice: 0.3,
 				description: "Claude 3.7 Sonnet with thinking",
 			},
+			"openai/gpt-4o": {
+				maxTokens: 16384,
+				contextWindow: 128000,
+				supportsImages: true,
+				supportsPromptCache: false,
+				supportsNativeTools: true,
+				inputPrice: 2.5,
+				outputPrice: 10,
+				description: "GPT-4o",
+			},
+			"openai/o1": {
+				maxTokens: 100000,
+				contextWindow: 200000,
+				supportsImages: true,
+				supportsPromptCache: false,
+				supportsNativeTools: true,
+				inputPrice: 15,
+				outputPrice: 60,
+				description: "OpenAI o1",
+				excludedTools: ["existing_excluded"],
+				includedTools: ["existing_included"],
+			},
 		})
 	}),
 }))
@@ -175,6 +197,51 @@ describe("OpenRouterHandler", () => {
 			expect(result.maxTokens).toBe(8192)
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
+		})
+
+		it("adds excludedTools and includedTools for OpenAI models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+			})
+
+			const result = await handler.fetchModel()
+			expect(result.id).toBe("openai/gpt-4o")
+			expect(result.info.excludedTools).toContain("apply_diff")
+			expect(result.info.excludedTools).toContain("write_to_file")
+			expect(result.info.includedTools).toContain("apply_patch")
+		})
+
+		it("merges excludedTools and includedTools with existing values for OpenAI models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/o1",
+			})
+
+			const result = await handler.fetchModel()
+			expect(result.id).toBe("openai/o1")
+			// Should have the new exclusions
+			expect(result.info.excludedTools).toContain("apply_diff")
+			expect(result.info.excludedTools).toContain("write_to_file")
+			// Should preserve existing exclusions
+			expect(result.info.excludedTools).toContain("existing_excluded")
+			// Should have the new inclusions
+			expect(result.info.includedTools).toContain("apply_patch")
+			// Should preserve existing inclusions
+			expect(result.info.includedTools).toContain("existing_included")
+		})
+
+		it("does not add excludedTools or includedTools for non-OpenAI models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+
+			const result = await handler.fetchModel()
+			expect(result.id).toBe("anthropic/claude-sonnet-4")
+			// Should NOT have the tool exclusions/inclusions
+			expect(result.info.excludedTools).toBeUndefined()
+			expect(result.info.includedTools).toBeUndefined()
 		})
 	})
 
