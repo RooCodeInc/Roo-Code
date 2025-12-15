@@ -12,6 +12,10 @@ export const deepSeekModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
+		// preserveReasoning enables interleaved thinking mode for tool calls:
+		// DeepSeek requires reasoning_content to be passed back during tool call
+		// continuation within the same turn. See: https://api-docs.deepseek.com/guides/thinking_mode
+		preserveReasoning: true,
 		defaultToolProtocol: "native",
 		inputPrice: 0.28, // $0.28 per million tokens (cache miss) - Updated Dec 9, 2025
 		outputPrice: 0.42, // $0.42 per million tokens - Updated Dec 9, 2025
@@ -22,8 +26,6 @@ export const deepSeekModels = {
 	"deepseek-reasoner": {
 		maxTokens: 8192, // 8K max output
 		contextWindow: 128_000,
-		includedTools: ["edit_file"],
-		// excludedTools: ["apply_diff"],
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
