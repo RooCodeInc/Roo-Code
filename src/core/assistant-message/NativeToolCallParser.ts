@@ -559,8 +559,6 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | McpToolUse | null {
-		// console.log(`parseToolCall -> ${JSON.stringify(toolCall, null, 2)}`)
-
 		// Check if this is a dynamic MCP tool (mcp--serverName--toolName)
 		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
 
@@ -815,8 +813,6 @@ export class NativeToolCallParser {
 			if (toolCall.name !== resolvedName) {
 				result.originalName = toolCall.name
 			}
-
-			console.log(`parseToolCall -> result: ${JSON.stringify(result, null, 2)}`)
 
 			return result
 		} catch (error) {
