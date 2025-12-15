@@ -334,6 +334,7 @@ export type ExtensionState = Pick<
 	cloudApiUrl?: string
 	cloudOrganizations?: CloudOrganizationMembership[]
 	sharingEnabled: boolean
+	publicSharingEnabled: boolean
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
