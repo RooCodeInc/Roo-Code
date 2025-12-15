@@ -2568,6 +2568,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 											// Get the index and replace partial with final
 											if (toolUseIndex !== undefined) {
+												console.log(
+													`[tool_call_partial] setting tool use at index ${toolUseIndex} with finalToolUse: ${JSON.stringify(finalToolUse, null, 2)}`,
+												)
+
 												this.assistantMessageContent[toolUseIndex] = finalToolUse
 											}
 
@@ -2727,6 +2731,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Get the index and replace partial with final
 								if (toolUseIndex !== undefined) {
+									console.log(
+										`[tool_call_end] setting tool use at index ${toolUseIndex} with finalToolUse: ${JSON.stringify(finalToolUse, null, 2)}`,
+									)
+
 									this.assistantMessageContent[toolUseIndex] = finalToolUse
 								}
 

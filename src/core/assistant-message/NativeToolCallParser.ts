@@ -1,13 +1,16 @@
+import { parseJSON } from "partial-json"
+
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
+import { customToolRegistry } from "@roo-code/core"
+
 import {
 	type ToolUse,
 	type McpToolUse,
 	type ToolParamName,
-	toolParamNames,
 	type NativeToolArgs,
+	toolParamNames,
 } from "../../shared/tools"
 import { resolveToolAlias } from "../prompts/tools/filter-tools-for-mode"
-import { parseJSON } from "partial-json"
 import type {
 	ApiStreamToolCallStartChunk,
 	ApiStreamToolCallDeltaChunk,
@@ -556,8 +559,11 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | McpToolUse | null {
+		// console.log(`parseToolCall -> ${JSON.stringify(toolCall, null, 2)}`)
+
 		// Check if this is a dynamic MCP tool (mcp--serverName--toolName)
 		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
+
 		if (typeof toolCall.name === "string" && toolCall.name.startsWith(mcpPrefix)) {
 			return this.parseDynamicMcpTool(toolCall)
 		}
@@ -565,8 +571,8 @@ export class NativeToolCallParser {
 		// Resolve tool alias to canonical name (e.g., "edit_file" -> "apply_diff", "temp_edit_file" -> "search_and_replace")
 		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
 
-		// Validate tool name (after alias resolution)
-		if (!toolNames.includes(resolvedName as ToolName)) {
+		// Validate tool name (after alias resolution).
+		if (!toolNames.includes(resolvedName as ToolName) && !customToolRegistry.has(resolvedName)) {
 			console.error(`Invalid tool name: ${toolCall.name} (resolved: ${resolvedName})`)
 			console.error(`Valid tool names:`, toolNames)
 			return null
@@ -574,7 +580,7 @@ export class NativeToolCallParser {
 
 		try {
 			// Parse the arguments JSON string
-			const args = JSON.parse(toolCall.arguments)
+			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
 
 			// Build legacy params object for backward compatibility with XML protocol and UI.
 			// Native execution path uses nativeArgs instead, which has proper typing.
@@ -589,7 +595,7 @@ export class NativeToolCallParser {
 				}
 
 				// Validate parameter name
-				if (!toolParamNames.includes(key as ToolParamName)) {
+				if (!toolParamNames.includes(key as ToolParamName) && !customToolRegistry.has(resolvedName)) {
 					console.warn(`Unknown parameter '${key}' for tool '${resolvedName}'`)
 					console.warn(`Valid param names:`, toolParamNames)
 					continue
@@ -786,6 +792,14 @@ export class NativeToolCallParser {
 					break
 
 				default:
+					if (customToolRegistry.has(resolvedName)) {
+						nativeArgs = args as NativeArgsFor<TName>
+					} else {
+						console.error(`Unhandled tool: ${resolvedName}`)
+						console.error(`Valid tool names:`, toolNames)
+						console.error(`Custom tool names:`, customToolRegistry.list())
+					}
+
 					break
 			}
 
@@ -801,6 +815,8 @@ export class NativeToolCallParser {
 			if (toolCall.name !== resolvedName) {
 				result.originalName = toolCall.name
 			}
+
+			console.log(`parseToolCall -> result: ${JSON.stringify(result, null, 2)}`)
 
 			return result
 		} catch (error) {

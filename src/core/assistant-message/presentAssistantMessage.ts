@@ -4,12 +4,16 @@ import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
+import { customToolRegistry } from "@roo-code/core"
+
+import { t } from "../../i18n"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
-import { Package } from "../../shared/package"
-import { t } from "../../i18n"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
+
 import { AskIgnoredError } from "../task/AskIgnoredError"
+import { Task } from "../task/Task"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
@@ -30,17 +34,14 @@ import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
-
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
+import { validateToolUse } from "../tools/validateToolUse"
+import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
-import { validateToolUse } from "../tools/validateToolUse"
-import { Task } from "../task/Task"
-import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
-import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
-import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -353,7 +354,7 @@ export async function presentAssistantMessage(cline: Task) {
 		case "tool_use": {
 			// Fetch state early so it's available for toolDescription and validation
 			const state = await cline.providerRef.deref()?.getState()
-			const { mode, customModes, experiments: stateExperiments, apiConfiguration } = state ?? {}
+			const { mode, customModes, experiments: stateExperiments } = state ?? {}
 
 			const toolDescription = (): string => {
 				switch (block.name) {
@@ -731,6 +732,8 @@ export async function presentAssistantMessage(cline: Task) {
 					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
 					// which would cause the extension to appear to hang
 					const errorContent = formatResponse.toolError(error.message, toolProtocol)
+					console.error(`[presentAssistantMessage] errorContent: ${errorContent}`)
+
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
 						// For native protocol, push tool_result directly without setting didAlreadyUseTool
 						cline.userMessageContent.push({
@@ -743,6 +746,7 @@ export async function presentAssistantMessage(cline: Task) {
 						// For XML protocol, use the standard pushToolResult
 						pushToolResult(errorContent)
 					}
+
 					break
 				}
 			}
@@ -1043,9 +1047,8 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				default: {
-					// Handle unknown/invalid tool names
+					// Handle unknown/invalid tool names OR custom tools
 					// This is critical for native protocol where every tool_use MUST have a tool_result
-					// Note: This case should rarely be reached since validateToolUse now checks for unknown tools
 
 					// CRITICAL: Don't process partial blocks for unknown tools - just let them stream in.
 					// If we try to show errors for partial blocks, we'd show the error on every streaming chunk,
@@ -1054,6 +1057,45 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					}
 
+					const customTool = customToolRegistry.get(block.name)
+
+					if (customTool) {
+						try {
+							console.log(`executing customTool -> ${JSON.stringify(customTool, null, 2)}`)
+							let customToolArgs
+
+							if (customTool.parameters) {
+								try {
+									customToolArgs = customTool.parameters.parse(block.nativeArgs || block.params || {})
+									console.log(`customToolArgs -> ${JSON.stringify(customToolArgs, null, 2)}`)
+								} catch (parseParamsError) {
+									const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
+									console.error(message)
+									cline.consecutiveMistakeCount++
+									await cline.say("error", message)
+									pushToolResult(formatResponse.toolError(message, toolProtocol))
+									break
+								}
+							}
+
+							console.log(`${customTool.name}.execute() -> ${JSON.stringify(customToolArgs, null, 2)}`)
+
+							const result = await customTool.execute(customToolArgs, {
+								mode: mode ?? defaultModeSlug,
+								task: cline,
+							})
+
+							pushToolResult(result)
+							cline.consecutiveMistakeCount = 0
+						} catch (executionError: any) {
+							cline.consecutiveMistakeCount++
+							await handleError(`executing custom tool "${block.name}"`, executionError)
+						}
+
+						break
+					}
+
+					// Not a custom tool - handle as unknown tool error
 					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
 					cline.consecutiveMistakeCount++
 					cline.recordToolError(block.name as ToolName, errorMessage)
