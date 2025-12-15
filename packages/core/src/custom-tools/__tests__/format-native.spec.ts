@@ -40,6 +40,8 @@ describe("formatNative", () => {
 			function: {
 				name: "simple_tool",
 				description: "A simple tool",
+				parameters: undefined,
+				strict: true,
 			},
 		})
 	})
@@ -87,7 +89,7 @@ describe("formatNative", () => {
 		const serialized = serializeCustomTool(tool)
 		const result = formatNative(serialized)
 
-		expect(result.function.parameters?.required).toBeUndefined()
+		expect(result.function.parameters?.required).toEqual([])
 		expect(result.function.parameters?.properties).toEqual({
 			format: {
 				type: "string",

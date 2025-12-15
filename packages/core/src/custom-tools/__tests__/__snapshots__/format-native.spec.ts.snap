@@ -6,11 +6,12 @@ exports[`Native Protocol snapshots > should generate correct native definition f
     "description": "Cached tool",
     "name": "cached",
     "parameters": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {},
+      "required": [],
       "type": "object",
     },
+    "strict": true,
   },
   "type": "function",
 }
@@ -22,7 +23,6 @@ exports[`Native Protocol snapshots > should generate correct native definition f
     "description": "Legacy tool using args",
     "name": "legacy",
     "parameters": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
         "input": {
@@ -35,6 +35,7 @@ exports[`Native Protocol snapshots > should generate correct native definition f
       ],
       "type": "object",
     },
+    "strict": true,
   },
   "type": "function",
 }
@@ -46,11 +47,12 @@ exports[`Native Protocol snapshots > should generate correct native definition f
     "description": "Valid",
     "name": "mixed_validTool",
     "parameters": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {},
+      "required": [],
       "type": "object",
     },
+    "strict": true,
   },
   "type": "function",
 }
@@ -62,7 +64,6 @@ exports[`Native Protocol snapshots > should generate correct native definition f
     "description": "Simple tool",
     "name": "simple",
     "parameters": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
         "value": {
@@ -75,6 +76,7 @@ exports[`Native Protocol snapshots > should generate correct native definition f
       ],
       "type": "object",
     },
+    "strict": true,
   },
   "type": "function",
 }
@@ -86,7 +88,6 @@ exports[`Native Protocol snapshots > should generate correct native definition f
     "description": "Returns the current system date and time in a friendly, human-readable format.",
     "name": "system_time",
     "parameters": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
       "additionalProperties": false,
       "properties": {
         "timezone": {
@@ -106,6 +107,7 @@ exports[`Native Protocol snapshots > should generate correct native definition f
       ],
       "type": "object",
     },
+    "strict": true,
   },
   "type": "function",
 }
@@ -118,7 +120,6 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Simple tool",
       "name": "simple",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {
           "value": {
@@ -131,6 +132,7 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
         ],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -139,11 +141,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Cached tool",
       "name": "cached",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -152,7 +155,6 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Legacy tool using args",
       "name": "legacy",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {
           "input": {
@@ -165,6 +167,7 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
         ],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -173,11 +176,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Tool A",
       "name": "multi_toolA",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -186,11 +190,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Tool B",
       "name": "multi_toolB",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -199,11 +204,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Valid",
       "name": "mixed_validTool",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -212,7 +218,6 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Returns the current system date and time in a friendly, human-readable format.",
       "name": "system_time",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {
           "timezone": {
@@ -232,6 +237,7 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
         ],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -245,11 +251,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Tool A",
       "name": "multi_toolA",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },
@@ -258,11 +265,12 @@ exports[`Native Protocol snapshots > should generate correct native definitions 
       "description": "Tool B",
       "name": "multi_toolB",
       "parameters": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
         "properties": {},
+        "required": [],
         "type": "object",
       },
+      "strict": true,
     },
     "type": "function",
   },

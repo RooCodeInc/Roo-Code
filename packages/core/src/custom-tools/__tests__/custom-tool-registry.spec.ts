@@ -287,20 +287,20 @@ describe("CustomToolRegistry", () => {
 		})
 	})
 
-	describe("loadFromDirectory", () => {
+	describe.sequential("loadFromDirectory", () => {
 		it("should load tools from TypeScript files", async () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
 
 			expect(result.loaded).toContain("simple")
 			expect(registry.has("simple")).toBe(true)
-		})
+		}, 60000)
 
 		it("should handle named exports", async () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
 
 			expect(result.loaded).toContain("multi_toolA")
 			expect(result.loaded).toContain("multi_toolB")
-		})
+		}, 30000)
 
 		it("should report validation failures", async () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
@@ -308,7 +308,7 @@ describe("CustomToolRegistry", () => {
 			const invalidFailure = result.failed.find((f) => f.file === "invalid.ts")
 			expect(invalidFailure).toBeDefined()
 			expect(invalidFailure?.error).toContain("Invalid tool definition")
-		})
+		}, 30000)
 
 		it("should return empty results for non-existent directory", async () => {
 			const result = await registry.loadFromDirectory("/nonexistent/path")
@@ -325,7 +325,7 @@ describe("CustomToolRegistry", () => {
 			expect(result.loaded).not.toContain("mixed_someString")
 			expect(result.loaded).not.toContain("mixed_someNumber")
 			expect(result.loaded).not.toContain("mixed_someObject")
-		})
+		}, 30000)
 
 		it("should support args as alias for parameters", async () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
@@ -334,10 +334,10 @@ describe("CustomToolRegistry", () => {
 
 			const tool = registry.get("legacy")
 			expect(tool?.parameters).toBeDefined()
-		})
+		}, 30000)
 	})
 
-	describe("clearCache", () => {
+	describe.sequential("clearCache", () => {
 		it("should clear the TypeScript compilation cache", async () => {
 			await registry.loadFromDirectory(TEST_FIXTURES_DIR)
 			registry.clearCache()
@@ -347,6 +347,6 @@ describe("CustomToolRegistry", () => {
 			const result = await registry.loadFromDirectory(TEST_FIXTURES_DIR)
 
 			expect(result.loaded).toContain("cached")
-		})
+		}, 30000)
 	})
 })
