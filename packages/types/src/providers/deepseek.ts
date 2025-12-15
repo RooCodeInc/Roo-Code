@@ -39,4 +39,4 @@ export const deepSeekModels = {
 } as const satisfies Record<string, ModelInfo>
 
 // https://api-docs.deepseek.com/quick_start/parameter_settings
-export const DEEP_SEEK_DEFAULT_TEMPERATURE = 0
+export const DEEP_SEEK_DEFAULT_TEMPERATURE = 0.3
