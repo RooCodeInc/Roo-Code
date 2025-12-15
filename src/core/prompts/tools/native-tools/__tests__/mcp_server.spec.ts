@@ -78,16 +78,17 @@ describe("getMcpServerTools", () => {
 			"project",
 		)
 
-		// First occurrence wins - in this test, global comes first
-		const mockHub = createMockMcpHub([globalServer, projectServer])
+		// McpHub.getServers() deduplicates with project servers taking priority
+		// This test simulates the deduplicated result (only project server returned)
+		const mockHub = createMockMcpHub([projectServer])
 
 		const result = getMcpServerTools(mockHub as McpHub)
 
-		// Should only have one tool, not two
+		// Should only have one tool (from project server)
 		expect(result).toHaveLength(1)
 		expect(getFunction(result[0]).name).toBe("mcp--context7--resolve-library-id")
-		// First occurrence wins (global in this case)
-		expect(getFunction(result[0]).description).toBe("Global description")
+		// Project server takes priority
+		expect(getFunction(result[0]).description).toBe("Project description")
 	})
 
 	it("should allow tools with different names from the same server", () => {
