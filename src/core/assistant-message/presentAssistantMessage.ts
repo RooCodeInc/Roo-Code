@@ -377,8 +377,24 @@ export async function presentAssistantMessage(cline: Task) {
 					case "write_to_file":
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_diff":
-						// Handle both legacy format and new multi-file format
-						if (block.params.path) {
+						// Handle native multi-file format (from multi_apply_diff schema)
+						if (block.nativeArgs?.files && Array.isArray(block.nativeArgs.files)) {
+							const files = block.nativeArgs.files
+							const firstPath = files[0]?.path
+							if (firstPath) {
+								if (files.length > 1) {
+									return `[${block.name} for '${firstPath}' and ${files.length - 1} more file${files.length > 2 ? "s" : ""}]`
+								} else {
+									return `[${block.name} for '${firstPath}']`
+								}
+							}
+						}
+						// Handle native single-file format
+						else if (block.nativeArgs?.path) {
+							return `[${block.name} for '${block.nativeArgs.path}']`
+						}
+						// Handle XML legacy format
+						else if (block.params.path) {
 							return `[${block.name} for '${block.params.path}']`
 						} else if (block.params.args) {
 							// Try to extract first file path from args for display
@@ -817,17 +833,38 @@ export async function presentAssistantMessage(cline: Task) {
 					// Check if this tool call came from native protocol by checking for ID
 					// Native calls always have IDs, XML calls never do
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
-						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
-							askApproval,
-							handleError,
-							pushToolResult,
-							removeClosingTag,
-							toolProtocol,
-						})
+						// For native protocol, route based on nativeArgs format:
+						// - nativeArgs.files (array) -> multi-file tool (from multi_apply_diff schema)
+						// - nativeArgs.path (string) -> single-file tool (from apply_diff schema)
+						const nativeArgs = block.nativeArgs as
+							| { files: Array<{ path: string; diff: string }> }
+							| { path: string; diff: string }
+							| undefined
+
+						if (nativeArgs && "files" in nativeArgs && Array.isArray(nativeArgs.files)) {
+							// Multi-file format: use MultiApplyDiffTool
+							await applyDiffTool(
+								cline,
+								block,
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+							)
+						} else {
+							// Single-file format: use ApplyDiffTool
+							await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+						}
 						break
 					}
 
-					// Get the provider and state to check experiment settings
+					// For XML protocol, check experiment settings to determine routing
 					const provider = cline.providerRef.deref()
 					let isMultiFileApplyDiffEnabled = false
 

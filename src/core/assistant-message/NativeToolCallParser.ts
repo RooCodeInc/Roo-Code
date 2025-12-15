@@ -400,7 +400,17 @@ export class NativeToolCallParser {
 				break
 
 			case "apply_diff":
-				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
+				// Multi-file format (from multi_apply_diff schema)
+				if (partialArgs.files && Array.isArray(partialArgs.files)) {
+					nativeArgs = {
+						files: partialArgs.files.map((f: any) => ({
+							path: f.path,
+							diff: f.diff,
+						})),
+					}
+				}
+				// Single-file format (from apply_diff schema)
+				else if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
 					nativeArgs = {
 						path: partialArgs.path,
 						diff: partialArgs.diff,
@@ -633,7 +643,17 @@ export class NativeToolCallParser {
 					break
 
 				case "apply_diff":
-					if (args.path !== undefined && args.diff !== undefined) {
+					// Multi-file format (from multi_apply_diff schema)
+					if (args.files && Array.isArray(args.files)) {
+						nativeArgs = {
+							files: args.files.map((f: any) => ({
+								path: f.path,
+								diff: f.diff,
+							})),
+						} as NativeArgsFor<TName>
+					}
+					// Single-file format (from apply_diff schema)
+					else if (args.path !== undefined && args.diff !== undefined) {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,

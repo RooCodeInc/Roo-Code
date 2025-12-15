@@ -90,7 +90,8 @@ export type NativeToolArgs = {
 	read_file: { files: FileEntry[] }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
-	apply_diff: { path: string; diff: string }
+	// Union type to support both single-file and multi-file formats
+	apply_diff: { path: string; diff: string } | { files: Array<{ path: string; diff: string }> }
 	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
 	search_replace: { file_path: string; old_string: string; new_string: string }
 	apply_patch: { patch: string }

@@ -3,6 +3,7 @@ import type { ProviderSettings, ModeConfig, ModelInfo } from "@roo-code/types"
 import type { ClineProvider } from "../webview/ClineProvider"
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
+import { experiments as experimentsModule, EXPERIMENT_IDS } from "../../shared/experiments"
 
 interface BuildToolsOptions {
 	provider: ClineProvider
@@ -55,8 +56,14 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	// Determine if partial reads are enabled based on maxReadFileLine setting
 	const partialReadsEnabled = maxReadFileLine !== -1
 
-	// Build native tools with dynamic read_file tool based on partialReadsEnabled
-	const nativeTools = getNativeTools(partialReadsEnabled)
+	// Determine if multi-file apply_diff is enabled based on experiment flag
+	const multiFileApplyDiffEnabled = experimentsModule.isEnabled(
+		experiments ?? {},
+		EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
+	)
+
+	// Build native tools with dynamic read_file and apply_diff tools based on settings
+	const nativeTools = getNativeTools(partialReadsEnabled, multiFileApplyDiffEnabled)
 
 	// Filter native tools based on mode restrictions
 	const filteredNativeTools = filterNativeToolsForMode(
