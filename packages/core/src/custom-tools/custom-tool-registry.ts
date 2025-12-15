@@ -125,6 +125,11 @@ export class CustomToolRegistry {
 	}
 
 	async loadFromDirectoryIfStale(toolDir: string): Promise<LoadResult> {
+		// Return empty result if directory doesn't exist
+		if (!fs.existsSync(toolDir)) {
+			return { loaded: [], failed: [] }
+		}
+
 		const lastLoaded = this.lastLoaded.get(toolDir)
 		const stat = fs.statSync(toolDir)
 		const isStale = lastLoaded ? stat.mtimeMs > lastLoaded : true
@@ -223,10 +228,25 @@ export class CustomToolRegistry {
 	}
 
 	/**
-	 * Clear the TypeScript compilation cache.
+	 * Clear the TypeScript compilation cache (both in-memory and on disk).
 	 */
 	clearCache(): void {
 		this.tsCache.clear()
+
+		// Also remove compiled files from disk
+		if (fs.existsSync(this.cacheDir)) {
+			try {
+				const files = fs.readdirSync(this.cacheDir)
+				for (const file of files) {
+					if (file.endsWith(".mjs")) {
+						fs.unlinkSync(path.join(this.cacheDir, file))
+					}
+				}
+			} catch (error) {
+				// Silently ignore cleanup errors
+				console.error(`[CustomToolRegistry] clearCache failed to clean disk cache: ${error}`)
+			}
+		}
 	}
 
 	/**

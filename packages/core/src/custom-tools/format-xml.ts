@@ -1,8 +1,33 @@
 import type { SerializedCustomToolDefinition, SerializedCustomToolParameters } from "@roo-code/types"
 
+/**
+ * Extract the type string from a parameter schema.
+ * Handles both direct `type` property and `anyOf` schemas (used for nullable types).
+ */
+function getParameterType(parameter: SerializedCustomToolParameters): string {
+	// Direct type property
+	if (parameter.type) {
+		return String(parameter.type)
+	}
+
+	// Handle anyOf schema (used for nullable types like `string | null`)
+	if (parameter.anyOf && Array.isArray(parameter.anyOf)) {
+		const types = parameter.anyOf
+			.map((schema) => (typeof schema === "object" && schema.type ? String(schema.type) : null))
+			.filter((t): t is string => t !== null && t !== "null")
+
+		if (types.length > 0) {
+			return types.join(" | ")
+		}
+	}
+
+	return "unknown"
+}
+
 function getParameterDescription(name: string, parameter: SerializedCustomToolParameters, required: string[]): string {
 	const requiredText = required.includes(name) ? "(required)" : "(optional)"
-	return `- ${name}: ${requiredText} ${parameter.description} (type: ${parameter.type})`
+	const typeText = getParameterType(parameter)
+	return `- ${name}: ${requiredText} ${parameter.description ?? ""} (type: ${typeText})`
 }
 
 function getUsage(tool: SerializedCustomToolDefinition): string {

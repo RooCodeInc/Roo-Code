@@ -68,6 +68,21 @@ export const bedrockModels = {
 		maxCachePoints: 1,
 		cachableFields: ["system"],
 	},
+	"amazon.nova-2-lite-v1:0": {
+		maxTokens: 65_535,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsNativeTools: true,
+		inputPrice: 0.33,
+		outputPrice: 2.75,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.0825, // 75% less than input price
+		minTokensPerCachePoint: 1,
+		maxCachePoints: 1,
+		cachableFields: ["system"],
+		description: "Amazon Nova 2 Lite - Comparable to Claude Haiku 4.5",
+	},
 	"amazon.nova-micro-v1:0": {
 		maxTokens: 5000,
 		contextWindow: 128_000,
@@ -562,3 +577,31 @@ export const BEDROCK_GLOBAL_INFERENCE_MODEL_IDS = [
 	"anthropic.claude-haiku-4-5-20251001-v1:0",
 	"anthropic.claude-opus-4-5-20251101-v1:0",
 ] as const
+
+// Amazon Bedrock Service Tier types
+export type BedrockServiceTier = "STANDARD" | "FLEX" | "PRIORITY"
+
+// Models that support service tiers based on AWS documentation
+// https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html
+export const BEDROCK_SERVICE_TIER_MODEL_IDS = [
+	// Amazon Nova models
+	"amazon.nova-lite-v1:0",
+	"amazon.nova-2-lite-v1:0",
+	"amazon.nova-pro-v1:0",
+	"amazon.nova-pro-latency-optimized-v1:0",
+	// DeepSeek models
+	"deepseek.r1-v1:0",
+	// Qwen models
+	"qwen.qwen3-next-80b-a3b",
+	"qwen.qwen3-coder-480b-a35b-v1:0",
+	// OpenAI GPT-OSS models
+	"openai.gpt-oss-20b-1:0",
+	"openai.gpt-oss-120b-1:0",
+] as const
+
+// Service tier pricing multipliers
+export const BEDROCK_SERVICE_TIER_PRICING = {
+	STANDARD: 1.0, // Base price
+	FLEX: 0.5, // 50% discount from standard
+	PRIORITY: 1.75, // 75% premium over standard
+} as const
