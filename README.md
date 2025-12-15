@@ -9,7 +9,7 @@ English | <a href="https://github.com/zgsm-ai/costrict/blob/main/README.zh-CN.md
 <br>
 <br>
 
-Costrict is a **free, open-source AI-assisted programming tool** that supports private deployment for enterprises, making it the optimal choice for enterprise serious programming. Its core capabilities are outstanding: **Strict Mode，Code Review** , Code Completion, etc. Feature highlights include: enterprise-level business understanding, standardized AI development processes, Vibe Mode, MCP service, multiple advanced free models, API/model customization, mode selection/customization, image context capabilities, and more. It supports multiple mainstream IDEs and leads the way in supporting VS Code and JetBrains IDEs. Compatible with popular languages including Python, Go, Java, JavaScript/ TypeScript, and C/C++."
+CoStrict is a **free, open-source AI-assisted programming tool** that supports private deployment for enterprises, making it the optimal choice for enterprise serious programming. Its core capabilities are outstanding: **Strict Mode，Code Review** , Code Completion, etc. Feature highlights include: enterprise-level business understanding, standardized AI development processes, Vibe Mode, MCP service, multiple advanced free models, API/model customization, mode selection/customization, image context capabilities, and more. It supports multiple mainstream IDEs and leads the way in supporting VS Code and JetBrains IDEs. Compatible with popular languages including Python, Go, Java, JavaScript/ TypeScript, and C/C++."
 
 <div align="center">
 
@@ -23,13 +23,13 @@ Costrict is a **free, open-source AI-assisted programming tool** that supports p
 
 ## Features
 
-- **Strcit Mode:**
+- **Strict Mode:**
 
 Strict Mode standardizes the process of AI-generated code, making it more aligned with enterprise development scenarios. It systematically breaks down a single requirement into steps such as：Requirements Analysis, Architecture Design, Task Planning and Test Generation etc. acting as a standardized procedure for AI to ensure high-quality and highly controllable output.
 
 <a href="https://docs.costrict.ai/en/tutorial-videos/video/#strict-mode" target="_blank"><img src="./assets/images/readme/strict_mode_en_buffer.png" alt="Docs Center"></a>
 
-![Strcit Mode](./assets/images/readme/strict_mode_en.png)
+![Strict Mode](./assets/images/readme/strict_mode_en.png)
 
 - **Code Review:**
 
