@@ -174,7 +174,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				// Create a new text part for the system instruction
 				const systemPart = { text: systemInstruction }
 				// Prepend it to the existing parts
-				firstMessage.parts = [systemPart, ...firstMessage.parts]
+				firstMessage.parts = [systemPart, ...(firstMessage.parts || [])]
 			} else {
 				// If no messages or first message is not user (e.g. starts with model),
 				// prepend a new user message with the system instruction.
