@@ -26,11 +26,11 @@ export function createCodeSnippetId(): string {
 }
 
 /**
- * Formats a code snippet for display in a collapsed chip/pill format
+ * Formats a code snippet for display in a collapsed chip/pill format.
+ * Shows only line numbers since the code is always from the current page.
  */
 export function formatCodeSnippetLabel(snippet: CodeSnippet): string {
-	const fileName = snippet.filePath.split("/").pop() || snippet.filePath
-	return `${fileName}:${snippet.startLine}-${snippet.endLine}`
+	return `lines ${snippet.startLine}-${snippet.endLine}`
 }
 
 /**
