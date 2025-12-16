@@ -53,6 +53,10 @@
 	},
 	"completion": {
 		"status": {
+			"notSupport": {
+				"text": "$(alert) CoStrict",
+				"tooltip": "仅 CoStrict 提供商支持此服务"
+			},
 			"loading": {
 				"text": "$(loading~spin) CoStrict - 处理中",
 				"tooltip": "CoStrict - 代码补全 - 等待请求结果"

@@ -29,7 +29,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		this.once("no_shell_integration", async () => {
 			this.emit("completed", "<no shell integration>")
 			this.terminal.busy = false
-			this.terminal.setActiveStream(undefined, (await this.terminal?.terminal?.processId) ?? undefined)
+			await this.terminal.setActiveStream(undefined, this?.terminal?.terminal?.processId)
 			this.continue()
 		})
 	}
@@ -216,7 +216,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 		}
 
 		// Set streamClosed immediately after stream ends.
-		this.terminal.setActiveStream(undefined, (await this.terminal?.terminal?.processId) ?? undefined)
+		await this.terminal.setActiveStream(undefined, this.terminal?.terminal?.processId)
 
 		// Wait for shell execution to complete.
 		await shellExecutionComplete

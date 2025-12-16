@@ -663,6 +663,11 @@ export class ZgsmCodebaseIndexManager implements ICodebaseIndexManager {
 		// this.log("Starting health check", "info", "CostrictHealthCheck")
 		this.isHealthCheckRunning = true
 		this.healthCheckTimer = setInterval(async () => {
+			if (!this.clineProvider) return
+			const { apiConfiguration } = await this.clineProvider.getState()
+			if (!apiConfiguration || apiConfiguration.apiProvider !== "zgsm") {
+				return
+			}
 			await this.performHealthCheck()
 		}, this.HEALTH_CHECK_INTERVAL)
 	}

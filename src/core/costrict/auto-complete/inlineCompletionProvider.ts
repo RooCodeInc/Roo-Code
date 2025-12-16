@@ -68,7 +68,7 @@ export class InlineCompletionProvider implements InlineCompletionItemProvider {
 			abortController.abort()
 		})
 		if (!(await this.isProviderSupported())) {
-			this.completionStatusBar.disable()
+			this.completionStatusBar.notSupport()
 			return []
 		}
 		if (document.uri.scheme === "vscode-scm") {

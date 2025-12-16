@@ -13,7 +13,7 @@ export interface RooTerminal {
 	getCurrentWorkingDirectory(): string
 	isClosed: () => boolean
 	runCommand: (command: string, callbacks: RooTerminalCallbacks) => RooTerminalProcessResultPromise
-	setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number): void
+	setActiveStream(stream: AsyncIterable<string> | undefined, pid: Thenable<number | undefined>): void
 	shellExecutionComplete(exitDetails: ExitCodeDetails): void
 	getProcessesWithOutput(): RooTerminalProcess[]
 	getUnretrievedOutput(): string

@@ -272,6 +272,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	fileContextTracker: FileContextTracker
 	urlContentFetcher: UrlContentFetcher
 	terminalProcess?: RooTerminalProcess
+	currentProcessPid?: number // Persisted PID for reliable process cancellation
+	persistedTerminalProcess?: RooTerminalProcess // Persisted process reference for continue operation
 
 	// Computer User
 	browserSession: BrowserSession
@@ -1415,51 +1417,57 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	async handleTerminalOperation(terminalOperation: "continue" | "abort", pid?: number, executionId?: string) {
 		if (terminalOperation === "continue") {
-			this.terminalProcess?.continue()
+			// Try terminalProcess first, fall back to persistedTerminalProcess
+			const process = this.terminalProcess || this.persistedTerminalProcess
+			if (process) {
+				process.continue()
+			}
 		} else if (terminalOperation === "abort") {
 			const provider = this.providerRef.deref()
 			if (this.terminalProcess) {
 				this.terminalProcess.abort()
-				// if (executionId) {
-				// 	const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
-				// 	provider
-				// 		?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
-				// }
-			} else if (pid) {
-				psTree(pid, async (err, children) => {
-					if (!err) {
-						const pids = children.map((p) => parseInt(p.PID))
-						console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
+			} else {
+				// Use provided pid or fall back to currentProcessPid
+				const targetPid = pid || this.currentProcessPid
+				if (targetPid) {
+					psTree(targetPid, async (err, children) => {
+						if (!err) {
+							const pids = children.map((p) => parseInt(p.PID))
+							console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
 
-						for (const pid of pids) {
-							try {
-								process.kill(pid, "SIGKILL")
-							} catch (e) {
-								console.warn(
-									`[ExecaTerminalProcess#abort] Failed to send SIGKILL to child PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
-								)
+							for (const pid of pids) {
+								try {
+									process.kill(pid, "SIGKILL")
+								} catch (e) {
+									console.warn(
+										`[ExecaTerminalProcess#abort] Failed to send SIGKILL to child PID ${pid}: ${e instanceof Error ? e.message : String(e)}`,
+									)
+								}
 							}
+						} else {
+							console.error(
+								`[ExecaTerminalProcess#abort] Failed to get process tree for PID ${targetPid}: ${err.message}`,
+							)
 						}
-					} else {
-						console.error(
-							`[ExecaTerminalProcess#abort] Failed to get process tree for PID ${pid}: ${err.message}`,
-						)
-					}
 
-					try {
-						process.kill(pid, "SIGKILL")
-						if (executionId) {
-							const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
-							this.providerRef
-								.deref()
-								?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
+						try {
+							process.kill(targetPid, "SIGKILL")
+							if (executionId) {
+								const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
+								this.providerRef
+									.deref()
+									?.postMessageToWebview({
+										type: "commandExecutionStatus",
+										text: JSON.stringify(status),
+									})
+							}
+						} catch (e) {
+							console.warn(
+								`[ExecaTerminalProcess#abort#handleTerminalOperation] Failed to kill process ${targetPid}: ${e instanceof Error ? e.message : String(e)}`,
+							)
 						}
-					} catch (e) {
-						console.warn(
-							`[ExecaTerminalProcess#abort] Failed to kill process ${pid}: ${e instanceof Error ? e.message : String(e)}`,
-						)
-					}
-				})
+					})
+				}
 			}
 		}
 	}
@@ -2097,6 +2105,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Release any terminals associated with this task.
 		try {
+			// Clear terminal process references
+			this.terminalProcess = undefined
+			this.persistedTerminalProcess = undefined
+			this.currentProcessPid = undefined
+
 			// Release any terminals associated with this task.
 			TerminalRegistry.releaseTerminalsForTask(this.taskId)
 		} catch (error) {

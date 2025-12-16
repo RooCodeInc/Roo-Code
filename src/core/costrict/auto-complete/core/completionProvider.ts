@@ -252,8 +252,8 @@ export class CompletionProvider {
 			}),
 		})
 		if (!response.ok) {
-			console.log(`[Completion Request]: ${response.statusText}`)
-			throw new Error(`Failed to fetch completion: ${response.statusText}`)
+			console.log(`[Completion Request ${input.completionId}]: ${response.statusText}`)
+			throw new Error(`Failed to fetch completion: ${input.completionId} ${response.statusText}`)
 		}
 		const data = await response.json()
 		const text = this.acquireCompletionText(data)

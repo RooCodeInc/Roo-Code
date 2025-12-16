@@ -46,6 +46,8 @@ import { getCommand } from "./utils/commands"
 import { activateCoworkflowIntegration, deactivateCoworkflowIntegration } from "./core/costrict/workflow"
 import { defaultLang } from "./utils/language"
 import { createLogger } from "./utils/logger"
+import { loadIdeaShellEnvOnce } from "./utils/ideaShellEnvLoader"
+import { isJetbrainsPlatform } from "./utils/platform"
 // import { flushModels, getModels, initializeModelCacheRefresh } from "./api/providers/fetchers/modelCache"
 
 /**
@@ -73,7 +75,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
 	// Migrate old settings to new
 	await migrateSettings(context, outputChannel)
-
+	if (isJetbrainsPlatform()) {
+		setTimeout(() => {
+			loadIdeaShellEnvOnce(context)
+		}, 1000)
+	}
 	// Initialize telemetry service.
 	TelemetryService.createInstance()
 

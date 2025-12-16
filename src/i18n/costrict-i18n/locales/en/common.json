@@ -108,6 +108,10 @@
 	},
 	"completion": {
 		"status": {
+			"notSupport": {
+				"text": "$(alert) CoStrict",
+				"tooltip": "Only CoStrict provider supports this service"
+			},
 			"loading": {
 				"text": "$(loading~spin) CoStrict - In Progress",
 				"tooltip": "CoStrict - Code Completion - Waiting for request results"

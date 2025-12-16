@@ -69,6 +69,11 @@ export class CompletionStatusBar {
 		this._statusBar.text = t("common:completion.status.loading.text")
 		this._statusBar.show()
 	}
+	public notSupport() {
+		this._statusBar.tooltip = t("common:completion.status.notSupport.tooltip")
+		this._statusBar.text = t("common:completion.status.notSupport.text")
+		this._statusBar.show()
+	}
 	public disable() {
 		this._statusBar.tooltip = t("common:completion.status.disabled.tooltip")
 		this._statusBar.text = t("common:completion.status.complete.text")

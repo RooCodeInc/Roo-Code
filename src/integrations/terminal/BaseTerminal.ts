@@ -47,7 +47,7 @@ export abstract class BaseTerminal implements RooTerminal {
 	 * @param stream The stream to set, or undefined to clean up
 	 * @throws Error if process is undefined when a stream is provided
 	 */
-	public setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number): void {
+	public async setActiveStream(stream: AsyncIterable<string> | undefined, pid: Thenable<number | undefined>) {
 		if (stream) {
 			if (!this.process) {
 				this.running = false
@@ -61,7 +61,7 @@ export abstract class BaseTerminal implements RooTerminal {
 
 			this.running = true
 			this.streamClosed = false
-			this.process.emit("shell_execution_started", pid)
+			this.process.emit("shell_execution_started", await pid)
 			this.process.emit("stream_available", stream)
 		} else {
 			this.streamClosed = true

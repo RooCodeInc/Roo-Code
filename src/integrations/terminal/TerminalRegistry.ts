@@ -7,8 +7,8 @@ import { TerminalProcess } from "./TerminalProcess"
 import { Terminal } from "./Terminal"
 import { ExecaTerminal } from "./ExecaTerminal"
 import { ShellIntegrationManager } from "./ShellIntegrationManager"
-import { isJetbrainsPlatform } from "../../utils/platform"
 import delay from "delay"
+import { isJetbrainsPlatform } from "../../utils/platform"
 const isWin32 = process.platform === "win32"
 // Although vscode.window.terminals provides a list of all open terminals,
 // there's no way to know whether they're busy or not (exitStatus does not
@@ -51,12 +51,11 @@ export class TerminalRegistry {
 		try {
 			const startDisposable = vscode.window.onDidStartTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionStartEvent) => {
-					if (e?.terminal?.name !== "CoStrict") {
+					if (!isJetbrainsPlatform() && e?.terminal?.name !== "CoStrict") {
 						return
 					}
 					// Get a handle to the stream as early as possible:
 					const stream = e.execution.read()
-					await delay(100) // Wait for stream to be ready
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
 
 					console.info("[onDidStartTerminalShellExecution]", {
@@ -65,7 +64,7 @@ export class TerminalRegistry {
 					})
 
 					if (terminal) {
-						terminal.setActiveStream(stream, (await e?.terminal?.processId) ?? undefined)
+						await terminal.setActiveStream(stream, e?.terminal?.processId)
 						terminal.busy = true // Mark terminal as busy when shell execution starts
 					} else {
 						console.error(
@@ -82,7 +81,7 @@ export class TerminalRegistry {
 
 			const endDisposable = vscode.window.onDidEndTerminalShellExecution?.(
 				async (e: vscode.TerminalShellExecutionEndEvent) => {
-					if (e.terminal.name !== "CoStrict") {
+					if (!isJetbrainsPlatform() && e.terminal.name !== "CoStrict") {
 						return
 					}
 					const terminal = this.getTerminalByVSCETerminal(e.terminal)
@@ -107,7 +106,7 @@ export class TerminalRegistry {
 						if (isWin32) {
 							await delay(1000)
 						} else {
-							await delay(300)
+							await delay(500)
 						}
 					}
 

@@ -18,6 +18,7 @@ import { Terminal } from "../../integrations/terminal/Terminal"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { isJetbrainsPlatform } from "../../utils/platform"
 
 class ShellIntegrationError extends Error {}
 
@@ -240,6 +241,7 @@ export async function executeCommandInTerminal(
 			completed = true
 		},
 		onShellExecutionStarted: (pid: number | undefined) => {
+			task.currentProcessPid = pid // Save pid to task for reliable cancellation
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 		},
@@ -276,8 +278,12 @@ export async function executeCommandInTerminal(
 	}
 	console.time("runCommand")
 
+	// Clear old persisted process when starting a new command
+	task.persistedTerminalProcess = undefined
+
 	const process = terminal.runCommand(command, callbacks)
 	task.terminalProcess = process
+	task.persistedTerminalProcess = process // Keep a persistent reference for continue operation
 
 	// Implement command execution timeout (skip if timeout is 0).
 	if (commandExecutionTimeout > 0) {
@@ -300,7 +306,7 @@ export async function executeCommandInTerminal(
 				provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 				await task.say("error", t("common:errors:command_timeout", { seconds: commandExecutionTimeoutSeconds }))
 				task.didToolFailInCurrentTurn = true
-				task.terminalProcess = undefined
+				clearTerminalProcess(task)
 
 				return [
 					false,
@@ -313,7 +319,7 @@ export async function executeCommandInTerminal(
 				clearTimeout(timeoutId)
 			}
 
-			task.terminalProcess = undefined
+			clearTerminalProcess(task)
 		}
 	} else {
 		// No timeout - just wait for the process to complete.
@@ -321,7 +327,7 @@ export async function executeCommandInTerminal(
 			await process
 		} finally {
 			console.timeEnd("runCommand")
-			task.terminalProcess = undefined
+			clearTerminalProcess(task)
 		}
 	}
 
@@ -390,6 +396,21 @@ export async function executeCommandInTerminal(
 			].join("\n"),
 		]
 	}
+}
+
+function clearTerminalProcess(task: Task) {
+	const process = task.terminalProcess
+
+	if (!isJetbrainsPlatform() && task) {
+		task.terminalProcess = undefined
+		return
+	}
+
+	setTimeout(() => {
+		if (task.terminalProcess === process) {
+			task.terminalProcess = undefined
+		}
+	}, 1000)
 }
 
 export const executeCommandTool = new ExecuteCommandTool()

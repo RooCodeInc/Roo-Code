@@ -49,6 +49,8 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 	const [isExpanded, setIsExpanded] = useState(terminalShellIntegrationDisabled)
 	const [streamingOutput, setStreamingOutput] = useState("")
 	const [status, setStatus] = useState<CommandExecutionStatus | null>(null)
+	// Persist pid separately to ensure it's available even after process exits
+	const [persistedPid, setPersistedPid] = useState<number | undefined>(undefined)
 
 	// The command's output can either come from the text associated with the
 	// task message (this is the case for completed commands) or from the
@@ -127,6 +129,10 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 					switch (data.status) {
 						case "started":
 							setStatus(data)
+							// Persist pid for later use even after process exits
+							if (data.pid) {
+								setPersistedPid(data.pid)
+							}
 							break
 						case "output":
 							setStreamingOutput(data.output)
@@ -179,7 +185,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 											vscode.postMessage({
 												type: "terminalOperation",
 												terminalOperation: "abort",
-												terminalPid: status.pid,
+												terminalPid: persistedPid, // Use persisted pid instead of status.pid
 												executionId: status.executionId ?? executionId,
 												terminalCommand: status.command,
 											})
