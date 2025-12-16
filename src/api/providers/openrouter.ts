@@ -16,7 +16,8 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
-import { convertToOpenAiMessages, normalizeToolCallId } from "../transform/openai-format"
+import { convertToOpenAiMessages } from "../transform/openai-format"
+import { normalizeMistralToolCallId } from "../transform/mistral-format"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { TOOL_PROTOCOL } from "@roo-code/types"
 import { ApiStreamChunk } from "../transform/stream"
@@ -230,7 +231,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const isMistral = modelId.toLowerCase().includes("mistral")
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, isMistral ? { normalizeToolCallId } : undefined),
+			...convertToOpenAiMessages(
+				messages,
+				isMistral ? { normalizeToolCallId: normalizeMistralToolCallId } : undefined,
+			),
 		]
 
 		// DeepSeek highly recommends using user instead of system role.

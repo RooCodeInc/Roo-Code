@@ -2,31 +2,6 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 /**
- * Normalizes a tool call ID to be compatible with providers that have strict ID requirements.
- * Some providers (like Mistral) require tool call IDs to be:
- * - Only alphanumeric characters (a-z, A-Z, 0-9)
- * - Exactly 9 characters in length
- *
- * This function extracts alphanumeric characters from the original ID and
- * pads/truncates to exactly 9 characters, ensuring deterministic output.
- *
- * @param id - The original tool call ID (e.g., "call_5019f900a247472bacde0b82" or "toolu_123")
- * @returns A normalized 9-character alphanumeric ID
- */
-export function normalizeToolCallId(id: string): string {
-	// Extract only alphanumeric characters
-	const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "")
-
-	// Take first 9 characters, or pad with zeros if shorter
-	if (alphanumeric.length >= 9) {
-		return alphanumeric.slice(0, 9)
-	}
-
-	// Pad with zeros to reach 9 characters
-	return alphanumeric.padEnd(9, "0")
-}
-
-/**
  * Options for converting Anthropic messages to OpenAI format.
  */
 export interface ConvertToOpenAiMessagesOptions {

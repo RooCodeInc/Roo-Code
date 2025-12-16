@@ -3,44 +3,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { convertToOpenAiMessages, normalizeToolCallId } from "../openai-format"
-
-describe("normalizeToolCallId", () => {
-	it("should strip non-alphanumeric characters and truncate to 9 characters", () => {
-		// OpenAI-style tool call ID: "call_5019f900..." -> "call5019f900..." -> first 9 chars = "call5019f"
-		expect(normalizeToolCallId("call_5019f900a247472bacde0b82")).toBe("call5019f")
-	})
-
-	it("should handle Anthropic-style tool call IDs", () => {
-		// Anthropic-style tool call ID
-		expect(normalizeToolCallId("toolu_01234567890abcdef")).toBe("toolu0123")
-	})
-
-	it("should pad short IDs to 9 characters", () => {
-		expect(normalizeToolCallId("abc")).toBe("abc000000")
-		expect(normalizeToolCallId("tool-1")).toBe("tool10000")
-	})
-
-	it("should handle IDs that are exactly 9 alphanumeric characters", () => {
-		expect(normalizeToolCallId("abcd12345")).toBe("abcd12345")
-	})
-
-	it("should return consistent results for the same input", () => {
-		const id = "call_5019f900a247472bacde0b82"
-		expect(normalizeToolCallId(id)).toBe(normalizeToolCallId(id))
-	})
-
-	it("should handle edge cases", () => {
-		// Empty string
-		expect(normalizeToolCallId("")).toBe("000000000")
-
-		// Only non-alphanumeric characters
-		expect(normalizeToolCallId("---___---")).toBe("000000000")
-
-		// Mixed special characters
-		expect(normalizeToolCallId("a-b_c.d@e")).toBe("abcde0000")
-	})
-})
+import { convertToOpenAiMessages } from "../openai-format"
+import { normalizeMistralToolCallId } from "../mistral-format"
 
 describe("convertToOpenAiMessages", () => {
 	it("should convert simple text messages", () => {
@@ -193,14 +157,14 @@ describe("convertToOpenAiMessages", () => {
 
 		// With normalizeToolCallId function - should normalize
 		const openAiMessages = convertToOpenAiMessages(anthropicMessages, {
-			normalizeToolCallId,
+			normalizeToolCallId: normalizeMistralToolCallId,
 		})
 
 		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
-		expect(assistantMessage.tool_calls![0].id).toBe(normalizeToolCallId("call_5019f900a247472bacde0b82"))
+		expect(assistantMessage.tool_calls![0].id).toBe(normalizeMistralToolCallId("call_5019f900a247472bacde0b82"))
 
 		const toolMessage = openAiMessages[1] as OpenAI.Chat.ChatCompletionToolMessageParam
-		expect(toolMessage.tool_call_id).toBe(normalizeToolCallId("call_5019f900a247472bacde0b82"))
+		expect(toolMessage.tool_call_id).toBe(normalizeMistralToolCallId("call_5019f900a247472bacde0b82"))
 	})
 
 	it("should not normalize tool call IDs when normalizeToolCallId function is not provided", () => {
