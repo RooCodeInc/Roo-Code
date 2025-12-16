@@ -1,28 +1,23 @@
-import {
-	addAdditionalPropertiesFalse,
-	validateJsonSchema,
-	isJsonSchema,
-	transformJsonSchema,
-	validateAndAddAdditionalPropertiesFalse,
-	JsonSchemaSchema,
-} from "../json-schema"
+import { JsonSchemaSchema, StrictJsonSchemaSchema } from "../json-schema"
 
-describe("validateJsonSchema", () => {
-	it("should return validated schema for valid input", () => {
+describe("JsonSchemaSchema", () => {
+	it("should validate a simple schema", () => {
 		const schema = { type: "object", properties: { name: { type: "string" } } }
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).not.toBeNull()
-		expect(result?.type).toBe("object")
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.type).toBe("object")
+		}
 	})
 
-	it("should return null for invalid type values", () => {
+	it("should reject invalid type values", () => {
 		const schema = { type: "invalid-type" }
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).toBeNull()
+		expect(result.success).toBe(false)
 	})
 
 	it("should validate nested schemas", () => {
@@ -39,9 +34,9 @@ describe("validateJsonSchema", () => {
 			},
 		}
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).not.toBeNull()
+		expect(result.success).toBe(true)
 	})
 
 	it("should validate array schemas", () => {
@@ -55,9 +50,9 @@ describe("validateJsonSchema", () => {
 			},
 		}
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).not.toBeNull()
+		expect(result.success).toBe(true)
 	})
 
 	it("should validate schemas with anyOf/oneOf/allOf", () => {
@@ -65,9 +60,9 @@ describe("validateJsonSchema", () => {
 			anyOf: [{ type: "string" }, { type: "number" }],
 		}
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).not.toBeNull()
+		expect(result.success).toBe(true)
 	})
 
 	it("should pass through unknown properties", () => {
@@ -79,31 +74,34 @@ describe("validateJsonSchema", () => {
 			},
 		}
 
-		const result = validateJsonSchema(schema)
+		const result = JsonSchemaSchema.safeParse(schema)
 
-		expect(result).not.toBeNull()
-		expect(result?.customProperty).toBe("custom value")
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.customProperty).toBe("custom value")
+		}
+	})
+
+	it("should accept empty object (valid JSON Schema)", () => {
+		const result = JsonSchemaSchema.safeParse({})
+
+		expect(result.success).toBe(true)
+	})
+
+	it("should NOT add additionalProperties (validation only)", () => {
+		const schema = {
+			type: "object",
+			properties: { name: { type: "string" } },
+		}
+
+		const result = JsonSchemaSchema.parse(schema)
+
+		expect(result.additionalProperties).toBeUndefined()
 	})
 })
 
-describe("isJsonSchema", () => {
-	it("should return true for valid schemas", () => {
-		expect(isJsonSchema({ type: "string" })).toBe(true)
-		expect(isJsonSchema({ type: "object", properties: {} })).toBe(true)
-		expect(isJsonSchema({ anyOf: [{ type: "string" }] })).toBe(true)
-	})
-
-	it("should return false for invalid type values", () => {
-		expect(isJsonSchema({ type: "invalid" })).toBe(false)
-	})
-
-	it("should return true for empty object (valid JSON Schema)", () => {
-		expect(isJsonSchema({})).toBe(true)
-	})
-})
-
-describe("transformJsonSchema", () => {
-	it("should apply callback to all sub-schemas", () => {
+describe("StrictJsonSchemaSchema", () => {
+	it("should validate and default additionalProperties to false", () => {
 		const schema = {
 			type: "object",
 			properties: {
@@ -111,78 +109,13 @@ describe("transformJsonSchema", () => {
 			},
 		}
 
-		const visited: string[] = []
-		transformJsonSchema(schema, (subSchema) => {
-			if (subSchema.type) {
-				visited.push(subSchema.type as string)
-			}
-		})
+		const result = StrictJsonSchemaSchema.parse(schema)
 
-		expect(visited).toContain("object")
-		expect(visited).toContain("string")
+		expect(result.type).toBe("object")
+		expect(result.additionalProperties).toBe(false)
 	})
 
-	it("should not mutate the original schema", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		const original = JSON.parse(JSON.stringify(schema))
-		transformJsonSchema(schema, (subSchema) => {
-			subSchema.modified = true
-		})
-
-		expect(schema).toEqual(original)
-	})
-
-	it("should return non-object values as-is", () => {
-		expect(transformJsonSchema(null as any, () => {})).toBeNull()
-		expect(transformJsonSchema("string" as any, () => {})).toBe("string")
-	})
-
-	it("should allow custom transformations", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		// Add description to all string types
-		const result = transformJsonSchema(schema, (subSchema) => {
-			if (subSchema.type === "string") {
-				subSchema.description = "A string field"
-			}
-		})
-
-		expect((result.properties as any).name.description).toBe("A string field")
-	})
-})
-
-describe("addAdditionalPropertiesFalse", () => {
-	it("should add additionalProperties: false to a simple object schema", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		const result = addAdditionalPropertiesFalse(schema)
-
-		expect(result).toEqual({
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-			additionalProperties: false,
-		})
-	})
-
-	it("should add additionalProperties: false to nested object schemas", () => {
+	it("should recursively apply defaults to nested schemas", () => {
 		const schema = {
 			type: "object",
 			properties: {
@@ -190,80 +123,90 @@ describe("addAdditionalPropertiesFalse", () => {
 					type: "object",
 					properties: {
 						name: { type: "string" },
-						address: {
-							type: "object",
-							properties: {
-								street: { type: "string" },
-							},
-						},
 					},
 				},
 			},
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
-		expect(result).toEqual({
-			type: "object",
-			properties: {
-				user: {
-					type: "object",
-					properties: {
-						name: { type: "string" },
-						address: {
-							type: "object",
-							properties: {
-								street: { type: "string" },
-							},
-							additionalProperties: false,
-						},
-					},
-					additionalProperties: false,
-				},
-			},
-			additionalProperties: false,
-		})
+		expect(result.additionalProperties).toBe(false)
+		expect((result.properties as any).user.additionalProperties).toBe(false)
 	})
 
-	it("should add additionalProperties: false to array items that are objects", () => {
+	it("should apply defaults to object schemas in array items", () => {
 		const schema = {
 			type: "object",
 			properties: {
-				entities: {
+				items: {
 					type: "array",
 					items: {
 						type: "object",
 						properties: {
-							name: { type: "string" },
-							entityType: { type: "string" },
+							id: { type: "number" },
 						},
 					},
 				},
 			},
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
-		expect(result).toEqual({
-			type: "object",
-			properties: {
-				entities: {
-					type: "array",
-					items: {
-						type: "object",
-						properties: {
-							name: { type: "string" },
-							entityType: { type: "string" },
-						},
-						additionalProperties: false,
-					},
-				},
-			},
-			additionalProperties: false,
-		})
+		expect(result.additionalProperties).toBe(false)
+		expect((result.properties as any).items.items.additionalProperties).toBe(false)
 	})
 
-	it("should handle tuple-style array items", () => {
+	it("should throw on invalid schema", () => {
+		const invalidSchema = { type: "invalid-type" }
+
+		expect(() => StrictJsonSchemaSchema.parse(invalidSchema)).toThrow()
+	})
+
+	it("should use safeParse for error handling", () => {
+		const invalidSchema = { type: "invalid-type" }
+
+		const result = StrictJsonSchemaSchema.safeParse(invalidSchema)
+
+		expect(result.success).toBe(false)
+	})
+
+	it("should apply defaults in anyOf schemas", () => {
+		const schema = {
+			anyOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "string" }],
+		}
+
+		const result = StrictJsonSchemaSchema.parse(schema)
+
+		expect((result.anyOf as any)[0].additionalProperties).toBe(false)
+		expect((result.anyOf as any)[1].additionalProperties).toBe(false)
+	})
+
+	it("should apply defaults in oneOf schemas", () => {
+		const schema = {
+			oneOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "number" }],
+		}
+
+		const result = StrictJsonSchemaSchema.parse(schema)
+
+		expect((result.oneOf as any)[0].additionalProperties).toBe(false)
+		expect((result.oneOf as any)[1].additionalProperties).toBe(false)
+	})
+
+	it("should apply defaults in allOf schemas", () => {
+		const schema = {
+			allOf: [
+				{ type: "object", properties: { a: { type: "string" } } },
+				{ type: "object", properties: { b: { type: "number" } } },
+			],
+		}
+
+		const result = StrictJsonSchemaSchema.parse(schema)
+
+		expect((result.allOf as any)[0].additionalProperties).toBe(false)
+		expect((result.allOf as any)[1].additionalProperties).toBe(false)
+	})
+
+	it("should apply defaults to tuple-style array items", () => {
 		const schema = {
 			type: "object",
 			properties: {
@@ -277,24 +220,14 @@ describe("addAdditionalPropertiesFalse", () => {
 			},
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
-		expect(result).toEqual({
-			type: "object",
-			properties: {
-				tuple: {
-					type: "array",
-					items: [
-						{ type: "object", properties: { a: { type: "string" } }, additionalProperties: false },
-						{ type: "object", properties: { b: { type: "number" } }, additionalProperties: false },
-					],
-				},
-			},
-			additionalProperties: false,
-		})
+		const tupleItems = (result.properties as any).tuple.items
+		expect(tupleItems[0].additionalProperties).toBe(false)
+		expect(tupleItems[1].additionalProperties).toBe(false)
 	})
 
-	it("should preserve existing additionalProperties: false", () => {
+	it("should preserve explicit additionalProperties: false", () => {
 		const schema = {
 			type: "object",
 			properties: {
@@ -303,77 +236,9 @@ describe("addAdditionalPropertiesFalse", () => {
 			additionalProperties: false,
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
-		expect(result).toEqual({
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-			additionalProperties: false,
-		})
-	})
-
-	it("should handle anyOf schemas", () => {
-		const schema = {
-			anyOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "string" }],
-		}
-
-		const result = addAdditionalPropertiesFalse(schema)
-
-		expect(result).toEqual({
-			anyOf: [
-				{ type: "object", properties: { a: { type: "string" } }, additionalProperties: false },
-				{ type: "string" },
-			],
-		})
-	})
-
-	it("should handle oneOf schemas", () => {
-		const schema = {
-			oneOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "number" }],
-		}
-
-		const result = addAdditionalPropertiesFalse(schema)
-
-		expect(result).toEqual({
-			oneOf: [
-				{ type: "object", properties: { a: { type: "string" } }, additionalProperties: false },
-				{ type: "number" },
-			],
-		})
-	})
-
-	it("should handle allOf schemas", () => {
-		const schema = {
-			allOf: [
-				{ type: "object", properties: { a: { type: "string" } } },
-				{ type: "object", properties: { b: { type: "number" } } },
-			],
-		}
-
-		const result = addAdditionalPropertiesFalse(schema)
-
-		expect(result).toEqual({
-			allOf: [
-				{ type: "object", properties: { a: { type: "string" } }, additionalProperties: false },
-				{ type: "object", properties: { b: { type: "number" } }, additionalProperties: false },
-			],
-		})
-	})
-
-	it("should not mutate the original schema", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		const original = JSON.parse(JSON.stringify(schema))
-		addAdditionalPropertiesFalse(schema)
-
-		expect(schema).toEqual(original)
+		expect(result.additionalProperties).toBe(false)
 	})
 
 	it("should handle deeply nested complex schemas", () => {
@@ -402,7 +267,7 @@ describe("addAdditionalPropertiesFalse", () => {
 			},
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
 		expect(result.additionalProperties).toBe(false)
 		expect((result.properties as any).level1.additionalProperties).toBe(false)
@@ -413,7 +278,7 @@ describe("addAdditionalPropertiesFalse", () => {
 	})
 
 	it("should handle the real-world MCP memory create_entities schema", () => {
-		// This is based on the actual schema that caused the error
+		// This is based on the actual schema that caused the OpenAI error
 		const schema = {
 			type: "object",
 			properties: {
@@ -438,72 +303,11 @@ describe("addAdditionalPropertiesFalse", () => {
 			required: ["entities"],
 		}
 
-		const result = addAdditionalPropertiesFalse(schema)
+		const result = StrictJsonSchemaSchema.parse(schema)
 
 		// Top-level object should have additionalProperties: false
 		expect(result.additionalProperties).toBe(false)
 		// Items in the entities array should have additionalProperties: false
 		expect((result.properties as any).entities.items.additionalProperties).toBe(false)
-	})
-
-	it("should not add additionalProperties to non-object types", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-				count: { type: "number" },
-				active: { type: "boolean" },
-				tags: { type: "array", items: { type: "string" } },
-			},
-		}
-
-		const result = addAdditionalPropertiesFalse(schema)
-
-		// Only the root object should have additionalProperties
-		expect(result.additionalProperties).toBe(false)
-		expect((result.properties as any).name.additionalProperties).toBeUndefined()
-		expect((result.properties as any).count.additionalProperties).toBeUndefined()
-		expect((result.properties as any).active.additionalProperties).toBeUndefined()
-		expect((result.properties as any).tags.additionalProperties).toBeUndefined()
-		expect((result.properties as any).tags.items.additionalProperties).toBeUndefined()
-	})
-})
-
-describe("validateAndAddAdditionalPropertiesFalse", () => {
-	it("should validate and transform valid schema", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		const result = validateAndAddAdditionalPropertiesFalse(schema)
-
-		expect(result.additionalProperties).toBe(false)
-	})
-
-	it("should throw for invalid schema", () => {
-		const invalidSchema = { type: "invalid-type" }
-
-		expect(() => validateAndAddAdditionalPropertiesFalse(invalidSchema)).toThrow()
-	})
-})
-
-describe("JsonSchemaSchema (Zod schema)", () => {
-	it("should be exported and usable directly", () => {
-		const schema = { type: "object" }
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-	})
-
-	it("should reject invalid types", () => {
-		const schema = { type: "invalid-type" }
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(false)
 	})
 })

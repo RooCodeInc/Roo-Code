@@ -1,7 +1,7 @@
 import type OpenAI from "openai"
 import { McpHub } from "../../../../services/mcp/McpHub"
 import { buildMcpToolName } from "../../../../utils/mcp-name"
-import { addAdditionalPropertiesFalse } from "../../../../utils/json-schema"
+import { StrictJsonSchemaSchema, type JsonSchema } from "../../../../utils/json-schema"
 
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
@@ -41,26 +41,16 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			}
 			seenToolNames.add(toolName)
 
-			const originalSchema = tool.inputSchema as Record<string, any> | undefined
-			const toolInputRequired = (originalSchema?.required ?? []) as string[]
+			const originalSchema = tool.inputSchema as Record<string, unknown> | undefined
 
-			// Transform the schema to ensure all nested object schemas have additionalProperties: false
-			// This is required by some API providers (e.g., OpenAI) for strict function calling
-			const transformedSchema = originalSchema ? addAdditionalPropertiesFalse(originalSchema) : {}
-			const toolInputProps = (transformedSchema as Record<string, any>)?.properties ?? {}
-
-			// Build parameters directly from the tool's input schema.
-			// The server_name and tool_name are encoded in the function name itself
-			// (e.g., mcp_serverName_toolName), so they don't need to be in the arguments.
-			const parameters: OpenAI.FunctionParameters = {
-				type: "object",
-				properties: toolInputProps,
-				additionalProperties: false,
-			}
-
-			// Only add required if there are required fields
-			if (toolInputRequired.length > 0) {
-				parameters.required = toolInputRequired
+			// Parse with StrictJsonSchemaSchema
+			let parameters: JsonSchema
+			if (originalSchema) {
+				const result = StrictJsonSchemaSchema.safeParse(originalSchema)
+				parameters = result.success ? result.data : (originalSchema as JsonSchema)
+			} else {
+				// No schema provided - create a minimal valid schema
+				parameters = StrictJsonSchemaSchema.parse({ type: "object" })
 			}
 
 			const toolDefinition: OpenAI.Chat.ChatCompletionTool = {
@@ -68,7 +58,7 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 				function: {
 					name: toolName,
 					description: tool.description,
-					parameters: parameters,
+					parameters: parameters as OpenAI.FunctionParameters,
 				},
 			}
 
