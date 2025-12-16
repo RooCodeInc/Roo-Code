@@ -381,7 +381,15 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			// Wait for taskMetricsId to be set by the TaskStarted handler.
 			// This prevents a race condition where these events arrive before
 			// the TaskStarted handler finishes its async database operations.
+			// Note: taskMetricsReady is also resolved on disconnect to prevent deadlock.
 			await taskMetricsReady
+
+			// Guard: taskMetricsReady may have been resolved due to disconnect
+			// without taskMetricsId being set. Skip metrics update in this case.
+			if (!taskMetricsId) {
+				logger.info(`skipping metrics update: taskMetricsId not set (event: ${eventName})`)
+				return
+			}
 
 			const duration = Date.now() - taskStartedAt
 
@@ -409,7 +417,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				}
 			}
 
-			await updateTaskMetrics(taskMetricsId!, {
+			await updateTaskMetrics(taskMetricsId, {
 				cost: totalCost,
 				tokensIn: totalTokensIn,
 				tokensOut: totalTokensOut,
@@ -433,6 +441,10 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	client.on(IpcMessageType.Disconnect, async () => {
 		logger.info(`disconnected from IPC socket -> ${ipcSocketPath}`)
 		isClientDisconnected = true
+		// Resolve taskMetricsReady to unblock any handlers waiting on it.
+		// This prevents deadlock if TaskStarted never fired or threw before resolving.
+		// The handlers check for taskMetricsId being set before proceeding.
+		resolveTaskMetricsReady()
 	})
 
 	client.sendCommand({
