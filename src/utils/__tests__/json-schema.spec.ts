@@ -1,106 +1,6 @@
-import { JsonSchemaSchema, StrictJsonSchemaSchema } from "../json-schema"
+import { ToolInputSchema } from "../json-schema"
 
-describe("JsonSchemaSchema", () => {
-	it("should validate a simple schema", () => {
-		const schema = { type: "object", properties: { name: { type: "string" } } }
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-		if (result.success) {
-			expect(result.data.type).toBe("object")
-		}
-	})
-
-	it("should reject invalid type values", () => {
-		const schema = { type: "invalid-type" }
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(false)
-	})
-
-	it("should validate nested schemas", () => {
-		const schema = {
-			type: "object",
-			properties: {
-				user: {
-					type: "object",
-					properties: {
-						name: { type: "string" },
-						age: { type: "integer" },
-					},
-				},
-			},
-		}
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-	})
-
-	it("should validate array schemas", () => {
-		const schema = {
-			type: "array",
-			items: {
-				type: "object",
-				properties: {
-					id: { type: "number" },
-				},
-			},
-		}
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-	})
-
-	it("should validate schemas with anyOf/oneOf/allOf", () => {
-		const schema = {
-			anyOf: [{ type: "string" }, { type: "number" }],
-		}
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-	})
-
-	it("should pass through unknown properties", () => {
-		const schema = {
-			type: "object",
-			customProperty: "custom value",
-			properties: {
-				name: { type: "string" },
-			},
-		}
-
-		const result = JsonSchemaSchema.safeParse(schema)
-
-		expect(result.success).toBe(true)
-		if (result.success) {
-			expect(result.data.customProperty).toBe("custom value")
-		}
-	})
-
-	it("should accept empty object (valid JSON Schema)", () => {
-		const result = JsonSchemaSchema.safeParse({})
-
-		expect(result.success).toBe(true)
-	})
-
-	it("should NOT add additionalProperties (validation only)", () => {
-		const schema = {
-			type: "object",
-			properties: { name: { type: "string" } },
-		}
-
-		const result = JsonSchemaSchema.parse(schema)
-
-		expect(result.additionalProperties).toBeUndefined()
-	})
-})
-
-describe("StrictJsonSchemaSchema", () => {
+describe("ToolInputSchema", () => {
 	it("should validate and default additionalProperties to false", () => {
 		const schema = {
 			type: "object",
@@ -109,7 +9,7 @@ describe("StrictJsonSchemaSchema", () => {
 			},
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect(result.type).toBe("object")
 		expect(result.additionalProperties).toBe(false)
@@ -128,7 +28,7 @@ describe("StrictJsonSchemaSchema", () => {
 			},
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect(result.additionalProperties).toBe(false)
 		expect((result.properties as any).user.additionalProperties).toBe(false)
@@ -150,7 +50,7 @@ describe("StrictJsonSchemaSchema", () => {
 			},
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect(result.additionalProperties).toBe(false)
 		expect((result.properties as any).items.items.additionalProperties).toBe(false)
@@ -159,13 +59,13 @@ describe("StrictJsonSchemaSchema", () => {
 	it("should throw on invalid schema", () => {
 		const invalidSchema = { type: "invalid-type" }
 
-		expect(() => StrictJsonSchemaSchema.parse(invalidSchema)).toThrow()
+		expect(() => ToolInputSchema.parse(invalidSchema)).toThrow()
 	})
 
 	it("should use safeParse for error handling", () => {
 		const invalidSchema = { type: "invalid-type" }
 
-		const result = StrictJsonSchemaSchema.safeParse(invalidSchema)
+		const result = ToolInputSchema.safeParse(invalidSchema)
 
 		expect(result.success).toBe(false)
 	})
@@ -175,7 +75,7 @@ describe("StrictJsonSchemaSchema", () => {
 			anyOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "string" }],
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect((result.anyOf as any)[0].additionalProperties).toBe(false)
 		expect((result.anyOf as any)[1].additionalProperties).toBe(false)
@@ -186,7 +86,7 @@ describe("StrictJsonSchemaSchema", () => {
 			oneOf: [{ type: "object", properties: { a: { type: "string" } } }, { type: "number" }],
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect((result.oneOf as any)[0].additionalProperties).toBe(false)
 		expect((result.oneOf as any)[1].additionalProperties).toBe(false)
@@ -200,7 +100,7 @@ describe("StrictJsonSchemaSchema", () => {
 			],
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect((result.allOf as any)[0].additionalProperties).toBe(false)
 		expect((result.allOf as any)[1].additionalProperties).toBe(false)
@@ -220,7 +120,7 @@ describe("StrictJsonSchemaSchema", () => {
 			},
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		const tupleItems = (result.properties as any).tuple.items
 		expect(tupleItems[0].additionalProperties).toBe(false)
@@ -236,7 +136,7 @@ describe("StrictJsonSchemaSchema", () => {
 			additionalProperties: false,
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect(result.additionalProperties).toBe(false)
 	})
@@ -267,7 +167,7 @@ describe("StrictJsonSchemaSchema", () => {
 			},
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		expect(result.additionalProperties).toBe(false)
 		expect((result.properties as any).level1.additionalProperties).toBe(false)
@@ -303,7 +203,7 @@ describe("StrictJsonSchemaSchema", () => {
 			required: ["entities"],
 		}
 
-		const result = StrictJsonSchemaSchema.parse(schema)
+		const result = ToolInputSchema.parse(schema)
 
 		// Top-level object should have additionalProperties: false
 		expect(result.additionalProperties).toBe(false)
