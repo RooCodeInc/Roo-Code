@@ -158,8 +158,8 @@ describe("getMcpServerTools", () => {
 		expect(getFunction(result[0]).parameters).toEqual({
 			type: "object",
 			properties: {
-				requiredField: { type: "string" },
-				optionalField: { type: "number" },
+				requiredField: { type: "string", additionalProperties: false },
+				optionalField: { type: "number", additionalProperties: false },
 			},
 			additionalProperties: false,
 			required: ["requiredField"],
@@ -186,7 +186,7 @@ describe("getMcpServerTools", () => {
 		expect(getFunction(result[0]).parameters).toEqual({
 			type: "object",
 			properties: {
-				optionalField: { type: "string" },
+				optionalField: { type: "string", additionalProperties: false },
 			},
 			additionalProperties: false,
 		})
