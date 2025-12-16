@@ -354,6 +354,17 @@ export function Run({ run }: { run: Run }) {
 						duration,
 						cost: streamingUsage.totalCost,
 					}
+				} else {
+					// Task finished but no DB metrics and no streaming data
+					// (e.g., page loaded after task completed, metrics not persisted)
+					// Still provide duration calculated from timestamps
+					metrics[task.id] = {
+						tokensIn: 0,
+						tokensOut: 0,
+						tokensContext: 0,
+						duration: calculateDurationFromTimestamps(task),
+						cost: 0,
+					}
 				}
 			} else if (streamingUsage) {
 				// For running tasks, use streaming values
