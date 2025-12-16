@@ -31,10 +31,11 @@ export function normalizeToolCallId(id: string): string {
  */
 export interface ConvertToOpenAiMessagesOptions {
 	/**
-	 * The model ID being used. If it contains "mistral", tool call IDs will be
-	 * normalized to be compatible with Mistral's strict ID requirements.
+	 * Optional function to normalize tool call IDs for providers with strict ID requirements.
+	 * When provided, this function will be applied to all tool_use IDs and tool_result tool_use_ids.
+	 * This allows callers to declare provider-specific ID format requirements.
 	 */
-	modelId?: string
+	normalizeToolCallId?: (id: string) => string
 }
 
 export function convertToOpenAiMessages(
@@ -43,8 +44,8 @@ export function convertToOpenAiMessages(
 ): OpenAI.Chat.ChatCompletionMessageParam[] {
 	const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
-	// Check if we need to normalize tool call IDs for Mistral compatibility
-	const shouldNormalizeToolCallIds = options?.modelId?.toLowerCase().includes("mistral") ?? false
+	// Use provided normalization function or identity function
+	const normalizeId = options?.normalizeToolCallId ?? ((id: string) => id)
 
 	for (const anthropicMessage of anthropicMessages) {
 		if (typeof anthropicMessage.content === "string") {
@@ -96,9 +97,7 @@ export function convertToOpenAiMessages(
 					}
 					openAiMessages.push({
 						role: "tool",
-						tool_call_id: shouldNormalizeToolCallIds
-							? normalizeToolCallId(toolMessage.tool_use_id)
-							: toolMessage.tool_use_id,
+						tool_call_id: normalizeId(toolMessage.tool_use_id),
 						content: content,
 					})
 				})
@@ -165,7 +164,7 @@ export function convertToOpenAiMessages(
 
 				// Process tool use messages
 				let tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] = toolMessages.map((toolMessage) => ({
-					id: shouldNormalizeToolCallIds ? normalizeToolCallId(toolMessage.id) : toolMessage.id,
+					id: normalizeId(toolMessage.id),
 					type: "function",
 					function: {
 						name: toolMessage.name,

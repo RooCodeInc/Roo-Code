@@ -16,7 +16,7 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToOpenAiMessages, normalizeToolCallId } from "../transform/openai-format"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { TOOL_PROTOCOL } from "@roo-code/types"
 import { ApiStreamChunk } from "../transform/stream"
@@ -226,10 +226,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Convert Anthropic messages to OpenAI format.
-		// Pass modelId to normalize tool call IDs for Mistral compatibility
+		// Pass normalization function for Mistral compatibility (requires 9-char alphanumeric IDs)
+		const isMistral = modelId.toLowerCase().includes("mistral")
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, { modelId }),
+			...convertToOpenAiMessages(messages, isMistral ? { normalizeToolCallId } : undefined),
 		]
 
 		// DeepSeek highly recommends using user instead of system role.

@@ -107,7 +107,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 	})
 
-	it("should handle assistant messages with tool use (no normalization without modelId)", () => {
+	it("should handle assistant messages with tool use (no normalization without normalizeToolCallId)", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -134,7 +134,7 @@ describe("convertToOpenAiMessages", () => {
 		expect(assistantMessage.content).toBe("Let me check the weather.")
 		expect(assistantMessage.tool_calls).toHaveLength(1)
 		expect(assistantMessage.tool_calls![0]).toEqual({
-			id: "weather-123", // Not normalized without modelId
+			id: "weather-123", // Not normalized without normalizeToolCallId function
 			type: "function",
 			function: {
 				name: "get_weather",
@@ -143,7 +143,7 @@ describe("convertToOpenAiMessages", () => {
 		})
 	})
 
-	it("should handle user messages with tool results (no normalization without modelId)", () => {
+	it("should handle user messages with tool results (no normalization without normalizeToolCallId)", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -162,11 +162,11 @@ describe("convertToOpenAiMessages", () => {
 
 		const toolMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam
 		expect(toolMessage.role).toBe("tool")
-		expect(toolMessage.tool_call_id).toBe("weather-123") // Not normalized without modelId
+		expect(toolMessage.tool_call_id).toBe("weather-123") // Not normalized without normalizeToolCallId function
 		expect(toolMessage.content).toBe("Current temperature in London: 20°C")
 	})
 
-	it("should normalize tool call IDs when modelId contains 'mistral'", () => {
+	it("should normalize tool call IDs when normalizeToolCallId function is provided", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -191,9 +191,9 @@ describe("convertToOpenAiMessages", () => {
 			},
 		]
 
-		// With Mistral model ID - should normalize
+		// With normalizeToolCallId function - should normalize
 		const openAiMessages = convertToOpenAiMessages(anthropicMessages, {
-			modelId: "mistralai/mistral-large-latest",
+			normalizeToolCallId,
 		})
 
 		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
@@ -203,7 +203,7 @@ describe("convertToOpenAiMessages", () => {
 		expect(toolMessage.tool_call_id).toBe(normalizeToolCallId("call_5019f900a247472bacde0b82"))
 	})
 
-	it("should not normalize tool call IDs when modelId does not contain 'mistral'", () => {
+	it("should not normalize tool call IDs when normalizeToolCallId function is not provided", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -228,8 +228,8 @@ describe("convertToOpenAiMessages", () => {
 			},
 		]
 
-		// With non-Mistral model ID - should NOT normalize
-		const openAiMessages = convertToOpenAiMessages(anthropicMessages, { modelId: "openai/gpt-4" })
+		// Without normalizeToolCallId function - should NOT normalize
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages, {})
 
 		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
 		expect(assistantMessage.tool_calls![0].id).toBe("call_5019f900a247472bacde0b82")
@@ -238,7 +238,7 @@ describe("convertToOpenAiMessages", () => {
 		expect(toolMessage.tool_call_id).toBe("call_5019f900a247472bacde0b82")
 	})
 
-	it("should be case-insensitive when checking for mistral in modelId", () => {
+	it("should use custom normalization function when provided", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -253,10 +253,11 @@ describe("convertToOpenAiMessages", () => {
 			},
 		]
 
-		// Uppercase MISTRAL should still trigger normalization
-		const openAiMessages = convertToOpenAiMessages(anthropicMessages, { modelId: "MISTRAL-7B" })
+		// Custom normalization function that prefixes with "custom_"
+		const customNormalizer = (id: string) => `custom_${id}`
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages, { normalizeToolCallId: customNormalizer })
 
 		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
-		expect(assistantMessage.tool_calls![0].id).toBe(normalizeToolCallId("toolu_123"))
+		expect(assistantMessage.tool_calls![0].id).toBe("custom_toolu_123")
 	})
 })
