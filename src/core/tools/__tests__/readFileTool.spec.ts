@@ -40,20 +40,29 @@ vi.mock("fs/promises", () => fsPromises)
 // Mock input content for tests
 let mockInputContent = ""
 
+// Create hoisted mocks that can be used in vi.mock factories
+const { addLineNumbersMock, mockReadFileWithTokenBudget } = vi.hoisted(() => {
+	const addLineNumbersMock = vi.fn().mockImplementation((text: string, startLine = 1) => {
+		if (!text) return ""
+		const lines = typeof text === "string" ? text.split("\n") : [text]
+		return lines.map((line: string, i: number) => `${startLine + i} | ${line}`).join("\n")
+	})
+	const mockReadFileWithTokenBudget = vi.fn()
+	return { addLineNumbersMock, mockReadFileWithTokenBudget }
+})
+
 // First create all the mocks
 vi.mock("../../../integrations/misc/extract-text", () => ({
 	extractTextFromFile: vi.fn(),
-	addLineNumbers: vi.fn(),
+	addLineNumbers: addLineNumbersMock,
 	getSupportedBinaryFormats: vi.fn(() => [".pdf", ".docx", ".ipynb"]),
 }))
 vi.mock("../../../services/tree-sitter")
 
-// Then create the mock functions
-const addLineNumbersMock = vi.fn().mockImplementation((text, startLine = 1) => {
-	if (!text) return ""
-	const lines = typeof text === "string" ? text.split("\n") : [text]
-	return lines.map((line, i) => `${startLine + i} | ${line}`).join("\n")
-})
+// Mock readFileWithTokenBudget - must be mocked to prevent actual file system access
+vi.mock("../../../integrations/misc/read-file-with-budget", () => ({
+	readFileWithTokenBudget: (...args: any[]) => mockReadFileWithTokenBudget(...args),
+}))
 
 const extractTextFromFileMock = vi.fn()
 const getSupportedBinaryFormatsMock = vi.fn(() => [".pdf", ".docx", ".ipynb"])
@@ -148,6 +157,27 @@ beforeEach(() => {
 					return { type: "image", source: { type: "base64", media_type, data } }
 				})
 			: []
+	})
+
+	// Reset addLineNumbers mock to its default implementation (prevents cross-test pollution)
+	addLineNumbersMock.mockReset()
+	addLineNumbersMock.mockImplementation((text: string, startLine = 1) => {
+		if (!text) return ""
+		const lines = typeof text === "string" ? text.split("\n") : [text]
+		return lines.map((line: string, i: number) => `${startLine + i} | ${line}`).join("\n")
+	})
+
+	// Reset readFileWithTokenBudget mock with default implementation
+	mockReadFileWithTokenBudget.mockClear()
+	mockReadFileWithTokenBudget.mockImplementation(async (_filePath: string, _options: any) => {
+		// Default: return the mockInputContent with 5 lines
+		const lines = mockInputContent ? mockInputContent.split("\n") : []
+		return {
+			content: mockInputContent,
+			tokenCount: mockInputContent.length / 4, // rough estimate
+			lineCount: lines.length,
+			complete: true,
+		}
 	})
 })
 
@@ -500,7 +530,16 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		it("should read with extractTextFromFile when file has few lines", async () => {
 			// Setup
 			mockedCountFileLines.mockResolvedValue(3) // File shorter than maxReadFileLine
-			mockInputContent = fileContent
+			const threeLineContent = "Line 1\nLine 2\nLine 3"
+			mockInputContent = threeLineContent
+
+			// Configure the mock to return the correct content for this test
+			mockReadFileWithTokenBudget.mockResolvedValueOnce({
+				content: threeLineContent,
+				tokenCount: threeLineContent.length / 4,
+				lineCount: 3,
+				complete: true,
+			})
 
 			// Execute
 			const result = await executeReadFileTool({}, { maxReadFileLine: 5, totalLines: 3 })
@@ -660,11 +699,15 @@ describe("read_file tool XML output structure", () => {
 		it("should produce XML output with no unnecessary indentation", async () => {
 			// Setup
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3\n4 | Line 4\n5 | Line 5"
-			// For XML structure test
-			mockedExtractTextFromFile.mockImplementation(() => {
-				addLineNumbersMock(mockInputContent)
-				return Promise.resolve(numberedContent)
+
+			// Configure mockReadFileWithTokenBudget to return the 5-line content
+			mockReadFileWithTokenBudget.mockResolvedValueOnce({
+				content: fileContent, // "Line 1\nLine 2\nLine 3\nLine 4\nLine 5"
+				tokenCount: fileContent.length / 4,
+				lineCount: 5,
+				complete: true,
 			})
+
 			mockProvider.getState.mockResolvedValue({
 				maxReadFileLine: -1,
 				maxImageFileSize: 20,
@@ -697,7 +740,15 @@ describe("read_file tool XML output structure", () => {
 		it("should handle empty files correctly", async () => {
 			// Setup
 			mockedCountFileLines.mockResolvedValue(0)
-			mockedExtractTextFromFile.mockResolvedValue("")
+
+			// Configure mockReadFileWithTokenBudget to return empty content
+			mockReadFileWithTokenBudget.mockResolvedValueOnce({
+				content: "",
+				tokenCount: 0,
+				lineCount: 0,
+				complete: true,
+			})
+
 			mockProvider.getState.mockResolvedValue({
 				maxReadFileLine: -1,
 				maxImageFileSize: 20,

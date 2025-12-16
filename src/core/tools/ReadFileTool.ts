@@ -24,7 +24,7 @@ import {
 	processImageFile,
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
-import { validateFileTokenBudget, truncateFileContent } from "./helpers/fileTokenBudget"
+import { FILE_READ_BUDGET_PERCENT, readFileWithTokenBudget } from "./helpers/fileTokenBudget"
 import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
@@ -392,7 +392,38 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 
 						if (supportedBinaryFormats && supportedBinaryFormats.includes(fileExtension)) {
-							// Fall through to extractTextFromFile
+							// Use extractTextFromFile for supported binary formats (PDF, DOCX, etc.)
+							try {
+								const content = await extractTextFromFile(fullPath)
+								const numberedContent = addLineNumbers(content)
+								const lines = content.split("\n")
+								const lineCount = lines.length
+								const lineRangeAttr = lineCount > 0 ? ` lines="1-${lineCount}"` : ""
+
+								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+								updateFileResult(relPath, {
+									xmlContent:
+										lineCount > 0
+											? `<file><path>${relPath}</path>\n<content${lineRangeAttr}>\n${numberedContent}</content>\n</file>`
+											: `<file><path>${relPath}</path>\n<content/><notice>File is empty</notice>\n</file>`,
+									nativeContent:
+										lineCount > 0
+											? `File: ${relPath}\nLines 1-${lineCount}:\n${numberedContent}`
+											: `File: ${relPath}\nNote: File is empty`,
+								})
+								continue
+							} catch (error) {
+								const errorMsg = error instanceof Error ? error.message : String(error)
+								updateFileResult(relPath, {
+									status: "error",
+									error: `Error extracting text: ${errorMsg}`,
+									xmlContent: `<file><path>${relPath}</path><error>Error extracting text: ${errorMsg}</error></file>`,
+									nativeContent: `File: ${relPath}\nError: Error extracting text: ${errorMsg}`,
+								})
+								await task.say("error", `Error extracting text from ${relPath}: ${errorMsg}`)
+								continue
+							}
 						} else {
 							const fileFormat = fileExtension.slice(1) || "bin"
 							updateFileResult(relPath, {
@@ -498,48 +529,54 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							settings: task.apiConfiguration,
 						}) ?? ANTHROPIC_DEFAULT_MAX_TOKENS
 
-					const budgetResult = await validateFileTokenBudget(
-						fullPath,
-						contextWindow - maxOutputTokens,
-						contextTokens || 0,
-					)
+					// Calculate available token budget (60% of remaining context)
+					const remainingTokens = contextWindow - maxOutputTokens - (contextTokens || 0)
+					const safeReadBudget = Math.floor(remainingTokens * FILE_READ_BUDGET_PERCENT)
 
-					let content = await extractTextFromFile(fullPath)
+					let content: string
 					let xmlInfo = ""
-
 					let nativeInfo = ""
 
-					if (budgetResult.shouldTruncate && budgetResult.maxChars !== undefined) {
-						const truncateResult = truncateFileContent(
-							content,
-							budgetResult.maxChars,
-							content.length,
-							budgetResult.isPreview,
-						)
-						content = truncateResult.content
-
-						let displayedLines = content.length === 0 ? 0 : content.split(/\r?\n/).length
-						if (displayedLines > 0 && content.endsWith("\n")) {
-							displayedLines--
-						}
-						const lineRangeAttr = displayedLines > 0 ? ` lines="1-${displayedLines}"` : ""
-						xmlInfo =
-							content.length > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
-						xmlInfo += `<notice>${truncateResult.notice}</notice>\n`
-
-						nativeInfo =
-							content.length > 0
-								? `Lines 1-${displayedLines}:\n${content}\n\nNote: ${truncateResult.notice}`
-								: `Note: ${truncateResult.notice}`
+					if (safeReadBudget <= 0) {
+						// No budget available
+						content = ""
+						const notice = "No available context budget for file reading"
+						xmlInfo = `<content/>\n<notice>${notice}</notice>\n`
+						nativeInfo = `Note: ${notice}`
 					} else {
-						const lineRangeAttr = ` lines="1-${totalLines}"`
-						xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+						// Read file with incremental token counting
+						const result = await readFileWithTokenBudget(fullPath, {
+							budgetTokens: safeReadBudget,
+						})
 
-						if (totalLines === 0) {
-							xmlInfo += `<notice>File is empty</notice>\n`
-							nativeInfo = "Note: File is empty"
+						content = addLineNumbers(result.content)
+
+						if (!result.complete) {
+							// File was truncated
+							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
+							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
+							xmlInfo =
+								result.lineCount > 0
+									? `<content${lineRangeAttr}>\n${content}</content>\n<notice>${notice}</notice>\n`
+									: `<content/>\n<notice>${notice}</notice>\n`
+							nativeInfo =
+								result.lineCount > 0
+									? `Lines 1-${result.lineCount}:\n${content}\n\nNote: ${notice}`
+									: `Note: ${notice}`
 						} else {
-							nativeInfo = `Lines 1-${totalLines}:\n${content}`
+							// Full file read
+							const lineRangeAttr = ` lines="1-${result.lineCount}"`
+							xmlInfo =
+								result.lineCount > 0
+									? `<content${lineRangeAttr}>\n${content}</content>\n`
+									: `<content/>`
+
+							if (result.lineCount === 0) {
+								xmlInfo += `<notice>File is empty</notice>\n`
+								nativeInfo = "Note: File is empty"
+							} else {
+								nativeInfo = `Lines 1-${result.lineCount}:\n${content}`
+							}
 						}
 					}
 

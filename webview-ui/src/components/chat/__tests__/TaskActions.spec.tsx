@@ -82,6 +82,7 @@ describe("TaskActions", () => {
 		vi.clearAllMocks()
 		mockUseExtensionState.mockReturnValue({
 			sharingEnabled: true,
+			publicSharingEnabled: true,
 			cloudIsAuthenticated: true,
 			cloudUserInfo: {
 				organizationName: "Test Organization",
@@ -167,6 +168,7 @@ describe("TaskActions", () => {
 		it("does not show organization option when user is not in an organization", () => {
 			mockUseExtensionState.mockReturnValue({
 				sharingEnabled: true,
+				publicSharingEnabled: true,
 				cloudIsAuthenticated: true,
 				cloudUserInfo: {
 					// No organizationName property
@@ -265,6 +267,7 @@ describe("TaskActions", () => {
 			// Simulate user becoming authenticated (e.g., from CloudView)
 			mockUseExtensionState.mockReturnValue({
 				sharingEnabled: true,
+				publicSharingEnabled: true,
 				cloudIsAuthenticated: true,
 				cloudUserInfo: {
 					organizationName: "Test Organization",
@@ -303,6 +306,7 @@ describe("TaskActions", () => {
 			// Simulate user becoming authenticated after clicking connect from share button
 			mockUseExtensionState.mockReturnValue({
 				sharingEnabled: true,
+				publicSharingEnabled: true,
 				cloudIsAuthenticated: true,
 				cloudUserInfo: {
 					organizationName: "Test Organization",

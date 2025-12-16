@@ -45,6 +45,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	cloudIsAuthenticated: boolean
 	cloudOrganizations?: CloudOrganizationMembership[]
 	sharingEnabled: boolean
+	publicSharingEnabled: boolean
 	maxConcurrentFileReads?: number
 	mdmCompliant?: boolean
 	hasOpenedModeSelector: boolean // New property to track if user has opened mode selector
@@ -269,6 +270,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		// cloudOrganizations: [],
 		sharingEnabled: false,
 		// organizationAllowList: { allowAll: true, providers: {} },
+		publicSharingEnabled: false,
 		organizationAllowList: ORGANIZATION_ALLOW_ALL,
 		organizationSettingsVersion: -1,
 		autoCondenseContext: true,

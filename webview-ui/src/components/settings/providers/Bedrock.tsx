@@ -168,30 +168,9 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 							<SelectValue placeholder={t("settings:common.select")} />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="STANDARD">
-								<div>
-									<div>{t("settings:providers.awsServiceTierStandard")}</div>
-									<div className="text-xs text-vscode-descriptionForeground">
-										{t("settings:providers.awsServiceTierStandardDesc")}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem value="FLEX">
-								<div>
-									<div>{t("settings:providers.awsServiceTierFlex")}</div>
-									<div className="text-xs text-vscode-descriptionForeground">
-										{t("settings:providers.awsServiceTierFlexDesc")}
-									</div>
-								</div>
-							</SelectItem>
-							<SelectItem value="PRIORITY">
-								<div>
-									<div>{t("settings:providers.awsServiceTierPriority")}</div>
-									<div className="text-xs text-vscode-descriptionForeground">
-										{t("settings:providers.awsServiceTierPriorityDesc")}
-									</div>
-								</div>
-							</SelectItem>
+							<SelectItem value="STANDARD">{t("settings:providers.awsServiceTierStandard")}</SelectItem>
+							<SelectItem value="FLEX">{t("settings:providers.awsServiceTierFlex")}</SelectItem>
+							<SelectItem value="PRIORITY">{t("settings:providers.awsServiceTierPriority")}</SelectItem>
 						</SelectContent>
 					</Select>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">

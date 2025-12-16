@@ -225,7 +225,7 @@ export default function PricingPage() {
 									On any plan, you can use your own LLM provider API key or use the built-in Roo Code
 									Cloud provider – curated models to work with Roo with no markup, including the
 									latest Gemini, GPT and Claude. Paid with credits.
-									<Link href="/provider/pricing" className="underline hover:no-underline ml-1">
+									<Link href="/provider" className="underline hover:no-underline ml-1">
 										See per model pricing.
 									</Link>
 								</p>

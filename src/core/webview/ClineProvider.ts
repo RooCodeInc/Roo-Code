@@ -1968,6 +1968,7 @@ export class ClineProvider
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
+			publicSharingEnabled,
 			organizationAllowList,
 			organizationSettingsVersion,
 			maxConcurrentFileReads,
@@ -2124,6 +2125,7 @@ export class ClineProvider
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			// cloudOrganizations,
 			sharingEnabled: sharingEnabled ?? false,
+			publicSharingEnabled: publicSharingEnabled ?? false,
 			organizationAllowList,
 			organizationSettingsVersion,
 			condensingApiConfigId,
@@ -2236,6 +2238,16 @@ export class ClineProvider
 		// } catch (error) {
 		// 	console.error(
 		// 		`[getState] failed to get sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
+		// 	)
+		// }
+
+		let publicSharingEnabled: boolean = false
+
+		// try {
+		// 	publicSharingEnabled = await CloudService.instance.canSharePublicly()
+		// } catch (error) {
+		// 	console.error(
+		// 		`[getState] failed to get public sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
 		// 	)
 		// }
 
@@ -2355,6 +2367,7 @@ export class ClineProvider
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
+			publicSharingEnabled,
 			organizationAllowList,
 			organizationSettingsVersion,
 			condensingApiConfigId: stateValues.condensingApiConfigId,

@@ -1,10 +1,11 @@
 import type OpenAI from "openai"
 import type { ModeConfig, ToolName, ToolGroup, ModelInfo } from "@roo-code/types"
-import { getModeBySlug, getToolsForMode, isToolAllowedForMode } from "../../../shared/modes"
+import { getModeBySlug, getToolsForMode } from "../../../shared/modes"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
+import { isToolAllowedForMode } from "../../../core/tools/validateToolUse"
 
 /**
  * Reverse lookup map - maps alias name to canonical tool name.

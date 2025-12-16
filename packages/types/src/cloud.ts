@@ -135,6 +135,7 @@ export type WorkspaceTaskVisibility = z.infer<typeof workspaceTaskVisibilitySche
 export const organizationCloudSettingsSchema = z.object({
 	recordTaskMessages: z.boolean().optional(),
 	enableTaskSharing: z.boolean().optional(),
+	allowPublicTaskSharing: z.boolean().optional(),
 	taskShareExpirationDays: z.number().int().positive().optional(),
 	allowMembersViewAllTasks: z.boolean().optional(),
 	workspaceTaskVisibility: workspaceTaskVisibilitySchema.optional(),
@@ -209,6 +210,7 @@ export const ORGANIZATION_DEFAULT: OrganizationSettings = {
 	cloudSettings: {
 		recordTaskMessages: true,
 		enableTaskSharing: true,
+		allowPublicTaskSharing: true,
 		taskShareExpirationDays: 30,
 		allowMembersViewAllTasks: true,
 	},

@@ -4,6 +4,8 @@ import { buildMcpToolName } from "../../../../utils/mcp-name"
 
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
+ * Tools are deduplicated by name to prevent API errors. When the same server exists in both
+ * global and project configs, project servers take priority (handled by McpHub.getServers()).
  *
  * @param mcpHub The McpHub instance containing connected servers.
  * @returns An array of OpenAI.Chat.ChatCompletionTool definitions.
@@ -15,6 +17,8 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 
 	const servers = mcpHub.getServers()
 	const tools: OpenAI.Chat.ChatCompletionTool[] = []
+	// Track seen tool names to prevent duplicates (e.g., when same server exists in both global and project configs)
+	const seenToolNames = new Set<string>()
 
 	for (const server of servers) {
 		if (!server.tools) {
@@ -25,6 +29,16 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			if (tool.enabledForPrompt === false) {
 				continue
 			}
+
+			// Build sanitized tool name for API compliance
+			// The name is sanitized to conform to API requirements (e.g., Gemini's function name restrictions)
+			const toolName = buildMcpToolName(server.name, tool.name)
+
+			// Skip duplicate tool names - first occurrence wins (project servers come before global servers)
+			if (seenToolNames.has(toolName)) {
+				continue
+			}
+			seenToolNames.add(toolName)
 
 			const originalSchema = tool.inputSchema as Record<string, any> | undefined
 			const toolInputProps = originalSchema?.properties ?? {}
@@ -43,10 +57,6 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			if (toolInputRequired.length > 0) {
 				parameters.required = toolInputRequired
 			}
-
-			// Build sanitized tool name for API compliance
-			// The name is sanitized to conform to API requirements (e.g., Gemini's function name restrictions)
-			const toolName = buildMcpToolName(server.name, tool.name)
 
 			const toolDefinition: OpenAI.Chat.ChatCompletionTool = {
 				type: "function",

@@ -5,11 +5,15 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import { t } from "../../i18n"
+
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
 // import { Package } from "../../shared/package"
-import { t } from "../../i18n"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
+
 import { AskIgnoredError } from "../task/AskIgnoredError"
+import { Task } from "../task/Task"
 
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
@@ -31,17 +35,14 @@ import { askMultipleChoiceTool } from "../tools/AskMultipleChoiceTool"
 import { switchModeTool } from "../tools/SwitchModeTool"
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/AttemptCompletionTool"
 import { newTaskTool } from "../tools/NewTaskTool"
-
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 
 import { formatResponse } from "../prompts/responses"
 import { validateToolUse } from "../tools/validateToolUse"
-import { Task } from "../task/Task"
 // import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
-import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
-import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { updateCospecMetadata } from "../checkpoints"
 import { fixBrowserLaunchAction } from "../../utils/fixbrowserLaunchAction"
 // import { isNativeProtocol } from "@roo-code/types"
@@ -358,7 +359,7 @@ export async function presentAssistantMessage(cline: Task) {
 		case "tool_use": {
 			// Fetch state early so it's available for toolDescription and validation
 			const state = await cline.providerRef.deref()?.getState()
-			const { mode, customModes, experiments: stateExperiments, apiConfiguration } = state ?? {}
+			const { mode, customModes, experiments: stateExperiments } = state ?? {}
 
 			const toolDescription = (): string => {
 				switch (block.name) {
@@ -750,6 +751,7 @@ export async function presentAssistantMessage(cline: Task) {
 					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
 					// which would cause the extension to appear to hang
 					const errorContent = formatResponse.toolError(error.message, toolProtocol)
+
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
 						// For native protocol, push tool_result directly without setting didAlreadyUseTool
 						cline.userMessageContent.push({
@@ -762,6 +764,7 @@ export async function presentAssistantMessage(cline: Task) {
 						// For XML protocol, use the standard pushToolResult
 						pushToolResult(errorContent)
 					}
+
 					break
 				}
 			}
