@@ -39,6 +39,7 @@ import { ProviderSettings } from "@roo-code/types"
 import ProviderRenderer from "../settings/ProviderRenderer"
 import { RouterModels } from "@roo/api"
 // import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { ModeSwitch } from "./ModeSwitch"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -1108,7 +1109,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											? "border-2 border-dashed border-vscode-focusBorder"
 											: "border border-transparent",
 									"pl-2",
-									"py-2",
+									"py-8.5",
 									isEditMode ? "pr-20" : "pr-9",
 									"z-10",
 									"pb-[32px]",
@@ -1213,7 +1214,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"text-vscode-editor-font-size",
 									"leading-vscode-editor-line-height",
 									"cursor-text",
-									"py-2 pl-2",
+									"py-8.5 pl-2",
 									isFocused
 										? "border border-vscode-focusBorder outline outline-vscode-focusBorder"
 										: isDraggingOver
@@ -1420,6 +1421,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
+				</div>
+
+				{/* ModeSwitch positioned at the top left of the input area */}
+				<div className="absolute top-2 left-4 z-30">
+					<ModeSwitch />
 				</div>
 			</div>
 		)

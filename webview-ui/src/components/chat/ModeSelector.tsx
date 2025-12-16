@@ -4,7 +4,7 @@ import { Check, X } from "lucide-react"
 
 import { type ModeConfig, type CustomModePrompts, TelemetryEventName } from "@roo-code/types"
 
-import { type Mode, ZgsmCodeMode, filterModesByZgsmCodeMode, getAllModes } from "@roo/modes"
+import { type Mode, filterModesByZgsmCodeMode, getAllModes } from "@roo/modes"
 
 import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
@@ -13,7 +13,6 @@ import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
 import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
-import { SelectDropdown } from "@/components/ui/select-dropdown"
 
 import { IconButton } from "./IconButton"
 
@@ -48,46 +47,8 @@ export const ModeSelector = ({
 	const selectedItemRef = React.useRef<HTMLDivElement>(null)
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null)
 	const portalContainer = useRooPortal("roo-portal")
-	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, setZgsmCodeMode, apiConfiguration } =
-		useExtensionState()
+	const { hasOpenedModeSelector, setHasOpenedModeSelector, zgsmCodeMode, apiConfiguration } = useExtensionState()
 	const { t } = useAppTranslation()
-	const handleCodeModeChange = React.useCallback(
-		(newMode: string) => {
-			if (apiConfiguration?.apiProvider !== "zgsm") {
-				vscode.postMessage({
-					type: "zgsmProviderTip",
-					values: {
-						tipType: "info",
-						msg: t("settings:codebase.general.onlyCostrictProviderSupport"),
-					},
-				})
-				return
-			}
-
-			const slug = newMode as ZgsmCodeMode
-			setZgsmCodeMode(slug)
-			vscode.postMessage({
-				type: "zgsmCodeMode",
-				text: slug,
-			})
-
-			// Map the mode to the appropriate mode slug
-			let modeSlug: string
-			if (slug === "vibe") {
-				modeSlug = "code"
-			} else if (slug === "plan") {
-				modeSlug = "plan"
-			} else {
-				modeSlug = "strict"
-			}
-
-			vscode.postMessage({
-				type: "mode",
-				text: modeSlug,
-			})
-		},
-		[apiConfiguration?.apiProvider, setZgsmCodeMode, t],
-	)
 	const trackModeSelectorOpened = React.useCallback(() => {
 		// Track telemetry every time the mode selector is opened.
 		telemetryClient.capture(TelemetryEventName.MODE_SELECTOR_OPENED)
@@ -363,19 +324,6 @@ export const ModeSelector = ({
 									})
 									setOpen(false)
 								}}
-							/>
-							<SelectDropdown
-								value={zgsmCodeMode || "vibe"}
-								options={[
-									{ value: "vibe", label: "Vibe" },
-									{ value: "strict", label: "Strict" },
-									{ value: "plan", label: "Plan" },
-								]}
-								onChange={handleCodeModeChange}
-								disabled={apiConfiguration?.apiProvider !== "zgsm"}
-								triggerClassName="h-7 text-xs"
-								disableSearch={true}
-								placeholder="Select mode"
 							/>
 						</div>
 
