@@ -281,6 +281,13 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	// Track accumulated tool usage across task instances (handles rehydration after abort)
 	const accumulatedToolUsage: ToolUsage = {}
 
+	// Promise that resolves when taskMetricsId is set, preventing race conditions
+	// where TaskTokenUsageUpdated arrives before TaskStarted handler completes
+	let resolveTaskMetricsReady: () => void
+	const taskMetricsReady = new Promise<void>((resolve) => {
+		resolveTaskMetricsReady = resolve
+	})
+
 	const ignoreEvents: Record<"broadcast" | "log", RooCodeEventName[]> = {
 		broadcast: [RooCodeEventName.Message],
 		log: [RooCodeEventName.TaskTokenUsageUpdated, RooCodeEventName.TaskAskResponded],
@@ -360,6 +367,9 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			taskStartedAt = Date.now()
 			taskMetricsId = taskMetrics.id
 			rooTaskId = payload[0]
+
+			// Signal that taskMetricsId is now ready for other handlers
+			resolveTaskMetricsReady()
 		}
 
 		if (eventName === RooCodeEventName.TaskToolFailed) {
@@ -367,10 +377,12 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
-		if (
-			(eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) &&
-			taskMetricsId
-		) {
+		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
+			// Wait for taskMetricsId to be set by the TaskStarted handler.
+			// This prevents a race condition where these events arrive before
+			// the TaskStarted handler finishes its async database operations.
+			await taskMetricsReady
+
 			const duration = Date.now() - taskStartedAt
 
 			const { totalCost, totalTokensIn, totalTokensOut, contextTokens, totalCacheWrites, totalCacheReads } =
@@ -397,7 +409,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				}
 			}
 
-			await updateTaskMetrics(taskMetricsId, {
+			await updateTaskMetrics(taskMetricsId!, {
 				cost: totalCost,
 				tokensIn: totalTokensIn,
 				tokensOut: totalTokensOut,
