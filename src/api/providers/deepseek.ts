@@ -13,7 +13,6 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { convertToR1Format } from "../transform/r1-format"
-import { XmlMatcher } from "../../utils/xml-matcher"
 
 import { OpenAiHandler } from "./openai"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
@@ -89,25 +88,16 @@ export class DeepSeekHandler extends OpenAiHandler {
 			throw handleOpenAIError(error, "DeepSeek")
 		}
 
-		// XmlMatcher for <think> tags (used by some DeepSeek models)
-		const matcher = new XmlMatcher(
-			"think",
-			(chunk) =>
-				({
-					type: chunk.matched ? "reasoning" : "text",
-					text: chunk.data,
-				}) as const,
-		)
-
 		let lastUsage
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices?.[0]?.delta ?? {}
 
-			// Handle regular content with <think> tag detection
+			// Handle regular text content
 			if (delta.content) {
-				for (const matchedChunk of matcher.update(delta.content)) {
-					yield matchedChunk
+				yield {
+					type: "text",
+					text: delta.content,
 				}
 			}
 
@@ -136,11 +126,6 @@ export class DeepSeekHandler extends OpenAiHandler {
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
-		}
-
-		// Flush any remaining content from the XML matcher
-		for (const matchedChunk of matcher.final()) {
-			yield matchedChunk
 		}
 
 		if (lastUsage) {
