@@ -644,7 +644,7 @@ importers:
         version: 1.2.0
       '@mistralai/mistralai':
         specifier: ^1.9.18
-        version: 1.9.18(zod@3.25.76)
+        version: 1.9.18(zod@3.25.61)
       '@modelcontextprotocol/sdk':
         specifier: 1.12.0
         version: 1.12.0
@@ -749,7 +749,7 @@ importers:
         version: 0.5.17
       openai:
         specifier: ^5.12.2
-        version: 5.12.2(ws@8.18.3)(zod@3.25.76)
+        version: 5.12.2(ws@8.18.3)(zod@3.25.61)
       os-name:
         specifier: ^6.0.0
         version: 6.1.0
@@ -853,8 +853,8 @@ importers:
         specifier: ^2.8.0
         version: 2.8.0
       zod:
-        specifier: ^3.25.61
-        version: 3.25.76
+        specifier: 3.25.61
+        version: 3.25.61
     devDependencies:
       '@roo-code/build':
         specifier: workspace:^
@@ -966,7 +966,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
       zod-to-ts:
         specifier: ^1.2.0
-        version: 1.2.0(typescript@5.8.3)(zod@3.25.76)
+        version: 1.2.0(typescript@5.8.3)(zod@3.25.61)
 
   webview-ui:
     dependencies:
@@ -11875,10 +11875,10 @@ snapshots:
     dependencies:
       exenv-es6: 1.1.1
 
-  '@mistralai/mistralai@1.9.18(zod@3.25.76)':
+  '@mistralai/mistralai@1.9.18(zod@3.25.61)':
     dependencies:
-      zod: 3.25.76
-      zod-to-json-schema: 3.24.5(zod@3.25.76)
+      zod: 3.25.61
+      zod-to-json-schema: 3.24.5(zod@3.25.61)
 
   '@mixmark-io/domino@2.2.0': {}
 
@@ -18414,10 +18414,10 @@ snapshots:
       is-inside-container: 1.0.0
       is-wsl: 3.1.0
 
-  openai@5.12.2(ws@8.18.3)(zod@3.25.76):
+  openai@5.12.2(ws@8.18.3)(zod@3.25.61):
     optionalDependencies:
       ws: 8.18.3
-      zod: 3.25.76
+      zod: 3.25.61
 
   option@0.2.4: {}
 
@@ -21203,14 +21203,18 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
+  zod-to-json-schema@3.24.5(zod@3.25.61):
+    dependencies:
+      zod: 3.25.61
+
   zod-to-json-schema@3.24.5(zod@3.25.76):
     dependencies:
       zod: 3.25.76
 
-  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.76):
+  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.61):
     dependencies:
       typescript: 5.8.3
-      zod: 3.25.76
+      zod: 3.25.61
 
   zod-validation-error@3.4.1(zod@3.25.76):
     dependencies:
