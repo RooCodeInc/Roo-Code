@@ -100,6 +100,7 @@ export const fireworksModels = {
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
+		supportsReasoningBinary: true,
 		inputPrice: 0.56,
 		outputPrice: 1.68,
 		description:
