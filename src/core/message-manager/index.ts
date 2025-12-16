@@ -136,15 +136,11 @@ export class MessageManager {
 	 *
 	 * Note on timestamp handling:
 	 * Due to async execution during streaming, clineMessage timestamps may not
-	 * perfectly align with API message timestamps. There are two race condition scenarios:
-	 *
-	 * 1. Original race: clineMessage timestamp is BEFORE the assistant API message
-	 *    (tool execution happens concurrently with stream completion)
-	 *    Solution: Find the first API user message at or after the cutoff
-	 *
-	 * 2. Inverse race: API user message (tool_result) timestamp is BEFORE the clineMessage
-	 *    (the tool_result was logged before the user_feedback clineMessage)
-	 *    Solution: Find the last assistant message before cutoff and use that as boundary
+	 * perfectly align with API message timestamps. Specifically, a "user_feedback"
+	 * clineMessage can have a timestamp BEFORE the assistant API message that
+	 * triggered it (because tool execution happens concurrently with stream
+	 * completion). To handle this race condition, we find the first API user
+	 * message at or after the cutoff and use its timestamp as the actual boundary.
 	 */
 	private async truncateApiHistoryWithCleanup(
 		cutoffTs: number,
@@ -163,35 +159,20 @@ export class MessageManager {
 		let actualCutoff: number = cutoffTs
 
 		if (!hasExactMatch && hasMessageBeforeCutoff) {
-			// No exact match but there are earlier messages - check for race conditions
-			//
-			// First, check for "inverse race" pattern:
-			// Find the last assistant message before cutoff
-			const lastAssistantBeforeCutoff = this.findLastAssistantBeforeCutoff(apiHistory, cutoffTs)
+			// No exact match but there are earlier messages means we might have a race
+			// condition where the clineMessage timestamp is earlier than any API message
+			// due to async execution. In this case, look for the first API user message
+			// at or after the cutoff to use as the actual boundary.
+			// This ensures assistant messages that preceded the user's response are preserved.
+			const firstUserMsgIndexToRemove = apiHistory.findIndex(
+				(m) => m.ts !== undefined && m.ts >= cutoffTs && m.role === "user",
+			)
 
-			if (lastAssistantBeforeCutoff !== undefined) {
-				// Check if there are user messages between the last assistant and cutoff
-				// This indicates an "inverse race" where the user's tool_result was logged
-				// before the clineMessage timestamp
-				const hasUserBetweenAssistantAndCutoff = apiHistory.some(
-					(m) =>
-						m.ts !== undefined && m.ts > lastAssistantBeforeCutoff && m.ts < cutoffTs && m.role === "user",
-				)
-
-				if (hasUserBetweenAssistantAndCutoff) {
-					// Inverse race detected: use the assistant timestamp + 1 as cutoff
-					// This ensures we keep the assistant response but remove the user
-					// message that belongs to the turn being deleted
-					actualCutoff = lastAssistantBeforeCutoff + 1
-				} else {
-					// No inverse race, check for original race condition
-					// Look for the first API user message at or after the cutoff
-					actualCutoff = this.findFirstUserCutoff(apiHistory, cutoffTs)
-				}
-			} else {
-				// No assistant before cutoff, use original race condition logic
-				actualCutoff = this.findFirstUserCutoff(apiHistory, cutoffTs)
+			if (firstUserMsgIndexToRemove !== -1) {
+				// Use the user message's timestamp as the actual cutoff
+				actualCutoff = apiHistory[firstUserMsgIndexToRemove].ts!
 			}
+			// else: no user message found, use original cutoffTs (fallback)
 		}
 
 		// Step 2: Filter by the actual cutoff timestamp
@@ -233,39 +214,5 @@ export class MessageManager {
 		if (historyChanged) {
 			await this.task.overwriteApiConversationHistory(apiHistory)
 		}
-	}
-
-	/**
-	 * Find the timestamp of the last assistant message before the cutoff.
-	 * Returns undefined if no assistant message exists before cutoff.
-	 */
-	private findLastAssistantBeforeCutoff(apiHistory: ApiMessage[], cutoffTs: number): number | undefined {
-		let lastAssistantTs: number | undefined
-
-		for (const msg of apiHistory) {
-			if (msg.ts !== undefined && msg.ts < cutoffTs && msg.role === "assistant") {
-				if (lastAssistantTs === undefined || msg.ts > lastAssistantTs) {
-					lastAssistantTs = msg.ts
-				}
-			}
-		}
-
-		return lastAssistantTs
-	}
-
-	/**
-	 * Find the cutoff based on the first user message at or after the original cutoff.
-	 * Falls back to the original cutoff if no user message is found.
-	 */
-	private findFirstUserCutoff(apiHistory: ApiMessage[], cutoffTs: number): number {
-		const firstUserMsgIndex = apiHistory.findIndex(
-			(m) => m.ts !== undefined && m.ts >= cutoffTs && m.role === "user",
-		)
-
-		if (firstUserMsgIndex !== -1) {
-			return apiHistory[firstUserMsgIndex].ts!
-		}
-
-		return cutoffTs
 	}
 }
