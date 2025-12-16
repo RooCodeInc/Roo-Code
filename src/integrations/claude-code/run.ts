@@ -7,7 +7,7 @@ import { CLAUDE_CODE_DEFAULT_MAX_OUTPUT_TOKENS } from "@roo-code/types"
 import * as os from "os"
 import { t } from "../../i18n"
 
-const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
+const cwd = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0) || process.cwd()
 
 // Claude Code installation URL - can be easily updated if needed
 const CLAUDE_CODE_INSTALLATION_URL = "https://docs.anthropic.com/en/docs/claude-code/setup"

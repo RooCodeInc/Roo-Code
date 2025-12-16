@@ -9,7 +9,14 @@ import {
 } from "@google/genai"
 import type { JWTInput } from "google-auth-library"
 
-import { type ModelInfo, type GeminiModelId, geminiDefaultModelId, geminiModels } from "@roo-code/types"
+import {
+	type ModelInfo,
+	type GeminiModelId,
+	geminiDefaultModelId,
+	geminiModels,
+	ApiProviderError,
+} from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { safeJsonParse } from "../../shared/safeJsonParse"
@@ -32,6 +39,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	private client: GoogleGenAI
 	private lastThoughtSignature?: string
 	private lastResponseId?: string
+	private readonly providerName = "Gemini"
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
 		super()
@@ -338,6 +346,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
 			if (error instanceof Error) {
 				throw new Error(t("common:errors.gemini.generate_stream", { error: error.message }))
 			}
@@ -401,9 +413,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any): Promise<string> {
-		try {
-			const { id: model, info } = this.getModel()
+		const { id: model, info } = this.getModel()
 
+		try {
 			const tools: GenerateContentConfig["tools"] = []
 			if (this.options.enableUrlContext) {
 				tools.push({ urlContext: {} })
@@ -445,6 +457,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
+
 			if (error instanceof Error) {
 				throw new Error(t("common:errors.gemini.generate_complete_prompt", { error: error.message }))
 			}

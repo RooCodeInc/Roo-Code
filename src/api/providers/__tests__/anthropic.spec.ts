@@ -3,6 +3,15 @@
 import { AnthropicHandler } from "../anthropic"
 import { ApiHandlerOptions } from "../../../shared/api"
 
+// Mock TelemetryService
+vitest.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureException: vitest.fn(),
+		},
+	},
+}))
+
 const mockCreate = vitest.fn()
 
 vitest.mock("@anthropic-ai/sdk", () => {
@@ -414,11 +423,11 @@ describe("AnthropicHandler", () => {
 			},
 		]
 
-		it("should include tools in request when toolProtocol is native", async () => {
+		it("should include tools in request by default (native is default)", async () => {
+			// Handler uses native protocol by default via model's defaultToolProtocol
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			})
 
 			// Consume the stream to trigger the API call
@@ -446,10 +455,15 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should not include tools when toolProtocol is xml", async () => {
-			const stream = handler.createMessage(systemPrompt, messages, {
+			// Create handler with xml tool protocol in options
+			const xmlHandler = new AnthropicHandler({
+				...mockOptions,
+				toolProtocol: "xml",
+			})
+
+			const stream = xmlHandler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "xml",
 			})
 
 			// Consume the stream to trigger the API call
@@ -466,9 +480,9 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should not include tools when no tools are provided", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
-				toolProtocol: "native",
 			})
 
 			// Consume the stream to trigger the API call
@@ -485,10 +499,10 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should convert tool_choice 'auto' to Anthropic format", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: "auto",
 			})
 
@@ -506,10 +520,10 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should convert tool_choice 'required' to Anthropic 'any' format", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: "required",
 			})
 
@@ -527,10 +541,10 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should omit both tools and tool_choice when tool_choice is 'none'", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: "none",
 			})
 
@@ -555,10 +569,10 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should convert specific tool_choice to Anthropic 'tool' format", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: { type: "function" as const, function: { name: "get_weather" } },
 			})
 
@@ -576,10 +590,10 @@ describe("AnthropicHandler", () => {
 		})
 
 		it("should enable parallel tool calls when parallelToolCalls is true", async () => {
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 				tool_choice: "auto",
 				parallelToolCalls: true,
 			})
@@ -621,10 +635,10 @@ describe("AnthropicHandler", () => {
 				},
 			}))
 
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			})
 
 			const chunks: any[] = []
@@ -688,10 +702,10 @@ describe("AnthropicHandler", () => {
 				},
 			}))
 
+			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
-				toolProtocol: "native",
 			})
 
 			const chunks: any[] = []

@@ -1,9 +1,19 @@
 import { t } from "i18next"
+import { vi } from "vitest"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { GeminiHandler } from "../gemini"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("GeminiHandler backend support", () => {
+	beforeEach(() => {
+		// Mock TelemetryService
+		vi.spyOn(TelemetryService, "hasInstance").mockReturnValue(true)
+		vi.spyOn(TelemetryService, "instance", "get").mockReturnValue({
+			captureException: vi.fn(),
+			captureEvent: vi.fn(),
+		} as any)
+	})
 	it("passes tools for URL context and grounding in config", async () => {
 		const options = {
 			apiProvider: "gemini",

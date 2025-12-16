@@ -11,7 +11,9 @@ import {
 	type VerbosityLevel,
 	type ReasoningEffortExtended,
 	type ServiceTier,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -28,6 +30,7 @@ export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
+	private readonly providerName = "OpenAI Native"
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
@@ -536,6 +539,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Handle streaming response
 			yield* this.handleStreamResponse(response.body, model)
 		} catch (error) {
+			const model = this.getModel()
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
 			if (error instanceof Error) {
 				// Re-throw with the original error message if it's already formatted
 				if (error.message.includes("Responses API")) {
@@ -1013,6 +1021,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// If we didn't get any content, don't throw - the API might have returned an empty response
 			// This can happen in certain edge cases and shouldn't break the flow
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
 			if (error instanceof Error) {
 				throw new Error(`Error processing response stream: ${error.message}`)
 			}
@@ -1339,6 +1351,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			return ""
 		} catch (error) {
+			const errorModel = this.getModel()
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, errorModel.id, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
+
 			if (error instanceof Error) {
 				throw new Error(`OpenAI Native completion error: ${error.message}`)
 			}

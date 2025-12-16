@@ -998,6 +998,7 @@ describe("Cline", () => {
 					postStateToWebview: vi.fn().mockResolvedValue(undefined),
 					postMessageToWebview: vi.fn().mockResolvedValue(undefined),
 					updateTaskHistory: vi.fn().mockResolvedValue(undefined),
+					getMcpHub: vi.fn().mockReturnValue(undefined),
 				}
 
 				// Initialize ZgsmAuthService with mock provider

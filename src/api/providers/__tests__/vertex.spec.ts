@@ -1,9 +1,8 @@
 // npx vitest run src/api/providers/__tests__/vertex.spec.ts
 
-// Mock vscode first to avoid import errors
-vitest.mock("vscode", () => ({}))
-
 import { Anthropic } from "@anthropic-ai/sdk"
+import { vi } from "vitest"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiStreamChunk } from "../../transform/stream"
 
@@ -14,6 +13,12 @@ describe("VertexHandler", () => {
 	let handler: VertexHandler
 
 	beforeEach(() => {
+		// Mock TelemetryService
+		vi.spyOn(TelemetryService, "hasInstance").mockReturnValue(true)
+		vi.spyOn(TelemetryService, "instance", "get").mockReturnValue({
+			captureException: vi.fn(),
+			captureEvent: vi.fn(),
+		} as any)
 		// Create mock functions
 		const mockGenerateContentStream = vitest.fn()
 		const mockGenerateContent = vitest.fn()
