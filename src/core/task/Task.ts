@@ -3068,13 +3068,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// able to save the assistant's response.
 				let didEndLoop = false
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, reasoning, or tool uses)
 				const hasTextContent = assistantMessage.length > 0
+				const hasReasoningContent = reasoningMessage.length > 0
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
 
-				if (hasTextContent || hasToolUses) {
+				if (hasTextContent || hasReasoningContent || hasToolUses) {
 					// Display grounding sources to the user if they exist
 					if (pendingGroundingSources.length > 0) {
 						const citationLinks = pendingGroundingSources.map((source, i) => `[${i + 1}](${source.url})`)
@@ -3088,11 +3089,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Build the assistant message content array
 					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
 
-					// Add text content if present
+					// Add text content if present, or a minimal placeholder if only reasoning was provided
 					if (assistantMessage) {
 						assistantContent.push({
 							type: "text" as const,
 							text: assistantMessage,
+						})
+					} else if (hasReasoningContent && !hasToolUses) {
+						// If we only have reasoning content and no text or tools, add a minimal text block
+						// This ensures the assistant message has some content for the API history
+						assistantContent.push({
+							type: "text" as const,
+							text: "[Reasoning provided without response text]",
 						})
 					}
 
