@@ -1,32 +1,9 @@
-import { z } from "zod"
+import { z } from "zod/v4"
 
 /**
- * Type representing a JSON Schema structure
+ * Re-export Zod v4's JSONSchema type for convenience
  */
-export interface JsonSchema {
-	type?: "string" | "number" | "integer" | "boolean" | "null" | "object" | "array"
-	properties?: Record<string, JsonSchema>
-	items?: JsonSchema | JsonSchema[]
-	required?: string[]
-	additionalProperties?: boolean | JsonSchema
-	description?: string
-	default?: unknown
-	enum?: unknown[]
-	const?: unknown
-	anyOf?: JsonSchema[]
-	oneOf?: JsonSchema[]
-	allOf?: JsonSchema[]
-	$ref?: string
-	minimum?: number
-	maximum?: number
-	minLength?: number
-	maxLength?: number
-	pattern?: string
-	minItems?: number
-	maxItems?: number
-	uniqueItems?: boolean
-	[key: string]: unknown // Allow additional properties
-}
+export type JsonSchema = z.core.JSONSchema.JSONSchema
 
 /**
  * Zod schema for JSON Schema primitive types
@@ -34,8 +11,13 @@ export interface JsonSchema {
 const JsonSchemaPrimitiveTypeSchema = z.enum(["string", "number", "integer", "boolean", "null"])
 
 /**
+ * Zod schema for JSON Schema enum values
+ */
+const JsonSchemaEnumValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
+
+/**
  * Zod schema for validating JSON Schema structures (without transformation).
- * Uses z.lazy for recursive definition with explicit type annotation.
+ * Uses z.lazy for recursive definition.
  *
  * @example
  * ```typescript
@@ -46,31 +28,29 @@ const JsonSchemaPrimitiveTypeSchema = z.enum(["string", "number", "integer", "bo
  * ```
  */
 export const JsonSchemaSchema: z.ZodType<JsonSchema> = z.lazy(() =>
-	z
-		.object({
-			type: z.union([JsonSchemaPrimitiveTypeSchema, z.literal("object"), z.literal("array")]).optional(),
-			properties: z.record(z.string(), JsonSchemaSchema).optional(),
-			items: z.union([JsonSchemaSchema, z.array(JsonSchemaSchema)]).optional(),
-			required: z.array(z.string()).optional(),
-			additionalProperties: z.union([z.boolean(), JsonSchemaSchema]).optional(),
-			description: z.string().optional(),
-			default: z.unknown().optional(),
-			enum: z.array(z.unknown()).optional(),
-			const: z.unknown().optional(),
-			anyOf: z.array(JsonSchemaSchema).optional(),
-			oneOf: z.array(JsonSchemaSchema).optional(),
-			allOf: z.array(JsonSchemaSchema).optional(),
-			$ref: z.string().optional(),
-			minimum: z.number().optional(),
-			maximum: z.number().optional(),
-			minLength: z.number().optional(),
-			maxLength: z.number().optional(),
-			pattern: z.string().optional(),
-			minItems: z.number().optional(),
-			maxItems: z.number().optional(),
-			uniqueItems: z.boolean().optional(),
-		})
-		.passthrough(),
+	z.looseObject({
+		type: z.union([JsonSchemaPrimitiveTypeSchema, z.literal("object"), z.literal("array")]).optional(),
+		properties: z.record(z.string(), JsonSchemaSchema).optional(),
+		items: z.union([JsonSchemaSchema, z.array(JsonSchemaSchema)]).optional(),
+		required: z.array(z.string()).optional(),
+		additionalProperties: z.union([z.boolean(), JsonSchemaSchema]).optional(),
+		description: z.string().optional(),
+		default: z.unknown().optional(),
+		enum: z.array(JsonSchemaEnumValueSchema).optional(),
+		const: JsonSchemaEnumValueSchema.optional(),
+		anyOf: z.array(JsonSchemaSchema).optional(),
+		oneOf: z.array(JsonSchemaSchema).optional(),
+		allOf: z.array(JsonSchemaSchema).optional(),
+		$ref: z.string().optional(),
+		minimum: z.number().optional(),
+		maximum: z.number().optional(),
+		minLength: z.number().optional(),
+		maxLength: z.number().optional(),
+		pattern: z.string().optional(),
+		minItems: z.number().optional(),
+		maxItems: z.number().optional(),
+		uniqueItems: z.boolean().optional(),
+	}),
 )
 
 /**
@@ -92,29 +72,27 @@ export const JsonSchemaSchema: z.ZodType<JsonSchema> = z.lazy(() =>
  * ```
  */
 export const StrictJsonSchemaSchema: z.ZodType<JsonSchema> = z.lazy(() =>
-	z
-		.object({
-			type: z.union([JsonSchemaPrimitiveTypeSchema, z.literal("object"), z.literal("array")]).optional(),
-			properties: z.record(z.string(), StrictJsonSchemaSchema).optional(),
-			items: z.union([StrictJsonSchemaSchema, z.array(StrictJsonSchemaSchema)]).optional(),
-			required: z.array(z.string()).optional(),
-			additionalProperties: z.union([z.boolean(), StrictJsonSchemaSchema]).default(false),
-			description: z.string().optional(),
-			default: z.unknown().optional(),
-			enum: z.array(z.unknown()).optional(),
-			const: z.unknown().optional(),
-			anyOf: z.array(StrictJsonSchemaSchema).optional(),
-			oneOf: z.array(StrictJsonSchemaSchema).optional(),
-			allOf: z.array(StrictJsonSchemaSchema).optional(),
-			$ref: z.string().optional(),
-			minimum: z.number().optional(),
-			maximum: z.number().optional(),
-			minLength: z.number().optional(),
-			maxLength: z.number().optional(),
-			pattern: z.string().optional(),
-			minItems: z.number().optional(),
-			maxItems: z.number().optional(),
-			uniqueItems: z.boolean().optional(),
-		})
-		.passthrough(),
+	z.looseObject({
+		type: z.union([JsonSchemaPrimitiveTypeSchema, z.literal("object"), z.literal("array")]).optional(),
+		properties: z.record(z.string(), StrictJsonSchemaSchema).optional(),
+		items: z.union([StrictJsonSchemaSchema, z.array(StrictJsonSchemaSchema)]).optional(),
+		required: z.array(z.string()).optional(),
+		additionalProperties: z.union([z.boolean(), StrictJsonSchemaSchema]).default(false),
+		description: z.string().optional(),
+		default: z.unknown().optional(),
+		enum: z.array(JsonSchemaEnumValueSchema).optional(),
+		const: JsonSchemaEnumValueSchema.optional(),
+		anyOf: z.array(StrictJsonSchemaSchema).optional(),
+		oneOf: z.array(StrictJsonSchemaSchema).optional(),
+		allOf: z.array(StrictJsonSchemaSchema).optional(),
+		$ref: z.string().optional(),
+		minimum: z.number().optional(),
+		maximum: z.number().optional(),
+		minLength: z.number().optional(),
+		maxLength: z.number().optional(),
+		pattern: z.string().optional(),
+		minItems: z.number().optional(),
+		maxItems: z.number().optional(),
+		uniqueItems: z.boolean().optional(),
+	}),
 )
