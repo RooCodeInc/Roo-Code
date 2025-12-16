@@ -24,8 +24,6 @@ type DeepSeekChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStream
 }
 
 export class DeepSeekHandler extends OpenAiHandler {
-	private currentReasoningContent: string = ""
-
 	constructor(options: ApiHandlerOptions) {
 		super({
 			...options,
@@ -35,15 +33,6 @@ export class DeepSeekHandler extends OpenAiHandler {
 			openAiStreamingEnabled: true,
 			includeMaxTokens: true,
 		})
-	}
-
-	/**
-	 * Returns the accumulated reasoning content from the last API call.
-	 * This is used for interleaved thinking with tool calls - the reasoning_content
-	 * needs to be passed back to the API in subsequent requests within the same turn.
-	 */
-	getReasoningContent(): string | undefined {
-		return this.currentReasoningContent || undefined
 	}
 
 	override getModel() {
@@ -63,9 +52,6 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 		// Check if this is a thinking-enabled model (deepseek-reasoner)
 		const isThinkingModel = modelId.includes("deepseek-reasoner")
-
-		// Reset reasoning content accumulator for this request
-		this.currentReasoningContent = ""
 
 		// Convert messages to R1 format (merges consecutive same-role messages)
 		// This is required for DeepSeek which does not support successive messages with the same role
@@ -128,12 +114,9 @@ export class DeepSeekHandler extends OpenAiHandler {
 			// Handle reasoning_content from DeepSeek's interleaved thinking
 			// This is the proper way DeepSeek sends thinking content in streaming
 			if ("reasoning_content" in delta && delta.reasoning_content) {
-				const reasoningText = (delta.reasoning_content as string) || ""
-				// Accumulate reasoning content for potential tool call continuation
-				this.currentReasoningContent += reasoningText
 				yield {
 					type: "reasoning",
-					text: reasoningText,
+					text: (delta.reasoning_content as string) || "",
 				}
 			}
 

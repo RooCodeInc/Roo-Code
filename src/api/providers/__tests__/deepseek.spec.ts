@@ -424,25 +424,6 @@ describe("DeepSeekHandler", () => {
 			expect(reasoningChunks[1].text).toBe(" I'll analyze step by step.")
 		})
 
-		it("should accumulate reasoning content via getReasoningContent()", async () => {
-			const reasonerHandler = new DeepSeekHandler({
-				...mockOptions,
-				apiModelId: "deepseek-reasoner",
-			})
-
-			// Before any API call, reasoning content should be undefined
-			expect(reasonerHandler.getReasoningContent()).toBeUndefined()
-
-			const stream = reasonerHandler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream) {
-				// Consume the stream
-			}
-
-			// After streaming, reasoning content should be accumulated
-			const reasoningContent = reasonerHandler.getReasoningContent()
-			expect(reasoningContent).toBe("Let me think about this... I'll analyze step by step.")
-		})
-
 		it("should pass thinking parameter for deepseek-reasoner model", async () => {
 			const reasonerHandler = new DeepSeekHandler({
 				...mockOptions,
@@ -511,36 +492,6 @@ describe("DeepSeekHandler", () => {
 			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			expect(toolCallChunks.length).toBeGreaterThan(0)
 			expect(toolCallChunks[0].name).toBe("get_weather")
-
-			// Reasoning content should be accumulated for potential continuation
-			const reasoningContent = reasonerHandler.getReasoningContent()
-			expect(reasoningContent).toBeDefined()
-		})
-
-		it("should reset reasoning content for each new request", async () => {
-			const reasonerHandler = new DeepSeekHandler({
-				...mockOptions,
-				apiModelId: "deepseek-reasoner",
-			})
-
-			// First request
-			const stream1 = reasonerHandler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream1) {
-				// Consume the stream
-			}
-
-			const reasoningContent1 = reasonerHandler.getReasoningContent()
-			expect(reasoningContent1).toBeDefined()
-
-			// Second request should reset the reasoning content
-			const stream2 = reasonerHandler.createMessage(systemPrompt, messages)
-			for await (const _chunk of stream2) {
-				// Consume the stream
-			}
-
-			// The reasoning content should be fresh from the second request
-			const reasoningContent2 = reasonerHandler.getReasoningContent()
-			expect(reasoningContent2).toBe("Let me think about this... I'll analyze step by step.")
 		})
 	})
 })
