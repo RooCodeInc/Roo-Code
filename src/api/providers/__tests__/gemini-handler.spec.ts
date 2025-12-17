@@ -19,6 +19,40 @@ describe("GeminiHandler backend support", () => {
 		expect(config.tools).toEqual([{ urlContext: {} }, { googleSearch: {} }])
 	})
 
+	it("should not enable Google Search for gemini-3-pro-preview even when enableGrounding is true", async () => {
+		const options = {
+			apiProvider: "gemini",
+			apiModelId: "gemini-3-pro-preview",
+			enableUrlContext: false,
+			enableGrounding: true,
+		} as ApiHandlerOptions
+		const handler = new GeminiHandler(options)
+		const stub = vi.fn().mockReturnValue((async function* () {})())
+		// @ts-ignore access private client
+		handler["client"].models.generateContentStream = stub
+		await handler.createMessage("instr", [] as any).next()
+		const config = stub.mock.calls[0][0].config
+		// Should not include googleSearch since model doesn't support it
+		expect(config.tools).toBeUndefined()
+	})
+
+	it("should enable Google Search for models that support grounding", async () => {
+		const options = {
+			apiProvider: "gemini",
+			apiModelId: "gemini-2.5-pro",
+			enableUrlContext: false,
+			enableGrounding: true,
+		} as ApiHandlerOptions
+		const handler = new GeminiHandler(options)
+		const stub = vi.fn().mockReturnValue((async function* () {})())
+		// @ts-ignore access private client
+		handler["client"].models.generateContentStream = stub
+		await handler.createMessage("instr", [] as any).next()
+		const config = stub.mock.calls[0][0].config
+		// Should include googleSearch for models that support it
+		expect(config.tools).toEqual([{ googleSearch: {} }])
+	})
+
 	it("completePrompt passes config overrides without tools when URL context and grounding disabled", async () => {
 		const options = {
 			apiProvider: "gemini",
