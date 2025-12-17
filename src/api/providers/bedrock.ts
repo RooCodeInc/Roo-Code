@@ -928,8 +928,14 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 * represent literal characters in the AWS ARN format, not filesystem paths. This regex will function consistently across Windows,
 		 * macOS, Linux, and any other operating system where JavaScript runs.
 		 *
+		 * Supports all AWS partitions:
+		 *  - Standard AWS: arn:aws:bedrock:...
+		 *  - AWS GovCloud: arn:aws-us-gov:bedrock:...
+		 *  - AWS China: arn:aws-cn:bedrock:...
+		 *
 		 *  This matches ARNs like:
 		 *  - Foundation Model: arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-v2
+		 *  - GovCloud Inference Profile: arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0
 		 *  - Prompt Router: arn:aws:bedrock:us-west-2:123456789012:prompt-router/anthropic-claude
 		 *  - Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/anthropic.claude-v2
 		 *  - Cross Region Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0
@@ -937,13 +943,14 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 *  - Imported Model: arn:aws:bedrock:us-west-2:123456789012:imported-model/my-imported-model
 		 *
 		 * match[0] - The entire matched string
-		 * match[1] - The region (e.g., "us-east-1")
+		 * match[1] - The region (e.g., "us-east-1", "us-gov-west-1")
 		 * match[2] - The account ID (can be empty string for AWS-managed resources)
 		 * match[3] - The resource type (e.g., "foundation-model")
 		 * match[4] - The resource ID (e.g., "anthropic.claude-3-sonnet-20240229-v1:0")
 		 */
 
-		const arnRegex = /^arn:aws:(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
+		const arnRegex =
+			/^arn:(?:aws|aws-us-gov|aws-cn):(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
 		let match = arn.match(arnRegex)
 
 		if (match && match[1] && match[3] && match[4]) {
