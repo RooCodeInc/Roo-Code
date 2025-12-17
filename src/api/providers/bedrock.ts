@@ -928,10 +928,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 * represent literal characters in the AWS ARN format, not filesystem paths. This regex will function consistently across Windows,
 		 * macOS, Linux, and any other operating system where JavaScript runs.
 		 *
-		 * Supports all AWS partitions:
-		 *  - Standard AWS: arn:aws:bedrock:...
-		 *  - AWS GovCloud: arn:aws-us-gov:bedrock:...
-		 *  - AWS China: arn:aws-cn:bedrock:...
+		 * Supports any AWS partition (aws, aws-us-gov, aws-cn, or future partitions).
+		 * The partition is not captured since we don't need to use it.
 		 *
 		 *  This matches ARNs like:
 		 *  - Foundation Model: arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-v2
@@ -949,8 +947,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 * match[4] - The resource ID (e.g., "anthropic.claude-3-sonnet-20240229-v1:0")
 		 */
 
-		const arnRegex =
-			/^arn:(?:aws|aws-us-gov|aws-cn):(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
+		const arnRegex = /^arn:[^:]+:(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
 		let match = arn.match(arnRegex)
 
 		if (match && match[1] && match[3] && match[4]) {
