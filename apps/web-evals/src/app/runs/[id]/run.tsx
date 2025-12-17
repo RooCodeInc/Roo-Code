@@ -321,6 +321,15 @@ export function Run({ run }: { run: Run }) {
 		void usageUpdatedAt
 		const metrics: Record<number, TaskMetrics> = {}
 
+		// Helper to calculate duration from database timestamps when streaming duration
+		// is unavailable (e.g., page was loaded after TaskStarted event was published)
+		const calculateDurationFromTimestamps = (task: TaskWithMetrics): number => {
+			if (!task.startedAt) return 0
+			const startTime = new Date(task.startedAt).getTime()
+			const endTime = task.finishedAt ? new Date(task.finishedAt).getTime() : Date.now()
+			return endTime - startTime
+		}
+
 		tasks?.forEach((task) => {
 			const streamingUsage = tokenUsage.get(task.id)
 			const dbMetrics = task.taskMetrics
@@ -331,25 +340,53 @@ export function Run({ run }: { run: Run }) {
 				// Check if DB metrics have meaningful values (not just default/empty)
 				const dbHasData = dbMetrics && (dbMetrics.tokensIn > 0 || dbMetrics.tokensOut > 0 || dbMetrics.cost > 0)
 				if (dbHasData) {
-					metrics[task.id] = dbMetrics
+					// If DB duration is 0 but we have timestamps, calculate from timestamps
+					const duration = dbMetrics.duration || calculateDurationFromTimestamps(task)
+					metrics[task.id] = { ...dbMetrics, duration }
 				} else if (streamingUsage) {
 					// Fall back to streaming values if DB is empty/stale
+					// Use streaming duration, or calculate from timestamps if not available
+					const duration = streamingUsage.duration || calculateDurationFromTimestamps(task)
 					metrics[task.id] = {
 						tokensIn: streamingUsage.totalTokensIn,
 						tokensOut: streamingUsage.totalTokensOut,
 						tokensContext: streamingUsage.contextTokens,
-						duration: streamingUsage.duration ?? 0,
+						duration,
 						cost: streamingUsage.totalCost,
+					}
+				} else {
+					// Task finished but no DB metrics and no streaming data
+					// (e.g., page loaded after task completed, metrics not persisted)
+					// Still provide duration calculated from timestamps
+					metrics[task.id] = {
+						tokensIn: 0,
+						tokensOut: 0,
+						tokensContext: 0,
+						duration: calculateDurationFromTimestamps(task),
+						cost: 0,
 					}
 				}
 			} else if (streamingUsage) {
 				// For running tasks, use streaming values
+				// Use streaming duration, or calculate from task.startedAt if not available
+				// (happens when page loads after TaskStarted event was already published)
+				const duration = streamingUsage.duration || calculateDurationFromTimestamps(task)
 				metrics[task.id] = {
 					tokensIn: streamingUsage.totalTokensIn,
 					tokensOut: streamingUsage.totalTokensOut,
 					tokensContext: streamingUsage.contextTokens,
-					duration: streamingUsage.duration ?? 0,
+					duration,
 					cost: streamingUsage.totalCost,
+				}
+			} else if (task.startedAt) {
+				// Task has started (has startedAt in DB) but no streaming data yet
+				// This can happen when page loads after TaskStarted but before TokenUsageUpdated
+				metrics[task.id] = {
+					tokensIn: 0,
+					tokensOut: 0,
+					tokensContext: 0,
+					duration: calculateDurationFromTimestamps(task),
+					cost: 0,
 				}
 			}
 		})

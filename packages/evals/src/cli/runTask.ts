@@ -281,6 +281,13 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	// Track accumulated tool usage across task instances (handles rehydration after abort)
 	const accumulatedToolUsage: ToolUsage = {}
 
+	// Promise that resolves when taskMetricsId is set, preventing race conditions
+	// where TaskTokenUsageUpdated arrives before TaskStarted handler completes
+	let resolveTaskMetricsReady: () => void
+	const taskMetricsReady = new Promise<void>((resolve) => {
+		resolveTaskMetricsReady = resolve
+	})
+
 	const ignoreEvents: Record<"broadcast" | "log", RooCodeEventName[]> = {
 		broadcast: [RooCodeEventName.Message],
 		log: [RooCodeEventName.TaskTokenUsageUpdated, RooCodeEventName.TaskAskResponded],
@@ -360,6 +367,9 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			taskStartedAt = Date.now()
 			taskMetricsId = taskMetrics.id
 			rooTaskId = payload[0]
+
+			// Signal that taskMetricsId is now ready for other handlers
+			resolveTaskMetricsReady()
 		}
 
 		if (eventName === RooCodeEventName.TaskToolFailed) {
@@ -367,10 +377,20 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
-		if (
-			(eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) &&
-			taskMetricsId
-		) {
+		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
+			// Wait for taskMetricsId to be set by the TaskStarted handler.
+			// This prevents a race condition where these events arrive before
+			// the TaskStarted handler finishes its async database operations.
+			// Note: taskMetricsReady is also resolved on disconnect to prevent deadlock.
+			await taskMetricsReady
+
+			// Guard: taskMetricsReady may have been resolved due to disconnect
+			// without taskMetricsId being set. Skip metrics update in this case.
+			if (!taskMetricsId) {
+				logger.info(`skipping metrics update: taskMetricsId not set (event: ${eventName})`)
+				return
+			}
+
 			const duration = Date.now() - taskStartedAt
 
 			const { totalCost, totalTokensIn, totalTokensOut, contextTokens, totalCacheWrites, totalCacheReads } =
@@ -421,6 +441,10 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	client.on(IpcMessageType.Disconnect, async () => {
 		logger.info(`disconnected from IPC socket -> ${ipcSocketPath}`)
 		isClientDisconnected = true
+		// Resolve taskMetricsReady to unblock any handlers waiting on it.
+		// This prevents deadlock if TaskStarted never fired or threw before resolving.
+		// The handlers check for taskMetricsId being set before proceeding.
+		resolveTaskMetricsReady()
 	})
 
 	client.sendCommand({
