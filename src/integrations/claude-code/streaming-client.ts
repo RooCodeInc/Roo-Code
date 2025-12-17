@@ -22,9 +22,12 @@ type ContentBlockWithType = { type: string }
 /**
  * Filters out non-Anthropic content blocks from messages before sending to the API.
  *
+ * NOTE: This function performs FILTERING ONLY - no type conversion is performed.
+ * Blocks are either kept as-is or removed entirely based on the allowlist.
+ *
  * Uses an allowlist approach - only blocks with types in VALID_ANTHROPIC_BLOCK_TYPES are kept.
  * This automatically filters out:
- * - Internal "reasoning" blocks (Roo Code's internal representation)
+ * - Internal "reasoning" blocks (Roo Code's internal representation) - NOT converted to "thinking"
  * - Gemini's "thoughtSignature" blocks
  * - Any other unknown block types
  *
@@ -32,7 +35,7 @@ type ContentBlockWithType = { type: string }
  * - `reasoning_details` (added by OpenRouter/Roo providers for Gemini/OpenAI reasoning)
  * - Any other non-standard fields added by other providers
  *
- * We preserve ALL thinking blocks for these reasons:
+ * We preserve ALL "thinking" blocks (Anthropic's native extended thinking format) for these reasons:
  * 1. Rewind functionality - users need to be able to go back in conversation history
  * 2. Claude Opus 4.5+ preserves thinking blocks by default (per Anthropic docs)
  * 3. Interleaved thinking requires thinking blocks to be passed back for tool use continuations
