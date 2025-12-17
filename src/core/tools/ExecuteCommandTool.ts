@@ -128,6 +128,8 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 					}
 
 					pushToolResult(result)
+				} else if ((error as any)["__IS_ESRCH__"]) {
+					pushToolResult((error as any).message)
 				} else {
 					pushToolResult(`Command failed to execute in terminal due to a shell integration error.`)
 				}
@@ -276,7 +278,6 @@ export async function executeCommandInTerminal(
 		// command actually executed.
 		workingDir = terminal.getCurrentWorkingDirectory()
 	}
-	console.time("runCommand")
 
 	// Clear old persisted process when starting a new command
 	task.persistedTerminalProcess = undefined
@@ -326,7 +327,6 @@ export async function executeCommandInTerminal(
 		try {
 			await process
 		} finally {
-			console.timeEnd("runCommand")
 			clearTerminalProcess(task)
 		}
 	}

@@ -117,10 +117,11 @@ describe("ExecaTerminalProcess", () => {
 
 		it("should set and clear active stream", async () => {
 			await terminalProcess.run("echo test")
-			expect(mockTerminal.setActiveStream).toHaveBeenCalledTimes(2)
+			const setActiveStreamMock = vitest.mocked(mockTerminal.setActiveStream)
+			expect(setActiveStreamMock).toHaveBeenCalledTimes(2)
 			// First call sets the stream, second call clears it
-			expect(mockTerminal.setActiveStream.mock.calls[0][0]).toBeDefined()
-			expect(mockTerminal.setActiveStream.mock.calls[1][0]).toBeUndefined()
+			expect(setActiveStreamMock.mock.calls[0][0]).toBeDefined()
+			expect(setActiveStreamMock.mock.calls[1][0]).toBeUndefined()
 		})
 	})
 })

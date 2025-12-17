@@ -75,6 +75,7 @@
 		"url_fetch_failed": "Failed to fetch URL content: {{error}}",
 		"url_fetch_error_with_url": "Error fetching content for {{url}}: {{error}}",
 		"command_timeout": "Command execution timed out after {{seconds}} seconds",
+		"command_esrch": "Command Abort Failed: failed to find target process. pid: ({{pid}}) command: ({{command}})",
 		"share_task_failed": "Failed to share task. Please try again.",
 		"share_no_active_task": "No active task to share",
 		"share_auth_required": "Authentication required. Please sign in to share tasks.",

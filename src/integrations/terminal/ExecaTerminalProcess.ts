@@ -7,6 +7,7 @@ import type { RooTerminal } from "./types"
 import { BaseTerminalProcess } from "./BaseTerminalProcess"
 import { getIdeaShellEnvWithUpdatePath } from "../../utils/ideaShellEnvLoader"
 import { isJetbrainsPlatform } from "../../utils/platform"
+import { t } from "../../i18n"
 
 export class ExecaTerminalProcess extends BaseTerminalProcess {
 	private terminalRef: WeakRef<RooTerminal>
@@ -188,6 +189,15 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 				try {
 					process.kill(this.pid, "SIGKILL")
 				} catch (e) {
+					// "error"
+					if (e.code === "ESRCH") {
+						const error = new Error(
+							t("common:errors.command_esrch", { pid: this.pid, command: this.command }),
+						)
+						Object.assign(error, { __IS_ESRCH__: true })
+						// this.emit("shell_execution_complete", { exitCode: e.exitCode ?? -1, signalName: e.signal ??  t("common:errors.command_esrch", { pid: this.pid, command: this.command })})
+						this.emit("error", error)
+					}
 					console.warn(
 						`[ExecaTerminalProcess#abort] Failed to kill process ${this.pid}: ${e instanceof Error ? e.message : String(e)}`,
 					)

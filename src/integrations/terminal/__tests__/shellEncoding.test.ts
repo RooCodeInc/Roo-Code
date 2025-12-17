@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { execa } from "execa"
+import { execa, Options } from "execa"
 import { ExecaTerminalProcess } from "../ExecaTerminalProcess"
 import { getShell } from "../../../utils/shell"
 
@@ -58,7 +58,7 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 			encoding: "buffer",
 		})
 		// Verify shell property exists (can be true or a path)
-		expect(call[0].shell).toBeTruthy()
+		expect((call[0] as Options).shell).toBeTruthy()
 	})
 
 	it("should use CMD encoding command for CMD", async () => {
@@ -91,7 +91,7 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 			encoding: "buffer",
 		})
 		// Verify shell property exists (can be true or a path)
-		expect(call[0].shell).toBeTruthy()
+		expect((call[0] as Options).shell).toBeTruthy()
 	})
 
 	it("should not modify command on non-Windows platforms", async () => {
@@ -129,7 +129,7 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 				encoding: "buffer",
 			})
 			// Verify shell property exists (can be true or a path)
-			expect(call[0].shell).toBeTruthy()
+			expect((call[0] as Options).shell).toBeTruthy()
 		} finally {
 			// Restore original platform
 			Object.defineProperty(global.process, "platform", {
@@ -169,7 +169,7 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 			encoding: "buffer",
 		})
 		// Verify shell property exists (can be true or a path)
-		expect(call[0].shell).toBeTruthy()
+		expect((call[0] as Options).shell).toBeTruthy()
 	})
 
 	it("should handle legacy PowerShell path correctly", async () => {
@@ -202,6 +202,6 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 			encoding: "buffer",
 		})
 		// Verify shell property exists (can be true or a path)
-		expect(call[0].shell).toBeTruthy()
+		expect((call[0] as Options).shell).toBeTruthy()
 	})
 })
