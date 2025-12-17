@@ -149,9 +149,10 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		this.stopHotTimer()
 		this.emit("completed", this.fullOutput)
 		this.emit("continue")
-		// Clear output buffer after all events have been emitted to avoid race conditions
-		// where listeners might try to access getUnretrievedOutput()
-		this.lastRetrievedIndex = this.fullOutput.length
+		// Trim the output buffer if all content has been retrieved via getUnretrievedOutput().
+		// We do NOT set lastRetrievedIndex here because getEnvironmentDetails() may not have
+		// had a chance to call getUnretrievedOutput() yet. The trimRetrievedOutput() method
+		// will only clear the buffer when lastRetrievedIndex >= fullOutput.length.
 		this.trimRetrievedOutput()
 		this.subprocess = undefined
 	}
