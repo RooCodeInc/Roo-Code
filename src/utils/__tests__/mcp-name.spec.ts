@@ -23,18 +23,24 @@ describe("mcp-name utilities", () => {
 			expect(sanitizeMcpName("test#$%^&*()")).toBe("test")
 		})
 
-		it("should keep valid characters (alphanumeric, underscore, dot, colon, dash)", () => {
+		it("should keep valid characters (alphanumeric, underscore, dash)", () => {
 			expect(sanitizeMcpName("server_name")).toBe("server_name")
-			expect(sanitizeMcpName("server.name")).toBe("server.name")
-			expect(sanitizeMcpName("server:name")).toBe("server:name")
 			expect(sanitizeMcpName("server-name")).toBe("server-name")
 			expect(sanitizeMcpName("Server123")).toBe("Server123")
+		})
+
+		it("should remove dots and colons for AWS Bedrock compatibility", () => {
+			// Dots and colons are NOT allowed due to AWS Bedrock restrictions
+			expect(sanitizeMcpName("server.name")).toBe("servername")
+			expect(sanitizeMcpName("server:name")).toBe("servername")
+			expect(sanitizeMcpName("awslabs.aws-documentation-mcp-server")).toBe("awslabsaws-documentation-mcp-server")
 		})
 
 		it("should prepend underscore if name starts with non-letter/underscore", () => {
 			expect(sanitizeMcpName("123server")).toBe("_123server")
 			expect(sanitizeMcpName("-server")).toBe("_-server")
-			expect(sanitizeMcpName(".server")).toBe("_.server")
+			// Dots are removed, so ".server" becomes "server" which starts with a letter
+			expect(sanitizeMcpName(".server")).toBe("server")
 		})
 
 		it("should not modify names that start with letter or underscore", () => {
