@@ -87,7 +87,7 @@ export const WatsonxAI = ({
 
 	const getCurrentRegion = () => {
 		const regionEntry = Object.entries(REGION_TO_URL).find(([_, url]) => url === apiConfiguration?.watsonxBaseUrl)
-		return regionEntry?.[0] || "us-south"
+		return regionEntry?.[0] || "Dallas"
 	}
 
 	const [selectedRegion, setSelectedRegion] = useState(getCurrentRegion())
@@ -107,7 +107,7 @@ export const WatsonxAI = ({
 			setApiConfigurationField("watsonxPlatform", newPlatform)
 
 			if (newPlatform === "ibmCloud") {
-				const defaultRegion = "us-south"
+				const defaultRegion = "Dallas"
 				setSelectedRegion(defaultRegion)
 				setApiConfigurationField("watsonxRegion", defaultRegion)
 				setApiConfigurationField("watsonxBaseUrl", REGION_TO_URL[defaultRegion])
