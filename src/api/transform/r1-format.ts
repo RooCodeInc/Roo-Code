@@ -26,11 +26,20 @@ export type DeepSeekAssistantMessage = AssistantMessage & {
  * - Preserves reasoning_content on assistant messages for tool call continuations
  * - Tool result messages are converted to OpenAI tool messages
  * - reasoning_content from previous assistant messages is preserved until a new user turn
+ * - Text content after tool_results (like environment_details) is merged into the last tool message
+ *   to avoid creating user messages that would cause reasoning_content to be dropped
  *
  * @param messages Array of Anthropic messages
+ * @param options Optional configuration for message conversion
+ * @param options.mergeToolResultText If true, merge text content after tool_results into the last
+ *                                     tool message instead of creating a separate user message.
+ *                                     This is critical for DeepSeek's interleaved thinking mode.
  * @returns Array of OpenAI messages where consecutive messages with the same role are combined
  */
-export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
+export function convertToR1Format(
+	messages: AnthropicMessage[],
+	options?: { mergeToolResultText?: boolean },
+): Message[] {
 	const result: Message[] = []
 
 	for (const message of messages) {
@@ -87,37 +96,54 @@ export function convertToR1Format(messages: AnthropicMessage[]): Message[] {
 					result.push(toolMessage)
 				}
 
-				// Then add user message with text/image content if any
+				// Handle text/image content after tool results
 				if (textParts.length > 0 || imageParts.length > 0) {
-					let content: UserMessage["content"]
-					if (imageParts.length > 0) {
-						const parts: (ContentPartText | ContentPartImage)[] = []
-						if (textParts.length > 0) {
-							parts.push({ type: "text", text: textParts.join("\n") })
-						}
-						parts.push(...imageParts)
-						content = parts
-					} else {
-						content = textParts.join("\n")
-					}
+					// For DeepSeek interleaved thinking: when mergeToolResultText is enabled and we have
+					// tool results followed by text, merge the text into the last tool message to avoid
+					// creating a user message that would cause reasoning_content to be dropped.
+					// This is critical because DeepSeek drops all reasoning_content when it sees a user message.
+					const shouldMergeIntoToolMessage =
+						options?.mergeToolResultText && toolResults.length > 0 && imageParts.length === 0
 
-					// Check if we can merge with the last message
-					const lastMessage = result[result.length - 1]
-					if (lastMessage?.role === "user") {
-						// Merge with existing user message
-						if (typeof lastMessage.content === "string" && typeof content === "string") {
-							lastMessage.content += `\n${content}`
-						} else {
-							const lastContent = Array.isArray(lastMessage.content)
-								? lastMessage.content
-								: [{ type: "text" as const, text: lastMessage.content || "" }]
-							const newContent = Array.isArray(content)
-								? content
-								: [{ type: "text" as const, text: content }]
-							lastMessage.content = [...lastContent, ...newContent] as UserMessage["content"]
+					if (shouldMergeIntoToolMessage) {
+						// Merge text content into the last tool message
+						const lastToolMessage = result[result.length - 1] as ToolMessage
+						if (lastToolMessage?.role === "tool") {
+							const additionalText = textParts.join("\n")
+							lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
 						}
 					} else {
-						result.push({ role: "user", content })
+						// Standard behavior: add user message with text/image content
+						let content: UserMessage["content"]
+						if (imageParts.length > 0) {
+							const parts: (ContentPartText | ContentPartImage)[] = []
+							if (textParts.length > 0) {
+								parts.push({ type: "text", text: textParts.join("\n") })
+							}
+							parts.push(...imageParts)
+							content = parts
+						} else {
+							content = textParts.join("\n")
+						}
+
+						// Check if we can merge with the last message
+						const lastMessage = result[result.length - 1]
+						if (lastMessage?.role === "user") {
+							// Merge with existing user message
+							if (typeof lastMessage.content === "string" && typeof content === "string") {
+								lastMessage.content += `\n${content}`
+							} else {
+								const lastContent = Array.isArray(lastMessage.content)
+									? lastMessage.content
+									: [{ type: "text" as const, text: lastMessage.content || "" }]
+								const newContent = Array.isArray(content)
+									? content
+									: [{ type: "text" as const, text: content }]
+								lastMessage.content = [...lastContent, ...newContent] as UserMessage["content"]
+							}
+						} else {
+							result.push({ role: "user", content })
+						}
 					}
 				}
 			} else {
