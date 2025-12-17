@@ -32,7 +32,6 @@ export const vertexModels = {
 			},
 		],
 	},
-	// 2.5 Flash models
 	"gemini-3-flash-preview": {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
