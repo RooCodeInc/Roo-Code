@@ -208,14 +208,16 @@ describe("mergeExtensionState", () => {
 			sharingEnabled: false,
 			publicSharingEnabled: false,
 			profileThresholds: {},
-			hasOpenedModeSelector: false, // Add the new required property
+			hasOpenedModeSelector: false,
 			maxImageFileSize: 5,
 			maxTotalImageSize: 20,
 			remoteControlEnabled: false,
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
+			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+			isGitRepository: false,
+			isGithubRepository: false,
 			isBrowserSessionActive: false,
-			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Add the checkpoint timeout property
 		}
 
 		const prevState: ExtensionState = {

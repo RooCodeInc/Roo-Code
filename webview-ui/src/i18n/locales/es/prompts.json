@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Iniciar nueva tarea",
 				"description": "Inicia una nueva tarea con entrada del usuario. Disponible en la Paleta de comandos."
+			},
+			"CREATE_PR": {
+				"label": "Crear Pull Request",
+				"description": "Genera instrucciones para preparar, revisar y crear un PR usando el CLI de GitHub. Puedes personalizar esta plantilla."
 			}
 		}
 	},

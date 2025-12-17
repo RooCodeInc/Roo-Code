@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Iniciar nova tasca",
 				"description": "Inicieu una nova tasca amb l'entrada proporcionada. Disponible a la paleta de comandes."
+			},
+			"CREATE_PR": {
+				"label": "Crear Sol·licitud d'Extracció",
+				"description": "Genera instruccions per preparar, revisar i crear una sol·licitud d'extracció (PR) utilitzant el CLI de GitHub. Pots personalitzar aquesta plantilla."
 			}
 		}
 	},

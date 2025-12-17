@@ -143,6 +143,10 @@
 			"NEW_TASK": {
 				"label": "Mulai Tugas Baru",
 				"description": "Mulai tugas baru dengan input pengguna. Tersedia di Command Palette."
+			},
+			"CREATE_PR": {
+				"label": "Buat Pull Request",
+				"description": "Hasilkan instruksi untuk menyiapkan, meninjau, dan membuat PR menggunakan GitHub CLI. Anda dapat menyesuaikan template ini."
 			}
 		}
 	},

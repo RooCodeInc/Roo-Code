@@ -42,7 +42,7 @@
 		"tooltip": "Torna a provar l'operació"
 	},
 	"startNewTask": {
-		"title": "Començar una nova tasca",
+		"title": "Tasca nova",
 		"tooltip": "Comença una nova tasca"
 	},
 	"proceedAnyways": {
@@ -61,6 +61,10 @@
 	"approve": {
 		"title": "Aprovar",
 		"tooltip": "Aprova aquesta acció"
+	},
+	"createPR": {
+		"title": "Crea PR",
+		"tooltip": "Crea una pull request a partir dels teus canvis"
 	},
 	"runCommand": {
 		"title": "Ordre",

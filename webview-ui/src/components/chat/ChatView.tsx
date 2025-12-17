@@ -49,6 +49,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { supportPrompt } from "@roo/support-prompt"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -95,6 +96,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		soundVolume,
 		cloudIsAuthenticated,
 		messageQueue = [],
+		isGitRepository = false,
+		isGithubRepository = false,
+		customSupportPrompts,
 		isBrowserSessionActive,
 	} = useExtensionState()
 
@@ -168,6 +172,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const userRespondedRef = useRef<boolean>(false)
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
+	const [prCreationRequested, setPrCreationRequested] = useState<boolean>(false)
 
 	const clineAskRef = useRef(clineAsk)
 	useEffect(() => {
@@ -360,8 +365,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+
+							// Show "Create PR" only if in a GitHub repository and user hasn't already requested it
+							if (isGitRepository && isGithubRepository && !prCreationRequested) {
+								setPrimaryButtonText(t("chat:createPR.title"))
+								setSecondaryButtonText(t("chat:startNewTask.title"))
+							} else {
+								// If not in git repo or PR already created, only show "New Task"
+								setPrimaryButtonText(t("chat:startNewTask.title"))
+								setSecondaryButtonText(undefined)
+							}
 							break
 						case "resume_task":
 							setSendingDisabled(false)
@@ -455,6 +468,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		everVisibleMessagesTsRef.current.clear() // Clear for new task
 		setCurrentFollowUpTs(null) // Clear follow-up answered state for new task
 		setIsCondensing(false) // Reset condensing state when switching tasks
+		setPrCreationRequested(false) // Reset PR flag for new task
 		// Note: sendingDisabled is not reset here as it's managed by message effects
 
 		// Clear any pending auto-approval timeout from previous task
@@ -582,6 +596,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
+				// Reset PR creation flag when user sends any message
+				// This allows creating another PR if more changes are made
+				setPrCreationRequested(false)
+
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
@@ -723,8 +741,17 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 				case "completion_result":
 				case "resume_completed_task":
-					// Waiting for feedback, but we can just present a new task button
-					startNewTask()
+					// Check if primary button is "Create PR"
+					if (primaryButtonText === t("chat:createPR.title")) {
+						// Mark that PR creation was requested
+						setPrCreationRequested(true)
+						// Send message using the Support Prompt for PR creation
+						const text = supportPrompt.create("CREATE_PR", {}, customSupportPrompts)
+						handleSendMessage(text, [])
+					} else {
+						// Original behavior: start new task
+						startNewTask()
+					}
 					break
 				case "command_output":
 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "continue" })
@@ -735,7 +762,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
+		[
+			clineAsk,
+			primaryButtonText,
+			t,
+			startNewTask,
+			customSupportPrompts,
+			handleSendMessage,
+			currentTaskItem?.parentTaskId,
+		],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -1524,17 +1559,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 															? t("chat:approve.tooltip")
 															: primaryButtonText === t("chat:runCommand.title")
 																? t("chat:runCommand.tooltip")
-																: primaryButtonText === t("chat:startNewTask.title")
-																	? t("chat:startNewTask.tooltip")
-																	: primaryButtonText === t("chat:resumeTask.title")
-																		? t("chat:resumeTask.tooltip")
+																: primaryButtonText === t("chat:createPR.title")
+																	? t("chat:createPR.tooltip")
+																	: primaryButtonText === t("chat:startNewTask.title")
+																		? t("chat:startNewTask.tooltip")
 																		: primaryButtonText ===
-																			  t("chat:proceedAnyways.title")
-																			? t("chat:proceedAnyways.tooltip")
+																			  t("chat:resumeTask.title")
+																			? t("chat:resumeTask.tooltip")
 																			: primaryButtonText ===
-																				  t("chat:proceedWhileRunning.title")
-																				? t("chat:proceedWhileRunning.tooltip")
-																				: undefined
+																				  t("chat:proceedAnyways.title")
+																				? t("chat:proceedAnyways.tooltip")
+																				: primaryButtonText ===
+																					  t(
+																							"chat:proceedWhileRunning.title",
+																					  )
+																					? t(
+																							"chat:proceedWhileRunning.tooltip",
+																						)
+																					: undefined
 											}>
 											<Button
 												variant="primary"

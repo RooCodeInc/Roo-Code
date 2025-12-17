@@ -142,6 +142,10 @@
 			"NEW_TASK": {
 				"label": "Start New Task",
 				"description": "Start a new task with user input. Available in the Command Palette."
+			},
+			"CREATE_PR": {
+				"label": "Create Pull Request",
+				"description": "Generate instructions to stage, review, and create a PR using the GitHub CLI. You can customize this template."
 			}
 		}
 	},
