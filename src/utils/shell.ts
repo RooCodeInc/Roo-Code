@@ -385,6 +385,10 @@ export function getShell(terminalShellIntegrationDisabled = false): string {
 	if (isJetbrainsPlatform()) {
 		try {
 			shell = vscode.env.appName.split("[shell]")[1]
+			if (shell) {
+				// Remove leading and trailing quotes (single or double)
+				shell = shell.trim().replace(/^["']|["']$/g, "")
+			}
 		} catch (error) {
 			console.log(error.message)
 

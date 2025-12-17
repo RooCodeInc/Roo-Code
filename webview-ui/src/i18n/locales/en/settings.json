@@ -460,7 +460,7 @@
 			"capabilities": "Configure the capabilities and pricing for your custom OpenAI-compatible model. Be careful when specifying the model capabilities, as they can affect how Roo Code performs.",
 			"maxTokens": {
 				"label": "Max Output Tokens",
-				"description": "Maximum number of tokens the model can generate in a response. (Specify -1 to allow the server to set the max tokens.)"
+				"description": "Maximum number of tokens the model can generate in a response."
 			},
 			"contextWindow": {
 				"label": "Context Window Size",

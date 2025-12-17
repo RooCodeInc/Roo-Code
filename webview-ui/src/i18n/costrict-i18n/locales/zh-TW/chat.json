@@ -144,7 +144,7 @@
 		"headerTitle": "CoStrict 有以下問題需要您解答：",
 		"userSkipped": "已跳過",
 		"userConfirmed": "已確認",
-		"skipHint": "如果選項都不符合您的需求，可以點選「跳過」或在下方輸入框直接說明您的需求",
+		"skipHint": "如果選項都不滿足您的需求，<code>可以在下方輸入框直接說明您的需求</code>；<code>點擊\"跳過\"，將跳過此問卷</code>",
 		"loading": "準備問題中..."
 	}
 }

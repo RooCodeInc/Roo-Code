@@ -141,7 +141,7 @@
 		"headerTitle": "CoStrict has the following questions for you:",
 		"userSkipped": "Skipped",
 		"userConfirmed": "Confirmed",
-		"skipHint": "If none of the options meet your needs, you can click \"Skip\" or type your requirements in the input box below",
+		"skipHint": "If none of the options meet your needs, <code>you can directly describe your requirements in the input box below</code>; <code>click \"Skip\" to skip this questionnaire</code>",
 		"loading": "Preparing questions..."
 	}
 }

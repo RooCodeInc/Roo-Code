@@ -3,6 +3,7 @@ import { Button } from "@/components/ui"
 import { cn } from "@/lib/utils"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import type { MultipleChoiceData, MultipleChoiceResponse } from "@roo-code/types"
+import { Trans } from "react-i18next"
 
 interface MultipleChoiceFormProps {
 	data: MultipleChoiceData
@@ -261,7 +262,10 @@ export const MultipleChoiceForm = ({ data, onSubmit, isAnswered = false }: Multi
 						{/* Hint text */}
 						{!submitted && (
 							<div className="text-[10px] text-vscode-descriptionForeground leading-snug opacity-75">
-								{t("chat:multipleChoice.skipHint")}
+								<Trans
+									i18nKey="chat:multipleChoice.skipHint"
+									components={{ code: <span style={{ color: "#E64545" }}></span> }}
+								/>
 							</div>
 						)}
 					</div>

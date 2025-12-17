@@ -451,7 +451,7 @@
 			"capabilities": "設定自訂 OpenAI 相容模型的功能和定價。請謹慎設定模型功能，因為這會影響 Roo Code 的運作方式。",
 			"maxTokens": {
 				"label": "最大輸出 Token",
-				"description": "模型能在一則回應中產生的最大 Token 數量。（設為 -1 則由伺服器決定最大值）"
+				"description": "模型能在一則回應中產生的最大 Token 數量。"
 			},
 			"contextWindow": {
 				"label": "上下文視窗大小",
