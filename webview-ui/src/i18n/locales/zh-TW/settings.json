@@ -275,8 +275,6 @@
 		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
 		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
 		"passwordStorageNotice": "密碼安全儲存於 VSCode 的密鑰儲存中",
-		"glamaApiKey": "Glama API 金鑰",
-		"getGlamaApiKey": "取得 Glama API 金鑰",
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",

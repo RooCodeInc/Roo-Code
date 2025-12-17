@@ -277,8 +277,6 @@
 		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
 		"passwordStorageNotice": "Passwörter werden sicher im VSCode Secret Storage gespeichert",
-		"glamaApiKey": "Glama API-Schlüssel",
-		"getGlamaApiKey": "Glama API-Schlüssel erhalten",
 		"useCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
 		"useReasoning": "Reasoning aktivieren",
 		"useHostHeader": "Benutzerdefinierten Host-Header verwenden",
