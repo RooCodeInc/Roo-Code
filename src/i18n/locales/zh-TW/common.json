@@ -124,7 +124,10 @@
 			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 金鑰包含無效字元。"
+			"invalidKeyInvalidChars": "API 金鑰包含無效字元。",
+			"dnsResolutionFailed": "無法解析主機名稱。這通常表示您需要連接到企業VPN才能存取內部服務。如果您使用的是內部API端點，請驗證您的VPN連接是否處於活動狀態。",
+			"connectionRefused": "服務拒絕連接。API端點可存取但不接受連接。請驗證服務是否正在運行以及連接埠是否正確。",
+			"connectionTimeout": "請求逾時。API端點可能無法存取或遇到問題。如果使用內部服務，請驗證您的VPN連接是否穩定。"
 		},
 		"manual_url_empty": "請輸入有效的回呼 URL",
 		"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",

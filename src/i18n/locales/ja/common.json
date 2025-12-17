@@ -125,7 +125,10 @@
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。"
+			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。",
+			"dnsResolutionFailed": "ホスト名を解決できません。これは通常、内部サービスにアクセスするために企業VPNに接続する必要があることを意味します。内部APIエンドポイントを使用している場合は、VPN接続がアクティブであることを確認してください。",
+			"connectionRefused": "サービスが接続を拒否しました。APIエンドポイントに到達可能ですが、接続を受け入れていません。サービスが実行中で、ポートが正しいことを確認してください。",
+			"connectionTimeout": "リクエストがタイムアウトしました。APIエンドポイントに到達できないか、問題が発生している可能性があります。内部サービスを使用している場合は、VPN接続が安定していることを確認してください。"
 		},
 		"manual_url_empty": "有効なコールバック URL を入力してください",
 		"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",

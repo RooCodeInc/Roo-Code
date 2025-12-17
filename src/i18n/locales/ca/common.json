@@ -128,7 +128,10 @@
 			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "La clau API conté caràcters no vàlids."
+			"invalidKeyInvalidChars": "La clau API conté caràcters no vàlids.",
+			"dnsResolutionFailed": "No es pot resoldre el nom de l'amfitrió. Això normalment significa que heu de connectar-vos a la vostra VPN corporativa per accedir als serveis interns. Si utilitzeu un punt final d'API intern, verifiqueu que la vostra connexió VPN estigui activa.",
+			"connectionRefused": "El servei ha rebutjat la connexió. El punt final de l'API és accessible però no accepta connexions. Verifiqueu que el servei s'estigui executant i que el port sigui correcte.",
+			"connectionTimeout": "Temps d'espera de la sol·licitud esgotat. És possible que el punt final de l'API no sigui accessible o tingui problemes. Si utilitzeu un servei intern, verifiqueu que la vostra connexió VPN sigui estable."
 		},
 		"manual_url_empty": "Si us plau, introdueix una URL de callback vàlida",
 		"manual_url_no_query": "URL de callback no vàlida: falten paràmetres de consulta",

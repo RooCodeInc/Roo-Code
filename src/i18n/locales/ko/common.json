@@ -125,7 +125,10 @@
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
+			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다.",
+			"dnsResolutionFailed": "호스트 이름을 확인할 수 없습니다. 이는 일반적으로 내부 서비스에 액세스하기 위해 회사 VPN에 연결해야 함을 의미합니다. 내부 API 엔드포인트를 사용하는 경우 VPN 연결이 활성 상태인지 확인하십시오.",
+			"connectionRefused": "서비스가 연결을 거부했습니다. API 엔드포인트에 연결할 수 있지만 연결을 수락하지 않습니다. 서비스가 실행 중이고 포트가 올바른지 확인하십시오.",
+			"connectionTimeout": "요청 시간이 초과되었습니다. API 엔드포인트에 연결할 수 없거나 문제가 발생했을 수 있습니다. 내부 서비스를 사용하는 경우 VPN 연결이 안정적인지 확인하십시오."
 		},
 		"manual_url_empty": "유효한 콜백 URL을 입력하세요",
 		"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수 누락",

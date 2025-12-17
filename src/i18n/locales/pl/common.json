@@ -125,7 +125,10 @@
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki."
+			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki.",
+			"dnsResolutionFailed": "Nie można rozpoznać nazwy hosta. Zazwyczaj oznacza to, że musisz połączyć się z firmowym VPN, aby uzyskać dostęp do usług wewnętrznych. Jeśli używasz wewnętrznego punktu końcowego API, sprawdź, czy połączenie VPN jest aktywne.",
+			"connectionRefused": "Usługa odrzuciła połączenie. Punkt końcowy API jest osiągalny, ale nie akceptuje połączeń. Sprawdź, czy usługa działa i czy port jest prawidłowy.",
+			"connectionTimeout": "Upłynął limit czasu żądania. Punkt końcowy API może być nieosiągalny lub mieć problemy. Jeśli korzystasz z usługi wewnętrznej, sprawdź, czy połączenie VPN jest stabilne."
 		},
 		"manual_url_empty": "Wprowadź prawidłowy URL callback",
 		"manual_url_no_query": "Nieprawidłowy URL callback: brak parametrów zapytania",

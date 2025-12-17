@@ -125,7 +125,10 @@
 			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Roo Code Cloud an."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API-Schlüssel enthält ungültige Zeichen."
+			"invalidKeyInvalidChars": "API-Schlüssel enthält ungültige Zeichen.",
+			"dnsResolutionFailed": "Hostname kann nicht aufgelöst werden. Dies bedeutet normalerweise, dass Sie sich mit Ihrem Unternehmens-VPN verbinden müssen, um auf interne Dienste zuzugreifen. Wenn Sie einen internen API-Endpunkt verwenden, überprüfen Sie bitte, ob Ihre VPN-Verbindung aktiv ist.",
+			"connectionRefused": "Dienst hat Verbindung abgelehnt. Der API-Endpunkt ist erreichbar, akzeptiert aber keine Verbindungen. Bitte überprüfen Sie, ob der Dienst läuft und der Port korrekt ist.",
+			"connectionTimeout": "Anfrage-Zeitüberschreitung. Der API-Endpunkt ist möglicherweise nicht erreichbar oder hat Probleme. Wenn Sie einen internen Dienst verwenden, überprüfen Sie, ob Ihre VPN-Verbindung stabil ist."
 		},
 		"manual_url_empty": "Bitte gib eine gültige Callback-URL ein",
 		"manual_url_no_query": "Ungültige Callback-URL: Query-Parameter fehlen",

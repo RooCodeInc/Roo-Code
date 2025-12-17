@@ -130,7 +130,10 @@
 			"authenticationRequired": "Roo 提供商需要云认证。请登录 Roo Code Cloud。"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 密钥包含无效字符。"
+			"invalidKeyInvalidChars": "API 密钥包含无效字符。",
+			"dnsResolutionFailed": "无法解析主机名。这通常意味着您需要连接到企业VPN才能访问内部服务。如果您使用的是内部API端点，请验证您的VPN连接是否处于活动状态。",
+			"connectionRefused": "服务拒绝连接。API端点可访问但不接受连接。请验证服务是否正在运行以及端口是否正确。",
+			"connectionTimeout": "请求超时。API端点可能无法访问或遇到问题。如果使用内部服务，请验证您的VPN连接是否稳定。"
 		},
 		"manual_url_empty": "请输入有效的回调 URL",
 		"manual_url_no_query": "无效的回调 URL：缺少查询参数",

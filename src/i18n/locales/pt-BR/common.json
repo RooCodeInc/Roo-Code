@@ -129,7 +129,10 @@
 			"authenticationRequired": "O provedor Roo requer autenticação na nuvem. Faça login no Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "A chave API contém caracteres inválidos."
+			"invalidKeyInvalidChars": "A chave API contém caracteres inválidos.",
+			"dnsResolutionFailed": "Não é possível resolver o nome do host. Isso geralmente significa que você precisa se conectar à sua VPN corporativa para acessar serviços internos. Se você estiver usando um endpoint de API interno, verifique se sua conexão VPN está ativa.",
+			"connectionRefused": "O serviço recusou a conexão. O endpoint da API está acessível, mas não está aceitando conexões. Verifique se o serviço está em execução e se a porta está correta.",
+			"connectionTimeout": "Tempo limite da solicitação esgotado. O endpoint da API pode estar inacessível ou enfrentando problemas. Se estiver usando um serviço interno, verifique se sua conexão VPN está estável."
 		},
 		"manual_url_empty": "Por favor, insira uma URL de callback válida",
 		"manual_url_no_query": "URL de callback inválida: parâmetros de consulta ausentes",

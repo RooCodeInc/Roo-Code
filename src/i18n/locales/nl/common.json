@@ -125,7 +125,10 @@
 			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters."
+			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters.",
+			"dnsResolutionFailed": "Kan hostnaam niet oplossen. Dit betekent meestal dat u verbinding moet maken met uw bedrijfs-VPN om toegang te krijgen tot interne services. Als u een intern API-eindpunt gebruikt, controleer dan of uw VPN-verbinding actief is.",
+			"connectionRefused": "Service heeft verbinding geweigerd. Het API-eindpunt is bereikbaar maar accepteert geen verbindingen. Controleer of de service actief is en de poort correct is.",
+			"connectionTimeout": "Aanvraag time-out. Het API-eindpunt is mogelijk onbereikbaar of heeft problemen. Als u een interne service gebruikt, controleer dan of uw VPN-verbinding stabiel is."
 		},
 		"manual_url_empty": "Voer een geldige callback-URL in",
 		"manual_url_no_query": "Ongeldige callback-URL: query-parameters ontbreken",

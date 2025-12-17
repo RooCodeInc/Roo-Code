@@ -125,7 +125,10 @@
 			"authenticationRequired": "Le fournisseur Roo nécessite une authentification cloud. Veuillez vous connecter à Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "La clé API contient des caractères invalides."
+			"invalidKeyInvalidChars": "La clé API contient des caractères invalides.",
+			"dnsResolutionFailed": "Impossible de résoudre le nom d'hôte. Cela signifie généralement que vous devez vous connecter à votre VPN d'entreprise pour accéder aux services internes. Si vous utilisez un endpoint API interne, veuillez vérifier que votre connexion VPN est active.",
+			"connectionRefused": "Le service a refusé la connexion. Le endpoint de l'API est accessible mais n'accepte pas les connexions. Veuillez vérifier que le service fonctionne et que le port est correct.",
+			"connectionTimeout": "Délai d'attente dépassé. Le endpoint de l'API peut être inaccessible ou rencontrer des problèmes. Si vous utilisez un service interne, vérifiez que votre connexion VPN est stable."
 		},
 		"manual_url_empty": "Veuillez entrer une URL de callback valide",
 		"manual_url_no_query": "URL de callback invalide : paramètres de requête manquants",
