@@ -147,8 +147,9 @@
 			"403": "Brak autoryzacji. Twój klucz API jest ważny, ale dostawca odmówił ukończenia tego żądania.",
 			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
-			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
-			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe."
+			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe.",
+			"internalRateLimit": "Oczekiwanie między żądaniami. To opóźnienie jest skonfigurowane w ustawieniach dostawcy.",
+			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code."
 		}
 	},
 	"checkpoint": {

@@ -147,8 +147,9 @@
 			"403": "Yetkisiz. API anahtarınız geçerli ama sağlayıcı bu isteği tamamlamayı reddetti.",
 			"429": "Çok fazla istek. Sağlayıcı tarafından oran sınırlaması uygulanıyor. Lütfen sonraki API çağrısından önce biraz bekle.",
 			"500": "Sağlayıcı sunucu hatası. Sağlayıcı tarafında bir sorun var, isteğinizde sorun yok.",
-			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç.",
-			"connection": "Bağlantı hatası. Çalışan bir internet bağlantınız olduğundan emin olun."
+			"connection": "Bağlantı hatası. Çalışan bir internet bağlantınız olduğundan emin olun.",
+			"internalRateLimit": "İstekler arasında bekleniyor. Bu gecikme sağlayıcı ayarlarınızda yapılandırılmıştır.",
+			"unknown": "Bilinmeyen API hatası. Lütfen Roo Code desteğiyle iletişime geç."
 		}
 	},
 	"checkpoint": {

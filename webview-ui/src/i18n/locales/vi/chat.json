@@ -147,8 +147,9 @@
 			"403": "Truy cập bị từ chối. Khóa API của bạn hợp lệ, nhưng nhà cung cấp từ chối hoàn thành yêu cầu này.",
 			"429": "Quá nhiều yêu cầu. Nhà cung cấp đang giới hạn tốc độ yêu cầu của bạn. Vui lòng chờ một chút trước khi gọi API tiếp theo.",
 			"500": "Lỗi máy chủ của nhà cung cấp. Có sự cố ở phía nhà cung cấp, không có gì sai với yêu cầu của bạn.",
-			"unknown": "Lỗi API không xác định. Vui lòng liên hệ hỗ trợ Roo Code.",
-			"connection": "Lỗi kết nối. Đảm bảo rằng bạn có kết nối Internet hoạt động."
+			"connection": "Lỗi kết nối. Đảm bảo rằng bạn có kết nối Internet hoạt động.",
+			"internalRateLimit": "Đang chờ giữa các yêu cầu. Độ trễ này được cấu hình trong cài đặt nhà cung cấp của bạn.",
+			"unknown": "Lỗi API không xác định. Vui lòng liên hệ hỗ trợ Roo Code."
 		}
 	},
 	"checkpoint": {

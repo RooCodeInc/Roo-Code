@@ -154,6 +154,7 @@
 			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
 			"connection": "Connection error. Make sure you have a working internet connection.",
+			"internalRateLimit": "Waiting between requests. This delay is configured in your provider settings.",
 			"unknown": "Unknown API error. Please contact Roo Code support."
 		}
 	},

@@ -147,8 +147,9 @@
 			"403": "No autoritzat. La teva clau API és vàlida, però el proveïdor ha rebutjat completar aquesta sol·licitud.",
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
-			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code.",
-			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional."
+			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
+			"internalRateLimit": "Esperant entre sol·licituds. Aquest retard es configura a la teva configuració del proveïdor.",
+			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code."
 		}
 	},
 	"checkpoint": {
