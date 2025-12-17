@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { resolveToolProtocol } from "../resolveToolProtocol"
-import { TOOL_PROTOCOL } from "@roo-code/types"
+import { TOOL_PROTOCOL, openAiModelInfoSaneDefaults } from "@roo-code/types"
 import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 describe("resolveToolProtocol", () => {
@@ -315,6 +315,15 @@ describe("resolveToolProtocol", () => {
 			}
 			const result = resolveToolProtocol(settings, modelInfo)
 			expect(result).toBe(TOOL_PROTOCOL.XML) // Model default wins
+		})
+
+		it("should use native tools for OpenAI compatible provider with default model info", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+			}
+			// Using the actual openAiModelInfoSaneDefaults to verify the fix
+			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Should use native tools by default
 		})
 	})
 })
