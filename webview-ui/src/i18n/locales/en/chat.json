@@ -90,6 +90,14 @@
 		"title": "Terminate",
 		"tooltip": "End the current task"
 	},
+	"keepAllChanges": {
+		"title": "Keep All Changes",
+		"tooltip": "Keep all file changes and start a new task"
+	},
+	"undoAllChanges": {
+		"title": "Undo All Changes",
+		"tooltip": "Restore files to initial state and start a new task"
+	},
 	"cancel": {
 		"title": "Cancel",
 		"tooltip": "Cancel the current operation"

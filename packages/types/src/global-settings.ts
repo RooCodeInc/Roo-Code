@@ -86,6 +86,13 @@ export const globalSettingsSchema = z.object({
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),
+	/**
+	 * When enabled, file write operations are auto-approved during task execution.
+	 * At task completion, the user is presented with "Keep All Changes" / "Undo All Changes" options.
+	 * This allows users to see the full result before deciding to keep or revert file changes.
+	 * @default false
+	 */
+	deferFileApprovalToCompletion: z.boolean().optional(),
 	allowedMaxRequests: z.number().nullish(),
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),

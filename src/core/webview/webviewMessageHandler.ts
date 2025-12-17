@@ -1104,6 +1104,39 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "keepAllChanges":
+			// User chose to keep all changes at task completion - nothing to do
+			// The changes were already applied during task execution
+			provider.log("User chose to keep all changes at task completion")
+			break
+		case "undoAllChanges": {
+			// User chose to undo all changes at task completion
+			// Restore to the initial checkpoint from the beginning of the task
+			provider.log("User chose to undo all changes at task completion")
+			const currentCline = provider.getCurrentTask()
+			if (currentCline?.checkpointService) {
+				try {
+					// Get the initial checkpoint hash - the first checkpoint saved for this task
+					const initialCheckpointHash = currentCline.getInitialCheckpointHash?.()
+					if (initialCheckpointHash) {
+						await currentCline.checkpointService.restoreCheckpoint(initialCheckpointHash)
+						provider.log(`Restored to initial checkpoint: ${initialCheckpointHash}`)
+					} else {
+						provider.log("No initial checkpoint hash available for restoration")
+						vscode.window.showWarningMessage(t("common:errors.no_initial_checkpoint"))
+					}
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					provider.log(`Failed to restore initial checkpoint: ${errorMessage}`)
+					vscode.window.showErrorMessage(
+						t("common:errors.checkpoint_restore_failed", { error: errorMessage }),
+					)
+				}
+			} else {
+				provider.log("No checkpoint service available for restoration")
+			}
+			break
+		}
 		case "cancelTask":
 			await provider.cancelTask()
 			break

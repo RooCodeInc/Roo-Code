@@ -96,6 +96,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		isBrowserSessionActive,
+		deferFileApprovalToCompletion,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -360,8 +361,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+							// When deferFileApprovalToCompletion is enabled, show Keep/Undo buttons
+							if (deferFileApprovalToCompletion) {
+								setPrimaryButtonText(t("chat:keepAllChanges.title"))
+								setSecondaryButtonText(t("chat:undoAllChanges.title"))
+							} else {
+								setPrimaryButtonText(t("chat:startNewTask.title"))
+								setSecondaryButtonText(undefined)
+							}
 							break
 						case "resume_task":
 							setSendingDisabled(false)
@@ -722,6 +729,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 					break
 				case "completion_result":
+					// When deferFileApprovalToCompletion is enabled, primary button is "Keep All Changes"
+					// which keeps the changes and starts a new task
+					if (deferFileApprovalToCompletion) {
+						// Notify extension to keep all changes (don't restore checkpoint)
+						vscode.postMessage({ type: "keepAllChanges" })
+					}
+					startNewTask()
+					break
 				case "resume_completed_task":
 					// Waiting for feedback, but we can just present a new task button
 					startNewTask()
@@ -735,7 +750,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
+		[clineAsk, startNewTask, currentTaskItem?.parentTaskId, deferFileApprovalToCompletion],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
@@ -755,6 +770,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "api_req_failed":
 				case "mistake_limit_reached":
 				case "resume_task":
+					startNewTask()
+					break
+				case "completion_result":
+					// When deferFileApprovalToCompletion is enabled, secondary button is "Undo All Changes"
+					// which restores the checkpoint and starts a new task
+					if (deferFileApprovalToCompletion) {
+						// Notify extension to undo all changes (restore to initial checkpoint)
+						vscode.postMessage({ type: "undoAllChanges" })
+					}
 					startNewTask()
 					break
 				case "command":
@@ -785,7 +809,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setClineAsk(undefined)
 			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming],
+		[clineAsk, startNewTask, isStreaming, deferFileApprovalToCompletion],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)

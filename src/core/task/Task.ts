@@ -4071,6 +4071,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return checkpointDiff(this, options)
 	}
 
+	/**
+	 * Get the initial checkpoint hash (first checkpoint saved for this task).
+	 * This is used for "undo all changes" functionality when deferFileApprovalToCompletion is enabled.
+	 *
+	 * @returns The hash of the first checkpoint, or undefined if no checkpoints exist
+	 */
+	public getInitialCheckpointHash(): string | undefined {
+		// Find the first checkpoint_saved message in clineMessages
+		const firstCheckpoint = this.clineMessages.find((msg) => msg.say === "checkpoint_saved")
+		return firstCheckpoint?.text
+	}
+
 	// Metrics
 
 	public combineMessages(messages: ClineMessage[]) {

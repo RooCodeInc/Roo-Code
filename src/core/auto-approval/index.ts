@@ -24,6 +24,7 @@ export type AutoApprovalStateOptions =
 	| "alwaysAllowReadOnlyOutsideWorkspace" // For `alwaysAllowReadOnly`.
 	| "alwaysAllowWriteOutsideWorkspace" // For `alwaysAllowWrite`.
 	| "alwaysAllowWriteProtected"
+	| "deferFileApprovalToCompletion" // Auto-approve file writes, let user undo at completion.
 	| "followupAutoApproveTimeoutMs" // For `alwaysAllowFollowupQuestions`.
 	| "mcpServers" // For `alwaysAllowMcp`.
 	| "allowedCommands" // For `alwaysAllowExecute`.
@@ -173,11 +174,20 @@ export async function checkAutoApproval({
 		}
 
 		if (isWriteToolAction(tool)) {
-			return state.alwaysAllowWrite === true &&
+			// When deferFileApprovalToCompletion is enabled, auto-approve file writes
+			// (except for protected files and files outside workspace, unless explicitly allowed)
+			// The user can undo all changes at task completion
+			const isDeferredApproval =
+				state.deferFileApprovalToCompletion === true &&
 				(!isOutsideWorkspace || state.alwaysAllowWriteOutsideWorkspace === true) &&
 				(!isProtected || state.alwaysAllowWriteProtected === true)
-				? { decision: "approve" }
-				: { decision: "ask" }
+
+			const isNormalApproval =
+				state.alwaysAllowWrite === true &&
+				(!isOutsideWorkspace || state.alwaysAllowWriteOutsideWorkspace === true) &&
+				(!isProtected || state.alwaysAllowWriteProtected === true)
+
+			return isDeferredApproval || isNormalApproval ? { decision: "approve" } : { decision: "ask" }
 		}
 	}
 
