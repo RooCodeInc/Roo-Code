@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
+import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod, TOOL_PROTOCOL } from "@roo-code/types"
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import { CloudService } from "@roo-code/cloud"
 
@@ -12,6 +12,7 @@ import { getModelParams } from "../transform/model-params"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
@@ -96,11 +97,66 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const max_tokens = params.maxTokens ?? undefined
 		const temperature = params.temperature ?? this.defaultTemperature
 
+		let openAiMessages = [{ role: "system" as const, content: systemPrompt }, ...convertToOpenAiMessages(messages)]
+
+		// Process reasoning_details when switching models to Gemini for native tool call compatibility
+		// This is the same approach used in OpenRouter - see openrouter.ts lines 246-280
+		const toolProtocol = resolveToolProtocol(this.options, info)
+		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+		const isGemini = model.startsWith("google/gemini") || model.includes("gemini")
+
+		// For Gemini models: ensure content is always a string (not undefined)
+		// The Gemini API requires content to be a string, even if empty
+		if (isGemini) {
+			openAiMessages = openAiMessages.map((msg) => {
+				if (msg.role === "assistant" && msg.content === undefined) {
+					return { ...msg, content: "" }
+				}
+				return msg
+			})
+		}
+
+		// For Gemini with native protocol: inject fake reasoning.encrypted blocks for tool calls
+		// This is required when switching from other models to Gemini to satisfy API validation
+		if (isNativeProtocol && isGemini) {
+			openAiMessages = openAiMessages.map((msg) => {
+				if (msg.role === "assistant") {
+					const toolCalls = (msg as any).tool_calls as any[] | undefined
+					const existingDetails = (msg as any).reasoning_details as any[] | undefined
+
+					// Only inject if there are tool calls and no existing encrypted reasoning
+					if (toolCalls && toolCalls.length > 0) {
+						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
+
+						if (!hasEncrypted) {
+							// Filter tool calls that have valid IDs
+							const validToolCalls = toolCalls.filter((tc) => tc.id && typeof tc.id === "string")
+
+							if (validToolCalls.length > 0) {
+								const fakeEncrypted = validToolCalls.map((tc, idx) => ({
+									id: tc.id,
+									type: "reasoning.encrypted",
+									data: "skip_thought_signature_validator",
+									index: (existingDetails?.length ?? 0) + idx,
+								}))
+
+								return {
+									...msg,
+									reasoning_details: [...(existingDetails ?? []), ...fakeEncrypted],
+								}
+							}
+						}
+					}
+				}
+				return msg
+			})
+		}
+
 		const rooParams: RooChatCompletionParams = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: openAiMessages,
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
