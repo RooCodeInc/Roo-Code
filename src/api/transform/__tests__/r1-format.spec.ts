@@ -394,5 +394,226 @@ describe("convertToR1Format", () => {
 				content: "Follow up response",
 			})
 		})
+
+		describe("mergeToolResultText option for DeepSeek interleaved thinking", () => {
+			it("should merge text content into last tool message when mergeToolResultText is true", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: [
+							{
+								type: "tool_result",
+								tool_use_id: "call_123",
+								content: "Tool result content",
+							},
+							{
+								type: "text",
+								text: "<environment_details>\nSome context\n</environment_details>",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				// Should produce only one tool message with merged content
+				expect(result).toHaveLength(1)
+				expect(result[0]).toEqual({
+					role: "tool",
+					tool_call_id: "call_123",
+					content: "Tool result content\n\n<environment_details>\nSome context\n</environment_details>",
+				})
+			})
+
+			it("should NOT merge text when mergeToolResultText is false (default behavior)", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: [
+							{
+								type: "tool_result",
+								tool_use_id: "call_123",
+								content: "Tool result content",
+							},
+							{
+								type: "text",
+								text: "Please continue",
+							},
+						],
+					},
+				]
+
+				// Without option (default behavior)
+				const result = convertToR1Format(input)
+
+				// Should produce two messages: tool message + user message
+				expect(result).toHaveLength(2)
+				expect(result[0]).toEqual({
+					role: "tool",
+					tool_call_id: "call_123",
+					content: "Tool result content",
+				})
+				expect(result[1]).toEqual({
+					role: "user",
+					content: "Please continue",
+				})
+			})
+
+			it("should merge text into last tool message when multiple tool results exist", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: [
+							{
+								type: "tool_result",
+								tool_use_id: "call_1",
+								content: "First result",
+							},
+							{
+								type: "tool_result",
+								tool_use_id: "call_2",
+								content: "Second result",
+							},
+							{
+								type: "text",
+								text: "<environment_details>Context</environment_details>",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				// Should produce two tool messages, with text merged into the last one
+				expect(result).toHaveLength(2)
+				expect(result[0]).toEqual({
+					role: "tool",
+					tool_call_id: "call_1",
+					content: "First result",
+				})
+				expect(result[1]).toEqual({
+					role: "tool",
+					tool_call_id: "call_2",
+					content: "Second result\n\n<environment_details>Context</environment_details>",
+				})
+			})
+
+			it("should NOT merge when there are images (images need user message)", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: [
+							{
+								type: "tool_result",
+								tool_use_id: "call_123",
+								content: "Tool result",
+							},
+							{
+								type: "text",
+								text: "Check this image",
+							},
+							{
+								type: "image",
+								source: {
+									type: "base64",
+									media_type: "image/jpeg",
+									data: "imagedata",
+								},
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				// Should produce tool message + user message with image
+				expect(result).toHaveLength(2)
+				expect(result[0]).toEqual({
+					role: "tool",
+					tool_call_id: "call_123",
+					content: "Tool result",
+				})
+				expect(result[1]).toMatchObject({
+					role: "user",
+					content: expect.arrayContaining([
+						{ type: "text", text: "Check this image" },
+						{ type: "image_url", image_url: expect.any(Object) },
+					]),
+				})
+			})
+
+			it("should NOT merge when there are no tool results (text-only should remain user message)", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{
+						role: "user",
+						content: [
+							{
+								type: "text",
+								text: "Just a regular message",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				// Should produce user message as normal
+				expect(result).toHaveLength(1)
+				expect(result[0]).toEqual({
+					role: "user",
+					content: "Just a regular message",
+				})
+			})
+
+			it("should preserve reasoning_content on assistant messages in same conversation", () => {
+				const input = [
+					{ role: "user" as const, content: "Start" },
+					{
+						role: "assistant" as const,
+						content: [
+							{
+								type: "tool_use" as const,
+								id: "call_123",
+								name: "test_tool",
+								input: {},
+							},
+						],
+						reasoning_content: "Let me think about this...",
+					},
+					{
+						role: "user" as const,
+						content: [
+							{
+								type: "tool_result" as const,
+								tool_use_id: "call_123",
+								content: "Result",
+							},
+							{
+								type: "text" as const,
+								text: "<environment_details>Context</environment_details>",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input as Anthropic.Messages.MessageParam[], {
+					mergeToolResultText: true,
+				})
+
+				// Should have: user, assistant (with reasoning + tool_calls), tool
+				expect(result).toHaveLength(3)
+				expect(result[0]).toEqual({ role: "user", content: "Start" })
+				expect((result[1] as any).reasoning_content).toBe("Let me think about this...")
+				expect((result[1] as any).tool_calls).toBeDefined()
+				// Tool message should have merged content
+				expect(result[2]).toEqual({
+					role: "tool",
+					tool_call_id: "call_123",
+					content: "Result\n\n<environment_details>Context</environment_details>",
+				})
+				// Most importantly: NO user message after tool message
+				expect(result.filter((m) => m.role === "user")).toHaveLength(1)
+			})
+		})
 	})
 })
