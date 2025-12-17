@@ -140,7 +140,9 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 		const model = this.getModel()
 
 		// Validate that the model ID is a valid ClaudeCodeModelId
-const modelId = Object.hasOwn(claudeCodeModels, model.id) ? (model.id as ClaudeCodeModelId) : claudeCodeDefaultModelId
+		const modelId = Object.hasOwn(claudeCodeModels, model.id)
+			? (model.id as ClaudeCodeModelId)
+			: claudeCodeDefaultModelId
 
 		// Generate user_id metadata in the format required by Claude Code API
 		const userId = generateUserId(email || undefined)
@@ -271,7 +273,7 @@ const modelId = Object.hasOwn(claudeCodeModels, model.id) ? (model.id as ClaudeC
 
 	getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.apiModelId
-		if (modelId && modelId in claudeCodeModels) {
+		if (modelId && Object.hasOwn(claudeCodeModels, modelId)) {
 			const id = modelId as ClaudeCodeModelId
 			return { id, info: { ...claudeCodeModels[id] } }
 		}
@@ -313,7 +315,9 @@ const modelId = Object.hasOwn(claudeCodeModels, model.id) ? (model.id as ClaudeC
 		const model = this.getModel()
 
 		// Validate that the model ID is a valid ClaudeCodeModelId
-		const modelId = model.id in claudeCodeModels ? (model.id as ClaudeCodeModelId) : claudeCodeDefaultModelId
+		const modelId = Object.hasOwn(claudeCodeModels, model.id)
+			? (model.id as ClaudeCodeModelId)
+			: claudeCodeDefaultModelId
 
 		// Generate user_id metadata in the format required by Claude Code API
 		const userId = generateUserId(email || undefined)

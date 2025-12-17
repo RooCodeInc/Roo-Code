@@ -21,12 +21,11 @@ type ContentBlockWithType = { type: string }
 
 /**
  * Filters out non-Anthropic content blocks from messages before sending to the API.
- * Also converts internal reasoning + thoughtSignature blocks to proper Anthropic thinking blocks.
  *
  * Uses an allowlist approach - only blocks with types in VALID_ANTHROPIC_BLOCK_TYPES are kept.
  * This automatically filters out:
- * - Internal "reasoning" blocks (Roo Code's internal representation) - unless combined with thoughtSignature
- * - Gemini's "thoughtSignature" blocks (converted to thinking blocks when paired with reasoning)
+ * - Internal "reasoning" blocks (Roo Code's internal representation)
+ * - Gemini's "thoughtSignature" blocks
  * - Any other unknown block types
  *
  * IMPORTANT: This function also strips message-level fields that are not part of the Anthropic API:
