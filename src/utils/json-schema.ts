@@ -112,22 +112,33 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 			})
 			.passthrough()
 			.transform((schema) => {
-				const { type, ...rest } = schema
+				const { type, required, properties, ...rest } = schema
+				const result: Record<string, unknown> = { ...rest }
 
-				// If type is an array, convert to anyOf format
+				// If type is an array, convert to anyOf format (JSON Schema 2020-12)
 				if (Array.isArray(type)) {
-					return {
-						...rest,
-						anyOf: type.map((t) => ({ type: t })),
+					result.anyOf = type.map((t) => ({ type: t }))
+				} else if (type !== undefined) {
+					result.type = type
+				}
+
+				// Handle properties and required for strict mode
+				if (properties) {
+					result.properties = properties
+					if (required) {
+						const propertyKeys = Object.keys(properties)
+						const filteredRequired = required.filter((key) => propertyKeys.includes(key))
+						if (filteredRequired.length > 0) {
+							result.required = filteredRequired
+						}
 					}
+				} else if (result.type === "object" || (Array.isArray(type) && type.includes("object"))) {
+					// For type: "object" without properties, add empty properties
+					// This is required by OpenAI strict mode
+					result.properties = {}
 				}
 
-				// Single type or undefined - return as-is
-				if (type !== undefined) {
-					return { ...rest, type }
-				}
-
-				return rest
+				return result
 			}),
 )
 

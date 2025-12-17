@@ -195,6 +195,7 @@ describe("normalizeToolSchema", () => {
 
 		expect(result).toEqual({
 			type: "object",
+			properties: {},
 			additionalProperties: {
 				anyOf: [{ type: "string" }, { type: "null" }],
 				additionalProperties: false,
@@ -212,6 +213,7 @@ describe("normalizeToolSchema", () => {
 
 		expect(result).toEqual({
 			type: "object",
+			properties: {},
 			additionalProperties: false,
 		})
 	})
