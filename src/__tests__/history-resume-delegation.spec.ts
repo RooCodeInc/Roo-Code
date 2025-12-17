@@ -29,7 +29,13 @@ vi.mock("vscode", () => {
 	const commands = { executeCommand: vi.fn() }
 	const ExtensionMode = { Development: 2 }
 	const version = "1.0.0-test"
-	return { window, workspace, env, Uri, commands, ExtensionMode, version }
+	// 添加 extensions 模拟，包含 getExtension 方法
+	const extensions = {
+		getExtension: vi.fn(() => ({
+			extensionUri: { fsPath: "/mock/extension/path", toString: () => "/mock/extension/path" },
+		})),
+	}
+	return { window, workspace, env, Uri, commands, ExtensionMode, version, extensions }
 })
 
 // Mock persistence BEFORE importing provider

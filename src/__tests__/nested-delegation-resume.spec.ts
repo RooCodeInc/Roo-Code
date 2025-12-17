@@ -39,11 +39,23 @@ vi.mock("vscode", () => {
 		workspaceFolders: [],
 	}
 	const env = { machineId: "test-machine", uriScheme: "vscode", appName: "VSCode", language: "en", sessionId: "sess" }
-	const Uri = { file: (p: string) => ({ fsPath: p, toString: () => p }) }
+	const Uri = {
+		file: (p: string) => ({ fsPath: p, toString: () => p }),
+		joinPath: (base: any, ...paths: string[]) => ({
+			fsPath: `${base.fsPath}/${paths.join("/")}`,
+			toString: () => `${base.fsPath}/${paths.join("/")}`,
+		}),
+	}
 	const commands = { executeCommand: vi.fn() }
 	const ExtensionMode = { Development: 2 }
 	const version = "1.0.0-test"
-	return { window, workspace, env, Uri, commands, ExtensionMode, version }
+	// 添加 extensions 模拟，包含 getExtension 方法
+	const extensions = {
+		getExtension: vi.fn(() => ({
+			extensionUri: { fsPath: "/mock/extension/path", toString: () => "/mock/extension/path" },
+		})),
+	}
+	return { window, workspace, env, Uri, commands, ExtensionMode, version, extensions }
 })
 
 // Mock persistence helpers used by provider reopen flow BEFORE importing provider

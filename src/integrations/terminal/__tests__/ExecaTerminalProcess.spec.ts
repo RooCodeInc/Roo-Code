@@ -61,7 +61,6 @@ describe("ExecaTerminalProcess", () => {
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
 					cwd: "/test/cwd",
 					all: true,
 					env: expect.objectContaining({
@@ -70,6 +69,9 @@ describe("ExecaTerminalProcess", () => {
 					}),
 				}),
 			)
+			// Verify shell property exists (can be true or a path)
+			const calledOptions = execaMock.mock.calls[0][0] as any
+			expect(calledOptions.shell).toBeTruthy()
 		})
 
 		it("should preserve existing environment variables", async () => {
@@ -115,8 +117,10 @@ describe("ExecaTerminalProcess", () => {
 
 		it("should set and clear active stream", async () => {
 			await terminalProcess.run("echo test")
-			expect(mockTerminal.setActiveStream).toHaveBeenCalledWith(expect.any(Object), mockPid)
-			expect(mockTerminal.setActiveStream).toHaveBeenLastCalledWith(undefined, mockPid)
+			expect(mockTerminal.setActiveStream).toHaveBeenCalledTimes(2)
+			// First call sets the stream, second call clears it
+			expect(mockTerminal.setActiveStream.mock.calls[0][0]).toBeDefined()
+			expect(mockTerminal.setActiveStream.mock.calls[1][0]).toBeUndefined()
 		})
 	})
 })

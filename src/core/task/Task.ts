@@ -1454,12 +1454,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							process.kill(targetPid, "SIGKILL")
 							if (executionId) {
 								const status: CommandExecutionStatus = { executionId, status: "exited", exitCode: 9 }
-								this.providerRef
-									.deref()
-									?.postMessageToWebview({
-										type: "commandExecutionStatus",
-										text: JSON.stringify(status),
-									})
+								this.providerRef.deref()?.postMessageToWebview({
+									type: "commandExecutionStatus",
+									text: JSON.stringify(status),
+								})
 							}
 						} catch (e) {
 							console.warn(
@@ -2289,7 +2287,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				break
 			} else {
 				const modelInfo = this.api.getModel().info
-				// const state = await this.providerRef.deref()?.getState()
 				const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(toolProtocol) }]
 				this.consecutiveMistakeCount++
@@ -3247,10 +3244,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Need to save assistant responses to file before proceeding to
 				// tool use since user can exit at any moment and we wouldn't be
 				// able to save the assistant's response.
-				let didEndLoop = false
 
 				// Check if we have any content to process (text or tool uses)
 				const hasTextContent = assistantMessage.length > 0
+
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
@@ -3320,10 +3317,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					await this.addToApiConversationHistory(
-						{
-							role: "assistant",
-							content: assistantContent,
-						},
+						{ role: "assistant", content: assistantContent },
 						reasoningMessage || undefined,
 					)
 
@@ -3372,7 +3366,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Add periodic yielding to prevent blocking
 						await new Promise((resolve) => setImmediate(resolve))
 					}
-					// Continue to next iteration instead of setting didEndLoop from recursive call
+
 					continue
 				} else {
 					// If there's no assistant_responses, that means we got no text
@@ -3411,7 +3405,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
-							new Error("Empty assistant response"),
+							new Error(
+								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
+							),
 							errorMsg,
 						)
 
@@ -4044,18 +4040,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 			if (autoApprovalEnabled) {
-				let errorMsg
-
-				// if (error.error?.metadata?.raw) {
-				// 	errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
-				// } else if (error.message) {
-				// 	errorMsg = error.message
-				// } else {
-				// 	errorMsg = "Unknown error"
-				// }
-
 				// Apply shared exponential backoff and countdown UX
-				await this.backoffAndAnnounce(retryAttempt, error, errorMsg)
+				await this.backoffAndAnnounce(retryAttempt, error)
 
 				// CRITICAL: Check if task was aborted during the backoff countdown
 				// This prevents infinite loops when users cancel during auto-retry
@@ -4132,7 +4118,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
-			if (finalDelay <= 0) return
+			if (finalDelay <= 0) {
+				return
+			}
 
 			// Build header text; fall back to error message if none provided
 			let headerText = header

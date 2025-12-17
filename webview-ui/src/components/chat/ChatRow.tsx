@@ -1258,6 +1258,7 @@ export const ChatRowContent = ({
 											</>
 										)
 									}
+									errorDetails={apiReqStreamingFailedMessage}
 								/>
 							)}
 						</>

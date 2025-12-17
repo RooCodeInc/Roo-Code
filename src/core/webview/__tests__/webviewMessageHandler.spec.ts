@@ -43,6 +43,18 @@ import { t } from "../../../i18n"
 
 vi.mock("vscode", async (importOriginal) => ({
 	...(await importOriginal()),
+	extensions: {
+		getExtension: (extensionId: string) => ({
+			extensionPath: "/mock/extension/path",
+			extensionUri: { fsPath: "/mock/extension/path", path: "/mock/extension/path", scheme: "file" },
+			packageJSON: {
+				name: "zgsm",
+				publisher: "zgsm-ai",
+				version: "2.0.27",
+			},
+		}),
+		all: [],
+	},
 	window: {
 		showInformationMessage: vi.fn(),
 		showErrorMessage: vi.fn(),

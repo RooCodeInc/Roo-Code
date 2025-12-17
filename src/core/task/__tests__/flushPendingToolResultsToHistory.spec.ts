@@ -42,7 +42,8 @@ vi.mock("p-wait-for", () => ({
 	default: vi.fn().mockImplementation(async () => Promise.resolve()),
 }))
 
-vi.mock("vscode", () => {
+vi.mock("vscode", async (importOriginal) => {
+	const actual = (await importOriginal()) as any
 	const mockDisposable = { dispose: vi.fn() }
 	const mockEventEmitter = { event: vi.fn(), fire: vi.fn() }
 	const mockTextDocument = { uri: { fsPath: "/mock/workspace/path/file.ts" } }
@@ -51,6 +52,19 @@ vi.mock("vscode", () => {
 	const mockTabGroup = { tabs: [mockTab] }
 
 	return {
+		...actual,
+		extensions: {
+			getExtension: (extensionId: string) => ({
+				extensionPath: "/mock/extension/path",
+				extensionUri: { fsPath: "/mock/extension/path", path: "/mock/extension/path", scheme: "file" },
+				packageJSON: {
+					name: "zgsm",
+					publisher: "zgsm-ai",
+					version: "2.0.27",
+				},
+			}),
+			all: [],
+		},
 		TabInputTextDiff: vi.fn(),
 		CodeActionKind: {
 			QuickFix: { value: "quickfix" },

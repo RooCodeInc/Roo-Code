@@ -8,36 +8,52 @@ vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
 
-vi.mock("vscode", async (importOriginal) => ({
-	...(await importOriginal()),
-	CodeActionKind: {
-		QuickFix: { value: "quickfix" },
-		RefactorRewrite: { value: "refactor.rewrite" },
-	},
-	window: {
-		createTextEditorDecorationType: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-		createOutputChannel: () => ({
-			appendLine: vi.fn(),
-			show: vi.fn(),
-		}),
-	},
-	workspace: {
-		workspaceFolders: [
-			{
-				uri: {
-					fsPath: "/mock/workspace",
+vi.mock("vscode", async () => {
+	return {
+		CodeActionKind: {
+			QuickFix: { value: "quickfix" },
+			RefactorRewrite: { value: "refactor.rewrite" },
+		},
+		window: {
+			createTextEditorDecorationType: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+			createOutputChannel: () => ({
+				appendLine: vi.fn(),
+				show: vi.fn(),
+			}),
+		},
+		workspace: {
+			workspaceFolders: [
+				{
+					uri: {
+						fsPath: "/mock/workspace",
+					},
 				},
-			},
-		],
-		createFileSystemWatcher: vi.fn().mockReturnValue({
-			onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-			onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-			onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
-			dispose: vi.fn(),
-		}),
-	},
-	RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
-}))
+			],
+			createFileSystemWatcher: vi.fn().mockReturnValue({
+				onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidDelete: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				dispose: vi.fn(),
+			}),
+		},
+		RelativePattern: vi.fn().mockImplementation((base, pattern) => ({ base, pattern })),
+		extensions: {
+			getExtension: (extensionId: string) => ({
+				extensionPath: "/mock/extension/path",
+				extensionUri: { fsPath: "/mock/extension/path", path: "/mock/extension/path", scheme: "file" },
+				packageJSON: {
+					name: "zgsm",
+					publisher: "zgsm-ai",
+					version: "2.0.27",
+				},
+			}),
+			all: [],
+		},
+		env: {
+			uriScheme: "vscode",
+		},
+	}
+})
 
 vi.mock("../../core/webview/ClineProvider")
 

@@ -43,6 +43,16 @@ vi.mock("vscode", () => {
 				return { dispose: vi.fn() }
 			}),
 		},
+		env: {
+			openExternal: vi.fn(),
+			uriScheme: "vscode",
+		},
+		extensions: {
+			getExtension: vi.fn().mockReturnValue({
+				extensionUri: { fsPath: "/test/extension/path" },
+			}),
+			all: [],
+		},
 		ThemeIcon: class ThemeIcon {
 			constructor(id: string) {
 				this.id = id

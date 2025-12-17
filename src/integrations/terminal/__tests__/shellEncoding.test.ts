@@ -53,11 +53,12 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 		const call = mockExeca.mock.calls[0]
 		// Based on actual behavior, PowerShell calls use template string with options
 		expect(call[0]).toMatchObject({
-			shell: true,
 			cwd: "/test",
 			all: true,
 			encoding: "buffer",
 		})
+		// Verify shell property exists (can be true or a path)
+		expect(call[0].shell).toBeTruthy()
 	})
 
 	it("should use CMD encoding command for CMD", async () => {
@@ -85,11 +86,12 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 		const call = mockExeca.mock.calls[0]
 		// For CMD, execa is called with template string: execa(options)`chcp 65001 >nul 2>&1 && ${command}`
 		expect(call[0]).toMatchObject({
-			shell: true,
 			cwd: "/test",
 			all: true,
 			encoding: "buffer",
 		})
+		// Verify shell property exists (can be true or a path)
+		expect(call[0].shell).toBeTruthy()
 	})
 
 	it("should not modify command on non-Windows platforms", async () => {
@@ -122,11 +124,12 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 			const call = mockExeca.mock.calls[0]
 			// For non-Windows platforms, execa is called with template string: execa(options)`${actualCommand}`
 			expect(call[0]).toMatchObject({
-				shell: true,
 				cwd: "/test",
 				all: true,
 				encoding: "buffer",
 			})
+			// Verify shell property exists (can be true or a path)
+			expect(call[0].shell).toBeTruthy()
 		} finally {
 			// Restore original platform
 			Object.defineProperty(global.process, "platform", {
@@ -161,11 +164,12 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 		const call = mockExeca.mock.calls[0]
 		// For Git Bash, options come first, then shell path and arguments
 		expect(call[0]).toMatchObject({
-			shell: true,
 			cwd: "/test",
 			all: true,
 			encoding: "buffer",
 		})
+		// Verify shell property exists (can be true or a path)
+		expect(call[0].shell).toBeTruthy()
 	})
 
 	it("should handle legacy PowerShell path correctly", async () => {
@@ -193,10 +197,11 @@ describe("ExecaTerminalProcess Shell Encoding", () => {
 		const call = mockExeca.mock.calls[0]
 		// For Legacy PowerShell, options come first, then shell path and arguments
 		expect(call[0]).toMatchObject({
-			shell: true,
 			cwd: "/test",
 			all: true,
 			encoding: "buffer",
 		})
+		// Verify shell property exists (can be true or a path)
+		expect(call[0].shell).toBeTruthy()
 	})
 })

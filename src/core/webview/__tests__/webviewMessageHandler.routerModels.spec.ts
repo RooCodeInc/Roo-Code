@@ -3,7 +3,20 @@ import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 
 // Mock vscode (minimal)
-vi.mock("vscode", () => ({
+vi.mock("vscode", async (importOriginal) => ({
+	...(await importOriginal()),
+	extensions: {
+		getExtension: (extensionId: string) => ({
+			extensionPath: "/mock/extension/path",
+			extensionUri: { fsPath: "/mock/extension/path", path: "/mock/extension/path", scheme: "file" },
+			packageJSON: {
+				name: "zgsm",
+				publisher: "zgsm-ai",
+				version: "2.0.27",
+			},
+		}),
+		all: [],
+	},
 	window: {
 		showErrorMessage: vi.fn(),
 		showWarningMessage: vi.fn(),

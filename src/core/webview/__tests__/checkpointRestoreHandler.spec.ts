@@ -9,7 +9,8 @@ vi.mock("../../task-persistence", () => ({
 	saveTaskMessages: vi.fn(),
 }))
 vi.mock("p-wait-for")
-vi.mock("vscode", () => ({
+vi.mock("vscode", async (importOriginal) => ({
+	...(await importOriginal()),
 	window: {
 		showErrorMessage: vi.fn(),
 	},

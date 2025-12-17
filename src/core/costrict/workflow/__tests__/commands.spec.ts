@@ -55,6 +55,11 @@ vi.mock("vscode", () => ({
 		uriScheme: "vscode",
 	},
 	RelativePattern: vi.fn((base, pattern) => ({ base, pattern })),
+	extensions: {
+		getExtension: vi.fn(() => ({
+			extensionUri: { fsPath: "/mock/extension/path", toString: () => "/mock/extension/path" },
+		})),
+	},
 }))
 
 // Mock supportPrompt

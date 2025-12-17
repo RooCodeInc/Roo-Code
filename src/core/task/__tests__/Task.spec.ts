@@ -83,6 +83,18 @@ vi.mock("vscode", async (importOriginal) => {
 
 	return {
 		...actual,
+		extensions: {
+			getExtension: (extensionId: string) => ({
+				extensionPath: "/mock/extension/path",
+				extensionUri: { fsPath: "/mock/extension/path", path: "/mock/extension/path", scheme: "file" },
+				packageJSON: {
+					name: "zgsm",
+					publisher: "zgsm-ai",
+					version: "2.0.27",
+				},
+			}),
+			all: [],
+		},
 		TabInputTextDiff: vi.fn(),
 		CodeActionKind: {
 			QuickFix: { value: "quickfix" },

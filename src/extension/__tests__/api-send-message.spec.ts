@@ -55,7 +55,9 @@ vi.mock("vscode", () => ({
 		}),
 	},
 	extensions: {
-		getExtension: () => null,
+		getExtension: vi.fn(() => ({
+			extensionUri: { fsPath: "/mock/extension/path", toString: () => "/mock/extension/path" },
+		})),
 	},
 	env: {
 		openExternal: () => Promise.resolve(),
