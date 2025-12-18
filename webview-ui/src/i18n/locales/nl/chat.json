@@ -254,6 +254,11 @@
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",
+	"modelResponseIncomplete": "Modelrespons onvolledig",
+	"modelResponseErrors": {
+		"noToolsUsed": "Het model heeft geen tools gebruikt in zijn reactie. Dit gebeurt meestal wanneer het model alleen tekst/redenering levert zonder de vereiste tools aan te roepen om de taak te voltooien.",
+		"noToolsUsedDetails": "Het model heeft tekst/redenering geleverd maar heeft geen van de vereiste tools aangeroepen. Dit geeft meestal aan dat het model de taak verkeerd heeft begrepen of moeite heeft om te bepalen welke tool te gebruiken. Het model is automatisch gevraagd om opnieuw te proberen met correct gebruik van tools."
+	},
 	"diffError": {
 		"title": "Bewerking mislukt"
 	},

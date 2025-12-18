@@ -258,6 +258,12 @@
 		"hasQuestion": "Roo té una pregunta"
 	},
 	"taskCompleted": "Tasca completada",
+	"error": "Error",
+	"modelResponseIncomplete": "Resposta del model incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El model no ha utilitzat cap eina en la seva resposta. Això sol passar quan el model només proporciona text/raonament sense cridar les eines necessàries per completar la tasca.",
+		"noToolsUsedDetails": "El model ha proporcionat text/raonament però no ha cridat cap de les eines necessàries. Això sol indicar que el model ha entès malament la tasca o té dificultats per determinar quina eina utilitzar. El model ha estat sol·licitat automàticament per tornar-ho a provar amb l'ús adequat de les eines."
+	},
 	"errorDetails": {
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",

@@ -309,6 +309,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveMistakeCount: number = 0
 	consecutiveMistakeLimit: number
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
+	consecutiveNoToolUseCount: number = 0
 	toolUsage: ToolUsage = {}
 
 	// Checkpoints
@@ -1981,6 +1982,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.abort = true
 
+		// Reset consecutive error counters on abort (manual intervention)
+		this.consecutiveNoToolUseCount = 0
+
 		// Force final token usage update before abort event
 		this.emitFinalTokenUsageUpdate()
 
@@ -3236,12 +3240,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
+						// Increment consecutive no-tool-use counter
+						this.consecutiveNoToolUseCount++
+
+						// Only show error and count toward mistake limit after 2 consecutive failures
+						if (this.consecutiveNoToolUseCount >= 2) {
+							await this.say("error", "MODEL_NO_TOOLS_USED")
+							// Only count toward mistake limit after second consecutive failure
+							this.consecutiveMistakeCount++
+						}
+
 						// Use the task's locked protocol for consistent behavior
 						this.userMessageContent.push({
 							type: "text",
 							text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml"),
 						})
-						this.consecutiveMistakeCount++
+					} else {
+						// Reset counter when tools are used successfully
+						this.consecutiveNoToolUseCount = 0
 					}
 
 					// Push to stack if there's content OR if we're paused waiting for a subtask.
