@@ -258,7 +258,6 @@
 		"hasQuestion": "Roo a une question"
 	},
 	"taskCompleted": "Tâche terminée",
-	"error": "Erreur",
 	"modelResponseIncomplete": "Réponse du modèle incomplète",
 	"modelResponseErrors": {
 		"noToolsUsed": "Le modèle n'a utilisé aucun outil dans sa réponse. Cela se produit généralement lorsque le modèle fournit uniquement du texte/raisonnement sans appeler les outils nécessaires pour accomplir la tâche.",

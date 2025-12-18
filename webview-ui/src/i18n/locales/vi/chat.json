@@ -259,7 +259,6 @@
 		"hasQuestion": "Roo có một câu hỏi"
 	},
 	"taskCompleted": "Nhiệm vụ hoàn thành",
-	"error": "Lỗi",
 	"modelResponseIncomplete": "Phản hồi của mô hình không đầy đủ",
 	"modelResponseErrors": {
 		"noToolsUsed": "Mô hình đã không sử dụng bất kỳ công cụ nào trong phản hồi của mình. Điều này thường xảy ra khi mô hình chỉ cung cấp văn bản/lý luận mà không gọi các công cụ cần thiết để hoàn thành tác vụ.",

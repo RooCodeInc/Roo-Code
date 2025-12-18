@@ -258,7 +258,6 @@
 		"hasQuestion": "Rooは質問があります"
 	},
 	"taskCompleted": "タスク完了",
-	"error": "エラー",
 	"modelResponseIncomplete": "モデルの応答が不完全",
 	"modelResponseErrors": {
 		"noToolsUsed": "モデルは応答でツールを使用しませんでした。これは通常、モデルがタスクを完了するために必要なツールを呼び出さずに、テキスト/推論のみを提供する場合に発生します。",

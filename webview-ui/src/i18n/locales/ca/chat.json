@@ -258,7 +258,6 @@
 		"hasQuestion": "Roo té una pregunta"
 	},
 	"taskCompleted": "Tasca completada",
-	"error": "Error",
 	"modelResponseIncomplete": "Resposta del model incompleta",
 	"modelResponseErrors": {
 		"noToolsUsed": "El model no ha utilitzat cap eina en la seva resposta. Això sol passar quan el model només proporciona text/raonament sense cridar les eines necessàries per completar la tasca.",

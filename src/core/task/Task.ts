@@ -2239,7 +2239,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} else {
 				// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
 				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml") }]
-				this.consecutiveMistakeCount++
 			}
 		}
 	}

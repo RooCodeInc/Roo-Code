@@ -259,7 +259,6 @@
 		"hasQuestion": "Roo'nun bir sorusu var"
 	},
 	"taskCompleted": "Görev Tamamlandı",
-	"error": "Hata",
 	"modelResponseIncomplete": "Model yanıtı eksik",
 	"modelResponseErrors": {
 		"noToolsUsed": "Model yanıtında herhangi bir araç kullanamadı. Bu genellikle model, görevi tamamlamak için gerekli araçları çağırmadan yalnızca metin/akıl yürütme sağladığında olur.",

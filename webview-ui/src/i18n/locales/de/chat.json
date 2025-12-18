@@ -258,7 +258,6 @@
 		"hasQuestion": "Roo hat eine Frage"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
-	"error": "Fehler",
 	"modelResponseIncomplete": "Modellantwort unvollständig",
 	"modelResponseErrors": {
 		"noToolsUsed": "Das Modell hat in seiner Antwort keine Tools verwendet. Dies passiert normalerweise, wenn das Modell nur Text/Überlegungen liefert, ohne die erforderlichen Tools aufzurufen, um die Aufgabe zu erledigen.",

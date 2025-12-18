@@ -258,7 +258,6 @@
 		"hasQuestion": "Roo ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
-	"error": "Błąd",
 	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",
 	"modelResponseErrors": {
 		"noToolsUsed": "Model nie użył żadnych narzędzi w swojej odpowiedzi. Zwykle dzieje się tak, gdy model dostarcza tylko tekst/rozumowanie bez wywołania wymaganych narzędzi do wykonania zadania.",

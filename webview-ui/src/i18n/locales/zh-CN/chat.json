@@ -259,7 +259,6 @@
 		"hasQuestion": "Roo有一个问题"
 	},
 	"taskCompleted": "任务完成",
-	"error": "错误",
 	"modelResponseIncomplete": "模型响应不完整",
 	"modelResponseErrors": {
 		"noToolsUsed": "模型在响应中未使用任何工具。这通常发生在模型仅提供文本/推理而未调用完成任务所需的工具时。",
