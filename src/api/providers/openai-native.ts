@@ -23,7 +23,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
-import { withLogging, ApiLogger } from "../core/logging"
+import { withLogging, ApiLogger, createLoggingFetch } from "../core/logging"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
@@ -71,7 +71,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableResponsesReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		this.client = new OpenAI({
+			baseURL: this.options.openAiNativeBaseUrl,
+			apiKey,
+			fetch: createLoggingFetch(this.providerName),
+		})
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {

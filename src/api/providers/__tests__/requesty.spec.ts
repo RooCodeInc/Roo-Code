@@ -69,6 +69,7 @@ describe("RequestyHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+			fetch: expect.any(Function),
 		})
 	})
 
@@ -84,6 +85,7 @@ describe("RequestyHandler", () => {
 				"X-Title": "Roo Code",
 				"User-Agent": `RooCode/${Package.version}`,
 			},
+			fetch: expect.any(Function),
 		})
 	})
 

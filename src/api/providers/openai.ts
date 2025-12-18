@@ -22,7 +22,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import { withLogging, ApiLogger } from "../core/logging"
+import { withLogging, ApiLogger, createLoggingFetch } from "../core/logging"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
@@ -63,6 +63,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				defaultHeaders: headers,
 				defaultQuery: { "api-version": this.options.azureApiVersion || "2024-05-01-preview" },
 				timeout,
+				fetch: createLoggingFetch(this.providerName),
 			})
 		} else if (isAzureOpenAi) {
 			// Azure API shape slightly differs from the core API shape:
@@ -73,6 +74,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
 				defaultHeaders: headers,
 				timeout,
+				fetch: createLoggingFetch(this.providerName),
 			})
 		} else {
 			this.client = new OpenAI({
@@ -80,6 +82,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiKey,
 				defaultHeaders: headers,
 				timeout,
+				fetch: createLoggingFetch(this.providerName),
 			})
 		}
 	}
