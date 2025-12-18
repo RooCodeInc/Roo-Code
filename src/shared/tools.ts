@@ -313,9 +313,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  * To add a new alias, simply add an entry here. No other files need to be modified.
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
-	// edit_file: "apply_diff", // Deprecated alias if the edit_file tool works better
 	write_file: "write_to_file",
-	temp_edit_file: "search_and_replace",
 } as const
 
 export type DiffResult =
