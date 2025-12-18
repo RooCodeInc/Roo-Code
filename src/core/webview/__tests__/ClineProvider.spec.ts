@@ -2692,7 +2692,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
-				"ibm-watsonx": {},
+				"ibm-watsonx": mockModels,
 			},
 			values: undefined,
 		})
@@ -2726,6 +2726,7 @@ describe("ClineProvider - Router Models", () => {
 			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
+			.mockResolvedValueOnce(mockModels) // ibm-watsonx success
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2746,7 +2747,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
-				"ibm-watsonx": {},
+				"ibm-watsonx": mockModels,
 			},
 			values: undefined,
 		})
@@ -2868,7 +2869,7 @@ describe("ClineProvider - Router Models", () => {
 				"vercel-ai-gateway": mockModels,
 				huggingface: {},
 				"io-intelligence": {},
-				"ibm-watsonx": {},
+				"ibm-watsonx": mockModels,
 			},
 			values: undefined,
 		})
