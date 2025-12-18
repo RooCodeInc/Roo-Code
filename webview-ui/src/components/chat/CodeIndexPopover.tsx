@@ -53,16 +53,22 @@ import {
 // Default URLs for providers
 const DEFAULT_QDRANT_URL = "http://localhost:6333"
 const DEFAULT_OLLAMA_URL = "http://localhost:11434"
+const DEFAULT_REDIS_URL = "redis://localhost:6379"
 
 interface CodeIndexPopoverProps {
 	children: React.ReactNode
 	indexingStatus: IndexingStatus
 }
 
+type VectorStoreProvider = "qdrant" | "redis"
+
 interface LocalCodeIndexSettings {
 	// Global state settings
 	codebaseIndexEnabled: boolean
+	codebaseIndexVectorStoreProvider: VectorStoreProvider
 	codebaseIndexQdrantUrl: string
+	codebaseIndexRedisUrl?: string
+	codebaseIndexRedisDatabase?: number
 	codebaseIndexEmbedderProvider: EmbedderProvider
 	codebaseIndexEmbedderBaseUrl?: string
 	codebaseIndexEmbedderModelId: string
@@ -77,6 +83,7 @@ interface LocalCodeIndexSettings {
 	// Secret settings (start empty, will be loaded separately)
 	codeIndexOpenAiKey?: string
 	codeIndexQdrantApiKey?: string
+	codebaseIndexRedisPassword?: string
 	codebaseIndexOpenAiCompatibleBaseUrl?: string
 	codebaseIndexOpenAiCompatibleApiKey?: string
 	codebaseIndexGeminiApiKey?: string
@@ -87,15 +94,34 @@ interface LocalCodeIndexSettings {
 }
 
 // Validation schema for codebase index settings
-const createValidationSchema = (provider: EmbedderProvider, t: any) => {
-	const baseSchema = z.object({
-		codebaseIndexEnabled: z.boolean(),
-		codebaseIndexQdrantUrl: z
-			.string()
-			.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
-			.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
-		codeIndexQdrantApiKey: z.string().optional(),
-	})
+const createValidationSchema = (provider: EmbedderProvider, vectorStoreProvider: VectorStoreProvider, t: any) => {
+	// Vector store validation based on selected provider
+	const vectorStoreSchema =
+		vectorStoreProvider === "redis"
+			? z.object({
+					codebaseIndexRedisUrl: z.string().min(1, t("settings:codeIndex.validation.redisUrlRequired")),
+					codebaseIndexRedisPassword: z.string().optional(),
+					codebaseIndexRedisDatabase: z.number().optional(),
+					codebaseIndexQdrantUrl: z.string().optional(),
+					codeIndexQdrantApiKey: z.string().optional(),
+				})
+			: z.object({
+					codebaseIndexQdrantUrl: z
+						.string()
+						.min(1, t("settings:codeIndex.validation.qdrantUrlRequired"))
+						.url(t("settings:codeIndex.validation.invalidQdrantUrl")),
+					codeIndexQdrantApiKey: z.string().optional(),
+					codebaseIndexRedisUrl: z.string().optional(),
+					codebaseIndexRedisPassword: z.string().optional(),
+					codebaseIndexRedisDatabase: z.number().optional(),
+				})
+
+	const baseSchema = z
+		.object({
+			codebaseIndexEnabled: z.boolean(),
+			codebaseIndexVectorStoreProvider: z.enum(["qdrant", "redis"]),
+		})
+		.merge(vectorStoreSchema)
 
 	switch (provider) {
 		case "openai":
@@ -210,7 +236,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Default settings template
 	const getDefaultSettings = (): LocalCodeIndexSettings => ({
 		codebaseIndexEnabled: true,
+		codebaseIndexVectorStoreProvider: "qdrant",
 		codebaseIndexQdrantUrl: "",
+		codebaseIndexRedisUrl: "",
+		codebaseIndexRedisDatabase: 0,
 		codebaseIndexEmbedderProvider: "openai",
 		codebaseIndexEmbedderBaseUrl: "",
 		codebaseIndexEmbedderModelId: "",
@@ -221,6 +250,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexBedrockProfile: "",
 		codeIndexOpenAiKey: "",
 		codeIndexQdrantApiKey: "",
+		codebaseIndexRedisPassword: "",
 		codebaseIndexOpenAiCompatibleBaseUrl: "",
 		codebaseIndexOpenAiCompatibleApiKey: "",
 		codebaseIndexGeminiApiKey: "",
@@ -244,9 +274,13 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	// Initialize settings from global state
 	useEffect(() => {
 		if (codebaseIndexConfig) {
-			const settings = {
+			const settings: LocalCodeIndexSettings = {
 				codebaseIndexEnabled: codebaseIndexConfig.codebaseIndexEnabled ?? true,
+				codebaseIndexVectorStoreProvider:
+					(codebaseIndexConfig.codebaseIndexVectorStoreProvider as VectorStoreProvider) || "qdrant",
 				codebaseIndexQdrantUrl: codebaseIndexConfig.codebaseIndexQdrantUrl || "",
+				codebaseIndexRedisUrl: codebaseIndexConfig.codebaseIndexRedisUrl || "",
+				codebaseIndexRedisDatabase: codebaseIndexConfig.codebaseIndexRedisDatabase ?? 0,
 				codebaseIndexEmbedderProvider: codebaseIndexConfig.codebaseIndexEmbedderProvider || "openai",
 				codebaseIndexEmbedderBaseUrl: codebaseIndexConfig.codebaseIndexEmbedderBaseUrl || "",
 				codebaseIndexEmbedderModelId: codebaseIndexConfig.codebaseIndexEmbedderModelId || "",
@@ -260,6 +294,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codeIndexOpenAiKey: "",
 				codeIndexQdrantApiKey: "",
+				codebaseIndexRedisPassword: "",
 				codebaseIndexOpenAiCompatibleBaseUrl: codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl || "",
 				codebaseIndexOpenAiCompatibleApiKey: "",
 				codebaseIndexGeminiApiKey: "",
@@ -392,6 +427,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 							? SECRET_PLACEHOLDER
 							: ""
 					}
+					if (!prev.codebaseIndexRedisPassword || prev.codebaseIndexRedisPassword === SECRET_PLACEHOLDER) {
+						updated.codebaseIndexRedisPassword = secretStatus.hasRedisPassword ? SECRET_PLACEHOLDER : ""
+					}
 
 					return updated
 				}
@@ -452,7 +490,11 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 	// Validation function
 	const validateSettings = (): boolean => {
-		const schema = createValidationSchema(currentSettings.codebaseIndexEmbedderProvider, t)
+		const schema = createValidationSchema(
+			currentSettings.codebaseIndexEmbedderProvider,
+			currentSettings.codebaseIndexVectorStoreProvider,
+			t,
+		)
 
 		// Prepare data for validation
 		const dataToValidate: any = {}
@@ -1433,54 +1475,155 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 										</>
 									)}
 
-									{/* Qdrant Settings */}
+									{/* Vector Store Provider Selection */}
 									<div className="space-y-2">
 										<label className="text-sm font-medium">
-											{t("settings:codeIndex.qdrantUrlLabel")}
+											{t("settings:codeIndex.vectorStoreProviderLabel")}
 										</label>
-										<VSCodeTextField
-											value={currentSettings.codebaseIndexQdrantUrl || ""}
-											onInput={(e: any) =>
-												updateSetting("codebaseIndexQdrantUrl", e.target.value)
-											}
-											onBlur={(e: any) => {
-												// Set default Qdrant URL if field is empty
-												if (!e.target.value.trim()) {
-													currentSettings.codebaseIndexQdrantUrl = DEFAULT_QDRANT_URL
-													updateSetting("codebaseIndexQdrantUrl", DEFAULT_QDRANT_URL)
-												}
-											}}
-											placeholder={t("settings:codeIndex.qdrantUrlPlaceholder")}
-											className={cn("w-full", {
-												"border-red-500": formErrors.codebaseIndexQdrantUrl,
-											})}
-										/>
-										{formErrors.codebaseIndexQdrantUrl && (
-											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-												{formErrors.codebaseIndexQdrantUrl}
-											</p>
-										)}
+										<Select
+											value={currentSettings.codebaseIndexVectorStoreProvider || "qdrant"}
+											onValueChange={(value: VectorStoreProvider) => {
+												updateSetting("codebaseIndexVectorStoreProvider", value)
+												// Set form errors to empty when provider changes to avoid stale errors
+												setFormErrors({})
+											}}>
+											<SelectTrigger className="w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="qdrant">
+													{t("settings:codeIndex.qdrantProvider")}
+												</SelectItem>
+												<SelectItem value="redis">
+													{t("settings:codeIndex.redisProvider")}
+												</SelectItem>
+											</SelectContent>
+										</Select>
 									</div>
 
-									<div className="space-y-2">
-										<label className="text-sm font-medium">
-											{t("settings:codeIndex.qdrantApiKeyLabel")}
-										</label>
-										<VSCodeTextField
-											type="password"
-											value={currentSettings.codeIndexQdrantApiKey || ""}
-											onInput={(e: any) => updateSetting("codeIndexQdrantApiKey", e.target.value)}
-											placeholder={t("settings:codeIndex.qdrantApiKeyPlaceholder")}
-											className={cn("w-full", {
-												"border-red-500": formErrors.codeIndexQdrantApiKey,
-											})}
-										/>
-										{formErrors.codeIndexQdrantApiKey && (
-											<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
-												{formErrors.codeIndexQdrantApiKey}
-											</p>
-										)}
-									</div>
+									{/* Qdrant Settings */}
+									{currentSettings.codebaseIndexVectorStoreProvider === "qdrant" && (
+										<>
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.qdrantUrlLabel")}
+												</label>
+												<VSCodeTextField
+													value={currentSettings.codebaseIndexQdrantUrl || ""}
+													onInput={(e: any) =>
+														updateSetting("codebaseIndexQdrantUrl", e.target.value)
+													}
+													onBlur={(e: any) => {
+														// Set default Qdrant URL if field is empty
+														if (!e.target.value.trim()) {
+															currentSettings.codebaseIndexQdrantUrl = DEFAULT_QDRANT_URL
+															updateSetting("codebaseIndexQdrantUrl", DEFAULT_QDRANT_URL)
+														}
+													}}
+													placeholder={t("settings:codeIndex.qdrantUrlPlaceholder")}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexQdrantUrl,
+													})}
+												/>
+												{formErrors.codebaseIndexQdrantUrl && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexQdrantUrl}
+													</p>
+												)}
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.qdrantApiKeyLabel")}
+												</label>
+												<VSCodeTextField
+													type="password"
+													value={currentSettings.codeIndexQdrantApiKey || ""}
+													onInput={(e: any) =>
+														updateSetting("codeIndexQdrantApiKey", e.target.value)
+													}
+													placeholder={t("settings:codeIndex.qdrantApiKeyPlaceholder")}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codeIndexQdrantApiKey,
+													})}
+												/>
+												{formErrors.codeIndexQdrantApiKey && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codeIndexQdrantApiKey}
+													</p>
+												)}
+											</div>
+										</>
+									)}
+
+									{/* Redis Settings */}
+									{currentSettings.codebaseIndexVectorStoreProvider === "redis" && (
+										<>
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.redisUrlLabel")}
+												</label>
+												<VSCodeTextField
+													value={currentSettings.codebaseIndexRedisUrl || ""}
+													onInput={(e: any) =>
+														updateSetting("codebaseIndexRedisUrl", e.target.value)
+													}
+													onBlur={(e: any) => {
+														// Set default Redis URL if field is empty
+														if (!e.target.value.trim()) {
+															currentSettings.codebaseIndexRedisUrl = DEFAULT_REDIS_URL
+															updateSetting("codebaseIndexRedisUrl", DEFAULT_REDIS_URL)
+														}
+													}}
+													placeholder={t("settings:codeIndex.redisUrlPlaceholder")}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexRedisUrl,
+													})}
+												/>
+												{formErrors.codebaseIndexRedisUrl && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexRedisUrl}
+													</p>
+												)}
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.redisPasswordLabel")}
+												</label>
+												<VSCodeTextField
+													type="password"
+													value={currentSettings.codebaseIndexRedisPassword || ""}
+													onInput={(e: any) =>
+														updateSetting("codebaseIndexRedisPassword", e.target.value)
+													}
+													placeholder={t("settings:codeIndex.redisPasswordPlaceholder")}
+													className="w-full"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.redisDatabaseLabel")}
+												</label>
+												<VSCodeTextField
+													value={String(currentSettings.codebaseIndexRedisDatabase ?? 0)}
+													onInput={(e: any) => {
+														const value = e.target.value
+														// Only allow numeric input
+														if (/^\d*$/.test(value)) {
+															updateSetting(
+																"codebaseIndexRedisDatabase",
+																parseInt(value, 10) || 0,
+															)
+														}
+													}}
+													placeholder={t("settings:codeIndex.redisDatabasePlaceholder")}
+													className="w-full"
+												/>
+											</div>
+										</>
+									)}
 								</div>
 							)}
 						</div>

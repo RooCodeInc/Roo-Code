@@ -4,6 +4,8 @@ import { EmbedderProvider } from "./manager"
 /**
  * Configuration state for the code indexing feature
  */
+export type VectorStoreProvider = "qdrant" | "redis"
+
 export interface CodeIndexConfig {
 	isConfigured: boolean
 	embedderProvider: EmbedderProvider
@@ -17,8 +19,12 @@ export interface CodeIndexConfig {
 	vercelAiGatewayOptions?: { apiKey: string }
 	bedrockOptions?: { region: string; profile?: string }
 	openRouterOptions?: { apiKey: string; specificProvider?: string }
+	vectorStoreProvider?: VectorStoreProvider
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	redisUrl?: string
+	redisPassword?: string
+	redisDatabase?: number
 	searchMinScore?: number
 	searchMaxResults?: number
 }
@@ -43,6 +49,10 @@ export type PreviousConfigSnapshot = {
 	bedrockProfile?: string
 	openRouterApiKey?: string
 	openRouterSpecificProvider?: string
+	vectorStoreProvider?: VectorStoreProvider
 	qdrantUrl?: string
 	qdrantApiKey?: string
+	redisUrl?: string
+	redisPassword?: string
+	redisDatabase?: number
 }
