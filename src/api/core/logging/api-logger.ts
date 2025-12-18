@@ -18,11 +18,17 @@ import type {
 } from "./types"
 import { isLoggingEnabled } from "./env-config"
 
+/** Maximum age for tracked timestamps before automatic cleanup (5 minutes) */
+const TIMESTAMP_TTL_MS = 5 * 60 * 1000
+
+/** Interval for running cleanup (1 minute) */
+const CLEANUP_INTERVAL_MS = 60 * 1000
+
 /**
  * Centralized API logging service
  * Singleton instance that all providers route through for consistent logging
  *
- * When ROO_CODE_API_LOGGING=true, logs are output via console.log/console.error
+ * When ROO_CODE_API_LOGGING=true or ROO_CODE_LOGGING=true, logs are output via console.log/console.error
  * for visibility in VS Code's Output panel and Debug Console.
  */
 class ApiLoggerService {
@@ -35,6 +41,41 @@ class ApiLoggerService {
 
 	/** Maps request IDs to their start timestamps for duration calculation */
 	private requestTimestamps = new Map<string, number>()
+
+	/** Cleanup interval handle */
+	private cleanupInterval: ReturnType<typeof setInterval> | null = null
+
+	constructor() {
+		// Start periodic cleanup of stale timestamps to prevent memory leaks
+		this.startCleanupInterval()
+	}
+
+	/**
+	 * Start the periodic cleanup interval for stale timestamps
+	 */
+	private startCleanupInterval(): void {
+		if (this.cleanupInterval) {
+			return
+		}
+		this.cleanupInterval = setInterval(() => this.cleanupStaleTimestamps(), CLEANUP_INTERVAL_MS)
+		// Allow the process to exit even if the interval is running
+		if (this.cleanupInterval.unref) {
+			this.cleanupInterval.unref()
+		}
+	}
+
+	/**
+	 * Remove timestamps older than TIMESTAMP_TTL_MS
+	 * This prevents memory leaks if logResponse/logError is never called
+	 */
+	private cleanupStaleTimestamps(): void {
+		const now = Date.now()
+		for (const [requestId, timestamp] of this.requestTimestamps) {
+			if (now - timestamp > TIMESTAMP_TTL_MS) {
+				this.requestTimestamps.delete(requestId)
+			}
+		}
+	}
 
 	/**
 	 * Configure the logger behavior

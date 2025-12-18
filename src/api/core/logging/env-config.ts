@@ -89,18 +89,20 @@ function getEnvLocalValues(): Record<string, string> {
  * Check if API logging is enabled
  *
  * Checks in order:
- * 1. Workspace .env.local: ROO_CODE_API_LOGGING=true (for user's workspace)
+ * 1. Workspace .env.local: ROO_CODE_API_LOGGING=true or ROO_CODE_LOGGING=true (for user's workspace)
  * 2. Process env (loaded from extension's .env.local via envFile in launch.json)
+ *
+ * Note: Both ROO_CODE_API_LOGGING and ROO_CODE_LOGGING are accepted for backward compatibility
  */
 export function isLoggingEnabled(): boolean {
 	// Check workspace .env.local first (user's current workspace)
 	const envLocal = getEnvLocalValues()
-	if (envLocal["ROO_CODE_API_LOGGING"] === "true") {
+	if (envLocal["ROO_CODE_API_LOGGING"] === "true" || envLocal["ROO_CODE_LOGGING"] === "true") {
 		return true
 	}
 
 	// Fallback to process.env (populated from extension's .env.local via launch.json envFile)
-	return process.env.ROO_CODE_API_LOGGING === "true"
+	return process.env.ROO_CODE_API_LOGGING === "true" || process.env.ROO_CODE_LOGGING === "true"
 }
 
 /**
