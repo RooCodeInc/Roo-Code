@@ -783,7 +783,7 @@ argument-hint: <file-path> [search-pattern]
 
 <task>
 Test the apply_diff tool's error handling by attempting to replace a pattern that does not exist in the target file.
-Target File: ${testFile.content}
+Target File: ${testFile.name}
 Search pattern: "PATTERN_THAT_DOES_NOT_EXIST_xyz123"
 Replacement: "REPLACEMENT_xyz123"
 </task>
