@@ -30,6 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Qdrant 벡터 데이터베이스에 연결하지 못했습니다. Qdrant가 실행 중이고 {{qdrantUrl}}에서 접근 가능한지 확인하세요. 오류: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "새 모델의 벡터 인덱스를 업데이트하지 못했습니다. 인덱스를 지우고 다시 시작해 보세요. 세부 정보: {{errorMessage}}"
 	},
 	"validation": {
@@ -60,6 +61,7 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "프로바이더 '{{provider}}'의 모델 '{{modelId}}'에 대한 벡터 차원을 결정할 수 없습니다. OpenAI 호환 프로바이더 설정에서 '임베딩 차원'이 올바르게 설정되어 있는지 확인하세요.",
 		"vectorDimensionNotDetermined": "프로바이더 '{{provider}}'의 모델 '{{modelId}}'에 대한 벡터 차원을 결정할 수 없습니다. 모델 프로필 또는 구성을 확인하세요.",
 		"qdrantUrlMissing": "벡터 저장소 생성을 위한 Qdrant URL이 누락되었습니다",
+		"redisUrlMissing": "Redis URL missing for vector store creation",
 		"codeIndexingNotConfigured": "서비스를 생성할 수 없습니다: 코드 인덱싱이 올바르게 구성되지 않았습니다"
 	},
 	"orchestrator": {

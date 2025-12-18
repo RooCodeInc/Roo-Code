@@ -30,6 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Nie udało się połączyć z bazą danych wektorowych Qdrant. Upewnij się, że Qdrant jest uruchomiony i dostępny pod adresem {{qdrantUrl}}. Błąd: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "Nie udało się zaktualizować indeksu wektorowego dla nowego modelu. Spróbuj wyczyścić indeks i zacząć od nowa. Szczegóły: {{errorMessage}}"
 	},
 	"validation": {
@@ -60,6 +61,7 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "Nie można określić wymiaru wektora dla modelu '{{modelId}}' z dostawcą '{{provider}}'. Upewnij się, że 'Wymiar osadzania' jest poprawnie ustawiony w ustawieniach dostawcy kompatybilnego z OpenAI.",
 		"vectorDimensionNotDetermined": "Nie można określić wymiaru wektora dla modelu '{{modelId}}' z dostawcą '{{provider}}'. Sprawdź profile modelu lub konfigurację.",
 		"qdrantUrlMissing": "Brak adresu URL Qdrant do utworzenia magazynu wektorów",
+		"redisUrlMissing": "Redis URL missing for vector store creation",
 		"codeIndexingNotConfigured": "Nie można utworzyć usług: Indeksowanie kodu nie jest poprawnie skonfigurowane"
 	},
 	"orchestrator": {
