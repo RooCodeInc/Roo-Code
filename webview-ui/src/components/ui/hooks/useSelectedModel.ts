@@ -32,8 +32,6 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
-	watsonxModels,
-	watsonxDefaultModelId,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -373,12 +371,9 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "ibm-watsonx": {
-			const id = apiConfiguration.watsonxModelId ?? watsonxDefaultModelId
-			const info = watsonxModels[id as keyof typeof watsonxModels]
-			return {
-				id,
-				info: info,
-			}
+			const id = getValidatedModelId(apiConfiguration.watsonxModelId, routerModels["ibm-watsonx"], defaultModelId)
+			const info = routerModels["ibm-watsonx"]?.[id]
+			return { id, info }
 		}
 		// case "anthropic":
 		// case "human-relay":
