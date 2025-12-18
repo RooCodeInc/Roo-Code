@@ -37,7 +37,7 @@ vi.mock("react-i18next", () => ({
 				"chat:errorDetails.title": "Error Details",
 				"chat:errorDetails.copyToClipboard": "Copy to Clipboard",
 				"chat:errorDetails.copied": "Copied!",
-				"chat:errorDetails.downloadDiagnostics": "Download diagnostics info",
+				"chat:errorDetails.diagnostics": "Get detailed error info",
 			}
 			return map[key] ?? key
 		},
@@ -58,8 +58,8 @@ describe("ErrorRow diagnostics download", () => {
 		const infoButton = screen.getByRole("button", { name: "Error Details" })
 		fireEvent.click(infoButton)
 
-		// Click the Download diagnostics button
-		const downloadButton = screen.getByRole("button", { name: "Download diagnostics info" })
+		// Click the diagnostics button
+		const downloadButton = screen.getByRole("button", { name: "Get detailed error info" })
 		fireEvent.click(downloadButton)
 
 		expect(mockPostMessage).toHaveBeenCalled()
