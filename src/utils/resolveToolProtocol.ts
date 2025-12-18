@@ -107,6 +107,6 @@ export function detectToolProtocolFromHistory(messages: ApiMessageForDetection[]
 	// - Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks)
 	// - XML protocol tool calls NEVER have an ID (parsed from XML text)
 	// This pattern is used in presentAssistantMessage.ts:497-500
-	const hasId = !!(lastToolUse as Anthropic.ToolUseBlock).id
+	const hasId = "id" in lastToolUse && !!lastToolUse.id
 	return hasId ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
 }
