@@ -124,7 +124,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 				operation: "edit",
 				editData: {
 					editedContent: "Edited checkpoint message",
-					images: undefined,
+					images: [],
 					apiConversationHistoryIndex: 0,
 				},
 			})

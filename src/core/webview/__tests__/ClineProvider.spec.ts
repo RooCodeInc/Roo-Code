@@ -1305,7 +1305,7 @@ describe("ClineProvider", () => {
 				messageTs: 4000,
 				text: "Edited message content",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate user confirming edit through the dialog
@@ -3034,7 +3034,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 3000,
 				text: "Edited message with preserved images",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate confirmation
@@ -3090,7 +3090,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 3000,
 				text: "Edited message with file attachment",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate user confirming the edit
@@ -3144,7 +3144,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate user confirming the edit
@@ -3186,7 +3186,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate user confirming the edit
@@ -3244,14 +3244,14 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message 1",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "showEditMessageDialog",
 				messageTs: 4000,
 				text: "Edited message 2",
 				hasCheckpoint: false,
-				images: undefined,
+				images: [],
 			})
 
 			// Simulate user confirming both edits
@@ -3438,7 +3438,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 5000,
 					text: "Edited non-existent message",
 					hasCheckpoint: false,
-					images: undefined,
+					images: [],
 				})
 
 				// Simulate user confirming the edit
@@ -3532,7 +3532,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 2000,
 					text: "Edited message",
 					hasCheckpoint: false,
-					images: undefined,
+					images: [],
 				})
 
 				// Simulate user confirming the edit
@@ -3625,7 +3625,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 2000,
 					text: largeEditedContent,
 					hasCheckpoint: false,
-					images: undefined,
+					images: [],
 				})
 
 				// Simulate user confirming the edit
@@ -3833,7 +3833,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: futureTimestamp + 1000,
 					text: "Edited future message",
 					hasCheckpoint: false,
-					images: undefined,
+					images: [],
 				})
 
 				// Simulate user confirming the edit
