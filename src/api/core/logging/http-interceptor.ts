@@ -120,7 +120,7 @@ export function createLoggingFetch(providerName: string): typeof fetch {
 				method,
 				url,
 				headers: sanitizeHeaders(headers),
-				body: init?.body ? parseBodyIfJson(init.body) : undefined,
+				body: init?.body === undefined || init.body === null ? undefined : parseBodyIfJson(init.body),
 			})
 		}
 

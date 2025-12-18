@@ -407,11 +407,9 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 
 			return result
 		} catch (error) {
-			if (!(error instanceof Error && error.message)) {
-				ApiLogger.logError(requestId, context, {
-					message: error instanceof Error ? error.message : String(error),
-				})
-			}
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+			})
 			throw error
 		}
 	}
