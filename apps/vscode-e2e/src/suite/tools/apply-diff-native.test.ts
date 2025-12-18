@@ -411,7 +411,7 @@ function validateInput(input) {
 
 		let taskId: string
 		try {
-			// Start task with native tool calling enabled using Anthropic provider directly
+			// Start task with native tool calling enabled via OpenRouter
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -420,8 +420,8 @@ function validateInput(input) {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter", // Use Anthropic provider directly
-					apiModelId: "openai/gpt-5.1", // Claude Sonnet 4.5 supports native tools
+					apiProvider: "openrouter", // Use OpenRouter provider
+					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "Hello World" to "Hello Universe". The file already exists with this content:
 ${testFile.content}
@@ -528,8 +528,8 @@ Assume the file exists and you can modify it directly.`,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter", // Use Anthropic provider directly
-					apiModelId: "openai/gpt-5.1", // Claude Sonnet 4.5 supports native tools
+					apiProvider: "openrouter", // Use OpenRouter provider
+					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make ALL of these changes:
 1. Rename function "calculate" to "compute"
@@ -642,8 +642,8 @@ function keepThis() {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter", // Use Anthropic provider directly
-					apiModelId: "openai/gpt-5.1", // Claude Sonnet 4.5 supports native tools
+					apiProvider: "openrouter", // Use OpenRouter provider
+					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "oldFunction" to "newFunction" and update its console.log to "New implementation". Keep the rest of the file unchanged.
 
@@ -1042,8 +1042,8 @@ function checkInput(input) {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter", // Use Anthropic provider directly
-					apiModelId: "openai/gpt-5.1", // Claude Sonnet 4.5 supports native tools
+					apiProvider: "openrouter", // Use OpenRouter provider
+					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make these changes. You MUST use TWO SEPARATE search/replace blocks within a SINGLE apply_diff call:
 
