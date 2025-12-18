@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 import accessMcpResource from "./access_mcp_resource"
-import { apply_diff } from "./apply_diff"
+import { createApplyDiffTool } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
@@ -27,12 +27,16 @@ export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./c
  * Get native tools array, optionally customizing based on settings.
  *
  * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param multiFileApplyDiffEnabled - Whether to use multi-file apply_diff schema (default: false)
  * @returns Array of native tool definitions
  */
-export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+export function getNativeTools(
+	partialReadsEnabled: boolean = true,
+	multiFileApplyDiffEnabled: boolean = false,
+): OpenAI.Chat.ChatCompletionTool[] {
 	return [
 		accessMcpResource,
-		apply_diff,
+		createApplyDiffTool(multiFileApplyDiffEnabled),
 		applyPatch,
 		askFollowupQuestion,
 		attemptCompletion,

@@ -1,4 +1,5 @@
 import type OpenAI from "openai"
+import { multi_apply_diff } from "./multi_apply_diff"
 
 const APPLY_DIFF_DESCRIPTION = `Apply precise, targeted modifications to an existing file using one or more search/replace blocks. This tool is for surgical edits only; the 'SEARCH' block must exactly match the existing content, including whitespace and indentation. To make multiple targeted changes, provide multiple SEARCH/REPLACE blocks in the 'diff' parameter. Use the 'read_file' tool first if you are not confident in the exact content to search for.`
 
@@ -33,3 +34,14 @@ export const apply_diff = {
 		},
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
+
+/**
+ * Creates the apply_diff tool definition, selecting between single-file and multi-file
+ * schemas based on whether the multi-file experiment is enabled.
+ *
+ * @param multiFileEnabled - Whether to use the multi-file schema (default: false)
+ * @returns Native tool definition for apply_diff
+ */
+export function createApplyDiffTool(multiFileEnabled: boolean = false): OpenAI.Chat.ChatCompletionTool {
+	return multiFileEnabled ? multi_apply_diff : apply_diff
+}

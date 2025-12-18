@@ -237,5 +237,206 @@ describe("NativeToolCallParser", () => {
 				}
 			})
 		})
+
+		describe("parseToolCall", () => {
+			describe("apply_diff tool", () => {
+				it("should handle single-file format (path and diff)", () => {
+					const toolCall = {
+						id: "toolu_123",
+						name: "apply_diff" as const,
+						arguments: JSON.stringify({
+							path: "src/test.ts",
+							diff: "<<<<<<< SEARCH\nold code\n=======\nnew code\n>>>>>>> REPLACE",
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.nativeArgs).toBeDefined()
+						const nativeArgs = result.nativeArgs as { path: string; diff: string }
+						expect(nativeArgs.path).toBe("src/test.ts")
+						expect(nativeArgs.diff).toContain("<<<<<<< SEARCH")
+						expect(nativeArgs.diff).toContain(">>>>>>> REPLACE")
+					}
+				})
+
+				it("should handle multi-file format (files array)", () => {
+					const toolCall = {
+						id: "toolu_456",
+						name: "apply_diff" as const,
+						arguments: JSON.stringify({
+							files: [
+								{
+									path: "src/file1.ts",
+									diff: "<<<<<<< SEARCH\nold code 1\n=======\nnew code 1\n>>>>>>> REPLACE",
+								},
+								{
+									path: "src/file2.ts",
+									diff: "<<<<<<< SEARCH\nold code 2\n=======\nnew code 2\n>>>>>>> REPLACE",
+								},
+							],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.nativeArgs).toBeDefined()
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; diff: string }>
+						}
+						expect(nativeArgs.files).toHaveLength(2)
+						expect(nativeArgs.files[0].path).toBe("src/file1.ts")
+						expect(nativeArgs.files[0].diff).toContain("old code 1")
+						expect(nativeArgs.files[1].path).toBe("src/file2.ts")
+						expect(nativeArgs.files[1].diff).toContain("old code 2")
+					}
+				})
+
+				it("should handle multi-file format with single file", () => {
+					const toolCall = {
+						id: "toolu_789",
+						name: "apply_diff" as const,
+						arguments: JSON.stringify({
+							files: [
+								{
+									path: "src/single.ts",
+									diff: "<<<<<<< SEARCH\nold\n=======\nnew\n>>>>>>> REPLACE",
+								},
+							],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; diff: string }>
+						}
+						expect(nativeArgs.files).toHaveLength(1)
+						expect(nativeArgs.files[0].path).toBe("src/single.ts")
+					}
+				})
+			})
+		})
+
+		describe("processStreamingChunk", () => {
+			describe("apply_diff tool", () => {
+				it("should handle single-file format during streaming", () => {
+					const id = "toolu_streaming_apply_diff_single"
+					NativeToolCallParser.startStreamingToolCall(id, "apply_diff")
+
+					const fullArgs = JSON.stringify({
+						path: "streaming/test.ts",
+						diff: "<<<<<<< SEARCH\nold\n=======\nnew\n>>>>>>> REPLACE",
+					})
+
+					const result = NativeToolCallParser.processStreamingChunk(id, fullArgs)
+
+					expect(result).not.toBeNull()
+					expect(result?.nativeArgs).toBeDefined()
+					const nativeArgs = result?.nativeArgs as { path: string; diff: string }
+					expect(nativeArgs.path).toBe("streaming/test.ts")
+					expect(nativeArgs.diff).toContain("<<<<<<< SEARCH")
+				})
+
+				it("should handle multi-file format during streaming", () => {
+					const id = "toolu_streaming_apply_diff_multi"
+					NativeToolCallParser.startStreamingToolCall(id, "apply_diff")
+
+					const fullArgs = JSON.stringify({
+						files: [
+							{
+								path: "streaming/file1.ts",
+								diff: "<<<<<<< SEARCH\nold1\n=======\nnew1\n>>>>>>> REPLACE",
+							},
+							{
+								path: "streaming/file2.ts",
+								diff: "<<<<<<< SEARCH\nold2\n=======\nnew2\n>>>>>>> REPLACE",
+							},
+						],
+					})
+
+					const result = NativeToolCallParser.processStreamingChunk(id, fullArgs)
+
+					expect(result).not.toBeNull()
+					expect(result?.nativeArgs).toBeDefined()
+					const nativeArgs = result?.nativeArgs as {
+						files: Array<{ path: string; diff: string }>
+					}
+					expect(nativeArgs.files).toHaveLength(2)
+					expect(nativeArgs.files[0].path).toBe("streaming/file1.ts")
+					expect(nativeArgs.files[1].path).toBe("streaming/file2.ts")
+				})
+			})
+		})
+
+		describe("finalizeStreamingToolCall", () => {
+			describe("apply_diff tool", () => {
+				it("should finalize single-file format correctly", () => {
+					const id = "toolu_finalize_apply_diff_single"
+					NativeToolCallParser.startStreamingToolCall(id, "apply_diff")
+
+					NativeToolCallParser.processStreamingChunk(
+						id,
+						JSON.stringify({
+							path: "finalized/single.ts",
+							diff: "<<<<<<< SEARCH\nold\n=======\nnew\n>>>>>>> REPLACE",
+						}),
+					)
+
+					const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						const nativeArgs = result.nativeArgs as { path: string; diff: string }
+						expect(nativeArgs.path).toBe("finalized/single.ts")
+						expect(nativeArgs.diff).toContain("<<<<<<< SEARCH")
+					}
+				})
+
+				it("should finalize multi-file format correctly", () => {
+					const id = "toolu_finalize_apply_diff_multi"
+					NativeToolCallParser.startStreamingToolCall(id, "apply_diff")
+
+					NativeToolCallParser.processStreamingChunk(
+						id,
+						JSON.stringify({
+							files: [
+								{
+									path: "finalized/file1.ts",
+									diff: "<<<<<<< SEARCH\nold1\n=======\nnew1\n>>>>>>> REPLACE",
+								},
+								{
+									path: "finalized/file2.ts",
+									diff: "<<<<<<< SEARCH\nold2\n=======\nnew2\n>>>>>>> REPLACE",
+								},
+							],
+						}),
+					)
+
+					const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; diff: string }>
+						}
+						expect(nativeArgs.files).toHaveLength(2)
+						expect(nativeArgs.files[0].path).toBe("finalized/file1.ts")
+						expect(nativeArgs.files[1].path).toBe("finalized/file2.ts")
+					}
+				})
+			})
+		})
 	})
 })

@@ -61,44 +61,19 @@ export async function applyDiffTool(
 	pushToolResult: PushToolResult,
 	removeClosingTag: RemoveClosingTag,
 ) {
-	// Check if native protocol is enabled - if so, always use single-file class-based tool
 	const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
-	if (isNativeProtocol(toolProtocol)) {
-		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
-			askApproval,
-			handleError,
-			pushToolResult,
-			removeClosingTag,
-			toolProtocol,
-		})
-	}
 
-	// Check if MULTI_FILE_APPLY_DIFF experiment is enabled
-	const provider = cline.providerRef.deref()
-	const state = await provider?.getState()
-	if (provider && state) {
-		const isMultiFileApplyDiffEnabled = experiments.isEnabled(
-			state.experiments ?? {},
-			EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
-		)
+	// Note: Routing between single-file and multi-file tools is now done in presentAssistantMessage.ts
+	// based on nativeArgs format. This function is only called for multi-file operations.
 
-		// If experiment is disabled, use single-file class-based tool
-		if (!isMultiFileApplyDiffEnabled) {
-			return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
-				askApproval,
-				handleError,
-				pushToolResult,
-				removeClosingTag,
-				toolProtocol,
-			})
-		}
-	}
-
-	// Otherwise, continue with new multi-file implementation
+	// Multi-file implementation
 	const argsXmlTag: string | undefined = block.params.args
 	const legacyPath: string | undefined = block.params.path
 	const legacyDiffContent: string | undefined = block.params.diff
 	const legacyStartLineStr: string | undefined = block.params.start_line
+
+	// Native multi-file format from nativeArgs.files
+	const nativeFiles = (block.nativeArgs as { files?: Array<{ path: string; diff: string }> } | undefined)?.files
 
 	let operationsMap: Record<string, DiffOperation> = {}
 	let usingLegacyParams = false
@@ -107,7 +82,12 @@ export async function applyDiffTool(
 	// Handle partial message first
 	if (block.partial) {
 		let filePath = ""
-		if (argsXmlTag) {
+		// Native multi-file format
+		if (nativeFiles && nativeFiles.length > 0) {
+			filePath = nativeFiles[0].path || ""
+		}
+		// XML args format
+		else if (argsXmlTag) {
 			const match = argsXmlTag.match(/<file>.*?<path>([^<]+)<\/path>/s)
 			if (match) {
 				filePath = match[1]
@@ -126,7 +106,33 @@ export async function applyDiffTool(
 		return
 	}
 
-	if (argsXmlTag) {
+	// Handle native multi-file format (from nativeArgs.files via multi_apply_diff schema)
+	if (nativeFiles && nativeFiles.length > 0) {
+		for (const file of nativeFiles) {
+			if (!file.path || !file.diff) continue
+
+			const filePath = file.path
+
+			// Initialize the operation in the map if it doesn't exist
+			if (!operationsMap[filePath]) {
+				operationsMap[filePath] = {
+					path: filePath,
+					diff: [],
+				}
+			}
+
+			// Native format has a single diff content per file entry
+			// The diff content contains the full SEARCH/REPLACE block(s)
+			if (file.diff) {
+				operationsMap[filePath].diff.push({
+					content: file.diff,
+					startLine: undefined, // Native format doesn't include start_line per file
+				})
+			}
+		}
+	}
+	// Handle XML args format (from XML protocol)
+	else if (argsXmlTag) {
 		// Parse file entries from XML (new way)
 		try {
 			// IMPORTANT: We use parseXmlForDiff here instead of parseXml to prevent HTML entity decoding
