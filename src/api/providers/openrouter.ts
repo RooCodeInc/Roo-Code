@@ -16,6 +16,7 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
+import { withLogging, ApiLogger, createLoggingFetch } from "../core/logging"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
@@ -140,8 +141,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	private client: OpenAI
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
-	private readonly providerName = "OpenRouter"
 	private currentReasoningDetails: any[] = []
+
+	protected override get providerName(): string {
+		return "OpenRouter"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -150,7 +154,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
-		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
+		// Use logging fetch for raw HTTP request logging when enabled
+		this.client = new OpenAI({
+			baseURL,
+			apiKey,
+			defaultHeaders: DEFAULT_HEADERS,
+			fetch: createLoggingFetch(this.providerName),
+		})
 
 		// Load models asynchronously to populate cache before getModel() is called
 		this.loadDynamicModels().catch((error) => {
@@ -204,6 +214,26 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): AsyncGenerator<ApiStreamChunk> {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -547,7 +577,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	async completePrompt(prompt: string) {
-		let { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
+		const model = await this.fetchModel()
+		let { id: modelId, maxTokens, temperature, reasoning } = model
+
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
 
 		const completionParams: OpenRouterChatCompletionParams = {
 			model: modelId,
@@ -612,11 +649,27 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		if ("error" in response) {
+			ApiLogger.logError(requestId, context, {
+				message: `OpenRouter error: ${(response.error as OpenRouterError)?.message || "Unknown error"}`,
+				code: (response.error as OpenRouterError)?.code,
+			})
 			this.handleStreamingError(response.error as OpenRouterError, modelId, "completePrompt")
 		}
 
 		const completion = response as OpenAI.Chat.ChatCompletion
-		return completion.choices[0]?.message?.content || ""
+		const content = completion.choices[0]?.message?.content || ""
+
+		ApiLogger.logResponse(requestId, context, {
+			textLength: content.length,
+			usage: completion.usage
+				? {
+						inputTokens: completion.usage.prompt_tokens,
+						outputTokens: completion.usage.completion_tokens,
+					}
+				: undefined,
+		})
+
+		return content
 	}
 
 	/**

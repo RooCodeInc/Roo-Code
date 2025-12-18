@@ -10,6 +10,7 @@ import {
 } from "@roo-code/types"
 import { type ApiHandler, ApiHandlerCreateMessageMetadata, type SingleCompletionHandler } from ".."
 import { ApiStreamUsageChunk, type ApiStream } from "../transform/stream"
+import { withLogging, ApiLogger, type ApiLogContext } from "../core/logging"
 import { claudeCodeOAuthManager, generateUserId } from "../../integrations/claude-code/oauth"
 import {
 	createStreamingMessage,
@@ -73,9 +74,26 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 	 * Similar to Gemini's thoughtSignature pattern.
 	 */
 	private lastThinkingSignature?: string
+	private readonly providerName = "Claude Code"
 
 	constructor(options: ApiHandlerOptions) {
 		this.options = options
+	}
+
+	/**
+	 * Helper to build log context for API calls
+	 */
+	private getLogContext(
+		operation: ApiLogContext["operation"],
+		metadata?: { taskId?: string },
+	): Omit<ApiLogContext, "requestId"> {
+		const { id: model } = this.getModel()
+		return {
+			provider: this.providerName,
+			model,
+			operation,
+			taskId: metadata?.taskId,
+		}
 	}
 
 	/**
@@ -115,6 +133,26 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 	}
 
 	async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -297,6 +335,12 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 	 * The Claude Code branding is automatically prepended by createStreamingMessage.
 	 */
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
+
 		// Get access token from OAuth manager
 		const accessToken = await claudeCodeOAuthManager.getAccessToken()
 
@@ -343,16 +387,32 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 		// Collect all text chunks into a single response
 		let result = ""
 
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "text":
-					result += chunk.text
-					break
-				case "error":
-					throw new Error(chunk.error)
+		try {
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "text":
+						result += chunk.text
+						break
+					case "error":
+						ApiLogger.logError(requestId, context, {
+							message: chunk.error,
+						})
+						throw new Error(chunk.error)
+				}
 			}
-		}
 
-		return result
+			ApiLogger.logResponse(requestId, context, {
+				textLength: result.length,
+			})
+
+			return result
+		} catch (error) {
+			if (!(error instanceof Error && error.message)) {
+				ApiLogger.logError(requestId, context, {
+					message: error instanceof Error ? error.message : String(error),
+				})
+			}
+			throw error
+		}
 	}
 }

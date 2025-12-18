@@ -23,6 +23,7 @@ import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { handleProviderError } from "./utils/error-handler"
 
 import { BaseProvider } from "./base-provider"
+import { withLogging, ApiLogger } from "../core/logging"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import {
@@ -33,7 +34,10 @@ import {
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
-	private readonly providerName = "Anthropic"
+
+	protected override get providerName(): string {
+		return "Anthropic"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -49,6 +53,76 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		// Build the request body first so we can log it
+		const requestBody = this.buildRequestBody(systemPrompt, messages, metadata)
+
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+					rawBody: requestBody,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Build the request body for logging purposes.
+	 * This creates the request object that will be sent to the API.
+	 */
+	private buildRequestBody(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): Record<string, unknown> {
+		const { id: modelId, maxTokens, temperature, reasoning: thinking } = this.getModel()
+
+		// Filter out non-Anthropic blocks
+		const sanitizedMessages = filterNonAnthropicBlocks(messages)
+
+		// Check for native tools
+		const model = this.getModel()
+		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		const shouldIncludeNativeTools =
+			metadata?.tools &&
+			metadata.tools.length > 0 &&
+			toolProtocol === TOOL_PROTOCOL.NATIVE &&
+			metadata?.tool_choice !== "none"
+
+		const nativeToolParams = shouldIncludeNativeTools
+			? {
+					tools: convertOpenAIToolsToAnthropic(metadata.tools!),
+					tool_choice: this.convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls),
+				}
+			: {}
+
+		return {
+			model: modelId,
+			max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+			temperature,
+			thinking,
+			system: [{ text: systemPrompt, type: "text" }],
+			messages: sanitizedMessages,
+			stream: true,
+			...nativeToolParams,
+		}
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -382,7 +456,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	async completePrompt(prompt: string) {
-		let { id: model, temperature } = this.getModel()
+		const { id: model, temperature } = this.getModel()
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
 
 		let message
 		try {
@@ -395,6 +471,12 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				stream: false,
 			})
 		} catch (error) {
+			// Check if Anthropic.APIError exists before using instanceof (may not exist in test mocks)
+			const isAnthropicAPIError = typeof Anthropic.APIError === "function" && error instanceof Anthropic.APIError
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+				code: isAnthropicAPIError ? (error as { status?: number }).status : undefined,
+			})
 			TelemetryService.instance.captureException(
 				new ApiProviderError(
 					error instanceof Error ? error.message : String(error),
@@ -407,6 +489,16 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		const content = message.content.find(({ type }) => type === "text")
-		return content?.type === "text" ? content.text : ""
+		const result = content?.type === "text" ? content.text : ""
+
+		ApiLogger.logResponse(requestId, context, {
+			textLength: result.length,
+			usage: {
+				inputTokens: message.usage?.input_tokens,
+				outputTokens: message.usage?.output_tokens,
+			},
+		})
+
+		return result
 	}
 }

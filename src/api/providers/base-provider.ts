@@ -5,11 +5,21 @@ import type { ModelInfo } from "@roo-code/types"
 import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
+import type { ApiLogContext } from "../core/logging"
 
 /**
  * Base class for API providers that implements common functionality.
  */
 export abstract class BaseProvider implements ApiHandler {
+	/**
+	 * The name of the provider for logging purposes.
+	 * Override this in subclasses to provide a meaningful name.
+	 * Defaults to class name.
+	 */
+	protected get providerName(): string {
+		return this.constructor.name
+	}
+
 	abstract createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -17,6 +27,24 @@ export abstract class BaseProvider implements ApiHandler {
 	): ApiStream
 
 	abstract getModel(): { id: string; info: ModelInfo }
+
+	/**
+	 * Helper to build log context for API calls
+	 * @param operation The operation type
+	 * @param metadata Optional metadata containing taskId
+	 */
+	protected getLogContext(
+		operation: ApiLogContext["operation"],
+		metadata?: { taskId?: string },
+	): Omit<ApiLogContext, "requestId"> {
+		const { id: model } = this.getModel()
+		return {
+			provider: this.providerName,
+			model,
+			operation,
+			taskId: metadata?.taskId,
+		}
+	}
 
 	/**
 	 * Converts an array of tools to be compatible with OpenAI's strict mode.

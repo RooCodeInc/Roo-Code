@@ -1,6 +1,10 @@
 // pnpm --filter roo-cline test api/providers/__tests__/openrouter.spec.ts
 
-vitest.mock("vscode", () => ({}))
+vitest.mock("vscode", () => ({
+	workspace: {
+		workspaceFolders: undefined,
+	},
+}))
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
@@ -99,15 +103,19 @@ describe("OpenRouterHandler", () => {
 		const handler = new OpenRouterHandler(mockOptions)
 		expect(handler).toBeInstanceOf(OpenRouterHandler)
 
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://openrouter.ai/api/v1",
-			apiKey: mockOptions.openRouterApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-				"X-Title": "Roo Code",
-				"User-Agent": `RooCode/${Package.version}`,
-			},
-		})
+		expect(OpenAI).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "https://openrouter.ai/api/v1",
+				apiKey: mockOptions.openRouterApiKey,
+				defaultHeaders: {
+					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
+					"X-Title": "Roo Code",
+					"User-Agent": `RooCode/${Package.version}`,
+				},
+				// Also includes fetch function for logging
+				fetch: expect.any(Function),
+			}),
+		)
 	})
 
 	describe("fetchModel", () => {

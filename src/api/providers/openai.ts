@@ -22,6 +22,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
+import { withLogging, ApiLogger } from "../core/logging"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
@@ -32,7 +33,10 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	protected client: OpenAI
-	private readonly providerName = "OpenAI"
+
+	protected override get providerName(): string {
+		return "OpenAI"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -81,6 +85,30 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -305,6 +333,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
+
 		try {
 			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 			const model = this.getModel()
@@ -328,8 +359,24 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
-			return response.choices?.[0]?.message.content || ""
+			const result = response.choices?.[0]?.message.content || ""
+			ApiLogger.logResponse(requestId, context, {
+				textLength: result.length,
+				usage: response.usage
+					? {
+							inputTokens: response.usage.prompt_tokens || 0,
+							outputTokens: response.usage.completion_tokens || 0,
+						}
+					: undefined,
+			})
+
+			return result
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			ApiLogger.logError(requestId, context, {
+				message: errorMessage,
+			})
+
 			if (error instanceof Error) {
 				throw new Error(`${this.providerName} completion error: ${error.message}`)
 			}

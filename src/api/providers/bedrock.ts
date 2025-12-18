@@ -45,6 +45,7 @@ import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { normalizeToolSchema } from "../../utils/json-schema"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { withLogging, ApiLogger } from "../core/logging"
 
 /************************************************************************************
  *
@@ -200,7 +201,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	protected options: ProviderSettings
 	private client: BedrockRuntimeClient
 	private arnInfo: any
-	private readonly providerName = "Bedrock"
+
+	protected override get providerName(): string {
+		return "Bedrock"
+	}
 
 	constructor(options: ProviderSettings) {
 		super()
@@ -346,6 +350,36 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata & {
+			thinking?: {
+				enabled: boolean
+				maxTokens?: number
+				maxThinkingTokens?: number
+			}
+		},
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata & {
@@ -747,6 +781,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
+
 		try {
 			const modelConfig = this.getModel()
 
@@ -792,7 +829,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				response.output.message.content[0].text.trim().length > 0
 			) {
 				try {
-					return response.output.message.content[0].text
+					const result = response.output.message.content[0].text
+					ApiLogger.logResponse(requestId, context, {
+						textLength: result.length,
+					})
+					return result
 				} catch (parseError) {
 					logger.error("Failed to parse Bedrock response", {
 						ctx: "bedrock",
@@ -800,8 +841,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					})
 				}
 			}
+
+			ApiLogger.logResponse(requestId, context, { textLength: 0 })
 			return ""
 		} catch (error) {
+			// Log error
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			ApiLogger.logError(requestId, context, {
+				message: errorMessage,
+				code: (error as any)?.$metadata?.httpStatusCode,
+			})
+
 			// Capture error in telemetry
 			const model = this.getModel()
 			const telemetryErrorMessage = error instanceof Error ? error.message : String(error)
@@ -811,10 +861,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// Use the extracted error handling method for all errors
 			const errorResult = this.handleBedrockError(error, false) // false for non-streaming context
 			// Since we're in a non-streaming context, we know the result is a string
-			const errorMessage = errorResult as string
+			const bedrockErrorMessage = errorResult as string
 
 			// Create enhanced error for retry system
-			const enhancedError = new Error(errorMessage)
+			const enhancedError = new Error(bedrockErrorMessage)
 			if (error instanceof Error) {
 				// Preserve important properties from the original error
 				enhancedError.name = error.name

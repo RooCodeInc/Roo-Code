@@ -13,6 +13,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { convertToR1Format } from "../transform/r1-format"
+import { withLogging } from "../core/logging"
 
 import { OpenAiHandler } from "./openai"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
@@ -23,6 +24,10 @@ type DeepSeekChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStream
 }
 
 export class DeepSeekHandler extends OpenAiHandler {
+	protected override get providerName(): string {
+		return "DeepSeek"
+	}
+
 	constructor(options: ApiHandlerOptions) {
 		super({
 			...options,
@@ -42,6 +47,26 @@ export class DeepSeekHandler extends OpenAiHandler {
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageDeepSeek(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageDeepSeek(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,

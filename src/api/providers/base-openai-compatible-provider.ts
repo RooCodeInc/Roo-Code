@@ -14,6 +14,7 @@ import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { withLogging, ApiLogger } from "../core/logging"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -27,7 +28,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	extends BaseProvider
 	implements SingleCompletionHandler
 {
-	protected readonly providerName: string
+	protected readonly _providerName: string
 	protected readonly baseURL: string
 	protected readonly defaultTemperature: number
 	protected readonly defaultProviderModelId: ModelName
@@ -47,7 +48,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}: BaseOpenAiCompatibleProviderOptions<ModelName>) {
 		super()
 
-		this.providerName = providerName
+		this._providerName = providerName
 		this.baseURL = baseURL
 		this.defaultProviderModelId = defaultProviderModelId
 		this.providerModels = providerModels
@@ -65,6 +66,13 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			defaultHeaders: DEFAULT_HEADERS,
 			timeout: getApiRequestTimeout(),
 		})
+	}
+
+	/**
+	 * Get the provider name for logging
+	 */
+	protected override get providerName(): string {
+		return this._providerName
 	}
 
 	protected createStream(
@@ -113,6 +121,30 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -209,6 +241,12 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: modelId, info: modelInfo } = this.getModel()
+		const context = this.getLogContext("completePrompt")
+
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
 			model: modelId,
@@ -231,8 +269,28 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				)
 			}
 
-			return response.choices?.[0]?.message.content || ""
+			const content = response.choices?.[0]?.message.content || ""
+
+			// Log successful response
+			ApiLogger.logResponse(requestId, context, {
+				textLength: content.length,
+				usage: response.usage
+					? {
+							inputTokens: response.usage.prompt_tokens,
+							outputTokens: response.usage.completion_tokens,
+						}
+					: undefined,
+			})
+
+			return content
 		} catch (error) {
+			// Log error
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+				code:
+					(error as { status?: string | number; code?: string | number })?.status ||
+					(error as { status?: string | number; code?: string | number })?.code,
+			})
 			throw handleOpenAIError(error, this.providerName)
 		}
 	}

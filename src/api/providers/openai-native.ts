@@ -23,6 +23,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
+import { withLogging, ApiLogger } from "../core/logging"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
@@ -30,7 +31,10 @@ export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "OpenAI Native"
+
+	protected override get providerName(): string {
+		return "OpenAI Native"
+	}
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
@@ -132,6 +136,30 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -1265,6 +1293,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
+
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
@@ -1337,6 +1368,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					if (outputItem.type === "message" && outputItem.content) {
 						for (const content of outputItem.content) {
 							if (content.type === "output_text" && content.text) {
+								ApiLogger.logResponse(requestId, context, {
+									textLength: content.text.length,
+								})
 								return content.text
 							}
 						}
@@ -1346,13 +1380,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			// Fallback: check for direct text in response
 			if (response?.text) {
+				ApiLogger.logResponse(requestId, context, {
+					textLength: response.text.length,
+				})
 				return response.text
 			}
 
+			ApiLogger.logResponse(requestId, context, { textLength: 0 })
 			return ""
 		} catch (error) {
 			const errorModel = this.getModel()
 			const errorMessage = error instanceof Error ? error.message : String(error)
+			ApiLogger.logError(requestId, context, {
+				message: errorMessage,
+			})
+
 			const apiError = new ApiProviderError(errorMessage, this.providerName, errorModel.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 

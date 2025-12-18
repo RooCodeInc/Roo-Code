@@ -24,6 +24,7 @@ import {
 	convertOpenAIToolsToAnthropic,
 	convertOpenAIToolChoiceToAnthropic,
 } from "../../core/prompts/tools/native-tools/converters"
+import { withLogging, ApiLogger } from "../core/logging"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -32,6 +33,10 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: AnthropicVertex
+
+	protected override get providerName(): string {
+		return "Anthropic Vertex"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -66,6 +71,26 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -268,6 +293,12 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	}
 
 	async completePrompt(prompt: string) {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
+
 		try {
 			let {
 				id,
@@ -296,12 +327,24 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			const response = await this.client.messages.create(params)
 			const content = response.content[0]
 
-			if (content.type === "text") {
-				return content.text
-			}
+			const result = content.type === "text" ? content.text : ""
 
-			return ""
+			ApiLogger.logResponse(requestId, context, {
+				textLength: result.length,
+				usage: response.usage
+					? {
+							inputTokens: response.usage.input_tokens,
+							outputTokens: response.usage.output_tokens,
+						}
+					: undefined,
+			})
+
+			return result
 		} catch (error) {
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+			})
+
 			if (error instanceof Error) {
 				throw new Error(`Vertex completion error: ${error.message}`)
 			}
