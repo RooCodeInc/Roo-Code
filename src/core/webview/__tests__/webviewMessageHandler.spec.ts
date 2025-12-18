@@ -802,7 +802,7 @@ describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
 		const [writtenPath, writtenContent] = writeFileSpy.mock.calls[0]
 		expect(String(writtenPath)).toContain("roo-diagnostics-")
 		expect(String(writtenContent)).toContain(
-			"// You can share this  with with Roo Code Support to diagnose the issue faster",
+			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster",
 		)
 		expect(String(writtenContent)).toContain('"error":')
 		expect(String(writtenContent)).toContain('"history":')
