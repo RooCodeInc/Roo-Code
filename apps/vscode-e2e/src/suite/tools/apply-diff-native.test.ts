@@ -60,6 +60,14 @@ function assertNativeProtocolUsed(verification: NativeProtocolVerification, test
 			`This indicates an API request was made.`,
 	)
 
+	// Check that native protocol was actually used (anthropic/openai format)
+	assert.strictEqual(
+		verification.hasNativeApiProtocol,
+		true,
+		`[${testName}] Native API protocol should be used. ` +
+			`Expected apiProtocol to be "anthropic" or "openai", but got: ${verification.apiProtocol}`,
+	)
+
 	// Check that response doesn't contain XML tool tags
 	assert.strictEqual(
 		verification.responseIsNotXML,
