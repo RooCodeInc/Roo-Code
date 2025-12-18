@@ -18,42 +18,18 @@ vi.mock("vscode", () => ({
 	},
 }))
 
-// Mock imageHelpers to avoid fs.stat issues in integration tests
-vi.mock("../../tools/helpers/imageHelpers", () => ({
-	SUPPORTED_IMAGE_FORMATS: [
-		".png",
-		".jpg",
-		".jpeg",
-		".gif",
-		".webp",
-		".svg",
-		".bmp",
-		".ico",
-		".tiff",
-		".tif",
-		".avif",
-	],
-	IMAGE_MIME_TYPES: {
-		".png": "image/png",
-		".jpg": "image/jpeg",
-		".jpeg": "image/jpeg",
-		".gif": "image/gif",
-		".webp": "image/webp",
-		".svg": "image/svg+xml",
-		".bmp": "image/bmp",
-		".ico": "image/x-icon",
-		".tiff": "image/tiff",
-		".tif": "image/tiff",
-		".avif": "image/avif",
-	},
-	validateImageForProcessing: vi.fn().mockResolvedValue({ isValid: true, sizeInMB: 0.001 }),
-	ImageMemoryTracker: vi.fn().mockImplementation(() => ({
-		getTotalMemoryUsed: vi.fn().mockReturnValue(0),
-		addMemoryUsage: vi.fn(),
-	})),
-	DEFAULT_MAX_IMAGE_FILE_SIZE_MB: 5,
-	DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB: 20,
-}))
+// Mock imageHelpers - use actual implementations for functions that need real file access
+vi.mock("../../tools/helpers/imageHelpers", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../tools/helpers/imageHelpers")>()
+	return {
+		...actual,
+		validateImageForProcessing: vi.fn().mockResolvedValue({ isValid: true, sizeInMB: 0.001 }),
+		ImageMemoryTracker: vi.fn().mockImplementation(() => ({
+			getTotalMemoryUsed: vi.fn().mockReturnValue(0),
+			addMemoryUsage: vi.fn(),
+		})),
+	}
+})
 
 describe("webviewMessageHandler - image mentions (integration)", () => {
 	it("resolves image mentions for newTask and passes images to createTask", async () => {

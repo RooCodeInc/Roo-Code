@@ -2,44 +2,27 @@ import * as path from "path"
 
 import { resolveImageMentions } from "../resolveImageMentions"
 
-vi.mock("fs/promises", () => {
-	return {
-		default: {
-			readFile: vi.fn(),
-			stat: vi.fn(),
-		},
-		readFile: vi.fn(),
-		stat: vi.fn(),
-	}
-})
+const SUPPORTED_IMAGE_FORMATS = [
+	".png",
+	".jpg",
+	".jpeg",
+	".gif",
+	".webp",
+	".svg",
+	".bmp",
+	".ico",
+	".tiff",
+	".tif",
+	".avif",
+] as const
 
 vi.mock("../../tools/helpers/imageHelpers", () => ({
-	SUPPORTED_IMAGE_FORMATS: [
-		".png",
-		".jpg",
-		".jpeg",
-		".gif",
-		".webp",
-		".svg",
-		".bmp",
-		".ico",
-		".tiff",
-		".tif",
-		".avif",
-	],
-	IMAGE_MIME_TYPES: {
-		".png": "image/png",
-		".jpg": "image/jpeg",
-		".jpeg": "image/jpeg",
-		".gif": "image/gif",
-		".webp": "image/webp",
-		".svg": "image/svg+xml",
-		".bmp": "image/bmp",
-		".ico": "image/x-icon",
-		".tiff": "image/tiff",
-		".tif": "image/tiff",
-		".avif": "image/avif",
-	},
+	isSupportedImageFormat: vi.fn((ext: string) =>
+		[".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico", ".tiff", ".tif", ".avif"].includes(
+			ext.toLowerCase(),
+		),
+	),
+	readImageAsDataUrlWithBuffer: vi.fn(),
 	validateImageForProcessing: vi.fn(),
 	ImageMemoryTracker: vi.fn().mockImplementation(() => ({
 		getTotalMemoryUsed: vi.fn().mockReturnValue(0),
@@ -49,10 +32,9 @@ vi.mock("../../tools/helpers/imageHelpers", () => ({
 	DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB: 20,
 }))
 
-import * as fs from "fs/promises"
-import { validateImageForProcessing } from "../../tools/helpers/imageHelpers"
+import { validateImageForProcessing, readImageAsDataUrlWithBuffer } from "../../tools/helpers/imageHelpers"
 
-const mockReadFile = vi.mocked(fs.readFile)
+const mockReadImageAsDataUrl = vi.mocked(readImageAsDataUrlWithBuffer)
 const mockValidateImage = vi.mocked(validateImageForProcessing)
 
 describe("resolveImageMentions", () => {
@@ -63,7 +45,8 @@ describe("resolveImageMentions", () => {
 	})
 
 	it("should append a data URL when a local png mention is present", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("png-bytes"))
+		const dataUrl = `data:image/png;base64,${Buffer.from("png-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("png-bytes") })
 
 		const result = await resolveImageMentions({
 			text: "Please look at @/assets/cat.png",
@@ -72,13 +55,14 @@ describe("resolveImageMentions", () => {
 		})
 
 		expect(mockValidateImage).toHaveBeenCalled()
-		expect(mockReadFile).toHaveBeenCalledWith(path.resolve("/workspace", "assets/cat.png"))
+		expect(mockReadImageAsDataUrl).toHaveBeenCalledWith(path.resolve("/workspace", "assets/cat.png"))
 		expect(result.text).toBe("Please look at @/assets/cat.png")
-		expect(result.images).toEqual([`data:image/png;base64,${Buffer.from("png-bytes").toString("base64")}`])
+		expect(result.images).toEqual([dataUrl])
 	})
 
 	it("should support gif images (matching read_file)", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("gif-bytes"))
+		const dataUrl = `data:image/gif;base64,${Buffer.from("gif-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("gif-bytes") })
 
 		const result = await resolveImageMentions({
 			text: "See @/animation.gif",
@@ -86,11 +70,12 @@ describe("resolveImageMentions", () => {
 			cwd: "/workspace",
 		})
 
-		expect(result.images).toEqual([`data:image/gif;base64,${Buffer.from("gif-bytes").toString("base64")}`])
+		expect(result.images).toEqual([dataUrl])
 	})
 
 	it("should support svg images (matching read_file)", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("svg-bytes"))
+		const dataUrl = `data:image/svg+xml;base64,${Buffer.from("svg-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("svg-bytes") })
 
 		const result = await resolveImageMentions({
 			text: "See @/icon.svg",
@@ -98,7 +83,7 @@ describe("resolveImageMentions", () => {
 			cwd: "/workspace",
 		})
 
-		expect(result.images).toEqual([`data:image/svg+xml;base64,${Buffer.from("svg-bytes").toString("base64")}`])
+		expect(result.images).toEqual([dataUrl])
 	})
 
 	it("should ignore non-image mentions", async () => {
@@ -108,12 +93,12 @@ describe("resolveImageMentions", () => {
 			cwd: "/workspace",
 		})
 
-		expect(mockReadFile).not.toHaveBeenCalled()
+		expect(mockReadImageAsDataUrl).not.toHaveBeenCalled()
 		expect(result.images).toEqual([])
 	})
 
 	it("should skip unreadable files (fail-soft)", async () => {
-		mockReadFile.mockRejectedValue(new Error("ENOENT"))
+		mockReadImageAsDataUrl.mockRejectedValue(new Error("ENOENT"))
 
 		const result = await resolveImageMentions({
 			text: "See @/missing.webp",
@@ -125,7 +110,8 @@ describe("resolveImageMentions", () => {
 	})
 
 	it("should respect rooIgnoreController", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("jpg-bytes"))
+		const dataUrl = `data:image/jpeg;base64,${Buffer.from("jpg-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("jpg-bytes") })
 		const rooIgnoreController = {
 			validateAccess: vi.fn().mockReturnValue(false),
 		}
@@ -138,12 +124,13 @@ describe("resolveImageMentions", () => {
 		})
 
 		expect(rooIgnoreController.validateAccess).toHaveBeenCalledWith("secret.jpg")
-		expect(mockReadFile).not.toHaveBeenCalled()
+		expect(mockReadImageAsDataUrl).not.toHaveBeenCalled()
 		expect(result.images).toEqual([])
 	})
 
 	it("should dedupe when mention repeats", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("png-bytes"))
+		const dataUrl = `data:image/png;base64,${Buffer.from("png-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("png-bytes") })
 
 		const result = await resolveImageMentions({
 			text: "@/a.png and again @/a.png",
@@ -155,7 +142,8 @@ describe("resolveImageMentions", () => {
 	})
 
 	it("should skip images when supportsImages is false", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("png-bytes"))
+		const dataUrl = `data:image/png;base64,${Buffer.from("png-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("png-bytes") })
 
 		const result = await resolveImageMentions({
 			text: "See @/cat.png",
@@ -164,7 +152,7 @@ describe("resolveImageMentions", () => {
 			supportsImages: false,
 		})
 
-		expect(mockReadFile).not.toHaveBeenCalled()
+		expect(mockReadImageAsDataUrl).not.toHaveBeenCalled()
 		expect(result.images).toEqual([])
 	})
 
@@ -182,7 +170,7 @@ describe("resolveImageMentions", () => {
 		})
 
 		expect(mockValidateImage).toHaveBeenCalled()
-		expect(mockReadFile).not.toHaveBeenCalled()
+		expect(mockReadImageAsDataUrl).not.toHaveBeenCalled()
 		expect(result.images).toEqual([])
 	})
 
@@ -203,7 +191,8 @@ describe("resolveImageMentions", () => {
 	})
 
 	it("should pass custom size limits to validation", async () => {
-		mockReadFile.mockResolvedValue(Buffer.from("png-bytes"))
+		const dataUrl = `data:image/png;base64,${Buffer.from("png-bytes").toString("base64")}`
+		mockReadImageAsDataUrl.mockResolvedValue({ dataUrl, buffer: Buffer.from("png-bytes") })
 
 		await resolveImageMentions({
 			text: "See @/cat.png",

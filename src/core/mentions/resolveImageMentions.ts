@@ -1,10 +1,9 @@
 import * as path from "path"
-import * as fs from "fs/promises"
 
 import { mentionRegexGlobal, unescapeSpaces } from "../../shared/context-mentions"
 import {
-	SUPPORTED_IMAGE_FORMATS,
-	IMAGE_MIME_TYPES,
+	isSupportedImageFormat,
+	readImageAsDataUrlWithBuffer,
 	validateImageForProcessing,
 	ImageMemoryTracker,
 	DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
@@ -48,22 +47,6 @@ function dedupePreserveOrder(values: string[]): string[] {
 }
 
 /**
- * Checks if a file extension is a supported image format.
- * Uses the same format list as read_file tool.
- */
-function isSupportedImageExtension(extension: string): boolean {
-	return SUPPORTED_IMAGE_FORMATS.includes(extension.toLowerCase() as (typeof SUPPORTED_IMAGE_FORMATS)[number])
-}
-
-/**
- * Gets the MIME type for an image extension.
- * Uses the same mapping as read_file tool.
- */
-function getMimeType(extension: string): string | undefined {
-	return IMAGE_MIME_TYPES[extension.toLowerCase()]
-}
-
-/**
  * Resolves local image file mentions like `@/path/to/image.png` found in `text` into `data:image/...;base64,...`
  * and appends them to the outgoing `images` array.
  *
@@ -104,7 +87,7 @@ export async function resolveImageMentions({
 		if (!mention.startsWith("/")) return false
 		const relPath = unescapeSpaces(mention.slice(1))
 		const ext = path.extname(relPath).toLowerCase()
-		return isSupportedImageExtension(ext)
+		return isSupportedImageFormat(ext)
 	})
 
 	if (imageMentions.length === 0) {
@@ -129,12 +112,6 @@ export async function resolveImageMentions({
 			continue
 		}
 
-		const ext = path.extname(relPath).toLowerCase()
-		const mimeType = getMimeType(ext)
-		if (!mimeType) {
-			continue
-		}
-
 		// Validate image size limits (matches read_file behavior)
 		try {
 			const validationResult = await validateImageForProcessing(
@@ -150,9 +127,8 @@ export async function resolveImageMentions({
 				continue
 			}
 
-			const buffer = await fs.readFile(absPath)
-			const base64 = buffer.toString("base64")
-			newImages.push(`data:${mimeType};base64,${base64}`)
+			const { dataUrl } = await readImageAsDataUrlWithBuffer(absPath)
+			newImages.push(dataUrl)
 
 			// Track memory usage
 			if (validationResult.sizeInMB) {
