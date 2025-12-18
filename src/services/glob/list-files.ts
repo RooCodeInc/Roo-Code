@@ -12,7 +12,7 @@ import delay from "delay"
 /**
  * Context object for directory scanning operations
  */
-interface ScanContext {
+export interface ScanContext {
 	/** Whether this is the explicitly targeted directory */
 	isTargetDir: boolean
 	/** Whether we're inside an explicitly targeted hidden directory */
@@ -21,6 +21,8 @@ interface ScanContext {
 	basePath: string
 	/** The ignore instance for gitignore handling */
 	ignoreInstance: ReturnType<typeof ignore>
+	/** Cache for gitignore directory checks to improve performance */
+	gitignoreDirCache: Map<string, boolean>
 }
 
 /**
@@ -94,6 +96,7 @@ async function getFirstLevelDirectories(dirPath: string, ignoreInstance: ReturnT
 					insideExplicitHiddenTarget: false,
 					basePath: dirPath,
 					ignoreInstance,
+					gitignoreDirCache: new Map<string, boolean>(),
 				}
 				if (shouldIncludeDirectory(entry.name, fullDirPath, context)) {
 					const formattedPath = fullDirPath.endsWith("/") ? fullDirPath : `${fullDirPath}/`
@@ -407,6 +410,7 @@ async function listFilteredDirectories(
 		insideExplicitHiddenTarget: isExplicitHiddenTarget,
 		basePath: dirPath,
 		ignoreInstance,
+		gitignoreDirCache: new Map<string, boolean>(),
 	}
 
 	async function scanDirectory(currentPath: string, context: ScanContext): Promise<boolean> {
@@ -463,7 +467,13 @@ async function listFilteredDirectories(
 						// Only apply the most critical ignore patterns when inside explicit hidden target
 						shouldRecurseIntoDir = !CRITICAL_IGNORE_PATTERNS.has(dirName)
 					} else {
+						// First, check the predefined ignore list.
 						shouldRecurseIntoDir = !isDirectoryExplicitlyIgnored(dirName)
+
+						// If it's not in the predefined list, check the folder patterns in `.gitignore`.
+						if (shouldRecurseIntoDir) {
+							shouldRecurseIntoDir = !isDirectoryIgnoredByGitignorePatterns(dirName, currentPath, context)
+						}
 					}
 
 					const shouldRecurse =
@@ -535,6 +545,49 @@ function isIgnoredByGitignore(
 	const normalizedPath = relativePath.replace(/\\/g, "/")
 	return ignoreInstance.ignores(normalizedPath) || ignoreInstance.ignores(normalizedPath + "/")
 }
+
+/**
+ * Check if a directory should be ignored during recursion based on gitignore patterns
+ * This function is used in recursion decisions to avoid unnecessary traversal
+ */
+function isDirectoryIgnoredByGitignorePatterns(dirName: string, parentPath: string, context: ScanContext): boolean {
+	const fullDirPath = path.join(parentPath, dirName)
+	const relativePath = path.relative(context.basePath, fullDirPath)
+	const normalizedPath = relativePath.replace(/\\/g, "/")
+
+	const cacheKey = normalizedPath
+	if (context.gitignoreDirCache.has(cacheKey)) {
+		return context.gitignoreDirCache.get(cacheKey)!
+	}
+
+	let isIgnored = false
+
+	if (context.ignoreInstance.ignores(normalizedPath)) {
+		isIgnored = true
+	}
+
+	// Check if the directory matches the /* pattern (handling patterns like question/*)
+	// For example, the "question" directory should match the "question/*" pattern.
+	if (!isIgnored) {
+		// Check if the current directory path plus /* matches a .gitignore pattern.
+		// For example, check if "question/*" matches; if it does, the "question" directory should be ignored recursively.
+		if (context.ignoreInstance.ignores(normalizedPath + "/*")) {
+			isIgnored = true
+		}
+	}
+
+	// Check if deeper content is being ignored (handling patterns like `question/**`).
+	if (!isIgnored && context.ignoreInstance.ignores(normalizedPath + "/**")) {
+		isIgnored = true
+	}
+
+	context.gitignoreDirCache.set(cacheKey, isIgnored)
+
+	return isIgnored
+}
+
+// Export the function for testing
+export { isDirectoryIgnoredByGitignorePatterns }
 
 /**
  * Check if a target directory should be included
