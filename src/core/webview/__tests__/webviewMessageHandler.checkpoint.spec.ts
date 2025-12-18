@@ -55,6 +55,10 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			contextProxy: {
 				globalStorageUri: { fsPath: "/test/storage" },
 			},
+			getState: vi.fn().mockResolvedValue({
+				maxImageFileSize: 5,
+				maxTotalImageSize: 20,
+			}),
 		}
 	})
 

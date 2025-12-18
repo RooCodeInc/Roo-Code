@@ -1,5 +1,6 @@
 import * as fs from "fs/promises"
 import * as path from "path"
+import * as os from "os"
 
 // Must mock dependencies before importing the handler module.
 vi.mock("../../../api/providers/fetchers/modelCache")
@@ -17,9 +18,46 @@ vi.mock("vscode", () => ({
 	},
 }))
 
+// Mock imageHelpers to avoid fs.stat issues in integration tests
+vi.mock("../../tools/helpers/imageHelpers", () => ({
+	SUPPORTED_IMAGE_FORMATS: [
+		".png",
+		".jpg",
+		".jpeg",
+		".gif",
+		".webp",
+		".svg",
+		".bmp",
+		".ico",
+		".tiff",
+		".tif",
+		".avif",
+	],
+	IMAGE_MIME_TYPES: {
+		".png": "image/png",
+		".jpg": "image/jpeg",
+		".jpeg": "image/jpeg",
+		".gif": "image/gif",
+		".webp": "image/webp",
+		".svg": "image/svg+xml",
+		".bmp": "image/bmp",
+		".ico": "image/x-icon",
+		".tiff": "image/tiff",
+		".tif": "image/tiff",
+		".avif": "image/avif",
+	},
+	validateImageForProcessing: vi.fn().mockResolvedValue({ isValid: true, sizeInMB: 0.001 }),
+	ImageMemoryTracker: vi.fn().mockImplementation(() => ({
+		getTotalMemoryUsed: vi.fn().mockReturnValue(0),
+		addMemoryUsage: vi.fn(),
+	})),
+	DEFAULT_MAX_IMAGE_FILE_SIZE_MB: 5,
+	DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB: 20,
+}))
+
 describe("webviewMessageHandler - image mentions (integration)", () => {
 	it("resolves image mentions for newTask and passes images to createTask", async () => {
-		const tmpRoot = await fs.mkdtemp(path.join(process.cwd(), "tmp-image-mentions-"))
+		const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "roo-image-mentions-"))
 		try {
 			const imgBytes = Buffer.from("png-bytes")
 			await fs.writeFile(path.join(tmpRoot, "cat.png"), imgBytes)
@@ -29,6 +67,10 @@ describe("webviewMessageHandler - image mentions (integration)", () => {
 				getCurrentTask: vi.fn().mockReturnValue(undefined),
 				createTask: vi.fn().mockResolvedValue(undefined),
 				postMessageToWebview: vi.fn().mockResolvedValue(undefined),
+				getState: vi.fn().mockResolvedValue({
+					maxImageFileSize: 5,
+					maxTotalImageSize: 20,
+				}),
 			} as unknown as ClineProvider
 
 			await webviewMessageHandler(mockProvider, {
@@ -46,7 +88,7 @@ describe("webviewMessageHandler - image mentions (integration)", () => {
 	})
 
 	it("resolves image mentions for askResponse and passes images to handleWebviewAskResponse", async () => {
-		const tmpRoot = await fs.mkdtemp(path.join(process.cwd(), "tmp-image-mentions-"))
+		const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "roo-image-mentions-"))
 		try {
 			const imgBytes = Buffer.from("jpg-bytes")
 			await fs.writeFile(path.join(tmpRoot, "cat.jpg"), imgBytes)
@@ -57,6 +99,10 @@ describe("webviewMessageHandler - image mentions (integration)", () => {
 				getCurrentTask: vi.fn().mockReturnValue({
 					cwd: tmpRoot,
 					handleWebviewAskResponse,
+				}),
+				getState: vi.fn().mockResolvedValue({
+					maxImageFileSize: 5,
+					maxTotalImageSize: 20,
 				}),
 			} as unknown as ClineProvider
 
@@ -69,6 +115,37 @@ describe("webviewMessageHandler - image mentions (integration)", () => {
 
 			expect(handleWebviewAskResponse).toHaveBeenCalledWith("messageResponse", "Please look at @/cat.jpg", [
 				`data:image/jpeg;base64,${imgBytes.toString("base64")}`,
+			])
+		} finally {
+			await fs.rm(tmpRoot, { recursive: true, force: true })
+		}
+	})
+
+	it("resolves gif image mentions (matching read_file behavior)", async () => {
+		const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "roo-image-mentions-"))
+		try {
+			const imgBytes = Buffer.from("gif-bytes")
+			await fs.writeFile(path.join(tmpRoot, "animation.gif"), imgBytes)
+
+			const mockProvider = {
+				cwd: tmpRoot,
+				getCurrentTask: vi.fn().mockReturnValue(undefined),
+				createTask: vi.fn().mockResolvedValue(undefined),
+				postMessageToWebview: vi.fn().mockResolvedValue(undefined),
+				getState: vi.fn().mockResolvedValue({
+					maxImageFileSize: 5,
+					maxTotalImageSize: 20,
+				}),
+			} as unknown as ClineProvider
+
+			await webviewMessageHandler(mockProvider, {
+				type: "newTask",
+				text: "See @/animation.gif",
+				images: [],
+			} as any)
+
+			expect(mockProvider.createTask).toHaveBeenCalledWith("See @/animation.gif", [
+				`data:image/gif;base64,${imgBytes.toString("base64")}`,
 			])
 		} finally {
 			await fs.rm(tmpRoot, { recursive: true, force: true })

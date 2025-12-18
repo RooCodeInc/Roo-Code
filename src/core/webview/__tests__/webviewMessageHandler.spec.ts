@@ -150,6 +150,10 @@ describe("webviewMessageHandler - requestLmStudioModels", () => {
 describe("webviewMessageHandler - image mentions", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockClineProvider.getState = vi.fn().mockResolvedValue({
+			maxImageFileSize: 5,
+			maxTotalImageSize: 20,
+		})
 	})
 
 	it("should resolve image mentions for askResponse payloads", async () => {
