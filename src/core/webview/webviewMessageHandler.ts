@@ -1485,7 +1485,9 @@ export const webviewMessageHandler = async (
 			break
 		case "updatePrompt":
 			if (message.promptMode && message.customPrompt !== undefined) {
-				const existingPrompts = getGlobalState("customModePrompts") ?? {}
+				// Use refreshGlobalStateKey to get the latest value from globalState,
+				// avoiding stale cache issues when multiple VS Code windows are open.
+				const existingPrompts = provider.contextProxy.refreshGlobalStateKey("customModePrompts") ?? {}
 				const updatedPrompts = { ...existingPrompts, [message.promptMode]: message.customPrompt }
 				await updateGlobalState("customModePrompts", updatedPrompts)
 				const currentState = await provider.getStateToPostToWebview()
@@ -1571,7 +1573,9 @@ export const webviewMessageHandler = async (
 		case "updateCondensingPrompt":
 			// Store the condensing prompt in customSupportPrompts["CONDENSE"]
 			// instead of customCondensingPrompt.
-			const currentSupportPrompts = getGlobalState("customSupportPrompts") ?? {}
+			// Use refreshGlobalStateKey to get the latest value from globalState,
+			// avoiding stale cache issues when multiple VS Code windows are open.
+			const currentSupportPrompts = provider.contextProxy.refreshGlobalStateKey("customSupportPrompts") ?? {}
 			const updatedSupportPrompts = { ...currentSupportPrompts, CONDENSE: message.text }
 			await updateGlobalState("customSupportPrompts", updatedSupportPrompts)
 			// Also update the old field for backward compatibility during migration.

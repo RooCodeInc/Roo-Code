@@ -208,6 +208,19 @@ export class ContextProxy {
 		return this.originalContext.globalState.update(key, value)
 	}
 
+	/**
+	 * Refresh a specific key from globalState and update the cache.
+	 * This is useful for settings that may be edited across multiple VS Code windows,
+	 * ensuring we read the latest value before making modifications.
+	 * @param key The global state key to refresh
+	 * @returns The fresh value from globalState
+	 */
+	refreshGlobalStateKey<K extends GlobalStateKey>(key: K): GlobalState[K] {
+		const value = this.originalContext.globalState.get<GlobalState[K]>(key)
+		this.stateCache[key] = value
+		return value as GlobalState[K]
+	}
+
 	private getAllGlobalState(): GlobalState {
 		return Object.fromEntries(GLOBAL_STATE_KEYS.map((key) => [key, this.getGlobalState(key)]))
 	}
