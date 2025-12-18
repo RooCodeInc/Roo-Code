@@ -3,10 +3,7 @@
  * Provides consistent logging for all API requests and responses across providers
  *
  * Enable logging by:
- * 1. Setting ROO_CODE_LOGGING=true in workspace .env.local file
- * 2. Setting ROO_CODE_LOGGING=true in process environment
- * 3. Setting VSCODE_DEBUG_MODE=true in process environment
- *
+ * 1. Setting ROO_CODE_API_LOGGING=true in workspace .env.local file
  * Logs will appear in the Output/Debug console as simple console.log statements.
  */
 
@@ -25,7 +22,7 @@ import { isLoggingEnabled } from "./env-config"
  * Centralized API logging service
  * Singleton instance that all providers route through for consistent logging
  *
- * When ROO_CODE_LOGGING=true, logs are output via console.log/console.error
+ * When ROO_CODE_API_LOGGING=true, logs are output via console.log/console.error
  * for visibility in VS Code's Output panel and Debug Console.
  */
 class ApiLoggerService {
@@ -56,7 +53,7 @@ class ApiLoggerService {
 
 	/**
 	 * Check if logging should actually output
-	 * Requires both: config.enabled AND ROO_CODE_LOGGING=true
+	 * Requires both: config.enabled AND ROO_CODE_API_LOGGING=true
 	 */
 	private shouldLog(): boolean {
 		return this.config.enabled && isLoggingEnabled()
