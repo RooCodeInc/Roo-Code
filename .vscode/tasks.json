@@ -69,6 +69,63 @@
 				"group": "watch",
 				"reveal": "always"
 			}
+		},
+		{
+			"label": "build-e2e-tests",
+			"dependsOn": ["build-e2e:bundle", "build-e2e:webview", "build-e2e:compile"],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "build-e2e:bundle",
+			"type": "shell",
+			"command": "pnpm -w bundle",
+			"group": "build",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "build-e2e:webview",
+			"type": "shell",
+			"command": "pnpm --filter @roo-code/vscode-webview build",
+			"group": "build",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "build-e2e:compile",
+			"type": "shell",
+			"command": "npx rimraf out; npx tsc -p tsconfig.json",
+			"options": {
+				"cwd": "${workspaceFolder}/apps/vscode-e2e"
+			},
+			"group": "build",
+			"problemMatcher": "$tsc",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "compile-e2e-only",
+			"type": "shell",
+			"command": "npx rimraf out; npx tsc -p tsconfig.json",
+			"options": {
+				"cwd": "${workspaceFolder}/apps/vscode-e2e"
+			},
+			"group": "build",
+			"problemMatcher": "$tsc",
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
 		}
 	]
 }
