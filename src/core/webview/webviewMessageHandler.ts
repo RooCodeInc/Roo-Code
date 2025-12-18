@@ -3207,8 +3207,8 @@ export const webviewMessageHandler = async (
 
 				// Prepend human-readable guidance comments before the JSON payload
 				const headerComment =
-					"// You can share this  with with Roo Code Support (support@roocode.com) to diagnose the issue faster\n" +
-					"// Make sure you're OK sharing the contents of the conversation below\n\n"
+					"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster\n" +
+					"// Just make sure you're OK sharing the contents of the conversation below.\n\n"
 				const jsonContent = JSON.stringify(diagnostics, null, 2)
 				const fullContent = headerComment + jsonContent
 

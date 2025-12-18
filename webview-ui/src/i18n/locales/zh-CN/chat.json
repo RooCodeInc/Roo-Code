@@ -262,7 +262,8 @@
 	"errorDetails": {
 		"title": "错误详情",
 		"copyToClipboard": "复制到剪贴板",
-		"copied": "已复制!"
+		"copied": "已复制!",
+		"diagnostics": "获取详细错误信息"
 	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"

@@ -261,7 +261,8 @@
 	"errorDetails": {
 		"title": "Foutdetails",
 		"copyToClipboard": "Naar klembord kopiëren",
-		"copied": "Gekopieerd!"
+		"copied": "Gekopieerd!",
+		"diagnostics": "Gedetailleerde foutinformatie ophalen"
 	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"

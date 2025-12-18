@@ -262,7 +262,8 @@
 	"errorDetails": {
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
-		"copied": "Kopyalandı!"
+		"copied": "Kopyalandı!",
+		"diagnostics": "Ayrıntılı hata bilgisi al"
 	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"

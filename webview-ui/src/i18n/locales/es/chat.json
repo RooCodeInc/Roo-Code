@@ -261,7 +261,8 @@
 	"errorDetails": {
 		"title": "Detalles del error",
 		"copyToClipboard": "Copiar al portapapeles",
-		"copied": "¡Copiado!"
+		"copied": "¡Copiado!",
+		"diagnostics": "Obtener información de error detallada"
 	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"

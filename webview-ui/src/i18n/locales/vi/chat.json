@@ -262,7 +262,8 @@
 	"errorDetails": {
 		"title": "Chi tiết lỗi",
 		"copyToClipboard": "Sao chép vào clipboard",
-		"copied": "Đã sao chép!"
+		"copied": "Đã sao chép!",
+		"diagnostics": "Nhận thông tin lỗi chi tiết"
 	},
 	"powershell": {
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
