@@ -3,7 +3,7 @@ import { VSCodeCheckbox, VSCodeTextField } from "@vscode/webview-ui-toolkit/reac
 
 import { type ProviderSettings, type OrganizationAllowList, requestyDefaultModelId } from "@roo-code/types"
 
-import type { RouterModels } from "@roo/api"
+import type { ModelRecord, RouterModels } from "@roo/api"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -14,6 +14,8 @@ import { ModelPicker } from "../ModelPicker"
 import { RequestyBalanceDisplay } from "./RequestyBalanceDisplay"
 import { getCallbackUrl } from "@/oauth/urls"
 import { toRequestyServiceUrl } from "@roo/utils/requesty"
+import { useEvent } from "react-use"
+import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 type RequestyProps = {
 	apiConfiguration: ProviderSettings
@@ -29,7 +31,6 @@ type RequestyProps = {
 export const Requesty = ({
 	apiConfiguration,
 	setApiConfigurationField,
-	routerModels,
 	refetchRouterModels,
 	organizationAllowList,
 	modelValidationError,
@@ -37,6 +38,8 @@ export const Requesty = ({
 	simplifySettings,
 }: RequestyProps) => {
 	const { t } = useAppTranslation()
+
+	const [requestyModels, setRequestyModels] = useState<ModelRecord>({})
 
 	const [requestyEndpointSelected, setRequestyEndpointSelected] = useState(!!apiConfiguration.requestyBaseUrl)
 
@@ -64,6 +67,25 @@ export const Requesty = ({
 
 		return authUrl.toString()
 	}
+
+	const onMessage = useCallback((event: MessageEvent) => {
+		const message: ExtensionMessage = event.data
+
+		if (message.type !== "requestyModels") {
+			return
+		}
+
+		const newModels = message.requestyModels ?? {}
+		setRequestyModels(newModels)
+	}, [])
+
+	useEvent("message", onMessage)
+
+	// Refresh models on mount
+	useEffect(() => {
+		// Request fresh models - the handler now flushes cache automatically
+		vscode.postMessage({ type: "requestRequestyModels" })
+	}, [])
 
 	return (
 		<>
@@ -127,7 +149,7 @@ export const Requesty = ({
 			<Button
 				variant="outline"
 				onClick={() => {
-					vscode.postMessage({ type: "flushRouterModels", text: "requesty" })
+					vscode.postMessage({ type: "requestRequestyModels" })
 					refetchRouterModels()
 				}}>
 				<div className="flex items-center gap-2">
@@ -139,7 +161,7 @@ export const Requesty = ({
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
 				defaultModelId={requestyDefaultModelId}
-				models={routerModels?.requesty ?? {}}
+				models={requestyModels}
 				modelIdKey="requestyModelId"
 				serviceName="Requesty"
 				serviceUrl="https://requesty.ai"

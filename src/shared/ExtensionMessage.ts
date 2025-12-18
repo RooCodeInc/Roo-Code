@@ -82,6 +82,7 @@ export interface ExtensionMessage {
 		| "lmStudioModels"
 		| "vsCodeLmModels"
 		| "huggingFaceModels"
+		| "requestyModels"
 		| "vsCodeLmApiAvailable"
 		| "updatePrompt"
 		| "systemPrompt"
@@ -184,6 +185,7 @@ export interface ExtensionMessage {
 			}
 		}>
 	}>
+	requestyModels?: ModelRecord
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
 	listApiConfig?: ProviderSettingsEntry[]
