@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef, useLayoutEffect } from "react"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
-import { Check, X, Brain } from "lucide-react"
+import { Check, X, Brain, Info } from "lucide-react"
 
 import type { ProviderSettings, ModelInfo, OrganizationAllowList } from "@roo-code/types"
 
@@ -58,7 +58,7 @@ interface ModelPickerProps {
 		value: ProviderSettings[K],
 		isUserAction?: boolean,
 	) => void
-	organizationAllowList: OrganizationAllowList
+	organizationAllowList?: OrganizationAllowList
 	errorMessage?: string
 	showInfoView?: boolean
 	showLabel?: boolean
@@ -68,6 +68,7 @@ interface ModelPickerProps {
 	PopoverTriggerContentClassName?: string
 	tooltip?: string
 	simplifySettings?: boolean
+	hidePricing?: boolean
 }
 
 export const ModelPicker = ({
@@ -89,6 +90,8 @@ export const ModelPicker = ({
 	PopoverTriggerContentClassName = "",
 	tooltip,
 	// simplifySettings,
+	simplifySettings,
+	hidePricing,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 
@@ -369,28 +372,44 @@ export const ModelPicker = ({
 			{selectedModelInfo?.deprecated && showInfoView && (
 				<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
 			)}
-			{selectedModelId && selectedModelInfo && !selectedModelInfo.deprecated && showInfoView && (
-				<ModelInfoView
-					apiProvider={apiConfiguration.apiProvider}
-					selectedModelId={selectedModelId}
-					modelInfo={selectedModelInfo}
-					isDescriptionExpanded={isDescriptionExpanded}
-					setIsDescriptionExpanded={setIsDescriptionExpanded}
-				/>
-			)}
-			{apiConfiguration.apiProvider !== "zgsm" && showInfoView && (
-				<div className="text-sm text-vscode-descriptionForeground">
-					<Trans
-						i18nKey="settings:modelPicker.automaticFetch"
-						components={{
-							serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
-							defaultModelLink: (
-								<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
-							),
-						}}
-						values={{ serviceName, defaultModelId }}
-					/>
-				</div>
+
+			{simplifySettings && showInfoView ? (
+				<p className="text-xs text-vscode-descriptionForeground m-0">
+					<Info className="size-3 inline mr-1" />
+					{t("settings:modelPicker.simplifiedExplanation")}
+				</p>
+			) : (
+				showInfoView && (
+					<div>
+						{selectedModelId && selectedModelInfo && !selectedModelInfo.deprecated && (
+							<ModelInfoView
+								apiProvider={apiConfiguration.apiProvider}
+								selectedModelId={selectedModelId}
+								modelInfo={selectedModelInfo}
+								isDescriptionExpanded={isDescriptionExpanded}
+								setIsDescriptionExpanded={setIsDescriptionExpanded}
+								hidePricing={hidePricing}
+							/>
+						)}
+						{!hidePricing && apiConfiguration.apiProvider !== "zgsm" && (
+							<div className="text-sm text-vscode-descriptionForeground">
+								<Trans
+									i18nKey="settings:modelPicker.automaticFetch"
+									components={{
+										serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
+										defaultModelLink: (
+											<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
+										),
+									}}
+									values={{
+										serviceName: serviceName === "zgsm" ? "Costrict" : serviceName,
+										defaultModelId,
+									}}
+								/>
+							</div>
+						)}
+					</div>
+				)
 			)}
 		</>
 	)

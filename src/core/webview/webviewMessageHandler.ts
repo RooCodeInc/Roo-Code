@@ -2410,6 +2410,45 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "claudeCodeSignIn": {
+			try {
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				const authUrl = claudeCodeOAuthManager.startAuthorizationFlow()
+
+				// Open the authorization URL in the browser
+				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+
+				// Wait for the callback in a separate promise (non-blocking)
+				claudeCodeOAuthManager
+					.waitForCallback()
+					.then(async () => {
+						vscode.window.showInformationMessage("Successfully signed in to Claude Code")
+						await provider.postStateToWebview()
+					})
+					.catch((error) => {
+						provider.log(`Claude Code OAuth callback failed: ${error}`)
+						if (!String(error).includes("timed out")) {
+							vscode.window.showErrorMessage(`Claude Code sign in failed: ${error.message || error}`)
+						}
+					})
+			} catch (error) {
+				provider.log(`Claude Code OAuth failed: ${error}`)
+				vscode.window.showErrorMessage("Claude Code sign in failed.")
+			}
+			break
+		}
+		case "claudeCodeSignOut": {
+			try {
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				await claudeCodeOAuthManager.clearCredentials()
+				vscode.window.showInformationMessage("Signed out from Claude Code")
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Claude Code sign out failed: ${error}`)
+				vscode.window.showErrorMessage("Claude Code sign out failed.")
+			}
+			break
+		}
 		// case "rooCloudManualUrl": {
 		// 	try {
 		// 		if (!message.text) {
@@ -3459,6 +3498,37 @@ export const webviewMessageHandler = async (
 				await provider.postMessageToWebview({
 					type: "zgsmQuotaInfo",
 					values: data,
+				})
+			}
+			break
+		}
+
+		case "requestClaudeCodeRateLimits": {
+			try {
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				const accessToken = await claudeCodeOAuthManager.getAccessToken()
+				const { apiConfiguration } = await provider.getState()
+				if (!accessToken) {
+					provider.postMessageToWebview({
+						type: "claudeCodeRateLimits",
+						error: "Not authenticated with Claude Code",
+					})
+					break
+				}
+
+				const { fetchRateLimitInfo } = await import("../../integrations/claude-code/streaming-client")
+				const rateLimits = await fetchRateLimitInfo(accessToken, apiConfiguration.apiModelId)
+
+				provider.postMessageToWebview({
+					type: "claudeCodeRateLimits",
+					values: rateLimits,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error fetching Claude Code rate limits: ${errorMessage}`)
+				provider.postMessageToWebview({
+					type: "claudeCodeRateLimits",
+					error: errorMessage,
 				})
 			}
 			break

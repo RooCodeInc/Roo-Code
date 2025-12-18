@@ -1,9 +1,11 @@
 // Mock VSCode API for Vitest tests
-const mockEventEmitter = () => ({
-	event: () => () => {},
-	fire: () => {},
-	dispose: () => {},
-})
+class MockEventEmitter {
+	constructor() {
+		this.event = () => () => {}
+		this.fire = () => {}
+		this.dispose = () => {}
+	}
+}
 
 const mockDisposable = {
 	dispose: () => {},
@@ -107,6 +109,7 @@ export const languages = {
 		clear: () => {},
 		dispose: () => {},
 	}),
+	registerCodeLensProvider: () => mockDisposable,
 }
 
 export const extensions = {
@@ -163,7 +166,7 @@ export const CodeActionKind = {
 	RefactorRewrite: { value: "refactor.rewrite" },
 }
 
-export const EventEmitter = mockEventEmitter
+export const EventEmitter = MockEventEmitter
 
 export const CommentMode = {
 	Editing: 0,

@@ -6,8 +6,8 @@
  */
 
 import * as vscode from "vscode"
+import { flushModels } from "./../../api/providers/fetchers/modelCache"
 import type { ClineProvider } from "../webview/ClineProvider"
-
 import { registerAutoCompletionProvider, CompletionStatusBar } from "./auto-complete"
 
 import { CostrictCodeLensProvider, codeLensCallBackCommand, codeLensCallBackMoreCommand } from "./codelens"
@@ -223,7 +223,7 @@ export async function activate(
 	})
 	setTimeout(() => {
 		loginTip()
-
+		flushModels("zgsm", true)
 		// init project-wiki subtasks.
 		ensureProjectWikiSubtasksExists()
 	}, 2000)

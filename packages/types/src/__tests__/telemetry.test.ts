@@ -3,6 +3,7 @@
 import {
 	getErrorStatusCode,
 	getErrorMessage,
+	extractMessageFromJsonPayload,
 	shouldReportApiErrorToTelemetry,
 	EXPECTED_API_ERROR_CODES,
 	ApiProviderError,
@@ -48,15 +49,20 @@ describe("telemetry error utilities", () => {
 	})
 
 	describe("getErrorMessage", () => {
-		it("should return undefined for non-OpenAI SDK errors", () => {
+		it("should return undefined for null, undefined, or objects without message", () => {
 			expect(getErrorMessage(null)).toBeUndefined()
 			expect(getErrorMessage(undefined)).toBeUndefined()
-			expect(getErrorMessage({ message: "error" })).toBeUndefined()
+			expect(getErrorMessage({})).toBeUndefined()
+			expect(getErrorMessage({ code: 500 })).toBeUndefined()
 		})
 
 		it("should return the primary message for simple OpenAI SDK errors", () => {
 			const error = { status: 400, message: "Bad request" }
 			expect(getErrorMessage(error)).toBe("Bad request")
+		})
+
+		it("should return message from plain objects with message property", () => {
+			expect(getErrorMessage({ message: "error" })).toBe("error")
 		})
 
 		it("should prioritize nested error.message over primary message", () => {
@@ -99,6 +105,132 @@ describe("telemetry error utilities", () => {
 				error: {},
 			}
 			expect(getErrorMessage(error)).toBe("Forbidden")
+		})
+
+		it("should extract message from JSON payload in error message", () => {
+			const error = {
+				status: 503,
+				message: '503 {"error":{"code":"","message":"Model unavailable"}}',
+			}
+			expect(getErrorMessage(error)).toBe("Model unavailable")
+		})
+
+		it("should extract message from JSON payload with status prefix", () => {
+			const error = {
+				status: 503,
+				message:
+					'503 {"error":{"code":"","message":"所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道，请更换分组尝试"}}',
+			}
+			expect(getErrorMessage(error)).toBe(
+				"所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道，请更换分组尝试",
+			)
+		})
+
+		it("should extract message from nested error.message containing JSON", () => {
+			const error = {
+				status: 500,
+				message: "Request failed",
+				error: { message: '{"error":{"message":"Upstream provider error"}}' },
+			}
+			expect(getErrorMessage(error)).toBe("Upstream provider error")
+		})
+
+		it("should return original message when JSON has no message field", () => {
+			const error = {
+				status: 500,
+				message: '{"error":{"code":"123"}}',
+			}
+			expect(getErrorMessage(error)).toBe('{"error":{"code":"123"}}')
+		})
+
+		it("should return original message when JSON is invalid", () => {
+			const error = {
+				status: 500,
+				message: "503 {invalid json}",
+			}
+			expect(getErrorMessage(error)).toBe("503 {invalid json}")
+		})
+
+		it("should extract message from standard Error object", () => {
+			const error = new Error("Simple error message")
+			expect(getErrorMessage(error)).toBe("Simple error message")
+		})
+
+		it("should extract message from standard Error with JSON payload", () => {
+			const error = new Error('503 {"error":{"code":"","message":"Model unavailable"}}')
+			expect(getErrorMessage(error)).toBe("Model unavailable")
+		})
+
+		it("should extract message from ApiProviderError", () => {
+			const error = new ApiProviderError("Test error", "OpenRouter", "gpt-4", "createMessage")
+			expect(getErrorMessage(error)).toBe("Test error")
+		})
+
+		it("should extract message from ApiProviderError with JSON payload", () => {
+			const jsonMessage =
+				'503 {"error":{"code":"","message":"所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道"}}'
+			const error = new ApiProviderError(jsonMessage, "Anthropic", "claude-sonnet-4-5", "createMessage")
+			expect(getErrorMessage(error)).toBe("所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道")
+		})
+
+		it("should handle ApiProviderError with errorCode but no status property", () => {
+			const error = new ApiProviderError("Test error", "Anthropic", "claude-3-opus", "createMessage", 500)
+			expect(getErrorMessage(error)).toBe("Test error")
+		})
+	})
+
+	describe("extractMessageFromJsonPayload", () => {
+		it("should return undefined for messages without JSON", () => {
+			expect(extractMessageFromJsonPayload("Simple error message")).toBeUndefined()
+			expect(extractMessageFromJsonPayload("Error: something went wrong")).toBeUndefined()
+			expect(extractMessageFromJsonPayload("")).toBeUndefined()
+		})
+
+		it("should extract message from error.message structure", () => {
+			const json = '{"error":{"message":"Model unavailable"}}'
+			expect(extractMessageFromJsonPayload(json)).toBe("Model unavailable")
+		})
+
+		it("should extract message from error.message with code structure", () => {
+			const json = '{"error":{"code":"","message":"Model unavailable"}}'
+			expect(extractMessageFromJsonPayload(json)).toBe("Model unavailable")
+		})
+
+		it("should extract message from status prefix followed by JSON", () => {
+			const message = '503 {"error":{"code":"","message":"Model unavailable"}}'
+			expect(extractMessageFromJsonPayload(message)).toBe("Model unavailable")
+		})
+
+		it("should extract message from simple message structure", () => {
+			const json = '{"message":"Simple error"}'
+			expect(extractMessageFromJsonPayload(json)).toBe("Simple error")
+		})
+
+		it("should return undefined for JSON without message field", () => {
+			const json = '{"error":{"code":"500"}}'
+			expect(extractMessageFromJsonPayload(json)).toBeUndefined()
+		})
+
+		it("should return undefined for invalid JSON", () => {
+			expect(extractMessageFromJsonPayload("{invalid json}")).toBeUndefined()
+			expect(extractMessageFromJsonPayload("503 {not: valid: json}")).toBeUndefined()
+		})
+
+		it("should handle nested error structure with empty code", () => {
+			const json = '{"error":{"code":"","message":"Token quota exceeded"}}'
+			expect(extractMessageFromJsonPayload(json)).toBe("Token quota exceeded")
+		})
+
+		it("should handle Unicode messages correctly", () => {
+			const json = '{"error":{"message":"所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道"}}'
+			expect(extractMessageFromJsonPayload(json)).toBe(
+				"所有令牌分组 Tier 3 下对于模型 claude-sonnet-4-5 均无可用渠道",
+			)
+		})
+
+		it("should return undefined when message field is not a string", () => {
+			const json = '{"error":{"message":123}}'
+			expect(extractMessageFromJsonPayload(json)).toBeUndefined()
 		})
 	})
 

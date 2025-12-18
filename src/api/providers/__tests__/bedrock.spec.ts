@@ -376,6 +376,103 @@ describe("AwsBedrockHandler", () => {
 				expect(result.modelId).toBe("ap.anthropic.claude-3-5-sonnet-20241022-v2:0") // Should be preserved as-is
 			})
 		})
+
+		describe("AWS GovCloud and China partition support", () => {
+			it("should parse AWS GovCloud ARNs (arn:aws-us-gov:bedrock:...)", () => {
+				const handler = new AwsBedrockHandler({
+					apiModelId: "test",
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-gov-west-1",
+				})
+
+				const parseArn = (handler as any).parseArn.bind(handler)
+
+				const result = parseArn(
+					"arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+				)
+
+				expect(result.isValid).toBe(true)
+				expect(result.region).toBe("us-gov-west-1")
+				expect(result.modelType).toBe("inference-profile")
+			})
+
+			it("should parse AWS China ARNs (arn:aws-cn:bedrock:...)", () => {
+				const handler = new AwsBedrockHandler({
+					apiModelId: "test",
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "cn-north-1",
+				})
+
+				const parseArn = (handler as any).parseArn.bind(handler)
+
+				const result = parseArn(
+					"arn:aws-cn:bedrock:cn-north-1:123456789012:inference-profile/anthropic.claude-3-sonnet-20240229-v1:0",
+				)
+
+				expect(result.isValid).toBe(true)
+				expect(result.region).toBe("cn-north-1")
+				expect(result.modelType).toBe("inference-profile")
+			})
+
+			it("should accept GovCloud custom ARN in handler constructor", () => {
+				const handler = new AwsBedrockHandler({
+					apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+					awsAccessKey: "test-access-key",
+					awsSecretKey: "test-secret-key",
+					awsRegion: "us-gov-west-1",
+					awsCustomArn:
+						"arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+				})
+
+				// Should not throw and should return valid model info
+				const modelInfo = handler.getModel()
+				expect(modelInfo.id).toBe(
+					"arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+				)
+				expect(modelInfo.info).toBeDefined()
+			})
+
+			it("should accept China region custom ARN in handler constructor", () => {
+				const handler = new AwsBedrockHandler({
+					apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+					awsAccessKey: "test-access-key",
+					awsSecretKey: "test-secret-key",
+					awsRegion: "cn-north-1",
+					awsCustomArn:
+						"arn:aws-cn:bedrock:cn-north-1:123456789012:inference-profile/anthropic.claude-3-sonnet-20240229-v1:0",
+				})
+
+				// Should not throw and should return valid model info
+				const modelInfo = handler.getModel()
+				expect(modelInfo.id).toBe(
+					"arn:aws-cn:bedrock:cn-north-1:123456789012:inference-profile/anthropic.claude-3-sonnet-20240229-v1:0",
+				)
+				expect(modelInfo.info).toBeDefined()
+			})
+
+			it("should detect region mismatch in GovCloud ARN", () => {
+				const handler = new AwsBedrockHandler({
+					apiModelId: "test",
+					awsAccessKey: "test",
+					awsSecretKey: "test",
+					awsRegion: "us-east-1",
+				})
+
+				const parseArn = (handler as any).parseArn.bind(handler)
+
+				// Region in ARN (us-gov-west-1) doesn't match provided region (us-east-1)
+				const result = parseArn(
+					"arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+					"us-east-1",
+				)
+
+				expect(result.isValid).toBe(true)
+				expect(result.region).toBe("us-gov-west-1")
+				expect(result.errorMessage).toContain("Region mismatch")
+			})
+		})
 	})
 
 	describe("image handling", () => {

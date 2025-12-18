@@ -342,17 +342,76 @@ export function getErrorStatusCode(error: unknown): number | undefined {
 }
 
 /**
- * Extracts the most descriptive error message from an OpenAI SDK error.
+ * Extracts a message from a JSON payload embedded in an error string.
+ * Handles cases like "503 {"error":{"message":"actual error message"}}"
+ * or just '{"error":{"message":"actual error message"}}'
+ *
+ * @param message - The message string that may contain JSON
+ * @returns The extracted message from the JSON payload, or undefined if not found
+ */
+export function extractMessageFromJsonPayload(message: string): string | undefined {
+	// Find the first occurrence of '{' which may indicate JSON content
+	const jsonStartIndex = message.indexOf("{")
+	if (jsonStartIndex === -1) {
+		return undefined
+	}
+
+	const potentialJson = message.slice(jsonStartIndex)
+
+	try {
+		const parsed = JSON.parse(potentialJson)
+
+		// Handle structure: {"error":{"message":"..."}} or {"error":{"code":"","message":"..."}}
+		if (parsed?.error?.message && typeof parsed.error.message === "string") {
+			return parsed.error.message
+		}
+
+		// Handle structure: {"message":"..."}
+		if (parsed?.message && typeof parsed.message === "string") {
+			return parsed.message
+		}
+	} catch {
+		// JSON parsing failed - not valid JSON
+	}
+
+	return undefined
+}
+
+/**
+ * Extracts the most descriptive error message from an error object.
  * Prioritizes nested metadata (upstream provider errors) over the standard message.
+ * Also handles JSON payloads embedded in error messages.
  * @param error - The error to extract message from
- * @returns The best available error message, or undefined if not an OpenAI SDK error
+ * @returns The best available error message, or undefined if not extractable
  */
 export function getErrorMessage(error: unknown): string | undefined {
+	let message: string | undefined
+
 	if (isOpenAISdkError(error)) {
 		// Prioritize nested metadata which may contain upstream provider details
-		return error.error?.metadata?.raw || error.error?.message || error.message
+		message = error.error?.metadata?.raw || error.error?.message || error.message
+	} else if (error instanceof Error) {
+		// Handle standard Error objects (including ApiProviderError)
+		message = error.message
+	} else if (typeof error === "object" && error !== null && "message" in error) {
+		// Handle plain objects with a message property
+		const msgValue = (error as { message: unknown }).message
+		if (typeof msgValue === "string") {
+			message = msgValue
+		}
 	}
-	return undefined
+
+	if (!message) {
+		return undefined
+	}
+
+	// If the message contains JSON, try to extract the message from it
+	const extractedMessage = extractMessageFromJsonPayload(message)
+	if (extractedMessage) {
+		return extractedMessage
+	}
+
+	return message
 }
 
 /**

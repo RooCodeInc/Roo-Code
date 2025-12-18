@@ -94,13 +94,13 @@ export class CoworkflowErrorHandler implements ICoworkflowErrorHandler {
 		switch (error.severity) {
 			case "critical":
 			case "error":
-				vscode.window.showErrorMessage(message, ...actions)
+				;(vscode?.window?.showErrorMessage ?? console.log)(message, ...actions)
 				break
 			case "warning":
-				vscode.window.showWarningMessage(message, ...actions)
+				;(vscode?.window?.showWarningMessage ?? console.log)(message, ...actions)
 				break
 			case "info":
-				vscode.window.showInformationMessage(message, ...actions)
+				;(vscode?.window?.showInformationMessage ?? console.log)(message, ...actions)
 				break
 		}
 	}

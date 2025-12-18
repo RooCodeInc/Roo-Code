@@ -551,6 +551,7 @@ export const openAiModelInfoSaneDefaults: ModelInfo = {
 	inputPrice: 0,
 	outputPrice: 0,
 	supportsNativeTools: true,
+	defaultToolProtocol: "native",
 }
 
 // https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation

@@ -234,10 +234,23 @@ export const ErrorRow = memo(
 										className="text-sm flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100"
 										onClick={(e) => {
 											e.preventDefault()
-											vscode.postMessage({ type: "openExternal", url: docsURL })
+											// Handle internal navigation to settings
+											if (docsURL.startsWith("roocode://settings")) {
+												vscode.postMessage({
+													type: "switchTab",
+													tab: "settings",
+													values: { section: "providers" },
+												})
+											} else {
+												vscode.postMessage({ type: "openExternal", url: docsURL })
+											}
 										}}>
 										<BookOpenText className="size-3 mt-[3px]" />
-										{t("chat:apiRequest.errorMessage.docs")}
+										{docsURL.startsWith("roocode://settings")
+											? t("chat:apiRequest.errorMessage.goToSettings", {
+													defaultValue: "Settings",
+												})
+											: t("chat:apiRequest.errorMessage.docs")}
 									</a>
 								)}
 								{apiConfiguration.apiProvider !== "zgsm" && formattedErrorDetails && (

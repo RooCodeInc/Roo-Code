@@ -1173,6 +1173,15 @@ export class ClineProvider
 				window.$RefreshReg$ = () => {}
 				window.$RefreshSig$ = () => (type) => type
 				window.__vite_plugin_react_preamble_installed__ = true
+				Object.assign(window, {
+					"process": {
+						"env": {
+						    "ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
+							"ANTHROPIC_AUTH_TOKEN": "${process.env.ANTHROPIC_AUTH_TOKEN}",
+							"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
+						}
+					}
+				})
 			</script>
 		`
 
@@ -1281,6 +1290,15 @@ export class ClineProvider
 				window.COSTRICT_BASE_URI = "${costrictUri}"
 				window.AUDIO_BASE_URI = "${audioUri}"
 				window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
+				Object.assign(window, {
+					"process": {
+						"env": {
+						    "ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
+							"ANTHROPIC_AUTH_TOKEN": "${process.env.ANTHROPIC_AUTH_TOKEN}",
+							"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
+						}
+					}
+				})
 			</script>
             <title>CoStrict</title>
           </head>
@@ -1548,11 +1566,11 @@ export class ClineProvider
 		// Get platform-specific application data directory
 		let mcpServersDir: string
 		if (process.platform === "win32") {
-			// Windows: %APPDATA%\Roo-Code\MCP
+			// Windows: %APPDATA%\Costrict\MCP
 			mcpServersDir = path.join(os.homedir(), "AppData", "Roaming", "Costrict", "MCP")
 		} else if (process.platform === "darwin") {
-			// macOS: ~/Documents/Cline/MCP
-			mcpServersDir = path.join(os.homedir(), "Documents", "Cline", "MCP")
+			// macOS: ~/Documents/Costrict/MCP
+			mcpServersDir = path.join(os.homedir(), "Documents", "Costrict", "MCP")
 		} else {
 			// Linux: ~/.local/share/Cline/MCP
 			mcpServersDir = path.join(os.homedir(), ".local", "share", "Costrict", "MCP")
@@ -2168,6 +2186,14 @@ export class ClineProvider
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", isJetbrainsPlatform()),
+			claudeCodeIsAuthenticated: await (async () => {
+				try {
+					const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+					return await claudeCodeOAuthManager.isAuthenticated()
+				} catch {
+					return false
+				}
+			})(),
 		}
 	}
 

@@ -771,9 +771,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				messageWithTs.reasoning_details = reasoningDetails
 			}
 
-			// Store reasoning: plain text (most providers) or encrypted (OpenAI Native)
+			// Store reasoning: Anthropic thinking (with signature), plain text (most providers), or encrypted (OpenAI Native)
 			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
-			if (reasoning && !reasoningDetails) {
+			if (reasoning && thoughtSignature && !reasoningDetails) {
+				// Anthropic provider with extended thinking: Store as proper `thinking` block
+				// This format passes through anthropic-filter.ts and is properly round-tripped
+				// for interleaved thinking with tool use (required by Anthropic API)
+				const thinkingBlock = {
+					type: "thinking",
+					thinking: reasoning,
+					signature: thoughtSignature,
+				}
+
+				if (typeof messageWithTs.content === "string") {
+					messageWithTs.content = [
+						thinkingBlock,
+						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+					]
+				} else if (Array.isArray(messageWithTs.content)) {
+					messageWithTs.content = [thinkingBlock, ...messageWithTs.content]
+				} else if (!messageWithTs.content) {
+					messageWithTs.content = [thinkingBlock]
+				}
+			} else if (reasoning && !reasoningDetails) {
+				// Other providers (non-Anthropic): Store as generic reasoning block
 				const reasoningBlock = {
 					type: "reasoning",
 					text: reasoning,
@@ -811,9 +832,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
-			// If we have a thought signature, append it as a dedicated content block
-			// so it can be round-tripped in api_history.json and re-sent on subsequent calls.
-			if (thoughtSignature) {
+			// If we have a thought signature WITHOUT reasoning text (edge case),
+			// append it as a dedicated content block for non-Anthropic providers (e.g., Gemini).
+			// Note: For Anthropic, the signature is already included in the thinking block above.
+			if (thoughtSignature && !reasoning) {
 				const thoughtSignatureBlock = {
 					type: "thoughtSignature",
 					thoughtSignature,
