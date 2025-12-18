@@ -615,5 +615,186 @@ describe("convertToR1Format", () => {
 				expect(result.filter((m) => m.role === "user")).toHaveLength(1)
 			})
 		})
+
+		describe("addEmptyReasoning option for provider switching compatibility", () => {
+			it("should add empty reasoning_content to assistant messages without reasoning when addEmptyReasoning is true", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Hello" },
+					{ role: "assistant", content: "Hi there" },
+					{ role: "user", content: "How are you?" },
+					{ role: "assistant", content: "I'm doing well" },
+				]
+
+				const result = convertToR1Format(input, { addEmptyReasoning: true })
+
+				expect(result).toHaveLength(4)
+				// All assistant messages should have reasoning_content (empty string)
+				expect((result[1] as any).reasoning_content).toBe("")
+				expect((result[3] as any).reasoning_content).toBe("")
+			})
+
+			it("should NOT add empty reasoning_content when addEmptyReasoning is false (default)", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Hello" },
+					{ role: "assistant", content: "Hi there" },
+				]
+
+				const result = convertToR1Format(input)
+
+				expect(result).toHaveLength(2)
+				// Assistant message should NOT have reasoning_content field
+				expect((result[1] as any).reasoning_content).toBeUndefined()
+			})
+
+			it("should preserve existing reasoning_content when addEmptyReasoning is true", () => {
+				const input = [
+					{ role: "user" as const, content: "Hello" },
+					{
+						role: "assistant" as const,
+						content: "Hi there",
+						reasoning_content: "Let me think...",
+					},
+				]
+
+				const result = convertToR1Format(input as Anthropic.Messages.MessageParam[], {
+					addEmptyReasoning: true,
+				})
+
+				expect(result).toHaveLength(2)
+				// Should preserve the existing reasoning_content, not replace with empty
+				expect((result[1] as any).reasoning_content).toBe("Let me think...")
+			})
+
+			it("should add empty reasoning_content to assistant messages with array content", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Hello" },
+					{
+						role: "assistant",
+						content: [{ type: "text", text: "Hi there" }],
+					},
+				]
+
+				const result = convertToR1Format(input, { addEmptyReasoning: true })
+
+				expect(result).toHaveLength(2)
+				expect((result[1] as any).reasoning_content).toBe("")
+			})
+
+			it("should add empty reasoning_content to assistant messages with tool_calls", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "What's the weather?" },
+					{
+						role: "assistant",
+						content: [
+							{ type: "text", text: "Let me check." },
+							{
+								type: "tool_use",
+								id: "call_123",
+								name: "get_weather",
+								input: { location: "SF" },
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input, { addEmptyReasoning: true })
+
+				expect(result).toHaveLength(2)
+				expect((result[1] as any).reasoning_content).toBe("")
+				expect((result[1] as any).tool_calls).toHaveLength(1)
+			})
+
+			it("should handle provider switch scenario: messages from OpenAI now sent to DeepSeek", () => {
+				// Simulates a conversation that started with OpenAI (no reasoning_content)
+				// and is now being sent to DeepSeek reasoner (requires reasoning_content on all assistant messages)
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "System prompt here" },
+					{ role: "user", content: "Write a hello world program" },
+					{
+						role: "assistant",
+						content: "Here's a hello world program:\n```python\nprint('Hello, World!')\n```",
+					},
+					{ role: "user", content: "Now modify it to say goodbye" },
+				]
+
+				const result = convertToR1Format(input, { addEmptyReasoning: true })
+
+				// Should have merged consecutive user messages
+				expect(result).toHaveLength(3)
+				expect(result[0].role).toBe("user")
+				expect(result[1].role).toBe("assistant")
+				expect(result[2].role).toBe("user")
+
+				// The assistant message from OpenAI should now have empty reasoning_content
+				expect((result[1] as any).reasoning_content).toBe("")
+			})
+
+			it("should work with both mergeToolResultText and addEmptyReasoning options", () => {
+				const input = [
+					{ role: "user" as const, content: "Start" },
+					{
+						role: "assistant" as const,
+						content: [
+							{
+								type: "tool_use" as const,
+								id: "call_123",
+								name: "test_tool",
+								input: {},
+							},
+						],
+					},
+					{
+						role: "user" as const,
+						content: [
+							{
+								type: "tool_result" as const,
+								tool_use_id: "call_123",
+								content: "Result",
+							},
+							{
+								type: "text" as const,
+								text: "<environment_details>Context</environment_details>",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input as Anthropic.Messages.MessageParam[], {
+					mergeToolResultText: true,
+					addEmptyReasoning: true,
+				})
+
+				// Should have: user, assistant (with empty reasoning + tool_calls), tool
+				expect(result).toHaveLength(3)
+				expect(result[0]).toEqual({ role: "user", content: "Start" })
+
+				// Assistant message should have empty reasoning_content and tool_calls
+				expect((result[1] as any).reasoning_content).toBe("")
+				expect((result[1] as any).tool_calls).toBeDefined()
+
+				// Tool message should have merged content
+				expect(result[2]).toEqual({
+					role: "tool",
+					tool_call_id: "call_123",
+					content: "Result\n\n<environment_details>Context</environment_details>",
+				})
+			})
+
+			it("should handle merged assistant messages with addEmptyReasoning", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "assistant", content: "First part" },
+					{ role: "assistant", content: "Second part" },
+				]
+
+				const result = convertToR1Format(input, { addEmptyReasoning: true })
+
+				// Should merge into one assistant message
+				expect(result).toHaveLength(1)
+				expect(result[0].role).toBe("assistant")
+				expect(result[0].content).toBe("First part\nSecond part")
+				// Should have empty reasoning_content
+				expect((result[0] as any).reasoning_content).toBe("")
+			})
+		})
 	})
 })
