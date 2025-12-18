@@ -73,8 +73,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// Enable native tools by default using resolveToolProtocol (which checks model's defaultToolProtocol)
 		// This matches OpenRouter's approach of always including tools when provided
 		// Also exclude tools when tool_choice is "none" since that means "don't use tools"
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
 		const model = this.getModel()
-		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
 		const shouldIncludeNativeTools =
 			metadata?.tools &&
 			metadata.tools.length > 0 &&

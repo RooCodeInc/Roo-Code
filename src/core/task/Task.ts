@@ -32,6 +32,7 @@ import {
 	type HistoryItem,
 	type CreateTaskOptions,
 	type ModelInfo,
+	type ToolProtocol,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -51,7 +52,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { resolveToolProtocol, detectToolProtocolFromHistory } from "../../utils/resolveToolProtocol"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -202,6 +203,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @see {@link waitForModeInitialization} - To ensure initialization is complete
 	 */
 	private _taskMode: string | undefined
+
+	/**
+	 * The tool protocol locked to this task. Once set, the task will continue
+	 * using this protocol even if user settings change.
+	 *
+	 * ## Why This Matters
+	 * When NTC (Native Tool Calling) is enabled, XML parsing does NOT occur.
+	 * If a task previously used XML tools, resuming it with NTC enabled would
+	 * break because the tool calls in the history would not be parseable.
+	 *
+	 * ## Lifecycle
+	 *
+	 * ### For new tasks:
+	 * 1. Set immediately in constructor via `resolveToolProtocol()`
+	 * 2. Locked for the lifetime of the task
+	 *
+	 * ### For history items:
+	 * 1. If `historyItem.toolProtocol` exists, use it
+	 * 2. Otherwise, detect from API history via `detectToolProtocolFromHistory()`
+	 * 3. If no tools in history, use `resolveToolProtocol()` from current settings
+	 *
+	 * @private
+	 */
+	private _taskToolProtocol: ToolProtocol | undefined
 
 	/**
 	 * Promise that resolves when the task mode has been initialized.
@@ -459,19 +484,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._taskMode = historyItem.mode || defaultModeSlug
 			this.taskModeReady = Promise.resolve()
 			TelemetryService.instance.captureTaskRestarted(this.taskId)
+
+			// For history items, use the persisted tool protocol if available.
+			// If not available (old tasks), it will be detected in resumeTaskFromHistory.
+			this._taskToolProtocol = historyItem.toolProtocol
 		} else {
 			// For new tasks, don't set the mode yet - wait for async initialization.
 			this._taskMode = undefined
 			this.taskModeReady = this.initializeTaskMode(provider)
 			TelemetryService.instance.captureTaskCreated(this.taskId)
+
+			// For new tasks, resolve and lock the tool protocol immediately.
+			// This ensures the task will continue using this protocol even if
+			// user settings change.
+			const modelInfo = this.api.getModel().info
+			this._taskToolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
 		}
 
-		// Initialize the assistant message parser only for XML protocol.
+		// Initialize the assistant message parser based on the locked tool protocol.
 		// For native protocol, tool calls come as tool_call chunks, not XML.
-		// experiments is always provided via TaskOptions (defaults to experimentDefault in provider)
-		const modelInfo = this.api.getModel().info
-		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		this.assistantMessageParser = toolProtocol !== "native" ? new AssistantMessageParser() : undefined
+		// For history items without a persisted protocol, we default to XML parser
+		// and will update it in resumeTaskFromHistory after detection.
+		const effectiveProtocol = this._taskToolProtocol || "xml"
+		this.assistantMessageParser = effectiveProtocol !== "native" ? new AssistantMessageParser() : undefined
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -977,6 +1012,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
 				initialStatus: this.initialStatus,
+				toolProtocol: this._taskToolProtocol, // Persist the locked tool protocol.
 			})
 
 			// Emit token/tool usage updates using debounced function
@@ -1286,9 +1322,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Updates the API configuration and reinitializes the parser based on the new tool protocol.
-	 * This should be called when switching between models/profiles with different tool protocols
-	 * to prevent the parser from being left in an inconsistent state.
+	 * Updates the API configuration but preserves the locked tool protocol.
+	 * The task's tool protocol is locked at creation time and should NOT change
+	 * even when switching between models/profiles with different settings.
 	 *
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
@@ -1297,26 +1333,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(newApiConfiguration)
 
-		// Determine what the tool protocol should be
-		const modelInfo = this.api.getModel().info
-		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		const shouldUseXmlParser = protocol === "xml"
-
-		// Ensure parser state matches protocol requirement
-		const parserStateCorrect =
-			(shouldUseXmlParser && this.assistantMessageParser) || (!shouldUseXmlParser && !this.assistantMessageParser)
-
-		if (parserStateCorrect) {
-			return
-		}
-
-		// Fix parser state
-		if (shouldUseXmlParser && !this.assistantMessageParser) {
-			this.assistantMessageParser = new AssistantMessageParser()
-		} else if (!shouldUseXmlParser && this.assistantMessageParser) {
-			this.assistantMessageParser.reset()
-			this.assistantMessageParser = undefined
-		}
+		// IMPORTANT: Do NOT change the parser based on the new configuration!
+		// The task's tool protocol is locked at creation time and must remain
+		// consistent throughout the task's lifetime to ensure history can be
+		// properly resumed.
 	}
 
 	public async submitUserMessage(
@@ -1399,9 +1419,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
 		// Determine if we're using native tool protocol for proper message handling
-		const modelInfo = this.api.getModel().info
-		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		const useNativeTools = isNativeProtocol(protocol)
+		// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
+		const useNativeTools = isNativeProtocol(this._taskToolProtocol ?? "xml")
 
 		const {
 			messages,
@@ -1583,10 +1602,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
 		)
-		const modelInfo = this.api.getModel().info
-		const state = await this.providerRef.deref()?.getState()
-		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName, toolProtocol))
+		// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
+		return formatResponse.toolError(
+			formatResponse.missingToolParameterError(paramName, this._taskToolProtocol ?? "xml"),
+		)
 	}
 
 	// Lifecycle
@@ -1702,6 +1721,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// the task first.
 		this.apiConversationHistory = await this.getSavedApiConversationHistory()
 
+		// If we don't have a persisted tool protocol (old tasks before this feature),
+		// detect it from the API history. This ensures tasks that previously used
+		// XML tools will continue using XML even if NTC is now enabled.
+		if (!this._taskToolProtocol) {
+			const detectedProtocol = detectToolProtocolFromHistory(this.apiConversationHistory)
+			if (detectedProtocol) {
+				// Found tool calls in history - lock to that protocol
+				this._taskToolProtocol = detectedProtocol
+			} else {
+				// No tool calls in history yet - use current settings
+				const modelInfo = this.api.getModel().info
+				this._taskToolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
+			}
+
+			// Update parser state to match the detected/resolved protocol
+			const shouldUseXmlParser = this._taskToolProtocol === "xml"
+			if (shouldUseXmlParser && !this.assistantMessageParser) {
+				this.assistantMessageParser = new AssistantMessageParser()
+			} else if (!shouldUseXmlParser && this.assistantMessageParser) {
+				this.assistantMessageParser.reset()
+				this.assistantMessageParser = undefined
+			}
+		} else {
+		}
+
 		const lastClineMessage = this.clineMessages
 			.slice()
 			.reverse()
@@ -1735,9 +1779,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// we need to replace all tool use blocks with a text block since the API disallows
 		// conversations with tool uses and no tool schema.
 		// For native protocol, we preserve tool_use and tool_result blocks as they're expected by the API.
-		const state = await this.providerRef.deref()?.getState()
-		const protocol = resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)
-		const useNative = isNativeProtocol(protocol)
+		// IMPORTANT: Use the task's locked protocol, NOT the current settings!
+		const useNative = isNativeProtocol(this._taskToolProtocol)
 
 		// Only convert tool blocks to text for XML protocol
 		// For native protocol, the API expects proper tool_use/tool_result structure
@@ -1746,9 +1789,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (Array.isArray(message.content)) {
 					const newContent = message.content.map((block) => {
 						if (block.type === "tool_use") {
-							// Format tool invocation based on protocol
+							// Format tool invocation based on the task's locked protocol
 							const params = block.input as Record<string, any>
-							const formattedText = formatToolInvocation(block.name, params, protocol)
+							const formattedText = formatToolInvocation(block.name, params, this._taskToolProtocol)
 
 							return {
 								type: "text",
@@ -2190,9 +2233,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the user hits max requests and denies resetting the count.
 				break
 			} else {
-				const modelInfo = this.api.getModel().info
-				const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(toolProtocol) }]
+				// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
+				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml") }]
 				this.consecutiveMistakeCount++
 			}
 		}
@@ -2434,7 +2476,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.cachedStreamingModel = this.api.getModel()
 				const streamModelInfo = this.cachedStreamingModel.info
 				const cachedModelId = this.cachedStreamingModel.id
-				const streamProtocol = resolveToolProtocol(this.apiConfiguration, streamModelInfo)
+				// Use the task's locked protocol instead of resolving fresh.
+				// This ensures task resumption works correctly even if NTC settings changed.
+				// Fallback to resolving if somehow _taskToolProtocol is not set (should not happen).
+				const streamProtocol = resolveToolProtocol(
+					this.apiConfiguration,
+					streamModelInfo,
+					this._taskToolProtocol,
+				)
 				const shouldUseXmlParser = streamProtocol === "xml"
 
 				// Yields only if the first chunk is successful, otherwise will
@@ -3187,10 +3236,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
-						const modelInfo = this.api.getModel().info
-						const state = await this.providerRef.deref()?.getState()
-						const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-						this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed(toolProtocol) })
+						// Use the task's locked protocol for consistent behavior
+						this.userMessageContent.push({
+							type: "text",
+							text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml"),
+						})
 						this.consecutiveMistakeCount++
 					}
 
@@ -3217,10 +3267,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// we need to remove that message before retrying to avoid having two consecutive
 					// user messages (which would cause tool_result validation errors).
 					let state = await this.providerRef.deref()?.getState()
-					if (
-						isNativeProtocol(resolveToolProtocol(this.apiConfiguration, this.api.getModel().info)) &&
-						this.apiConversationHistory.length > 0
-					) {
+					// Use the task's locked protocol, NOT current settings
+					if (isNativeProtocol(this._taskToolProtocol ?? "xml") && this.apiConversationHistory.length > 0) {
 						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
 						if (lastMessage.role === "user") {
 							// Remove the last user message that we added earlier
@@ -3280,10 +3328,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						} else {
 							// User declined to retry
 							// For native protocol, re-add the user message we removed
-							// Reuse the state variable from above
-							if (
-								isNativeProtocol(resolveToolProtocol(this.apiConfiguration, this.api.getModel().info))
-							) {
+							// Use the task's locked protocol, NOT current settings
+							if (isNativeProtocol(this._taskToolProtocol ?? "xml")) {
 								await this.addToApiConversationHistory({
 									role: "user",
 									content: currentUserContent,
@@ -3380,8 +3426,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
-			// Resolve the tool protocol based on profile, model, and provider settings
-			const toolProtocol = resolveToolProtocol(apiConfiguration ?? this.apiConfiguration, modelInfo)
+			// Use the task's locked protocol for system prompt consistency.
+			// This ensures the system prompt matches the protocol the task was started with,
+			// even if user settings have changed since then.
+			const toolProtocol = resolveToolProtocol(
+				apiConfiguration ?? this.apiConfiguration,
+				modelInfo,
+				this._taskToolProtocol,
+			)
 
 			return SYSTEM_PROMPT(
 				provider.context,
@@ -3451,8 +3503,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 
 		// Determine if we're using native tool protocol for proper message handling
-		const protocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		const useNativeTools = isNativeProtocol(protocol)
+		// Use the task's locked protocol, NOT the current settings
+		const useNativeTools = isNativeProtocol(this._taskToolProtocol ?? "xml")
 
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
@@ -3595,9 +3647,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const currentProfileId = this.getCurrentProfileId(state)
 
 			// Determine if we're using native tool protocol for proper message handling
-			const modelInfoForProtocol = this.api.getModel().info
-			const protocol = resolveToolProtocol(this.apiConfiguration, modelInfoForProtocol)
-			const useNativeTools = isNativeProtocol(protocol)
+			// Use the task's locked protocol, NOT the current settings
+			const useNativeTools = isNativeProtocol(this._taskToolProtocol ?? "xml")
 
 			// Check if context management will likely run (threshold check)
 			// This allows us to show an in-progress indicator to the user
@@ -3722,11 +3773,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Determine if we should include native tools based on:
-		// 1. Tool protocol is set to NATIVE
+		// 1. Task's locked tool protocol is set to NATIVE
 		// 2. Model supports native tools
+		// CRITICAL: Use the task's locked protocol to ensure tasks that started with XML
+		// tools continue using XML even if NTC settings have since changed.
 		const modelInfo = this.api.getModel().info
-		const toolProtocol = resolveToolProtocol(this.apiConfiguration, modelInfo)
-		const shouldIncludeTools = toolProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
+		const taskProtocol = this._taskToolProtocol ?? "xml"
+		const shouldIncludeTools = taskProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = []
@@ -3760,7 +3813,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
 			// Include tools and tool protocol when using native protocol and model supports it
 			...(shouldIncludeTools
-				? { tools: allTools, tool_choice: "auto", toolProtocol, parallelToolCalls: parallelToolCallsEnabled }
+				? {
+						tools: allTools,
+						tool_choice: "auto",
+						toolProtocol: taskProtocol,
+						parallelToolCalls: parallelToolCallsEnabled,
+					}
 				: {}),
 		}
 
@@ -4162,6 +4220,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	/**
+	 * Get the tool protocol locked to this task.
+	 * Returns undefined only if the task hasn't been fully initialized yet.
+	 *
+	 * @see {@link _taskToolProtocol} for lifecycle details
+	 */
+	public get taskToolProtocol() {
+		return this._taskToolProtocol
 	}
 
 	/**
