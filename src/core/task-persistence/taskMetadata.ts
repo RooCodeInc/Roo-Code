@@ -21,6 +21,8 @@ export type TaskMetadataOptions = {
 	globalStoragePath: string
 	workspace: string
 	mode?: string
+	/** Provider profile name for the task (sticky profile feature) */
+	apiConfigName?: string
 	/** Initial status for the task (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
 }
@@ -34,6 +36,7 @@ export async function taskMetadata({
 	globalStoragePath,
 	workspace,
 	mode,
+	apiConfigName,
 	initialStatus,
 }: TaskMetadataOptions) {
 	const taskDir = await getTaskDirectoryPath(globalStoragePath, id)
@@ -107,6 +110,7 @@ export async function taskMetadata({
 		size: taskDirSize,
 		workspace,
 		mode,
+		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
 		...(initialStatus && { status: initialStatus }),
 	}
 
