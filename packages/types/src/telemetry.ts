@@ -495,6 +495,8 @@ export class ConsecutiveMistakeError extends Error {
 		public readonly consecutiveMistakeCount: number,
 		public readonly consecutiveMistakeLimit: number,
 		public readonly reason: ConsecutiveMistakeReason = "unknown",
+		public readonly provider?: string,
+		public readonly modelId?: string,
 	) {
 		super(message)
 		this.name = "ConsecutiveMistakeError"
@@ -525,5 +527,7 @@ export function extractConsecutiveMistakeErrorProperties(error: ConsecutiveMista
 		consecutiveMistakeCount: error.consecutiveMistakeCount,
 		consecutiveMistakeLimit: error.consecutiveMistakeLimit,
 		reason: error.reason,
+		...(error.provider !== undefined && { provider: error.provider }),
+		...(error.modelId !== undefined && { modelId: error.modelId }),
 	}
 }

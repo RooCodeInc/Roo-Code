@@ -2222,6 +2222,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			if (this.consecutiveMistakeLimit > 0 && this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
+				// Track consecutive mistake errors in telemetry via event and PostHog exception tracking.
+				// The reason is "no_tools_used" because this limit is reached via initiateTaskLoop
+				// which increments consecutiveMistakeCount when the model doesn't use any tools.
+				TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
+				TelemetryService.instance.captureException(
+					new ConsecutiveMistakeError(
+						`Task reached consecutive mistake limit (${this.consecutiveMistakeLimit})`,
+						this.taskId,
+						this.consecutiveMistakeCount,
+						this.consecutiveMistakeLimit,
+						"no_tools_used",
+						this.apiConfiguration.apiProvider,
+						getModelId(this.apiConfiguration),
+					),
+				)
+
 				const { response, text, images } = await this.ask(
 					"mistake_limit_reached",
 					t("common:errors.mistake_limit_guidance"),
@@ -2236,19 +2252,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					await this.say("user_feedback", text, images)
-
-					// Track consecutive mistake errors in telemetry via PostHog exception tracking.
-					// The reason is "no_tools_used" because this limit is reached via initiateTaskLoop
-					// which increments consecutiveMistakeCount when the model doesn't use any tools.
-					TelemetryService.instance.captureException(
-						new ConsecutiveMistakeError(
-							`Task reached consecutive mistake limit (${this.consecutiveMistakeLimit})`,
-							this.taskId,
-							this.consecutiveMistakeCount,
-							this.consecutiveMistakeLimit,
-							"no_tools_used",
-						),
-					)
 				}
 
 				this.consecutiveMistakeCount = 0

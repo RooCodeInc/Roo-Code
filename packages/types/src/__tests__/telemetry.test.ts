@@ -405,6 +405,27 @@ describe("telemetry error utilities", () => {
 			expect(error.reason).toBe("no_tools_used")
 		})
 
+		it("should create an error with provider and modelId", () => {
+			const error = new ConsecutiveMistakeError(
+				"Test error",
+				"task-123",
+				5,
+				3,
+				"no_tools_used",
+				"anthropic",
+				"claude-3-sonnet-20240229",
+			)
+
+			expect(error.message).toBe("Test error")
+			expect(error.name).toBe("ConsecutiveMistakeError")
+			expect(error.taskId).toBe("task-123")
+			expect(error.consecutiveMistakeCount).toBe(5)
+			expect(error.consecutiveMistakeLimit).toBe(3)
+			expect(error.reason).toBe("no_tools_used")
+			expect(error.provider).toBe("anthropic")
+			expect(error.modelId).toBe("claude-3-sonnet-20240229")
+		})
+
 		it("should be an instance of Error", () => {
 			const error = new ConsecutiveMistakeError("Test error", "task-123", 3, 3)
 			expect(error).toBeInstanceOf(Error)
@@ -431,6 +452,12 @@ describe("telemetry error utilities", () => {
 		it("should accept no_tools_used reason", () => {
 			const error = new ConsecutiveMistakeError("Test error", "task-123", 3, 3, "no_tools_used")
 			expect(error.reason).toBe("no_tools_used")
+		})
+
+		it("should have undefined provider and modelId when not provided", () => {
+			const error = new ConsecutiveMistakeError("Test error", "task-123", 3, 3, "no_tools_used")
+			expect(error.provider).toBeUndefined()
+			expect(error.modelId).toBeUndefined()
 		})
 	})
 
@@ -490,6 +517,36 @@ describe("telemetry error utilities", () => {
 				consecutiveMistakeLimit: 3,
 				reason: "no_tools_used",
 			})
+		})
+
+		it("should extract all properties including provider and modelId", () => {
+			const error = new ConsecutiveMistakeError(
+				"Test error",
+				"task-123",
+				5,
+				3,
+				"no_tools_used",
+				"anthropic",
+				"claude-3-sonnet-20240229",
+			)
+			const properties = extractConsecutiveMistakeErrorProperties(error)
+
+			expect(properties).toEqual({
+				taskId: "task-123",
+				consecutiveMistakeCount: 5,
+				consecutiveMistakeLimit: 3,
+				reason: "no_tools_used",
+				provider: "anthropic",
+				modelId: "claude-3-sonnet-20240229",
+			})
+		})
+
+		it("should not include provider and modelId when undefined", () => {
+			const error = new ConsecutiveMistakeError("Test error", "task-123", 5, 3, "no_tools_used")
+			const properties = extractConsecutiveMistakeErrorProperties(error)
+
+			expect(properties).not.toHaveProperty("provider")
+			expect(properties).not.toHaveProperty("modelId")
 		})
 
 		it("should handle zero values correctly", () => {

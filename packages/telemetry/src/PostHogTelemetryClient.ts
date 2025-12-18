@@ -65,10 +65,12 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#capture] ${event.event}`)
 		}
 
+		const properties = await this.getEventProperties(event)
+
 		this.client.capture({
 			distinctId: this.distinctId,
 			event: event.event,
-			properties: await this.getEventProperties(event),
+			properties,
 		})
 	}
 
@@ -128,10 +130,12 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			}
 		}
 
-		this.client.captureException(error, this.distinctId, {
+		const exceptionProperties = {
 			...mergedProperties,
 			$app_version: telemetryProperties?.appVersion,
-		})
+		}
+
+		this.client.captureException(error, this.distinctId, exceptionProperties)
 	}
 
 	/**
