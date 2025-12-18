@@ -530,11 +530,20 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		// For OpenAI models via OpenRouter, exclude write_to_file and apply_diff, and include apply_patch
 		// This matches the behavior of the native OpenAI provider
-		if (id.startsWith("openai/")) {
+		if (id.includes("openai")) {
 			info = {
 				...info,
 				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
 				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
+			}
+		}
+
+		// For Gemini models via OpenRouter, include write_file and edit_file
+		// This matches the behavior of the native Gemini provider
+		if (id.includes("gemini")) {
+			info = {
+				...info,
+				includedTools: [...new Set([...(info.includedTools || []), "write_file", "edit_file"])],
 			}
 		}
 

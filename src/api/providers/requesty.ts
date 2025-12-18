@@ -78,7 +78,26 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		const info = this.models[id] ?? requestyDefaultModelInfo
+		let info = this.models[id] ?? requestyDefaultModelInfo
+
+		// For OpenAI models via Requesty, exclude write_to_file and apply_diff, and include apply_patch
+		// This matches the behavior of the native OpenAI provider
+		if (id.includes("openai")) {
+			info = {
+				...info,
+				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
+				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
+			}
+		}
+
+		// For Gemini models via Requesty, include write_file and edit_file
+		// This matches the behavior of the native Gemini provider
+		if (id.includes("gemini")) {
+			info = {
+				...info,
+				includedTools: [...new Set([...(info.includedTools || []), "write_file", "edit_file"])],
+			}
+		}
 
 		const params = getModelParams({
 			format: "anthropic",
