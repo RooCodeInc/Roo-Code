@@ -35,6 +35,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Add custom interface for OpenRouter params.
 type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
@@ -528,24 +529,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
-		// For OpenAI models via OpenRouter, exclude write_to_file and apply_diff, and include apply_patch
-		// This matches the behavior of the native OpenAI provider
-		if (id.includes("openai")) {
-			info = {
-				...info,
-				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
-				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
-			}
-		}
-
-		// For Gemini models via OpenRouter, include write_file and edit_file
-		// This matches the behavior of the native Gemini provider
-		if (id.includes("gemini")) {
-			info = {
-				...info,
-				includedTools: [...new Set([...(info.includedTools || []), "write_file", "edit_file"])],
-			}
-		}
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
 
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 

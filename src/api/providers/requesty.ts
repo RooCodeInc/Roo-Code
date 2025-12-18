@@ -18,6 +18,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -80,24 +81,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
 		let info = this.models[id] ?? requestyDefaultModelInfo
 
-		// For OpenAI models via Requesty, exclude write_to_file and apply_diff, and include apply_patch
-		// This matches the behavior of the native OpenAI provider
-		if (id.includes("openai")) {
-			info = {
-				...info,
-				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
-				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
-			}
-		}
-
-		// For Gemini models via Requesty, include write_file and edit_file
-		// This matches the behavior of the native Gemini provider
-		if (id.includes("gemini")) {
-			info = {
-				...info,
-				includedTools: [...new Set([...(info.includedTools || []), "write_file", "edit_file"])],
-			}
-		}
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
 
 		const params = getModelParams({
 			format: "anthropic",
