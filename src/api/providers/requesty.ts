@@ -18,6 +18,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -78,7 +79,10 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		const info = this.models[id] ?? requestyDefaultModelInfo
+		let info = this.models[id] ?? requestyDefaultModelInfo
+
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
 
 		const params = getModelParams({
 			format: "anthropic",
