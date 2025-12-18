@@ -178,6 +178,7 @@ export interface WebviewMessage {
 		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
+		| "downloadErrorDiagnostics"
 		| "requestClaudeCodeRateLimits"
 	text?: string
 	editedMessageContent?: string

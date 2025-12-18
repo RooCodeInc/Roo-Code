@@ -5,6 +5,11 @@ import type { Mock } from "vitest"
 // Mock dependencies - must come before imports
 vi.mock("../../../api/providers/fetchers/modelCache")
 
+// Mock storage utilities used by debug/diagnostics handlers
+vi.mock("../../../utils/storage", () => ({
+	getTaskDirectoryPath: vi.fn(async () => "/mock/task-dir"),
+}))
+
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
@@ -41,15 +46,24 @@ const mockClineProvider = {
 
 import { t } from "../../../i18n"
 
-vi.mock("vscode", () => ({
-	window: {
-		showInformationMessage: vi.fn(),
-		showErrorMessage: vi.fn(),
-	},
-	workspace: {
-		workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
-	},
-}))
+vi.mock("vscode", () => {
+	const showInformationMessage = vi.fn()
+	const showErrorMessage = vi.fn()
+	const openTextDocument = vi.fn().mockResolvedValue({})
+	const showTextDocument = vi.fn().mockResolvedValue(undefined)
+
+	return {
+		window: {
+			showInformationMessage,
+			showErrorMessage,
+			showTextDocument,
+		},
+		workspace: {
+			workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
+			openTextDocument,
+		},
+	}
+})
 
 vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string, args?: Record<string, any>) => {
@@ -72,14 +86,20 @@ vi.mock("../../../i18n", () => ({
 vi.mock("fs/promises", () => {
 	const mockRm = vi.fn().mockResolvedValue(undefined)
 	const mockMkdir = vi.fn().mockResolvedValue(undefined)
+	const mockReadFile = vi.fn().mockResolvedValue("[]")
+	const mockWriteFile = vi.fn().mockResolvedValue(undefined)
 
 	return {
 		default: {
 			rm: mockRm,
 			mkdir: mockMkdir,
+			readFile: mockReadFile,
+			writeFile: mockWriteFile,
 		},
 		rm: mockRm,
 		mkdir: mockMkdir,
+		readFile: mockReadFile,
+		writeFile: mockWriteFile,
 	}
 })
 
@@ -737,5 +757,62 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+
+		// Ensure contextProxy has a globalStorageUri for the handler
+		;(mockClineProvider as any).contextProxy.globalStorageUri = { fsPath: "/mock/global/storage" }
+
+		// Provide a current task with a stable ID
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			taskId: "test-task-id",
+		} as any)
+
+		// fileExistsAtPath should report that the history file exists
+		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true as any)
+	})
+
+	it("generates a diagnostics file with error metadata and history", async () => {
+		const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValue("[{}]" as any)
+		const writeFileSpy = vi.spyOn(fs, "writeFile").mockResolvedValue(undefined as any)
+
+		const openTextDocumentSpy = vi.spyOn(vscode.workspace, "openTextDocument")
+		const showTextDocumentSpy = vi.spyOn(vscode.window, "showTextDocument")
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+		} as any)
+
+		// Ensure we attempted to read API history
+		expect(readFileSpy).toHaveBeenCalledWith(path.join("/mock/task-dir", "api_conversation_history.json"), "utf8")
+
+		// Ensure we wrote a diagnostics file with the expected header and JSON content
+		expect(writeFileSpy).toHaveBeenCalledTimes(1)
+		const [writtenPath, writtenContent] = writeFileSpy.mock.calls[0]
+		expect(String(writtenPath)).toContain("roo-diagnostics-")
+		expect(String(writtenContent)).toContain(
+			"// You can share this  with with Roo Code Support to diagnose the issue faster",
+		)
+		expect(String(writtenContent)).toContain('"error":')
+		expect(String(writtenContent)).toContain('"history":')
+		expect(String(writtenContent)).toContain('"version": "1.2.3"')
+		expect(String(writtenContent)).toContain('"provider": "test-provider"')
+		expect(String(writtenContent)).toContain('"model": "test-model"')
+		expect(String(writtenContent)).toContain('"details": "Sample error details"')
+
+		// Ensure VS Code APIs were used to open the generated file
+		expect(openTextDocumentSpy).toHaveBeenCalledTimes(1)
+		expect(showTextDocumentSpy).toHaveBeenCalledTimes(1)
 	})
 })
