@@ -853,6 +853,19 @@ export const webviewMessageHandler = async (
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
 				},
+				{
+					key: "ibm-watsonx",
+					options: {
+						provider: "ibm-watsonx",
+						apiKey: apiConfiguration.watsonxApiKey,
+						projectId: apiConfiguration.watsonxProjectId,
+						baseUrl: apiConfiguration.watsonxBaseUrl,
+						platform: apiConfiguration.watsonxPlatform,
+						authType: apiConfiguration.watsonxAuthType,
+						username: apiConfiguration.watsonxUsername,
+						password: apiConfiguration.watsonxPassword,
+					},
+				},
 			]
 
 			// IO Intelligence is conditional on api key

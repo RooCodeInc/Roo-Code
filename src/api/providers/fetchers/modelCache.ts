@@ -110,7 +110,15 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			models = await getChutesModels(options.apiKey)
 			break
 		case "ibm-watsonx":
-			models = await getWatsonxModels()
+			models = await getWatsonxModels(
+				options.apiKey,
+				options.projectId,
+				options.baseUrl,
+				options.platform,
+				options.authType,
+				options.username,
+				options.password,
+			)
 			break
 		default: {
 			// Ensures router is exhaustively checked if RouterName is a strict union.
