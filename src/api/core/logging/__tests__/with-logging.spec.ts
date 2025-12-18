@@ -179,6 +179,54 @@ describe("withLogging", () => {
 			)
 		})
 
+		it("should count tool_call_partial chunks without overcounting", async () => {
+			// Simulates streaming tool calls with multiple partial chunks per tool
+			const chunks: ApiStreamChunk[] = [
+				// First tool call (index 0) - multiple partials
+				{ type: "tool_call_partial", index: 0, id: "call1", name: "read_file" },
+				{ type: "tool_call_partial", index: 0, arguments: '{"path":' },
+				{ type: "tool_call_partial", index: 0, arguments: '"/src/file.ts"}' },
+				// Second tool call (index 1) - multiple partials
+				{ type: "tool_call_partial", index: 1, id: "call2", name: "write_file" },
+				{ type: "tool_call_partial", index: 1, arguments: '{"path":' },
+				{ type: "tool_call_partial", index: 1, arguments: '"/src/new.ts",' },
+				{ type: "tool_call_partial", index: 1, arguments: '"content":"hello"}' },
+			]
+
+			const stream = withLogging({ context: baseContext, request: baseRequest }, () => createMockStream(chunks))
+
+			await collectStream(stream)
+
+			// Should count only 2 unique tool calls (by index), not 7 partial chunks
+			expect(ApiLogger.logResponse).toHaveBeenCalledWith(
+				"mock-request-id",
+				baseContext,
+				expect.objectContaining({ toolCallCount: 2 }),
+			)
+		})
+
+		it("should count single tool_call_partial chunk correctly", async () => {
+			const chunks: ApiStreamChunk[] = [
+				{
+					type: "tool_call_partial",
+					index: 0,
+					id: "call1",
+					name: "read_file",
+					arguments: '{"path":"/file.ts"}',
+				},
+			]
+
+			const stream = withLogging({ context: baseContext, request: baseRequest }, () => createMockStream(chunks))
+
+			await collectStream(stream)
+
+			expect(ApiLogger.logResponse).toHaveBeenCalledWith(
+				"mock-request-id",
+				baseContext,
+				expect.objectContaining({ toolCallCount: 1 }),
+			)
+		})
+
 		it("should capture usage metrics from usage chunk", async () => {
 			const chunks: ApiStreamChunk[] = [
 				{ type: "text", text: "Response" },

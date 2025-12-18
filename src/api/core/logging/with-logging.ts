@@ -47,6 +47,8 @@ export async function* withLogging(options: WithLoggingOptions, generator: () =>
 	let reasoningLength = 0
 	let toolCallCount = 0
 	let usage: ApiStreamUsageChunk | undefined
+	// Track seen tool_call_partial indices to avoid overcounting
+	const seenToolCallPartialIndices = new Set<number>()
 
 	try {
 		for await (const chunk of generator()) {
@@ -61,6 +63,13 @@ export async function* withLogging(options: WithLoggingOptions, generator: () =>
 				case "tool_call":
 				case "tool_call_start":
 					toolCallCount++
+					break
+				case "tool_call_partial":
+					// Count each unique tool call only once using index
+					if (!seenToolCallPartialIndices.has(chunk.index)) {
+						seenToolCallPartialIndices.add(chunk.index)
+						toolCallCount++
+					}
 					break
 				case "usage":
 					usage = chunk

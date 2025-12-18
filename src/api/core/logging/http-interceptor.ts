@@ -31,15 +31,48 @@ function sanitizeHeaders(headers: Record<string, string>): Record<string, string
 }
 
 /**
- * Parse body as JSON if possible, otherwise return as-is
+ * Parse body as JSON if possible, otherwise return as-is.
+ * Only processes string and URLSearchParams bodies; returns a placeholder
+ * for binary types (Blob, ArrayBuffer, FormData) to avoid misleading output.
  */
-function parseBodyIfJson(body: BodyInit | string): unknown {
-	try {
-		const bodyStr = typeof body === "string" ? body : body.toString()
-		return JSON.parse(bodyStr)
-	} catch {
-		return body
+function parseBodyIfJson(body: BodyInit | null | undefined): unknown {
+	if (body === null || body === undefined) {
+		return undefined
 	}
+
+	// Handle string bodies directly
+	if (typeof body === "string") {
+		try {
+			return JSON.parse(body)
+		} catch {
+			return body
+		}
+	}
+
+	// URLSearchParams can be safely converted to string
+	if (body instanceof URLSearchParams) {
+		return body.toString()
+	}
+
+	// For binary types, return a placeholder to avoid misleading output
+	if (body instanceof Blob) {
+		return `[Blob: ${body.size} bytes, type: ${body.type || "unknown"}]`
+	}
+
+	if (body instanceof ArrayBuffer) {
+		return `[ArrayBuffer: ${body.byteLength} bytes]`
+	}
+
+	if (typeof FormData !== "undefined" && body instanceof FormData) {
+		return "[FormData]"
+	}
+
+	if (typeof ReadableStream !== "undefined" && body instanceof ReadableStream) {
+		return "[ReadableStream]"
+	}
+
+	// For any other type (e.g., BufferSource), return a generic placeholder
+	return "[non-string body]"
 }
 
 /**
