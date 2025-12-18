@@ -1305,7 +1305,7 @@ describe("ClineProvider", () => {
 				messageTs: 4000,
 				text: "Edited message content",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate user confirming edit through the dialog
@@ -3034,7 +3034,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 3000,
 				text: "Edited message with preserved images",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate confirmation
@@ -3048,7 +3048,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([mockMessages[0]])
 			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([{ ts: 1000 }])
 			// Verify submitUserMessage was called with the edited content
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", [])
 		})
 
 		test("handles editing messages with file attachments", async () => {
@@ -3090,7 +3090,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 3000,
 				text: "Edited message with file attachment",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate user confirming the edit
@@ -3101,7 +3101,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			})
 
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", [])
 		})
 	})
 
@@ -3144,7 +3144,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate user confirming the edit
@@ -3186,7 +3186,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate user confirming the edit
@@ -3244,14 +3244,14 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				messageTs: 2000,
 				text: "Edited message 1",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "showEditMessageDialog",
 				messageTs: 4000,
 				text: "Edited message 2",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 
 			// Simulate user confirming both edits
@@ -3438,7 +3438,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 5000,
 					text: "Edited non-existent message",
 					hasCheckpoint: false,
-					images: [],
+					images: undefined,
 				})
 
 				// Simulate user confirming the edit
@@ -3532,7 +3532,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 2000,
 					text: "Edited message",
 					hasCheckpoint: false,
-					images: [],
+					images: undefined,
 				})
 
 				// Simulate user confirming the edit
@@ -3625,14 +3625,14 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: 2000,
 					text: largeEditedContent,
 					hasCheckpoint: false,
-					images: [],
+					images: undefined,
 				})
 
 				// Simulate user confirming the edit
 				await messageHandler({ type: "editMessageConfirm", messageTs: 2000, text: largeEditedContent })
 
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, undefined)
+				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, [])
 			})
 
 			test("handles deleting messages with large payloads", async () => {
@@ -3833,7 +3833,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 					messageTs: futureTimestamp + 1000,
 					text: "Edited future message",
 					hasCheckpoint: false,
-					images: [],
+					images: undefined,
 				})
 
 				// Simulate user confirming the edit

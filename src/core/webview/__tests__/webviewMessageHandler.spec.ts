@@ -718,7 +718,7 @@ describe("webviewMessageHandler - message dialog preferences", () => {
 				messageTs: 123456789,
 				text: "edited content",
 				hasCheckpoint: false,
-				images: [],
+				images: undefined,
 			})
 		})
 	})
