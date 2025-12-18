@@ -378,4 +378,83 @@ describe("ApiLoggerService", () => {
 			expect(ApiLogger).toBeInstanceOf(ApiLoggerService)
 		})
 	})
+
+	describe("TTL-based timestamp cleanup", () => {
+		// We need to create fresh instances with fake timers since the singleton
+		// was created before fake timers were enabled
+		let logger: InstanceType<typeof ApiLoggerService>
+
+		beforeEach(() => {
+			vi.useFakeTimers()
+			// Create a fresh instance AFTER enabling fake timers so the cleanup interval uses fake timers
+			logger = new ApiLoggerService()
+		})
+
+		afterEach(() => {
+			vi.useRealTimers()
+		})
+
+		it("should clean up stale timestamps after TTL expires", () => {
+			const context = {
+				provider: "test",
+				model: "test",
+				operation: "createMessage" as const,
+			}
+
+			// Create some requests
+			logger.logRequest(context, {})
+			logger.logRequest(context, {})
+			expect(logger.getTrackedRequestCount()).toBe(2)
+
+			// Advance time past the TTL (5 minutes) plus cleanup interval (1 minute)
+			vi.advanceTimersByTime(6 * 60 * 1000)
+
+			// Timestamps should be cleaned up by the interval
+			expect(logger.getTrackedRequestCount()).toBe(0)
+		})
+
+		it("should not clean up timestamps before TTL expires", () => {
+			const context = {
+				provider: "test",
+				model: "test",
+				operation: "createMessage" as const,
+			}
+
+			// Create some requests
+			logger.logRequest(context, {})
+			logger.logRequest(context, {})
+			expect(logger.getTrackedRequestCount()).toBe(2)
+
+			// Advance time but not past TTL (only 3 minutes)
+			vi.advanceTimersByTime(3 * 60 * 1000)
+
+			// Timestamps should still be present
+			expect(logger.getTrackedRequestCount()).toBe(2)
+		})
+
+		it("should clean up only stale timestamps, keeping recent ones", () => {
+			const context = {
+				provider: "test",
+				model: "test",
+				operation: "createMessage" as const,
+			}
+
+			// Create first request
+			logger.logRequest(context, {})
+			expect(logger.getTrackedRequestCount()).toBe(1)
+
+			// Advance time by 4 minutes (not yet expired)
+			vi.advanceTimersByTime(4 * 60 * 1000)
+
+			// Create second request
+			logger.logRequest(context, {})
+			expect(logger.getTrackedRequestCount()).toBe(2)
+
+			// Advance time by 2 more minutes (total 6 min for first, 2 min for second)
+			vi.advanceTimersByTime(2 * 60 * 1000)
+
+			// First request should be cleaned up, second should remain
+			expect(logger.getTrackedRequestCount()).toBe(1)
+		})
+	})
 })
