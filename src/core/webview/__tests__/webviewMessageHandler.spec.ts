@@ -96,6 +96,15 @@ vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
 vi.mock("../../../utils/globalContext")
 
+vi.mock("../../mentions/resolveImageMentions", () => ({
+	resolveImageMentions: vi.fn(async ({ text, images }: { text: string; images?: string[] }) => ({
+		text,
+		images: [...(images ?? []), "data:image/png;base64,from-mention"],
+	})),
+}))
+
+import { resolveImageMentions } from "../../mentions/resolveImageMentions"
+
 describe("webviewMessageHandler - requestLmStudioModels", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -135,6 +144,33 @@ describe("webviewMessageHandler - requestLmStudioModels", () => {
 			type: "lmStudioModels",
 			lmStudioModels: mockModels,
 		})
+	})
+})
+
+describe("webviewMessageHandler - image mentions", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should resolve image mentions for askResponse payloads", async () => {
+		const mockHandleWebviewAskResponse = vi.fn()
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			cwd: "/mock/workspace",
+			rooIgnoreController: undefined,
+			handleWebviewAskResponse: mockHandleWebviewAskResponse,
+		} as any)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "askResponse",
+			askResponse: "messageResponse",
+			text: "See @/img.png",
+			images: [],
+		})
+
+		expect(vi.mocked(resolveImageMentions)).toHaveBeenCalled()
+		expect(mockHandleWebviewAskResponse).toHaveBeenCalledWith("messageResponse", "See @/img.png", [
+			"data:image/png;base64,from-mention",
+		])
 	})
 })
 
