@@ -3,6 +3,7 @@ import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
+import { ConsecutiveMistakeError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { t } from "../../i18n"
@@ -776,8 +777,16 @@ export async function presentAssistantMessage(cline: Task) {
 						// Add user feedback to chat.
 						await cline.say("user_feedback", text, images)
 
-						// Track tool repetition in telemetry.
-						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
+						// Track tool repetition in telemetry via PostHog exception tracking.
+						TelemetryService.instance.captureException(
+							new ConsecutiveMistakeError(
+								`Tool repetition limit reached for ${block.name}`,
+								cline.taskId,
+								cline.consecutiveMistakeCount,
+								cline.consecutiveMistakeLimit,
+								"tool_repetition",
+							),
+						)
 					}
 
 					// Return tool result message about the repetition

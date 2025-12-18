@@ -10,6 +10,8 @@ import {
 	shouldReportApiErrorToTelemetry,
 	isApiProviderError,
 	extractApiProviderErrorProperties,
+	isConsecutiveMistakeError,
+	extractConsecutiveMistakeErrorProperties,
 } from "@roo-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
@@ -100,12 +102,15 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
 		}
 
-		// Auto-extract properties from ApiProviderError and merge with additionalProperties.
+		// Auto-extract properties from known error types and merge with additionalProperties.
 		// Explicit additionalProperties take precedence over auto-extracted properties.
 		let mergedProperties = additionalProperties
 
 		if (isApiProviderError(error)) {
 			const extractedProperties = extractApiProviderErrorProperties(error)
+			mergedProperties = { ...extractedProperties, ...additionalProperties }
+		} else if (isConsecutiveMistakeError(error)) {
+			const extractedProperties = extractConsecutiveMistakeErrorProperties(error)
 			mergedProperties = { ...extractedProperties, ...additionalProperties }
 		}
 
