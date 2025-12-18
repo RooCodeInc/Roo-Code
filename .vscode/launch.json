@@ -16,7 +16,8 @@
 			"preLaunchTask": "${defaultBuildTask}",
 			"envFile": "${workspaceFolder}/.env.local",
 			"env": {
-				"NODE_ENV": "development"
+				"NODE_ENV": "development",
+				"VSCODE_DEBUG_MODE": "true"
 			},
 			"resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
 			"presentation": {
