@@ -32,6 +32,7 @@ export function applyRouterToolPreferences(modelId: string, info: ModelInfo): Mo
 	if (modelId.includes("gemini")) {
 		result = {
 			...result,
+			excludedTools: [...new Set([...(result.excludedTools || []), "apply_diff"])],
 			includedTools: [...new Set([...(result.includedTools || []), "write_file", "edit_file"])],
 		}
 	}
