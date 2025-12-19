@@ -279,7 +279,13 @@ function getSelectedModel({
 		}
 		case "openai": {
 			const id = apiConfiguration.openAiModelId ?? ""
-			const info = apiConfiguration?.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+			const customInfo = apiConfiguration?.openAiCustomModelInfo
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
+				defaultToolProtocol: openAiModelInfoSaneDefaults.defaultToolProtocol,
+			}
+			const info = customInfo ? { ...nativeToolDefaults, ...customInfo } : openAiModelInfoSaneDefaults
 			return { id, info }
 		}
 		case "ollama": {
