@@ -1,7 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type ModelInfo, requestyDefaultModelId, requestyDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
+import {
+	type ModelInfo,
+	requestyDefaultModelId,
+	requestyDefaultModelInfo,
+	TOOL_PROTOCOL,
+	NATIVE_TOOL_DEFAULTS,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
@@ -83,11 +89,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		// Merge native tool defaults for cached models that may lack these fields
 		// The order ensures that cached values (if present) override the defaults
-		let info: ModelInfo = {
-			supportsNativeTools: true,
-			defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
-			...cachedInfo,
-		}
+		let info: ModelInfo = { ...NATIVE_TOOL_DEFAULTS, ...cachedInfo }
 
 		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
 		info = applyRouterToolPreferences(id, info)

@@ -33,6 +33,7 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
+	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
 
 import type { ModelRecord, RouterModels } from "@roo/api"
@@ -158,34 +159,22 @@ function getSelectedModel({
 		case "requesty": {
 			const id = getValidatedModelId(apiConfiguration.requestyModelId, routerModels.requesty, defaultModelId)
 			const routerInfo = routerModels.requesty?.[id]
-			// Merge native tool call defaults for cached models that may lack these fields
-			const nativeToolDefaults = {
-				supportsNativeTools: true,
-				defaultToolProtocol: "native" as const,
-			}
-			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : undefined
+			// Merge native tool defaults for cached models that may lack these fields
+			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
 			return { id, info }
 		}
 		case "unbound": {
 			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
 			const routerInfo = routerModels.unbound?.[id]
-			// Merge native tool call defaults for cached models that may lack these fields
-			const nativeToolDefaults = {
-				supportsNativeTools: true,
-				defaultToolProtocol: "native" as const,
-			}
-			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : undefined
+			// Merge native tool defaults for cached models that may lack these fields
+			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
 			return { id, info }
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
 			const routerInfo = routerModels.litellm?.[id]
-			// Only merge native tool call defaults, not prices or other model-specific info
-			const nativeToolDefaults = {
-				supportsNativeTools: litellmDefaultModelInfo.supportsNativeTools,
-				defaultToolProtocol: litellmDefaultModelInfo.defaultToolProtocol,
-			}
-			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : litellmDefaultModelInfo
+			// Merge native tool defaults for cached models that may lack these fields
+			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : litellmDefaultModelInfo
 			return { id, info }
 		}
 		case "xai": {
