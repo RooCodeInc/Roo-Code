@@ -5,9 +5,9 @@ import type { Mock } from "vitest"
 // Mock dependencies - must come before imports
 vi.mock("../../../api/providers/fetchers/modelCache")
 
-// Mock storage utilities used by debug/diagnostics handlers
-vi.mock("../../../utils/storage", () => ({
-	getTaskDirectoryPath: vi.fn(async () => "/mock/task-dir"),
+// Mock the diagnosticsHandler module
+vi.mock("../diagnosticsHandler", () => ({
+	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
 }))
 
 import { webviewMessageHandler } from "../webviewMessageHandler"
@@ -110,6 +110,7 @@ import * as path from "path"
 import * as fsUtils from "../../../utils/fs"
 import { getWorkspacePath } from "../../../utils/path"
 import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
+import { generateErrorDiagnostics } from "../diagnosticsHandler"
 import type { ModeConfig } from "@roo-code/types"
 
 vi.mock("../../../utils/fs")
@@ -771,18 +772,9 @@ describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
 		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
 			taskId: "test-task-id",
 		} as any)
-
-		// fileExistsAtPath should report that the history file exists
-		vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValue(true as any)
 	})
 
-	it("generates a diagnostics file with error metadata and history", async () => {
-		const readFileSpy = vi.spyOn(fs, "readFile").mockResolvedValue("[{}]" as any)
-		const writeFileSpy = vi.spyOn(fs, "writeFile").mockResolvedValue(undefined as any)
-
-		const openTextDocumentSpy = vi.spyOn(vscode.workspace, "openTextDocument")
-		const showTextDocumentSpy = vi.spyOn(vscode.window, "showTextDocument")
-
+	it("calls generateErrorDiagnostics with correct parameters", async () => {
 		await webviewMessageHandler(mockClineProvider, {
 			type: "downloadErrorDiagnostics",
 			values: {
@@ -794,25 +786,31 @@ describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
 			},
 		} as any)
 
-		// Ensure we attempted to read API history
-		expect(readFileSpy).toHaveBeenCalledWith(path.join("/mock/task-dir", "api_conversation_history.json"), "utf8")
+		// Verify generateErrorDiagnostics was called with the correct parameters
+		expect(generateErrorDiagnostics).toHaveBeenCalledTimes(1)
+		expect(generateErrorDiagnostics).toHaveBeenCalledWith({
+			taskId: "test-task-id",
+			globalStoragePath: "/mock/global/storage",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+			log: expect.any(Function),
+		})
+	})
 
-		// Ensure we wrote a diagnostics file with the expected header and JSON content
-		expect(writeFileSpy).toHaveBeenCalledTimes(1)
-		const [writtenPath, writtenContent] = writeFileSpy.mock.calls[0]
-		expect(String(writtenPath)).toContain("roo-diagnostics-")
-		expect(String(writtenContent)).toContain(
-			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster",
-		)
-		expect(String(writtenContent)).toContain('"error":')
-		expect(String(writtenContent)).toContain('"history":')
-		expect(String(writtenContent)).toContain('"version": "1.2.3"')
-		expect(String(writtenContent)).toContain('"provider": "test-provider"')
-		expect(String(writtenContent)).toContain('"model": "test-model"')
-		expect(String(writtenContent)).toContain('"details": "Sample error details"')
+	it("shows error when no active task", async () => {
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue(null as any)
 
-		// Ensure VS Code APIs were used to open the generated file
-		expect(openTextDocumentSpy).toHaveBeenCalledTimes(1)
-		expect(showTextDocumentSpy).toHaveBeenCalledTimes(1)
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {},
+		} as any)
+
+		expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("No active task to generate diagnostics for")
+		expect(generateErrorDiagnostics).not.toHaveBeenCalled()
 	})
 })

@@ -25,6 +25,7 @@ import { saveTaskMessages } from "../task-persistence"
 import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
+import { generateErrorDiagnostics } from "./diagnosticsHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
@@ -3175,59 +3176,12 @@ export const webviewMessageHandler = async (
 				break
 			}
 
-			try {
-				const { getTaskDirectoryPath } = await import("../../utils/storage")
-				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
-				const taskDirPath = await getTaskDirectoryPath(globalStoragePath, currentTask.taskId)
-
-				// Load API conversation history from the same file used by openDebugApiHistory
-				const apiHistoryPath = path.join(taskDirPath, "api_conversation_history.json")
-				let history: unknown = []
-
-				if (await fileExistsAtPath(apiHistoryPath)) {
-					const content = await fs.readFile(apiHistoryPath, "utf8")
-					try {
-						history = JSON.parse(content)
-					} catch {
-						// If parsing fails, fall back to empty history but still generate diagnostics file
-						vscode.window.showErrorMessage("Failed to parse api_conversation_history.json")
-					}
-				}
-
-				const diagnostics = {
-					error: {
-						timestamp: message.values?.timestamp ?? new Date().toISOString(),
-						version: message.values?.version ?? "",
-						provider: message.values?.provider ?? "",
-						model: message.values?.model ?? "",
-						details: message.values?.details ?? "",
-					},
-					history,
-				}
-
-				// Prepend human-readable guidance comments before the JSON payload
-				const headerComment =
-					"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster\n" +
-					"// Just make sure you're OK sharing the contents of the conversation below.\n\n"
-				const jsonContent = JSON.stringify(diagnostics, null, 2)
-				const fullContent = headerComment + jsonContent
-
-				// Create a temporary diagnostics file
-				const tmpDir = os.tmpdir()
-				const timestamp = Date.now()
-				const tempFileName = `roo-diagnostics-${currentTask.taskId.slice(0, 8)}-${timestamp}.json`
-				const tempFilePath = path.join(tmpDir, tempFileName)
-
-				await fs.writeFile(tempFilePath, fullContent, "utf8")
-
-				// Open the diagnostics file in VS Code
-				const doc = await vscode.workspace.openTextDocument(tempFilePath)
-				await vscode.window.showTextDocument(doc, { preview: true })
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error)
-				provider.log(`Error generating diagnostics: ${errorMessage}`)
-				vscode.window.showErrorMessage(`Failed to generate diagnostics: ${errorMessage}`)
-			}
+			await generateErrorDiagnostics({
+				taskId: currentTask.taskId,
+				globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+				values: message.values,
+				log: (msg) => provider.log(msg),
+			})
 			break
 		}
 
