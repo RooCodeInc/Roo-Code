@@ -10,10 +10,10 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties should NOT be added to non-object types (string, null)
 		expect(result).toEqual({
 			anyOf: [{ type: "string" }, { type: "null" }],
 			description: "Optional field",
-			additionalProperties: false,
 		})
 	})
 
@@ -26,11 +26,11 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties should NOT be added to array or primitive types
 		expect(result).toEqual({
 			anyOf: [{ type: "array" }, { type: "null" }],
-			items: { type: "string", additionalProperties: false },
+			items: { type: "string" },
 			description: "Optional array",
-			additionalProperties: false,
 		})
 	})
 
@@ -42,10 +42,10 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties should NOT be added to string type
 		expect(result).toEqual({
 			type: "string",
 			description: "Required field",
-			additionalProperties: false,
 		})
 	})
 
@@ -64,14 +64,14 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties: false should ONLY be on the object type, not on primitives
 		expect(result).toEqual({
 			type: "object",
 			properties: {
-				name: { type: "string", additionalProperties: false },
+				name: { type: "string" },
 				optional: {
 					anyOf: [{ type: "string" }, { type: "null" }],
 					description: "Optional nested field",
-					additionalProperties: false,
 				},
 			},
 			required: ["name"],
@@ -96,21 +96,20 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties: false should ONLY be on object types
 		expect(result).toEqual({
 			type: "array",
 			items: {
 				type: "object",
 				properties: {
-					path: { type: "string", additionalProperties: false },
+					path: { type: "string" },
 					line_ranges: {
 						anyOf: [{ type: "array" }, { type: "null" }],
-						items: { type: "integer", additionalProperties: false },
-						additionalProperties: false,
+						items: { type: "integer" },
 					},
 				},
 				additionalProperties: false,
 			},
-			additionalProperties: false,
 		})
 	})
 
@@ -162,18 +161,18 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// additionalProperties: false should ONLY be on object types, not on null or primitive types
 		expect(result).toEqual({
 			anyOf: [
 				{
 					type: "object",
 					properties: {
-						optional: { anyOf: [{ type: "string" }, { type: "null" }], additionalProperties: false },
+						optional: { anyOf: [{ type: "string" }, { type: "null" }] },
 					},
 					additionalProperties: false,
 				},
-				{ type: "null", additionalProperties: false },
+				{ type: "null" },
 			],
-			additionalProperties: false,
 		})
 	})
 
@@ -183,7 +182,9 @@ describe("normalizeToolSchema", () => {
 		expect(normalizeToolSchema(123 as any)).toBe(123)
 	})
 
-	it("should transform additionalProperties when it is a schema object", () => {
+	it("should force additionalProperties to false for object types even when set to a schema", () => {
+		// For strict mode compatibility, we MUST force additionalProperties: false
+		// even when the original schema allowed arbitrary properties
 		const input = {
 			type: "object",
 			additionalProperties: {
@@ -193,13 +194,11 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
+		// The original additionalProperties schema is replaced with false for strict mode
 		expect(result).toEqual({
 			type: "object",
 			properties: {},
-			additionalProperties: {
-				anyOf: [{ type: "string" }, { type: "null" }],
-				additionalProperties: false,
-			},
+			additionalProperties: false,
 		})
 	})
 
@@ -276,11 +275,11 @@ describe("normalizeToolSchema", () => {
 
 			const result = normalizeToolSchema(input)
 
+			// additionalProperties should NOT be added to string types
 			expect(result).toEqual({
 				type: "string",
 				format: "date-time",
 				description: "Timestamp",
-				additionalProperties: false,
 			})
 		})
 
@@ -335,10 +334,10 @@ describe("normalizeToolSchema", () => {
 
 			const result = normalizeToolSchema(input)
 
+			// additionalProperties should NOT be added to string types
 			expect(result).toEqual({
 				type: "string",
 				description: "URL field",
-				additionalProperties: false,
 			})
 			expect(result.format).toBeUndefined()
 		})
