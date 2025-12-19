@@ -137,6 +137,7 @@ const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
+const MAX_EMPTY_RESPONSE_RETRIES = 3 // Maximum retries for empty assistant response errors
 
 export interface TaskOptions extends CreateTaskOptions {
 	provider: ClineProvider
@@ -3307,7 +3308,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Check if we should auto-retry or prompt the user
 					// Reuse the state variable from above
-					if (state?.autoApprovalEnabled) {
+					// Check if we've exceeded maximum retries for empty responses
+					const emptyResponseRetryCount = currentItem.retryAttempt ?? 0
+					if (emptyResponseRetryCount >= MAX_EMPTY_RESPONSE_RETRIES) {
+						console.warn(
+							`[Task#${this.taskId}.${this.instanceId}] Empty response retry limit reached (${emptyResponseRetryCount}/${MAX_EMPTY_RESPONSE_RETRIES}). Falling back to user prompt.`,
+						)
+						// Fall through to manual retry prompt below
+					} else if (state?.autoApprovalEnabled) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						await this.backoffAndAnnounce(
 							currentItem.retryAttempt ?? 0,
