@@ -348,6 +348,8 @@ ${testFile.content}\nAssume the file exists and you can modify it directly.`,
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make ALL of these changes:
 1. Rename function "calculate" to "compute"
@@ -464,6 +466,8 @@ function keepThis() {
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "oldFunction" to "newFunction" and update its console.log to "New implementation". Keep the rest of the file unchanged.
 
@@ -584,6 +588,8 @@ ${testFile.content}\nAssume the file exists and you can modify it directly.`,
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to find and replace the text "PATTERN_THAT_DOES_NOT_EXIST_xyz123" with "REPLACEMENT_xyz123".
 
@@ -727,6 +733,8 @@ function checkInput(input) {
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make these changes. You MUST use TWO SEPARATE search/replace blocks within a SINGLE apply_diff call:
 

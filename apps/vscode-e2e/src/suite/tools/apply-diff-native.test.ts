@@ -537,7 +537,7 @@ Assume the file exists and you can modify it directly.`,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
 					apiProvider: "openrouter", // Use OpenRouter provider
-					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make ALL of these changes:
 1. Rename function "calculate" to "compute"
@@ -651,7 +651,7 @@ function keepThis() {
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
 					apiProvider: "openrouter", // Use OpenRouter provider
-					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "oldFunction" to "newFunction" and update its console.log to "New implementation". Keep the rest of the file unchanged.
 
@@ -780,8 +780,8 @@ Assume the file exists and you can modify it directly.`,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					reasoningEffort: "none",
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter",
-					apiModelId: "openai/gpt-5.1",
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `
 ---
@@ -1051,7 +1051,7 @@ function checkInput(input) {
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
 					apiProvider: "openrouter", // Use OpenRouter provider
-					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to make these changes. You MUST use TWO SEPARATE search/replace blocks within a SINGLE apply_diff call:
 
