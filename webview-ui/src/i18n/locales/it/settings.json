@@ -301,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
+		"vertex1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"basetenApiKey": "Chiave API Baseten",
 		"getBasetenApiKey": "Ottieni chiave API Baseten",
 		"cerebrasApiKey": "Chiave API Cerebras",

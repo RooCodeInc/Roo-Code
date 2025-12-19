@@ -301,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
+		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
 		"basetenApiKey": "Chave de API Baseten",
 		"getBasetenApiKey": "Obter chave de API Baseten",
 		"cerebrasApiKey": "Chave de API Cerebras",

@@ -301,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"awsBedrock1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
+		"vertex1MContextBetaLabel": "1M संदर्भ विंडो सक्षम करें (बीटा)",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4 के लिए संदर्भ विंडो को 1 मिलियन टोकन तक बढ़ाता है",
 		"basetenApiKey": "Baseten API कुंजी",
 		"getBasetenApiKey": "Baseten API कुंजी प्राप्त करें",
 		"cerebrasApiKey": "Cerebras API कुंजी",

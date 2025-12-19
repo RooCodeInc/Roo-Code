@@ -517,6 +517,10 @@ export const vertexModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
+// Vertex AI models that support 1M context window beta
+// Uses the same beta header 'context-1m-2025-08-07' as Anthropic and Bedrock
+export const VERTEX_1M_CONTEXT_MODEL_IDS = ["claude-sonnet-4@20250514", "claude-sonnet-4-5@20250929"] as const
+
 export const VERTEX_REGIONS = [
 	{ value: "global", label: "global" },
 	{ value: "us-central1", label: "us-central1" },
