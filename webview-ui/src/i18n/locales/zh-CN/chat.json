@@ -265,6 +265,11 @@
 		"hasQuestion": "Roo有一个问题"
 	},
 	"taskCompleted": "任务完成",
+	"modelResponseIncomplete": "模型响应不完整",
+	"modelResponseErrors": {
+		"noToolsUsed": "模型在响应中未使用任何工具。这通常发生在模型仅提供文本/推理而未调用完成任务所需的工具时。",
+		"noToolsUsedDetails": "模型提供了文本/推理，但未调用任何必需的工具。这通常表明模型误解了任务，或在确定使用哪个工具时遇到困难。系统已自动提示模型使用正确的工具重试。"
+	},
 	"errorDetails": {
 		"title": "错误详情",
 		"copyToClipboard": "复制到剪贴板",

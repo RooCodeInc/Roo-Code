@@ -294,6 +294,11 @@
 	},
 	"taskCompleted": "工作完成",
 	"error": "錯誤",
+	"modelResponseIncomplete": "模型回應不完整",
+	"modelResponseErrors": {
+		"noToolsUsed": "模型在回應中未使用任何工具。這通常發生在模型僅提供文字/推理而未呼叫完成工作所需的工具時。",
+		"noToolsUsedDetails": "模型提供了文字/推理，但未呼叫任何必需的工具。這通常表示模型誤解了工作，或在確定使用哪個工具時遇到困難。系統已自動提示模型使用正確的工具重試。"
+	},
 	"diffError": {
 		"title": "編輯失敗"
 	},

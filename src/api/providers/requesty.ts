@@ -139,7 +139,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			: undefined
 
 		// Check if native tool protocol is enabled
-		const toolProtocol = resolveToolProtocol(this.options, info)
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
+		const toolProtocol = resolveToolProtocol(this.options, info, metadata?.toolProtocol)
 		const useNativeTools = toolProtocol === TOOL_PROTOCOL.NATIVE
 
 		const completionParams: RequestyChatCompletionParamsStreaming = {

@@ -615,7 +615,7 @@ describe("useSelectedModel", () => {
 			expect(result.current.info?.supportsNativeTools).toBe(true)
 		})
 
-		it("should use model info from routerModels when model exists", () => {
+		it("should merge only native tool defaults with routerModels when model exists", () => {
 			const customModelInfo: ModelInfo = {
 				maxTokens: 16384,
 				contextWindow: 128000,
@@ -649,9 +649,15 @@ describe("useSelectedModel", () => {
 
 			expect(result.current.provider).toBe("litellm")
 			expect(result.current.id).toBe("custom-model")
-			// Should use the model info from routerModels, not the fallback
-			expect(result.current.info).toEqual(customModelInfo)
+			// Should only merge native tool defaults, not prices or other model-specific info
+			// Router model values override the defaults
+			const nativeToolDefaults = {
+				supportsNativeTools: litellmDefaultModelInfo.supportsNativeTools,
+				defaultToolProtocol: litellmDefaultModelInfo.defaultToolProtocol,
+			}
+			expect(result.current.info).toEqual({ ...nativeToolDefaults, ...customModelInfo })
 			expect(result.current.info?.supportsNativeTools).toBe(true)
+			expect(result.current.info?.defaultToolProtocol).toBe("native")
 		})
 	})
 })

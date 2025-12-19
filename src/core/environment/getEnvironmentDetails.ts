@@ -290,8 +290,12 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		}
 	}
 	// Resolve and add tool protocol information
+	// Use the task's locked tool protocol for consistent environment details.
+	// This ensures the model sees the same tool format it was started with,
+	// even if user settings have changed. Fall back to resolving fresh if
+	// the task hasn't been fully initialized yet (shouldn't happen in practice).
 	const modelInfo = cline.api.getModel().info
-	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo)
+	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo, cline.taskToolProtocol)
 
 	details += `\n\n# Current Mode\n`
 	details += `<slug>${currentMode}</slug>\n`

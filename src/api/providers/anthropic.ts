@@ -24,7 +24,10 @@ import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
-import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
+import {
+	convertOpenAIToolsToAnthropic,
+	convertOpenAIToolChoiceToAnthropic,
+} from "../../core/prompts/tools/native-tools/converters"
 
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -73,8 +76,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		// Enable native tools by default using resolveToolProtocol (which checks model's defaultToolProtocol)
 		// This matches OpenRouter's approach of always including tools when provided
 		// Also exclude tools when tool_choice is "none" since that means "don't use tools"
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
 		const model = this.getModel()
-		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
 		const shouldIncludeNativeTools =
 			metadata?.tools &&
 			metadata.tools.length > 0 &&
@@ -84,7 +88,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		const nativeToolParams = shouldIncludeNativeTools
 			? {
 					tools: convertOpenAIToolsToAnthropic(metadata.tools!),
-					tool_choice: this.convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls),
+					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata.tool_choice, metadata.parallelToolCalls),
 				}
 			: {}
 
@@ -374,49 +378,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas: id === "claude-3-7-sonnet-20250219:thinking" ? ["output-128k-2025-02-19"] : undefined,
 			...params,
 		}
-	}
-
-	/**
-	 * Converts OpenAI tool_choice to Anthropic ToolChoice format
-	 * @param toolChoice - OpenAI tool_choice parameter
-	 * @param parallelToolCalls - When true, allows parallel tool calls. When false (default), disables parallel tool calls.
-	 */
-	private convertOpenAIToolChoice(
-		toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
-		parallelToolCalls?: boolean,
-	): Anthropic.Messages.MessageCreateParams["tool_choice"] | undefined {
-		// Anthropic allows parallel tool calls by default. When parallelToolCalls is false or undefined,
-		// we disable parallel tool use to ensure one tool call at a time.
-		const disableParallelToolUse = !parallelToolCalls
-
-		if (!toolChoice) {
-			// Default to auto with parallel tool use control
-			return { type: "auto", disable_parallel_tool_use: disableParallelToolUse }
-		}
-
-		if (typeof toolChoice === "string") {
-			switch (toolChoice) {
-				case "none":
-					return undefined // Anthropic doesn't have "none", just omit tools
-				case "auto":
-					return { type: "auto", disable_parallel_tool_use: disableParallelToolUse }
-				case "required":
-					return { type: "any", disable_parallel_tool_use: disableParallelToolUse }
-				default:
-					return { type: "auto", disable_parallel_tool_use: disableParallelToolUse }
-			}
-		}
-
-		// Handle object form { type: "function", function: { name: string } }
-		if (typeof toolChoice === "object" && "function" in toolChoice) {
-			return {
-				type: "tool",
-				name: toolChoice.function.name,
-				disable_parallel_tool_use: disableParallelToolUse,
-			}
-		}
-
-		return { type: "auto", disable_parallel_tool_use: disableParallelToolUse }
 	}
 
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any) {

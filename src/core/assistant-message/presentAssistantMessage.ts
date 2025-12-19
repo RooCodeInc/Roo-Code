@@ -3,6 +3,7 @@ import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
+import { ConsecutiveMistakeError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { t } from "../../i18n"
@@ -24,6 +25,7 @@ import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
 import { searchReplaceTool } from "../tools/SearchReplaceTool"
+import { editFileTool } from "../tools/EditFileTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
@@ -409,6 +411,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.path}']`
 					case "search_replace":
 						return `[${block.name} for '${block.params.file_path}']`
+					case "edit_file":
+						return `[${block.name} for '${block.params.file_path}']`
 					case "apply_patch":
 						return `[${block.name}]`
 					case "list_files":
@@ -513,10 +517,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 			const pushToolResult = (content: ToolResponse) => {
 				const editTools = [
-					/* "insert_content", */ "apply_diff",
-					"search_and_replace",
-					"apply_patch",
 					"write_to_file",
+					"apply_diff",
+					"search_and_replace",
+					"search_replace",
+					"edit_file",
+					"apply_patch",
 				]
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
@@ -795,10 +801,21 @@ export async function presentAssistantMessage(cline: Task) {
 
 						// Add user feedback to chat.
 						await cline.say("user_feedback", text, images)
-
-						// Track tool repetition in telemetry.
-						TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
 					}
+
+					// Track tool repetition in telemetry via PostHog exception tracking and event.
+					TelemetryService.instance.captureConsecutiveMistakeError(cline.taskId)
+					TelemetryService.instance.captureException(
+						new ConsecutiveMistakeError(
+							`Tool repetition limit reached for ${block.name}`,
+							cline.taskId,
+							cline.consecutiveMistakeCount,
+							cline.consecutiveMistakeLimit,
+							"tool_repetition",
+							cline.apiConfiguration.apiProvider,
+							cline.api.getModel().id,
+						),
+					)
 
 					// Return tool result message about the repetition
 					pushToolResult(
@@ -885,6 +902,16 @@ export async function presentAssistantMessage(cline: Task) {
 				case "search_replace":
 					await checkpointSaveAndMark(cline)
 					await searchReplaceTool.handle(cline, block as ToolUse<"search_replace">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "edit_file":
+					await checkpointSaveAndMark(cline)
+					await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,

@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
+import OpenAI from "openai"
 
 import { type ModelInfo, openAiModelInfoSaneDefaults } from "@roo-code/types"
 
@@ -11,6 +12,21 @@ import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../trans
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+
+/**
+ * Converts OpenAI-format tools to VSCode Language Model tools.
+ * @param tools Array of OpenAI ChatCompletionTool definitions
+ * @returns Array of VSCode LanguageModelChatTool definitions
+ */
+function convertToVsCodeLmTools(tools: OpenAI.Chat.ChatCompletionTool[]): vscode.LanguageModelChatTool[] {
+	return tools
+		.filter((tool) => tool.type === "function")
+		.map((tool) => ({
+			name: tool.function.name,
+			description: tool.function.description || "",
+			inputSchema: tool.function.parameters as Record<string, unknown> | undefined,
+		}))
+}
 
 /**
  * Handles interaction with VS Code's Language Model API for chat-based operations.
@@ -360,14 +376,19 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		// Accumulate the text and count at the end of the stream to reduce token counting overhead.
 		let accumulatedText: string = ""
 
+		// Determine if we're using native tool protocol
+		const useNativeTools = metadata?.toolProtocol === "native" && metadata?.tools && metadata.tools.length > 0
+
 		try {
-			// Create the response stream with minimal required options
+			// Create the response stream with required options
 			const requestOptions: vscode.LanguageModelChatRequestOptions = {
 				justification: `CoStrict would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
 			}
 
-			// Note: Tool support is currently provided by the VSCode Language Model API directly
-			// Extensions can register tools using vscode.lm.registerTool()
+			// Add tools to request options when using native tool protocol
+			if (useNativeTools && metadata?.tools) {
+				requestOptions.tools = convertToVsCodeLmTools(metadata.tools)
+			}
 
 			const response: vscode.LanguageModelChatResponse = await client.sendRequest(
 				vsCodeLmMessages,
@@ -408,17 +429,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 							continue
 						}
 
-						// Convert tool calls to text format with proper error handling
-						const toolCall = {
-							type: "tool_call",
-							name: chunk.name,
-							arguments: chunk.input,
-							callId: chunk.callId,
-						}
-
-						const toolCallText = JSON.stringify(toolCall)
-						accumulatedText += toolCallText
-
 						// Log tool call for debugging
 						console.debug("CoStrict <Language Model API>: Processing tool call:", {
 							name: chunk.name,
@@ -426,9 +436,32 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 							inputSize: JSON.stringify(chunk.input).length,
 						})
 
-						yield {
-							type: "text",
-							text: toolCallText,
+						// Yield native tool_call chunk when using native tool protocol
+						if (useNativeTools) {
+							const argumentsString = JSON.stringify(chunk.input)
+							accumulatedText += argumentsString
+							yield {
+								type: "tool_call",
+								id: chunk.callId,
+								name: chunk.name,
+								arguments: argumentsString,
+							}
+						} else {
+							// Fallback: Convert tool calls to text format for XML tool protocol
+							const toolCall = {
+								type: "tool_call",
+								name: chunk.name,
+								arguments: chunk.input,
+								callId: chunk.callId,
+							}
+
+							const toolCallText = JSON.stringify(toolCall)
+							accumulatedText += toolCallText
+
+							yield {
+								type: "text",
+								text: toolCallText,
+							}
 						}
 					} catch (error) {
 						console.error("CoStrict <Language Model API>: Failed to process tool call:", error)
@@ -512,6 +545,8 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 						: openAiModelInfoSaneDefaults.contextWindow,
 				supportsImages: false, // VSCode Language Model API currently doesn't support image inputs
 				supportsPromptCache: true,
+				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
+				defaultToolProtocol: "native", // Use native tool protocol by default
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `VSCode Language Model: ${modelId}`,
@@ -531,6 +566,8 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			id: fallbackId,
 			info: {
 				...openAiModelInfoSaneDefaults,
+				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
+				defaultToolProtocol: "native", // Use native tool protocol by default
 				description: `VSCode Language Model (Fallback): ${fallbackId}`,
 			},
 		}

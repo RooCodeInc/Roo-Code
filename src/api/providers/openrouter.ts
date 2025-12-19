@@ -244,7 +244,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Process reasoning_details when switching models to Gemini for native tool call compatibility
-		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
 		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 		const isGemini = modelId.startsWith("google/gemini")
 

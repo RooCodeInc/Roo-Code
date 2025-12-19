@@ -1267,11 +1267,13 @@ export const ChatRowContent = ({
 				case "api_req_retry_delayed":
 					let body = t(`chat:apiRequest.failed`)
 					let retryInfo, rawError, code, docsURL
+					docsURL = "costrict://settings?provider=claude-code"
+
 					if (message.text !== undefined) {
 						// Check for Claude Code authentication error first
 						if (message.text.includes("Not authenticated with Claude Code")) {
 							body = t("chat:apiRequest.errorMessage.claudeCodeNotAuthenticated")
-							docsURL = "roocode://settings?provider=claude-code"
+							docsURL = "costrict://settings?provider=claude-code"
 						} else {
 							// Try to show richer error message for that code, if available
 							const potentialCode = parseInt(message.text.substring(0, 3))
@@ -1289,7 +1291,7 @@ export const ChatRowContent = ({
 									// }
 								} else {
 									body = t("chat:apiRequest.errorMessage.unknown")
-									docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+									docsURL = "mailto:zgsm@sangfor.com.cn?subject=Unknown API Error"
 								}
 							} else if (message.text.indexOf("Connection error") === 0) {
 								body = t("chat:apiRequest.errorMessage.connection")
@@ -1496,14 +1498,26 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
-					{
-						/* return <ErrorRow type="error" message={message.text || ""} apiConfiguration={apiConfiguration} /> */
+					// Check if this is a model response error based on marker strings from backend
+					const isNoToolsUsedError = message.text === "MODEL_NO_TOOLS_USED"
+
+					if (isNoToolsUsedError) {
+						return (
+							<ErrorRow
+								type="error"
+								title={t("chat:modelResponseIncomplete")}
+								message={t("chat:modelResponseErrors.noToolsUsed")}
+								errorDetails={t("chat:modelResponseErrors.noToolsUsedDetails")}
+								apiConfiguration={apiConfiguration}
+							/>
+						)
 					}
+
+					// Fallback for generic errors
 					return (
 						<ErrorRow
 							type="error"
-							message={t("chat:error")}
-							errorDetails={message.text || undefined}
+							message={message.text || t("chat:error")}
 							apiConfiguration={apiConfiguration}
 						/>
 					)

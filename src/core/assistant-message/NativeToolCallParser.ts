@@ -526,6 +526,21 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "edit_file":
+				if (
+					partialArgs.file_path !== undefined ||
+					partialArgs.old_string !== undefined ||
+					partialArgs.new_string !== undefined
+				) {
+					nativeArgs = {
+						file_path: partialArgs.file_path,
+						old_string: partialArgs.old_string,
+						new_string: partialArgs.new_string,
+						expected_replacements: partialArgs.expected_replacements,
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -563,7 +578,7 @@ export class NativeToolCallParser {
 			return this.parseDynamicMcpTool(toolCall)
 		}
 
-		// Resolve tool alias to canonical name (e.g., "edit_file" -> "apply_diff", "temp_edit_file" -> "search_and_replace")
+		// Resolve tool alias to canonical name
 		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
 
 		// Validate tool name (after alias resolution)
@@ -782,6 +797,21 @@ export class NativeToolCallParser {
 							file_path: args.file_path,
 							old_string: args.old_string,
 							new_string: args.new_string,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "edit_file":
+					if (
+						args.file_path !== undefined &&
+						args.old_string !== undefined &&
+						args.new_string !== undefined
+					) {
+						nativeArgs = {
+							file_path: args.file_path,
+							old_string: args.old_string,
+							new_string: args.new_string,
+							expected_replacements: args.expected_replacements,
 						} as NativeArgsFor<TName>
 					}
 					break

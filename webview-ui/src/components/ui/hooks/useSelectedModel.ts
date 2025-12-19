@@ -198,7 +198,13 @@ function getSelectedModel({
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
-			const info = routerModels.litellm?.[id] ?? litellmDefaultModelInfo
+			const routerInfo = routerModels.litellm?.[id]
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: litellmDefaultModelInfo.supportsNativeTools,
+				defaultToolProtocol: litellmDefaultModelInfo.defaultToolProtocol,
+			}
+			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : litellmDefaultModelInfo
 			return { id, info }
 		}
 		case "xai": {

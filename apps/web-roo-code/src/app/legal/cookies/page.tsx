@@ -187,8 +187,8 @@ export default function CookiePolicy() {
 					<h2 className="mt-12 text-2xl font-bold">Contact us</h2>
 					<p>
 						If you have questions about our use of cookies, please contact us at{" "}
-						<a href="mailto:privacy@roocode.com" className="text-primary hover:underline">
-							privacy@roocode.com
+						<a href="mailto:zgsm@sangfor.com.cn" className="text-primary hover:underline">
+							zgsm@sangfor.com.cn
 						</a>
 						.
 					</p>

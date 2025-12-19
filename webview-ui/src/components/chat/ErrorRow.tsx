@@ -235,7 +235,7 @@ export const ErrorRow = memo(
 										onClick={(e) => {
 											e.preventDefault()
 											// Handle internal navigation to settings
-											if (docsURL.startsWith("roocode://settings")) {
+											if (docsURL.startsWith("costrict://settings")) {
 												vscode.postMessage({
 													type: "switchTab",
 													tab: "settings",
@@ -246,7 +246,7 @@ export const ErrorRow = memo(
 											}
 										}}>
 										<BookOpenText className="size-3 mt-[3px]" />
-										{docsURL.startsWith("roocode://settings")
+										{docsURL.startsWith("costrict://settings")
 											? t("chat:apiRequest.errorMessage.goToSettings", {
 													defaultValue: "Settings",
 												})

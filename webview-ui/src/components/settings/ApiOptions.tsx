@@ -477,8 +477,8 @@ const ApiOptions = ({
 	// Mirrors the simplified logic in resolveToolProtocol.ts:
 	// 1. User preference (toolProtocol) - handled by the select value binding
 	// 2. Model default - use if available
-	// 3. XML fallback
-	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
+	// 3. Native fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.NATIVE
 
 	// Show the tool protocol selector when model supports native tools.
 	// For OpenAI Compatible providers we always show it so users can force XML/native explicitly.

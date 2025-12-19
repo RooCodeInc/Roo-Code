@@ -7,6 +7,23 @@ import { z } from "zod"
 export type JsonSchema = z4.core.JSONSchema.JSONSchema
 
 /**
+ * Set of format values supported by OpenAI's Structured Outputs (strict mode).
+ * Unsupported format values will be stripped during schema normalization.
+ * @see https://platform.openai.com/docs/guides/structured-outputs#supported-schemas
+ */
+const OPENAI_SUPPORTED_FORMATS = new Set([
+	"date-time",
+	"time",
+	"date",
+	"duration",
+	"email",
+	"hostname",
+	"ipv4",
+	"ipv6",
+	"uuid",
+])
+
+/**
  * Zod schema for JSON Schema primitive types
  */
 const JsonSchemaPrimitiveTypeSchema = z.enum(["string", "number", "integer", "boolean", "null"])
@@ -76,10 +93,11 @@ const TypeFieldSchema = z.union([JsonSchemaTypeSchema, z.array(JsonSchemaTypeSch
 /**
  * Internal Zod schema that normalizes tool input JSON Schema to be compliant with JSON Schema draft 2020-12.
  *
- * This schema performs two key transformations:
+ * This schema performs three key transformations:
  * 1. Sets `additionalProperties: false` by default (required by OpenAI strict mode)
  * 2. Converts deprecated `type: ["T", "null"]` array syntax to `anyOf` format
  *    (required by Claude on Bedrock which enforces JSON Schema draft 2020-12)
+ * 3. Strips unsupported `format` values (e.g., "uri") for OpenAI Structured Outputs compatibility
  *
  * Uses recursive parsing so transformations apply to all nested schemas automatically.
  */
@@ -109,10 +127,12 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 				minItems: z.number().optional(),
 				maxItems: z.number().optional(),
 				uniqueItems: z.boolean().optional(),
+				// Format field - unsupported values will be stripped in transform
+				format: z.string().optional(),
 			})
 			.passthrough()
 			.transform((schema) => {
-				const { type, required, properties, ...rest } = schema
+				const { type, required, properties, format, ...rest } = schema
 				const result: Record<string, unknown> = { ...rest }
 
 				// If type is an array, convert to anyOf format (JSON Schema 2020-12)
@@ -120,6 +140,12 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 					result.anyOf = type.map((t) => ({ type: t }))
 				} else if (type !== undefined) {
 					result.type = type
+				}
+
+				// Strip unsupported format values for OpenAI compatibility
+				// Only include format if it's a supported value
+				if (format && OPENAI_SUPPORTED_FORMATS.has(format)) {
+					result.format = format
 				}
 
 				// Handle properties and required for strict mode
@@ -145,10 +171,11 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 /**
  * Normalizes a tool input JSON Schema to be compliant with JSON Schema draft 2020-12.
  *
- * This function performs two key transformations:
+ * This function performs three key transformations:
  * 1. Sets `additionalProperties: false` by default (required by OpenAI strict mode)
  * 2. Converts deprecated `type: ["T", "null"]` array syntax to `anyOf` format
  *    (required by Claude on Bedrock which enforces JSON Schema draft 2020-12)
+ * 3. Strips unsupported `format` values (e.g., "uri") for OpenAI Structured Outputs compatibility
  *
  * Uses recursive parsing so transformations apply to all nested schemas automatically.
  *
