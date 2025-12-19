@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import { t } from "i18next"
 
 import { type ModelInfo, requestyDefaultModelId, requestyDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
 
@@ -166,19 +167,26 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		}
 		let lastUsage: any = undefined
 
+		// Track whether we've received actual content vs just reasoning
+		let hasContent = false
+		let hasReasoning = false
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
 
 			if (delta?.content) {
+				hasContent = true
 				yield { type: "text", text: delta.content }
 			}
 
 			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
+				hasReasoning = true
 				yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
 			}
 
 			// Handle native tool calls
 			if (delta && "tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+				hasContent = true
 				for (const toolCall of delta.tool_calls) {
 					yield {
 						type: "tool_call_partial",
@@ -193,6 +201,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
+		}
+
+		// If model produced reasoning but no actual content (text or tool calls),
+		// emit a placeholder to prevent "empty assistant response" errors.
+		// This can happen when models output malformed tool call syntax in their
+		// reasoning/thinking content (e.g., <tool_call><function=...> tags).
+		if (hasReasoning && !hasContent) {
+			yield { type: "text", text: t("common:errors.gemini.thinking_complete_no_output") }
 		}
 
 		if (lastUsage) {
