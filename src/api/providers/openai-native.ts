@@ -291,13 +291,20 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			...(metadata?.tools && {
 				tools: metadata.tools
 					.filter((tool) => tool.type === "function")
-					.map((tool) => ({
-						type: "function",
-						name: tool.function.name,
-						description: tool.function.description,
-						parameters: ensureAllRequired(tool.function.parameters),
-						strict: true,
-					})),
+					.map((tool) => {
+						// MCP tools use the 'mcp--' prefix - disable strict mode for them
+						// to preserve optional parameters from the MCP server schema
+						const isMcpTool = tool.function.name.startsWith("mcp--")
+						return {
+							type: "function",
+							name: tool.function.name,
+							description: tool.function.description,
+							parameters: isMcpTool
+								? tool.function.parameters
+								: ensureAllRequired(tool.function.parameters),
+							strict: !isMcpTool,
+						}
+					}),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
