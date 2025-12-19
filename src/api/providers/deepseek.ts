@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import {
+	type ModelInfo,
 	deepSeekModels,
 	deepSeekDefaultModelId,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
@@ -36,7 +37,13 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 	override getModel() {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
-		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
+		let info: ModelInfo = {
+			...(deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]),
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}

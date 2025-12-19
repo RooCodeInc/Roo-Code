@@ -1,6 +1,6 @@
 import { OpenAiHandler } from "./openai"
 import type { ApiHandlerOptions } from "../../shared/api"
-import { DOUBAO_API_BASE_URL, doubaoDefaultModelId, doubaoModels } from "@roo-code/types"
+import { type ModelInfo, DOUBAO_API_BASE_URL, doubaoDefaultModelId, doubaoModels } from "@roo-code/types"
 import { getModelParams } from "../transform/model-params"
 import { ApiStreamUsageChunk } from "../transform/stream"
 
@@ -63,7 +63,13 @@ export class DoubaoHandler extends OpenAiHandler {
 
 	override getModel() {
 		const id = this.options.apiModelId ?? doubaoDefaultModelId
-		const info = doubaoModels[id as keyof typeof doubaoModels] || doubaoModels[doubaoDefaultModelId]
+		let info: ModelInfo = {
+			...(doubaoModels[id as keyof typeof doubaoModels] || doubaoModels[doubaoDefaultModelId]),
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}

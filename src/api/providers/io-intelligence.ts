@@ -1,4 +1,9 @@
-import { ioIntelligenceDefaultModelId, ioIntelligenceModels, type IOIntelligenceModelId } from "@roo-code/types"
+import {
+	type ModelInfo,
+	ioIntelligenceDefaultModelId,
+	ioIntelligenceModels,
+	type IOIntelligenceModelId,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
@@ -27,18 +32,25 @@ export class IOIntelligenceHandler extends BaseOpenAiCompatibleProvider<IOIntell
 			this.providerModels[modelId as IOIntelligenceModelId] ?? this.providerModels[ioIntelligenceDefaultModelId]
 
 		if (modelInfo) {
-			return { id: modelId as IOIntelligenceModelId, info: modelInfo }
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(modelId, modelInfo)
+			return { id: modelId as IOIntelligenceModelId, info }
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
+		let defaultInfo: ModelInfo = {
+			maxTokens: 8192,
+			contextWindow: 128000,
+			supportsImages: false,
+			supportsPromptCache: false,
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		defaultInfo = this.applyModelDefaults(modelId, defaultInfo)
+
 		return {
 			id: modelId as IOIntelligenceModelId,
-			info: {
-				maxTokens: 8192,
-				contextWindow: 128000,
-				supportsImages: false,
-				supportsPromptCache: false,
-			},
+			info: defaultInfo,
 		}
 	}
 }

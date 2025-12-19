@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type XAIModelId, xaiDefaultModelId, xaiModels, ApiProviderError } from "@roo-code/types"
+import { type XAIModelId, type ModelInfo, xaiDefaultModelId, xaiModels, ApiProviderError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
@@ -42,7 +42,11 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 				? (this.options.apiModelId as XAIModelId)
 				: xaiDefaultModelId
 
-		const info = xaiModels[id]
+		let info: ModelInfo = { ...xaiModels[id] }
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}

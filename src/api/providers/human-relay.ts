@@ -7,6 +7,7 @@ import { getCommand } from "../../utils/commands"
 import { ApiStream } from "../transform/stream"
 
 import type { ApiHandler, SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { applyModelFamilyDefaults } from "./utils/model-family-defaults"
 
 /**
  * Human Relay API processor
@@ -62,18 +63,22 @@ export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
 	 * Get model information
 	 */
 	getModel(): { id: string; info: ModelInfo } {
+		const modelId = "human-relay"
 		// Human relay does not depend on a specific model, here is a default configuration
+		const baseInfo: ModelInfo = {
+			maxTokens: 16384,
+			contextWindow: 100000,
+			supportsImages: true,
+			supportsPromptCache: false,
+			inputPrice: 0,
+			outputPrice: 0,
+			description: "Calling web-side AI model through human relay",
+		}
+		// Apply model family defaults for consistent behavior across providers
+		const info = applyModelFamilyDefaults(modelId, baseInfo)
 		return {
-			id: "human-relay",
-			info: {
-				maxTokens: 16384,
-				contextWindow: 100000,
-				supportsImages: true,
-				supportsPromptCache: false,
-				inputPrice: 0,
-				outputPrice: 0,
-				description: "Calling web-side AI model through human relay",
-			},
+			id: modelId,
+			info,
 		}
 	}
 

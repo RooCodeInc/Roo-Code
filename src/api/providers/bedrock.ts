@@ -1072,15 +1072,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		reasoningBudget?: number
 	} {
 		if (this.costModelConfig?.id?.trim().length > 0) {
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(this.costModelConfig.id, this.costModelConfig.info)
 			// Get model params for cost model config
 			const params = getModelParams({
 				format: "anthropic",
 				modelId: this.costModelConfig.id,
-				model: this.costModelConfig.info,
+				model: info,
 				settings: this.options,
 				defaultTemperature: BEDROCK_DEFAULT_TEMPERATURE,
 			})
-			return { ...this.costModelConfig, ...params }
+			return { ...this.costModelConfig, info, ...params }
 		}
 
 		let modelConfig = undefined
@@ -1157,6 +1159,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				}
 			}
 		}
+
+		// Apply model family defaults for consistent behavior across providers
+		modelConfig.info = this.applyModelDefaults(modelConfig.id, modelConfig.info)
 
 		// Don't override maxTokens/contextWindow here; handled in getModelById (and includes user overrides)
 		return { ...modelConfig, ...params } as {

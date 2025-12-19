@@ -4,6 +4,7 @@ import OpenAI from "openai"
 
 import {
 	type MistralModelId,
+	type ModelInfo,
 	mistralDefaultModelId,
 	mistralModels,
 	MISTRAL_DEFAULT_TEMPERATURE,
@@ -90,7 +91,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		} = {
 			model,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToMistralMessages(messages)],
-			maxTokens: maxTokens ?? info.maxTokens,
+			maxTokens: maxTokens ?? info.maxTokens ?? 8192,
 			temperature,
 		}
 
@@ -188,7 +189,10 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 
 	override getModel() {
 		const id = this.options.apiModelId ?? mistralDefaultModelId
-		const info = mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]
+		let info: ModelInfo = { ...(mistralModels[id as MistralModelId] ?? mistralModels[mistralDefaultModelId]) }
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
 
 		// @TODO: Move this to the `getModelParams` function.
 		const maxTokens = this.options.includeMaxTokens ? info.maxTokens : undefined

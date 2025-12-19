@@ -65,7 +65,9 @@ export abstract class RouterProvider extends BaseProvider {
 
 		// First check instance models (populated by fetchModel)
 		if (this.models[id]) {
-			return { id, info: this.models[id] }
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(id, this.models[id])
+			return { id, info }
 		}
 
 		// Fall back to global cache (synchronous disk/memory cache)
@@ -74,11 +76,15 @@ export abstract class RouterProvider extends BaseProvider {
 		if (cachedModels?.[id]) {
 			// Also populate instance models for future calls
 			this.models = cachedModels
-			return { id, info: cachedModels[id] }
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(id, cachedModels[id])
+			return { id, info }
 		}
 
 		// Last resort: return default model
-		return { id: this.defaultModelId, info: this.defaultModelInfo }
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(this.defaultModelId, this.defaultModelInfo)
+		return { id: this.defaultModelId, info }
 	}
 
 	protected supportsTemperature(modelId: string): boolean {

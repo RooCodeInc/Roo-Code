@@ -22,7 +22,13 @@ export class MoonshotHandler extends OpenAiHandler {
 
 	override getModel() {
 		const id = this.options.apiModelId ?? moonshotDefaultModelId
-		const info = moonshotModels[id as keyof typeof moonshotModels] || moonshotModels[moonshotDefaultModelId]
+		let info: ModelInfo = {
+			...(moonshotModels[id as keyof typeof moonshotModels] || moonshotModels[moonshotDefaultModelId]),
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}

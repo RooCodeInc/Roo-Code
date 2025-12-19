@@ -9,6 +9,7 @@ import {
 	type ModelInfo,
 } from "@roo-code/types"
 import { type ApiHandler, ApiHandlerCreateMessageMetadata, type SingleCompletionHandler } from ".."
+import { applyModelFamilyDefaults } from "./utils/model-family-defaults"
 import { ApiStreamUsageChunk, type ApiStream } from "../transform/stream"
 import { claudeCodeOAuthManager, generateUserId } from "../../integrations/claude-code/oauth"
 import {
@@ -275,12 +276,18 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 		const modelId = this.options.apiModelId
 		if (modelId && Object.hasOwn(claudeCodeModels, modelId)) {
 			const id = modelId as ClaudeCodeModelId
-			return { id, info: { ...claudeCodeModels[id] } }
+			// Apply model family defaults for consistent behavior across providers
+			const info = applyModelFamilyDefaults(id, { ...claudeCodeModels[id] })
+			return { id, info }
 		}
 
+		// Apply model family defaults for consistent behavior across providers
+		const info = applyModelFamilyDefaults(claudeCodeDefaultModelId, {
+			...claudeCodeModels[claudeCodeDefaultModelId],
+		})
 		return {
 			id: claudeCodeDefaultModelId,
-			info: { ...claudeCodeModels[claudeCodeDefaultModelId] },
+			info,
 		}
 	}
 

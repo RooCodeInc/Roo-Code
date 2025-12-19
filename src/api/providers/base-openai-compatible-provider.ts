@@ -243,6 +243,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				? (this.options.apiModelId as ModelName)
 				: this.defaultProviderModelId
 
-		return { id, info: this.providerModels[id] }
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(id, this.providerModels[id])
+		return { id, info }
 	}
 }
