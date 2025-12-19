@@ -45,3 +45,18 @@ export async function fileExistsAtPath(filePath: string): Promise<boolean> {
 		return false
 	}
 }
+
+/**
+ * Helper function to check if a path is a file.
+ *
+ * @param filePath - The path to check.
+ * @returns A promise that resolves to true if the path is a file, false otherwise.
+ */
+export async function isFile(filePath: string): Promise<boolean> {
+	try {
+		const stats = await fs.stat(filePath)
+		return stats.isFile()
+	} catch {
+		return false
+	}
+}

@@ -1319,6 +1319,12 @@ const ModesView = () => {
 									vscode.postMessage({
 										type: "getSystemPrompt",
 										mode: currentMode.slug,
+										values: {
+											modelId:
+												apiConfiguration.apiProvider === "zgsm"
+													? apiConfiguration?.zgsmModelId
+													: apiConfiguration?.apiModelId,
+										},
 									})
 								}
 							}}

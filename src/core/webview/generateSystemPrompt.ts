@@ -2,7 +2,7 @@ import * as vscode from "vscode"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
-import { experiments as experimentsModule, EXPERIMENT_IDS } from "../../shared/experiments"
+import { experiments as experimentsModule, EXPERIMENT_IDS, parallelToolCallsEnabled } from "../../shared/experiments"
 
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -101,6 +101,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			toolProtocol,
 			isStealthModel: modelInfo?.isStealthModel,
 		},
+		undefined,
+		message?.values?.modelId,
+		parallelToolCallsEnabled,
 	)
 
 	return systemPrompt

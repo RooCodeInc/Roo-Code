@@ -2,7 +2,7 @@ import * as path from "path"
 
 import type { MockedFunction } from "vitest"
 
-import { fileExistsAtPath, createDirectoriesForFile } from "../../../utils/fs"
+import { fileExistsAtPath, createDirectoriesForFile, isFile } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { unescapeHtmlEntities } from "../../../utils/text-normalization"
@@ -29,6 +29,7 @@ vi.mock("delay", () => ({
 vi.mock("../../../utils/fs", () => ({
 	fileExistsAtPath: vi.fn().mockResolvedValue(false),
 	createDirectoriesForFile: vi.fn().mockResolvedValue([]),
+	isFile: vi.fn().mockResolvedValue(true),
 }))
 
 vi.mock("../../prompts/responses", () => ({
@@ -121,6 +122,7 @@ describe("writeToFileTool", () => {
 	// Mocked functions with correct types
 	const mockedFileExistsAtPath = fileExistsAtPath as MockedFunction<typeof fileExistsAtPath>
 	const mockedCreateDirectoriesForFile = createDirectoriesForFile as MockedFunction<typeof createDirectoriesForFile>
+	const mockedIsFile = isFile as MockedFunction<typeof isFile>
 	const mockedIsPathOutsideWorkspace = isPathOutsideWorkspace as MockedFunction<typeof isPathOutsideWorkspace>
 	const mockedGetReadablePath = getReadablePath as MockedFunction<typeof getReadablePath>
 	const mockedUnescapeHtmlEntities = unescapeHtmlEntities as MockedFunction<typeof unescapeHtmlEntities>
@@ -140,6 +142,7 @@ describe("writeToFileTool", () => {
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
 		mockedFileExistsAtPath.mockResolvedValue(false)
+		mockedIsFile.mockResolvedValue(true)
 		mockedIsPathOutsideWorkspace.mockReturnValue(false)
 		mockedGetReadablePath.mockReturnValue("test/path.txt")
 		mockedUnescapeHtmlEntities.mockImplementation((content) => content)
@@ -231,6 +234,7 @@ describe("writeToFileTool", () => {
 		const accessAllowed = options.accessAllowed ?? true
 
 		mockedFileExistsAtPath.mockResolvedValue(fileExists)
+		mockedIsFile.mockResolvedValue(true)
 		mockCline.rooIgnoreController.validateAccess.mockReturnValue(accessAllowed)
 
 		// Create a tool use object
@@ -284,12 +288,16 @@ describe("writeToFileTool", () => {
 			expect(mockCline.diffViewProvider.editType).toBe("create")
 		})
 
-		it("uses cached editType without filesystem check", async () => {
+		it("uses cached editType but still checks if path is a file", async () => {
 			mockCline.diffViewProvider.editType = "modify"
 
-			await executeWriteFileTool({})
+			await executeWriteFileTool({}, { fileExists: true })
 
-			expect(mockedFileExistsAtPath).not.toHaveBeenCalled()
+			// Even with cached editType, we still need to check if the path is a file, not a directory
+			// So fileExistsAtPath is called as part of the directory check
+			expect(mockedFileExistsAtPath).toHaveBeenCalledWith(absoluteFilePath)
+			// isFile is called to verify the path is a file, not a directory
+			expect(mockedIsFile).toHaveBeenCalledWith(absoluteFilePath)
 		})
 	})
 

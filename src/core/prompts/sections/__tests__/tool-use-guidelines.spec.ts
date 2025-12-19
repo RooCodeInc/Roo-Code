@@ -36,7 +36,7 @@ describe("getToolUseGuidelinesSection", () => {
 
 	describe("native protocol", () => {
 		it("should include proper numbered guidelines", () => {
-			const guidelines = getToolUseGuidelinesSection(TOOL_PROTOCOL.NATIVE)
+			const guidelines = getToolUseGuidelinesSection(TOOL_PROTOCOL.NATIVE, true)
 
 			// Check that all numbered items are present with correct numbering
 			expect(guidelines).toContain("1. Assess what information")
@@ -46,7 +46,7 @@ describe("getToolUseGuidelinesSection", () => {
 		})
 
 		it("should include native protocol-specific guidelines", () => {
-			const guidelines = getToolUseGuidelinesSection(TOOL_PROTOCOL.NATIVE)
+			const guidelines = getToolUseGuidelinesSection(TOOL_PROTOCOL.NATIVE, true)
 
 			expect(guidelines).toContain("you may use multiple tools in a single message")
 			expect(guidelines).not.toContain("Formulate your tool use using the XML format")

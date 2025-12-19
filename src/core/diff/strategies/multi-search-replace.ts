@@ -8,7 +8,7 @@ import { addLineNumbers, everyLineHasLineNumbers, stripLineNumbers } from "../..
 import { ToolUse, DiffStrategy, DiffResult } from "../../../shared/tools"
 import { normalizeString } from "../../../utils/text-normalization"
 
-const BUFFER_LINES = 1000 // Number of extra context lines to show before and after matches
+const BUFFER_LINES = 2000 // Number of extra context lines to show before and after matches
 
 function getSimilarity(original: string, search: string): number {
 	// Empty searches are no longer supported

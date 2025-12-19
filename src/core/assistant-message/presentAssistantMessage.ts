@@ -188,7 +188,7 @@ export async function presentAssistantMessage(cline: Task) {
 				cline.didAlreadyUseTool = true
 			}
 
-			const toolDescription = () => `[mcp_tool: ${mcpBlock.serverName}/${mcpBlock.toolName}]`
+			// const toolDescription = () => `[mcp_tool: ${mcpBlock.serverName}/${mcpBlock.toolName}]`
 
 			const askApproval = async (
 				type: ClineAsk,

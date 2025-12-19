@@ -1,5 +1,7 @@
 import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } from "@roo-code/types"
 
+export const parallelToolCallsEnabled = false
+
 export const EXPERIMENT_IDS = {
 	CHAT_SEARCH: "chatSearch",
 	ALWAYS_INCLUDE_FILE_DETAILS: "alwaysIncludeFileDetails",

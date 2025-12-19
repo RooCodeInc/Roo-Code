@@ -7,7 +7,7 @@ import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
-import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
+import { fileExistsAtPath, createDirectoriesForFile, isFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
@@ -68,6 +68,18 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		let fileExists: boolean
 		const absolutePath = path.resolve(task.cwd, relPath)
+
+		if ((await fileExistsAtPath(absolutePath)) && !(await isFile(absolutePath))) {
+			// throw new Error(`Path "${relPath}" is a directory, not a file. Please provide a file path instead of a directory path.`)
+			await handleError(
+				"writing file",
+				new Error(
+					`Path "${relPath}" is a directory, not a file. Please provide a file path instead of a directory path.`,
+				),
+			)
+			await task.diffViewProvider.reset()
+			return
+		}
 
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"
@@ -226,6 +238,15 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		let fileExists: boolean
 		const absolutePath = path.resolve(task.cwd, relPath)
+
+		if ((await fileExistsAtPath(absolutePath)) && !(await isFile(absolutePath))) {
+			provider?.log(
+				`Path "${relPath}" is a directory, not a file. Please provide a file path instead of a directory path.`,
+				"info",
+				"WriteToFileTool",
+			)
+			return
+		}
 
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"

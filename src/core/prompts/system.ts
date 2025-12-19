@@ -45,28 +45,53 @@ export function getPromptComponent(
 	return component
 }
 
-async function generatePrompt(
-	context: vscode.ExtensionContext,
-	cwd: string,
-	supportsComputerUse: boolean,
-	mode: Mode,
-	mcpHub?: McpHub,
-	diffStrategy?: DiffStrategy,
-	browserViewportSize?: string,
-	promptComponent?: PromptComponent,
-	customModeConfigs?: ModeConfig[],
-	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
-	experiments?: Record<string, boolean>,
-	enableMcpServerCreation?: boolean,
-	language?: string,
-	rooIgnoreInstructions?: string,
-	partialReadsEnabled?: boolean,
-	settings?: SystemPromptSettings,
-	todoList?: TodoItem[],
-	modelId?: string,
-	shell?: string,
-): Promise<string> {
+async function generatePrompt(data: {
+	context: vscode.ExtensionContext
+	cwd: string
+	supportsComputerUse: boolean
+	mode: Mode
+	mcpHub?: McpHub
+	diffStrategy?: DiffStrategy
+	browserViewportSize?: string
+	promptComponent?: PromptComponent
+	customModeConfigs?: ModeConfig[]
+	globalCustomInstructions?: string
+	diffEnabled?: boolean
+	experiments?: Record<string, boolean>
+	enableMcpServerCreation?: boolean
+	language?: string
+	rooIgnoreInstructions?: string
+	partialReadsEnabled?: boolean
+	parallelToolCallsEnabled?: boolean
+	settings?: SystemPromptSettings
+	todoList?: TodoItem[]
+	modelId?: string
+	shell?: string
+}): Promise<string> {
+	let {
+		context,
+		cwd,
+		supportsComputerUse,
+		mode,
+		mcpHub,
+		diffStrategy,
+		browserViewportSize,
+		promptComponent,
+		customModeConfigs,
+		globalCustomInstructions,
+		diffEnabled,
+		experiments,
+		enableMcpServerCreation,
+		language,
+		rooIgnoreInstructions,
+		partialReadsEnabled,
+		parallelToolCallsEnabled,
+		settings,
+		todoList,
+		modelId,
+		shell,
+	} = data
+
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
@@ -125,7 +150,7 @@ ${markdownFormattingSection()}
 
 ${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
 
-${getToolUseGuidelinesSection(effectiveProtocol)}
+${getToolUseGuidelinesSection(effectiveProtocol, parallelToolCallsEnabled)}
 
 ${mcpServersSection}
 
@@ -169,6 +194,7 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	parallelToolCallsEnabled?: boolean,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -223,16 +249,16 @@ ${customInstructions}`
 	// If diff is disabled, don't pass the diffStrategy
 	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
-	return generatePrompt(
+	return generatePrompt({
 		context,
 		cwd,
 		supportsComputerUse,
-		currentMode.slug,
+		mode: currentMode.slug,
 		mcpHub,
-		effectiveDiffStrategy,
+		diffStrategy: effectiveDiffStrategy,
 		browserViewportSize,
 		promptComponent,
-		customModes,
+		customModeConfigs: customModes,
 		globalCustomInstructions,
 		diffEnabled,
 		experiments,
@@ -240,9 +266,10 @@ ${customInstructions}`
 		language,
 		rooIgnoreInstructions,
 		partialReadsEnabled,
+		parallelToolCallsEnabled,
 		settings,
 		todoList,
 		modelId,
 		shell,
-	)
+	})
 }

@@ -230,6 +230,7 @@ export const SECRET_STATE_KEYS = [
 	// zgsm
 	"zgsmAccessToken",
 	"zgsmRefreshToken",
+	"zgsmState",
 	// zgsm
 	"apiKey",
 	"openRouterApiKey",

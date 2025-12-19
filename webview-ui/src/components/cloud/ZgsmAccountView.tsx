@@ -269,7 +269,7 @@ const ZgsmAccountViewComponent = ({ apiConfiguration, onDone }: AccountViewProps
 
 	// https://zgsm.sangfor.com/credit/manager/credit-reward-plan?code=GY5P
 	const handleGetMoreQuota = useCallback(() => {
-		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager/credit-reward-plan?code=${inviteCodeInfo?.invite_code}`
+		const cloudUrl = `${apiConfiguration?.zgsmBaseUrl?.trim() || "https://zgsm.sangfor.com"}/credit/manager/credit-reward-plan?code=${inviteCodeInfo?.invite_code || ""}`
 		vscode.postMessage({ type: "openExternal", url: cloudUrl })
 	}, [apiConfiguration?.zgsmBaseUrl, inviteCodeInfo?.invite_code])
 
