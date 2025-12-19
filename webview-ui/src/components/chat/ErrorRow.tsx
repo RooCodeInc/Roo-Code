@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { BookOpenText, MessageCircleWarning, Info, Copy, Check, Microscope } from "lucide-react"
+import { BookOpenText, MessageCircleWarning, Copy, Check, Microscope } from "lucide-react"
 
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
