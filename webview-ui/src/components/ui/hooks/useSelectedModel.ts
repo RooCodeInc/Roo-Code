@@ -29,6 +29,7 @@ import {
 	basetenModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
+	lMStudioDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
@@ -300,10 +301,16 @@ function getSelectedModel({
 		}
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
-			const info = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
+			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: lMStudioDefaultModelInfo.supportsNativeTools,
+				defaultToolProtocol: lMStudioDefaultModelInfo.defaultToolProtocol,
+			}
+			const info = modelInfo ? { ...nativeToolDefaults, ...modelInfo } : undefined
 			return {
 				id,
-				info: info || undefined,
+				info,
 			}
 		}
 		case "deepinfra": {
