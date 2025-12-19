@@ -334,9 +334,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const modelId = this.options.ollamaModelId || ""
+		const baseInfo = this.models[modelId] || openAiModelInfoSaneDefaults
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(modelId, baseInfo)
 		return {
 			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
+			info,
 		}
 	}
 

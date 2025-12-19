@@ -245,6 +245,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			}
 		}
 
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
 
 		// Build betas array for request headers

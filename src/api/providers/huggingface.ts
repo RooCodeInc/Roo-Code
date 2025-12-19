@@ -1,6 +1,8 @@
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
+import type { ModelInfo } from "@roo-code/types"
+
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -112,9 +114,11 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
 
 		// Try to get model info from cache
-		const modelInfo = this.modelCache?.[modelId]
+		let modelInfo = this.modelCache?.[modelId]
 
 		if (modelInfo) {
+			// Apply model family defaults for consistent behavior across providers
+			modelInfo = this.applyModelDefaults(modelId, modelInfo)
 			return {
 				id: modelId,
 				info: modelInfo,
@@ -122,14 +126,19 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		}
 
 		// Fallback to default values if model not found in cache
+		let defaultInfo: ModelInfo = {
+			maxTokens: 8192,
+			contextWindow: 131072,
+			supportsImages: false,
+			supportsPromptCache: false,
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		defaultInfo = this.applyModelDefaults(modelId, defaultInfo)
+
 		return {
 			id: modelId,
-			info: {
-				maxTokens: 8192,
-				contextWindow: 131072,
-				supportsImages: false,
-				supportsPromptCache: false,
-			},
+			info: defaultInfo,
 		}
 	}
 }

@@ -537,7 +537,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			const modelId = this.client.id || modelParts.join(SELECTOR_SEPARATOR)
 
 			// Build model info with conservative defaults for missing values
-			const modelInfo: ModelInfo = {
+			const baseInfo: ModelInfo = {
 				maxTokens: -1, // Unlimited tokens by default
 				contextWindow:
 					typeof this.client.maxInputTokens === "number"
@@ -552,7 +552,10 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 				description: `VSCode Language Model: ${modelId}`,
 			}
 
-			return { id: modelId, info: modelInfo }
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(modelId, baseInfo)
+
+			return { id: modelId, info }
 		}
 
 		// Fallback when no client is available
@@ -562,14 +565,19 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 		console.debug("Roo Code <Language Model API>: No client available, using fallback model info")
 
+		const baseInfo: ModelInfo = {
+			...openAiModelInfoSaneDefaults,
+			supportsNativeTools: true, // VSCode Language Model API supports native tool calling
+			defaultToolProtocol: "native", // Use native tool protocol by default
+			description: `VSCode Language Model (Fallback): ${fallbackId}`,
+		}
+
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(fallbackId, baseInfo)
+
 		return {
 			id: fallbackId,
-			info: {
-				...openAiModelInfoSaneDefaults,
-				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
-				defaultToolProtocol: "native", // Use native tool protocol by default
-				description: `VSCode Language Model (Fallback): ${fallbackId}`,
-			},
+			info,
 		}
 	}
 

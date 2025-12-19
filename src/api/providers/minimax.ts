@@ -272,7 +272,9 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	getModel() {
 		const modelId = this.options.apiModelId
 		const id = modelId && modelId in minimaxModels ? (modelId as MinimaxModelId) : minimaxDefaultModelId
-		const info = minimaxModels[id]
+		const baseInfo = minimaxModels[id]
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(id, baseInfo)
 
 		const params = getModelParams({
 			format: "anthropic",

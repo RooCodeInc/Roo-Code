@@ -63,7 +63,9 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 		const requestedId = this.options.unboundModelId ?? unboundDefaultModelId
 		const modelExists = this.models[requestedId]
 		const id = modelExists ? requestedId : unboundDefaultModelId
-		const info = modelExists ? this.models[requestedId] : unboundDefaultModelInfo
+		const baseInfo = modelExists ? this.models[requestedId] : unboundDefaultModelInfo
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(id, baseInfo)
 
 		const params = getModelParams({
 			format: "openai",

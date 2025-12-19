@@ -361,6 +361,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			}
 		}
 
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({
 			format: "anthropic",
 			modelId: id,

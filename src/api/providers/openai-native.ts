@@ -1220,7 +1220,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		let id =
 			modelId && modelId in openAiNativeModels ? (modelId as OpenAiNativeModelId) : openAiNativeDefaultModelId
 
-		const info: ModelInfo = openAiNativeModels[id]
+		let info: ModelInfo = openAiNativeModels[id]
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
 
 		const params = getModelParams({
 			format: "openai",

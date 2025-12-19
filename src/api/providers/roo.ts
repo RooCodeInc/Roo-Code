@@ -349,11 +349,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		const modelInfo = models[modelId]
 
 		if (modelInfo) {
-			return { id: modelId, info: modelInfo }
+			// Apply model family defaults for consistent behavior across providers
+			const info = this.applyModelDefaults(modelId, modelInfo)
+			return { id: modelId, info }
 		}
 
 		// Return the requested model ID even if not found, with fallback info.
-		const fallbackInfo = {
+		let fallbackInfo = {
 			maxTokens: 16_384,
 			contextWindow: 262_144,
 			supportsImages: false,
@@ -364,6 +366,9 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			outputPrice: 0,
 			isFree: false,
 		}
+
+		// Apply model family defaults for consistent behavior across providers
+		fallbackInfo = this.applyModelDefaults(modelId, fallbackInfo) as typeof fallbackInfo
 
 		return {
 			id: modelId,

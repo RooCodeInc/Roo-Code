@@ -5,6 +5,7 @@ import type { ModelInfo } from "@roo-code/types"
 import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
+import { applyModelFamilyDefaults } from "./utils/model-family-defaults"
 
 /**
  * Base class for API providers that implements common functionality.
@@ -102,5 +103,24 @@ export abstract class BaseProvider implements ApiHandler {
 		}
 
 		return countTokens(content, { useWorker: true })
+	}
+
+	/**
+	 * Apply model family defaults to a ModelInfo object.
+	 *
+	 * This helper method allows providers to apply consistent defaults
+	 * for recognized model families (OpenAI, Gemini, etc.) regardless of
+	 * which provider is serving the model.
+	 *
+	 * Defaults are only applied when the corresponding property is not
+	 * already explicitly set on the model info, ensuring that provider-specific
+	 * or model-specific settings take precedence.
+	 *
+	 * @param modelId - The model identifier
+	 * @param info - The original ModelInfo object
+	 * @returns A new ModelInfo object with family defaults applied
+	 */
+	protected applyModelDefaults(modelId: string, info: ModelInfo): ModelInfo {
+		return applyModelFamilyDefaults(modelId, info)
 	}
 }

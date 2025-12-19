@@ -322,7 +322,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
-		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
+		const baseInfo = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
+		// Apply model family defaults for consistent behavior across providers
+		const info = this.applyModelDefaults(id, baseInfo)
 		return { id, info }
 	}
 

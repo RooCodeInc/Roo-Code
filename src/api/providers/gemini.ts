@@ -348,6 +348,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		let id = modelId && modelId in geminiModels ? (modelId as GeminiModelId) : geminiDefaultModelId
 		let info: ModelInfo = geminiModels[id]
 
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
+
 		const params = getModelParams({
 			format: "gemini",
 			modelId: id,

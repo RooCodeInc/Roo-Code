@@ -40,7 +40,10 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 
 	override getModel() {
 		const id = this.options.deepInfraModelId ?? deepInfraDefaultModelId
-		const info = this.models[id] ?? deepInfraDefaultModelInfo
+		let info = this.models[id] ?? deepInfraDefaultModelInfo
+
+		// Apply model family defaults for consistent behavior across providers
+		info = this.applyModelDefaults(id, info)
 
 		const params = getModelParams({
 			format: "openai",
