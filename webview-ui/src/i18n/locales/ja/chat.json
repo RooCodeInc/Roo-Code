@@ -138,7 +138,7 @@
 		"streaming": "APIリクエスト...",
 		"cancelled": "APIリクエストキャンセル",
 		"streamingFailed": "APIストリーミング失敗",
-		"errorTitle": "APIエラー {{code}}",
+		"errorTitle": "プロバイダーエラー {{code}}",
 		"errorMessage": {
 			"docs": "ドキュメント",
 			"goToSettings": "設定",

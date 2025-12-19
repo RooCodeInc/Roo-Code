@@ -133,7 +133,7 @@
 		"streaming": "API-запрос...",
 		"cancelled": "API-запрос отменен",
 		"streamingFailed": "Ошибка потокового API-запроса",
-		"errorTitle": "Ошибка API {{code}}",
+		"errorTitle": "Ошибка провайдера {{code}}",
 		"errorMessage": {
 			"docs": "Документация",
 			"goToSettings": "Настройки",

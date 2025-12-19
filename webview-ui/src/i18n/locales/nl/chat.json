@@ -133,7 +133,7 @@
 		"streaming": "API-verzoek...",
 		"cancelled": "API-verzoek geannuleerd",
 		"streamingFailed": "API-streaming mislukt",
-		"errorTitle": "API-fout {{code}}",
+		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
 			"docs": "Documentatie",
 			"goToSettings": "Instellingen",

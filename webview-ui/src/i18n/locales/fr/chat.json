@@ -138,7 +138,7 @@
 		"streaming": "Requête API...",
 		"cancelled": "Requête API annulée",
 		"streamingFailed": "Échec du streaming API",
-		"errorTitle": "Erreur API {{code}}",
+		"errorTitle": "Erreur du fournisseur {{code}}",
 		"errorMessage": {
 			"docs": "Documentation",
 			"goToSettings": "Paramètres",

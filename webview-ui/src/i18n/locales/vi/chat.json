@@ -138,7 +138,7 @@
 		"streaming": "Yêu cầu API...",
 		"cancelled": "Yêu cầu API đã hủy",
 		"streamingFailed": "Streaming API thất bại",
-		"errorTitle": "Lỗi API {{code}}",
+		"errorTitle": "Lỗi nhà cung cấp {{code}}",
 		"errorMessage": {
 			"docs": "Tài liệu",
 			"goToSettings": "Cài đặt",

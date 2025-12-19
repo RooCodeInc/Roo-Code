@@ -138,7 +138,7 @@
 		"streaming": "API请求...",
 		"cancelled": "API请求已取消",
 		"streamingFailed": "API流式传输失败",
-		"errorTitle": "API 错误 {{code}}",
+		"errorTitle": "提供商错误 {{code}}",
 		"errorMessage": {
 			"docs": "文档",
 			"goToSettings": "设置",
