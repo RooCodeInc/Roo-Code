@@ -867,7 +867,7 @@ export const ChatRowContent = ({
 											e.stopPropagation()
 											handleEditSubtaskClick()
 										}}
-										title={t("chat:editSubtaskInstructions")}
+										title={t("chat:subtasks.editInstructions")}
 										style={{
 											padding: "2px 4px",
 											borderRadius: "3px",
@@ -892,19 +892,19 @@ export const ChatRowContent = ({
 												fontFamily: "var(--vscode-editor-font-family)",
 												fontSize: "var(--vscode-editor-font-size)",
 											}}
-											placeholder={t("chat:editSubtaskInstructions.placeholder")}
+											placeholder={t("chat:subtasks.editPlaceholder")}
 											autoFocus
 										/>
 										<div className="flex gap-2 justify-end">
 											<button
 												onClick={handleCancelEditSubtask}
 												className="px-3 py-1 rounded bg-vscode-button-secondaryBackground text-vscode-button-secondaryForeground hover:bg-vscode-button-secondaryHoverBackground">
-												{t("chat:cancel")}
+												{t("chat:cancel.title")}
 											</button>
 											<button
 												onClick={handleSaveEditSubtask}
 												className="px-3 py-1 rounded bg-vscode-button-background text-vscode-button-foreground hover:bg-vscode-button-hoverBackground">
-												{t("chat:save")}
+												{t("chat:save.title")}
 											</button>
 										</div>
 									</div>

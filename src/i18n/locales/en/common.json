@@ -100,7 +100,8 @@
 			"cannot_delete_invalid_timestamp": "Cannot delete message: invalid timestamp",
 			"message_not_found": "Message with timestamp {{messageTs}} not found",
 			"error_deleting_message": "Error deleting message: {{error}}",
-			"error_editing_message": "Error editing message: {{error}}"
+			"error_editing_message": "Error editing message: {{error}}",
+			"error_editing_subtask": "Error editing subtask: {{error}}"
 		},
 		"gemini": {
 			"generate_stream": "Gemini generate context stream error: {{error}}",
