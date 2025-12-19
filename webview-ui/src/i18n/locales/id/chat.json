@@ -300,6 +300,7 @@
 	},
 	"troubleMessage": "Roo mengalami masalah...",
 	"errorDetails": {
+		"link": "Details",
 		"title": "Detail Kesalahan",
 		"copyToClipboard": "Salin ke Clipboard",
 		"copied": "Disalin!"

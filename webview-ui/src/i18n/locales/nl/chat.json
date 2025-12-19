@@ -264,6 +264,7 @@
 	},
 	"troubleMessage": "Roo ondervindt problemen...",
 	"errorDetails": {
+		"link": "Details",
 		"title": "Foutdetails",
 		"copyToClipboard": "Naar klembord kopiëren",
 		"copied": "Gekopieerd!"

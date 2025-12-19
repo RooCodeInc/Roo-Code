@@ -1,12 +1,12 @@
 import React, { useState, useCallback, memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { BookOpenText, MessageCircleWarning, Info, Copy, Check } from "lucide-react"
+import { BookOpenText, MessageCircleWarning, Copy, Check } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@src/components/ui/dialog"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "../ui"
+import { Button } from "../ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 
@@ -242,19 +242,6 @@ export const ErrorRow = memo(
 											: t("chat:apiRequest.errorMessage.docs")}
 									</a>
 								)}
-								{formattedErrorDetails && (
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<button
-												onClick={() => setIsDetailsDialogOpen(true)}
-												className="transition-opacity opacity-30 group-hover:opacity-100 cursor-pointer"
-												aria-label={t("chat:errorDetails.title")}>
-												<Info className="size-4" />
-											</button>
-										</TooltipTrigger>
-										<TooltipContent>{t("chat:errorDetails.title")}</TooltipContent>
-									</Tooltip>
-								)}
 							</div>
 						</div>
 					)}
@@ -265,6 +252,14 @@ export const ErrorRow = memo(
 								"my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
 							}>
 							{message}
+							{formattedErrorDetails && (
+								<button
+									onClick={() => setIsDetailsDialogOpen(true)}
+									className="cursor-pointer ml-1 text-vscode-descriptionForeground/50 hover:text-vscode-descriptionForeground hover:underline font-normal"
+									aria-label={t("chat:errorDetails.title")}>
+									{t("chat:errorDetails.link")}
+								</button>
+							)}
 						</p>
 						{additionalContent}
 					</div>

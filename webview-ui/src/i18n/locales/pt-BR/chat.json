@@ -264,6 +264,7 @@
 		"noToolsUsedDetails": "O modelo forneceu texto/raciocínio, mas não chamou nenhuma das ferramentas necessárias. Isso geralmente indica que o modelo entendeu mal a tarefa ou está tendo dificuldade em determinar qual ferramenta usar. O modelo foi automaticamente solicitado a tentar novamente com o uso adequado de ferramentas."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Detalhes do erro",
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!"

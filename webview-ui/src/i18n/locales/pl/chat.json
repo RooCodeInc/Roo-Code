@@ -264,6 +264,7 @@
 		"noToolsUsedDetails": "Model dostarczył tekst/rozumowanie, ale nie wywołał żadnego z wymaganych narzędzi. Zazwyczaj oznacza to, że model źle zrozumiał zadanie lub ma trudności z określeniem, którego narzędzia użyć. Model został automatycznie poproszony o ponowną próbę z odpowiednim użyciem narzędzi."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Szczegóły błędu",
 		"copyToClipboard": "Kopiuj do schowka",
 		"copied": "Skopiowano!"

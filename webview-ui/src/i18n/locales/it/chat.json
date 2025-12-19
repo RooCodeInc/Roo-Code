@@ -264,6 +264,7 @@
 		"noToolsUsedDetails": "Il modello ha fornito testo/ragionamento ma non ha chiamato nessuno degli strumenti richiesti. Questo di solito indica che il modello ha frainteso l'attività o ha difficoltà a determinare quale strumento utilizzare. Il modello è stato automaticamente sollecitato a riprovare con l'uso appropriato degli strumenti."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Dettagli errore",
 		"copyToClipboard": "Copia negli appunti",
 		"copied": "Copiato!"

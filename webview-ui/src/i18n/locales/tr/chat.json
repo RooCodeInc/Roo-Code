@@ -265,6 +265,7 @@
 		"noToolsUsedDetails": "Model metin/akıl yürütme sağladı ancak gerekli araçlardan hiçbirini çağırmadı. Bu genellikle modelin görevi yanlış anladığını veya hangi aracı kullanacağını belirlemekte zorlandığını gösterir. Model, uygun araç kullanımıyla yeniden denemesi için otomatik olarak istenmiştir."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
 		"copied": "Kopyalandı!"

@@ -264,6 +264,7 @@
 		"noToolsUsedDetails": "Das Modell hat Text/Überlegungen geliefert, aber keine der erforderlichen Tools aufgerufen. Dies deutet normalerweise darauf hin, dass das Modell die Aufgabe missverstanden hat oder Schwierigkeiten hat zu bestimmen, welches Tool verwendet werden soll. Das Modell wurde automatisch aufgefordert, es erneut mit der richtigen Tool-Verwendung zu versuchen."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Fehlerdetails",
 		"copyToClipboard": "In Zwischenablage kopieren",
 		"copied": "Kopiert!"

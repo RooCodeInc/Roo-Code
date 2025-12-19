@@ -265,6 +265,7 @@
 	},
 	"troubleMessage": "У Roo возникли проблемы...",
 	"errorDetails": {
+		"link": "Details",
 		"title": "Детали ошибки",
 		"copyToClipboard": "Скопировать в буфер обмена",
 		"copied": "Скопировано!"
