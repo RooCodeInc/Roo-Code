@@ -50,6 +50,7 @@ import {
 	MIN_CHECKPOINT_TIMEOUT_SECONDS,
 	TOOL_PROTOCOL,
 	ConsecutiveMistakeError,
+	toolNames,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -3107,6 +3108,50 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
 					this.assistantMessageContent = parsedBlocks
+				}
+
+				// FALLBACK: For native protocol, check if model output XML tool tags instead of using native tool calls.
+				// Some models/providers may fall back to XML-style tool output even when configured for native protocol.
+				// This can happen with certain providers (e.g., Requesty, OpenRouter) where the model doesn't properly
+				// use the native tool calling format. When detected, parse the XML as a fallback to recover tool calls.
+				// See: https://github.com/RooCodeInc/Roo-Code/issues/10106
+				if (!shouldUseXmlParser && assistantMessage.length > 0) {
+					// Check if we received any native tool calls during streaming
+					const hasNativeToolCalls = this.assistantMessageContent.some(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+
+					if (!hasNativeToolCalls) {
+						// Check if the assistant message contains XML tool tags
+						// We look for patterns like <tool_name> where tool_name is a known tool
+						const xmlToolTagPattern = new RegExp(`<(${toolNames.join("|")})>`, "i")
+						const containsXmlToolTags = xmlToolTagPattern.test(assistantMessage)
+
+						if (containsXmlToolTags) {
+							console.log(
+								`[Task#${this.taskId}.${this.instanceId}] Native protocol received XML tool tags - applying fallback XML parsing`,
+							)
+
+							// Use AssistantMessageParser to parse the XML tool calls from the text
+							const fallbackParser = new AssistantMessageParser()
+							fallbackParser.processChunk(assistantMessage)
+							fallbackParser.finalizeContentBlocks()
+							const parsedBlocks = fallbackParser.getContentBlocks()
+
+							// Check if we successfully parsed any tool_use blocks
+							const parsedToolUses = parsedBlocks.filter((block) => block.type === "tool_use")
+
+							if (parsedToolUses.length > 0) {
+								console.log(
+									`[Task#${this.taskId}.${this.instanceId}] Fallback XML parsing recovered ${parsedToolUses.length} tool call(s)`,
+								)
+								// Replace content with parsed blocks that include the tool calls
+								this.assistantMessageContent = parsedBlocks
+								// Mark that we have new content to process
+								this.userMessageContentReady = false
+							}
+						}
+					}
 				}
 
 				// Present any partial blocks that were just completed
