@@ -265,4 +265,183 @@ describe("normalizeToolSchema", () => {
 		expect(props.line_ranges.items).toBeDefined()
 		expect(props.line_ranges.description).toBe("Optional line ranges")
 	})
+
+	describe("format field handling", () => {
+		it("should preserve supported format values (date-time)", () => {
+			const input = {
+				type: "string",
+				format: "date-time",
+				description: "Timestamp",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result).toEqual({
+				type: "string",
+				format: "date-time",
+				description: "Timestamp",
+				additionalProperties: false,
+			})
+		})
+
+		it("should preserve supported format values (email)", () => {
+			const input = {
+				type: "string",
+				format: "email",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result.format).toBe("email")
+		})
+
+		it("should preserve supported format values (uuid)", () => {
+			const input = {
+				type: "string",
+				format: "uuid",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result.format).toBe("uuid")
+		})
+
+		it("should preserve all supported format values", () => {
+			const supportedFormats = [
+				"date-time",
+				"time",
+				"date",
+				"duration",
+				"email",
+				"hostname",
+				"ipv4",
+				"ipv6",
+				"uuid",
+			]
+
+			for (const format of supportedFormats) {
+				const input = { type: "string", format }
+				const result = normalizeToolSchema(input)
+				expect(result.format).toBe(format)
+			}
+		})
+
+		it("should strip unsupported format value (uri)", () => {
+			const input = {
+				type: "string",
+				format: "uri",
+				description: "URL field",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result).toEqual({
+				type: "string",
+				description: "URL field",
+				additionalProperties: false,
+			})
+			expect(result.format).toBeUndefined()
+		})
+
+		it("should strip unsupported format value (uri-reference)", () => {
+			const input = {
+				type: "string",
+				format: "uri-reference",
+			}
+
+			const result = normalizeToolSchema(input)
+
+			expect(result.format).toBeUndefined()
+		})
+
+		it("should strip unsupported format values (various)", () => {
+			const unsupportedFormats = ["uri", "uri-reference", "iri", "iri-reference", "regex", "json-pointer"]
+
+			for (const format of unsupportedFormats) {
+				const input = { type: "string", format }
+				const result = normalizeToolSchema(input)
+				expect(result.format).toBeUndefined()
+			}
+		})
+
+		it("should strip unsupported format in nested properties", () => {
+			const input = {
+				type: "object",
+				properties: {
+					url: {
+						type: "string",
+						format: "uri",
+						description: "A URL",
+					},
+					email: {
+						type: "string",
+						format: "email",
+						description: "An email",
+					},
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			expect(props.url.format).toBeUndefined()
+			expect(props.url.description).toBe("A URL")
+			expect(props.email.format).toBe("email")
+			expect(props.email.description).toBe("An email")
+		})
+
+		it("should strip unsupported format in deeply nested structures", () => {
+			const input = {
+				type: "object",
+				properties: {
+					items: {
+						type: "array",
+						items: {
+							type: "object",
+							properties: {
+								link: {
+									type: "string",
+									format: "uri",
+								},
+								timestamp: {
+									type: "string",
+									format: "date-time",
+								},
+							},
+						},
+					},
+				},
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			const itemsItems = props.items.items as Record<string, unknown>
+			const nestedProps = itemsItems.properties as Record<string, Record<string, unknown>>
+			expect(nestedProps.link.format).toBeUndefined()
+			expect(nestedProps.timestamp.format).toBe("date-time")
+		})
+
+		it("should handle MCP fetch server schema with uri format", () => {
+			// This is similar to the actual fetch MCP server schema that caused the error
+			const input = {
+				type: "object",
+				properties: {
+					url: {
+						type: "string",
+						format: "uri",
+						description: "URL to fetch",
+					},
+				},
+				required: ["url"],
+			}
+
+			const result = normalizeToolSchema(input)
+
+			const props = result.properties as Record<string, Record<string, unknown>>
+			expect(props.url.format).toBeUndefined()
+			expect(props.url.type).toBe("string")
+			expect(props.url.description).toBe("URL to fetch")
+		})
+	})
 })

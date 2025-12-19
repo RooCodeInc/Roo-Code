@@ -138,7 +138,7 @@
 		"streaming": "API İsteği...",
 		"cancelled": "API İsteği İptal Edildi",
 		"streamingFailed": "API Akışı Başarısız",
-		"errorTitle": "API Hatası {{code}}",
+		"errorTitle": "Sağlayıcı Hatası {{code}}",
 		"errorMessage": {
 			"docs": "Belgeler",
 			"goToSettings": "Ayarlar",
@@ -259,7 +259,13 @@
 		"hasQuestion": "Roo'nun bir sorusu var"
 	},
 	"taskCompleted": "Görev Tamamlandı",
+	"modelResponseIncomplete": "Model yanıtı eksik",
+	"modelResponseErrors": {
+		"noToolsUsed": "Model yanıtında herhangi bir araç kullanamadı. Bu genellikle model, görevi tamamlamak için gerekli araçları çağırmadan yalnızca metin/akıl yürütme sağladığında olur.",
+		"noToolsUsedDetails": "Model metin/akıl yürütme sağladı ancak gerekli araçlardan hiçbirini çağırmadı. Bu genellikle modelin görevi yanlış anladığını veya hangi aracı kullanacağını belirlemekte zorlandığını gösterir. Model, uygun araç kullanımıyla yeniden denemesi için otomatik olarak istenmiştir."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
 		"copied": "Kopyalandı!",

@@ -29,6 +29,7 @@ import {
 	basetenModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
+	lMStudioDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
@@ -166,7 +167,13 @@ function getSelectedModel({
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
-			const info = routerModels.litellm?.[id] ?? litellmDefaultModelInfo
+			const routerInfo = routerModels.litellm?.[id]
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: litellmDefaultModelInfo.supportsNativeTools,
+				defaultToolProtocol: litellmDefaultModelInfo.defaultToolProtocol,
+			}
+			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : litellmDefaultModelInfo
 			return { id, info }
 		}
 		case "xai": {
@@ -294,10 +301,16 @@ function getSelectedModel({
 		}
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
-			const info = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
+			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: lMStudioDefaultModelInfo.supportsNativeTools,
+				defaultToolProtocol: lMStudioDefaultModelInfo.defaultToolProtocol,
+			}
+			const info = modelInfo ? { ...nativeToolDefaults, ...modelInfo } : undefined
 			return {
 				id,
-				info: info || undefined,
+				info,
 			}
 		}
 		case "deepinfra": {

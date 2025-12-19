@@ -1,5 +1,24 @@
 # Roo Code Changelog
 
+## [3.36.14] - 2025-12-18
+
+![3.36.14 Release - Native Tool Calling for Claude on Vertex AI](/releases/3.36.14-release.png)
+
+- Add native tool calling support for Claude models on Vertex AI, enabling more efficient and reliable tool interactions (PR #10197 by @hannesrudolph)
+- Fix JSON Schema format value stripping for OpenAI compatibility, resolving issues with unsupported format values (PR #10198 by @daniel-lxs)
+- Improve "no tools used" error handling with graceful retry mechanism for better reliability when tools fail to execute (PR #10196 by @hannesrudolph)
+
+## [3.36.13] - 2025-12-18
+
+![3.36.13 Release - Native Tool Protocol](/releases/3.36.13-release.png)
+
+- Change default tool protocol from XML to native for improved reliability and performance (PR #10186 by @mrubens)
+- Add native tool support for VS Code Language Model API providers (PR #10191 by @daniel-lxs)
+- Lock task tool protocol for consistent task resumption, ensuring tasks resume with the same protocol they started with (PR #10192 by @daniel-lxs)
+- Replace edit_file tool alias with actual edit_file tool for improved diff editing capabilities (PR #9983 by @hannesrudolph)
+- Fix LiteLLM router models by merging default model info for native tool calling support (PR #10187 by @daniel-lxs)
+- Add PostHog exception tracking for consecutive mistake errors to improve error monitoring (PR #10193 by @daniel-lxs)
+
 ## [3.36.12] - 2025-12-18
 
 ![3.36.12 Release - Better telemetry and Bedrock fixes](/releases/3.36.12-release.png)

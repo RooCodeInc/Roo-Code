@@ -384,7 +384,7 @@ describe("extension.ts", () => {
 			})
 
 			// Verify flushModels was called to clear the cache on logout
-			expect(flushModels).toHaveBeenCalledWith("roo", false)
+			expect(flushModels).toHaveBeenCalledWith({ provider: "roo" }, false)
 		})
 	})
 })

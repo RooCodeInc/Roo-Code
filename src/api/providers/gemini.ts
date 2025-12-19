@@ -25,6 +25,7 @@ import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { t } from "i18next"
 import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
+import { handleProviderError } from "./utils/error-handler"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -294,21 +295,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				if (chunk.usageMetadata) {
 					lastUsageMetadata = chunk.usageMetadata
 				}
-			}
-
-			// If we had reasoning but no content, emit a placeholder text to prevent "Empty assistant response" errors.
-			// This typically happens when the model hits max output tokens while reasoning.
-			if (hasReasoning && !hasContent) {
-				let message = t("common:errors.gemini.thinking_complete_no_output")
-				if (finishReason === "MAX_TOKENS") {
-					message = t("common:errors.gemini.thinking_complete_truncated")
-				} else if (finishReason === "SAFETY") {
-					message = t("common:errors.gemini.thinking_complete_safety")
-				} else if (finishReason === "RECITATION") {
-					message = t("common:errors.gemini.thinking_complete_recitation")
-				}
-
-				yield { type: "text", text: message }
 			}
 
 			if (finalResponse?.responseId) {

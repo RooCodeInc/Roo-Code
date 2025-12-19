@@ -138,7 +138,7 @@
 		"streaming": "API-Anfrage...",
 		"cancelled": "API-Anfrage abgebrochen",
 		"streamingFailed": "API-Streaming fehlgeschlagen",
-		"errorTitle": "API-Fehler {{code}}",
+		"errorTitle": "Anbieter-Fehler {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentation",
 			"goToSettings": "Einstellungen",
@@ -258,7 +258,13 @@
 		"hasQuestion": "Roo hat eine Frage"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
+	"modelResponseIncomplete": "Modellantwort unvollständig",
+	"modelResponseErrors": {
+		"noToolsUsed": "Das Modell hat in seiner Antwort keine Tools verwendet. Dies passiert normalerweise, wenn das Modell nur Text/Überlegungen liefert, ohne die erforderlichen Tools aufzurufen, um die Aufgabe zu erledigen.",
+		"noToolsUsedDetails": "Das Modell hat Text/Überlegungen geliefert, aber keine der erforderlichen Tools aufgerufen. Dies deutet normalerweise darauf hin, dass das Modell die Aufgabe missverstanden hat oder Schwierigkeiten hat zu bestimmen, welches Tool verwendet werden soll. Das Modell wurde automatisch aufgefordert, es erneut mit der richtigen Tool-Verwendung zu versuchen."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Fehlerdetails",
 		"copyToClipboard": "In Zwischenablage kopieren",
 		"copied": "Kopiert!",

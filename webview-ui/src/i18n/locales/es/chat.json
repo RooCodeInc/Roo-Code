@@ -138,7 +138,7 @@
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
 		"streamingFailed": "Transmisión API falló",
-		"errorTitle": "Error API {{code}}",
+		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentación",
 			"goToSettings": "Configuración",
@@ -258,7 +258,13 @@
 		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
+	"modelResponseIncomplete": "Respuesta del modelo incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El modelo no utilizó ninguna herramienta en su respuesta. Esto suele ocurrir cuando el modelo solo proporciona texto/razonamiento sin llamar a las herramientas necesarias para completar la tarea.",
+		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas."
+	},
 	"errorDetails": {
+		"link": "Detalles",
 		"title": "Detalles del error",
 		"copyToClipboard": "Copiar al portapapeles",
 		"copied": "¡Copiado!",
