@@ -43,6 +43,8 @@ export async function getRequestyModels(baseUrl?: string, apiKey?: string): Prom
 				description: rawModel.description,
 				cacheWritesPrice: parseApiPrice(rawModel.caching_price),
 				cacheReadsPrice: parseApiPrice(rawModel.cached_price),
+				supportsNativeTools: true,
+				defaultToolProtocol: "native",
 			}
 
 			models[rawModel.id] = modelInfo
