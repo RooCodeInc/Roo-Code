@@ -265,7 +265,7 @@
 		"noToolsUsedDetails": "Mô hình đã cung cấp văn bản/lý luận nhưng không gọi bất kỳ công cụ bắt buộc nào. Điều này thường cho thấy mô hình đã hiểu sai tác vụ hoặc đang gặp khó khăn trong việc xác định công cụ nào sẽ sử dụng. Mô hình đã được tự động nhắc thử lại với việc sử dụng công cụ phù hợp."
 	},
 	"errorDetails": {
-		"link": "Details",
+		"link": "Chi tiết",
 		"title": "Chi tiết lỗi",
 		"copyToClipboard": "Sao chép vào clipboard",
 		"copied": "Đã sao chép!"

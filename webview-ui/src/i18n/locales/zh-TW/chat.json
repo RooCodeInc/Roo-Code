@@ -298,7 +298,7 @@
 	},
 	"troubleMessage": "Roo 遇到問題...",
 	"errorDetails": {
-		"link": "Details",
+		"link": "詳情",
 		"title": "錯誤詳細資訊",
 		"copyToClipboard": "複製到剪貼簿",
 		"copied": "已複製！"
