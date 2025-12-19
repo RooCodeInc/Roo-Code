@@ -162,6 +162,7 @@ export interface WebviewMessage {
 		| "showZgsmCodebaseDisableConfirmDialog"
 		| "fetchZgsmQuotaInfo"
 		| "zgsmProviderTip"
+		| "costrictTelemetry"
 		| "fetchZgsmInviteCode"
 		| "fixCodebase"
 		| "showTaskWithIdInNewTab"

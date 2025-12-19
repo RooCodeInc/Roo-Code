@@ -1,6 +1,7 @@
 import posthog from "posthog-js"
 
 import { telemetryClient } from "@src/utils/TelemetryClient"
+import { vscode } from "@src/utils/vscode"
 
 vi.mock("posthog-js", () => ({
 	default: {
@@ -8,6 +9,12 @@ vi.mock("posthog-js", () => ({
 		reset: vi.fn(),
 		identify: vi.fn(),
 		capture: vi.fn(),
+	},
+}))
+
+vi.mock("@src/utils/vscode", () => ({
+	vscode: {
+		postMessage: vi.fn(),
 	},
 }))
 
@@ -99,7 +106,13 @@ describe("TelemetryClient", () => {
 			telemetryClient.capture("test_event", { property: "value" })
 
 			// Assert
-			expect(posthog.capture).toHaveBeenCalledWith("test_event", { property: "value" })
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "costrictTelemetry",
+				values: {
+					eventName: "test_event",
+					properties: { property: "value" },
+				},
+			})
 		})
 
 		it("doesn't capture events when telemetry is disabled", () => {
@@ -110,8 +123,15 @@ describe("TelemetryClient", () => {
 			// Act
 			telemetryClient.capture("test_event")
 
-			// Assert
-			expect(posthog.capture).not.toHaveBeenCalled()
+			// Assert - Even when telemetry is disabled, the capture method still calls vscode.postMessage
+			// The actual filtering should happen on the extension side
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "costrictTelemetry",
+				values: {
+					eventName: "test_event",
+					properties: undefined,
+				},
+			})
 		})
 
 		/**
@@ -126,8 +146,15 @@ describe("TelemetryClient", () => {
 			// Act
 			telemetryClient.capture("test_event", { property: "test value" })
 
-			// Assert
-			expect(posthog.capture).not.toHaveBeenCalled()
+			// Assert - Even when telemetry is unset, the capture method still calls vscode.postMessage
+			// The actual filtering should happen on the extension side
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "costrictTelemetry",
+				values: {
+					eventName: "test_event",
+					properties: { property: "test value" },
+				},
+			})
 		})
 	})
 })

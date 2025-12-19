@@ -480,6 +480,13 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "costrictTelemetry": {
+			const { eventName, properties } = message?.values ?? {}
+			if (eventName) {
+				TelemetryService.instance.captureEvent(eventName, properties)
+			}
+			break
+		}
 		case "zgsmAbort": {
 			await provider.cancelTask()
 			break

@@ -1,6 +1,7 @@
 import posthog from "posthog-js"
 
 import type { TelemetrySetting } from "@roo-code/types"
+import { vscode } from "./vscode"
 
 class TelemetryClient {
 	private static instance: TelemetryClient
@@ -35,13 +36,13 @@ class TelemetryClient {
 	}
 
 	public capture(eventName: string, properties?: Record<string, any>) {
-		if (TelemetryClient.telemetryEnabled) {
-			try {
-				posthog.capture(eventName, properties)
-			} catch (_error) {
-				// Silently fail if there's an error capturing an event.
-			}
-		}
+		vscode.postMessage({
+			type: "costrictTelemetry",
+			values: {
+				eventName,
+				properties,
+			},
+		})
 	}
 }
 
