@@ -234,6 +234,8 @@ function validateInput(input) {
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
+					apiProvider: "openrouter", // Use OpenRouter provider
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "Hello World" to "Hello Universe". The file already exists with this content:
 ${testFile.content}\nAssume the file exists and you can modify it directly.`,
