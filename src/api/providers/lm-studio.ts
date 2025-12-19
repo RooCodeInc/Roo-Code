@@ -47,11 +47,8 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			...convertToOpenAiMessages(messages),
 		]
 
-		// Check if model supports native tools and tools are provided with native protocol
-		const modelInfo = this.getModel().info
-		const supportsNativeTools = modelInfo.supportsNativeTools ?? false
-		const useNativeTools =
-			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+		// LM Studio always supports native tools (https://lmstudio.ai/docs/developer/core/tools)
+		const useNativeTools = metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
 
 		// -------------------------
 		// Track token usage
