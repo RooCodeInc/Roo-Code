@@ -429,7 +429,7 @@ function validateInput(input) {
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					toolProtocol: "native", // Enable native tool calling
 					apiProvider: "openrouter", // Use OpenRouter provider
-					apiModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
 				},
 				text: `Use apply_diff on the file ${testFile.name} to change "Hello World" to "Hello Universe". The file already exists with this content:
 ${testFile.content}
