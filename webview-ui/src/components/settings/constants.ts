@@ -4,7 +4,6 @@ import {
 	anthropicModels,
 	bedrockModels,
 	cerebrasModels,
-	claudeCodeModels,
 	deepSeekModels,
 	moonshotModels,
 	geminiModels,
@@ -22,11 +21,12 @@ import {
 	featherlessModels,
 	minimaxModels,
 	basetenModels,
+	getClaudeCodeModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
 	anthropic: anthropicModels,
-	"claude-code": claudeCodeModels,
+	"claude-code": getClaudeCodeModels((window as any).ANTHROPIC_MODEL),
 	bedrock: bedrockModels,
 	cerebras: cerebrasModels,
 	deepseek: deepSeekModels,

@@ -17,7 +17,7 @@ import {
 	groqModels,
 	vscodeLlmModels,
 	vscodeLlmDefaultModelId,
-	claudeCodeModels,
+	getClaudeCodeModels,
 	zgsmDefaultModelId,
 	geminiCliDefaultModelId,
 	geminiCliModels,
@@ -355,7 +355,7 @@ function getSelectedModel({
 			// Normalize legacy model IDs to current canonical model IDs for backward compatibility
 			const rawId = apiConfiguration.apiModelId ?? defaultModelId
 			const normalizedId = normalizeClaudeCodeModelId(rawId)
-			const info = claudeCodeModels[normalizedId]
+			const info = getClaudeCodeModels((window as any).ANTHROPIC_MODEL)[normalizedId]
 			return { id: rawId, info: { ...openAiModelInfoSaneDefaults, ...info } }
 		}
 		case "cerebras": {

@@ -7,7 +7,6 @@ import {
 	basetenModels,
 	bedrockModels,
 	cerebrasModels,
-	claudeCodeModels,
 	deepSeekModels,
 	doubaoModels,
 	featherlessModels,
@@ -25,6 +24,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
+	getClaudeCodeModels,
 } from "./providers/index.js"
 
 /**
@@ -689,7 +689,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "Cerebras",
 		models: Object.keys(cerebrasModels),
 	},
-	"claude-code": { id: "claude-code", label: "Claude Code", models: Object.keys(claudeCodeModels) },
+	"claude-code": { id: "claude-code", label: "Claude Code", models: Object.keys(getClaudeCodeModels()) },
 	deepseek: {
 		id: "deepseek",
 		label: "DeepSeek",

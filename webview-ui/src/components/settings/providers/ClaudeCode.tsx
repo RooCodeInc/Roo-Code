@@ -1,5 +1,5 @@
 import React from "react"
-import { type ProviderSettings, claudeCodeDefaultModelId, claudeCodeModels } from "@roo-code/types"
+import { type ProviderSettings, claudeCodeDefaultModelId, getClaudeCodeModels } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"
 import { vscode } from "@src/utils/vscode"
@@ -56,7 +56,7 @@ export const ClaudeCode: React.FC<ClaudeCodeProps> = ({
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
 				defaultModelId={claudeCodeDefaultModelId}
-				models={claudeCodeModels}
+				models={getClaudeCodeModels((window as any).ANTHROPIC_MODEL)}
 				modelIdKey="apiModelId"
 				serviceName="Claude Code"
 				serviceUrl="https://claude.ai"

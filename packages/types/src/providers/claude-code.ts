@@ -82,12 +82,27 @@ export const claudeCodeModels = {
 // Claude Code - Only models that work with Claude Code OAuth tokens
 export type ClaudeCodeModelId = keyof typeof claudeCodeModels
 export const claudeCodeDefaultModelId: ClaudeCodeModelId = "claude-sonnet-4-5"
-const localDefaultModelId = process.env.ANTHROPIC_MODEL || ""
-if (localDefaultModelId && !Object.hasOwn(claudeCodeModels, localDefaultModelId)) {
-	Object.assign(claudeCodeModels, {
-		[localDefaultModelId]:
-			claudeCodeModels[normalizeClaudeCodeModelId(localDefaultModelId) || claudeCodeDefaultModelId],
-	})
+export function getClaudeCodeModels(localDefaultModelId?: string): Record<string, ModelInfo> {
+	let local_anthropic_model = localDefaultModelId || process.env.ANTHROPIC_MODEL || ""
+
+	if (!local_anthropic_model) {
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			local_anthropic_model = (window as any || {})?.ANTHROPIC_MODEL
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	// If already a valid model ID, return as-is
+	if (local_anthropic_model && !Object.hasOwn(claudeCodeModels, local_anthropic_model)) {
+		Object.assign(claudeCodeModels, {
+			[local_anthropic_model]:
+				claudeCodeModels[normalizeClaudeCodeModelId(local_anthropic_model) || claudeCodeDefaultModelId],
+		})
+	}
+
+	return claudeCodeModels
 }
 /**
  * Model family patterns for normalization.

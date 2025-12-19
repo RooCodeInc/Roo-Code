@@ -1,5 +1,30 @@
 # CoStrict Change Log
 
+## [2.1.0]
+
+- Refactor: Convert claude-code models to dynamic loading with getClaudeCodeModels()
+- Fix: Race condition in new_task tool for native protocol
+- Add model-specific tool customization via excludedTools and includedTools
+- Add customTools for opt-in only tools
+- Add search_and_replace tool for batch text replacements
+- Enable native tool support for DeepSeek, Doubao, Requesty, and multiple other providers
+- Add native tool support to OpenAI-compatible providers, Vertex Gemini, Grok, Bedrock, and more
+- Refactor: Terminal simplification (Vscode/JetBrains)
+- Update i18n: Improve skipHint text clarity in multiple languages
+- Refactor: Update scope prefix from roo_cline to costrict
+- Update terminal test mocks and shell path handling
+- Add ModeSwitch component to manage display modes in chat
+- Optimize directory scanning by caching gitignore checks
+- Enhance error messages and documentation links
+- Remove line_count parameter from write_to_file tool
+- Handle malformed native tool calls to prevent hanging
+- Fix Vercel AI Gateway model fetching
+- Add search_replace native tool for single-replacement operations
+- Improve auto-approve timer visibility in follow-up suggestions
+- Cancel auto-approval timeout when user starts typing
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/06c5c7f980b605a447eea8fa6818d98fcbc913f8)
+- Fix known issues
+
 ## [2.0.27]
 
 - Add tool result ID validation and fix mechanism to prevent ID mismatch issues in API requests

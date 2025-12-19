@@ -217,7 +217,7 @@ export async function generateImageWithImagesApi(options: ImagesApiOptions): Pro
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
 				"HTTP-Referer": "https://github.com/zgsm-ai/costrict",
-				"X-Title": "Roo Code",
+				"X-Title": "Costrict",
 			},
 			body: JSON.stringify(requestBody),
 		}

@@ -1174,13 +1174,8 @@ export class ClineProvider
 				window.$RefreshSig$ = () => (type) => type
 				window.__vite_plugin_react_preamble_installed__ = true
 				Object.assign(window, {
-					"process": {
-						"env": {
-						    "ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
-							"ANTHROPIC_AUTH_TOKEN": "${process.env.ANTHROPIC_AUTH_TOKEN}",
-							"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
-						}
-					}
+					"ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
+					"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
 				})
 			</script>
 		`
@@ -1291,13 +1286,8 @@ export class ClineProvider
 				window.AUDIO_BASE_URI = "${audioUri}"
 				window.MATERIAL_ICONS_BASE_URI = "${materialIconsUri}"
 				Object.assign(window, {
-					"process": {
-						"env": {
-						    "ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
-							"ANTHROPIC_AUTH_TOKEN": "${process.env.ANTHROPIC_AUTH_TOKEN}",
-							"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
-						}
-					}
+					"ANTHROPIC_MODEL": "${process.env.ANTHROPIC_MODEL}",
+					"ANTHROPIC_BASE_URL": "${process.env.ANTHROPIC_BASE_URL}",
 				})
 			</script>
             <title>CoStrict</title>

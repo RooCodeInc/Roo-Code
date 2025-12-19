@@ -3,9 +3,9 @@ import OpenAI from "openai"
 import {
 	claudeCodeDefaultModelId,
 	type ClaudeCodeModelId,
-	claudeCodeModels,
 	claudeCodeReasoningConfig,
 	type ClaudeCodeReasoningLevel,
+	getClaudeCodeModels,
 	type ModelInfo,
 	normalizeClaudeCodeModelId,
 } from "@roo-code/types"
@@ -271,6 +271,7 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 	}
 
 	getModel(): { id: string; info: ModelInfo } {
+		const claudeCodeModels = getClaudeCodeModels()
 		const modelId = this.options.apiModelId
 		const normalizedId = normalizeClaudeCodeModelId(modelId || "")
 		if (modelId && normalizedId) {
