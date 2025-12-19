@@ -79,7 +79,15 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		let info = this.models[id] ?? requestyDefaultModelInfo
+		const cachedInfo = this.models[id] ?? requestyDefaultModelInfo
+
+		// Merge native tool defaults for cached models that may lack these fields
+		// The order ensures that cached values (if present) override the defaults
+		let info: ModelInfo = {
+			supportsNativeTools: true,
+			defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
+			...cachedInfo,
+		}
 
 		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
 		info = applyRouterToolPreferences(id, info)

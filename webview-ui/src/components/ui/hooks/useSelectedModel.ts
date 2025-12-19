@@ -157,12 +157,24 @@ function getSelectedModel({
 		}
 		case "requesty": {
 			const id = getValidatedModelId(apiConfiguration.requestyModelId, routerModels.requesty, defaultModelId)
-			const info = routerModels.requesty?.[id]
+			const routerInfo = routerModels.requesty?.[id]
+			// Merge native tool call defaults for cached models that may lack these fields
+			const nativeToolDefaults = {
+				supportsNativeTools: true,
+				defaultToolProtocol: "native" as const,
+			}
+			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : undefined
 			return { id, info }
 		}
 		case "unbound": {
 			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
-			const info = routerModels.unbound?.[id]
+			const routerInfo = routerModels.unbound?.[id]
+			// Merge native tool call defaults for cached models that may lack these fields
+			const nativeToolDefaults = {
+				supportsNativeTools: true,
+				defaultToolProtocol: "native" as const,
+			}
+			const info = routerInfo ? { ...nativeToolDefaults, ...routerInfo } : undefined
 			return { id, info }
 		}
 		case "litellm": {
