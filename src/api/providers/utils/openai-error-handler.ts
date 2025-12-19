@@ -13,25 +13,52 @@ import i18n from "../../../i18n/setup"
  */
 export function handleOpenAIError(error: unknown, providerName: string): Error {
 	if (error instanceof Error) {
-		const msg = (error as any)?.error?.metadata?.raw || error.message || ""
+		const anyErr = error as any
+		const msg = anyErr?.error?.metadata?.raw || error.message || ""
 
 		// Log the original error details for debugging
 		console.error(`[${providerName}] API error:`, {
 			message: msg,
 			name: error.name,
 			stack: error.stack,
+			status: anyErr.status,
 		})
+
+		let wrapped: Error
 
 		// Invalid character/ByteString conversion error in API key
 		if (msg.includes("Cannot convert argument to a ByteString")) {
-			return new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
+			wrapped = new Error(i18n.t("common:errors.api.invalidKeyInvalidChars"))
+		} else {
+			// For other Error instances, wrap with provider-specific prefix
+			wrapped = new Error(`${providerName} completion error: ${msg}`)
 		}
 
-		// For other Error instances, wrap with provider-specific prefix
-		return new Error(`${providerName} completion error: ${msg}`)
+		// Preserve HTTP status and structured details for retry/backoff + UI
+		// These fields are used by Task.backoffAndAnnounce() and ChatRow/ErrorRow
+		// to provide status-aware error messages and handling
+		if (anyErr.status !== undefined) {
+			;(wrapped as any).status = anyErr.status
+		}
+		if (anyErr.errorDetails !== undefined) {
+			;(wrapped as any).errorDetails = anyErr.errorDetails
+		}
+		if (anyErr.code !== undefined) {
+			;(wrapped as any).code = anyErr.code
+		}
+
+		return wrapped
 	}
 
 	// Non-Error: wrap with provider-specific prefix
 	console.error(`[${providerName}] Non-Error exception:`, error)
-	return new Error(`${providerName} completion error: ${String(error)}`)
+	const wrapped = new Error(`${providerName} completion error: ${String(error)}`)
+
+	// Also try to preserve status for non-Error exceptions (e.g., plain objects with status)
+	const anyErr = error as any
+	if (typeof anyErr?.status === "number") {
+		;(wrapped as any).status = anyErr.status
+	}
+
+	return wrapped
 }

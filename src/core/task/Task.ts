@@ -3996,10 +3996,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Build header text; fall back to error message if none provided
 			let headerText
 			if (error.status) {
-				// This sets the message as just the error code, for which
-				// ChatRow knows how to handle and use an i18n'd error string
-				// In development, hardcode headerText to an HTTP status code to check it
-				headerText = error.status
+				// Include both status code (for ChatRow parsing) and detailed message (for error details)
+				// Format: "<status>\n<message>" allows ChatRow to extract status via parseInt(text.substring(0,3))
+				// while preserving the full error message in errorDetails for debugging
+				const errorMessage = error?.message || "Unknown error"
+				headerText = `${error.status}\n${errorMessage}`
 			} else if (error?.message) {
 				headerText = error.message
 			} else {
