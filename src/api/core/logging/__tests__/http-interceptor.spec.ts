@@ -2,7 +2,7 @@
  * @fileoverview Tests for the HTTP interceptor logging module
  */
 
-import { createLoggingFetch } from "../http-interceptor"
+import { createLoggingFetch, withScopedFetchLogging } from "../http-interceptor"
 import * as envConfig from "../env-config"
 
 // Mock the env-config module
@@ -270,5 +270,89 @@ describe("createLoggingFetch", () => {
 				}),
 			)
 		})
+	})
+})
+
+describe("withScopedFetchLogging", () => {
+	let consoleSpy: ReturnType<typeof vi.spyOn>
+	let originalFetch: typeof fetch
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+		originalFetch = globalThis.fetch
+	})
+
+	afterEach(() => {
+		globalThis.fetch = originalFetch
+		vi.unstubAllGlobals()
+	})
+
+	it("should no-op and not touch global fetch when logging is disabled", async () => {
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(false)
+		const before = globalThis.fetch
+		await withScopedFetchLogging("TestProvider", async () => {
+			// nothing
+		})
+		expect(globalThis.fetch).toBe(before)
+		expect(consoleSpy).not.toHaveBeenCalled()
+	})
+
+	it("should restore global fetch after callback", async () => {
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
+		const baseFetch = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ ok: true }), {
+				status: 200,
+				headers: { "content-type": "application/json" },
+			}),
+		)
+		vi.stubGlobal("fetch", baseFetch)
+		const before = globalThis.fetch
+
+		await withScopedFetchLogging("TestProvider", async () => {
+			await globalThis.fetch("https://api.example.com/test")
+		})
+
+		expect(globalThis.fetch).toBe(before)
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"[TestProvider] RAW HTTP REQUEST",
+			expect.objectContaining({ url: "https://api.example.com/test" }),
+		)
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"[TestProvider] RAW HTTP RESPONSE",
+			expect.objectContaining({ status: 200 }),
+		)
+	})
+
+	it("should support nesting and restore to previous scoped fetch", async () => {
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
+		const baseFetch = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ ok: true }), {
+				status: 200,
+				headers: { "content-type": "application/json" },
+			}),
+		)
+		vi.stubGlobal("fetch", baseFetch)
+		const rootFetch = globalThis.fetch
+
+		await withScopedFetchLogging("Outer", async () => {
+			const outerFetch = globalThis.fetch
+			await withScopedFetchLogging("Inner", async () => {
+				await globalThis.fetch("https://api.example.com/inner")
+			})
+			expect(globalThis.fetch).toBe(outerFetch)
+			await globalThis.fetch("https://api.example.com/outer")
+		})
+
+		expect(globalThis.fetch).toBe(rootFetch)
+		// Ensure both provider labels were used
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"[Inner] RAW HTTP REQUEST",
+			expect.objectContaining({ url: "https://api.example.com/inner" }),
+		)
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"[Outer] RAW HTTP REQUEST",
+			expect.objectContaining({ url: "https://api.example.com/outer" }),
+		)
 	})
 })

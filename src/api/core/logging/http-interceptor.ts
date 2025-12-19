@@ -10,7 +10,7 @@ import { isLoggingEnabled } from "./env-config"
 /**
  * Sanitize headers by removing sensitive data like API keys
  */
-function sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
+export function sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
 	const sensitiveKeys = ["authorization", "x-api-key", "api-key", "openai-api-key", "anthropic-api-key"]
 
 	const sanitized: Record<string, string> = {}
@@ -90,9 +90,11 @@ function headersToObject(headers: Headers): Record<string, string> {
  * Creates a fetch wrapper that logs raw HTTP requests and responses
  *
  * @param providerName - Name of the provider for logging context
+ * @param baseFetch - Optional base fetch implementation to wrap (defaults to current global fetch)
  * @returns A fetch function that logs requests and responses
  */
-export function createLoggingFetch(providerName: string): typeof fetch {
+
+export function createLoggingFetch(providerName: string, baseFetch: typeof fetch = globalThis.fetch): typeof fetch {
 	return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
 		const loggingEnabled = isLoggingEnabled()
 		const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
@@ -124,8 +126,8 @@ export function createLoggingFetch(providerName: string): typeof fetch {
 			})
 		}
 
-		// Execute the actual fetch
-		const response = await fetch(input, init)
+		// Execute the actual fetch (avoid recursion if globalThis.fetch has been replaced)
+		const response = await baseFetch(input, init)
 
 		if (loggingEnabled) {
 			const contentType = response.headers.get("content-type") || ""
@@ -161,6 +163,36 @@ export function createLoggingFetch(providerName: string): typeof fetch {
 		}
 
 		return response
+	}
+}
+
+const scopedFetchStack: Array<typeof fetch> = []
+
+/**
+ * Temporarily replaces globalThis.fetch with a logging fetch for the duration of the callback.
+ *
+ * Intended for SDKs that call global fetch internally and do not support injecting a custom fetch.
+ *
+ * Requirements:
+ * - Always restore in finally
+ * - Support nesting
+ * - No-op when logging disabled
+ * - Preserve typeof fetch
+ */
+export async function withScopedFetchLogging<T>(providerName: string, callback: () => Promise<T>): Promise<T> {
+	if (!isLoggingEnabled()) {
+		return callback()
+	}
+
+	const previousFetch = globalThis.fetch
+	scopedFetchStack.push(previousFetch)
+	globalThis.fetch = createLoggingFetch(providerName, previousFetch)
+
+	try {
+		return await callback()
+	} finally {
+		const restoreFetch = scopedFetchStack.pop()
+		globalThis.fetch = restoreFetch ?? previousFetch
 	}
 }
 

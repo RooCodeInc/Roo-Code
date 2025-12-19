@@ -2,6 +2,7 @@
 
 import { AnthropicHandler } from "../anthropic"
 import { ApiHandlerOptions } from "../../../shared/api"
+import { createLoggingFetch } from "../../core/logging/http-interceptor"
 
 // Mock TelemetryService
 vitest.mock("@roo-code/telemetry", () => ({
@@ -69,6 +70,14 @@ vitest.mock("@anthropic-ai/sdk", () => {
 	}
 })
 
+vitest.mock("../../core/logging/http-interceptor", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../core/logging/http-interceptor")>()
+	return {
+		...actual,
+		createLoggingFetch: vitest.fn(actual.createLoggingFetch),
+	}
+})
+
 // Import after mock
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -91,6 +100,18 @@ describe("AnthropicHandler", () => {
 		it("should initialize with provided options", () => {
 			expect(handler).toBeInstanceOf(AnthropicHandler)
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
+		})
+
+		it("should construct Anthropic client with injected fetch for raw HTTP logging", () => {
+			const handler = new AnthropicHandler(mockOptions)
+			expect(handler).toBeInstanceOf(AnthropicHandler)
+			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
+			expect(createLoggingFetch).toHaveBeenCalledWith("Anthropic")
+			expect(mockAnthropicConstructor.mock.calls[0]![0]!).toEqual(
+				expect.objectContaining({
+					fetch: expect.any(Function),
+				}),
+			)
 		})
 
 		it("should initialize with undefined API key", () => {

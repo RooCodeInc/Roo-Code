@@ -20,9 +20,14 @@ vi.mock("../constants", () => ({
 
 import { CerebrasHandler } from "../cerebras"
 import { cerebrasModels, type CerebrasModelId } from "@roo-code/types"
+import * as envConfig from "../../core/logging/env-config"
 
 // Mock fetch globally
-global.fetch = vi.fn()
+vi.stubGlobal("fetch", vi.fn())
+
+vi.mock("../../core/logging/env-config", () => ({
+	isLoggingEnabled: vi.fn(),
+}))
 
 describe("CerebrasHandler", () => {
 	let handler: CerebrasHandler
@@ -35,6 +40,14 @@ describe("CerebrasHandler", () => {
 		vi.clearAllMocks()
 		handler = new CerebrasHandler(mockOptions)
 	})
+
+	function createEmptyReadableStream(): ReadableStream<Uint8Array> {
+		return new ReadableStream<Uint8Array>({
+			start(controller) {
+				controller.close()
+			},
+		})
+	}
 
 	describe("constructor", () => {
 		it("should throw error when API key is missing", () => {
@@ -79,23 +92,23 @@ describe("CerebrasHandler", () => {
 
 	describe("createMessage", () => {
 		it("should make correct API request", async () => {
-			// Mock successful API response
-			const mockResponse = {
-				ok: true,
-				body: {
-					getReader: () => ({
-						read: vi.fn().mockResolvedValueOnce({ done: true, value: new Uint8Array() }),
-						releaseLock: vi.fn(),
-					}),
-				},
-			}
-			vi.mocked(fetch).mockResolvedValueOnce(mockResponse as any)
+			vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+			vi.stubGlobal("fetch", vi.fn())
+			// Mock successful API response as a real Response (needed by createLoggingFetch)
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				new Response(createEmptyReadableStream(), {
+					status: 200,
+					statusText: "OK",
+					headers: { "content-type": "text/event-stream" },
+				}),
+			)
 
 			const generator = handler.createMessage("System prompt", [])
 			await generator.next() // Actually start the generator to trigger the fetch call
 
 			// Test that fetch was called with correct parameters
-			expect(fetch).toHaveBeenCalledWith(
+			expect(globalThis.fetch).toHaveBeenCalledWith(
 				"https://api.cerebras.ai/v1/chat/completions",
 				expect.objectContaining({
 					method: "POST",
@@ -108,15 +121,22 @@ describe("CerebrasHandler", () => {
 					}),
 				}),
 			)
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"[Cerebras] RAW HTTP REQUEST",
+				expect.objectContaining({ url: "https://api.cerebras.ai/v1/chat/completions" }),
+			)
 		})
 
 		it("should handle API errors properly", async () => {
-			const mockErrorResponse = {
-				ok: false,
-				status: 400,
-				text: () => Promise.resolve('{"error": {"message": "Bad Request"}}'),
-			}
-			vi.mocked(fetch).mockResolvedValueOnce(mockErrorResponse as any)
+			vi.stubGlobal("fetch", vi.fn())
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				new Response('{"error": {"message": "Bad Request"}}', {
+					status: 400,
+					statusText: "Bad Request",
+					headers: { "content-type": "application/json" },
+				}),
+			)
 
 			const generator = handler.createMessage("System prompt", [])
 			// Since the mock isn't working, let's just check that an error is thrown
@@ -130,33 +150,37 @@ describe("CerebrasHandler", () => {
 		})
 
 		it("should handle temperature clamping", async () => {
+			vi.stubGlobal("fetch", vi.fn())
 			const handlerWithTemp = new CerebrasHandler({
 				...mockOptions,
 				modelTemperature: 2.0, // Above Cerebras max of 1.5
 			})
 
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: true,
-				body: { getReader: () => ({ read: () => Promise.resolve({ done: true }), releaseLock: vi.fn() }) },
-			} as any)
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				new Response(createEmptyReadableStream(), {
+					status: 200,
+					statusText: "OK",
+					headers: { "content-type": "text/event-stream" },
+				}),
+			)
 
 			await handlerWithTemp.createMessage("test", []).next()
 
-			const requestBody = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string)
+			const requestBody = JSON.parse(vi.mocked(globalThis.fetch).mock.calls[0][1]?.body as string)
 			expect(requestBody.temperature).toBe(1.5) // Should be clamped
 		})
 	})
 
 	describe("completePrompt", () => {
 		it("should handle non-streaming completion", async () => {
-			const mockResponse = {
-				ok: true,
-				json: () =>
-					Promise.resolve({
-						choices: [{ message: { content: "Test response" } }],
-					}),
-			}
-			vi.mocked(fetch).mockResolvedValueOnce(mockResponse as any)
+			vi.stubGlobal("fetch", vi.fn())
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				new Response(JSON.stringify({ choices: [{ message: { content: "Test response" } }] }), {
+					status: 200,
+					statusText: "OK",
+					headers: { "content-type": "application/json" },
+				}),
+			)
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")

@@ -12,6 +12,7 @@ import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from ".
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
 import { t } from "../../i18n"
+import { createLoggingFetch } from "../core/logging/http-interceptor"
 
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
@@ -36,6 +37,10 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		if (!this.apiKey) {
 			throw new Error("Cerebras API key is required")
 		}
+	}
+
+	protected override get providerName(): string {
+		return "Cerebras"
 	}
 
 	getModel(): { id: CerebrasModelId; info: (typeof cerebrasModels)[CerebrasModelId] } {
@@ -128,7 +133,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+			const fetchWithLogging = createLoggingFetch(this.providerName)
+			const response = await fetchWithLogging(`${CEREBRAS_BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					...DEFAULT_HEADERS,
@@ -290,7 +296,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+			const fetchWithLogging = createLoggingFetch(this.providerName)
+			const response = await fetchWithLogging(`${CEREBRAS_BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					...DEFAULT_HEADERS,

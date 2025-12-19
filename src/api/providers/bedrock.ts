@@ -46,6 +46,8 @@ import { shouldUseReasoningBudget } from "../../shared/api"
 import { normalizeToolSchema } from "../../utils/json-schema"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { withLogging, ApiLogger } from "../core/logging"
+import { isLoggingEnabled } from "../core/logging/env-config"
+import { sanitizeHeaders } from "../core/logging/http-interceptor"
 
 /************************************************************************************
  *
@@ -288,6 +290,63 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		this.client = new BedrockRuntimeClient(clientConfig)
+		this.addRawHttpLoggingMiddleware()
+	}
+
+	private addRawHttpLoggingMiddleware(): void {
+		if (!isLoggingEnabled()) {
+			return
+		}
+
+		this.client.middlewareStack.add(
+			(next, context) => async (args) => {
+				const request = args.request as
+					| {
+							protocol?: string
+							hostname?: string
+							path?: string
+							method?: string
+							headers?: Record<string, string>
+					  }
+					| undefined
+
+				if (request) {
+					const url =
+						request.protocol && request.hostname
+							? `${request.protocol}//${request.hostname}${request.path ?? ""}`
+							: undefined
+
+					console.log(`[${this.providerName}] RAW HTTP REQUEST`, {
+						url,
+						method: request.method,
+						operation: context.commandName,
+						headers: request.headers ? sanitizeHeaders(request.headers) : {},
+						body: "[unavailable]",
+					})
+				}
+
+				const result = await next(args)
+				const response = result.response as
+					| {
+							statusCode?: number
+							headers?: Record<string, string>
+							body?: unknown
+					  }
+					| undefined
+
+				if (response) {
+					console.log(`[${this.providerName}] RAW HTTP RESPONSE`, {
+						status: response.statusCode,
+						operation: context.commandName,
+						headers: response.headers ? sanitizeHeaders(response.headers) : {},
+						streaming: response.body != null,
+					})
+				}
+
+				return result
+			},
+			{ step: "finalizeRequest", name: "rooRawHttpLogging", tags: ["ROO_CODE"] },
+		)
 	}
 
 	// Helper to guess model info from custom modelId string if not in bedrockModels

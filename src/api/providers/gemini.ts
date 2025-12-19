@@ -30,6 +30,7 @@ import { handleProviderError } from "./utils/error-handler"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 import { withLogging, ApiLogger } from "../core/logging"
+import { withScopedFetchLogging } from "../core/logging/http-interceptor"
 
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
@@ -231,7 +232,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const params: GenerateContentParameters = { model, contents, config }
 
 		try {
-			const result = await this.client.models.generateContentStream(params)
+			const result = await withScopedFetchLogging(this.providerName, async () =>
+				this.client.models.generateContentStream(params),
+			)
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
@@ -459,7 +462,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				config: promptConfig,
 			}
 
-			const result = await this.client.models.generateContent(request)
+			const result = await withScopedFetchLogging(this.providerName, async () =>
+				this.client.models.generateContent(request),
+			)
 
 			let text = result.text ?? ""
 
