@@ -104,7 +104,7 @@ import {
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
 import { inputEventTransform, noTransform } from "./transforms"
-import { ModelInfoView } from "./ModelInfoView"
+import { ModelPicker } from "./ModelPicker"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
 import { Verbosity } from "./Verbosity"
@@ -173,7 +173,6 @@ const ApiOptions = ({
 		[customHeaders, apiConfiguration?.openAiHeaders, setApiConfigurationField],
 	)
 
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 
 	const handleInputChange = useCallback(
@@ -272,31 +271,47 @@ const ApiOptions = ({
 		setErrorMessage(apiValidationResult)
 	}, [apiConfiguration, routerModels, organizationAllowList, setErrorMessage])
 
-	const selectedProviderModels = useMemo(() => {
+	// Get models for static providers (those with models defined in MODELS_BY_PROVIDER)
+	const staticProviderModels = useMemo(() => {
 		const models = MODELS_BY_PROVIDER[selectedProvider]
+		if (!models) return null
+		return filterModels(models, selectedProvider, organizationAllowList)
+	}, [selectedProvider, organizationAllowList])
 
-		if (!models) return []
+	// Get the default model ID for the current static provider
+	const staticProviderDefaultModelId = useMemo(() => {
+		const defaults: Partial<Record<ProviderName, string>> = {
+			anthropic: anthropicDefaultModelId,
+			"openai-native": openAiNativeDefaultModelId,
+			gemini: geminiDefaultModelId,
+			deepseek: deepSeekDefaultModelId,
+			doubao: doubaoDefaultModelId,
+			moonshot: moonshotDefaultModelId,
+			mistral: mistralDefaultModelId,
+			xai: xaiDefaultModelId,
+			groq: groqDefaultModelId,
+			cerebras: cerebrasDefaultModelId,
+			baseten: basetenDefaultModelId,
+			bedrock: bedrockDefaultModelId,
+			vertex: vertexDefaultModelId,
+			sambanova: sambaNovaDefaultModelId,
+			zai:
+				apiConfiguration.zaiApiLine === "china_coding"
+					? mainlandZAiDefaultModelId
+					: internationalZAiDefaultModelId,
+			fireworks: fireworksDefaultModelId,
+			featherless: featherlessDefaultModelId,
+			minimax: minimaxDefaultModelId,
+			"qwen-code": qwenCodeDefaultModelId,
+		}
+		return defaults[selectedProvider] || ""
+	}, [selectedProvider, apiConfiguration.zaiApiLine])
 
-		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
-
-		// Include the currently selected model even if deprecated (so users can see what they have selected)
-		// But filter out other deprecated models from being newly selectable
-		const availableModels = filteredModels
-			? Object.entries(filteredModels)
-					.filter(([modelId, modelInfo]) => {
-						// Always include the currently selected model
-						if (modelId === selectedModelId) return true
-						// Filter out deprecated models that aren't currently selected
-						return !modelInfo.deprecated
-					})
-					.map(([modelId]) => ({
-						value: modelId,
-						label: modelId,
-					}))
-			: []
-
-		return availableModels
-	}, [selectedProvider, organizationAllowList, selectedModelId])
+	// Get the provider label for display
+	const staticProviderLabel = useMemo(() => {
+		const provider = PROVIDERS.find(({ value }) => value === selectedProvider)
+		return provider?.label || selectedProvider
+	}, [selectedProvider])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {
@@ -781,16 +796,16 @@ const ApiOptions = ({
 			)}
 
 			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
-			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
+			{staticProviderModels !== null && selectedProvider !== "claude-code" && (
 				<>
-					<div>
-						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
-						<Select
-							value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
-							onValueChange={(value) => {
-								setApiConfigurationField("apiModelId", value)
+					<ModelPicker
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={(field, value, isUserAction) => {
+							setApiConfigurationField(field, value, isUserAction)
 
-								// Clear custom ARN if not using custom ARN option.
+							// Handle special cases when model changes
+							if (field === "apiModelId") {
+								// Clear custom ARN if not using custom ARN option for Bedrock
 								if (value !== "custom-arn" && selectedProvider === "bedrock") {
 									setApiConfigurationField("awsCustomArn", "")
 								}
@@ -800,43 +815,22 @@ const ApiOptions = ({
 								if (selectedProvider === "openai-native") {
 									setApiConfigurationField("reasoningEffort", undefined)
 								}
-							}}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder={t("settings:common.select")} />
-							</SelectTrigger>
-							<SelectContent>
-								{selectedProviderModels.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-								{selectedProvider === "bedrock" && (
-									<SelectItem value="custom-arn">{t("settings:labels.useCustomArn")}</SelectItem>
-								)}
-							</SelectContent>
-						</Select>
-					</div>
-
-					{/* Show error if a deprecated model is selected */}
-					{selectedModelInfo?.deprecated && (
-						<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
-					)}
+							}
+						}}
+						defaultModelId={staticProviderDefaultModelId}
+						models={staticProviderModels}
+						modelIdKey="apiModelId"
+						serviceName={staticProviderLabel}
+						serviceUrl={docs?.url || ""}
+						organizationAllowList={organizationAllowList}
+						simplifySettings={fromWelcomeView}
+						hidePricing
+					/>
 
 					{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
 						<BedrockCustomArn
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
-						/>
-					)}
-
-					{/* Only show model info if not deprecated */}
-					{!selectedModelInfo?.deprecated && (
-						<ModelInfoView
-							apiProvider={selectedProvider}
-							selectedModelId={selectedModelId}
-							modelInfo={selectedModelInfo}
-							isDescriptionExpanded={isDescriptionExpanded}
-							setIsDescriptionExpanded={setIsDescriptionExpanded}
 						/>
 					)}
 				</>
