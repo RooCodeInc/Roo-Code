@@ -87,9 +87,6 @@ function parseHuggingFaceModel(model: HuggingFaceModel, provider?: HuggingFacePr
 
 	const pricing = provider?.pricing || model.providers.find((p) => p.pricing)?.pricing
 
-	// Check if any provider supports tools
-	const supportsTools = provider?.supports_tools ?? model.providers.some((p) => p.supports_tools === true)
-
 	// Include provider name in description if specific provider is given.
 	const description = provider ? `${model.id} via ${provider.provider}` : `${model.id} via HuggingFace`
 
@@ -98,8 +95,8 @@ function parseHuggingFaceModel(model: HuggingFaceModel, provider?: HuggingFacePr
 		contextWindow: contextLength,
 		supportsImages: false, // HuggingFace API doesn't provide this info yet.
 		supportsPromptCache: false,
-		supportsNativeTools: supportsTools,
-		defaultToolProtocol: supportsTools ? "native" : undefined,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
 		inputPrice: pricing?.input,
 		outputPrice: pricing?.output,
 		description,
