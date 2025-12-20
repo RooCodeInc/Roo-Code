@@ -2752,8 +2752,9 @@ export class ClineProvider
 		// This ensures the stream fails quickly rather than waiting for network timeout
 		task.cancelCurrentRequest()
 
-		// Begin abort (non-blocking)
-		task.abortTask()
+		// Begin abort and wait for messages to be saved to disk
+		// This ensures history is properly persisted before rehydration
+		await task.abortTask()
 
 		// Immediately mark the original instance as abandoned to prevent any residual activity
 		task.abandoned = true
