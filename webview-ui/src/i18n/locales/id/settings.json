@@ -854,6 +854,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Panggilan tool paralel",
 			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
+		},
+		"SMART_READ": {
+			"name": "Pembacaan File Cerdas",
+			"description": "Saat diaktifkan, Roo akan melewati pembacaan ulang file yang sudah ada dalam konteks efektif percakapan dan belum dimodifikasi sejak pembacaan terakhir. Ini mengurangi penggunaan token dan mempercepat respons saat bekerja dengan file yang baru saja Anda lihat."
 		}
 	},
 	"promptCaching": {

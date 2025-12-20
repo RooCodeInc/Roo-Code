@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Chiamate parallele agli strumenti",
 			"description": "Quando abilitato, il protocollo nativo può eseguire più strumenti in un singolo turno di messaggio dell'assistente."
+		},
+		"SMART_READ": {
+			"name": "Letture intelligenti di file",
+			"description": "Quando abilitato, Roo salterà la rilettura di file che sono già nel contesto effettivo della conversazione e non sono stati modificati dalla loro ultima lettura. Questo riduce l'uso di token e velocizza le risposte quando lavori con file che hai visualizzato di recente."
 		}
 	},
 	"promptCaching": {

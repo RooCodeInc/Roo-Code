@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "並行工具呼叫",
 			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
+		},
+		"SMART_READ": {
+			"name": "智慧檔案讀取",
+			"description": "啟用後，Roo 將略過重新讀取已在對話有效情境中且自上次讀取後未修改的檔案。這可減少 Token 使用量，並在處理最近檢視過的檔案時加快回應速度。"
 		}
 	},
 	"promptCaching": {

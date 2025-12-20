@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallelle tool-aanroepen",
 			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in één enkele assistent-berichtbeurt."
+		},
+		"SMART_READ": {
+			"name": "Slimme bestandslezingen",
+			"description": "Wanneer ingeschakeld, slaat Roo het opnieuw lezen over van bestanden die al in de effectieve context van het gesprek zijn en niet zijn gewijzigd sinds hun laatste lezing. Dit vermindert het token-gebruik en versnelt reacties wanneer je werkt met bestanden die je recent hebt bekeken."
 		}
 	},
 	"promptCaching": {

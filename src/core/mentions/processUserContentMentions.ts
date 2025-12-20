@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { parseMentions } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import type { ApiMessage } from "../task-persistence/apiMessages"
 
 /**
  * Process mentions in user content, specifically within task and feedback tags
@@ -16,6 +17,8 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 	maxReadFileLine,
+	experiments,
+	apiConversationHistory,
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -26,6 +29,8 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	maxReadFileLine?: number
+	experiments?: Record<string, boolean>
+	apiConversationHistory?: ApiMessage[]
 }) {
 	// Process userContent array, which contains various block types:
 	// TextBlockParam, ImageBlockParam, ToolUseBlockParam, and ToolResultBlockParam.
@@ -59,6 +64,8 @@ export async function processUserContentMentions({
 							includeDiagnosticMessages,
 							maxDiagnosticMessages,
 							maxReadFileLine,
+							experiments,
+							apiConversationHistory,
 						),
 					}
 				}
@@ -79,6 +86,8 @@ export async function processUserContentMentions({
 								includeDiagnosticMessages,
 								maxDiagnosticMessages,
 								maxReadFileLine,
+								experiments,
+								apiConversationHistory,
 							),
 						}
 					}
@@ -100,6 +109,8 @@ export async function processUserContentMentions({
 										includeDiagnosticMessages,
 										maxDiagnosticMessages,
 										maxReadFileLine,
+										experiments,
+										apiConversationHistory,
 									),
 								}
 							}

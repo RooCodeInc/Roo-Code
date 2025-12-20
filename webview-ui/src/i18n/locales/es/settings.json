@@ -824,6 +824,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Llamadas paralelas a herramientas",
 			"description": "Cuando está habilitado, el protocolo nativo puede ejecutar múltiples herramientas en un solo turno de mensaje del asistente."
+		},
+		"SMART_READ": {
+			"name": "Lecturas inteligentes de archivos",
+			"description": "Cuando está activado, Roo omitirá la relectura de archivos que ya están en el contexto efectivo de la conversación y no se han modificado desde su última lectura. Esto reduce el uso de token y acelera las respuestas cuando trabajas con archivos que has visto recientemente."
 		}
 	},
 	"promptCaching": {

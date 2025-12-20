@@ -30,9 +30,85 @@ export class FileContextTracker {
 	private recentlyEditedByRoo = new Set<string>()
 	private checkpointPossibleFiles = new Set<string>()
 
+	// Message context tracking - tracks which API message the current tool results will be part of
+	private currentMessageTs: number | null = null
+
 	constructor(provider: ClineProvider, taskId: string) {
 		this.providerRef = new WeakRef(provider)
 		this.taskId = taskId
+	}
+
+	/**
+	 * Sets the timestamp of the current API message being built.
+	 * Should be called before tool execution starts for each message.
+	 */
+	setCurrentMessageContext(messageTs: number): void {
+		this.currentMessageTs = messageTs
+	}
+
+	/**
+	 * Clears the current message context.
+	 * Should be called after tool execution completes.
+	 */
+	clearCurrentMessageContext(): void {
+		this.currentMessageTs = null
+	}
+
+	/**
+	 * Gets the current message timestamp context.
+	 */
+	getCurrentMessageContext(): number | null {
+		return this.currentMessageTs
+	}
+
+	/**
+	 * Rewinds the file context metadata to a specific timestamp.
+	 * This should be called when the conversation is rewound (messages deleted)
+	 * to ensure file context tracking stays in sync with the conversation state.
+	 *
+	 * - Removes all entries where containingMessageTs >= cutoffTs
+	 * - Restores the newest "stale" entry to "active" for files that lost their active entry
+	 *
+	 * @param cutoffTs - The timestamp cutoff. Entries with containingMessageTs >= this value are removed.
+	 */
+	async rewindToTimestamp(cutoffTs: number): Promise<void> {
+		try {
+			const metadata = await this.getTaskMetadata(this.taskId)
+
+			// Track which files had entries removed
+			const affectedFiles = new Set<string>()
+
+			// Filter out entries where containingMessageTs >= cutoffTs
+			const filteredEntries = metadata.files_in_context.filter((entry) => {
+				if (entry.containingMessageTs && entry.containingMessageTs >= cutoffTs) {
+					affectedFiles.add(entry.path)
+					return false
+				}
+				return true
+			})
+
+			// For affected files, check if we need to restore a stale entry to active
+			for (const filePath of affectedFiles) {
+				const fileEntries = filteredEntries.filter((e) => e.path === filePath)
+				const hasActiveEntry = fileEntries.some((e) => e.record_state === "active")
+
+				if (!hasActiveEntry && fileEntries.length > 0) {
+					// Find the newest stale entry (by roo_read_date) and restore it to active
+					const staleEntries = fileEntries
+						.filter((e) => e.record_state === "stale" && e.roo_read_date)
+						.sort((a, b) => (b.roo_read_date ?? 0) - (a.roo_read_date ?? 0))
+
+					if (staleEntries.length > 0) {
+						staleEntries[0].record_state = "active"
+					}
+				}
+			}
+
+			metadata.files_in_context = filteredEntries
+			await this.saveTaskMetadata(this.taskId, metadata)
+		} catch (error) {
+			console.error("Failed to rewind file context metadata:", error)
+		}
 	}
 
 	// Gets the current working directory or returns undefined if it cannot be determined
@@ -168,6 +244,8 @@ export class FileContextTracker {
 				roo_read_date: getLatestDateForField(filePath, "roo_read_date"),
 				roo_edit_date: getLatestDateForField(filePath, "roo_edit_date"),
 				user_edit_date: getLatestDateForField(filePath, "user_edit_date"),
+				// Track the API message containing this file's content (for context status checking)
+				containingMessageTs: this.currentMessageTs,
 			}
 
 			switch (source) {
@@ -181,6 +259,7 @@ export class FileContextTracker {
 				case "roo_edited":
 					newEntry.roo_read_date = now
 					newEntry.roo_edit_date = now
+					newEntry.containingMessageTs = this.currentMessageTs
 					this.checkpointPossibleFiles.add(filePath)
 					this.markFileAsEditedByRoo(filePath)
 					break
@@ -189,6 +268,7 @@ export class FileContextTracker {
 				case "read_tool":
 				case "file_mentioned":
 					newEntry.roo_read_date = now
+					newEntry.containingMessageTs = this.currentMessageTs
 					break
 			}
 

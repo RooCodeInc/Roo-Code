@@ -14,6 +14,8 @@ export const fileMetadataEntrySchema = z.object({
 	roo_read_date: z.number().nullable(),
 	roo_edit_date: z.number().nullable(),
 	user_edit_date: z.number().nullable().optional(),
+	// Timestamp of the API message containing this file's content (for context tracking)
+	containingMessageTs: z.number().nullable().optional(),
 })
 
 // TypeScript type derived from the Zod schema

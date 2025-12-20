@@ -225,7 +225,9 @@ function createMockCline(): any {
 		removeClosingTag: vi.fn((tag, content) => content),
 		fileContextTracker: {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
+			getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 		},
+		apiConversationHistory: [],
 		recordToolUsage: vi.fn().mockReturnValue(undefined),
 		recordToolError: vi.fn().mockReturnValue(undefined),
 		didRejectTool: false,
@@ -846,7 +848,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)
@@ -919,7 +923,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)
@@ -1005,7 +1011,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)
@@ -1078,7 +1086,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)
@@ -1203,7 +1213,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)
@@ -1250,7 +1262,9 @@ describe("read_file tool XML output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					getTaskMetadata: vi.fn().mockResolvedValue({ files_in_context: [] }),
 				}
+				mockCline.apiConversationHistory = []
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
 				setImageSupport(mockCline, true)

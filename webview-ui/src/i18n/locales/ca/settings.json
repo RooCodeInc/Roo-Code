@@ -824,6 +824,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Crides paral·leles a eines",
 			"description": "Quan està activat, el protocol natiu pot executar múltiples eines en un sol torn de missatge de l'assistent."
+		},
+		"SMART_READ": {
+			"name": "Lectures intel·ligents de fitxers",
+			"description": "Quan està activat, Roo ometrà la relectura de fitxers que ja estan al context efectiu de la conversa i no s'han modificat des de la seva última lectura. Això redueix l'ús de token i accelera les respostes quan treballes amb fitxers que has vist recentment."
 		}
 	},
 	"promptCaching": {

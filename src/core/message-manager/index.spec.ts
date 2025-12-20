@@ -12,6 +12,9 @@ describe("MessageManager", () => {
 			apiConversationHistory: [],
 			overwriteClineMessages: vi.fn(),
 			overwriteApiConversationHistory: vi.fn(),
+			fileContextTracker: {
+				rewindToTimestamp: vi.fn().mockResolvedValue(undefined),
+			},
 		}
 		manager = new MessageManager(mockTask)
 

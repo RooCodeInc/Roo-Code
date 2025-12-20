@@ -83,6 +83,10 @@ export class MessageManager {
 
 		// Step 3: Truncate and clean API history (combined with cleanup for efficiency)
 		await this.truncateApiHistoryWithCleanup(cutoffTs, removedIds, skipCleanup)
+
+		// Step 4: Rewind file context metadata to match the conversation state
+		// This ensures smart read tracking stays in sync when messages are deleted
+		await this.task.fileContextTracker.rewindToTimestamp(cutoffTs)
 	}
 
 	/**

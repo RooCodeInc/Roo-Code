@@ -824,6 +824,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallele Tool-Aufrufe",
 			"description": "Wenn aktiviert, kann das native Protokoll mehrere Tools in einer einzigen Assistenten-Nachrichtenrunde ausführen."
+		},
+		"SMART_READ": {
+			"name": "Intelligente Datei-Lesevorgänge",
+			"description": "Wenn aktiviert, überspringt Roo das erneute Lesen von Dateien, die bereits im effektiven Kontext der Unterhaltung sind und seit ihrem letzten Lesen nicht geändert wurden. Dies reduziert die Token-Nutzung und beschleunigt Antworten, wenn du mit kürzlich angesehenen Dateien arbeitest."
 		}
 	},
 	"promptCaching": {

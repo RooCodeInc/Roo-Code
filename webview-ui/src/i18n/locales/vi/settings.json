@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Lệnh gọi công cụ song song",
 			"description": "Khi được bật, giao thức native có thể thực thi nhiều công cụ trong một lượt tin nhắn của trợ lý."
+		},
+		"SMART_READ": {
+			"name": "Đọc Tệp Thông Minh",
+			"description": "Khi được bật, Roo sẽ bỏ qua việc đọc lại các tệp đã có trong ngữ cảnh hiệu quả của cuộc trò chuyện và không bị sửa đổi kể từ lần đọc cuối cùng. Điều này giảm việc sử dụng token và tăng tốc độ phản hồi khi làm việc với các tệp bạn đã xem gần đây."
 		}
 	},
 	"promptCaching": {

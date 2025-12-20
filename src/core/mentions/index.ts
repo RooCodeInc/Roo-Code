@@ -15,11 +15,14 @@ import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import { checkFileContextStatus, getReReadNotice } from "../context-tracking/FileContextStatusChecker"
+import type { ApiMessage } from "../task-persistence/apiMessages"
 
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getCommand, type Command } from "../../services/command/commands"
 
 import { t } from "../../i18n"
+import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 
 function getUrlErrorMessage(error: unknown): string {
 	const errorMessage = error instanceof Error ? error.message : String(error)
@@ -81,6 +84,8 @@ export async function parseMentions(
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
 	maxReadFileLine?: number,
+	experimentsConfig?: Record<string, boolean>,
+	apiConversationHistory?: ApiMessage[],
 ): Promise<string> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
@@ -182,6 +187,37 @@ export async function parseMentions(
 		} else if (mention.startsWith("/")) {
 			const mentionPath = mention.slice(1)
 			try {
+				// Check if smart read is enabled and file is already in effective context
+				const isSmartReadEnabled = experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.SMART_READ)
+
+				if (
+					isSmartReadEnabled &&
+					fileContextTracker &&
+					apiConversationHistory &&
+					!mention.endsWith("/") // Only for files, not folders
+				) {
+					const absolutePath = path.resolve(cwd, unescapeSpaces(mentionPath))
+					const taskMetadata = await fileContextTracker.getTaskMetadata(fileContextTracker.taskId)
+					const status = await checkFileContextStatus(
+						mentionPath,
+						absolutePath,
+						taskMetadata,
+						apiConversationHistory,
+					)
+
+					if (!status.shouldReRead) {
+						// File is already in effective context, return notice instead of content
+						const notice = getReReadNotice(status.reason)
+						const noticeText = notice
+							? `(This file's content is already in context. ${notice})`
+							: "(This file's content is already in context and hasn't changed.)"
+						parsedText += `\n\n<file_content path="${mentionPath}">\n${noticeText}\n</file_content>`
+						// Still track the context with the same source
+						await fileContextTracker.trackFileContext(mentionPath, "file_mentioned")
+						continue
+					}
+				}
+
 				const content = await getFileOrFolderContent(
 					mentionPath,
 					cwd,

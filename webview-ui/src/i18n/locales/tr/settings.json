@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Paralel araç çağrıları",
 			"description": "Etkinleştirildiğinde, yerel protokol tek bir asistan mesaj turunda birden fazla araç yürütebilir."
+		},
+		"SMART_READ": {
+			"name": "Akıllı Dosya Okumaları",
+			"description": "Etkinleştirildiğinde, Roo zaten konuşmanın etkili bağlamında olan ve son okumalarından bu yana değiştirilmemiş dosyaları yeniden okumayı atlayacaktır. Bu, token kullanımını azaltır ve yakın zamanda görüntülediğiniz dosyalarla çalışırken yanıtları hızlandırır."
 		}
 	},
 	"promptCaching": {

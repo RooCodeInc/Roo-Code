@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Równoległe wywołania narzędzi",
 			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
+		},
+		"SMART_READ": {
+			"name": "Inteligentne odczyty plików",
+			"description": "Po włączeniu Roo pominie ponowne odczytywanie plików, które są już w efektywnym kontekście rozmowy i nie zostały zmodyfikowane od ich ostatniego odczytu. Zmniejsza to użycie tokenów i przyspiesza odpowiedzi podczas pracy z plikami, które niedawno przeglądałeś."
 		}
 	},
 	"promptCaching": {

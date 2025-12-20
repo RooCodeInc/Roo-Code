@@ -336,6 +336,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	presentAssistantMessageHasPendingUpdates = false
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
+	// Timestamp for the pending user message (for file context tracking coordination)
+	pendingUserMessageTs: number | null = null
 	didRejectTool = false
 	didAlreadyUseTool = false
 	didToolFailInCurrentTurn = false
@@ -874,8 +876,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else {
 			// For user messages, validate and fix tool_result IDs against the previous assistant message
 			const validatedMessage = validateAndFixToolResultIds(message, this.apiConversationHistory)
-			const messageWithTs = { ...validatedMessage, ts: Date.now() }
+			// Use pendingUserMessageTs if set (for file context tracking coordination)
+			// This ensures the message timestamp matches what was set during tool execution
+			const messageTs = this.pendingUserMessageTs ?? Date.now()
+			const messageWithTs = { ...validatedMessage, ts: messageTs }
 			this.apiConversationHistory.push(messageWithTs)
+			// Clear the pending timestamp and message context after use
+			if (this.pendingUserMessageTs) {
+				this.pendingUserMessageTs = null
+				this.fileContextTracker.clearCurrentMessageContext()
+			}
 		}
 
 		await this.saveApiConversationHistory()
@@ -915,8 +925,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Validate and fix tool_result IDs against the previous assistant message
 		const validatedMessage = validateAndFixToolResultIds(userMessage, this.apiConversationHistory)
-		const userMessageWithTs = { ...validatedMessage, ts: Date.now() }
+		// Use pendingUserMessageTs if set (for file context tracking coordination)
+		// This ensures the message timestamp matches what was set during tool execution
+		const messageTs = this.pendingUserMessageTs ?? Date.now()
+		const userMessageWithTs = { ...validatedMessage, ts: messageTs }
 		this.apiConversationHistory.push(userMessageWithTs as ApiMessage)
+
+		// Clear the pending timestamp and message context after use
+		if (this.pendingUserMessageTs) {
+			this.pendingUserMessageTs = null
+			this.fileContextTracker.clearCurrentMessageContext()
+		}
 
 		await this.saveApiConversationHistory()
 
@@ -2318,12 +2337,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}),
 			)
 
-			const {
-				showRooIgnoredFiles = false,
-				includeDiagnosticMessages = true,
-				maxDiagnosticMessages = 50,
-				maxReadFileLine = -1,
-			} = (await this.providerRef.deref()?.getState()) ?? {}
+			const providerState = await this.providerRef.deref()?.getState()
+			const showRooIgnoredFiles = providerState?.showRooIgnoredFiles ?? false
+			const includeDiagnosticMessages = providerState?.includeDiagnosticMessages ?? true
+			const maxDiagnosticMessages = providerState?.maxDiagnosticMessages ?? 50
+			const maxReadFileLine = providerState?.maxReadFileLine ?? -1
+			const experimentsConfig = providerState?.experiments
 
 			const parsedUserContent = await processUserContentMentions({
 				userContent: currentUserContent,
@@ -2335,6 +2354,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
 				maxReadFileLine,
+				experiments: experimentsConfig,
+				apiConversationHistory: this.apiConversationHistory,
 			})
 
 			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
@@ -2485,6 +2506,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Clear any leftover streaming tool call state from previous interrupted streams
 				NativeToolCallParser.clearAllStreamingToolCalls()
 				NativeToolCallParser.clearRawChunkState()
+
+				// Set up message context for file context tracking.
+				// This timestamp will be used for the user message containing tool results,
+				// allowing us to track which message contains each file's content.
+				const userMessageTs = Date.now()
+				this.pendingUserMessageTs = userMessageTs
+				this.fileContextTracker.setCurrentMessageContext(userMessageTs)
 
 				await this.diffViewProvider.reset()
 

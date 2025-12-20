@@ -825,6 +825,10 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "并行工具调用",
 			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
+		},
+		"SMART_READ": {
+			"name": "智能文件读取",
+			"description": "启用后，Roo 将跳过重新读取已在对话有效上下文中且自上次读取后未修改的文件。这可减少 Token 使用量，并在处理最近查看过的文件时加快响应速度。"
 		}
 	},
 	"promptCaching": {
