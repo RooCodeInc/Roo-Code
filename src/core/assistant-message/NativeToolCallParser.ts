@@ -146,17 +146,27 @@ export class NativeToolCallParser {
 
 	/**
 	 * Process stream finish reason.
-	 * Emits end events when finish_reason is 'tool_calls'.
+	 * Emits end events when any finish_reason is present and there are tracked tool calls.
+	 *
+	 * This is important for compatibility with OpenAI-compatible servers like ik_llama.cpp
+	 * that may not send finish_reason: "tool_calls" specifically. Some servers send
+	 * "stop" or other finish reasons even when tool calls were made.
 	 */
 	public static processFinishReason(finishReason: string | null | undefined): ToolCallStreamEvent[] {
 		const events: ToolCallStreamEvent[] = []
 
-		if (finishReason === "tool_calls" && this.rawChunkTracker.size > 0) {
+		// Emit tool_call_end events when ANY finish_reason is present and we have tracked tool calls
+		// This ensures compatibility with various OpenAI-compatible servers including ik_llama.cpp
+		// that may not set finish_reason to "tool_calls" specifically
+		if (finishReason && this.rawChunkTracker.size > 0) {
 			for (const [, tracked] of this.rawChunkTracker.entries()) {
-				events.push({
-					type: "tool_call_end",
-					id: tracked.id,
-				})
+				// Only emit end events for tool calls that have actually started
+				if (tracked.hasStarted) {
+					events.push({
+						type: "tool_call_end",
+						id: tracked.id,
+					})
+				}
 			}
 		}
 
