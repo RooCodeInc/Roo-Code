@@ -3,6 +3,63 @@ import { parse } from "shell-quote"
 export type ShellToken = string | { op: string } | { command: string }
 
 /**
+ * Replace multiline quoted strings with placeholders before splitting by newlines.
+ * This prevents quoted strings that span multiple lines from being incorrectly split.
+ *
+ * @param command - The command string to process
+ * @returns An object with the processed command and arrays of replaced quotes
+ */
+function replaceMultilineQuotes(command: string): {
+	processedCommand: string
+	multilineDoubleQuotes: string[]
+	multilineSingleQuotes: string[]
+} {
+	const multilineDoubleQuotes: string[] = []
+	const multilineSingleQuotes: string[] = []
+
+	// Replace multiline double-quoted strings with placeholders
+	// This regex matches double-quoted strings that contain newlines
+	let processedCommand = command.replace(/"([^"\\]|\\.)*"/gs, (match) => {
+		if (/\r\n|\r|\n/.test(match)) {
+			multilineDoubleQuotes.push(match)
+			return `__MLQUOTE_D_${multilineDoubleQuotes.length - 1}__`
+		}
+		return match
+	})
+
+	// Replace multiline single-quoted strings with placeholders
+	// Single quotes don't support escape sequences in shell, but we still need to handle them
+	processedCommand = processedCommand.replace(/'[^']*'/gs, (match) => {
+		if (/\r\n|\r|\n/.test(match)) {
+			multilineSingleQuotes.push(match)
+			return `__MLQUOTE_S_${multilineSingleQuotes.length - 1}__`
+		}
+		return match
+	})
+
+	return { processedCommand, multilineDoubleQuotes, multilineSingleQuotes }
+}
+
+/**
+ * Restore multiline quoted string placeholders back to their original values.
+ *
+ * @param command - The command with placeholders
+ * @param multilineDoubleQuotes - Array of replaced double-quoted strings
+ * @param multilineSingleQuotes - Array of replaced single-quoted strings
+ * @returns The command with placeholders restored
+ */
+function restoreMultilineQuotes(
+	command: string,
+	multilineDoubleQuotes: string[],
+	multilineSingleQuotes: string[],
+): string {
+	let result = command
+	result = result.replace(/__MLQUOTE_D_(\d+)__/g, (_, i) => multilineDoubleQuotes[parseInt(i)])
+	result = result.replace(/__MLQUOTE_S_(\d+)__/g, (_, i) => multilineSingleQuotes[parseInt(i)])
+	return result
+}
+
+/**
  * Split a command string into individual sub-commands by
  * chaining operators (&&, ||, ;, |, or &) and newlines.
  *
@@ -12,15 +69,20 @@ export type ShellToken = string | { op: string } | { command: string }
  * - PowerShell redirections (2>&1)
  * - Chain operators (&&, ||, ;, |, &)
  * - Newlines as command separators
+ * - Multiline quoted strings (preserves them as single commands)
  */
 export function parseCommand(command: string): string[] {
 	if (!command?.trim()) {
 		return []
 	}
 
-	// Split by newlines first (handle different line ending formats)
+	// First, replace multiline quoted strings with placeholders
+	// This prevents them from being incorrectly split when we split by newlines
+	const { processedCommand, multilineDoubleQuotes, multilineSingleQuotes } = replaceMultilineQuotes(command)
+
+	// Split by newlines (handle different line ending formats)
 	// This regex splits on \r\n (Windows), \n (Unix), or \r (old Mac)
-	const lines = command.split(/\r\n|\r|\n/)
+	const lines = processedCommand.split(/\r\n|\r|\n/)
 	const allCommands: string[] = []
 
 	for (const line of lines) {
@@ -31,7 +93,13 @@ export function parseCommand(command: string): string[] {
 
 		// Process each line through the existing parsing logic
 		const lineCommands = parseCommandLine(line)
-		allCommands.push(...lineCommands)
+
+		// Restore multiline quotes in each parsed command
+		const restoredCommands = lineCommands.map((cmd) =>
+			restoreMultilineQuotes(cmd, multilineDoubleQuotes, multilineSingleQuotes),
+		)
+
+		allCommands.push(...restoredCommands)
 	}
 
 	return allCommands
