@@ -11,7 +11,8 @@ import { Trans } from "react-i18next"
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
 
-import type { ClineAsk, ClineMessage } from "@roo-code/types"
+import type { ClineAsk, ClineMessage, CodeSnippet } from "@roo-code/types"
+import { expandCodeSnippets } from "@roo-code/types"
 
 import { ClineSayTool, ExtensionMessage } from "@roo/ExtensionMessage"
 import { findLast } from "@roo/array"
@@ -135,6 +136,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
+	const [codeSnippets, setCodeSnippets] = useState<CodeSnippet[]>([])
 
 	// We need to hold on to the ask because useEffect > lastMessage will always
 	// let us know when an ask comes in and handle it, but by the time
@@ -565,6 +567,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setInputValue("")
 		setSendingDisabled(true)
 		setSelectedImages([])
+		setCodeSnippets([])
 		setClineAsk(undefined)
 		setEnableButtons(false)
 		// Do not reset mode here as it should persist.
@@ -580,6 +583,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const handleSendMessage = useCallback(
 		(text: string, images: string[]) => {
 			text = text.trim()
+
+			// Expand code snippets and prepend to the message
+			if (codeSnippets.length > 0) {
+				const expandedSnippets = expandCodeSnippets(codeSnippets)
+				text = expandedSnippets + (text ? "\n\n" + text : "")
+			}
 
 			if (text || images.length > 0) {
 				// Queue message if:
@@ -642,7 +651,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length, codeSnippets], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -659,6 +668,26 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		},
 		[inputValue, selectedImages],
 	)
+
+	const handleAddCodeSnippet = useCallback((snippet: CodeSnippet) => {
+		setCodeSnippets((prev) => {
+			// Avoid duplicates by checking if snippet with same file/lines already exists
+			const isDuplicate = prev.some(
+				(s) =>
+					s.filePath === snippet.filePath &&
+					s.startLine === snippet.startLine &&
+					s.endLine === snippet.endLine,
+			)
+			if (isDuplicate) {
+				return prev
+			}
+			return [...prev, snippet]
+		})
+	}, [])
+
+	const handleRemoveCodeSnippet = useCallback((id: string) => {
+		setCodeSnippets((prev) => prev.filter((s) => s.id !== id))
+	}, [])
 
 	const startNewTask = useCallback(() => vscode.postMessage({ type: "clearTask" }), [])
 
@@ -837,6 +866,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "secondaryButtonClick":
 							handleSecondaryButtonClick(message.text ?? "", message.images ?? [])
 							break
+						case "addCodeSnippet":
+							if (message.codeSnippet) {
+								handleAddCodeSnippet(message.codeSnippet)
+							}
+							break
 					}
 					break
 				case "condenseTaskContextStarted":
@@ -883,6 +917,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			handleSecondaryButtonClick,
 			setCheckpointWarning,
 			playSound,
+			handleAddCodeSnippet,
 		],
 	)
 
@@ -1599,6 +1634,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}
+				codeSnippets={codeSnippets}
+				onRemoveCodeSnippet={handleRemoveCodeSnippet}
 				onSend={() => handleSendMessage(inputValue, selectedImages)}
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
