@@ -336,6 +336,7 @@ describe("VsCodeLmHandler", () => {
 			}
 
 			// Verify sendRequest was called with tools in options
+			// Note: normalizeToolSchema adds additionalProperties: false for JSON Schema 2020-12 compliance
 			expect(mockLanguageModelChat.sendRequest).toHaveBeenCalledWith(
 				expect.any(Array),
 				expect.objectContaining({
@@ -348,6 +349,7 @@ describe("VsCodeLmHandler", () => {
 								properties: {
 									operation: { type: "string" },
 								},
+								additionalProperties: false,
 							},
 						},
 					],
