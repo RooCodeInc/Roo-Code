@@ -9,6 +9,9 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { TOOL_PROTOCOL } from "@roo-code/types"
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -53,12 +56,23 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		const modelId = this.options.huggingFaceModelId || "meta-llama/Llama-3.3-70B-Instruct"
 		const temperature = this.options.modelTemperature ?? 0.7
 
+		// Get model info to check tool support
+		const model = this.getModel()
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
+
+		// Check if model supports native tools and tools are provided with native protocol
+		const supportsNativeTools = model.info.supportsNativeTools ?? false
+		const useNativeTools =
+			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && toolProtocol === TOOL_PROTOCOL.NATIVE
+
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			temperature,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
+			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		// Add max_tokens if specified
@@ -75,11 +89,33 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta?.content) {
 				yield {
 					type: "text",
 					text: delta.content,
+				}
+			}
+
+			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
+			if (delta?.tool_calls) {
+				for (const toolCall of delta.tool_calls) {
+					yield {
+						type: "tool_call_partial",
+						index: toolCall.index,
+						id: toolCall.id,
+						name: toolCall.function?.name,
+						arguments: toolCall.function?.arguments,
+					}
+				}
+			}
+
+			// Process finish_reason to emit tool_call_end events
+			if (finishReason) {
+				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+				for (const event of endEvents) {
+					yield event
 				}
 			}
 
