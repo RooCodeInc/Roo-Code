@@ -133,7 +133,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			},
 			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+			// Omit parallel_tool_calls parameter - not supported by all LiteLLM backends (e.g. Bedrock)
+			// We handle parallel tool call restrictions via system prompts instead
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter
