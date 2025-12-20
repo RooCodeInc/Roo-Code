@@ -402,11 +402,7 @@ describe("LiteLLMHandler", () => {
 
 	describe("Bedrock model handling", () => {
 		it("should exclude parallel_tool_calls for Bedrock models when using native tools", async () => {
-			const bedrockModels = [
-				"bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
-				"anthropic.claude-sonnet-4-20250514-v1:0",
-				"amazon.titan-text-express-v1",
-			]
+			const bedrockModels = ["bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", "amazon.titan-text-express-v1"]
 
 			for (const modelId of bedrockModels) {
 				vi.clearAllMocks()
@@ -466,7 +462,12 @@ describe("LiteLLMHandler", () => {
 		})
 
 		it("should include parallel_tool_calls for non-Bedrock models when using native tools", async () => {
-			const nonBedrockModels = ["gpt-4", "claude-3-opus", "gpt-4-turbo"]
+			const nonBedrockModels = [
+				"gpt-4",
+				"claude-3-opus",
+				"gpt-4-turbo",
+				"anthropic.claude-sonnet-4-20250514-v1:0",
+			]
 
 			for (const modelId of nonBedrockModels) {
 				vi.clearAllMocks()

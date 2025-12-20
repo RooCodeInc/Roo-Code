@@ -41,15 +41,15 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	/**
 	 * Check if the model is routed through AWS Bedrock
 	 * Bedrock doesn't support the parallel_tool_calls parameter
+	 * Note: We exclude 'anthropic.' prefix as it can match direct Anthropic API access through LiteLLM
 	 */
 	private isBedrockModel(modelId: string): boolean {
 		const lowerModel = modelId.toLowerCase()
 		return (
 			lowerModel.includes("bedrock") ||
-			lowerModel.startsWith("anthropic.") ||
 			lowerModel.includes("amazon.") ||
-			// Match AWS Bedrock model ID patterns
-			/^(anthropic|amazon|ai21|cohere|meta|mistral)\./.test(lowerModel)
+			// Match AWS Bedrock model ID patterns (excluding anthropic to avoid false positives)
+			/^(amazon|ai21|cohere|meta|mistral)\./.test(lowerModel)
 		)
 	}
 
