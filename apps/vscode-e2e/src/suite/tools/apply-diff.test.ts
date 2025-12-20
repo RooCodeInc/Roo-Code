@@ -588,8 +588,8 @@ ${testFile.content}\nAssume the file exists and you can modify it directly.`,
 					alwaysAllowWrite: true,
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
-					apiProvider: "openrouter", // Use OpenRouter provider
-					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					apiProvider: "openrouter",
+					openRouterModelId: "anthropic/claude-sonnet-4.5",
 				},
 				text: `Use apply_diff on the file ${testFile.name} to find and replace the text "PATTERN_THAT_DOES_NOT_EXIST_xyz123" with "REPLACEMENT_xyz123".
 
