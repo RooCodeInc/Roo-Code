@@ -3,6 +3,91 @@ import { parse } from "shell-quote"
 export type ShellToken = string | { op: string } | { command: string }
 
 /**
+ * Join lines that are within quoted strings.
+ *
+ * This function scans through the input character by character, tracking
+ * whether we're inside a quoted string. When we encounter a newline while
+ * inside quotes, we preserve it rather than splitting the command.
+ *
+ * This approach:
+ * - Preserves the original content exactly (no placeholder replacement/restoration)
+ * - Properly handles both single and double quotes
+ * - Handles escaped quotes within strings
+ * - Handles different line ending formats (CRLF, LF, CR)
+ *
+ * @param command - The command string that may contain multiline quoted strings
+ * @returns Array of logical command lines with multiline quotes joined
+ */
+export function joinQuotedLines(command: string): string[] {
+	if (!command) {
+		return []
+	}
+
+	const result: string[] = []
+	let currentLine = ""
+	let inDoubleQuote = false
+	let inSingleQuote = false
+	let i = 0
+
+	while (i < command.length) {
+		const char = command[i]
+		const prevChar = i > 0 ? command[i - 1] : ""
+
+		// Handle escape sequences (only in double quotes, single quotes are literal)
+		const isEscaped = prevChar === "\\" && inDoubleQuote
+
+		// Handle quote state changes
+		if (char === '"' && !inSingleQuote && !isEscaped) {
+			inDoubleQuote = !inDoubleQuote
+			currentLine += char
+		} else if (char === "'" && !inDoubleQuote) {
+			// Single quotes can't be escaped, so we just toggle
+			inSingleQuote = !inSingleQuote
+			currentLine += char
+		} else if (char === "\r" || char === "\n") {
+			// Handle different line endings: \r\n, \n, or \r
+			if (char === "\r" && command[i + 1] === "\n") {
+				// CRLF - consume both characters
+				if (inDoubleQuote || inSingleQuote) {
+					// Inside quotes - preserve the newline in the command
+					currentLine += "\r\n"
+				} else {
+					// Outside quotes - this is a line separator
+					if (currentLine.trim()) {
+						result.push(currentLine)
+					}
+					currentLine = ""
+				}
+				i++ // Skip the \n since we consumed it
+			} else {
+				// LF or CR alone
+				if (inDoubleQuote || inSingleQuote) {
+					// Inside quotes - preserve the newline in the command
+					currentLine += char
+				} else {
+					// Outside quotes - this is a line separator
+					if (currentLine.trim()) {
+						result.push(currentLine)
+					}
+					currentLine = ""
+				}
+			}
+		} else {
+			currentLine += char
+		}
+
+		i++
+	}
+
+	// Don't forget the last line
+	if (currentLine.trim()) {
+		result.push(currentLine)
+	}
+
+	return result
+}
+
+/**
  * Split a command string into individual sub-commands by
  * chaining operators (&&, ||, ;, |, or &) and newlines.
  *
@@ -11,16 +96,16 @@ export type ShellToken = string | { op: string } | { command: string }
  * - Subshell commands ($(cmd), `cmd`, <(cmd), >(cmd))
  * - PowerShell redirections (2>&1)
  * - Chain operators (&&, ||, ;, |, &)
- * - Newlines as command separators
+ * - Newlines as command separators (respecting quoted strings)
  */
 export function parseCommand(command: string): string[] {
 	if (!command?.trim()) {
 		return []
 	}
 
-	// Split by newlines first (handle different line ending formats)
-	// This regex splits on \r\n (Windows), \n (Unix), or \r (old Mac)
-	const lines = command.split(/\r\n|\r|\n/)
+	// Join lines that are within quoted strings first
+	// This preserves multiline quoted content as single logical lines
+	const lines = joinQuotedLines(command)
 	const allCommands: string[] = []
 
 	for (const line of lines) {
