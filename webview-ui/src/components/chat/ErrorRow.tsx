@@ -1,13 +1,12 @@
 import React, { useState, useCallback, memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { BookOpenText, MessageCircleWarning, Info, Copy, Check } from "lucide-react"
+import { BookOpenText, MessageCircleWarning, Copy, Check, Microscope } from "lucide-react"
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
 import CodeBlock from "../common/CodeBlock"
-import { ProviderSettings } from "@roo-code/types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@src/components/ui/dialog"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "../ui"
+import { Button } from "../ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 
@@ -59,7 +58,6 @@ export interface ErrorRowProps {
 		| "api_req_retry_delayed"
 	title?: string
 	message: string
-	apiConfiguration: ProviderSettings
 	showCopyButton?: boolean
 	expandable?: boolean
 	defaultExpanded?: boolean
@@ -113,6 +111,23 @@ export const ErrorRow = memo(
 
 			return metadata + errorDetails
 		}, [errorDetails, version, provider, modelId])
+
+		const handleDownloadDiagnostics = useCallback(
+			(e: React.MouseEvent) => {
+				e.stopPropagation()
+				vscode.postMessage({
+					type: "downloadErrorDiagnostics",
+					values: {
+						timestamp: new Date().toISOString(),
+						version,
+						provider,
+						model: modelId,
+						details: errorDetails || "",
+					},
+				})
+			},
+			[version, provider, modelId, errorDetails],
+		)
 
 		// Default titles for different error types
 		const getDefaultTitle = () => {
@@ -253,19 +268,6 @@ export const ErrorRow = memo(
 											: t("chat:apiRequest.errorMessage.docs")}
 									</a>
 								)}
-								{apiConfiguration.apiProvider !== "zgsm" && formattedErrorDetails && (
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<button
-												onClick={() => setIsDetailsDialogOpen(true)}
-												className="transition-opacity opacity-30 group-hover:opacity-100 cursor-pointer"
-												aria-label={t("chat:errorDetails.title")}>
-												<Info className="size-4" />
-											</button>
-										</TooltipTrigger>
-										<TooltipContent>{t("chat:errorDetails.title")}</TooltipContent>
-									</Tooltip>
-								)}
 							</div>
 						</div>
 					)}
@@ -289,7 +291,19 @@ export const ErrorRow = memo(
 											__html: message,
 										}
 							}>
-							{apiConfiguration.apiProvider !== "zgsm" ? message : null}
+							{apiConfiguration.apiProvider !== "zgsm" ? (
+								<>
+									{message}
+									{formattedErrorDetails && (
+										<button
+											onClick={() => setIsDetailsDialogOpen(true)}
+											className="cursor-pointer ml-1 text-vscode-descriptionForeground/50 hover:text-vscode-descriptionForeground hover:underline font-normal"
+											aria-label={t("chat:errorDetails.title")}>
+											{t("chat:errorDetails.link")}
+										</button>
+									)}
+								</>
+							) : null}
 						</p>
 						{additionalContent}
 					</div>
@@ -308,7 +322,7 @@ export const ErrorRow = memo(
 								</pre>
 							</div>
 							<DialogFooter>
-								<Button variant="secondary" onClick={handleCopyDetails}>
+								<Button variant="secondary" className="w-full" onClick={handleCopyDetails}>
 									{showDetailsCopySuccess ? (
 										<>
 											<Check className="size-3" />
@@ -320,6 +334,10 @@ export const ErrorRow = memo(
 											{t("chat:errorDetails.copyToClipboard")}
 										</>
 									)}
+								</Button>
+								<Button variant="secondary" className="w-full" onClick={handleDownloadDiagnostics}>
+									<Microscope className="size-3" />
+									{t("chat:errorDetails.diagnostics")}
 								</Button>
 							</DialogFooter>
 						</DialogContent>

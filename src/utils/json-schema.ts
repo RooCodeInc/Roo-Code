@@ -110,7 +110,8 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 				properties: z.record(z.string(), NormalizedToolSchemaInternal).optional(),
 				items: z.union([NormalizedToolSchemaInternal, z.array(NormalizedToolSchemaInternal)]).optional(),
 				required: z.array(z.string()).optional(),
-				additionalProperties: z.union([z.boolean(), NormalizedToolSchemaInternal]).default(false),
+				// Don't set default here - we'll handle it conditionally in the transform
+				additionalProperties: z.union([z.boolean(), NormalizedToolSchemaInternal]).optional(),
 				description: z.string().optional(),
 				default: z.unknown().optional(),
 				enum: z.array(JsonSchemaEnumValueSchema).optional(),
@@ -132,8 +133,12 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 			})
 			.passthrough()
 			.transform((schema) => {
-				const { type, required, properties, format, ...rest } = schema
+				const { type, required, properties, additionalProperties, format, ...rest } = schema
 				const result: Record<string, unknown> = { ...rest }
+
+				// Determine if this schema represents an object type
+				const isObjectType =
+					type === "object" || (Array.isArray(type) && type.includes("object")) || properties !== undefined
 
 				// If type is an array, convert to anyOf format (JSON Schema 2020-12)
 				if (Array.isArray(type)) {
@@ -163,6 +168,17 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 					// This is required by OpenAI strict mode
 					result.properties = {}
 				}
+
+				// Only add additionalProperties for object-type schemas
+				// Adding it to primitive types (string, number, etc.) is invalid JSON Schema
+				if (isObjectType) {
+					// For strict mode compatibility, we MUST set additionalProperties to false
+					// Even if the original schema had {} (any) or true, we force false because
+					// OpenAI/OpenRouter strict mode rejects schemas with additionalProperties != false
+					// The original schema intent (allowing arbitrary properties) is incompatible with strict mode
+					result.additionalProperties = false
+				}
+				// For non-object types, don't include additionalProperties at all
 
 				return result
 			}),

@@ -14,7 +14,7 @@ export class ShellIntegrationManager {
 		// Create a temporary directory with the sticky bit set for security
 		const os = require("os")
 		const path = require("path")
-		const tmpDir = path.join(os.tmpdir(), `roo-zdotdir-${Math.random().toString(36).substring(2, 15)}`)
+		const tmpDir = path.join(os.tmpdir(), `costrict-zdotdir-${Math.random().toString(36).substring(2, 15)}`)
 		console.info(`[TerminalRegistry] Creating temporary directory for ZDOTDIR: ${tmpDir}`)
 
 		// Save original ZDOTDIR as ROO_ZDOTDIR

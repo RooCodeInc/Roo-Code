@@ -5,6 +5,11 @@ import type { Mock } from "vitest"
 // Mock dependencies - must come before imports
 vi.mock("../../../api/providers/fetchers/modelCache")
 
+// Mock the diagnosticsHandler module
+vi.mock("../diagnosticsHandler", () => ({
+	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
+}))
+
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
@@ -66,6 +71,7 @@ vi.mock("vscode", async (importOriginal) => ({
 	},
 	workspace: {
 		workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
+		openTextDocument: vi.fn().mockResolvedValue({}),
 		createFileSystemWatcher: vi.fn().mockReturnValue({
 			onDidCreate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
 			onDidChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
@@ -97,14 +103,20 @@ vi.mock("../../../i18n", () => ({
 vi.mock("fs/promises", () => {
 	const mockRm = vi.fn().mockResolvedValue(undefined)
 	const mockMkdir = vi.fn().mockResolvedValue(undefined)
+	const mockReadFile = vi.fn().mockResolvedValue("[]")
+	const mockWriteFile = vi.fn().mockResolvedValue(undefined)
 
 	return {
 		default: {
 			rm: mockRm,
 			mkdir: mockMkdir,
+			readFile: mockReadFile,
+			writeFile: mockWriteFile,
 		},
 		rm: mockRm,
 		mkdir: mockMkdir,
+		readFile: mockReadFile,
+		writeFile: mockWriteFile,
 	}
 })
 
@@ -115,6 +127,7 @@ import * as path from "path"
 import * as fsUtils from "../../../utils/fs"
 import { getWorkspacePath } from "../../../utils/path"
 import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
+import { generateErrorDiagnostics } from "../diagnosticsHandler"
 import type { ModeConfig } from "@roo-code/types"
 
 vi.mock("../../../utils/fs")
@@ -798,5 +811,59 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+
+		// Ensure contextProxy has a globalStorageUri for the handler
+		;(mockClineProvider as any).contextProxy.globalStorageUri = { fsPath: "/mock/global/storage" }
+
+		// Provide a current task with a stable ID
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			taskId: "test-task-id",
+		} as any)
+	})
+
+	it("calls generateErrorDiagnostics with correct parameters", async () => {
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+		} as any)
+
+		// Verify generateErrorDiagnostics was called with the correct parameters
+		expect(generateErrorDiagnostics).toHaveBeenCalledTimes(1)
+		expect(generateErrorDiagnostics).toHaveBeenCalledWith({
+			taskId: "test-task-id",
+			globalStoragePath: "/mock/global/storage",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+			log: expect.any(Function),
+		})
+	})
+
+	it("shows error when no active task", async () => {
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue(null as any)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {},
+		} as any)
+
+		expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("No active task to generate diagnostics for")
+		expect(generateErrorDiagnostics).not.toHaveBeenCalled()
 	})
 })

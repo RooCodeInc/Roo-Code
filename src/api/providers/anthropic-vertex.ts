@@ -9,6 +9,7 @@ import {
 	vertexModels,
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 	TOOL_PROTOCOL,
+	VERTEX_1M_CONTEXT_MODEL_IDS,
 } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../shared/api"
@@ -69,7 +70,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		let { id, info, temperature, maxTokens, reasoning: thinking } = this.getModel()
+		let { id, info, temperature, maxTokens, reasoning: thinking, betas } = this.getModel()
 
 		const { supportsPromptCache } = info
 
@@ -120,7 +121,10 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			...nativeToolParams,
 		}
 
-		const stream = await this.client.messages.create(params, { signal: metadata?.signal })
+		// and prompt caching
+		const requestOptions = betas?.length ? { headers: { "anthropic-beta": betas.join(",") } } : undefined
+
+		const stream = await this.client.messages.create(params, { ...requestOptions, signal: metadata?.signal })
 
 		for await (const chunk of stream) {
 			switch (chunk.type) {
@@ -218,14 +222,49 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 	getModel() {
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		const info: ModelInfo = vertexModels[id]
+		let info: ModelInfo = vertexModels[id]
+
+		// Check if 1M context beta should be enabled for supported models
+		const supports1MContext = VERTEX_1M_CONTEXT_MODEL_IDS.includes(
+			id as (typeof VERTEX_1M_CONTEXT_MODEL_IDS)[number],
+		)
+		const enable1MContext = supports1MContext && this.options.vertex1MContext
+
+		// If 1M context beta is enabled, update the model info with tier pricing
+		if (enable1MContext) {
+			const tier = info.tiers?.[0]
+			if (tier) {
+				info = {
+					...info,
+					contextWindow: tier.contextWindow,
+					inputPrice: tier.inputPrice,
+					outputPrice: tier.outputPrice,
+					cacheWritesPrice: tier.cacheWritesPrice,
+					cacheReadsPrice: tier.cacheReadsPrice,
+				}
+			}
+		}
+
 		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
+
+		// Build betas array for request headers
+		const betas: string[] = []
+
+		// Add 1M context beta flag if enabled for supported models
+		if (enable1MContext) {
+			betas.push("context-1m-2025-08-07")
+		}
 
 		// The `:thinking` suffix indicates that the model is a "Hybrid"
 		// reasoning model and that reasoning is required to be enabled.
 		// The actual model ID honored by Anthropic's API does not have this
 		// suffix.
-		return { id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id, info, ...params }
+		return {
+			id: id.endsWith(":thinking") ? id.replace(":thinking", "") : id,
+			info,
+			betas: betas.length > 0 ? betas : undefined,
+			...params,
+		}
 	}
 
 	async completePrompt(prompt: string, systemPrompt?: string, metadata?: any) {

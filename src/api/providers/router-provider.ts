@@ -1,6 +1,6 @@
 import OpenAI from "openai"
 
-import type { ModelInfo } from "@roo-code/types"
+import { type ModelInfo, NATIVE_TOOL_DEFAULTS } from "@roo-code/types"
 
 import { ApiHandlerOptions, RouterName, ModelRecord } from "../../shared/api"
 
@@ -64,9 +64,32 @@ export abstract class RouterProvider extends BaseProvider {
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = this.modelId ?? this.defaultModelId
 
-		return this.models[id]
-			? { id, info: this.models[id] }
-			: { id: this.defaultModelId, info: this.defaultModelInfo }
+		// First check instance models (populated by fetchModel)
+		// Merge native tool defaults for cached models that may lack these fields
+		if (this.models[id]) {
+			return { id, info: { ...NATIVE_TOOL_DEFAULTS, ...this.models[id] } }
+		}
+
+		// Fall back to global cache (synchronous disk/memory cache)
+		// This ensures models are available before fetchModel() is called
+		// Use dynamic import to avoid circular dependency
+		let cachedModels: ModelRecord | undefined
+		try {
+			const { getModelsFromCache } = require("./fetchers/modelCache")
+			cachedModels = getModelsFromCache(this.name)
+		} catch (error) {
+			// If import fails, continue without cache
+			cachedModels = undefined
+		}
+
+		if (cachedModels?.[id]) {
+			// Also populate instance models for future calls
+			this.models = cachedModels
+			return { id, info: { ...NATIVE_TOOL_DEFAULTS, ...cachedModels[id] } }
+		}
+
+		// Last resort: return default model
+		return { id: this.defaultModelId, info: this.defaultModelInfo }
 	}
 
 	protected supportsTemperature(modelId: string): boolean {

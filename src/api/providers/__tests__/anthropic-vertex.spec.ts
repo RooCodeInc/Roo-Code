@@ -3,6 +3,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk"
 
+import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
+
 import { ApiStreamChunk } from "../../transform/stream"
 
 import { AnthropicVertexHandler } from "../anthropic-vertex"
@@ -164,6 +166,7 @@ describe("VertexHandler", () => {
 					model: "claude-3-5-sonnet-v2@20241022",
 					max_tokens: 8192,
 					temperature: 0,
+					thinking: undefined,
 					system: [
 						{
 							type: "text",
@@ -865,6 +868,162 @@ describe("VertexHandler", () => {
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
 		})
+
+		it("should enable 1M context for Claude Sonnet 4 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
+		it("should enable 1M context for Claude Sonnet 4.5 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[1],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
+		it("should not enable 1M context when flag is disabled", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: false,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(200_000)
+			expect(model.info.inputPrice).toBe(3.0)
+			expect(model.info.outputPrice).toBe(15.0)
+			expect(model.betas).toBeUndefined()
+		})
+
+		it("should not enable 1M context for non-supported models even with flag", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(200_000)
+			expect(model.betas).toBeUndefined()
+		})
+	})
+
+	describe("1M context beta header", () => {
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		const systemPrompt = "You are a helpful assistant"
+
+		it("should include anthropic-beta header when 1M context is enabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Verify the API was called with the beta header
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.objectContaining({
+					headers: { "anthropic-beta": "context-1m-2025-08-07" },
+				}),
+			)
+		})
+
+		it("should not include anthropic-beta header when 1M context is disabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: false,
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Verify the API was called without the beta header
+			expect(mockCreate).toHaveBeenCalledWith(expect.anything(), { signal: undefined })
+		})
 	})
 
 	describe("thinking model configuration", () => {
@@ -1085,9 +1244,12 @@ describe("VertexHandler", () => {
 				// Just consume
 			}
 
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("tools")
-			expect(callArgs).not.toHaveProperty("tool_choice")
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					tools: expect.anything(),
+				}),
+				{ signal: undefined },
+			)
 		})
 
 		it("should handle tool_use blocks in stream and emit tool_call_partial", async () => {

@@ -2598,7 +2598,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const stream = this.attemptApiRequest()
 				let assistantMessage = ""
 				let reasoningMessage = ""
-				let streamingFailedMessage = ""
+				let streamingFailedMessage: string | undefined = ""
 				let pendingGroundingSources: GroundingSource[] = []
 				this.isStreaming = true
 				let shouldStop = false
@@ -3138,34 +3138,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (!this.abandoned) {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
-						const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
-						const requestId = error.headers?.get("x-request-id")
 						streamingFailedMessage = this.abort
 							? undefined
-							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
-						// let shouldStop = false
-						if (isZgsm) {
-							const errorCodeManager = ErrorCodeManager.getInstance()
-							streamingFailedMessage = await errorCodeManager.parseResponse(
-								error,
-								isZgsm,
-								this.taskId,
-								this.instanceId,
-							)
-
-							if (requestId) {
-								// Store raw error
-								errorCodeManager.setRawError(requestId, error)
-							}
-
-							if (error.status === 401 || error.code === "ai-gateway.insufficient_quota") {
-								if (error.status === 401) {
-									ZgsmAuthService.openStatusBarLoginTip()
-								}
-
-								shouldStop = true
-							}
-						}
+							: await this.convertErrorMessage(error, () => {
+									shouldStop = true
+								})
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
 
@@ -3456,7 +3433,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					if (state?.autoApprovalEnabled) {
 						// Auto-retry with backoff - don't persist failure message when retrying
 						if (shouldStop) {
-							errorMsg = streamingFailedMessage
+							errorMsg = streamingFailedMessage || ""
 						} else if (requestId) {
 							errorMsg += `\n\nRequestId: ${requestId}\n\n`
 						}
@@ -3489,7 +3466,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						continue
 					} else {
 						if (shouldStop) {
-							errorMsg = streamingFailedMessage
+							errorMsg = streamingFailedMessage || ""
 						} else if (requestId) {
 							errorMsg += `\n\nRequestId: ${requestId}\n\n`
 						}
@@ -3520,7 +3497,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								})
 							}
 							if (shouldStop) {
-								errorMsg = streamingFailedMessage
+								errorMsg = streamingFailedMessage || ""
 							} else if (requestId) {
 								errorMsg += `\n\nRequestId: ${requestId}\n\n`
 							}
@@ -4069,25 +4046,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			yield firstChunk.value
 			this.isWaitingForFirstChunk = false
 		} catch (error) {
-			const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
-			let errorMsg = ""
-			if (isZgsm) {
-				const errorCodeManager = ErrorCodeManager.getInstance()
-				errorMsg = await errorCodeManager.parseResponse(error, isZgsm, this.taskId, this.instanceId)
-
-				const requestId = error.headers?.get("x-request-id")
-				if (requestId) {
-					// Store raw error
-					errorCodeManager.setRawError(requestId, error)
-				}
-
-				if (error.status === 401) {
-					ZgsmAuthService.openStatusBarLoginTip()
-				}
-			} else {
-				errorMsg = error.message
-			}
-
+			let forceAutoApprovaldisabled = false
+			const errorMsg = await this.convertErrorMessage(error, () => {
+				forceAutoApprovaldisabled = true
+			})
 			this.isWaitingForFirstChunk = false
 			this.currentRequestAbortController = undefined
 			const isContextWindowExceededError = checkContextWindowExceededError(error)
@@ -4106,7 +4068,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
-			if (autoApprovalEnabled) {
+			if (autoApprovalEnabled && !forceAutoApprovaldisabled) {
 				// Apply shared exponential backoff and countdown UX
 				await this.backoffAndAnnounce(retryAttempt, error)
 
@@ -4158,7 +4120,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async backoffAndAnnounce(retryAttempt: number, error: any, header?: string): Promise<void> {
 		try {
 			const state = await this.providerRef.deref()?.getState()
-			const baseDelay = state?.requestDelaySeconds || 5
+			const baseDelay = state?.requestDelaySeconds || 3
 
 			let exponentialDelay = Math.min(
 				Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
@@ -4188,24 +4150,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (finalDelay <= 0) {
 				return
 			}
-
 			// Build header text; fall back to error message if none provided
-			let headerText = header
+			let headerText = header || ""
 			if (!headerText) {
-				if (error.status) {
-					// This sets the message as just the error code, for which
-					// ChatRow knows how to handle and use an i18n'd error string
-					// In development, hardcode headerText to an HTTP status code to check it
-					headerText = error.status
-				} else if (error?.error?.metadata?.raw) {
-					headerText = JSON.stringify(error.error.metadata.raw, null, 2)
-				} else if (error?.message) {
-					headerText = error.message
-				} else {
-					headerText = "Unknown error"
+				let requestId
+				headerText = await this.convertErrorMessage(error, undefined, (id) => {
+					requestId = id
+				})
+				const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
+				if (isZgsm) {
+					const requestIdMatch = headerText?.match(/RequestID:\s*([a-f0-9-]+)/i)
+					const _requestId = requestIdMatch?.[1]
+					if (requestId && !_requestId) {
+						headerText = `\n\nRequestId: ${requestId}\n\n` + headerText
+					}
 				}
 			}
-			headerText = headerText ? `${headerText}\n` : ""
 
 			// Show countdown timer with exponential backoff
 			for (let i = finalDelay; i > 0; i--) {
@@ -4555,5 +4515,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
 		}
+	}
+
+	public async convertErrorMessage(
+		error: any,
+		pauseHandler?: () => void,
+		requestIdHandler?: (requestId?: string) => void,
+	) {
+		const isZgsm = this.apiConfiguration?.apiProvider === "zgsm"
+		let errorMsg = ""
+		if (isZgsm) {
+			const errorCodeManager = ErrorCodeManager.getInstance()
+			errorMsg = await errorCodeManager.parseResponse(error, isZgsm, this.taskId, this.instanceId)
+
+			const requestId = error.headers?.get("x-request-id") || this?.lastApiRequestHeaders?.["X-Request-ID"]
+			if (requestId) {
+				// Store raw error
+				errorCodeManager.setRawError(requestId, error)
+				requestIdHandler?.(requestId)
+			}
+
+			if (error.status === 401 || error.code === "ai-gateway.insufficient_quota") {
+				if (error.status === 401) {
+					ZgsmAuthService.openStatusBarLoginTip()
+				}
+
+				pauseHandler?.()
+			}
+		} else {
+			errorMsg = error.message
+		}
+
+		return errorMsg
 	}
 }

@@ -25,7 +25,7 @@ export class CacheManager implements ICacheManager {
 	) {
 		this.cachePath = vscode.Uri.joinPath(
 			context.globalStorageUri,
-			`roo-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.json`,
+			`costrict-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.json`,
 		)
 		this._debouncedSaveCache = debounce(async () => {
 			await this._performSave()

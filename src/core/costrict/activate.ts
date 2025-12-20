@@ -223,7 +223,7 @@ export async function activate(
 	})
 	setTimeout(() => {
 		loginTip()
-		flushModels("zgsm", true)
+		flushModels({ provider: "zgsm" }, true)
 		// init project-wiki subtasks.
 		ensureProjectWikiSubtasksExists()
 	}, 2000)

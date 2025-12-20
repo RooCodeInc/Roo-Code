@@ -466,7 +466,7 @@ export const ChatRowContent = ({
 	const handleCopyErrorDetail = useCallback(
 		(message: string) => {
 			vscode.postMessage({
-				type: "copyError",
+				type: "copyApiError",
 				values: {
 					message,
 					originModelId,
@@ -1112,7 +1112,6 @@ export const ChatRowContent = ({
 							message={message.text || ""}
 							expandable={true}
 							showCopyButton={true}
-							apiConfiguration={apiConfiguration}
 						/>
 					)
 				case "subtask_result":
@@ -1237,7 +1236,6 @@ export const ChatRowContent = ({
 								apiReqStreamingFailedMessage) && (
 								<ErrorRow
 									type="api_failure"
-									apiConfiguration={apiConfiguration}
 									message={apiRequestFailedMessage || apiReqStreamingFailedMessage || ""}
 									docsURL={
 										apiRequestFailedMessage?.toLowerCase().includes("powershell")
@@ -1322,7 +1320,6 @@ export const ChatRowContent = ({
 					return (
 						<ErrorRow
 							type="api_req_retry_delayed"
-							apiConfiguration={apiConfiguration}
 							code={code}
 							message={apiConfiguration.apiProvider === "zgsm" ? message.text || "" : body}
 							docsURL={docsURL}
@@ -1508,19 +1505,12 @@ export const ChatRowContent = ({
 								title={t("chat:modelResponseIncomplete")}
 								message={t("chat:modelResponseErrors.noToolsUsed")}
 								errorDetails={t("chat:modelResponseErrors.noToolsUsedDetails")}
-								apiConfiguration={apiConfiguration}
 							/>
 						)
 					}
 
 					// Fallback for generic errors
-					return (
-						<ErrorRow
-							type="error"
-							message={message.text || t("chat:error")}
-							apiConfiguration={apiConfiguration}
-						/>
-					)
+					return <ErrorRow type="error" message={message.text || t("chat:error")} />
 				case "completion_result":
 					return (
 						<>
@@ -1731,13 +1721,7 @@ export const ChatRowContent = ({
 		case "ask":
 			switch (message.ask) {
 				case "mistake_limit_reached":
-					return (
-						<ErrorRow
-							type="mistake_limit"
-							message={message.text || ""}
-							apiConfiguration={apiConfiguration}
-						/>
-					)
+					return <ErrorRow type="mistake_limit" message={message.text || ""} />
 				case "command":
 					return (
 						<CommandExecution

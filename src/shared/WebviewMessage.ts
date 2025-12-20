@@ -185,7 +185,7 @@ export interface WebviewMessage {
 		| "insertTextIntoTextarea"
 		| "startCodereview"
 		| "settingsButtonclicked"
-		| "copyError"
+		| "copyApiError"
 		| "showMdmAuthRequiredNotification"
 		| "imageGenerationSettings"
 		| "queueMessage"
@@ -203,6 +203,7 @@ export interface WebviewMessage {
 		| "browserPanelDidLaunch"
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
+		| "downloadErrorDiagnostics"
 		| "requestClaudeCodeRateLimits"
 	text?: string
 	editedMessageContent?: string

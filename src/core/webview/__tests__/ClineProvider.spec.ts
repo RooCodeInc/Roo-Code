@@ -271,6 +271,7 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 	getModels: vi.fn().mockResolvedValue({}),
 	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock("../../../shared/modes", () => ({
@@ -342,6 +343,7 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 	getModels: vi.fn().mockResolvedValue({}),
 	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock("../diff/strategies/multi-search-replace", () => ({

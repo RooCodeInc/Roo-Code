@@ -147,7 +147,7 @@
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed",
-		"errorTitle": "API Error {{code}}",
+		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
 			"docs": "Docs",
 			"goToSettings": "Settings",
@@ -297,9 +297,11 @@
 		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage."
 	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Error Details",
-		"copyToClipboard": "Copy to Clipboard",
-		"copied": "Copied!"
+		"copyToClipboard": "Copy basic error info",
+		"copied": "Copied!",
+		"diagnostics": "Get detailed error info"
 	},
 	"diffError": {
 		"title": "Edit Unsuccessful"

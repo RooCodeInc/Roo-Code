@@ -6,6 +6,7 @@ import { type ModelInfo, openAiModelInfoSaneDefaults } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { SELECTOR_SEPARATOR, stringifyVsCodeLmModelSelector } from "../../shared/vsCodeSelectorUtils"
+import { normalizeToolSchema } from "../../utils/json-schema"
 
 import { ApiStream } from "../transform/stream"
 import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../transform/vscode-lm-format"
@@ -15,6 +16,8 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 
 /**
  * Converts OpenAI-format tools to VSCode Language Model tools.
+ * Normalizes the JSON Schema to draft 2020-12 compliant format required by
+ * GitHub Copilot's backend, converting type: ["T", "null"] to anyOf format.
  * @param tools Array of OpenAI ChatCompletionTool definitions
  * @returns Array of VSCode LanguageModelChatTool definitions
  */
@@ -24,7 +27,9 @@ function convertToVsCodeLmTools(tools: OpenAI.Chat.ChatCompletionTool[]): vscode
 		.map((tool) => ({
 			name: tool.function.name,
 			description: tool.function.description || "",
-			inputSchema: tool.function.parameters as Record<string, unknown> | undefined,
+			inputSchema: tool.function.parameters
+				? normalizeToolSchema(tool.function.parameters as Record<string, unknown>)
+				: undefined,
 		}))
 }
 

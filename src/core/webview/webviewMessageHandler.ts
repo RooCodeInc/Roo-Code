@@ -26,6 +26,7 @@ import { saveTaskMessages } from "../task-persistence"
 import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
+import { generateErrorDiagnostics } from "./diagnosticsHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
@@ -877,34 +878,31 @@ export const webviewMessageHandler = async (
 		case "flushRouterModels": {
 			const { apiConfiguration } = await provider.getState()
 			const routerNameFlush: RouterName = toRouterName(message.text)
+			const opt = {
+				provider: routerNameFlush,
+			} as GetModelsOptions
 
-			await flushModels(
-				routerNameFlush,
-				true,
-				apiConfiguration?.apiProvider === "zgsm"
-					? {
-							provider: "zgsm",
-							baseUrl: apiConfiguration?.zgsmBaseUrl,
-							apiKey: apiConfiguration?.zgsmAccessToken,
-							openAiHeaders: apiConfiguration?.openAiHeaders,
-						}
-					: undefined,
-				(models: ModelRecord) => {
-					if (apiConfiguration?.apiProvider === "zgsm") {
-						const openAiModels = [] as string[]
-						const fullResponseData = [] as ModelInfo[]
-						for (const [id, value] of Object.entries(models)) {
-							openAiModels.push(id)
-							fullResponseData.push(value)
-						}
-						provider.postMessageToWebview({
-							type: "zgsmModels",
-							openAiModels,
-							fullResponseData,
-						})
+			if (opt.provider === "zgsm") {
+				opt.baseUrl = apiConfiguration?.zgsmBaseUrl
+				opt.apiKey = apiConfiguration?.zgsmAccessToken
+				opt.openAiHeaders = apiConfiguration?.openAiHeaders
+			}
+
+			await flushModels(opt, true, (models: ModelRecord) => {
+				if (apiConfiguration?.apiProvider === "zgsm") {
+					const openAiModels = [] as string[]
+					const fullResponseData = [] as ModelInfo[]
+					for (const [id, value] of Object.entries(models)) {
+						openAiModels.push(id)
+						fullResponseData.push(value)
 					}
-				},
-			)
+					provider.postMessageToWebview({
+						type: "zgsmModels",
+						openAiModels,
+						fullResponseData,
+					})
+				}
+			})
 			break
 		}
 		case "requestRouterModels":
@@ -1007,7 +1005,7 @@ export const webviewMessageHandler = async (
 				// If explicit credentials are provided in message.values (from Refresh Models button),
 				// flush the cache first to ensure we fetch fresh data with the new credentials
 				if (message?.values?.litellmApiKey || message?.values?.litellmBaseUrl) {
-					await flushModels("litellm", true)
+					await flushModels({ provider: "litellm", apiKey: litellmApiKey, baseUrl: litellmBaseUrl }, true)
 				}
 
 				candidates.push({
@@ -1076,14 +1074,15 @@ export const webviewMessageHandler = async (
 			// Specific handler for Ollama models only.
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			try {
-				// Flush cache and refresh to ensure fresh models.
-				await flushModels("ollama", true)
-
-				const ollamaModels = await getModels({
-					provider: "ollama",
+				const ollamaOptions = {
+					provider: "ollama" as const,
 					baseUrl: ollamaApiConfig.ollamaBaseUrl,
 					apiKey: ollamaApiConfig.ollamaApiKey,
-				})
+				}
+				// Flush cache and refresh to ensure fresh models.
+				await flushModels(ollamaOptions, true)
+
+				const ollamaModels = await getModels(ollamaOptions)
 
 				if (Object.keys(ollamaModels).length > 0) {
 					provider.postMessageToWebview({ type: "ollamaModels", ollamaModels: ollamaModels })
@@ -1098,13 +1097,14 @@ export const webviewMessageHandler = async (
 			// Specific handler for LM Studio models only.
 			const { apiConfiguration: lmStudioApiConfig } = await provider.getState()
 			try {
-				// Flush cache and refresh to ensure fresh models.
-				await flushModels("lmstudio", true)
-
-				const lmStudioModels = await getModels({
-					provider: "lmstudio",
+				const lmStudioOptions = {
+					provider: "lmstudio" as const,
 					baseUrl: lmStudioApiConfig.lmStudioBaseUrl,
-				})
+				}
+				// Flush cache and refresh to ensure fresh models.
+				await flushModels(lmStudioOptions, true)
+
+				const lmStudioModels = await getModels(lmStudioOptions)
 
 				if (Object.keys(lmStudioModels).length > 0) {
 					provider.postMessageToWebview({
@@ -3375,7 +3375,7 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
-		case "copyError": {
+		case "copyApiError": {
 			const { message: errorMessage, originModelId, selectedLLM } = message.values ?? {}
 			const { apiConfiguration } = await provider.getState()
 			const httpProxy = process.env.http_proxy || process.env.HTTP_PROXY
@@ -3594,6 +3594,22 @@ export const webviewMessageHandler = async (
 				provider.log(`Error opening debug history: ${errorMessage}`)
 				vscode.window.showErrorMessage(`Failed to open debug history: ${errorMessage}`)
 			}
+			break
+		}
+
+		case "downloadErrorDiagnostics": {
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				vscode.window.showErrorMessage("No active task to generate diagnostics for")
+				break
+			}
+
+			await generateErrorDiagnostics({
+				taskId: currentTask.taskId,
+				globalStoragePath: provider.contextProxy.globalStorageUri.fsPath,
+				values: message.values,
+				log: (msg) => provider.log(msg),
+			})
 			break
 		}
 
