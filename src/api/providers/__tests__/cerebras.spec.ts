@@ -123,6 +123,59 @@ describe("CerebrasHandler", () => {
 			await expect(generator.next()).rejects.toThrow()
 		})
 
+		it("should attach HTTP status code to error objects", async () => {
+			const mockErrorResponse = {
+				ok: false,
+				status: 401,
+				text: () => Promise.resolve('{"error": {"message": "Unauthorized"}}'),
+			}
+			vi.mocked(fetch).mockResolvedValueOnce(mockErrorResponse as any)
+
+			const generator = handler.createMessage("System prompt", [])
+			try {
+				await generator.next()
+				// Should not reach here
+				expect(true).toBe(false)
+			} catch (error: any) {
+				// The outer catch wraps the error, but status should be preserved
+				expect(error.status).toBe(401)
+			}
+		})
+
+		it("should attach HTTP status code for rate limit errors", async () => {
+			const mockErrorResponse = {
+				ok: false,
+				status: 429,
+				text: () => Promise.resolve('{"error": {"message": "Rate limit exceeded"}}'),
+			}
+			vi.mocked(fetch).mockResolvedValueOnce(mockErrorResponse as any)
+
+			const generator = handler.createMessage("System prompt", [])
+			try {
+				await generator.next()
+				expect(true).toBe(false)
+			} catch (error: any) {
+				expect(error.status).toBe(429)
+			}
+		})
+
+		it("should attach HTTP status code for server errors", async () => {
+			const mockErrorResponse = {
+				ok: false,
+				status: 500,
+				text: () => Promise.resolve('{"error": {"message": "Internal server error"}}'),
+			}
+			vi.mocked(fetch).mockResolvedValueOnce(mockErrorResponse as any)
+
+			const generator = handler.createMessage("System prompt", [])
+			try {
+				await generator.next()
+				expect(true).toBe(false)
+			} catch (error: any) {
+				expect(error.status).toBe(500)
+			}
+		})
+
 		it("should parse streaming responses correctly", async () => {
 			// Test streaming response parsing
 			// Mock ReadableStream with various data chunks
