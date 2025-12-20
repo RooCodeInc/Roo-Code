@@ -221,6 +221,24 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	private async getNestedGitRepository(): Promise<string | null> {
 		try {
+			// First, check if the workspace root has its own .git directory.
+			// If the root does NOT have a .git, we allow checkpoints even if subdirectories
+			// have their own git repos. This supports the common use case where users open
+			// a parent folder containing multiple sibling projects (e.g., frontend and backend),
+			// each with their own git repository.
+			const rootGitPath = path.join(this.workspaceDir, ".git")
+			const rootHasGit = await fileExistsAtPath(rootGitPath)
+
+			if (!rootHasGit) {
+				this.log(
+					`[${this.constructor.name}#getNestedGitRepository] workspace root has no .git, allowing checkpoints even with subdirectory git repos`,
+				)
+				// No root .git means subdirectory git repos are independent projects, not nested repos.
+				// The shadow repo will exclude them via .git/ pattern in excludes.
+				return null
+			}
+
+			// Root has a .git, so we need to check for truly nested git repos (submodules, etc.)
 			// Find all .git/HEAD files that are not at the root level.
 			const args = ["--files", "--hidden", "--follow", "-g", "**/.git/HEAD", this.workspaceDir]
 

@@ -483,6 +483,65 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
+
+			it("succeeds when workspace root has no .git but subdirectories have git repos (sibling projects)", async () => {
+				// Create a new temporary workspace and service for this test.
+				// This simulates a user opening a parent folder containing multiple sibling projects.
+				const shadowDir = path.join(tmpDir, `${prefix}-sibling-projects-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-sibling-projects-${Date.now()}`)
+
+				// Create the parent workspace WITHOUT initializing git (no root .git)
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a "frontend" project with its own git repo
+				const frontendDir = path.join(workspaceDir, "frontend")
+				await fs.mkdir(frontendDir, { recursive: true })
+				const frontendGit = simpleGit(frontendDir)
+				await frontendGit.init()
+				await frontendGit.addConfig("user.name", "Roo Code")
+				await frontendGit.addConfig("user.email", "support@roocode.com")
+				const frontendFile = path.join(frontendDir, "index.js")
+				await fs.writeFile(frontendFile, "// Frontend code")
+				await frontendGit.add(".")
+				await frontendGit.commit("Initial frontend commit")
+
+				// Create a "backend" project with its own git repo
+				const backendDir = path.join(workspaceDir, "backend")
+				await fs.mkdir(backendDir, { recursive: true })
+				const backendGit = simpleGit(backendDir)
+				await backendGit.init()
+				await backendGit.addConfig("user.name", "Roo Code")
+				await backendGit.addConfig("user.email", "support@roocode.com")
+				const backendFile = path.join(backendDir, "server.js")
+				await fs.writeFile(backendFile, "// Backend code")
+				await backendGit.add(".")
+				await backendGit.commit("Initial backend commit")
+
+				// Create a test file in the root (outside any git repo)
+				const rootFile = path.join(workspaceDir, "README.md")
+				await fs.writeFile(rootFile, "# Project Documentation")
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// Initialization should succeed because root has no .git
+				// Even though subdirectories have their own git repos, they are independent projects
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Verify checkpoints work correctly
+				await fs.writeFile(rootFile, "# Updated Documentation")
+				const checkpoint = await service.saveCheckpoint("Update readme")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify we can restore
+				await fs.writeFile(rootFile, "# Modified again")
+				await service.restoreCheckpoint(checkpoint!.commit)
+				expect(await fs.readFile(rootFile, "utf-8")).toBe("# Updated Documentation")
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
 		})
 
 		describe(`${klass.name}#events`, () => {
