@@ -138,9 +138,10 @@
 		"streaming": "Sol·licitud API...",
 		"cancelled": "Sol·licitud API cancel·lada",
 		"streamingFailed": "Transmissió API ha fallat",
-		"errorTitle": "Error API {{code}}",
+		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
 			"docs": "Documentació",
+			"goToSettings": "Configuració",
 			"400": "El proveïdor no ha pogut processar la sol·licitud tal com es va fer. Interromp la tasca i prova una abordatge diferent.",
 			"401": "No s'ha pogut autenticar amb el proveïdor. Si us plau, verifica la teva configuració de clau API.",
 			"402": "Sembla que se t'han acabat els fons/crèdits al teu compte. Vés al teu proveïdor i afegeix més per continuar.",
@@ -148,7 +149,8 @@
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
 			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code.",
-			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional."
+			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
+			"claudeCodeNotAuthenticated": "Has d'iniciar sessió per utilitzar Claude Code. Vés a Configuració i fes clic a \"Iniciar sessió a Claude Code\" per autenticar-te."
 		}
 	},
 	"checkpoint": {
@@ -256,10 +258,17 @@
 		"hasQuestion": "Roo té una pregunta"
 	},
 	"taskCompleted": "Tasca completada",
+	"modelResponseIncomplete": "Resposta del model incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El model no ha utilitzat cap eina en la seva resposta. Això sol passar quan el model només proporciona text/raonament sense cridar les eines necessàries per completar la tasca.",
+		"noToolsUsedDetails": "El model ha proporcionat text/raonament però no ha cridat cap de les eines necessàries. Això sol indicar que el model ha entès malament la tasca o té dificultats per determinar quina eina utilitzar. El model ha estat sol·licitat automàticament per tornar-ho a provar amb l'ús adequat de les eines."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",
-		"copied": "Copiat!"
+		"copied": "Copiat!",
+		"diagnostics": "Obtenir informació d'error detallada"
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."

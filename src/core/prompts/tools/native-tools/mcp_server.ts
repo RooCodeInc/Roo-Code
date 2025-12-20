@@ -1,6 +1,7 @@
 import type OpenAI from "openai"
 import { McpHub } from "../../../../services/mcp/McpHub"
 import { buildMcpToolName } from "../../../../utils/mcp-name"
+import { normalizeToolSchema, type JsonSchema } from "../../../../utils/json-schema"
 
 /**
  * Dynamically generates native tool definitions for all enabled tools across connected MCP servers.
@@ -40,22 +41,15 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 			}
 			seenToolNames.add(toolName)
 
-			const originalSchema = tool.inputSchema as Record<string, any> | undefined
-			const toolInputProps = originalSchema?.properties ?? {}
-			const toolInputRequired = (originalSchema?.required ?? []) as string[]
+			const originalSchema = tool.inputSchema as Record<string, unknown> | undefined
 
-			// Build parameters directly from the tool's input schema.
-			// The server_name and tool_name are encoded in the function name itself
-			// (e.g., mcp_serverName_toolName), so they don't need to be in the arguments.
-			const parameters: OpenAI.FunctionParameters = {
-				type: "object",
-				properties: toolInputProps,
-				additionalProperties: false,
-			}
-
-			// Only add required if there are required fields
-			if (toolInputRequired.length > 0) {
-				parameters.required = toolInputRequired
+			// Normalize schema for JSON Schema 2020-12 compliance (type arrays → anyOf)
+			let parameters: JsonSchema
+			if (originalSchema) {
+				parameters = normalizeToolSchema(originalSchema) as JsonSchema
+			} else {
+				// No schema provided - create a minimal valid schema
+				parameters = { type: "object", additionalProperties: false } as JsonSchema
 			}
 
 			const toolDefinition: OpenAI.Chat.ChatCompletionTool = {
@@ -63,7 +57,7 @@ export function getMcpServerTools(mcpHub?: McpHub): OpenAI.Chat.ChatCompletionTo
 				function: {
 					name: toolName,
 					description: tool.description,
-					parameters: parameters,
+					parameters: parameters as OpenAI.FunctionParameters,
 				},
 			}
 

@@ -30,7 +30,9 @@ import {
 	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_PRICING,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
@@ -41,6 +43,7 @@ import { ModelInfo as CacheModelInfo } from "../transform/cache-strategy/types"
 import { convertToBedrockConverseMessages as sharedConverter } from "../transform/bedrock-converse-format"
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
+import { normalizeToolSchema } from "../../utils/json-schema"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 /************************************************************************************
@@ -197,6 +200,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	protected options: ProviderSettings
 	private client: BedrockRuntimeClient
 	private arnInfo: any
+	private readonly providerName = "Bedrock"
 
 	constructor(options: ProviderSettings) {
 		super()
@@ -690,6 +694,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// Clear timeout on error
 			clearTimeout(timeoutId)
 
+			// Capture error in telemetry before processing
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+
 			// Check if this is a throttling error that should trigger retry logic
 			const errorType = this.getErrorType(error)
 
@@ -793,6 +802,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 			return ""
 		} catch (error) {
+			// Capture error in telemetry
+			const model = this.getModel()
+			const telemetryErrorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(telemetryErrorMessage, this.providerName, model.id, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
+
 			// Use the extracted error handling method for all errors
 			const errorResult = this.handleBedrockError(error, false) // false for non-streaming context
 			// Since we're in a non-streaming context, we know the result is a string
@@ -914,8 +929,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 * represent literal characters in the AWS ARN format, not filesystem paths. This regex will function consistently across Windows,
 		 * macOS, Linux, and any other operating system where JavaScript runs.
 		 *
+		 * Supports any AWS partition (aws, aws-us-gov, aws-cn, or future partitions).
+		 * The partition is not captured since we don't need to use it.
+		 *
 		 *  This matches ARNs like:
 		 *  - Foundation Model: arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-v2
+		 *  - GovCloud Inference Profile: arn:aws-us-gov:bedrock:us-gov-west-1:123456789012:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0
 		 *  - Prompt Router: arn:aws:bedrock:us-west-2:123456789012:prompt-router/anthropic-claude
 		 *  - Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/anthropic.claude-v2
 		 *  - Cross Region Inference Profile: arn:aws:bedrock:us-west-2:123456789012:inference-profile/us.anthropic.claude-3-5-sonnet-20241022-v2:0
@@ -923,13 +942,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		 *  - Imported Model: arn:aws:bedrock:us-west-2:123456789012:imported-model/my-imported-model
 		 *
 		 * match[0] - The entire matched string
-		 * match[1] - The region (e.g., "us-east-1")
+		 * match[1] - The region (e.g., "us-east-1", "us-gov-west-1")
 		 * match[2] - The account ID (can be empty string for AWS-managed resources)
 		 * match[3] - The resource type (e.g., "foundation-model")
 		 * match[4] - The resource ID (e.g., "anthropic.claude-3-sonnet-20240229-v1:0")
 		 */
 
-		const arnRegex = /^arn:aws:(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
+		const arnRegex = /^arn:[^:]+:(?:bedrock|sagemaker):([^:]+):([^:]*):(?:([^\/]+)\/([\w\.\-:]+)|([^\/]+))$/
 		let match = arn.match(arnRegex)
 
 		if (match && match[1] && match[3] && match[4]) {
@@ -1194,6 +1213,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	/**
 	 * Convert OpenAI tool definitions to Bedrock Converse format
+	 * Transforms JSON Schema to draft 2020-12 compliant format required by Claude models.
 	 * @param tools Array of OpenAI ChatCompletionTool definitions
 	 * @returns Array of Bedrock Tool definitions
 	 */
@@ -1207,7 +1227,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 							name: tool.function.name,
 							description: tool.function.description,
 							inputSchema: {
-								json: tool.function.parameters as Record<string, unknown>,
+								// Normalize schema to JSON Schema draft 2020-12 compliant format
+								// This converts type: ["T", "null"] to anyOf: [{type: "T"}, {type: "null"}]
+								json: normalizeToolSchema(tool.function.parameters as Record<string, unknown>),
 							},
 						},
 					}) as Tool,

@@ -140,7 +140,7 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -417,8 +417,8 @@ const ApiOptions = ({
 	// Mirrors the simplified logic in resolveToolProtocol.ts:
 	// 1. User preference (toolProtocol) - handled by the select value binding
 	// 2. Model default - use if available
-	// 3. XML fallback
-	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
+	// 3. Native fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.NATIVE
 
 	// Show the tool protocol selector when model supports native tools.
 	// For OpenAI Compatible providers we always show it so users can force XML/native explicitly.
@@ -567,6 +567,7 @@ const ApiOptions = ({
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
+					claudeCodeIsAuthenticated={claudeCodeIsAuthenticated}
 				/>
 			)}
 
@@ -779,7 +780,8 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProviderModels.length > 0 && (
+			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
+			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>

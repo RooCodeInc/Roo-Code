@@ -1,5 +1,97 @@
 # Roo Code Changelog
 
+## [3.36.16] - 2025-12-19
+
+- Fix: Normalize tool schemas for VS Code LM API to resolve error 400 when using VS Code Language Model API providers (PR #10221 by @hannesrudolph)
+
+## [3.36.15] - 2025-12-19
+
+![3.36.15 Release - 1M Context Window Support](/releases/3.36.15-release.png)
+
+- Add 1M context window beta support for Claude Sonnet 4 on Vertex AI, enabling significantly larger context for complex tasks (PR #10209 by @hannesrudolph)
+- Add native tool calling support for LM Studio and Qwen-Code providers, improving compatibility with local models (PR #10208 by @hannesrudolph)
+- Add native tool call defaults for OpenAI-compatible providers, expanding native function calling across more configurations (PR #10213 by @hannesrudolph)
+- Enable native tool calls for Requesty provider (PR #10211 by @daniel-lxs)
+- Improve API error handling and visibility with clearer error messages and better user feedback (PR #10204 by @brunobergher)
+- Add downloadable error diagnostics from chat errors, making it easier to troubleshoot and report issues (PR #10188 by @brunobergher)
+- Fix refresh models button not properly flushing the cache, ensuring model lists update correctly (#9682 by @tl-hbk, PR #9870 by @pdecat)
+- Fix additionalProperties handling for strict mode compatibility, resolving schema validation issues with certain providers (PR #10210 by @daniel-lxs)
+
+## [3.36.14] - 2025-12-18
+
+![3.36.14 Release - Native Tool Calling for Claude on Vertex AI](/releases/3.36.14-release.png)
+
+- Add native tool calling support for Claude models on Vertex AI, enabling more efficient and reliable tool interactions (PR #10197 by @hannesrudolph)
+- Fix JSON Schema format value stripping for OpenAI compatibility, resolving issues with unsupported format values (PR #10198 by @daniel-lxs)
+- Improve "no tools used" error handling with graceful retry mechanism for better reliability when tools fail to execute (PR #10196 by @hannesrudolph)
+
+## [3.36.13] - 2025-12-18
+
+![3.36.13 Release - Native Tool Protocol](/releases/3.36.13-release.png)
+
+- Change default tool protocol from XML to native for improved reliability and performance (PR #10186 by @mrubens)
+- Add native tool support for VS Code Language Model API providers (PR #10191 by @daniel-lxs)
+- Lock task tool protocol for consistent task resumption, ensuring tasks resume with the same protocol they started with (PR #10192 by @daniel-lxs)
+- Replace edit_file tool alias with actual edit_file tool for improved diff editing capabilities (PR #9983 by @hannesrudolph)
+- Fix LiteLLM router models by merging default model info for native tool calling support (PR #10187 by @daniel-lxs)
+- Add PostHog exception tracking for consecutive mistake errors to improve error monitoring (PR #10193 by @daniel-lxs)
+
+## [3.36.12] - 2025-12-18
+
+![3.36.12 Release - Better telemetry and Bedrock fixes](/releases/3.36.12-release.png)
+
+- Fix: Add userAgentAppId to Bedrock embedder for code indexing (#10165 by @jackrein, PR #10166 by @roomote)
+- Update OpenAI and Gemini tool preferences for improved model behavior (PR #10170 by @hannesrudolph)
+- Extract error messages from JSON payloads for better PostHog error grouping (PR #10163 by @daniel-lxs)
+
+## [3.36.11] - 2025-12-17
+
+![3.36.11 Release - Native Tool Calling Enhancements](/releases/3.36.11-release.png)
+
+- Add support for Claude Code Provider native tool calling, improving tool execution performance and reliability (PR #10077 by @hannesrudolph)
+- Enable native tool calling by default for Z.ai models for better model compatibility (PR #10158 by @app/roomote)
+- Enable native tools by default for OpenAI compatible provider to improve tool calling support (PR #10159 by @daniel-lxs)
+- Fix: Normalize MCP tool schemas for Bedrock and OpenAI strict mode to ensure proper tool compatibility (PR #10148 by @daniel-lxs)
+- Fix: Remove dots and colons from MCP tool names for Bedrock compatibility (PR #10152 by @daniel-lxs)
+- Fix: Convert tool_result to XML text when native tools disabled for Bedrock (PR #10155 by @daniel-lxs)
+- Fix: Refresh Roo models cache with session token on auth state change to resolve model list refresh issues (PR #10156 by @daniel-lxs)
+- Fix: Support AWS GovCloud and China region ARNs in Bedrock provider for expanded regional support (PR #10157 by @app/roomote)
+
+## [3.36.10] - 2025-12-17
+
+![3.36.10 Release - Gemini 3 Flash Preview](/releases/3.36.10-release.png)
+
+- Add support for Gemini 3 Flash Preview model in the Gemini provider (PR #10151 by @hannesrudolph)
+- Implement interleaved thinking mode for DeepSeek Reasoner, enabling streaming reasoning output (PR #9969 by @hannesrudolph)
+- Fix: Preserve reasoning_content during tool call sequences in DeepSeek (PR #10141 by @hannesrudolph)
+- Fix: Correct token counting for context truncation display (PR #9961 by @hannesrudolph)
+- Update Next.js dependency to ~15.2.8 (PR #10140 by @jr)
+
+## [3.36.9] - 2025-12-15
+
+![3.36.9 Release - Cross-Provider Compatibility](/releases/3.36.9-release.png)
+
+- Fix: Normalize tool call IDs for cross-provider compatibility via OpenRouter, ensuring consistent handling across different AI providers (PR #10102 by @daniel-lxs)
+- Fix: Add additionalProperties: false to nested MCP tool schemas, improving schema validation and preventing unexpected properties (PR #10109 by @daniel-lxs)
+- Fix: Validate tool_result IDs in delegation resume flow, preventing errors when resuming delegated tasks (PR #10135 by @daniel-lxs)
+- Feat: Add full error details to streaming failure dialog, providing more comprehensive information for debugging streaming issues (PR #10131 by @roomote)
+- Feat: Improve evals UI with tool groups and duration fix, enhancing the evaluation interface organization and timing accuracy (PR #10133 by @hannesrudolph)
+
+## [3.36.8] - 2025-12-16
+
+![3.36.8 Release - Native Tools Enabled by Default](/releases/3.36.8-release.png)
+
+- Implement incremental token-budgeted file reading for smarter, more efficient file content retrieval (PR #10052 by @jr)
+- Enable native tools by default for multiple providers including OpenAI, Azure, Google, Vertex, and more (PR #10059 by @daniel-lxs)
+- Enable native tools by default for Anthropic and add telemetry tracking for tool format usage (PR #10021 by @daniel-lxs)
+- Fix: Prevent race condition from deleting wrong API messages during streaming (PR #10113 by @hannesrudolph)
+- Fix: Prevent duplicate MCP tools error by deduplicating servers at source (PR #10096 by @daniel-lxs)
+- Remove strict ARN validation for Bedrock custom ARN users allowing more flexibility (#10108 by @wisestmumbler, PR #10110 by @roomote)
+- Add metadata to error details dialog for improved debugging (PR #10050 by @roomote)
+- Add configuration to control public sharing feature (PR #10105 by @mrubens)
+- Remove description from Bedrock service tiers for cleaner UI (PR #10118 by @mrubens)
+- Fix: Correct link to provider pricing page on web (PR #10107 by @brunobergher)
+
 ## [3.36.7] - 2025-12-15
 
 - Improve tool configuration for OpenAI models in OpenRouter (PR #10082 by @hannesrudolph)

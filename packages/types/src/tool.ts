@@ -21,6 +21,7 @@ export const toolNames = [
 	"apply_diff",
 	"search_and_replace",
 	"search_replace",
+	"edit_file",
 	"apply_patch",
 	"search_files",
 	"list_files",
@@ -69,6 +70,16 @@ export const TOOL_PROTOCOL = {
  * Derived from TOOL_PROTOCOL constants to ensure type safety
  */
 export type ToolProtocol = (typeof TOOL_PROTOCOL)[keyof typeof TOOL_PROTOCOL]
+
+/**
+ * Default model info properties for native tool support.
+ * Used to merge with cached model info that may lack these fields.
+ * Router providers (Requesty, Unbound, LiteLLM) assume all models support native tools.
+ */
+export const NATIVE_TOOL_DEFAULTS = {
+	supportsNativeTools: true,
+	defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
+} as const
 
 /**
  * Checks if the protocol is native (non-XML).

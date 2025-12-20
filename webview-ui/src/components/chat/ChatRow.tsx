@@ -1081,6 +1081,7 @@ export const ChatRowContent = ({
 											? "https://github.com/cline/cline/wiki/TroubleShooting-%E2%80%90-%22PowerShell-is-not-recognized-as-an-internal-or-external-command%22"
 											: undefined
 									}
+									errorDetails={apiReqStreamingFailedMessage}
 								/>
 							)}
 						</>
@@ -1089,30 +1090,36 @@ export const ChatRowContent = ({
 					let body = t(`chat:apiRequest.failed`)
 					let retryInfo, rawError, code, docsURL
 					if (message.text !== undefined) {
-						// Try to show richer error message for that code, if available
-						const potentialCode = parseInt(message.text.substring(0, 3))
-						if (!isNaN(potentialCode) && potentialCode >= 400) {
-							code = potentialCode
-							const stringForError = `chat:apiRequest.errorMessage.${code}`
-							if (i18n.exists(stringForError)) {
-								body = t(stringForError)
-								// Fill this out in upcoming PRs
-								// Do not remove this
-								// switch(code) {
-								// 	case ERROR_CODE:
-								// 		docsURL = ???
-								// 		break;
-								// }
+						// Check for Claude Code authentication error first
+						if (message.text.includes("Not authenticated with Claude Code")) {
+							body = t("chat:apiRequest.errorMessage.claudeCodeNotAuthenticated")
+							docsURL = "roocode://settings?provider=claude-code"
+						} else {
+							// Try to show richer error message for that code, if available
+							const potentialCode = parseInt(message.text.substring(0, 3))
+							if (!isNaN(potentialCode) && potentialCode >= 400) {
+								code = potentialCode
+								const stringForError = `chat:apiRequest.errorMessage.${code}`
+								if (i18n.exists(stringForError)) {
+									body = t(stringForError)
+									// Fill this out in upcoming PRs
+									// Do not remove this
+									// switch(code) {
+									// 	case ERROR_CODE:
+									// 		docsURL = ???
+									// 		break;
+									// }
+								} else {
+									body = t("chat:apiRequest.errorMessage.unknown")
+									docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+								}
+							} else if (message.text.indexOf("Connection error") === 0) {
+								body = t("chat:apiRequest.errorMessage.connection")
 							} else {
+								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
 								docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
 							}
-						} else if (message.text.indexOf("Connection error") === 0) {
-							body = t("chat:apiRequest.errorMessage.connection")
-						} else {
-							// Non-HTTP-status-code error message - store full text as errorDetails
-							body = t("chat:apiRequest.errorMessage.unknown")
-							docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
 						}
 
 						// This isn't pretty, but since the retry logic happens at a lower level
@@ -1252,7 +1259,22 @@ export const ChatRowContent = ({
 						</div>
 					)
 				case "error":
-					return <ErrorRow type="error" message={t("chat:error")} errorDetails={message.text || undefined} />
+					// Check if this is a model response error based on marker strings from backend
+					const isNoToolsUsedError = message.text === "MODEL_NO_TOOLS_USED"
+
+					if (isNoToolsUsedError) {
+						return (
+							<ErrorRow
+								type="error"
+								title={t("chat:modelResponseIncomplete")}
+								message={t("chat:modelResponseErrors.noToolsUsed")}
+								errorDetails={t("chat:modelResponseErrors.noToolsUsedDetails")}
+							/>
+						)
+					}
+
+					// Fallback for generic errors
+					return <ErrorRow type="error" message={message.text || t("chat:error")} />
 				case "completion_result":
 					return (
 						<>

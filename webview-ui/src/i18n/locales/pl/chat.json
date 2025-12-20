@@ -138,9 +138,10 @@
 		"streaming": "Zapytanie API...",
 		"cancelled": "Zapytanie API anulowane",
 		"streamingFailed": "Strumieniowanie API nie powiodło się",
-		"errorTitle": "Błąd API {{code}}",
+		"errorTitle": "Błąd dostawcy {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentacja",
+			"goToSettings": "Ustawienia",
 			"400": "Dostawca nie mógł przetworzyć żądania. Zatrzymaj zadanie i spróbuj innego podejścia.",
 			"401": "Nie można uwierzytelnić u dostawcy. Sprawdź konfigurację klucza API.",
 			"402": "Wygląda na to, że wyczerpałeś środki/kredyty na swoim koncie. Przejdź do dostawcy i dodaj więcej, aby kontynuować.",
@@ -148,7 +149,8 @@
 			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
 			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
-			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe."
+			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe.",
+			"claudeCodeNotAuthenticated": "Musisz się zalogować, aby korzystać z Claude Code. Przejdź do Ustawień i kliknij \"Zaloguj się do Claude Code\", aby się uwierzytelnić."
 		}
 	},
 	"checkpoint": {
@@ -256,10 +258,17 @@
 		"hasQuestion": "Roo ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
+	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",
+	"modelResponseErrors": {
+		"noToolsUsed": "Model nie użył żadnych narzędzi w swojej odpowiedzi. Zwykle dzieje się tak, gdy model dostarcza tylko tekst/rozumowanie bez wywołania wymaganych narzędzi do wykonania zadania.",
+		"noToolsUsedDetails": "Model dostarczył tekst/rozumowanie, ale nie wywołał żadnego z wymaganych narzędzi. Zazwyczaj oznacza to, że model źle zrozumiał zadanie lub ma trudności z określeniem, którego narzędzia użyć. Model został automatycznie poproszony o ponowną próbę z odpowiednim użyciem narzędzi."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Szczegóły błędu",
 		"copyToClipboard": "Kopiuj do schowka",
-		"copied": "Skopiowano!"
+		"copied": "Skopiowano!",
+		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie"
 	},
 	"powershell": {
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"

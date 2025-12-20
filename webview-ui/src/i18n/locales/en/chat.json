@@ -144,9 +144,10 @@
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed",
-		"errorTitle": "API Error {{code}}",
+		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
 			"docs": "Docs",
+			"goToSettings": "Settings",
 			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
 			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
 			"402": "You seem to have run out of funds/credits in your account. Go to your provider and add more to continue.",
@@ -154,7 +155,8 @@
 			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
 			"connection": "Connection error. Make sure you have a working internet connection.",
-			"unknown": "Unknown API error. Please contact Roo Code support."
+			"unknown": "Unknown API error. Please contact Roo Code support.",
+			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
 		}
 	},
 	"checkpoint": {
@@ -283,10 +285,17 @@
 	},
 	"taskCompleted": "Task Completed",
 	"error": "Error",
+	"modelResponseIncomplete": "Model Response Incomplete",
+	"modelResponseErrors": {
+		"noToolsUsed": "The model failed to use any tools in its response. This typically happens when the model provides only text/reasoning without calling the required tools to complete the task.",
+		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Error Details",
-		"copyToClipboard": "Copy to Clipboard",
-		"copied": "Copied!"
+		"copyToClipboard": "Copy basic error info",
+		"copied": "Copied!",
+		"diagnostics": "Get detailed error info"
 	},
 	"diffError": {
 		"title": "Edit Unsuccessful"

@@ -138,9 +138,10 @@
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
 		"streamingFailed": "Transmisión API falló",
-		"errorTitle": "Error API {{code}}",
+		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentación",
+			"goToSettings": "Configuración",
 			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
 			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
 			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
@@ -148,7 +149,8 @@
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
 			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
-			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional."
+			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
+			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
 		}
 	},
 	"checkpoint": {
@@ -256,10 +258,17 @@
 		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
+	"modelResponseIncomplete": "Respuesta del modelo incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El modelo no utilizó ninguna herramienta en su respuesta. Esto suele ocurrir cuando el modelo solo proporciona texto/razonamiento sin llamar a las herramientas necesarias para completar la tarea.",
+		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas."
+	},
 	"errorDetails": {
+		"link": "Detalles",
 		"title": "Detalles del error",
 		"copyToClipboard": "Copiar al portapapeles",
-		"copied": "¡Copiado!"
+		"copied": "¡Copiado!",
+		"diagnostics": "Obtener información de error detallada"
 	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"

@@ -200,10 +200,7 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
-const claudeCodeSchema = apiModelIdProviderModelSchema.extend({
-	claudeCodePath: z.string().optional(),
-	claudeCodeMaxOutputTokens: z.number().int().min(1).max(200000).optional(),
-})
+const claudeCodeSchema = apiModelIdProviderModelSchema.extend({})
 
 const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterApiKey: z.string().optional(),
@@ -240,6 +237,7 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 	vertexRegion: z.string().optional(),
 	enableUrlContext: z.boolean().optional(),
 	enableGrounding: z.boolean().optional(),
+	vertex1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
 const openAiSchema = baseProviderSettingsSchema.extend({

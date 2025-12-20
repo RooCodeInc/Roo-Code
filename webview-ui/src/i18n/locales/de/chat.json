@@ -138,9 +138,10 @@
 		"streaming": "API-Anfrage...",
 		"cancelled": "API-Anfrage abgebrochen",
 		"streamingFailed": "API-Streaming fehlgeschlagen",
-		"errorTitle": "API-Fehler {{code}}",
+		"errorTitle": "Anbieter-Fehler {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentation",
+			"goToSettings": "Einstellungen",
 			"400": "Der Anbieter konnte die Anfrage nicht wie gestellt verarbeiten. Beende die Aufgabe und versuche einen anderen Ansatz.",
 			"401": "Authentifizierung beim Anbieter fehlgeschlagen. Bitte überprüfe deine API-Schlüssel-Konfiguration.",
 			"402": "Es sieht so aus, als ob dir die Guthaben/Credits in deinem Konto ausgegangen sind. Gehe zu deinem Anbieter und füge mehr hinzu, um fortzufahren.",
@@ -148,7 +149,8 @@
 			"429": "Zu viele Anfragen. Du wirst vom Anbieter rate-limitiert. Bitte warte ein wenig, bevor du den nächsten API-Aufruf machst.",
 			"500": "Fehler auf dem Server des Anbieters. Es stimmt etwas mit der Anbieterseite nicht, mit deiner Anfrage stimmt alles.",
 			"unknown": "Unbekannter API-Fehler. Bitte kontaktiere den Roo Code Support.",
-			"connection": "Verbindungsfehler. Stelle sicher, dass du eine funktionierende Internetverbindung hast."
+			"connection": "Verbindungsfehler. Stelle sicher, dass du eine funktionierende Internetverbindung hast.",
+			"claudeCodeNotAuthenticated": "Du musst dich anmelden, um Claude Code zu verwenden. Gehe zu den Einstellungen und klicke auf \"Bei Claude Code anmelden\", um dich zu authentifizieren."
 		}
 	},
 	"checkpoint": {
@@ -256,10 +258,17 @@
 		"hasQuestion": "Roo hat eine Frage"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
+	"modelResponseIncomplete": "Modellantwort unvollständig",
+	"modelResponseErrors": {
+		"noToolsUsed": "Das Modell hat in seiner Antwort keine Tools verwendet. Dies passiert normalerweise, wenn das Modell nur Text/Überlegungen liefert, ohne die erforderlichen Tools aufzurufen, um die Aufgabe zu erledigen.",
+		"noToolsUsedDetails": "Das Modell hat Text/Überlegungen geliefert, aber keine der erforderlichen Tools aufgerufen. Dies deutet normalerweise darauf hin, dass das Modell die Aufgabe missverstanden hat oder Schwierigkeiten hat zu bestimmen, welches Tool verwendet werden soll. Das Modell wurde automatisch aufgefordert, es erneut mit der richtigen Tool-Verwendung zu versuchen."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Fehlerdetails",
 		"copyToClipboard": "In Zwischenablage kopieren",
-		"copied": "Kopiert!"
+		"copied": "Kopiert!",
+		"diagnostics": "Detaillierte Fehlerinformationen abrufen"
 	},
 	"powershell": {
 		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"

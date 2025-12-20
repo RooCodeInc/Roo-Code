@@ -98,6 +98,7 @@ import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
+import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -1873,6 +1874,7 @@ export class ClineProvider
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
+			publicSharingEnabled,
 			organizationAllowList,
 			organizationSettingsVersion,
 			maxConcurrentFileReads,
@@ -2025,6 +2027,7 @@ export class ClineProvider
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			cloudOrganizations,
 			sharingEnabled: sharingEnabled ?? false,
+			publicSharingEnabled: publicSharingEnabled ?? false,
 			organizationAllowList,
 			organizationSettingsVersion,
 			condensingApiConfigId,
@@ -2065,6 +2068,14 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
+			claudeCodeIsAuthenticated: await (async () => {
+				try {
+					const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+					return await claudeCodeOAuthManager.isAuthenticated()
+				} catch {
+					return false
+				}
+			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
 		}
 	}
@@ -2137,6 +2148,16 @@ export class ClineProvider
 		} catch (error) {
 			console.error(
 				`[getState] failed to get sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
+		let publicSharingEnabled: boolean = false
+
+		try {
+			publicSharingEnabled = await CloudService.instance.canSharePublicly()
+		} catch (error) {
+			console.error(
+				`[getState] failed to get public sharing enabled state: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
 
@@ -2251,6 +2272,7 @@ export class ClineProvider
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
+			publicSharingEnabled,
 			organizationAllowList,
 			organizationSettingsVersion,
 			condensingApiConfigId: stateValues.condensingApiConfigId,
@@ -3152,6 +3174,15 @@ export class ClineProvider
 				],
 				ts,
 			})
+		}
+
+		// Validate the newly injected tool_result against the preceding assistant message.
+		// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
+		// preceding assistant message (Anthropic API requirement).
+		const lastMessage = parentApiMessages[parentApiMessages.length - 1]
+		if (lastMessage?.role === "user") {
+			const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
+			parentApiMessages[parentApiMessages.length - 1] = validatedMessage
 		}
 
 		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })

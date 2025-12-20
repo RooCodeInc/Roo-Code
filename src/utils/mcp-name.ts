@@ -1,17 +1,12 @@
 /**
  * Utilities for sanitizing MCP server and tool names to conform to
- * API function name requirements (e.g., Gemini's restrictions).
- *
- * Gemini function name requirements:
- * - Must start with a letter or an underscore
- * - Must be alphanumeric (a-z, A-Z, 0-9), underscores (_), dots (.), colons (:), or dashes (-)
- * - Maximum length of 64 characters
+ * API function name requirements across all providers.
  */
 
 /**
  * Separator used between MCP prefix, server name, and tool name.
  * We use "--" (double hyphen) because:
- * 1. It's allowed by Gemini (dashes are permitted in function names)
+ * 1. It's allowed by all providers (dashes are permitted in function names)
  * 2. It won't conflict with underscores in sanitized server/tool names
  * 3. It's unique enough to be a reliable delimiter for parsing
  */
@@ -40,8 +35,8 @@ export function sanitizeMcpName(name: string): string {
 	// Replace spaces with underscores first
 	let sanitized = name.replace(/\s+/g, "_")
 
-	// Remove any characters that are not alphanumeric, underscores, dots, colons, or dashes
-	sanitized = sanitized.replace(/[^a-zA-Z0-9_.\-:]/g, "")
+	// Only allow alphanumeric, underscores, and dashes
+	sanitized = sanitized.replace(/[^a-zA-Z0-9_\-]/g, "")
 
 	// Replace any double-hyphen sequences with single hyphen to avoid separator conflicts
 	sanitized = sanitized.replace(/--+/g, "-")

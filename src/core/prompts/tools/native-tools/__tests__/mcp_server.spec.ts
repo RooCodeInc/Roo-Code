@@ -155,6 +155,7 @@ describe("getMcpServerTools", () => {
 		const result = getMcpServerTools(mockHub as McpHub)
 
 		expect(result).toHaveLength(1)
+		// additionalProperties: false should only be on the root object type, not on primitive types
 		expect(getFunction(result[0]).parameters).toEqual({
 			type: "object",
 			properties: {
@@ -183,6 +184,7 @@ describe("getMcpServerTools", () => {
 		const result = getMcpServerTools(mockHub as McpHub)
 
 		expect(result).toHaveLength(1)
+		// additionalProperties: false should only be on the root object type, not on primitive types
 		expect(getFunction(result[0]).parameters).toEqual({
 			type: "object",
 			properties: {
