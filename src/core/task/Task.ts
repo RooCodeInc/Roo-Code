@@ -1149,7 +1149,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
-		const approval = await checkAutoApproval({ state, ask: type, text, isProtected })
+		const approval = await checkAutoApproval({ state, ask: type, text, isProtected, todoList: this.todoList })
 
 		if (approval.decision === "approve") {
 			this.approveAsk()

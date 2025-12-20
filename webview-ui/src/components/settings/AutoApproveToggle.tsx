@@ -14,6 +14,7 @@ type AutoApproveToggles = Pick<
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
 	| "alwaysAllowFollowupQuestions"
+	| "alwaysAllowDuringTodoExecution"
 >
 
 export type AutoApproveSetting = keyof AutoApproveToggles
@@ -82,6 +83,13 @@ export const autoApproveSettingsConfig: Record<AutoApproveSetting, AutoApproveCo
 		descriptionKey: "settings:autoApprove.followupQuestions.description",
 		icon: "question",
 		testId: "always-allow-followup-questions-toggle",
+	},
+	alwaysAllowDuringTodoExecution: {
+		key: "alwaysAllowDuringTodoExecution",
+		labelKey: "settings:autoApprove.todoExecution.label",
+		descriptionKey: "settings:autoApprove.todoExecution.description",
+		icon: "checklist",
+		testId: "always-allow-todo-execution-toggle",
 	},
 }
 

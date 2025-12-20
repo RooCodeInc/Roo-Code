@@ -227,6 +227,10 @@
 			"description": "Automatically select the first suggested answer for follow-up questions after the configured timeout",
 			"timeoutLabel": "Time to wait before auto-selecting the first answer"
 		},
+		"todoExecution": {
+			"label": "Todo",
+			"description": "Automatically approve file writes while a todo list is being executed. Helps Roo complete todo items without interruption."
+		},
 		"execute": {
 			"label": "Execute",
 			"description": "Automatically execute allowed terminal commands without requiring approval",

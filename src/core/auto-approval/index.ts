@@ -1,4 +1,4 @@
-import { type ClineAsk, type McpServerUse, type FollowUpData, isNonBlockingAsk } from "@roo-code/types"
+import { type ClineAsk, type McpServerUse, type FollowUpData, type TodoItem, isNonBlockingAsk } from "@roo-code/types"
 
 import type { ClineSayTool, ExtensionState } from "../../shared/ExtensionMessage"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
@@ -17,6 +17,7 @@ export type AutoApprovalState =
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
 	| "alwaysAllowFollowupQuestions"
+	| "alwaysAllowDuringTodoExecution"
 
 // Some of these actions have additional settings associated with them.
 export type AutoApprovalStateOptions =
@@ -28,6 +29,17 @@ export type AutoApprovalStateOptions =
 	| "mcpServers" // For `alwaysAllowMcp`.
 	| "allowedCommands" // For `alwaysAllowExecute`.
 	| "deniedCommands"
+
+/**
+ * Check if there are incomplete todo items in the list.
+ * A todo is considered incomplete if its status is "pending" or "in_progress".
+ */
+function hasTodosInProgress(todoList?: TodoItem[]): boolean {
+	if (!todoList || todoList.length === 0) {
+		return false
+	}
+	return todoList.some((todo) => todo.status === "pending" || todo.status === "in_progress")
+}
 
 export type CheckAutoApprovalResult =
 	| { decision: "approve" }
@@ -44,11 +56,13 @@ export async function checkAutoApproval({
 	ask,
 	text,
 	isProtected,
+	todoList,
 }: {
 	state?: Pick<ExtensionState, AutoApprovalState | AutoApprovalStateOptions>
 	ask: ClineAsk
 	text?: string
 	isProtected?: boolean
+	todoList?: TodoItem[]
 }): Promise<CheckAutoApprovalResult> {
 	if (isNonBlockingAsk(ask)) {
 		return { decision: "approve" }
@@ -173,6 +187,19 @@ export async function checkAutoApproval({
 		}
 
 		if (isWriteToolAction(tool)) {
+			// Check if auto-approve during todo execution is enabled and todos are in progress
+			const todosInProgress = hasTodosInProgress(todoList)
+			const autoApproveDuringTodo =
+				state.alwaysAllowDuringTodoExecution === true &&
+				todosInProgress &&
+				!isOutsideWorkspace && // Never auto-approve outside workspace during todo execution
+				!isProtected // Never auto-approve protected files during todo execution
+
+			if (autoApproveDuringTodo) {
+				return { decision: "approve" }
+			}
+
+			// Fall back to regular write auto-approval logic
 			return state.alwaysAllowWrite === true &&
 				(!isOutsideWorkspace || state.alwaysAllowWriteOutsideWorkspace === true) &&
 				(!isProtected || state.alwaysAllowWriteProtected === true)
