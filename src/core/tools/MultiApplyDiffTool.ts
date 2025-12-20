@@ -11,7 +11,6 @@ import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } f
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
@@ -204,7 +203,7 @@ Original error: ${errorMessage}`
 			path: legacyPath,
 			diff: [
 				{
-					content: legacyDiffContent, // Unescaping will be handled later like new diffs
+					content: legacyDiffContent,
 					startLine: legacyStartLineStr ? parseInt(legacyStartLineStr) : undefined,
 				},
 			],
@@ -322,12 +321,7 @@ Original error: ${errorMessage}`
 				let unified = ""
 				try {
 					const original = await fs.readFile(opResult.absolutePath!, "utf-8")
-					const processed = !cline.api.getModel().id.includes("claude")
-						? (opResult.diffItems || []).map((item) => ({
-								...item,
-								content: item.content ? unescapeHtmlEntities(item.content) : item.content,
-							}))
-						: opResult.diffItems || []
+					const processed = opResult.diffItems || []
 
 					const applyRes =
 						(await cline.diffStrategy?.applyDiff(original, processed)) ?? ({ success: false } as any)
@@ -484,12 +478,8 @@ Original error: ${errorMessage}`
 				let formattedError = ""
 
 				// Pre-process all diff items for HTML entity unescaping if needed
-				const processedDiffItems = !cline.api.getModel().id.includes("claude")
-					? diffItems.map((item) => ({
-							...item,
-							content: item.content ? unescapeHtmlEntities(item.content) : item.content,
-						}))
-					: diffItems
+				// Use diff items directly without HTML entity unescaping
+				const processedDiffItems = diffItems
 
 				// Apply all diffs at once with the array-based method
 				const diffResult = (await cline.diffStrategy?.applyDiff(originalContent, processedDiffItems)) ?? {
