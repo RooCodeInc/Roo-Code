@@ -780,8 +780,8 @@ Assume the file exists and you can modify it directly.`,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 					reasoningEffort: "none",
 					toolProtocol: "native", // Enable native tool calling
-					apiProvider: "openrouter", // Use OpenRouter provider
-					openRouterModelId: "openai/gpt-5.1", // GPT-5.1 supports native tools
+					apiProvider: "openrouter",
+					openRouterModelId: "openai/gpt-5.1",
 				},
 				text: `
 ---
