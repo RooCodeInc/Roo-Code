@@ -70,6 +70,7 @@ export const toolParamNames = [
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
+	"line_range", // Simple read_file parameter for single line range
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
 	"file_path", // search_replace and edit_file parameter

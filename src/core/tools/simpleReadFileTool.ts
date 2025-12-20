@@ -23,13 +23,26 @@ import {
 } from "./helpers/imageHelpers"
 
 /**
+ * Helper function to parse line range string (e.g., "1-100" -> {start: 1, end: 100})
+ */
+function parseLineRange(lineRangeStr: string | undefined): { start: number; end: number } | null {
+	if (!lineRangeStr) return null
+	const match = lineRangeStr.match(/^(\d+)-(\d+)$/)
+	if (!match) return null
+	const start = parseInt(match[1], 10)
+	const end = parseInt(match[2], 10)
+	if (isNaN(start) || isNaN(end) || start < 1 || end < start) return null
+	return { start, end }
+}
+
+/**
  * Simplified read file tool for models that only support single file reads
- * Uses the format: <read_file><path>file/path.ext</path></read_file>
+ * Uses the format: <read_file><path>file/path.ext</path><line_range>start-end</line_range></read_file>
  *
  * This is a streamlined version of readFileTool that:
  * - Only accepts a single path parameter
  * - Does not support multiple files
- * - Does not support line ranges
+ * - Supports a single optional line_range parameter for reading specific portions
  * - Has simpler XML parsing
  */
 export async function simpleReadFileTool(
@@ -42,6 +55,10 @@ export async function simpleReadFileTool(
 	toolProtocol?: ToolProtocol,
 ) {
 	const filePath: string | undefined = block.params.path
+	const lineRangeStr: string | undefined = block.params.line_range
+
+	// Parse line range if provided
+	const lineRange = parseLineRange(lineRangeStr)
 
 	// Check if the current model supports images
 	const modelInfo = cline.api.getModel().info
@@ -91,7 +108,9 @@ export async function simpleReadFileTool(
 		// Create approval message
 		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 		let lineSnippet = ""
-		if (maxReadFileLine === 0) {
+		if (lineRange) {
+			lineSnippet = t("tools:readFile.linesRange", { start: lineRange.start, end: lineRange.end })
+		} else if (maxReadFileLine === 0) {
 			lineSnippet = t("tools:readFile.definitionsOnly")
 		} else if (maxReadFileLine > 0) {
 			lineSnippet = t("tools:readFile.maxLines", { max: maxReadFileLine })
@@ -201,6 +220,44 @@ export async function simpleReadFileTool(
 			}
 		}
 
+		// Handle specific line range reading (when line_range parameter is provided)
+		if (lineRange) {
+			// Validate line range against total lines
+			if (lineRange.start > totalLines) {
+				const errorMsg = `Invalid line range: start line ${lineRange.start} exceeds total lines ${totalLines}`
+				pushToolResult(`<file><path>${relPath}</path><error>${errorMsg}</error></file>`)
+				return
+			}
+
+			// Clamp end line to total lines
+			const effectiveEnd = Math.min(lineRange.end, totalLines)
+			const content = addLineNumbers(
+				await readLines(fullPath, effectiveEnd - 1, lineRange.start - 1),
+				lineRange.start,
+			)
+			const lineRangeAttr = ` lines="${lineRange.start}-${effectiveEnd}"`
+			let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
+
+			// Add notice if there are more lines after this range
+			if (effectiveEnd < totalLines) {
+				const nextStart = effectiveEnd + 1
+				const suggestedEnd = Math.min(effectiveEnd + (effectiveEnd - lineRange.start + 1), totalLines)
+				xmlInfo += `<notice>Showing lines ${lineRange.start}-${effectiveEnd} of ${totalLines} total lines. To continue reading, use the read_file tool again with the line_range parameter starting at line ${nextStart} (e.g., <line_range>${nextStart}-${suggestedEnd}</line_range>)</notice>\n`
+			}
+
+			// Track file read
+			await cline.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+			// Return the result
+			if (text) {
+				const statusMessage = formatResponse.toolApprovedWithFeedback(text)
+				pushToolResult(`${statusMessage}\n<file><path>${relPath}</path>\n${xmlInfo}</file>`)
+			} else {
+				pushToolResult(`<file><path>${relPath}</path>\n${xmlInfo}</file>`)
+			}
+			return
+		}
+
 		// Handle definitions-only mode
 		if (maxReadFileLine === 0) {
 			try {
@@ -234,7 +291,9 @@ export async function simpleReadFileTool(
 				if (defResult) {
 					xmlInfo += `<list_code_definition_names>${defResult}</list_code_definition_names>\n`
 				}
-				xmlInfo += `<notice>Showing only ${maxReadFileLine} of ${totalLines} total lines. File is too large for complete display</notice>\n`
+				const nextStart = maxReadFileLine + 1
+				const suggestedEnd = Math.min(maxReadFileLine * 2, totalLines)
+				xmlInfo += `<notice>Showing lines 1-${maxReadFileLine} of ${totalLines} total lines. To continue reading, use the read_file tool again with the line_range parameter starting at line ${nextStart} (e.g., <line_range>${nextStart}-${suggestedEnd}</line_range>)</notice>\n`
 				pushToolResult(`<file><path>${relPath}</path>\n${xmlInfo}</file>`)
 			} catch (error) {
 				if (error instanceof Error && error.message.startsWith("Unsupported language:")) {
@@ -282,7 +341,8 @@ export async function simpleReadFileTool(
  */
 export function getSimpleReadFileToolDescription(blockName: string, blockParams: any): string {
 	if (blockParams.path) {
-		return `[${blockName} for '${blockParams.path}']`
+		const lineRangeInfo = blockParams.line_range ? ` (lines ${blockParams.line_range})` : ""
+		return `[${blockName} for '${blockParams.path}'${lineRangeInfo}]`
 	} else {
 		return `[${blockName} with missing path]`
 	}
