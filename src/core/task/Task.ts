@@ -4164,10 +4164,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Default path for regular messages (no embedded reasoning)
 			if (msg.role) {
-				cleanConversationHistory.push({
+				const cleanMessage: Anthropic.Messages.MessageParam & { reasoning_content?: string } = {
 					role: msg.role,
 					content: msg.content as Anthropic.Messages.ContentBlockParam[] | string,
-				})
+				}
+				// Preserve reasoning_content for DeepSeek interleaved thinking mode
+				// This is required for tool call sequences where the model needs its previous
+				// reasoning content passed back to continue the thinking chain
+				// See: https://api-docs.deepseek.com/guides/thinking_mode
+				if (msg.role === "assistant" && msg.reasoning_content) {
+					cleanMessage.reasoning_content = msg.reasoning_content
+				}
+				cleanConversationHistory.push(cleanMessage)
 			}
 		}
 

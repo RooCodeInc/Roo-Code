@@ -104,7 +104,7 @@ describe("getKeepMessagesWithToolBlocks", () => {
 		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
 	})
 
-	it("should not preserve tool_use blocks when first kept message is assistant role", () => {
+	it("should extend keep range backwards to ensure first kept message is user role", () => {
 		const toolUseBlock = {
 			type: "tool_use" as const,
 			id: "toolu_123",
@@ -127,9 +127,12 @@ describe("getKeepMessagesWithToolBlocks", () => {
 
 		const result = getKeepMessagesWithToolBlocks(messages, 3)
 
-		// First kept message is assistant, not user with tool_result
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].role).toBe("assistant")
+		// The function now extends backwards to ensure first kept message is a user message
+		// This prevents consecutive assistant messages (summary + first kept message)
+		// which would cause DeepSeek API 400 errors
+		expect(result.keepMessages).toHaveLength(4) // Extended from 3 to 4 to include user message
+		expect(result.keepMessages[0].role).toBe("user") // Now starts with user
+		expect(result.keepMessages[0].content).toBe("Please read")
 		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
 	})
 
@@ -245,6 +248,174 @@ describe("getKeepMessagesWithToolBlocks", () => {
 
 		expect(result.keepMessages).toEqual(messages)
 		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+	})
+
+	it("should preserve reasoning_content from preceding assistant message (top-level property)", () => {
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_deepseek",
+			name: "read_file",
+			input: { path: "test.txt" },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_deepseek",
+			content: "file contents",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Let me think", ts: 2 },
+			{ role: "user", content: "Continue", ts: 3 },
+			{
+				role: "assistant",
+				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
+				ts: 4,
+				reasoning_content: "I need to read this file to understand the context.", // DeepSeek interleaved thinking
+			},
+			{
+				role: "user",
+				content: [toolResultBlock, { type: "text" as const, text: "Thanks" }],
+				ts: 5,
+			},
+			{ role: "assistant", content: "Got it", ts: 6 },
+			{ role: "user", content: "Done", ts: 7 },
+		]
+
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		expect(result.keepMessages).toHaveLength(3)
+		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
+		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
+		expect(result.reasoningContentToPreserve).toBe("I need to read this file to understand the context.")
+	})
+
+	it("should preserve reasoning_content from content blocks when not at top level", () => {
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_reasoning_block",
+			name: "search_files",
+			input: { query: "test" },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_reasoning_block",
+			content: "search results",
+		}
+		const reasoningBlock = {
+			type: "reasoning",
+			text: "Reasoning from content block",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Search for something", ts: 1 },
+			{
+				role: "assistant",
+				content: [
+					reasoningBlock as any, // Reasoning stored in content blocks
+					{ type: "text" as const, text: "Searching..." },
+					toolUseBlock,
+				],
+				ts: 2,
+			},
+			{
+				role: "user",
+				content: [toolResultBlock],
+				ts: 3,
+			},
+			{ role: "assistant", content: "Found it", ts: 4 },
+			{ role: "user", content: "Thanks", ts: 5 },
+		]
+
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		expect(result.keepMessages).toHaveLength(3)
+		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
+		expect(result.reasoningContentToPreserve).toBe("Reasoning from content block")
+	})
+
+	it("should prefer top-level reasoning_content over content block reasoning", () => {
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_both",
+			name: "list_files",
+			input: { path: "." },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_both",
+			content: "file list",
+		}
+		const reasoningBlock = {
+			type: "reasoning",
+			text: "Reasoning in content block (should be ignored)",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "List files", ts: 1 },
+			{
+				role: "assistant",
+				content: [reasoningBlock as any, { type: "text" as const, text: "Listing..." }, toolUseBlock],
+				ts: 2,
+				reasoning_content: "Top-level reasoning (should be used)", // Top-level takes priority
+			},
+			{
+				role: "user",
+				content: [toolResultBlock],
+				ts: 3,
+			},
+			{ role: "assistant", content: "Listed", ts: 4 },
+			{ role: "user", content: "Done", ts: 5 },
+		]
+
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		expect(result.reasoningContentToPreserve).toBe("Top-level reasoning (should be used)")
+	})
+
+	it("should not return reasoning_content when no tool_use blocks need preserving", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{
+				role: "assistant",
+				content: "Thinking about it...",
+				ts: 2,
+				reasoning_content: "Some deep thoughts",
+			},
+			{ role: "user", content: "Continue", ts: 3 },
+			{ role: "assistant", content: "Done", ts: 4 },
+			{ role: "user", content: "Thanks", ts: 5 },
+		]
+
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		expect(result.reasoningContentToPreserve).toBeUndefined()
+	})
+
+	it("should return correct actualStartIndex when extended backwards for turn alternation", () => {
+		// This test validates the fix for DeepSeek 400 error when condensing creates consecutive assistant messages
+		// The scenario: last N_MESSAGES_TO_KEEP would start with an assistant message
+		// The fix: extend backwards to include the preceding user message
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Task", ts: 1 },
+			{ role: "assistant", content: "Working on it", ts: 2 },
+			{ role: "user", content: "Continue", ts: 3 },
+			{ role: "assistant", content: "Still working", ts: 4 },
+			{ role: "user", content: "More", ts: 5 },
+			{ role: "assistant", content: "Almost done", ts: 6 }, // Without fix, this would be first kept message
+			{ role: "user", content: "Thanks", ts: 7 },
+			{ role: "assistant", content: "Complete", ts: 8 },
+		]
+
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		// With keepCount=3, original startIndex would be 5 (messages[5] = "Almost done", assistant)
+		// The fix extends backwards to find a user message, so startIndex becomes 4 (messages[4] = "More", user)
+		expect(result.keepMessages).toHaveLength(4) // Extended from 3 to 4
+		expect(result.keepMessages[0].role).toBe("user")
+		expect(result.keepMessages[0].content).toBe("More")
+		expect(result.actualStartIndex).toBe(4) // Moved back from 5 to 4
 	})
 })
 
@@ -988,6 +1159,79 @@ describe("summarizeConversation", () => {
 		)
 		expect(preservedToolUses).toHaveLength(2)
 		expect(preservedToolUses.map((block) => block.id)).toEqual(["toolu_parallel_1", "toolu_parallel_2"])
+	})
+
+	it("should preserve reasoning_content on summary message for DeepSeek interleaved thinking", async () => {
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_deepseek_reasoning",
+			name: "read_file",
+			input: { path: "test.txt" },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_deepseek_reasoning",
+			content: "file contents",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Let me think about this", ts: 2 },
+			{ role: "user", content: "Please continue", ts: 3 },
+			{
+				role: "assistant",
+				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
+				ts: 4,
+				reasoning_content: "I need to read this file to understand the user's request.", // DeepSeek reasoning
+			},
+			{
+				role: "user",
+				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
+				ts: 5,
+			},
+			{ role: "assistant", content: "Got the file contents", ts: 6 },
+			{ role: "user", content: "Thanks", ts: 7 },
+		]
+
+		// Create a stream with usage information
+		const streamWithUsage = (async function* () {
+			yield { type: "text" as const, text: "Summary with reasoning preserved" }
+			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
+		})()
+
+		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
+		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(50)) as any
+
+		const result = await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+			false, // isAutomaticTrigger
+			undefined, // customCondensingPrompt
+			undefined, // condensingApiHandler
+			true, // useNativeTools - required for tool_use block preservation
+		)
+
+		// Find the summary message
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.isSummary).toBe(true)
+
+		// Verify reasoning_content is preserved on the summary message (critical for DeepSeek)
+		expect(summaryMessage!.reasoning_content).toBe("I need to read this file to understand the user's request.")
+
+		// Also verify tool_use blocks are preserved
+		expect(Array.isArray(summaryMessage!.content)).toBe(true)
+		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
+		expect(content).toHaveLength(2)
+		expect(content[0].type).toBe("text")
+		expect(content[1].type).toBe("tool_use")
+		expect((content[1] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_deepseek_reasoning")
+
+		expect(result.error).toBeUndefined()
 	})
 })
 

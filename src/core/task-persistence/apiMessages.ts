@@ -20,6 +20,9 @@ export type ApiMessage = Anthropic.MessageParam & {
 	text?: string
 	// For OpenRouter reasoning_details array format (used by Gemini 3, etc.)
 	reasoning_details?: any[]
+	// For DeepSeek interleaved thinking mode: reasoning content that must be passed back
+	// during tool call sequences. See: https://api-docs.deepseek.com/guides/thinking_mode
+	reasoning_content?: string
 	// For non-destructive condense: unique identifier for summary messages
 	condenseId?: string
 	// For non-destructive condense: points to the condenseId of the summary that replaces this message

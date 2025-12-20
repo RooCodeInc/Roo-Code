@@ -31,24 +31,76 @@ function getToolUseBlocks(message: ApiMessage): Anthropic.Messages.ToolUseBlock[
 }
 
 /**
- * Extracts tool_use blocks that need to be preserved to match tool_result blocks in keepMessages.
+ * Extracts reasoning_content from an assistant message.
+ * DeepSeek's interleaved thinking mode stores reasoning in two possible locations:
+ * 1. Top-level `reasoning_content` property on the message
+ * 2. Inside content array as `type: "reasoning"` blocks
+ *
+ * This is critical for DeepSeek's thinking mode with tool calls - if reasoning_content
+ * is not passed back during multi-turn tool sequences, the API returns a 400 error.
+ * See: https://api-docs.deepseek.com/guides/thinking_mode#tool-calls
+ */
+function getReasoningContent(message: ApiMessage): string | undefined {
+	if (message.role !== "assistant") {
+		return undefined
+	}
+
+	// First check for top-level reasoning_content property
+	if (message.reasoning_content) {
+		return message.reasoning_content
+	}
+
+	// Then check for reasoning blocks in content
+	if (Array.isArray(message.content)) {
+		for (const block of message.content) {
+			if ((block as any).type === "reasoning" && (block as any).text) {
+				return (block as any).text
+			}
+		}
+	}
+
+	return undefined
+}
+
+/**
+ * Extracts tool_use blocks and reasoning_content that need to be preserved to match tool_result blocks in keepMessages.
  * When the first kept message is a user message with tool_result blocks,
  * we need to find the corresponding tool_use blocks from the preceding assistant message.
  * These tool_use blocks will be appended to the summary message to maintain proper pairing.
  *
+ * For DeepSeek's interleaved thinking mode, we also preserve reasoning_content from the
+ * preceding assistant message. This is required because DeepSeek's API returns a 400 error
+ * if reasoning_content is not passed back during multi-turn tool call sequences.
+ * See: https://api-docs.deepseek.com/guides/thinking_mode#tool-calls
+ *
  * @param messages - The full conversation messages
  * @param keepCount - The number of messages to keep from the end
- * @returns Object containing keepMessages and any tool_use blocks to preserve
+ * @returns Object containing keepMessages, tool_use blocks to preserve, and reasoning_content to preserve
  */
 export function getKeepMessagesWithToolBlocks(
 	messages: ApiMessage[],
 	keepCount: number,
-): { keepMessages: ApiMessage[]; toolUseBlocksToPreserve: Anthropic.Messages.ToolUseBlock[] } {
+): {
+	keepMessages: ApiMessage[]
+	toolUseBlocksToPreserve: Anthropic.Messages.ToolUseBlock[]
+	reasoningContentToPreserve?: string
+	actualStartIndex: number
+} {
 	if (messages.length <= keepCount) {
-		return { keepMessages: messages, toolUseBlocksToPreserve: [] }
+		return { keepMessages: messages, toolUseBlocksToPreserve: [], actualStartIndex: 0 }
 	}
 
-	const startIndex = messages.length - keepCount
+	let startIndex = messages.length - keepCount
+
+	// Ensure first kept message is a user message to maintain proper turn alternation.
+	// This is critical for DeepSeek and other APIs that require alternating user/assistant turns.
+	// Without this, inserting an assistant summary before an assistant message creates
+	// consecutive assistant messages which causes API errors.
+	// See: https://api-docs.deepseek.com/guides/thinking_mode#tool-calls
+	while (startIndex > 1 && messages[startIndex].role !== "user") {
+		startIndex--
+	}
+
 	const keepMessages = messages.slice(startIndex)
 
 	// Check if the first kept message is a user message with tool_result blocks
@@ -59,13 +111,20 @@ export function getKeepMessagesWithToolBlocks(
 			const precedingMessage = messages[precedingIndex]
 			const toolUseBlocks = getToolUseBlocks(precedingMessage)
 			if (toolUseBlocks.length > 0) {
-				// Return the tool_use blocks to be merged into the summary message
-				return { keepMessages, toolUseBlocksToPreserve: toolUseBlocks }
+				// Also extract reasoning_content for DeepSeek interleaved thinking
+				const reasoningContent = getReasoningContent(precedingMessage)
+				// Return the tool_use blocks and reasoning_content to be merged into the summary message
+				return {
+					keepMessages,
+					toolUseBlocksToPreserve: toolUseBlocks,
+					reasoningContentToPreserve: reasoningContent,
+					actualStartIndex: startIndex,
+				}
 			}
 		}
 	}
 
-	return { keepMessages, toolUseBlocksToPreserve: [] }
+	return { keepMessages, toolUseBlocksToPreserve: [], actualStartIndex: startIndex }
 }
 
 export const N_MESSAGES_TO_KEEP = 3
@@ -168,13 +227,19 @@ export async function summarizeConversation(
 	// Always preserve the first message (which may contain slash command content)
 	const firstMessage = messages[0]
 
-	// Get keepMessages and any tool_use blocks that need to be preserved for tool_result pairing
-	// Only preserve tool_use blocks when using native tools protocol (XML protocol doesn't need them)
-	const { keepMessages, toolUseBlocksToPreserve } = useNativeTools
-		? getKeepMessagesWithToolBlocks(messages, N_MESSAGES_TO_KEEP)
-		: { keepMessages: messages.slice(-N_MESSAGES_TO_KEEP), toolUseBlocksToPreserve: [] }
+	// Get keepMessages, tool_use blocks, and reasoning_content that need to be preserved.
+	// getKeepMessagesWithToolBlocks handles:
+	// 1. Turn alternation: Ensures first kept message is a user message (required by ALL providers)
+	// 2. Tool_use block preservation: Only needed when using native tools protocol
+	// 3. reasoning_content preservation: For DeepSeek interleaved thinking mode
+	//
+	// We ALWAYS call getKeepMessagesWithToolBlocks for proper turn alternation, regardless of useNativeTools.
+	// When useNativeTools is false, tool_use blocks won't exist in messages, so toolUseBlocksToPreserve
+	// will be empty, but we still get the critical turn alternation fix.
+	const { keepMessages, toolUseBlocksToPreserve, reasoningContentToPreserve, actualStartIndex } =
+		getKeepMessagesWithToolBlocks(messages, N_MESSAGES_TO_KEEP)
 
-	const keepStartIndex = Math.max(messages.length - N_MESSAGES_TO_KEEP, 0)
+	const keepStartIndex = actualStartIndex
 	const includeFirstKeptMessageInSummary = toolUseBlocksToPreserve.length > 0
 	const summarySliceEnd = includeFirstKeptMessageInSummary ? keepStartIndex + 1 : keepStartIndex
 	const messagesBeforeKeep = summarySliceEnd > 0 ? messages.slice(0, summarySliceEnd) : []
@@ -281,6 +346,13 @@ export async function summarizeConversation(
 		ts: firstKeptTs - 1, // Unique timestamp before first kept message to avoid collision
 		isSummary: true,
 		condenseId, // Unique ID for this summary, used to track which messages it replaces
+		// Preserve reasoning_content for DeepSeek interleaved thinking mode.
+		// This is critical: when condensing splits a tool call sequence, the summary
+		// message replaces the assistant message that had tool_use blocks. If that
+		// message also had reasoning_content, it must be preserved on the summary
+		// to avoid DeepSeek API 400 errors during multi-turn tool sequences.
+		// See: https://api-docs.deepseek.com/guides/thinking_mode#tool-calls
+		...(reasoningContentToPreserve && { reasoning_content: reasoningContentToPreserve }),
 	}
 
 	// NON-DESTRUCTIVE CONDENSE:
