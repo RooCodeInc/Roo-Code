@@ -5,7 +5,7 @@ import { fileURLToPath } from "url"
 import process from "node:process"
 import * as console from "node:console"
 
-import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code/build"
+import { copyPaths, copyWasms, copyEsbuildWasm, copyLocales, setupLocaleWatcher } from "@roo-code/build"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -121,9 +121,13 @@ async function main() {
 		await Promise.all([extensionCtx.watch(), workerCtx.watch()])
 		copyLocales(srcDir, distDir)
 		setupLocaleWatcher(srcDir, distDir)
+		// Copy esbuild-wasm for custom tool transpilation
+		copyEsbuildWasm(srcDir, distDir)
 	} else {
 		await Promise.all([extensionCtx.rebuild(), workerCtx.rebuild()])
 		await Promise.all([extensionCtx.dispose(), workerCtx.dispose()])
+		// Copy esbuild-wasm for custom tool transpilation (cross-platform)
+		copyEsbuildWasm(srcDir, distDir)
 	}
 }
 

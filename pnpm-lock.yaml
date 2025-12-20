@@ -739,9 +739,9 @@ importers:
       diff-match-patch:
         specifier: ^1.0.5
         version: 1.0.5
-      esbuild:
-        specifier: '>=0.25.0'
-        version: 0.25.9
+      esbuild-wasm:
+        specifier: ^0.25.0
+        version: 0.25.12
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
@@ -5831,6 +5831,11 @@ packages:
     resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
     peerDependencies:
       esbuild: '>=0.25.0'
+
+  esbuild-wasm@0.25.12:
+    resolution: {integrity: sha512-rZqkjL3Y6FwLpSHzLnaEy8Ps6veCNo1kZa9EOfJvmWtBq5dJH4iVjfmOO6Mlkv9B0tt9WFPFmb/VxlgJOnueNg==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
@@ -15711,6 +15716,8 @@ snapshots:
       esbuild: 0.25.9
     transitivePeerDependencies:
       - supports-color
+
+  esbuild-wasm@0.25.12: {}
 
   esbuild@0.25.9:
     optionalDependencies:
