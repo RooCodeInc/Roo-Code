@@ -3,9 +3,7 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import * as vscode from "vscode"
 import { ToolProtocol, isNativeProtocol, TOOL_PROTOCOL } from "@roo-code/types"
-import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 
 export const formatResponse = {
 	toolDenied: (protocol?: ToolProtocol) => {

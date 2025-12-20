@@ -4120,7 +4120,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async backoffAndAnnounce(retryAttempt: number, error: any, header?: string): Promise<void> {
 		try {
 			const state = await this.providerRef.deref()?.getState()
-			const baseDelay = state?.requestDelaySeconds || 3
+			const baseDelay = state?.requestDelaySeconds || 4
 
 			let exponentialDelay = Math.min(
 				Math.ceil(baseDelay * Math.pow(2, retryAttempt)),
