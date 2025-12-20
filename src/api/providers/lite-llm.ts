@@ -38,6 +38,21 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		return /\bgpt-?5(?!\d)/i.test(modelId)
 	}
 
+	/**
+	 * Check if the model is routed through AWS Bedrock
+	 * Bedrock doesn't support the parallel_tool_calls parameter
+	 */
+	private isBedrockModel(modelId: string): boolean {
+		const lowerModel = modelId.toLowerCase()
+		return (
+			lowerModel.includes("bedrock") ||
+			lowerModel.startsWith("anthropic.") ||
+			lowerModel.includes("amazon.") ||
+			// Match AWS Bedrock model ID patterns
+			/^(anthropic|amazon|ai21|cohere|meta|mistral)\./.test(lowerModel)
+		)
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -133,7 +148,9 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			},
 			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+			// Bedrock doesn't support parallel_tool_calls parameter, so exclude it for Bedrock models
+			...(useNativeTools &&
+				!this.isBedrockModel(modelId) && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter

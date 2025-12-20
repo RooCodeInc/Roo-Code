@@ -40,6 +40,17 @@ vi.mock("../fetchers/modelCache", () => ({
 			"claude-3-opus": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"llama-3": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt-4-turbo": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0": {
+				...litellmDefaultModelInfo,
+				maxTokens: 8192,
+				supportsNativeTools: true,
+			},
+			"anthropic.claude-sonnet-4-20250514-v1:0": {
+				...litellmDefaultModelInfo,
+				maxTokens: 8192,
+				supportsNativeTools: true,
+			},
+			"amazon.titan-text-express-v1": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
 		})
 	}),
 	getModelsFromCache: vi.fn().mockReturnValue(undefined),
@@ -386,6 +397,185 @@ describe("LiteLLMHandler", () => {
 			const createCall = mockCreate.mock.calls[0][0]
 			expect(createCall.max_tokens).toBeUndefined()
 			expect(createCall.max_completion_tokens).toBeUndefined()
+		})
+	})
+
+	describe("Bedrock model handling", () => {
+		it("should exclude parallel_tool_calls for Bedrock models when using native tools", async () => {
+			const bedrockModels = [
+				"bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+				"anthropic.claude-sonnet-4-20250514-v1:0",
+				"amazon.titan-text-express-v1",
+			]
+
+			for (const modelId of bedrockModels) {
+				vi.clearAllMocks()
+
+				const options: ApiHandlerOptions = {
+					...mockOptions,
+					litellmModelId: modelId,
+				}
+				handler = new LiteLLMHandler(options)
+
+				const systemPrompt = "You are a helpful assistant"
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+				// Mock the stream response
+				const mockStream = {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							choices: [{ delta: { content: "Response" } }],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 5,
+							},
+						}
+					},
+				}
+
+				mockCreate.mockReturnValue({
+					withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+				})
+
+				const metadata = {
+					taskId: "test-task",
+					tools: [
+						{
+							type: "function" as const,
+							function: {
+								name: "test_tool",
+								description: "A test tool",
+								parameters: { type: "object", properties: {} },
+							},
+						},
+					],
+					toolProtocol: "native" as const,
+					parallelToolCalls: true,
+				}
+
+				const generator = handler.createMessage(systemPrompt, messages, metadata)
+				for await (const chunk of generator) {
+					// Consume the generator
+				}
+
+				// Verify that parallel_tool_calls is NOT included for Bedrock models
+				const createCall = mockCreate.mock.calls[0][0]
+				expect(createCall.parallel_tool_calls).toBeUndefined()
+				expect(createCall.tools).toBeDefined() // Tools should still be present
+			}
+		})
+
+		it("should include parallel_tool_calls for non-Bedrock models when using native tools", async () => {
+			const nonBedrockModels = ["gpt-4", "claude-3-opus", "gpt-4-turbo"]
+
+			for (const modelId of nonBedrockModels) {
+				vi.clearAllMocks()
+
+				const options: ApiHandlerOptions = {
+					...mockOptions,
+					litellmModelId: modelId,
+				}
+				handler = new LiteLLMHandler(options)
+
+				const systemPrompt = "You are a helpful assistant"
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+				// Mock the stream response
+				const mockStream = {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							choices: [{ delta: { content: "Response" } }],
+							usage: {
+								prompt_tokens: 10,
+								completion_tokens: 5,
+							},
+						}
+					},
+				}
+
+				mockCreate.mockReturnValue({
+					withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+				})
+
+				const metadata = {
+					taskId: "test-task",
+					tools: [
+						{
+							type: "function" as const,
+							function: {
+								name: "test_tool",
+								description: "A test tool",
+								parameters: { type: "object", properties: {} },
+							},
+						},
+					],
+					toolProtocol: "native" as const,
+					parallelToolCalls: true,
+				}
+
+				const generator = handler.createMessage(systemPrompt, messages, metadata)
+				for await (const chunk of generator) {
+					// Consume the generator
+				}
+
+				// Verify that parallel_tool_calls IS included for non-Bedrock models
+				const createCall = mockCreate.mock.calls[0][0]
+				expect(createCall.parallel_tool_calls).toBe(true)
+				expect(createCall.tools).toBeDefined()
+			}
+		})
+
+		it("should default parallel_tool_calls to false for non-Bedrock models when not specified", async () => {
+			const options: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-4",
+			}
+			handler = new LiteLLMHandler(options)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+			// Mock the stream response
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const metadata = {
+				taskId: "test-task",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "test_tool",
+							description: "A test tool",
+							parameters: { type: "object", properties: {} },
+						},
+					},
+				],
+				toolProtocol: "native" as const,
+				// parallelToolCalls not specified
+			}
+
+			const generator = handler.createMessage(systemPrompt, messages, metadata)
+			for await (const chunk of generator) {
+				// Consume the generator
+			}
+
+			// Verify that parallel_tool_calls defaults to false
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.parallel_tool_calls).toBe(false)
 		})
 	})
 })
