@@ -114,6 +114,45 @@ export class CustomToolRegistry {
 	}
 
 	/**
+	 * Load all tools from multiple directories.
+	 * Directories are processed in order, so later directories can override tools from earlier ones.
+	 * Supports both .ts and .js files.
+	 *
+	 * @param toolDirs - Array of absolute paths to tools directories
+	 * @returns LoadResult with lists of loaded and failed tools from all directories
+	 */
+	async loadFromDirectories(toolDirs: string[]): Promise<LoadResult> {
+		const result: LoadResult = { loaded: [], failed: [] }
+
+		for (const toolDir of toolDirs) {
+			const dirResult = await this.loadFromDirectory(toolDir)
+			result.loaded.push(...dirResult.loaded)
+			result.failed.push(...dirResult.failed)
+		}
+
+		return result
+	}
+
+	/**
+	 * Load all tools from multiple directories if any has become stale.
+	 * Directories are processed in order, so later directories can override tools from earlier ones.
+	 *
+	 * @param toolDirs - Array of absolute paths to tools directories
+	 * @returns LoadResult with lists of loaded and failed tools
+	 */
+	async loadFromDirectoriesIfStale(toolDirs: string[]): Promise<LoadResult> {
+		const result: LoadResult = { loaded: [], failed: [] }
+
+		for (const toolDir of toolDirs) {
+			const dirResult = await this.loadFromDirectoryIfStale(toolDir)
+			result.loaded.push(...dirResult.loaded)
+			result.failed.push(...dirResult.failed)
+		}
+
+		return result
+	}
+
+	/**
 	 * Register a tool directly (without loading from file).
 	 */
 	register(definition: CustomToolDefinition): void {

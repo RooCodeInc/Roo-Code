@@ -6,6 +6,7 @@ import type { ProviderSettings, ModeConfig, ModelInfo } from "@roo-code/types"
 import { customToolRegistry, formatNative } from "@roo-code/core"
 
 import type { ClineProvider } from "../webview/ClineProvider"
+import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
 import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
@@ -83,7 +84,8 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	let nativeCustomTools: OpenAI.Chat.ChatCompletionFunctionTool[] = []
 
 	if (experiments?.customTools) {
-		await customToolRegistry.loadFromDirectoryIfStale(path.join(cwd, ".roo", "tools"))
+		const toolDirs = getRooDirectoriesForCwd(cwd).map((dir) => path.join(dir, "tools"))
+		await customToolRegistry.loadFromDirectoriesIfStale(toolDirs)
 		const customTools = customToolRegistry.getAllSerialized()
 
 		if (customTools.length > 0) {
