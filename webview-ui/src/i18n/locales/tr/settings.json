@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Sağlayıcılar",
+		"modes": "Modlar",
+		"mcp": "MCP Sunucuları",
 		"autoApprove": "Oto-Onay",
 		"browser": "Bilgisayar Erişimi",
 		"checkpoints": "Kontrol Noktaları",
@@ -78,9 +80,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Anahtarı",
 		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI Gateway API anahtarınızı girin",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS Bölgesi",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS Profili",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "~/.aws/credentials dosyasından AWS profil adı (gerekli).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
 		"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
+		"openRouterProviderRoutingLabel": "OpenRouter Sağlayıcı Yönlendirmesi",
+		"openRouterProviderRoutingDescription": "OpenRouter, gömme modeliniz için mevcut en iyi sağlayıcılara istekleri yönlendirir. Varsayılan olarak, istekler çalışma süresini en üst düzeye çıkarmak için en iyi sağlayıcılar arasında dengelenir. Ancak, bu model için kullanılacak belirli bir sağlayıcı seçebilirsiniz.",
 		"openaiCompatibleProvider": "OpenAI Uyumlu",
 		"openAiKeyLabel": "OpenAI API Anahtarı",
 		"openAiKeyPlaceholder": "OpenAI API anahtarınızı girin",
@@ -145,11 +155,14 @@
 			"geminiApiKeyRequired": "Gemini API anahtarı gereklidir",
 			"mistralApiKeyRequired": "Mistral API anahtarı gereklidir",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API anahtarı gereklidir",
+			"bedrockRegionRequired": "AWS bölgesi gereklidir",
+			"bedrockProfileRequired": "AWS profili gereklidir",
 			"ollamaBaseUrlRequired": "Ollama temel URL'si gereklidir",
 			"baseUrlRequired": "Temel URL'si gereklidir",
 			"modelDimensionMinValue": "Model boyutu 0'dan büyük olmalıdır",
 			"openRouterApiKeyRequired": "OpenRouter API anahtarı gereklidir"
 		},
+		"optional": "isteğe bağlı",
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
 		"searchMinScoreDescription": "Arama sonuçları için gereken minimum benzerlik puanı (0.0-1.0). Düşük değerler daha fazla sonuç döndürür ancak daha az alakalı olabilir. Yüksek değerler daha az ancak daha alakalı sonuçlar döndürür.",
@@ -189,11 +202,6 @@
 			"label": "Tarayıcı",
 			"description": "Onay gerektirmeden otomatik olarak tarayıcı eylemleri gerçekleştir. Not: Yalnızca model bilgisayar kullanımını desteklediğinde geçerlidir"
 		},
-		"retry": {
-			"label": "Yeniden Dene",
-			"description": "Sunucu bir hata yanıtı döndürdüğünde başarısız API isteklerini otomatik olarak yeniden dene",
-			"delayLabel": "İsteği yeniden denemeden önce gecikme"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCP Sunucuları görünümünde bireysel MCP araçlarının otomatik onayını etkinleştir (hem bu ayar hem de aracın \"Her zaman izin ver\" onay kutusu gerekir)"
@@ -222,10 +230,6 @@
 			"deniedCommandPlaceholder": "Reddetmek için komut öneki girin (örn. 'rm -rf')",
 			"addButton": "Ekle",
 			"autoDenied": "`{{prefix}}` önekli komutlar kullanıcı tarafından yasaklandı. Başka bir komut çalıştırarak bu kısıtlamayı aşma."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Yapılacaklar listesi onay gerektirmeden otomatik olarak güncellenir"
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
@@ -270,8 +274,6 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı Al",
 		"apiKeyStorageNotice": "API anahtarları VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
-		"glamaApiKey": "Glama API Anahtarı",
-		"getGlamaApiKey": "Glama API Anahtarı Al",
 		"useCustomBaseUrl": "Özel temel URL kullan",
 		"useReasoning": "Akıl yürütmeyi etkinleştir",
 		"useHostHeader": "Özel Host başlığı kullan",
@@ -299,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
@@ -367,6 +371,14 @@
 		"awsRegion": "AWS Bölgesi",
 		"awsCrossRegion": "Bölgeler arası çıkarım kullan",
 		"awsGlobalInference": "Genel çıkarımı kullan (en uygun AWS Bölgesini otomatik seç)",
+		"awsServiceTier": "Hizmet seviyesi",
+		"awsServiceTierStandard": "Standart",
+		"awsServiceTierStandardDesc": "Dengeli performans ve maliyet",
+		"awsServiceTierFlex": "Esnek (%50 indirim)",
+		"awsServiceTierFlexDesc": "Daha düşük maliyet, kritik olmayan görevler için daha yüksek gecikme",
+		"awsServiceTierPriority": "Öncelik (%75 ek ücret)",
+		"awsServiceTierPriorityDesc": "İş açısından kritik uygulamalar için en hızlı performans",
+		"awsServiceTierNote": "Hizmet seviyeleri fiyatlandırmayı ve performansı etkiler. Esnek %50 indirim sunarken daha yüksek gecikmeye sahiptir, Öncelik %25 daha iyi performans sunarken %75 ek ücrete sahiptir.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Özel VPC uç noktası kullan",
 			"vpcEndpointUrlPlaceholder": "VPC uç noktası URL'sini girin (isteğe bağlı)",
@@ -493,6 +505,7 @@
 			"none": "Yok",
 			"minimal": "Minimal (en hızlı)",
 			"high": "Yüksek",
+			"xhigh": "Çok yüksek",
 			"medium": "Orta",
 			"low": "Düşük"
 		},
@@ -850,7 +863,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Ara",
 		"noMatchFound": "Eşleşme bulunamadı",
-		"useCustomModel": "Özel kullan: {{modelId}}"
+		"useCustomModel": "Özel kullan: {{modelId}}",
+		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
@@ -942,6 +956,10 @@
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
+			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		}
 	}
 }

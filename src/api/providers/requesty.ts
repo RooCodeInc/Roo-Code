@@ -1,9 +1,16 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type ModelInfo, requestyDefaultModelId, requestyDefaultModelInfo } from "@roo-code/types"
+import {
+	type ModelInfo,
+	requestyDefaultModelId,
+	requestyDefaultModelInfo,
+	TOOL_PROTOCOL,
+	NATIVE_TOOL_DEFAULTS,
+} from "@roo-code/types"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -17,6 +24,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -77,7 +85,14 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		const info = this.models[id] ?? requestyDefaultModelInfo
+		const cachedInfo = this.models[id] ?? requestyDefaultModelInfo
+
+		// Merge native tool defaults for cached models that may lack these fields
+		// The order ensures that cached values (if present) override the defaults
+		let info: ModelInfo = { ...NATIVE_TOOL_DEFAULTS, ...cachedInfo }
+
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
 
 		const params = getModelParams({
 			format: "anthropic",
@@ -133,6 +148,11 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			? (reasoning_effort as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming["reasoning_effort"])
 			: undefined
 
+		// Check if native tool protocol is enabled
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
+		const toolProtocol = resolveToolProtocol(this.options, info, metadata?.toolProtocol)
+		const useNativeTools = toolProtocol === TOOL_PROTOCOL.NATIVE
+
 		const completionParams: RequestyChatCompletionParamsStreaming = {
 			messages: openAiMessages,
 			model,
@@ -143,6 +163,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			requesty: { trace_id: metadata?.taskId, extra: { mode: metadata?.mode } },
+			...(useNativeTools && metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(useNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		let stream
@@ -163,6 +185,19 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
 				yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
+			}
+
+			// Handle native tool calls
+			if (delta && "tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+				for (const toolCall of delta.tool_calls) {
+					yield {
+						type: "tool_call_partial",
+						index: toolCall.index,
+						id: toolCall.id,
+						name: toolCall.function?.name,
+						arguments: toolCall.function?.arguments,
+					}
+				}
 			}
 
 			if (chunk.usage) {

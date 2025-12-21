@@ -6,7 +6,8 @@ import NodeCache from "node-cache"
 import { z } from "zod"
 
 import type { ProviderName } from "@roo-code/types"
-import { modelInfoSchema } from "@roo-code/types"
+import { modelInfoSchema, TelemetryEventName } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { safeWriteJson } from "../../../utils/safeWriteJson"
 
@@ -18,7 +19,6 @@ import { fileExistsAtPath } from "../../../utils/fs"
 import { getOpenRouterModels } from "./openrouter"
 import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
 import { getRequestyModels } from "./requesty"
-import { getGlamaModels } from "./glama"
 import { getUnboundModels } from "./unbound"
 import { getLiteLLMModels } from "./litellm"
 import { GetModelsOptions } from "../../../shared/api"
@@ -34,6 +34,10 @@ const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
 // Zod schema for validating ModelRecord structure from disk cache
 const modelRecordSchema = z.record(z.string(), modelInfoSchema)
+
+// Track in-flight refresh requests to prevent concurrent API calls for the same provider
+// This prevents race conditions where multiple calls might overwrite each other's results
+const inFlightRefresh = new Map<RouterName, Promise<ModelRecord>>()
 
 async function writeModels(router: RouterName, data: ModelRecord) {
 	const filename = `${router}_models.json`
@@ -68,9 +72,6 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 		case "requesty":
 			// Requesty models endpoint requires an API key for per-user custom policies.
 			models = await getRequestyModels(options.baseUrl, options.apiKey)
-			break
-		case "glama":
-			models = await getGlamaModels()
 			break
 		case "unbound":
 			// Unbound models endpoint requires an API key to fetch application specific models.
@@ -139,20 +140,25 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 
 	try {
 		models = await fetchModelsFromProvider(options)
+		const modelCount = Object.keys(models).length
 
-		// Cache the fetched models (even if empty, to signify a successful fetch with no models).
-		memoryCache.set(provider, models)
+		// Only cache non-empty results to prevent persisting failed API responses
+		// Empty results could indicate API failure rather than "no models exist"
+		if (modelCount > 0) {
+			memoryCache.set(provider, models)
 
-		await writeModels(provider, models).catch((err) =>
-			console.error(`[MODEL_CACHE] Error writing ${provider} models to file cache:`, err),
-		)
-
-		try {
-			models = await readModels(provider)
-		} catch (error) {
-			console.error(`[getModels] error reading ${provider} models from file cache`, error)
+			await writeModels(provider, models).catch((err) =>
+				console.error(`[MODEL_CACHE] Error writing ${provider} models to file cache:`, err),
+			)
+		} else {
+			TelemetryService.instance.captureEvent(TelemetryEventName.MODEL_CACHE_EMPTY_RESPONSE, {
+				provider,
+				context: "getModels",
+				hasExistingCache: false,
+			})
 		}
-		return models || {}
+
+		return models
 	} catch (error) {
 		// Log the error and re-throw it so the caller can handle it (e.g., show a UI message).
 		console.error(`[getModels] Failed to fetch models in modelCache for ${provider}:`, error)
@@ -164,31 +170,71 @@ export const getModels = async (options: GetModelsOptions): Promise<ModelRecord>
 /**
  * Force-refresh models from API, bypassing cache.
  * Uses atomic writes so cache remains available during refresh.
+ * This function also prevents concurrent API calls for the same provider using
+ * in-flight request tracking to avoid race conditions.
  *
  * @param options - Provider options for fetching models
- * @returns Fresh models from API
+ * @returns Fresh models from API, or existing cache if refresh yields worse data
  */
 export const refreshModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
 	const { provider } = options
 
-	try {
-		// Force fresh API fetch - skip getModelsFromCache() check
-		const models = await fetchModelsFromProvider(options)
-
-		// Update memory cache first
-		memoryCache.set(provider, models)
-
-		// Atomically write to disk (safeWriteJson handles atomic writes)
-		await writeModels(provider, models).catch((err) =>
-			console.error(`[refreshModels] Error writing ${provider} models to disk:`, err),
-		)
-
-		return models
-	} catch (error) {
-		console.debug(`[refreshModels] Failed to refresh ${provider}:`, error)
-		// On error, return existing cache if available (graceful degradation)
-		return getModelsFromCache(provider) || {}
+	// Check if there's already an in-flight refresh for this provider
+	// This prevents race conditions where multiple concurrent refreshes might
+	// overwrite each other's results
+	const existingRequest = inFlightRefresh.get(provider)
+	if (existingRequest) {
+		return existingRequest
 	}
+
+	// Create the refresh promise and track it
+	const refreshPromise = (async (): Promise<ModelRecord> => {
+		try {
+			// Force fresh API fetch - skip getModelsFromCache() check
+			const models = await fetchModelsFromProvider(options)
+			const modelCount = Object.keys(models).length
+
+			// Get existing cached data for comparison
+			const existingCache = getModelsFromCache(provider)
+			const existingCount = existingCache ? Object.keys(existingCache).length : 0
+
+			if (modelCount === 0) {
+				TelemetryService.instance.captureEvent(TelemetryEventName.MODEL_CACHE_EMPTY_RESPONSE, {
+					provider,
+					context: "refreshModels",
+					hasExistingCache: existingCount > 0,
+					existingCacheSize: existingCount,
+				})
+				if (existingCount > 0) {
+					return existingCache!
+				} else {
+					return {}
+				}
+			}
+
+			// Update memory cache first
+			memoryCache.set(provider, models)
+
+			// Atomically write to disk (safeWriteJson handles atomic writes)
+			await writeModels(provider, models).catch((err) =>
+				console.error(`[refreshModels] Error writing ${provider} models to disk:`, err),
+			)
+
+			return models
+		} catch (error) {
+			// Log the error for debugging, then return existing cache if available (graceful degradation)
+			console.error(`[refreshModels] Failed to refresh ${provider} models:`, error)
+			return getModelsFromCache(provider) || {}
+		} finally {
+			// Always clean up the in-flight tracking
+			inFlightRefresh.delete(provider)
+		}
+	})()
+
+	// Track the in-flight request
+	inFlightRefresh.set(provider, refreshPromise)
+
+	return refreshPromise
 }
 
 /**
@@ -202,8 +248,8 @@ export async function initializeModelCacheRefresh(): Promise<void> {
 		// Providers that work without API keys
 		const publicProviders: Array<{ provider: RouterName; options: GetModelsOptions }> = [
 			{ provider: "openrouter", options: { provider: "openrouter" } },
-			{ provider: "glama", options: { provider: "glama" } },
 			{ provider: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
+			{ provider: "chutes", options: { provider: "chutes" } },
 		]
 
 		// Refresh each provider in background (fire and forget)
@@ -221,20 +267,20 @@ export async function initializeModelCacheRefresh(): Promise<void> {
 /**
  * Flush models memory cache for a specific router.
  *
- * @param router - The router to flush models for.
+ * @param options - The options for fetching models, including provider, apiKey, and baseUrl
  * @param refresh - If true, immediately fetch fresh data from API
  */
-export const flushModels = async (router: RouterName, refresh: boolean = false): Promise<void> => {
+export const flushModels = async (options: GetModelsOptions, refresh: boolean = false): Promise<void> => {
+	const { provider } = options
 	if (refresh) {
 		// Don't delete memory cache - let refreshModels atomically replace it
 		// This prevents a race condition where getModels() might be called
 		// before refresh completes, avoiding a gap in cache availability
-		refreshModels({ provider: router } as GetModelsOptions).catch((error) => {
-			console.error(`[flushModels] Refresh failed for ${router}:`, error)
-		})
+		// Await the refresh to ensure the cache is updated before returning
+		await refreshModels(options)
 	} else {
 		// Only delete memory cache when not refreshing
-		memoryCache.del(router)
+		memoryCache.del(provider)
 	}
 }
 

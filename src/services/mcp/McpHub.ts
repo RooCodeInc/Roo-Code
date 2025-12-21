@@ -33,6 +33,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { sanitizeMcpName } from "../../utils/mcp-name"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -154,6 +155,7 @@ export class McpHub {
 	private configChangeDebounceTimers: Map<string, NodeJS.Timeout> = new Map()
 	private isProgrammaticUpdate: boolean = false
 	private flagResetTimer?: NodeJS.Timeout
+	private sanitizedNameRegistry: Map<string, string> = new Map()
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
@@ -433,8 +435,23 @@ export class McpHub {
 	}
 
 	getServers(): McpServer[] {
-		// Only return enabled servers
-		return this.connections.filter((conn) => !conn.server.disabled).map((conn) => conn.server)
+		// Only return enabled servers, deduplicating by name with project servers taking priority
+		const enabledConnections = this.connections.filter((conn) => !conn.server.disabled)
+
+		// Deduplicate by server name: project servers take priority over global servers
+		const serversByName = new Map<string, McpServer>()
+		for (const conn of enabledConnections) {
+			const existing = serversByName.get(conn.server.name)
+			if (!existing) {
+				serversByName.set(conn.server.name, conn.server)
+			} else if (conn.server.source === "project" && existing.source !== "project") {
+				// Project server overrides global server with the same name
+				serversByName.set(conn.server.name, conn.server)
+			}
+			// If existing is project and current is global, keep existing (project wins)
+		}
+
+		return Array.from(serversByName.values())
 	}
 
 	getAllServers(): McpServer[] {
@@ -626,6 +643,10 @@ export class McpHub {
 	): Promise<void> {
 		// Remove existing connection if it exists with the same source
 		await this.deleteConnection(name, source)
+
+		// Register the sanitized name for O(1) lookup
+		const sanitizedName = sanitizeMcpName(name)
+		this.sanitizedNameRegistry.set(sanitizedName, name)
 
 		// Check if MCP is globally enabled
 		const mcpEnabled = await this.isMcpEnabled()
@@ -910,6 +931,22 @@ export class McpHub {
 		)
 	}
 
+	/**
+	 * Find a connection by sanitized server name.
+	 * This is used when parsing MCP tool responses where the server name has been
+	 * sanitized (e.g., hyphens replaced with underscores) for API compliance.
+	 * @param sanitizedServerName The sanitized server name from the API tool call
+	 * @returns The original server name if found, or null if no match
+	 */
+	public findServerNameBySanitizedName(sanitizedServerName: string): string | null {
+		const exactMatch = this.connections.find((conn) => conn.server.name === sanitizedServerName)
+		if (exactMatch) {
+			return exactMatch.server.name
+		}
+
+		return this.sanitizedNameRegistry.get(sanitizedServerName) ?? null
+	}
+
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
 		try {
 			// Use the helper method to find the connection
@@ -1027,6 +1064,13 @@ export class McpHub {
 			if (source && conn.server.source !== source) return true
 			return false
 		})
+
+		// Remove from sanitized name registry if no more connections with this name exist
+		const remainingConnections = this.connections.filter((conn) => conn.server.name === name)
+		if (remainingConnections.length === 0) {
+			const sanitizedName = sanitizeMcpName(name)
+			this.sanitizedNameRegistry.delete(sanitizedName)
+		}
 	}
 
 	async updateServerConnections(

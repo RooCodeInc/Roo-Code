@@ -5,6 +5,11 @@ import type { Mock } from "vitest"
 // Mock dependencies - must come before imports
 vi.mock("../../../api/providers/fetchers/modelCache")
 
+// Mock the diagnosticsHandler module
+vi.mock("../diagnosticsHandler", () => ({
+	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
+}))
+
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
@@ -41,15 +46,24 @@ const mockClineProvider = {
 
 import { t } from "../../../i18n"
 
-vi.mock("vscode", () => ({
-	window: {
-		showInformationMessage: vi.fn(),
-		showErrorMessage: vi.fn(),
-	},
-	workspace: {
-		workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
-	},
-}))
+vi.mock("vscode", () => {
+	const showInformationMessage = vi.fn()
+	const showErrorMessage = vi.fn()
+	const openTextDocument = vi.fn().mockResolvedValue({})
+	const showTextDocument = vi.fn().mockResolvedValue(undefined)
+
+	return {
+		window: {
+			showInformationMessage,
+			showErrorMessage,
+			showTextDocument,
+		},
+		workspace: {
+			workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
+			openTextDocument,
+		},
+	}
+})
 
 vi.mock("../../../i18n", () => ({
 	t: vi.fn((key: string, args?: Record<string, any>) => {
@@ -72,14 +86,20 @@ vi.mock("../../../i18n", () => ({
 vi.mock("fs/promises", () => {
 	const mockRm = vi.fn().mockResolvedValue(undefined)
 	const mockMkdir = vi.fn().mockResolvedValue(undefined)
+	const mockReadFile = vi.fn().mockResolvedValue("[]")
+	const mockWriteFile = vi.fn().mockResolvedValue(undefined)
 
 	return {
 		default: {
 			rm: mockRm,
 			mkdir: mockMkdir,
+			readFile: mockReadFile,
+			writeFile: mockWriteFile,
 		},
 		rm: mockRm,
 		mkdir: mockMkdir,
+		readFile: mockReadFile,
+		writeFile: mockWriteFile,
 	}
 })
 
@@ -90,6 +110,7 @@ import * as path from "path"
 import * as fsUtils from "../../../utils/fs"
 import { getWorkspacePath } from "../../../utils/path"
 import { ensureSettingsDirectoryExists } from "../../../utils/globalContext"
+import { generateErrorDiagnostics } from "../diagnosticsHandler"
 import type { ModeConfig } from "@roo-code/types"
 
 vi.mock("../../../utils/fs")
@@ -187,7 +208,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				glamaApiKey: "glama-key",
 				unboundApiKey: "unbound-key",
 				litellmApiKey: "litellm-key",
 				litellmBaseUrl: "http://localhost:4000",
@@ -220,7 +240,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		// Verify getModels was called for each provider
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
-		expect(mockGetModels).toHaveBeenCalledWith({ provider: "glama" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
 		expect(mockGetModels).toHaveBeenCalledWith({ provider: "deepinfra" })
@@ -245,7 +264,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				glama: mockModels,
 				unbound: mockModels,
 				litellm: mockModels,
 				roo: mockModels,
@@ -265,7 +283,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				glamaApiKey: "glama-key",
 				unboundApiKey: "unbound-key",
 				// Missing litellm config
 			},
@@ -303,7 +320,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				glamaApiKey: "glama-key",
 				unboundApiKey: "unbound-key",
 				// Missing litellm config
 			},
@@ -339,7 +355,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				glama: mockModels,
 				unbound: mockModels,
 				roo: mockModels,
 				chutes: mockModels,
@@ -368,7 +383,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockResolvedValueOnce(mockModels) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
-			.mockResolvedValueOnce(mockModels) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway
 			.mockResolvedValueOnce(mockModels) // deepinfra
@@ -416,7 +430,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: {},
-				glama: mockModels,
 				unbound: {},
 				roo: mockModels,
 				chutes: {},
@@ -436,7 +449,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 		mockGetModels
 			.mockRejectedValueOnce(new Error("Structured error message")) // openrouter
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty
-			.mockRejectedValueOnce(new Error("Glama API error")) // glama
 			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound
 			.mockRejectedValueOnce(new Error("Vercel AI Gateway error")) // vercel-ai-gateway
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
@@ -461,13 +473,6 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Requesty API error",
 			values: { provider: "requesty" },
-		})
-
-		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Glama API error",
-			values: { provider: "glama" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
@@ -753,5 +758,59 @@ describe("webviewMessageHandler - mcpEnabled", () => {
 
 		expect((mockClineProvider as any).getMcpHub).toHaveBeenCalledTimes(1)
 		expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe("webviewMessageHandler - downloadErrorDiagnostics", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+
+		// Ensure contextProxy has a globalStorageUri for the handler
+		;(mockClineProvider as any).contextProxy.globalStorageUri = { fsPath: "/mock/global/storage" }
+
+		// Provide a current task with a stable ID
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue({
+			taskId: "test-task-id",
+		} as any)
+	})
+
+	it("calls generateErrorDiagnostics with correct parameters", async () => {
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+		} as any)
+
+		// Verify generateErrorDiagnostics was called with the correct parameters
+		expect(generateErrorDiagnostics).toHaveBeenCalledTimes(1)
+		expect(generateErrorDiagnostics).toHaveBeenCalledWith({
+			taskId: "test-task-id",
+			globalStoragePath: "/mock/global/storage",
+			values: {
+				timestamp: "2025-01-01T00:00:00.000Z",
+				version: "1.2.3",
+				provider: "test-provider",
+				model: "test-model",
+				details: "Sample error details",
+			},
+			log: expect.any(Function),
+		})
+	})
+
+	it("shows error when no active task", async () => {
+		vi.mocked(mockClineProvider.getCurrentTask).mockReturnValue(null as any)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "downloadErrorDiagnostics",
+			values: {},
+		} as any)
+
+		expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("No active task to generate diagnostics for")
+		expect(generateErrorDiagnostics).not.toHaveBeenCalled()
 	})
 })

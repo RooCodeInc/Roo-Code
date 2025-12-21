@@ -190,7 +190,6 @@ describe("mergeExtensionState", () => {
 			shouldShowAnnouncement: false,
 			enableCheckpoints: true,
 			writeDelayMs: 1000,
-			requestDelaySeconds: 5,
 			mode: "default",
 			experiments: {} as Record<ExperimentId, boolean>,
 			customModes: [],
@@ -207,6 +206,7 @@ describe("mergeExtensionState", () => {
 			autoCondenseContextPercent: 100,
 			cloudIsAuthenticated: false,
 			sharingEnabled: false,
+			publicSharingEnabled: false,
 			profileThresholds: {},
 			hasOpenedModeSelector: false, // Add the new required property
 			maxImageFileSize: 5,

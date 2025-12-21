@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "プロバイダー",
+		"modes": "モード",
+		"mcp": "MCPサーバー",
 		"autoApprove": "自動承認",
 		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",
@@ -75,9 +77,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "APIキー",
 		"vercelAiGatewayApiKeyPlaceholder": "Vercel AI GatewayのAPIキーを入力してください",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS リージョン",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS プロファイル",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "~/.aws/credentials の AWS プロファイル名（必須）。",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter APIキー",
 		"openRouterApiKeyPlaceholder": "OpenRouter APIキーを入力してください",
+		"openRouterProviderRoutingLabel": "OpenRouterプロバイダールーティング",
+		"openRouterProviderRoutingDescription": "OpenRouterは、埋め込みモデルに最適な利用可能なプロバイダーにリクエストをルーティングします。デフォルトでは、稼働時間を最大化するために、リクエストはトッププロバイダー間で負荷分散されます。ただし、このモデルに使用する特定のプロバイダーを選択することもできます。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "APIキー:",
 		"mistralApiKeyPlaceholder": "Mistral APIキーを入力してください",
@@ -145,11 +155,14 @@
 			"geminiApiKeyRequired": "Gemini APIキーが必要です",
 			"mistralApiKeyRequired": "Mistral APIキーが必要です",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway APIキーが必要です",
+			"bedrockRegionRequired": "AWS リージョンは必須です",
+			"bedrockProfileRequired": "AWS プロファイルは必須です",
 			"ollamaBaseUrlRequired": "OllamaのベースURLが必要です",
 			"baseUrlRequired": "ベースURLが必要です",
 			"modelDimensionMinValue": "モデルの次元は0より大きくなければなりません",
 			"openRouterApiKeyRequired": "OpenRouter APIキーが必要です"
 		},
+		"optional": "オプション",
 		"advancedConfigLabel": "詳細設定",
 		"searchMinScoreLabel": "検索スコアのしきい値",
 		"searchMinScoreDescription": "検索結果に必要な最小類似度スコア（0.0-1.0）。値を低くするとより多くの結果が返されますが、関連性が低くなる可能性があります。値を高くすると返される結果は少なくなりますが、より関連性が高くなります。",
@@ -189,11 +202,6 @@
 			"label": "ブラウザ",
 			"description": "承認なしで自動的にブラウザアクションを実行 — 注意：コンピューター使用をサポートするモデルを使用している場合のみ適用されます"
 		},
-		"retry": {
-			"label": "再試行",
-			"description": "サーバーがエラーレスポンスを返した場合、自動的に失敗したAPIリクエストを再試行",
-			"delayLabel": "リクエスト再試行前の遅延"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "MCPサーバービューで個々のMCPツールの自動承認を有効にします（この設定とツールの「常に許可」チェックボックスの両方が必要）"
@@ -222,10 +230,6 @@
 			"deniedCommandPlaceholder": "拒否するコマンドプレフィックスを入力（例：'rm -rf'）",
 			"addButton": "追加",
 			"autoDenied": "プレフィックス `{{prefix}}` を持つコマンドはユーザーによって禁止されています。別のコマンドを実行してこの制限を回避しないでください。"
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "承認なしで自動的にToDoリストを更新"
 		},
 		"apiRequestLimit": {
 			"title": "最大リクエスト数",
@@ -270,8 +274,6 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
 		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
-		"glamaApiKey": "Glama APIキー",
-		"getGlamaApiKey": "Glama APIキーを取得",
 		"useCustomBaseUrl": "カスタムベースURLを使用",
 		"useReasoning": "推論を有効化",
 		"useHostHeader": "カスタムHostヘッダーを使用",
@@ -299,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"awsBedrock1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
 		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
+		"vertex1MContextBetaLabel": "1Mコンテキストウィンドウを有効にする（ベータ版）",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4のコンテキストウィンドウを100万トークンに拡張します",
 		"basetenApiKey": "Baseten APIキー",
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"cerebrasApiKey": "Cerebras APIキー",
@@ -367,6 +371,14 @@
 		"awsRegion": "AWSリージョン",
 		"awsCrossRegion": "クロスリージョン推論を使用",
 		"awsGlobalInference": "グローバル推論を使用する（最適なAWSリージョンを自動選択）",
+		"awsServiceTier": "サービスティア",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "バランスの取れたパフォーマンスとコスト",
+		"awsServiceTierFlex": "Flex（50%割引）",
+		"awsServiceTierFlexDesc": "低コスト、非クリティカルなタスクのレイテンシが高い",
+		"awsServiceTierPriority": "Priority（75%プレミアム）",
+		"awsServiceTierPriorityDesc": "ミッションクリティカルなアプリケーション向けの最速パフォーマンス",
+		"awsServiceTierNote": "サービスティアは価格とパフォーマンスに影響します。Flexは50%割引でレイテンシが高く、Priorityは25%優れたパフォーマンスで75%のプレミアムです。",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "カスタムVPCエンドポイントを使用",
 			"vpcEndpointUrlPlaceholder": "VPCエンドポイントURLを入力（任意）",
@@ -493,6 +505,7 @@
 			"none": "なし",
 			"minimal": "最小 (最速)",
 			"high": "高",
+			"xhigh": "非常に高い",
 			"medium": "中",
 			"low": "低"
 		},
@@ -850,7 +863,8 @@
 		"label": "モデル",
 		"searchPlaceholder": "検索",
 		"noMatchFound": "一致するものが見つかりません",
-		"useCustomModel": "カスタムを使用: {{modelId}}"
+		"useCustomModel": "カスタムを使用: {{modelId}}",
+		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
@@ -942,6 +956,10 @@
 		"collapseThinking": {
 			"label": "デフォルトで思考メッセージを折りたたむ",
 			"description": "有効にすると、操作するまで思考ブロックがデフォルトで折りたたまれます"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
+			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
 		}
 	}
 }

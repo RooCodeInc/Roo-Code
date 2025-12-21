@@ -110,6 +110,7 @@ export interface ExtensionMessage {
 		| "mcpExecutionStatus"
 		| "vsCodeSetting"
 		| "authenticatedUser"
+		| "condenseTaskContextStarted"
 		| "condenseTaskContextResponse"
 		| "singleRouterModelFetchResponse"
 		| "rooCreditBalance"
@@ -131,6 +132,7 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
+		| "claudeCodeRateLimits"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -140,10 +142,8 @@ export interface ExtensionMessage {
 	}
 	action?:
 		| "chatButtonClicked"
-		| "mcpButtonClicked"
 		| "settingsButtonClicked"
 		| "historyButtonClicked"
-		| "promptsButtonClicked"
 		| "marketplaceButtonClicked"
 		| "cloudButtonClicked"
 		| "didBecomeVisible"
@@ -234,13 +234,11 @@ export type ExtensionState = Pick<
 	| "alwaysAllowWriteOutsideWorkspace"
 	| "alwaysAllowWriteProtected"
 	| "alwaysAllowBrowser"
-	| "alwaysApproveResubmit"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowFollowupQuestions"
 	| "alwaysAllowExecute"
-	| "alwaysAllowUpdateTodoList"
 	| "followupAutoApproveTimeoutMs"
 	| "allowedCommands"
 	| "deniedCommands"
@@ -287,9 +285,11 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "enterBehavior"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"
+	| "requestDelaySeconds"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -302,7 +302,6 @@ export type ExtensionState = Pick<
 	taskHistory: HistoryItem[]
 
 	writeDelayMs: number
-	requestDelaySeconds: number
 
 	enableCheckpoints: boolean
 	checkpointTimeout: number // Timeout for checkpoint initialization in seconds (default: 15)
@@ -336,6 +335,7 @@ export type ExtensionState = Pick<
 	cloudApiUrl?: string
 	cloudOrganizations?: CloudOrganizationMembership[]
 	sharingEnabled: boolean
+	publicSharingEnabled: boolean
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion?: number
 
@@ -358,6 +358,8 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	claudeCodeIsAuthenticated?: boolean
+	debug?: boolean
 }
 
 export interface ClineSayTool {
@@ -370,12 +372,10 @@ export interface ClineSayTool {
 		| "fetchInstructions"
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
-		| "listCodeDefinitionNames"
 		| "searchFiles"
 		| "switchMode"
 		| "newTask"
 		| "finishTask"
-		| "insertContent"
 		| "generateImage"
 		| "imageGenerated"
 		| "runSlashCommand"
@@ -433,6 +433,7 @@ export const browserActions = [
 	"scroll_up",
 	"resize",
 	"close",
+	"screenshot",
 ] as const
 
 export type BrowserAction = (typeof browserActions)[number]

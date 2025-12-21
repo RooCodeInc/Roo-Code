@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
 		"shareSuccessPublic": "公开链接已复制到剪贴板",
 		"openInCloud": "在 Roo Code Cloud 中打开任务",
-		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。"
+		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。",
+		"openApiHistory": "打开 API 历史",
+		"openUiHistory": "打开 UI 历史"
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",
@@ -103,6 +105,7 @@
 	"enhancePrompt": "增强提示词",
 	"addImages": "添加图片到消息",
 	"sendMessage": "发送消息",
+	"pressToSend": "按 {{keyCombination}} 发送",
 	"stopTts": "停止文本转语音",
 	"typeMessage": "输入消息...",
 	"typeTask": "在此处输入您的任务...",
@@ -134,7 +137,21 @@
 		"failed": "API请求失败",
 		"streaming": "API请求...",
 		"cancelled": "API请求已取消",
-		"streamingFailed": "API流式传输失败"
+		"streamingFailed": "API流式传输失败",
+		"errorTitle": "提供商错误 {{code}}",
+		"errorMessage": {
+			"docs": "文档",
+			"goToSettings": "设置",
+			"400": "提供商无法按此方式处理请求。请停止任务并尝试不同方法。",
+			"401": "无法向提供商进行身份验证。请检查您的 API 密钥配置。",
+			"402": "您的账户余额/积分似乎已用尽。请前往提供商处充值以继续。",
+			"403": "无权限。您的 API 密钥有效，但提供商拒绝完成此请求。",
+			"429": "请求过于频繁。提供商已对您的请求进行速率限制。请在下一次 API 调用前稍候。",
+			"500": "提供商服务器错误。提供商端出现问题，您的请求无问题。",
+			"unknown": "未知 API 错误。请联系 Roo Code 支持。",
+			"connection": "连接错误。确保您有可用的互联网连接。",
+			"claudeCodeNotAuthenticated": "你需要登录才能使用 Claude Code。前往设置并点击「登录到 Claude Code」进行身份验证。"
+		}
 	},
 	"checkpoint": {
 		"regular": "检查点",
@@ -184,8 +201,6 @@
 		"didViewTopLevel": "已查看目录文件列表",
 		"wantsToViewRecursive": "需要查看目录所有文件",
 		"didViewRecursive": "已查看目录所有文件",
-		"wantsToViewDefinitions": "Roo想查看此目录中使用的源代码定义名称",
-		"didViewDefinitions": "Roo已查看此目录中使用的源代码定义名称",
 		"wantsToSearch": "需要搜索内容: {{regex}}",
 		"didSearch": "已完成内容搜索: {{regex}}",
 		"wantsToSearchOutsideWorkspace": "需要搜索内容（工作区外）: {{regex}}",
@@ -193,9 +208,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "需要查看目录文件列表（工作区外）",
 		"didViewTopLevelOutsideWorkspace": "已查看目录文件列表（工作区外）",
 		"wantsToViewRecursiveOutsideWorkspace": "需要查看目录所有文件（工作区外）",
-		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo想查看此目录中使用的源代码定义名称（工作区外）",
-		"didViewDefinitionsOutsideWorkspace": "Roo已查看此目录中使用的源代码定义名称（工作区外）"
+		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）"
 	},
 	"commandOutput": "命令输出",
 	"commandExecution": {
@@ -246,6 +259,18 @@
 		"hasQuestion": "Roo有一个问题"
 	},
 	"taskCompleted": "任务完成",
+	"modelResponseIncomplete": "模型响应不完整",
+	"modelResponseErrors": {
+		"noToolsUsed": "模型在响应中未使用任何工具。这通常发生在模型仅提供文本/推理而未调用完成任务所需的工具时。",
+		"noToolsUsedDetails": "模型提供了文本/推理，但未调用任何必需的工具。这通常表明模型误解了任务，或在确定使用哪个工具时遇到困难。系统已自动提示模型使用正确的工具重试。"
+	},
+	"errorDetails": {
+		"link": "详情",
+		"title": "错误详情",
+		"copyToClipboard": "复制到剪贴板",
+		"copied": "已复制!",
+		"diagnostics": "获取详细错误信息"
+	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"
 	},
@@ -271,19 +296,28 @@
 		"thinking": "思考中",
 		"seconds": "{{count}}秒"
 	},
-	"contextCondense": {
-		"title": "上下文已压缩",
-		"condensing": "正在压缩上下文...",
-		"errorHeader": "上下文压缩失败",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "Token",
+		"condensation": {
+			"title": "上下文已压缩",
+			"inProgress": "正在压缩上下文...",
+			"errorHeader": "上下文压缩失败"
+		},
+		"truncation": {
+			"title": "上下文已截断",
+			"inProgress": "正在截断上下文...",
+			"messagesRemoved": "已移除 {{count}} 条消息",
+			"messagesRemoved_other": "已移除 {{count}} 条消息",
+			"description": "为保持在上下文窗口限制内，已从对话中移除较旧的消息。与压缩相比，这是一种快速但上下文保留较少的方法。"
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "复制到输入框（或按住Shift点击）",
-		"autoSelectCountdown": "{{count}}秒后自动选择",
-		"countdownDisplay": "{{count}}秒"
+		"timerPrefix": "自动批准已启用。{{seconds}}秒后选择中…"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} 已发布",
+		"title": "Roo Code {{version}} 已发布",
+		"support": "请在 <githubLink>GitHub</githubLink> 上为我们点星支持 Roo Code。",
 		"stealthModel": {
 			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：现已升级为 <bold>1M Token 上下文窗口</bold>！一个支持图像输入的多功能代理编程模型，通过 Roo Code Cloud 提供。",
 			"note": "(注意：提示词和补全内容会被模型创建者记录并用于改进模型)",
@@ -293,8 +327,8 @@
 		},
 		"release": {
 			"heading": "最新功能：",
-			"browserUse": "Browser Use 2.0 升级了聊天内浏览体验，支持持久会话、更清晰的反馈、专用浏览器面板以及更自然的操作描述",
-			"cloudPaid": "Roo Code Cloud 现已提供付费模型：购买积分即可同时用于云端智能体和推理服务"
+			"contextRewind": "改进的上下文压缩现在允许您在回到存档点时恢复完整的之前上下文",
+			"rooProvider": "Roo Code Cloud 提供商现在保留推理内容，并默认使用原生工具以获得更好的性能"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -302,8 +336,7 @@
 			"description": "代理在云端协同工作，可从网页或通过 Slack 触发。",
 			"tryButton": "试用云代理"
 		},
-		"careers": "此外，<careersLink>我们正在招聘！</careersLink>",
-		"socialLinks": "在 <xLink>X</xLink>、<discordLink>Discord</discordLink> 或 <redditLink>r/RooCode</redditLink> 上关注我们 🚀"
+		"careers": "此外，<careersLink>我们正在招聘！</careersLink>"
 	},
 	"browser": {
 		"session": "浏览器会话",
@@ -320,13 +353,25 @@
 		"sessionStarted": "浏览器会话已启动",
 		"actions": {
 			"title": "浏览器操作: ",
+			"launched": "浏览器已启动",
 			"launch": "访问 {{url}}",
+			"clicked": "点击位置: {{coordinate}}",
 			"click": "点击 ({{coordinate}})",
+			"typed": "输入: {{text}}",
 			"type": "输入 \"{{text}}\"",
+			"pressed": "已按 {{key}}",
 			"press": "按 {{key}}",
+			"scrolledDown": "已向下滚动",
 			"scrollDown": "向下滚动",
+			"scrolledUp": "已向上滚动",
 			"scrollUp": "向上滚动",
+			"hovered": "悬停位置: {{coordinate}}",
 			"hover": "悬停 ({{coordinate}})",
+			"resized": "大小已更改: {{size}}",
+			"resize": "调整大小为 {{size}}",
+			"screenshotSaved": "截图已保存",
+			"screenshot": "将截图保存到 {{path}}",
+			"closed": "浏览器已关闭",
 			"close": "关闭浏览器"
 		}
 	},

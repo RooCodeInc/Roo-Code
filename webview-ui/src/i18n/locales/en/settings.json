@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Providers",
+		"modes": "Modes",
+		"mcp": "MCP Servers",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",
@@ -62,6 +64,10 @@
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Require {{primaryMod}}+Enter to send messages",
+			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"
 		}
 	},
 	"prompts": {
@@ -89,9 +95,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API Key",
 		"vercelAiGatewayApiKeyPlaceholder": "Enter your Vercel AI Gateway API key",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS Region",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS Profile",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "AWS profile name from ~/.aws/credentials (required).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API Key",
 		"openRouterApiKeyPlaceholder": "Enter your OpenRouter API key",
+		"openRouterProviderRoutingLabel": "OpenRouter Provider Routing",
+		"openRouterProviderRoutingDescription": "OpenRouter routes requests to the best available providers for your embedding model. By default, requests are load balanced across the top providers to maximize uptime. However, you can choose a specific provider to use for this model.",
 		"openaiCompatibleProvider": "OpenAI Compatible",
 		"openAiKeyLabel": "OpenAI API Key",
 		"openAiKeyPlaceholder": "Enter your OpenAI API key",
@@ -158,11 +172,14 @@
 			"geminiApiKeyRequired": "Gemini API key is required",
 			"mistralApiKeyRequired": "Mistral API key is required",
 			"vercelAiGatewayApiKeyRequired": "Vercel AI Gateway API key is required",
+			"bedrockRegionRequired": "AWS region is required",
+			"bedrockProfileRequired": "AWS profile is required",
 			"openRouterApiKeyRequired": "OpenRouter API key is required",
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
-		}
+		},
+		"optional": "optional"
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
@@ -193,11 +210,6 @@
 			"label": "Browser",
 			"description": "Automatically perform browser actions without requiring approval. Note: Only applies when the model supports computer use"
 		},
-		"retry": {
-			"label": "Retry",
-			"description": "Automatically retry failed API requests when server returns an error response",
-			"delayLabel": "Delay before retrying the request"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Enable auto-approval of individual MCP tools in the MCP Servers view (requires both this setting and the tool's individual \"Always allow\" checkbox)"
@@ -226,10 +238,6 @@
 			"deniedCommandPlaceholder": "Enter command prefix to deny (e.g., 'rm -rf')",
 			"addButton": "Add",
 			"autoDenied": "Commands with the prefix `{{prefix}}` have been forbidden by the user. Do not bypass this restriction by running another command."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Automatically update the to-do list without requiring approval"
 		},
 		"apiRequestLimit": {
 			"title": "Max Count",
@@ -275,8 +283,6 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Get Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API keys are stored securely in VSCode's Secret Storage",
-		"glamaApiKey": "Glama API Key",
-		"getGlamaApiKey": "Get Glama API Key",
 		"useCustomBaseUrl": "Use custom base URL",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
@@ -304,6 +310,8 @@
 		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Enable 1M context window (Beta)",
 		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Enable 1M context window (Beta)",
+		"vertex1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Get Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
@@ -372,6 +380,14 @@
 		"awsRegion": "AWS Region",
 		"awsCrossRegion": "Use cross-region inference",
 		"awsGlobalInference": "Use Global inference (auto-select optimal AWS Region)",
+		"awsServiceTier": "Service Tier",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "Balanced performance and cost",
+		"awsServiceTierFlex": "Flex (50% discount)",
+		"awsServiceTierFlexDesc": "Lower cost, higher latency for non-critical tasks",
+		"awsServiceTierPriority": "Priority (75% premium)",
+		"awsServiceTierPriorityDesc": "Fastest performance for mission-critical applications",
+		"awsServiceTierNote": "Service tiers affect pricing and performance. Flex offers 50% discount with higher latency, Priority offers 25% better performance with 75% premium.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Use custom VPC endpoint",
 			"vpcEndpointUrlPlaceholder": "Enter VPC Endpoint URL (optional)",
@@ -499,7 +515,8 @@
 			"minimal": "Minimal (Fastest)",
 			"low": "Low",
 			"medium": "Medium",
-			"high": "High"
+			"high": "High",
+			"xhigh": "Extra High"
 		},
 		"verbosity": {
 			"label": "Output Verbosity",
@@ -854,7 +871,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Search",
 		"noMatchFound": "No match found",
-		"useCustomModel": "Use custom: {{modelId}}"
+		"useCustomModel": "Use custom: {{modelId}}",
+		"simplifiedExplanation": "You can adjust detailed model settings later."
 	},
 	"footer": {
 		"telemetry": {

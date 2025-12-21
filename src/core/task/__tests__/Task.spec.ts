@@ -697,11 +697,8 @@ describe("Cline", () => {
 					return mockSuccessStream
 				})
 
-				// Set alwaysApproveResubmit and requestDelaySeconds
-				mockProvider.getState = vi.fn().mockResolvedValue({
-					alwaysApproveResubmit: true,
-					requestDelaySeconds: 3,
-				})
+				// Set up mock state
+				mockProvider.getState = vi.fn().mockResolvedValue({})
 
 				// Mock previous API request message
 				cline.clineMessages = [
@@ -723,7 +720,7 @@ describe("Cline", () => {
 				await iterator.next()
 
 				// Calculate expected delay for first retry
-				const baseDelay = 3 // from requestDelaySeconds
+				const baseDelay = 3 // test retry delay
 
 				// Verify countdown messages
 				for (let i = baseDelay; i > 0; i--) {
@@ -821,11 +818,8 @@ describe("Cline", () => {
 					return mockSuccessStream
 				})
 
-				// Set alwaysApproveResubmit and requestDelaySeconds
-				mockProvider.getState = vi.fn().mockResolvedValue({
-					alwaysApproveResubmit: true,
-					requestDelaySeconds: 3,
-				})
+				// Set up mock state
+				mockProvider.getState = vi.fn().mockResolvedValue({})
 
 				// Mock previous API request message
 				cline.clineMessages = [
@@ -847,7 +841,7 @@ describe("Cline", () => {
 				await iterator.next()
 
 				// Verify delay is only applied for the countdown
-				const baseDelay = 3 // from requestDelaySeconds
+				const baseDelay = 3 // test retry delay
 				const expectedDelayCount = baseDelay // One delay per second for countdown
 				expect(mockDelay).toHaveBeenCalledTimes(expectedDelayCount)
 				expect(mockDelay).toHaveBeenCalledWith(1000) // Each delay should be 1 second
@@ -981,6 +975,7 @@ describe("Cline", () => {
 					getState: vi.fn().mockResolvedValue({
 						apiConfiguration: mockApiConfig,
 					}),
+					getMcpHub: vi.fn().mockReturnValue(undefined),
 					say: vi.fn(),
 					postStateToWebview: vi.fn().mockResolvedValue(undefined),
 					postMessageToWebview: vi.fn().mockResolvedValue(undefined),

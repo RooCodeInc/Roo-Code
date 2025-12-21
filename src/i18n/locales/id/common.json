@@ -91,8 +91,7 @@
 			"errorOutput": "Output error: {{output}}",
 			"processExitedWithError": "Proses Claude Code keluar dengan kode {{exitCode}}. Output error: {{output}}",
 			"stoppedWithReason": "Claude Code berhenti karena alasan: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
 		},
 		"message": {
 			"no_active_task_to_delete": "Tidak ada tugas aktif untuk menghapus pesan",
@@ -106,7 +105,11 @@
 		"gemini": {
 			"generate_stream": "Kesalahan aliran konteks pembuatan Gemini: {{error}}",
 			"generate_complete_prompt": "Kesalahan penyelesaian Gemini: {{error}}",
-			"sources": "Sumber:"
+			"sources": "Sumber:",
+			"thinking_complete_no_output": "(Berpikir selesai, tetapi tidak ada output yang dihasilkan.)",
+			"thinking_complete_truncated": "(Berpikir selesai, tetapi output terpotong karena batas token.)",
+			"thinking_complete_safety": "(Berpikir selesai, tetapi output diblokir karena pengaturan keamanan.)",
+			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)"
 		},
 		"cerebras": {
 			"authenticationFailed": "Autentikasi API Cerebras gagal. Silakan periksa apakah kunci API Anda valid dan belum kedaluwarsa.",
@@ -184,12 +187,7 @@
 	"settings": {
 		"providers": {
 			"groqApiKey": "Kunci API Groq",
-			"getGroqApiKey": "Dapatkan Kunci API Groq",
-			"claudeCode": {
-				"pathLabel": "Jalur Claude Code",
-				"description": "Jalur opsional ke CLI Claude Code Anda. Defaultnya 'claude' jika tidak diatur.",
-				"placeholder": "Default: claude"
-			}
+			"getGroqApiKey": "Dapatkan Kunci API Groq"
 		}
 	},
 	"customModes": {

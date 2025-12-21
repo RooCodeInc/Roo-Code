@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.34.5",
+	"version": "3.36.16",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -74,16 +74,6 @@
 				"command": "roo-cline.plusButtonClicked",
 				"title": "%command.newTask.title%",
 				"icon": "$(edit)"
-			},
-			{
-				"command": "roo-cline.promptsButtonClicked",
-				"title": "%command.prompts.title%",
-				"icon": "$(organization)"
-			},
-			{
-				"command": "roo-cline.mcpButtonClicked",
-				"title": "%command.mcpServers.title%",
-				"icon": "$(server)"
 			},
 			{
 				"command": "roo-cline.historyButtonClicked",
@@ -229,17 +219,17 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.marketplaceButtonClicked",
+					"command": "roo-cline.settingsButtonClicked",
 					"group": "navigation@2",
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.settingsButtonClicked",
+					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.cloudButtonClicked",
+					"command": "roo-cline.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "view == roo-cline.SidebarProvider"
 				},
@@ -249,18 +239,8 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.promptsButtonClicked",
-					"group": "overflow@2",
-					"when": "view == roo-cline.SidebarProvider"
-				},
-				{
-					"command": "roo-cline.mcpButtonClicked",
-					"group": "overflow@3",
-					"when": "view == roo-cline.SidebarProvider"
-				},
-				{
 					"command": "roo-cline.popoutButtonClicked",
-					"group": "overflow@4",
+					"group": "overflow@2",
 					"when": "view == roo-cline.SidebarProvider"
 				}
 			],
@@ -271,17 +251,17 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.marketplaceButtonClicked",
+					"command": "roo-cline.settingsButtonClicked",
 					"group": "navigation@2",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.settingsButtonClicked",
+					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.cloudButtonClicked",
+					"command": "roo-cline.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
@@ -291,18 +271,8 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.promptsButtonClicked",
-					"group": "overflow@2",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
-				},
-				{
-					"command": "roo-cline.mcpButtonClicked",
-					"group": "overflow@3",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
-				},
-				{
 					"command": "roo-cline.popoutButtonClicked",
-					"group": "overflow@4",
+					"group": "overflow@2",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				}
 			]
@@ -436,6 +406,11 @@
 					"minimum": 1,
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
+				},
+				"roo-cline.debug": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.debug.description%"
 				}
 			}
 		}
@@ -513,6 +488,7 @@
 		"safe-stable-stringify": "^2.5.0",
 		"sanitize-filename": "^1.6.3",
 		"say": "^0.16.0",
+		"semver-compare": "^1.0.0",
 		"serialize-error": "^12.0.0",
 		"shell-quote": "^1.8.2",
 		"simple-git": "^3.27.0",
@@ -531,7 +507,7 @@
 		"web-tree-sitter": "^0.25.6",
 		"workerpool": "^9.2.0",
 		"yaml": "^2.8.0",
-		"zod": "^3.25.61"
+		"zod": "3.25.61"
 	},
 	"devDependencies": {
 		"@roo-code/build": "workspace:^",
@@ -549,6 +525,7 @@
 		"@types/node-ipc": "^9.2.3",
 		"@types/proper-lockfile": "^4.1.4",
 		"@types/ps-tree": "^1.1.6",
+		"@types/semver-compare": "^1.0.3",
 		"@types/shell-quote": "^1.7.5",
 		"@types/stream-json": "^1.7.8",
 		"@types/string-similarity": "^4.0.2",

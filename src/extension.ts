@@ -25,6 +25,7 @@ import { ContextProxy } from "./core/config/ContextProxy"
 import { ClineProvider } from "./core/webview/ClineProvider"
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
+import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
@@ -40,7 +41,7 @@ import {
 	CodeActionProvider,
 } from "./activate"
 import { initializeI18n } from "./i18n"
-import { flushModels, getModels, initializeModelCacheRefresh } from "./api/providers/fetchers/modelCache"
+import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -89,6 +90,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize terminal shell execution handlers.
 	TerminalRegistry.initialize()
+
+	// Initialize Claude Code OAuth manager for direct API access.
+	claudeCodeOAuthManager.initialize(context)
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []
@@ -142,16 +146,22 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 
-		// Handle Roo models cache based on auth state
+		// Handle Roo models cache based on auth state (ROO-202)
 		const handleRooModelsCache = async () => {
 			try {
-				// Flush and refresh cache on auth state changes
-				await flushModels("roo", true)
-
 				if (data.state === "active-session") {
-					cloudLogger(`[authStateChangedHandler] Refreshed Roo models cache for active session`)
+					// Refresh with auth token to get authenticated models
+					const sessionToken = CloudService.hasInstance()
+						? CloudService.instance.authService?.getSessionToken()
+						: undefined
+					await refreshModels({
+						provider: "roo",
+						baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+						apiKey: sessionToken,
+					})
 				} else {
-					cloudLogger(`[authStateChangedHandler] Flushed Roo models cache on logout`)
+					// Flush without refresh on logout
+					await flushModels({ provider: "roo" }, false)
 				}
 			} catch (error) {
 				cloudLogger(

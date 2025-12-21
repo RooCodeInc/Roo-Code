@@ -91,8 +91,7 @@
 			"errorOutput": "Đầu ra lỗi: {{output}}",
 			"processExitedWithError": "Tiến trình Claude Code thoát với mã {{exitCode}}. Đầu ra lỗi: {{output}}",
 			"stoppedWithReason": "Claude Code dừng lại vì lý do: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
 		},
 		"message": {
 			"no_active_task_to_delete": "Không có nhiệm vụ hoạt động để xóa tin nhắn",
@@ -106,7 +105,11 @@
 		"gemini": {
 			"generate_stream": "Lỗi luồng ngữ cảnh tạo Gemini: {{error}}",
 			"generate_complete_prompt": "Lỗi hoàn thành Gemini: {{error}}",
-			"sources": "Nguồn:"
+			"sources": "Nguồn:",
+			"thinking_complete_no_output": "(Đã suy nghĩ xong nhưng không có kết quả đầu ra.)",
+			"thinking_complete_truncated": "(Đã suy nghĩ xong nhưng kết quả bị cắt ngắn do giới hạn token.)",
+			"thinking_complete_safety": "(Đã suy nghĩ xong nhưng kết quả bị chặn do cài đặt an toàn.)",
+			"thinking_complete_recitation": "(Đã suy nghĩ xong nhưng kết quả bị chặn do kiểm tra trích dẫn.)"
 		},
 		"cerebras": {
 			"authenticationFailed": "Xác thực API Cerebras thất bại. Vui lòng kiểm tra khóa API của bạn có hợp lệ và chưa hết hạn.",
@@ -184,12 +187,7 @@
 	"settings": {
 		"providers": {
 			"groqApiKey": "Khóa API Groq",
-			"getGroqApiKey": "Lấy khóa API Groq",
-			"claudeCode": {
-				"pathLabel": "Đường dẫn Claude Code",
-				"description": "Đường dẫn tùy chọn đến CLI Claude Code của bạn. Mặc định là 'claude' nếu không được đặt.",
-				"placeholder": "Mặc định: claude"
-			}
+			"getGroqApiKey": "Lấy khóa API Groq"
 		}
 	},
 	"customModes": {

@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react"
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
-import { ChevronsUpDown, Check, X } from "lucide-react"
+import { ChevronsUpDown, Check, X, Info } from "lucide-react"
 
 import type { ProviderSettings, ModelInfo, OrganizationAllowList } from "@roo-code/types"
 
@@ -28,7 +28,6 @@ import { ApiErrorMessage } from "./ApiErrorMessage"
 
 type ModelIdKey = keyof Pick<
 	ProviderSettings,
-	| "glamaModelId"
 	| "openRouterModelId"
 	| "unboundModelId"
 	| "requestyModelId"
@@ -52,8 +51,10 @@ interface ModelPickerProps {
 		value: ProviderSettings[K],
 		isUserAction?: boolean,
 	) => void
-	organizationAllowList: OrganizationAllowList
+	organizationAllowList?: OrganizationAllowList
 	errorMessage?: string
+	simplifySettings?: boolean
+	hidePricing?: boolean
 }
 
 export const ModelPicker = ({
@@ -66,6 +67,8 @@ export const ModelPicker = ({
 	setApiConfigurationField,
 	organizationAllowList,
 	errorMessage,
+	simplifySettings,
+	hidePricing,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 
@@ -246,25 +249,40 @@ export const ModelPicker = ({
 			{selectedModelInfo?.deprecated && (
 				<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
 			)}
-			{selectedModelId && selectedModelInfo && !selectedModelInfo.deprecated && (
-				<ModelInfoView
-					apiProvider={apiConfiguration.apiProvider}
-					selectedModelId={selectedModelId}
-					modelInfo={selectedModelInfo}
-					isDescriptionExpanded={isDescriptionExpanded}
-					setIsDescriptionExpanded={setIsDescriptionExpanded}
-				/>
+
+			{simplifySettings ? (
+				<p className="text-xs text-vscode-descriptionForeground m-0">
+					<Info className="size-3 inline mr-1" />
+					{t("settings:modelPicker.simplifiedExplanation")}
+				</p>
+			) : (
+				<div>
+					{selectedModelId && selectedModelInfo && !selectedModelInfo.deprecated && (
+						<ModelInfoView
+							apiProvider={apiConfiguration.apiProvider}
+							selectedModelId={selectedModelId}
+							modelInfo={selectedModelInfo}
+							isDescriptionExpanded={isDescriptionExpanded}
+							setIsDescriptionExpanded={setIsDescriptionExpanded}
+							hidePricing={hidePricing}
+						/>
+					)}
+					{!hidePricing && (
+						<div className="text-sm text-vscode-descriptionForeground">
+							<Trans
+								i18nKey="settings:modelPicker.automaticFetch"
+								components={{
+									serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
+									defaultModelLink: (
+										<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
+									),
+								}}
+								values={{ serviceName, defaultModelId }}
+							/>
+						</div>
+					)}
+				</div>
 			)}
-			<div className="text-sm text-vscode-descriptionForeground">
-				<Trans
-					i18nKey="settings:modelPicker.automaticFetch"
-					components={{
-						serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
-						defaultModelLink: <VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />,
-					}}
-					values={{ serviceName, defaultModelId }}
-				/>
-			</div>
 		</>
 	)
 }

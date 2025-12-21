@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Dostawcy",
+		"modes": "Tryby",
+		"mcp": "Serwery MCP",
 		"autoApprove": "Auto-zatwierdzanie",
 		"browser": "Dostęp komputera",
 		"checkpoints": "Punkty kontrolne",
@@ -78,9 +80,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Klucz API",
 		"vercelAiGatewayApiKeyPlaceholder": "Wprowadź swój klucz API Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Region AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Profil AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nazwa profilu AWS z ~/.aws/credentials (wymagane).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Klucz API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routing dostawców OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter kieruje żądania do najlepszych dostępnych dostawców dla Twojego modelu osadzania. Domyślnie żądania są równoważone między najlepszymi dostawcami, aby zmaksymalizować czas działania. Możesz jednak wybrać konkretnego dostawcę do użycia z tym modelem.",
 		"openaiCompatibleProvider": "Kompatybilny z OpenAI",
 		"openAiKeyLabel": "Klucz API OpenAI",
 		"openAiKeyPlaceholder": "Wprowadź swój klucz API OpenAI",
@@ -145,11 +155,14 @@
 			"geminiApiKeyRequired": "Wymagany jest klucz API Gemini",
 			"mistralApiKeyRequired": "Klucz API Mistral jest wymagany",
 			"vercelAiGatewayApiKeyRequired": "Klucz API Vercel AI Gateway jest wymagany",
+			"bedrockRegionRequired": "Region AWS jest wymagany",
+			"bedrockProfileRequired": "Profil AWS jest wymagany",
 			"ollamaBaseUrlRequired": "Wymagany jest bazowy adres URL Ollama",
 			"baseUrlRequired": "Wymagany jest bazowy adres URL",
 			"modelDimensionMinValue": "Wymiar modelu musi być większy niż 0",
 			"openRouterApiKeyRequired": "Wymagany jest klucz API OpenRouter"
 		},
+		"optional": "opcjonalny",
 		"advancedConfigLabel": "Konfiguracja zaawansowana",
 		"searchMinScoreLabel": "Próg wyniku wyszukiwania",
 		"searchMinScoreDescription": "Minimalny wynik podobieństwa (0.0-1.0) wymagany dla wyników wyszukiwania. Niższe wartości zwracają więcej wyników, ale mogą być mniej trafne. Wyższe wartości zwracają mniej wyników, ale bardziej trafnych.",
@@ -189,11 +202,6 @@
 			"label": "Przeglądarka",
 			"description": "Automatycznie wykonuj akcje przeglądarki bez konieczności zatwierdzania. Uwaga: Dotyczy tylko gdy model obsługuje używanie komputera"
 		},
-		"retry": {
-			"label": "Ponów",
-			"description": "Automatycznie ponawiaj nieudane żądania API, gdy serwer zwraca odpowiedź z błędem",
-			"delayLabel": "Opóźnienie przed ponowieniem żądania"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Włącz automatyczne zatwierdzanie poszczególnych narzędzi MCP w widoku Serwerów MCP (wymaga zarówno tego ustawienia, jak i pola wyboru \"Zawsze zezwalaj\" narzędzia)"
@@ -222,10 +230,6 @@
 			"deniedCommandPlaceholder": "Wprowadź prefiks polecenia do odrzucenia (np. 'rm -rf')",
 			"addButton": "Dodaj",
 			"autoDenied": "Polecenia z prefiksem `{{prefix}}` zostały zabronione przez użytkownika. Nie obchodź tego ograniczenia uruchamiając inne polecenie."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Lista zadań jest automatycznie aktualizowana bez zatwierdzenia"
 		},
 		"apiRequestLimit": {
 			"title": "Maksymalna liczba żądań",
@@ -270,8 +274,6 @@
 		"vercelAiGatewayApiKey": "Klucz API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Uzyskaj klucz API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Klucze API są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
-		"glamaApiKey": "Klucz API Glama",
-		"getGlamaApiKey": "Uzyskaj klucz API Glama",
 		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
 		"useReasoning": "Włącz rozumowanie",
 		"useHostHeader": "Użyj niestandardowego nagłówka Host",
@@ -299,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Włącz okno kontekstowe 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Włącz okno kontekstowe 1M (Beta)",
+		"vertex1MContextBetaDescription": "Rozszerza okno kontekstowe do 1 miliona tokenów dla Claude Sonnet 4",
 		"basetenApiKey": "Klucz API Baseten",
 		"getBasetenApiKey": "Uzyskaj klucz API Baseten",
 		"cerebrasApiKey": "Klucz API Cerebras",
@@ -367,6 +371,14 @@
 		"awsRegion": "Region AWS",
 		"awsCrossRegion": "Użyj wnioskowania międzyregionalnego",
 		"awsGlobalInference": "Użyj globalnej inferencji (automatyczny wybór optymalnego regionu AWS)",
+		"awsServiceTier": "Warstwa usługi",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "Zrównoważona wydajność i koszt",
+		"awsServiceTierFlex": "Flex (50% zniżka)",
+		"awsServiceTierFlexDesc": "Niższy koszt, wyższe opóźnienie dla zadań niekrytycznych",
+		"awsServiceTierPriority": "Priority (75% premia)",
+		"awsServiceTierPriorityDesc": "Najszybsza wydajność dla aplikacji krytycznych",
+		"awsServiceTierNote": "Warstwy usługi wpływają na ceny i wydajność. Flex oferuje 50% zniżkę z wyższym opóźnieniem, Priority oferuje 25% lepszą wydajność z 75% premią.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Użyj niestandardowego punktu końcowego VPC",
 			"vpcEndpointUrlPlaceholder": "Wprowadź URL punktu końcowego VPC (opcjonalnie)",
@@ -493,6 +505,7 @@
 			"none": "Brak",
 			"minimal": "Minimalny (najszybszy)",
 			"high": "Wysoki",
+			"xhigh": "Bardzo wysoki",
 			"medium": "Średni",
 			"low": "Niski"
 		},
@@ -850,7 +863,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Wyszukaj",
 		"noMatchFound": "Nie znaleziono dopasowań",
-		"useCustomModel": "Użyj niestandardowy: {{modelId}}"
+		"useCustomModel": "Użyj niestandardowy: {{modelId}}",
+		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
 	},
 	"footer": {
 		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
@@ -942,6 +956,10 @@
 		"collapseThinking": {
 			"label": "Domyślnie zwijaj komunikaty o myśleniu",
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Wymagaj {{primaryMod}}+Enter do wysyłania wiadomości",
+			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
 		}
 	}
 }

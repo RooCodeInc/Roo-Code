@@ -91,8 +91,7 @@
 			"errorOutput": "Hata çıktısı: {{output}}",
 			"processExitedWithError": "Claude Code işlemi {{exitCode}} koduyla çıktı. Hata çıktısı: {{output}}",
 			"stoppedWithReason": "Claude Code şu nedenle durdu: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
 		},
 		"message": {
 			"no_active_task_to_delete": "Mesaj silinecek aktif görev yok",
@@ -106,7 +105,11 @@
 		"gemini": {
 			"generate_stream": "Gemini oluşturma bağlam akışı hatası: {{error}}",
 			"generate_complete_prompt": "Gemini tamamlama hatası: {{error}}",
-			"sources": "Kaynaklar:"
+			"sources": "Kaynaklar:",
+			"thinking_complete_no_output": "(Düşünme tamamlandı, ancak çıktı oluşturulmadı.)",
+			"thinking_complete_truncated": "(Düşünme tamamlandı, ancak çıktı jeton sınırı nedeniyle kesildi.)",
+			"thinking_complete_safety": "(Düşünme tamamlandı, ancak çıktı güvenlik ayarları nedeniyle engellendi.)",
+			"thinking_complete_recitation": "(Düşünme tamamlandı, ancak çıktı okuma kontrolü nedeniyle engellendi.)"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API kimlik doğrulama başarısız oldu. API anahtarınızın geçerli olduğunu ve süresi dolmadığını kontrol edin.",
@@ -184,12 +187,7 @@
 	"settings": {
 		"providers": {
 			"groqApiKey": "Groq API Anahtarı",
-			"getGroqApiKey": "Groq API Anahtarı Al",
-			"claudeCode": {
-				"pathLabel": "Claude Code Yolu",
-				"description": "Claude Code CLI'nizin isteğe bağlı yolu. Ayarlanmazsa varsayılan olarak 'claude' olur.",
-				"placeholder": "Varsayılan: claude"
-			}
+			"getGroqApiKey": "Groq API Anahtarı Al"
 		}
 	},
 	"customModes": {

@@ -26,7 +26,9 @@
 		"shareSuccessOrganization": "Link da organização copiado para a área de transferência",
 		"shareSuccessPublic": "Link público copiado para a área de transferência",
 		"openInCloud": "Abrir tarefa no Roo Code Cloud",
-		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir."
+		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir.",
+		"openApiHistory": "Abrir histórico da API",
+		"openUiHistory": "Abrir histórico da UI"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -103,6 +105,7 @@
 	"enhancePrompt": "Aprimorar prompt com contexto adicional",
 	"addImages": "Adicionar imagens à mensagem",
 	"sendMessage": "Enviar mensagem",
+	"pressToSend": "Pressione {{keyCombination}} para enviar",
 	"stopTts": "Parar conversão de texto em fala",
 	"typeMessage": "Digite uma mensagem...",
 	"typeTask": "Digite sua tarefa aqui...",
@@ -134,7 +137,21 @@
 		"failed": "Requisição API falhou",
 		"streaming": "Requisição API...",
 		"cancelled": "Requisição API cancelada",
-		"streamingFailed": "Streaming API falhou"
+		"streamingFailed": "Streaming API falhou",
+		"errorTitle": "Erro do provedor {{code}}",
+		"errorMessage": {
+			"docs": "Documentação",
+			"goToSettings": "Configurações",
+			"400": "O provedor não conseguiu processar a solicitação conforme feita. Interrompa a tarefa e tente uma abordagem diferente.",
+			"401": "Não foi possível autenticar com o provedor. Por favor, verifique a configuração da sua chave API.",
+			"402": "Parece que você ficou sem fundos/créditos em sua conta. Vá ao seu provedor e adicione mais para continuar.",
+			"403": "Não autorizado. Sua chave API é válida, mas o provedor se recusou a concluir esta solicitação.",
+			"429": "Muitas solicitações. Você está sendo limitado pelo provedor. Por favor, aguarde um pouco antes de sua próxima chamada de API.",
+			"500": "Erro do servidor do provedor. Algo está errado do lado do provedor, não há nada de errado com sua solicitação.",
+			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code.",
+			"connection": "Erro de conexão. Certifique-se de que você tem uma conexão de internet funcionando.",
+			"claudeCodeNotAuthenticated": "Você precisa fazer login para usar o Claude Code. Vá para Configurações e clique em \"Entrar no Claude Code\" para autenticar."
+		}
 	},
 	"checkpoint": {
 		"regular": "Ponto de verificação",
@@ -184,8 +201,6 @@
 		"didViewTopLevel": "Roo visualizou os arquivos de nível superior neste diretório",
 		"wantsToViewRecursive": "Roo quer visualizar recursivamente todos os arquivos neste diretório",
 		"didViewRecursive": "Roo visualizou recursivamente todos os arquivos neste diretório",
-		"wantsToViewDefinitions": "Roo quer visualizar nomes de definição de código-fonte usados neste diretório",
-		"didViewDefinitions": "Roo visualizou nomes de definição de código-fonte usados neste diretório",
 		"wantsToSearch": "Roo quer pesquisar neste diretório por <code>{{regex}}</code>",
 		"didSearch": "Roo pesquisou neste diretório por <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo quer pesquisar neste diretório (fora do espaço de trabalho) por <code>{{regex}}</code>",
@@ -193,9 +208,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quer visualizar os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"didViewTopLevelOutsideWorkspace": "Roo visualizou os arquivos de nível superior neste diretório (fora do espaço de trabalho)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quer visualizar recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo quer visualizar nomes de definição de código-fonte usados neste diretório (fora do espaço de trabalho)",
-		"didViewDefinitionsOutsideWorkspace": "Roo visualizou nomes de definição de código-fonte usados neste diretório (fora do espaço de trabalho)"
+		"didViewRecursiveOutsideWorkspace": "Roo visualizou recursivamente todos os arquivos neste diretório (fora do espaço de trabalho)"
 	},
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
@@ -245,6 +258,18 @@
 		"hasQuestion": "Roo tem uma pergunta"
 	},
 	"taskCompleted": "Tarefa concluída",
+	"modelResponseIncomplete": "Resposta do modelo incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "O modelo falhou em usar qualquer ferramenta em sua resposta. Isso geralmente acontece quando o modelo fornece apenas texto/raciocínio sem chamar as ferramentas necessárias para completar a tarefa.",
+		"noToolsUsedDetails": "O modelo forneceu texto/raciocínio, mas não chamou nenhuma das ferramentas necessárias. Isso geralmente indica que o modelo entendeu mal a tarefa ou está tendo dificuldade em determinar qual ferramenta usar. O modelo foi automaticamente solicitado a tentar novamente com o uso adequado de ferramentas."
+	},
+	"errorDetails": {
+		"link": "Details",
+		"title": "Detalhes do erro",
+		"copyToClipboard": "Copiar para área de transferência",
+		"copied": "Copiado!",
+		"diagnostics": "Obter informações detalhadas do erro"
+	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
 	},
@@ -270,19 +295,28 @@
 		"thinking": "Pensando",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Contexto condensado",
-		"condensing": "Condensando contexto...",
-		"errorHeader": "Falha ao condensar contexto",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Contexto condensado",
+			"inProgress": "Condensando contexto...",
+			"errorHeader": "Falha ao condensar contexto"
+		},
+		"truncation": {
+			"title": "Contexto truncado",
+			"inProgress": "Truncando contexto...",
+			"messagesRemoved": "{{count}} mensagem removida",
+			"messagesRemoved_other": "{{count}} mensagens removidas",
+			"description": "Mensagens mais antigas foram removidas da conversa para permanecer dentro do limite da janela de contexto. Esta é uma abordagem rápida, mas menos preservadora de contexto em comparação com a condensação."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar para entrada (ou Shift + clique)",
-		"autoSelectCountdown": "Seleção automática em {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Aprovação automática ativada. Selecionando em {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} Lançado",
+		"title": "Roo Code {{version}} Lançado",
+		"support": "Apoie o Roo Code nos dando uma estrela no <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modelo stealth GRATUITO por tempo limitado</bold> - Code Supernova: Agora atualizado com uma <bold>janela de contexto de 1M tokens</bold>! Um modelo de codificação agêntica versátil que suporta entradas de imagem, acessível através do Roo Code Cloud.",
 			"note": "(Nota: prompts e completações são registrados pelo criador do modelo e usados para melhorá-lo)",
@@ -292,8 +326,8 @@
 		},
 		"release": {
 			"heading": "Novidades nesta versão:",
-			"browserUse": "Browser Use 2.0 atualiza a experiência de navegação em chat com sessões persistentes, feedback mais claro, um painel de navegador dedicado e descrições de ações mais naturais",
-			"cloudPaid": "O provedor Roo Code Cloud agora oferece modelos pagos: compre créditos e use-os para agentes na nuvem e inferência"
+			"contextRewind": "A condensação melhorada do contexto agora permite restaurar o contexto anterior completo ao rebobinar para um ponto de verificação",
+			"rooProvider": "O provedor Roo Code Cloud agora preserva o conteúdo de raciocínio e usa ferramentas nativas por padrão para melhor desempenho"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -301,8 +335,7 @@
 			"description": "Os agentes trabalham juntos na nuvem e podem ser acionados a partir da web ou por meio do Slack.",
 			"tryButton": "Experimentar Agentes em Nuvem"
 		},
-		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>",
-		"socialLinks": "Junte-se a nós no <xLink>X</xLink>, <discordLink>Discord</discordLink>, ou <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>"
 	},
 	"browser": {
 		"session": "Sessão do Navegador",
@@ -319,13 +352,25 @@
 		"sessionStarted": "Sessão do navegador iniciada",
 		"actions": {
 			"title": "Ação do navegador: ",
+			"launched": "Navegador iniciado",
 			"launch": "Iniciar navegador em {{url}}",
+			"clicked": "Clicado em: {{coordinate}}",
 			"click": "Clique ({{coordinate}})",
+			"typed": "Digitado: {{text}}",
 			"type": "Digitar \"{{text}}\"",
+			"pressed": "Pressionado: {{key}}",
 			"press": "Pressione {{key}}",
+			"scrolledDown": "Rolado para baixo",
 			"scrollDown": "Rolar para baixo",
+			"scrolledUp": "Rolado para cima",
 			"scrollUp": "Rolar para cima",
+			"hovered": "Pairado em: {{coordinate}}",
 			"hover": "Pairar ({{coordinate}})",
+			"resized": "Redimensionado para: {{size}}",
+			"resize": "Redimensionar para {{size}}",
+			"screenshotSaved": "Captura de tela salva",
+			"screenshot": "Salvar captura de tela em {{path}}",
+			"closed": "Navegador fechado",
 			"close": "Fechar navegador"
 		}
 	},

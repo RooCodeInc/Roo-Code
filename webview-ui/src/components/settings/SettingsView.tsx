@@ -25,6 +25,9 @@ import {
 	LucideIcon,
 	SquareSlash,
 	Glasses,
+	Plug,
+	Server,
+	Users2,
 } from "lucide-react"
 
 import {
@@ -74,6 +77,8 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
+import ModesView from "../modes/ModesView"
+import McpView from "../mcp/McpView"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -95,6 +100,8 @@ const sectionNames = [
 	"notifications",
 	"contextManagement",
 	"terminal",
+	"modes",
+	"mcp",
 	"prompts",
 	"ui",
 	"experimental",
@@ -150,7 +157,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		alwaysAllowWrite,
 		alwaysAllowWriteOutsideWorkspace,
 		alwaysAllowWriteProtected,
-		alwaysApproveResubmit,
 		autoCondenseContext,
 		autoCondenseContextPercent,
 		browserToolEnabled,
@@ -163,7 +169,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxOpenTabsContext,
 		maxWorkspaceFiles,
 		mcpEnabled,
-		requestDelaySeconds,
 		remoteBrowserHost,
 		screenshotQuality,
 		soundEnabled,
@@ -194,7 +199,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		customSupportPrompts,
 		profileThresholds,
 		alwaysAllowFollowupQuestions,
-		alwaysAllowUpdateTodoList,
 		followupAutoApproveTimeoutMs,
 		includeDiagnosticMessages,
 		maxDiagnosticMessages,
@@ -203,6 +207,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
+		enterBehavior,
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
@@ -387,8 +392,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZdotdir,
 					terminalCompressProgressBar,
 					mcpEnabled,
-					alwaysApproveResubmit: alwaysApproveResubmit ?? false,
-					requestDelaySeconds: requestDelaySeconds ?? 5,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
@@ -400,12 +403,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
 					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 					alwaysAllowSubtasks,
-					alwaysAllowUpdateTodoList,
 					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 					followupAutoApproveTimeoutMs,
 					condensingApiConfigId: condensingApiConfigId || "",
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					enterBehavior: enterBehavior ?? "send",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
@@ -501,7 +504,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
 		() => [
-			{ id: "providers", icon: Webhook },
+			{ id: "providers", icon: Plug },
+			{ id: "modes", icon: Users2 },
+			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "browser", icon: SquareMousePointer },
@@ -614,7 +619,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 									isSelected // Use manual isSelected for styling
 										? `${settingsTabTrigger} ${settingsTabTriggerActive}`
 										: settingsTabTrigger,
-									"focus:ring-0", // Remove the focus ring styling
+									"cursor-pointer focus:ring-0", // Remove the focus ring styling
 								)}
 								data-testid={`tab-${id}`}
 								data-compact={isCompactMode}>
@@ -708,14 +713,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
 							alwaysAllowWriteProtected={alwaysAllowWriteProtected}
 							alwaysAllowBrowser={alwaysAllowBrowser}
-							alwaysApproveResubmit={alwaysApproveResubmit}
-							requestDelaySeconds={requestDelaySeconds}
 							alwaysAllowMcp={alwaysAllowMcp}
 							alwaysAllowModeSwitch={alwaysAllowModeSwitch}
 							alwaysAllowSubtasks={alwaysAllowSubtasks}
 							alwaysAllowExecute={alwaysAllowExecute}
 							alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
-							alwaysAllowUpdateTodoList={alwaysAllowUpdateTodoList}
 							followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
 							allowedCommands={allowedCommands}
 							allowedMaxRequests={allowedMaxRequests ?? undefined}
@@ -802,6 +804,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						/>
 					)}
 
+					{/* Modes Section */}
+					{activeTab === "modes" && <ModesView />}
+
+					{/* MCP Section */}
+					{activeTab === "mcp" && <McpView />}
+
 					{/* Prompts Section */}
 					{activeTab === "prompts" && (
 						<PromptsSettings
@@ -818,6 +826,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+							enterBehavior={enterBehavior ?? "send"}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

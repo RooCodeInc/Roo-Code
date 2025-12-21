@@ -13,6 +13,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -62,6 +63,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			baseURL,
 			apiKey: this.options.apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			timeout: getApiRequestTimeout(),
 		})
 	}
 
@@ -93,6 +95,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			stream_options: { include_usage: true },
 			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(metadata?.toolProtocol === "native" && {
+				parallel_tool_calls: metadata.parallelToolCalls ?? false,
+			}),
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it

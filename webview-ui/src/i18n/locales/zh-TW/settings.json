@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "供應商",
+		"modes": "模式",
+		"mcp": "MCP 伺服器",
 		"autoApprove": "自動核准",
 		"browser": "電腦存取",
 		"checkpoints": "檢查點",
@@ -75,9 +77,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API 金鑰",
 		"vercelAiGatewayApiKeyPlaceholder": "輸入您的 Vercel AI Gateway API 金鑰",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS 區域",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS 設定檔",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "來自 ~/.aws/credentials 的 AWS 設定檔名稱（必需）。",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API 金鑰",
 		"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
+		"openRouterProviderRoutingLabel": "OpenRouter 供應商路由",
+		"openRouterProviderRoutingDescription": "OpenRouter 會將請求路由到適合您嵌入模型的最佳可用供應商。預設情況下，請求會在頂尖供應商之間進行負載平衡以最大化正常運作時間。您也可以為此模型選擇特定的供應商。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 金鑰：",
 		"mistralApiKeyPlaceholder": "輸入您的 Mistral API 金鑰",
@@ -145,11 +155,14 @@
 			"geminiApiKeyRequired": "需要 Gemini API 金鑰",
 			"mistralApiKeyRequired": "需要 Mistral API 金鑰",
 			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 金鑰",
+			"bedrockRegionRequired": "AWS 區域為必填",
+			"bedrockProfileRequired": "AWS 設定檔為必填",
 			"ollamaBaseUrlRequired": "需要 Ollama 基礎 URL",
 			"baseUrlRequired": "需要基礎 URL",
 			"modelDimensionMinValue": "模型維度必須大於 0",
 			"openRouterApiKeyRequired": "OpenRouter API 密鑰是必需的"
 		},
+		"optional": "可選",
 		"advancedConfigLabel": "進階設定",
 		"searchMinScoreLabel": "搜尋分數閾值",
 		"searchMinScoreDescription": "搜尋結果所需的最低相似度分數（0.0-1.0）。較低的值會傳回更多結果，但可能較不相關。較高的值會傳回較少但更相關的結果。",
@@ -189,11 +202,6 @@
 			"label": "瀏覽器",
 			"description": "自動執行瀏覽器操作而無需核准 — 注意：僅適用於模型支援電腦使用時"
 		},
-		"retry": {
-			"label": "重試",
-			"description": "當伺服器回傳錯誤回應時自動重試失敗的 API 請求",
-			"delayLabel": "重試請求前的延遲"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "在 MCP 伺服器檢視中啟用個別 MCP 工具的自動核准（需要此設定和工具的「始終允許」核取方塊）"
@@ -222,10 +230,6 @@
 			"deniedCommandPlaceholder": "輸入要拒絕的命令前綴（例如 'rm -rf'）",
 			"addButton": "新增",
 			"autoDenied": "前綴為 `{{prefix}}` 的命令已被使用者禁止。不要透過執行其他命令來繞過此限制。"
-		},
-		"updateTodoList": {
-			"label": "待辦",
-			"description": "自動更新待辦清單無需核准"
 		},
 		"apiRequestLimit": {
 			"title": "最大請求數",
@@ -270,8 +274,6 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 金鑰",
 		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
 		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
-		"glamaApiKey": "Glama API 金鑰",
-		"getGlamaApiKey": "取得 Glama API 金鑰",
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",
@@ -299,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
 		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
+		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"basetenApiKey": "Baseten API 金鑰",
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"cerebrasApiKey": "Cerebras API 金鑰",
@@ -367,6 +371,14 @@
 		"awsRegion": "AWS 區域",
 		"awsCrossRegion": "使用跨區域推論",
 		"awsGlobalInference": "使用全域推論 (自動選取最佳 AWS 區域)",
+		"awsServiceTier": "服務層級",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "效能和成本均衡",
+		"awsServiceTierFlex": "Flex (50% 折扣)",
+		"awsServiceTierFlexDesc": "低成本，非關鍵工作的延遲較高",
+		"awsServiceTierPriority": "Priority (75% 溢價)",
+		"awsServiceTierPriorityDesc": "為關鍵業務應用提供最快效能",
+		"awsServiceTierNote": "服務層級會影響定價和效能。Flex 提供 50% 折扣但延遲較高，Priority 提供 25% 更好的效能但費用溢價 75%。",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "使用自訂 VPC 端點",
 			"vpcEndpointUrlPlaceholder": "輸入 VPC 端點 URL（選填）",
@@ -493,6 +505,7 @@
 			"none": "無",
 			"minimal": "最小 (最快)",
 			"high": "高",
+			"xhigh": "超高",
 			"medium": "中",
 			"low": "低"
 		},
@@ -850,7 +863,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜尋",
 		"noMatchFound": "找不到符合的項目",
-		"useCustomModel": "使用自訂模型：{{modelId}}"
+		"useCustomModel": "使用自訂模型：{{modelId}}",
+		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
 		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
@@ -940,8 +954,12 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "預設折疊“思考”訊息",
-			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
+			"label": "預設折疊「思考」訊息",
+			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "需要 {{primaryMod}}+Enter 傳送訊息",
+			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
 		}
 	}
 }

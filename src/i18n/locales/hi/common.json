@@ -91,8 +91,7 @@
 			"errorOutput": "त्रुटि आउटपुट: {{output}}",
 			"processExitedWithError": "Claude Code प्रक्रिया कोड {{exitCode}} के साथ समाप्त हुई। त्रुटि आउटपुट: {{output}}",
 			"stoppedWithReason": "Claude Code इस कारण से रुका: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
 		},
 		"message": {
 			"no_active_task_to_delete": "संदेशों को हटाने के लिए कोई सक्रिय कार्य नहीं",
@@ -106,7 +105,11 @@
 		"gemini": {
 			"generate_stream": "जेमिनी जनरेट कॉन्टेक्स्ट स्ट्रीम त्रुटि: {{error}}",
 			"generate_complete_prompt": "जेमिनी समापन त्रुटि: {{error}}",
-			"sources": "स्रोत:"
+			"sources": "स्रोत:",
+			"thinking_complete_no_output": "(सोचना पूरा हुआ, लेकिन कोई आउटपुट नहीं बना।)",
+			"thinking_complete_truncated": "(सोचना पूरा हुआ, लेकिन टोकन सीमा के कारण आउटपुट काट दिया गया।)",
+			"thinking_complete_safety": "(सोचना पूरा हुआ, लेकिन सुरक्षा सेटिंग्स के कारण आउटपुट अवरुद्ध कर दिया गया।)",
+			"thinking_complete_recitation": "(सोचना पूरा हुआ, लेकिन पाठ जाँच के कारण आउटपुट अवरुद्ध कर दिया गया।)"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API प्रमाणीकरण विफल हुआ। कृपया जांचें कि आपकी API कुंजी वैध है और समाप्त नहीं हुई है।",
@@ -184,11 +187,7 @@
 	"settings": {
 		"providers": {
 			"groqApiKey": "ग्रोक एपीआई कुंजी",
-			"getGroqApiKey": "ग्रोक एपीआई कुंजी प्राप्त करें",
-			"claudeCode": {
-				"pathLabel": "क्लाउड कोड पाथ",
-				"description": "आपके क्लाउड कोड CLI का वैकल्पिक पाथ। सेट न होने पर डिफ़ॉल्ट रूप से 'claude'।"
-			}
+			"getGroqApiKey": "ग्रोक एपीआई कुंजी प्राप्त करें"
 		}
 	},
 	"customModes": {

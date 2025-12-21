@@ -18,6 +18,7 @@ export interface ToolCallbacks {
 	pushToolResult: PushToolResult
 	removeClosingTag: RemoveClosingTag
 	toolProtocol: ToolProtocol
+	toolCallId?: string
 }
 
 /**

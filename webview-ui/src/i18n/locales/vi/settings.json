@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Nhà cung cấp",
+		"modes": "Chế độ",
+		"mcp": "Máy chủ MCP",
 		"autoApprove": "Phê duyệt",
 		"browser": "Trình duyệt",
 		"checkpoints": "Điểm kiểm tra",
@@ -78,9 +80,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Khóa API",
 		"vercelAiGatewayApiKeyPlaceholder": "Nhập khóa API Vercel AI Gateway của bạn",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Vùng AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Hồ sơ AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Tên hồ sơ AWS từ ~/.aws/credentials (bắt buộc).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Khóa API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Nhập khóa API OpenRouter của bạn",
+		"openRouterProviderRoutingLabel": "Định tuyến nhà cung cấp OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter chuyển hướng yêu cầu đến các nhà cung cấp tốt nhất hiện có cho mô hình nhúng của bạn. Theo mặc định, các yêu cầu được cân bằng giữa các nhà cung cấp hàng đầu để tối đa hóa thời gian hoạt động. Tuy nhiên, bạn có thể chọn một nhà cung cấp cụ thể để sử dụng cho mô hình này.",
 		"openaiCompatibleProvider": "Tương thích OpenAI",
 		"openAiKeyLabel": "Khóa API OpenAI",
 		"openAiKeyPlaceholder": "Nhập khóa API OpenAI của bạn",
@@ -145,11 +155,14 @@
 			"geminiApiKeyRequired": "Yêu cầu khóa API Gemini",
 			"mistralApiKeyRequired": "Cần có khóa API của Mistral",
 			"vercelAiGatewayApiKeyRequired": "Cần có khóa API Vercel AI Gateway",
+			"bedrockRegionRequired": "Vùng AWS là bắt buộc",
+			"bedrockProfileRequired": "Hồ sơ AWS là bắt buộc",
 			"ollamaBaseUrlRequired": "Yêu cầu URL cơ sở Ollama",
 			"baseUrlRequired": "Yêu cầu URL cơ sở",
 			"modelDimensionMinValue": "Kích thước mô hình phải lớn hơn 0",
 			"openRouterApiKeyRequired": "Yêu cầu khóa API OpenRouter"
 		},
+		"optional": "tùy chọn",
 		"advancedConfigLabel": "Cấu hình nâng cao",
 		"searchMinScoreLabel": "Ngưỡng điểm tìm kiếm",
 		"searchMinScoreDescription": "Điểm tương đồng tối thiểu (0.0-1.0) cần thiết cho kết quả tìm kiếm. Giá trị thấp hơn trả về nhiều kết quả hơn nhưng có thể kém liên quan hơn. Giá trị cao hơn trả về ít kết quả hơn nhưng có liên quan hơn.",
@@ -189,11 +202,6 @@
 			"label": "Trình duyệt",
 			"description": "Tự động thực hiện các hành động trình duyệt mà không cần phê duyệt. Lưu ý: Chỉ áp dụng khi mô hình hỗ trợ sử dụng máy tính"
 		},
-		"retry": {
-			"label": "Thử lại",
-			"description": "Tự động thử lại các yêu cầu API thất bại khi máy chủ trả về phản hồi lỗi",
-			"delayLabel": "Trì hoãn trước khi thử lại yêu cầu"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Bật tự động phê duyệt các công cụ MCP riêng lẻ trong chế độ xem Máy chủ MCP (yêu cầu cả cài đặt này và hộp kiểm \"Luôn cho phép\" của công cụ)"
@@ -222,10 +230,6 @@
 			"deniedCommandPlaceholder": "Nhập tiền tố lệnh để từ chối (ví dụ: 'rm -rf')",
 			"addButton": "Thêm",
 			"autoDenied": "Các lệnh có tiền tố `{{prefix}}` đã bị người dùng cấm. Đừng vượt qua hạn chế này bằng cách chạy lệnh khác."
-		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "Danh sách việc cần làm được cập nhật tự động mà không cần phê duyệt"
 		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",
@@ -270,8 +274,6 @@
 		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
-		"glamaApiKey": "Khóa API Glama",
-		"getGlamaApiKey": "Lấy khóa API Glama",
 		"useCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
 		"useReasoning": "Bật lý luận",
 		"useHostHeader": "Sử dụng tiêu đề Host tùy chỉnh",
@@ -299,6 +301,8 @@
 		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
+		"vertex1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"basetenApiKey": "Khóa API Baseten",
 		"getBasetenApiKey": "Lấy khóa API Baseten",
 		"cerebrasApiKey": "Khóa API Cerebras",
@@ -367,6 +371,14 @@
 		"awsRegion": "Vùng AWS",
 		"awsCrossRegion": "Sử dụng suy luận liên vùng",
 		"awsGlobalInference": "Sử dụng suy luận toàn cầu (tự động chọn Khu vực AWS tối ưu)",
+		"awsServiceTier": "Cấp độ dịch vụ",
+		"awsServiceTierStandard": "Tiêu chuẩn",
+		"awsServiceTierStandardDesc": "Hiệu suất và chi phí cân bằng",
+		"awsServiceTierFlex": "Linh hoạt (giảm giá 50%)",
+		"awsServiceTierFlexDesc": "Chi phí thấp hơn, độ trễ cao hơn cho các tác vụ không quan trọng",
+		"awsServiceTierPriority": "Ưu tiên (Phí thêm 75%)",
+		"awsServiceTierPriorityDesc": "Hiệu suất nhanh nhất cho các ứng dụng quan trọng",
+		"awsServiceTierNote": "Các cấp độ dịch vụ ảnh hưởng đến giá và hiệu suất. Linh hoạt cung cấp giảm giá 50% với độ trễ cao hơn, Ưu tiên cung cấp hiệu suất tốt hơn 25% với phí thêm 75%.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Sử dụng điểm cuối VPC tùy chỉnh",
 			"vpcEndpointUrlPlaceholder": "Nhập URL điểm cuối VPC (tùy chọn)",
@@ -493,6 +505,7 @@
 			"none": "Không",
 			"minimal": "Tối thiểu (nhanh nhất)",
 			"high": "Cao",
+			"xhigh": "Rất cao",
 			"medium": "Trung bình",
 			"low": "Thấp"
 		},
@@ -850,7 +863,8 @@
 		"label": "Mô hình",
 		"searchPlaceholder": "Tìm kiếm",
 		"noMatchFound": "Không tìm thấy kết quả",
-		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}"
+		"useCustomModel": "Sử dụng tùy chỉnh: {{modelId}}",
+		"simplifiedExplanation": "Bạn có thể điều chỉnh cài đặt mô hình chi tiết sau."
 	},
 	"footer": {
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
@@ -942,6 +956,10 @@
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
+			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
 		}
 	}
 }

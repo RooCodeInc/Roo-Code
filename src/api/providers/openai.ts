@@ -31,7 +31,7 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
 export class OpenAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
-	private client: OpenAI
+	protected client: OpenAI
 	private readonly providerName = "OpenAI"
 
 	constructor(options: ApiHandlerOptions) {
@@ -166,6 +166,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(reasoning && reasoning),
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(metadata?.toolProtocol === "native" && {
+					parallel_tool_calls: metadata.parallelToolCalls ?? false,
+				}),
 			}
 
 			// Add max_tokens if needed
@@ -242,6 +245,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(metadata?.toolProtocol === "native" && {
+					parallel_tool_calls: metadata.parallelToolCalls ?? false,
+				}),
 			}
 
 			// Add max_tokens if needed
@@ -359,6 +365,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(metadata?.toolProtocol === "native" && {
+					parallel_tool_calls: metadata.parallelToolCalls ?? false,
+				}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -391,6 +400,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+				...(metadata?.toolProtocol === "native" && {
+					parallel_tool_calls: metadata.parallelToolCalls ?? false,
+				}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -466,7 +478,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
-	private _getUrlHost(baseUrl?: string): string {
+	protected _getUrlHost(baseUrl?: string): string {
 		try {
 			return new URL(baseUrl ?? "").host
 		} catch (error) {
@@ -479,7 +491,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		return urlHost.includes("x.ai")
 	}
 
-	private _isAzureAiInference(baseUrl?: string): boolean {
+	protected _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
 	}

@@ -122,19 +122,19 @@ ${markdownFormattingSection()}
 
 ${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
 
-${getToolUseGuidelinesSection(codeIndexManager, effectiveProtocol)}
+${getToolUseGuidelinesSection(effectiveProtocol)}
 
 ${mcpServersSection}
 
-${getCapabilitiesSection(cwd, supportsComputerUse, mode, customModeConfigs, experiments, shouldIncludeMcp ? mcpHub : undefined, effectiveDiffStrategy, codeIndexManager, settings)}
+${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
 ${modesSection}
 
-${getRulesSection(cwd, supportsComputerUse, mode, customModeConfigs, experiments, effectiveDiffStrategy, codeIndexManager, settings)}
+${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
 
-${getObjectiveSection(codeIndexManager, experiments)}
+${getObjectiveSection()}
 
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {
 	language: language ?? formatLanguage(vscode.env.language),

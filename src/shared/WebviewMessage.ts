@@ -68,6 +68,7 @@ export interface WebviewMessage {
 		| "openFile"
 		| "openMention"
 		| "cancelTask"
+		| "cancelAutoApproval"
 		| "updateVSCodeSetting"
 		| "getVSCodeSetting"
 		| "vsCodeSetting"
@@ -126,6 +127,8 @@ export interface WebviewMessage {
 		| "cloudLandingPageSignIn"
 		| "rooCloudSignOut"
 		| "rooCloudManualUrl"
+		| "claudeCodeSignIn"
+		| "claudeCodeSignOut"
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
@@ -173,6 +176,10 @@ export interface WebviewMessage {
 		| "showBrowserSessionPanelAtStep"
 		| "refreshBrowserSessionPanel"
 		| "browserPanelDidLaunch"
+		| "openDebugApiHistory"
+		| "openDebugUiHistory"
+		| "downloadErrorDiagnostics"
+		| "requestClaudeCodeRateLimits"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -236,13 +243,17 @@ export interface WebviewMessage {
 			| "gemini"
 			| "mistral"
 			| "vercel-ai-gateway"
+			| "bedrock"
 			| "openrouter"
 		codebaseIndexEmbedderBaseUrl?: string
 		codebaseIndexEmbedderModelId: string
 		codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 		codebaseIndexOpenAiCompatibleBaseUrl?: string
+		codebaseIndexBedrockRegion?: string
+		codebaseIndexBedrockProfile?: string
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
+		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
 
 		// Secret settings
 		codeIndexOpenAiKey?: string

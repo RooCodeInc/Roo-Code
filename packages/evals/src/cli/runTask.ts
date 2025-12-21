@@ -1,4 +1,5 @@
 import * as fs from "fs"
+import * as fsp from "fs/promises"
 import * as path from "path"
 import * as os from "node:os"
 
@@ -12,6 +13,7 @@ import {
 	RooCodeEventName,
 	IpcMessageType,
 	EVALS_SETTINGS,
+	type ToolUsage,
 } from "@roo-code/types"
 import { IpcClient } from "@roo-code/ipc"
 
@@ -35,6 +37,58 @@ class SubprocessTimeoutError extends Error {
 	constructor(timeout: number) {
 		super(`Subprocess timeout after ${timeout}ms`)
 		this.name = "SubprocessTimeoutError"
+	}
+}
+
+/**
+ * Copy conversation history files from VS Code extension storage to the log directory.
+ * This allows us to preserve the api_conversation_history.json and ui_messages.json
+ * files for post-mortem analysis alongside the log files.
+ */
+async function copyConversationHistory({
+	rooTaskId,
+	logDir,
+	language,
+	exercise,
+	iteration,
+	logger,
+}: {
+	rooTaskId: string
+	logDir: string
+	language: string
+	exercise: string
+	iteration: number
+	logger: Logger
+}): Promise<void> {
+	// VS Code extension global storage path within the container
+	const extensionStoragePath = "/roo/.vscode/User/globalStorage/rooveterinaryinc.roo-cline"
+	const taskStoragePath = path.join(extensionStoragePath, "tasks", rooTaskId)
+
+	const filesToCopy = ["api_conversation_history.json", "ui_messages.json"]
+
+	for (const filename of filesToCopy) {
+		const sourcePath = path.join(taskStoragePath, filename)
+		// Use sanitized exercise name (replace slashes with dashes) for the destination filename
+		// Include iteration number to handle multiple attempts at the same exercise
+		const sanitizedExercise = exercise.replace(/\//g, "-")
+		const destFilename = `${language}-${sanitizedExercise}.${iteration}_${filename}`
+		const destPath = path.join(logDir, destFilename)
+
+		try {
+			// Check if source file exists
+			await fsp.access(sourcePath)
+
+			// Copy the file
+			await fsp.copyFile(sourcePath, destPath)
+			logger.info(`copied ${filename} to ${destPath}`)
+		} catch (error) {
+			// File may not exist if task didn't complete properly - this is not fatal
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+				logger.info(`${filename} not found at ${sourcePath} - skipping`)
+			} else {
+				logger.error(`failed to copy ${filename}:`, error)
+			}
+		}
 	}
 }
 
@@ -114,7 +168,7 @@ export const processTaskInContainer = async ({
 
 	for (let attempt = 0; attempt <= maxRetries; attempt++) {
 		const containerName = `evals-task-${taskId}.${attempt}`
-		const args = [`--name ${containerName}`, ...baseArgs]
+		const args = [`--name ${containerName}`, `-e EVALS_ATTEMPT=${attempt}`, ...baseArgs]
 		const isRetry = attempt > 0
 
 		if (isRetry) {
@@ -172,6 +226,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	const controller = new AbortController()
 	const cancelSignal = controller.signal
 	const containerized = isDockerContainer()
+	const logDir = containerized ? `/var/log/evals/runs/${run.id}` : `/tmp/evals/runs/${run.id}`
 
 	let codeCommand = containerized
 		? `xvfb-run --auto-servernum --server-num=1 code --wait --log trace --disable-workspace-trust --disable-gpu --disable-lcd-text --no-sandbox --user-data-dir /roo/.vscode --password-store="basic" -n ${workspacePath}`
@@ -223,6 +278,15 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	let taskMetricsId: number | undefined
 	let rooTaskId: string | undefined
 	let isClientDisconnected = false
+	// Track accumulated tool usage across task instances (handles rehydration after abort)
+	const accumulatedToolUsage: ToolUsage = {}
+
+	// Promise that resolves when taskMetricsId is set, preventing race conditions
+	// where TaskTokenUsageUpdated arrives before TaskStarted handler completes
+	let resolveTaskMetricsReady: () => void
+	const taskMetricsReady = new Promise<void>((resolve) => {
+		resolveTaskMetricsReady = resolve
+	})
 
 	const ignoreEvents: Record<"broadcast" | "log", RooCodeEventName[]> = {
 		broadcast: [RooCodeEventName.Message],
@@ -266,7 +330,23 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				(payload[0].message.say && loggableSays.includes(payload[0].message.say)) ||
 				payload[0].message.partial !== true)
 		) {
-			logger.info(`${eventName} ->`, payload)
+			// Extract tool name for tool-related messages for clearer logging
+			let logEventName: string = eventName
+			if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "tool") {
+				try {
+					const textJson = JSON.parse(payload[0].message.text ?? "{}")
+					if (textJson.tool) {
+						logEventName = `${eventName} (tool: ${textJson.tool})`
+					}
+				} catch {
+					// If parsing fails, use the default event name
+				}
+			} else if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "command") {
+				logEventName = `${eventName} (command)`
+			} else if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "completion_result") {
+				logEventName = `${eventName} (completion_result)`
+			}
+			logger.info(`${logEventName} ->`, payload)
 		}
 
 		if (eventName === RooCodeEventName.TaskStarted) {
@@ -287,6 +367,9 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			taskStartedAt = Date.now()
 			taskMetricsId = taskMetrics.id
 			rooTaskId = payload[0]
+
+			// Signal that taskMetricsId is now ready for other handlers
+			resolveTaskMetricsReady()
 		}
 
 		if (eventName === RooCodeEventName.TaskToolFailed) {
@@ -294,14 +377,45 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 			await createToolError({ taskId: task.id, toolName, error })
 		}
 
-		if (
-			(eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) &&
-			taskMetricsId
-		) {
+		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
+			// Wait for taskMetricsId to be set by the TaskStarted handler.
+			// This prevents a race condition where these events arrive before
+			// the TaskStarted handler finishes its async database operations.
+			// Note: taskMetricsReady is also resolved on disconnect to prevent deadlock.
+			await taskMetricsReady
+
+			// Guard: taskMetricsReady may have been resolved due to disconnect
+			// without taskMetricsId being set. Skip metrics update in this case.
+			if (!taskMetricsId) {
+				logger.info(`skipping metrics update: taskMetricsId not set (event: ${eventName})`)
+				return
+			}
+
 			const duration = Date.now() - taskStartedAt
 
 			const { totalCost, totalTokensIn, totalTokensOut, contextTokens, totalCacheWrites, totalCacheReads } =
 				payload[1]
+
+			// For both TaskTokenUsageUpdated and TaskCompleted: toolUsage is payload[2]
+			const incomingToolUsage: ToolUsage = payload[2] ?? {}
+
+			// Merge incoming tool usage with accumulated data using MAX strategy.
+			// This handles the case where a task is rehydrated after abort:
+			// - Empty rehydrated data won't overwrite existing: max(5, 0) = 5
+			// - Legitimate restart with additional work is captured: max(5, 8) = 8
+			// Each task instance tracks its own cumulative values, so we take the max
+			// to preserve the highest values seen across all instances.
+			for (const [toolName, usage] of Object.entries(incomingToolUsage)) {
+				const existing = accumulatedToolUsage[toolName as keyof ToolUsage]
+				if (existing) {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = {
+						attempts: Math.max(existing.attempts, usage.attempts),
+						failures: Math.max(existing.failures, usage.failures),
+					}
+				} else {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = { ...usage }
+				}
+			}
 
 			await updateTaskMetrics(taskMetricsId, {
 				cost: totalCost,
@@ -311,12 +425,8 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				duration,
 				cacheWrites: totalCacheWrites ?? 0,
 				cacheReads: totalCacheReads ?? 0,
+				toolUsage: accumulatedToolUsage,
 			})
-		}
-
-		if (eventName === RooCodeEventName.TaskCompleted && taskMetricsId) {
-			const toolUsage = payload[2]
-			await updateTaskMetrics(taskMetricsId, { toolUsage })
 		}
 
 		if (eventName === RooCodeEventName.TaskAborted) {
@@ -331,6 +441,10 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	client.on(IpcMessageType.Disconnect, async () => {
 		logger.info(`disconnected from IPC socket -> ${ipcSocketPath}`)
 		isClientDisconnected = true
+		// Resolve taskMetricsReady to unblock any handlers waiting on it.
+		// This prevents deadlock if TaskStarted never fired or threw before resolving.
+		// The handlers check for taskMetricsId being set before proceeding.
+		resolveTaskMetricsReady()
 	})
 
 	client.sendCommand({
@@ -418,9 +532,25 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 		}
 	}
 
+	// Copy conversation history files from VS Code extension storage to the log directory
+	// for post-mortem analysis. Only do this in containerized mode where we have a known path.
+	if (containerized && rooTaskId) {
+		await copyConversationHistory({
+			rooTaskId,
+			logDir,
+			language,
+			exercise,
+			iteration: task.iteration,
+			logger,
+		})
+	}
+
 	logger.close()
 
-	if (isApiUnstable) {
+	// Only throw for API instability if the task didn't complete successfully.
+	// If taskFinishedAt is set via TaskCompleted event, the task succeeded despite
+	// API retries, so re-running from scratch would waste resources.
+	if (isApiUnstable && !taskFinishedAt) {
 		throw new Error("API is unstable, throwing to trigger a retry.")
 	}
 }

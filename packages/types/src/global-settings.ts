@@ -74,7 +74,6 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowWriteProtected: z.boolean().optional(),
 	writeDelayMs: z.number().min(0).optional(),
 	alwaysAllowBrowser: z.boolean().optional(),
-	alwaysApproveResubmit: z.boolean().optional(),
 	requestDelaySeconds: z.number().optional(),
 	alwaysAllowMcp: z.boolean().optional(),
 	alwaysAllowModeSwitch: z.boolean().optional(),
@@ -82,7 +81,6 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowExecute: z.boolean().optional(),
 	alwaysAllowFollowupQuestions: z.boolean().optional(),
 	followupAutoApproveTimeoutMs: z.number().optional(),
-	alwaysAllowUpdateTodoList: z.boolean().optional(),
 	allowedCommands: z.array(z.string()).optional(),
 	deniedCommands: z.array(z.string()).optional(),
 	commandExecutionTimeout: z.number().optional(),
@@ -187,6 +185,13 @@ export const globalSettingsSchema = z.object({
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
+	/**
+	 * Controls the keyboard behavior for sending messages in the chat input.
+	 * - "send": Enter sends message, Shift+Enter creates newline (default)
+	 * - "newline": Enter creates newline, Shift+Enter/Ctrl+Enter sends message
+	 * @default "send"
+	 */
+	enterBehavior: z.enum(["send", "newline"]).optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
@@ -210,7 +215,6 @@ export type RooCodeSettings = GlobalSettings & ProviderSettings
  */
 export const SECRET_STATE_KEYS = [
 	"apiKey",
-	"glamaApiKey",
 	"openRouterApiKey",
 	"awsAccessKey",
 	"awsApiKey",
@@ -301,14 +305,12 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	alwaysAllowWriteProtected: false,
 	writeDelayMs: 1000,
 	alwaysAllowBrowser: true,
-	alwaysApproveResubmit: true,
 	requestDelaySeconds: 10,
 	alwaysAllowMcp: true,
 	alwaysAllowModeSwitch: true,
 	alwaysAllowSubtasks: true,
 	alwaysAllowExecute: true,
 	alwaysAllowFollowupQuestions: true,
-	alwaysAllowUpdateTodoList: true,
 	followupAutoApproveTimeoutMs: 0,
 	allowedCommands: ["*"],
 	commandExecutionTimeout: 20,

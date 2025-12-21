@@ -48,17 +48,22 @@ vi.mock("@dotenvx/dotenvx", () => ({
 
 const mockBridgeOrchestratorDisconnect = vi.fn().mockResolvedValue(undefined)
 
+const mockCloudServiceInstance = {
+	off: vi.fn(),
+	on: vi.fn(),
+	getUserInfo: vi.fn().mockReturnValue(null),
+	isTaskSyncEnabled: vi.fn().mockReturnValue(false),
+	authService: {
+		getSessionToken: vi.fn().mockReturnValue("test-session-token"),
+	},
+}
+
 vi.mock("@roo-code/cloud", () => ({
 	CloudService: {
 		createInstance: vi.fn(),
 		hasInstance: vi.fn().mockReturnValue(true),
 		get instance() {
-			return {
-				off: vi.fn(),
-				on: vi.fn(),
-				getUserInfo: vi.fn().mockReturnValue(null),
-				isTaskSyncEnabled: vi.fn().mockReturnValue(false),
-			}
+			return mockCloudServiceInstance
 		},
 	},
 	BridgeOrchestrator: {
@@ -171,6 +176,46 @@ vi.mock("../i18n", () => ({
 	t: vi.fn((key) => key),
 }))
 
+// Mock ClineProvider - remoteControlEnabled must call BridgeOrchestrator.disconnect for the test
+vi.mock("../core/webview/ClineProvider", async () => {
+	const { BridgeOrchestrator } = await import("@roo-code/cloud")
+	const mockInstance = {
+		resolveWebviewView: vi.fn(),
+		postMessageToWebview: vi.fn(),
+		postStateToWebview: vi.fn(),
+		getState: vi.fn().mockResolvedValue({}),
+		remoteControlEnabled: vi.fn().mockImplementation(async (enabled: boolean) => {
+			if (!enabled) {
+				await BridgeOrchestrator.disconnect()
+			}
+		}),
+		initializeCloudProfileSyncWhenReady: vi.fn().mockResolvedValue(undefined),
+		providerSettingsManager: {},
+		contextProxy: { getGlobalState: vi.fn() },
+		customModesManager: {},
+		upsertProviderProfile: vi.fn().mockResolvedValue(undefined),
+	}
+	return {
+		ClineProvider: Object.assign(
+			vi.fn().mockImplementation(() => mockInstance),
+			{
+				// Static method used by extension.ts
+				getVisibleInstance: vi.fn().mockReturnValue(mockInstance),
+				sideBarId: "roo-cline-sidebar",
+			},
+		),
+	}
+})
+
+// Mock modelCache to prevent network requests during module loading
+const mockRefreshModels = vi.fn().mockResolvedValue({})
+vi.mock("../api/providers/fetchers/modelCache", () => ({
+	flushModels: vi.fn(),
+	getModels: vi.fn().mockResolvedValue([]),
+	initializeModelCacheRefresh: vi.fn(),
+	refreshModels: mockRefreshModels,
+}))
+
 describe("extension.ts", () => {
 	let mockContext: vscode.ExtensionContext
 	let authStateChangedHandler:
@@ -206,6 +251,8 @@ describe("extension.ts", () => {
 				off: vi.fn(),
 				on: vi.fn(),
 				telemetryClient: null,
+				hasActiveSession: vi.fn().mockReturnValue(false),
+				authService: null,
 			} as any
 		})
 
@@ -239,6 +286,8 @@ describe("extension.ts", () => {
 				off: vi.fn(),
 				on: vi.fn(),
 				telemetryClient: null,
+				hasActiveSession: vi.fn().mockReturnValue(false),
+				authService: null,
 			} as any
 		})
 
@@ -254,5 +303,88 @@ describe("extension.ts", () => {
 
 		// Verify BridgeOrchestrator.disconnect was NOT called.
 		expect(mockBridgeOrchestratorDisconnect).not.toHaveBeenCalled()
+	})
+
+	describe("Roo model cache refresh on auth state change (ROO-202)", () => {
+		beforeEach(() => {
+			vi.resetModules()
+			mockRefreshModels.mockClear()
+		})
+
+		test("refreshModels is called with session token when auth state changes to active-session", async () => {
+			const mockAuthService = {
+				getSessionToken: vi.fn().mockReturnValue("test-session-token"),
+			}
+
+			const { CloudService } = await import("@roo-code/cloud")
+
+			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
+				if (handlers?.["auth-state-changed"]) {
+					authStateChangedHandler = handlers["auth-state-changed"]
+				}
+				return {
+					off: vi.fn(),
+					on: vi.fn(),
+					telemetryClient: null,
+					authService: mockAuthService,
+					hasActiveSession: vi.fn().mockReturnValue(false),
+				} as any
+			})
+
+			vi.mocked(CloudService.hasInstance).mockReturnValue(true)
+
+			// Activate the extension
+			const { activate } = await import("../extension")
+			await activate(mockContext)
+
+			// Clear any calls during activation
+			mockRefreshModels.mockClear()
+
+			// Trigger active-session state
+			await authStateChangedHandler!({
+				state: "active-session" as AuthState,
+				previousState: "logged-out" as AuthState,
+			})
+
+			// Verify refreshModels was called with correct parameters including session token
+			expect(mockRefreshModels).toHaveBeenCalledWith({
+				provider: "roo",
+				baseUrl: expect.any(String),
+				apiKey: "test-session-token",
+			})
+		})
+
+		test("flushModels is called when auth state changes to logged-out", async () => {
+			const { flushModels } = await import("../api/providers/fetchers/modelCache")
+			const { CloudService } = await import("@roo-code/cloud")
+
+			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
+				if (handlers?.["auth-state-changed"]) {
+					authStateChangedHandler = handlers["auth-state-changed"]
+				}
+				return {
+					off: vi.fn(),
+					on: vi.fn(),
+					telemetryClient: null,
+					authService: null,
+					hasActiveSession: vi.fn().mockReturnValue(false),
+				} as any
+			})
+
+			vi.mocked(CloudService.hasInstance).mockReturnValue(true)
+
+			// Activate the extension
+			const { activate } = await import("../extension")
+			await activate(mockContext)
+
+			// Trigger logged-out state
+			await authStateChangedHandler!({
+				state: "logged-out" as AuthState,
+				previousState: "active-session" as AuthState,
+			})
+
+			// Verify flushModels was called to clear the cache on logout
+			expect(flushModels).toHaveBeenCalledWith({ provider: "roo" }, false)
+		})
 	})
 })

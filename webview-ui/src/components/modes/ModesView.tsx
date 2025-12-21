@@ -8,7 +8,7 @@ import {
 	VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
-import { ChevronDown, X, Upload, Download } from "lucide-react"
+import { ChevronDown, X, Upload, Download, MessageSquare } from "lucide-react"
 
 import { ModeConfig, GroupEntry, PromptComponent, ToolGroup, modeConfigSchema } from "@roo-code/types"
 
@@ -28,7 +28,8 @@ import { vscode } from "@src/utils/vscode"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { Tab, TabContent, TabHeader } from "@src/components/common/Tab"
+import { Section } from "@src/components/settings/Section"
+import { SectionHeader } from "@src/components/settings/SectionHeader"
 import {
 	Button,
 	Select,
@@ -58,16 +59,12 @@ type ModeSource = "global" | "project"
 
 type ImportModeResult = { type: "importModeResult"; success: boolean; slug?: string; error?: string }
 
-type ModesViewProps = {
-	onDone: () => void
-}
-
 // Helper to get group name regardless of format
 function getGroupName(group: GroupEntry): ToolGroup {
 	return Array.isArray(group) ? group[0] : group
 }
 
-const ModesView = ({ onDone }: ModesViewProps) => {
+const ModesView = () => {
 	const { t } = useAppTranslation()
 
 	const {
@@ -595,13 +592,15 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 	}
 
 	return (
-		<Tab>
-			<TabHeader className="flex justify-between items-center">
-				<h3 className="text-vscode-foreground m-0">{t("prompts:title")}</h3>
-				<Button onClick={onDone}>{t("prompts:done")}</Button>
-			</TabHeader>
+		<div>
+			<SectionHeader>
+				<div className="flex items-center gap-2">
+					<MessageSquare className="w-4" />
+					<div>{t("prompts:title")}</div>
+				</div>
+			</SectionHeader>
 
-			<TabContent>
+			<Section>
 				<div>
 					<div onClick={(e) => e.stopPropagation()} className="flex justify-between items-center mb-3">
 						<h3 className="text-vscode-foreground m-0">{t("prompts:modes.title")}</h3>
@@ -1462,7 +1461,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 						/>
 					</div>
 				</div>
-			</TabContent>
+			</Section>
 
 			{isCreateModeDialogOpen && (
 				<div className="fixed inset-0 flex justify-end bg-black/50 z-[1000]">
@@ -1765,7 +1764,7 @@ const ModesView = ({ onDone }: ModesViewProps) => {
 					}
 				}}
 			/>
-		</Tab>
+		</div>
 	)
 }
 
