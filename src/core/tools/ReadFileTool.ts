@@ -458,7 +458,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								task.rooIgnoreController,
 							)
 							if (defResult) {
-								const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
+								const notice = `Showing code definitions only (0 of ${totalLines} total lines). To read file content, use the read_file tool with line_range (e.g., <line_range>1-${Math.min(500, totalLines)}</line_range>)`
 								updateFileResult(relPath, {
 									xmlContent: `<file><path>${relPath}</path>\n<list_code_definition_names>${defResult}</list_code_definition_names>\n<notice>${notice}</notice>\n</file>`,
 									nativeContent: `File: ${relPath}\nCode Definitions:\n${defResult}\n\nNote: ${notice}`,
@@ -493,7 +493,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								nativeInfo += `\nCode Definitions:\n${truncatedDefs}\n`
 							}
 
-							const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
+							const nextLine = maxReadFileLine + 1
+							const notice = `File truncated at line ${maxReadFileLine} of ${totalLines} total lines. To continue reading, use the read_file tool again with line_range starting at line ${nextLine} (e.g., <line_range>${nextLine}-${Math.min(nextLine + 499, totalLines)}</line_range>)`
 							xmlInfo += `<notice>${notice}</notice>\n`
 							nativeInfo += `\nNote: ${notice}`
 
@@ -547,8 +548,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						content = addLineNumbers(result.content)
 
 						if (!result.complete) {
-							// File was truncated
-							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
+							// File was truncated due to context budget
+							const nextLine = result.lineCount + 1
+							const notice = `File truncated at line ${result.lineCount} of ${totalLines} total lines due to context budget (${result.tokenCount} tokens used). To continue reading, use the read_file tool again with line_range starting at line ${nextLine} (e.g., <line_range>${nextLine}-${Math.min(nextLine + 499, totalLines)}</line_range>)`
 							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
 							xmlInfo =
 								result.lineCount > 0
