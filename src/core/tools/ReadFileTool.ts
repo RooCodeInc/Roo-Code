@@ -547,8 +547,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						content = addLineNumbers(result.content)
 
 						if (!result.complete) {
-							// File was truncated
-							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
+							// File was truncated due to context budget
+							const nextLine = result.lineCount + 1
+							const notice = `File truncated at line ${result.lineCount} of ${totalLines} total lines due to context budget (${result.tokenCount} tokens used). To continue reading, use the read_file tool again with line_range starting at line ${nextLine} (e.g., <line_range>${nextLine}-${Math.min(nextLine + 499, totalLines)}</line_range>)`
 							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
 							xmlInfo =
 								result.lineCount > 0
