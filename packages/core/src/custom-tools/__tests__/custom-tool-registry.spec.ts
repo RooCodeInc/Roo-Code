@@ -10,6 +10,7 @@ import { CustomToolRegistry } from "../custom-tool-registry.js"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const TEST_FIXTURES_DIR = path.join(__dirname, "fixtures")
+const TEST_FIXTURES_OVERRIDE_DIR = path.join(__dirname, "fixtures-override")
 
 describe("CustomToolRegistry", () => {
 	let registry: CustomToolRegistry
@@ -281,5 +282,100 @@ describe("CustomToolRegistry", () => {
 
 			expect(result.loaded).toContain("cached")
 		}, 30000)
+	})
+
+	describe.sequential("loadFromDirectories", () => {
+		it("should load tools from multiple directories", async () => {
+			const result = await registry.loadFromDirectories([TEST_FIXTURES_DIR, TEST_FIXTURES_OVERRIDE_DIR])
+
+			// Should load tools from both directories.
+			expect(result.loaded).toContain("simple") // From both directories (override wins).
+			expect(result.loaded).toContain("unique_override") // Only in override directory.
+			expect(result.loaded).toContain("multi_toolA") // Only in fixtures directory.
+		}, 60000)
+
+		it("should allow later directories to override earlier ones", async () => {
+			await registry.loadFromDirectories([TEST_FIXTURES_DIR, TEST_FIXTURES_OVERRIDE_DIR])
+
+			// The simple tool should have the overridden description.
+			const simpleTool = registry.get("simple")
+			expect(simpleTool).toBeDefined()
+			expect(simpleTool?.description).toBe("Simple tool - OVERRIDDEN")
+		}, 60000)
+
+		it("should preserve order: first directory loaded first, second overrides", async () => {
+			// Load in reverse order: override first, then fixtures.
+			await registry.loadFromDirectories([TEST_FIXTURES_OVERRIDE_DIR, TEST_FIXTURES_DIR])
+
+			// Now the original fixtures directory should win.
+			const simpleTool = registry.get("simple")
+			expect(simpleTool).toBeDefined()
+			expect(simpleTool?.description).toBe("Simple tool") // Original wins when loaded second.
+		}, 60000)
+
+		it("should handle non-existent directories in the array", async () => {
+			const result = await registry.loadFromDirectories([
+				"/nonexistent/path",
+				TEST_FIXTURES_DIR,
+				"/another/nonexistent",
+			])
+
+			// Should still load from the existing directory.
+			expect(result.loaded).toContain("simple")
+			expect(result.failed).toHaveLength(1) // Only the invalid.ts from fixtures.
+		}, 60000)
+
+		it("should handle empty array", async () => {
+			const result = await registry.loadFromDirectories([])
+
+			expect(result.loaded).toHaveLength(0)
+			expect(result.failed).toHaveLength(0)
+		})
+
+		it("should combine results from all directories", async () => {
+			const result = await registry.loadFromDirectories([TEST_FIXTURES_DIR, TEST_FIXTURES_OVERRIDE_DIR])
+
+			// Loaded should include tools from both (with duplicates since simple is loaded twice).
+			// The "simple" tool is loaded from both directories.
+			const simpleCount = result.loaded.filter((name) => name === "simple").length
+			expect(simpleCount).toBe(2) // Listed twice in loaded results.
+		}, 60000)
+	})
+
+	describe.sequential("loadFromDirectoriesIfStale", () => {
+		it("should load tools from multiple directories when stale", async () => {
+			const result = await registry.loadFromDirectoriesIfStale([TEST_FIXTURES_DIR, TEST_FIXTURES_OVERRIDE_DIR])
+
+			expect(result.loaded).toContain("simple")
+			expect(result.loaded).toContain("unique_override")
+		}, 60000)
+
+		it("should not reload if directories are not stale", async () => {
+			// First load.
+			await registry.loadFromDirectoriesIfStale([TEST_FIXTURES_DIR])
+
+			// Clear tools but keep staleness tracking.
+			// (firstLoadSize is captured to document that tools were loaded, then cleared).
+			const _firstLoadSize = registry.size
+			registry.clear()
+
+			// Second load - should return cached tool names without reloading.
+			const result = await registry.loadFromDirectoriesIfStale([TEST_FIXTURES_DIR])
+
+			// Registry was cleared, not stale so no reload.
+			expect(result.loaded).toEqual([])
+		}, 30000)
+
+		it("should handle mixed stale and non-stale directories", async () => {
+			// Load from fixtures first.
+			await registry.loadFromDirectoriesIfStale([TEST_FIXTURES_DIR])
+
+			// Load from both - fixtures is not stale, override is new (stale).
+			const result = await registry.loadFromDirectoriesIfStale([TEST_FIXTURES_DIR, TEST_FIXTURES_OVERRIDE_DIR])
+
+			// Override directory tools should be loaded (it's stale/new).
+			expect(result.loaded).toContain("simple") // From override (stale).
+			expect(result.loaded).toContain("unique_override") // From override (stale).
+		}, 60000)
 	})
 })

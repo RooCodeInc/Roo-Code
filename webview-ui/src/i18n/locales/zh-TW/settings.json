@@ -828,9 +828,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "啟用自訂工具",
-			"description": "啟用後，Roo 可以從專案中的 .roo/tools 目錄載入並使用自訂 TypeScript/JavaScript 工具。",
+			"description": "啟用後，Roo 可以從專案中的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 載入並使用自訂 TypeScript/JavaScript 工具。注意：這些工具將自動獲得核准。",
 			"toolsHeader": "可用自訂工具",
-			"noTools": "未載入自訂工具。請向專案的 .roo/tools 目錄新增 .ts 或 .js 檔案。",
+			"noTools": "未載入自訂工具。請向專案的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 新增 .ts 或 .js 檔案。",
 			"refreshButton": "重新整理",
 			"refreshing": "正在重新整理...",
 			"refreshSuccess": "工具重新整理成功",

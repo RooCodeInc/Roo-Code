@@ -59,6 +59,7 @@ export interface SerializedCustomToolDefinition {
 	name: string
 	description: string
 	parameters?: SerializedCustomToolParameters
+	source?: string
 }
 
 /**

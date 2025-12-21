@@ -19,6 +19,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       ],
       "type": "object",
     },
+    "source": undefined,
   },
   {
     "description": "Cached tool",
@@ -29,6 +30,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       "properties": {},
       "type": "object",
     },
+    "source": undefined,
   },
   {
     "description": "Legacy tool using args",
@@ -47,6 +49,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       ],
       "type": "object",
     },
+    "source": undefined,
   },
   {
     "description": "Tool A",
@@ -57,6 +60,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       "properties": {},
       "type": "object",
     },
+    "source": undefined,
   },
   {
     "description": "Tool B",
@@ -67,6 +71,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       "properties": {},
       "type": "object",
     },
+    "source": undefined,
   },
   {
     "description": "Valid",
@@ -77,6 +82,7 @@ exports[`Serialization snapshots > should correctly serialize all fixtures 1`] =
       "properties": {},
       "type": "object",
     },
+    "source": undefined,
   },
 ]
 `;
@@ -91,6 +97,7 @@ exports[`Serialization snapshots > should correctly serialize cached tool 1`] = 
     "properties": {},
     "type": "object",
   },
+  "source": undefined,
 }
 `;
 
@@ -112,6 +119,7 @@ exports[`Serialization snapshots > should correctly serialize legacy tool (using
     ],
     "type": "object",
   },
+  "source": undefined,
 }
 `;
 
@@ -133,5 +141,6 @@ exports[`Serialization snapshots > should correctly serialize simple tool 1`] = 
     ],
     "type": "object",
   },
+  "source": undefined,
 }
 `;

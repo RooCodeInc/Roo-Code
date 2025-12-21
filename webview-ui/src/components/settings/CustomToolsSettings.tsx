@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useEvent } from "react-use"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { RefreshCw, Loader2 } from "lucide-react"
+import { RefreshCw, Loader2, FileCode } from "lucide-react"
 
 import type { SerializedCustomToolDefinition } from "@roo-code/types"
 
@@ -22,6 +22,7 @@ interface ProcessedTool {
 	name: string
 	description: string
 	parameters: ToolParameter[]
+	source?: string
 }
 
 interface CustomToolsSettingsProps {
@@ -69,6 +70,7 @@ export const CustomToolsSettings = ({ enabled, onChange }: CustomToolsSettingsPr
 				return {
 					name: tool.name,
 					description: tool.description,
+					source: tool.source,
 					parameters: Object.entries(properties).map(([name, def]) => ({
 						name,
 						type: def.type ?? "any",
@@ -124,47 +126,55 @@ export const CustomToolsSettings = ({ enabled, onChange }: CustomToolsSettingsPr
 							{t("settings:experimental.CUSTOM_TOOLS.noTools")}
 						</p>
 					) : (
-						<div className="space-y-2">
-							{processedTools.map((tool) => (
-								<div
-									key={tool.name}
-									className="p-3 bg-vscode-editor-background border border-vscode-panel-border rounded">
+						processedTools.map((tool) => (
+							<div
+								key={tool.name}
+								className="bg-vscode-editor-background border border-vscode-panel-border rounded space-y-3 p-3">
+								<div className="space-y-1">
 									<div className="font-medium text-vscode-foreground">{tool.name}</div>
-									<p className="text-vscode-descriptionForeground text-sm mt-1">{tool.description}</p>
-									{tool.parameters.length > 0 && (
-										<div className="mt-3">
-											<div className="text-xs font-medium text-vscode-foreground mb-2">
-												{t("settings:experimental.CUSTOM_TOOLS.toolParameters")}:
-											</div>
-											<div className="space-y-1">
-												{tool.parameters.map((param) => (
-													<div
-														key={param.name}
-														className="flex items-start gap-2 text-xs pl-2 py-1 border-l-2 border-vscode-panel-border">
-														<code className="text-vscode-textLink-foreground font-mono">
-															{param.name}
-														</code>
-														<span className="text-vscode-descriptionForeground">
-															({param.type})
-														</span>
-														{param.required && (
-															<span className="text-vscode-errorForeground text-[10px] uppercase">
-																required
-															</span>
-														)}
-														{param.description && (
-															<span className="text-vscode-descriptionForeground">
-																— {param.description}
-															</span>
-														)}
-													</div>
-												))}
-											</div>
+									{tool.source && (
+										<div className="flex items-center text-xs text-vscode-descriptionForeground">
+											<FileCode className="size-3 flex-shrink-0" />
+											<span className="font-mono truncate" title={tool.source}>
+												{tool.source}
+											</span>
 										</div>
 									)}
 								</div>
-							))}
-						</div>
+								<div className="text-vscode-descriptionForeground text-sm">{tool.description}</div>
+								{tool.parameters.length > 0 && (
+									<div className="space-y-1">
+										<div className="text-xs font-medium text-vscode-foreground">
+											{t("settings:experimental.CUSTOM_TOOLS.toolParameters")}:
+										</div>
+										<div>
+											{tool.parameters.map((param) => (
+												<div
+													key={param.name}
+													className="flex items-start gap-2 text-xs pl-2 py-1 border-l-2 border-vscode-panel-border">
+													<code className="text-vscode-textLink-foreground font-mono">
+														{param.name}
+													</code>
+													<span className="text-vscode-descriptionForeground">
+														({param.type})
+													</span>
+													{param.required && (
+														<span className="text-vscode-errorForeground text-[10px] uppercase">
+															required
+														</span>
+													)}
+													{param.description && (
+														<span className="text-vscode-descriptionForeground">
+															— {param.description}
+														</span>
+													)}
+												</div>
+											))}
+										</div>
+									</div>
+								)}
+							</div>
+						))
 					)}
 				</div>
 			)}

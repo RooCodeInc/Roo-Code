@@ -15,13 +15,9 @@ import os from "os"
 
 import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@roo-code/types"
 
+import type { StoredCustomTool, LoadResult } from "./types.js"
 import { serializeCustomTool } from "./serialize.js"
 import { runEsbuild } from "./esbuild-runner.js"
-
-export interface LoadResult {
-	loaded: string[]
-	failed: Array<{ file: string; error: string }>
-}
 
 export interface RegistryOptions {
 	/** Directory for caching compiled TypeScript files. */
@@ -33,7 +29,7 @@ export interface RegistryOptions {
 }
 
 export class CustomToolRegistry {
-	private tools = new Map<string, CustomToolDefinition>()
+	private tools = new Map<string, StoredCustomTool>()
 	private tsCache = new Map<string, string>()
 	private cacheDir: string
 	private nodePaths: string[]
@@ -78,7 +74,7 @@ export class CustomToolRegistry {
 							continue
 						}
 
-						this.tools.set(def.name, def)
+						this.tools.set(def.name, { ...def, source: filePath })
 						console.log(`[CustomToolRegistry] loaded tool ${def.name} from ${filePath}`)
 						result.loaded.push(def.name)
 					}
@@ -114,9 +110,48 @@ export class CustomToolRegistry {
 	}
 
 	/**
+	 * Load all tools from multiple directories.
+	 * Directories are processed in order, so later directories can override tools from earlier ones.
+	 * Supports both .ts and .js files.
+	 *
+	 * @param toolDirs - Array of absolute paths to tools directories
+	 * @returns LoadResult with lists of loaded and failed tools from all directories
+	 */
+	async loadFromDirectories(toolDirs: string[]): Promise<LoadResult> {
+		const result: LoadResult = { loaded: [], failed: [] }
+
+		for (const toolDir of toolDirs) {
+			const dirResult = await this.loadFromDirectory(toolDir)
+			result.loaded.push(...dirResult.loaded)
+			result.failed.push(...dirResult.failed)
+		}
+
+		return result
+	}
+
+	/**
+	 * Load all tools from multiple directories if any has become stale.
+	 * Directories are processed in order, so later directories can override tools from earlier ones.
+	 *
+	 * @param toolDirs - Array of absolute paths to tools directories
+	 * @returns LoadResult with lists of loaded and failed tools
+	 */
+	async loadFromDirectoriesIfStale(toolDirs: string[]): Promise<LoadResult> {
+		const result: LoadResult = { loaded: [], failed: [] }
+
+		for (const toolDir of toolDirs) {
+			const dirResult = await this.loadFromDirectoryIfStale(toolDir)
+			result.loaded.push(...dirResult.loaded)
+			result.failed.push(...dirResult.failed)
+		}
+
+		return result
+	}
+
+	/**
 	 * Register a tool directly (without loading from file).
 	 */
-	register(definition: CustomToolDefinition): void {
+	register(definition: CustomToolDefinition, source?: string): void {
 		const { name: id } = definition
 		const validated = this.validate(id, definition)
 
@@ -124,7 +159,8 @@ export class CustomToolRegistry {
 			throw new Error(`Invalid tool definition for '${id}'`)
 		}
 
-		this.tools.set(id, validated)
+		const storedTool: StoredCustomTool = source ? { ...validated, source } : validated
+		this.tools.set(id, storedTool)
 	}
 
 	/**
