@@ -54,7 +54,7 @@ import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
 import { getWorkspacePath } from "../../utils/path"
 import { Mode, defaultModeSlug } from "../../shared/modes"
-import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
+import { getModels, flushModels, refreshModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { getCommand } from "../../utils/commands"
@@ -923,10 +923,8 @@ export const webviewMessageHandler = async (
 			// Specific handler for Ollama models only.
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			try {
-				// Flush cache and refresh to ensure fresh models.
-				await flushModels("ollama", true)
-
-				const ollamaModels = await getModels({
+				// Force-refresh with the user-provided baseUrl/apiKey so we don't hit stale localhost cache.
+				const ollamaModels = await refreshModels({
 					provider: "ollama",
 					baseUrl: ollamaApiConfig.ollamaBaseUrl,
 					apiKey: ollamaApiConfig.ollamaApiKey,
@@ -945,10 +943,8 @@ export const webviewMessageHandler = async (
 			// Specific handler for LM Studio models only.
 			const { apiConfiguration: lmStudioApiConfig } = await provider.getState()
 			try {
-				// Flush cache and refresh to ensure fresh models.
-				await flushModels("lmstudio", true)
-
-				const lmStudioModels = await getModels({
+				// Force-refresh with the user-provided baseUrl so we don't hit stale localhost cache.
+				const lmStudioModels = await refreshModels({
 					provider: "lmstudio",
 					baseUrl: lmStudioApiConfig.lmStudioBaseUrl,
 				})

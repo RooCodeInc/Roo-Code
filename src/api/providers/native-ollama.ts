@@ -7,6 +7,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
+import { normalizeToolSchema } from "../../utils/json-schema"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 interface OllamaChatOptions {
@@ -158,15 +159,23 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	private ensureClient(): Ollama {
 		if (!this.client) {
 			try {
+				// Priority: environment variables > VS Code settings > default
+				const host =
+					process.env.OLLAMA_BASE_URL ||
+					process.env.OLLAMA_SERVER_URL ||
+					this.options.ollamaBaseUrl ||
+					"http://localhost:11434"
+
 				const clientOptions: OllamaOptions = {
-					host: this.options.ollamaBaseUrl || "http://localhost:11434",
+					host,
 					// Note: The ollama npm package handles timeouts internally
 				}
 
 				// Add API key if provided (for Ollama cloud or authenticated instances)
-				if (this.options.ollamaApiKey) {
+				const apiKey = process.env.OLLAMA_API_KEY || this.options.ollamaApiKey
+				if (apiKey) {
 					clientOptions.headers = {
-						Authorization: `Bearer ${this.options.ollamaApiKey}`,
+						Authorization: `Bearer ${apiKey}`,
 					}
 				}
 
@@ -182,6 +191,9 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	 * Converts OpenAI-format tools to Ollama's native tool format.
 	 * This allows NativeOllamaHandler to use the same tool definitions
 	 * that are passed to OpenAI-compatible providers.
+	 *
+	 * Normalizes JSON schemas to ensure compatibility with Ollama's Go unmarshaler,
+	 * which expects `type` to be a string (not an array like ["string", "null"]).
 	 */
 	private convertToolsToOllama(tools: OpenAI.Chat.ChatCompletionTool[] | undefined): OllamaTool[] | undefined {
 		if (!tools || tools.length === 0) {
@@ -195,7 +207,9 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				function: {
 					name: tool.function.name,
 					description: tool.function.description,
-					parameters: tool.function.parameters as OllamaTool["function"]["parameters"],
+					parameters: normalizeToolSchema(
+						tool.function.parameters as Record<string, unknown>,
+					) as OllamaTool["function"]["parameters"],
 				},
 			}))
 	}
@@ -234,9 +248,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
-			// Only include num_ctx if explicitly set via ollamaNumCtx
-			if (this.options.ollamaNumCtx !== undefined) {
-				chatOptions.num_ctx = this.options.ollamaNumCtx
+			// Only include num_ctx if explicitly set (env overrides settings)
+			const numCtx = process.env.OLLAMA_NUM_CTX
+				? parseInt(process.env.OLLAMA_NUM_CTX, 10)
+				: this.options.ollamaNumCtx
+			if (numCtx !== undefined && !isNaN(numCtx)) {
+				chatOptions.num_ctx = numCtx
 			}
 
 			// Create the actual API request promise
@@ -328,12 +345,15 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	}
 
 	async fetchModel() {
-		this.models = await getOllamaModels(this.options.ollamaBaseUrl, this.options.ollamaApiKey)
+		const baseUrl = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_SERVER_URL || this.options.ollamaBaseUrl
+		const apiKey = process.env.OLLAMA_API_KEY || this.options.ollamaApiKey
+
+		this.models = await getOllamaModels(baseUrl, apiKey)
 		return this.getModel()
 	}
 
 	override getModel(): { id: string; info: ModelInfo } {
-		const modelId = this.options.ollamaModelId || ""
+		const modelId = process.env.OLLAMA_MODEL_ID || this.options.ollamaModelId || ""
 		return {
 			id: modelId,
 			info: this.models[modelId] || openAiModelInfoSaneDefaults,
@@ -351,9 +371,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 			}
 
-			// Only include num_ctx if explicitly set via ollamaNumCtx
-			if (this.options.ollamaNumCtx !== undefined) {
-				chatOptions.num_ctx = this.options.ollamaNumCtx
+			// Only include num_ctx if explicitly set (env overrides settings)
+			const numCtx = process.env.OLLAMA_NUM_CTX
+				? parseInt(process.env.OLLAMA_NUM_CTX, 10)
+				: this.options.ollamaNumCtx
+			if (numCtx !== undefined && !isNaN(numCtx)) {
+				chatOptions.num_ctx = numCtx
 			}
 
 			const response = await client.chat({
