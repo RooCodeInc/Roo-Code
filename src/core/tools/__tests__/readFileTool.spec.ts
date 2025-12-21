@@ -3,9 +3,7 @@
 import * as path from "path"
 
 import { countFileLines } from "../../../integrations/misc/line-counter"
-import { readLines } from "../../../integrations/misc/read-lines"
 import { extractTextFromFile } from "../../../integrations/misc/extract-text"
-import { parseSourceCodeDefinitionsForFile } from "../../../services/tree-sitter"
 import { isBinaryFile } from "isbinaryfile"
 import { ReadFileToolUse, ToolParamName, ToolResponse } from "../../../shared/tools"
 import { readFileTool } from "../ReadFileTool"
@@ -24,7 +22,13 @@ vi.mock("path", async () => {
 vi.mock("isbinaryfile")
 
 vi.mock("../../../integrations/misc/line-counter")
-vi.mock("../../../integrations/misc/read-lines")
+
+// Create hoisted mock for readFileContent
+const mockReadFileContent = vi.hoisted(() => vi.fn())
+
+vi.mock("../../../integrations/misc/read-file-content", () => ({
+	readFileContent: mockReadFileContent,
+}))
 
 // Mock fs/promises readFile for image tests
 const fsPromises = vi.hoisted(() => ({
@@ -53,7 +57,6 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 	addLineNumbers: addLineNumbersMock,
 	getSupportedBinaryFormats: vi.fn(() => [".pdf", ".docx", ".ipynb"]),
 }))
-vi.mock("../../../services/tree-sitter")
 
 // Mock readFileWithTokenBudget - must be mocked to prevent actual file system access
 vi.mock("../../../integrations/misc/read-file-with-budget", () => ({
@@ -269,13 +272,10 @@ describe("read_file tool with maxReadFileLine setting", () => {
 	const absoluteFilePath = "/test/file.txt"
 	const fileContent = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5"
 	const numberedFileContent = "1 | Line 1\n2 | Line 2\n3 | Line 3\n4 | Line 4\n5 | Line 5\n"
-	const sourceCodeDef = "\n\n# file.txt\n1--5 | Content"
 
 	// Mocked functions with correct types
 	const mockedCountFileLines = vi.mocked(countFileLines)
-	const mockedReadLines = vi.mocked(readLines)
 	const mockedExtractTextFromFile = vi.mocked(extractTextFromFile)
-	const mockedParseSourceCodeDefinitionsForFile = vi.mocked(parseSourceCodeDefinitionsForFile)
 
 	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
 	const mockedPathResolve = vi.mocked(path.resolve)
@@ -410,106 +410,73 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		})
 	})
 
-	describe("when maxReadFileLine is 0", () => {
-		it("should return an empty content with source code definitions", async () => {
-			// Setup - for maxReadFileLine = 0, the implementation won't call readLines
-			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue(sourceCodeDef)
-
-			// Execute - skip addLineNumbers check as it's not called for maxReadFileLine=0
-			const result = await executeReadFileTool(
-				{},
-				{
-					maxReadFileLine: 0,
-					totalLines: 5,
-					skipAddLineNumbersCheck: true,
-				},
-			)
-
-			// Verify - native format
-			expect(result).toContain(`File: ${testFilePath}`)
-			expect(result).toContain(`Code Definitions:`)
-
-			// Verify native structure
-			expect(result).toContain("Note: Showing only 0 of 5 total lines")
-			expect(result).toContain(sourceCodeDef.trim())
-			expect(result).not.toContain("Lines 1-") // No content when maxReadFileLine is 0
-		})
-	})
-
 	describe("when maxReadFileLine is less than file length", () => {
-		it("should read only maxReadFileLine lines and add source code definitions", async () => {
+		it("should read only maxReadFileLine lines with notice", async () => {
 			// Setup
 			const content = "Line 1\nLine 2\nLine 3"
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3"
-			mockedReadLines.mockResolvedValue(content)
-			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue(sourceCodeDef)
 
-			// Setup addLineNumbers to always return numbered content
-			addLineNumbersMock.mockReturnValue(numberedContent)
+			// Mock readFileContent for partial read with metadata
+			mockReadFileContent.mockResolvedValue({
+				content: numberedContent,
+				lineCount: 3,
+				totalLines: 5,
+				metadata: {
+					filePath: absoluteFilePath,
+					totalLinesInFile: 5,
+					linesReturned: 3,
+					startLine: 1,
+					endLine: 3,
+					hasMoreBefore: false,
+					hasMoreAfter: true,
+					linesBeforeStart: 0,
+					linesAfterEnd: 2,
+					truncatedByLimit: true,
+					lineLengthTruncations: [],
+				},
+			})
 
 			// Execute
 			const result = await executeReadFileTool({}, { maxReadFileLine: 3 })
 
-			// Verify - native format
-			expect(result).toContain(`File: ${testFilePath}`)
-			expect(result).toContain(`Lines 1-3:`)
-			expect(result).toContain(`Code Definitions:`)
-			expect(result).toContain("Note: Showing only 3 of 5 total lines")
+			// Verify - just check that the result contains the expected elements
+			expect(result).toContain(`<file><path>${testFilePath}</path>`)
+			expect(result).toContain(`<content lines="1-3">`)
+			expect(result).toContain("<notice>Showing 3 of 5 total lines")
 		})
 
-		it("should truncate code definitions when file exceeds maxReadFileLine", async () => {
-			// Setup - file with 100 lines but we'll only read first 30
+		it("should suggest using offset/limit for specific sections", async () => {
+			// Setup
 			const content = "Line 1\nLine 2\nLine 3"
 			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3"
-			const fullDefinitions = `# file.txt
-10--20 | function foo() {
-50--60 | function bar() {
-80--90 | function baz() {`
-			const truncatedDefinitions = `# file.txt
-10--20 | function foo() {`
 
-			mockedReadLines.mockResolvedValue(content)
-			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue(fullDefinitions)
-			addLineNumbersMock.mockReturnValue(numberedContent)
+			// Mock readFileContent for partial read with metadata
+			mockReadFileContent.mockResolvedValue({
+				content: numberedContent,
+				lineCount: 3,
+				totalLines: 100,
+				metadata: {
+					filePath: absoluteFilePath,
+					totalLinesInFile: 100,
+					linesReturned: 3,
+					startLine: 1,
+					endLine: 3,
+					hasMoreBefore: false,
+					hasMoreAfter: true,
+					linesBeforeStart: 0,
+					linesAfterEnd: 97,
+					truncatedByLimit: true,
+					lineLengthTruncations: [],
+				},
+			})
 
-			// Execute with maxReadFileLine = 30
-			const result = await executeReadFileTool({}, { maxReadFileLine: 30, totalLines: 100 })
+			// Execute with maxReadFileLine = 3
+			const result = await executeReadFileTool({}, { maxReadFileLine: 3, totalLines: 100 })
 
-			// Verify - native format
-			expect(result).toContain(`File: ${testFilePath}`)
-			expect(result).toContain(`Lines 1-30:`)
-			expect(result).toContain(`Code Definitions:`)
-
-			// Should include foo (starts at line 10) but not bar (starts at line 50) or baz (starts at line 80)
-			expect(result).toContain("10--20 | function foo()")
-			expect(result).not.toContain("50--60 | function bar()")
-			expect(result).not.toContain("80--90 | function baz()")
-
-			expect(result).toContain("Note: Showing only 30 of 100 total lines")
-		})
-
-		it("should handle truncation when all definitions are beyond the line limit", async () => {
-			// Setup - all definitions start after maxReadFileLine
-			const content = "Line 1\nLine 2\nLine 3"
-			const numberedContent = "1 | Line 1\n2 | Line 2\n3 | Line 3"
-			const fullDefinitions = `# file.txt
-50--60 | function foo() {
-80--90 | function bar() {`
-
-			mockedReadLines.mockResolvedValue(content)
-			mockedParseSourceCodeDefinitionsForFile.mockResolvedValue(fullDefinitions)
-			addLineNumbersMock.mockReturnValue(numberedContent)
-
-			// Execute with maxReadFileLine = 30
-			const result = await executeReadFileTool({}, { maxReadFileLine: 30, totalLines: 100 })
-
-			// Verify - native format
-			expect(result).toContain(`File: ${testFilePath}`)
-			expect(result).toContain(`Lines 1-30:`)
-			expect(result).toContain(`Code Definitions:`)
-			expect(result).toContain("# file.txt")
-			expect(result).not.toContain("50--60 | function foo()")
-			expect(result).not.toContain("80--90 | function bar()")
+			// Verify notice includes suggestion about offset/limit
+			expect(result).toContain(`<file><path>${testFilePath}</path>`)
+			expect(result).toContain(`<content lines="1-3">`)
+			expect(result).toContain("Use offset to read more")
 		})
 	})
 
@@ -563,26 +530,6 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			// Verify - native format for binary files
 			expect(result).toContain(`File: ${testFilePath}`)
 			expect(typeof result).toBe("string")
-		})
-	})
-
-	describe("with range parameters", () => {
-		it("should honor start_line and end_line when provided", async () => {
-			// Setup
-			mockedReadLines.mockResolvedValue("Line 2\nLine 3\nLine 4")
-
-			// Execute using executeReadFileTool with range parameters
-			const rangeResult = await executeReadFileTool(
-				{},
-				{
-					start_line: "2",
-					end_line: "4",
-				},
-			)
-
-			// Verify - native format
-			expect(rangeResult).toContain(`File: ${testFilePath}`)
-			expect(rangeResult).toContain(`Lines 2-4:`)
 		})
 	})
 })

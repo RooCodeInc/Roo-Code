@@ -119,8 +119,10 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	const supportsImages = modelInfo?.supportsImages ?? false
 
 	// Build native tools with dynamic read_file tool based on settings.
+	// Pass maxReadFileLine so the tool description tells the model about the limit.
 	const nativeTools = getNativeTools({
 		partialReadsEnabled,
+		maxReadFileLine: partialReadsEnabled ? maxReadFileLine : undefined,
 		maxConcurrentFileReads,
 		supportsImages,
 	})

@@ -1,8 +1,7 @@
 import path from "path"
 import * as fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
-
-import type { FileEntry, LineRange } from "@roo-code/types"
+import type { FileEntry, ReadMode, IndentationConfig } from "@roo-code/types"
 import { type ClineSayTool, isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 
 import { Task } from "../task/Task"
@@ -13,9 +12,8 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { getReadablePath } from "../../utils/path"
 import { countFileLines } from "../../integrations/misc/line-counter"
-import { readLines } from "../../integrations/misc/read-lines"
+import { readFileContent } from "../../integrations/misc/read-file-content"
 import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "../../integrations/misc/extract-text"
-import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { parseXml } from "../../utils/xml"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import type { ToolUse } from "../../shared/tools"
@@ -29,7 +27,6 @@ import {
 	ImageMemoryTracker,
 } from "./helpers/imageHelpers"
 import { FILE_READ_BUDGET_PERCENT, readFileWithTokenBudget } from "./helpers/fileTokenBudget"
-import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface FileResult {
@@ -38,7 +35,11 @@ interface FileResult {
 	content?: string
 	error?: string
 	notice?: string
-	lineRanges?: LineRange[]
+	// Slice/indentation mode parameters
+	offset?: number
+	limit?: number
+	mode?: ReadMode
+	indentation?: IndentationConfig
 	xmlContent?: string
 	nativeContent?: string
 	imageDataUrl?: string
@@ -51,65 +52,27 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 	parseLegacy(params: Partial<Record<string, string>>): { files: FileEntry[] } {
 		const argsXmlTag = params.args
-		const legacyPath = params.path
-		const legacyStartLineStr = params.start_line
-		const legacyEndLineStr = params.end_line
 
 		const fileEntries: FileEntry[] = []
 
-		// XML args format
+		// XML args format - just parse paths, advanced features are native-only
 		if (argsXmlTag) {
 			const parsed = parseXml(argsXmlTag) as any
 			const files = Array.isArray(parsed.file) ? parsed.file : [parsed.file].filter(Boolean)
 
 			for (const file of files) {
 				if (!file.path) continue
-
-				const fileEntry: FileEntry = {
-					path: file.path,
-					lineRanges: [],
-				}
-
-				if (file.line_range) {
-					const ranges = Array.isArray(file.line_range) ? file.line_range : [file.line_range]
-					for (const range of ranges) {
-						const match = String(range).match(/(\d+)-(\d+)/)
-						if (match) {
-							const [, start, end] = match.map(Number)
-							if (!isNaN(start) && !isNaN(end)) {
-								fileEntry.lineRanges?.push({ start, end })
-							}
-						}
-					}
-				}
-				fileEntries.push(fileEntry)
+				fileEntries.push({ path: file.path })
 			}
 
 			return { files: fileEntries }
-		}
-
-		// Legacy single file path
-		if (legacyPath) {
-			const fileEntry: FileEntry = {
-				path: legacyPath,
-				lineRanges: [],
-			}
-
-			if (legacyStartLineStr && legacyEndLineStr) {
-				const start = parseInt(legacyStartLineStr, 10)
-				const end = parseInt(legacyEndLineStr, 10)
-				if (!isNaN(start) && !isNaN(end) && start > 0 && end > 0) {
-					fileEntry.lineRanges?.push({ start, end })
-				}
-			}
-			fileEntries.push(fileEntry)
 		}
 
 		return { files: fileEntries }
 	}
 
 	async execute(params: { files: FileEntry[] }, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { handleError, pushToolResult, toolProtocol } = callbacks
+		const { pushToolResult } = callbacks
 		const fileEntries = params.files
 		const modelInfo = task.api.getModel().info
 		// Use the task's locked protocol for consistent output formatting throughout the task
@@ -142,7 +105,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		const fileResults: FileResult[] = fileEntries.map((entry) => ({
 			path: entry.path,
 			status: "pending",
-			lineRanges: entry.lineRanges,
+			// Map slice/indentation mode parameters (limit is not mapped - always use maxReadFileLine setting)
+			offset: entry.offset,
+			mode: entry.mode,
+			indentation: entry.indentation,
 		}))
 
 		const updateFileResult = (filePath: string, updates: Partial<FileResult>) => {
@@ -157,38 +123,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			for (const fileResult of fileResults) {
 				const relPath = fileResult.path
-				const fullPath = path.resolve(task.cwd, relPath)
-
-				if (fileResult.lineRanges) {
-					let hasRangeError = false
-					for (const range of fileResult.lineRanges) {
-						if (range.start > range.end) {
-							const errorMsg = "Invalid line range: end line cannot be less than start line"
-							updateFileResult(relPath, {
-								status: "blocked",
-								error: errorMsg,
-								xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
-								nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
-							})
-							await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
-							hasRangeError = true
-							break
-						}
-						if (isNaN(range.start) || isNaN(range.end)) {
-							const errorMsg = "Invalid line range values"
-							updateFileResult(relPath, {
-								status: "blocked",
-								error: errorMsg,
-								xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
-								nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
-							})
-							await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
-							hasRangeError = true
-							break
-						}
-					}
-					if (hasRangeError) continue
-				}
 
 				if (fileResult.status === "pending") {
 					const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
@@ -217,15 +151,14 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 					let lineSnippet = ""
-					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
-						const ranges = fileResult.lineRanges.map((range) =>
-							t("tools:readFile.linesRange", { start: range.start, end: range.end }),
-						)
-						lineSnippet = ranges.join(", ")
-					} else if (maxReadFileLine === 0) {
-						lineSnippet = t("tools:readFile.definitionsOnly")
-					} else if (maxReadFileLine > 0) {
-						lineSnippet = t("tools:readFile.maxLines", { max: maxReadFileLine })
+					const startLine = fileResult.offset ?? 1
+					if (maxReadFileLine > 0) {
+						// Show the expected line range (start to start + maxReadFileLine - 1)
+						const endLine = startLine + maxReadFileLine - 1
+						lineSnippet = t("tools:readFile.linesRange", { start: startLine, end: endLine })
+					} else if (startLine > 1) {
+						// No line limit but reading from offset
+						lineSnippet = t("tools:readFile.startingFromLine", { start: startLine })
 					}
 
 					const readablePath = getReadablePath(task.cwd, relPath)
@@ -300,15 +233,14 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				const { maxReadFileLine = -1 } = (await task.providerRef.deref()?.getState()) ?? {}
 
 				let lineSnippet = ""
-				if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
-					const ranges = fileResult.lineRanges.map((range) =>
-						t("tools:readFile.linesRange", { start: range.start, end: range.end }),
-					)
-					lineSnippet = ranges.join(", ")
-				} else if (maxReadFileLine === 0) {
-					lineSnippet = t("tools:readFile.definitionsOnly")
-				} else if (maxReadFileLine > 0) {
-					lineSnippet = t("tools:readFile.maxLines", { max: maxReadFileLine })
+				const startLine = fileResult.offset ?? 1
+				if (maxReadFileLine > 0) {
+					// Show the expected line range (start to start + maxReadFileLine - 1)
+					const endLine = startLine + maxReadFileLine - 1
+					lineSnippet = t("tools:readFile.linesRange", { start: startLine, end: endLine })
+				} else if (startLine > 1) {
+					// No line limit but reading from offset
+					lineSnippet = t("tools:readFile.startingFromLine", { start: startLine })
 				}
 
 				const completeMessage = JSON.stringify({
@@ -458,86 +390,106 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 					}
 
-					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
-						const rangeResults: string[] = []
-						const nativeRangeResults: string[] = []
-
-						for (const range of fileResult.lineRanges) {
-							const content = addLineNumbers(
-								await readLines(fullPath, range.end - 1, range.start - 1),
-								range.start,
-							)
-							const lineRangeAttr = ` lines="${range.start}-${range.end}"`
-							rangeResults.push(`<content${lineRangeAttr}>\n${content}</content>`)
-							nativeRangeResults.push(`Lines ${range.start}-${range.end}:\n${content}`)
-						}
-
-						updateFileResult(relPath, {
-							xmlContent: `<file><path>${relPath}</path>\n${rangeResults.join("\n")}\n</file>`,
-							nativeContent: `File: ${relPath}\n${nativeRangeResults.join("\n\n")}`,
-						})
-						continue
-					}
-
-					if (maxReadFileLine === 0) {
+					// Handle slice/indentation mode when offset or mode is specified
+					if (fileResult.offset !== undefined || fileResult.mode !== undefined) {
 						try {
-							const defResult = await parseSourceCodeDefinitionsForFile(
-								fullPath,
-								task.rooIgnoreController,
-							)
-							if (defResult) {
-								const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
-								updateFileResult(relPath, {
-									xmlContent: `<file><path>${relPath}</path>\n<list_code_definition_names>${defResult}</list_code_definition_names>\n<notice>${notice}</notice>\n</file>`,
-									nativeContent: `File: ${relPath}\nCode Definitions:\n${defResult}\n\nNote: ${notice}`,
-								})
-							}
-						} catch (error) {
-							if (error instanceof Error && error.message.startsWith("Unsupported language:")) {
-								console.warn(`[read_file] Warning: ${error.message}`)
+							const result = await readFileContent({
+								filePath: fullPath,
+								offset: fileResult.offset,
+								// limit is controlled by maxReadFileLine setting, not model input
+								mode: fileResult.mode,
+								indentation: fileResult.indentation,
+								defaultLimit: maxReadFileLine > 0 ? maxReadFileLine : undefined,
+							})
+
+							await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+							const modeLabel = fileResult.mode === "indentation" ? "indentation" : "slice"
+							const { metadata } = result
+							let xmlInfo = ""
+							let nativeInfo = ""
+
+							if (result.lineCount === 0) {
+								xmlInfo = `<content/>\n<notice>No content returned (file may be empty or offset exceeds file length)</notice>\n`
+								nativeInfo = `Note: No content returned (file may be empty or offset exceeds file length)`
 							} else {
-								console.error(
-									`[read_file] Unhandled error: ${error instanceof Error ? error.message : String(error)}`,
-								)
+								const lineRangeAttr = ` lines="${metadata.startLine}-${metadata.endLine}"`
+								xmlInfo = `<content mode="${modeLabel}"${lineRangeAttr}>\n${result.content}</content>\n`
+								nativeInfo = `Lines ${metadata.startLine}-${metadata.endLine} (${modeLabel} mode):\n${result.content}`
+
+								// Include structured metadata for LLM pagination awareness
+								const metadataJson = JSON.stringify({
+									totalLinesInFile: metadata.totalLinesInFile,
+									linesReturned: metadata.linesReturned,
+									startLine: metadata.startLine,
+									endLine: metadata.endLine,
+									hasMoreBefore: metadata.hasMoreBefore,
+									hasMoreAfter: metadata.hasMoreAfter,
+									linesBeforeStart: metadata.linesBeforeStart,
+									linesAfterEnd: metadata.linesAfterEnd,
+									truncatedByLimit: metadata.truncatedByLimit,
+									lineLengthTruncations: metadata.lineLengthTruncations,
+								})
+								xmlInfo += `<metadata>${metadataJson}</metadata>\n`
+								nativeInfo += `\n\n<metadata>${metadataJson}</metadata>`
 							}
-						}
-						continue
-					}
-
-					if (maxReadFileLine > 0 && totalLines > maxReadFileLine) {
-						const content = addLineNumbers(await readLines(fullPath, maxReadFileLine - 1, 0))
-						const lineRangeAttr = ` lines="1-${maxReadFileLine}"`
-						let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
-						let nativeInfo = `Lines 1-${maxReadFileLine}:\n${content}\n`
-
-						try {
-							const defResult = await parseSourceCodeDefinitionsForFile(
-								fullPath,
-								task.rooIgnoreController,
-							)
-							if (defResult) {
-								const truncatedDefs = truncateDefinitionsToLineLimit(defResult, maxReadFileLine)
-								xmlInfo += `<list_code_definition_names>${truncatedDefs}</list_code_definition_names>\n`
-								nativeInfo += `\nCode Definitions:\n${truncatedDefs}\n`
-							}
-
-							const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
-							xmlInfo += `<notice>${notice}</notice>\n`
-							nativeInfo += `\nNote: ${notice}`
 
 							updateFileResult(relPath, {
 								xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
 								nativeContent: `File: ${relPath}\n${nativeInfo}`,
 							})
+							continue
 						} catch (error) {
-							if (error instanceof Error && error.message.startsWith("Unsupported language:")) {
-								console.warn(`[read_file] Warning: ${error.message}`)
-							} else {
-								console.error(
-									`[read_file] Unhandled error: ${error instanceof Error ? error.message : String(error)}`,
-								)
-							}
+							const errorMsg = error instanceof Error ? error.message : String(error)
+							updateFileResult(relPath, {
+								status: "error",
+								error: `Error reading file with ${fileResult.mode || "slice"} mode: ${errorMsg}`,
+								xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+								nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
+							})
+							await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+							continue
 						}
+					}
+
+					// Handle maxReadFileLine partial read
+					if (maxReadFileLine > 0 && totalLines > maxReadFileLine) {
+						const sliceResult = await readFileContent({
+							filePath: fullPath,
+							offset: 1,
+							limit: maxReadFileLine,
+							mode: "slice",
+						})
+						// readFileContent already includes line numbers
+						const content = sliceResult.content
+						const { metadata } = sliceResult
+
+						// Build metadata summary for pagination awareness
+						const metadataSummary = []
+						if (metadata.hasMoreAfter) {
+							metadataSummary.push(`${metadata.linesAfterEnd} lines after`)
+						}
+						if (metadata.lineLengthTruncations.length > 0) {
+							metadataSummary.push(`${metadata.lineLengthTruncations.length} lines truncated for length`)
+						}
+
+						const lineRangeAttr = ` lines="${metadata.startLine}-${metadata.endLine}"`
+						let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
+						let nativeInfo = `Lines ${metadata.startLine}-${metadata.endLine}:\n${content}\n`
+
+						const notice =
+							`Showing ${sliceResult.lineCount} of ${metadata.totalLinesInFile} total lines` +
+							(metadataSummary.length > 0 ? ` (${metadataSummary.join(", ")})` : "") +
+							`. Use offset to read more`
+						xmlInfo += `<notice>${notice}</notice>\n`
+						nativeInfo += `\nNote: ${notice}`
+
+						await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+
+						updateFileResult(relPath, {
+							xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,
+							nativeContent: `File: ${relPath}\n${nativeInfo}`,
+						})
 						continue
 					}
 
@@ -576,7 +528,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 						if (!result.complete) {
 							// File was truncated
-							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
+							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use offset to read more.`
 							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
 							xmlInfo =
 								result.lineCount > 0
@@ -744,7 +696,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			}
 		}
 
-		// Fallback to legacy/XML or synthesized params
+		// XML args format
 		const blockParams = second as any
 
 		if (blockParams?.args) {
@@ -767,43 +719,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				console.error("Failed to parse read_file args XML for description:", error)
 				return `[${blockName} with unparsable args]`
 			}
-		} else if (blockParams?.path) {
-			return `[${blockName} for '${blockParams.path}'. Reading multiple files at once is more efficient for the LLM. If other files are relevant to your current task, please read them simultaneously.]`
-		} else if (blockParams?.files) {
-			// Back-compat: some paths may still synthesize params.files; try to parse if present
-			try {
-				const files = JSON.parse(blockParams.files)
-				if (Array.isArray(files) && files.length > 0) {
-					const paths = files.map((f: any) => f?.path).filter(Boolean) as string[]
-					if (paths.length === 1) {
-						return `[${blockName} for '${paths[0]}'. Reading multiple files at once is more efficient for the LLM. If other files are relevant to your current task, please read them simultaneously.]`
-					} else if (paths.length <= 3) {
-						const pathList = paths.map((p) => `'${p}'`).join(", ")
-						return `[${blockName} for ${pathList}]`
-					} else {
-						return `[${blockName} for ${paths.length} files]`
-					}
-				}
-			} catch (error) {
-				console.error("Failed to parse native files JSON for description:", error)
-				return `[${blockName} with unparsable files]`
-			}
 		}
 
-		return `[${blockName} with missing path/args/files]`
+		return `[${blockName} with missing args]`
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"read_file">): Promise<void> {
 		const argsXmlTag = block.params.args
-		const legacyPath = block.params.path
 
 		let filePath = ""
 		if (argsXmlTag) {
 			const match = argsXmlTag.match(/<file>.*?<path>([^<]+)<\/path>/s)
 			if (match) filePath = match[1]
-		}
-		if (!filePath && legacyPath) {
-			filePath = legacyPath
 		}
 
 		if (!filePath && block.nativeArgs && "files" in block.nativeArgs && Array.isArray(block.nativeArgs.files)) {
