@@ -825,6 +825,11 @@ const ApiOptions = ({
 						organizationAllowList={organizationAllowList}
 						simplifySettings={fromWelcomeView}
 						hidePricing
+						extraOptions={
+							selectedProvider === "bedrock"
+								? [{ value: "custom-arn", label: t("settings:labels.useCustomArn") }]
+								: undefined
+						}
 					/>
 
 					{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
