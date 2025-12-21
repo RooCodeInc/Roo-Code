@@ -3036,7 +3036,18 @@ export const webviewMessageHandler = async (
 		 */
 
 		case "queueMessage": {
-			provider.getCurrentTask()?.messageQueueService.addMessage(message.text ?? "", message.images)
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				// Task ended between when the user clicked send and when the message was processed
+				provider.log("Cannot queue message: No active task")
+				await provider.postMessageToWebview({
+					type: "queueMessageFailed",
+					text: message.text,
+					images: message.images,
+				})
+				break
+			}
+			currentTask.messageQueueService.addMessage(message.text ?? "", message.images)
 			break
 		}
 		case "removeQueuedMessage": {

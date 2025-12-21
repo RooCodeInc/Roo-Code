@@ -820,6 +820,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						)
 					}
 					break
+				case "queueMessageFailed":
+					// Restore the message that failed to queue
+					if (message.text || (message.images && message.images.length > 0)) {
+						setInputValue(message.text || "")
+						setSelectedImages(message.images || [])
+					}
+					break
 				case "invoke":
 					switch (message.invoke!) {
 						case "newChat":
