@@ -5,9 +5,13 @@ const RooHero = () => {
 		const w = window as any
 		return w.IMAGES_BASE_URI || ""
 	})
+	const [isHovered, setIsHovered] = useState(false)
 
 	return (
-		<div className="pb-4 forced-color-adjust-none group">
+		<div
+			className="pb-4 forced-color-adjust-none"
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}>
 			<div
 				style={{
 					backgroundColor: "var(--vscode-foreground)",
@@ -17,8 +21,9 @@ const RooHero = () => {
 					maskImage: `url('${imagesBaseUri}/roo-logo.svg')`,
 					maskRepeat: "no-repeat",
 					maskSize: "contain",
+					animation: isHovered ? "smooth-bounce 1s ease-in-out infinite" : "none",
 				}}
-				className="mx-auto group-hover:animate-bounce translate-y-0 transition-transform duration-500">
+				className="mx-auto">
 				<img src={imagesBaseUri + "/roo-logo.svg"} alt="Roo logo" className="h-8 opacity-0" />
 			</div>
 		</div>
