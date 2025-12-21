@@ -82,7 +82,7 @@ export interface TypedCustomToolDefinition<T extends CustomToolParametersSchema>
  *
  * @example
  * ```ts
- * import { z, defineCustomTool } from "@roo-code/types"
+ * import { parametersSchema as z, defineCustomTool } from "@roo-code/types"
  *
  * export default defineCustomTool({
  *   name: "add_numbers",
