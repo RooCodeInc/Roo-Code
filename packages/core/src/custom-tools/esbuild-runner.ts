@@ -9,23 +9,23 @@
  * In development, it falls back to using esbuild-wasm from node_modules.
  */
 
-import { spawn } from "child_process"
 import path from "path"
 import fs from "fs"
 import { fileURLToPath } from "url"
+import { execa } from "execa"
 
-// Get the directory where this module is located
-// Handle both ESM (import.meta.url) and bundled CJS contexts
+// Get the directory where this module is located.
 function getModuleDir(): string | undefined {
 	try {
-		// In ESM context, import.meta.url is available
-		// In bundled CJS, this will throw or be undefined
+		// In ESM context, import.meta.url is available.
+		// In bundled CJS, this will throw or be undefined.
 		if (typeof import.meta !== "undefined" && import.meta.url) {
 			return path.dirname(fileURLToPath(import.meta.url))
 		}
 	} catch {
-		// Ignore errors, fall through to undefined
+		// Ignore errors, fall through to undefined.
 	}
+
 	return undefined
 }
 
@@ -53,68 +53,31 @@ export interface EsbuildOptions {
 }
 
 /**
- * Find the esbuild-wasm CLI script in various possible locations.
- * Handles regular node_modules, pnpm hoisting, and monorepo structures.
+ * Find the esbuild-wasm CLI script by walking up the directory tree.
+ * In pnpm monorepos, node_modules/esbuild-wasm is a symlink to the actual package,
+ * so we don't need special pnpm handling.
  */
 function findEsbuildWasmScript(startDir: string): string | null {
-	const possiblePaths = [
-		// Direct in node_modules (npm, yarn)
-		path.join(startDir, "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		// Parent directory's node_modules (monorepo with hoisting)
-		path.join(startDir, "..", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		// Root node_modules in monorepo
-		path.join(startDir, "..", "..", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		// Go up more levels for deeply nested packages
-		path.join(startDir, "..", "..", "..", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		path.join(startDir, "..", "..", "..", "..", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		path.join(startDir, "..", "..", "..", "..", "..", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-		// src directory in monorepo
-		path.join(startDir, "src", "node_modules", "esbuild-wasm", "bin", "esbuild"),
-	]
+	const maxDepth = 10
+	let currentDir = path.resolve(startDir)
+	const root = path.parse(currentDir).root
 
-	// Check each possible path
-	for (const possiblePath of possiblePaths) {
-		const normalizedPath = path.normalize(possiblePath)
-		if (fs.existsSync(normalizedPath)) {
-			return normalizedPath
+	for (let i = 0; i < maxDepth && currentDir !== root; i++) {
+		// Check node_modules/esbuild-wasm/bin/esbuild at this level.
+		const scriptPath = path.join(currentDir, "node_modules", "esbuild-wasm", "bin", "esbuild")
+
+		if (fs.existsSync(scriptPath)) {
+			return scriptPath
 		}
-	}
 
-	// Check pnpm .pnpm directory structure
-	const pnpmPaths = [
-		path.join(startDir, "node_modules", ".pnpm"),
-		path.join(startDir, "..", "node_modules", ".pnpm"),
-		path.join(startDir, "..", "..", "node_modules", ".pnpm"),
-		path.join(startDir, "..", "..", "..", "node_modules", ".pnpm"),
-		path.join(startDir, "..", "..", "..", "..", "node_modules", ".pnpm"),
-		path.join(startDir, "..", "..", "..", "..", "..", "node_modules", ".pnpm"),
-	]
+		// Also check src/node_modules for monorepo where src is a workspace.
+		const srcScriptPath = path.join(currentDir, "src", "node_modules", "esbuild-wasm", "bin", "esbuild")
 
-	for (const pnpmPath of pnpmPaths) {
-		const normalizedPnpmPath = path.normalize(pnpmPath)
-		if (fs.existsSync(normalizedPnpmPath)) {
-			try {
-				const dirs = fs.readdirSync(normalizedPnpmPath)
-				// Look for esbuild-wasm@<version>
-				const esbuildDir = dirs.find((dir) => dir.startsWith("esbuild-wasm@"))
-
-				if (esbuildDir) {
-					const scriptPath = path.join(
-						normalizedPnpmPath,
-						esbuildDir,
-						"node_modules",
-						"esbuild-wasm",
-						"bin",
-						"esbuild",
-					)
-					if (fs.existsSync(scriptPath)) {
-						return scriptPath
-					}
-				}
-			} catch {
-				// Ignore errors reading directories
-			}
+		if (fs.existsSync(srcScriptPath)) {
+			return srcScriptPath
 		}
+
+		currentDir = path.dirname(currentDir)
 	}
 
 	return null
@@ -124,33 +87,36 @@ function findEsbuildWasmScript(startDir: string): string | null {
  * Get the path to the esbuild CLI script.
  *
  * Resolution order:
- * 1. Production: Look in extension's dist/bin directory for bundled script
- * 2. Development: Use esbuild-wasm from node_modules (relative to this module)
- * 3. Fallback: Try process.cwd() as last resort
+ * 1. Production: Look in extension's dist/bin directory for bundled script.
+ * 2. Development: Use esbuild-wasm from node_modules (relative to this module).
+ * 3. Fallback: Try process.cwd() as last resort.
  *
  * @param extensionPath - Path to the extension's root directory (production)
  * @returns Path to the esbuild CLI script
  */
 export function getEsbuildScriptPath(extensionPath?: string): string {
-	// Production: look in extension's dist/bin directory
+	// Production: look in extension's dist/bin directory.
 	if (extensionPath) {
 		const prodPath = path.join(extensionPath, "dist", "bin", "esbuild")
+
 		if (fs.existsSync(prodPath)) {
 			return prodPath
 		}
 	}
 
-	// Development: use esbuild-wasm from node_modules relative to this module
-	// This works when running the extension in debug mode (if moduleDir is available)
+	// Development: use esbuild-wasm from node_modules relative to this module.
+	// This works when running the extension in debug mode (if moduleDir is available).
 	if (moduleDir) {
 		const devPath = findEsbuildWasmScript(moduleDir)
+
 		if (devPath) {
 			return devPath
 		}
 	}
 
-	// Fallback: try from cwd (for tests and other contexts)
+	// Fallback: try from cwd (for tests and other contexts).
 	const cwdPath = findEsbuildWasmScript(process.cwd())
+
 	if (cwdPath) {
 		return cwdPath
 	}
@@ -198,35 +164,14 @@ export async function runEsbuild(options: EsbuildOptions, extensionPath?: string
 		env.NODE_PATH = options.nodePaths.join(path.delimiter)
 	}
 
-	return new Promise<void>((resolve, reject) => {
-		// Spawn node to run the esbuild script
-		const proc = spawn(process.execPath, args, {
+	try {
+		await execa(process.execPath, args, {
 			env,
-			stdio: ["ignore", "pipe", "pipe"],
+			stdin: "ignore",
 		})
-
-		let stdout = ""
-		let stderr = ""
-
-		proc.stdout?.on("data", (data: Buffer) => {
-			stdout += data.toString()
-		})
-
-		proc.stderr?.on("data", (data: Buffer) => {
-			stderr += data.toString()
-		})
-
-		proc.on("close", (code: number | null) => {
-			if (code === 0) {
-				resolve()
-			} else {
-				const errorMessage = stderr || stdout || `esbuild exited with code ${code}`
-				reject(new Error(`esbuild failed: ${errorMessage}`))
-			}
-		})
-
-		proc.on("error", (err: Error) => {
-			reject(new Error(`Failed to spawn esbuild: ${err.message}`))
-		})
-	})
+	} catch (error) {
+		const execaError = error as { stderr?: string; stdout?: string; exitCode?: number; message: string }
+		const errorMessage = execaError.stderr || execaError.stdout || `esbuild exited with code ${execaError.exitCode}`
+		throw new Error(`esbuild failed: ${errorMessage}`)
+	}
 }

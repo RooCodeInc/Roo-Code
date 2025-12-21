@@ -97,12 +97,7 @@ describe("runEsbuild", () => {
 
 		fs.writeFileSync(inputFile, `export const value = 42`)
 
-		await runEsbuild({
-			entryPoint: inputFile,
-			outfile: outputFile,
-			format: "esm",
-			sourcemap: "inline",
-		})
+		await runEsbuild({ entryPoint: inputFile, outfile: outputFile, format: "esm", sourcemap: "inline" })
 
 		const outputContent = fs.readFileSync(outputFile, "utf-8")
 		expect(outputContent).toContain("sourceMappingURL=data:")
