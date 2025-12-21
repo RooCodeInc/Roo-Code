@@ -162,52 +162,12 @@ export function copyWasms(srcDir: string, distDir: string): void {
 
 /**
  * Find the esbuild-wasm package directory.
- * Handles regular node_modules, pnpm hoisting, and monorepo structures.
+ * In our pnpm monorepo, esbuild-wasm is declared in src/package.json and pnpm
+ * symlinks it to src/node_modules/esbuild-wasm.
  */
 function findEsbuildWasmDir(srcDir: string): string | null {
-	const possiblePaths = [
-		// Direct in node_modules (npm, yarn)
-		path.join(srcDir, "node_modules", "esbuild-wasm"),
-		// Parent directory's node_modules (monorepo with hoisting)
-		path.join(srcDir, "..", "node_modules", "esbuild-wasm"),
-		// Root node_modules in monorepo
-		path.join(srcDir, "..", "..", "node_modules", "esbuild-wasm"),
-	]
-
-	// Check each possible path
-	for (const possiblePath of possiblePaths) {
-		if (fs.existsSync(possiblePath)) {
-			return possiblePath
-		}
-	}
-
-	// Check pnpm .pnpm directory structure
-	const pnpmPaths = [
-		path.join(srcDir, "node_modules", ".pnpm"),
-		path.join(srcDir, "..", "node_modules", ".pnpm"),
-		path.join(srcDir, "..", "..", "node_modules", ".pnpm"),
-	]
-
-	for (const pnpmPath of pnpmPaths) {
-		if (fs.existsSync(pnpmPath)) {
-			try {
-				const dirs = fs.readdirSync(pnpmPath)
-				// Look for esbuild-wasm@<version>
-				const esbuildDir = dirs.find((dir) => dir.startsWith("esbuild-wasm@"))
-
-				if (esbuildDir) {
-					const packagePath = path.join(pnpmPath, esbuildDir, "node_modules", "esbuild-wasm")
-					if (fs.existsSync(packagePath)) {
-						return packagePath
-					}
-				}
-			} catch {
-				// Ignore errors reading directories
-			}
-		}
-	}
-
-	return null
+	const esbuildWasmPath = path.join(srcDir, "node_modules", "esbuild-wasm")
+	return fs.existsSync(esbuildWasmPath) ? esbuildWasmPath : null
 }
 
 /**
@@ -215,7 +175,6 @@ function findEsbuildWasmDir(srcDir: string): string | null {
  *
  * This function copies the esbuild-wasm CLI and WASM binary, which provides
  * a cross-platform esbuild implementation that works on all platforms.
- * This is simpler and smaller (~12MB) than bundling native binaries for all platforms.
  *
  * Files copied:
  * - bin/esbuild (Node.js CLI script)
@@ -233,16 +192,15 @@ export function copyEsbuildWasm(srcDir: string, distDir: string): void {
 		return
 	}
 
-	// Create bin directory in dist
+	// Create bin directory in dist.
 	const binDir = path.join(distDir, "bin")
 	fs.mkdirSync(binDir, { recursive: true })
 
 	// Files to copy - the esbuild CLI script expects wasm_exec_node.js and esbuild.wasm
-	// to be one directory level up from the bin directory (i.e., in distDir directly)
-	// wasm_exec_node.js requires wasm_exec.js, so we need to copy that too
+	// to be one directory level up from the bin directory (i.e., in distDir directly).
+	// wasm_exec_node.js requires wasm_exec.js, so we need to copy that too.
 	const filesToCopy = [
 		{ src: path.join(esbuildWasmDir, "bin", "esbuild"), dest: path.join(binDir, "esbuild") },
-		// wasm_exec_node.js, wasm_exec.js, and esbuild.wasm go in dist/, not dist/bin/
 		{ src: path.join(esbuildWasmDir, "esbuild.wasm"), dest: path.join(distDir, "esbuild.wasm") },
 		{ src: path.join(esbuildWasmDir, "wasm_exec_node.js"), dest: path.join(distDir, "wasm_exec_node.js") },
 		{ src: path.join(esbuildWasmDir, "wasm_exec.js"), dest: path.join(distDir, "wasm_exec.js") },
@@ -255,12 +213,12 @@ export function copyEsbuildWasm(srcDir: string, distDir: string): void {
 			fs.copyFileSync(src, dest)
 			copiedCount++
 
-			// Make CLI executable
+			// Make CLI executable.
 			if (src.endsWith("esbuild")) {
 				try {
 					fs.chmodSync(dest, 0o755)
 				} catch {
-					// Ignore chmod errors on Windows
+					// Ignore chmod errors on Windows.
 				}
 			}
 		} else {
