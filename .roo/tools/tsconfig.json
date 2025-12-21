@@ -1,9 +1,0 @@
-{
-	"extends": "@roo-code/config-typescript/base.json",
-	"compilerOptions": {
-		"noEmit": true,
-		"types": ["vitest/globals"]
-	},
-	"include": ["*.ts", "__tests__/*.ts"],
-	"exclude": ["node_modules"]
-}
