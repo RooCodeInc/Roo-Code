@@ -1,11 +1,35 @@
 import type OpenAI from "openai"
-import type { ModeConfig, ToolName, ToolGroup, ModelInfo } from "@roo-code/types"
+import type { ModeConfig, ToolName, ToolGroup, ModelInfo, EditToolVariant } from "@roo-code/types"
 import { getModeBySlug, getToolsForMode } from "../../../shared/modes"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
 import { isToolAllowedForMode } from "../../../core/tools/validateToolUse"
+
+/**
+ * Mapping from edit tool variant to internal tool name.
+ * These are the tools that will be selected based on modelInfo.editToolVariant.
+ */
+const EDIT_TOOL_VARIANT_MAP: Record<EditToolVariant, string> = {
+	roo: "edit_file_roo",
+	anthropic: "edit_file_anthropic",
+	grok: "edit_file_grok",
+	gemini: "edit_file_gemini",
+	codex: "edit_file_codex",
+}
+
+/**
+ * All edit tool variant names that should be filtered.
+ * Only one of these (based on editToolVariant) will be included and renamed to "edit_file".
+ */
+const ALL_EDIT_TOOL_VARIANTS = new Set(Object.values(EDIT_TOOL_VARIANT_MAP))
+
+/**
+ * Legacy edit tool names that are now aliases.
+ * These should be excluded from the tool list since they're replaced by the variants.
+ */
+const LEGACY_EDIT_TOOL_NAMES = new Set(["apply_diff", "search_and_replace", "search_replace", "apply_patch"])
 
 /**
  * Reverse lookup map - maps alias name to canonical tool name.
@@ -296,15 +320,39 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("browser_action")
 	}
 
-	// Conditionally exclude apply_diff if diffs are disabled
-	if (settings?.diffEnabled === false) {
-		allowedToolNames.delete("apply_diff")
-	}
-
 	// Conditionally exclude access_mcp_resource if MCP is not enabled or there are no resources
 	if (!mcpHub || !hasAnyMcpResources(mcpHub)) {
 		allowedToolNames.delete("access_mcp_resource")
 	}
+
+	// Handle edit tool variant selection:
+	// 1. Remove legacy edit tool names (they're now aliases)
+	// 2. Remove non-selected edit tool variants
+	// 3. The selected variant will be renamed to "edit_file" below
+	for (const legacyTool of LEGACY_EDIT_TOOL_NAMES) {
+		allowedToolNames.delete(legacyTool)
+	}
+	for (const variantTool of ALL_EDIT_TOOL_VARIANTS) {
+		allowedToolNames.delete(variantTool)
+	}
+
+	// Determine which edit tool variant to use (default: "roo")
+	const editToolVariant: EditToolVariant = modelInfo?.editToolVariant ?? "roo"
+	const selectedEditToolName = EDIT_TOOL_VARIANT_MAP[editToolVariant]
+
+	// Check if diffs are disabled - if so, skip edit tool entirely
+	const diffEnabled = settings?.diffEnabled !== false
+
+	// Check if mode has "edit" group (required for edit tools)
+	const allowedGroups = new Set(
+		modeConfig.groups.map((groupEntry) => (Array.isArray(groupEntry) ? groupEntry[0] : groupEntry)),
+	)
+	const modeHasEditGroup = allowedGroups.has("edit")
+
+	// Check if edit_file is excluded by model config
+	const isEditFileExcluded = modelInfo?.excludedTools?.some(
+		(tool) => resolveToolAlias(tool) === "edit_file" || tool === "edit_file",
+	)
 
 	// Filter native tools based on allowed tool names and apply alias renames
 	const filteredTools: OpenAI.Chat.ChatCompletionTool[] = []
@@ -313,6 +361,22 @@ export function filterNativeToolsForMode(
 		// Handle both ChatCompletionTool and ChatCompletionCustomTool
 		if ("function" in tool && tool.function) {
 			const toolName = tool.function.name
+
+			// Special handling for edit tool variants
+			if (ALL_EDIT_TOOL_VARIANTS.has(toolName)) {
+				// Only include if:
+				// 1. This is the selected variant
+				// 2. Diffs are enabled
+				// 3. Mode has "edit" group
+				// 4. edit_file is not excluded by model config
+				if (toolName === selectedEditToolName && diffEnabled && modeHasEditGroup && !isEditFileExcluded) {
+					// Rename the selected variant to "edit_file" so LLM always sees that name
+					filteredTools.push(getOrCreateRenamedTool(tool, "edit_file"))
+				}
+				continue
+			}
+
+			// Regular tool processing
 			if (allowedToolNames.has(toolName)) {
 				// Check if this tool should be renamed to an alias
 				const aliasName = aliasRenames.get(toolName)

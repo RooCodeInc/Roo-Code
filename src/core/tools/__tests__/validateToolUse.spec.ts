@@ -93,13 +93,15 @@ describe("mode-validator", () => {
 						groups: ["edit"] as const,
 					},
 				]
-				const requirements = { apply_diff: false }
+				// Use write_to_file for requirement testing (edit_file is the unified tool name
+				// which is handled separately from TOOL_GROUPS in filterNativeToolsForMode)
+				const requirements = { write_to_file: false }
 
 				// Should respect disabled requirement even if tool group is allowed
-				expect(isToolAllowedForMode("apply_diff", "custom-mode", customModes, requirements)).toBe(false)
+				expect(isToolAllowedForMode("write_to_file", "custom-mode", customModes, requirements)).toBe(false)
 
-				// Should allow other edit tools
-				expect(isToolAllowedForMode("write_to_file", "custom-mode", customModes, requirements)).toBe(true)
+				// Should allow other edit tools when not disabled
+				expect(isToolAllowedForMode("generate_image", "custom-mode", customModes, requirements)).toBe(true)
 			})
 		})
 
@@ -140,28 +142,30 @@ describe("mode-validator", () => {
 		})
 
 		describe("tool requirements", () => {
+			// Note: apply_diff is now a legacy tool name. The unified edit tool is "edit_file".
+			// For testing requirements, we use write_to_file which is still in TOOL_GROUPS.
 			it("respects tool requirements when provided", () => {
-				const requirements = { apply_diff: false }
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], requirements)).toBe(false)
+				const requirements = { write_to_file: false }
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], requirements)).toBe(false)
 
-				const enabledRequirements = { apply_diff: true }
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], enabledRequirements)).toBe(true)
+				const enabledRequirements = { write_to_file: true }
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], enabledRequirements)).toBe(true)
 			})
 
 			it("allows tools when their requirements are not specified", () => {
 				const requirements = { some_other_tool: true }
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], requirements)).toBe(true)
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], requirements)).toBe(true)
 			})
 
 			it("handles undefined and empty requirements", () => {
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], undefined)).toBe(true)
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], {})).toBe(true)
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], undefined)).toBe(true)
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], {})).toBe(true)
 			})
 
 			it("prioritizes requirements over mode configuration", () => {
-				const requirements = { apply_diff: false }
+				const requirements = { write_to_file: false }
 				// Even in code mode which allows all tools, disabled requirement should take precedence
-				expect(isToolAllowedForMode("apply_diff", codeMode, [], requirements)).toBe(false)
+				expect(isToolAllowedForMode("write_to_file", codeMode, [], requirements)).toBe(false)
 			})
 		})
 	})
@@ -186,19 +190,19 @@ describe("mode-validator", () => {
 		})
 
 		it("throws error when tool requirement is not met", () => {
-			const requirements = { apply_diff: false }
-			expect(() => validateToolUse("apply_diff", codeMode, [], requirements)).toThrow(
-				'Tool "apply_diff" is not allowed in code mode.',
+			const requirements = { write_to_file: false }
+			expect(() => validateToolUse("write_to_file", codeMode, [], requirements)).toThrow(
+				'Tool "write_to_file" is not allowed in code mode.',
 			)
 		})
 
 		it("does not throw when tool requirement is met", () => {
-			const requirements = { apply_diff: true }
-			expect(() => validateToolUse("apply_diff", codeMode, [], requirements)).not.toThrow()
+			const requirements = { write_to_file: true }
+			expect(() => validateToolUse("write_to_file", codeMode, [], requirements)).not.toThrow()
 		})
 
 		it("handles undefined requirements gracefully", () => {
-			expect(() => validateToolUse("apply_diff", codeMode, [], undefined)).not.toThrow()
+			expect(() => validateToolUse("write_to_file", codeMode, [], undefined)).not.toThrow()
 		})
 	})
 })

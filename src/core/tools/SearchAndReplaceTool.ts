@@ -14,38 +14,38 @@ import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
-interface SearchReplaceOperation {
-	search: string
-	replace: string
+interface EditOperation {
+	old_text: string
+	new_text: string
 }
 
 interface SearchAndReplaceParams {
 	path: string
-	operations: SearchReplaceOperation[]
+	edits: EditOperation[]
 }
 
 export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	readonly name = "search_and_replace" as const
 
 	parseLegacy(params: Partial<Record<string, string>>): SearchAndReplaceParams {
-		// Parse operations from JSON string if provided
-		let operations: SearchReplaceOperation[] = []
-		if (params.operations) {
+		// Parse edits from JSON string if provided
+		let edits: EditOperation[] = []
+		if (params.edits) {
 			try {
-				operations = JSON.parse(params.operations)
+				edits = JSON.parse(params.edits)
 			} catch {
-				operations = []
+				edits = []
 			}
 		}
 
 		return {
 			path: params.path || "",
-			operations,
+			edits,
 		}
 	}
 
 	async execute(params: SearchAndReplaceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { path: relPath, operations } = params
+		const { path: relPath, edits } = params
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
@@ -57,30 +57,30 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 				return
 			}
 
-			if (!operations || !Array.isArray(operations) || operations.length === 0) {
+			if (!edits || !Array.isArray(edits) || edits.length === 0) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("search_and_replace")
 				pushToolResult(
 					formatResponse.toolError(
-						"Missing or empty 'operations' parameter. At least one search/replace operation is required.",
+						"Missing or empty 'edits' parameter. At least one edit operation is required.",
 					),
 				)
 				return
 			}
 
-			// Validate each operation has search and replace fields
-			for (let i = 0; i < operations.length; i++) {
-				const op = operations[i]
-				if (!op.search) {
+			// Validate each edit has old_text and new_text fields
+			for (let i = 0; i < edits.length; i++) {
+				const op = edits[i]
+				if (!op.old_text) {
 					task.consecutiveMistakeCount++
 					task.recordToolError("search_and_replace")
-					pushToolResult(formatResponse.toolError(`Operation ${i + 1} is missing the 'search' field.`))
+					pushToolResult(formatResponse.toolError(`Edit ${i + 1} is missing the 'old_text' field.`))
 					return
 				}
-				if (op.replace === undefined) {
+				if (op.new_text === undefined) {
 					task.consecutiveMistakeCount++
 					task.recordToolError("search_and_replace")
-					pushToolResult(formatResponse.toolError(`Operation ${i + 1} is missing the 'replace' field.`))
+					pushToolResult(formatResponse.toolError(`Edit ${i + 1} is missing the 'new_text' field.`))
 					return
 				}
 			}
@@ -122,38 +122,38 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 				return
 			}
 
-			// Apply all operations sequentially
+			// Apply all edits sequentially
 			let newContent = fileContent
 			const errors: string[] = []
 
-			for (let i = 0; i < operations.length; i++) {
-				// Normalize line endings in search/replace strings to match file content
-				const search = operations[i].search.replace(/\r\n/g, "\n")
-				const replace = operations[i].replace.replace(/\r\n/g, "\n")
-				const searchPattern = new RegExp(escapeRegExp(search), "g")
+		for (let i = 0; i < edits.length; i++) {
+			// Normalize line endings in search/replace strings to match file content
+			const old_text = edits[i].old_text.replace(/\r\n/g, "\n")
+			const new_text = edits[i].new_text.replace(/\r\n/g, "\n")
+			const searchPattern = new RegExp(escapeRegExp(old_text), "g")
 
 				const matchCount = newContent.match(searchPattern)?.length ?? 0
 				if (matchCount === 0) {
-					errors.push(`Operation ${i + 1}: No match found for search text.`)
+					errors.push(`Edit ${i + 1}: No match found for old_text.`)
 					continue
 				}
 
 				if (matchCount > 1) {
 					errors.push(
-						`Operation ${i + 1}: Found ${matchCount} matches. Please provide more context to make a unique match.`,
+						`Edit ${i + 1}: Found ${matchCount} matches. Please provide more context to make a unique match.`,
 					)
 					continue
 				}
 
 				// Apply the replacement
-				newContent = newContent.replace(searchPattern, replace)
+				newContent = newContent.replace(searchPattern, new_text)
 			}
 
-			// If all operations failed, return error
-			if (errors.length === operations.length) {
+			// If all edits failed, return error
+			if (errors.length === edits.length) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("search_and_replace", "no_match")
-				pushToolResult(formatResponse.toolError(`All operations failed:\n${errors.join("\n")}`))
+				pushToolResult(formatResponse.toolError(`All edits failed:\n${errors.join("\n")}`))
 				return
 			}
 
@@ -201,7 +201,7 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			// Include any partial errors in the message
 			let resultMessage = ""
 			if (errors.length > 0) {
-				resultMessage = `Some operations failed:\n${errors.join("\n")}\n\n`
+				resultMessage = `Some edits failed:\n${errors.join("\n")}\n\n`
 			}
 
 			const completeMessage = JSON.stringify({
@@ -270,17 +270,17 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 
 	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
 		const relPath: string | undefined = block.params.path
-		const operationsStr: string | undefined = block.params.operations
+		const editsStr: string | undefined = block.params.edits
 
-		let operationsPreview: string | undefined
-		if (operationsStr) {
+		let editsPreview: string | undefined
+		if (editsStr) {
 			try {
-				const ops = JSON.parse(operationsStr)
+				const ops = JSON.parse(editsStr)
 				if (Array.isArray(ops) && ops.length > 0) {
-					operationsPreview = `${ops.length} operation(s)`
+					editsPreview = `${ops.length} edit(s)`
 				}
 			} catch {
-				operationsPreview = "parsing..."
+				editsPreview = "parsing..."
 			}
 		}
 
@@ -290,7 +290,7 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
 			path: getReadablePath(task.cwd, relPath || ""),
-			diff: operationsPreview,
+			diff: editsPreview,
 			isOutsideWorkspace,
 		}
 
