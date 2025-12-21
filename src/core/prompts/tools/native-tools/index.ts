@@ -27,7 +27,7 @@ export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./c
 /**
  * Get native tools array, optionally customizing based on settings.
  *
- * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param partialReadsEnabled - Whether to include line_range support in read_file tool (default: true)
  * @returns Array of native tool definitions
  */
 export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {

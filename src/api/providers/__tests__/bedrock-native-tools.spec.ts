@@ -141,13 +141,12 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 										type: "object",
 										properties: {
 											path: { type: "string" },
-											line_ranges: {
-												type: ["array", "null"],
-												items: { type: "integer" },
-												description: "Optional line ranges",
+											line_range: {
+												type: ["string", "null"],
+												description: "Optional line range",
 											},
 										},
-										required: ["path", "line_ranges"],
+										required: ["path", "line_range"],
 									},
 								},
 							},
@@ -167,14 +166,12 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(executeCommandSchema.properties.cwd.type).toBeUndefined()
 			expect(executeCommandSchema.properties.cwd.description).toBe("Working directory (optional)")
 
-			// Second tool: line_ranges should be transformed from type: ["array", "null"] to anyOf
+			// Second tool: line_range should be transformed from type: ["string", "null"] to anyOf
 			const readFileSchema = bedrockTools[1].toolSpec.inputSchema.json as any
-			const lineRanges = readFileSchema.properties.files.items.properties.line_ranges
-			expect(lineRanges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
-			expect(lineRanges.type).toBeUndefined()
-			// items also gets additionalProperties: false from normalization
-			expect(lineRanges.items.type).toBe("integer")
-			expect(lineRanges.description).toBe("Optional line ranges")
+			const lineRange = readFileSchema.properties.files.items.properties.line_range
+			expect(lineRange.anyOf).toEqual([{ type: "string" }, { type: "null" }])
+			expect(lineRange.type).toBeUndefined()
+			expect(lineRange.description).toBe("Optional line range")
 		})
 
 		it("should filter non-function tools", () => {

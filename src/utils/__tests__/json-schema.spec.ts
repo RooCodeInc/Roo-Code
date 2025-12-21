@@ -86,9 +86,8 @@ describe("normalizeToolSchema", () => {
 				type: "object",
 				properties: {
 					path: { type: "string" },
-					line_ranges: {
-						type: ["array", "null"],
-						items: { type: "integer" },
+					line_range: {
+						type: ["string", "null"],
 					},
 				},
 			},
@@ -103,9 +102,8 @@ describe("normalizeToolSchema", () => {
 				type: "object",
 				properties: {
 					path: { type: "string" },
-					line_ranges: {
-						anyOf: [{ type: "array" }, { type: "null" }],
-						items: { type: "integer" },
+					line_range: {
+						anyOf: [{ type: "string" }, { type: "null" }],
 					},
 				},
 				additionalProperties: false,
@@ -123,15 +121,11 @@ describe("normalizeToolSchema", () => {
 						type: "object",
 						properties: {
 							path: { type: "string" },
-							line_ranges: {
-								type: ["array", "null"],
-								items: {
-									type: "array",
-									items: { type: "integer" },
-								},
+							line_range: {
+								type: ["string", "null"],
 							},
 						},
-						required: ["path", "line_ranges"],
+						required: ["path", "line_range"],
 					},
 				},
 			},
@@ -143,7 +137,7 @@ describe("normalizeToolSchema", () => {
 		const properties = result.properties as Record<string, Record<string, unknown>>
 		const filesItems = properties.files.items as Record<string, unknown>
 		const filesItemsProps = filesItems.properties as Record<string, Record<string, unknown>>
-		expect(filesItemsProps.line_ranges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
+		expect(filesItemsProps.line_range.anyOf).toEqual([{ type: "string" }, { type: "null" }])
 	})
 
 	it("should recursively transform anyOf arrays", () => {
@@ -232,18 +226,12 @@ describe("normalizeToolSchema", () => {
 								type: "string",
 								description: "Path to the file",
 							},
-							line_ranges: {
-								type: ["array", "null"],
-								description: "Optional line ranges",
-								items: {
-									type: "array",
-									items: { type: "integer" },
-									minItems: 2,
-									maxItems: 2,
-								},
+							line_range: {
+								type: ["string", "null"],
+								description: "Optional line range",
 							},
 						},
-						required: ["path", "line_ranges"],
+						required: ["path", "line_range"],
 						additionalProperties: false,
 					},
 					minItems: 1,
@@ -255,14 +243,13 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
-		// Verify the line_ranges was transformed
+		// Verify the line_range was transformed
 		const files = (result.properties as Record<string, unknown>).files as Record<string, unknown>
 		const items = files.items as Record<string, unknown>
 		const props = items.properties as Record<string, Record<string, unknown>>
-		expect(props.line_ranges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
+		expect(props.line_range.anyOf).toEqual([{ type: "string" }, { type: "null" }])
 		// Verify other properties are preserved
-		expect(props.line_ranges.items).toBeDefined()
-		expect(props.line_ranges.description).toBe("Optional line ranges")
+		expect(props.line_range.description).toBe("Optional line range")
 	})
 
 	describe("format field handling", () => {

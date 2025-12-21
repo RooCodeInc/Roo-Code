@@ -8,7 +8,68 @@ describe("NativeToolCallParser", () => {
 
 	describe("parseToolCall", () => {
 		describe("read_file tool", () => {
-			it("should handle line_ranges as tuples (new format)", () => {
+			it("should handle line_range as a single range string (unified format)", () => {
+				const toolCall = {
+					id: "toolu_123",
+					name: "read_file" as const,
+					arguments: JSON.stringify({
+						files: [
+							{
+								path: "src/core/task/Task.ts",
+								line_range: "1920-1990",
+							},
+						],
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					expect(result.nativeArgs).toBeDefined()
+					const nativeArgs = result.nativeArgs as {
+						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					}
+					expect(nativeArgs.files).toHaveLength(1)
+					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
+					expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 1920, end: 1990 }])
+				}
+			})
+
+			it("should handle line_range as a comma-separated string for multiple ranges (unified format)", () => {
+				const toolCall = {
+					id: "toolu_123",
+					name: "read_file" as const,
+					arguments: JSON.stringify({
+						files: [
+							{
+								path: "src/core/task/Task.ts",
+								line_range: "1920-1990,2060-2120",
+							},
+						],
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					expect(result.nativeArgs).toBeDefined()
+					const nativeArgs = result.nativeArgs as {
+						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					}
+					expect(nativeArgs.files).toHaveLength(1)
+					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
+					expect(nativeArgs.files[0].lineRanges).toEqual([
+						{ start: 1920, end: 1990 },
+						{ start: 2060, end: 2120 },
+					])
+				}
+			})
+
+			it("should handle line_ranges as tuples (legacy format)", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -43,7 +104,7 @@ describe("NativeToolCallParser", () => {
 				}
 			})
 
-			it("should handle line_ranges as strings (legacy format)", () => {
+			it("should handle line_ranges as strings array (legacy format)", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -174,7 +235,36 @@ describe("NativeToolCallParser", () => {
 
 	describe("processStreamingChunk", () => {
 		describe("read_file tool", () => {
-			it("should convert line_ranges strings to lineRanges objects during streaming", () => {
+			it("should convert line_range string to lineRanges objects during streaming (unified format)", () => {
+				const id = "toolu_streaming_unified"
+				NativeToolCallParser.startStreamingToolCall(id, "read_file")
+
+				// Simulate streaming chunks using the new unified format
+				const fullArgs = JSON.stringify({
+					files: [
+						{
+							path: "src/test.ts",
+							line_range: "10-20,30-40",
+						},
+					],
+				})
+
+				// Process the complete args as a single chunk for simplicity
+				const result = NativeToolCallParser.processStreamingChunk(id, fullArgs)
+
+				expect(result).not.toBeNull()
+				expect(result?.nativeArgs).toBeDefined()
+				const nativeArgs = result?.nativeArgs as {
+					files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+				}
+				expect(nativeArgs.files).toHaveLength(1)
+				expect(nativeArgs.files[0].lineRanges).toEqual([
+					{ start: 10, end: 20 },
+					{ start: 30, end: 40 },
+				])
+			})
+
+			it("should convert line_ranges strings to lineRanges objects during streaming (legacy format)", () => {
 				const id = "toolu_streaming_123"
 				NativeToolCallParser.startStreamingToolCall(id, "read_file")
 
@@ -207,7 +297,37 @@ describe("NativeToolCallParser", () => {
 
 	describe("finalizeStreamingToolCall", () => {
 		describe("read_file tool", () => {
-			it("should convert line_ranges strings to lineRanges objects on finalize", () => {
+			it("should convert line_range string to lineRanges objects on finalize (unified format)", () => {
+				const id = "toolu_finalize_unified"
+				NativeToolCallParser.startStreamingToolCall(id, "read_file")
+
+				// Add the complete arguments using new unified format
+				NativeToolCallParser.processStreamingChunk(
+					id,
+					JSON.stringify({
+						files: [
+							{
+								path: "finalized.ts",
+								line_range: "500-600",
+							},
+						],
+					}),
+				)
+
+				const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as {
+						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					}
+					expect(nativeArgs.files[0].path).toBe("finalized.ts")
+					expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 500, end: 600 }])
+				}
+			})
+
+			it("should convert line_ranges strings to lineRanges objects on finalize (legacy format)", () => {
 				const id = "toolu_finalize_123"
 				NativeToolCallParser.startStreamingToolCall(id, "read_file")
 
