@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const EDIT_FILE_DESCRIPTION = `Use this tool to replace text in an existing file, or create a new file.
+const EDIT_FILE_GEMINI_DESCRIPTION = `Use this tool to replace text in an existing file, or create a new file.
 
 This tool performs literal string replacement with support for multiple occurrences.
 
@@ -31,11 +31,11 @@ CRITICAL REQUIREMENTS:
 
 4. NO ESCAPING: Provide the literal text - do not escape special characters.`
 
-const edit_file = {
+const edit_file_gemini = {
 	type: "function",
 	function: {
-		name: "edit_file",
-		description: EDIT_FILE_DESCRIPTION,
+		name: "edit_file_gemini",
+		description: EDIT_FILE_GEMINI_DESCRIPTION,
 		parameters: {
 			type: "object",
 			properties: {
@@ -67,4 +67,7 @@ const edit_file = {
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
 
-export default edit_file
+export default edit_file_gemini
+
+// Backward compatibility export (original name was edit_file)
+export { edit_file_gemini as edit_file }

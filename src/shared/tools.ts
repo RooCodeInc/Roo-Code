@@ -70,7 +70,9 @@ export const toolParamNames = [
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
-	"operations", // search_and_replace parameter for multiple operations
+	"edits", // edit_file_anthropic parameter for multiple edit operations
+	"old_text", // edit_file_anthropic parameter for text to replace
+	"new_text", // edit_file_anthropic parameter for replacement text
 	"patch", // apply_patch parameter
 	"file_path", // search_replace and edit_file parameter
 	"old_string", // search_replace and edit_file parameter
@@ -91,11 +93,18 @@ export type NativeToolArgs = {
 	read_file: { files: FileEntry[] }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
+	// Legacy edit tool names (deprecated, mapped to new names via aliases)
 	apply_diff: { path: string; diff: string }
-	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
+	search_and_replace: { path: string; edits: Array<{ old_text: string; new_text: string }> }
 	search_replace: { file_path: string; old_string: string; new_string: string }
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
+	// New edit tool variant names (all present "edit_file" to LLM)
+	edit_file_roo: { path: string; diff: string }
+	edit_file_anthropic: { path: string; edits: Array<{ old_text: string; new_text: string }> }
+	edit_file_grok: { file_path: string; old_string: string; new_string: string }
+	edit_file_gemini: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
+	edit_file_codex: { patch: string }
 	ask_followup_question: {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
@@ -248,11 +257,19 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	read_file: "read files",
 	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
+	// Legacy edit tool names (deprecated)
 	apply_diff: "apply changes",
 	search_and_replace: "apply changes using search and replace",
 	search_replace: "apply single search and replace",
 	edit_file: "edit files using search and replace",
 	apply_patch: "apply patches using codex format",
+	// New edit tool variant names
+	edit_file_roo: "edit files (roo format)",
+	edit_file_anthropic: "edit files (anthropic format)",
+	edit_file_grok: "edit files (grok format)",
+	edit_file_gemini: "edit files (gemini format)",
+	edit_file_codex: "edit files (codex format)",
+	// Other tools
 	search_files: "search files",
 	list_files: "list files",
 	browser_action: "use a browser",
@@ -275,8 +292,25 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
-		tools: ["apply_diff", "write_to_file", "generate_image"],
-		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
+		// apply_diff is included for XML protocol backward compatibility
+		// For native protocol, filterNativeToolsForMode selects the appropriate edit_file_* variant
+		tools: ["write_to_file", "apply_diff", "edit_file", "generate_image"],
+		// All edit tool variants and legacy names - one is selected based on modelInfo.editToolVariant
+		// "edit_file" is the unified name that LLMs see (for modelInfo.includedTools validation)
+		customTools: [
+			// Unified edit tool name (for includedTools validation)
+			"edit_file",
+			// Legacy names (for backward compatibility with existing includedTools configs)
+			"search_and_replace",
+			"search_replace",
+			"apply_patch",
+			// Variant names (for native protocol internal use)
+			"edit_file_roo",
+			"edit_file_anthropic",
+			"edit_file_grok",
+			"edit_file_gemini",
+			"edit_file_codex",
+		],
 	},
 	browser: {
 		tools: ["browser_action"],
@@ -315,6 +349,12 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
 	write_file: "write_to_file",
+	// Backward compatibility: map old edit tool names to new variant names
+	apply_diff: "edit_file_roo",
+	search_and_replace: "edit_file_anthropic",
+	search_replace: "edit_file_grok",
+	// Note: edit_file is kept as a tool name (for gemini variant) but also serves as the unified LLM-facing name
+	apply_patch: "edit_file_codex",
 } as const
 
 export type DiffResult =

@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const SEARCH_REPLACE_DESCRIPTION = `Use this tool to propose a search and replace operation on an existing file.
+const EDIT_FILE_GROK_DESCRIPTION = `Use this tool to propose a search and replace operation on an existing file.
 
 The tool will replace ONE occurrence of old_string with new_string in the specified file.
 
@@ -19,11 +19,11 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
    - If multiple instances exist, gather enough context to uniquely identify each one
    - Plan separate tool calls for each instance`
 
-const search_replace = {
+const edit_file_grok = {
 	type: "function",
 	function: {
-		name: "search_replace",
-		description: SEARCH_REPLACE_DESCRIPTION,
+		name: "edit_file_grok",
+		description: EDIT_FILE_GROK_DESCRIPTION,
 		parameters: {
 			type: "object",
 			properties: {
@@ -48,4 +48,7 @@ const search_replace = {
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
 
-export default search_replace
+export default edit_file_grok
+
+// Backward compatibility export
+export const search_replace = edit_file_grok

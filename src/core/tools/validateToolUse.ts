@@ -62,7 +62,7 @@ export function validateToolUse(
 	}
 }
 
-const EDIT_OPERATION_PARAMS = ["diff", "content", "operations", "search", "replace", "args", "line"] as const
+const EDIT_OPERATION_PARAMS = ["diff", "content", "edits", "old_text", "new_text", "args", "line"] as const
 
 function getGroupOptions(group: GroupEntry): GroupOptions | undefined {
 	return Array.isArray(group) ? group[1] : undefined

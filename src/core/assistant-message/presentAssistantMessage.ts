@@ -2,7 +2,7 @@ import cloneDeep from "clone-deep"
 import { serializeError } from "serialize-error"
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
+import type { ToolName, ClineAsk, ToolProgressStatus, EditToolVariant } from "@roo-code/types"
 import { ConsecutiveMistakeError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { customToolRegistry } from "@roo-code/core"
@@ -399,8 +399,19 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.path}']`
 					case "search_replace":
 						return `[${block.name} for '${block.params.file_path}']`
-					case "edit_file":
-						return `[${block.name} for '${block.params.file_path}']`
+					case "edit_file": {
+						// Unified edit_file tool - path location depends on variant
+						// Gemini/Grok variants use file_path, Roo/Anthropic use path
+						const filePath = block.params.file_path || block.params.path
+						if (filePath) {
+							return `[${block.name} for '${filePath}']`
+						}
+						// Codex variant uses patch parameter
+						if (block.params.patch) {
+							return `[${block.name}]`
+						}
+						return `[${block.name}]`
+					}
 					case "apply_patch":
 						return `[${block.name}]`
 					case "list_files":
@@ -884,16 +895,77 @@ export async function presentAssistantMessage(cline: Task) {
 						toolProtocol,
 					})
 					break
-				case "edit_file":
+				case "edit_file": {
+					// Unified edit_file tool - route to correct handler based on editToolVariant
 					await checkpointSaveAndMark(cline)
-					await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
+					const modelInfo = cline.api.getModel()
+					const editToolVariant: EditToolVariant = modelInfo?.info?.editToolVariant ?? "roo"
+
+					switch (editToolVariant) {
+						case "roo":
+							// Route to apply_diff handler (Roo variant)
+							await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						case "anthropic":
+							// Route to search_and_replace handler (Anthropic variant)
+							await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						case "grok":
+							// Route to search_replace handler (Grok variant)
+							await searchReplaceTool.handle(cline, block as ToolUse<"search_replace">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						case "gemini":
+							// Route to edit_file handler (Gemini variant)
+							await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						case "codex":
+							// Route to apply_patch handler (Codex variant)
+							await applyPatchTool.handle(cline, block as ToolUse<"apply_patch">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+							break
+						default: {
+							// Should never happen, but default to roo variant
+							const _exhaustiveCheck: never = editToolVariant
+							await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+								askApproval,
+								handleError,
+								pushToolResult,
+								removeClosingTag,
+								toolProtocol,
+							})
+						}
+					}
 					break
+				}
 				case "apply_patch":
 					await checkpointSaveAndMark(cline)
 					await applyPatchTool.handle(cline, block as ToolUse<"apply_patch">, {

@@ -1,7 +1,7 @@
 import type OpenAI from "openai"
 import accessMcpResource from "./access_mcp_resource"
-import { apply_diff } from "./apply_diff"
-import applyPatch from "./apply_patch"
+import { edit_file_roo, apply_diff } from "./edit_file_roo"
+import edit_file_codex, { apply_patch } from "./edit_file_codex"
 import askFollowupQuestion from "./ask_followup_question"
 import attemptCompletion from "./attempt_completion"
 import browserAction from "./browser_action"
@@ -13,9 +13,9 @@ import listFiles from "./list_files"
 import newTask from "./new_task"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
-import searchAndReplace from "./search_and_replace"
-import searchReplace from "./search_replace"
-import edit_file from "./edit_file"
+import edit_file_anthropic, { search_and_replace } from "./edit_file_anthropic"
+import edit_file_grok, { search_replace } from "./edit_file_grok"
+import edit_file_gemini, { edit_file } from "./edit_file_gemini"
 import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
@@ -38,10 +38,37 @@ export interface NativeToolsOptions {
 }
 
 /**
- * Get native tools array, optionally customizing based on settings.
+ * Edit tool variant types - determines which edit tool schema is presented to the LLM
+ */
+export type EditToolVariant = "roo" | "anthropic" | "grok" | "gemini" | "codex"
+
+/**
+ * All edit tool definitions mapped by variant
+ */
+export const EDIT_TOOL_VARIANTS: Record<EditToolVariant, OpenAI.Chat.ChatCompletionTool> = {
+	roo: edit_file_roo,
+	anthropic: edit_file_anthropic,
+	grok: edit_file_grok,
+	gemini: edit_file_gemini,
+	codex: edit_file_codex,
+}
+
+/**
+ * Get the edit tool definition for a specific variant
+ * @param variant The edit tool variant to use
+ * @returns The tool definition for that variant
+ */
+export function getEditToolForVariant(variant: EditToolVariant): OpenAI.Chat.ChatCompletionTool {
+	return EDIT_TOOL_VARIANTS[variant]
+}
+
+/**
+ * Get native tools array, including all edit tool variants.
+ * The filterNativeToolsForMode function will select the appropriate variant
+ * based on modelInfo.editToolVariant and rename it to "edit_file".
  *
  * @param options - Configuration options for the tools
- * @returns Array of native tool definitions
+ * @returns Array of native tool definitions (including all edit tool variants)
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
 	const { partialReadsEnabled = true, maxConcurrentFileReads = 5, supportsImages = false } = options
@@ -54,8 +81,12 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 
 	return [
 		accessMcpResource,
-		apply_diff,
-		applyPatch,
+		// All edit tool variants - filterNativeToolsForMode will select one and rename to "edit_file"
+		edit_file_roo,
+		edit_file_anthropic,
+		edit_file_grok,
+		edit_file_gemini,
+		edit_file_codex,
 		askFollowupQuestion,
 		attemptCompletion,
 		browserAction,
@@ -67,9 +98,6 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		newTask,
 		createReadFileTool(readFileOptions),
 		runSlashCommand,
-		searchAndReplace,
-		searchReplace,
-		edit_file,
 		searchFiles,
 		switchMode,
 		updateTodoList,
@@ -78,4 +106,21 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 }
 
 // Backward compatibility: export default tools with line ranges enabled
+// Note: filterNativeToolsForMode will select the edit tool variant based on modelInfo
 export const nativeTools = getNativeTools()
+
+// Re-export individual tools for backward compatibility
+export {
+	// New names
+	edit_file_roo,
+	edit_file_anthropic,
+	edit_file_grok,
+	edit_file_gemini,
+	edit_file_codex,
+	// Old names (aliases)
+	apply_diff,
+	search_and_replace,
+	search_replace,
+	edit_file,
+	apply_patch,
+}

@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const APPLY_DIFF_DESCRIPTION = `Apply precise, targeted modifications to an existing file using one or more search/replace blocks. This tool is for surgical edits only; the 'SEARCH' block must exactly match the existing content, including whitespace and indentation. To make multiple targeted changes, provide multiple SEARCH/REPLACE blocks in the 'diff' parameter. Use the 'read_file' tool first if you are not confident in the exact content to search for.`
+const EDIT_FILE_ROO_DESCRIPTION = `Apply precise, targeted modifications to an existing file using one or more search/replace blocks. This tool is for surgical edits only; the 'SEARCH' block must exactly match the existing content, including whitespace and indentation. To make multiple targeted changes, provide multiple SEARCH/REPLACE blocks in the 'diff' parameter. Use the 'read_file' tool first if you are not confident in the exact content to search for.`
 
 const DIFF_PARAMETER_DESCRIPTION = `A string containing one or more search/replace blocks defining the changes. The ':start_line:' is required and indicates the starting line number of the original content. You must not add a start line for the replacement content. Each block must follow this format:
 <<<<<<< SEARCH
@@ -11,11 +11,11 @@ const DIFF_PARAMETER_DESCRIPTION = `A string containing one or more search/repla
 [new content to replace with]
 >>>>>>> REPLACE`
 
-export const apply_diff = {
+export const edit_file_roo = {
 	type: "function",
 	function: {
-		name: "apply_diff",
-		description: APPLY_DIFF_DESCRIPTION,
+		name: "edit_file_roo",
+		description: EDIT_FILE_ROO_DESCRIPTION,
 		parameters: {
 			type: "object",
 			properties: {
@@ -33,3 +33,6 @@ export const apply_diff = {
 		},
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
+
+// Backward compatibility export
+export const apply_diff = edit_file_roo

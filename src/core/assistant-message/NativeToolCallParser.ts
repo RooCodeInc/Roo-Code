@@ -520,10 +520,10 @@ export class NativeToolCallParser {
 				break
 
 			case "search_and_replace":
-				if (partialArgs.path !== undefined || partialArgs.operations !== undefined) {
+				if (partialArgs.path !== undefined || partialArgs.edits !== undefined) {
 					nativeArgs = {
 						path: partialArgs.path,
-						operations: partialArgs.operations,
+						edits: partialArgs.edits,
 					}
 				}
 				break
@@ -661,10 +661,10 @@ export class NativeToolCallParser {
 					break
 
 				case "search_and_replace":
-					if (args.path !== undefined && args.operations !== undefined && Array.isArray(args.operations)) {
+					if (args.path !== undefined && args.edits !== undefined && Array.isArray(args.edits)) {
 						nativeArgs = {
 							path: args.path,
-							operations: args.operations,
+							edits: args.edits,
 						} as NativeArgsFor<TName>
 					}
 					break
