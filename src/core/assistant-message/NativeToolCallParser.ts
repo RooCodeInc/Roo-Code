@@ -298,40 +298,75 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
-	 * (with lineRanges). Handles multiple formats for compatibility:
+	 * Convert raw file entries from API to FileEntry objects.
+	 * Supports the new slice/indentation API:
 	 *
-	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
-	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
-	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
-	 *
-	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
+	 * { path: string, offset?: number, limit?: number, mode?: "slice" | "indentation", indentation?: {...} }
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
 			const entry: FileEntry = { path: file.path }
-			if (file.line_ranges && Array.isArray(file.line_ranges)) {
-				entry.lineRanges = file.line_ranges
-					.map((range: any) => {
-						// Handle tuple format: [start, end]
-						if (Array.isArray(range) && range.length >= 2) {
-							return { start: Number(range[0]), end: Number(range[1]) }
-						}
-						// Handle object format: { start: number, end: number }
-						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
-							return { start: Number(range.start), end: Number(range.end) }
-						}
-						// Handle legacy string format: "1-50"
-						if (typeof range === "string") {
-							const match = range.match(/^(\d+)-(\d+)$/)
-							if (match) {
-								return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
-							}
-						}
-						return null
-					})
-					.filter(Boolean)
+
+			// Map offset parameter
+			if (file.offset !== undefined) {
+				const offset = Number(file.offset)
+				if (!isNaN(offset) && offset > 0) {
+					entry.offset = offset
+				}
 			}
+
+			// Map limit parameter
+			if (file.limit !== undefined) {
+				const limit = Number(file.limit)
+				if (!isNaN(limit) && limit > 0) {
+					entry.limit = limit
+				}
+			}
+
+			// Map mode parameter
+			if (file.mode === "slice" || file.mode === "indentation") {
+				entry.mode = file.mode
+			}
+
+			// Map indentation configuration
+			if (file.indentation && typeof file.indentation === "object") {
+				const indent = file.indentation
+				const indentConfig: FileEntry["indentation"] = {}
+
+				if (indent.anchor_line !== undefined) {
+					const anchorLine = Number(indent.anchor_line)
+					if (!isNaN(anchorLine) && anchorLine > 0) {
+						indentConfig.anchorLine = anchorLine
+					}
+				}
+
+				if (indent.max_levels !== undefined) {
+					const maxLevels = Number(indent.max_levels)
+					if (!isNaN(maxLevels) && maxLevels >= 0) {
+						indentConfig.maxLevels = maxLevels
+					}
+				}
+
+				if (indent.include_siblings !== undefined) {
+					indentConfig.includeSiblings = Boolean(indent.include_siblings)
+				}
+
+				if (indent.include_header !== undefined) {
+					indentConfig.includeHeader = Boolean(indent.include_header)
+				}
+
+				if (indent.max_lines !== undefined) {
+					const maxLines = Number(indent.max_lines)
+					if (!isNaN(maxLines) && maxLines > 0) {
+						indentConfig.maxLines = maxLines
+					}
+				}
+
+				if (Object.keys(indentConfig).length > 0) {
+					entry.indentation = indentConfig
+				}
+			}
+
 			return entry
 		})
 	}

@@ -8,7 +8,7 @@ describe("NativeToolCallParser", () => {
 
 	describe("parseToolCall", () => {
 		describe("read_file tool", () => {
-			it("should handle line_ranges as tuples (new format)", () => {
+			it("should handle offset and mode parameters", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -16,10 +16,8 @@ describe("NativeToolCallParser", () => {
 						files: [
 							{
 								path: "src/core/task/Task.ts",
-								line_ranges: [
-									[1920, 1990],
-									[2060, 2120],
-								],
+								offset: 100,
+								mode: "slice",
 							},
 						],
 					}),
@@ -32,18 +30,16 @@ describe("NativeToolCallParser", () => {
 				if (result?.type === "tool_use") {
 					expect(result.nativeArgs).toBeDefined()
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{ path: string; offset?: number; mode?: string }>
 					}
 					expect(nativeArgs.files).toHaveLength(1)
 					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
-					expect(nativeArgs.files[0].lineRanges).toEqual([
-						{ start: 1920, end: 1990 },
-						{ start: 2060, end: 2120 },
-					])
+					expect(nativeArgs.files[0].offset).toBe(100)
+					expect(nativeArgs.files[0].mode).toBe("slice")
 				}
 			})
 
-			it("should handle line_ranges as strings (legacy format)", () => {
+			it("should handle indentation mode with configuration", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -51,7 +47,13 @@ describe("NativeToolCallParser", () => {
 						files: [
 							{
 								path: "src/core/task/Task.ts",
-								line_ranges: ["1920-1990", "2060-2120"],
+								offset: 50,
+								mode: "indentation",
+								indentation: {
+									anchor_line: 55,
+									max_levels: 2,
+									include_siblings: true,
+								},
 							},
 						],
 					}),
@@ -64,18 +66,24 @@ describe("NativeToolCallParser", () => {
 				if (result?.type === "tool_use") {
 					expect(result.nativeArgs).toBeDefined()
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{
+							path: string
+							offset?: number
+							mode?: string
+							indentation?: { anchorLine?: number; maxLevels?: number; includeSiblings?: boolean }
+						}>
 					}
 					expect(nativeArgs.files).toHaveLength(1)
 					expect(nativeArgs.files[0].path).toBe("src/core/task/Task.ts")
-					expect(nativeArgs.files[0].lineRanges).toEqual([
-						{ start: 1920, end: 1990 },
-						{ start: 2060, end: 2120 },
-					])
+					expect(nativeArgs.files[0].offset).toBe(50)
+					expect(nativeArgs.files[0].mode).toBe("indentation")
+					expect(nativeArgs.files[0].indentation?.anchorLine).toBe(55)
+					expect(nativeArgs.files[0].indentation?.maxLevels).toBe(2)
+					expect(nativeArgs.files[0].indentation?.includeSiblings).toBe(true)
 				}
 			})
 
-			it("should handle files without line_ranges", () => {
+			it("should handle files without offset or mode (defaults)", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -94,15 +102,16 @@ describe("NativeToolCallParser", () => {
 				expect(result?.type).toBe("tool_use")
 				if (result?.type === "tool_use") {
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{ path: string; offset?: number; mode?: string }>
 					}
 					expect(nativeArgs.files).toHaveLength(1)
 					expect(nativeArgs.files[0].path).toBe("src/utils.ts")
-					expect(nativeArgs.files[0].lineRanges).toBeUndefined()
+					expect(nativeArgs.files[0].offset).toBeUndefined()
+					expect(nativeArgs.files[0].mode).toBeUndefined()
 				}
 			})
 
-			it("should handle multiple files with different line_ranges", () => {
+			it("should handle multiple files with different offsets and modes", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -110,11 +119,14 @@ describe("NativeToolCallParser", () => {
 						files: [
 							{
 								path: "file1.ts",
-								line_ranges: ["1-50"],
+								offset: 1,
+								mode: "slice",
 							},
 							{
 								path: "file2.ts",
-								line_ranges: ["100-150", "200-250"],
+								offset: 100,
+								mode: "indentation",
+								indentation: { max_levels: 1 },
 							},
 							{
 								path: "file3.ts",
@@ -129,19 +141,25 @@ describe("NativeToolCallParser", () => {
 				expect(result?.type).toBe("tool_use")
 				if (result?.type === "tool_use") {
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{
+							path: string
+							offset?: number
+							mode?: string
+							indentation?: { maxLevels?: number }
+						}>
 					}
 					expect(nativeArgs.files).toHaveLength(3)
-					expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 1, end: 50 }])
-					expect(nativeArgs.files[1].lineRanges).toEqual([
-						{ start: 100, end: 150 },
-						{ start: 200, end: 250 },
-					])
-					expect(nativeArgs.files[2].lineRanges).toBeUndefined()
+					expect(nativeArgs.files[0].offset).toBe(1)
+					expect(nativeArgs.files[0].mode).toBe("slice")
+					expect(nativeArgs.files[1].offset).toBe(100)
+					expect(nativeArgs.files[1].mode).toBe("indentation")
+					expect(nativeArgs.files[1].indentation?.maxLevels).toBe(1)
+					expect(nativeArgs.files[2].offset).toBeUndefined()
+					expect(nativeArgs.files[2].mode).toBeUndefined()
 				}
 			})
 
-			it("should filter out invalid line_range strings", () => {
+			it("should ignore invalid offset and mode values", () => {
 				const toolCall = {
 					id: "toolu_123",
 					name: "read_file" as const,
@@ -149,7 +167,8 @@ describe("NativeToolCallParser", () => {
 						files: [
 							{
 								path: "file.ts",
-								line_ranges: ["1-50", "invalid", "100-200", "abc-def"],
+								offset: -10, // Invalid - should be ignored
+								mode: "invalid_mode", // Invalid - should be ignored
 							},
 						],
 					}),
@@ -161,12 +180,11 @@ describe("NativeToolCallParser", () => {
 				expect(result?.type).toBe("tool_use")
 				if (result?.type === "tool_use") {
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{ path: string; offset?: number; mode?: string }>
 					}
-					expect(nativeArgs.files[0].lineRanges).toEqual([
-						{ start: 1, end: 50 },
-						{ start: 100, end: 200 },
-					])
+					// Invalid values should not be passed through
+					expect(nativeArgs.files[0].offset).toBeUndefined()
+					expect(nativeArgs.files[0].mode).toBeUndefined()
 				}
 			})
 		})
@@ -174,7 +192,7 @@ describe("NativeToolCallParser", () => {
 
 	describe("processStreamingChunk", () => {
 		describe("read_file tool", () => {
-			it("should convert line_ranges strings to lineRanges objects during streaming", () => {
+			it("should parse offset and mode during streaming", () => {
 				const id = "toolu_streaming_123"
 				NativeToolCallParser.startStreamingToolCall(id, "read_file")
 
@@ -183,7 +201,8 @@ describe("NativeToolCallParser", () => {
 					files: [
 						{
 							path: "src/test.ts",
-							line_ranges: ["10-20", "30-40"],
+							offset: 50,
+							mode: "slice",
 						},
 					],
 				})
@@ -194,20 +213,18 @@ describe("NativeToolCallParser", () => {
 				expect(result).not.toBeNull()
 				expect(result?.nativeArgs).toBeDefined()
 				const nativeArgs = result?.nativeArgs as {
-					files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+					files: Array<{ path: string; offset?: number; mode?: string }>
 				}
 				expect(nativeArgs.files).toHaveLength(1)
-				expect(nativeArgs.files[0].lineRanges).toEqual([
-					{ start: 10, end: 20 },
-					{ start: 30, end: 40 },
-				])
+				expect(nativeArgs.files[0].offset).toBe(50)
+				expect(nativeArgs.files[0].mode).toBe("slice")
 			})
 		})
 	})
 
 	describe("finalizeStreamingToolCall", () => {
 		describe("read_file tool", () => {
-			it("should convert line_ranges strings to lineRanges objects on finalize", () => {
+			it("should parse offset and mode on finalize", () => {
 				const id = "toolu_finalize_123"
 				NativeToolCallParser.startStreamingToolCall(id, "read_file")
 
@@ -218,7 +235,9 @@ describe("NativeToolCallParser", () => {
 						files: [
 							{
 								path: "finalized.ts",
-								line_ranges: ["500-600"],
+								offset: 500,
+								mode: "indentation",
+								indentation: { anchor_line: 520 },
 							},
 						],
 					}),
@@ -230,10 +249,17 @@ describe("NativeToolCallParser", () => {
 				expect(result?.type).toBe("tool_use")
 				if (result?.type === "tool_use") {
 					const nativeArgs = result.nativeArgs as {
-						files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						files: Array<{
+							path: string
+							offset?: number
+							mode?: string
+							indentation?: { anchorLine?: number }
+						}>
 					}
 					expect(nativeArgs.files[0].path).toBe("finalized.ts")
-					expect(nativeArgs.files[0].lineRanges).toEqual([{ start: 500, end: 600 }])
+					expect(nativeArgs.files[0].offset).toBe(500)
+					expect(nativeArgs.files[0].mode).toBe("indentation")
+					expect(nativeArgs.files[0].indentation?.anchorLine).toBe(520)
 				}
 			})
 		})
