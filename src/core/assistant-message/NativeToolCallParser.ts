@@ -295,18 +295,47 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
-	 * (with lineRanges). Handles multiple formats for compatibility:
+	 * Parse a line range string in the format "start-end" or "start-end,start-end"
+	 * Returns an array of { start, end } objects.
+	 */
+	private static parseLineRangeString(lineRange: string): Array<{ start: number; end: number }> {
+		const ranges: Array<{ start: number; end: number }> = []
+		// Split by comma for multiple ranges (e.g., "1-50,100-150")
+		const parts = lineRange.split(",")
+		for (const part of parts) {
+			const match = part.trim().match(/^(\d+)-(\d+)$/)
+			if (match) {
+				ranges.push({ start: parseInt(match[1], 10), end: parseInt(match[2], 10) })
+			}
+		}
+		return ranges
+	}
+
+	/**
+	 * Convert raw file entries from API to FileEntry objects (with lineRanges).
+	 * Handles multiple formats for backward compatibility:
 	 *
-	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
-	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
-	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
+	 * New unified format: { path: string, line_range: "1-50" } or "1-50,100-150"
+	 * Legacy tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
+	 * Legacy object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
+	 * Legacy string array format: { path: string, line_ranges: ["1-50"] }
 	 *
 	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
 			const entry: FileEntry = { path: file.path }
+
+			// New unified format: line_range as string "1-50" or "1-50,100-150"
+			if (file.line_range && typeof file.line_range === "string") {
+				const ranges = this.parseLineRangeString(file.line_range)
+				if (ranges.length > 0) {
+					entry.lineRanges = ranges
+				}
+				return entry
+			}
+
+			// Legacy format: line_ranges as array
 			if (file.line_ranges && Array.isArray(file.line_ranges)) {
 				entry.lineRanges = file.line_ranges
 					.map((range: any) => {

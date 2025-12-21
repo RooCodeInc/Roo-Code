@@ -91,12 +91,13 @@ describe("converters", () => {
 									type: "object",
 									properties: {
 										path: { type: "string" },
-										line_ranges: {
-											type: ["array", "null"],
-											items: { type: "string", pattern: "^[0-9]+-[0-9]+$" },
+										line_range: {
+											type: ["string", "null"],
+											description:
+												"Optional line range to read. Format: 'start-end' with 1-based inclusive line numbers. For multiple ranges, use comma-separated format like '1-50,100-150'.",
 										},
 									},
-									required: ["path", "line_ranges"],
+									required: ["path", "line_range"],
 								},
 							},
 						},

@@ -5,28 +5,32 @@ const READ_FILE_BASE_DESCRIPTION = `Read one or more files and return their cont
 const READ_FILE_SUPPORTS_NOTE = `Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.`
 
 /**
- * Creates the read_file tool definition, optionally including line_ranges support
+ * Creates the read_file tool definition, optionally including line_range support
  * based on whether partial reads are enabled.
  *
- * @param partialReadsEnabled - Whether to include line_ranges parameter
+ * Uses `line_range` (singular) with a simple string format like "1-50" or "1-50,100-150"
+ * for multiple ranges. This unified format matches the XML protocol for consistency.
+ *
+ * @param partialReadsEnabled - Whether to include line_range parameter
  * @returns Native tool definition for read_file
  */
 export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool {
 	const baseDescription =
 		READ_FILE_BASE_DESCRIPTION +
 		" Structure: { files: [{ path: 'relative/path.ts'" +
-		(partialReadsEnabled ? ", line_ranges: [[1, 50], [100, 150]]" : "") +
+		(partialReadsEnabled ? ", line_range: '1-50'" : "") +
 		" }] }. " +
 		"The 'path' is required and relative to workspace. "
 
 	const optionalRangesDescription = partialReadsEnabled
-		? "The 'line_ranges' is optional for reading specific sections. Each range is a [start, end] tuple (1-based inclusive). "
+		? "The 'line_range' is optional for reading specific sections. Format: 'start-end' (1-based inclusive). For multiple ranges, use comma-separated format like '1-50,100-150'. "
 		: ""
 
 	const examples = partialReadsEnabled
 		? "Example single file: { files: [{ path: 'src/app.ts' }] }. " +
-			"Example with line ranges: { files: [{ path: 'src/app.ts', line_ranges: [[1, 50], [100, 150]] }] }. " +
-			"Example multiple files: { files: [{ path: 'file1.ts', line_ranges: [[1, 50]] }, { path: 'file2.ts' }] }"
+			"Example with line range: { files: [{ path: 'src/app.ts', line_range: '1-50' }] }. " +
+			"Example with multiple ranges: { files: [{ path: 'src/app.ts', line_range: '1-50,100-150' }] }. " +
+			"Example multiple files: { files: [{ path: 'file1.ts', line_range: '1-50' }, { path: 'file2.ts' }] }"
 		: "Example single file: { files: [{ path: 'src/app.ts' }] }. " +
 			"Example multiple files: { files: [{ path: 'file1.ts' }, { path: 'file2.ts' }] }"
 
@@ -40,24 +44,18 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 		},
 	}
 
-	// Only include line_ranges if partial reads are enabled
+	// Only include line_range if partial reads are enabled
 	if (partialReadsEnabled) {
-		fileProperties.line_ranges = {
-			type: ["array", "null"],
+		fileProperties.line_range = {
+			type: ["string", "null"],
 			description:
-				"Optional line ranges to read. Each range is a [start, end] tuple with 1-based inclusive line numbers. Use multiple ranges for non-contiguous sections.",
-			items: {
-				type: "array",
-				items: { type: "integer" },
-				minItems: 2,
-				maxItems: 2,
-			},
+				"Optional line range to read. Format: 'start-end' with 1-based inclusive line numbers. For multiple ranges, use comma-separated format like '1-50,100-150'.",
 		}
 	}
 
 	// When using strict mode, ALL properties must be in the required array
 	// Optional properties are handled by having type: ["...", "null"]
-	const fileRequiredProperties = partialReadsEnabled ? ["path", "line_ranges"] : ["path"]
+	const fileRequiredProperties = partialReadsEnabled ? ["path", "line_range"] : ["path"]
 
 	return {
 		type: "function",
