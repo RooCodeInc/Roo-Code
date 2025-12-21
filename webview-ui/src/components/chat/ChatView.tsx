@@ -727,7 +727,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					startNewTask()
 					break
 				case "command_output":
-					vscode.postMessage({ type: "terminalOperation", terminalOperation: "continue" })
+					// If user has typed a message, send it with the continue response
+					if (trimmedInput || (images && images.length > 0)) {
+						vscode.postMessage({
+							type: "askResponse",
+							askResponse: "messageResponse",
+							text: trimmedInput,
+							images: images,
+						})
+						// Clear input state after sending
+						setInputValue("")
+						setSelectedImages([])
+					} else {
+						// If no message, just continue the command
+						vscode.postMessage({ type: "terminalOperation", terminalOperation: "continue" })
+					}
 					break
 			}
 
