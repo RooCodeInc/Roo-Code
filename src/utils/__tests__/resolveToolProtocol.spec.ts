@@ -376,13 +376,15 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.XML) // Model default wins
 		})
 
-		it("should use native tools for OpenAI compatible provider with default model info", () => {
+		it("should use XML for OpenAI compatible provider with default model info", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "openai",
 			}
-			// Using the actual openAiModelInfoSaneDefaults to verify the fix
+			// OpenAI Compatible defaults to XML protocol since third-party proxies
+			// have varying levels of support for native tool calling.
+			// Users who want native can explicitly enable it in Advanced Settings.
 			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Should use native tools by default
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Should use XML by default for better compatibility
 		})
 	})
 })
