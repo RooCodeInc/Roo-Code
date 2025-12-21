@@ -6,6 +6,7 @@ import { ApiHandlerOptions, RouterName, ModelRecord } from "../../shared/api"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
+import { createLoggingFetch } from "../core/logging"
 
 import { DEFAULT_HEADERS } from "./constants"
 
@@ -52,6 +53,7 @@ export abstract class RouterProvider extends BaseProvider {
 				...DEFAULT_HEADERS,
 				...(options.openAiHeaders || {}),
 			},
+			fetch: createLoggingFetch(name),
 		})
 	}
 

@@ -10,6 +10,7 @@ import { normalizeToolSchema } from "../../utils/json-schema"
 
 import { ApiStream } from "../transform/stream"
 import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../transform/vscode-lm-format"
+import { withLogging, ApiLogger } from "../core/logging"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -65,6 +66,10 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	private client: vscode.LanguageModelChat | null
 	private disposable: vscode.Disposable | null
 	private currentRequestCancellation: vscode.CancellationTokenSource | null
+
+	protected override get providerName(): string {
+		return "VSCode LM"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -356,6 +361,26 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		// Ensure clean state before starting a new request
 		this.ensureCleanState()
 		const client: vscode.LanguageModelChat = await this.getClient()
@@ -579,6 +604,12 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
+
 		try {
 			const client = await this.getClient()
 			const response = await client.sendRequest(
@@ -592,8 +623,17 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 					result += chunk.value
 				}
 			}
+
+			ApiLogger.logResponse(requestId, context, {
+				textLength: result.length,
+			})
+
 			return result
 		} catch (error) {
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+			})
+
 			if (error instanceof Error) {
 				throw new Error(`VSCode LM completion error: ${error.message}`)
 			}

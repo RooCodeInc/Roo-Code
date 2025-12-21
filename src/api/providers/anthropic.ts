@@ -23,6 +23,8 @@ import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { handleProviderError } from "./utils/error-handler"
 
 import { BaseProvider } from "./base-provider"
+import { withLogging, ApiLogger } from "../core/logging"
+import { createLoggingFetch, withScopedFetchLogging } from "../core/logging/http-interceptor"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import {
@@ -33,7 +35,10 @@ import {
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
 	private client: Anthropic
-	private readonly providerName = "Anthropic"
+
+	protected override get providerName(): string {
+		return "Anthropic"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -45,10 +50,82 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		this.client = new Anthropic({
 			baseURL: this.options.anthropicBaseUrl || undefined,
 			[apiKeyFieldName]: this.options.apiKey,
+			// Anthropic SDK supports injecting fetch; use this for raw HTTP parity when logging enabled.
+			fetch: createLoggingFetch(this.providerName),
 		})
 	}
 
 	async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		// Build the request body first so we can log it
+		const requestBody = this.buildRequestBody(systemPrompt, messages, metadata)
+
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+					rawBody: requestBody,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	/**
+	 * Build the request body for logging purposes.
+	 * This creates the request object that will be sent to the API.
+	 */
+	private buildRequestBody(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): Record<string, unknown> {
+		const { id: modelId, maxTokens, temperature, reasoning: thinking } = this.getModel()
+
+		// Filter out non-Anthropic blocks
+		const sanitizedMessages = filterNonAnthropicBlocks(messages)
+
+		// Check for native tools
+		const model = this.getModel()
+		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		const shouldIncludeNativeTools =
+			metadata?.tools &&
+			metadata.tools.length > 0 &&
+			toolProtocol === TOOL_PROTOCOL.NATIVE &&
+			metadata?.tool_choice !== "none"
+
+		const nativeToolParams = shouldIncludeNativeTools
+			? {
+					tools: convertOpenAIToolsToAnthropic(metadata.tools!),
+					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata.tool_choice, metadata.parallelToolCalls),
+				}
+			: {}
+
+		return {
+			model: modelId,
+			max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+			temperature,
+			thinking,
+			system: [{ text: systemPrompt, type: "text" }],
+			messages: sanitizedMessages,
+			stream: true,
+			...nativeToolParams,
+		}
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -124,57 +201,65 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
 				try {
-					stream = await this.client.messages.create(
-						{
-							model: modelId,
-							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-							temperature,
-							thinking,
-							// Setting cache breakpoint for system prompt so new tasks can reuse it.
-							system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
-							messages: sanitizedMessages.map((message, index) => {
-								if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-									return {
-										...message,
-										content:
-											typeof message.content === "string"
-												? [{ type: "text", text: message.content, cache_control: cacheControl }]
-												: message.content.map((content, contentIndex) =>
-														contentIndex === message.content.length - 1
-															? { ...content, cache_control: cacheControl }
-															: content,
-													),
+					stream = await withScopedFetchLogging(this.providerName, async () =>
+						this.client.messages.create(
+							{
+								model: modelId,
+								max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+								temperature,
+								thinking,
+								// Setting cache breakpoint for system prompt so new tasks can reuse it.
+								system: [{ text: systemPrompt, type: "text", cache_control: cacheControl }],
+								messages: sanitizedMessages.map((message, index) => {
+									if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
+										return {
+											...message,
+											content:
+												typeof message.content === "string"
+													? [
+															{
+																type: "text",
+																text: message.content,
+																cache_control: cacheControl,
+															},
+														]
+													: message.content.map((content, contentIndex) =>
+															contentIndex === message.content.length - 1
+																? { ...content, cache_control: cacheControl }
+																: content,
+														),
+										}
 									}
-								}
-								return message
-							}),
-							stream: true,
-							...nativeToolParams,
-						},
-						(() => {
-							// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
-							// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
-							// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
+									return message
+								}),
+								stream: true,
+								...nativeToolParams,
+							},
+							(() => {
+								// prompt caching: https://x.com/alexalbert__/status/1823751995901272068
+								// https://github.com/anthropics/anthropic-sdk-typescript?tab=readme-ov-file#default-headers
+								// https://github.com/anthropics/anthropic-sdk-typescript/commit/c920b77fc67bd839bfeb6716ceab9d7c9bbe7393
 
-							// Then check for models that support prompt caching
-							switch (modelId) {
-								case "claude-sonnet-4-5":
-								case "claude-sonnet-4-20250514":
-								case "claude-opus-4-5-20251101":
-								case "claude-opus-4-1-20250805":
-								case "claude-opus-4-20250514":
-								case "claude-3-7-sonnet-20250219":
-								case "claude-3-5-sonnet-20241022":
-								case "claude-3-5-haiku-20241022":
-								case "claude-3-opus-20240229":
-								case "claude-haiku-4-5-20251001":
-								case "claude-3-haiku-20240307":
-									betas.push("prompt-caching-2024-07-31")
-									return { headers: { "anthropic-beta": betas.join(",") } }
-								default:
-									return undefined
-							}
-						})(),
+								// Then check for models that support prompt caching
+								switch (modelId) {
+									case "claude-sonnet-4-5":
+									case "claude-sonnet-4-20250514":
+									case "claude-opus-4-5-20251101":
+									case "claude-opus-4-1-20250805":
+									case "claude-opus-4-20250514":
+									case "claude-3-7-sonnet-20250219":
+									case "claude-3-5-sonnet-20241022":
+									case "claude-3-5-haiku-20241022":
+									case "claude-3-opus-20240229":
+									case "claude-haiku-4-5-20251001":
+									case "claude-3-haiku-20240307":
+										betas.push("prompt-caching-2024-07-31")
+										return { headers: { "anthropic-beta": betas.join(",") } }
+									default:
+										return undefined
+								}
+							})(),
+						),
 					)
 				} catch (error) {
 					TelemetryService.instance.captureException(
@@ -191,15 +276,17 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			}
 			default: {
 				try {
-					stream = (await this.client.messages.create({
-						model: modelId,
-						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-						temperature,
-						system: [{ text: systemPrompt, type: "text" }],
-						messages: sanitizedMessages,
-						stream: true,
-						...nativeToolParams,
-					})) as any
+					stream = (await withScopedFetchLogging(this.providerName, async () =>
+						this.client.messages.create({
+							model: modelId,
+							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+							temperature,
+							system: [{ text: systemPrompt, type: "text" }],
+							messages: sanitizedMessages,
+							stream: true,
+							...nativeToolParams,
+						}),
+					)) as any
 				} catch (error) {
 					TelemetryService.instance.captureException(
 						new ApiProviderError(
@@ -382,19 +469,29 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	}
 
 	async completePrompt(prompt: string) {
-		let { id: model, temperature } = this.getModel()
+		const { id: model, temperature } = this.getModel()
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
 
 		let message
 		try {
-			message = await this.client.messages.create({
-				model,
-				max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
-				thinking: undefined,
-				temperature,
-				messages: [{ role: "user", content: prompt }],
-				stream: false,
-			})
+			message = await withScopedFetchLogging(this.providerName, async () =>
+				this.client.messages.create({
+					model,
+					max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
+					thinking: undefined,
+					temperature,
+					messages: [{ role: "user", content: prompt }],
+					stream: false,
+				}),
+			)
 		} catch (error) {
+			// Check if Anthropic.APIError exists before using instanceof (may not exist in test mocks)
+			const isAnthropicAPIError = typeof Anthropic.APIError === "function" && error instanceof Anthropic.APIError
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+				code: isAnthropicAPIError ? (error as { status?: number }).status : undefined,
+			})
 			TelemetryService.instance.captureException(
 				new ApiProviderError(
 					error instanceof Error ? error.message : String(error),
@@ -407,6 +504,16 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		}
 
 		const content = message.content.find(({ type }) => type === "text")
-		return content?.type === "text" ? content.text : ""
+		const result = content?.type === "text" ? content.text : ""
+
+		ApiLogger.logResponse(requestId, context, {
+			textLength: result.length,
+			usage: {
+				inputTokens: message.usage?.input_tokens,
+				outputTokens: message.usage?.output_tokens,
+			},
+		})
+
+		return result
 	}
 }

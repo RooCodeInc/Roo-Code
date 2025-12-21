@@ -16,8 +16,13 @@ import { type ModelInfo, geminiDefaultModelId, ApiProviderError } from "@roo-cod
 
 import { t } from "i18next"
 import { GeminiHandler } from "../gemini"
+import * as envConfig from "../../core/logging/env-config"
 
 const GEMINI_MODEL_NAME = geminiDefaultModelId
+
+vitest.mock("../../core/logging/env-config", () => ({
+	isLoggingEnabled: vitest.fn(),
+}))
 
 describe("GeminiHandler", () => {
 	let handler: GeminiHandler
@@ -69,6 +74,17 @@ describe("GeminiHandler", () => {
 		const systemPrompt = "You are a helpful assistant"
 
 		it("should handle text messages correctly", async () => {
+			vitest.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
+			const consoleSpy = vitest.spyOn(console, "log").mockImplementation(() => {})
+			// NOTE: This is best-effort. We can only get raw HTTP logs if the Google GenAI SDK
+			// actually uses globalThis.fetch under the hood.
+			const baseFetch = vitest.fn().mockResolvedValue(
+				new Response(JSON.stringify({ ok: true }), {
+					status: 200,
+					headers: { "content-type": "application/json" },
+				}),
+			)
+			vitest.stubGlobal("fetch", baseFetch)
 			// Setup the mock implementation to return an async generator
 			;(handler["client"].models.generateContentStream as any).mockResolvedValue({
 				[Symbol.asyncIterator]: async function* () {
@@ -101,6 +117,12 @@ describe("GeminiHandler", () => {
 					}),
 				}),
 			)
+
+			// If fetch is called (SDK implementation detail), we should see RAW HTTP logs.
+			if (baseFetch.mock.calls.length > 0) {
+				expect(consoleSpy).toHaveBeenCalledWith("[Gemini] RAW HTTP REQUEST", expect.any(Object))
+				expect(consoleSpy).toHaveBeenCalledWith("[Gemini] RAW HTTP RESPONSE", expect.any(Object))
+			}
 		})
 
 		it("should handle API errors", async () => {

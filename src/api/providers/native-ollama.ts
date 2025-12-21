@@ -3,6 +3,7 @@ import OpenAI from "openai"
 import { Message, Ollama, Tool as OllamaTool, type Config as OllamaOptions } from "ollama"
 import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 import { ApiStream } from "../transform/stream"
+import { withLogging, ApiLogger } from "../core/logging"
 import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
@@ -150,6 +151,10 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	private client: Ollama | undefined
 	protected models: Record<string, ModelInfo> = {}
 
+	protected override get providerName(): string {
+		return "Ollama"
+	}
+
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
@@ -201,6 +206,26 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -341,6 +366,12 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
+
 		try {
 			const client = this.ensureClient()
 			const { id: modelId } = await this.fetchModel()
@@ -363,8 +394,25 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				options: chatOptions,
 			})
 
-			return response.message?.content || ""
+			const result = response.message?.content || ""
+
+			ApiLogger.logResponse(requestId, context, {
+				textLength: result.length,
+				usage:
+					response.eval_count || response.prompt_eval_count
+						? {
+								inputTokens: response.prompt_eval_count || 0,
+								outputTokens: response.eval_count || 0,
+							}
+						: undefined,
+			})
+
+			return result
 		} catch (error) {
+			ApiLogger.logError(requestId, context, {
+				message: error instanceof Error ? error.message : String(error),
+			})
+
 			if (error instanceof Error) {
 				throw new Error(`Ollama completion error: ${error.message}`)
 			}

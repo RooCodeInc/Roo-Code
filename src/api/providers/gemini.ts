@@ -29,6 +29,8 @@ import { handleProviderError } from "./utils/error-handler"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
+import { withLogging, ApiLogger } from "../core/logging"
+import { withScopedFetchLogging } from "../core/logging/http-interceptor"
 
 type GeminiHandlerOptions = ApiHandlerOptions & {
 	isVertex?: boolean
@@ -40,7 +42,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	private client: GoogleGenAI
 	private lastThoughtSignature?: string
 	private lastResponseId?: string
-	private readonly providerName = "Gemini"
+
+	protected override get providerName(): string {
+		return "Gemini"
+	}
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
 		super()
@@ -73,6 +78,30 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async *createMessage(
+		systemInstruction: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemInstruction.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageInternal(systemInstruction, messages, metadata),
+		)
+	}
+
+	/**
+	 * Internal implementation of createMessage without logging wrapper.
+	 * This is wrapped by createMessage with logging.
+	 */
+	private async *createMessageInternal(
 		systemInstruction: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
@@ -203,7 +232,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const params: GenerateContentParameters = { model, contents, config }
 
 		try {
-			const result = await this.client.models.generateContentStream(params)
+			const result = await withScopedFetchLogging(this.providerName, async () =>
+				this.client.models.generateContentStream(params),
+			)
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
@@ -400,6 +431,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: model, info } = this.getModel()
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, { messageCount: 1, stream: false })
 
 		try {
 			const tools: GenerateContentConfig["tools"] = []
@@ -429,7 +462,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				config: promptConfig,
 			}
 
-			const result = await this.client.models.generateContent(request)
+			const result = await withScopedFetchLogging(this.providerName, async () =>
+				this.client.models.generateContent(request),
+			)
 
 			let text = result.text ?? ""
 
@@ -441,9 +476,17 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
+			ApiLogger.logResponse(requestId, context, {
+				textLength: text.length,
+			})
+
 			return text
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
+			ApiLogger.logError(requestId, context, {
+				message: errorMessage,
+			})
+
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 

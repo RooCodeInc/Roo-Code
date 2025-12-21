@@ -14,6 +14,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
+import { createLoggingFetch, withScopedFetchLogging } from "../core/logging/http-interceptor"
 
 /**
  * Converts OpenAI tool_choice to Anthropic ToolChoice format
@@ -72,7 +73,12 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		this.client = new Anthropic({
 			baseURL,
 			apiKey: options.minimaxApiKey,
+			fetch: createLoggingFetch(this.providerName),
 		})
+	}
+
+	protected override get providerName(): string {
+		return "MiniMax"
 	}
 
 	async *createMessage(
@@ -113,7 +119,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 			}
 		}
 
-		stream = await this.client.messages.create(requestParams)
+		stream = await withScopedFetchLogging(this.providerName, async () => this.client.messages.create(requestParams))
 
 		let inputTokens = 0
 		let outputTokens = 0
@@ -292,13 +298,15 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 	async completePrompt(prompt: string) {
 		const { id: model, temperature } = this.getModel()
 
-		const message = await this.client.messages.create({
-			model,
-			max_tokens: 16_384,
-			temperature: temperature ?? 1.0,
-			messages: [{ role: "user", content: prompt }],
-			stream: false,
-		})
+		const message = await withScopedFetchLogging(this.providerName, async () =>
+			this.client.messages.create({
+				model,
+				max_tokens: 16_384,
+				temperature: temperature ?? 1.0,
+				messages: [{ role: "user", content: prompt }],
+				stream: false,
+			}),
+		)
 
 		const content = message.content.find(({ type }) => type === "text")
 		return content?.type === "text" ? content.text : ""

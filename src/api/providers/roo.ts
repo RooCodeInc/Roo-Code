@@ -14,6 +14,7 @@ import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
+import { withLogging } from "../core/logging"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
 import { handleOpenAIError } from "./utils/openai-error-handler"
@@ -121,6 +122,26 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	}
 
 	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: Boolean(metadata?.tools?.length),
+					toolCount: metadata?.tools?.length,
+					stream: true,
+				},
+			},
+			() => this.createMessageRoo(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageRoo(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,

@@ -14,6 +14,7 @@
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/src/dist/**/*.js"],
 			"preLaunchTask": "${defaultBuildTask}",
+			"envFile": "${workspaceFolder}/.env.local",
 			"env": {
 				"NODE_ENV": "development",
 				"VSCODE_DEBUG_MODE": "true"

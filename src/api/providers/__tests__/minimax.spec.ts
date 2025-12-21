@@ -10,6 +10,8 @@ vitest.mock("vscode", () => ({
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
+import { createLoggingFetch } from "../../core/logging/http-interceptor"
+
 import { type MinimaxModelId, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
 
 import { MiniMaxHandler } from "../minimax"
@@ -22,6 +24,14 @@ vitest.mock("@anthropic-ai/sdk", () => {
 				create: mockCreate,
 			},
 		})),
+	}
+})
+
+vitest.mock("../../core/logging/http-interceptor", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../core/logging/http-interceptor")>()
+	return {
+		...actual,
+		createLoggingFetch: vitest.fn(actual.createLoggingFetch),
 	}
 })
 
@@ -48,8 +58,10 @@ describe("MiniMaxHandler", () => {
 			expect(Anthropic).toHaveBeenCalledWith(
 				expect.objectContaining({
 					baseURL: "https://api.minimax.io/anthropic",
+					fetch: expect.any(Function),
 				}),
 			)
+			expect(createLoggingFetch).toHaveBeenCalledWith("MiniMax")
 		})
 
 		it("should convert /v1 endpoint to /anthropic endpoint", () => {

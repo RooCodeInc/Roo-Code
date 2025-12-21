@@ -1,7 +1,11 @@
 // npx vitest run src/api/providers/__tests__/vertex.spec.ts
 
 // Mock vscode first to avoid import errors
-vitest.mock("vscode", () => ({}))
+vitest.mock("vscode", () => ({
+	workspace: {
+		workspaceFolders: undefined,
+	},
+}))
 
 import { Anthropic } from "@anthropic-ai/sdk"
 

@@ -15,13 +15,17 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { createLoggingFetch } from "../core/logging"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
 export class XAIHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "xAI"
+
+	protected override get providerName(): string {
+		return "xAI"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -33,6 +37,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			baseURL: "https://api.x.ai/v1",
 			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			fetch: createLoggingFetch(this.providerName),
 		})
 	}
 

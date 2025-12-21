@@ -24,15 +24,25 @@ vi.mock("@aws-sdk/client-bedrock-runtime", () => {
 		stream: [],
 	})
 	const mockConverseStreamCommand = vi.fn()
+	const mockMiddlewareAdd = vi.fn()
 
 	return {
 		BedrockRuntimeClient: vi.fn().mockImplementation(() => ({
 			send: mockSend,
+			middlewareStack: {
+				add: mockMiddlewareAdd,
+			},
 		})),
 		ConverseStreamCommand: mockConverseStreamCommand,
 		ConverseCommand: vi.fn(),
 	}
 })
+
+vi.mock("../../core/logging/env-config", () => ({
+	isLoggingEnabled: vi.fn(),
+}))
+
+import * as envConfig from "../../core/logging/env-config"
 
 import { AwsBedrockHandler } from "../bedrock"
 import { ConverseStreamCommand, BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime"
@@ -55,6 +65,7 @@ describe("AwsBedrockHandler", () => {
 	beforeEach(() => {
 		// Clear all mocks before each test
 		vi.clearAllMocks()
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
 
 		handler = new AwsBedrockHandler({
 			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
@@ -62,6 +73,42 @@ describe("AwsBedrockHandler", () => {
 			awsSecretKey: "test-secret-key",
 			awsRegion: "us-east-1",
 		})
+	})
+
+	it("should attach raw HTTP logging middleware when logging is enabled", () => {
+		// Avoid counting middleware added by the suite-level beforeEach handler construction.
+		vi.clearAllMocks()
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(true)
+
+		new AwsBedrockHandler({
+			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+			awsAccessKey: "test-access-key",
+			awsSecretKey: "test-secret-key",
+			awsRegion: "us-east-1",
+		})
+
+		const clientInstance =
+			vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]?.value
+		const middlewareAdd = clientInstance?.middlewareStack?.add as unknown as ReturnType<typeof vi.fn>
+		expect(middlewareAdd).toHaveBeenCalledTimes(1)
+	})
+
+	it("should not attach raw HTTP logging middleware when logging is disabled", () => {
+		// Avoid counting middleware added by the suite-level beforeEach handler construction.
+		vi.clearAllMocks()
+		vi.mocked(envConfig.isLoggingEnabled).mockReturnValue(false)
+
+		new AwsBedrockHandler({
+			apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+			awsAccessKey: "test-access-key",
+			awsSecretKey: "test-secret-key",
+			awsRegion: "us-east-1",
+		})
+
+		const clientInstance =
+			vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]?.value
+		const middlewareAdd = clientInstance?.middlewareStack?.add as unknown as ReturnType<typeof vi.fn>
+		expect(middlewareAdd).not.toHaveBeenCalled()
 	})
 
 	describe("getModel", () => {

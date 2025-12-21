@@ -17,11 +17,15 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { createLoggingFetch } from "../core/logging"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "LM Studio"
+
+	protected override get providerName(): string {
+		return "LM Studio"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -34,6 +38,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
+			fetch: createLoggingFetch(this.providerName),
 		})
 	}
 

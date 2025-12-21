@@ -51,7 +51,10 @@ type MistralTool = {
 export class MistralHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: Mistral
-	private readonly providerName = "Mistral"
+
+	protected override get providerName(): string {
+		return "Mistral"
+	}
 
 	constructor(options: ApiHandlerOptions) {
 		super()

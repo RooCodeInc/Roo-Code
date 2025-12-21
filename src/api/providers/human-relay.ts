@@ -5,6 +5,7 @@ import type { ModelInfo } from "@roo-code/types"
 
 import { getCommand } from "../../utils/commands"
 import { ApiStream } from "../transform/stream"
+import { withLogging, ApiLogger, type ApiLogContext } from "../core/logging"
 
 import type { ApiHandler, SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
@@ -13,8 +14,26 @@ import type { ApiHandler, SingleCompletionHandler, ApiHandlerCreateMessageMetada
  * This processor does not directly call the API, but interacts with the model through human operations copy and paste.
  */
 export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
+	private readonly providerName = "Human Relay"
+
 	countTokens(_content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
 		return Promise.resolve(0)
+	}
+
+	/**
+	 * Helper to build log context for API calls
+	 */
+	private getLogContext(
+		operation: ApiLogContext["operation"],
+		metadata?: { taskId?: string },
+	): Omit<ApiLogContext, "requestId"> {
+		const { id: model } = this.getModel()
+		return {
+			provider: this.providerName,
+			model,
+			operation,
+			taskId: metadata?.taskId,
+		}
 	}
 
 	/**
@@ -27,6 +46,25 @@ export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		yield* withLogging(
+			{
+				context: this.getLogContext("createMessage", metadata),
+				request: {
+					systemPromptLength: systemPrompt.length,
+					messageCount: messages.length,
+					hasTools: false,
+					stream: false, // Human relay is not really streaming
+				},
+			},
+			() => this.createMessageInternal(systemPrompt, messages, metadata),
+		)
+	}
+
+	private async *createMessageInternal(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		_metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		// Get the most recent user message
 		const latestMessage = messages[messages.length - 1]
@@ -82,17 +120,39 @@ export class HumanRelayHandler implements ApiHandler, SingleCompletionHandler {
 	 * @param prompt Prompt content
 	 */
 	async completePrompt(prompt: string): Promise<string> {
-		// Copy to clipboard
-		await vscode.env.clipboard.writeText(prompt)
+		const context = this.getLogContext("completePrompt")
+		const requestId = ApiLogger.logRequest(context, {
+			messageCount: 1,
+			stream: false,
+		})
 
-		// A dialog box pops up to request user action
-		const response = await showHumanRelayDialog(prompt)
+		try {
+			// Copy to clipboard
+			await vscode.env.clipboard.writeText(prompt)
 
-		if (!response) {
-			throw new Error("Human relay operation cancelled")
+			// A dialog box pops up to request user action
+			const response = await showHumanRelayDialog(prompt)
+
+			if (!response) {
+				ApiLogger.logError(requestId, context, {
+					message: "Human relay operation cancelled",
+				})
+				throw new Error("Human relay operation cancelled")
+			}
+
+			ApiLogger.logResponse(requestId, context, {
+				textLength: response.length,
+			})
+
+			return response
+		} catch (error) {
+			if (!(error instanceof Error && error.message === "Human relay operation cancelled")) {
+				ApiLogger.logError(requestId, context, {
+					message: error instanceof Error ? error.message : String(error),
+				})
+			}
+			throw error
 		}
-
-		return response
 	}
 }
 
