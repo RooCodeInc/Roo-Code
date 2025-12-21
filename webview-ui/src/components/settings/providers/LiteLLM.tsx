@@ -156,6 +156,20 @@ export const LiteLLM = ({
 				simplifySettings={simplifySettings}
 			/>
 
+			{/* Bedrock backend option */}
+			<div className="mt-4">
+				<VSCodeCheckbox
+					checked={apiConfiguration.litellmUseAzureBedrock || false}
+					onChange={(e: any) => {
+						setApiConfigurationField("litellmUseAzureBedrock", e.target.checked)
+					}}>
+					<span className="font-medium">{t("settings:providers.litellmUseAzureBedrock")}</span>
+				</VSCodeCheckbox>
+				<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1">
+					{t("settings:providers.litellmUseAzureBedrockDescription")}
+				</div>
+			</div>
+
 			{/* Show prompt caching option if the selected model supports it */}
 			{(() => {
 				const selectedModelId = apiConfiguration.litellmModelId || litellmDefaultModelId

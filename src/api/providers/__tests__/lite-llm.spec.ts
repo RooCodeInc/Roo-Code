@@ -401,7 +401,117 @@ describe("LiteLLMHandler", () => {
 	})
 
 	describe("Bedrock model handling", () => {
-		it("should exclude parallel_tool_calls for Bedrock models when using native tools", async () => {
+		it("should exclude parallel_tool_calls when litellmUseAzureBedrock is explicitly true", async () => {
+			const options: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "gpt-4", // Non-Bedrock model ID
+				litellmUseAzureBedrock: true, // Explicitly set to Bedrock
+			}
+			handler = new LiteLLMHandler(options)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+			// Mock the stream response
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const metadata = {
+				taskId: "test-task",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "test_tool",
+							description: "A test tool",
+							parameters: { type: "object", properties: {} },
+						},
+					},
+				],
+				toolProtocol: "native" as const,
+				parallelToolCalls: true,
+			}
+
+			const generator = handler.createMessage(systemPrompt, messages, metadata)
+			for await (const chunk of generator) {
+				// Consume the generator
+			}
+
+			// Verify that parallel_tool_calls is NOT included when litellmUseAzureBedrock is true
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.parallel_tool_calls).toBeUndefined()
+			expect(createCall.tools).toBeDefined()
+		})
+
+		it("should include parallel_tool_calls when litellmUseAzureBedrock is explicitly false", async () => {
+			const options: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", // Bedrock model ID
+				litellmUseAzureBedrock: false, // Explicitly set to NOT Bedrock
+			}
+			handler = new LiteLLMHandler(options)
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+			// Mock the stream response
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const metadata = {
+				taskId: "test-task",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "test_tool",
+							description: "A test tool",
+							parameters: { type: "object", properties: {} },
+						},
+					},
+				],
+				toolProtocol: "native" as const,
+				parallelToolCalls: true,
+			}
+
+			const generator = handler.createMessage(systemPrompt, messages, metadata)
+			for await (const chunk of generator) {
+				// Consume the generator
+			}
+
+			// Verify that parallel_tool_calls IS included when litellmUseAzureBedrock is false
+			const createCall = mockCreate.mock.calls[0][0]
+			expect(createCall.parallel_tool_calls).toBe(true)
+			expect(createCall.tools).toBeDefined()
+		})
+
+		it("should auto-detect and exclude parallel_tool_calls for Bedrock models when litellmUseAzureBedrock is not set", async () => {
 			const bedrockModels = ["bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0", "amazon.titan-text-express-v1"]
 
 			for (const modelId of bedrockModels) {
@@ -461,7 +571,7 @@ describe("LiteLLMHandler", () => {
 			}
 		})
 
-		it("should include parallel_tool_calls for non-Bedrock models when using native tools", async () => {
+		it("should auto-detect and include parallel_tool_calls for non-Bedrock models when litellmUseAzureBedrock is not set", async () => {
 			const nonBedrockModels = [
 				"gpt-4",
 				"claude-3-opus",

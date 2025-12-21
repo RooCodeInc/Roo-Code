@@ -41,9 +41,18 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	/**
 	 * Check if the model is routed through AWS Bedrock
 	 * Bedrock doesn't support the parallel_tool_calls parameter
+	 *
+	 * If the user has explicitly set litellmUseAzureBedrock, use that setting.
+	 * Otherwise, fall back to auto-detection based on model ID patterns.
 	 * Note: We exclude 'anthropic.' prefix as it can match direct Anthropic API access through LiteLLM
 	 */
 	private isBedrockModel(modelId: string): boolean {
+		// User-specified option takes precedence
+		if (this.options.litellmUseAzureBedrock !== undefined) {
+			return this.options.litellmUseAzureBedrock
+		}
+
+		// Fall back to auto-detection
 		const lowerModel = modelId.toLowerCase()
 		return (
 			lowerModel.includes("bedrock") ||

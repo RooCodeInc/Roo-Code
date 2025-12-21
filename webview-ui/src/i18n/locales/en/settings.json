@@ -370,6 +370,8 @@
 		"getXaiApiKey": "Get xAI API Key",
 		"litellmApiKey": "LiteLLM API Key",
 		"litellmBaseUrl": "LiteLLM Base URL",
+		"litellmUseAzureBedrock": "Backend is AWS Bedrock",
+		"litellmUseAzureBedrockDescription": "Enable this if your LiteLLM proxy routes to AWS Bedrock models. This ensures Bedrock-incompatible parameters are excluded from requests.",
 		"awsCredentials": "AWS Credentials",
 		"awsProfile": "AWS Profile",
 		"awsApiKey": "Amazon Bedrock API Key",
