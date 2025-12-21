@@ -824,6 +824,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Appels d'outils parallèles",
 			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Activer les outils personnalisés",
+			"description": "Lorsqu'activé, Roo peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",
+			"toolsHeader": "Outils personnalisés disponibles",
+			"noTools": "Aucun outil personnalisé chargé. Ajoutez des fichiers .ts ou .js au répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux.",
+			"refreshButton": "Actualiser",
+			"refreshing": "Actualisation...",
+			"refreshSuccess": "Outils actualisés avec succès",
+			"refreshError": "Échec de l'actualisation des outils",
+			"toolParameters": "Paramètres"
 		}
 	},
 	"promptCaching": {

@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "並行工具呼叫",
 			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
+		},
+		"CUSTOM_TOOLS": {
+			"name": "啟用自訂工具",
+			"description": "啟用後，Roo 可以從專案中的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 載入並使用自訂 TypeScript/JavaScript 工具。注意：這些工具將自動獲得核准。",
+			"toolsHeader": "可用自訂工具",
+			"noTools": "未載入自訂工具。請向專案的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 新增 .ts 或 .js 檔案。",
+			"refreshButton": "重新整理",
+			"refreshing": "正在重新整理...",
+			"refreshSuccess": "工具重新整理成功",
+			"refreshError": "工具重新整理失敗",
+			"toolParameters": "參數"
 		}
 	},
 	"promptCaching": {

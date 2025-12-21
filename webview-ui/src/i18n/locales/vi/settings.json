@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Lệnh gọi công cụ song song",
 			"description": "Khi được bật, giao thức native có thể thực thi nhiều công cụ trong một lượt tin nhắn của trợ lý."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Bật công cụ tùy chỉnh",
+			"description": "Khi được bật, Roo có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục. Lưu ý: các công cụ này sẽ được tự động phê duyệt.",
+			"toolsHeader": "Công cụ tùy chỉnh có sẵn",
+			"noTools": "Không có công cụ tùy chỉnh nào được tải. Thêm tệp .ts hoặc .js vào thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục.",
+			"refreshButton": "Làm mới",
+			"refreshing": "Đang làm mới...",
+			"refreshSuccess": "Làm mới công cụ thành công",
+			"refreshError": "Không thể làm mới công cụ",
+			"toolParameters": "Thông số"
 		}
 	},
 	"promptCaching": {

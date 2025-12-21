@@ -854,6 +854,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Panggilan tool paralel",
 			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Aktifkan tool kustom",
+			"description": "Ketika diaktifkan, Roo dapat memuat dan menggunakan tool TypeScript/JavaScript kustom dari direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global. Catatan: tool ini akan disetujui otomatis.",
+			"toolsHeader": "Tool Kustom yang Tersedia",
+			"noTools": "Tidak ada tool kustom yang dimuat. Tambahkan file .ts atau .js ke direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global.",
+			"refreshButton": "Refresh",
+			"refreshing": "Merefresh...",
+			"refreshSuccess": "Tool berhasil direfresh",
+			"refreshError": "Gagal merefresh tool",
+			"toolParameters": "Parameter"
 		}
 	},
 	"promptCaching": {

@@ -824,6 +824,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Crides paral·leles a eines",
 			"description": "Quan està activat, el protocol natiu pot executar múltiples eines en un sol torn de missatge de l'assistent."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Habilitar eines personalitzades",
+			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
+			"toolsHeader": "Eines personalitzades disponibles",
+			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals.",
+			"refreshButton": "Actualitzar",
+			"refreshing": "Actualitzant...",
+			"refreshSuccess": "Eines actualitzades correctament",
+			"refreshError": "Error en actualitzar les eines",
+			"toolParameters": "Paràmetres"
 		}
 	},
 	"promptCaching": {

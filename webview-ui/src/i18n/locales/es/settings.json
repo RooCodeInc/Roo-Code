@@ -824,6 +824,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Llamadas paralelas a herramientas",
 			"description": "Cuando está habilitado, el protocolo nativo puede ejecutar múltiples herramientas en un solo turno de mensaje del asistente."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Habilitar herramientas personalizadas",
+			"description": "Cuando está habilitado, Roo puede cargar y usar herramientas TypeScript/JavaScript personalizadas desde el directorio .roo/tools de tu proyecto o ~/.roo/tools para herramientas globales. Nota: estas herramientas se aprobarán automáticamente.",
+			"toolsHeader": "Herramientas personalizadas disponibles",
+			"noTools": "No hay herramientas personalizadas cargadas. Añade archivos .ts o .js al directorio .roo/tools de tu proyecto o ~/.roo/tools para herramientas globales.",
+			"refreshButton": "Actualizar",
+			"refreshing": "Actualizando...",
+			"refreshSuccess": "Herramientas actualizadas correctamente",
+			"refreshError": "Error al actualizar las herramientas",
+			"toolParameters": "Parámetros"
 		}
 	},
 	"promptCaching": {

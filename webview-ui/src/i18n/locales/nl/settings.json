@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallelle tool-aanroepen",
 			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in één enkele assistent-berichtbeurt."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Aangepaste tools inschakelen",
+			"description": "Indien ingeschakeld kan Roo aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .roo/tools van je project of ~/.roo/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
+			"toolsHeader": "Beschikbare aangepaste tools",
+			"noTools": "Geen aangepaste tools geladen. Voeg .ts- of .js-bestanden toe aan de map .roo/tools van je project of ~/.roo/tools voor globale tools.",
+			"refreshButton": "Vernieuwen",
+			"refreshing": "Vernieuwen...",
+			"refreshSuccess": "Tools succesvol vernieuwd",
+			"refreshError": "Fout bij vernieuwen van tools",
+			"toolParameters": "Parameters"
 		}
 	},
 	"promptCaching": {

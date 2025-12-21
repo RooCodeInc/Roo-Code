@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Paralel araç çağrıları",
 			"description": "Etkinleştirildiğinde, yerel protokol tek bir asistan mesaj turunda birden fazla araç yürütebilir."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Özel araçları etkinleştir",
+			"description": "Etkinleştirildiğinde, Roo projenizin .roo/tools dizininden veya global araçlar için ~/.roo/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: Bu araçlar otomatik olarak onaylanacaktır.",
+			"toolsHeader": "Kullanılabilir Özel Araçlar",
+			"noTools": "Özel araç yüklenmedi. Projenizin .roo/tools dizinine veya global araçlar için ~/.roo/tools dizinine .ts veya .js dosyaları ekleyin.",
+			"refreshButton": "Yenile",
+			"refreshing": "Yenileniyor...",
+			"refreshSuccess": "Araçlar başarıyla yenilendi",
+			"refreshError": "Araçlar yenilenemedi",
+			"toolParameters": "Parametreler"
 		}
 	},
 	"promptCaching": {

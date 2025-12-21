@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "병렬 도구 호출",
 			"description": "활성화되면 네이티브 프로토콜이 단일 어시스턴트 메시지 턴에서 여러 도구를 실행할 수 있습니다."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "사용자 정의 도구 활성화",
+			"description": "활성화하면 Roo가 프로젝트의 .roo/tools 디렉터리 또는 전역 도구를 위한 ~/.roo/tools에서 사용자 정의 TypeScript/JavaScript 도구를 로드하고 사용할 수 있습니다. 참고: 이러한 도구는 자동으로 자동 승인됩니다.",
+			"toolsHeader": "사용 가능한 사용자 정의 도구",
+			"noTools": "로드된 사용자 정의 도구가 없습니다. 프로젝트의 .roo/tools 디렉터리 또는 전역 도구를 위한 ~/.roo/tools에 .ts 또는 .js 파일을 추가하세요.",
+			"refreshButton": "새로고침",
+			"refreshing": "새로고침 중...",
+			"refreshSuccess": "도구가 성공적으로 새로고침되었습니다",
+			"refreshError": "도구 새로고침에 실패했습니다",
+			"toolParameters": "매개변수"
 		}
 	},
 	"promptCaching": {

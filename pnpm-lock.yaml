@@ -474,6 +474,37 @@ importers:
 
   packages/config-typescript: {}
 
+  packages/core:
+    dependencies:
+      '@roo-code/types':
+        specifier: workspace:^
+        version: link:../types
+      esbuild:
+        specifier: '>=0.25.0'
+        version: 0.25.9
+      execa:
+        specifier: ^9.5.2
+        version: 9.6.0
+      openai:
+        specifier: ^5.12.2
+        version: 5.12.2(ws@8.18.3)(zod@3.25.76)
+      zod:
+        specifier: ^3.25.61
+        version: 3.25.76
+    devDependencies:
+      '@roo-code/config-eslint':
+        specifier: workspace:^
+        version: link:../config-eslint
+      '@roo-code/config-typescript':
+        specifier: workspace:^
+        version: link:../config-typescript
+      '@types/node':
+        specifier: ^24.1.0
+        version: 24.2.1
+      vitest:
+        specifier: ^3.2.3
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+
   packages/evals:
     dependencies:
       '@roo-code/ipc':
@@ -654,6 +685,9 @@ importers:
       '@roo-code/cloud':
         specifier: workspace:^
         version: link:../packages/cloud
+      '@roo-code/core':
+        specifier: workspace:^
+        version: link:../packages/core
       '@roo-code/ipc':
         specifier: workspace:^
         version: link:../packages/ipc
@@ -928,9 +962,9 @@ importers:
       '@vscode/vsce':
         specifier: 3.3.2
         version: 3.3.2
-      esbuild:
-        specifier: '>=0.25.0'
-        version: 0.25.9
+      esbuild-wasm:
+        specifier: ^0.25.0
+        version: 0.25.12
       execa:
         specifier: ^9.5.2
         version: 9.5.3
@@ -5785,6 +5819,11 @@ packages:
     resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
     peerDependencies:
       esbuild: '>=0.25.0'
+
+  esbuild-wasm@0.25.12:
+    resolution: {integrity: sha512-rZqkjL3Y6FwLpSHzLnaEy8Ps6veCNo1kZa9EOfJvmWtBq5dJH4iVjfmOO6Mlkv9B0tt9WFPFmb/VxlgJOnueNg==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
@@ -15666,6 +15705,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  esbuild-wasm@0.25.12: {}
+
   esbuild@0.25.9:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.9
@@ -18417,6 +18458,11 @@ snapshots:
     optionalDependencies:
       ws: 8.18.3
       zod: 3.25.61
+
+  openai@5.12.2(ws@8.18.3)(zod@3.25.76):
+    optionalDependencies:
+      ws: 8.18.3
+      zod: 3.25.76
 
   option@0.2.4: {}
 

@@ -1,9 +1,15 @@
 import * as vscode from "vscode"
 import * as os from "os"
 
-import type { ModeConfig, PromptComponent, CustomModePrompts, TodoItem } from "@roo-code/types"
-
-import type { SystemPromptSettings } from "./types"
+import {
+	type ModeConfig,
+	type PromptComponent,
+	type CustomModePrompts,
+	type TodoItem,
+	getEffectiveProtocol,
+	isNativeProtocol,
+} from "@roo-code/types"
+import { customToolRegistry, formatXml } from "@roo-code/core"
 
 import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelection } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
@@ -15,8 +21,8 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
+import type { SystemPromptSettings } from "./types"
 import { getToolDescriptionsForMode } from "./tools"
-import { getEffectiveProtocol, isNativeProtocol } from "@roo-code/types"
 import {
 	getRulesSection,
 	getSystemInfoSection,
@@ -98,7 +104,7 @@ async function generatePrompt(
 	])
 
 	// Build tools catalog section only for XML protocol
-	const toolsCatalog = isNativeProtocol(effectiveProtocol)
+	const builtInToolsCatalog = isNativeProtocol(effectiveProtocol)
 		? ""
 		: `\n\n${getToolDescriptionsForMode(
 				mode,
@@ -115,6 +121,18 @@ async function generatePrompt(
 				enableMcpServerCreation,
 				modelId,
 			)}`
+
+	let customToolsSection = ""
+
+	if (experiments?.customTools && !isNativeProtocol(effectiveProtocol)) {
+		const customTools = customToolRegistry.getAllSerialized()
+
+		if (customTools.length > 0) {
+			customToolsSection = `\n\n${formatXml(customTools)}`
+		}
+	}
+
+	const toolsCatalog = builtInToolsCatalog + customToolsSection
 
 	const basePrompt = `${roleDefinition}
 

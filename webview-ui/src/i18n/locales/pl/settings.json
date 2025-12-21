@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Równoległe wywołania narzędzi",
 			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Włącz niestandardowe narzędzia",
+			"description": "Gdy włączone, Roo może ładować i używać niestandardowych narzędzi TypeScript/JavaScript z katalogu .roo/tools Twojego projektu lub ~/.roo/tools dla narzędzi globalnych. Uwaga: te narzędzia będą automatycznie zatwierdzane.",
+			"toolsHeader": "Dostępne niestandardowe narzędzia",
+			"noTools": "Nie załadowano niestandardowych narzędzi. Dodaj pliki .ts lub .js do katalogu .roo/tools swojego projektu lub ~/.roo/tools dla narzędzi globalnych.",
+			"refreshButton": "Odśwież",
+			"refreshing": "Odświeżanie...",
+			"refreshSuccess": "Narzędzia odświeżone pomyślnie",
+			"refreshError": "Nie udało się odświeżyć narzędzi",
+			"toolParameters": "Parametry"
 		}
 	},
 	"promptCaching": {

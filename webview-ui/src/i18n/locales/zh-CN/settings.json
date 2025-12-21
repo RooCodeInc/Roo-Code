@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "并行工具调用",
 			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
+		},
+		"CUSTOM_TOOLS": {
+			"name": "启用自定义工具",
+			"description": "启用后 Roo 可从项目中的 .roo/tools 目录或全局工具目录 ~/.roo/tools 加载并使用自定义 TypeScript/JavaScript 工具。注意：这些工具将自动获批。",
+			"toolsHeader": "可用自定义工具",
+			"noTools": "未加载自定义工具。请向项目的 .roo/tools 目录或全局工具目录 ~/.roo/tools 添加 .ts 或 .js 文件。",
+			"refreshButton": "刷新",
+			"refreshing": "正在刷新...",
+			"refreshSuccess": "工具刷新成功",
+			"refreshError": "工具刷新失败",
+			"toolParameters": "参数"
 		}
 	},
 	"promptCaching": {
