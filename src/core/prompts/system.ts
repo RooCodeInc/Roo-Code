@@ -124,7 +124,7 @@ async function generatePrompt(
 
 	let customToolsSection = ""
 
-	if (!isNativeProtocol(effectiveProtocol)) {
+	if (experiments?.customTools && !isNativeProtocol(effectiveProtocol)) {
 		const customTools = customToolRegistry.getAllSerialized()
 
 		if (customTools.length > 0) {

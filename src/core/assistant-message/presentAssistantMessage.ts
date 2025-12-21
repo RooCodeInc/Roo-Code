@@ -1081,17 +1081,15 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					}
 
-					const customTool = customToolRegistry.get(block.name)
+					const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
 
 					if (customTool) {
 						try {
-							console.log(`executing customTool -> ${JSON.stringify(customTool, null, 2)}`)
 							let customToolArgs
 
 							if (customTool.parameters) {
 								try {
 									customToolArgs = customTool.parameters.parse(block.nativeArgs || block.params || {})
-									console.log(`customToolArgs -> ${JSON.stringify(customToolArgs, null, 2)}`)
 								} catch (parseParamsError) {
 									const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
 									console.error(message)
@@ -1102,12 +1100,14 @@ export async function presentAssistantMessage(cline: Task) {
 								}
 							}
 
-							console.log(`${customTool.name}.execute() -> ${JSON.stringify(customToolArgs, null, 2)}`)
-
 							const result = await customTool.execute(customToolArgs, {
 								mode: mode ?? defaultModeSlug,
 								task: cline,
 							})
+
+							console.log(
+								`${customTool.name}.execute(): ${JSON.stringify(customToolArgs)} -> ${JSON.stringify(result)}`,
+							)
 
 							pushToolResult(result)
 							cline.consecutiveMistakeCount = 0

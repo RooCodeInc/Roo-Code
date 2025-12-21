@@ -14,6 +14,7 @@ import type {
 	OrganizationAllowList,
 	ShareVisibility,
 	QueuedMessage,
+	SerializedCustomToolDefinition,
 } from "@roo-code/types"
 
 import { GitCommit } from "../utils/git"
@@ -133,6 +134,7 @@ export interface ExtensionMessage {
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
 		| "claudeCodeRateLimits"
+		| "customToolsResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -218,6 +220,7 @@ export interface ExtensionMessage {
 	browserSessionMessages?: ClineMessage[] // For browser session panel updates
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
+	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 }
 
 export type ExtensionState = Pick<

@@ -16,6 +16,7 @@ import {
 	Experiments,
 	ExperimentId,
 } from "@roo-code/types"
+import { customToolRegistry } from "@roo-code/core"
 import { CloudService } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -1723,6 +1724,24 @@ export const webviewMessageHandler = async (
 			if (Array.isArray(todos)) {
 				await setPendingTodoList(todos)
 			}
+			break
+		}
+		case "refreshCustomTools": {
+			try {
+				await customToolRegistry.loadFromDirectory(path.join(getCurrentCwd(), ".roo", "tools"))
+
+				await provider.postMessageToWebview({
+					type: "customToolsResult",
+					tools: customToolRegistry.getAllSerialized(),
+				})
+			} catch (error) {
+				await provider.postMessageToWebview({
+					type: "customToolsResult",
+					tools: [],
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
+
 			break
 		}
 		case "saveApiConfiguration":

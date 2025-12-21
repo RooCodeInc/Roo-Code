@@ -13,6 +13,7 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { ExperimentalFeature } from "./ExperimentalFeature"
 import { ImageGenerationSettings } from "./ImageGenerationSettings"
+import { CustomToolsSettings } from "./CustomToolsSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
@@ -89,6 +90,15 @@ export const ExperimentalSettings = ({
 									setImageGenerationProvider={setImageGenerationProvider}
 									setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 									setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+								/>
+							)
+						}
+						if (config[0] === "CUSTOM_TOOLS") {
+							return (
+								<CustomToolsSettings
+									key={config[0]}
+									enabled={experiments[EXPERIMENT_IDS.CUSTOM_TOOLS] ?? false}
+									onChange={(enabled) => setExperimentEnabled(EXPERIMENT_IDS.CUSTOM_TOOLS, enabled)}
 								/>
 							)
 						}
