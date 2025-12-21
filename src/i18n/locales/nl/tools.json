@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (regels {{start}}-{{end}})",
+		"startingFromLine": " (vanaf regel {{start}})",
 		"definitionsOnly": " (alleen definities)",
 		"maxLines": " (max {{max}} regels)",
 		"imageTooLarge": "Afbeeldingsbestand is te groot ({{size}} MB). De maximaal toegestane grootte is {{max}} MB.",

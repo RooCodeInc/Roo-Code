@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (línies {{start}}-{{end}})",
+		"startingFromLine": " (començant des de la línia {{start}})",
 		"definitionsOnly": " (només definicions)",
 		"maxLines": " (màxim {{max}} línies)",
 		"imageTooLarge": "El fitxer d'imatge és massa gran ({{size}} MB). La mida màxima permesa és {{max}} MB.",

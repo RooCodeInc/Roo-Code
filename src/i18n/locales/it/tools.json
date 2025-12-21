@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (righe {{start}}-{{end}})",
+		"startingFromLine": " (a partire dalla riga {{start}})",
 		"definitionsOnly": " (solo definizioni)",
 		"maxLines": " (max {{max}} righe)",
 		"imageTooLarge": "Il file immagine è troppo grande ({{size}} MB). La dimensione massima consentita è {{max}} MB.",
