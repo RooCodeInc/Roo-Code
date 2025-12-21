@@ -3,4 +3,3 @@ packages:
     - "webview-ui" # Should be apps/vscode-webview
     - "apps/*"
     - "packages/*"
-    - ".roo/tools" # Custom tools for this workspace
