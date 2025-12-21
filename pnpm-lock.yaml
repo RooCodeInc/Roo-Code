@@ -742,9 +742,6 @@ importers:
       diff-match-patch:
         specifier: ^1.0.5
         version: 1.0.5
-      esbuild-wasm:
-        specifier: ^0.25.0
-        version: 0.25.12
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
@@ -980,6 +977,9 @@ importers:
       '@vscode/vsce':
         specifier: 3.3.2
         version: 3.3.2
+      esbuild-wasm:
+        specifier: ^0.25.0
+        version: 0.25.12
       execa:
         specifier: ^9.5.2
         version: 9.5.3
