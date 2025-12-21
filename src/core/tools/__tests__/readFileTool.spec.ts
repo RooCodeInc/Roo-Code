@@ -423,7 +423,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			expect(result).toContain(`<list_code_definition_names>`)
 
 			// Verify XML structure
-			expect(result).toContain("<notice>Showing only 0 of 5 total lines")
+			expect(result).toContain("<notice>Showing code definitions only (0 of 5 total lines)")
 			expect(result).toContain("</notice>")
 			expect(result).toContain("<list_code_definition_names>")
 			expect(result).toContain(sourceCodeDef.trim())
@@ -450,7 +450,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			expect(result).toContain(`<file><path>${testFilePath}</path>`)
 			expect(result).toContain(`<content lines="1-3">`)
 			expect(result).toContain(`<list_code_definition_names>`)
-			expect(result).toContain("<notice>Showing only 3 of 5 total lines")
+			expect(result).toContain("<notice>File truncated at line 3 of 5 total lines")
 		})
 
 		it("should truncate code definitions when file exceeds maxReadFileLine", async () => {
@@ -481,7 +481,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			expect(result).not.toContain("50--60 | function bar()")
 			expect(result).not.toContain("80--90 | function baz()")
 
-			expect(result).toContain("<notice>Showing only 30 of 100 total lines")
+			expect(result).toContain("<notice>File truncated at line 30 of 100 total lines")
 		})
 
 		it("should handle truncation when all definitions are beyond the line limit", async () => {
