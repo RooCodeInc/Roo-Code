@@ -11,13 +11,14 @@ import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../shared/tools"
  * Note: This does NOT check if the tool is allowed for a specific mode,
  * only that the tool actually exists.
  */
-export function isValidToolName(toolName: string): toolName is ToolName {
+export function isValidToolName(toolName: string, experiments?: Record<string, boolean>): toolName is ToolName {
 	// Check if it's a valid static tool
 	if ((validToolNames as readonly string[]).includes(toolName)) {
 		return true
 	}
 
-	if (customToolRegistry.has(toolName)) {
+	// Check custom tools only if the experiment is enabled
+	if (experiments?.customTools && customToolRegistry.has(toolName)) {
 		return true
 	}
 
@@ -40,7 +41,7 @@ export function validateToolUse(
 ): void {
 	// First, check if the tool name is actually a valid/known tool
 	// This catches completely invalid tool names like "edit_file" that don't exist
-	if (!isValidToolName(toolName)) {
+	if (!isValidToolName(toolName, experiments)) {
 		throw new Error(
 			`Unknown tool "${toolName}". This tool does not exist. Please use one of the available tools: ${validToolNames.join(", ")}.`,
 		)
@@ -92,9 +93,9 @@ export function isToolAllowedForMode(
 		return true
 	}
 
-	// For now, allow all custom tools in any mode.
+	// For now, allow all custom tools in any mode (if the experiment is enabled).
 	// As a follow-up we should expand the custom tool definition to include mode restrictions.
-	if (customToolRegistry.has(tool)) {
+	if (experiments?.customTools && customToolRegistry.has(tool)) {
 		return true
 	}
 

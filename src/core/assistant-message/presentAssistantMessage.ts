@@ -1081,7 +1081,8 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					}
 
-					const customTool = customToolRegistry.get(block.name)
+					// Only check for custom tools if the experiment is enabled
+					const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
 
 					if (customTool) {
 						try {

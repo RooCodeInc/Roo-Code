@@ -79,13 +79,16 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	const mcpTools = getMcpServerTools(mcpHub)
 	const filteredMcpTools = filterMcpToolsForMode(mcpTools, mode, customModes, experiments)
 
-	// Add custom tools if they are available.
-	await customToolRegistry.loadFromDirectoryIfStale(path.join(cwd, ".roo", "tools"))
-	const customTools = customToolRegistry.getAllSerialized()
+	// Add custom tools if they are available and the experiment is enabled.
 	let nativeCustomTools: OpenAI.Chat.ChatCompletionFunctionTool[] = []
 
-	if (customTools.length > 0) {
-		nativeCustomTools = customTools.map(formatNative)
+	if (experiments?.customTools) {
+		await customToolRegistry.loadFromDirectoryIfStale(path.join(cwd, ".roo", "tools"))
+		const customTools = customToolRegistry.getAllSerialized()
+
+		if (customTools.length > 0) {
+			nativeCustomTools = customTools.map(formatNative)
+		}
 	}
 
 	return [...filteredNativeTools, ...filteredMcpTools, ...nativeCustomTools]
