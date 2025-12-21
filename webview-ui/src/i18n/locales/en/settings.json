@@ -836,9 +836,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Enable custom tools",
-			"description": "When enabled, Roo can load and use custom TypeScript/JavaScript tools from your project's .roo/tools directory. Note: these tools will automatically be auto-approved.",
+			"description": "When enabled, Roo can load and use custom TypeScript/JavaScript tools from your project's .roo/tools directory or ~/.roo/tools for global tools. Note: these tools will automatically be auto-approved.",
 			"toolsHeader": "Available Custom Tools",
-			"noTools": "No custom tools loaded. Add .ts or .js files to your project's .roo/tools directory.",
+			"noTools": "No custom tools loaded. Add .ts or .js files to your project's .roo/tools directory or ~/.roo/tools for global tools.",
 			"refreshButton": "Refresh",
 			"refreshing": "Refreshing...",
 			"refreshSuccess": "Tools refreshed successfully",

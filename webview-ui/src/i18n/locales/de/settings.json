@@ -827,9 +827,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Benutzerdefinierte Tools aktivieren",
-			"description": "Wenn aktiviert, kann Roo benutzerdefinierte TypeScript/JavaScript-Tools aus dem .roo/tools-Verzeichnis deines Projekts laden und verwenden.",
+			"description": "Wenn aktiviert, kann Roo benutzerdefinierte TypeScript/JavaScript-Tools aus dem .roo/tools-Verzeichnis deines Projekts oder ~/.roo/tools für globale Tools laden und verwenden. Hinweis: Diese Tools werden automatisch genehmigt.",
 			"toolsHeader": "Verfügbare benutzerdefinierte Tools",
-			"noTools": "Keine benutzerdefinierten Tools geladen. Füge .ts- oder .js-Dateien zum .roo/tools-Verzeichnis deines Projekts hinzu.",
+			"noTools": "Keine benutzerdefinierten Tools geladen. Füge .ts- oder .js-Dateien zum .roo/tools-Verzeichnis deines Projekts oder ~/.roo/tools für globale Tools hinzu.",
 			"refreshButton": "Aktualisieren",
 			"refreshing": "Aktualisieren...",
 			"refreshSuccess": "Tools erfolgreich aktualisiert",

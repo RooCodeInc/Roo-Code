@@ -828,9 +828,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Bật công cụ tùy chỉnh",
-			"description": "Khi được bật, Roo có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .roo/tools của dự án của bạn.",
+			"description": "Khi được bật, Roo có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục. Lưu ý: các công cụ này sẽ được tự động phê duyệt.",
 			"toolsHeader": "Công cụ tùy chỉnh có sẵn",
-			"noTools": "Không có công cụ tùy chỉnh nào được tải. Thêm tệp .ts hoặc .js vào thư mục .roo/tools của dự án của bạn.",
+			"noTools": "Không có công cụ tùy chỉnh nào được tải. Thêm tệp .ts hoặc .js vào thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục.",
 			"refreshButton": "Làm mới",
 			"refreshing": "Đang làm mới...",
 			"refreshSuccess": "Làm mới công cụ thành công",

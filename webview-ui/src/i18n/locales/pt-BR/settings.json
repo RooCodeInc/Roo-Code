@@ -828,9 +828,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Ativar ferramentas personalizadas",
-			"description": "Quando habilitado, o Roo pode carregar e usar ferramentas TypeScript/JavaScript personalizadas do diretório .roo/tools do seu projeto.",
+			"description": "Quando habilitado, o Roo pode carregar e usar ferramentas TypeScript/JavaScript personalizadas do diretório .roo/tools do seu projeto ou ~/.roo/tools para ferramentas globais. Nota: estas ferramentas serão aprovadas automaticamente.",
 			"toolsHeader": "Ferramentas personalizadas disponíveis",
-			"noTools": "Nenhuma ferramenta personalizada carregada. Adicione arquivos .ts ou .js ao diretório .roo/tools do seu projeto.",
+			"noTools": "Nenhuma ferramenta personalizada carregada. Adicione arquivos .ts ou .js ao diretório .roo/tools do seu projeto ou ~/.roo/tools para ferramentas globais.",
 			"refreshButton": "Atualizar",
 			"refreshing": "Atualizando...",
 			"refreshSuccess": "Ferramentas atualizadas com sucesso",

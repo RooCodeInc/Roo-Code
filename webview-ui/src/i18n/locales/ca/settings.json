@@ -827,9 +827,9 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar eines personalitzades",
-			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte.",
+			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
 			"toolsHeader": "Eines personalitzades disponibles",
-			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .roo/tools del vostre projecte.",
+			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals.",
 			"refreshButton": "Actualitzar",
 			"refreshing": "Actualitzant...",
 			"refreshSuccess": "Eines actualitzades correctament",
