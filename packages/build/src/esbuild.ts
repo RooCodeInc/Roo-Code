@@ -158,16 +158,9 @@ export function copyWasms(srcDir: string, distDir: string): void {
 	})
 
 	console.log(`[copyWasms] Copied ${wasmFiles.length} tree-sitter language wasms to ${distDir}`)
-}
 
-/**
- * Find the esbuild-wasm package directory.
- * In our pnpm monorepo, esbuild-wasm is declared in src/package.json and pnpm
- * symlinks it to src/node_modules/esbuild-wasm.
- */
-function findEsbuildWasmDir(srcDir: string): string | null {
-	const esbuildWasmPath = path.join(srcDir, "node_modules", "esbuild-wasm")
-	return fs.existsSync(esbuildWasmPath) ? esbuildWasmPath : null
+	// Copy esbuild-wasm files for custom tool transpilation (cross-platform).
+	copyEsbuildWasmFiles(nodeModulesDir, distDir)
 }
 
 /**
@@ -180,16 +173,13 @@ function findEsbuildWasmDir(srcDir: string): string | null {
  * - bin/esbuild (Node.js CLI script)
  * - esbuild.wasm (WASM binary)
  * - wasm_exec_node.js (Go WASM runtime for Node.js)
- *
- * @param srcDir - Source directory containing node_modules
- * @param distDir - Destination dist directory
+ * - wasm_exec.js (Go WASM runtime dependency)
  */
-export function copyEsbuildWasm(srcDir: string, distDir: string): void {
-	const esbuildWasmDir = findEsbuildWasmDir(srcDir)
+function copyEsbuildWasmFiles(nodeModulesDir: string, distDir: string): void {
+	const esbuildWasmDir = path.join(nodeModulesDir, "esbuild-wasm")
 
-	if (!esbuildWasmDir) {
-		console.warn("[copyEsbuildWasm] esbuild-wasm package not found, skipping")
-		return
+	if (!fs.existsSync(esbuildWasmDir)) {
+		throw new Error(`Directory does not exist: ${esbuildWasmDir}`)
 	}
 
 	// Create bin directory in dist.
@@ -206,27 +196,20 @@ export function copyEsbuildWasm(srcDir: string, distDir: string): void {
 		{ src: path.join(esbuildWasmDir, "wasm_exec.js"), dest: path.join(distDir, "wasm_exec.js") },
 	]
 
-	let copiedCount = 0
-
 	for (const { src, dest } of filesToCopy) {
-		if (fs.existsSync(src)) {
-			fs.copyFileSync(src, dest)
-			copiedCount++
+		fs.copyFileSync(src, dest)
 
-			// Make CLI executable.
-			if (src.endsWith("esbuild")) {
-				try {
-					fs.chmodSync(dest, 0o755)
-				} catch {
-					// Ignore chmod errors on Windows.
-				}
+		// Make CLI executable.
+		if (src.endsWith("esbuild")) {
+			try {
+				fs.chmodSync(dest, 0o755)
+			} catch {
+				// Ignore chmod errors on Windows.
 			}
-		} else {
-			console.warn(`[copyEsbuildWasm] File not found: ${src}`)
 		}
 	}
 
-	console.log(`[copyEsbuildWasm] Copied ${copiedCount} esbuild-wasm files to ${distDir}`)
+	console.log(`[copyWasms] Copied ${filesToCopy.length} esbuild-wasm files to ${distDir}`)
 }
 
 export function copyLocales(srcDir: string, distDir: string): void {
