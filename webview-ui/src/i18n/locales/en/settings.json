@@ -843,9 +843,7 @@
 			"refreshing": "Refreshing...",
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
-			"toolParameters": "Parameters",
-			"noParameters": "No parameters",
-			"toolCount": "{{count}} tool(s) loaded"
+			"toolParameters": "Parameters"
 		}
 	},
 	"promptCaching": {
