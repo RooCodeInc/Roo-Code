@@ -124,7 +124,6 @@ async function generatePrompt(
 
 	let customToolsSection = ""
 
-	// Only include custom tools if the experiment is enabled
 	if (experiments?.customTools && !isNativeProtocol(effectiveProtocol)) {
 		const customTools = customToolRegistry.getAllSerialized()
 

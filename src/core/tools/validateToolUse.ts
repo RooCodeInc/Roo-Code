@@ -17,7 +17,6 @@ export function isValidToolName(toolName: string, experiments?: Record<string, b
 		return true
 	}
 
-	// Check custom tools only if the experiment is enabled
 	if (experiments?.customTools && customToolRegistry.has(toolName)) {
 		return true
 	}
@@ -93,7 +92,7 @@ export function isToolAllowedForMode(
 		return true
 	}
 
-	// For now, allow all custom tools in any mode (if the experiment is enabled).
+	// For now, allow all custom tools in any mode.
 	// As a follow-up we should expand the custom tool definition to include mode restrictions.
 	if (experiments?.customTools && customToolRegistry.has(tool)) {
 		return true

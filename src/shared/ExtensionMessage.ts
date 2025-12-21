@@ -221,8 +221,6 @@ export interface ExtensionMessage {
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
-	loaded?: string[] // For customToolsResult: list of successfully loaded tool names
-	failed?: Array<{ file: string; error: string }> // For customToolsResult: list of failed tool loads
 }
 
 export type ExtensionState = Pick<

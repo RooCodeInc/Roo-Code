@@ -1728,10 +1728,9 @@ export const webviewMessageHandler = async (
 		}
 		case "requestCustomTools": {
 			try {
-				const tools = customToolRegistry.getAllSerialized()
 				await provider.postMessageToWebview({
 					type: "customToolsResult",
-					tools,
+					tools: customToolRegistry.getAllSerialized(),
 				})
 			} catch (error) {
 				await provider.postMessageToWebview({
@@ -1740,19 +1739,16 @@ export const webviewMessageHandler = async (
 					error: error instanceof Error ? error.message : String(error),
 				})
 			}
+
 			break
 		}
 		case "refreshCustomTools": {
 			try {
-				const cwd = getCurrentCwd()
-				const toolDir = path.join(cwd, ".roo", "tools")
-				const result = await customToolRegistry.loadFromDirectory(toolDir)
-				const tools = customToolRegistry.getAllSerialized()
+				await customToolRegistry.loadFromDirectory(path.join(getCurrentCwd(), ".roo", "tools"))
+
 				await provider.postMessageToWebview({
 					type: "customToolsResult",
-					tools,
-					loaded: result.loaded,
-					failed: result.failed,
+					tools: customToolRegistry.getAllSerialized(),
 				})
 			} catch (error) {
 				await provider.postMessageToWebview({
@@ -1761,6 +1757,7 @@ export const webviewMessageHandler = async (
 					error: error instanceof Error ? error.message : String(error),
 				})
 			}
+
 			break
 		}
 		case "saveApiConfiguration":
