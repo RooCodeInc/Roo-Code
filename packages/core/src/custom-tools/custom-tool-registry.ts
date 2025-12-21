@@ -235,7 +235,7 @@ export class CustomToolRegistry {
 		const stat = fs.statSync(absolutePath)
 		const cacheKey = `${absolutePath}:${stat.mtimeMs}`
 
-		// Check if we have a cached version.
+		// Check if we have a cached version in memory.
 		if (this.tsCache.has(cacheKey)) {
 			const cachedPath = this.tsCache.get(cacheKey)!
 			return import(`file://${cachedPath}`)
@@ -246,6 +246,12 @@ export class CustomToolRegistry {
 
 		const hash = createHash("sha256").update(cacheKey).digest("hex").slice(0, 16)
 		const tempFile = path.join(this.cacheDir, `${hash}.mjs`)
+
+		// Check if we have a cached version on disk (from a previous run/instance).
+		if (fs.existsSync(tempFile)) {
+			this.tsCache.set(cacheKey, tempFile)
+			return import(`file://${tempFile}`)
+		}
 
 		// Bundle the TypeScript file with dependencies using esbuild CLI.
 		await runEsbuild(
