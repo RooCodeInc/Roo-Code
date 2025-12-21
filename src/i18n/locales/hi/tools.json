@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (पंक्तियाँ {{start}}-{{end}})",
+		"startingFromLine": " (पंक्ति {{start}} से शुरू)",
 		"definitionsOnly": " (केवल परिभाषाएँ)",
 		"maxLines": " (अधिकतम {{max}} पंक्तियाँ)",
 		"imageTooLarge": "छवि फ़ाइल बहुत बड़ी है ({{size}} MB)। अधिकतम अनुमतित आकार {{max}} MB है।",

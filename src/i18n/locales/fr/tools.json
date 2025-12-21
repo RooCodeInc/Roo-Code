@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (lignes {{start}}-{{end}})",
+		"startingFromLine": " (à partir de la ligne {{start}})",
 		"definitionsOnly": " (définitions uniquement)",
 		"maxLines": " (max {{max}} lignes)",
 		"imageTooLarge": "Le fichier image est trop volumineux ({{size}} MB). La taille maximale autorisée est {{max}} MB.",

@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (第 {{start}}-{{end}} 行)",
+		"startingFromLine": " (從第 {{start}} 行開始)",
 		"definitionsOnly": " (僅定義)",
 		"maxLines": " (最多 {{max}} 行)",
 		"imageTooLarge": "圖片檔案過大 ({{size}} MB)。允許的最大大小為 {{max}} MB。",

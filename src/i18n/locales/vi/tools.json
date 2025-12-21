@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (dòng {{start}}-{{end}})",
+		"startingFromLine": " (bắt đầu từ dòng {{start}})",
 		"definitionsOnly": " (chỉ định nghĩa)",
 		"maxLines": " (tối đa {{max}} dòng)",
 		"imageTooLarge": "Tệp hình ảnh quá lớn ({{size}} MB). Kích thước tối đa cho phép là {{max}} MB.",
