@@ -37,7 +37,7 @@ export const CustomToolsSettings = ({ enabled, onChange }: CustomToolsSettingsPr
 
 	useEffect(() => {
 		if (enabled) {
-			vscode.postMessage({ type: "requestCustomTools" })
+			vscode.postMessage({ type: "refreshCustomTools" })
 		} else {
 			setTools([])
 		}

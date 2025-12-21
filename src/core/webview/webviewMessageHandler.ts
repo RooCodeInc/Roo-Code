@@ -1726,22 +1726,6 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "requestCustomTools": {
-			try {
-				await provider.postMessageToWebview({
-					type: "customToolsResult",
-					tools: customToolRegistry.getAllSerialized(),
-				})
-			} catch (error) {
-				await provider.postMessageToWebview({
-					type: "customToolsResult",
-					tools: [],
-					error: error instanceof Error ? error.message : String(error),
-				})
-			}
-
-			break
-		}
 		case "refreshCustomTools": {
 			try {
 				await customToolRegistry.loadFromDirectory(path.join(getCurrentCwd(), ".roo", "tools"))

@@ -180,7 +180,6 @@ export interface WebviewMessage {
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
 		| "requestClaudeCodeRateLimits"
-		| "requestCustomTools"
 		| "refreshCustomTools"
 	text?: string
 	editedMessageContent?: string
