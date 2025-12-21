@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@roo-code/types": "workspace:^",
 		"esbuild": "^0.25.0",
+		"execa": "^9.5.2",
 		"openai": "^5.12.2",
 		"zod": "^3.25.61"
 	},

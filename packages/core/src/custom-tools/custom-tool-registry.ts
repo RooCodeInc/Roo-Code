@@ -13,11 +13,10 @@ import path from "path"
 import { createHash } from "crypto"
 import os from "os"
 
-import { build } from "esbuild"
-
 import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@roo-code/types"
 
 import { serializeCustomTool } from "./serialize.js"
+import { runEsbuild } from "./esbuild-runner.js"
 
 export interface LoadResult {
 	loaded: string[]
@@ -29,6 +28,8 @@ export interface RegistryOptions {
 	cacheDir?: string
 	/** Additional paths for resolving node modules (useful for tools outside node_modules). */
 	nodePaths?: string[]
+	/** Path to the extension root directory (for finding bundled esbuild binary in production). */
+	extensionPath?: string
 }
 
 export class CustomToolRegistry {
@@ -36,12 +37,14 @@ export class CustomToolRegistry {
 	private tsCache = new Map<string, string>()
 	private cacheDir: string
 	private nodePaths: string[]
+	private extensionPath?: string
 	private lastLoaded: Map<string, number> = new Map()
 
 	constructor(options?: RegistryOptions) {
 		this.cacheDir = options?.cacheDir ?? path.join(os.tmpdir(), "dynamic-tools-cache")
 		// Default to current working directory's node_modules.
 		this.nodePaths = options?.nodePaths ?? [path.join(process.cwd(), "node_modules")]
+		this.extensionPath = options?.extensionPath
 	}
 
 	/**
@@ -181,6 +184,21 @@ export class CustomToolRegistry {
 	}
 
 	/**
+	 * Set the extension path for finding bundled esbuild binary.
+	 * This should be called with context.extensionPath when the extension activates.
+	 */
+	setExtensionPath(extensionPath: string): void {
+		this.extensionPath = extensionPath
+	}
+
+	/**
+	 * Get the current extension path.
+	 */
+	getExtensionPath(): string | undefined {
+		return this.extensionPath
+	}
+
+	/**
 	 * Clear the TypeScript compilation cache (both in-memory and on disk).
 	 */
 	clearCache(): void {
@@ -229,19 +247,21 @@ export class CustomToolRegistry {
 		const hash = createHash("sha256").update(cacheKey).digest("hex").slice(0, 16)
 		const tempFile = path.join(this.cacheDir, `${hash}.mjs`)
 
-		// Bundle the TypeScript file with dependencies.
-		await build({
-			entryPoints: [absolutePath],
-			bundle: true,
-			format: "esm",
-			platform: "node",
-			target: "node18",
-			outfile: tempFile,
-			sourcemap: "inline",
-			packages: "bundle",
-			// Include node_modules paths for module resolution.
-			nodePaths: this.nodePaths,
-		})
+		// Bundle the TypeScript file with dependencies using esbuild CLI.
+		await runEsbuild(
+			{
+				entryPoint: absolutePath,
+				outfile: tempFile,
+				format: "esm",
+				platform: "node",
+				target: "node18",
+				bundle: true,
+				sourcemap: "inline",
+				packages: "bundle",
+				nodePaths: this.nodePaths,
+			},
+			this.extensionPath,
+		)
 
 		this.tsCache.set(cacheKey, tempFile)
 		return import(`file://${tempFile}`)
