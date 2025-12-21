@@ -254,7 +254,7 @@ const WORKFLOW_MODES: readonly modelType[] = [
 		description: "Review code and identify potential issues",
 		groups: ["read", "mcp", "browser"],
 		source: "project",
-		zgsmCodeModeGroup: "strict,plan,vibe",
+		zgsmCodeModeGroup: "hide",
 		apiProvider: "zgsm",
 	},
 ]

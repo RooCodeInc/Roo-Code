@@ -74,7 +74,7 @@ Communicate via [GitHub Issues](https://github.com/zgsm-ai/costrict/issues/new/c
 
 ## Disclaimer
 
-**Please note** that CoStrict, Inc does **not** make any representations or warranties regarding any code, models, or other tools provided or made available in connection with CoStrict, any associated third-party tools, or any resulting outputs. You assume **all risks** associated with the use of any such tools or outputs; such tools are provided on an **"AS IS"** and **"AS AVAILABLE"** basis. Such risks may include, without limitation, intellectual property infringement, cyber vulnerabilities or attacks, bias, inaccuracies, errors, defects, viruses, downtime, property loss or damage, and/or personal injury. You are solely responsible for your use of any such tools or outputs (including, without limitation, the legality, appropriateness, and results thereof).
+**Please note** that Sangfor, Inc does **not** make any representations or warranties regarding any code, models, or other tools provided or made available in connection with CoStrict, any associated third-party tools, or any resulting outputs. You assume **all risks** associated with the use of any such tools or outputs; such tools are provided on an **"AS IS"** and **"AS AVAILABLE"** basis. Such risks may include, without limitation, intellectual property infringement, cyber vulnerabilities or attacks, bias, inaccuracies, errors, defects, viruses, downtime, property loss or damage, and/or personal injury. You are solely responsible for your use of any such tools or outputs (including, without limitation, the legality, appropriateness, and results thereof).
 
 ## License
 

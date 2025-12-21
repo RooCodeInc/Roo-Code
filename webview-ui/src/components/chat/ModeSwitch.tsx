@@ -6,6 +6,11 @@ import { StandardTooltip } from "@src/components/ui"
 import { useTranslation } from "react-i18next"
 import { vscode } from "@/utils/vscode"
 import { type ZgsmCodeMode } from "@roo/modes"
+import { useCallback } from "react"
+
+interface ModeSwitchProps {
+	isStreaming?: boolean
+}
 
 const mapDisplayToOriginal = (displayMode: "vibe" | "plan" | "spec"): string => {
 	if (displayMode === "vibe") return "vibe"
@@ -47,12 +52,35 @@ const Slider = styled.div.withConfig({
 	transform: translateX(${(props) => (props.isVibe ? "0%" : props.isSpec ? "200%" : "100%")});
 `
 
-export const ModeSwitch = () => {
-	const { zgsmCodeMode, setZgsmCodeMode } = useExtensionState()
+export const ModeSwitch = ({ isStreaming = false }: ModeSwitchProps) => {
+	const { zgsmCodeMode, setZgsmCodeMode, apiConfiguration } = useExtensionState()
 	const displayMode = mapModeToDisplay(zgsmCodeMode)
 	const { t } = useTranslation("welcome")
+	const { t: tSettings } = useTranslation("settings")
 
+	const apiProviderCheck = useCallback(
+		(apiProvider: string) => {
+			if (apiConfiguration?.apiProvider === apiProvider) {
+				return true
+			}
+
+			vscode.postMessage({
+				type: "zgsmProviderTip",
+				values: {
+					tipType: "info",
+					msg: tSettings("codebase.general.onlyCostrictProviderSupport"),
+				},
+			})
+
+			return false
+		},
+		[apiConfiguration?.apiProvider, tSettings],
+	)
 	const handleModeClick = (selectedMode: "vibe" | "plan" | "spec", forceMode?: string) => {
+		if (isStreaming) return
+		if (!apiProviderCheck("zgsm")) {
+			selectedMode = "vibe"
+		}
 		const originalMode = mapDisplayToOriginal(selectedMode)
 		setZgsmCodeMode(originalMode as ZgsmCodeMode)
 
@@ -79,7 +107,7 @@ export const ModeSwitch = () => {
 	}
 
 	return (
-		<SwitchContainer data-testid="mode-switch" disabled={false}>
+		<SwitchContainer data-testid="mode-switch" disabled={isStreaming}>
 			<Slider isVibe={displayMode === "vibe"} isPlan={displayMode === "plan"} isSpec={displayMode === "spec"} />
 			{["Vibe", "Plan", "Spec"].map((m) => (
 				<StandardTooltip content={getModeTip(m.toLowerCase())} key={m}>

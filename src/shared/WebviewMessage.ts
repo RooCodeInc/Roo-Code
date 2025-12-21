@@ -207,7 +207,7 @@ export interface WebviewMessage {
 		| "requestClaudeCodeRateLimits"
 	text?: string
 	editedMessageContent?: string
-	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account"
+	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
 	disabled?: boolean
 	context?: string
 	dataUri?: string

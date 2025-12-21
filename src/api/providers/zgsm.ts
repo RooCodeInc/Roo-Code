@@ -111,6 +111,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			workflowModes.includes(metadata?.parentTaskMode) ||
 			workflowModes.includes(metadata?.zgsmCodeMode)
 		this.apiResponseRenderModeInfo = getApiResponseRenderMode()
+		if ("review" === metadata?.mode) {
+			this.client.maxRetries = 1
+		}
 		// 1. Cache calculation results and configuration
 		const { info: modelInfo, reasoning } = this.getModel()
 		const modelUrl = this.baseURL || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()

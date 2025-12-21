@@ -78,6 +78,7 @@ import { getJumpLine } from "@/utils/path-mentions"
 import { useZgsmUserInfo } from "@/hooks/useZgsmUserInfo"
 import { format } from "date-fns"
 import { PathTooltip } from "../ui/PathTooltip"
+import { TaskStatus } from "@roo/codeReview"
 
 // Helper function to get previous todos before a specific message
 function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
@@ -200,7 +201,8 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages, reviewTask } =
+		useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -210,7 +212,6 @@ export const ChatRowContent = ({
 	const [editImages, setEditImages] = useState<string[]>([])
 	const { copyWithFeedback } = useCopyToClipboard()
 	const userEditRef = useRef<HTMLDivElement>(null)
-
 	// Handle message events for image selection during edit mode
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
@@ -353,7 +354,23 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-check"
 						style={{ color: successColor, marginBottom: "-1.5px" }}></span>,
-					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
+					<span style={{ color: successColor, fontWeight: "bold" }}>
+						{t("chat:taskCompleted")}{" "}
+						{reviewTask.status === TaskStatus.COMPLETED && (
+							<a
+								href="javascript:void(0)"
+								onClick={(e) => {
+									e.stopPropagation()
+									vscode.postMessage({
+										type: "switchTab",
+										tab: "codeReview",
+									})
+								}}
+								style={{ color: "inherit", textDecoration: "underline" }}>
+								{t("chat:subtasks.viewSubtask")}
+							</a>
+						)}
+					</span>,
 				]
 			case "api_req_retry_delayed":
 				return []
@@ -420,6 +437,7 @@ export const ChatRowContent = ({
 		message.text,
 		message.ts,
 		isMcpServerResponding,
+		reviewTask.status,
 		apiReqCancelReason,
 		cost,
 		apiRequestFailedMessage,

@@ -22,6 +22,7 @@ interface ModeSelectorProps {
 	value: Mode
 	onChange: (value: Mode) => void
 	disabled?: boolean
+	isReviewing?: boolean
 	title: string
 	triggerClassName?: string
 	modeShortcutText: string
@@ -34,6 +35,7 @@ export const ModeSelector = ({
 	value,
 	onChange,
 	disabled = false,
+	isReviewing = false,
 	title,
 	triggerClassName = "",
 	modeShortcutText,
@@ -203,7 +205,7 @@ export const ModeSelector = ({
 		<Popover open={open} onOpenChange={onOpenChange} data-testid="mode-selector-root">
 			<StandardTooltip content={`${title}${title ? ` (${zgsmCodeMode})` : ""}`}>
 				<PopoverTrigger
-					disabled={disabled}
+					disabled={disabled || isReviewing}
 					data-testid="mode-selector-trigger"
 					className={cn(
 						"inline-flex items-center gap-1.5 relative whitespace-nowrap px-1.5 py-1 text-xs",
@@ -218,10 +220,16 @@ export const ModeSelector = ({
 							? "bg-primary opacity-90 hover:bg-primary-hover text-vscode-button-foreground"
 							: null,
 					)}>
-					<span className="truncate">
-						{selectedMode?.name || t("chat:selectMode")}
-						{selectedMode?.name ? ` (${zgsmCodeMode})` : ""}
-					</span>
+					{isReviewing ? (
+						<span className="animate-pulse font-bold bg-gradient-to-r from-vscode-foreground to-vscode-foreground/50 bg-clip-text text-transparent drop-shadow-[0_0_8px_theme('colors.vscode.charts.blue')] shadow-[0_0_20px_theme('colors.vscode.charts.blue')]">
+							Review...
+						</span>
+					) : (
+						<span className="truncate">
+							{selectedMode?.name || t("chat:selectMode")}
+							{selectedMode?.name ? ` (${zgsmCodeMode})` : ""}
+						</span>
+					)}
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent

@@ -1,5 +1,17 @@
 # CoStrict Change Log
 
+## [2.1.1]
+
+- Fix model response handling for "no tools used" scenarios
+- Add comprehensive error handling utilities for different API providers
+- Update UI components for better error display and user experience
+- Fix telemetry client to send events through vscode.postMessage instead of posthog-js
+- Update system prompts to use "Native fallback" instead of "XML fallback" as default
+- Add internationalization updates for error messages in multiple languages
+- Fix ModeSwitch component display issues
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/78dc34498be499cacd395bd7daf317fbbd1fbd8b)
+- Fix known issues
+
 ## [2.1.0]
 
 - Refactor: Convert claude-code models to dynamic loading with getClaudeCodeModels()
