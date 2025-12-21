@@ -158,17 +158,15 @@ export async function runEsbuild(options: EsbuildOptions, extensionPath?: string
 		args.push(`--packages=${options.packages}`)
 	}
 
-	// Build environment with NODE_PATH for module resolution
+	// Build environment with NODE_PATH for module resolution.
 	const env: NodeJS.ProcessEnv = { ...process.env }
+
 	if (options.nodePaths && options.nodePaths.length > 0) {
 		env.NODE_PATH = options.nodePaths.join(path.delimiter)
 	}
 
 	try {
-		await execa(process.execPath, args, {
-			env,
-			stdin: "ignore",
-		})
+		await execa(process.execPath, args, { env, stdin: "ignore" })
 	} catch (error) {
 		const execaError = error as { stderr?: string; stdout?: string; exitCode?: number; message: string }
 		const errorMessage = execaError.stderr || execaError.stdout || `esbuild exited with code ${execaError.exitCode}`
