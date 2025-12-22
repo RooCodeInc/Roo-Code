@@ -2,19 +2,16 @@ import {
 	ArrowRight,
 	Users,
 	Settings,
-	Github,
-	Slack,
 	BarChart3,
 	Lock,
 	Puzzle,
 	ShieldCheck,
-	UserCog,
 	DollarSign,
 	Share2,
 	LucideIcon,
 	Server,
-	FileKey,
-	Building,
+	ServerIcon,
+	RefreshCcw,
 } from "lucide-react"
 import type { Metadata } from "next"
 
@@ -114,37 +111,26 @@ interface Feature {
 
 const features: Feature[] = [
 	{
-		icon: UserCog,
-		title: "Team Member Management",
+		icon: ShieldCheck,
+		title: "Configuration Enforcement",
 		description:
-			"Invite, remove, and manage permissions for team members. Assign Admin or regular member roles to control access.",
-	},
-	{
-		icon: Building,
-		title: "Organization Profile",
-		description: "Customize your organization with logo, name, and branding to create a cohesive team identity.",
-	},
-	{
-		icon: Github,
-		title: "GitHub Integration",
-		description:
-			"Centralized GitHub connection for the entire team. Agents can review PRs and collaborate on your repositories.",
-	},
-	{
-		icon: Slack,
-		title: "Slack Integration",
-		description:
-			"Connect Slack once for your organization. Team members can interact with agents directly from channels.",
+			"Require team members to log in to the VS Code Extension so policies can be enforced via MDM distribution.",
 	},
 	{
 		icon: Server,
-		title: "Cloud Model Providers",
+		title: "Provider Management",
 		description:
-			"Configure and manage model providers for Cloud Agents with centralized API key management and team-wide access.",
+			"Configure and manage the model providers your team can access for both the Extension and Cloud Agents, with API-key-free management.",
 	},
 	{
-		icon: BarChart3,
-		title: "Extension Task Sync",
+		icon: Puzzle,
+		title: "Centralized Integration",
+		description:
+			"Centralized GitHub and Slack connection for the entire team. Agents can review PRs, collaborate on your repositories and respond on your team channels.",
+	},
+	{
+		icon: RefreshCcw,
+		title: "Extension Task Sync Config",
 		description:
 			"Require task syncing from VS Code Extension and control visibility settings for who can view each other's tasks.",
 	},
@@ -154,32 +140,9 @@ const features: Feature[] = [
 		description: "Enable per-task sharing with customizable audience controls and link expiration times.",
 	},
 	{
-		icon: FileKey,
-		title: "Environment Variables",
-		description:
-			"Securely store connection strings, package manager URLs, keys, and secrets for Cloud Agents in encrypted storage.",
-	},
-	{
-		icon: Puzzle,
-		title: "Marketplace MCP Management",
-		description: "Create allow/deny lists for MCPs from the Roo Code marketplace available to team members.",
-	},
-	{
-		icon: Puzzle,
-		title: "Custom MCP Servers",
-		description: "Deploy vetted, custom MCP servers and make them available to all team members automatically.",
-	},
-	{
-		icon: Settings,
-		title: "Extension Provider Control",
-		description:
-			"Manage which inference providers team members can use in the VS Code Extension with allow/deny lists.",
-	},
-	{
-		icon: ShieldCheck,
-		title: "Connection Policy Enforcement",
-		description:
-			"Require team members to log in to the VS Code Extension so policies can be enforced via MDM distribution.",
+		icon: ServerIcon,
+		title: "MCP Server Controls",
+		description: "Control access to the Roo MCP Markeplace and what custom MCPs to make available to your team.",
 	},
 ]
 
