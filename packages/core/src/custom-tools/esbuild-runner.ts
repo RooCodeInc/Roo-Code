@@ -50,6 +50,8 @@ export interface EsbuildOptions {
 	packages?: "bundle" | "external"
 	/** Additional paths for module resolution */
 	nodePaths?: string[]
+	/** Package aliases for module resolution (e.g., { "@roo-code/types": "/path/to/types/dist/index.js" }) */
+	alias?: Record<string, string>
 }
 
 /**
@@ -156,6 +158,12 @@ export async function runEsbuild(options: EsbuildOptions, extensionPath?: string
 
 	if (options.packages) {
 		args.push(`--packages=${options.packages}`)
+	}
+
+	if (options.alias) {
+		for (const [from, to] of Object.entries(options.alias)) {
+			args.push(`--alias:${from}=${to}`)
+		}
 	}
 
 	// Build environment with NODE_PATH for module resolution.

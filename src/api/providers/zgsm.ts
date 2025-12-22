@@ -178,7 +178,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			let selectedLLM: string | undefined = this.options.zgsmModelId
 			let selectReason: string | undefined
 			try {
-				this.logger.info(`[RequestID]:`, requestId)
+				this.logger.info(`[RequestID ${modelId}]:`, requestId)
 
 				if (metadata?.onRequestHeadersReady && typeof metadata.onRequestHeadersReady === "function") {
 					metadata.onRequestHeadersReady(_headers)
@@ -193,7 +193,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						}),
 					)
 					.withResponse()
-				this.logger.info(`[ResponseID]:`, response.headers.get("x-request-id"))
+				this.logger.info(`[ResponseID ${modelId}]:`, response.headers.get("x-request-id"))
 				if (isAuto) {
 					selectedLLM = response.headers.get("x-select-llm") || ""
 					selectReason = response.headers.get("x-select-reason") || ""

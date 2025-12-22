@@ -152,7 +152,7 @@ describe("resolveToolProtocol", () => {
 				supportsNativeTools: true,
 			}
 			const result = resolveToolProtocol(settings, modelInfo)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Native fallback
+			expect(result).toBe(TOOL_PROTOCOL.XML) // XML fallback
 		})
 	})
 
@@ -206,7 +206,7 @@ describe("resolveToolProtocol", () => {
 			}
 
 			const result = resolveToolProtocol(settings, modelInfo)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Native fallback
+			expect(result).toBe(TOOL_PROTOCOL.XML) // XML fallback
 		})
 
 		it("should skip to XML fallback when model info is unavailable", () => {
@@ -313,7 +313,7 @@ describe("resolveToolProtocol", () => {
 				supportsNativeTools: true,
 			}
 			const result = resolveToolProtocol(settings, modelInfo)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Native fallback
+			expect(result).toBe(TOOL_PROTOCOL.XML) // XML fallback
 		})
 
 		it("should use XML for Claude models with Anthropic provider", () => {

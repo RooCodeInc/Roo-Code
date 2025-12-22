@@ -12,6 +12,7 @@ import fs from "fs"
 import path from "path"
 import { createHash } from "crypto"
 import os from "os"
+import { fileURLToPath } from "url"
 
 import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@roo-code/types"
 
@@ -26,6 +27,8 @@ export interface RegistryOptions {
 	nodePaths?: string[]
 	/** Path to the extension root directory (for finding bundled esbuild binary in production). */
 	extensionPath?: string
+	/** Path to @roo-code/types package (defaults to auto-detection). */
+	typesPackagePath?: string
 }
 
 export class CustomToolRegistry {
@@ -34,13 +37,70 @@ export class CustomToolRegistry {
 	private cacheDir: string
 	private nodePaths: string[]
 	private extensionPath?: string
+	private typesPackagePath?: string
 	private lastLoaded: Map<string, number> = new Map()
 
 	constructor(options?: RegistryOptions) {
 		this.cacheDir = options?.cacheDir ?? path.join(os.tmpdir(), "dynamic-tools-cache")
-		// Default to current working directory's node_modules.
+		// Don't set default nodePaths - esbuild will resolve from entry point location.
 		this.nodePaths = options?.nodePaths ?? [path.join(process.cwd(), "node_modules")]
 		this.extensionPath = options?.extensionPath
+		this.typesPackagePath = options?.typesPackagePath ?? this.findTypesPackage()
+	}
+
+	/**
+	 * Find the @roo-code/types package location.
+	 * Tries multiple locations to support both development and production environments.
+	 * Prefers compiled versions (.js) for production reliability.
+	 */
+	private findTypesPackage(): string | undefined {
+		// If extension path is set, try relative to extension first.
+		if (this.extensionPath) {
+			// Production: bundled compiled version
+			const extDistJsPath = path.join(this.extensionPath, "dist", "packages", "types", "dist", "index.js")
+			if (fs.existsSync(extDistJsPath)) {
+				return extDistJsPath
+			}
+
+			// Development: monorepo packages directory - compiled version
+			const extPackagesDistPath = path.join(this.extensionPath, "packages", "types", "dist", "index.js")
+			if (fs.existsSync(extPackagesDistPath)) {
+				return extPackagesDistPath
+			}
+
+			// Development: monorepo packages directory - source fallback
+			const extPackagesSrcPath = path.join(this.extensionPath, "packages", "types", "src", "index.ts")
+			if (fs.existsSync(extPackagesSrcPath)) {
+				return extPackagesSrcPath
+			}
+		}
+
+		// Try to resolve from this module's location
+		try {
+			const moduleDir = path.dirname(fileURLToPath(import.meta.url))
+			// Walk up to find packages/types
+			let currentDir = moduleDir
+			const root = path.parse(currentDir).root
+			for (let i = 0; i < 10 && currentDir !== root; i++) {
+				// Try compiled version first
+				const typesDistPath = path.join(currentDir, "packages", "types", "dist", "index.js")
+				if (fs.existsSync(typesDistPath)) {
+					return typesDistPath
+				}
+
+				// Fallback to source
+				const typesSrcPath = path.join(currentDir, "packages", "types", "src", "index.ts")
+				if (fs.existsSync(typesSrcPath)) {
+					return typesSrcPath
+				}
+
+				currentDir = path.dirname(currentDir)
+			}
+		} catch {
+			// Ignore if we can't get module directory
+		}
+
+		return undefined
 	}
 
 	/**
@@ -222,9 +282,12 @@ export class CustomToolRegistry {
 	/**
 	 * Set the extension path for finding bundled esbuild binary.
 	 * This should be called with context.extensionPath when the extension activates.
+	 * Also re-finds the types package location with the new extension path.
 	 */
 	setExtensionPath(extensionPath: string): void {
 		this.extensionPath = extensionPath
+		// Re-find types package with the new extension path
+		this.typesPackagePath = this.findTypesPackage()
 	}
 
 	/**
@@ -290,20 +353,27 @@ export class CustomToolRegistry {
 		}
 
 		// Bundle the TypeScript file with dependencies using esbuild CLI.
-		await runEsbuild(
-			{
-				entryPoint: absolutePath,
-				outfile: tempFile,
-				format: "esm",
-				platform: "node",
-				target: "node18",
-				bundle: true,
-				sourcemap: "inline",
-				packages: "bundle",
-				nodePaths: this.nodePaths,
-			},
-			this.extensionPath,
-		)
+		const esbuildOptions: Parameters<typeof runEsbuild>[0] = {
+			entryPoint: absolutePath,
+			outfile: tempFile,
+			format: "esm",
+			platform: "node",
+			target: "node18",
+			bundle: true,
+			sourcemap: false,
+			packages: "bundle",
+			nodePaths: this.nodePaths,
+		}
+
+		// Add alias for @roo-code/types if we found it.
+		// Note: @roo-code/types is built with zod bundled in, so we don't need a separate zod alias.
+		if (this.typesPackagePath) {
+			esbuildOptions.alias = {
+				"@roo-code/types": this.typesPackagePath,
+			}
+		}
+
+		await runEsbuild(esbuildOptions, this.extensionPath)
 
 		this.tsCache.set(cacheKey, tempFile)
 		return import(`file://${tempFile}`)

@@ -167,6 +167,10 @@ export function copyWasms(srcDir: string, distDir: string): void {
 
 	// Copy esbuild-wasm files for custom tool transpilation (cross-platform).
 	copyEsbuildWasmFiles(nodeModulesDir, distDir)
+
+	// Copy @roo-code/types package for custom tool compilation.
+	// Note: @roo-code/types is built with zod bundled in, so we don't need to copy zod separately.
+	copyTypesPackage(srcDir, distDir)
 }
 
 /**
@@ -216,6 +220,71 @@ function copyEsbuildWasmFiles(nodeModulesDir: string, distDir: string): void {
 	}
 
 	console.log(`[copyWasms] Copied ${filesToCopy.length} esbuild-wasm files to ${distDir}`)
+}
+
+/**
+ * Copy @roo-code/types package files for custom tool compilation.
+ *
+ * This function copies the compiled @roo-code/types package so that custom tools
+ * can import it during runtime compilation. This enables users to write custom
+ * tools that use TypeScript and Zod schemas even after the extension is packaged.
+ *
+ * Files copied:
+ * - dist/index.js (ESM version)
+ * - dist/index.js.map (source map)
+ * - dist/index.d.ts (TypeScript definitions)
+ * - dist/index.cjs (CommonJS version)
+ * - dist/index.d.cts (CommonJS type definitions)
+ */
+function copyTypesPackage(srcDir: string, distDir: string): void {
+	// Find the types package - try multiple locations
+	const possiblePaths = [
+		// Monorepo packages directory (relative to src)
+		path.join(srcDir, "..", "packages", "types"),
+		// Parent's packages directory
+		path.join(srcDir, "..", "..", "packages", "types"),
+	]
+
+	let typesPackageDir: string | null = null
+	for (const possiblePath of possiblePaths) {
+		if (fs.existsSync(possiblePath)) {
+			typesPackageDir = possiblePath
+			break
+		}
+	}
+
+	if (!typesPackageDir) {
+		throw new Error("Could not find @roo-code/types package directory")
+	}
+
+	const typesDistDir = path.join(typesPackageDir, "dist")
+	if (!fs.existsSync(typesDistDir)) {
+		throw new Error(`@roo-code/types dist directory does not exist: ${typesDistDir}. Run 'pnpm build' first.`)
+	}
+
+	// Create packages/types/dist directory structure in dist
+	const targetDir = path.join(distDir, "packages", "types", "dist")
+	fs.mkdirSync(targetDir, { recursive: true })
+
+	// Files to copy (exclude sourcemap files in production to reduce bundle size)
+	const filesToCopy = ["index.js", "index.d.ts", "index.cjs", "index.d.cts"]
+
+	let copiedCount = 0
+	for (const file of filesToCopy) {
+		const srcFile = path.join(typesDistDir, file)
+		const destFile = path.join(targetDir, file)
+
+		if (fs.existsSync(srcFile)) {
+			fs.copyFileSync(srcFile, destFile)
+			copiedCount++
+		}
+	}
+
+	if (copiedCount === 0) {
+		throw new Error(`No files copied from @roo-code/types dist directory: ${typesDistDir}`)
+	}
+
+	console.log(`[copyWasms] Copied ${copiedCount} @roo-code/types files to ${targetDir}`)
 }
 
 export function copyLocales(srcDir: string, distDir: string): void {

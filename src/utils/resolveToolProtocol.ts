@@ -54,7 +54,7 @@ export function resolveToolProtocol(
 	}
 
 	// 3. Native Fallback
-	return TOOL_PROTOCOL.NATIVE
+	return TOOL_PROTOCOL.XML
 }
 
 /**
