@@ -247,7 +247,8 @@ export async function readSlice(
 
 				lineNumber++
 
-				if (lineNumber >= offset && collected.length < limit) {
+				// Only collect content if we haven't hit the limit yet
+				if (!truncatedByLimit && lineNumber >= offset && collected.length < limit) {
 					// Track first line collected
 					if (startLine === 0) {
 						startLine = lineNumber
@@ -261,33 +262,12 @@ export async function readSlice(
 						lineLengthTruncations.push(lineNumber)
 					}
 					collected.push(`${lineNumber} | ${display}`)
-				}
 
-				if (collected.length >= limit) {
-					truncatedByLimit = true
-					input.destroy()
-					// We don't know the total lines yet, so estimate
-					const totalLines = lineNumber
-					const linesReturned = collected.length
-					resolve({
-						content: collected.join("\n"),
-						lineCount: linesReturned,
-						totalLines,
-						metadata: {
-							filePath,
-							totalLinesInFile: totalLines, // Approximate - file was truncated early
-							linesReturned,
-							startLine,
-							endLine,
-							hasMoreBefore: startLine > 1,
-							hasMoreAfter: true, // We hit the limit, so there's likely more
-							linesBeforeStart: startLine - 1,
-							linesAfterEnd: 0, // Unknown when truncated
-							truncatedByLimit: true,
-							lineLengthTruncations,
-						},
-					})
-					return
+					// Check if we've hit the limit
+					if (collected.length >= limit) {
+						truncatedByLimit = true
+						// Continue counting lines instead of destroying stream
+					}
 				}
 
 				pos = nextNewline + 1
@@ -301,7 +281,7 @@ export async function readSlice(
 			// Process any remaining data (last line without newline)
 			if (buffer.length > 0) {
 				lineNumber++
-				if (lineNumber >= offset && collected.length < limit) {
+				if (!truncatedByLimit && lineNumber >= offset && collected.length < limit) {
 					if (startLine === 0) {
 						startLine = lineNumber
 					}
@@ -316,12 +296,30 @@ export async function readSlice(
 				}
 			}
 
-			if (lineNumber < offset) {
-				reject(new RangeError("offset exceeds file length"))
+			// Handle offset beyond EOF gracefully - return empty content instead of throwing
+			const totalLines = lineNumber
+			if (totalLines === 0 || offset > totalLines) {
+				resolve({
+					content: "",
+					lineCount: 0,
+					totalLines,
+					metadata: {
+						filePath,
+						totalLinesInFile: totalLines,
+						linesReturned: 0,
+						startLine: offset,
+						endLine: offset,
+						hasMoreBefore: offset > 1 && totalLines > 0,
+						hasMoreAfter: false,
+						linesBeforeStart: Math.min(offset - 1, totalLines),
+						linesAfterEnd: 0,
+						truncatedByLimit: false,
+						lineLengthTruncations: [],
+					},
+				})
 				return
 			}
 
-			const totalLines = lineNumber
 			const linesReturned = collected.length
 			const linesAfterEnd = endLine > 0 ? totalLines - endLine : 0
 
@@ -365,17 +363,17 @@ export async function readIndentationBlock(
 	} = config
 
 	if (anchorLine === 0) {
-		throw new RangeError("anchor_line must be a 1-indexed line number")
+		throw new RangeError("anchorLine must be a 1-indexed line number")
 	}
 	if (maxLines === 0) {
-		throw new RangeError("max_lines must be greater than zero")
+		throw new RangeError("maxLines must be greater than zero")
 	}
 
 	// Load all lines
 	const records = await collectFileLines(filePath)
 
 	if (records.length === 0 || anchorLine > records.length) {
-		throw new RangeError("anchor_line exceeds file length")
+		throw new RangeError("anchorLine exceeds file length")
 	}
 
 	const anchorIndex = anchorLine - 1
