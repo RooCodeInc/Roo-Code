@@ -101,7 +101,7 @@
 		"description": "在雲端執行 CoStrict 遠端代理、隨時隨地存取您的工作、與他人協作等等。"
 	},
 	"copy": {
-		"errorDetail": "複製錯誤詳情，聯絡管理員"
+		"errorDetail": "點我複製錯誤詳情，聯絡管理員"
 	},
 	"slashCommand": {
 		"wantsToRun": "CoStrict 想要執行斜線指令",

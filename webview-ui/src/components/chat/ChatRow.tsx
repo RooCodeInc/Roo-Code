@@ -1265,12 +1265,17 @@ export const ChatRowContent = ({
 											<>
 												<br />
 												<br />
-												<Button
-													size="sm"
-													className="ml-6"
-													onClick={() => handleCopyErrorDetail(message.text || "")}>
-													{t("chat:copy.errorDetail")}
-												</Button>
+												<div className="relative inline-flex">
+													<Button
+														size="sm"
+														className="ml-6"
+														onClick={() => handleCopyErrorDetail(message.text || "")}>
+														{t("chat:copy.errorDetail")}
+													</Button>
+													<div
+														className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full cursor-pointer"
+														onClick={() => handleCopyErrorDetail(message.text || "")}></div>
+												</div>
 											</>
 										)
 									}
@@ -1349,12 +1354,17 @@ export const ChatRowContent = ({
 									<>
 										<br />
 										<br />
-										<Button
-											size="sm"
-											className="ml-6"
-											onClick={() => handleCopyErrorDetail(message.text || "")}>
-											{t("chat:copy.errorDetail")}
-										</Button>
+										<div className="relative inline-flex">
+											<Button
+												size="sm"
+												className="ml-6"
+												onClick={() => handleCopyErrorDetail(message.text || "")}>
+												{t("chat:copy.errorDetail")}
+											</Button>
+											<div
+												className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full cursor-pointer"
+												onClick={() => handleCopyErrorDetail(message.text || "")}></div>
+										</div>
 									</>
 								) : (
 									retryInfo

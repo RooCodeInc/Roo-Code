@@ -101,7 +101,7 @@
 		"description": "在云端运行远程代理，随时随地访问任务，与他人协作等更多功能。"
 	},
 	"copy": {
-		"errorDetail": "复制错误详情，联系管理员"
+		"errorDetail": "点我复制错误详情，联系管理员"
 	},
 	"slashCommand": {
 		"wantsToRun": "CoStrict 想要运行斜杠命令",

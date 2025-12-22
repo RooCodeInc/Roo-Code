@@ -101,7 +101,7 @@
 		"description": "Run CoStrict agents in the cloud, access your tasks from anywhere, collaborate with others, and more."
 	},
 	"copy": {
-		"errorDetail": "Copy error detail,Contact the administrator"
+		"errorDetail": "Click here to copy the error details and contact the administrator."
 	},
 	"slashCommand": {
 		"wantsToRun": "CoStrict wants to run a slash command",
