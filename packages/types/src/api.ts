@@ -133,6 +133,12 @@ export interface RooCodeAPI extends EventEmitter<RooCodeAPIEvents> {
 	 * @throws Error if the profile does not exist
 	 */
 	setActiveProfile(name: string): Promise<string | undefined>
+	/**
+	 * Gets the task content formatted as markdown.
+	 * @param taskId Optional task ID. If not provided, uses the current active task.
+	 * @returns The task content formatted as markdown, or undefined if no task is found.
+	 */
+	getTaskAsMarkdown(taskId?: string): Promise<string | undefined>
 }
 
 export interface RooCodeIpcServer extends EventEmitter<IpcServerEvents> {
