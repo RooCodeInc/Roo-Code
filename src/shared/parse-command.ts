@@ -31,10 +31,20 @@ export function joinQuotedLines(command: string): string[] {
 
 	while (i < command.length) {
 		const char = command[i]
-		const prevChar = i > 0 ? command[i - 1] : ""
 
 		// Handle escape sequences (only in double quotes, single quotes are literal)
-		const isEscaped = prevChar === "\\" && inDoubleQuote
+		// Count consecutive backslashes before the current character
+		// If odd count, the current character is escaped; if even, it's not
+		// e.g., \" = escaped quote, \\" = escaped backslash + closing quote
+		let backslashCount = 0
+		if (inDoubleQuote) {
+			let j = i - 1
+			while (j >= 0 && command[j] === "\\") {
+				backslashCount++
+				j--
+			}
+		}
+		const isEscaped = backslashCount % 2 === 1
 
 		// Handle quote state changes
 		if (char === '"' && !inSingleQuote && !isEscaped) {

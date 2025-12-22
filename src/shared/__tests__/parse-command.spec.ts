@@ -77,6 +77,20 @@ describe("joinQuotedLines", () => {
 		const input = 'bd create "desc\nmore" && npm install\necho done'
 		expect(joinQuotedLines(input)).toEqual(['bd create "desc\nmore" && npm install', "echo done"])
 	})
+
+	it('should handle escaped backslash before closing quote (\\\\" sequence)', () => {
+		// \\" means escaped backslash (\\) followed by closing quote (")
+		// The string should end at the quote, not continue
+		const input = 'echo "hello\\\\"\necho done'
+		expect(joinQuotedLines(input)).toEqual(['echo "hello\\\\"', "echo done"])
+	})
+
+	it('should handle escaped backslash followed by escaped quote (\\\\\\" sequence)', () => {
+		// \\\" means escaped backslash (\\) followed by escaped quote (\")
+		// The string should continue past the quote
+		const input = 'echo "hello\\\\\\"world"\necho done'
+		expect(joinQuotedLines(input)).toEqual(['echo "hello\\\\\\"world"', "echo done"])
+	})
 })
 
 describe("parseCommand", () => {
