@@ -21,7 +21,7 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "LM Studio"
+	protected readonly providerName = "LM Studio"
 
 	constructor(options: ApiHandlerOptions) {
 		super()

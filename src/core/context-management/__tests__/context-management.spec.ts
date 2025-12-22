@@ -19,6 +19,7 @@ import {
 
 // Create a mock ApiHandler for testing
 class MockApiHandler extends BaseProvider {
+	protected readonly providerName = "Mock"
 	createMessage(): any {
 		// Mock implementation for testing - returns an async iterable stream
 		const mockStream = {

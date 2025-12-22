@@ -31,7 +31,7 @@ export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "OpenAI Native"
+	protected readonly providerName = "OpenAI Native"
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
@@ -175,8 +175,54 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Make the request (pass systemPrompt and messages for potential retry)
-		yield* this.executeRequest(requestBody, model, metadata, systemPrompt, messages)
+		// Start inference logging with actual request body
+		const logHandle = this.inferenceLogger.start(
+			{
+				provider: this.providerName,
+				operation: "createMessage",
+				model: model.id,
+			},
+			requestBody,
+		)
+
+		// Accumulators for response logging
+		const accumulatedText: string[] = []
+		const accumulatedReasoning: string[] = []
+		const toolCalls: Array<{ id?: string; name?: string }> = []
+		let lastUsage: any
+
+		try {
+			// Make the request (pass systemPrompt and messages for potential retry)
+			for await (const chunk of this.executeRequest(requestBody, model, metadata, systemPrompt, messages)) {
+				// Accumulate for logging
+				if (chunk.type === "text") {
+					accumulatedText.push(chunk.text)
+				} else if (chunk.type === "reasoning") {
+					accumulatedReasoning.push(chunk.text)
+				} else if (chunk.type === "tool_call" || chunk.type === "tool_call_partial") {
+					if (chunk.id || chunk.name) {
+						toolCalls.push({ id: chunk.id, name: chunk.name })
+					}
+				} else if (chunk.type === "usage") {
+					lastUsage = chunk
+				}
+
+				yield chunk
+			}
+
+			// Log successful response
+			logHandle.success({
+				text: accumulatedText.join(""),
+				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+				usage: lastUsage,
+				responseId: this.lastResponseId,
+				responseOutput: this.lastResponseOutput,
+			})
+		} catch (error) {
+			logHandle.error(error)
+			throw error
+		}
 	}
 
 	private buildRequestBody(

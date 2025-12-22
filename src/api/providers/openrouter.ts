@@ -140,7 +140,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	private client: OpenAI
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
-	private readonly providerName = "OpenRouter"
+	protected readonly providerName = "OpenRouter"
 	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
@@ -319,198 +319,235 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } }
 			: undefined
 
-		let stream
-		try {
-			stream = await this.client.chat.completions.create(completionParams, requestOptions)
-		} catch (error) {
-			// Try to parse as OpenRouter error structure using Zod
-			const parseResult = OpenRouterErrorResponseSchema.safeParse(error)
-
-			if (parseResult.success && parseResult.data.error) {
-				const openRouterError = parseResult.data
-				const rawString = openRouterError.error?.metadata?.raw
-				const parsedError = extractErrorFromMetadataRaw(rawString)
-				const rawErrorMessage = parsedError || openRouterError.error?.message || "Unknown error"
-
-				const apiError = Object.assign(
-					new ApiProviderError(
-						rawErrorMessage,
-						this.providerName,
-						modelId,
-						"createMessage",
-						openRouterError.error?.code,
-					),
-					{
-						status: openRouterError.error?.code,
-						error: openRouterError.error,
-					},
-				)
-
-				TelemetryService.instance.captureException(apiError)
-				throw handleOpenAIError(error, this.providerName)
-			} else {
-				// Fallback for non-OpenRouter errors
-				const errorMessage = error instanceof Error ? error.message : String(error)
-				const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
-				TelemetryService.instance.captureException(apiError)
-				throw handleOpenAIError(error, this.providerName)
-			}
-		}
-
-		let lastUsage: CompletionUsage | undefined = undefined
-		// Accumulator for reasoning_details FROM the API.
-		// We preserve the original shape of reasoning_details to prevent malformed responses.
-		const reasoningDetailsAccumulator = new Map<
-			string,
+		// Start inference logging with actual request params
+		const logHandle = this.inferenceLogger.start(
 			{
-				type: string
-				text?: string
-				summary?: string
-				data?: string
-				id?: string | null
-				format?: string
-				signature?: string
-				index: number
+				provider: this.providerName,
+				operation: "createMessage",
+				model: modelId,
+			},
+			{ completionParams, requestOptions },
+		)
+
+		// Accumulators for response logging
+		const accumulatedText: string[] = []
+		const accumulatedReasoning: string[] = []
+		const toolCalls: Array<{ id?: string; name?: string }> = []
+
+		try {
+			let stream
+			try {
+				stream = await this.client.chat.completions.create(completionParams, requestOptions)
+			} catch (error) {
+				// Try to parse as OpenRouter error structure using Zod
+				const parseResult = OpenRouterErrorResponseSchema.safeParse(error)
+
+				if (parseResult.success && parseResult.data.error) {
+					const openRouterError = parseResult.data
+					const rawString = openRouterError.error?.metadata?.raw
+					const parsedError = extractErrorFromMetadataRaw(rawString)
+					const rawErrorMessage = parsedError || openRouterError.error?.message || "Unknown error"
+
+					const apiError = Object.assign(
+						new ApiProviderError(
+							rawErrorMessage,
+							this.providerName,
+							modelId,
+							"createMessage",
+							openRouterError.error?.code,
+						),
+						{
+							status: openRouterError.error?.code,
+							error: openRouterError.error,
+						},
+					)
+
+					TelemetryService.instance.captureException(apiError)
+					throw handleOpenAIError(error, this.providerName)
+				} else {
+					// Fallback for non-OpenRouter errors
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+					TelemetryService.instance.captureException(apiError)
+					throw handleOpenAIError(error, this.providerName)
+				}
 			}
-		>()
 
-		// Track whether we've yielded displayable text from reasoning_details.
-		// When reasoning_details has displayable content (reasoning.text or reasoning.summary),
-		// we skip yielding the top-level reasoning field to avoid duplicate display.
-		let hasYieldedReasoningFromDetails = false
+			let lastUsage: CompletionUsage | undefined = undefined
+			// Accumulator for reasoning_details FROM the API.
+			// We preserve the original shape of reasoning_details to prevent malformed responses.
+			const reasoningDetailsAccumulator = new Map<
+				string,
+				{
+					type: string
+					text?: string
+					summary?: string
+					data?: string
+					id?: string | null
+					format?: string
+					signature?: string
+					index: number
+				}
+			>()
 
-		for await (const chunk of stream) {
-			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
-			if ("error" in chunk) {
-				this.handleStreamingError(chunk.error as OpenRouterError, modelId, "createMessage")
-			}
+			// Track whether we've yielded displayable text from reasoning_details.
+			// When reasoning_details has displayable content (reasoning.text or reasoning.summary),
+			// we skip yielding the top-level reasoning field to avoid duplicate display.
+			let hasYieldedReasoningFromDetails = false
 
-			const delta = chunk.choices[0]?.delta
-			const finishReason = chunk.choices[0]?.finish_reason
-
-			if (delta) {
-				// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
-				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
-				// Priority: Check for reasoning_details first, as it's the newer format
-				const deltaWithReasoning = delta as typeof delta & {
-					reasoning_details?: Array<{
-						type: string
-						text?: string
-						summary?: string
-						data?: string
-						id?: string | null
-						format?: string
-						signature?: string
-						index?: number
-					}>
+			for await (const chunk of stream) {
+				// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
+				if ("error" in chunk) {
+					logHandle.error(chunk.error)
+					this.handleStreamingError(chunk.error as OpenRouterError, modelId, "createMessage")
 				}
 
-				if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
-					for (const detail of deltaWithReasoning.reasoning_details) {
-						const index = detail.index ?? 0
-						const key = `${detail.type}-${index}`
-						const existing = reasoningDetailsAccumulator.get(key)
+				const delta = chunk.choices[0]?.delta
+				const finishReason = chunk.choices[0]?.finish_reason
 
-						if (existing) {
-							// Accumulate text/summary/data for existing reasoning detail
-							if (detail.text !== undefined) {
-								existing.text = (existing.text || "") + detail.text
-							}
-							if (detail.summary !== undefined) {
-								existing.summary = (existing.summary || "") + detail.summary
-							}
-							if (detail.data !== undefined) {
-								existing.data = (existing.data || "") + detail.data
-							}
-							// Update other fields if provided
-							if (detail.id !== undefined) existing.id = detail.id
-							if (detail.format !== undefined) existing.format = detail.format
-							if (detail.signature !== undefined) existing.signature = detail.signature
-						} else {
-							// Start new reasoning detail accumulation
-							reasoningDetailsAccumulator.set(key, {
-								type: detail.type,
-								text: detail.text,
-								summary: detail.summary,
-								data: detail.data,
-								id: detail.id,
-								format: detail.format,
-								signature: detail.signature,
-								index,
-							})
-						}
+				if (delta) {
+					// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
+					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+					// Priority: Check for reasoning_details first, as it's the newer format
+					const deltaWithReasoning = delta as typeof delta & {
+						reasoning_details?: Array<{
+							type: string
+							text?: string
+							summary?: string
+							data?: string
+							id?: string | null
+							format?: string
+							signature?: string
+							index?: number
+						}>
+					}
 
-						// Yield text for display (still fragmented for live streaming)
-						// Only reasoning.text and reasoning.summary have displayable content
-						// reasoning.encrypted is intentionally skipped as it contains redacted content
-						let reasoningText: string | undefined
-						if (detail.type === "reasoning.text" && typeof detail.text === "string") {
-							reasoningText = detail.text
-						} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
-							reasoningText = detail.summary
-						}
+					if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
+						for (const detail of deltaWithReasoning.reasoning_details) {
+							const index = detail.index ?? 0
+							const key = `${detail.type}-${index}`
+							const existing = reasoningDetailsAccumulator.get(key)
 
-						if (reasoningText) {
-							hasYieldedReasoningFromDetails = true
-							yield { type: "reasoning", text: reasoningText }
+							if (existing) {
+								// Accumulate text/summary/data for existing reasoning detail
+								if (detail.text !== undefined) {
+									existing.text = (existing.text || "") + detail.text
+								}
+								if (detail.summary !== undefined) {
+									existing.summary = (existing.summary || "") + detail.summary
+								}
+								if (detail.data !== undefined) {
+									existing.data = (existing.data || "") + detail.data
+								}
+								// Update other fields if provided
+								if (detail.id !== undefined) existing.id = detail.id
+								if (detail.format !== undefined) existing.format = detail.format
+								if (detail.signature !== undefined) existing.signature = detail.signature
+							} else {
+								// Start new reasoning detail accumulation
+								reasoningDetailsAccumulator.set(key, {
+									type: detail.type,
+									text: detail.text,
+									summary: detail.summary,
+									data: detail.data,
+									id: detail.id,
+									format: detail.format,
+									signature: detail.signature,
+									index,
+								})
+							}
+
+							// Yield text for display (still fragmented for live streaming)
+							// Only reasoning.text and reasoning.summary have displayable content
+							// reasoning.encrypted is intentionally skipped as it contains redacted content
+							let reasoningText: string | undefined
+							if (detail.type === "reasoning.text" && typeof detail.text === "string") {
+								reasoningText = detail.text
+							} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
+								reasoningText = detail.summary
+							}
+
+							if (reasoningText) {
+								hasYieldedReasoningFromDetails = true
+								accumulatedReasoning.push(reasoningText)
+								yield { type: "reasoning", text: reasoningText }
+							}
 						}
+					}
+
+					// Handle top-level reasoning field for UI display.
+					// Skip if we've already yielded from reasoning_details to avoid duplicate display.
+					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+						if (!hasYieldedReasoningFromDetails) {
+							accumulatedReasoning.push(delta.reasoning)
+							yield { type: "reasoning", text: delta.reasoning }
+						}
+					}
+
+					// Emit raw tool call chunks - NativeToolCallParser handles state management
+					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+						for (const toolCall of delta.tool_calls) {
+							if (toolCall.id || toolCall.function?.name) {
+								toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
+							}
+							yield {
+								type: "tool_call_partial",
+								index: toolCall.index,
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								arguments: toolCall.function?.arguments,
+							}
+						}
+					}
+
+					if (delta.content) {
+						accumulatedText.push(delta.content)
+						yield { type: "text", text: delta.content }
 					}
 				}
 
-				// Handle top-level reasoning field for UI display.
-				// Skip if we've already yielded from reasoning_details to avoid duplicate display.
-				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-					if (!hasYieldedReasoningFromDetails) {
-						yield { type: "reasoning", text: delta.reasoning }
+				// Process finish_reason to emit tool_call_end events
+				// This ensures tool calls are finalized even if the stream doesn't properly close
+				if (finishReason) {
+					const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+					for (const event of endEvents) {
+						yield event
 					}
 				}
 
-				// Emit raw tool call chunks - NativeToolCallParser handles state management
-				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
-					for (const toolCall of delta.tool_calls) {
-						yield {
-							type: "tool_call_partial",
-							index: toolCall.index,
-							id: toolCall.id,
-							name: toolCall.function?.name,
-							arguments: toolCall.function?.arguments,
-						}
-					}
-				}
-
-				if (delta.content) {
-					yield { type: "text", text: delta.content }
+				if (chunk.usage) {
+					lastUsage = chunk.usage
 				}
 			}
 
-			// Process finish_reason to emit tool_call_end events
-			// This ensures tool calls are finalized even if the stream doesn't properly close
-			if (finishReason) {
-				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-				for (const event of endEvents) {
-					yield event
+			// After streaming completes, store ONLY the reasoning_details we received from the API.
+			if (reasoningDetailsAccumulator.size > 0) {
+				this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
+			}
+
+			if (lastUsage) {
+				yield {
+					type: "usage",
+					inputTokens: lastUsage.prompt_tokens || 0,
+					outputTokens: lastUsage.completion_tokens || 0,
+					cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
+					reasoningTokens: lastUsage.completion_tokens_details?.reasoning_tokens,
+					totalCost: (lastUsage.cost_details?.upstream_inference_cost || 0) + (lastUsage.cost || 0),
 				}
 			}
 
-			if (chunk.usage) {
-				lastUsage = chunk.usage
-			}
-		}
-
-		// After streaming completes, store ONLY the reasoning_details we received from the API.
-		if (reasoningDetailsAccumulator.size > 0) {
-			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
-		}
-
-		if (lastUsage) {
-			yield {
-				type: "usage",
-				inputTokens: lastUsage.prompt_tokens || 0,
-				outputTokens: lastUsage.completion_tokens || 0,
-				cacheReadTokens: lastUsage.prompt_tokens_details?.cached_tokens,
-				reasoningTokens: lastUsage.completion_tokens_details?.reasoning_tokens,
-				totalCost: (lastUsage.cost_details?.upstream_inference_cost || 0) + (lastUsage.cost || 0),
-			}
+			// Log successful response
+			logHandle.success({
+				text: accumulatedText.join(""),
+				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+				usage: lastUsage,
+				reasoningDetails:
+					reasoningDetailsAccumulator.size > 0 ? Array.from(reasoningDetailsAccumulator.values()) : undefined,
+			})
+		} catch (error) {
+			logHandle.error(error)
+			throw error
 		}
 	}
 

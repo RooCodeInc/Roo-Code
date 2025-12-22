@@ -14,7 +14,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 	private client: OpenAI
 	private options: ApiHandlerOptions
 	private modelCache: ModelRecord | null = null
-	private readonly providerName = "HuggingFace"
+	protected readonly providerName = "HuggingFace"
 
 	constructor(options: ApiHandlerOptions) {
 		super()

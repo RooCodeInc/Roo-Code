@@ -22,6 +22,10 @@ type RouterProviderOptions = {
 export abstract class RouterProvider extends BaseProvider {
 	protected readonly options: ApiHandlerOptions
 	protected readonly name: RouterName
+	// Implement abstract providerName from BaseProvider using name
+	protected get providerName(): string {
+		return this.name
+	}
 	protected models: ModelRecord = {}
 	protected readonly modelId?: string
 	protected readonly defaultModelId: string

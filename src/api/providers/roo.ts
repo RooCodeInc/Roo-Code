@@ -125,6 +125,41 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const { id: model, info } = this.getModel()
+
+		// Get model parameters for logging
+		const params = getModelParams({
+			format: "openai",
+			modelId: model,
+			model: info,
+			settings: this.options,
+			defaultTemperature: this.defaultTemperature,
+		})
+
+		// Start inference logging
+		const logHandle = this.inferenceLogger.start(
+			{
+				provider: this.providerName,
+				operation: "createMessage",
+				model,
+				taskId: metadata?.taskId,
+			},
+			{
+				model,
+				maxTokens: params.maxTokens,
+				temperature: params.temperature,
+				messageCount: messages.length,
+				hasTools: !!metadata?.tools,
+				toolCount: metadata?.tools?.length ?? 0,
+				toolChoice: metadata?.tool_choice,
+			},
+		)
+
+		// Accumulators for final response logging
+		const accumulatedText: string[] = []
+		const accumulatedReasoning: string[] = []
+		const toolCalls: Array<{ id?: string; name?: string }> = []
+
 		try {
 			// Reset reasoning_details accumulator for this request
 			this.currentReasoningDetails = []
@@ -234,6 +269,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 							if (reasoningText) {
 								hasYieldedReasoningFromDetails = true
+								accumulatedReasoning.push(reasoningText)
 								yield { type: "reasoning", text: reasoningText }
 							}
 						}
@@ -243,11 +279,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					// Skip if we've already yielded from reasoning_details to avoid duplicate display.
 					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 						if (!hasYieldedReasoningFromDetails) {
+							accumulatedReasoning.push(delta.reasoning)
 							yield { type: "reasoning", text: delta.reasoning }
 						}
 					} else if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 						// Also check for reasoning_content for backward compatibility
 						if (!hasYieldedReasoningFromDetails) {
+							accumulatedReasoning.push(delta.reasoning_content)
 							yield { type: "reasoning", text: delta.reasoning_content }
 						}
 					}
@@ -255,6 +293,10 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					// Emit raw tool call chunks - NativeToolCallParser handles state management
 					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
 						for (const toolCall of delta.tool_calls) {
+							// Track tool calls for logging
+							if (toolCall.id || toolCall.function?.name) {
+								toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
+							}
 							yield {
 								type: "tool_call_partial",
 								index: toolCall.index,
@@ -266,6 +308,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					}
 
 					if (delta.content) {
+						accumulatedText.push(delta.content)
 						yield {
 							type: "text",
 							text: delta.content,
@@ -317,7 +360,17 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 				}
 			}
+
+			// Log successful response
+			logHandle.success({
+				text: accumulatedText.join(""),
+				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+				usage: lastUsage,
+			})
 		} catch (error) {
+			logHandle.error(error)
+
 			const errorContext = {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,

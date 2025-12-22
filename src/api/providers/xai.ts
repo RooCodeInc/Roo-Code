@@ -21,7 +21,7 @@ const XAI_DEFAULT_TEMPERATURE = 0
 export class XAIHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
-	private readonly providerName = "xAI"
+	protected readonly providerName = "xAI"
 
 	constructor(options: ApiHandlerOptions) {
 		super()

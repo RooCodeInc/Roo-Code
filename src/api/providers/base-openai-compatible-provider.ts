@@ -117,87 +117,167 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const stream = await this.createStream(systemPrompt, messages, metadata)
+		const { id: model, info } = this.getModel()
 
-		const matcher = new XmlMatcher(
-			"think",
-			(chunk) =>
-				({
-					type: chunk.matched ? "reasoning" : "text",
-					text: chunk.data,
-				}) as const,
+		// Build the actual params object that will be passed to the SDK
+		const max_tokens =
+			getModelMaxOutputTokens({
+				modelId: model,
+				model: info,
+				settings: this.options,
+				format: "openai",
+			}) ?? undefined
+
+		const temperature = this.options.modelTemperature ?? this.defaultTemperature
+
+		const requestParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+			model,
+			max_tokens,
+			temperature,
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			stream: true,
+			stream_options: { include_usage: true },
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(metadata?.toolProtocol === "native" && {
+				parallel_tool_calls: metadata.parallelToolCalls ?? false,
+			}),
+		}
+
+		// Add thinking parameter if reasoning is enabled and model supports it
+		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
+			;(requestParams as any).thinking = { type: "enabled" }
+		}
+
+		// Start inference logging with the actual request params
+		const logHandle = this.inferenceLogger.start(
+			{
+				provider: this.providerName,
+				operation: "createMessage",
+				model,
+			},
+			requestParams,
 		)
 
+		// Accumulators for final response logging
+		const accumulatedText: string[] = []
+		const accumulatedReasoning: string[] = []
+		const toolCalls: Array<{ id?: string; name?: string; arguments?: string }> = []
 		let lastUsage: OpenAI.CompletionUsage | undefined
 		const activeToolCallIds = new Set<string>()
 
-		for await (const chunk of stream) {
-			// Check for provider-specific error responses (e.g., MiniMax base_resp)
-			const chunkAny = chunk as any
-			if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
-				throw new Error(
-					`${this.providerName} API Error (${chunkAny.base_resp.status_code}): ${chunkAny.base_resp.status_msg || "Unknown error"}`,
-				)
-			}
+		try {
+			const stream = await this.createStream(systemPrompt, messages, metadata)
 
-			const delta = chunk.choices?.[0]?.delta
-			const finishReason = chunk.choices?.[0]?.finish_reason
+			const matcher = new XmlMatcher(
+				"think",
+				(chunk) =>
+					({
+						type: chunk.matched ? "reasoning" : "text",
+						text: chunk.data,
+					}) as const,
+			)
 
-			if (delta?.content) {
-				for (const processedChunk of matcher.update(delta.content)) {
-					yield processedChunk
+			for await (const chunk of stream) {
+				// Check for provider-specific error responses (e.g., MiniMax base_resp)
+				const chunkAny = chunk as any
+				if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
+					const error = new Error(
+						`${this.providerName} API Error (${chunkAny.base_resp.status_code}): ${chunkAny.base_resp.status_msg || "Unknown error"}`,
+					)
+					logHandle.error(error)
+					throw error
 				}
-			}
 
-			if (delta) {
-				for (const key of ["reasoning_content", "reasoning"] as const) {
-					if (key in delta) {
-						const reasoning_content = ((delta as any)[key] as string | undefined) || ""
-						if (reasoning_content?.trim()) {
-							yield { type: "reasoning", text: reasoning_content }
+				const delta = chunk.choices?.[0]?.delta
+				const finishReason = chunk.choices?.[0]?.finish_reason
+
+				if (delta?.content) {
+					for (const processedChunk of matcher.update(delta.content)) {
+						if (processedChunk.type === "text") {
+							accumulatedText.push(processedChunk.text)
+						} else if (processedChunk.type === "reasoning") {
+							accumulatedReasoning.push(processedChunk.text)
 						}
-						break
+						yield processedChunk
 					}
+				}
+
+				if (delta) {
+					for (const key of ["reasoning_content", "reasoning"] as const) {
+						if (key in delta) {
+							const reasoning_content = ((delta as any)[key] as string | undefined) || ""
+							if (reasoning_content?.trim()) {
+								accumulatedReasoning.push(reasoning_content)
+								yield { type: "reasoning", text: reasoning_content }
+							}
+							break
+						}
+					}
+				}
+
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
+				if (delta?.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						// Track tool calls for logging
+						if (toolCall.id) {
+							activeToolCallIds.add(toolCall.id)
+						}
+						if (toolCall.id || toolCall.function?.name) {
+							toolCalls.push({
+								id: toolCall.id,
+								name: toolCall.function?.name,
+								arguments: toolCall.function?.arguments,
+							})
+						}
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
+						}
+					}
+				}
+
+				// Emit tool_call_end events when finish_reason is "tool_calls"
+				// This ensures tool calls are finalized even if the stream doesn't properly close
+				if (finishReason === "tool_calls" && activeToolCallIds.size > 0) {
+					for (const id of activeToolCallIds) {
+						yield { type: "tool_call_end", id }
+					}
+					activeToolCallIds.clear()
+				}
+
+				if (chunk.usage) {
+					lastUsage = chunk.usage
 				}
 			}
 
-			// Emit raw tool call chunks - NativeToolCallParser handles state management
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					if (toolCall.id) {
-						activeToolCallIds.add(toolCall.id)
-					}
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
+			if (lastUsage) {
+				yield this.processUsageMetrics(lastUsage, this.getModel().info)
+			}
+
+			// Process any remaining content
+			for (const processedChunk of matcher.final()) {
+				if (processedChunk.type === "text") {
+					accumulatedText.push(processedChunk.text)
+				} else if (processedChunk.type === "reasoning") {
+					accumulatedReasoning.push(processedChunk.text)
 				}
+				yield processedChunk
 			}
 
-			// Emit tool_call_end events when finish_reason is "tool_calls"
-			// This ensures tool calls are finalized even if the stream doesn't properly close
-			if (finishReason === "tool_calls" && activeToolCallIds.size > 0) {
-				for (const id of activeToolCallIds) {
-					yield { type: "tool_call_end", id }
-				}
-				activeToolCallIds.clear()
-			}
-
-			if (chunk.usage) {
-				lastUsage = chunk.usage
-			}
-		}
-
-		if (lastUsage) {
-			yield this.processUsageMetrics(lastUsage, this.getModel().info)
-		}
-
-		// Process any remaining content
-		for (const processedChunk of matcher.final()) {
-			yield processedChunk
+			// Log successful response
+			logHandle.success({
+				text: accumulatedText.join(""),
+				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
+				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+				usage: lastUsage,
+			})
+		} catch (error) {
+			logHandle.error(error)
+			throw error
 		}
 	}
 
