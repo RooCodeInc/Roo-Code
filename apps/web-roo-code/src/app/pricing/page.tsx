@@ -183,7 +183,7 @@ export default function PricingPage() {
 												<Link
 													href={tier.learnMoreLink}
 													className="text-sm text-violet-600 dark:text-violet-400 hover:underline">
-													Learn more about the Team plan →
+													Learn more →
 												</Link>
 											</div>
 										)}

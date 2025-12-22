@@ -232,7 +232,7 @@ export default function CloudTeamPage() {
 
 					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 						<div>
-							<h2 className="text-3xl font-bold tracking-tight sm:text-5xl mb-4">Why Teams Choose Roo</h2>
+							<h2 className="text-4xl font-bold tracking-tight mb-4">Why Teams Choose Roo</h2>
 							<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
 								Streamline collaboration and scale your development capacity with team-first features.
 							</p>
@@ -240,20 +240,20 @@ export default function CloudTeamPage() {
 					</div>
 
 					<div className="relative mx-auto md:max-w-[1200px]">
-						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+						<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
 							{keyBenefits.map((benefit, index) => {
 								const Icon = benefit.icon
 								return (
 									<li
 										key={index}
-										className="relative h-full w-full border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
+										className="rounded-3xl bg-card outline outline-border/50 hover:outline-8 shadow-xl p-8 h-full w-full group transition-all hover:shadow-2xl hover:shadow-violet-800/30 relative">
 										{Icon && (
-											<div className="bg-violet-100 dark:bg-violet-900/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-												<Icon className="size-6 text-violet-600 dark:text-violet-400" />
+											<div className="size-15 p-3 rounded-full flex items-center justify-center shadow-lg absolute -top-4 -right-2 transition-all outline outline-foreground/5 bg-card group-hover:outline-3 group-hover:scale-105">
+												<Icon className="size-5 text-violet-500" />
 											</div>
 										)}
-										<h3 className="mb-3 text-xl font-semibold text-foreground">{benefit.title}</h3>
-										<div className="leading-relaxed font-light text-muted-foreground">
+										<h3 className="text-xl font-bold tracking-tight mb-2">{benefit.title}</h3>
+										<div className="text-sm text-muted-foreground leading-relaxed">
 											{benefit.description}
 										</div>
 									</li>
@@ -271,24 +271,24 @@ export default function CloudTeamPage() {
 						<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
 					</div>
 					<div className="text-center mb-16">
-						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Complete Team Management</h2>
+						<h2 className="text-4xl font-bold tracking-tight mb-4">Complete Team Management</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
 							Access all capabilities from your Organization Settings. Everything you need to manage your
 							team in one place.
 						</p>
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative">
 						{features.map((feature, index) => {
 							const Icon = feature.icon
 							return (
 								<div
 									key={index}
-									className="bg-background p-8 rounded-2xl border border-border hover:shadow-lg transition-all duration-300">
-									<div className="bg-violet-100 dark:bg-violet-900/20 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-										<Icon className="size-6 text-violet-600 dark:text-violet-400" />
-									</div>
-									<h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-									<p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+									className="relative h-full border border-border rounded-2xl bg-background p-8 transition-all duration-300">
+									<Icon className="size-6 text-foreground/80" />
+									<h3 className="mb-3 mt-3 text-xl font-semibold text-foreground">{feature.title}</h3>
+									<p className="leading-relaxed font-light text-muted-foreground">
+										{feature.description}
+									</p>
 								</div>
 							)
 						})}
