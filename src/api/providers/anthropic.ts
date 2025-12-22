@@ -99,7 +99,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			: {}
 
 		// Variable to hold the log handle - will be created after request body is built
-		let logHandle: ReturnType<typeof this.inferenceLogger.start>
+		let logHandle: ReturnType<typeof this.inferenceLogger.start> | undefined
 
 		try {
 			switch (modelId) {
@@ -379,7 +379,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			})
 		} catch (error) {
 			// logHandle may not be assigned if error occurs before request body is built
-			if (logHandle!) {
+			if (logHandle) {
 				logHandle.error(error)
 			}
 			throw error
