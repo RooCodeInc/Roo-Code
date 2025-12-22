@@ -949,18 +949,23 @@ export const webviewMessageHandler = async (
 		case "requestRequestyModels": {
 			// Specific handler for Requesty models only.
 			const { apiConfiguration: requestyApiConfiguration } = await provider.getState()
-			const requestyOptions = {
-				provider: "requesty" as const,
-				baseUrl: requestyApiConfiguration.requestyBaseUrl,
-				apiKey: requestyApiConfiguration.requestyApiKey,
+			try {
+				const requestyOptions = {
+					provider: "requesty" as const,
+					baseUrl: requestyApiConfiguration.requestyBaseUrl,
+					apiKey: requestyApiConfiguration.requestyApiKey,
+				}
+
+				// Flush cache and refresh to ensure fresh models.
+				await flushModels(requestyOptions, true)
+
+				const requestyModels = await getModels(requestyOptions)
+
+				provider.postMessageToWebview({ type: "requestyModels", requestyModels: requestyModels })
+			} catch (error) {
+				// Silently fail - user may not have configured Requesty yet
+				console.debug("Requesty models fetch failed:", error)
 			}
-
-			// Flush cache and refresh to ensure fresh models.
-			await flushModels(requestyOptions, true)
-
-			const requestyModels = await getModels(requestyOptions)
-
-			provider.postMessageToWebview({ type: "requestyModels", requestyModels: requestyModels })
 			break
 		}
 		case "requestLmStudioModels": {
