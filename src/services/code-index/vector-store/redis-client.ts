@@ -35,31 +35,46 @@ export class RedisVectorStore implements IVectorStore {
 		this.redisUrl = url
 
 		// Parse URL and create client
+		let host: string
+		let port: number
+		let urlPassword: string | undefined
+
 		try {
 			const parsedUrl = new URL(url)
-			this.client = new Redis({
-				host: parsedUrl.hostname,
-				port: parseInt(parsedUrl.port) || 6379,
-				password: password || parsedUrl.password || undefined,
-				db: database,
-				lazyConnect: true,
-				retryStrategy: (times) => {
-					if (times > 3) {
-						return null // Stop retrying after 3 attempts
-					}
-					return Math.min(times * 200, 1000)
-				},
-			})
+			// Check if parsing produced a valid hostname (not empty)
+			// new URL("localhost:6379") parses but produces empty hostname
+			if (parsedUrl.hostname) {
+				host = parsedUrl.hostname
+				port = parseInt(parsedUrl.port) || 6379
+				urlPassword = parsedUrl.password || undefined
+			} else {
+				// URL parsed but hostname is empty, fallback to simple parsing
+				const parts = url.split(":")
+				host = parts[0] || "localhost"
+				port = parseInt(parts[1]) || 6379
+				urlPassword = undefined
+			}
 		} catch {
-			// Fallback for simple host:port format
-			this.client = new Redis({
-				host: url.split(":")[0] || "localhost",
-				port: parseInt(url.split(":")[1]) || 6379,
-				password: password || undefined,
-				db: database,
-				lazyConnect: true,
-			})
+			// URL parsing failed, fallback for simple host:port format
+			const parts = url.split(":")
+			host = parts[0] || "localhost"
+			port = parseInt(parts[1]) || 6379
+			urlPassword = undefined
 		}
+
+		this.client = new Redis({
+			host,
+			port,
+			password: password || urlPassword || undefined,
+			db: database,
+			lazyConnect: true,
+			retryStrategy: (times) => {
+				if (times > 3) {
+					return null // Stop retrying after 3 attempts
+				}
+				return Math.min(times * 200, 1000)
+			},
+		})
 
 		// Generate index name from workspace path (same pattern as Qdrant)
 		const hash = createHash("sha256").update(workspacePath).digest("hex")

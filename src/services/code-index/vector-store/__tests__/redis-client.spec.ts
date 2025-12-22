@@ -173,22 +173,38 @@ describe("RedisVectorStore", () => {
 			)
 		})
 
-		it("should handle URL-like format that parses successfully", () => {
+		it("should handle simple host:port format correctly", () => {
 			vitest.clearAllMocks()
 			;(Redis as any).mockImplementation(() => mockRedisInstance)
 			;(createHash as any).mockReturnValue(mockCreateHashInstance)
 			mockCreateHashInstance.update.mockReturnValue(mockCreateHashInstance)
 			mockCreateHashInstance.digest.mockReturnValue(mockHashedPath)
 
-			// Note: "localhost:6379" is parsed by new URL() - "localhost" becomes protocol
-			// This results in an empty hostname, so it's not a great user experience but
-			// demonstrates the URL parsing behavior
+			// "localhost:6379" without redis:// prefix should be correctly parsed
 			new RedisVectorStore(mockWorkspacePath, "localhost:6379", mockVectorSize)
 
-			// The URL is parsed but produces empty hostname since "localhost" is treated as protocol
 			expect(Redis).toHaveBeenCalledWith(
 				expect.objectContaining({
-					port: 6379, // Port defaults to 6379 since parsed port is NaN
+					host: "localhost",
+					port: 6379,
+				}),
+			)
+		})
+
+		it("should handle simple host-only format correctly", () => {
+			vitest.clearAllMocks()
+			;(Redis as any).mockImplementation(() => mockRedisInstance)
+			;(createHash as any).mockReturnValue(mockCreateHashInstance)
+			mockCreateHashInstance.update.mockReturnValue(mockCreateHashInstance)
+			mockCreateHashInstance.digest.mockReturnValue(mockHashedPath)
+
+			// "localhost" without port should use default port
+			new RedisVectorStore(mockWorkspacePath, "localhost", mockVectorSize)
+
+			expect(Redis).toHaveBeenCalledWith(
+				expect.objectContaining({
+					host: "localhost",
+					port: 6379,
 				}),
 			)
 		})
