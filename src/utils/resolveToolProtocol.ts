@@ -1,5 +1,5 @@
 import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
-import type { ProviderSettings, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings } from "@roo-code/types"
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { findLast, findLastIndex } from "../shared/array"
 
@@ -12,48 +12,35 @@ type ApiMessageForDetection = Anthropic.MessageParam & {
 }
 
 /**
- * Resolve the effective tool protocol based on the precedence hierarchy:
+ * Resolve the effective tool protocol.
  *
- * 0. Locked Protocol (task-level lock, if provided - highest priority)
- * 1. User Preference - Per-Profile (explicit profile setting)
- * 2. Model Default (defaultToolProtocol in ModelInfo)
- * 3. Native Fallback (final fallback)
+ * **Deprecation Note (XML Protocol):**
+ * XML tool protocol has been deprecated. All models now use Native tool calling.
+ * User/profile preferences (`providerSettings.toolProtocol`) and model defaults
+ * (`modelInfo.defaultToolProtocol`) are ignored.
  *
- * Then check support: if protocol is "native" but model doesn't support it, use XML.
+ * Precedence:
+ * 1. Locked Protocol (task-level lock for resumed tasks - highest priority)
+ * 2. Native (always, for all new tasks)
  *
- * @param providerSettings - The provider settings for the current profile
- * @param modelInfo - Optional model information containing capabilities
+ * @param _providerSettings - The provider settings (toolProtocol field is ignored)
+ * @param _modelInfo - Unused, kept for API compatibility
  * @param lockedProtocol - Optional task-locked protocol that takes absolute precedence
  * @returns The resolved tool protocol (either "xml" or "native")
  */
 export function resolveToolProtocol(
-	providerSettings: ProviderSettings,
-	modelInfo?: ModelInfo,
+	_providerSettings: ProviderSettings,
+	_modelInfo?: unknown,
 	lockedProtocol?: ToolProtocol,
 ): ToolProtocol {
-	// 0. Locked Protocol - task-level lock takes absolute precedence
-	// This ensures tasks continue using their original protocol even if settings change
+	// 1. Locked Protocol - task-level lock takes absolute precedence
+	// This ensures resumed tasks continue using their original protocol
 	if (lockedProtocol) {
 		return lockedProtocol
 	}
 
-	// If model doesn't support native tools, return XML immediately
-	// Treat undefined as unsupported (only allow native when explicitly true)
-	if (modelInfo?.supportsNativeTools !== true) {
-		return TOOL_PROTOCOL.XML
-	}
-
-	// 1. User Preference - Per-Profile (explicit profile setting, highest priority)
-	if (providerSettings.toolProtocol) {
-		return providerSettings.toolProtocol
-	}
-
-	// 2. Model Default - model's preferred protocol
-	if (modelInfo?.defaultToolProtocol) {
-		return modelInfo.defaultToolProtocol
-	}
-
-	// 3. Native Fallback
+	// 2. Always return Native protocol for new tasks
+	// All models now support native tools; XML is deprecated
 	return TOOL_PROTOCOL.NATIVE
 }
 

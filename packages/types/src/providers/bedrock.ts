@@ -454,22 +454,6 @@ export const bedrockModels = {
 		outputPrice: 0.6,
 		description: "Amazon Titan Text Express",
 	},
-	"amazon.titan-text-embeddings-v1:0": {
-		maxTokens: 8192,
-		contextWindow: 8_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.1,
-		description: "Amazon Titan Text Embeddings",
-	},
-	"amazon.titan-text-embeddings-v2:0": {
-		maxTokens: 8192,
-		contextWindow: 8_000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.02,
-		description: "Amazon Titan Text Embeddings V2",
-	},
 	"moonshot.kimi-k2-thinking": {
 		maxTokens: 32_000,
 		contextWindow: 262_144,
