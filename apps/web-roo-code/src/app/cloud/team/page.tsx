@@ -142,7 +142,7 @@ const features: Feature[] = [
 	{
 		icon: ServerIcon,
 		title: "MCP Server Controls",
-		description: "Control access to the Roo MCP Markeplace and what custom MCPs to make available to your team.",
+		description: "Control access to the Roo MCP Marketplace and what custom MCPs to make available to your team.",
 	},
 ]
 
