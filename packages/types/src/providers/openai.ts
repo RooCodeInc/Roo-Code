@@ -551,7 +551,10 @@ export const openAiModelInfoSaneDefaults: ModelInfo = {
 	inputPrice: 0,
 	outputPrice: 0,
 	supportsNativeTools: true,
-	defaultToolProtocol: "native",
+	// Default to XML for OpenAI Compatible providers since third-party proxies
+	// have varying levels of support for native tool calling. Users who want
+	// native tool calling can explicitly enable it in Advanced Settings.
+	defaultToolProtocol: "xml",
 }
 
 // https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation
