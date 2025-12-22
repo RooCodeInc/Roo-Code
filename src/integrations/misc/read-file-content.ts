@@ -382,7 +382,7 @@ export async function readIndentationBlock(
 				linesReturned: 0,
 				startLine: anchorLine,
 				endLine: anchorLine,
-				hasMoreBefore: anchorLine > 1,
+				hasMoreBefore: false, // Empty file has no lines before
 				hasMoreAfter: false,
 				linesBeforeStart: 0,
 				linesAfterEnd: 0,
