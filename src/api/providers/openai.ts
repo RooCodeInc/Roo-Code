@@ -194,9 +194,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			)
 
 			let lastUsage
+			const activeToolCallIds = new Set<string>()
 
 			for await (const chunk of stream) {
 				const delta = chunk.choices?.[0]?.delta ?? {}
+				const finishReason = chunk.choices?.[0]?.finish_reason
 
 				if (delta.content) {
 					for (const chunk of matcher.update(delta.content)) {
@@ -213,6 +215,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
+						if (toolCall.id) {
+							activeToolCallIds.add(toolCall.id)
+						}
 						yield {
 							type: "tool_call_partial",
 							index: toolCall.index,
@@ -221,6 +226,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							arguments: toolCall.function?.arguments,
 						}
 					}
+				}
+
+				// Emit tool_call_end events when finish_reason is "tool_calls"
+				// This ensures tool calls are finalized even if the stream doesn't properly close
+				if (finishReason === "tool_calls" && activeToolCallIds.size > 0) {
+					for (const id of activeToolCallIds) {
+						yield { type: "tool_call_end", id }
+					}
+					activeToolCallIds.clear()
 				}
 
 				if (chunk.usage) {
@@ -443,8 +457,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
+		const activeToolCallIds = new Set<string>()
+
 		for await (const chunk of stream) {
 			const delta = chunk.choices?.[0]?.delta
+			const finishReason = chunk.choices?.[0]?.finish_reason
 
 			if (delta) {
 				if (delta.content) {
@@ -457,6 +474,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				// Emit raw tool call chunks - NativeToolCallParser handles state management
 				if (delta.tool_calls) {
 					for (const toolCall of delta.tool_calls) {
+						if (toolCall.id) {
+							activeToolCallIds.add(toolCall.id)
+						}
 						yield {
 							type: "tool_call_partial",
 							index: toolCall.index,
@@ -466,6 +486,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						}
 					}
 				}
+			}
+
+			// Emit tool_call_end events when finish_reason is "tool_calls"
+			// This ensures tool calls are finalized even if the stream doesn't properly close
+			if (finishReason === "tool_calls" && activeToolCallIds.size > 0) {
+				for (const id of activeToolCallIds) {
+					yield { type: "tool_call_end", id }
+				}
+				activeToolCallIds.clear()
 			}
 
 			if (chunk.usage) {
