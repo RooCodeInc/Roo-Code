@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
 import { FoldVertical } from "lucide-react"
 
 import type { ContextCondense } from "@roo-code/types"
@@ -29,22 +28,32 @@ export function CondensationResultRow({ data }: CondensationResultRowProps) {
 	return (
 		<div className="mb-2">
 			<div
-				className="flex items-center justify-between cursor-pointer select-none"
+				className="group text-sm transition-opacity opacity-40 hover:opacity-100 cursor-pointer select-none"
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: "10px",
+					marginBottom: isExpanded ? "10px" : "0",
+					justifyContent: "space-between",
+				}}
 				onClick={() => setIsExpanded(!isExpanded)}>
-				<div className="flex items-center gap-2 flex-grow">
+				<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
 					<FoldVertical size={16} className="text-vscode-foreground" />
-					<span className="font-bold text-vscode-foreground">
-						{t("chat:contextManagement.condensation.title")}
-					</span>
+					<span className="text-vscode-foreground">{t("chat:contextManagement.condensation.title")}</span>
 					<span className="text-vscode-descriptionForeground text-sm">
 						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()}{" "}
 						{t("chat:contextManagement.tokens")}
 					</span>
-					<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
-						${displayCost.toFixed(2)}
-					</VSCodeBadge>
 				</div>
-				<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
+				<div className="flex items-center gap-2">
+					<div
+						className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+						style={{ opacity: displayCost > 0 ? 1 : 0 }}>
+						${displayCost.toFixed(4)}
+					</div>
+					<span
+						className={`codicon codicon-chevron-${isExpanded ? "up" : "down"} opacity-0 group-hover:opacity-100 transition-opacity`}></span>
+				</div>
 			</div>
 
 			{isExpanded && (
