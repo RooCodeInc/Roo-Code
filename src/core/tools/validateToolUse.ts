@@ -62,7 +62,18 @@ export function validateToolUse(
 	}
 }
 
-const EDIT_OPERATION_PARAMS = ["diff", "content", "edits", "old_text", "new_text", "args", "line"] as const
+const EDIT_OPERATION_PARAMS = [
+	"diff",
+	"content",
+	"edits",
+	"old_text",
+	"new_text",
+	"args",
+	"line",
+	"old_string", // edit_file_grok/gemini variant parameter
+	"new_string", // edit_file_grok/gemini variant parameter
+	"patch", // edit_file_codex variant parameter
+] as const
 
 function getGroupOptions(group: GroupEntry): GroupOptions | undefined {
 	return Array.isArray(group) ? group[1] : undefined
@@ -155,13 +166,44 @@ export function isToolAllowedForMode(
 
 		// For the edit group, check file regex if specified
 		if (groupName === "edit" && options.fileRegex) {
-			const filePath = toolParams?.path
+			// Support both 'path' (roo/anthropic variants) and 'file_path' (grok/gemini variants)
+			const filePath = toolParams?.path || toolParams?.file_path
 			// Check if this is an actual edit operation (not just path-only for streaming)
 			const isEditOperation = EDIT_OPERATION_PARAMS.some((param) => toolParams?.[param])
 
 			// Handle single file path validation
 			if (filePath && isEditOperation && !doesFileMatchRegex(filePath, options.fileRegex)) {
 				throw new FileRestrictionError(mode.name, options.fileRegex, options.description, filePath, tool)
+			}
+
+			// Handle codex patch parameter which contains embedded file paths
+			if (toolParams?.patch && typeof toolParams.patch === "string") {
+				try {
+					// Extract file paths from codex patch format:
+					// *** Add File: path, *** Update File: path, *** Delete File: path, *** Move to: path
+					const patchPathRegex =
+						/\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*([^\n]+)|\*\*\*\s+Move\s+to:\s*([^\n]+)/g
+					let match
+					while ((match = patchPathRegex.exec(toolParams.patch)) !== null) {
+						const extractedPath = (match[1] || match[2])?.trim()
+						if (extractedPath && !doesFileMatchRegex(extractedPath, options.fileRegex)) {
+							throw new FileRestrictionError(
+								mode.name,
+								options.fileRegex,
+								options.description,
+								extractedPath,
+								tool,
+							)
+						}
+					}
+				} catch (error) {
+					// Re-throw FileRestrictionError as it's an expected validation error
+					if (error instanceof FileRestrictionError) {
+						throw error
+					}
+					// If patch parsing fails, log the error but don't block the operation
+					console.warn(`Failed to parse codex patch for file restriction validation: ${error}`)
+				}
 			}
 
 			// Handle XML args parameter (used by MULTI_FILE_APPLY_DIFF experiment)
