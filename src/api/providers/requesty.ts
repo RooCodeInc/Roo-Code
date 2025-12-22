@@ -61,7 +61,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 	protected models: ModelRecord = {}
 	private client: OpenAI
 	private baseURL: string
-	private readonly providerName = "Requesty"
+	protected readonly providerName = "Requesty"
 
 	constructor(options: ApiHandlerOptions) {
 		super()

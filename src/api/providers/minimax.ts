@@ -50,6 +50,7 @@ function convertOpenAIToolChoice(
 }
 
 export class MiniMaxHandler extends BaseProvider implements SingleCompletionHandler {
+	protected readonly providerName = "MiniMax"
 	private options: ApiHandlerOptions
 	private client: Anthropic
 

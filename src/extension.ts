@@ -2,11 +2,14 @@ import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as path from "path"
 
-// Load environment variables from .env file
+// Load environment variables from .env and .env.local files
 try {
-	// Specify path to .env file in the project root directory
+	// Specify paths to .env and .env.local files in the project root directory
 	const envPath = path.join(__dirname, "..", ".env")
+	const envLocalPath = path.join(__dirname, "..", ".env.local")
+	// Load .env first, then .env.local (so .env.local can override)
 	dotenvx.config({ path: envPath })
+	dotenvx.config({ path: envLocalPath, override: true })
 } catch (e) {
 	// Silently handle environment loading errors
 	console.warn("Failed to load environment variables:", e)
@@ -19,6 +22,7 @@ import { customToolRegistry } from "@roo-code/core"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
+import { ApiInferenceLogger } from "./api/logging/ApiInferenceLogger"
 
 import { Package } from "./shared/package"
 import { formatLanguage } from "./shared/language"
@@ -67,6 +71,12 @@ export async function activate(context: vscode.ExtensionContext) {
 	outputChannel = vscode.window.createOutputChannel(Package.outputChannel)
 	context.subscriptions.push(outputChannel)
 	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
+
+	// Configure API inference logger for debugging (enable via ROO_CODE_API_LOGGING=true)
+	ApiInferenceLogger.configure({
+		enabled: process.env.ROO_CODE_API_LOGGING === "true",
+		sink: createOutputChannelLogger(outputChannel),
+	})
 
 	// Set extension path for custom tool registry to find bundled esbuild
 	customToolRegistry.setExtensionPath(context.extensionPath)

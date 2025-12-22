@@ -61,6 +61,7 @@ function convertToVsCodeLmTools(tools: OpenAI.Chat.ChatCompletionTool[]): vscode
  * ```
  */
 export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHandler {
+	protected readonly providerName = "VS Code LM"
 	protected options: ApiHandlerOptions
 	private client: vscode.LanguageModelChat | null
 	private disposable: vscode.Disposable | null

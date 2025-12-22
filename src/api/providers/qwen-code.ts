@@ -52,6 +52,7 @@ function objectToUrlEncoded(data: Record<string, string>): string {
 }
 
 export class QwenCodeHandler extends BaseProvider implements SingleCompletionHandler {
+	protected readonly providerName = "Qwen Code"
 	protected options: QwenCodeHandlerOptions
 	private credentials: QwenOAuthCredentials | null = null
 	private client: OpenAI | undefined

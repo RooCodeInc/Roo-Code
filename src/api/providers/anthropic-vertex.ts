@@ -30,6 +30,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 
 // https://docs.anthropic.com/en/api/claude-on-vertex-ai
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
+	protected readonly providerName = "Anthropic Vertex"
 	protected options: ApiHandlerOptions
 	private client: AnthropicVertex
 

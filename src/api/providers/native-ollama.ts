@@ -146,6 +146,7 @@ function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessagePa
 }
 
 export class NativeOllamaHandler extends BaseProvider implements SingleCompletionHandler {
+	protected readonly providerName = "Ollama"
 	protected options: ApiHandlerOptions
 	private client: Ollama | undefined
 	protected models: Record<string, ModelInfo> = {}
