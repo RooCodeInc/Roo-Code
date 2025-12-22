@@ -30,7 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Falha ao conectar com o banco de dados vetorial Qdrant. Certifique-se de que o Qdrant esteja rodando e acessível em {{qdrantUrl}}. Erro: {{errorMessage}}",
-		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "Falha ao atualizar o índice de vetores para o novo modelo. Tente limpar o índice e começar novamente. Detalhes: {{errorMessage}}"
 	},
 	"validation": {

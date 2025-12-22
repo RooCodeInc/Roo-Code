@@ -7,8 +7,8 @@ import { DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_SEARCH_MIN_SCORE, REDIS_CODE_BLOCK_
 import { t } from "../../../i18n"
 
 /**
- * Redis Stack (RediSearch) implementation of the vector store interface
- * Uses RediSearch's HNSW-based vector similarity search
+ * Redis Open Source (Redis Query Engine) implementation of the vector store interface
+ * Uses Redis Query Engine's HNSW-based vector similarity search
  */
 export class RedisVectorStore implements IVectorStore {
 	private readonly vectorSize: number
@@ -91,7 +91,7 @@ export class RedisVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Checks if the RediSearch index exists
+	 * Checks if the Redis Query Engine index exists
 	 */
 	private async indexExists(): Promise<boolean> {
 		try {
@@ -141,12 +141,12 @@ export class RedisVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Creates the RediSearch index with vector field
+	 * Creates the Redis Query Engine index with vector field
 	 */
 	private async createIndex(): Promise<void> {
 		await this.ensureConnected()
 
-		// Create RediSearch index with VECTOR field using HNSW algorithm
+		// Create Redis Query Engine index with VECTOR field using HNSW algorithm
 		// Schema: vector (VECTOR), filePath (TAG), codeChunk (TEXT), startLine/endLine (NUMERIC), type (TAG), pathSegments (TAGs)
 		await this.client.call(
 			"FT.CREATE",
@@ -295,10 +295,10 @@ export class RedisVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Escapes special characters in RediSearch TAG values
+	 * Escapes special characters in Redis Query Engine TAG values
 	 */
 	private escapeTagValue(value: string): string {
-		// RediSearch TAG values need certain characters escaped
+		// Redis Query Engine TAG values need certain characters escaped
 		return value.replace(/[,.<>{}[\]"':;!@#$%^&*()\-+=~`|\\/ ]/g, "\\$&")
 	}
 
@@ -352,7 +352,7 @@ export class RedisVectorStore implements IVectorStore {
 			const filterQuery = filterParts.length > 0 ? `(${filterParts.join(" ")})` : "*"
 
 			// Build KNN query
-			// RediSearch KNN syntax: [filter]=>[KNN limit @vector $BLOB]
+			// Redis Query Engine KNN syntax: [filter]=>[KNN limit @vector $BLOB]
 			const query = `${filterQuery}=>[KNN ${limit} @vector $BLOB AS __score]`
 
 			const results = (await this.client.call(
@@ -385,7 +385,7 @@ export class RedisVectorStore implements IVectorStore {
 	}
 
 	/**
-	 * Parses RediSearch results into VectorStoreSearchResult format
+	 * Parses Redis Query Engine results into VectorStoreSearchResult format
 	 */
 	private parseSearchResults(results: any[], minScore: number): VectorStoreSearchResult[] {
 		// Redis FT.SEARCH returns: [count, key1, [field1, value1, ...], key2, [field2, value2, ...], ...]
@@ -408,7 +408,7 @@ export class RedisVectorStore implements IVectorStore {
 				fieldMap[fields[j]] = fields[j + 1]
 			}
 
-			// RediSearch returns cosine distance (0 = identical, 2 = opposite)
+			// Redis Query Engine returns cosine distance (0 = identical, 2 = opposite)
 			// Convert to similarity score (1 = identical, 0 = orthogonal, -1 = opposite)
 			const distance = parseFloat(fieldMap["__score"] || "2")
 			const score = 1 - distance / 2

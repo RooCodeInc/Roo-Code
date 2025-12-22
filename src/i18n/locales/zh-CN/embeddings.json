@@ -30,7 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "连接 Qdrant 向量数据库失败。请确保 Qdrant 正在运行并可在 {{qdrantUrl}} 访问。错误：{{errorMessage}}",
-		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "无法更新新模型的向量索引。请尝试清除索引并重新开始。详细信息：{{errorMessage}}"
 	},
 	"validation": {

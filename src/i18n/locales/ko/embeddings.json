@@ -30,7 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Qdrant 벡터 데이터베이스에 연결하지 못했습니다. Qdrant가 실행 중이고 {{qdrantUrl}}에서 접근 가능한지 확인하세요. 오류: {{errorMessage}}",
-		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "새 모델의 벡터 인덱스를 업데이트하지 못했습니다. 인덱스를 지우고 다시 시작해 보세요. 세부 정보: {{errorMessage}}"
 	},
 	"validation": {

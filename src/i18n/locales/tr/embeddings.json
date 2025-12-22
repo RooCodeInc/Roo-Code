@@ -30,7 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Qdrant vektör veritabanına bağlanılamadı. Qdrant'ın çalıştığından ve {{qdrantUrl}} adresinde erişilebilir olduğundan emin olun. Hata: {{errorMessage}}",
-		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "Yeni model için vektör dizini güncellenemedi. Lütfen dizini temizleyip yeniden başlatmayı deneyin. Detaylar: {{errorMessage}}"
 	},
 	"validation": {

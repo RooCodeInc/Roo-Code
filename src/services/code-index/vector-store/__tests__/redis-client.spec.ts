@@ -12,7 +12,7 @@ vitest.mock("uuid")
 vitest.mock("../../../../i18n", () => ({
 	t: (key: string, params?: any) => {
 		if (key === "embeddings:vectorStore.redisConnectionFailed" && params?.redisUrl && params?.errorMessage) {
-			return `Failed to connect to Redis vector database. Please ensure Redis Stack is running and accessible at ${params.redisUrl}. Error: ${params.errorMessage}`
+			return `Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at ${params.redisUrl}. Error: ${params.errorMessage}`
 		}
 		return key
 	},

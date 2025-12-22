@@ -125,7 +125,7 @@
 		"ollamaBaseUrlLabel": "URL base Ollama",
 		"vectorStoreProviderLabel": "Vector Store",
 		"qdrantProvider": "Qdrant",
-		"redisProvider": "Redis Stack",
+		"redisProvider": "Redis Open Source",
 		"qdrantApiKeyLabel": "Chiave API Qdrant",
 		"qdrantApiKeyPlaceholder": "Inserisci la tua chiave API Qdrant (opzionale)",
 		"redisUrlLabel": "Redis URL",
