@@ -133,7 +133,18 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 			})
 			.passthrough()
 			.transform((schema) => {
-				const { type, required, properties, additionalProperties, format, ...rest } = schema
+				const {
+					type,
+					required,
+					properties,
+					additionalProperties,
+					format,
+					items,
+					minItems,
+					maxItems,
+					uniqueItems,
+					...rest
+				} = schema
 				const result: Record<string, unknown> = { ...rest }
 
 				// Determine if this schema represents an object type
@@ -141,10 +152,30 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 					type === "object" || (Array.isArray(type) && type.includes("object")) || properties !== undefined
 
 				// If type is an array, convert to anyOf format (JSON Schema 2020-12)
+				// Array-specific properties (items, minItems, maxItems, uniqueItems) must be moved
+				// inside the array variant, not left at root level where they're invalid
 				if (Array.isArray(type)) {
-					result.anyOf = type.map((t) => ({ type: t }))
+					result.anyOf = type.map((t) => {
+						if (t === "array") {
+							// Move array-specific properties into the array variant
+							const arrayVariant: Record<string, unknown> = { type: t }
+							if (items !== undefined) arrayVariant.items = items
+							if (minItems !== undefined) arrayVariant.minItems = minItems
+							if (maxItems !== undefined) arrayVariant.maxItems = maxItems
+							if (uniqueItems !== undefined) arrayVariant.uniqueItems = uniqueItems
+							return arrayVariant
+						}
+						return { type: t }
+					})
 				} else if (type !== undefined) {
 					result.type = type
+					// For single "array" type, preserve array-specific properties at root
+					if (type === "array") {
+						if (items !== undefined) result.items = items
+						if (minItems !== undefined) result.minItems = minItems
+						if (maxItems !== undefined) result.maxItems = maxItems
+						if (uniqueItems !== undefined) result.uniqueItems = uniqueItems
+					}
 				}
 
 				// Strip unsupported format values for OpenAI compatibility

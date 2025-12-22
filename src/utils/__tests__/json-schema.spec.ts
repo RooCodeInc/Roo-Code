@@ -26,10 +26,10 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
-		// additionalProperties should NOT be added to array or primitive types
+		// Array-specific properties (items) should be moved inside the array variant
+		// This is required by strict schema validators like GPT-5-mini
 		expect(result).toEqual({
-			anyOf: [{ type: "array" }, { type: "null" }],
-			items: { type: "string" },
+			anyOf: [{ type: "array", items: { type: "string" } }, { type: "null" }],
 			description: "Optional array",
 		})
 	})
@@ -97,6 +97,7 @@ describe("normalizeToolSchema", () => {
 		const result = normalizeToolSchema(input)
 
 		// additionalProperties: false should ONLY be on object types
+		// Array-specific properties (items) should be moved inside the array variant
 		expect(result).toEqual({
 			type: "array",
 			items: {
@@ -104,8 +105,7 @@ describe("normalizeToolSchema", () => {
 				properties: {
 					path: { type: "string" },
 					line_ranges: {
-						anyOf: [{ type: "array" }, { type: "null" }],
-						items: { type: "integer" },
+						anyOf: [{ type: "array", items: { type: "integer" } }, { type: "null" }],
 					},
 				},
 				additionalProperties: false,
@@ -143,7 +143,11 @@ describe("normalizeToolSchema", () => {
 		const properties = result.properties as Record<string, Record<string, unknown>>
 		const filesItems = properties.files.items as Record<string, unknown>
 		const filesItemsProps = filesItems.properties as Record<string, Record<string, unknown>>
-		expect(filesItemsProps.line_ranges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
+		// Array-specific properties (items) should be moved inside the array variant
+		expect(filesItemsProps.line_ranges.anyOf).toEqual([
+			{ type: "array", items: { type: "array", items: { type: "integer" } } },
+			{ type: "null" },
+		])
 	})
 
 	it("should recursively transform anyOf arrays", () => {
@@ -255,13 +259,26 @@ describe("normalizeToolSchema", () => {
 
 		const result = normalizeToolSchema(input)
 
-		// Verify the line_ranges was transformed
+		// Verify the line_ranges was transformed with items inside the array variant
 		const files = (result.properties as Record<string, unknown>).files as Record<string, unknown>
 		const items = files.items as Record<string, unknown>
 		const props = items.properties as Record<string, Record<string, unknown>>
-		expect(props.line_ranges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
-		// Verify other properties are preserved
-		expect(props.line_ranges.items).toBeDefined()
+		// Array-specific properties (items, minItems, maxItems) should be moved inside the array variant
+		expect(props.line_ranges.anyOf).toEqual([
+			{
+				type: "array",
+				items: {
+					type: "array",
+					items: { type: "integer" },
+					minItems: 2,
+					maxItems: 2,
+				},
+			},
+			{ type: "null" },
+		])
+		// items should NOT be at root level anymore
+		expect(props.line_ranges.items).toBeUndefined()
+		// Other properties are preserved at root level
 		expect(props.line_ranges.description).toBe("Optional line ranges")
 	})
 
