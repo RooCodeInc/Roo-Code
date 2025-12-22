@@ -83,7 +83,12 @@ export const WatsonxAI = ({
 		if (!apiConfiguration.watsonxPlatform) {
 			setApiConfigurationField("watsonxPlatform", "ibmCloud")
 		}
-	}, [apiConfiguration.watsonxPlatform, setApiConfigurationField])
+		if (apiConfiguration.watsonxPlatform === "ibmCloud" && !apiConfiguration.watsonxRegion) {
+			const defaultRegion = "Dallas"
+			setApiConfigurationField("watsonxRegion", defaultRegion)
+			setApiConfigurationField("watsonxBaseUrl", REGION_TO_URL[defaultRegion])
+		}
+	}, [apiConfiguration.watsonxPlatform, apiConfiguration.watsonxRegion, setApiConfigurationField])
 
 	const getCurrentRegion = () => {
 		const regionEntry = Object.entries(REGION_TO_URL).find(([_, url]) => url === apiConfiguration?.watsonxBaseUrl)
