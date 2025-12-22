@@ -115,6 +115,9 @@ import {
 	readTaskMessages,
 	saveTaskMessages,
 	taskMetadata,
+	getPendingSubtasks,
+	getPendingSubtasksFromContent,
+	getOtherToolResults,
 } from "../task-persistence"
 import { getEnvironmentDetails } from "../environment/getEnvironmentDetails"
 import { checkContextWindowExceededError } from "../context/context-management/context-error-handling"
@@ -922,6 +925,73 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Clear the pending content since it's now saved
 		this.userMessageContent = []
+	}
+
+	/**
+	 * Execute pending subtasks sequentially, deriving pending subtasks from api_conversation_history
+	 * and in-memory userMessageContent.
+	 * Returns empty array since delegation suspends the parent.
+	 */
+	public async executePendingSubtasks(): Promise<Array<{ toolCallId: string; result: string }>> {
+		// Derive pending subtasks - use the in-memory version since user message may not be in history yet
+		const pendingSubtasks = getPendingSubtasksFromContent(this.apiConversationHistory, this.userMessageContent)
+		if (pendingSubtasks.length === 0) {
+			return []
+		}
+
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			throw new Error("Provider not available for subtask execution")
+		}
+
+		// Before delegating first subtask, flush other tool results to api_conversation_history.
+		// We need to create a user message with ALL tool_results including a placeholder for this new_task.
+		// This ensures the API conversation is valid (every tool_use has a tool_result).
+
+		// Get all new_task tool IDs from the last assistant message
+		const newTaskToolIds = new Set(pendingSubtasks.map((s) => s.toolCallId))
+
+		// Find non-new_task tool results in userMessageContent
+		const nonNewTaskToolResults = this.userMessageContent.filter(
+			(block): block is Anthropic.ToolResultBlockParam =>
+				block.type === "tool_result" && !newTaskToolIds.has(block.tool_use_id),
+		)
+
+		// Flush all pending tool results (for non-new_task tools) to history
+		if (nonNewTaskToolResults.length > 0) {
+			await this.flushPendingToolResultsToHistory()
+		} else {
+			// Clear userMessageContent since we're about to delegate
+			this.userMessageContent = []
+		}
+
+		// Get the first pending subtask to execute
+		const currentSubtask = pendingSubtasks[0]
+
+		try {
+			await (provider as any).delegateParentAndOpenChild({
+				parentTaskId: this.taskId,
+				message: currentSubtask.message,
+				initialTodos: currentSubtask.todoItems,
+				mode: currentSubtask.mode,
+			})
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`[Task#executePendingSubtasks] Failed to execute subtask: ${errorMessage}`)
+		}
+
+		return []
+	}
+
+	/**
+	 * Check if there are pending subtasks by examining api_conversation_history
+	 * and in-memory userMessageContent.
+	 * Pending = new_task tool_use blocks without corresponding tool_result blocks.
+	 */
+	public hasPendingSubtasks(): boolean {
+		// Use the in-memory version since user message may not be in history yet
+		// This is called after streaming completes but before the user message is saved
+		return getPendingSubtasksFromContent(this.apiConversationHistory, this.userMessageContent).length > 0
 	}
 
 	private async saveApiConversationHistory() {
@@ -2202,6 +2272,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Save the updated history
 		await this.saveApiConversationHistory()
 
+		// Check if there are pending subtasks to execute sequentially.
+		// This happens when multiple new_task tools were called in parallel -
+		// they are queued and executed one at a time.
+		if (this.hasPendingSubtasks()) {
+			const provider = this.providerRef.deref()
+			if (provider) {
+				// Execute the next pending subtask
+				await this.executePendingSubtasks()
+				// Don't call initiateTaskLoop - the next subtask will run,
+				// and when it completes, this method will be called again.
+				return
+			}
+		}
+
 		// Continue task loop - pass empty array to signal no new user content needed
 		// The initiateTaskLoop will handle this by skipping user message addition
 		await this.initiateTaskLoop([])
@@ -3245,6 +3329,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// }
 
 					await pWaitFor(() => this.userMessageContentReady)
+
+					// Execute pending subtasks after all tool blocks have been processed.
+					// This ensures the assistant message is already in history before delegating.
+					if (typeof this.hasPendingSubtasks === "function" && this.hasPendingSubtasks()) {
+						await this.executePendingSubtasks()
+						// executePendingSubtasks delegates and suspends this task.
+						// The parent will resume when all subtasks complete.
+						return false
+					}
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
