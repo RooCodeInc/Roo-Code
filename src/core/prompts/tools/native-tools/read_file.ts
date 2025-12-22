@@ -140,16 +140,18 @@ export function createReadFileTool(options: CreateReadFileToolOptions = {}): Ope
 		}
 	}
 
-	// When using strict mode, ALL properties must be in the required array
-	// Optional properties are handled by having type: ["...", "null"]
-	const fileRequiredProperties = partialReadsEnabled ? ["path", "offset", "mode", "indentation"] : ["path"]
+	// Only 'path' is truly required. Other properties are optional.
+	// When partialReadsEnabled is true, we disable strict mode to allow optional properties
+	// without requiring the model to explicitly pass null for each one.
+	const fileRequiredProperties = ["path"]
+	const useStrictMode = !partialReadsEnabled
 
 	return {
 		type: "function",
 		function: {
 			name: "read_file",
 			description,
-			strict: true,
+			strict: useStrictMode,
 			parameters: {
 				type: "object",
 				properties: {

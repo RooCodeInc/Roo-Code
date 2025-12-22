@@ -81,10 +81,14 @@ describe("read-file-content", () => {
 			})
 		})
 
-		it("should throw error when offset exceeds file length", async () => {
+		it("should return empty content when offset exceeds file length", async () => {
 			const content = "Line 1\nLine 2"
 			await withTempFile("slice-past-end-test.txt", content, async (filepath) => {
-				await expect(readSlice(filepath, 100, 3)).rejects.toThrow("offset exceeds file length")
+				const result = await readSlice(filepath, 100, 3)
+				expect(result.content).toBe("")
+				expect(result.lineCount).toBe(0)
+				expect(result.totalLines).toBe(2)
+				expect(result.metadata.totalLinesInFile).toBe(2)
 			})
 		})
 
@@ -154,7 +158,7 @@ def another():
 		it("should throw error for anchorLine=0", async () => {
 			await withTempFile("indent-zero-anchor-test.py", pythonCode, async (filepath) => {
 				await expect(readIndentationBlock(filepath, 1, 100, { anchorLine: 0 })).rejects.toThrow(
-					"anchor_line must be a 1-indexed line number",
+					"anchorLine must be a 1-indexed line number",
 				)
 			})
 		})
@@ -162,7 +166,7 @@ def another():
 		it("should throw error when anchorLine exceeds file length", async () => {
 			await withTempFile("indent-past-end-test.py", pythonCode, async (filepath) => {
 				await expect(readIndentationBlock(filepath, 1, 100, { anchorLine: 100 })).rejects.toThrow(
-					"anchor_line exceeds file length",
+					"anchorLine exceeds file length",
 				)
 			})
 		})
@@ -262,7 +266,10 @@ def my_function():
 
 		it("should handle empty files gracefully", async () => {
 			await withTempFile("mode-empty-test.txt", "", async (filepath) => {
-				await expect(readFileContent({ filePath: filepath })).rejects.toThrow()
+				const result = await readFileContent({ filePath: filepath })
+				expect(result.content).toBe("")
+				expect(result.lineCount).toBe(0)
+				expect(result.totalLines).toBe(0)
 			})
 		})
 
