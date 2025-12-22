@@ -109,6 +109,15 @@ describe("read-file-content", () => {
 				expect(result.content).not.toContain("\r")
 			})
 		})
+
+		it("should only mark truncatedByLimit when more lines exist after endLine", async () => {
+			const content = "Line 1\nLine 2\nLine 3"
+			await withTempFile("slice-truncated-metadata-test.txt", content, async (filepath) => {
+				const result = await readSlice(filepath, 1, 3)
+				expect(result.metadata.hasMoreAfter).toBe(false)
+				expect(result.metadata.truncatedByLimit).toBe(false)
+			})
+		})
 	})
 
 	describe("readIndentationBlock", () => {
