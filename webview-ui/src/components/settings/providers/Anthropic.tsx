@@ -21,6 +21,7 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 	const selectedModel = useSelectedModel(apiConfiguration)
 
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
+	const [azureFoundryEnabled, setAzureFoundryEnabled] = useState(!!apiConfiguration?.anthropicUseAzureFoundry)
 
 	// Check if the current model supports 1M context beta
 	const supports1MContextBeta =
@@ -86,6 +87,37 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 					</>
 				)}
 			</div>
+			{anthropicBaseUrlSelected && (
+				<div>
+					<Checkbox
+						checked={azureFoundryEnabled}
+						onChange={(checked: boolean) => {
+							setAzureFoundryEnabled(checked)
+							setApiConfigurationField("anthropicUseAzureFoundry", checked)
+							if (!checked) {
+								setApiConfigurationField("anthropicAzureDeploymentName", "")
+							}
+						}}>
+						{t("settings:providers.anthropicUseAzureFoundry")}
+					</Checkbox>
+					{azureFoundryEnabled && (
+						<>
+							<VSCodeTextField
+								value={apiConfiguration?.anthropicAzureDeploymentName || ""}
+								onInput={handleInputChange("anthropicAzureDeploymentName")}
+								placeholder="claude-opus-4-5"
+								className="w-full mt-2">
+								<label className="block font-medium mb-1">
+									{t("settings:providers.anthropicAzureDeploymentName")}
+								</label>
+							</VSCodeTextField>
+							<div className="text-sm text-vscode-descriptionForeground mt-1">
+								{t("settings:providers.anthropicAzureDeploymentNameDescription")}
+							</div>
+						</>
+					)}
+				</div>
+			)}
 			{supports1MContextBeta && (
 				<div>
 					<Checkbox
