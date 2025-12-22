@@ -366,10 +366,18 @@ export class CustomToolRegistry {
 		}
 
 		// Add alias for @roo-code/types if we found it.
-		// Note: @roo-code/types is built with zod bundled in, so we don't need a separate zod alias.
+		// Use the packaged version to ensure parametersSchema instance consistency
 		if (this.typesPackagePath) {
-			esbuildOptions.alias = {
-				"@roo-code/types": this.typesPackagePath,
+			// Look for the packaged ES modules version to maintain instance consistency
+			const packagedTypesPath = path.join(path.dirname(this.typesPackagePath), "dist", "index.js")
+			if (fs.existsSync(packagedTypesPath)) {
+				esbuildOptions.alias = {
+					"@roo-code/types": packagedTypesPath,
+				}
+			} else {
+				esbuildOptions.alias = {
+					"@roo-code/types": this.typesPackagePath,
+				}
 			}
 		}
 

@@ -30,6 +30,7 @@ import { cn } from "./lib/utils"
 import { ReauthConfirmationDialog } from "./components/chat/ReauthConfirmationDialog"
 import { ZgsmCodebaseDisableConfirmDialog } from "./components/settings/ZgsmCodebaseDisableConfirmDialog"
 import { useTranslation } from "react-i18next"
+import { EXPERIMENT_IDS } from "@roo/experiments"
 
 // type Tab = "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
 type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud" | "zgsm-account" | "codeReview"
@@ -89,6 +90,7 @@ const App = () => {
 		telemetrySetting,
 		telemetryKey,
 		machineId,
+		experiments,
 		// cloudUserInfo,
 		// cloudIsAuthenticated,
 		// cloudApiUrl,
@@ -250,7 +252,11 @@ const App = () => {
 
 	// Tell the extension that we are ready to receive messages.
 	useEffect(() => vscode.postMessage({ type: "webviewDidLaunch" }), [])
-
+	useEffect(() => {
+		if (experiments[EXPERIMENT_IDS.CUSTOM_TOOLS] ?? false) {
+			vscode.postMessage({ type: "refreshCustomTools" })
+		}
+	}, [experiments])
 	// Initialize source map support for better error reporting
 	useEffect(() => {
 		// Initialize source maps for better error reporting in production

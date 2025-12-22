@@ -148,7 +148,7 @@ export async function readFileIfExists(filePath: string): Promise<string | null>
  *         └── index.ts
  * ```
  */
-export function getRooDirectoriesForCwd(cwd: string): string[] {
+export function getRooDirectoriesForCwd(cwd: string, ignoreOpenspec = false): string[] {
 	const directories: string[] = []
 
 	// Add global directory first
@@ -156,7 +156,10 @@ export function getRooDirectoriesForCwd(cwd: string): string[] {
 
 	// Add project-local directory second
 	directories.push(getProjectRooDirectoryForCwd(cwd))
-	directories.push(path.join(getProjectCostrictSpecDirectoryForCwd(cwd), "openspec"))
+
+	if (!ignoreOpenspec) {
+		directories.push(path.join(getProjectCostrictSpecDirectoryForCwd(cwd), "openspec"))
+	}
 
 	return directories
 }
