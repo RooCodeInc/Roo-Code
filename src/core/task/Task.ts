@@ -2322,7 +2322,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				showRooIgnoredFiles = false,
 				includeDiagnosticMessages = true,
 				maxDiagnosticMessages = 50,
-				maxReadFileLine = -1,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
 			const parsedUserContent = await processUserContentMentions({
@@ -2334,7 +2333,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				showRooIgnoredFiles,
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
-				maxReadFileLine,
 			})
 
 			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
