@@ -122,14 +122,14 @@ describe("read-file-content", () => {
 
 	describe("readIndentationBlock", () => {
 		const pythonCode = `def outer():
-    x = 1
-    def inner():
-        y = 2
-        return y
-    return inner()
-
-def another():
-    pass`
+	    x = 1
+	    def inner():
+	        y = 2
+	        return y
+	    return inner()
+	
+	def another():
+	    pass`
 
 		it("should extract a function block with its contents", async () => {
 			await withTempFile("indent-function-test.py", pythonCode, async (filepath) => {
@@ -177,6 +177,16 @@ def another():
 				await expect(readIndentationBlock(filepath, 1, 100, { anchorLine: 100 })).rejects.toThrow(
 					"anchorLine exceeds file length",
 				)
+			})
+		})
+
+		it("should return empty content when offset exceeds file length (no explicit anchorLine)", async () => {
+			await withTempFile("indent-offset-past-end-test.py", pythonCode, async (filepath) => {
+				const result = await readIndentationBlock(filepath, 100, 10)
+				expect(result.content).toBe("")
+				expect(result.lineCount).toBe(0)
+				expect(result.totalLines).toBeGreaterThan(0)
+				expect(result.metadata.totalLinesInFile).toBe(result.totalLines)
 			})
 		})
 
