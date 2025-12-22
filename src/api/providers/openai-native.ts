@@ -24,6 +24,7 @@ import { getModelParams } from "../transform/model-params"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { isMcpTool } from "../../utils/mcp-name"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -291,13 +292,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			...(metadata?.tools && {
 				tools: metadata.tools
 					.filter((tool) => tool.type === "function")
-					.map((tool) => ({
-						type: "function",
-						name: tool.function.name,
-						description: tool.function.description,
-						parameters: ensureAllRequired(tool.function.parameters),
-						strict: true,
-					})),
+					.map((tool) => {
+						// MCP tools use the 'mcp--' prefix - disable strict mode for them
+						// to preserve optional parameters from the MCP server schema
+						const isMcp = isMcpTool(tool.function.name)
+						return {
+							type: "function",
+							name: tool.function.name,
+							description: tool.function.description,
+							parameters: isMcp ? tool.function.parameters : ensureAllRequired(tool.function.parameters),
+							strict: !isMcp,
+						}
+					}),
 			}),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}

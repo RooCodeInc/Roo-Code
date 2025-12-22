@@ -914,6 +914,9 @@ export const webviewMessageHandler = async (
 			const requestedProvider = message?.values?.provider
 			const providerFilter = requestedProvider ? toRouterName(requestedProvider) : undefined
 
+			// Optional refresh flag to flush cache before fetching (useful for providers requiring credentials)
+			const shouldRefresh = message?.values?.refresh === true
+
 			const routerModels: Record<RouterName, ModelRecord> = providerFilter
 				? ({} as Record<RouterName, ModelRecord>)
 				: {
@@ -1020,6 +1023,12 @@ export const webviewMessageHandler = async (
 			const modelFetchPromises = providerFilter
 				? candidates.filter(({ key }) => key === providerFilter)
 				: candidates
+
+			// If refresh flag is set and we have a specific provider, flush its cache first
+			if (shouldRefresh && providerFilter && modelFetchPromises.length > 0) {
+				const targetCandidate = modelFetchPromises[0]
+				await flushModels(targetCandidate.options, true)
+			}
 
 			const results = await Promise.allSettled(
 				modelFetchPromises.map(async ({ key, options }) => {
