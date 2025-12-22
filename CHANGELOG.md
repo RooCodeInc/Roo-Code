@@ -1,5 +1,9 @@
 # CoStrict Change Log
 
+## [2.1.2]
+
+- Enhanced code review mode with improved UI behavior and provider support
+
 ## [2.1.1]
 
 - Fix model response handling for "no tools used" scenarios
