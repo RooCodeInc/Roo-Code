@@ -123,6 +123,26 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					outputPrice: 4,
 					defaultToolProtocol: "native",
 				},
+				"google/gemini-2.5-pro": {
+					maxTokens: 65_536,
+					contextWindow: 1_048_576,
+					supportsImages: true,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 1.25,
+					outputPrice: 5,
+					defaultToolProtocol: "native",
+				},
+				"gemini-2.5-flash": {
+					maxTokens: 65_536,
+					contextWindow: 1_048_576,
+					supportsImages: true,
+					supportsPromptCache: true,
+					supportsNativeTools: true,
+					inputPrice: 0.15,
+					outputPrice: 0.6,
+					defaultToolProtocol: "native",
+				},
 			}
 		}
 		return {}
@@ -1064,6 +1084,296 @@ describe("RooHandler", () => {
 			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_finish_test")
+		})
+	})
+
+	describe("Gemini thought signature handling", () => {
+		it("should inject reasoning_details with reasoning.encrypted for Gemini models with tool calls", async () => {
+			const geminiHandler = new RooHandler({
+				apiModelId: "google/gemini-2.5-pro",
+			})
+
+			// Messages with tool calls in history
+			const messagesWithToolCalls: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Read the file test.ts" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll read the file for you." },
+						{
+							type: "tool_use",
+							id: "call_123",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_123",
+							content: "file content here",
+						},
+					],
+				},
+				{ role: "user", content: "What's in the file?" },
+			]
+
+			const stream = geminiHandler.createMessage(systemPrompt, messagesWithToolCalls)
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify the messages sent to the API
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			const messages = callArgs.messages
+
+			// Find the assistant message with tool calls
+			const assistantMessage = messages.find(
+				(m: any) => m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			expect(assistantMessage.reasoning_details[0]).toMatchObject({
+				id: "call_123",
+				type: "reasoning.encrypted",
+				data: "skip_thought_signature_validator",
+				index: 0,
+			})
+		})
+
+		it("should inject reasoning_details for Gemini model without google/ prefix", async () => {
+			const geminiHandler = new RooHandler({
+				apiModelId: "gemini-2.5-flash",
+			})
+
+			// Messages with tool calls in history
+			const messagesWithToolCalls: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "List files" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_456",
+							name: "list_files",
+							input: { path: "." },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_456",
+							content: "file1.ts\nfile2.ts",
+						},
+					],
+				},
+			]
+
+			const stream = geminiHandler.createMessage(systemPrompt, messagesWithToolCalls)
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify the messages sent to the API
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			const messages = callArgs.messages
+
+			// Find the assistant message with tool calls
+			const assistantMessage = messages.find(
+				(m: any) => m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details[0].type).toBe("reasoning.encrypted")
+		})
+
+		it("should not inject reasoning_details for non-Gemini models", async () => {
+			const nonGeminiHandler = new RooHandler({
+				apiModelId: "anthropic/claude-haiku-4.5",
+			})
+
+			// Messages with tool calls in history
+			const messagesWithToolCalls: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Read the file test.ts" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_789",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_789",
+							content: "file content here",
+						},
+					],
+				},
+			]
+
+			const stream = nonGeminiHandler.createMessage(systemPrompt, messagesWithToolCalls)
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify the messages sent to the API
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			const messages = callArgs.messages
+
+			// Find the assistant message with tool calls
+			const assistantMessage = messages.find(
+				(m: any) => m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			// Should NOT have reasoning_details injected
+			expect(assistantMessage.reasoning_details).toBeUndefined()
+		})
+
+		it("should not inject reasoning_details if already present with encrypted type", async () => {
+			const geminiHandler = new RooHandler({
+				apiModelId: "google/gemini-2.5-pro",
+			})
+
+			// Messages with tool calls that already have reasoning_details
+			const messagesWithExistingDetails: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Read the file" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_existing",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+					// @ts-expect-error - reasoning_details is not in the Anthropic type
+					reasoning_details: [
+						{
+							type: "reasoning.encrypted",
+							data: "existing_signature",
+							format: "google-gemini-v1",
+							index: 0,
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_existing",
+							content: "file content",
+						},
+					],
+				},
+			]
+
+			const stream = geminiHandler.createMessage(systemPrompt, messagesWithExistingDetails)
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify the messages sent to the API
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			const messages = callArgs.messages
+
+			// Find the assistant message with tool calls
+			const assistantMessage = messages.find(
+				(m: any) => m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			// Should keep existing reasoning_details without duplicating
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			expect(assistantMessage.reasoning_details[0].data).toBe("existing_signature")
+		})
+
+		it("should handle multiple tool calls with individual reasoning_details entries", async () => {
+			const geminiHandler = new RooHandler({
+				apiModelId: "google/gemini-2.5-pro",
+			})
+
+			// Messages with multiple tool calls
+			const messagesWithMultipleToolCalls: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Read both files" },
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_multi_1",
+							name: "read_file",
+							input: { path: "file1.ts" },
+						},
+						{
+							type: "tool_use",
+							id: "call_multi_2",
+							name: "read_file",
+							input: { path: "file2.ts" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_multi_1",
+							content: "content 1",
+						},
+						{
+							type: "tool_result",
+							tool_use_id: "call_multi_2",
+							content: "content 2",
+						},
+					],
+				},
+			]
+
+			const stream = geminiHandler.createMessage(systemPrompt, messagesWithMultipleToolCalls)
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			// Verify the messages sent to the API
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			const messages = callArgs.messages
+
+			// Find the assistant message with tool calls
+			const assistantMessage = messages.find(
+				(m: any) => m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details).toHaveLength(2)
+			expect(assistantMessage.reasoning_details[0].id).toBe("call_multi_1")
+			expect(assistantMessage.reasoning_details[0].index).toBe(0)
+			expect(assistantMessage.reasoning_details[1].id).toBe("call_multi_2")
+			expect(assistantMessage.reasoning_details[1].index).toBe(1)
 		})
 	})
 })
