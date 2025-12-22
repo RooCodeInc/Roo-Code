@@ -356,13 +356,9 @@ export async function readIndentationBlock(
 	limit: number = FALLBACK_LIMIT,
 	config: IndentationConfig = {},
 ): Promise<ReadFileContentResult> {
-	const {
-		anchorLine = offset,
-		maxLevels = 0,
-		includeSiblings = false,
-		includeHeader = true,
-		maxLines = limit,
-	} = config
+	const hasExplicitAnchorLine = typeof config.anchorLine === "number"
+	const anchorLine = config.anchorLine ?? offset
+	const { maxLevels = 0, includeSiblings = false, includeHeader = true, maxLines = limit } = config
 
 	if (anchorLine === 0) {
 		throw new RangeError("anchorLine must be a 1-indexed line number")
@@ -374,8 +370,53 @@ export async function readIndentationBlock(
 	// Load all lines
 	const records = await collectFileLines(filePath)
 
-	if (records.length === 0 || anchorLine > records.length) {
-		throw new RangeError("anchorLine exceeds file length")
+	// If the file is empty, match slice mode and return an empty page.
+	if (records.length === 0) {
+		return {
+			content: "",
+			lineCount: 0,
+			totalLines: 0,
+			metadata: {
+				filePath,
+				totalLinesInFile: 0,
+				linesReturned: 0,
+				startLine: anchorLine,
+				endLine: anchorLine,
+				hasMoreBefore: anchorLine > 1,
+				hasMoreAfter: false,
+				linesBeforeStart: 0,
+				linesAfterEnd: 0,
+				truncatedByLimit: false,
+				lineLengthTruncations: [],
+			},
+		}
+	}
+
+	// If offset is out-of-range and no explicit anchorLine was provided, match slice mode and return an empty page.
+	if (anchorLine > records.length) {
+		if (hasExplicitAnchorLine) {
+			throw new RangeError("anchorLine exceeds file length")
+		}
+
+		const totalLines = records.length
+		return {
+			content: "",
+			lineCount: 0,
+			totalLines,
+			metadata: {
+				filePath,
+				totalLinesInFile: totalLines,
+				linesReturned: 0,
+				startLine: anchorLine,
+				endLine: anchorLine,
+				hasMoreBefore: anchorLine > 1,
+				hasMoreAfter: false,
+				linesBeforeStart: Math.min(anchorLine - 1, totalLines),
+				linesAfterEnd: 0,
+				truncatedByLimit: false,
+				lineLengthTruncations: [],
+			},
+		}
 	}
 
 	const anchorIndex = anchorLine - 1
