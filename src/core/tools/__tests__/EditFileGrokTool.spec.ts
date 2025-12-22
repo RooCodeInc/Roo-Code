@@ -7,7 +7,7 @@ import { fileExistsAtPath } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
-import { searchReplaceTool } from "../SearchReplaceTool"
+import { searchReplaceTool } from "../EditFileGrokTool"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -179,7 +179,7 @@ describe("searchReplaceTool", () => {
 
 		const toolUse: ToolUse = {
 			type: "tool_use",
-			name: "search_replace",
+			name: "edit_file_grok",
 			params: {
 				file_path: testFilePath,
 				old_string: testOldString,
@@ -193,7 +193,7 @@ describe("searchReplaceTool", () => {
 			toolResult = result
 		})
 
-		await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+		await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"edit_file_grok">, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -210,7 +210,7 @@ describe("searchReplaceTool", () => {
 
 			expect(result).toBe("Missing param error")
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace")
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("edit_file_grok")
 		})
 
 		it("returns error when old_string is missing", async () => {
@@ -268,7 +268,7 @@ describe("searchReplaceTool", () => {
 			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "no_match")
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("edit_file_grok", "no_match")
 		})
 
 		it("returns error when multiple matches are found", async () => {
@@ -280,7 +280,7 @@ describe("searchReplaceTool", () => {
 			expect(result).toContain("Error:")
 			expect(result).toContain("3 matches")
 			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "multiple_matches")
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("edit_file_grok", "multiple_matches")
 		})
 
 		it("successfully replaces single unique match", async () => {
@@ -306,7 +306,7 @@ describe("searchReplaceTool", () => {
 
 			expect(mockCline.diffViewProvider.saveChanges).toHaveBeenCalled()
 			expect(mockCline.didEditFile).toBe(true)
-			expect(mockCline.recordToolUsage).toHaveBeenCalledWith("search_replace")
+			expect(mockCline.recordToolUsage).not.toHaveBeenCalled()
 		})
 
 		it("reverts changes when user rejects", async () => {
@@ -335,7 +335,7 @@ describe("searchReplaceTool", () => {
 
 			const toolUse: ToolUse = {
 				type: "tool_use",
-				name: "search_replace",
+				name: "edit_file_grok",
 				params: {
 					file_path: testFilePath,
 					old_string: testOldString,
@@ -349,7 +349,7 @@ describe("searchReplaceTool", () => {
 				capturedResult = result
 			})
 
-			await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+			await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"edit_file_grok">, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,

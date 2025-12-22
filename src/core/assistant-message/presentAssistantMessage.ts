@@ -22,10 +22,10 @@ import { readFileTool } from "../tools/ReadFileTool"
 import { TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
-import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
-import { searchReplaceTool } from "../tools/SearchReplaceTool"
-import { editFileTool } from "../tools/EditFileTool"
-import { applyPatchTool } from "../tools/ApplyPatchTool"
+import { editFileAnthropicTool } from "../tools/EditFileAnthropicTool"
+import { editFileGrokTool } from "../tools/EditFileGrokTool"
+import { editFileGeminiTool } from "../tools/EditFileGeminiTool"
+import { editFileCodexTool } from "../tools/EditFileCodexTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
@@ -38,11 +38,27 @@ import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
-import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
+import { editFileRooTool } from "../tools/EditFileRooTool"
 import { validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
+
+function getAnalyticsToolNameForToolUse(toolName: ToolName, editToolVariant: EditToolVariant): ToolName {
+	if (toolName !== "edit_file") {
+		return toolName
+	}
+
+	const analyticsToolNameByVariant = {
+		roo: "edit_file_roo",
+		anthropic: "edit_file_anthropic",
+		grok: "edit_file_grok",
+		gemini: "edit_file_gemini",
+		codex: "edit_file_codex",
+	} satisfies Record<EditToolVariant, ToolName>
+
+	return analyticsToolNameByVariant[editToolVariant]
+}
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -395,10 +411,6 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.regex}'${
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
 						}]`
-					case "search_and_replace":
-						return `[${block.name} for '${block.params.path}']`
-					case "search_replace":
-						return `[${block.name} for '${block.params.file_path}']`
 					case "edit_file": {
 						// Unified edit_file tool - path location depends on variant
 						// Gemini/Grok variants use file_path, Roo/Anthropic use path
@@ -412,8 +424,6 @@ export async function presentAssistantMessage(cline: Task) {
 						}
 						return `[${block.name}]`
 					}
-					case "apply_patch":
-						return `[${block.name}]`
 					case "list_files":
 						return `[${block.name} for '${block.params.path}']`
 					case "browser_action":
@@ -706,11 +716,22 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			if (!block.partial) {
+				// Determine the tool name for analytics
+				let toolNameForAnalytics: ToolName = block.name
+
 				// Check if this is a custom tool - if so, record as "custom_tool" (like MCP tools)
 				const isCustomTool = stateExperiments?.customTools && customToolRegistry.has(block.name)
-				const recordName = isCustomTool ? "custom_tool" : block.name
-				cline.recordToolUsage(recordName)
-				TelemetryService.instance.captureToolUsage(cline.taskId, recordName, toolProtocol)
+				if (isCustomTool) {
+					toolNameForAnalytics = "custom_tool"
+				} else if (toolNameForAnalytics === "edit_file") {
+					// Map edit_file to specific variant for analytics
+					const modelInfo = cline.api.getModel()
+					const editToolVariant: EditToolVariant = modelInfo?.info?.editToolVariant ?? "roo"
+					toolNameForAnalytics = getAnalyticsToolNameForToolUse(toolNameForAnalytics, editToolVariant)
+				}
+
+				cline.recordToolUsage(toolNameForAnalytics)
+				TelemetryService.instance.captureToolUsage(cline.taskId, toolNameForAnalytics, toolProtocol)
 			}
 
 			// Validate tool use before execution - ONLY for complete (non-partial) blocks.
@@ -840,7 +861,7 @@ export async function presentAssistantMessage(cline: Task) {
 					// Check if this tool call came from native protocol by checking for ID
 					// Native calls always have IDs, XML calls never do
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
-						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+						await editFileRooTool.handle(cline, block as ToolUse<"edit_file_roo">, {
 							askApproval,
 							handleError,
 							pushToolResult,
@@ -865,7 +886,7 @@ export async function presentAssistantMessage(cline: Task) {
 					if (isMultiFileApplyDiffEnabled) {
 						await applyDiffTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
 					} else {
-						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+						await editFileRooTool.handle(cline, block as ToolUse<"edit_file_roo">, {
 							askApproval,
 							handleError,
 							pushToolResult,
@@ -875,26 +896,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					break
 				}
-				case "search_and_replace":
-					await checkpointSaveAndMark(cline)
-					await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
-				case "search_replace":
-					await checkpointSaveAndMark(cline)
-					await searchReplaceTool.handle(cline, block as ToolUse<"search_replace">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
 				case "edit_file": {
 					// Unified edit_file tool - route to correct handler based on editToolVariant
 					await checkpointSaveAndMark(cline)
@@ -903,8 +904,8 @@ export async function presentAssistantMessage(cline: Task) {
 
 					switch (editToolVariant) {
 						case "roo":
-							// Route to apply_diff handler (Roo variant)
-							await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+							// Route to Roo variant (unified diff format)
+							await editFileRooTool.handle(cline, block as ToolUse<"edit_file_roo">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -913,8 +914,8 @@ export async function presentAssistantMessage(cline: Task) {
 							})
 							break
 						case "anthropic":
-							// Route to search_and_replace handler (Anthropic variant)
-							await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
+							// Route to Anthropic variant (multi-edit search/replace)
+							await editFileAnthropicTool.handle(cline, block as ToolUse<"edit_file_anthropic">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -923,8 +924,8 @@ export async function presentAssistantMessage(cline: Task) {
 							})
 							break
 						case "grok":
-							// Route to search_replace handler (Grok variant)
-							await searchReplaceTool.handle(cline, block as ToolUse<"search_replace">, {
+							// Route to Grok variant (single search/replace)
+							await editFileGrokTool.handle(cline, block as ToolUse<"edit_file_grok">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -933,8 +934,8 @@ export async function presentAssistantMessage(cline: Task) {
 							})
 							break
 						case "gemini":
-							// Route to edit_file handler (Gemini variant)
-							await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
+							// Route to Gemini variant (search/replace with expected_replacements)
+							await editFileGeminiTool.handle(cline, block as ToolUse<"edit_file">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -943,8 +944,8 @@ export async function presentAssistantMessage(cline: Task) {
 							})
 							break
 						case "codex":
-							// Route to apply_patch handler (Codex variant)
-							await applyPatchTool.handle(cline, block as ToolUse<"apply_patch">, {
+							// Route to Codex variant (unified patch format)
+							await editFileCodexTool.handle(cline, block as ToolUse<"edit_file_codex">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -955,7 +956,7 @@ export async function presentAssistantMessage(cline: Task) {
 						default: {
 							// Should never happen, but default to roo variant
 							const _exhaustiveCheck: never = editToolVariant
-							await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+							await editFileRooTool.handle(cline, block as ToolUse<"edit_file_roo">, {
 								askApproval,
 								handleError,
 								pushToolResult,
@@ -966,16 +967,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					break
 				}
-				case "apply_patch":
-					await checkpointSaveAndMark(cline)
-					await applyPatchTool.handle(cline, block as ToolUse<"apply_patch">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-						removeClosingTag,
-						toolProtocol,
-					})
-					break
 				case "read_file":
 					// Type assertion is safe here because we're in the "read_file" case
 					await readFileTool.handle(cline, block as ToolUse<"read_file">, {

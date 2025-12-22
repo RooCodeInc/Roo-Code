@@ -497,43 +497,36 @@ export class NativeToolCallParser {
 				}
 				break
 
-			case "apply_patch":
-				if (partialArgs.patch !== undefined) {
+			case "edit_file":
+				// Handle unified edit_file with variant-aware argument detection
+				// Detect variant based on which arguments are present:
+				// - roo variant: { path, diff }
+				// - anthropic variant: { path, edits: [{ old_text, new_text }] }
+				// - grok/gemini variant: { file_path, old_string, new_string }
+				// - codex variant: { patch }
+				if (partialArgs.diff !== undefined) {
+					// Roo variant (apply_diff format)
 					nativeArgs = {
-						patch: partialArgs.patch,
+						path: partialArgs.path,
+						diff: partialArgs.diff,
 					}
-				}
-				break
-
-			case "search_replace":
-				if (
-					partialArgs.file_path !== undefined ||
-					partialArgs.old_string !== undefined ||
-					partialArgs.new_string !== undefined
-				) {
-					nativeArgs = {
-						file_path: partialArgs.file_path,
-						old_string: partialArgs.old_string,
-						new_string: partialArgs.new_string,
-					}
-				}
-				break
-
-			case "search_and_replace":
-				if (partialArgs.path !== undefined || partialArgs.edits !== undefined) {
+				} else if (partialArgs.edits !== undefined) {
+					// Anthropic variant (search_and_replace format)
 					nativeArgs = {
 						path: partialArgs.path,
 						edits: partialArgs.edits,
 					}
-				}
-				break
-
-			case "edit_file":
-				if (
+				} else if (partialArgs.patch !== undefined) {
+					// Codex variant (apply_patch format)
+					nativeArgs = {
+						patch: partialArgs.patch,
+					}
+				} else if (
 					partialArgs.file_path !== undefined ||
 					partialArgs.old_string !== undefined ||
 					partialArgs.new_string !== undefined
 				) {
+					// Grok/Gemini variant (search_replace/edit_file format)
 					nativeArgs = {
 						file_path: partialArgs.file_path,
 						old_string: partialArgs.old_string,
@@ -660,15 +653,6 @@ export class NativeToolCallParser {
 					}
 					break
 
-				case "search_and_replace":
-					if (args.path !== undefined && args.edits !== undefined && Array.isArray(args.edits)) {
-						nativeArgs = {
-							path: args.path,
-							edits: args.edits,
-						} as NativeArgsFor<TName>
-					}
-					break
-
 				case "ask_followup_question":
 					if (args.question !== undefined && args.follow_up !== undefined) {
 						nativeArgs = {
@@ -782,34 +766,36 @@ export class NativeToolCallParser {
 					}
 					break
 
-				case "apply_patch":
-					if (args.patch !== undefined) {
+				case "edit_file":
+					// Handle unified edit_file with variant-aware argument detection
+					// Detect variant based on which arguments are present:
+					// - roo variant: { path, diff }
+					// - anthropic variant: { path, edits: [{ old_text, new_text }] }
+					// - grok/gemini variant: { file_path, old_string, new_string }
+					// - codex variant: { patch }
+					if (args.diff !== undefined && args.path !== undefined) {
+						// Roo variant (apply_diff format)
+						nativeArgs = {
+							path: args.path,
+							diff: args.diff,
+						} as NativeArgsFor<TName>
+					} else if (args.edits !== undefined && Array.isArray(args.edits) && args.path !== undefined) {
+						// Anthropic variant (search_and_replace format)
+						nativeArgs = {
+							path: args.path,
+							edits: args.edits,
+						} as NativeArgsFor<TName>
+					} else if (args.patch !== undefined) {
+						// Codex variant (apply_patch format)
 						nativeArgs = {
 							patch: args.patch,
 						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "search_replace":
-					if (
+					} else if (
 						args.file_path !== undefined &&
 						args.old_string !== undefined &&
 						args.new_string !== undefined
 					) {
-						nativeArgs = {
-							file_path: args.file_path,
-							old_string: args.old_string,
-							new_string: args.new_string,
-						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "edit_file":
-					if (
-						args.file_path !== undefined &&
-						args.old_string !== undefined &&
-						args.new_string !== undefined
-					) {
+						// Grok/Gemini variant (search_replace/edit_file format)
 						nativeArgs = {
 							file_path: args.file_path,
 							old_string: args.old_string,

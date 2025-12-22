@@ -30,13 +30,11 @@ export const toolNames = [
 	"execute_command",
 	"read_file",
 	"write_to_file",
-	// Legacy edit tool names (deprecated, use edit_file_* variants)
+	// apply_diff is kept for XML protocol backward compatibility
 	"apply_diff",
-	"search_and_replace",
-	"search_replace",
+	// Unified edit tool for native protocol (variant selected via modelInfo.editToolVariant)
 	"edit_file",
-	"apply_patch",
-	// New edit tool variant names
+	// Internal edit tool variant names (used by native protocol, presented to LLM as "edit_file")
 	"edit_file_roo",
 	"edit_file_anthropic",
 	"edit_file_grok",

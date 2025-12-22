@@ -14,7 +14,7 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
-import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
+import { applyDiffTool as applyDiffToolClass } from "./EditFileRooTool"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { isNativeProtocol } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
@@ -65,7 +65,7 @@ export async function applyDiffTool(
 	// Use the task's locked protocol for consistency throughout the task lifetime
 	const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info, cline.taskToolProtocol)
 	if (isNativeProtocol(toolProtocol)) {
-		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+		return applyDiffToolClass.handle(cline, block as ToolUse<"edit_file_roo">, {
 			askApproval,
 			handleError,
 			pushToolResult,
@@ -85,7 +85,7 @@ export async function applyDiffTool(
 
 		// If experiment is disabled, use single-file class-based tool
 		if (!isMultiFileApplyDiffEnabled) {
-			return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+			return applyDiffToolClass.handle(cline, block as ToolUse<"edit_file_roo">, {
 				askApproval,
 				handleError,
 				pushToolResult,

@@ -14,69 +14,75 @@ import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
-interface SearchReplaceParams {
-	file_path: string
-	old_string: string
-	new_string: string
+interface EditOperation {
+	old_text: string
+	new_text: string
 }
 
-export class SearchReplaceTool extends BaseTool<"search_replace"> {
-	readonly name = "search_replace" as const
+interface SearchAndReplaceParams {
+	path: string
+	edits: EditOperation[]
+}
 
-	parseLegacy(params: Partial<Record<string, string>>): SearchReplaceParams {
+export class SearchAndReplaceTool extends BaseTool<"edit_file_anthropic"> {
+	readonly name = "edit_file_anthropic" as const
+
+	parseLegacy(params: Partial<Record<string, string>>): SearchAndReplaceParams {
+		// Parse edits from JSON string if provided
+		let edits: EditOperation[] = []
+		if (params.edits) {
+			try {
+				edits = JSON.parse(params.edits)
+			} catch {
+				edits = []
+			}
+		}
+
 		return {
-			file_path: params.file_path || "",
-			old_string: params.old_string || "",
-			new_string: params.new_string || "",
+			path: params.path || "",
+			edits,
 		}
 	}
 
-	async execute(params: SearchReplaceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { file_path, old_string, new_string } = params
+	async execute(params: SearchAndReplaceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { path: relPath, edits } = params
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
 			// Validate required parameters
-			if (!file_path) {
+			if (!relPath) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "file_path"))
+				task.recordToolError("edit_file_anthropic")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_anthropic", "path"))
 				return
 			}
 
-			if (!old_string) {
+			if (!edits || !Array.isArray(edits) || edits.length === 0) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "old_string"))
-				return
-			}
-
-			if (new_string === undefined) {
-				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "new_string"))
-				return
-			}
-
-			// Validate that old_string and new_string are different
-			if (old_string === new_string) {
-				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_anthropic")
 				pushToolResult(
 					formatResponse.toolError(
-						"The 'old_string' and 'new_string' parameters must be different.",
-						toolProtocol,
+						"Missing or empty 'edits' parameter. At least one edit operation is required.",
 					),
 				)
 				return
 			}
 
-			// Determine relative path - file_path can be absolute or relative
-			let relPath: string
-			if (path.isAbsolute(file_path)) {
-				relPath = path.relative(task.cwd, file_path)
-			} else {
-				relPath = file_path
+			// Validate each edit has old_text and new_text fields
+			for (let i = 0; i < edits.length; i++) {
+				const op = edits[i]
+				if (!op.old_text) {
+					task.consecutiveMistakeCount++
+					task.recordToolError("edit_file_anthropic")
+					pushToolResult(formatResponse.toolError(`Edit ${i + 1} is missing the 'old_text' field.`))
+					return
+				}
+				if (op.new_text === undefined) {
+					task.consecutiveMistakeCount++
+					task.recordToolError("edit_file_anthropic")
+					pushToolResult(formatResponse.toolError(`Edit ${i + 1} is missing the 'new_text' field.`))
+					return
+				}
 			}
 
 			const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
@@ -95,10 +101,10 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			const fileExists = await fileExistsAtPath(absolutePath)
 			if (!fileExists) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_anthropic")
 				const errorMessage = `File not found: ${relPath}. Cannot perform search and replace on a non-existent file.`
 				await task.say("error", errorMessage)
-				pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
+				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}
 
@@ -109,46 +115,47 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				fileContent = fileContent.replace(/\r\n/g, "\n")
 			} catch (error) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_anthropic")
 				const errorMessage = `Failed to read file '${relPath}'. Please verify file permissions and try again.`
 				await task.say("error", errorMessage)
-				pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
+				pushToolResult(formatResponse.toolError(errorMessage))
 				return
 			}
 
+			// Apply all edits sequentially
+			let newContent = fileContent
+			const errors: string[] = []
+
+		for (let i = 0; i < edits.length; i++) {
 			// Normalize line endings in search/replace strings to match file content
-			const normalizedOldString = old_string.replace(/\r\n/g, "\n")
-			const normalizedNewString = new_string.replace(/\r\n/g, "\n")
+			const old_text = edits[i].old_text.replace(/\r\n/g, "\n")
+			const new_text = edits[i].new_text.replace(/\r\n/g, "\n")
+			const searchPattern = new RegExp(escapeRegExp(old_text), "g")
 
-			// Check for exact match (literal string, not regex)
-			const matchCount = fileContent.split(normalizedOldString).length - 1
+				const matchCount = newContent.match(searchPattern)?.length ?? 0
+				if (matchCount === 0) {
+					errors.push(`Edit ${i + 1}: No match found for old_text.`)
+					continue
+				}
 
-			if (matchCount === 0) {
-				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace", "no_match")
-				pushToolResult(
-					formatResponse.toolError(
-						`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including whitespace and indentation.`,
-						toolProtocol,
-					),
-				)
-				return
+				if (matchCount > 1) {
+					errors.push(
+						`Edit ${i + 1}: Found ${matchCount} matches. Please provide more context to make a unique match.`,
+					)
+					continue
+				}
+
+				// Apply the replacement
+				newContent = newContent.replace(searchPattern, new_text)
 			}
 
-			if (matchCount > 1) {
+			// If all edits failed, return error
+			if (errors.length === edits.length) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace", "multiple_matches")
-				pushToolResult(
-					formatResponse.toolError(
-						`Found ${matchCount} matches for the specified 'old_string'. This tool can only replace ONE occurrence at a time. Please provide more context (3-5 lines before and after) to uniquely identify the specific instance you want to change.`,
-						toolProtocol,
-					),
-				)
+				task.recordToolError("edit_file_anthropic", "no_match")
+				pushToolResult(formatResponse.toolError(`All edits failed:\n${errors.join("\n")}`))
 				return
 			}
-
-			// Apply the single replacement
-			const newContent = fileContent.replace(normalizedOldString, normalizedNewString)
 
 			// Check if any changes were made
 			if (newContent === fileContent) {
@@ -189,6 +196,12 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				path: getReadablePath(task.cwd, relPath),
 				diff: sanitizedDiff,
 				isOutsideWorkspace,
+			}
+
+			// Include any partial errors in the message
+			let resultMessage = ""
+			if (errors.length > 0) {
+				resultMessage = `Some edits failed:\n${errors.join("\n")}\n\n`
 			}
 
 			const completeMessage = JSON.stringify({
@@ -235,10 +248,14 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 
 			// Get the formatted response message
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, false)
-			pushToolResult(message)
 
-			// Record successful tool usage and cleanup
-			task.recordToolUsage("search_replace")
+			// Add error info if some operations failed
+			if (errors.length > 0) {
+				pushToolResult(`${resultMessage}${message}`)
+			} else {
+				pushToolResult(message)
+			}
+
 			await task.diffViewProvider.reset()
 
 			// Process any queued messages after file edit completes
@@ -249,21 +266,20 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"search_replace">): Promise<void> {
-		const filePath: string | undefined = block.params.file_path
-		const oldString: string | undefined = block.params.old_string
+	override async handlePartial(task: Task, block: ToolUse<"edit_file_anthropic">): Promise<void> {
+		const relPath: string | undefined = block.params.path
+		const editsStr: string | undefined = block.params.edits
 
-		let operationPreview: string | undefined
-		if (oldString) {
-			// Show a preview of what will be replaced
-			const preview = oldString.length > 50 ? oldString.substring(0, 50) + "..." : oldString
-			operationPreview = `replacing: "${preview}"`
-		}
-
-		// Determine relative path for display
-		let relPath = filePath || ""
-		if (filePath && path.isAbsolute(filePath)) {
-			relPath = path.relative(task.cwd, filePath)
+		let editsPreview: string | undefined
+		if (editsStr) {
+			try {
+				const ops = JSON.parse(editsStr)
+				if (Array.isArray(ops) && ops.length > 0) {
+					editsPreview = `${ops.length} edit(s)`
+				}
+			} catch {
+				editsPreview = "parsing..."
+			}
 		}
 
 		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
@@ -271,8 +287,8 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: getReadablePath(task.cwd, relPath),
-			diff: operationPreview,
+			path: getReadablePath(task.cwd, relPath || ""),
+			diff: editsPreview,
 			isOutsideWorkspace,
 		}
 
@@ -280,4 +296,15 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 	}
 }
 
-export const searchReplaceTool = new SearchReplaceTool()
+/**
+ * Escapes special regex characters in a string
+ * @param input String to escape regex characters in
+ * @returns Escaped string safe for regex pattern matching
+ */
+function escapeRegExp(input: string): string {
+	return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+export const searchAndReplaceTool = new SearchAndReplaceTool()
+// Alias for new naming convention
+export const editFileAnthropicTool = searchAndReplaceTool

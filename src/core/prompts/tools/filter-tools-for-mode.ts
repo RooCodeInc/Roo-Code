@@ -26,12 +26,6 @@ const EDIT_TOOL_VARIANT_MAP: Record<EditToolVariant, string> = {
 const ALL_EDIT_TOOL_VARIANTS = new Set(Object.values(EDIT_TOOL_VARIANT_MAP))
 
 /**
- * Legacy edit tool names that are now aliases.
- * These should be excluded from the tool list since they're replaced by the variants.
- */
-const LEGACY_EDIT_TOOL_NAMES = new Set(["apply_diff", "search_and_replace", "search_replace", "apply_patch"])
-
-/**
  * Reverse lookup map - maps alias name to canonical tool name.
  * Built once at module load from the central TOOL_ALIASES constant.
  */
@@ -326,12 +320,6 @@ export function filterNativeToolsForMode(
 	}
 
 	// Handle edit tool variant selection:
-	// 1. Remove legacy edit tool names (they're now aliases)
-	// 2. Remove non-selected edit tool variants
-	// 3. The selected variant will be renamed to "edit_file" below
-	for (const legacyTool of LEGACY_EDIT_TOOL_NAMES) {
-		allowedToolNames.delete(legacyTool)
-	}
 	for (const variantTool of ALL_EDIT_TOOL_VARIANTS) {
 		allowedToolNames.delete(variantTool)
 	}

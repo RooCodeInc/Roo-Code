@@ -70,14 +70,14 @@ export const toolParamNames = [
 	"prompt",
 	"image",
 	"files", // Native protocol parameter for read_file
-	"edits", // edit_file_anthropic parameter for multiple edit operations
-	"old_text", // edit_file_anthropic parameter for text to replace
-	"new_text", // edit_file_anthropic parameter for replacement text
-	"patch", // apply_patch parameter
-	"file_path", // search_replace and edit_file parameter
-	"old_string", // search_replace and edit_file parameter
-	"new_string", // search_replace and edit_file parameter
-	"expected_replacements", // edit_file parameter for multiple occurrences
+	"edits", // edit_file (anthropic variant) parameter for multiple edit operations
+	"old_text", // edit_file (anthropic variant) parameter for text to replace
+	"new_text", // edit_file (anthropic variant) parameter for replacement text
+	"patch", // edit_file (codex variant) parameter
+	"file_path", // edit_file (grok/gemini variant) parameter
+	"old_string", // edit_file (grok/gemini variant) parameter
+	"new_string", // edit_file (grok/gemini variant) parameter
+	"expected_replacements", // edit_file (gemini variant) parameter for multiple occurrences
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -93,13 +93,22 @@ export type NativeToolArgs = {
 	read_file: { files: FileEntry[] }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
-	// Legacy edit tool names (deprecated, mapped to new names via aliases)
+	// apply_diff is kept for XML protocol backward compatibility
 	apply_diff: { path: string; diff: string }
-	search_and_replace: { path: string; edits: Array<{ old_text: string; new_text: string }> }
-	search_replace: { file_path: string; old_string: string; new_string: string }
-	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
-	apply_patch: { patch: string }
-	// New edit tool variant names (all present "edit_file" to LLM)
+	// Unified edit_file for native protocol - variant-specific args based on modelInfo.editToolVariant
+	// The actual arg structure depends on which variant is selected:
+	// - roo: { path, diff }
+	// - anthropic: { path, edits }
+	// - grok: { file_path, old_string, new_string }
+	// - gemini: { file_path, old_string, new_string, expected_replacements? }
+	// - codex: { patch }
+	edit_file:
+		| { path: string; diff: string }
+		| { path: string; edits: Array<{ old_text: string; new_text: string }> }
+		| { file_path: string; old_string: string; new_string: string }
+		| { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
+		| { patch: string }
+	// Internal edit tool variant names (used by native protocol, presented to LLM as "edit_file")
 	edit_file_roo: { path: string; diff: string }
 	edit_file_anthropic: { path: string; edits: Array<{ old_text: string; new_text: string }> }
 	edit_file_grok: { file_path: string; old_string: string; new_string: string }
@@ -257,13 +266,11 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	read_file: "read files",
 	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
-	// Legacy edit tool names (deprecated)
+	// apply_diff is kept for XML protocol backward compatibility
 	apply_diff: "apply changes",
-	search_and_replace: "apply changes using search and replace",
-	search_replace: "apply single search and replace",
-	edit_file: "edit files using search and replace",
-	apply_patch: "apply patches using codex format",
-	// New edit tool variant names
+	// Unified edit tool for native protocol
+	edit_file: "edit files",
+	// Internal edit tool variant names (used by native protocol)
 	edit_file_roo: "edit files (roo format)",
 	edit_file_anthropic: "edit files (anthropic format)",
 	edit_file_grok: "edit files (grok format)",
@@ -292,25 +299,12 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
-		// apply_diff is included for XML protocol backward compatibility
-		// For native protocol, filterNativeToolsForMode selects the appropriate edit_file_* variant
+		// For XML protocol: apply_diff is included for backward compatibility
+		// For native protocol: filterNativeToolsForMode selects the appropriate edit_file_* variant
+		// and presents it as "edit_file" to the LLM
 		tools: ["write_to_file", "apply_diff", "edit_file", "generate_image"],
-		// All edit tool variants and legacy names - one is selected based on modelInfo.editToolVariant
-		// "edit_file" is the unified name that LLMs see (for modelInfo.includedTools validation)
-		customTools: [
-			// Unified edit tool name (for includedTools validation)
-			"edit_file",
-			// Legacy names (for backward compatibility with existing includedTools configs)
-			"search_and_replace",
-			"search_replace",
-			"apply_patch",
-			// Variant names (for native protocol internal use)
-			"edit_file_roo",
-			"edit_file_anthropic",
-			"edit_file_grok",
-			"edit_file_gemini",
-			"edit_file_codex",
-		],
+		// Variant names for native protocol internal use - one is selected based on modelInfo.editToolVariant
+		customTools: ["edit_file_roo", "edit_file_anthropic", "edit_file_grok", "edit_file_gemini", "edit_file_codex"],
 	},
 	browser: {
 		tools: ["browser_action"],
@@ -341,20 +335,16 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  * Central registry of tool aliases.
  * Maps alias name -> canonical tool name.
  *
- * This allows models to use alternative names for tools (e.g., "edit_file" instead of "apply_diff").
+ * This allows models to use alternative names for tools.
  * When a model calls a tool by its alias, the system resolves it to the canonical name for execution,
  * but preserves the alias in API conversation history for consistency.
  *
- * To add a new alias, simply add an entry here. No other files need to be modified.
+ * Note: Legacy edit tool aliases (apply_diff, search_and_replace, search_replace, apply_patch)
+ * have been removed. Native protocol now uses editToolVariant to select the edit tool schema,
+ * and all edit tools are presented to the LLM as "edit_file". XML protocol still uses apply_diff directly.
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
 	write_file: "write_to_file",
-	// Backward compatibility: map old edit tool names to new variant names
-	apply_diff: "edit_file_roo",
-	search_and_replace: "edit_file_anthropic",
-	search_replace: "edit_file_grok",
-	// Note: edit_file is kept as a tool name (for gemini variant) but also serves as the unified LLM-facing name
-	apply_patch: "edit_file_codex",
 } as const
 
 export type DiffResult =
