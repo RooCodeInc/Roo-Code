@@ -5,6 +5,7 @@ import type { ModelInfo } from "@roo-code/types"
 import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
+import { isMcpTool } from "../../utils/mcp-name"
 
 /**
  * Base class for API providers that implements common functionality.
@@ -35,14 +36,14 @@ export abstract class BaseProvider implements ApiHandler {
 
 			// MCP tools use the 'mcp--' prefix - disable strict mode for them
 			// to preserve optional parameters from the MCP server schema
-			const isMcpTool = tool.function.name.startsWith("mcp--")
+			const isMcp = isMcpTool(tool.function.name)
 
 			return {
 				...tool,
 				function: {
 					...tool.function,
-					strict: !isMcpTool,
-					parameters: isMcpTool
+					strict: !isMcp,
+					parameters: isMcp
 						? tool.function.parameters
 						: this.convertToolSchemaForOpenAI(tool.function.parameters),
 				},

@@ -18,6 +18,16 @@ export const MCP_TOOL_SEPARATOR = "--"
 export const MCP_TOOL_PREFIX = "mcp"
 
 /**
+ * Check if a tool name is an MCP tool (starts with the MCP prefix and separator).
+ *
+ * @param toolName - The tool name to check
+ * @returns true if the tool name starts with "mcp--", false otherwise
+ */
+export function isMcpTool(toolName: string): boolean {
+	return toolName.startsWith(`${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}`)
+}
+
+/**
  * Sanitize a name to be safe for use in API function names.
  * This removes special characters and ensures the name starts correctly.
  *
