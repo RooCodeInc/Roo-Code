@@ -4,6 +4,7 @@ import { isBinaryFile } from "isbinaryfile"
 import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
+import { getModelMaxOutputTokens } from "../../shared/api"
 import { t } from "../../i18n"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
@@ -13,7 +14,7 @@ import { countFileLines } from "../../integrations/misc/line-counter"
 import { readLines } from "../../integrations/misc/read-lines"
 import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "../../integrations/misc/extract-text"
 import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
-import { ToolProtocol, isNativeProtocol } from "@roo-code/types"
+import { ToolProtocol, isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 import {
 	DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 	DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
@@ -21,6 +22,7 @@ import {
 	validateImageForProcessing,
 	processImageFile,
 } from "./helpers/imageHelpers"
+import { validateFileTokenBudget, truncateFileContent } from "./helpers/fileTokenBudget"
 
 /**
  * Simplified read file tool for models that only support single file reads
@@ -249,12 +251,53 @@ export async function simpleReadFileTool(
 		}
 
 		// Handle normal file read
-		const content = await extractTextFromFile(fullPath)
-		const lineRangeAttr = ` lines="1-${totalLines}"`
-		let xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+		// Get token budget information
+		const { id: modelId, info: modelInfo } = cline.api.getModel()
+		const { contextTokens } = cline.getTokenUsage()
+		const contextWindow = modelInfo.contextWindow
 
-		if (totalLines === 0) {
-			xmlInfo += `<notice>File is empty</notice>\n`
+		const maxOutputTokens =
+			getModelMaxOutputTokens({
+				modelId,
+				model: modelInfo,
+				settings: cline.apiConfiguration,
+			}) ?? ANTHROPIC_DEFAULT_MAX_TOKENS
+
+		// Validate if file content fits within token budget
+		const budgetResult = await validateFileTokenBudget(
+			fullPath,
+			contextWindow - maxOutputTokens,
+			contextTokens || 0,
+		)
+
+		let content = await extractTextFromFile(fullPath)
+		let xmlInfo = ""
+
+		if (budgetResult.shouldTruncate && budgetResult.maxChars !== undefined) {
+			// File exceeds token budget - truncate it
+			const truncateResult = truncateFileContent(
+				content,
+				budgetResult.maxChars,
+				content.length,
+				budgetResult.isPreview,
+			)
+			content = truncateResult.content
+
+			let displayedLines = content.length === 0 ? 0 : content.split(/\r?\n/).length
+			if (displayedLines > 0 && content.endsWith("\n")) {
+				displayedLines--
+			}
+			const lineRangeAttr = displayedLines > 0 ? ` lines="1-${displayedLines}"` : ""
+			xmlInfo = content.length > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+			xmlInfo += `<notice>${truncateResult.notice}</notice>\n`
+		} else {
+			// File fits within budget - read normally
+			const lineRangeAttr = ` lines="1-${totalLines}"`
+			xmlInfo = totalLines > 0 ? `<content${lineRangeAttr}>\n${content}</content>\n` : `<content/>`
+
+			if (totalLines === 0) {
+				xmlInfo += `<notice>File is empty</notice>\n`
+			}
 		}
 
 		// Track file read
