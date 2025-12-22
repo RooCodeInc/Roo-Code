@@ -191,12 +191,13 @@ export default function CloudTeamPage() {
 				<AnimatedBackground />
 				<div className="container relative flex flex-col items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center max-w-4xl mx-auto mb-12">
-						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
+						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-6xl">Roo Code Cloud Team</h1>
+						<h2 className="text-2xl font-bold tracking-tight mb-6 md:text-4xl">
 							Built for <span className="text-violet-500">AI-Forward Teams</span>
-						</h1>
-						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-							Empower your entire team with autonomous AI agents, centralized billing, and unified
-							configuration. No per-seat costs, no API key juggling.
+						</h2>
+						<p className="text-xl text-muted-foreground mb-8 mx-auto">
+							Empower your entire team with confidence with team-wide configuration, centralized billing,
+							analytics and more. No per-seat costs, no API key juggling.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
 							<Button
@@ -295,50 +296,6 @@ export default function CloudTeamPage() {
 				</div>
 			</section>
 
-			{/* Additional Features Section */}
-			<section className="py-24 border-t border-border">
-				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="max-w-4xl mx-auto">
-						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-8 text-center">
-							Additional Team Functionality
-						</h2>
-						<div className="space-y-6">
-							<div className="border border-border rounded-xl p-6 bg-background">
-								<h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-									<BarChart3 className="size-5 text-violet-600 dark:text-violet-400" />
-									Usage Analytics
-								</h3>
-								<p className="text-muted-foreground">
-									Track team-wide activity with detailed analytics. Filter by user to understand
-									individual usage patterns and optimize costs across your organization.
-								</p>
-							</div>
-							<div className="border border-border rounded-xl p-6 bg-background">
-								<h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
-									<Users className="size-5 text-violet-600 dark:text-violet-400" />
-									Team Task Lists
-								</h3>
-								<p className="text-muted-foreground">
-									View all team tasks in one place from the Home and Agent pages. Track what your team
-									is working on and collaborate more effectively.
-								</p>
-							</div>
-						</div>
-						<div className="mt-8 text-center">
-							<p className="text-muted-foreground">
-								We&apos;re constantly expanding team functionality. Need something specific?{" "}
-								<a
-									href="mailto:support@roocode.com"
-									className="text-violet-600 dark:text-violet-400 hover:underline">
-									Get in touch with us
-								</a>
-								.
-							</p>
-						</div>
-					</div>
-				</div>
-			</section>
-
 			{/* CTA Section */}
 			<section className="py-24">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -347,7 +304,7 @@ export default function CloudTeamPage() {
 							Ready to scale your team&apos;s development?
 						</h2>
 						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-							Start your free 14-day trial today. No credit card required for trial access.
+							Start your free 14-day trial today. Got questions? Get in touch.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button
@@ -364,12 +321,8 @@ export default function CloudTeamPage() {
 								</a>
 							</Button>
 							<Button variant="outline" size="lg" className="backdrop-blur-sm" asChild>
-								<a
-									href={EXTERNAL_LINKS.DISCORD}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Talk to Sales
+								<a href={EXTERNAL_LINKS.SUPPORT} className="flex items-center justify-center">
+									Contact Support
 								</a>
 							</Button>
 						</div>

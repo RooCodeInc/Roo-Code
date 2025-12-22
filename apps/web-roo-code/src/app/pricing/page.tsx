@@ -166,11 +166,11 @@ export default function PricingPage() {
 										<Icon className="size-6" strokeWidth={1.5} />
 									</div>
 
-									<div className="grow mb-8">
+									<div className="grow mb-8 md:h-[214px]">
 										<p className="text-sm text-muted-foreground font-light mb-2">
 											{tier.featuresIntro}&nbsp;
 										</p>
-										<ul className="space-y-3 my-0 md:h-[192px]">
+										<ul className="space-y-3 my-0">
 											{tier.features.map((feature) => (
 												<li key={feature} className="flex items-start gap-2">
 													<Check className="mt-0.5 h-4 w-4 text-muted-foreground shrink-0" />
@@ -178,6 +178,15 @@ export default function PricingPage() {
 												</li>
 											))}
 										</ul>
+										{tier.learnMoreLink && (
+											<div className="mt-2">
+												<Link
+													href={tier.learnMoreLink}
+													className="text-sm text-violet-600 dark:text-violet-400 hover:underline">
+													Learn more about the Team plan →
+												</Link>
+											</div>
+										)}
 									</div>
 
 									<p className="text-base font-light">{tier.trial}</p>
@@ -211,16 +220,6 @@ export default function PricingPage() {
 											<ArrowRight />
 										</Link>
 									</Button>
-
-									{tier.learnMoreLink && (
-										<div className="mt-3 text-center">
-											<Link
-												href={tier.learnMoreLink}
-												className="text-sm text-violet-600 dark:text-violet-400 hover:underline">
-												Learn more about Team features →
-											</Link>
-										</div>
-									)}
 
 									{/* <div className="bg-foreground/20 h-8 absolute -bottom-8 left-1/2 w-[1px]" /> */}
 									<div className="h-[28px] absolute bottom-[-31px] left-1/2 w-[4px] transition-colors bg-gradient-to-b from-transparent to-violet-700/20 group-hover:from-violet-500/50 group-hover:to-violet-500/20" />
