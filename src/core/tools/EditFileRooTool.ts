@@ -16,22 +16,22 @@ import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 
-interface ApplyDiffParams {
+interface EditFileRooParams {
 	path: string
 	diff: string
 }
 
-export class ApplyDiffTool extends BaseTool<"apply_diff"> {
-	readonly name = "apply_diff" as const
+export class EditFileRooTool extends BaseTool<"edit_file_roo"> {
+	readonly name = "edit_file_roo" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): ApplyDiffParams {
+	parseLegacy(params: Partial<Record<string, string>>): EditFileRooParams {
 		return {
 			path: params.path || "",
 			diff: params.diff || "",
 		}
 	}
 
-	async execute(params: ApplyDiffParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(params: EditFileRooParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 		let { path: relPath, diff: diffContent } = params
 
@@ -42,15 +42,15 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		try {
 			if (!relPath) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_diff")
-				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "path"))
+				task.recordToolError("edit_file_roo")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_roo", "path"))
 				return
 			}
 
 			if (!diffContent) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_diff")
-				pushToolResult(await task.sayAndCreateMissingParamError("apply_diff", "diff"))
+				task.recordToolError("edit_file_roo")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_roo", "diff"))
 				return
 			}
 
@@ -67,7 +67,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 
 			if (!fileExists) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_diff")
+				task.recordToolError("edit_file_roo")
 				const formattedError = `File does not exist at path: ${absolutePath}\n\n<error_details>\nThe specified file could not be found. Please verify the file path and try again.\n</error_details>`
 				await task.say("error", formattedError)
 				task.didToolFailInCurrentTurn = true
@@ -118,7 +118,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 					await task.say("diff_error", formattedError)
 				}
 
-				task.recordToolError("apply_diff", formattedError)
+				task.recordToolError("edit_file_roo", formattedError)
 
 				pushToolResult(formattedError)
 				return
@@ -164,9 +164,9 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				let toolProgressStatus
 
 				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
-					const block: ToolUse<"apply_diff"> = {
+					const block: ToolUse<"edit_file_roo"> = {
 						type: "tool_use",
-						name: "apply_diff",
+						name: "edit_file_roo",
 						params: { path: relPath, diff: diffContent },
 						partial: false,
 					}
@@ -208,9 +208,9 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				let toolProgressStatus
 
 				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
-					const block: ToolUse<"apply_diff"> = {
+					const block: ToolUse<"edit_file_roo"> = {
 						type: "tool_use",
-						name: "apply_diff",
+						name: "edit_file_roo",
 						params: { path: relPath, diff: diffContent },
 						partial: false,
 					}
@@ -272,7 +272,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"apply_diff">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"edit_file_roo">): Promise<void> {
 		const relPath: string | undefined = block.params.path
 		const diffContent: string | undefined = block.params.diff
 
@@ -296,4 +296,6 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 	}
 }
 
-export const applyDiffTool = new ApplyDiffTool()
+export const editFileRooTool = new EditFileRooTool()
+// Legacy alias for backward compatibility
+export const applyDiffTool = editFileRooTool

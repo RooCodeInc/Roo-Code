@@ -741,8 +741,8 @@ describe("getRooModels", () => {
 						output: "0.0002",
 					},
 					settings: {
-						includedTools: ["apply_patch"],
-						excludedTools: ["apply_diff", "write_to_file"],
+						editToolVariant: "codex",
+						excludedTools: ["write_to_file"],
 						reasoningEffort: "high",
 					},
 				},
@@ -756,8 +756,8 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/model-with-settings"].includedTools).toEqual(["apply_patch"])
-		expect(models["test/model-with-settings"].excludedTools).toEqual(["apply_diff", "write_to_file"])
+		expect(models["test/model-with-settings"].editToolVariant).toBe("codex")
+		expect(models["test/model-with-settings"].excludedTools).toEqual(["write_to_file"])
 		expect(models["test/model-with-settings"].reasoningEffort).toBe("high")
 	})
 
@@ -824,14 +824,14 @@ describe("getRooModels", () => {
 					},
 					// Plain settings for backward compatibility with old clients
 					settings: {
-						includedTools: ["apply_patch"],
+						editToolVariant: "codex",
 						excludedTools: ["write_to_file"],
 					},
 					// Versioned settings keyed by version number (low version - always met)
 					versionedSettings: {
 						"1.0.0": {
-							includedTools: ["apply_patch", "search_replace"],
-							excludedTools: ["apply_diff", "write_to_file"],
+							editToolVariant: "grok",
+							excludedTools: ["write_to_file", "browser_action"],
 						},
 					},
 				},
@@ -846,8 +846,8 @@ describe("getRooModels", () => {
 		const models = await getRooModels(baseUrl, apiKey)
 
 		// Versioned settings should be used instead of plain settings
-		expect(models["test/versioned-model"].includedTools).toEqual(["apply_patch", "search_replace"])
-		expect(models["test/versioned-model"].excludedTools).toEqual(["apply_diff", "write_to_file"])
+		expect(models["test/versioned-model"].editToolVariant).toBe("grok")
+		expect(models["test/versioned-model"].excludedTools).toEqual(["write_to_file", "browser_action"])
 	})
 
 	it("should use plain settings when no versioned settings version matches", async () => {
@@ -870,12 +870,12 @@ describe("getRooModels", () => {
 						output: "0.0002",
 					},
 					settings: {
-						includedTools: ["apply_patch"],
+						editToolVariant: "codex",
 					},
 					// Versioned settings keyed by very high version - never met
 					versionedSettings: {
 						"99.0.0": {
-							includedTools: ["apply_patch", "search_replace"],
+							editToolVariant: "grok",
 						},
 					},
 				},
@@ -890,7 +890,7 @@ describe("getRooModels", () => {
 		const models = await getRooModels(baseUrl, apiKey)
 
 		// Should use plain settings since no versioned settings match current version
-		expect(models["test/old-version-model"].includedTools).toEqual(["apply_patch"])
+		expect(models["test/old-version-model"].editToolVariant).toBe("codex")
 	})
 
 	it("should handle model with only versionedSettings and no plain settings", async () => {

@@ -7,7 +7,7 @@ import { fileExistsAtPath } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
-import { editFileTool } from "../EditFileTool"
+import { editFileTool } from "../EditFileGeminiTool"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -348,7 +348,7 @@ describe("editFileTool", () => {
 
 			expect(mockTask.diffViewProvider.saveChanges).toHaveBeenCalled()
 			expect(mockTask.didEditFile).toBe(true)
-			expect(mockTask.recordToolUsage).toHaveBeenCalledWith("edit_file")
+			expect(mockTask.recordToolUsage).not.toHaveBeenCalled()
 		})
 
 		it("reverts changes when user rejects", async () => {

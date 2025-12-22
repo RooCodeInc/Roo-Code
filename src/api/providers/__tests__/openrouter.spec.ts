@@ -161,7 +161,7 @@ describe("OpenRouterHandler", () => {
 			expect(result.temperature).toBe(0)
 		})
 
-		it("adds excludedTools and includedTools for OpenAI models", async () => {
+		it("sets editToolVariant to codex for OpenAI models", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "openai/gpt-4o",
@@ -169,12 +169,10 @@ describe("OpenRouterHandler", () => {
 
 			const result = await handler.fetchModel()
 			expect(result.id).toBe("openai/gpt-4o")
-			expect(result.info.excludedTools).toContain("apply_diff")
-			expect(result.info.excludedTools).toContain("write_to_file")
-			expect(result.info.includedTools).toContain("apply_patch")
+			expect(result.info.editToolVariant).toBe("codex")
 		})
 
-		it("merges excludedTools and includedTools with existing values for OpenAI models", async () => {
+		it("sets editToolVariant to codex for OpenAI models while preserving existing excludedTools/includedTools", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "openai/o1",
@@ -182,18 +180,14 @@ describe("OpenRouterHandler", () => {
 
 			const result = await handler.fetchModel()
 			expect(result.id).toBe("openai/o1")
-			// Should have the new exclusions
-			expect(result.info.excludedTools).toContain("apply_diff")
-			expect(result.info.excludedTools).toContain("write_to_file")
-			// Should preserve existing exclusions
+			// Should have editToolVariant set
+			expect(result.info.editToolVariant).toBe("codex")
+			// Should preserve existing exclusions/inclusions from model info
 			expect(result.info.excludedTools).toContain("existing_excluded")
-			// Should have the new inclusions
-			expect(result.info.includedTools).toContain("apply_patch")
-			// Should preserve existing inclusions
 			expect(result.info.includedTools).toContain("existing_included")
 		})
 
-		it("does not add excludedTools or includedTools for non-OpenAI models", async () => {
+		it("does not set editToolVariant for non-OpenAI models", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "anthropic/claude-sonnet-4",
@@ -201,9 +195,8 @@ describe("OpenRouterHandler", () => {
 
 			const result = await handler.fetchModel()
 			expect(result.id).toBe("anthropic/claude-sonnet-4")
-			// Should NOT have the tool exclusions/inclusions
-			expect(result.info.excludedTools).toBeUndefined()
-			expect(result.info.includedTools).toBeUndefined()
+			// Should NOT have editToolVariant set
+			expect(result.info.editToolVariant).toBeUndefined()
 		})
 	})
 

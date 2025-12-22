@@ -8,8 +8,8 @@ vi.mock("vscode", () => ({
 	},
 }))
 
-// Mock the ApplyDiffTool module
-vi.mock("../ApplyDiffTool", () => ({
+// Mock the EditFileRooTool module
+vi.mock("../EditFileRooTool", () => ({
 	applyDiffTool: {
 		handle: vi.fn(),
 	},
@@ -17,7 +17,7 @@ vi.mock("../ApplyDiffTool", () => ({
 
 // Import after mocking to get the mocked version
 import { applyDiffTool as multiApplyDiffTool } from "../MultiApplyDiffTool"
-import { applyDiffTool as applyDiffToolClass } from "../ApplyDiffTool"
+import { applyDiffTool as applyDiffToolClass } from "../EditFileRooTool"
 
 describe("applyDiffTool experiment routing", () => {
 	let mockCline: any

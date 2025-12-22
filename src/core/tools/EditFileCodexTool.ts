@@ -20,8 +20,8 @@ interface ApplyPatchParams {
 	patch: string
 }
 
-export class ApplyPatchTool extends BaseTool<"apply_patch"> {
-	readonly name = "apply_patch" as const
+export class ApplyPatchTool extends BaseTool<"edit_file_codex"> {
+	readonly name = "edit_file_codex" as const
 
 	parseLegacy(params: Partial<Record<string, string>>): ApplyPatchParams {
 		return {
@@ -37,8 +37,8 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			// Validate required parameters
 			if (!patch) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_patch")
-				pushToolResult(await task.sayAndCreateMissingParamError("apply_patch", "patch"))
+				task.recordToolError("edit_file_codex")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_codex", "patch"))
 				return
 			}
 
@@ -48,7 +48,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 				parsedPatch = parsePatch(patch)
 			} catch (error) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_patch")
+				task.recordToolError("edit_file_codex")
 				const errorMessage =
 					error instanceof ParseError
 						? `Invalid patch format: ${error.message}`
@@ -73,7 +73,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 				changes = await processAllHunks(parsedPatch.hunks, readFile)
 			} catch (error) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_patch")
+				task.recordToolError("edit_file_codex")
 				const errorMessage = `Failed to process patch: ${error instanceof Error ? error.message : String(error)}`
 				pushToolResult(formatResponse.toolError(errorMessage))
 				return
@@ -108,7 +108,6 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			}
 
 			task.consecutiveMistakeCount = 0
-			task.recordToolUsage("apply_patch")
 		} catch (error) {
 			await handleError("apply patch", error as Error)
 			await task.diffViewProvider.reset()
@@ -129,7 +128,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		const fileExists = await fileExistsAtPath(absolutePath)
 		if (fileExists) {
 			task.consecutiveMistakeCount++
-			task.recordToolError("apply_patch")
+			task.recordToolError("edit_file_codex")
 			const errorMessage = `File already exists: ${relPath}. Use Update File instead.`
 			await task.say("error", errorMessage)
 			pushToolResult(formatResponse.toolError(errorMessage))
@@ -220,7 +219,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		const fileExists = await fileExistsAtPath(absolutePath)
 		if (!fileExists) {
 			task.consecutiveMistakeCount++
-			task.recordToolError("apply_patch")
+			task.recordToolError("edit_file_codex")
 			const errorMessage = `File not found: ${relPath}. Cannot delete a non-existent file.`
 			await task.say("error", errorMessage)
 			pushToolResult(formatResponse.toolError(errorMessage))
@@ -278,7 +277,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		const fileExists = await fileExistsAtPath(absolutePath)
 		if (!fileExists) {
 			task.consecutiveMistakeCount++
-			task.recordToolError("apply_patch")
+			task.recordToolError("edit_file_codex")
 			const errorMessage = `File not found: ${relPath}. Cannot update a non-existent file.`
 			await task.say("error", errorMessage)
 			pushToolResult(formatResponse.toolError(errorMessage))
@@ -363,7 +362,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			const isMovePathWriteProtected = task.rooProtectedController?.isWriteProtected(change.movePath) || false
 			if (isMovePathWriteProtected) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_patch")
+				task.recordToolError("edit_file_codex")
 				const errorMessage = `Cannot move file to write-protected path: ${change.movePath}`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage))
@@ -375,7 +374,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 			const isMoveOutsideWorkspace = isPathOutsideWorkspace(moveAbsolutePath)
 			if (isMoveOutsideWorkspace) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("apply_patch")
+				task.recordToolError("edit_file_codex")
 				const errorMessage = `Cannot move file to path outside workspace: ${change.movePath}`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage))
@@ -426,7 +425,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		task.processQueuedMessages()
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"apply_patch">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"edit_file_codex">): Promise<void> {
 		const patch: string | undefined = block.params.patch
 
 		let patchPreview: string | undefined
@@ -448,3 +447,5 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 }
 
 export const applyPatchTool = new ApplyPatchTool()
+// Alias for new naming convention
+export const editFileCodexTool = applyPatchTool

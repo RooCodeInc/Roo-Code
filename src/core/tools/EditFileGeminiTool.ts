@@ -324,8 +324,6 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 
 			pushToolResult(message + replacementInfo)
 
-			// Record successful tool usage and cleanup
-			task.recordToolUsage("edit_file")
 			await task.diffViewProvider.reset()
 
 			// Process any queued messages after file edit completes
@@ -371,3 +369,5 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 }
 
 export const editFileTool = new EditFileTool()
+// Alias for new naming convention
+export const editFileGeminiTool = editFileTool
