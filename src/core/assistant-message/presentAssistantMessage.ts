@@ -751,7 +751,16 @@ export async function presentAssistantMessage(cline: Task) {
 						block.name as ToolName,
 						mode ?? defaultModeSlug,
 						customModes ?? [],
-						{ apply_diff: cline.diffEnabled },
+						{
+							// diffEnabled should gate ALL edit operations (both XML legacy apply_diff and native edit_file)
+							apply_diff: cline.diffEnabled,
+							edit_file: cline.diffEnabled,
+							edit_file_roo: cline.diffEnabled,
+							edit_file_anthropic: cline.diffEnabled,
+							edit_file_grok: cline.diffEnabled,
+							edit_file_gemini: cline.diffEnabled,
+							edit_file_codex: cline.diffEnabled,
+						},
 						block.params,
 						stateExperiments,
 						includedTools,

@@ -167,6 +167,11 @@ describe("mode-validator", () => {
 				// Even in code mode which allows all tools, disabled requirement should take precedence
 				expect(isToolAllowedForMode("write_to_file", codeMode, [], requirements)).toBe(false)
 			})
+
+			it("can gate native unified edit tool (edit_file)", () => {
+				const requirements = { edit_file: false }
+				expect(isToolAllowedForMode("edit_file", codeMode, [], requirements)).toBe(false)
+			})
 		})
 	})
 
