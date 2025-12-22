@@ -214,7 +214,7 @@ describe("read-file-content", () => {
 			const codeWithComment = `# This is a comment header
 # describing the function
 def my_function():
-    return 42`
+		  return 42`
 			await withTempFile("indent-header-test.py", codeWithComment, async (filepath) => {
 				const result = await readIndentationBlock(filepath, 3, 100, {
 					anchorLine: 3,
@@ -222,6 +222,31 @@ def my_function():
 				})
 				// Should include the comment header
 				expect(result.content).toContain("# This is a comment header")
+			})
+		})
+
+		it("should report hasMoreBefore as false for empty files", async () => {
+			await withTempFile("indent-empty-test.txt", "", async (filepath) => {
+				const result = await readIndentationBlock(filepath, 1, 100)
+				expect(result.content).toBe("")
+				expect(result.lineCount).toBe(0)
+				expect(result.totalLines).toBe(0)
+				expect(result.metadata.totalLinesInFile).toBe(0)
+				expect(result.metadata.hasMoreBefore).toBe(false)
+				expect(result.metadata.hasMoreAfter).toBe(false)
+			})
+		})
+
+		it("should report hasMoreBefore as false for empty files even with offset > 1", async () => {
+			await withTempFile("indent-empty-offset-test.txt", "", async (filepath) => {
+				const result = await readIndentationBlock(filepath, 5, 100)
+				expect(result.content).toBe("")
+				expect(result.lineCount).toBe(0)
+				expect(result.totalLines).toBe(0)
+				expect(result.metadata.totalLinesInFile).toBe(0)
+				// Even though offset > 1, there are no lines in an empty file
+				expect(result.metadata.hasMoreBefore).toBe(false)
+				expect(result.metadata.hasMoreAfter).toBe(false)
 			})
 		})
 	})
