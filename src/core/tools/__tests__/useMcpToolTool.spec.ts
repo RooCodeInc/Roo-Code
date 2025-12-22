@@ -3,6 +3,25 @@
 import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
+import * as fs from "fs/promises"
+
+// Mock fs/promises
+vi.mock("fs/promises", () => ({
+	stat: vi.fn(),
+	readFile: vi.fn(),
+}))
+
+// Import the actual module to get the mock
+import { readImageAsDataUrlWithBuffer } from "../helpers/imageHelpers"
+
+// Mock image helpers
+vi.mock("../helpers/imageHelpers", () => ({
+	readImageAsDataUrlWithBuffer: vi.fn(),
+	isSupportedImageFormat: vi.fn((ext: string) => {
+		const supportedFormats = [".png", ".jpg", ".jpeg", ".gif", ".webp"]
+		return supportedFormats.includes(ext.toLowerCase())
+	}),
+}))
 
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
@@ -535,6 +554,349 @@ describe("useMcpToolTool", () => {
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("No servers available"))
 			expect(callToolMock).not.toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("image handling", () => {
+		let mockReadImageAsDataUrlWithBuffer: ReturnType<typeof vi.fn>
+		let mockFsStat: ReturnType<typeof vi.fn>
+
+		beforeEach(() => {
+			// Get mocked functions
+			mockReadImageAsDataUrlWithBuffer = vi.mocked(readImageAsDataUrlWithBuffer)
+			mockFsStat = vi.mocked(fs.stat)
+
+			// Clear all mocks before each test
+			vi.clearAllMocks()
+		})
+
+		it("should convert image file paths to base64 data URLs", async () => {
+			// Setup
+			const imagePath = "/path/to/image.png"
+			const base64DataUrl =
+				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+
+			// Mock file exists and is a file
+			mockFsStat.mockResolvedValue({
+				isFile: () => true,
+			})
+
+			// Mock image reading
+			mockReadImageAsDataUrlWithBuffer.mockResolvedValue({
+				dataUrl: base64DataUrl,
+				buffer: Buffer.from("test"),
+			})
+
+			// Mock server and tool exist
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{
+								name: "test_server",
+								tools: [{ name: "process_image", description: "Process an image" }],
+							},
+						]),
+					callTool: vi.fn().mockResolvedValue({
+						content: [{ type: "text", text: "Image processed" }],
+						isError: false,
+					}),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "process_image",
+					arguments: JSON.stringify({ image: imagePath }),
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Execute
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify image was converted
+			expect(mockFsStat).toHaveBeenCalledWith(imagePath)
+			expect(mockReadImageAsDataUrlWithBuffer).toHaveBeenCalledWith(imagePath)
+
+			// Verify the approval message contains the base64 data URL
+			const approvalCall = mockAskApproval.mock.calls[0]
+			const approvalMessage = JSON.parse(approvalCall[1])
+			const args = JSON.parse(approvalMessage.arguments)
+			expect(args.image).toBe(base64DataUrl)
+		})
+
+		it("should handle nested image paths in complex objects", async () => {
+			// Setup
+			const imagePath1 = "/path/to/image1.jpg"
+			const imagePath2 = "/path/to/image2.png"
+			const base64DataUrl1 = "data:image/jpeg;base64,/9j/4AAQSkZJRg=="
+			const base64DataUrl2 = "data:image/png;base64,iVBORw0KGgoAAAANS=="
+
+			// Mock file exists checks
+			mockFsStat.mockImplementation((path) => {
+				if (path === imagePath1 || path === imagePath2) {
+					return Promise.resolve({ isFile: () => true })
+				}
+				return Promise.reject(new Error("File not found"))
+			})
+
+			// Mock image reading
+			mockReadImageAsDataUrlWithBuffer.mockImplementation((path) => {
+				if (path === imagePath1) {
+					return Promise.resolve({ dataUrl: base64DataUrl1, buffer: Buffer.from("test1") })
+				}
+				if (path === imagePath2) {
+					return Promise.resolve({ dataUrl: base64DataUrl2, buffer: Buffer.from("test2") })
+				}
+				return Promise.reject(new Error("File not found"))
+			})
+
+			// Mock server and tool exist
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{
+								name: "test_server",
+								tools: [{ name: "process_images", description: "Process multiple images" }],
+							},
+						]),
+					callTool: vi.fn().mockResolvedValue({
+						content: [{ type: "text", text: "Images processed" }],
+						isError: false,
+					}),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "process_images",
+					arguments: JSON.stringify({
+						images: [imagePath1, imagePath2],
+						metadata: {
+							primary_image: imagePath1,
+							thumbnail: imagePath2,
+						},
+						text: "Some text that should not be converted",
+					}),
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Execute
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify the approval message contains converted base64 data URLs
+			const approvalCall = mockAskApproval.mock.calls[0]
+			const approvalMessage = JSON.parse(approvalCall[1])
+			const args = JSON.parse(approvalMessage.arguments)
+
+			expect(args.images[0]).toBe(base64DataUrl1)
+			expect(args.images[1]).toBe(base64DataUrl2)
+			expect(args.metadata.primary_image).toBe(base64DataUrl1)
+			expect(args.metadata.thumbnail).toBe(base64DataUrl2)
+			expect(args.text).toBe("Some text that should not be converted")
+		})
+
+		it("should skip conversion for non-image file paths", async () => {
+			// Setup
+			const textFilePath = "/path/to/document.txt"
+
+			// Mock file exists but is not an image
+			mockFsStat.mockResolvedValue({
+				isFile: () => true,
+			})
+
+			// Mock server and tool exist
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{ name: "test_server", tools: [{ name: "process_file", description: "Process a file" }] },
+						]),
+					callTool: vi.fn().mockResolvedValue({
+						content: [{ type: "text", text: "File processed" }],
+						isError: false,
+					}),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "process_file",
+					arguments: JSON.stringify({ file: textFilePath }),
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Execute
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify image conversion was NOT attempted
+			expect(mockReadImageAsDataUrlWithBuffer).not.toHaveBeenCalled()
+
+			// Verify the original path is preserved
+			const approvalCall = mockAskApproval.mock.calls[0]
+			const approvalMessage = JSON.parse(approvalCall[1])
+			const args = JSON.parse(approvalMessage.arguments)
+			expect(args.file).toBe(textFilePath)
+		})
+
+		it("should skip conversion for already base64 encoded images", async () => {
+			// Setup
+			const base64DataUrl =
+				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+
+			// Mock server and tool exist
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{
+								name: "test_server",
+								tools: [{ name: "process_image", description: "Process an image" }],
+							},
+						]),
+					callTool: vi.fn().mockResolvedValue({
+						content: [{ type: "text", text: "Image processed" }],
+						isError: false,
+					}),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "process_image",
+					arguments: JSON.stringify({ image: base64DataUrl }),
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Execute
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify no file system operations were performed
+			expect(mockFsStat).not.toHaveBeenCalled()
+			expect(mockReadImageAsDataUrlWithBuffer).not.toHaveBeenCalled()
+
+			// Verify the base64 data URL is preserved as-is
+			const approvalCall = mockAskApproval.mock.calls[0]
+			const approvalMessage = JSON.parse(approvalCall[1])
+			const args = JSON.parse(approvalMessage.arguments)
+			expect(args.image).toBe(base64DataUrl)
+		})
+
+		it("should handle file read errors gracefully", async () => {
+			// Setup
+			const imagePath = "/path/to/nonexistent.png"
+
+			// Mock file exists
+			mockFsStat.mockResolvedValue({
+				isFile: () => true,
+			})
+
+			// Mock image reading failure
+			mockReadImageAsDataUrlWithBuffer.mockRejectedValue(new Error("File read error"))
+
+			// Mock server and tool exist
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi
+						.fn()
+						.mockReturnValue([
+							{
+								name: "test_server",
+								tools: [{ name: "process_image", description: "Process an image" }],
+							},
+						]),
+					callTool: vi.fn().mockResolvedValue({
+						content: [{ type: "text", text: "Image processed" }],
+						isError: false,
+					}),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test_server",
+					tool_name: "process_image",
+					arguments: JSON.stringify({ image: imagePath }),
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Execute
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Verify the original path is preserved when conversion fails
+			const approvalCall = mockAskApproval.mock.calls[0]
+			const approvalMessage = JSON.parse(approvalCall[1])
+			const args = JSON.parse(approvalMessage.arguments)
+			expect(args.image).toBe(imagePath)
 		})
 	})
 })
