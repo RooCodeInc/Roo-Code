@@ -71,6 +71,7 @@ interface PricingTier {
 		text: string
 		href?: string
 	}
+	learnMoreLink?: string
 }
 
 const pricingTiers: PricingTier[] = [
@@ -123,6 +124,7 @@ const pricingTiers: PricingTier[] = [
 			text: "Sign up",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
 		},
+		learnMoreLink: "/cloud/team",
 	},
 ]
 
@@ -209,6 +211,16 @@ export default function PricingPage() {
 											<ArrowRight />
 										</Link>
 									</Button>
+
+									{tier.learnMoreLink && (
+										<div className="mt-3 text-center">
+											<Link
+												href={tier.learnMoreLink}
+												className="text-sm text-violet-600 dark:text-violet-400 hover:underline">
+												Learn more about Team features →
+											</Link>
+										</div>
+									)}
 
 									{/* <div className="bg-foreground/20 h-8 absolute -bottom-8 left-1/2 w-[1px]" /> */}
 									<div className="h-[28px] absolute bottom-[-31px] left-1/2 w-[4px] transition-colors bg-gradient-to-b from-transparent to-violet-700/20 group-hover:from-violet-500/50 group-hover:to-violet-500/20" />
