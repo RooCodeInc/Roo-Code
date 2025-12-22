@@ -702,7 +702,8 @@ describe("useSelectedModel", () => {
 			expect(result.current.id).toBe("gpt-4o")
 			expect(result.current.info).toEqual(openAiModelInfoSaneDefaults)
 			expect(result.current.info?.supportsNativeTools).toBe(true)
-			expect(result.current.info?.defaultToolProtocol).toBe("native")
+			// OpenAI Compatible defaults to XML for better third-party proxy compatibility
+			expect(result.current.info?.defaultToolProtocol).toBe("xml")
 		})
 
 		it("should merge native tool defaults with custom model info", () => {
@@ -734,7 +735,8 @@ describe("useSelectedModel", () => {
 			}
 			expect(result.current.info).toEqual({ ...nativeToolDefaults, ...customModelInfo })
 			expect(result.current.info?.supportsNativeTools).toBe(true)
-			expect(result.current.info?.defaultToolProtocol).toBe("native")
+			// OpenAI Compatible defaults to XML for better third-party proxy compatibility
+			expect(result.current.info?.defaultToolProtocol).toBe("xml")
 		})
 
 		it("should allow custom model info to override native tool defaults", () => {
