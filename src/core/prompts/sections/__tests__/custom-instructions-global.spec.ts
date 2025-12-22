@@ -12,7 +12,8 @@ const { mockHomedir, mockStat, mockReadFile, mockReaddir, mockGetRooDirectoriesF
 	}))
 
 // Mock os module
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	default: {
 		homedir: mockHomedir,
 	},

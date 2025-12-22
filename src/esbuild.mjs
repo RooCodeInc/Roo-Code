@@ -16,7 +16,7 @@ async function main() {
 	const production = process.argv.includes("--production")
 	const watch = process.argv.includes("--watch")
 	const minify = production
-	const sourcemap = true // Always generate source maps for error handling
+	const sourcemap = !production // Always generate source maps for error handling.
 
 	/**
 	 * @type {import('esbuild').BuildOptions}
@@ -109,7 +109,7 @@ async function main() {
 		plugins,
 		entryPoints: ["extension.ts"],
 		outfile: "dist/extension.js",
-		external: ["vscode"],
+		external: ["vscode", "esbuild"],
 	}
 
 	/**

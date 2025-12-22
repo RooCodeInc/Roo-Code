@@ -25,7 +25,8 @@ vi.mock("vscode", () => ({
 }))
 
 // Mock the os module
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	userInfo: vi.fn(() => ({ shell: null })),
 }))
 

@@ -1,5 +1,5 @@
 import * as jschardet from "jschardet"
-import * as iconv from "iconv-lite"
+import iconv from "iconv-lite"
 import { isBinaryFile } from "isbinaryfile"
 import fs from "fs/promises"
 import path from "path"

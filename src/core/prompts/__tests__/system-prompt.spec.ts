@@ -1,6 +1,7 @@
 // npx vitest core/prompts/__tests__/system-prompt.spec.ts
 
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	default: {
 		homedir: () => "/home/user",
 		platform: () => "linux",

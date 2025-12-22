@@ -60,13 +60,15 @@ vi.mock("vscode", async (importOriginal) => ({
 }))
 
 // Mock os module
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	tmpdir: vi.fn(() => "/tmp"),
 	homedir: vi.fn(() => "/home/user"),
 }))
 
 // Mock path module
-vi.mock("path", () => ({
+vi.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	join: vi.fn((...args: string[]) => args.join("/")),
 	sep: "/",
 }))

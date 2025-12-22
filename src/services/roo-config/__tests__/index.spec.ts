@@ -16,7 +16,8 @@ vi.mock("fs/promises", () => ({
 }))
 
 // Mock os module
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	homedir: mockHomedir,
 }))
 

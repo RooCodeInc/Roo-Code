@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import * as jschardet from "jschardet"
-import * as iconv from "iconv-lite"
+import iconv from "iconv-lite"
 import { isBinaryFile } from "isbinaryfile"
 import fs from "fs/promises"
 import path from "path"
@@ -32,11 +32,21 @@ vi.mock("jschardet", () => ({
 	detect: vi.fn(),
 }))
 
-vi.mock("iconv-lite", () => ({
-	encodingExists: vi.fn(),
-	decode: vi.fn(),
-	encode: vi.fn(),
-}))
+vi.mock("iconv-lite", async (importOriginal) => {
+	const original = (await importOriginal()) as any
+	return {
+		...original,
+		default: {
+			...original.default,
+			encodingExists: vi.fn(),
+			decode: vi.fn(),
+			encode: vi.fn(),
+		},
+		encodingExists: vi.fn(),
+		decode: vi.fn(),
+		encode: vi.fn(),
+	}
+})
 
 vi.mock("isbinaryfile", () => ({
 	isBinaryFile: vi.fn(),
@@ -50,7 +60,8 @@ vi.mock("fs/promises", () => ({
 	},
 }))
 
-vi.mock("path", () => ({
+vi.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	default: {
 		extname: vi.fn(),
 	},

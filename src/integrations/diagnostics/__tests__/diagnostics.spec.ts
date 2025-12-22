@@ -3,7 +3,8 @@ import * as vscode from "vscode"
 import { diagnosticsToProblemsString } from "../index"
 
 // Mock path module
-vitest.mock("path", () => ({
+vitest.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	relative: vitest.fn((cwd, fullPath) => {
 		let relativePath = ""
 		// Handle the specific case already present

@@ -6,7 +6,8 @@ vi.mock("fs", () => ({
 	readFileSync: vi.fn(),
 }))
 
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	platform: vi.fn(),
 }))
 

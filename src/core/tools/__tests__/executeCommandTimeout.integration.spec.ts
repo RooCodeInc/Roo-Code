@@ -56,11 +56,13 @@ vi.mock("vscode", async (importOriginal) => ({
 }))
 
 vitest.mock("fs/promises")
-vitest.mock("os", () => ({
+vitest.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	tmpdir: vitest.fn(() => "/tmp"),
 	homedir: vitest.fn(() => "/home/user"),
 }))
-vitest.mock("path", () => ({
+vitest.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	join: vitest.fn((...args: string[]) => args.join("/")),
 	sep: "/",
 }))

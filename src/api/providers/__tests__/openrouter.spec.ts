@@ -40,12 +40,14 @@ import { Package } from "../../../shared/package"
 
 vitest.mock("openai")
 vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
-vitest.mock("os", () => ({
+vitest.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	tmpdir: vitest.fn(() => "/tmp"),
 	homedir: vitest.fn(() => "/home/user"),
 }))
 
-vitest.mock("path", () => ({
+vitest.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	join: vitest.fn((...paths) => paths.join("/")),
 	sep: "/",
 }))

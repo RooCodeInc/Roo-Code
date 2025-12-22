@@ -13,12 +13,14 @@ vitest.mock("execa", () => ({
 	execa: vitest.fn(),
 }))
 
-vitest.mock("os", () => ({
+vitest.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	tmpdir: vitest.fn(() => "/tmp"),
 	homedir: vitest.fn(() => "/home/user"),
 }))
 
-vitest.mock("path", () => ({
+vitest.mock("path", async (importOriginal) => ({
+	...(await importOriginal()),
 	join: vitest.fn((...paths) => paths.join("/")),
 	sep: "/",
 	isAbsolute: vitest.fn((path: string) => path.startsWith("/")),

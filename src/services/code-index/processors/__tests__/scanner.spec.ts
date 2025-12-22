@@ -96,7 +96,8 @@ vi.mock("vscode", async (importOriginal) => ({
 vi.mock("../../../../core/ignore/RooIgnoreController")
 vi.mock("ignore")
 // Mock os
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	tmpdir: vi.fn(() => "/tmp"),
 	homedir: vi.fn(() => "/home/user"),
 }))

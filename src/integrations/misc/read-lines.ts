@@ -8,9 +8,9 @@
  */
 import { createReadStream } from "fs"
 import { open } from "fs/promises"
-import * as iconv from "iconv-lite"
+import iconv from "iconv-lite"
 import { detectEncoding } from "../../utils/encoding"
-
+// iconv.default.decodeStream
 const outOfRangeError = (filepath: string, n: number) => {
 	return new RangeError(`Line with index ${n} does not exist in '${filepath}'. Note that line indexing is zero-based`)
 }

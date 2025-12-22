@@ -92,9 +92,11 @@ vi.mock("fs/promises", () => ({
 	},
 }))
 
-vi.mock("os", () => ({
+vi.mock("os", async (importOriginal) => ({
+	...(await importOriginal()),
 	default: {
 		homedir: vi.fn(() => "/mock/home"),
+		tmpdir: vi.fn(() => "/tmp"),
 	},
 	homedir: vi.fn(() => "/mock/home"),
 	tmpdir: vi.fn(() => "/tmp"),

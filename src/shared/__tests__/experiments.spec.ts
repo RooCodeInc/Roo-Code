@@ -35,6 +35,7 @@ describe("experiments", () => {
 				alwaysIncludeFileDetails: false,
 				runSlashCommand: false,
 				multipleNativeToolCalls: false,
+				customTools: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
@@ -50,6 +51,7 @@ describe("experiments", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				multipleNativeToolCalls: false,
+				customTools: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(true)
 		})
@@ -65,6 +67,7 @@ describe("experiments", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				multipleNativeToolCalls: false,
+				customTools: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.POWER_STEERING)).toBe(false)
 		})
