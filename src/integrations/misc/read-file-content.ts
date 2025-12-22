@@ -226,7 +226,7 @@ export async function readSlice(
 		let buffer = ""
 		let startLine = 0
 		let endLine = 0
-		let truncatedByLimit = false
+		let hitLimit = false
 
 		const input = createReadStream(filePath)
 
@@ -248,7 +248,7 @@ export async function readSlice(
 				lineNumber++
 
 				// Only collect content if we haven't hit the limit yet
-				if (!truncatedByLimit && lineNumber >= offset && collected.length < limit) {
+				if (!hitLimit && lineNumber >= offset && collected.length < limit) {
 					// Track first line collected
 					if (startLine === 0) {
 						startLine = lineNumber
@@ -265,7 +265,7 @@ export async function readSlice(
 
 					// Check if we've hit the limit
 					if (collected.length >= limit) {
-						truncatedByLimit = true
+						hitLimit = true
 						// Continue counting lines instead of destroying stream
 					}
 				}
@@ -281,7 +281,7 @@ export async function readSlice(
 			// Process any remaining data (last line without newline)
 			if (buffer.length > 0) {
 				lineNumber++
-				if (!truncatedByLimit && lineNumber >= offset && collected.length < limit) {
+				if (!hitLimit && lineNumber >= offset && collected.length < limit) {
 					if (startLine === 0) {
 						startLine = lineNumber
 					}
@@ -321,7 +321,9 @@ export async function readSlice(
 			}
 
 			const linesReturned = collected.length
+			const hasMoreAfter = endLine > 0 && endLine < totalLines
 			const linesAfterEnd = endLine > 0 ? totalLines - endLine : 0
+			const truncatedByLimit = hitLimit && hasMoreAfter
 
 			resolve({
 				content: collected.join("\n"),
@@ -334,7 +336,7 @@ export async function readSlice(
 					startLine: startLine || offset,
 					endLine: endLine || offset,
 					hasMoreBefore: (startLine || offset) > 1,
-					hasMoreAfter: linesAfterEnd > 0,
+					hasMoreAfter,
 					linesBeforeStart: (startLine || offset) - 1,
 					linesAfterEnd,
 					truncatedByLimit,

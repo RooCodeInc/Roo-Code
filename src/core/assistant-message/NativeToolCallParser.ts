@@ -328,45 +328,40 @@ export class NativeToolCallParser {
 				entry.mode = file.mode
 			}
 
-			// Map indentation configuration (accepts both camelCase and snake_case)
+			// Map indentation configuration
 			if (file.indentation && typeof file.indentation === "object") {
 				const indent = file.indentation
 				const indentConfig: FileEntry["indentation"] = {}
 
-				// anchorLine (camelCase) or anchor_line (snake_case)
-				const anchorLineValue = indent.anchorLine ?? indent.anchor_line
-				if (anchorLineValue !== undefined) {
-					const anchorLine = Number(anchorLineValue)
+				// anchorLine
+				if (indent.anchorLine !== undefined) {
+					const anchorLine = Number(indent.anchorLine)
 					if (!isNaN(anchorLine) && anchorLine > 0) {
 						indentConfig.anchorLine = anchorLine
 					}
 				}
 
-				// maxLevels (camelCase) or max_levels (snake_case)
-				const maxLevelsValue = indent.maxLevels ?? indent.max_levels
-				if (maxLevelsValue !== undefined) {
-					const maxLevels = Number(maxLevelsValue)
+				// maxLevels
+				if (indent.maxLevels !== undefined) {
+					const maxLevels = Number(indent.maxLevels)
 					if (!isNaN(maxLevels) && maxLevels >= 0) {
 						indentConfig.maxLevels = maxLevels
 					}
 				}
 
-				// includeSiblings (camelCase) or include_siblings (snake_case)
-				const includeSiblingsValue = indent.includeSiblings ?? indent.include_siblings
-				if (includeSiblingsValue !== undefined) {
-					indentConfig.includeSiblings = Boolean(includeSiblingsValue)
+				// includeSiblings
+				if (indent.includeSiblings !== undefined) {
+					indentConfig.includeSiblings = Boolean(indent.includeSiblings)
 				}
 
-				// includeHeader (camelCase) or include_header (snake_case)
-				const includeHeaderValue = indent.includeHeader ?? indent.include_header
-				if (includeHeaderValue !== undefined) {
-					indentConfig.includeHeader = Boolean(includeHeaderValue)
+				// includeHeader
+				if (indent.includeHeader !== undefined) {
+					indentConfig.includeHeader = Boolean(indent.includeHeader)
 				}
 
-				// maxLines (camelCase) or max_lines (snake_case)
-				const maxLinesValue = indent.maxLines ?? indent.max_lines
-				if (maxLinesValue !== undefined) {
-					const maxLines = Number(maxLinesValue)
+				// maxLines
+				if (indent.maxLines !== undefined) {
+					const maxLines = Number(indent.maxLines)
 					if (!isNaN(maxLines) && maxLines > 0) {
 						indentConfig.maxLines = maxLines
 					}
