@@ -1,6 +1,7 @@
 import { type ToolName, toolNames } from "@roo-code/types"
 import { TextContent, ToolUse, ToolParamName, toolParamNames } from "../../shared/tools"
 import { AssistantMessageContent } from "./parseAssistantMessage"
+import { parseXml } from "../../utils/xml"
 
 /**
  * Parser for assistant messages. Maintains state between chunks
@@ -12,16 +13,22 @@ export class AssistantMessageParser {
 	private currentTextContentStartIndex = 0
 	private currentToolUse: ToolUse | undefined = undefined
 	private currentToolUseStartIndex = 0
-	private currentParamName: ToolParamName | undefined = undefined
+	private currentParamName: string | undefined = undefined
 	private currentParamValueStartIndex = 0
 	private readonly MAX_ACCUMULATOR_SIZE = 1024 * 1024 // 1MB limit
 	private readonly MAX_PARAM_LENGTH = 1024 * 100 // 100KB per parameter limit
 	private accumulator = ""
+	private allToolNames: readonly string[]
+	private customToolNames: Set<string>
 
 	/**
 	 * Initialize a new AssistantMessageParser instance.
+	 * @param customToolNames - Optional array of custom tool names to recognize in addition to built-in tools
 	 */
-	constructor() {
+	constructor(customToolNames: string[] = []) {
+		// Combine built-in tool names with custom tool names
+		this.allToolNames = [...toolNames, ...customToolNames]
+		this.customToolNames = new Set(customToolNames)
 		this.reset()
 	}
 
@@ -78,7 +85,8 @@ export class AssistantMessageParser {
 					// End of param value.
 					// Do not trim content parameters to preserve newlines, but strip first and last newline only
 					const paramValue = currentParamValue.slice(0, -paramClosingTag.length)
-					this.currentToolUse.params[this.currentParamName] =
+					// Use type assertion to support custom tool parameters
+					;(this.currentToolUse.params as Record<ToolParamName | string, string>)[this.currentParamName] =
 						this.currentParamName === "content"
 							? paramValue.replace(/^\n/, "").replace(/\n$/, "")
 							: paramValue.trim()
@@ -87,7 +95,8 @@ export class AssistantMessageParser {
 				} else {
 					// Partial param value is accumulating.
 					// Write the currently accumulated param content in real time
-					this.currentToolUse.params[this.currentParamName] = currentParamValue
+					;(this.currentToolUse.params as Record<ToolParamName | string, string>)[this.currentParamName] =
+						currentParamValue
 					continue
 				}
 			}
@@ -98,15 +107,30 @@ export class AssistantMessageParser {
 				const currentToolValue = this.accumulator.slice(this.currentToolUseStartIndex)
 				const toolUseClosingTag = `</${this.currentToolUse.name}>`
 				if (currentToolValue.endsWith(toolUseClosingTag)) {
-					// End of a tool use.
-					this.currentToolUse.partial = false
 					if (
 						this.currentToolUse.name === "attempt_completion" &&
 						!this.currentToolUse?.params?.result &&
 						currentToolValue.trim()
 					) {
 						this.currentToolUse.params.result = currentToolValueExtract(currentToolValue.trim())
+					} else if (this.customToolNames.has(this.currentToolUse.name)) {
+						// Custom tool use, extract the content
+						Object.assign(
+							this.currentToolUse.params,
+							((text: string = "") => {
+								try {
+									return parseXml(text, [])
+								} catch (error) {
+									console.log(
+										`[${this.currentToolUse.name}] Invalid XML format: ${error instanceof Error ? error.message : String(error)}`,
+									)
+									return {}
+								}
+							})(currentToolValue.trim()),
+						)
 					}
+					// End of a tool use.
+					this.currentToolUse.partial = false
 					this.currentToolUse = undefined
 					continue
 				} else {
@@ -161,7 +185,7 @@ export class AssistantMessageParser {
 			// No currentToolUse.
 
 			let didStartToolUse = false
-			const possibleToolUseOpeningTags = toolNames.map((name) => `<${name}>`)
+			const possibleToolUseOpeningTags = this.allToolNames.map((name) => `<${name}>`)
 
 			for (const toolUseOpeningTag of possibleToolUseOpeningTags) {
 				if (this.accumulator.endsWith(toolUseOpeningTag)) {
@@ -169,7 +193,7 @@ export class AssistantMessageParser {
 					const extractedToolName = toolUseOpeningTag.slice(1, -1)
 
 					// Check if the extracted tool name is valid
-					if (!toolNames.includes(extractedToolName as ToolName)) {
+					if (!this.allToolNames.includes(extractedToolName)) {
 						// Invalid tool name, treat as plain text and continue
 						continue
 					}

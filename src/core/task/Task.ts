@@ -54,6 +54,7 @@ import {
 } from "@roo-code/types"
 // import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
 import { TelemetryService } from "@roo-code/telemetry"
+import { customToolRegistry } from "@roo-code/core"
 import { resolveToolProtocol, detectToolProtocolFromHistory } from "../../utils/resolveToolProtocol"
 
 // api
@@ -95,6 +96,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { buildNativeToolsArray } from "./build-tools"
+import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -526,7 +528,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// For history items without a persisted protocol, we default to XML parser
 		// and will update it in resumeTaskFromHistory after detection.
 		const effectiveProtocol = this._taskToolProtocol || "xml"
-		this.assistantMessageParser = effectiveProtocol !== "native" ? new AssistantMessageParser() : undefined
+		this.assistantMessageParser =
+			effectiveProtocol !== "native" ? new AssistantMessageParser(this.getCustomToolNames()) : undefined
 
 		this.messageQueueService = new MessageQueueService()
 
@@ -1825,7 +1828,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Update parser state to match the detected/resolved protocol
 			const shouldUseXmlParser = this._taskToolProtocol === "xml"
 			if (shouldUseXmlParser && !this.assistantMessageParser) {
-				this.assistantMessageParser = new AssistantMessageParser()
+				this.assistantMessageParser = new AssistantMessageParser(this.getCustomToolNames())
 			} else if (!shouldUseXmlParser && this.assistantMessageParser) {
 				this.assistantMessageParser.reset()
 				this.assistantMessageParser = undefined
@@ -3526,6 +3529,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// If we exit the while loop normally (stack is empty), return false
 		return false
+	}
+
+	/**
+	 * Get the names of all loaded custom tools.
+	 * This is a synchronous method that returns the currently loaded custom tool names.
+	 * If custom tools experiment is not enabled, the registry will be empty.
+	 */
+	private getCustomToolNames(): string[] {
+		return customToolRegistry.list()
 	}
 
 	private async getSystemPrompt(): Promise<string> {
