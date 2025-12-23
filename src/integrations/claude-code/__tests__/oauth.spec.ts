@@ -5,9 +5,21 @@ import {
 	generateUserId,
 	buildAuthorizationUrl,
 	isTokenExpired,
+	refreshAccessToken,
 	CLAUDE_CODE_OAUTH_CONFIG,
+	ClaudeCodeOAuthManager,
 	type ClaudeCodeCredentials,
 } from "../oauth"
+
+// Mock vscode module
+vi.mock("vscode", () => ({
+	window: {
+		showWarningMessage: vi.fn(),
+	},
+}))
+
+// Mock fetch for token refresh tests
+global.fetch = vi.fn()
 
 describe("Claude Code OAuth", () => {
 	describe("generateCodeVerifier", () => {
@@ -193,6 +205,241 @@ describe("Claude Code OAuth", () => {
 			expect(CLAUDE_CODE_OAUTH_CONFIG.redirectUri).toBe("http://localhost:54545/callback")
 			expect(CLAUDE_CODE_OAUTH_CONFIG.scopes).toBe("org:create_api_key user:profile user:inference")
 			expect(CLAUDE_CODE_OAUTH_CONFIG.callbackPort).toBe(54545)
+		})
+	})
+
+	describe("refreshAccessToken", () => {
+		beforeEach(() => {
+			vi.clearAllMocks()
+		})
+
+		test("should successfully refresh token", async () => {
+			const mockResponse = {
+				access_token: "new-access-token",
+				refresh_token: "new-refresh-token",
+				expires_in: 3600,
+				email: "test@example.com",
+			}
+
+			;(global.fetch as any).mockResolvedValue({
+				ok: true,
+				json: async () => mockResponse,
+			})
+
+			const credentials = await refreshAccessToken("old-refresh-token")
+
+			expect(credentials.access_token).toBe("new-access-token")
+			expect(credentials.refresh_token).toBe("new-refresh-token")
+			expect(credentials.email).toBe("test@example.com")
+			expect(credentials.type).toBe("claude")
+			expect(new Date(credentials.expired).getTime()).toBeGreaterThan(Date.now())
+		})
+
+		test("should throw error on failed refresh", async () => {
+			;(global.fetch as any).mockResolvedValue({
+				ok: false,
+				status: 401,
+				statusText: "Unauthorized",
+				text: async () => "Invalid refresh token",
+			})
+
+			await expect(refreshAccessToken("invalid-refresh-token")).rejects.toThrow(
+				/Token refresh failed.*401.*Unauthorized/,
+			)
+		})
+	})
+
+	describe("ClaudeCodeOAuthManager", () => {
+		let manager: ClaudeCodeOAuthManager
+		let mockContext: any
+
+		beforeEach(() => {
+			vi.clearAllMocks()
+			manager = new ClaudeCodeOAuthManager()
+			mockContext = {
+				secrets: {
+					get: vi.fn(),
+					store: vi.fn(),
+					delete: vi.fn(),
+				},
+			}
+		})
+
+		afterEach(() => {
+			manager.dispose()
+		})
+
+		describe("initialize", () => {
+			test("should initialize without credentials", async () => {
+				mockContext.secrets.get.mockResolvedValue(null)
+
+				await manager.initialize(mockContext)
+
+				expect(mockContext.secrets.get).toHaveBeenCalled()
+			})
+
+			test("should load and start refresh timer with existing credentials", async () => {
+				const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "test-token",
+					refresh_token: "test-refresh",
+					expired: futureDate.toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+
+				await manager.initialize(mockContext)
+
+				// Credentials should be loaded
+				expect(manager.getCredentials()).toMatchObject(credentials)
+			})
+		})
+
+		describe("getAccessToken", () => {
+			test("should return null when not authenticated", async () => {
+				mockContext.secrets.get.mockResolvedValue(null)
+				await manager.initialize(mockContext)
+
+				const token = await manager.getAccessToken()
+
+				expect(token).toBeNull()
+			})
+
+			test("should return existing valid token", async () => {
+				const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "valid-token",
+					refresh_token: "test-refresh",
+					expired: futureDate.toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+				await manager.initialize(mockContext)
+
+				const token = await manager.getAccessToken()
+
+				expect(token).toBe("valid-token")
+			})
+
+			test("should refresh expired token automatically", async () => {
+				const pastDate = new Date(Date.now() - 60 * 60 * 1000)
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "expired-token",
+					refresh_token: "test-refresh",
+					expired: pastDate.toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+
+				const mockResponse = {
+					access_token: "new-token",
+					refresh_token: "new-refresh",
+					expires_in: 3600,
+				}
+
+				;(global.fetch as any).mockResolvedValue({
+					ok: true,
+					json: async () => mockResponse,
+				})
+
+				await manager.initialize(mockContext)
+
+				const token = await manager.getAccessToken()
+
+				expect(token).toBe("new-token")
+				expect(mockContext.secrets.store).toHaveBeenCalled()
+			})
+		})
+
+		describe("saveCredentials", () => {
+			test("should save credentials and start refresh timer", async () => {
+				await manager.initialize(mockContext)
+
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "new-token",
+					refresh_token: "new-refresh",
+					expired: new Date(Date.now() + 3600 * 1000).toISOString(),
+				}
+
+				await manager.saveCredentials(credentials)
+
+				expect(mockContext.secrets.store).toHaveBeenCalledWith(
+					"claude-code-oauth-credentials",
+					JSON.stringify(credentials),
+				)
+				expect(manager.getCredentials()).toMatchObject(credentials)
+			})
+		})
+
+		describe("clearCredentials", () => {
+			test("should clear credentials and stop refresh timer", async () => {
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "test-token",
+					refresh_token: "test-refresh",
+					expired: new Date(Date.now() + 3600 * 1000).toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+				await manager.initialize(mockContext)
+
+				await manager.clearCredentials()
+
+				expect(mockContext.secrets.delete).toHaveBeenCalled()
+				expect(manager.getCredentials()).toBeNull()
+			})
+		})
+
+		describe("isAuthenticated", () => {
+			test("should return false when no credentials", async () => {
+				mockContext.secrets.get.mockResolvedValue(null)
+				await manager.initialize(mockContext)
+
+				const isAuth = await manager.isAuthenticated()
+
+				expect(isAuth).toBe(false)
+			})
+
+			test("should return true with valid credentials", async () => {
+				const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "valid-token",
+					refresh_token: "test-refresh",
+					expired: futureDate.toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+				await manager.initialize(mockContext)
+
+				const isAuth = await manager.isAuthenticated()
+
+				expect(isAuth).toBe(true)
+			})
+		})
+
+		describe("dispose", () => {
+			test("should stop refresh timer and cancel auth flow", async () => {
+				const credentials: ClaudeCodeCredentials = {
+					type: "claude",
+					access_token: "test-token",
+					refresh_token: "test-refresh",
+					expired: new Date(Date.now() + 3600 * 1000).toISOString(),
+				}
+
+				mockContext.secrets.get.mockResolvedValue(JSON.stringify(credentials))
+				await manager.initialize(mockContext)
+
+				// Should not throw
+				manager.dispose()
+
+				// Calling dispose multiple times should be safe
+				manager.dispose()
+			})
 		})
 	})
 })
