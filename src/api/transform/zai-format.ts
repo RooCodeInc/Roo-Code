@@ -24,19 +24,19 @@ export type ZAiAssistantMessage = AssistantMessage & {
  *
  * Key differences from standard OpenAI format:
  * - Preserves reasoning_content on assistant messages for interleaved thinking
- * - Text content after tool_results (like environment_details) is converted to system messages
- *   instead of user messages, preventing reasoning_content from being dropped
+ * - Text content after tool_results (like environment_details) is merged into the last tool message
+ *   to avoid creating user messages that would cause reasoning_content to be dropped
  *
  * @param messages Array of Anthropic messages
  * @param options Optional configuration for message conversion
- * @param options.convertToolResultTextToSystem If true, convert text content after tool_results
- *                                              to system messages instead of user messages.
- *                                              This preserves reasoning_content continuity.
+ * @param options.mergeToolResultText If true, merge text content after tool_results into the last
+ *                                     tool message instead of creating a separate user message.
+ *                                     This is critical for Z.ai's interleaved thinking mode.
  * @returns Array of OpenAI messages optimized for Z.ai's thinking mode
  */
 export function convertToZAiFormat(
 	messages: AnthropicMessage[],
-	options?: { convertToolResultTextToSystem?: boolean },
+	options?: { mergeToolResultText?: boolean },
 ): Message[] {
 	const result: Message[] = []
 
@@ -96,19 +96,20 @@ export function convertToZAiFormat(
 
 				// Handle text/image content after tool results
 				if (textParts.length > 0 || imageParts.length > 0) {
-					// For Z.ai interleaved thinking: when convertToolResultTextToSystem is enabled and we have
-					// tool results followed by text (like environment_details), convert to system message
-					// instead of user message to avoid dropping reasoning_content.
-					const shouldConvertToSystem =
-						options?.convertToolResultTextToSystem && toolResults.length > 0 && imageParts.length === 0
+					// For Z.ai interleaved thinking: when mergeToolResultText is enabled and we have
+					// tool results followed by text, merge the text into the last tool message to avoid
+					// creating a user message that would cause reasoning_content to be dropped.
+					// This is critical because Z.ai drops all reasoning_content when it sees a user message.
+					const shouldMergeIntoToolMessage =
+						options?.mergeToolResultText && toolResults.length > 0 && imageParts.length === 0
 
-					if (shouldConvertToSystem) {
-						// Convert text content to system message
-						const systemMessage: SystemMessage = {
-							role: "system",
-							content: textParts.join("\n"),
+					if (shouldMergeIntoToolMessage) {
+						// Merge text content into the last tool message
+						const lastToolMessage = result[result.length - 1] as ToolMessage
+						if (lastToolMessage?.role === "tool") {
+							const additionalText = textParts.join("\n")
+							lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
 						}
-						result.push(systemMessage)
 					} else {
 						// Standard behavior: add user message with text/image content
 						let content: UserMessage["content"]
