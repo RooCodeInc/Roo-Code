@@ -262,7 +262,9 @@
 	"modelResponseIncomplete": "Phản hồi của mô hình không đầy đủ",
 	"modelResponseErrors": {
 		"noToolsUsed": "Mô hình đã không sử dụng bất kỳ công cụ nào trong phản hồi của mình. Điều này thường xảy ra khi mô hình chỉ cung cấp văn bản/lý luận mà không gọi các công cụ cần thiết để hoàn thành tác vụ.",
-		"noToolsUsedDetails": "Mô hình đã cung cấp văn bản/lý luận nhưng không gọi bất kỳ công cụ bắt buộc nào. Điều này thường cho thấy mô hình đã hiểu sai tác vụ hoặc đang gặp khó khăn trong việc xác định công cụ nào sẽ sử dụng. Mô hình đã được tự động nhắc thử lại với việc sử dụng công cụ phù hợp."
+		"noToolsUsedDetails": "Mô hình đã cung cấp văn bản/lý luận nhưng không gọi bất kỳ công cụ bắt buộc nào. Điều này thường cho thấy mô hình đã hiểu sai tác vụ hoặc đang gặp khó khăn trong việc xác định công cụ nào sẽ sử dụng. Mô hình đã được tự động nhắc thử lại với việc sử dụng công cụ phù hợp.",
+		"noAssistantMessages": "Mô hình không cung cấp bất kỳ nội dung phản hồi nào. Điều này có thể cho thấy có vấn đề với API hoặc đầu ra của mô hình.",
+		"noAssistantMessagesDetails": "Mô hình ngôn ngữ đã trả về một phản hồi trống mà không có văn bản hoặc lệnh gọi công cụ nào. Điều này có thể xảy ra do vấn đề API, giới hạn tốc độ hoặc các vấn đề cụ thể của mô hình. Mô hình đã được tự động nhắc thử lại."
 	},
 	"errorDetails": {
 		"link": "Chi tiết",

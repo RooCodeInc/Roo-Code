@@ -261,7 +261,9 @@
 	"modelResponseIncomplete": "Risposta del modello incompleta",
 	"modelResponseErrors": {
 		"noToolsUsed": "Il modello non ha utilizzato alcuno strumento nella sua risposta. Questo accade tipicamente quando il modello fornisce solo testo/ragionamento senza chiamare gli strumenti necessari per completare l'attività.",
-		"noToolsUsedDetails": "Il modello ha fornito testo/ragionamento ma non ha chiamato nessuno degli strumenti richiesti. Questo di solito indica che il modello ha frainteso l'attività o ha difficoltà a determinare quale strumento utilizzare. Il modello è stato automaticamente sollecitato a riprovare con l'uso appropriato degli strumenti."
+		"noToolsUsedDetails": "Il modello ha fornito testo/ragionamento ma non ha chiamato nessuno degli strumenti richiesti. Questo di solito indica che il modello ha frainteso l'attività o ha difficoltà a determinare quale strumento utilizzare. Il modello è stato automaticamente sollecitato a riprovare con l'uso appropriato degli strumenti.",
+		"noAssistantMessages": "Il modello non ha fornito alcun contenuto di risposta. Questo potrebbe indicare un problema con l'API o l'output del modello.",
+		"noAssistantMessagesDetails": "Il modello linguistico ha restituito una risposta vuota senza testo o chiamate a strumenti. Questo può accadere a causa di problemi API, limitazione della velocità o problemi specifici del modello. Il modello è stato automaticamente sollecitato a riprovare."
 	},
 	"errorDetails": {
 		"link": "Dettagli",

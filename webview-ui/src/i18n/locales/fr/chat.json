@@ -261,7 +261,9 @@
 	"modelResponseIncomplete": "Réponse du modèle incomplète",
 	"modelResponseErrors": {
 		"noToolsUsed": "Le modèle n'a utilisé aucun outil dans sa réponse. Cela se produit généralement lorsque le modèle fournit uniquement du texte/raisonnement sans appeler les outils nécessaires pour accomplir la tâche.",
-		"noToolsUsedDetails": "Le modèle a fourni du texte/raisonnement mais n'a appelé aucun des outils requis. Cela indique généralement que le modèle a mal compris la tâche ou a des difficultés à déterminer quel outil utiliser. Le modèle a été automatiquement invité à réessayer avec l'utilisation appropriée des outils."
+		"noToolsUsedDetails": "Le modèle a fourni du texte/raisonnement mais n'a appelé aucun des outils requis. Cela indique généralement que le modèle a mal compris la tâche ou a des difficultés à déterminer quel outil utiliser. Le modèle a été automatiquement invité à réessayer avec l'utilisation appropriée des outils.",
+		"noAssistantMessages": "Le modèle n'a fourni aucun contenu de réponse. Cela peut indiquer un problème avec l'API ou la sortie du modèle.",
+		"noAssistantMessagesDetails": "Le modèle de langage a renvoyé une réponse vide sans aucun texte ni appel d'outil. Cela peut se produire en raison de problèmes d'API, de limitation de débit ou de problèmes spécifiques au modèle. Le modèle a été automatiquement invité à réessayer."
 	},
 	"errorDetails": {
 		"link": "Détails",
