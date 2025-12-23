@@ -140,7 +140,7 @@ ${markdownFormattingSection()}
 
 ${getSharedToolUseSection(effectiveProtocol, experiments)}${toolsCatalog}
 
-${getToolUseGuidelinesSection(effectiveProtocol)}
+${getToolUseGuidelinesSection(effectiveProtocol, experiments)}
 
 ${mcpServersSection}
 
