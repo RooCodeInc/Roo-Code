@@ -36,7 +36,6 @@ interface FileResult {
 	notice?: string
 	// Slice/indentation mode parameters
 	offset?: number
-	limit?: number
 	mode?: ReadMode
 	indentation?: IndentationConfig
 	xmlContent?: string
@@ -92,7 +91,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		const fileResults: FileResult[] = fileEntries.map((entry) => ({
 			path: entry.path,
 			status: "pending",
-			// Map slice/indentation mode parameters (limit is not mapped - always use maxReadFileLine setting)
+			// Map slice/indentation mode parameters
 			offset: entry.offset,
 			mode: entry.mode,
 			indentation: entry.indentation,
