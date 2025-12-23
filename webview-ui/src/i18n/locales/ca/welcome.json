@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "Tria el teu proveïdor",
-		"chooseProvider": "Roo necessita un proveïdor de LLM per funcionar. Tria-ne un per començar, pots afegir-ne més més tard.",
+		"chooseProvider": "Roo necessita un proveïdor de LLM per funcionar. Tria-ne un per començar, pots afegir-ne més tard.",
 		"rooCloudProvider": "Proveïdor de Roo Code Cloud",
 		"rooCloudDescription": "La manera més fàcil de començar és amb el Proveïdor Roo Code Cloud: una mescla acurada de models gratuïts i de pagament a baix cost.",
 		"learnMore": "Més informació",
