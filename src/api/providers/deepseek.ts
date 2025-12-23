@@ -54,12 +54,17 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 		// Convert messages to R1 format (merges consecutive same-role messages)
 		// This is required for DeepSeek which does not support successive messages with the same role
-		// For thinking models (deepseek-reasoner), enable mergeToolResultText to preserve reasoning_content
-		// during tool call sequences. Without this, environment_details text after tool_results would
-		// create user messages that cause DeepSeek to drop all previous reasoning_content.
+		// For thinking models (deepseek-reasoner):
+		// - Enable mergeToolResultText to preserve reasoning_content during tool call sequences.
+		//   Without this, environment_details text after tool_results would create user messages
+		//   that cause DeepSeek to drop all previous reasoning_content.
+		// - Enable addEmptyReasoning to add empty reasoning_content ("") to assistant messages
+		//   that don't have reasoning. This is required when switching providers mid-conversation,
+		//   as DeepSeek's API requires all assistant messages to have reasoning_content in thinking mode.
 		// See: https://api-docs.deepseek.com/guides/thinking_mode
 		const convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
 			mergeToolResultText: isThinkingModel,
+			addEmptyReasoning: isThinkingModel,
 		})
 
 		const requestOptions: DeepSeekChatCompletionParams = {

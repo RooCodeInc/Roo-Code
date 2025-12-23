@@ -34,11 +34,15 @@ export type DeepSeekAssistantMessage = AssistantMessage & {
  * @param options.mergeToolResultText If true, merge text content after tool_results into the last
  *                                     tool message instead of creating a separate user message.
  *                                     This is critical for DeepSeek's interleaved thinking mode.
+ * @param options.addEmptyReasoning If true, add empty reasoning_content ("") to assistant messages
+ *                                   that don't have reasoning content. This is required for DeepSeek
+ *                                   thinking mode when switching providers mid-conversation, as
+ *                                   DeepSeek's API requires all assistant messages to have reasoning_content.
  * @returns Array of OpenAI messages where consecutive messages with the same role are combined
  */
 export function convertToR1Format(
 	messages: AnthropicMessage[],
-	options?: { mergeToolResultText?: boolean },
+	options?: { mergeToolResultText?: boolean; addEmptyReasoning?: boolean },
 ): Message[] {
 	const result: Message[] = []
 
@@ -190,12 +194,20 @@ export function convertToR1Format(
 				// Use reasoning from content blocks if not provided at top level
 				const finalReasoning = reasoningContent || extractedReasoning
 
+				// Determine the reasoning_content value:
+				// - Use finalReasoning if it exists
+				// - Use empty string if addEmptyReasoning is enabled and no reasoning exists
+				// - Otherwise undefined (don't include the field)
+				const reasoningValue =
+					finalReasoning !== undefined ? finalReasoning : options?.addEmptyReasoning ? "" : undefined
+
 				const assistantMessage: DeepSeekAssistantMessage = {
 					role: "assistant",
 					content: textParts.length > 0 ? textParts.join("\n") : null,
 					...(toolCalls.length > 0 && { tool_calls: toolCalls }),
 					// Preserve reasoning_content for DeepSeek interleaved thinking
-					...(finalReasoning && { reasoning_content: finalReasoning }),
+					// or add empty reasoning_content if addEmptyReasoning option is enabled
+					...(reasoningValue !== undefined && { reasoning_content: reasoningValue }),
 				}
 
 				// Check if we can merge with the last message (only if no tool calls)
@@ -208,15 +220,23 @@ export function convertToR1Format(
 						const lastContent = lastMessage.content || ""
 						lastMessage.content = `${lastContent}\n${assistantMessage.content}`
 					}
-					// Preserve reasoning_content from the new message if present
-					if (finalReasoning) {
-						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = finalReasoning
+					// Preserve reasoning_content from the new message if present,
+					// or add empty reasoning if addEmptyReasoning is enabled
+					if (reasoningValue !== undefined) {
+						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = reasoningValue
 					}
 				} else {
 					result.push(assistantMessage)
 				}
 			} else {
 				// Simple string content
+				// Determine the reasoning_content value for simple string content:
+				// - Use reasoningContent if it exists
+				// - Use empty string if addEmptyReasoning is enabled and no reasoning exists
+				// - Otherwise undefined (don't include the field)
+				const simpleReasoningValue =
+					reasoningContent !== undefined ? reasoningContent : options?.addEmptyReasoning ? "" : undefined
+
 				const lastMessage = result[result.length - 1]
 				if (lastMessage?.role === "assistant" && !(lastMessage as any).tool_calls) {
 					if (typeof lastMessage.content === "string") {
@@ -224,15 +244,16 @@ export function convertToR1Format(
 					} else {
 						lastMessage.content = message.content
 					}
-					// Preserve reasoning_content from the new message if present
-					if (reasoningContent) {
-						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = reasoningContent
+					// Preserve reasoning_content from the new message if present,
+					// or add empty reasoning if addEmptyReasoning is enabled
+					if (simpleReasoningValue !== undefined) {
+						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = simpleReasoningValue
 					}
 				} else {
 					const assistantMessage: DeepSeekAssistantMessage = {
 						role: "assistant",
 						content: message.content,
-						...(reasoningContent && { reasoning_content: reasoningContent }),
+						...(simpleReasoningValue !== undefined && { reasoning_content: simpleReasoningValue }),
 					}
 					result.push(assistantMessage)
 				}
