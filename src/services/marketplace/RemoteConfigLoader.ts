@@ -3,10 +3,11 @@ import * as yaml from "yaml"
 import { z } from "zod"
 
 import {
-	type MarketplaceItem,
-	type MarketplaceItemType,
+	commandMarketplaceItemSchema,
 	modeMarketplaceItemSchema,
 	mcpMarketplaceItemSchema,
+	type MarketplaceItem,
+	type MarketplaceItemType,
 } from "@roo-code/types"
 import { getRooCodeApiUrl } from "@roo-code/cloud"
 
@@ -16,6 +17,10 @@ const modeMarketplaceResponse = z.object({
 
 const mcpMarketplaceResponse = z.object({
 	items: z.array(mcpMarketplaceItemSchema),
+})
+
+const commandMarketplaceResponse = z.object({
+	items: z.array(commandMarketplaceItemSchema),
 })
 
 export class RemoteConfigLoader {
@@ -32,10 +37,11 @@ export class RemoteConfigLoader {
 
 		const modesPromise = this.fetchModes()
 		const mcpsPromise = hideMarketplaceMcps ? Promise.resolve([]) : this.fetchMcps()
+		const commandsPromise = this.fetchCommands()
 
-		const [modes, mcps] = await Promise.all([modesPromise, mcpsPromise])
+		const [modes, mcps, commands] = await Promise.all([modesPromise, mcpsPromise, commandsPromise])
 
-		items.push(...modes, ...mcps)
+		items.push(...modes, ...mcps, ...commands)
 		return items
 	}
 
@@ -76,6 +82,30 @@ export class RemoteConfigLoader {
 
 		const items: MarketplaceItem[] = validated.items.map((item) => ({
 			type: "mcp" as const,
+			...item,
+		}))
+
+		this.setCache(cacheKey, items)
+		return items
+	}
+
+	private async fetchCommands(): Promise<MarketplaceItem[]> {
+		const cacheKey = "commands"
+		const cached = this.getFromCache(cacheKey)
+
+		if (cached) {
+			return cached
+		}
+
+		const data = await this.fetchWithRetry<string>(`${this.apiBaseUrl}/api/marketplace/commands`)
+
+		// The commands endpoint returns Markdown list (yaml frontmatter + markdown body per item)
+		// The test server sample is plain Markdown with YAML frontmatter; parse as plain text list.
+		const yamlData = yaml.parse(data)
+		const validated = commandMarketplaceResponse.parse(yamlData)
+
+		const items: MarketplaceItem[] = validated.items.map((item) => ({
+			type: "command" as const,
 			...item,
 		}))
 

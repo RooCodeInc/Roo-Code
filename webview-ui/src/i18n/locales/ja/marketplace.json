@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "インストール済み",
 		"settings": "設定",
-		"browse": "参照"
+		"browse": "参照",
+		"slashCommands": "スラッシュコマンド"
 	},
 	"done": "完了",
 	"refresh": "更新",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Marketplaceアイテムを検索...",
 			"placeholderMcp": "MCPを検索...",
-			"placeholderMode": "モードを検索..."
+			"placeholderMode": "モードを検索...",
+			"placeholderCommand": "スラッシュコマンドを検索..."
 		},
 		"installed": {
 			"label": "ステータスで絞り込む",
@@ -23,7 +25,8 @@
 			"label": "タイプでフィルター:",
 			"all": "すべてのタイプ",
 			"mode": "モード",
-			"mcpServer": "MCPサーバー"
+			"mcpServer": "MCPサーバー",
+			"slashCommand": "スラッシュコマンド"
 		},
 		"sort": {
 			"label": "並び順:",
@@ -89,6 +92,7 @@
 		"title": "{{name}}をインストール",
 		"titleMode": "{{name}}モードをインストール",
 		"titleMcp": "{{name}} MCPをインストール",
+		"titleCommand": "{{name}}スラッシュコマンドをインストール",
 		"scope": "インストール範囲",
 		"project": "プロジェクト（現在のワークスペース）",
 		"global": "グローバル（すべてのワークスペース）",
@@ -101,6 +105,7 @@
 		"installed": "正常にインストールされました！",
 		"whatNextMcp": "このMCPサーバーを設定して使用できるようになりました。サイドバーのMCPアイコンをクリックしてタブを切り替えてください。",
 		"whatNextMode": "このモードを使用できるようになりました。サイドバーのモードアイコンをクリックしてタブを切り替えてください。",
+		"whatNextCommand": "チャットで /{{name}} と入力することで、このスラッシュコマンドを使用できるようになりました。",
 		"done": "完了",
 		"goToMcp": "MCPタブに移動",
 		"goToModes": "モード設定に移動",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "MCPサーバーを削除",
 			"message": "MCPサーバー「{{mcpName}}」を本当に削除しますか？"
+		},
+		"command": {
+			"title": "スラッシュコマンドを削除",
+			"message": "スラッシュコマンド「{{commandName}}」を削除してもよろしいですか？"
 		},
 		"cancel": "キャンセル",
 		"confirm": "削除"

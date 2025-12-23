@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Zainstalowane",
 		"settings": "Ustawienia",
-		"browse": "Przeglądaj"
+		"browse": "Przeglądaj",
+		"slashCommands": "Polecenia Slash"
 	},
 	"done": "Gotowe",
 	"refresh": "Odśwież",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Szukaj elementów marketplace...",
 			"placeholderMcp": "Szukaj MCPs...",
-			"placeholderMode": "Szukaj trybów..."
+			"placeholderMode": "Szukaj trybów...",
+			"placeholderCommand": "Szukaj poleceń Slash..."
 		},
 		"installed": {
 			"label": "Filtruj według statusu",
@@ -23,7 +25,8 @@
 			"label": "Filtruj według typu:",
 			"all": "Wszystkie typy",
 			"mode": "Tryb",
-			"mcpServer": "Serwer MCP"
+			"mcpServer": "Serwer MCP",
+			"slashCommand": "Polecenie Slash"
 		},
 		"sort": {
 			"label": "Sortuj według:",
@@ -89,6 +92,7 @@
 		"title": "Zainstaluj {{name}}",
 		"titleMode": "Zainstaluj tryb {{name}}",
 		"titleMcp": "Zainstaluj MCP {{name}}",
+		"titleCommand": "Zainstaluj polecenie Slash {{name}}",
 		"scope": "Zakres instalacji",
 		"project": "Projekt (bieżący obszar roboczy)",
 		"global": "Globalnie (wszystkie obszary robocze)",
@@ -101,6 +105,7 @@
 		"installed": "Zainstalowano pomyślnie!",
 		"whatNextMcp": "Możesz teraz skonfigurować i używać tego serwera MCP. Kliknij ikonę MCP na pasku bocznym, aby przełączyć zakładki.",
 		"whatNextMode": "Możesz teraz używać tego trybu. Kliknij ikonę Tryby na pasku bocznym, aby przełączyć zakładki.",
+		"whatNextCommand": "Możesz teraz używać tego polecenia slash, wpisując /{{name}} w czacie.",
 		"done": "Gotowe",
 		"goToMcp": "Przejdź do zakładki MCP",
 		"goToModes": "Przejdź do ustawień Trybów",
@@ -140,12 +145,16 @@
 	"removeConfirm": {
 		"mode": {
 			"title": "Usuń tryb",
-			"message": "Czy na pewno chcesz usunąć tryb „{{modeName}}”?",
+			"message": "Czy na pewno chcesz usunąć tryb \"{{modeName}}\"?",
 			"rulesWarning": "Spowoduje to również usunięcie wszelkich powiązanych plików reguł dla tego trybu."
 		},
 		"mcp": {
 			"title": "Usuń serwer MCP",
-			"message": "Czy na pewno chcesz usunąć serwer MCP „{{mcpName}}”?"
+			"message": "Czy na pewno chcesz usunąć serwer MCP \"{{mcpName}}\"?"
+		},
+		"command": {
+			"title": "Usuń polecenie Slash",
+			"message": "Czy na pewno chcesz usunąć polecenie slash \"{{commandName}}\"?"
 		},
 		"cancel": "Anuluj",
 		"confirm": "Usuń"

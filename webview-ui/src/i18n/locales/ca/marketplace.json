@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Instal·lat",
 		"settings": "Configuració",
-		"browse": "Navegar"
+		"browse": "Navegar",
+		"slashCommands": "Comandes Slash"
 	},
 	"done": "Fet",
 	"refresh": "Actualitzar",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Cercar elements del marketplace...",
 			"placeholderMcp": "Cercar MCPs...",
-			"placeholderMode": "Cercar modes..."
+			"placeholderMode": "Cercar modes...",
+			"placeholderCommand": "Cercar comandes Slash..."
 		},
 		"installed": {
 			"label": "Filtra per estat",
@@ -23,7 +25,8 @@
 			"label": "Filtrar per tipus:",
 			"all": "Tots els tipus",
 			"mode": "Mode",
-			"mcpServer": "Servidor MCP"
+			"mcpServer": "Servidor MCP",
+			"slashCommand": "Comanda Slash"
 		},
 		"sort": {
 			"label": "Ordenar per:",
@@ -91,6 +94,7 @@
 		"title": "Instal·lar {{name}}",
 		"titleMode": "Instal·lar mode {{name}}",
 		"titleMcp": "Instal·lar MCP {{name}}",
+		"titleCommand": "Instal·lar la comanda Slash {{name}}",
 		"scope": "Àmbit d'instal·lació",
 		"project": "Projecte (espai de treball actual)",
 		"global": "Global (tots els espais de treball)",
@@ -103,6 +107,7 @@
 		"installed": "Instal·lat amb èxit!",
 		"whatNextMcp": "Ara pots configurar i utilitzar aquest servidor MCP. Feu clic a la icona MCP de la barra lateral per canviar de pestanya.",
 		"whatNextMode": "Ara pots utilitzar aquest mode. Feu clic a la icona Modes de la barra lateral per canviar de pestanya.",
+		"whatNextCommand": "Ara pots utilitzar aquesta comanda slash escrivint /{{name}} al xat.",
 		"done": "Fet",
 		"goToMcp": "Anar a la pestanya MCP",
 		"goToModes": "Anar a la configuració de Modes",
@@ -148,6 +153,10 @@
 		"mcp": {
 			"title": "Eliminar el servidor MCP",
 			"message": "Estàs segur que vols eliminar el servidor MCP \"{{mcpName}}\"?"
+		},
+		"command": {
+			"title": "Eliminar comanda Slash",
+			"message": "Estàs segur que vols eliminar la comanda Slash \"{{commandName}}\"?"
 		},
 		"cancel": "Cancel·lar",
 		"confirm": "Eliminar"

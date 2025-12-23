@@ -6,6 +6,7 @@ import type { MarketplaceItem, MarketplaceItemType, InstallMarketplaceItemOption
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import type { CustomModesManager } from "../../core/config/CustomModesManager"
+import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-config"
 
 export interface InstallOptions extends InstallMarketplaceItemOptions {
 	target: "project" | "global"
@@ -26,9 +27,28 @@ export class SimpleInstaller {
 				return await this.installMode(item, target)
 			case "mcp":
 				return await this.installMcp(item, target, options)
+			case "command":
+				return await this.installCommand(item, target)
 			default:
 				throw new Error(`Unsupported item type: ${(item as any).type}`)
 		}
+	}
+
+	private async installCommand(
+		item: MarketplaceItem,
+		target: "project" | "global",
+	): Promise<{ filePath: string; line?: number }> {
+		if (!item.content || Array.isArray(item.content)) {
+			throw new Error("Command item missing content")
+		}
+
+		const dirPath = await this.getCommandDirPath(target)
+		await fs.mkdir(dirPath, { recursive: true })
+
+		const filePath = path.join(dirPath, `${item.id}.md`)
+		await fs.writeFile(filePath, item.content, "utf-8")
+
+		return { filePath }
 	}
 
 	private async installMode(
@@ -288,8 +308,25 @@ export class SimpleInstaller {
 			case "mcp":
 				await this.removeMcp(item, target)
 				break
+			case "command":
+				await this.removeCommand(item, target)
+				break
 			default:
 				throw new Error(`Unsupported item type: ${(item as any).type}`)
+		}
+	}
+
+	private async removeCommand(item: MarketplaceItem, target: "project" | "global"): Promise<void> {
+		const dirPath = await this.getCommandDirPath(target)
+		const filePath = path.join(dirPath, `${item.id}.md`)
+
+		try {
+			await fs.unlink(filePath)
+		} catch (error: any) {
+			if (error.code === "ENOENT") {
+				return
+			}
+			throw error
 		}
 	}
 
@@ -380,5 +417,17 @@ export class SimpleInstaller {
 			const globalSettingsPath = await ensureSettingsDirectoryExists(this.context)
 			return path.join(globalSettingsPath, GlobalFileNames.mcpSettings)
 		}
+	}
+
+	private async getCommandDirPath(target: "project" | "global"): Promise<string> {
+		if (target === "project") {
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+			if (!workspaceFolder) {
+				throw new Error("No workspace folder found")
+			}
+			return path.join(getProjectRooDirectoryForCwd(workspaceFolder.uri.fsPath), "commands")
+		}
+
+		return path.join(getGlobalRooDirectory(), "commands")
 	}
 }

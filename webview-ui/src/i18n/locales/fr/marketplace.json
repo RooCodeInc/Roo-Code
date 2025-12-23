@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "Installé",
 		"settings": "Paramètres",
-		"browse": "Parcourir"
+		"browse": "Parcourir",
+		"slashCommands": "Commandes Slash"
 	},
 	"done": "Terminé",
 	"refresh": "Actualiser",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "Rechercher des éléments du marketplace...",
 			"placeholderMcp": "Rechercher des MCPs...",
-			"placeholderMode": "Rechercher des modes..."
+			"placeholderMode": "Rechercher des modes...",
+			"placeholderCommand": "Rechercher des commandes Slash..."
 		},
 		"installed": {
 			"label": "Filtrer par statut",
@@ -23,7 +25,8 @@
 			"label": "Filtrer par type :",
 			"all": "Tous les types",
 			"mode": "Mode",
-			"mcpServer": "Serveur MCP"
+			"mcpServer": "Serveur MCP",
+			"slashCommand": "Commande Slash"
 		},
 		"sort": {
 			"label": "Trier par :",
@@ -91,6 +94,7 @@
 		"title": "Installer {{name}}",
 		"titleMode": "Installer le mode {{name}}",
 		"titleMcp": "Installer le MCP {{name}}",
+		"titleCommand": "Installer la commande Slash {{name}}",
 		"scope": "Portée d'installation",
 		"project": "Projet (espace de travail actuel)",
 		"global": "Global (tous les espaces de travail)",
@@ -103,6 +107,7 @@
 		"installed": "Installé avec succès !",
 		"whatNextMcp": "Vous pouvez maintenant configurer et utiliser ce serveur MCP. Cliquez sur l'icône MCP dans la barre latérale pour changer d'onglet.",
 		"whatNextMode": "Vous pouvez maintenant utiliser ce mode. Cliquez sur l'icône Modes dans la barre latérale pour changer d'onglet.",
+		"whatNextCommand": "Tu peux maintenant utiliser cette commande slash en tapant /{{name}} dans le chat.",
 		"done": "Terminé",
 		"goToMcp": "Aller à l'onglet MCP",
 		"goToModes": "Aller aux paramètres des Modes",
@@ -148,6 +153,10 @@
 		"mcp": {
 			"title": "Supprimer le serveur MCP",
 			"message": "Êtes-vous sûr de vouloir supprimer le serveur MCP « {{mcpName}} » ?"
+		},
+		"command": {
+			"title": "Supprimer la commande Slash",
+			"message": "Es-tu sûr de vouloir supprimer la commande slash \"{{commandName}}\" ?"
 		},
 		"cancel": "Annuler",
 		"confirm": "Supprimer"

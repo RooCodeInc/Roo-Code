@@ -68,6 +68,7 @@ export const MarketplaceItemCard: React.FC<MarketplaceItemCardProps> = ({ item, 
 		const labels: Partial<Record<MarketplaceItem["type"], string>> = {
 			mode: t("marketplace:filters.type.mode"),
 			mcp: t("marketplace:filters.type.mcpServer"),
+			command: t("marketplace:filters.type.slashCommand"),
 		}
 		return labels[item.type] ?? "N/A"
 	}, [item.type, t])
@@ -210,7 +211,9 @@ export const MarketplaceItemCard: React.FC<MarketplaceItemCardProps> = ({ item, 
 						<AlertDialogTitle>
 							{item.type === "mode"
 								? t("marketplace:removeConfirm.mode.title")
-								: t("marketplace:removeConfirm.mcp.title")}
+								: item.type === "command"
+									? t("marketplace:removeConfirm.command.title")
+									: t("marketplace:removeConfirm.mcp.title")}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{item.type === "mode" ? (
@@ -220,6 +223,8 @@ export const MarketplaceItemCard: React.FC<MarketplaceItemCardProps> = ({ item, 
 										{t("marketplace:removeConfirm.mode.rulesWarning")}
 									</div>
 								</>
+							) : item.type === "command" ? (
+								t("marketplace:removeConfirm.command.message", { commandName: item.name })
 							) : (
 								t("marketplace:removeConfirm.mcp.message", { mcpName: item.name })
 							)}

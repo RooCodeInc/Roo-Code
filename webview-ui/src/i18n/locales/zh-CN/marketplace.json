@@ -3,7 +3,8 @@
 	"tabs": {
 		"installed": "已安装",
 		"settings": "设置",
-		"browse": "浏览"
+		"browse": "浏览",
+		"slashCommands": "Slash 命令"
 	},
 	"done": "完成",
 	"refresh": "刷新",
@@ -11,7 +12,8 @@
 		"search": {
 			"placeholder": "搜索 Marketplace 项目...",
 			"placeholderMcp": "搜索 MCP...",
-			"placeholderMode": "搜索模式..."
+			"placeholderMode": "搜索模式...",
+			"placeholderCommand": "搜索 Slash 命令..."
 		},
 		"installed": {
 			"label": "按状态筛选",
@@ -23,7 +25,8 @@
 			"label": "按类型筛选：",
 			"all": "所有类型",
 			"mode": "模式",
-			"mcpServer": "MCP 服务"
+			"mcpServer": "MCP 服务",
+			"slashCommand": "Slash 命令"
 		},
 		"sort": {
 			"label": "排序方式：",
@@ -89,6 +92,7 @@
 		"title": "安装 {{name}}",
 		"titleMode": "安装 {{name}} 模式",
 		"titleMcp": "安装 {{name}} MCP",
+		"titleCommand": "安装 {{name}} Slash 命令",
 		"scope": "安装范围",
 		"project": "项目（当前工作区）",
 		"global": "全局（所有工作区）",
@@ -101,6 +105,7 @@
 		"installed": "安装成功！",
 		"whatNextMcp": "现在您可以配置和使用此 MCP 服务。点击侧边栏中的 MCP 图标切换标签页。",
 		"whatNextMode": "现在您可以使用此模式。点击侧边栏中的模式图标切换标签页。",
+		"whatNextCommand": "你现在可以在聊天中输入 /{{name}} 来使用这个 slash 命令。",
 		"done": "完成",
 		"goToMcp": "转到 MCP 标签页",
 		"goToModes": "转到模式设置",
@@ -146,6 +151,10 @@
 		"mcp": {
 			"title": "删除 MCP 服务器",
 			"message": "您确定要删除 MCP 服务器\"{{mcpName}}\"吗？"
+		},
+		"command": {
+			"title": "移除 Slash 命令",
+			"message": "确定要移除 slash 命令\"{{commandName}}\"吗？"
 		},
 		"cancel": "取消",
 		"confirm": "删除"
