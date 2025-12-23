@@ -107,7 +107,7 @@ describe("WelcomeViewProvider", () => {
 			renderWelcomeViewProvider()
 
 			// Should show the Roo Cloud Provider heading
-			expect(screen.getByText(/welcome:providerSignup.rooCloudProvider/)).toBeInTheDocument()
+			expect(screen.getByText(/welcome:providerSignup.rooCloudDescription/)).toBeInTheDocument()
 
 			// Should show the description
 			expect(screen.getByText(/welcome:providerSignup.rooCloudDescription/)).toBeInTheDocument()
