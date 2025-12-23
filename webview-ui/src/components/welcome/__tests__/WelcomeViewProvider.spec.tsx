@@ -61,6 +61,7 @@ vi.mock("lucide-react", () => ({
 	ArrowLeft: () => <span data-testid="arrow-left-icon">←</span>,
 	ArrowRight: () => <span data-testid="arrow-right-icon">→</span>,
 	BadgeInfo: () => <span data-testid="badge-info-icon">ℹ</span>,
+	Brain: () => <span data-testid="brain-icon">🧠</span>,
 	TriangleAlert: () => <span data-testid="triangle-alert-icon">⚠</span>,
 }))
 
@@ -180,8 +181,7 @@ describe("WelcomeViewProvider", () => {
 			expect(screen.getByTestId("radio-custom")).toBeInTheDocument()
 
 			// Should show the provider selection introduction
-			expect(screen.getByTestId("trans-welcome:introduction")).toBeInTheDocument()
-			expect(screen.getByTestId("trans-welcome:chooseProvider")).toBeInTheDocument()
+			expect(screen.getByTestId("trans-welcome:providerSignup.chooseProvider")).toBeInTheDocument()
 		})
 	})
 
@@ -346,7 +346,7 @@ describe("WelcomeViewProvider", () => {
 
 			// Should be back on provider selection screen
 			expect(screen.getByTestId("radio-group")).toBeInTheDocument()
-			expect(screen.getByTestId("trans-welcome:chooseProvider")).toBeInTheDocument()
+			expect(screen.getByTestId("trans-welcome:providerSignup.chooseProvider")).toBeInTheDocument()
 			expect(screen.queryByTestId("progress-ring")).not.toBeInTheDocument()
 		})
 	})
