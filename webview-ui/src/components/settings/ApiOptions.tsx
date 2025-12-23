@@ -760,7 +760,13 @@ const ApiOptions = ({
 					<ModelPicker
 						apiConfiguration={apiConfiguration}
 						setApiConfigurationField={setApiConfigurationField}
-						defaultModelId={getDefaultModelIdForProvider(selectedProvider)}
+						defaultModelId={
+							selectedProvider === "zai"
+								? apiConfiguration.zaiApiLine === "china_coding"
+									? mainlandZAiDefaultModelId
+									: internationalZAiDefaultModelId
+								: getDefaultModelIdForProvider(selectedProvider)
+						}
 						models={getStaticModelsForProvider(selectedProvider, t("settings:labels.useCustomArn"))}
 						modelIdKey="apiModelId"
 						serviceName={getProviderServiceConfig(selectedProvider).serviceName}
