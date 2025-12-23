@@ -61,6 +61,7 @@ vi.mock("lucide-react", () => ({
 	ArrowLeft: () => <span data-testid="arrow-left-icon">←</span>,
 	ArrowRight: () => <span data-testid="arrow-right-icon">→</span>,
 	BadgeInfo: () => <span data-testid="badge-info-icon">ℹ</span>,
+	Brain: () => <span data-testid="brain-icon">🧠</span>,
 	TriangleAlert: () => <span data-testid="triangle-alert-icon">⚠</span>,
 }))
 
