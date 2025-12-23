@@ -9,7 +9,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
-import { extractEnvironmentDetailsForMiniMax } from "../transform/minimax-format"
+import { mergeEnvironmentDetailsForMiniMax } from "../transform/minimax-format"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -88,23 +88,18 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		// MiniMax M2 models support prompt caching
 		const supportsPromptCache = info.supportsPromptCache ?? false
 
-		// Extract environment_details from messages that follow tool_result blocks
-		// and move them to the system prompt. This preserves reasoning continuity
-		// for thinking models by preventing user messages from interrupting the
-		// reasoning context after tool use.
-		const { messages: processedMessages, extractedSystemContent } = extractEnvironmentDetailsForMiniMax(messages)
+		// Merge environment_details from messages that follow tool_result blocks
+		// into the tool_result content. This preserves reasoning continuity for
+		// thinking models by preventing user messages from interrupting the
+		// reasoning context after tool use (similar to r1-format's mergeToolResultText).
+		const processedMessages = mergeEnvironmentDetailsForMiniMax(messages)
 
-		// Build the system blocks array - start with the main system prompt
+		// Build the system blocks array
 		const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
 			supportsPromptCache
 				? { text: systemPrompt, type: "text", cache_control: cacheControl }
 				: { text: systemPrompt, type: "text" },
 		]
-
-		// Add any extracted environment_details as additional system text blocks
-		for (const extractedText of extractedSystemContent) {
-			systemBlocks.push({ text: extractedText, type: "text" })
-		}
 
 		// Prepare request parameters
 		const requestParams: Anthropic.Messages.MessageCreateParams = {

@@ -2,9 +2,9 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { extractEnvironmentDetailsForMiniMax } from "../minimax-format"
+import { mergeEnvironmentDetailsForMiniMax } from "../minimax-format"
 
-describe("extractEnvironmentDetailsForMiniMax", () => {
+describe("mergeEnvironmentDetailsForMiniMax", () => {
 	it("should pass through simple text messages unchanged", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
@@ -17,11 +17,10 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(2)
-		expect(result.messages).toEqual(messages)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(2)
+		expect(result).toEqual(messages)
 	})
 
 	it("should pass through user messages with only tool_result blocks unchanged", () => {
@@ -38,11 +37,10 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages).toEqual(messages)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(1)
+		expect(result).toEqual(messages)
 	})
 
 	it("should pass through user messages with only text blocks unchanged", () => {
@@ -58,14 +56,13 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages).toEqual(messages)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(1)
+		expect(result).toEqual(messages)
 	})
 
-	it("should extract text content from user messages with tool_result AND text blocks", () => {
+	it("should merge text content into last tool_result when both tool_result AND text blocks exist", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -83,23 +80,21 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		// The text should be extracted
-		expect(result.extractedSystemContent).toHaveLength(1)
-		expect(result.extractedSystemContent[0]).toBe(
-			"<environment_details>\nCurrent Time: 2024-01-01\n</environment_details>",
-		)
-
-		// The message should only contain tool_result
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages[0].role).toBe("user")
-		const content = result.messages[0].content as Anthropic.Messages.ContentBlockParam[]
+		// The message should have only tool_result with merged content
+		expect(result).toHaveLength(1)
+		expect(result[0].role).toBe("user")
+		const content = result[0].content as Anthropic.Messages.ToolResultBlockParam[]
 		expect(content).toHaveLength(1)
 		expect(content[0].type).toBe("tool_result")
+		expect(content[0].tool_use_id).toBe("tool-123")
+		expect(content[0].content).toBe(
+			"Tool result content\n\n<environment_details>\nCurrent Time: 2024-01-01\n</environment_details>",
+		)
 	})
 
-	it("should extract multiple text blocks from a single message", () => {
+	it("should merge multiple text blocks into last tool_result", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -126,22 +121,19 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		// Both text blocks should be extracted
-		expect(result.extractedSystemContent).toHaveLength(2)
-		expect(result.extractedSystemContent[0]).toBe("First text block")
-		expect(result.extractedSystemContent[1]).toBe("Second text block")
-
-		// The message should only contain tool_result blocks
-		expect(result.messages).toHaveLength(1)
-		const content = result.messages[0].content as Anthropic.Messages.ContentBlockParam[]
+		// The message should have only tool_result blocks, with text merged into the last one
+		expect(result).toHaveLength(1)
+		const content = result[0].content as Anthropic.Messages.ToolResultBlockParam[]
 		expect(content).toHaveLength(2)
 		expect(content[0].type).toBe("tool_result")
+		expect(content[0].content).toBe("Tool result 1") // First one unchanged
 		expect(content[1].type).toBe("tool_result")
+		expect(content[1].content).toBe("Tool result 2\n\nFirst text block\n\nSecond text block") // Second has merged text
 	})
 
-	it("should NOT extract text when images are present (cannot move images to system)", () => {
+	it("should NOT merge text when images are present (cannot move images to tool_result)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -167,14 +159,11 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		// Nothing should be extracted since images are present
-		expect(result.extractedSystemContent).toHaveLength(0)
-
-		// Message should be unchanged
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages).toEqual(messages)
+		// Message should be unchanged since images are present
+		expect(result).toHaveLength(1)
+		expect(result).toEqual(messages)
 	})
 
 	it("should pass through assistant messages unchanged", () => {
@@ -196,14 +185,13 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages).toEqual(messages)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(1)
+		expect(result).toEqual(messages)
 	})
 
-	it("should handle mixed conversation with extraction only for eligible messages", () => {
+	it("should handle mixed conversation with merging only for eligible messages", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -244,28 +232,26 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
-
-		// Should extract the environment_details from the third message
-		expect(result.extractedSystemContent).toHaveLength(1)
-		expect(result.extractedSystemContent[0]).toContain("environment_details")
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
 		// Should have all 4 messages
-		expect(result.messages).toHaveLength(4)
+		expect(result).toHaveLength(4)
 
 		// First user message unchanged (simple string)
-		expect(result.messages[0]).toEqual(messages[0])
+		expect(result[0]).toEqual(messages[0])
 
 		// Assistant message unchanged
-		expect(result.messages[1]).toEqual(messages[1])
+		expect(result[1]).toEqual(messages[1])
 
-		// Third message should have only tool_result
-		const thirdMessage = result.messages[2].content as Anthropic.Messages.ContentBlockParam[]
+		// Third message should have tool_result with merged environment_details
+		const thirdMessage = result[2].content as Anthropic.Messages.ToolResultBlockParam[]
 		expect(thirdMessage).toHaveLength(1)
 		expect(thirdMessage[0].type).toBe("tool_result")
+		expect(thirdMessage[0].content).toContain("File created successfully")
+		expect(thirdMessage[0].content).toContain("environment_details")
 
 		// Fourth message unchanged
-		expect(result.messages[3]).toEqual(messages[3])
+		expect(result[3]).toEqual(messages[3])
 	})
 
 	it("should handle string content in user messages", () => {
@@ -276,19 +262,75 @@ describe("extractEnvironmentDetailsForMiniMax", () => {
 			},
 		]
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(1)
-		expect(result.messages).toEqual(messages)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(1)
+		expect(result).toEqual(messages)
 	})
 
 	it("should handle empty messages array", () => {
 		const messages: Anthropic.Messages.MessageParam[] = []
 
-		const result = extractEnvironmentDetailsForMiniMax(messages)
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
 
-		expect(result.messages).toHaveLength(0)
-		expect(result.extractedSystemContent).toHaveLength(0)
+		expect(result).toHaveLength(0)
+	})
+
+	it("should handle tool_result with array content", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123",
+						content: [
+							{ type: "text", text: "Part 1" },
+							{ type: "text", text: "Part 2" },
+						],
+					},
+					{
+						type: "text",
+						text: "<environment_details>Context</environment_details>",
+					},
+				],
+			},
+		]
+
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
+
+		expect(result).toHaveLength(1)
+		const content = result[0].content as Anthropic.Messages.ToolResultBlockParam[]
+		expect(content).toHaveLength(1)
+		expect(content[0].type).toBe("tool_result")
+		// Array content should be concatenated and then merged with text
+		expect(content[0].content).toBe("Part 1\nPart 2\n\n<environment_details>Context</environment_details>")
+	})
+
+	it("should handle tool_result with empty content", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123",
+						content: "",
+					},
+					{
+						type: "text",
+						text: "<environment_details>Context</environment_details>",
+					},
+				],
+			},
+		]
+
+		const result = mergeEnvironmentDetailsForMiniMax(messages)
+
+		expect(result).toHaveLength(1)
+		const content = result[0].content as Anthropic.Messages.ToolResultBlockParam[]
+		expect(content).toHaveLength(1)
+		expect(content[0].type).toBe("tool_result")
+		expect(content[0].content).toBe("<environment_details>Context</environment_details>")
 	})
 })
