@@ -1339,7 +1339,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})
@@ -1359,7 +1358,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})
@@ -1381,7 +1379,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})

@@ -89,7 +89,6 @@ export type TaskProviderEvents = {
  */
 
 export interface CreateTaskOptions {
-	enableDiff?: boolean
 	enableCheckpoints?: boolean
 	consecutiveMistakeLimit?: number
 	experiments?: Record<string, boolean>
