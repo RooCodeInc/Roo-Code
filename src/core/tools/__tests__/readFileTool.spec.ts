@@ -439,10 +439,10 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			// Execute
 			const result = await executeReadFileTool({}, { maxReadFileLine: 3 })
 
-			// Verify - just check that the result contains the expected elements
-			expect(result).toContain(`<file><path>${testFilePath}</path>`)
-			expect(result).toContain(`<content lines="1-3">`)
-			expect(result).toContain("<notice>Showing 3 of 5 total lines")
+			// Verify - check that the result contains the expected native format elements
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain(`Lines 1-3:`)
+			expect(result).toContain("Showing 3 of 5 total lines")
 		})
 
 		it("should suggest using offset/limit for specific sections", async () => {
@@ -473,9 +473,9 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			// Execute with maxReadFileLine = 3
 			const result = await executeReadFileTool({}, { maxReadFileLine: 3, totalLines: 100 })
 
-			// Verify notice includes suggestion about offset/limit
-			expect(result).toContain(`<file><path>${testFilePath}</path>`)
-			expect(result).toContain(`<content lines="1-3">`)
+			// Verify notice includes suggestion about offset/limit - native format
+			expect(result).toContain(`File: ${testFilePath}`)
+			expect(result).toContain(`Lines 1-3:`)
 			expect(result).toContain("Use offset to read more")
 		})
 	})
