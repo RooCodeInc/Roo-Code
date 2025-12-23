@@ -150,16 +150,28 @@ export function convertToOpenAiMessages(
 
 				// Check if the message has reasoning_details (used by Gemini 3, etc.)
 				const messageWithDetails = anthropicMessage as any
-				const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam = {
+
+				// Build message with reasoning_details BEFORE tool_calls to preserve
+				// the order expected by providers like Roo. Property order matters
+				// when sending messages back to some APIs.
+				const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam & { reasoning_details?: any[] } = {
 					role: "assistant",
 					content,
-					// Cannot be an empty array. API expects an array with minimum length 1, and will respond with an error if it's empty
-					tool_calls: tool_calls.length > 0 ? tool_calls : undefined,
 				}
 
-				// Preserve reasoning_details if present (will be processed by provider if needed)
+				// Add reasoning_details first (before tool_calls) to preserve provider-expected order
+				// Strip the id field from each reasoning detail as it's only used internally for accumulation
 				if (messageWithDetails.reasoning_details && Array.isArray(messageWithDetails.reasoning_details)) {
-					;(baseMessage as any).reasoning_details = messageWithDetails.reasoning_details
+					baseMessage.reasoning_details = messageWithDetails.reasoning_details.map((detail: any) => {
+						const { id, ...rest } = detail
+						return rest
+					})
+				}
+
+				// Add tool_calls after reasoning_details
+				// Cannot be an empty array. API expects an array with minimum length 1, and will respond with an error if it's empty
+				if (tool_calls.length > 0) {
+					baseMessage.tool_calls = tool_calls
 				}
 
 				openAiMessages.push(baseMessage)

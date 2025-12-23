@@ -7,9 +7,7 @@ export type SambaNovaModelId =
 	| "DeepSeek-R1"
 	| "DeepSeek-V3-0324"
 	| "DeepSeek-V3.1"
-	| "DeepSeek-R1-Distill-Llama-70B"
 	| "Llama-4-Maverick-17B-128E-Instruct"
-	| "Llama-3.3-Swallow-70B-Instruct-v0.4"
 	| "Qwen3-32B"
 	| "gpt-oss-120b"
 
@@ -72,15 +70,6 @@ export const sambaNovaModels = {
 		outputPrice: 4.5,
 		description: "DeepSeek V3.1 model with 32K context window.",
 	},
-	"DeepSeek-R1-Distill-Llama-70B": {
-		maxTokens: 8192,
-		contextWindow: 131072,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.7,
-		outputPrice: 1.4,
-		description: "DeepSeek R1 distilled Llama 70B model with 128K context window.",
-	},
 	"Llama-4-Maverick-17B-128E-Instruct": {
 		maxTokens: 8192,
 		contextWindow: 131072,
@@ -91,15 +80,6 @@ export const sambaNovaModels = {
 		inputPrice: 0.63,
 		outputPrice: 1.8,
 		description: "Meta Llama 4 Maverick 17B 128E Instruct model with 128K context window.",
-	},
-	"Llama-3.3-Swallow-70B-Instruct-v0.4": {
-		maxTokens: 8192,
-		contextWindow: 16384,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.6,
-		outputPrice: 1.2,
-		description: "Tokyotech Llama 3.3 Swallow 70B Instruct v0.4 model with 16K context window.",
 	},
 	"Qwen3-32B": {
 		maxTokens: 8192,

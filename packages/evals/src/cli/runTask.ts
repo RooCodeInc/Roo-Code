@@ -32,6 +32,7 @@ import { EVALS_REPO_PATH } from "../exercises/index.js"
 import { Logger, getTag, isDockerContainer } from "./utils.js"
 import { redisClient, getPubSubKey, registerRunner, deregisterRunner } from "./redis.js"
 import { runUnitTest } from "./runUnitTest.js"
+import { MessageLogDeduper } from "./messageLogDeduper.js"
 
 class SubprocessTimeoutError extends Error {
 	constructor(timeout: number) {
@@ -305,6 +306,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 	]
 
 	let isApiUnstable = false
+	const messageLogDeduper = new MessageLogDeduper()
 
 	client.on(IpcMessageType.TaskEvent, async (taskEvent) => {
 		const { eventName, payload } = taskEvent
@@ -330,6 +332,15 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 				(payload[0].message.say && loggableSays.includes(payload[0].message.say)) ||
 				payload[0].message.partial !== true)
 		) {
+			// Dedupe identical repeated message events (same message.ts + same payload)
+			if (eventName === RooCodeEventName.Message) {
+				const action = payload[0]?.action as string | undefined
+				const message = payload[0]?.message
+				if (!messageLogDeduper.shouldLog(action, message)) {
+					return
+				}
+			}
+
 			// Extract tool name for tool-related messages for clearer logging
 			let logEventName: string = eventName
 			if (eventName === RooCodeEventName.Message && payload[0]?.message?.ask === "tool") {
