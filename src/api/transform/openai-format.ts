@@ -190,9 +190,16 @@ export function convertToOpenAiMessages(
 				}
 
 				// Add reasoning_details first (before tool_calls) to preserve provider-expected order
-				// Strip the id field from each reasoning detail as it's only used internally for accumulation
+				// Strip the id field from reasoning details as it's only used internally for accumulation,
+				// EXCEPT for reasoning.encrypted which requires the id (tool call ID) to link thought
+				// signatures to function calls (required by Gemini 3 models via OpenRouter)
 				if (messageWithDetails.reasoning_details && Array.isArray(messageWithDetails.reasoning_details)) {
 					baseMessage.reasoning_details = messageWithDetails.reasoning_details.map((detail: any) => {
+						// Keep id for reasoning.encrypted (tool call thought signatures)
+						// Strip id for other types (used internally for accumulation)
+						if (detail.type === "reasoning.encrypted") {
+							return detail
+						}
 						const { id, ...rest } = detail
 						return rest
 					})
