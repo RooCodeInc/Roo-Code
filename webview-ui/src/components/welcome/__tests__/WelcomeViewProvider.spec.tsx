@@ -106,8 +106,8 @@ describe("WelcomeViewProvider", () => {
 		it("renders Roo provider option by default", () => {
 			renderWelcomeViewProvider()
 
-			// Should show the Roo Cloud Provider heading
-			expect(screen.getByText(/welcome:providerSignup.rooCloudDescription/)).toBeInTheDocument()
+			// Should show the greeting heading
+			expect(screen.getByText(/welcome:greeting/)).toBeInTheDocument()
 
 			// Should show the description
 			expect(screen.getByText(/welcome:providerSignup.rooCloudDescription/)).toBeInTheDocument()
@@ -141,14 +141,14 @@ describe("WelcomeViewProvider", () => {
 			// Should now show API options
 			expect(screen.getByTestId("api-options")).toBeInTheDocument()
 
-			// Should show "Use Roo Code Provider" link
+			// Should show "back to Roo" link
 			const useRooProviderLink = screen
 				.getAllByTestId("vscode-link")
-				.find((link) => link.textContent?.includes("Use Roo Code Provider"))
+				.find((link) => link.textContent?.includes("welcome:providerSignup.backToRoo"))
 			expect(useRooProviderLink).toBeInTheDocument()
 		})
 
-		it("switches back to Roo provider when 'Use Roo Code Provider' is clicked", () => {
+		it("switches back to Roo provider when 'back to Roo' is clicked", () => {
 			renderWelcomeViewProvider()
 
 			// Switch to custom provider first
@@ -160,14 +160,14 @@ describe("WelcomeViewProvider", () => {
 			// Verify we're on custom provider screen
 			expect(screen.getByTestId("api-options")).toBeInTheDocument()
 
-			// Click "Use Roo Code Provider" link
+			// Click "back to Roo" link
 			const useRooProviderLink = screen
 				.getAllByTestId("vscode-link")
-				.find((link) => link.textContent?.includes("Use Roo Code Provider"))
+				.find((link) => link.textContent?.includes("welcome:providerSignup.backToRoo"))
 			fireEvent.click(useRooProviderLink!)
 
 			// Should be back on Roo provider screen
-			expect(screen.getByText(/welcome:providerSignup.rooCloudProvider/)).toBeInTheDocument()
+			expect(screen.getByText(/welcome:greeting/)).toBeInTheDocument()
 			expect(screen.queryByTestId("api-options")).not.toBeInTheDocument()
 		})
 	})
@@ -248,7 +248,7 @@ describe("WelcomeViewProvider", () => {
 			fireEvent.click(goBackButton)
 
 			// Should be back on provider selection screen
-			expect(screen.getByText(/welcome:providerSignup.rooCloudProvider/)).toBeInTheDocument()
+			expect(screen.getByText(/welcome:greeting/)).toBeInTheDocument()
 			expect(screen.queryByTestId("progress-ring")).not.toBeInTheDocument()
 		})
 	})
