@@ -3466,7 +3466,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modelInfo = this.api.getModel().info
 			const modelSupportsBrowser = (modelInfo as any)?.supportsImages === true
 
-			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
+			const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? false)
 
 			// Use the task's locked protocol for system prompt consistency.
 			// This ensures the system prompt matches the protocol the task was started with,

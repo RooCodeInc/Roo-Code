@@ -14,6 +14,14 @@ vi.mock("@/i18n/TranslationContext", () => {
 	}
 })
 
+// Ensure components relying on ExtensionStateContext don't crash in tests
+vi.mock("@/context/ExtensionStateContext", () => {
+	return {
+		useExtensionState: () => ({ browserToolEnabled: true }),
+		ExtensionStateContextProvider: ({ children }: any) => children,
+	}
+})
+
 describe("AutoApproveToggle", () => {
 	const mockOnToggle = vi.fn()
 	const initialProps = {
