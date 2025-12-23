@@ -315,14 +315,6 @@ export class NativeToolCallParser {
 				}
 			}
 
-			// Map limit parameter
-			if (file.limit !== undefined) {
-				const limit = Number(file.limit)
-				if (!isNaN(limit) && limit > 0) {
-					entry.limit = limit
-				}
-			}
-
 			// Map mode parameter
 			if (file.mode === "slice" || file.mode === "indentation") {
 				entry.mode = file.mode
