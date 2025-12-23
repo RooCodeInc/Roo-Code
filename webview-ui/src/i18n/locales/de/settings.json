@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Workspace-Dateien Kontextlimit",
-			"description": "Maximale Anzahl von Dateien, die in den Details des aktuellen Arbeitsverzeichnisses enthalten sein sollen. Höhere Werte bieten mehr Kontext, erhöhen aber den Token-Verbrauch."
+			"description": "Maximale Anzahl von Dateien, die in den Details des aktuellen Arbeitsverzeichnisses enthalten sein sollen. Höhere Werte bieten mehr Kontext, erhöhen aber den Token-Verbrauch.",
+			"descriptionFoldersOnly": "Maximale Anzahl der Ordner, die in den Details des aktuellen Arbeitsverzeichnisses enthalten sein sollen. Der Nur-Ordner-Modus bietet eine strukturelle Übersicht ohne Dateilisten.",
+			"includeFiles": "Einzelne Dateien einbeziehen (abwählen für nur Ordner)",
+			"mode": {
+				"placeholder": "Anzeigemodus auswählen",
+				"filesAndFolders": "Dateien und Ordner",
+				"foldersOnly": "Nur Ordner"
+			}
 		},
 		"rooignore": {
 			"label": ".rooignore-Dateien in Listen und Suchen anzeigen",

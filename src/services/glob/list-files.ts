@@ -28,9 +28,15 @@ interface ScanContext {
  * @param dirPath - Directory path to list files from
  * @param recursive - Whether to recursively list files in subdirectories
  * @param limit - Maximum number of files to return
+ * @param foldersOnly - When true, only returns directories (no files)
  * @returns Tuple of [file paths array, whether the limit was reached]
  */
-export async function listFiles(dirPath: string, recursive: boolean, limit: number): Promise<[string[], boolean]> {
+export async function listFiles(
+	dirPath: string,
+	recursive: boolean,
+	limit: number,
+	foldersOnly: boolean = false,
+): Promise<[string[], boolean]> {
 	// Early return for limit of 0 - no need to scan anything
 	if (limit === 0) {
 		return [[], false]
@@ -41,6 +47,25 @@ export async function listFiles(dirPath: string, recursive: boolean, limit: numb
 
 	if (specialResult) {
 		return specialResult
+	}
+
+	// For folders-only mode, skip file scanning entirely
+	if (foldersOnly) {
+		const ignoreInstance = await createIgnoreInstance(dirPath)
+		const directories = await listFilteredDirectories(dirPath, recursive, ignoreInstance, limit)
+
+		// Sort and format directories
+		const sortedDirs = directories.sort((a, b) => a.localeCompare(b))
+		const trimmedDirs = sortedDirs.slice(0, limit)
+		const limitReached = trimmedDirs.length >= limit
+
+		// If we hit the limit, ensure all first-level directories are included
+		if (limitReached && recursive) {
+			const firstLevelDirs = await getFirstLevelDirectories(dirPath, ignoreInstance)
+			return ensureFirstLevelDirectoriesIncluded(trimmedDirs, firstLevelDirs, limit)
+		}
+
+		return [trimmedDirs, limitReached]
 	}
 
 	// Get ripgrep path

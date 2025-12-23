@@ -612,7 +612,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Workspace files context limit",
-			"description": "Maximum number of files to include in current working directory details. Higher values provide more context but increase token usage."
+			"description": "Maximum number of files to include in current working directory details. Higher values provide more context but increase token usage.",
+			"descriptionFoldersOnly": "Maximum number of folders to include in current working directory details. Folders-only mode provides structural overview without file listings.",
+			"includeFiles": "Include individual files (uncheck for folders only)",
+			"mode": {
+				"placeholder": "Select display mode",
+				"filesAndFolders": "Files and Folders",
+				"foldersOnly": "Folders Only"
+			}
 		},
 		"rooignore": {
 			"label": "Show .rooignore'd files in lists and searches",

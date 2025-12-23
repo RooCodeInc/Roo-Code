@@ -142,6 +142,13 @@ export const globalSettingsSchema = z.object({
 
 	maxOpenTabsContext: z.number().optional(),
 	maxWorkspaceFiles: z.number().optional(),
+	/**
+	 * Controls what is shown in the workspace files context.
+	 * - "files": Shows both files and directories (default, current behavior)
+	 * - "folders": Shows only the folder structure
+	 * @default "files"
+	 */
+	workspaceFilesMode: z.enum(["files", "folders"]).optional(),
 	showRooIgnoredFiles: z.boolean().optional(),
 	maxReadFileLine: z.number().optional(),
 	maxImageFileSize: z.number().optional(),
@@ -199,6 +206,9 @@ export const globalSettingsSchema = z.object({
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
+
+// Workspace files mode type for controlling what is shown in the workspace files context
+export type WorkspaceFilesMode = NonNullable<GlobalSettings["workspaceFilesMode"]>
 
 export const GLOBAL_SETTINGS_KEYS = globalSettingsSchema.keyof().options
 
@@ -349,6 +359,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	rateLimitSeconds: 0,
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
+	workspaceFilesMode: "files",
 	maxGitStatusFiles: 20,
 	showRooIgnoredFiles: true,
 	maxReadFileLine: -1, // -1 to enable full file reading.

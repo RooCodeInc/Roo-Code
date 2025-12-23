@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Limite contesto file area di lavoro",
-			"description": "Numero massimo di file da includere nei dettagli della directory di lavoro corrente. Valori più alti forniscono più contesto ma aumentano l'utilizzo di token."
+			"description": "Numero massimo di file da includere nei dettagli della directory di lavoro corrente. Valori più alti forniscono più contesto ma aumentano l'utilizzo di token.",
+			"descriptionFoldersOnly": "Numero massimo di cartelle da includere nei dettagli della directory di lavoro corrente. La modalità solo cartelle fornisce una panoramica strutturale senza elenchi di file.",
+			"includeFiles": "Includi file individuali (deseleziona per solo cartelle)",
+			"mode": {
+				"placeholder": "Seleziona modalità di visualizzazione",
+				"filesAndFolders": "File e Cartelle",
+				"foldersOnly": "Solo Cartelle"
+			}
 		},
 		"rooignore": {
 			"label": "Mostra file .rooignore negli elenchi e nelle ricerche",

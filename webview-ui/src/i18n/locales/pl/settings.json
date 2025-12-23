@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Limit kontekstu plików obszaru roboczego",
-			"description": "Maksymalna liczba plików do uwzględnienia w szczegółach bieżącego katalogu roboczego. Wyższe wartości zapewniają więcej kontekstu, ale zwiększają zużycie token."
+			"description": "Maksymalna liczba plików do uwzględnienia w szczegółach bieżącego katalogu roboczego. Wyższe wartości zapewniają więcej kontekstu, ale zwiększają zużycie token.",
+			"descriptionFoldersOnly": "Maksymalna liczba folderów do uwzględnienia w szczegółach bieżącego katalogu roboczego. Tryb tylko foldery zapewnia przegląd strukturalny bez list plików.",
+			"includeFiles": "Uwzględnij poszczególne pliki (odznacz dla tylko folderów)",
+			"mode": {
+				"placeholder": "Wybierz tryb wyświetlania",
+				"filesAndFolders": "Pliki i Foldery",
+				"foldersOnly": "Tylko Foldery"
+			}
 		},
 		"rooignore": {
 			"label": "Pokaż pliki .rooignore na listach i w wyszukiwaniach",

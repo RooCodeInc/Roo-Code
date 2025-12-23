@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "工作区文件限制",
-			"description": "允许纳入上下文的最大文件数（值越大消耗token越多）"
+			"description": "允许纳入上下文的最大文件数（值越大消耗token越多）",
+			"descriptionFoldersOnly": "当前工作目录详情中包含的最大文件夹数。仅文件夹模式提供结构概览而不显示文件列表。",
+			"includeFiles": "包含单个文件（取消选中仅显示文件夹）",
+			"mode": {
+				"placeholder": "选择显示模式",
+				"filesAndFolders": "文件和文件夹",
+				"foldersOnly": "仅文件夹"
+			}
 		},
 		"rooignore": {
 			"label": "在列表和搜索中显示 .rooignore 文件",

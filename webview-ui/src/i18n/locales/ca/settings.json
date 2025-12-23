@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Límit de context de fitxers de l'espai de treball",
-			"description": "Nombre màxim de fitxers a incloure als detalls del directori de treball actual. Valors més alts proporcionen més context però augmenten l'ús de token."
+			"description": "Nombre màxim de fitxers a incloure als detalls del directori de treball actual. Valors més alts proporcionen més context però augmenten l'ús de token.",
+			"descriptionFoldersOnly": "Nombre màxim de carpetes a incloure als detalls del directori de treball actual. El mode només carpetes proporciona una visió estructural sense llistats de fitxers.",
+			"includeFiles": "Inclou fitxers individuals (desmarca per només carpetes)",
+			"mode": {
+				"placeholder": "Selecciona el mode de visualització",
+				"filesAndFolders": "Fitxers i Carpetes",
+				"foldersOnly": "Només Carpetes"
+			}
 		},
 		"rooignore": {
 			"label": "Mostrar fitxers .rooignore en llistes i cerques",

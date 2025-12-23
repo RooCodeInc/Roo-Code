@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Limite de contexte des fichiers de l'espace de travail",
-			"description": "Nombre maximum de fichiers à inclure dans les détails du répertoire de travail actuel. Des valeurs plus élevées fournissent plus de contexte mais augmentent l'utilisation de token."
+			"description": "Nombre maximum de fichiers à inclure dans les détails du répertoire de travail actuel. Des valeurs plus élevées fournissent plus de contexte mais augmentent l'utilisation de token.",
+			"descriptionFoldersOnly": "Nombre maximum de dossiers à inclure dans les détails du répertoire de travail actuel. Le mode dossiers uniquement fournit un aperçu structurel sans listes de fichiers.",
+			"includeFiles": "Inclure les fichiers individuels (décocher pour dossiers uniquement)",
+			"mode": {
+				"placeholder": "Sélectionner le mode d'affichage",
+				"filesAndFolders": "Fichiers et Dossiers",
+				"foldersOnly": "Dossiers Uniquement"
+			}
 		},
 		"rooignore": {
 			"label": "Afficher les fichiers .rooignore dans les listes et recherches",

@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Límite de contexto de archivos del espacio de trabajo",
-			"description": "Número máximo de archivos a incluir en los detalles del directorio de trabajo actual. Valores más altos proporcionan más contexto pero aumentan el uso de token."
+			"description": "Número máximo de archivos a incluir en los detalles del directorio de trabajo actual. Valores más altos proporcionan más contexto pero aumentan el uso de token.",
+			"descriptionFoldersOnly": "Número máximo de carpetas a incluir en los detalles del directorio de trabajo actual. El modo solo carpetas proporciona una visión estructural sin listados de archivos.",
+			"includeFiles": "Incluir archivos individuales (desmarcar para solo carpetas)",
+			"mode": {
+				"placeholder": "Seleccionar modo de visualización",
+				"filesAndFolders": "Archivos y Carpetas",
+				"foldersOnly": "Solo Carpetas"
+			}
 		},
 		"rooignore": {
 			"label": "Mostrar archivos .rooignore en listas y búsquedas",

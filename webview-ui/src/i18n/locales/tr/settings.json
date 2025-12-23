@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Çalışma alanı dosyaları bağlam sınırı",
-			"description": "Mevcut çalışma dizini ayrıntılarına dahil edilecek maksimum dosya sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak token kullanımını artırır."
+			"description": "Mevcut çalışma dizini ayrıntılarına dahil edilecek maksimum dosya sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak token kullanımını artırır.",
+			"descriptionFoldersOnly": "Mevcut çalışma dizini ayrıntılarına dahil edilecek maksimum klasör sayısı. Yalnızca klasörler modu, dosya listelemeleri olmadan yapısal bir genel bakış sağlar.",
+			"includeFiles": "Bireysel dosyaları dahil et (yalnızca klasörler için işareti kaldır)",
+			"mode": {
+				"placeholder": "Görüntüleme modunu seçin",
+				"filesAndFolders": "Dosyalar ve Klasörler",
+				"foldersOnly": "Yalnızca Klasörler"
+			}
 		},
 		"rooignore": {
 			"label": "Listelerde ve aramalarda .rooignore dosyalarını göster",

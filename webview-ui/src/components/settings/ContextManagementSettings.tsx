@@ -18,6 +18,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	listApiConfigMeta: any[]
 	maxOpenTabsContext: number
 	maxWorkspaceFiles: number
+	workspaceFilesMode?: "files" | "folders"
 	showRooIgnoredFiles?: boolean
 	maxReadFileLine?: number
 	maxImageFileSize?: number
@@ -35,6 +36,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "autoCondenseContextPercent"
 		| "maxOpenTabsContext"
 		| "maxWorkspaceFiles"
+		| "workspaceFilesMode"
 		| "showRooIgnoredFiles"
 		| "maxReadFileLine"
 		| "maxImageFileSize"
@@ -56,6 +58,7 @@ export const ContextManagementSettings = ({
 	listApiConfigMeta,
 	maxOpenTabsContext,
 	maxWorkspaceFiles,
+	workspaceFilesMode,
 	showRooIgnoredFiles,
 	setCachedStateField,
 	maxReadFileLine,
@@ -145,7 +148,19 @@ export const ContextManagementSettings = ({
 						<span className="w-10">{maxWorkspaceFiles ?? 200}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
-						{t("settings:contextManagement.workspaceFiles.description")}
+						{workspaceFilesMode === "folders"
+							? t("settings:contextManagement.workspaceFiles.descriptionFoldersOnly")
+							: t("settings:contextManagement.workspaceFiles.description")}
+					</div>
+					<div className="mt-2">
+						<VSCodeCheckbox
+							checked={workspaceFilesMode !== "folders"}
+							onChange={(e: any) =>
+								setCachedStateField("workspaceFilesMode", e.target.checked ? "files" : "folders")
+							}
+							data-testid="workspace-files-include-files-checkbox">
+							{t("settings:contextManagement.workspaceFiles.includeFiles")}
+						</VSCodeCheckbox>
 					</div>
 				</div>
 

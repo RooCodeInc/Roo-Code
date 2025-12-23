@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "工作區檔案的上下文限制",
-			"description": "目前工作目錄中最多包含多少個檔案。數值越高提供的上下文越多，但 token 用量也會增加。"
+			"description": "目前工作目錄中最多包含多少個檔案。數值越高提供的上下文越多，但 token 用量也會增加。",
+			"descriptionFoldersOnly": "目前工作目錄詳細資料中要包含的資料夾數量上限。僅資料夾模式提供結構概覽而不顯示檔案清單。",
+			"includeFiles": "包含個別檔案（取消勾選以僅顯示資料夾）",
+			"mode": {
+				"placeholder": "選擇顯示模式",
+				"filesAndFolders": "檔案和資料夾",
+				"foldersOnly": "僅資料夾"
+			}
 		},
 		"rooignore": {
 			"label": "在列表和搜尋中顯示被 .rooignore 排除的檔案",

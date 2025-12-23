@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Giới hạn ngữ cảnh tệp workspace",
-			"description": "Số lượng tệp tối đa để đưa vào chi tiết thư mục làm việc hiện tại. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng tăng sử dụng token."
+			"description": "Số lượng tệp tối đa để đưa vào chi tiết thư mục làm việc hiện tại. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng tăng sử dụng token.",
+			"descriptionFoldersOnly": "Số lượng thư mục tối đa để bao gồm trong chi tiết thư mục làm việc hiện tại. Chế độ chỉ thư mục cung cấp tổng quan cấu trúc mà không có danh sách tệp.",
+			"includeFiles": "Bao gồm các tệp riêng lẻ (bỏ chọn cho chỉ thư mục)",
+			"mode": {
+				"placeholder": "Chọn chế độ hiển thị",
+				"filesAndFolders": "Tệp và Thư mục",
+				"foldersOnly": "Chỉ Thư mục"
+			}
 		},
 		"rooignore": {
 			"label": "Hiển thị tệp .rooignore trong danh sách và tìm kiếm",

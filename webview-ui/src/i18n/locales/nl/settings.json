@@ -603,7 +603,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Limiet werkruimtebestanden in context",
-			"description": "Maximaal aantal bestanden dat wordt opgenomen in details van de huidige werkmap. Hogere waarden geven meer context maar verhogen het tokengebruik."
+			"description": "Maximaal aantal bestanden dat wordt opgenomen in details van de huidige werkmap. Hogere waarden geven meer context maar verhogen het tokengebruik.",
+			"descriptionFoldersOnly": "Maximum aantal mappen om op te nemen in huidige werkdirectory details. Map-alleen modus biedt een structureel overzicht zonder bestandslijsten.",
+			"includeFiles": "Individuele bestanden opnemen (uitvinken voor alleen mappen)",
+			"mode": {
+				"placeholder": "Selecteer weergavemodus",
+				"filesAndFolders": "Bestanden en Mappen",
+				"foldersOnly": "Alleen Mappen"
+			}
 		},
 		"rooignore": {
 			"label": ".rooignore-bestanden tonen in lijsten en zoekopdrachten",

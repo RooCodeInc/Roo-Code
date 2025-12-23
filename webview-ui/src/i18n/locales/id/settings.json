@@ -633,7 +633,14 @@
 		},
 		"workspaceFiles": {
 			"label": "Batas konteks file workspace",
-			"description": "Jumlah maksimum file yang disertakan dalam detail direktori kerja saat ini. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi meningkatkan penggunaan token."
+			"description": "Jumlah maksimum file yang disertakan dalam detail direktori kerja saat ini. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi meningkatkan penggunaan token.",
+			"descriptionFoldersOnly": "Jumlah maksimum folder yang disertakan dalam detail direktori kerja saat ini. Mode khusus folder menyediakan ringkasan struktural tanpa daftar file.",
+			"includeFiles": "Sertakan file individual (hapus centang untuk folder saja)",
+			"mode": {
+				"placeholder": "Pilih mode tampilan",
+				"filesAndFolders": "File dan Folder",
+				"foldersOnly": "Hanya Folder"
+			}
 		},
 		"rooignore": {
 			"label": "Tampilkan file .rooignore'd dalam daftar dan pencarian",
