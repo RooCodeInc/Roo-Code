@@ -302,9 +302,10 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
-			"heading": "Nieuw:",
-			"contextRewind": "Verbeterde context-samenvatting stelt je nu in staat om de volledige vorige context te herstellen bij het terugspoelen naar een checkpoint",
-			"rooProvider": "De Roo Code Cloud-provider behoudt nu reasoninginhoud en gebruikt standaard native tools voor betere prestaties"
+			"heading": "Wat is er nieuw:",
+			"minimaxM21": "Snelle en betaalbare MiniMax M2.1 model nu beschikbaar in Roo Code Cloud, MiniMax en meer",
+			"glm47": "Z.AI GLM-4.7 model met ondersteuning voor thinking mode toegevoegd aan Roo Code Cloud, Z.AI en meer",
+			"customTools": "Experimentele aangepaste tool-ondersteuning voor het definiëren van je eigen tools in TypeScript"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

@@ -326,9 +326,10 @@
 			"goToSettingsButton": "Đi tới Cài đặt"
 		},
 		"release": {
-			"heading": "Mới trong phiên bản này:",
-			"contextRewind": "Nén ngữ cảnh được cải thiện hiện cho phép bạn khôi phục bối cảnh trước đó đầy đủ khi cuộn lại đến một điểm kiểm tra",
-			"rooProvider": "Nhà cung cấp Roo Code Cloud hiện giữ lại nội dung lý luận và sử dụng các công cụ gốc theo mặc định để có hiệu suất tốt hơn"
+			"heading": "Tính năng mới:",
+			"minimaxM21": "Mô hình MiniMax M2.1 nhanh và rẻ hiện có sẵn trong Roo Code Cloud, MiniMax và hơn thế nữa",
+			"glm47": "Mô hình Z.AI GLM-4.7 có hỗ trợ chế độ suy nghĩ được thêm vào Roo Code Cloud, Z.AI và hơn thế nữa",
+			"customTools": "Hỗ trợ công cụ tùy chỉnh thử nghiệm để định nghĩa các công cụ của riêng bạn trong TypeScript"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

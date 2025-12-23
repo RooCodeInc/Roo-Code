@@ -338,9 +338,10 @@
 			"goToSettingsButton": "Pergi ke Pengaturan"
 		},
 		"release": {
-			"heading": "Terbaru:",
-			"contextRewind": "Kondensasi konteks yang ditingkatkan sekarang memungkinkan Anda mengembalikan konteks sebelumnya secara penuh saat memutar ulang ke checkpoint",
-			"rooProvider": "Penyedia Roo Code Cloud sekarang mempertahankan konten penalaran dan menggunakan alat asli secara default untuk kinerja yang lebih baik"
+			"heading": "Yang Baru:",
+			"minimaxM21": "Model MiniMax M2.1 yang cepat dan terjangkau sekarang tersedia di Roo Code Cloud, MiniMax, dan lainnya",
+			"glm47": "Model Z.AI GLM-4.7 dengan dukungan mode pemikiran ditambahkan ke Roo Code Cloud, Z.AI, dan lainnya",
+			"customTools": "Dukungan eksperimental untuk alat khusus untuk mendefinisikan alat Anda sendiri dalam TypeScript"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

@@ -325,9 +325,10 @@
 			"goToSettingsButton": "설정으로 이동"
 		},
 		"release": {
-			"heading": "이 버전의 새로운 기능:",
-			"contextRewind": "개선된 컨텍스트 압축을 통해 이제 체크포인트로 되감을 때 이전의 전체 컨텍스트를 복원할 수 있습니다",
-			"rooProvider": "Roo Code Cloud 제공자는 이제 추론 콘텐츠를 보존하고 더 나은 성능을 위해 기본적으로 네이티브 도구를 사용합니다"
+			"heading": "새로운 기능:",
+			"minimaxM21": "빠르고 저렴한 MiniMax M2.1 모델이 이제 Roo Code Cloud, MiniMax 등에서 사용 가능합니다",
+			"glm47": "사고 모드 지원이 포함된 Z.AI GLM-4.7 모델이 Roo Code Cloud, Z.AI 등에 추가되었습니다",
+			"customTools": "TypeScript에서 자신만의 도구를 정의하기 위한 사용자 정의 도구 지원의 실험적 기능"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

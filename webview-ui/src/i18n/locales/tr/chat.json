@@ -326,9 +326,10 @@
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
 		"release": {
-			"heading": "Bu sürümdeki yenilikler:",
-			"contextRewind": "İyileştirilmiş bağlam sıkıştırması, artık bir kontrol noktasına geri sarma sırasında tam önceki bağlamı geri yüklemenizi sağlıyor",
-			"rooProvider": "Roo Code Cloud sağlayıcısı artık akıl yürütme içeriğini korur ve daha iyi performans için varsayılan olarak yerel araçları kullanır"
+			"heading": "Yenilikler:",
+			"minimaxM21": "Hızlı ve uygun fiyatlı MiniMax M2.1 modeli artık Roo Code Cloud, MiniMax ve daha fazlasında mevcut",
+			"glm47": "Düşünme modu desteğine sahip Z.AI GLM-4.7 modeli Roo Code Cloud, Z.AI ve daha fazlasına eklendi",
+			"customTools": "TypeScript'te kendi araçlarınızı tanımlamak için deneysel özel araç desteği"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

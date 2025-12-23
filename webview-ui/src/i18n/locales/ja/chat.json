@@ -325,9 +325,10 @@
 			"goToSettingsButton": "設定に移動"
 		},
 		"release": {
-			"heading": "このバージョンの新機能:",
-			"contextRewind": "改善されたコンテキスト圧縮により、チェックポイントに巻き戻すときに以前の完全なコンテキストを復元できるようになりました",
-			"rooProvider": "Roo Code Cloud プロバイダーはレジーニングコンテンツを保持し、デフォルトでネイティブ ツールを使用してパフォーマンスを向上させます"
+			"heading": "新機能:",
+			"minimaxM21": "高速で手頃な価格のMiniMax M2.1モデルがRoo Code Cloud、MiniMax以降で利用可能になりました",
+			"glm47": "シンキングモードサポート付きのZ.AI GLM-4.7モデルがRoo Code Cloud、Z.AI以降に追加されました",
+			"customTools": "TypeScriptで独自のツールを定義するためのカスタムツール機能の実験的サポート"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",

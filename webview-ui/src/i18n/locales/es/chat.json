@@ -325,9 +325,10 @@
 			"goToSettingsButton": "Ir a Configuración"
 		},
 		"release": {
-			"heading": "Novedades en esta versión:",
-			"contextRewind": "La condensación mejorada del contexto ahora te permite restaurar el contexto anterior completo cuando retrocedes a un punto de control",
-			"rooProvider": "El proveedor de Roo Code Cloud ahora preserva el contenido del razonamiento y usa herramientas nativas de forma predeterminada para mejor rendimiento"
+			"heading": "Qué hay de nuevo:",
+			"minimaxM21": "El modelo MiniMax M2.1 rápido y económico ya está disponible en Roo Code Cloud, MiniMax y más",
+			"glm47": "Modelo Z.AI GLM-4.7 con soporte de modo de pensamiento añadido a Roo Code Cloud, Z.AI y más",
+			"customTools": "Soporte experimental de herramientas personalizadas para definir tus propias herramientas en TypeScript"
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
