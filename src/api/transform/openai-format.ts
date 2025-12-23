@@ -27,12 +27,47 @@ export function convertToOpenAiMessages(
 ): OpenAI.Chat.ChatCompletionMessageParam[] {
 	const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
+	const mapReasoningDetails = (details: unknown): any[] | undefined => {
+		if (!Array.isArray(details)) {
+			return undefined
+		}
+
+		return details.map((detail: any) => {
+			// Strip `id` from openai-responses-v1 blocks because OpenAI's Responses API
+			// requires `store: true` to persist reasoning blocks. Since we manage
+			// conversation state client-side, we don't use `store: true`, and sending
+			// back the `id` field causes a 404 error.
+			if (detail?.format === "openai-responses-v1" && detail?.id) {
+				const { id, ...rest } = detail
+				return rest
+			}
+			return detail
+		})
+	}
+
 	// Use provided normalization function or identity function
 	const normalizeId = options?.normalizeToolCallId ?? ((id: string) => id)
 
 	for (const anthropicMessage of anthropicMessages) {
 		if (typeof anthropicMessage.content === "string") {
-			openAiMessages.push({ role: anthropicMessage.role, content: anthropicMessage.content })
+			// Some upstream transforms (e.g. [`Task.buildCleanConversationHistory()`](src/core/task/Task.ts:4048))
+			// will convert a single text block into a string for compactness.
+			// If a message also contains reasoning_details (Gemini 3 / xAI / o-series, etc.),
+			// we must preserve it here as well.
+			const messageWithDetails = anthropicMessage as any
+			const baseMessage: OpenAI.Chat.ChatCompletionMessageParam & { reasoning_details?: any[] } = {
+				role: anthropicMessage.role,
+				content: anthropicMessage.content,
+			}
+
+			if (anthropicMessage.role === "assistant") {
+				const mapped = mapReasoningDetails(messageWithDetails.reasoning_details)
+				if (mapped) {
+					;(baseMessage as any).reasoning_details = mapped
+				}
+			}
+
+			openAiMessages.push(baseMessage)
 		} else {
 			// image_url.url is base64 encoded image data
 			// ensure it contains the content-type of the image: data:image/png;base64,
@@ -178,24 +213,24 @@ export function convertToOpenAiMessages(
 					},
 				}))
 
-				// Check if the message has reasoning_details (used by Gemini 3, etc.)
+				// Check if the message has reasoning_details (used by Gemini 3, xAI, etc.)
 				const messageWithDetails = anthropicMessage as any
 
 				// Build message with reasoning_details BEFORE tool_calls to preserve
 				// the order expected by providers like Roo. Property order matters
 				// when sending messages back to some APIs.
-				const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam & { reasoning_details?: any[] } = {
+				const baseMessage: OpenAI.Chat.ChatCompletionAssistantMessageParam & {
+					reasoning_details?: any[]
+				} = {
 					role: "assistant",
 					content,
 				}
 
-				// Add reasoning_details first (before tool_calls) to preserve provider-expected order
-				// Strip the id field from each reasoning detail as it's only used internally for accumulation
-				if (messageWithDetails.reasoning_details && Array.isArray(messageWithDetails.reasoning_details)) {
-					baseMessage.reasoning_details = messageWithDetails.reasoning_details.map((detail: any) => {
-						const { id, ...rest } = detail
-						return rest
-					})
+				// Pass through reasoning_details to preserve the original shape from the API.
+				// The `id` field is stripped from openai-responses-v1 blocks (see mapReasoningDetails).
+				const mapped = mapReasoningDetails(messageWithDetails.reasoning_details)
+				if (mapped) {
+					baseMessage.reasoning_details = mapped
 				}
 
 				// Add tool_calls after reasoning_details
