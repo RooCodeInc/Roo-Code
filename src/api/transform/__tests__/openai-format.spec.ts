@@ -401,4 +401,148 @@ describe("convertToOpenAiMessages", () => {
 			expect(openAiMessages[0].role).toBe("user")
 		})
 	})
+
+	describe("reasoning_details handling", () => {
+		it("should strip id from reasoning.text blocks", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "text",
+							text: "I will help you.",
+						},
+					],
+					reasoning_details: [
+						{
+							type: "reasoning.text",
+							text: "Let me think about this...",
+							format: "google-gemini-v1",
+							index: 0,
+							id: "internal_accumulation_id",
+						},
+					],
+				} as any,
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			const assistantMessage = openAiMessages[0] as any
+
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			expect(assistantMessage.reasoning_details[0]).toEqual({
+				type: "reasoning.text",
+				text: "Let me think about this...",
+				format: "google-gemini-v1",
+				index: 0,
+			})
+			expect(assistantMessage.reasoning_details[0].id).toBeUndefined()
+		})
+
+		it("should preserve id for reasoning.encrypted blocks (required by Gemini 3)", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "tool_new_task_k7LktBScQZtG5uIJYm6g",
+							name: "new_task",
+							input: { mode: "code", message: "test" },
+						},
+					],
+					reasoning_details: [
+						{
+							type: "reasoning.text",
+							text: "Let me think...",
+							format: "google-gemini-v1",
+							index: 0,
+							id: "internal_id_to_strip",
+						},
+						{
+							type: "reasoning.encrypted",
+							data: "encrypted_thought_signature_data",
+							id: "tool_new_task_k7LktBScQZtG5uIJYm6g",
+							format: "google-gemini-v1",
+							index: 0,
+						},
+					],
+				} as any,
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			const assistantMessage = openAiMessages[0] as any
+
+			expect(assistantMessage.reasoning_details).toHaveLength(2)
+
+			// reasoning.text should have id stripped
+			expect(assistantMessage.reasoning_details[0]).toEqual({
+				type: "reasoning.text",
+				text: "Let me think...",
+				format: "google-gemini-v1",
+				index: 0,
+			})
+			expect(assistantMessage.reasoning_details[0].id).toBeUndefined()
+
+			// reasoning.encrypted should preserve id (required for tool call thought signatures)
+			expect(assistantMessage.reasoning_details[1]).toEqual({
+				type: "reasoning.encrypted",
+				data: "encrypted_thought_signature_data",
+				id: "tool_new_task_k7LktBScQZtG5uIJYm6g",
+				format: "google-gemini-v1",
+				index: 0,
+			})
+		})
+
+		it("should handle reasoning_details without id field", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "text",
+							text: "Response text",
+						},
+					],
+					reasoning_details: [
+						{
+							type: "reasoning.summary",
+							summary: "Summary of reasoning",
+							format: "google-gemini-v1",
+							index: 0,
+						},
+					],
+				} as any,
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			const assistantMessage = openAiMessages[0] as any
+
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			expect(assistantMessage.reasoning_details[0]).toEqual({
+				type: "reasoning.summary",
+				summary: "Summary of reasoning",
+				format: "google-gemini-v1",
+				index: 0,
+			})
+		})
+
+		it("should not add reasoning_details if not present", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "text",
+							text: "Simple response",
+						},
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			const assistantMessage = openAiMessages[0] as any
+
+			expect(assistantMessage.reasoning_details).toBeUndefined()
+		})
+	})
 })
