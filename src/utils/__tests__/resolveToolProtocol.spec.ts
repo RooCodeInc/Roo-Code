@@ -8,12 +8,15 @@ describe("resolveToolProtocol", () => {
 	/**
 	 * XML Protocol Deprecation:
 	 *
-	 * XML tool protocol has been fully deprecated. All models now use Native
-	 * tool calling. User preferences and model defaults are ignored.
+	 * XML tool protocol has been deprecated for most providers. All models now
+	 * use Native tool calling by default. However, for OpenAI Compatible providers,
+	 * user preferences are still respected because third-party API proxies may not
+	 * fully support native tool calling.
 	 *
 	 * Precedence:
 	 * 1. Locked Protocol (for resumed tasks that used XML)
-	 * 2. Native (always, for all new tasks)
+	 * 2. User preference for OpenAI Compatible provider (allows XML for compatibility)
+	 * 3. Native (default for all other providers and new tasks)
 	 */
 
 	describe("Locked Protocol (Precedence Level 0 - Highest Priority)", () => {
@@ -66,11 +69,49 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should use native for OpenAI compatible provider", () => {
+		it("should use native for OpenAI compatible provider without user preference", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "openai",
 			}
 			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+	})
+
+	describe("OpenAI Compatible Provider - User Preference Respected", () => {
+		it("should use XML when user explicitly sets toolProtocol to xml for openai provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "xml",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
+		})
+
+		it("should use native when user explicitly sets toolProtocol to native for openai provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "native",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should default to native when no toolProtocol is set for openai provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should respect locked protocol over user preference for openai provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "xml",
+			}
+			// Locked protocol takes precedence
+			const result = resolveToolProtocol(settings, undefined, "native")
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 	})

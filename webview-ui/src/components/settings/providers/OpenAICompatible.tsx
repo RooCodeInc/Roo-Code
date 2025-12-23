@@ -8,14 +8,24 @@ import {
 	type ModelInfo,
 	type ReasoningEffort,
 	type OrganizationAllowList,
+	type ToolProtocol,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { Button, StandardTooltip } from "@src/components/ui"
+import {
+	Button,
+	StandardTooltip,
+	Select,
+	SelectTrigger,
+	SelectValue,
+	SelectContent,
+	SelectItem,
+} from "@src/components/ui"
 
 import { convertHeadersToObject } from "../utils/headers"
 import { inputEventTransform, noTransform } from "../transforms"
@@ -244,6 +254,31 @@ export const OpenAICompatible = ({
 						</div>
 					))
 				)}
+			</div>
+
+			{/* Tool Protocol Selector - for third-party API providers that may not support native tool calling */}
+			<div>
+				<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+				<Select
+					value={apiConfiguration.toolProtocol || "default"}
+					onValueChange={(value) => {
+						const newValue = value === "default" ? undefined : (value as ToolProtocol)
+						setApiConfigurationField("toolProtocol", newValue)
+					}}>
+					<SelectTrigger className="w-full">
+						<SelectValue placeholder={t("settings:common.select")} />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="default">
+							{t("settings:toolProtocol.default")} ({t("settings:toolProtocol.native")})
+						</SelectItem>
+						<SelectItem value={TOOL_PROTOCOL.XML}>{t("settings:toolProtocol.xml")}</SelectItem>
+						<SelectItem value={TOOL_PROTOCOL.NATIVE}>{t("settings:toolProtocol.native")}</SelectItem>
+					</SelectContent>
+				</Select>
+				<div className="text-sm text-vscode-descriptionForeground mt-1">
+					{t("settings:toolProtocol.description")}
+				</div>
 			</div>
 
 			<div className="flex flex-col gap-1">
