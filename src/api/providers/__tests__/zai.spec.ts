@@ -6,6 +6,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import {
 	type InternationalZAiModelId,
 	type MainlandZAiModelId,
+	type ModelInfo,
 	internationalZAiDefaultModelId,
 	mainlandZAiDefaultModelId,
 	internationalZAiModels,
@@ -96,6 +97,23 @@ describe("ZAiHandler", () => {
 			expect(model.info.maxTokens).toBe(16_384)
 			expect(model.info.contextWindow).toBe(131_072)
 		})
+
+		it("should return GLM-4.7 international model with preserved thinking support", () => {
+			const testModelId: InternationalZAiModelId = "glm-4.7"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "international_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(internationalZAiModels[testModelId])
+			// GLM-4.7 should have preserveReasoning enabled for interleaved thinking mode
+			// This allows reasoning_content to be passed back during tool call continuation
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+			expect(model.info.contextWindow).toBe(200_000)
+			expect(model.info.supportsNativeTools).toBe(true)
+		})
 	})
 
 	describe("China Z AI", () => {
@@ -160,6 +178,23 @@ describe("ZAiHandler", () => {
 			expect(model.info.supportsImages).toBe(true)
 			expect(model.info.maxTokens).toBe(16_384)
 			expect(model.info.contextWindow).toBe(131_072)
+		})
+
+		it("should return GLM-4.7 China model with preserved thinking support", () => {
+			const testModelId: MainlandZAiModelId = "glm-4.7"
+			const handlerWithModel = new ZAiHandler({
+				apiModelId: testModelId,
+				zaiApiKey: "test-zai-api-key",
+				zaiApiLine: "china_coding",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe(testModelId)
+			expect(model.info).toEqual(mainlandZAiModels[testModelId])
+			// GLM-4.7 should have preserveReasoning enabled for interleaved thinking mode
+			// This allows reasoning_content to be passed back during tool call continuation
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+			expect(model.info.contextWindow).toBe(204_800)
+			expect(model.info.supportsNativeTools).toBe(true)
 		})
 	})
 

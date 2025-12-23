@@ -5,6 +5,8 @@ import { ZaiApiLine } from "../provider-settings.js"
 // https://docs.z.ai/guides/llm/glm-4-32b-0414-128k
 // https://docs.z.ai/guides/llm/glm-4.5
 // https://docs.z.ai/guides/llm/glm-4.6
+// https://docs.z.ai/guides/llm/glm-4.7
+// https://docs.z.ai/guides/capabilities/thinking-mode
 // https://docs.z.ai/guides/overview/pricing
 // https://bigmodel.cn/pricing
 
@@ -106,6 +108,21 @@ export const internationalZAiModels = {
 		cacheReadsPrice: 0.11,
 		description:
 			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
+	},
+	"glm-4.7": {
+		maxTokens: 98_304,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		preserveReasoning: true,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-4.7 is Zhipu's latest model with preserved thinking capabilities, allowing reasoning content to be retained across turns for improved coherence and cache efficiency.",
 	},
 	"glm-4-32b-0414-128k": {
 		maxTokens: 98_304,
@@ -220,6 +237,21 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
+	},
+	"glm-4.7": {
+		maxTokens: 98_304,
+		contextWindow: 204_800,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		preserveReasoning: true,
+		inputPrice: 0.29,
+		outputPrice: 1.14,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.057,
+		description:
+			"GLM-4.7 is Zhipu's latest model with preserved thinking capabilities, allowing reasoning content to be retained across turns for improved coherence and cache efficiency.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
