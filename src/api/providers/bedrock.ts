@@ -200,7 +200,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	protected options: ProviderSettings
 	private client: BedrockRuntimeClient
 	private arnInfo: any
-	private readonly providerName = "Bedrock"
+	protected readonly providerName = "Bedrock"
 
 	constructor(options: ProviderSettings) {
 		super()

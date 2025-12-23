@@ -40,7 +40,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	private client: GoogleGenAI
 	private lastThoughtSignature?: string
 	private lastResponseId?: string
-	private readonly providerName = "Gemini"
+	protected readonly providerName = "Gemini"
 
 	constructor({ isVertex, ...options }: GeminiHandlerOptions) {
 		super()
