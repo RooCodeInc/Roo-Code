@@ -185,6 +185,57 @@ describe("ContextProxy", () => {
 		})
 	})
 
+	describe("refreshGlobalStateKey", () => {
+		it("should read fresh value from globalState and update cache", async () => {
+			// Set up initial cache value
+			await proxy.updateGlobalState("customSupportPrompts", { OLD: "old-prompt" })
+
+			// Simulate another window updating globalState directly (bypassing our cache)
+			const newValue = { OLD: "old-prompt", NEW: "new-prompt" }
+			mockGlobalState.get.mockReturnValue(newValue)
+
+			// Refresh the key
+			const result = proxy.refreshGlobalStateKey("customSupportPrompts")
+
+			// Should return the fresh value from globalState
+			expect(result).toEqual(newValue)
+
+			// Should have updated the cache (subsequent getGlobalState should return new value)
+			const cachedValue = proxy.getGlobalState("customSupportPrompts")
+			expect(cachedValue).toEqual(newValue)
+		})
+
+		it("should return undefined when globalState has no value", async () => {
+			// Set up initial cache value
+			await proxy.updateGlobalState("customModePrompts", { code: { roleDefinition: "test" } })
+
+			// Simulate globalState being cleared (e.g., by another window)
+			mockGlobalState.get.mockReturnValue(undefined)
+
+			// Refresh the key
+			const result = proxy.refreshGlobalStateKey("customModePrompts")
+
+			// Should return undefined
+			expect(result).toBeUndefined()
+
+			// Cache should also be updated to undefined
+			const cachedValue = proxy.getGlobalState("customModePrompts")
+			expect(cachedValue).toBeUndefined()
+		})
+
+		it("should call globalState.get with the correct key", async () => {
+			// Clear mock call history
+			mockGlobalState.get.mockClear()
+			mockGlobalState.get.mockReturnValue({ ENHANCE: "test-prompt" })
+
+			// Refresh a specific key
+			proxy.refreshGlobalStateKey("customSupportPrompts")
+
+			// Should have called get with the correct key
+			expect(mockGlobalState.get).toHaveBeenCalledWith("customSupportPrompts")
+		})
+	})
+
 	describe("getSecret", () => {
 		it("should return value from cache when it exists", async () => {
 			// Manually set a value in the cache
