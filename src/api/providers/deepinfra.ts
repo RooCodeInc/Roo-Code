@@ -72,7 +72,10 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+			],
 			stream: true,
 			stream_options: { include_usage: true },
 			reasoning_effort,

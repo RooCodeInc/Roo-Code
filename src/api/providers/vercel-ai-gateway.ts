@@ -45,7 +45,7 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 		]
 
 		if (VERCEL_AI_GATEWAY_PROMPT_CACHING_MODELS.has(modelId) && info.supportsPromptCache) {
