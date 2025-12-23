@@ -16,7 +16,6 @@ import { convertToZAiFormat } from "../transform/zai-format"
 
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
-import { DEFAULT_HEADERS } from "./constants"
 
 // Custom interface for Z.ai params to support thinking mode
 type ZAiChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
@@ -108,12 +107,6 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 				parallel_tool_calls: metadata.parallelToolCalls ?? false,
 			}),
 		}
-
-		// DEBUG: Log raw API request for z.ai (temporary debug measure)
-		console.log("[Z.ai DEBUG] Raw API Request:")
-		console.log("[Z.ai DEBUG] Base URL:", this.baseURL)
-		console.log("[Z.ai DEBUG] Headers:", DEFAULT_HEADERS)
-		console.log("[Z.ai DEBUG] Request Params:", params)
 
 		return this.client.chat.completions.create(params)
 	}
