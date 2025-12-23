@@ -126,11 +126,11 @@ export class SearchAndReplaceTool extends BaseTool<"edit_file_anthropic"> {
 			let newContent = fileContent
 			const errors: string[] = []
 
-		for (let i = 0; i < edits.length; i++) {
-			// Normalize line endings in search/replace strings to match file content
-			const old_text = edits[i].old_text.replace(/\r\n/g, "\n")
-			const new_text = edits[i].new_text.replace(/\r\n/g, "\n")
-			const searchPattern = new RegExp(escapeRegExp(old_text), "g")
+			for (let i = 0; i < edits.length; i++) {
+				// Normalize line endings in search/replace strings to match file content
+				const old_text = edits[i].old_text.replace(/\r\n/g, "\n")
+				const new_text = edits[i].new_text.replace(/\r\n/g, "\n")
+				const searchPattern = new RegExp(escapeRegExp(old_text), "g")
 
 				const matchCount = newContent.match(searchPattern)?.length ?? 0
 				if (matchCount === 0) {
@@ -245,6 +245,7 @@ export class SearchAndReplaceTool extends BaseTool<"edit_file_anthropic"> {
 			}
 
 			task.didEditFile = true
+			task.recordToolUsage("edit_file_anthropic")
 
 			// Get the formatted response message
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, false)
