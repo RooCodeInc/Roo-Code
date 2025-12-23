@@ -784,10 +784,6 @@
 					"unified": "Chiến lược diff thống nhất thực hiện nhiều cách tiếp cận để áp dụng diff và chọn cách tiếp cận tốt nhất.",
 					"multiBlock": "Chiến lược diff đa khối cho phép cập nhật nhiều khối mã trong một tệp trong một yêu cầu."
 				}
-			},
-			"matchPrecision": {
-				"label": "Độ chính xác khớp",
-				"description": "Thanh trượt này kiểm soát mức độ chính xác các phần mã phải khớp khi áp dụng diff. Giá trị thấp hơn cho phép khớp linh hoạt hơn nhưng tăng nguy cơ thay thế không chính xác. Sử dụng giá trị dưới 100% với sự thận trọng cao."
 			}
 		},
 		"todoList": {

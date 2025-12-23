@@ -650,7 +650,7 @@ export async function presentAssistantMessage(cline: Task) {
 						block.name as ToolName,
 						mode ?? defaultModeSlug,
 						customModes ?? [],
-						{ apply_diff: cline.diffEnabled },
+						{},
 						block.params,
 						stateExperiments,
 						includedTools,

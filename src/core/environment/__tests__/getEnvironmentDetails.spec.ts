@@ -115,7 +115,6 @@ describe("getEnvironmentDetails", () => {
 				createMessage: vi.fn(),
 				countTokens: vi.fn(),
 			} as unknown as ApiHandler,
-			diffEnabled: true,
 			providerRef: {
 				deref: vi.fn().mockReturnValue(mockProvider),
 				[Symbol.toStringTag]: "WeakRef",

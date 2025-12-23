@@ -554,11 +554,9 @@ describe("ClineProvider", () => {
 			uriScheme: "vscode",
 			soundEnabled: false,
 			ttsEnabled: false,
-			diffEnabled: false,
 			enableCheckpoints: false,
 			writeDelayMs: 1000,
 			browserViewportSize: "900x600",
-			fuzzyMatchThreshold: 1.0,
 			mcpEnabled: true,
 			enableMcpServerCreation: false,
 			mode: defaultModeSlug,
@@ -767,7 +765,6 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("taskHistory")
 		expect(state).toHaveProperty("soundEnabled")
 		expect(state).toHaveProperty("ttsEnabled")
-		expect(state).toHaveProperty("diffEnabled")
 		expect(state).toHaveProperty("writeDelayMs")
 	})
 
@@ -777,15 +774,6 @@ describe("ClineProvider", () => {
 
 		const state = await provider.getState()
 		expect(state.language).toBe("pt-BR")
-	})
-
-	test("diffEnabled defaults to true when not set", async () => {
-		// Mock globalState.get to return undefined for diffEnabled
-		;(mockContext.globalState.get as any).mockReturnValue(undefined)
-
-		const state = await provider.getState()
-
-		expect(state.diffEnabled).toBe(true)
 	})
 
 	test("writeDelayMs defaults to 1000ms", async () => {
@@ -1444,10 +1432,10 @@ describe("ClineProvider", () => {
 			)
 		})
 
-		test("generates system prompt with diff enabled", async () => {
+		test("generates system prompt with various configurations", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
-			// Mock getState to return diffEnabled: true
+			// Mock getState with typical configuration
 			vi.spyOn(provider, "getState").mockResolvedValue({
 				apiConfiguration: {
 					apiProvider: "openrouter",
@@ -1458,44 +1446,8 @@ describe("ClineProvider", () => {
 				enableMcpServerCreation: true,
 				mcpEnabled: false,
 				browserViewportSize: "900x600",
-				diffEnabled: true,
-				fuzzyMatchThreshold: 0.8,
 				experiments: experimentDefault,
 				browserToolEnabled: true,
-			} as any)
-
-			// Trigger getSystemPrompt
-			const handler = getMessageHandler()
-			await handler({ type: "getSystemPrompt", mode: "code" })
-
-			// Verify system prompt was generated and sent
-			expect(mockPostMessage).toHaveBeenCalledWith(
-				expect.objectContaining({
-					type: "systemPrompt",
-					text: expect.any(String),
-					mode: "code",
-				}),
-			)
-		})
-
-		test("generates system prompt with diff disabled", async () => {
-			await provider.resolveWebviewView(mockWebviewView)
-
-			// Mock getState to return diffEnabled: false
-			vi.spyOn(provider, "getState").mockResolvedValue({
-				apiConfiguration: {
-					apiProvider: "openrouter",
-					apiModelId: "test-model",
-				},
-				customModePrompts: {},
-				mode: "code",
-				mcpEnabled: false,
-				browserViewportSize: "900x600",
-				diffEnabled: false,
-				fuzzyMatchThreshold: 0.8,
-				experiments: experimentDefault,
-				enableMcpServerCreation: true,
-				browserToolEnabled: false,
 			} as any)
 
 			// Trigger getSystemPrompt

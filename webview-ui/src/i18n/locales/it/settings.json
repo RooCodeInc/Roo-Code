@@ -784,10 +784,6 @@
 					"unified": "La strategia diff unificato adotta diversi approcci per applicare i diff e sceglie il migliore.",
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisione corrispondenza",
-				"description": "Questo cursore controlla quanto precisamente le sezioni di codice devono corrispondere quando si applicano i diff. Valori più bassi consentono corrispondenze più flessibili ma aumentano il rischio di sostituzioni errate. Usa valori inferiori al 100% con estrema cautela."
 			}
 		},
 		"todoList": {
