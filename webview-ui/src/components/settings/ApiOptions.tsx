@@ -452,6 +452,11 @@ const ApiOptions = ({
 				options.unshift(rooOption)
 			}
 		} else {
+			// Filter out roo from the welcome view
+			const filteredOptions = options.filter((opt) => opt.value !== "roo")
+			options.length = 0
+			options.push(...filteredOptions)
+
 			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
 			if (openRouterIndex > 0) {
 				const [openRouterOption] = options.splice(openRouterIndex, 1)
@@ -472,7 +477,7 @@ const ApiOptions = ({
 					) : (
 						docs && (
 							<VSCodeLink href={docs.url} target="_blank" className="flex gap-2">
-								{docs.name}
+								{t("settings:providers.apiProviderDocs")}
 								<BookOpenText className="size-4 inline ml-2" />
 							</VSCodeLink>
 						)
