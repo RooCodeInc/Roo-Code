@@ -27,8 +27,14 @@ type ProviderOption = "roo" | "custom"
 type AuthOrigin = "landing" | "providerSelection"
 
 const WelcomeViewProvider = () => {
-	const { apiConfiguration, currentApiConfigName, setApiConfiguration, uriScheme, cloudIsAuthenticated } =
-		useExtensionState()
+	const {
+		apiConfiguration,
+		currentApiConfigName,
+		setApiConfiguration,
+		uriScheme,
+		cloudIsAuthenticated,
+		cloudAuthSkipModel,
+	} = useExtensionState()
 	const { t } = useAppTranslation()
 	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
 	const [selectedProvider, setSelectedProvider] = useState<ProviderOption | null>(null)
@@ -39,23 +45,33 @@ const WelcomeViewProvider = () => {
 	const [manualErrorMessage, setManualErrorMessage] = useState<boolean | undefined>(undefined)
 	const manualUrlInputRef = useRef<HTMLInputElement | null>(null)
 
-	// When auth completes during the provider signup flow, save the Roo config
-	// This will cause showWelcome to become false and navigate to chat
+	// When auth completes during the provider signup flow, either:
+	// 1. If user skipped model selection (cloudAuthSkipModel=true), navigate to provider selection with "custom" selected
+	// 2. Otherwise, save the Roo config and navigate to chat
 	useEffect(() => {
 		if (cloudIsAuthenticated && authInProgress) {
-			// Auth completed from provider signup flow - save the config now
-			const rooConfig: ProviderSettings = {
-				apiProvider: "roo",
+			if (cloudAuthSkipModel) {
+				// User skipped model selection during signup - navigate to provider selection with 3rd-party selected
+				setSelectedProvider("custom")
+				setAuthInProgress(false)
+				setShowManualEntry(false)
+				// Clear the flag so it doesn't affect future flows
+				vscode.postMessage({ type: "clearCloudAuthSkipModel" })
+			} else {
+				// Auth completed from provider signup flow - save the config now
+				const rooConfig: ProviderSettings = {
+					apiProvider: "roo",
+				}
+				vscode.postMessage({
+					type: "upsertApiConfiguration",
+					text: currentApiConfigName,
+					apiConfiguration: rooConfig,
+				})
+				setAuthInProgress(false)
+				setShowManualEntry(false)
 			}
-			vscode.postMessage({
-				type: "upsertApiConfiguration",
-				text: currentApiConfigName,
-				apiConfiguration: rooConfig,
-			})
-			setAuthInProgress(false)
-			setShowManualEntry(false)
 		}
-	}, [cloudIsAuthenticated, authInProgress, currentApiConfigName])
+	}, [cloudIsAuthenticated, authInProgress, currentApiConfigName, cloudAuthSkipModel])
 
 	// Focus the manual URL input when it becomes visible
 	useEffect(() => {
