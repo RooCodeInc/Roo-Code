@@ -179,8 +179,6 @@ describe("WelcomeViewProvider", () => {
 			expect(screen.getByTestId("radio-group")).toBeInTheDocument()
 			expect(screen.getByTestId("radio-roo")).toBeInTheDocument()
 			expect(screen.getByTestId("radio-custom")).toBeInTheDocument()
-
-			// Should show the provider selection introduction
 			expect(screen.getByTestId("trans-welcome:providerSignup.chooseProvider")).toBeInTheDocument()
 		})
 	})
