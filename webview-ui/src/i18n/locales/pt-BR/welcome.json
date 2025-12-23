@@ -16,14 +16,15 @@
 			"incentive": "Experimente o Roo gratuitamente"
 		}
 	},
-	"chooseProvider": "Para começar, você precisa de um provedor LLM:",
+	"chooseProvider": "Roo precisa de um provedor LLM.",
 	"providerSignup": {
-		"rooCloudProvider": "Provedor Roo Code Cloud",
-		"rooCloudDescription": "A maneira mais simples de usar o Roo. Uma combinação selecionada de modelos gratuitos e pagos a baixo custo",
-		"learnMore": "saiba mais",
-		"useAnotherProvider": "Usar outro provedor",
+		"rooCloudDescription": "A maneira mais simples de começar é com o Provedor Roo Code Cloud: uma combinação selecionada de modelos gratuitos e pagos a baixo custo.",
+		"learnMore": "Saiba mais.",
+		"additionalBenefits": "Além disso, com uma conta Roo Code Cloud, você tem acesso a análises de uso, sincronização de tarefas, suporte profissional e muito mais.",
+		"useAnotherProvider": "ou use outro provedor",
 		"useAnotherProviderDescription": "Digite uma chave API e comece.",
-		"noApiKeys": "Não quer lidar com chaves? Escolha o Provedor Roo Code Cloud.",
+		"noApiKeys": "Não quer lidar com chaves de API e contas separadas?",
+		"backToRoo": "Escolha o Provedor Roo Code Cloud.",
 		"getStarted": "Começar"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Se você não for solicitado a abrir uma URL, <clickHere>clique aqui</clickHere>.",
 		"havingTrouble": "Se você completou o registro mas está tendo problemas, <clickHere>clique aqui</clickHere>.",
 		"pasteUrl": "Cole a URL de callback do seu navegador:",
+		"docsLink": "Não está funcionando? <DocsLink>Confira a documentação</DocsLink>.",
 		"invalidURL": "Isso não parece uma URL de callback válida. Copie o que o Roo Code Cloud está mostrando no seu navegador.",
 		"goBack": "Voltar"
 	},

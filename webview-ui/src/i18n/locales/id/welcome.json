@@ -16,14 +16,15 @@
 			"incentive": "Coba Roo gratis"
 		}
 	},
-	"chooseProvider": "Untuk memulai, kamu memerlukan penyedia LLM:",
+	"chooseProvider": "Roo memerlukan penyedia LLM.",
 	"providerSignup": {
-		"rooCloudProvider": "Penyedia Roo Code Cloud",
-		"rooCloudDescription": "Cara termudah untuk menggunakan Roo. Campuran model gratis dan berbayar yang dikurasi dengan biaya rendah",
-		"learnMore": "pelajari lebih lanjut",
-		"useAnotherProvider": "Gunakan penyedia lain",
+		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia Roo Code Cloud: campuran model gratis dan berbayar yang dikurasi dengan biaya rendah.",
+		"learnMore": "Pelajari lebih lanjut.",
+		"additionalBenefits": "Selain itu, dengan akun Roo Code Cloud, Anda mendapatkan akses ke analitik penggunaan, sinkronisasi tugas, dukungan profesional, dan lainnya.",
+		"useAnotherProvider": "atau gunakan penyedia lain",
 		"useAnotherProviderDescription": "Masukkan kunci API dan mulai.",
-		"noApiKeys": "Tidak ingin menangani kunci? Pilih Penyedia Roo Code Cloud.",
+		"noApiKeys": "Tidak ingin menangani kunci API dan akun terpisah?",
+		"backToRoo": "Pilih Penyedia Roo Code Cloud.",
 		"getStarted": "Mulai"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Jika kamu tidak diminta untuk membuka URL, <clickHere>klik di sini</clickHere>.",
 		"havingTrouble": "Jika kamu telah menyelesaikan pendaftaran tetapi mengalami masalah, <clickHere>klik di sini</clickHere>.",
 		"pasteUrl": "Tempel URL callback dari browser Anda:",
+		"docsLink": "Tidak bekerja? <DocsLink>Lihat dokumentasi</DocsLink>.",
 		"invalidURL": "Itu tidak terlihat seperti URL callback yang valid. Salin apa yang ditampilkan Roo Code Cloud di browser Anda.",
 		"goBack": "Kembali"
 	},

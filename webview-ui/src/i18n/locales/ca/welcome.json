@@ -16,14 +16,15 @@
 			"incentive": "Prova Roo gratis"
 		}
 	},
-	"chooseProvider": "Per començar, necessites un proveïdor LLM:",
+	"chooseProvider": "Roo necessita un proveïdor de LLM.",
 	"providerSignup": {
-		"rooCloudProvider": "Proveïdor Roo Code Cloud",
-		"rooCloudDescription": "La manera més senzilla d'utilitzar Roo. Una combinació seleccionada de models gratuïts i de pagament a un cost baix",
-		"learnMore": "més informació",
-		"useAnotherProvider": "Utilitza un altre proveïdor",
+		"rooCloudDescription": "La manera més senzilla de començar és amb el Proveïdor Roo Code Cloud: una combinació seleccionada de models gratuïts i de pagament a un cost baix.",
+		"learnMore": "Més informació.",
+		"additionalBenefits": "A més, amb un compte Roo Code Cloud, tens accés a analítiques d'ús, sincronització de tasques, suport professional i més.",
+		"useAnotherProvider": "o utilitza un altre proveïdor",
 		"useAnotherProviderDescription": "Introdueix una clau API i comença.",
-		"noApiKeys": "No vols haver de tractar amb claus? Opta pel Proveïdor Roo Code Cloud.",
+		"noApiKeys": "No vols tractar amb claus API i comptes separats?",
+		"backToRoo": "Opta pel Proveïdor Roo Code Cloud.",
 		"getStarted": "Començar"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Si no se t'avisa per obrir una URL, <clickHere>feu clic aquí</clickHere>.",
 		"havingTrouble": "Si has completat el registre però tens problemes, <clickHere>feu clic aquí</clickHere>.",
 		"pasteUrl": "Enganxa la URL de resposta del teu navegador:",
+		"docsLink": "No funciona? <DocsLink>Consulta la documentació</DocsLink>.",
 		"invalidURL": "No sembla una URL de resposta vàlida. Copia el que Roo Code Cloud mostra al teu navegador.",
 		"goBack": "Enrere"
 	},

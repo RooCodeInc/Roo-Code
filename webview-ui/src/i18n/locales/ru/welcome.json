@@ -16,14 +16,15 @@
 			"incentive": "Попробуй Roo бесплатно"
 		}
 	},
-	"chooseProvider": "Для начала работы тебе нужен LLM-провайдер:",
+	"chooseProvider": "Roo нужен LLM-провайдер.",
 	"providerSignup": {
-		"rooCloudProvider": "Провайдер Roo Code Cloud",
-		"rooCloudDescription": "Самый простой способ использования Roo. Подобранная комбинация бесплатных и платных моделей по низкой цене",
-		"learnMore": "подробнее",
-		"useAnotherProvider": "Использовать другого провайдера",
+		"rooCloudDescription": "Самый простой способ начать работу - это Провайдер Roo Code Cloud: подобранная комбинация бесплатных и платных моделей по низкой цене.",
+		"learnMore": "Подробнее.",
+		"additionalBenefits": "Кроме того, с аккаунтом Roo Code Cloud ты получаешь доступ к аналитике использования, синхронизации задач, профессиональной поддержке и многому другому.",
+		"useAnotherProvider": "или используй другого провайдера",
 		"useAnotherProviderDescription": "Введи API-ключ и начни.",
-		"noApiKeys": "Не хочешь заниматься ключами? Выбери Провайдер Roo Code Cloud.",
+		"noApiKeys": "Не хочешь заниматься API-ключами и разными аккаунтами?",
+		"backToRoo": "Выбери Провайдер Roo Code Cloud.",
 		"getStarted": "Начать"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Если вас не попросят открыть URL, <clickHere>нажмите здесь</clickHere>.",
 		"havingTrouble": "Если вы завершили регистрацию, но у вас возникли проблемы, <clickHere>нажмите здесь</clickHere>.",
 		"pasteUrl": "Вставьте URL обратного вызова из браузера:",
+		"docsLink": "Не работает? <DocsLink>Посмотри документацию</DocsLink>.",
 		"invalidURL": "Это не похоже на корректный URL обратного вызова. Скопируй то, что показывает Roo Code Cloud в твоем браузере.",
 		"goBack": "Назад"
 	},

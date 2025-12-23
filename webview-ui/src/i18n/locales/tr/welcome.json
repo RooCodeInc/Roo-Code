@@ -16,14 +16,15 @@
 			"incentive": "Roo'yu ücretsiz dene"
 		}
 	},
-	"chooseProvider": "Başlamak için bir LLM sağlayıcısına ihtiyacın var:",
+	"chooseProvider": "Roo'nun çalışması için bir LLM sağlayıcısına ihtiyacı var.",
 	"providerSignup": {
-		"rooCloudProvider": "Roo Code Cloud Sağlayıcısı",
-		"rooCloudDescription": "Roo'yu kullanmanın en basit yolu. Düşük maliyetle seçilmiş ücretsiz ve ücretli modellerin karışımı",
-		"learnMore": "daha fazla bilgi",
-		"useAnotherProvider": "Başka bir sağlayıcı kullan",
+		"rooCloudDescription": "Başlamanın en basit yolu Roo Code Cloud Sağlayıcısı'dır: düşük maliyetle seçilmiş ücretsiz ve ücretli modellerin karışımı.",
+		"learnMore": "Daha fazla bilgi.",
+		"additionalBenefits": "Ayrıca, bir Roo Code Cloud hesabıyla, kullanım analitiklerine, görev senkronizasyonuna, profesyonel desteğe ve daha fazlasına erişim elde edersin.",
+		"useAnotherProvider": "ya da başka bir sağlayıcı kullan",
 		"useAnotherProviderDescription": "Bir API anahtarı gir ve başla.",
-		"noApiKeys": "Anahtarlarla uğraşmak istemez misin? Roo Code Cloud Sağlayıcısı'nı seç.",
+		"noApiKeys": "API anahtarları ve ayrı hesaplarla uğraşmak istemez misin?",
+		"backToRoo": "Roo Code Cloud Sağlayıcısı'nı seç.",
 		"getStarted": "Başla"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "URL açmanız istenmezse, <clickHere>buraya tıkla</clickHere>.",
 		"havingTrouble": "Kaydı tamamladıysan ama sorun yaşıyorsan, <clickHere>buraya tıkla</clickHere>.",
 		"pasteUrl": "Tarayıcınızdan geri arama URL'sini yapıştırın:",
+		"docsLink": "Çalışmıyor mu? <DocsLink>Belgeleri kontrol et</DocsLink>.",
 		"invalidURL": "Bu geçerli bir geri arama URL'si gibi görünmüyor. Roo Code Cloud'un tarayıcında gösterdiği şeyi kopyala.",
 		"goBack": "Geri Dön"
 	},

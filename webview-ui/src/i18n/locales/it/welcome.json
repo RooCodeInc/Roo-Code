@@ -16,14 +16,15 @@
 			"incentive": "Prova Roo gratuitamente"
 		}
 	},
-	"chooseProvider": "Per iniziare, hai bisogno di un provider LLM:",
+	"chooseProvider": "Roo ha bisogno di un provider LLM.",
 	"providerSignup": {
-		"rooCloudProvider": "Provider Roo Code Cloud",
-		"rooCloudDescription": "Il modo più semplice per usare Roo. Un mix curato di modelli gratuiti e a pagamento a basso costo",
-		"learnMore": "scopri di più",
-		"useAnotherProvider": "Usa un altro provider",
+		"rooCloudDescription": "Il modo più semplice per iniziare è con il Provider Roo Code Cloud: un mix curato di modelli gratuiti e a pagamento a basso costo.",
+		"learnMore": "Scopri di più.",
+		"additionalBenefits": "Inoltre, con un account Roo Code Cloud, hai accesso a analitiche d'uso, sincronizzazione attività, supporto professionale e altro ancora.",
+		"useAnotherProvider": "o usa un altro provider",
 		"useAnotherProviderDescription": "Inserisci una chiave API e inizia.",
-		"noApiKeys": "Non vuoi occuparti di chiavi? Scegli il Provider Roo Code Cloud.",
+		"noApiKeys": "Non vuoi occuparti di chiavi API e account separati?",
+		"backToRoo": "Scegli il Provider Roo Code Cloud.",
 		"getStarted": "Inizia"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Se non ti viene chiesto di aprire un URL, <clickHere>fai clic qui</clickHere>.",
 		"havingTrouble": "Se hai completato l'iscrizione ma hai problemi, <clickHere>fai clic qui</clickHere>.",
 		"pasteUrl": "Incolla l'URL di callback dal tuo browser:",
+		"docsLink": "Non funziona? <DocsLink>Consulta la documentazione</DocsLink>.",
 		"invalidURL": "Questo non sembra un URL di callback valido. Copia quello che Roo Code Cloud mostra nel tuo browser.",
 		"goBack": "Indietro"
 	},

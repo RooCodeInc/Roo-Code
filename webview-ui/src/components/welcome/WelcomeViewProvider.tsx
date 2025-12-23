@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import {
-	VSCodeLink,
-	VSCodeProgressRing,
-	VSCodeRadio,
-	VSCodeRadioGroup,
-	VSCodeTextField,
-} from "@vscode/webview-ui-toolkit/react"
+import { VSCodeLink, VSCodeProgressRing, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import type { ProviderSettings } from "@roo-code/types"
 
@@ -20,7 +14,8 @@ import { Tab, TabContent } from "../common/Tab"
 
 import RooHero from "./RooHero"
 import { Trans } from "react-i18next"
-import { ArrowLeft, ArrowRight, BadgeInfo } from "lucide-react"
+import { ArrowLeft, ArrowRight, BadgeInfo, TriangleAlert } from "lucide-react"
+import { buildDocLink } from "@/utils/docLinks"
 
 type ProviderOption = "roo" | "custom"
 
@@ -129,14 +124,22 @@ const WelcomeViewProvider = () => {
 		vscode.postMessage({ type: "rooCloudSignIn", useProviderSignup: true })
 	}
 
+	const handleUseAnotherProvider = useCallback(() => {
+		setSelectedProvider("custom")
+	}, [])
+
+	const handleGoWithRooProvider = useCallback(() => {
+		setSelectedProvider("roo")
+	}, [])
+
 	// Render the waiting for cloud state
 	if (authInProgress) {
 		return (
 			<Tab>
-				<TabContent className="flex flex-col gap-4 p-6">
+				<TabContent className="flex flex-col gap-4 p-6 justify-center">
 					<div className="flex flex-col items-start gap-4 pt-8">
 						<VSCodeProgressRing className="size-6" />
-						<h2 className="mt-0 mb-0 text-lg font-semibold">{t("welcome:waitingForCloud.heading")}</h2>
+						<h2 className="mt-0 mb-0 text-xl font-semibold">{t("welcome:waitingForCloud.heading")}</h2>
 						<p className="text-vscode-descriptionForeground mt-0">
 							{t("welcome:waitingForCloud.description")}
 						</p>
@@ -159,25 +162,25 @@ const WelcomeViewProvider = () => {
 						</div>
 
 						<div className="flex gap-2 items-start pr-4 text-vscode-descriptionForeground">
-							<ArrowRight className="size-4 inline shrink-0" />
+							<TriangleAlert className="size-4 inline shrink-0" />
 							<div>
-								<p className="m-0">
-									<Trans
-										i18nKey="welcome:waitingForCloud.havingTrouble"
-										components={{
-											clickHere: (
-												<button
-													onClick={() => setShowManualEntry(true)}
-													className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0	"
-												/>
-											),
-										}}
-									/>
-								</p>
-
-								{showManualEntry && (
+								{!showManualEntry ? (
+									<p className="m-0">
+										<Trans
+											i18nKey="welcome:waitingForCloud.havingTrouble"
+											components={{
+												clickHere: (
+													<button
+														onClick={() => setShowManualEntry(true)}
+														className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground underline cursor-pointer bg-transparent border-none p-0	"
+													/>
+												),
+											}}
+										/>
+									</p>
+								) : (
 									<div className="w-full max-w-sm">
-										<p className="text-vscode-descriptionForeground">
+										<p className="text-vscode-descriptionForeground mt-0">
 											{t("welcome:waitingForCloud.pasteUrl")}
 										</p>
 										<div className="flex gap-2 items-center">
@@ -195,6 +198,22 @@ const WelcomeViewProvider = () => {
 												<ArrowRight className="size-4" />
 											</Button>
 										</div>
+										<p className="mt-2">
+											<Trans
+												i18nKey="welcome:waitingForCloud.docsLink"
+												components={{
+													DocsLink: (
+														<a
+															href={buildDocLink("roo-code-cloud/login", "setup")}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="text-vscode-textLink-foreground hover:underline">
+															{t("common:docsLink.label")}
+														</a>
+													),
+												}}
+											/>
+										</p>
 										{manualUrl && manualErrorMessage && (
 											<p className="text-vscode-errorForeground mt-2">
 												{t("welcome:waitingForCloud.invalidURL")}
@@ -223,63 +242,45 @@ const WelcomeViewProvider = () => {
 				<RooHero />
 				<h2 className="mt-0 mb-0 text-xl">{t("welcome:greeting")}</h2>
 
-				<div className="text-base text-vscode-foreground space-y-3">
-					{selectedProvider === "roo" && (
-						<p>
-							<Trans i18nKey="welcome:introduction" />
-						</p>
-					)}
-					<p>
-						<Trans i18nKey="welcome:chooseProvider" />
-					</p>
-				</div>
-
-				<div className="mb-4">
-					<VSCodeRadioGroup
-						value={selectedProvider}
-						onChange={(e: Event | React.FormEvent<HTMLElement>) => {
-							const target = ((e as CustomEvent)?.detail?.target ||
-								(e.target as HTMLInputElement)) as HTMLInputElement
-							setSelectedProvider(target.value as ProviderOption)
-						}}>
-						{/* Roo Code Cloud Provider Option */}
-						<VSCodeRadio value="roo" className="flex items-start gap-2">
-							<div className="flex-1 space-y-1 cursor-pointer">
-								<p className="text-lg font-semibold block -mt-1">
-									{t("welcome:providerSignup.rooCloudProvider")}
-								</p>
-								<p className="text-base text-vscode-descriptionForeground mt-0">
-									{t("welcome:providerSignup.rooCloudDescription")} (
-									<VSCodeLink
-										href="https://roocode.com/provider/pricing?utm_source=extension&utm_medium=welcome-screen&utm_campaign=provider-signup&utm_content=learn-more"
-										className="cursor-pointer">
-										{t("welcome:providerSignup.learnMore")}
-									</VSCodeLink>
-									).
-								</p>
-							</div>
-						</VSCodeRadio>
-
-						{/* Use Another Provider Option */}
-						<VSCodeRadio value="custom" className="flex items-start gap-2">
-							<div className="flex-1 space-y-1 cursor-pointer">
-								<p className="text-lg font-semibold block -mt-1">
-									{t("welcome:providerSignup.useAnotherProvider")}
-								</p>
-								<p className="text-base text-vscode-descriptionForeground mt-0">
-									{t("welcome:providerSignup.useAnotherProviderDescription")}
-								</p>
-							</div>
-						</VSCodeRadio>
-					</VSCodeRadioGroup>
-
-					{/* Expand API options only when custom provider is selected, max height is used to force a transition */}
-					<div className="mb-8 border-l-2 border-vscode-panel-border pl-6 ml-[7px]">
-						<div
-							className={`overflow-clip transition-[max-height] ease-in-out duration-300 ${selectedProvider === "custom" ? "max-h-[600px]" : "max-h-0"}`}>
-							<p className="text-base text-vscode-descriptionForeground mt-0">
-								{t("welcome:providerSignup.noApiKeys")}
+				{selectedProvider === "roo" ? (
+					<>
+						<div className="space-y-4 leading-normal">
+							<p className="text-base text-vscode-foreground">
+								<Trans i18nKey="welcome:introduction" />
 							</p>
+							<p className="font-semibold">
+								<Trans i18nKey="welcome:chooseProvider" />
+							</p>
+							<p className="font-semibold pl-3 py-0 border-l-2 border-vscode-panel-border">
+								{t("welcome:providerSignup.rooCloudDescription")}{" "}
+								<VSCodeLink
+									href="https://docs.roocode.com/roo-code-provider/overview?utm_source=extension&utm_medium=welcome-screen&utm_campaign=provider-signup&utm_content=learn-more"
+									className="cursor-pointer text-vscode-descriptionForeground">
+									{t("welcome:providerSignup.learnMore")}
+								</VSCodeLink>
+							</p>
+						</div>
+
+						<div className="mt-4 flex gap-2 items-center">
+							<Button onClick={handleGetStarted} variant="primary">
+								{t("welcome:providerSignup.getStarted")}
+							</Button>
+							<VSCodeLink onClick={handleUseAnotherProvider} className="cursor-pointer">
+								{t("welcome:providerSignup.useAnotherProvider")}
+							</VSCodeLink>
+						</div>
+					</>
+				) : (
+					<>
+						<div className="mb-4">
+							<div className="text-sm">
+								<p className="text-base text-vscode-descriptionForeground">
+									{t("welcome:providerSignup.noApiKeys")}
+									<VSCodeLink onClick={handleGoWithRooProvider} className="cursor-pointer">
+										{t("welcome:providerSignup.backToRoo")}
+									</VSCodeLink>
+								</p>
+							</div>
 							<ApiOptions
 								fromWelcomeView
 								apiConfiguration={apiConfiguration || {}}
@@ -289,14 +290,14 @@ const WelcomeViewProvider = () => {
 								setErrorMessage={setErrorMessage}
 							/>
 						</div>
-					</div>
-				</div>
 
-				<div className="-mt-8">
-					<Button onClick={handleGetStarted} variant="primary">
-						{t("welcome:providerSignup.getStarted")} →
-					</Button>
-				</div>
+						<div className="-mt-2 mb-4">
+							<Button onClick={handleGetStarted} variant="primary">
+								{t("welcome:providerSignup.getStarted")} →
+							</Button>
+						</div>
+					</>
+				)}
 			</TabContent>
 		</Tab>
 	)

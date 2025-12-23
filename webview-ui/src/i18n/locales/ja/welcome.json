@@ -16,14 +16,15 @@
 			"incentive": "Rooを無料で試す"
 		}
 	},
-	"chooseProvider": "開始するには、LLMプロバイダーが必要です：",
+	"chooseProvider": "Rooを使用するにはLLMプロバイダーが必要です。",
 	"providerSignup": {
-		"rooCloudProvider": "Roo Code Cloudプロバイダー",
-		"rooCloudDescription": "Rooを使用する最も簡単な方法。低コストで厳選された無料および有料モデルの組み合わせ",
-		"learnMore": "詳細を見る",
-		"useAnotherProvider": "別のプロバイダーを使用",
+		"rooCloudDescription": "開始するための最も簡単な方法はRoo Code Cloudプロバイダーです：低コストで厳選された無料および有料モデルの組み合わせ。",
+		"learnMore": "詳細を見る。",
+		"additionalBenefits": "さらに、Roo Code Cloudアカウントなら、使用状況の分析、タスク同期、プロフェッショナルサポートなどにアクセスできます。",
+		"useAnotherProvider": "または別のプロバイダーを使用",
 		"useAnotherProviderDescription": "APIキーを入力して始める。",
-		"noApiKeys": "キーを扱いたくないですか？Roo Code Cloudプロバイダーを選びましょう。",
+		"noApiKeys": "APIキーと別々のアカウントは扱いたくないですか？",
+		"backToRoo": "Roo Code Cloudプロバイダーを選びましょう。",
 		"getStarted": "始める"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "URLを開くように促されない場合は、<clickHere>ここをクリック</clickHere>してください。",
 		"havingTrouble": "サインアップを完了しましたが問題がある場合は、<clickHere>ここをクリック</clickHere>してください。",
 		"pasteUrl": "ブラウザからコールバックURLを貼り付けてください：",
+		"docsLink": "機能しませんか？<DocsLink>ドキュメントを確認</DocsLink>。",
 		"invalidURL": "有効なコールバックURLのようには見えません。Roo Code Cloudがブラウザに表示しているものをコピーしてください。",
 		"goBack": "戻る"
 	},

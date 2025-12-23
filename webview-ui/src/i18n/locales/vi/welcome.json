@@ -16,14 +16,15 @@
 			"incentive": "Dùng thử Roo miễn phí"
 		}
 	},
-	"chooseProvider": "Để bắt đầu, bạn cần một nhà cung cấp LLM:",
+	"chooseProvider": "Roo cần một nhà cung cấp LLM.",
 	"providerSignup": {
-		"rooCloudProvider": "Nhà cung cấp Roo Code Cloud",
-		"rooCloudDescription": "Cách đơn giản nhất để sử dụng Roo. Sự kết hợp được tuyển chọn của các mô hình miễn phí và trả phí với chi phí thấp",
-		"learnMore": "tìm hiểu thêm",
-		"useAnotherProvider": "Sử dụng nhà cung cấp khác",
+		"rooCloudDescription": "Cách đơn giản nhất để bắt đầu là sử dụng Nhà cung cấp Roo Code Cloud: sự kết hợp được tuyển chọn của các mô hình miễn phí và trả phí với chi phí thấp.",
+		"learnMore": "Tìm hiểu thêm.",
+		"additionalBenefits": "Ngoài ra, với tài khoản Roo Code Cloud, bạn có quyền truy cập vào phân tích sử dụng, đồng bộ hóa tác vụ, hỗ trợ chuyên nghiệp và hơn thế nữa.",
+		"useAnotherProvider": "hoặc sử dụng nhà cung cấp khác",
 		"useAnotherProviderDescription": "Nhập khóa API và bắt đầu.",
-		"noApiKeys": "Không muốn phải xử lý các khóa? Hãy sử dụng Nhà cung cấp Roo Code Cloud.",
+		"noApiKeys": "Không muốn phải xử lý các khóa API và tài khoản riêng biệt?",
+		"backToRoo": "Hãy sử dụng Nhà cung cấp Roo Code Cloud.",
 		"getStarted": "Bắt đầu"
 	},
 	"waitingForCloud": {
@@ -32,6 +33,7 @@
 		"noPrompt": "Nếu bạn không được nhắc mở URL, <clickHere>hãy nhấp vào đây</clickHere>.",
 		"havingTrouble": "Nếu bạn đã hoàn thành đăng ký nhưng gặp sự cố, <clickHere>hãy nhấp vào đây</clickHere>.",
 		"pasteUrl": "Dán URL callback từ trình duyệt của bạn:",
+		"docsLink": "Không hoạt động? <DocsLink>Kiểm tra tài liệu</DocsLink>.",
 		"invalidURL": "Điều đó không giống như một URL callback hợp lệ. Vui lòng sao chép những gì Roo Code Cloud đang hiển thị trong trình duyệt của bạn.",
 		"goBack": "Quay lại"
 	},
