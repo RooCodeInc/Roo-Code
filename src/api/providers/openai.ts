@@ -6,6 +6,7 @@ import {
 	type ModelInfo,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
+	NATIVE_TOOL_DEFAULTS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
 } from "@roo-code/types"
@@ -291,7 +292,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
-		const info = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+		// Ensure OpenAI-compatible models default to supporting native tool calling.
+		// This is required for [`Task.attemptApiRequest()`](src/core/task/Task.ts:3817) to
+		// include tool definitions in the request.
+		const info: ModelInfo = {
+			...NATIVE_TOOL_DEFAULTS,
+			...(this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults),
+		}
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
