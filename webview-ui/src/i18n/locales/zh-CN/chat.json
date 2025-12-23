@@ -332,9 +332,10 @@
 			"goToSettingsButton": "前往设置"
 		},
 		"release": {
-			"heading": "最新功能：",
-			"contextRewind": "改进的上下文压缩现在允许您在回到存档点时恢复完整的之前上下文",
-			"rooProvider": "Roo Code Cloud 提供商现在保留推理内容，并默认使用原生工具以获得更好的性能"
+			"heading": "新增功能：",
+			"minimaxM21": "快速且经济高效的 MiniMax M2.1 模型现在在 Roo Code Cloud、MiniMax 等中可用",
+			"glm47": "支持思考模式的 Z.AI GLM-4.7 模型已添加到 Roo Code Cloud、Z.AI 等",
+			"customTools": "用于在 TypeScript 中定义自己的工具的实验性自定义工具支持"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
