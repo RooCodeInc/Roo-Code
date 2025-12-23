@@ -37,6 +37,7 @@ type ModelIdKey = keyof Pick<
 	| "ioIntelligenceModelId"
 	| "vercelAiGatewayModelId"
 	| "apiModelId"
+	| "watsonxModelId"
 >
 
 interface ModelPickerProps {

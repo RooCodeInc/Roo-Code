@@ -274,6 +274,7 @@
 		"vercelAiGatewayApiKey": "Clé API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir la clé API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les clés API sont stockées en toute sécurité dans le stockage sécurisé de VSCode",
+		"passwordStorageNotice": "Les mots de passe sont stockés en toute sécurité dans le stockage sécurisé de VSCode",
 		"useCustomBaseUrl": "Utiliser une URL de base personnalisée",
 		"useReasoning": "Activer le raisonnement",
 		"useHostHeader": "Utiliser un en-tête Host personnalisé",
@@ -523,6 +524,20 @@
 			"placeholder": "Défaut : claude",
 			"maxTokensLabel": "Jetons de sortie max",
 			"maxTokensDescription": "Nombre maximum de jetons de sortie pour les réponses de Claude Code. La valeur par défaut est 8000."
+		},
+		"watsonx": {
+			"platform": "Plateforme",
+			"region": "Région",
+			"username": "Nom d'utilisateur",
+			"password": "Mot de passe",
+			"apiKey": "Clé API",
+			"authType": "Type d'authentification",
+			"projectId": "ID du projet",
+			"urlDescription": "Entrez l'URL complète de votre instance IBM Cloud Pak for Data",
+			"selectedEndpoint": "Point de terminaison sélectionné",
+			"retrieveModels": "Récupérer les modèles",
+			"retrieveSuccessful": "Modèles récupérés avec succès",
+			"retrieveError": "Échec de la récupération des modèles. Veuillez vérifier vos identifiants et réessayer"
 		}
 	},
 	"browser": {
@@ -908,7 +923,17 @@
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",
-		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth"
+		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth",
+		"watsonx": {
+			"platform": "Vous devez sélectionner une plateforme.",
+			"region": "Vous devez sélectionner une région.",
+			"projectId": "Vous devez fournir un ID de projet valide.",
+			"authType": "Vous devez sélectionner un type d'authentification.",
+			"username": "Vous devez fournir un nom d'utilisateur valide.",
+			"apiKey": "Vous devez fournir une clé API valide.",
+			"password": "Vous devez fournir un mot de passe valide.",
+			"baseUrl": "Vous devez fournir une URL IBM Cloud Pak for Data valide."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Saisissez la clé API...",

@@ -274,6 +274,7 @@
 		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
+		"passwordStorageNotice": "Les contrasenyes s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
 		"useReasoning": "Activar raonament",
 		"useHostHeader": "Utilitzar capçalera Host personalitzada",
@@ -523,6 +524,20 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
+		},
+		"watsonx": {
+			"platform": "Plataforma",
+			"region": "Regió",
+			"username": "Nom d'usuari",
+			"password": "Contrasenya",
+			"apiKey": "Clau API",
+			"authType": "Tipus d'autenticació",
+			"projectId": "ID del projecte",
+			"urlDescription": "Introduïu l'URL complet de la vostra instància d'IBM Cloud Pak for Data",
+			"selectedEndpoint": "Punt final seleccionat",
+			"retrieveModels": "Recuperar models",
+			"retrieveSuccessful": "Models recuperats correctament",
+			"retrieveError": "No s'han pogut recuperar els models. Comproveu les vostres credencials i torneu-ho a provar"
 		}
 	},
 	"browser": {
@@ -908,7 +923,17 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
+		"watsonx": {
+			"platform": "Heu de seleccionar una plataforma.",
+			"region": "Heu de seleccionar una regió.",
+			"projectId": "Heu de proporcionar un ID de projecte vàlid.",
+			"authType": "Heu de seleccionar un tipus d'autenticació.",
+			"username": "Heu de proporcionar un nom d'usuari vàlid.",
+			"apiKey": "Heu de proporcionar una clau API vàlida.",
+			"password": "Heu de proporcionar una contrasenya vàlida.",
+			"baseUrl": "Heu de proporcionar una URL vàlida d'IBM Cloud Pak for Data."
+		}
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",

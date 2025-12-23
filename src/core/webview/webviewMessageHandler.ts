@@ -65,6 +65,7 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/UpdateTodoListTool"
+import { getWatsonxModels, regionToWatsonxBaseUrl } from "../../api/providers/fetchers/ibm-watsonx"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -808,6 +809,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						"ibm-watsonx": {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -857,6 +859,19 @@ export const webviewMessageHandler = async (
 				{
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
+				{
+					key: "ibm-watsonx",
+					options: {
+						provider: "ibm-watsonx",
+						apiKey: apiConfiguration.watsonxApiKey,
+						projectId: apiConfiguration.watsonxProjectId,
+						baseUrl: apiConfiguration.watsonxBaseUrl,
+						platform: apiConfiguration.watsonxPlatform,
+						authType: apiConfiguration.watsonxAuthType,
+						username: apiConfiguration.watsonxUsername,
+						password: apiConfiguration.watsonxPassword,
+					},
 				},
 			]
 
@@ -1068,6 +1083,85 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				console.error("Failed to fetch Hugging Face models:", error)
 				provider.postMessageToWebview({ type: "huggingFaceModels", huggingFaceModels: [] })
+			}
+			break
+		case "requestWatsonxModels":
+			if (message?.values) {
+				try {
+					const { apiKey, projectId, platform, baseUrl, authType, username, password, region } =
+						message.values
+
+					if (platform === "ibmCloud") {
+						if (!apiKey || !region || !projectId) {
+							console.error(
+								"Missing IBM Cloud authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+							)
+							provider.postMessageToWebview({
+								type: "singleRouterModelFetchResponse",
+								success: false,
+								error: "Missing IBM Cloud authentication credentials for IBM watsonx models",
+								values: { provider: "ibm-watsonx" },
+							})
+							return
+						}
+					} else if (platform === "cloudPak") {
+						if (authType === "password") {
+							if (!baseUrl || !username || !password || !projectId) {
+								console.error(
+									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+								)
+								provider.postMessageToWebview({
+									type: "singleRouterModelFetchResponse",
+									success: false,
+									error: "Missing IBM Cloud Pak for Data authentication credentials for IBM watsonx models",
+									values: { provider: "ibm-watsonx" },
+								})
+								return
+							}
+						} else if (authType === "apiKey") {
+							if (!baseUrl || !apiKey || !username || !projectId) {
+								console.error(
+									"Missing IBM Cloud Pak for Data authentication credentials in IBM watsonx AI provider for IBM watsonx models",
+								)
+								provider.postMessageToWebview({
+									type: "singleRouterModelFetchResponse",
+									success: false,
+									error: "Missing IBM Cloud Pak for Data authentication credentials for IBM watsonx models",
+									values: { provider: "ibm-watsonx" },
+								})
+								return
+							}
+						}
+					}
+
+					let effectiveBaseUrl = baseUrl
+					if (platform === "ibmCloud" && region && !baseUrl) {
+						effectiveBaseUrl = regionToWatsonxBaseUrl(region)
+					}
+
+					const watsonxModels = await getWatsonxModels(
+						apiKey,
+						projectId,
+						effectiveBaseUrl,
+						platform,
+						authType,
+						username,
+						password,
+					)
+
+					provider.postMessageToWebview({
+						type: "watsonxModels",
+						watsonxModels: watsonxModels,
+					})
+				} catch (error) {
+					console.error("Failed to fetch IBM watsonx models:", error)
+					provider.postMessageToWebview({
+						type: "singleRouterModelFetchResponse",
+						success: false,
+						error: "Failed to fetch IBM watsonx models",
+						values: { provider: "ibm-watsonx" },
+					})
+				}
 			}
 			break
 		case "openImage":

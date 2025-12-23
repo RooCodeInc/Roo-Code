@@ -274,6 +274,7 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway APIキー",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway APIキーを取得",
 		"apiKeyStorageNotice": "APIキーはVSCodeのシークレットストレージに安全に保存されます",
+		"passwordStorageNotice": "パスワードはVSCodeのシークレットストレージに安全に保存されます",
 		"useCustomBaseUrl": "カスタムベースURLを使用",
 		"useReasoning": "推論を有効化",
 		"useHostHeader": "カスタムHostヘッダーを使用",
@@ -523,6 +524,20 @@
 			"placeholder": "デフォルト：claude",
 			"maxTokensLabel": "最大出力トークン",
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
+		},
+		"watsonx": {
+			"platform": "プラットフォーム",
+			"region": "リージョン",
+			"username": "ユーザー名",
+			"password": "パスワード",
+			"apiKey": "APIキー",
+			"authType": "認証タイプ",
+			"projectId": "プロジェクトID",
+			"urlDescription": "IBM Cloud Pak for Dataインスタンスの完全なURLを入力してください",
+			"selectedEndpoint": "選択されたエンドポイント",
+			"retrieveModels": "モデルを取得",
+			"retrieveSuccessful": "モデルが正常に取得されました",
+			"retrieveError": "モデルの取得に失敗しました。認証情報を確認して再試行してください"
 		}
 	},
 	"browser": {
@@ -909,7 +924,17 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"watsonx": {
+			"platform": "プラットフォームを選択する必要があります。",
+			"region": "リージョンを選択する必要があります。",
+			"projectId": "有効なプロジェクトIDを提供する必要があります。",
+			"authType": "認証タイプを選択する必要があります。",
+			"username": "有効なユーザー名を提供する必要があります。",
+			"apiKey": "有効なAPIキーを提供する必要があります。",
+			"password": "有効なパスワードを提供する必要があります。",
+			"baseUrl": "有効なIBM Cloud Pak for Data URLを提供する必要があります。"
+		}
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",

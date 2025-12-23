@@ -159,6 +159,7 @@ describe("ApiOptions Provider Filtering", () => {
 		expect(providerValues).toContain("unbound")
 		expect(providerValues).toContain("requesty")
 		expect(providerValues).toContain("io-intelligence")
+		expect(providerValues).toContain("ibm-watsonx")
 	})
 
 	it("should filter static providers based on organization allow list", () => {

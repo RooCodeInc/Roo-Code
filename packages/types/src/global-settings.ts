@@ -252,6 +252,8 @@ export const SECRET_STATE_KEYS = [
 	"ioIntelligenceApiKey",
 	"vercelAiGatewayApiKey",
 	"basetenApiKey",
+	"watsonxApiKey",
+	"watsonxPassword",
 ] as const
 
 // Global secrets that are part of GlobalSettings (not ProviderSettings)

@@ -276,7 +276,7 @@ const WelcomeViewProvider = () => {
 					{/* Expand API options only when custom provider is selected, max height is used to force a transition */}
 					<div className="mb-8 border-l-2 border-vscode-panel-border pl-6 ml-[7px]">
 						<div
-							className={`overflow-clip transition-[max-height] ease-in-out duration-300 ${selectedProvider === "custom" ? "max-h-[600px]" : "max-h-0"}`}>
+							className={`overflow-clip transition-[max-height] ease-in-out duration-300 ${selectedProvider === "custom" ? "max-h-[1200px]" : "max-h-0"}`}>
 							<p className="text-base text-vscode-descriptionForeground mt-0">
 								{t("welcome:providerSignup.noApiKeys")}
 							</p>

@@ -390,6 +390,11 @@ function getSelectedModel({
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
+		case "ibm-watsonx": {
+			const id = getValidatedModelId(apiConfiguration.watsonxModelId, routerModels["ibm-watsonx"], defaultModelId)
+			const info = routerModels["ibm-watsonx"]?.[id]
+			return { id, info }
+		}
 		// case "anthropic":
 		// case "human-relay":
 		// case "fake-ai":

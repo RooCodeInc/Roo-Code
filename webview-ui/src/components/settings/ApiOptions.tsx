@@ -98,6 +98,7 @@ import {
 	VercelAiGateway,
 	DeepInfra,
 	MiniMax,
+	WatsonxAI,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -243,6 +244,8 @@ const ApiOptions = ({
 				selectedProvider === "roo"
 			) {
 				vscode.postMessage({ type: "requestRouterModels" })
+			} else if (selectedProvider === "ibm-watsonx") {
+				vscode.postMessage({ type: "requestWatsonxModels" })
 			}
 		},
 		250,
@@ -257,6 +260,13 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration.watsonxPlatform,
+			apiConfiguration.watsonxApiKey,
+			apiConfiguration.watsonxProjectId,
+			apiConfiguration.watsonxBaseUrl,
+			apiConfiguration.watsonxAuthType,
+			apiConfiguration.watsonxUsername,
+			apiConfiguration.watsonxPassword,
 			customHeaders,
 		],
 	)
@@ -372,6 +382,7 @@ const ApiOptions = ({
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
+				"ibm-watsonx": { field: "watsonxModelId" },
 			}
 
 			const config = PROVIDER_MODEL_CONFIG[value]
@@ -767,8 +778,17 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
-			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
+			{selectedProvider === "ibm-watsonx" && (
+				<WatsonxAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+				/>
+			)}
+
+			{/* Skip generic model picker for providers with custom pickers */}
+			{selectedProviderModels.length > 0 && !["claude-code", "ibm-watsonx"].includes(selectedProvider) && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>

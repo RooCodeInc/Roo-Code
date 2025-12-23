@@ -63,6 +63,7 @@ export interface WebviewMessage {
 		| "requestRooCreditBalance"
 		| "requestVsCodeLmModels"
 		| "requestHuggingFaceModels"
+		| "requestWatsonxModels"
 		| "openImage"
 		| "saveImage"
 		| "openFile"
