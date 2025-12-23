@@ -47,5 +47,14 @@ export function applyRouterToolPreferences(modelId: string, info: ModelInfo): Mo
 		}
 	}
 
+	// For Claude/Anthropic models via routers, use anthropic variant
+	// This matches the behavior of the native Anthropic provider
+	if (modelId.includes("claude") || modelId.includes("anthropic")) {
+		result = {
+			...result,
+			editToolVariant: result.editToolVariant ?? "anthropic",
+		}
+	}
+
 	return result
 }

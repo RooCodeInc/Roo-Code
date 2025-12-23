@@ -187,7 +187,7 @@ describe("OpenRouterHandler", () => {
 			expect(result.info.includedTools).toContain("existing_included")
 		})
 
-		it("does not set editToolVariant for non-OpenAI models", async () => {
+		it("sets editToolVariant to anthropic for Claude models", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "anthropic/claude-sonnet-4",
@@ -195,8 +195,8 @@ describe("OpenRouterHandler", () => {
 
 			const result = await handler.fetchModel()
 			expect(result.id).toBe("anthropic/claude-sonnet-4")
-			// Should NOT have editToolVariant set
-			expect(result.info.editToolVariant).toBeUndefined()
+			// Should have editToolVariant set to anthropic
+			expect(result.info.editToolVariant).toBe("anthropic")
 		})
 	})
 
