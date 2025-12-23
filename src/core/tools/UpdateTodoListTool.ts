@@ -59,15 +59,19 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				todos: normalizedTodos,
 			})
 
-			approvedTodoList = cloneDeep(normalizedTodos)
 			const didApprove = await askApproval("tool", approvalMsg)
 			if (!didApprove) {
+				// Clear approvedTodoList on rejection to prevent stale state
+				approvedTodoList = undefined
 				pushToolResult("User declined to update the todoList.")
 				return
 			}
 
+			// Check if user edited the todos during approval
 			const isTodoListChanged =
 				approvedTodoList !== undefined && JSON.stringify(normalizedTodos) !== JSON.stringify(approvedTodoList)
+
+			// If user edited the todos, use the edited version
 			if (isTodoListChanged) {
 				normalizedTodos = approvedTodoList ?? []
 				task.say(
@@ -78,6 +82,9 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 					}),
 				)
 			}
+
+			// Clear approvedTodoList after processing to prevent stale state
+			approvedTodoList = undefined
 
 			await setTodoListForTask(task, normalizedTodos)
 
