@@ -15,6 +15,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { ApiProviderError } from "@roo-code/types"
 
 import { OpenAiNativeHandler } from "../openai-native"
+import type { ApiHandlerCreateMessageMetadata } from "../../index"
 import { ApiHandlerOptions } from "../../../shared/api"
 
 // Mock OpenAI client - now everything uses Responses API
@@ -1596,5 +1597,519 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 				expect(bodyStr).not.toContain('"verbosity"')
 			})
 		})
+	})
+})
+
+describe("OpenAI Native background mode behavior", () => {
+	const systemPrompt = "System prompt"
+	const baseMessages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "hi" }]
+	const createMinimalIterable = () => ({
+		async *[Symbol.asyncIterator]() {
+			yield {
+				type: "response.done",
+				response: { id: "resp_minimal", usage: { input_tokens: 1, output_tokens: 1 } },
+			}
+		},
+	})
+	const createUsageIterable = () => ({
+		async *[Symbol.asyncIterator]() {
+			yield { type: "response.text.delta", delta: "Hello" }
+			yield {
+				type: "response.done",
+				response: {
+					id: "resp_usage",
+					usage: { input_tokens: 120, output_tokens: 60 },
+				},
+			}
+		},
+	})
+
+	beforeEach(() => {
+		mockResponsesCreate.mockClear()
+	})
+
+	afterEach(() => {
+		if ((global as any).fetch) {
+			delete (global as any).fetch
+		}
+	})
+
+	const metadataStoreFalse: ApiHandlerCreateMessageMetadata = { taskId: "background-test", store: false }
+
+	it("auto-enables background mode for gpt-5-pro when no override is specified", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			// openAiNativeBackgroundMode is undefined
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(createMinimalIterable())
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage(systemPrompt, baseMessages, metadataStoreFalse)) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks).not.toHaveLength(0)
+		const requestBody = mockResponsesCreate.mock.calls[0][0]
+		expect(requestBody.background).toBe(true)
+		expect(requestBody.stream).toBe(true)
+		expect(requestBody.store).toBe(true)
+	})
+	it("sends background:true, stream:true, and forces store:true for gpt-5-pro when background mode is enabled", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(createMinimalIterable())
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage(systemPrompt, baseMessages, metadataStoreFalse)) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks).not.toHaveLength(0)
+
+		const requestBody = mockResponsesCreate.mock.calls[0][0]
+		expect(requestBody.background).toBe(true)
+		expect(requestBody.stream).toBe(true)
+		expect(requestBody.store).toBe(true)
+		expect(requestBody.instructions).toBe(systemPrompt)
+		expect(requestBody.model).toBe("gpt-5-pro-2025-10-06")
+		expect(Array.isArray(requestBody.input)).toBe(true)
+		expect(requestBody.input.length).toBeGreaterThan(0)
+
+		mockResponsesCreate.mockClear()
+
+		const handlerWithOptionFalse = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: false, // metadata still enforces background mode
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(createMinimalIterable())
+
+		for await (const chunk of handlerWithOptionFalse.createMessage(
+			systemPrompt,
+			baseMessages,
+			metadataStoreFalse,
+		)) {
+			chunks.push(chunk)
+		}
+
+		const requestBodyWithOptionFalse = mockResponsesCreate.mock.calls[0][0]
+		// Still enabled due to model.info.backgroundMode
+		expect(requestBodyWithOptionFalse.background).toBe(true)
+		expect(requestBodyWithOptionFalse.store).toBe(true)
+		expect(requestBodyWithOptionFalse.stream).toBe(true)
+	})
+
+	it("forces store:true and includes background:true when falling back to SSE", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce({})
+
+		const encoder = new TextEncoder()
+		const sseStream = new ReadableStream({
+			start(controller) {
+				controller.enqueue(
+					encoder.encode(
+						'data: {"type":"response.done","response":{"id":"resp_1","usage":{"input_tokens":1,"output_tokens":1}}}\n\n',
+					),
+				)
+				controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+				controller.close()
+			},
+		})
+
+		const mockFetch = vitest.fn().mockResolvedValue(
+			new Response(sseStream, {
+				status: 200,
+				headers: { "Content-Type": "text/event-stream" },
+			}),
+		)
+		global.fetch = mockFetch as any
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage(systemPrompt, baseMessages, metadataStoreFalse)) {
+			chunks.push(chunk)
+		}
+
+		expect(mockFetch).toHaveBeenCalledTimes(1)
+		const requestInit = mockFetch.mock.calls[0][1] as RequestInit
+		expect(requestInit?.body).toBeDefined()
+
+		const parsedBody = JSON.parse(requestInit?.body as string)
+		expect(parsedBody.background).toBe(true)
+		expect(parsedBody.store).toBe(true)
+		expect(parsedBody.stream).toBe(true)
+		expect(parsedBody.model).toBe("gpt-5-pro-2025-10-06")
+	})
+
+	it("emits identical usage chunk when background mode is enabled", async () => {
+		const collectUsageChunk = async (options: ApiHandlerOptions) => {
+			mockResponsesCreate.mockResolvedValueOnce(createUsageIterable())
+			const handler = new OpenAiNativeHandler(options)
+			const chunks: any[] = []
+			for await (const chunk of handler.createMessage(systemPrompt, baseMessages)) {
+				chunks.push(chunk)
+			}
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			mockResponsesCreate.mockClear()
+			return usageChunk
+		}
+
+		const baselineUsage = await collectUsageChunk({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+		})
+
+		expect(baselineUsage).toBeDefined()
+
+		const backgroundUsage = await collectUsageChunk({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		expect(backgroundUsage).toBeDefined()
+		expect(backgroundUsage).toEqual(baselineUsage)
+	})
+
+	it("emits background status chunks for Responses events (SDK path)", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		const createStatusIterable = () => ({
+			async *[Symbol.asyncIterator]() {
+				yield { type: "response.queued", response: { id: "resp_bg" } }
+				yield { type: "response.in_progress" }
+				yield { type: "response.text.delta", delta: "Hello" }
+				yield {
+					type: "response.done",
+					response: { id: "resp_bg", usage: { input_tokens: 1, output_tokens: 1 } },
+				}
+			},
+		})
+		mockResponsesCreate.mockResolvedValueOnce(createStatusIterable())
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage(systemPrompt, baseMessages)) {
+			chunks.push(chunk)
+		}
+
+		const statusChunks = chunks.filter((c) => c.type === "status")
+		expect(statusChunks).toEqual([
+			{ type: "status", mode: "background", status: "queued", responseId: "resp_bg" },
+			{ type: "status", mode: "background", status: "in_progress" },
+			{ type: "status", mode: "background", status: "completed", responseId: "resp_bg" },
+		])
+	})
+
+	it("emits background status chunks for Responses events (SSE fallback)", async () => {
+		// Force fallback by making SDK return non-iterable
+		mockResponsesCreate.mockResolvedValueOnce({})
+
+		const encoder = new TextEncoder()
+		const sseStream = new ReadableStream({
+			start(controller) {
+				controller.enqueue(encoder.encode('data: {"type":"response.queued","response":{"id":"resp_bg2"}}\n\n'))
+				controller.enqueue(encoder.encode('data: {"type":"response.in_progress"}\n\n'))
+				controller.enqueue(encoder.encode('data: {"type":"response.text.delta","delta":"Hi"}\n\n'))
+				controller.enqueue(
+					encoder.encode(
+						'data: {"type":"response.done","response":{"id":"resp_bg2","usage":{"input_tokens":1,"output_tokens":1}}}\n\n',
+					),
+				)
+				controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+				controller.close()
+			},
+		})
+
+		const mockFetch = vitest.fn().mockResolvedValue(
+			new Response(sseStream, {
+				status: 200,
+				headers: { "Content-Type": "text/event-stream" },
+			}),
+		)
+		global.fetch = mockFetch as any
+
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage(systemPrompt, baseMessages)) {
+			chunks.push(chunk)
+		}
+
+		const statusChunks = chunks.filter((c) => c.type === "status")
+		expect(statusChunks).toEqual([
+			{ type: "status", mode: "background", status: "queued", responseId: "resp_bg2" },
+			{ type: "status", mode: "background", status: "in_progress" },
+			{ type: "status", mode: "background", status: "completed", responseId: "resp_bg2" },
+		])
+
+		// Clean up fetch
+		delete (global as any).fetch
+	})
+})
+
+describe("OpenAI Native streaming metadata tracking", () => {
+	beforeEach(() => {
+		mockResponsesCreate.mockClear()
+	})
+
+	it("tracks sequence_number from streaming events and exposes via getLastSequenceNumber", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+		})
+
+		const createSequenceIterable = () => ({
+			async *[Symbol.asyncIterator]() {
+				yield { type: "response.text.delta", delta: "A", sequence_number: 1 }
+				yield { type: "response.reasoning.delta", delta: "B", sequence_number: 2 }
+				yield {
+					type: "response.done",
+					sequence_number: 3,
+					response: { id: "resp_123", usage: { input_tokens: 1, output_tokens: 2 } },
+				}
+			},
+		})
+
+		mockResponsesCreate.mockResolvedValueOnce(createSequenceIterable())
+
+		const chunks: any[] = []
+		for await (const chunk of handler.createMessage("System", [{ role: "user", content: "hi" }])) {
+			chunks.push(chunk)
+		}
+
+		expect(chunks).toContainEqual({ type: "text", text: "A" })
+		expect(chunks).toContainEqual({ type: "reasoning", text: "B" })
+		expect(handler.getLastSequenceNumber()).toBe(3)
+		expect(handler.getResponseId()).toBe("resp_123")
+	})
+})
+
+// Added plumbing test for openAiNativeBackgroundMode
+describe("OpenAI Native background mode setting (plumbing)", () => {
+	it("should surface openAiNativeBackgroundMode in handler options when provided", () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-4.1",
+			openAiNativeApiKey: "test-api-key",
+			openAiNativeBackgroundMode: true,
+		} as ApiHandlerOptions)
+
+		// Access protected options via runtime cast to verify pass-through
+		expect((handler as any).options.openAiNativeBackgroundMode).toBe(true)
+	})
+})
+
+describe("OpenAI Native background auto-resume and polling", () => {
+	const systemPrompt = "System prompt"
+	const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "hello" }]
+
+	beforeEach(() => {
+		mockResponsesCreate.mockClear()
+		if ((global as any).fetch) {
+			delete (global as any).fetch
+		}
+	})
+
+	it("resumes background stream on drop and emits no duplicate deltas", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+		})
+
+		const dropIterable = {
+			async *[Symbol.asyncIterator]() {
+				yield { type: "response.queued", response: { id: "resp_resume" }, sequence_number: 0 }
+				yield { type: "response.in_progress", sequence_number: 1 }
+				yield { type: "response.text.delta", delta: "Hello", sequence_number: 2 }
+				throw new Error("network drop")
+			},
+		}
+		mockResponsesCreate.mockResolvedValueOnce(dropIterable as any)
+
+		const encoder = new TextEncoder()
+		const sseStream = new ReadableStream({
+			start(controller) {
+				controller.enqueue(
+					encoder.encode(
+						'data: {"type":"response.output_item.added","item":{"type":"text","text":"SHOULD_SKIP"},"sequence_number":2}\n\n',
+					),
+				)
+				controller.enqueue(
+					encoder.encode(
+						'data: {"type":"response.output_item.added","item":{"type":"text","text":" world"},"sequence_number":3}\n\n',
+					),
+				)
+				controller.enqueue(
+					encoder.encode(
+						'data: {"type":"response.done","response":{"id":"resp_resume","usage":{"input_tokens":10,"output_tokens":5}},"sequence_number":4}\n\n',
+					),
+				)
+				controller.enqueue(encoder.encode("data: [DONE]\n\n"))
+				controller.close()
+			},
+		})
+		;(global as any).fetch = vitest
+			.fn()
+			.mockResolvedValue(
+				new Response(sseStream, { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+			)
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const c of stream) {
+			chunks.push(c)
+		}
+
+		const statusChunks = chunks.filter((c) => c.type === "status")
+		const statusNames = statusChunks.map((s: any) => s.status)
+		const reconnectIdx = statusNames.indexOf("reconnecting")
+		const inProgIdx = statusNames.findIndex((s, i) => s === "in_progress" && i > reconnectIdx)
+		expect(reconnectIdx).toBeGreaterThanOrEqual(0)
+		expect(inProgIdx).toBeGreaterThan(reconnectIdx)
+
+		const fullText = chunks
+			.filter((c) => c.type === "text")
+			.map((c: any) => c.text)
+			.join("")
+		expect(fullText).toBe("Hello world")
+		expect(fullText).not.toContain("SHOULD_SKIP")
+
+		const usageChunks = chunks.filter((c) => c.type === "usage")
+		expect(usageChunks).toHaveLength(1)
+	})
+
+	it("falls back to polling after failed resume and yields final output/usage", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-5-pro-2025-10-06",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: true,
+			openAiNativeBackgroundResumeMaxRetries: 1,
+			openAiNativeBackgroundResumeBaseDelayMs: 0,
+			openAiNativeBackgroundPollIntervalMs: 1,
+			openAiNativeBackgroundPollMaxMinutes: 1,
+		} as ApiHandlerOptions)
+
+		const dropIterable = {
+			async *[Symbol.asyncIterator]() {
+				yield { type: "response.queued", response: { id: "resp_poll" }, sequence_number: 0 }
+				yield { type: "response.in_progress", sequence_number: 1 }
+				throw new Error("network drop")
+			},
+		}
+		mockResponsesCreate.mockResolvedValueOnce(dropIterable as any)
+
+		let pollStep = 0
+		;(global as any).fetch = vitest.fn().mockImplementation((url: string) => {
+			if (url.includes("?stream=true")) {
+				return Promise.resolve({
+					ok: false,
+					status: 500,
+					text: async () => "resume failed",
+				} as any)
+			}
+			// polling path
+			const payloads = [
+				{ response: { id: "resp_poll", status: "queued" } },
+				{ response: { id: "resp_poll", status: "in_progress" } },
+				{
+					response: {
+						id: "resp_poll",
+						status: "completed",
+						output: [{ type: "message", content: [{ type: "output_text", text: "Polled result" }] }],
+						usage: { input_tokens: 7, output_tokens: 3 },
+					},
+				},
+			]
+			const payload = payloads[Math.min(pollStep++, payloads.length - 1)]
+			return Promise.resolve(
+				new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }),
+			)
+		})
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const c of stream) {
+			chunks.push(c)
+		}
+
+		const statusNames = chunks.filter((c) => c.type === "status").map((s: any) => s.status)
+		const idxReconnect = statusNames.indexOf("reconnecting")
+		const idxPolling = statusNames.indexOf("polling")
+		const idxQueued = statusNames.indexOf("queued")
+		const idxInProgress = statusNames.indexOf("in_progress")
+		const idxCompleted = statusNames.indexOf("completed")
+		expect(idxReconnect).toBeGreaterThanOrEqual(0)
+		expect(idxPolling).toBeGreaterThan(idxReconnect)
+
+		const idxQueuedAfterPolling = statusNames.findIndex((s, i) => s === "queued" && i > idxPolling)
+		const idxInProgressAfterQueued = statusNames.findIndex(
+			(s, i) => s === "in_progress" && i > idxQueuedAfterPolling,
+		)
+		const idxCompletedAfterInProgress = statusNames.findIndex(
+			(s, i) => s === "completed" && i > idxInProgressAfterQueued,
+		)
+
+		expect(idxQueuedAfterPolling).toBeGreaterThan(idxPolling)
+		expect(idxInProgressAfterQueued).toBeGreaterThan(idxQueuedAfterPolling)
+		expect(idxCompletedAfterInProgress).toBeGreaterThan(idxInProgressAfterQueued)
+
+		const finalText = chunks
+			.filter((c) => c.type === "text")
+			.map((c: any) => c.text)
+			.join("")
+		expect(finalText).toBe("Polled result")
+
+		const usageChunks = chunks.filter((c) => c.type === "usage")
+		expect(usageChunks).toHaveLength(1)
+		expect(usageChunks[0]).toMatchObject({ type: "usage", inputTokens: 7, outputTokens: 3 })
+	})
+
+	it("does not attempt resume when not in background mode", async () => {
+		const handler = new OpenAiNativeHandler({
+			apiModelId: "gpt-4.1",
+			openAiNativeApiKey: "test",
+			openAiNativeBackgroundMode: false,
+		})
+
+		const dropIterable = {
+			async *[Symbol.asyncIterator]() {
+				yield { type: "response.text.delta", delta: "Hi", sequence_number: 1 }
+				throw new Error("drop")
+			},
+		}
+		mockResponsesCreate.mockResolvedValueOnce(dropIterable as any)
+		;(global as any).fetch = vitest.fn().mockRejectedValue(new Error("SSE fallback failed"))
+
+		const stream = handler.createMessage(systemPrompt, messages)
+
+		const chunks: any[] = []
+		await expect(async () => {
+			for await (const c of stream) {
+				chunks.push(c)
+			}
+		}).rejects.toThrow()
+
+		const statuses = chunks.filter((c) => c.type === "status").map((s: any) => s.status)
+		expect(statuses).not.toContain("reconnecting")
+		expect(statuses).not.toContain("polling")
 	})
 })

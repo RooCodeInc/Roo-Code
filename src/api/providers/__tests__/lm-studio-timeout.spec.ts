@@ -88,4 +88,34 @@ describe("LmStudioHandler timeout configuration", () => {
 			}),
 		)
 	})
+
+	it("should force zero timeout when model info disables timeout", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(600000)
+
+		const spy = vitest.spyOn(LmStudioHandler.prototype as any, "getModel").mockReturnValue({
+			id: "llama2",
+			info: {
+				maxTokens: -1,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsImages: true,
+				disableTimeout: true,
+			},
+		})
+
+		const options: ApiHandlerOptions = {
+			apiModelId: "llama2",
+			lmStudioModelId: "llama2",
+		}
+
+		new LmStudioHandler(options)
+
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+			expect.objectContaining({
+				timeout: 0,
+			}),
+		)
+
+		spy.mockRestore()
+	})
 })

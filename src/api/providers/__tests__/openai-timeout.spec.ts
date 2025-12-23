@@ -141,4 +141,28 @@ describe("OpenAiHandler timeout configuration", () => {
 			}),
 		)
 	})
+
+	it("should force zero timeout when model info disables timeout", () => {
+		;(getApiRequestTimeout as any).mockReturnValue(600000)
+
+		const options: ApiHandlerOptions = {
+			apiModelId: "gpt-4",
+			openAiModelId: "gpt-4",
+			openAiCustomModelInfo: {
+				maxTokens: -1,
+				contextWindow: 128000,
+				supportsPromptCache: false,
+				supportsImages: true,
+				disableTimeout: true,
+			} as any,
+		}
+
+		new OpenAiHandler(options)
+
+		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+			expect.objectContaining({
+				timeout: 0, // Forced no timeout via model info
+			}),
+		)
+	})
 })

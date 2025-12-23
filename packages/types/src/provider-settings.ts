@@ -297,6 +297,15 @@ const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
 	// OpenAI Responses API service tier for openai-native provider only.
 	// UI should only expose this when the selected model supports flex/priority.
 	openAiNativeServiceTier: serviceTierSchema.optional(),
+	// Enable OpenAI Responses background mode when using Responses API.
+	// Opt-in; defaults to false when omitted.
+	openAiNativeBackgroundMode: z.boolean().optional(),
+	// Background auto-resume/poll settings (no UI; plumbed via options)
+	openAiNativeBackgroundAutoResume: z.boolean().optional(),
+	openAiNativeBackgroundResumeMaxRetries: z.number().int().min(0).optional(),
+	openAiNativeBackgroundResumeBaseDelayMs: z.number().int().min(0).optional(),
+	openAiNativeBackgroundPollIntervalMs: z.number().int().min(0).optional(),
+	openAiNativeBackgroundPollMaxMinutes: z.number().int().min(1).optional(),
 })
 
 const mistralSchema = apiModelIdProviderModelSchema.extend({

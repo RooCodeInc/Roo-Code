@@ -2454,7 +2454,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
 						lastMessage.partial = false
 						// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
-						console.log("updating partial message", lastMessage)
 					}
 
 					// Update `api_req_started` to have cancelled and cost, so that
@@ -2547,6 +2546,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						if (!chunk) {
 							// Sometimes chunk is undefined, no idea that can cause
 							// it, but this workaround seems to fix it.
+							item = await iterator.next()
 							continue
 						}
 
@@ -2722,6 +2722,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								presentAssistantMessage(this)
 								break
 							}
+
+							case "status": {
+								try {
+									const apiReqMsg = this.clineMessages[lastApiReqIndex]
+									if (apiReqMsg && apiReqMsg.type === "say" && apiReqMsg.say === "api_req_started") {
+										;(apiReqMsg as any).metadata = (apiReqMsg as any).metadata || {}
+										if (chunk.mode === "background") {
+											;(apiReqMsg as any).metadata.background = true
+										}
+										;(apiReqMsg as any).metadata.backgroundStatus = chunk.status
+										if (chunk.responseId) {
+											;(apiReqMsg as any).metadata.responseId = chunk.responseId
+										}
+										// Update the specific message; avoid full-state refresh on every status chunk to reduce re-renders
+										await this.updateClineMessage(apiReqMsg)
+									}
+								} catch {}
+								break
+							}
 							case "text": {
 								assistantMessage += chunk.text
 
@@ -2796,6 +2815,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]"
 							break
 						}
+						// Prefetch the next item after processing the current chunk.
+						// This ensures terminal status chunks (e.g., failed/canceled/completed)
+						// are not skipped when the provider throws on the following next().
+						item = await iterator.next()
 					}
 
 					// Finalize any remaining streaming tool calls that weren't explicitly ended
@@ -3292,8 +3315,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					continue
 				} else {
 					// If there's no assistant_responses, that means we got no text
-					// or tool_use content blocks from API which we should assume is
-					// an error.
+					// or tool_use content blocks from API which we should assume is an error.
+					// Prefer any streaming failure details captured on the last api_req_started message.
+					let errorText =
+						"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output."
+					try {
+						const lastApiReqStartedIdx = findLastIndex(
+							this.clineMessages,
+							(m) => m.type === "say" && m.say === "api_req_started",
+						)
+						if (lastApiReqStartedIdx !== -1) {
+							const info = JSON.parse(
+								this.clineMessages[lastApiReqStartedIdx].text || "{}",
+							) as ClineApiReqInfo
+							if (
+								typeof info?.streamingFailedMessage === "string" &&
+								info.streamingFailedMessage.trim().length > 0
+							) {
+								errorText = info.streamingFailedMessage
+							}
+						}
+					} catch {
+						// ignore parse issues and keep default message
+					}
+
+					await this.say("error", errorText)
 
 					// Increment consecutive no-assistant-messages counter
 					this.consecutiveNoAssistantMessagesCount++
