@@ -7,7 +7,7 @@ import { fileExistsAtPath } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
-import { searchAndReplaceTool } from "../SearchAndReplaceTool"
+import { searchAndReplaceTool } from "../EditFileAnthropicTool"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -177,10 +177,10 @@ describe("searchAndReplaceTool", () => {
 
 		const toolUse: ToolUse = {
 			type: "tool_use",
-			name: "search_and_replace",
+			name: "edit_file_anthropic",
 			params: {
 				path: testFilePath,
-				operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]),
+				edits: JSON.stringify([{ old_text: "Line 2", new_text: "Modified Line 2" }]),
 				...params,
 			},
 			partial: isPartial,
@@ -190,7 +190,7 @@ describe("searchAndReplaceTool", () => {
 			toolResult = result
 		})
 
-		await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
+		await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"edit_file_anthropic">, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -207,22 +207,22 @@ describe("searchAndReplaceTool", () => {
 
 			expect(result).toBe("Missing param error")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("search_and_replace")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file_anthropic")
 		})
 
-		it("returns error when operations is missing", async () => {
-			const result = await executeSearchAndReplaceTool({ operations: undefined })
+		it("returns error when edits is missing", async () => {
+			const result = await executeSearchAndReplaceTool({ edits: undefined })
 
 			expect(result).toContain("Error:")
-			expect(result).toContain("Missing or empty 'operations' parameter")
+			expect(result).toContain("Missing or empty 'edits' parameter")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 
-		it("returns error when operations is empty array", async () => {
-			const result = await executeSearchAndReplaceTool({ operations: JSON.stringify([]) })
+		it("returns error when edits is empty array", async () => {
+			const result = await executeSearchAndReplaceTool({ edits: JSON.stringify([]) })
 
 			expect(result).toContain("Error:")
-			expect(result).toContain("Missing or empty 'operations' parameter")
+			expect(result).toContain("Missing or empty 'edits' parameter")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 	})
@@ -246,19 +246,19 @@ describe("searchAndReplaceTool", () => {
 	describe("search and replace logic", () => {
 		it("returns error when no match is found", async () => {
 			const result = await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: "NonExistent", replace: "New" }]) },
+				{ edits: JSON.stringify([{ old_text: "NonExistent", new_text: "New" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("search_and_replace", "no_match")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file_anthropic", "no_match")
 		})
 
 		it("returns error when multiple matches are found", async () => {
 			const result = await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: "Line", replace: "Row" }]) },
+				{ edits: JSON.stringify([{ old_text: "Line", new_text: "Row" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
@@ -269,7 +269,7 @@ describe("searchAndReplaceTool", () => {
 
 		it("successfully replaces single unique match", async () => {
 			await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]) },
+				{ edits: JSON.stringify([{ old_text: "Line 2", new_text: "Modified Line 2" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
@@ -284,7 +284,7 @@ describe("searchAndReplaceTool", () => {
 			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
 
 			await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]) },
+				{ edits: JSON.stringify([{ old_text: "Line 2", new_text: "Modified Line 2" }]) },
 				{ fileContent: contentWithCRLF },
 			)
 
@@ -299,7 +299,7 @@ describe("searchAndReplaceTool", () => {
 			const searchWithCRLF = "Line 1\r\nLine 2"
 
 			await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: searchWithCRLF, replace: "Modified Lines" }]) },
+				{ edits: JSON.stringify([{ old_text: searchWithCRLF, new_text: "Modified Lines" }]) },
 				{ fileContent: contentWithCRLF },
 			)
 
@@ -314,7 +314,7 @@ describe("searchAndReplaceTool", () => {
 			const searchWithLF = "Line 1\nLine 2"
 
 			await executeSearchAndReplaceTool(
-				{ operations: JSON.stringify([{ search: searchWithLF, replace: "Modified Lines" }]) },
+				{ edits: JSON.stringify([{ old_text: searchWithLF, new_text: "Modified Lines" }]) },
 				{ fileContent: contentWithCRLF },
 			)
 
@@ -331,7 +331,7 @@ describe("searchAndReplaceTool", () => {
 
 			expect(mockTask.diffViewProvider.saveChanges).toHaveBeenCalled()
 			expect(mockTask.didEditFile).toBe(true)
-			expect(mockTask.recordToolUsage).toHaveBeenCalledWith("search_and_replace")
+			expect(mockTask.recordToolUsage).toHaveBeenCalledWith("edit_file_anthropic")
 		})
 
 		it("reverts changes when user rejects", async () => {
@@ -359,10 +359,10 @@ describe("searchAndReplaceTool", () => {
 
 			const toolUse: ToolUse = {
 				type: "tool_use",
-				name: "search_and_replace",
+				name: "edit_file_anthropic",
 				params: {
 					path: testFilePath,
-					operations: JSON.stringify([{ search: "Line 2", replace: "Modified" }]),
+					edits: JSON.stringify([{ old_text: "Line 2", new_text: "Modified" }]),
 				},
 				partial: false,
 			}
@@ -372,7 +372,7 @@ describe("searchAndReplaceTool", () => {
 				capturedResult = result
 			})
 
-			await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
+			await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"edit_file_anthropic">, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,
