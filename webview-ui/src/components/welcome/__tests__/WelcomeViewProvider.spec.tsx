@@ -51,6 +51,7 @@ vi.mock("lucide-react", () => ({
 	ArrowLeft: () => <span data-testid="arrow-left-icon">←</span>,
 	ArrowRight: () => <span data-testid="arrow-right-icon">→</span>,
 	BadgeInfo: () => <span data-testid="badge-info-icon">ℹ</span>,
+	TriangleAlert: () => <span data-testid="triangle-alert-icon">⚠</span>,
 }))
 
 // Mock vscode utility
