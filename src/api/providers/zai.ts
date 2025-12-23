@@ -89,8 +89,8 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 
 		const temperature = this.options.modelTemperature ?? this.defaultTemperature
 
-		// Use Z.ai format to preserve reasoning_content and convert post-tool text to system messages
-		const convertedMessages = convertToZAiFormat(messages, { convertToolResultTextToSystem: true })
+		// Use Z.ai format to preserve reasoning_content and merge post-tool text into tool messages
+		const convertedMessages = convertToZAiFormat(messages, { mergeToolResultText: true })
 
 		const params: ZAiChatCompletionParams = {
 			model,
