@@ -88,7 +88,16 @@ export const WatsonxAI = ({
 			setApiConfigurationField("watsonxRegion", defaultRegion)
 			setApiConfigurationField("watsonxBaseUrl", REGION_TO_URL[defaultRegion])
 		}
-	}, [apiConfiguration.watsonxPlatform, apiConfiguration.watsonxRegion, setApiConfigurationField])
+		// Initialize default model
+		if (!apiConfiguration.watsonxModelId) {
+			setApiConfigurationField("watsonxModelId", watsonxDefaultModelId)
+		}
+	}, [
+		apiConfiguration.watsonxPlatform,
+		apiConfiguration.watsonxRegion,
+		apiConfiguration.watsonxModelId,
+		setApiConfigurationField,
+	])
 
 	const getCurrentRegion = () => {
 		const regionEntry = Object.entries(REGION_TO_URL).find(([_, url]) => url === apiConfiguration?.watsonxBaseUrl)
@@ -144,40 +153,49 @@ export const WatsonxAI = ({
 		[setApiConfigurationField],
 	)
 
-	// Auto-fetch models on mount if credentials are available (similar to LMStudio/Ollama pattern)
+	// Auto-fetch models when credentials are available and change
 	useEffect(() => {
-		if (initialModelFetchAttempted.current || (watsonxModels && Object.keys(watsonxModels).length > 0)) return
-
 		const { valid } = validateRefreshRequest(apiConfiguration, t)
+
+		// Fetch models when credentials are valid
 		if (valid) {
-			initialModelFetchAttempted.current = true
+			// Fetch if not attempted yet or no models loaded
+			const shouldFetch =
+				!initialModelFetchAttempted.current || !(watsonxModels && Object.keys(watsonxModels).length > 0)
 
-			const {
-				watsonxPlatform,
-				watsonxApiKey,
-				watsonxProjectId,
-				watsonxUsername,
-				watsonxAuthType,
-				watsonxPassword,
-			} = apiConfiguration
-			const baseUrl =
-				watsonxPlatform === "ibmCloud"
-					? REGION_TO_URL[selectedRegion as keyof typeof REGION_TO_URL]
-					: apiConfiguration.watsonxBaseUrl || ""
+			if (shouldFetch) {
+				initialModelFetchAttempted.current = true
 
-			vscode.postMessage({
-				type: "requestWatsonxModels",
-				values: {
-					apiKey: watsonxApiKey,
-					projectId: watsonxProjectId,
-					platform: watsonxPlatform,
-					baseUrl,
-					authType: watsonxAuthType,
-					username: watsonxUsername,
-					password: watsonxPassword,
-					region: watsonxPlatform === "ibmCloud" ? selectedRegion : undefined,
-				},
-			})
+				const {
+					watsonxPlatform,
+					watsonxApiKey,
+					watsonxProjectId,
+					watsonxUsername,
+					watsonxAuthType,
+					watsonxPassword,
+				} = apiConfiguration
+				const baseUrl =
+					watsonxPlatform === "ibmCloud"
+						? REGION_TO_URL[selectedRegion as keyof typeof REGION_TO_URL]
+						: apiConfiguration.watsonxBaseUrl || ""
+
+				vscode.postMessage({
+					type: "requestWatsonxModels",
+					values: {
+						apiKey: watsonxApiKey,
+						projectId: watsonxProjectId,
+						platform: watsonxPlatform,
+						baseUrl,
+						authType: watsonxAuthType,
+						username: watsonxUsername,
+						password: watsonxPassword,
+						region: watsonxPlatform === "ibmCloud" ? selectedRegion : undefined,
+					},
+				})
+			}
+		} else {
+			// Reset flag when credentials become invalid
+			initialModelFetchAttempted.current = false
 		}
 	}, [apiConfiguration, watsonxModels, t, selectedRegion])
 
