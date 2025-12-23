@@ -7,7 +7,7 @@ import { fileExistsAtPath } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
-import { searchReplaceTool } from "../SearchReplaceTool"
+import { searchAndReplaceTool } from "../SearchAndReplaceTool"
 
 vi.mock("fs/promises", () => ({
 	default: {
@@ -69,13 +69,11 @@ vi.mock("vscode", () => ({
 	},
 }))
 
-describe("searchReplaceTool", () => {
+describe("searchAndReplaceTool", () => {
 	// Test data
 	const testFilePath = "test/file.txt"
 	const absoluteFilePath = process.platform === "win32" ? "C:\\test\\file.txt" : "/test/file.txt"
 	const testFileContent = "Line 1\nLine 2\nLine 3\nLine 4"
-	const testOldString = "Line 2"
-	const testNewString = "Modified Line 2"
 
 	// Mocked functions
 	const mockedFileExistsAtPath = fileExistsAtPath as MockedFunction<typeof fileExistsAtPath>
@@ -87,7 +85,7 @@ describe("searchReplaceTool", () => {
 	const mockedPathResolve = path.resolve as MockedFunction<typeof path.resolve>
 	const mockedPathIsAbsolute = path.isAbsolute as MockedFunction<typeof path.isAbsolute>
 
-	const mockCline: any = {}
+	const mockTask: any = {}
 	let mockAskApproval: ReturnType<typeof vi.fn>
 	let mockHandleError: ReturnType<typeof vi.fn>
 	let mockPushToolResult: ReturnType<typeof vi.fn>
@@ -104,10 +102,10 @@ describe("searchReplaceTool", () => {
 		mockedIsPathOutsideWorkspace.mockReturnValue(false)
 		mockedGetReadablePath.mockReturnValue("test/path.txt")
 
-		mockCline.cwd = "/"
-		mockCline.consecutiveMistakeCount = 0
-		mockCline.didEditFile = false
-		mockCline.providerRef = {
+		mockTask.cwd = "/"
+		mockTask.consecutiveMistakeCount = 0
+		mockTask.didEditFile = false
+		mockTask.providerRef = {
 			deref: vi.fn().mockReturnValue({
 				getState: vi.fn().mockResolvedValue({
 					diagnosticsEnabled: true,
@@ -116,13 +114,13 @@ describe("searchReplaceTool", () => {
 				}),
 			}),
 		}
-		mockCline.rooIgnoreController = {
+		mockTask.rooIgnoreController = {
 			validateAccess: vi.fn().mockReturnValue(true),
 		}
-		mockCline.rooProtectedController = {
+		mockTask.rooProtectedController = {
 			isWriteProtected: vi.fn().mockReturnValue(false),
 		}
-		mockCline.diffViewProvider = {
+		mockTask.diffViewProvider = {
 			editType: undefined,
 			isEditing: false,
 			originalContent: "",
@@ -139,15 +137,15 @@ describe("searchReplaceTool", () => {
 			scrollToFirstDiff: vi.fn(),
 			pushToolWriteResult: vi.fn().mockResolvedValue("Tool result message"),
 		}
-		mockCline.fileContextTracker = {
+		mockTask.fileContextTracker = {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
 		}
-		mockCline.say = vi.fn().mockResolvedValue(undefined)
-		mockCline.ask = vi.fn().mockResolvedValue(undefined)
-		mockCline.recordToolError = vi.fn()
-		mockCline.recordToolUsage = vi.fn()
-		mockCline.processQueuedMessages = vi.fn()
-		mockCline.sayAndCreateMissingParamError = vi.fn().mockResolvedValue("Missing param error")
+		mockTask.say = vi.fn().mockResolvedValue(undefined)
+		mockTask.ask = vi.fn().mockResolvedValue(undefined)
+		mockTask.recordToolError = vi.fn()
+		mockTask.recordToolUsage = vi.fn()
+		mockTask.processQueuedMessages = vi.fn()
+		mockTask.sayAndCreateMissingParamError = vi.fn().mockResolvedValue("Missing param error")
 
 		mockAskApproval = vi.fn().mockResolvedValue(true)
 		mockHandleError = vi.fn().mockResolvedValue(undefined)
@@ -157,9 +155,9 @@ describe("searchReplaceTool", () => {
 	})
 
 	/**
-	 * Helper function to execute the search replace tool with different parameters
+	 * Helper function to execute the search and replace tool with different parameters
 	 */
-	async function executeSearchReplaceTool(
+	async function executeSearchAndReplaceTool(
 		params: Partial<ToolUse["params"]> = {},
 		options: {
 			fileExists?: boolean
@@ -175,15 +173,14 @@ describe("searchReplaceTool", () => {
 
 		mockedFileExistsAtPath.mockResolvedValue(fileExists)
 		mockedFsReadFile.mockResolvedValue(fileContent)
-		mockCline.rooIgnoreController.validateAccess.mockReturnValue(accessAllowed)
+		mockTask.rooIgnoreController.validateAccess.mockReturnValue(accessAllowed)
 
 		const toolUse: ToolUse = {
 			type: "tool_use",
-			name: "search_replace",
+			name: "search_and_replace",
 			params: {
-				file_path: testFilePath,
-				old_string: testOldString,
-				new_string: testNewString,
+				path: testFilePath,
+				operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]),
 				...params,
 			},
 			partial: isPartial,
@@ -193,7 +190,7 @@ describe("searchReplaceTool", () => {
 			toolResult = result
 		})
 
-		await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+		await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -205,54 +202,42 @@ describe("searchReplaceTool", () => {
 	}
 
 	describe("parameter validation", () => {
-		it("returns error when file_path is missing", async () => {
-			const result = await executeSearchReplaceTool({ file_path: undefined })
+		it("returns error when path is missing", async () => {
+			const result = await executeSearchAndReplaceTool({ path: undefined })
 
 			expect(result).toBe("Missing param error")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace")
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("search_and_replace")
 		})
 
-		it("returns error when old_string is missing", async () => {
-			const result = await executeSearchReplaceTool({ old_string: undefined })
-
-			expect(result).toBe("Missing param error")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
-		})
-
-		it("allows empty new_string for deletion", async () => {
-			// Empty new_string is valid - it means delete the old_string
-			await executeSearchReplaceTool(
-				{ old_string: "Line 2", new_string: "" },
-				{ fileContent: "Line 1\nLine 2\nLine 3" },
-			)
-
-			// Should proceed to approval (not error out)
-			expect(mockAskApproval).toHaveBeenCalled()
-		})
-
-		it("returns error when old_string equals new_string", async () => {
-			const result = await executeSearchReplaceTool({
-				old_string: "same",
-				new_string: "same",
-			})
+		it("returns error when operations is missing", async () => {
+			const result = await executeSearchAndReplaceTool({ operations: undefined })
 
 			expect(result).toContain("Error:")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(result).toContain("Missing or empty 'operations' parameter")
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+		})
+
+		it("returns error when operations is empty array", async () => {
+			const result = await executeSearchAndReplaceTool({ operations: JSON.stringify([]) })
+
+			expect(result).toContain("Error:")
+			expect(result).toContain("Missing or empty 'operations' parameter")
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 	})
 
 	describe("file access", () => {
 		it("returns error when file does not exist", async () => {
-			const result = await executeSearchReplaceTool({}, { fileExists: false })
+			const result = await executeSearchAndReplaceTool({}, { fileExists: false })
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("File not found")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 
 		it("returns error when access is denied", async () => {
-			const result = await executeSearchReplaceTool({}, { accessAllowed: false })
+			const result = await executeSearchAndReplaceTool({}, { accessAllowed: false })
 
 			expect(result).toContain("Access denied")
 		})
@@ -260,40 +245,80 @@ describe("searchReplaceTool", () => {
 
 	describe("search and replace logic", () => {
 		it("returns error when no match is found", async () => {
-			const result = await executeSearchReplaceTool(
-				{ old_string: "NonExistent" },
+			const result = await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "NonExistent", replace: "New" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "no_match")
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("search_and_replace", "no_match")
 		})
 
 		it("returns error when multiple matches are found", async () => {
-			const result = await executeSearchReplaceTool(
-				{ old_string: "Line" },
+			const result = await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "Line", replace: "Row" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
 			expect(result).toContain("Error:")
 			expect(result).toContain("3 matches")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
-			expect(mockCline.recordToolError).toHaveBeenCalledWith("search_replace", "multiple_matches")
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 
 		it("successfully replaces single unique match", async () => {
-			await executeSearchReplaceTool(
-				{
-					old_string: "Line 2",
-					new_string: "Modified Line 2",
-				},
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]) },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
-			expect(mockCline.consecutiveMistakeCount).toBe(0)
-			expect(mockCline.diffViewProvider.editType).toBe("modify")
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockTask.diffViewProvider.editType).toBe("modify")
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+	})
+
+	describe("CRLF normalization", () => {
+		it("normalizes CRLF to LF when reading file", async () => {
+			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
+
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: "Line 2", replace: "Modified Line 2" }]) },
+				{ fileContent: contentWithCRLF },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+
+		it("normalizes CRLF in search string to match LF-normalized file content", async () => {
+			// File has CRLF line endings
+			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
+			// Search string also has CRLF (simulating what the model might send)
+			const searchWithCRLF = "Line 1\r\nLine 2"
+
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: searchWithCRLF, replace: "Modified Lines" }]) },
+				{ fileContent: contentWithCRLF },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+		})
+
+		it("matches LF search string against CRLF file content after normalization", async () => {
+			// File has CRLF line endings
+			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
+			// Search string has LF (typical model output)
+			const searchWithLF = "Line 1\nLine 2"
+
+			await executeSearchAndReplaceTool(
+				{ operations: JSON.stringify([{ search: searchWithLF, replace: "Modified Lines" }]) },
+				{ fileContent: contentWithCRLF },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockAskApproval).toHaveBeenCalled()
 		})
 	})
@@ -302,44 +327,42 @@ describe("searchReplaceTool", () => {
 		it("saves changes when user approves", async () => {
 			mockAskApproval.mockResolvedValue(true)
 
-			await executeSearchReplaceTool()
+			await executeSearchAndReplaceTool()
 
-			expect(mockCline.diffViewProvider.saveChanges).toHaveBeenCalled()
-			expect(mockCline.didEditFile).toBe(true)
-			expect(mockCline.recordToolUsage).toHaveBeenCalledWith("search_replace")
+			expect(mockTask.diffViewProvider.saveChanges).toHaveBeenCalled()
+			expect(mockTask.didEditFile).toBe(true)
+			expect(mockTask.recordToolUsage).toHaveBeenCalledWith("search_and_replace")
 		})
 
 		it("reverts changes when user rejects", async () => {
 			mockAskApproval.mockResolvedValue(false)
 
-			const result = await executeSearchReplaceTool()
+			const result = await executeSearchAndReplaceTool()
 
-			expect(mockCline.diffViewProvider.revertChanges).toHaveBeenCalled()
-			expect(mockCline.diffViewProvider.saveChanges).not.toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.revertChanges).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.saveChanges).not.toHaveBeenCalled()
 			expect(result).toContain("rejected")
 		})
 	})
 
 	describe("partial block handling", () => {
 		it("handles partial block without errors", async () => {
-			await executeSearchReplaceTool({}, { isPartial: true })
+			await executeSearchAndReplaceTool({}, { isPartial: true })
 
-			expect(mockCline.ask).toHaveBeenCalled()
+			expect(mockTask.ask).toHaveBeenCalled()
 		})
 	})
 
 	describe("error handling", () => {
 		it("handles file read errors gracefully", async () => {
-			// Set up the rejection BEFORE executing
 			mockedFsReadFile.mockRejectedValueOnce(new Error("Read failed"))
 
 			const toolUse: ToolUse = {
 				type: "tool_use",
-				name: "search_replace",
+				name: "search_and_replace",
 				params: {
-					file_path: testFilePath,
-					old_string: testOldString,
-					new_string: testNewString,
+					path: testFilePath,
+					operations: JSON.stringify([{ search: "Line 2", replace: "Modified" }]),
 				},
 				partial: false,
 			}
@@ -349,7 +372,7 @@ describe("searchReplaceTool", () => {
 				capturedResult = result
 			})
 
-			await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+			await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,
@@ -359,68 +382,24 @@ describe("searchReplaceTool", () => {
 
 			expect(capturedResult).toContain("Error:")
 			expect(capturedResult).toContain("Failed to read file")
-			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.consecutiveMistakeCount).toBe(1)
 		})
 
 		it("handles general errors and resets diff view", async () => {
-			mockCline.diffViewProvider.open.mockRejectedValueOnce(new Error("General error"))
+			mockTask.diffViewProvider.open.mockRejectedValueOnce(new Error("General error"))
 
-			await executeSearchReplaceTool()
+			await executeSearchAndReplaceTool()
 
 			expect(mockHandleError).toHaveBeenCalledWith("search and replace", expect.any(Error))
-			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.reset).toHaveBeenCalled()
 		})
 	})
 
 	describe("file tracking", () => {
 		it("tracks file context after successful edit", async () => {
-			await executeSearchReplaceTool()
+			await executeSearchAndReplaceTool()
 
-			expect(mockCline.fileContextTracker.trackFileContext).toHaveBeenCalledWith(testFilePath, "roo_edited")
-		})
-	})
-
-	describe("CRLF normalization", () => {
-		it("normalizes CRLF to LF when reading file", async () => {
-			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
-
-			await executeSearchReplaceTool(
-				{ old_string: "Line 2", new_string: "Modified Line 2" },
-				{ fileContent: contentWithCRLF },
-			)
-
-			expect(mockCline.consecutiveMistakeCount).toBe(0)
-			expect(mockAskApproval).toHaveBeenCalled()
-		})
-
-		it("normalizes CRLF in old_string to match LF-normalized file content", async () => {
-			// File has CRLF line endings
-			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
-			// Search string also has CRLF (simulating what the model might send)
-			const searchWithCRLF = "Line 1\r\nLine 2"
-
-			await executeSearchReplaceTool(
-				{ old_string: searchWithCRLF, new_string: "Modified Lines" },
-				{ fileContent: contentWithCRLF },
-			)
-
-			expect(mockCline.consecutiveMistakeCount).toBe(0)
-			expect(mockAskApproval).toHaveBeenCalled()
-		})
-
-		it("matches LF old_string against CRLF file content after normalization", async () => {
-			// File has CRLF line endings
-			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
-			// Search string has LF (typical model output)
-			const searchWithLF = "Line 1\nLine 2"
-
-			await executeSearchReplaceTool(
-				{ old_string: searchWithLF, new_string: "Modified Lines" },
-				{ fileContent: contentWithCRLF },
-			)
-
-			expect(mockCline.consecutiveMistakeCount).toBe(0)
-			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.fileContextTracker.trackFileContext).toHaveBeenCalledWith(testFilePath, "roo_edited")
 		})
 	})
 })
