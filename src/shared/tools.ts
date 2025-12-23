@@ -102,6 +102,15 @@ export type NativeToolArgs = {
 		question: string
 		follow_up: Array<{ text: string; mode?: string }>
 	}
+	ask_multiple_choice: {
+		title?: string
+		questions: Array<{
+			id: string
+			prompt: string
+			options: Array<{ id: string; label: string }>
+			allow_multiple?: boolean
+		}>
+	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
 	fetch_instructions: { task: string }

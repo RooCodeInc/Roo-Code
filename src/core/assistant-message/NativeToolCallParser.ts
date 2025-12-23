@@ -403,6 +403,15 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "ask_multiple_choice":
+				if (partialArgs.questions !== undefined) {
+					nativeArgs = {
+						title: partialArgs.title,
+						questions: Array.isArray(partialArgs.questions) ? partialArgs.questions : undefined,
+					}
+				}
+				break
+
 			case "apply_diff":
 				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
 					nativeArgs = {
@@ -675,6 +684,15 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							question: args.question,
 							follow_up: args.follow_up,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "ask_multiple_choice":
+					if (args.questions !== undefined && Array.isArray(args.questions)) {
+						nativeArgs = {
+							title: args.title,
+							questions: args.questions,
 						} as NativeArgsFor<TName>
 					}
 					break

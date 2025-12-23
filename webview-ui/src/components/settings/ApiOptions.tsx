@@ -477,7 +477,7 @@ const ApiOptions = ({
 		selectedModelInfo?.defaultToolProtocol ||
 		(selectedProvider === "zgsm" ? TOOL_PROTOCOL.XML : TOOL_PROTOCOL.NATIVE)
 	const showToolProtocolSelector =
-		["openai", "zgsm"].includes(selectedProvider) || selectedModelInfo?.supportsNativeTools === true
+		["openai", "zgsm", "gemini-cli"].includes(selectedProvider) || selectedModelInfo?.supportsNativeTools === true
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list

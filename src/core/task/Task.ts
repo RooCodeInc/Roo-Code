@@ -4007,6 +4007,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				? {
 						tools: allTools,
 						tool_choice: "auto",
+						// tool_choice: apiConfiguration?.apiProvider === "zgsm" ? "required" : "auto",
 						toolProtocol: taskProtocol,
 						parallelToolCalls: parallelToolCallsEnabled,
 					}

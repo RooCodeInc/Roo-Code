@@ -19,7 +19,12 @@ CoStrict is a **free, open-source AI-assisted programming tool** that supports p
 
 </div>
 
-### Jetbrains plugin (<a href="https://github.com/zgsm-ai/costrict-jetbrains-agent" target="_blank">repo</a> | <a href="https://costrict.ai/download" target="_blank">download</a>)
+### <img width="30" src="./assets/images/readme/idea.webp" alt="Jetbrains plugin"> Jetbrains plugin (<a href="https://github.com/zgsm-ai/costrict-jetbrains-agent" target="_blank">repo</a> | <a href="https://costrict.ai/download" target="_blank">download</a>)
+
+### Community Communication & Feedback
+
+<img width="100" src="./assets/images/readme/wechat.png" alt="Communication Group">&nbsp;
+<img width="100" src="./assets/images/readme/communication_group.png" alt="Communication Group">
 
 ## Features
 

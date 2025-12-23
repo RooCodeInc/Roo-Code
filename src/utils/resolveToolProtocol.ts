@@ -39,7 +39,7 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
-	if (["openai", "zgsm"].includes(_providerSettings.apiProvider || "")) {
+	if (["openai", "zgsm", "gemini-cli"].includes(_providerSettings.apiProvider || "")) {
 		// If model doesn't support native tools, return XML immediately
 		// Treat undefined as unsupported (only allow native when explicitly true)
 		if (_modelInfo?.supportsNativeTools === true) {

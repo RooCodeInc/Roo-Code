@@ -5,7 +5,7 @@ const WelcomePage = () => {
 	const { t } = useAppTranslation()
 
 	return (
-		<div className="welcome-page-container flex flex-col items-center justify-start h-full w-full bg-vscode-sideBar-background text-vscode-foreground pt-[100px] px-[10px]">
+		<div className="welcome-page-container flex flex-col items-center justify-start h-full w-full text-vscode-foreground pt-[100px] px-[10px]">
 			<div className="welcome-page flex flex-col items-center w-full max-w-[500px] text-center">
 				<RooHero />
 
