@@ -1,6 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { z } from "zod"
+import { t } from "i18next"
 
 import {
 	openRouterDefaultModelId,
@@ -376,6 +377,12 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 		>()
 
+		// Track whether we received actual content vs just reasoning
+		// This prevents "Empty assistant response" errors when models output
+		// reasoning but no text/tool content (e.g., malformed tool calls in thinking)
+		let hasContent = false
+		let hasReasoning = false
+
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
 			if ("error" in chunk) {
@@ -447,17 +454,20 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
 
 						if (reasoningText) {
+							hasReasoning = true
 							yield { type: "reasoning", text: reasoningText }
 						}
 					}
 				} else if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 					// Handle legacy reasoning format - only if reasoning_details is not present
 					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens
+					hasReasoning = true
 					yield { type: "reasoning", text: delta.reasoning }
 				}
 
 				// Emit raw tool call chunks - NativeToolCallParser handles state management
 				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+					hasContent = true
 					for (const toolCall of delta.tool_calls) {
 						yield {
 							type: "tool_call_partial",
@@ -470,6 +480,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 
 				if (delta.content) {
+					hasContent = true
 					yield { type: "text", text: delta.content }
 				}
 			}
@@ -491,6 +502,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// After streaming completes, store the accumulated reasoning_details
 		if (reasoningDetailsAccumulator.size > 0) {
 			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
+		}
+
+		// If we had reasoning but no content, emit a placeholder text to prevent
+		// "Empty assistant response" errors. This typically happens when some models
+		// output malformed tool calls in their thinking content (e.g., <tool_call> tags)
+		// instead of using proper tool calling mechanisms.
+		if (hasReasoning && !hasContent) {
+			yield { type: "text", text: t("common:errors.gemini.thinking_complete_no_output") }
 		}
 
 		if (lastUsage) {
