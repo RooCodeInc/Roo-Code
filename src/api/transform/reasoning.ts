@@ -133,8 +133,12 @@ export const getGeminiReasoning = ({
 }: GetModelReasoningOptions): GeminiReasoningParams | undefined => {
 	// Only send thinkingConfig to models that advertise support for it; Gemini 3 rejects
 	// the field and returns 400 otherwise.
+	// This checks for: budget support, effort UI support, or fixed reasoning level defaults.
 	const supportsThinkingConfig =
-		typeof model.maxThinkingTokens === "number" || model.supportsReasoningBudget || model.supportsReasoningEffort
+		typeof model.maxThinkingTokens === "number" ||
+		model.supportsReasoningBudget ||
+		model.supportsReasoningEffort ||
+		!!model.reasoningEffort
 
 	// Budget-based (2.5) models: use thinkingBudget, not thinkingLevel.
 	if (shouldUseReasoningBudget({ model, settings })) {
