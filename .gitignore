@@ -52,3 +52,5 @@ qdrant_storage/
 
 # Architect plans
 plans/
+
+.results
