@@ -30,23 +30,34 @@ export function convertAnthropicContentToGemini(
 	const includeThoughtSignatures = options?.includeThoughtSignatures ?? true
 	const toolIdToName = options?.toolIdToName
 
-	// First pass: find thoughtSignature if it exists in the content blocks
+	// First pass: find thoughtSignature and check for tool_use blocks
 	let activeThoughtSignature: string | undefined
+	let hasToolUseBlocks = false
 	if (Array.isArray(content)) {
 		const sigBlock = content.find((block) => isThoughtSignatureContentBlock(block)) as ThoughtSignatureContentBlock
 		if (sigBlock?.thoughtSignature) {
 			activeThoughtSignature = sigBlock.thoughtSignature
 		}
+		// Check if this message contains tool_use blocks
+		hasToolUseBlocks = content.some((block) => "type" in block && (block as { type: string }).type === "tool_use")
 	}
 
 	// Determine the signature to attach to function calls.
 	// If we're in a mode that expects signatures (includeThoughtSignatures is true):
 	// 1. Use the actual signature if we found one in the history/content.
-	// 2. Don't use a fallback - only include thoughtSignature if we have a real one.
-	//    The fallback "skip_thought_signature_validator" causes 400 errors with Gemini 3 models.
+	// 2. If there are tool_use blocks but no signature (cross-model history scenario),
+	//    use the fallback "skip_thought_signature_validator" to satisfy Gemini 3's validation.
+	//    See: https://ai.google.dev/gemini-api/docs/thought-signatures#faqs
+	// 3. If there are no tool_use blocks, don't include any signature (nothing to attach it to).
 	let functionCallSignature: string | undefined
-	if (includeThoughtSignatures && activeThoughtSignature) {
-		functionCallSignature = activeThoughtSignature
+	if (includeThoughtSignatures) {
+		if (activeThoughtSignature) {
+			functionCallSignature = activeThoughtSignature
+		} else if (hasToolUseBlocks) {
+			// Cross-model scenario: tool_use blocks exist but no thoughtSignature was captured.
+			// This happens when switching from a non-thinking model to a thinking model.
+			functionCallSignature = "skip_thought_signature_validator"
+		}
 	}
 
 	if (typeof content === "string") {

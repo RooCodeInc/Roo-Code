@@ -107,7 +107,7 @@ describe("convertAnthropicMessageToGemini", () => {
 		expect(() => convertAnthropicMessageToGemini(anthropicMessage)).toThrow("Unsupported image source type")
 	})
 
-	it("should convert a message with tool use without thoughtSignature when none exists", () => {
+	it("should use fallback thoughtSignature for tool_use when includeThoughtSignatures is true but no signature exists (cross-model scenario)", () => {
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "assistant",
 			content: [
@@ -118,6 +118,74 @@ describe("convertAnthropicMessageToGemini", () => {
 					name: "calculator",
 					input: { operation: "add", numbers: [2, 3] },
 				},
+			],
+		}
+
+		// Default includeThoughtSignatures is true, so fallback should be used
+		const result = convertAnthropicMessageToGemini(anthropicMessage)
+
+		expect(result).toEqual([
+			{
+				role: "model",
+				parts: [
+					{ text: "Let me calculate that for you." },
+					{
+						functionCall: {
+							name: "calculator",
+							args: { operation: "add", numbers: [2, 3] },
+						},
+						thoughtSignature: "skip_thought_signature_validator",
+					},
+				],
+			},
+		])
+	})
+
+	it("should NOT include thoughtSignature for tool_use when includeThoughtSignatures is false", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{ type: "text", text: "Let me calculate that for you." },
+				{
+					type: "tool_use",
+					id: "calc-123",
+					name: "calculator",
+					input: { operation: "add", numbers: [2, 3] },
+				},
+			],
+		}
+
+		// With includeThoughtSignatures false, no signature should be included
+		const result = convertAnthropicMessageToGemini(anthropicMessage, { includeThoughtSignatures: false })
+
+		expect(result).toEqual([
+			{
+				role: "model",
+				parts: [
+					{ text: "Let me calculate that for you." },
+					{
+						functionCall: {
+							name: "calculator",
+							args: { operation: "add", numbers: [2, 3] },
+						},
+					},
+				],
+			},
+		])
+	})
+
+	it("should use real thoughtSignature when present in content", () => {
+		const anthropicMessage: Anthropic.Messages.MessageParam = {
+			role: "assistant",
+			content: [
+				{ type: "text", text: "Let me calculate that for you." },
+				{
+					type: "tool_use",
+					id: "calc-123",
+					name: "calculator",
+					input: { operation: "add", numbers: [2, 3] },
+				},
+				{ type: "thoughtSignature", thoughtSignature: "real-signature-abc123" } as any,
 			],
 		}
 
@@ -133,6 +201,7 @@ describe("convertAnthropicMessageToGemini", () => {
 							name: "calculator",
 							args: { operation: "add", numbers: [2, 3] },
 						},
+						thoughtSignature: "real-signature-abc123",
 					},
 				],
 			},
