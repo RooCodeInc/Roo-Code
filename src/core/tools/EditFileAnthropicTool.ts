@@ -245,7 +245,8 @@ export class SearchAndReplaceTool extends BaseTool<"edit_file_anthropic"> {
 			}
 
 			task.didEditFile = true
-			task.recordToolUsage("edit_file_anthropic")
+			// Tool usage metrics are recorded by presentAssistantMessage(), which also derives provider variants.
+			// Recording here would double-count successful runs and skew metrics.
 
 			// Get the formatted response message
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, false)
@@ -262,25 +263,22 @@ export class SearchAndReplaceTool extends BaseTool<"edit_file_anthropic"> {
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
-			await handleError("search and replace", error as Error)
+			await handleError("edit_file_anthropic", error as Error)
 			await task.diffViewProvider.reset()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"edit_file_anthropic">): Promise<void> {
 		const relPath: string | undefined = block.params.path
-		const editsStr: string | undefined = block.params.edits
+		// For native protocol, nativeArgs contains the edits array
+		// For XML protocol, edits would be in params (but this tool is native-only)
+		const nativeArgs = block.nativeArgs as
+			| { path: string; edits: Array<{ old_text: string; new_text: string }> }
+			| undefined
 
 		let editsPreview: string | undefined
-		if (editsStr) {
-			try {
-				const ops = JSON.parse(editsStr)
-				if (Array.isArray(ops) && ops.length > 0) {
-					editsPreview = `${ops.length} edit(s)`
-				}
-			} catch {
-				editsPreview = "parsing..."
-			}
+		if (nativeArgs?.edits && Array.isArray(nativeArgs.edits)) {
+			editsPreview = `${nativeArgs.edits.length} edit(s)`
 		}
 
 		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""

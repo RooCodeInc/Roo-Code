@@ -90,8 +90,8 @@ function applyReplacement(
 	return safeLiteralReplace(currentContent, oldString, newString)
 }
 
-export class EditFileTool extends BaseTool<"edit_file"> {
-	readonly name = "edit_file" as const
+export class EditFileTool extends BaseTool<"edit_file_gemini"> {
+	readonly name = "edit_file_gemini" as const
 
 	parseLegacy(params: Partial<Record<string, string>>): EditFileParams {
 		return {
@@ -112,8 +112,8 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Validate required parameters
 			if (!file_path) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("edit_file")
-				pushToolResult(await task.sayAndCreateMissingParamError("edit_file", "file_path"))
+				task.recordToolError("edit_file_gemini")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_gemini", "file_path"))
 				return
 			}
 
@@ -150,7 +150,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 					currentContent = currentContent.replace(/\r\n/g, "\n")
 				} catch (error) {
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file")
+					task.recordToolError("edit_file_gemini")
 					const errorMessage = `Failed to read file '${relPath}'. Please verify file permissions and try again.`
 					await task.say("error", errorMessage)
 					pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
@@ -160,7 +160,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				// Check if trying to create a file that already exists
 				if (old_string === "") {
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file")
+					task.recordToolError("edit_file_gemini")
 					const errorMessage = `File '${relPath}' already exists. Cannot create a new file with empty old_string when file exists.`
 					await task.say("error", errorMessage)
 					pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
@@ -174,7 +174,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				} else {
 					// Trying to replace in non-existent file
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file")
+					task.recordToolError("edit_file_gemini")
 					const errorMessage = `File not found: ${relPath}. Cannot perform replacement on a non-existent file. Use an empty old_string to create a new file.`
 					await task.say("error", errorMessage)
 					pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
@@ -189,7 +189,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 
 				if (occurrences === 0) {
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file", "no_match")
+					task.recordToolError("edit_file_gemini", "no_match")
 					pushToolResult(
 						formatResponse.toolError(
 							`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including all whitespace and indentation.`,
@@ -201,7 +201,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 
 				if (occurrences !== expected_replacements) {
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file", "occurrence_mismatch")
+					task.recordToolError("edit_file_gemini", "occurrence_mismatch")
 					pushToolResult(
 						formatResponse.toolError(
 							`Expected ${expected_replacements} occurrence(s) but found ${occurrences}. Please adjust your old_string to match exactly ${expected_replacements} occurrence(s), or set expected_replacements to ${occurrences}.`,
@@ -214,7 +214,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				// Validate that old_string and new_string are different
 				if (old_string === new_string) {
 					task.consecutiveMistakeCount++
-					task.recordToolError("edit_file")
+					task.recordToolError("edit_file_gemini")
 					pushToolResult(
 						formatResponse.toolError(
 							"No changes to apply. The old_string and new_string are identical.",
@@ -329,12 +329,12 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
-			await handleError("edit_file", error as Error)
+			await handleError("edit_file_gemini", error as Error)
 			await task.diffViewProvider.reset()
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"edit_file">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"edit_file_gemini">): Promise<void> {
 		const filePath: string | undefined = block.params.file_path
 		const oldString: string | undefined = block.params.old_string
 

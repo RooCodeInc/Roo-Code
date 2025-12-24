@@ -830,7 +830,7 @@ describe("getRooModels", () => {
 					// Versioned settings keyed by version number (low version - always met)
 					versionedSettings: {
 						"1.0.0": {
-							editToolVariant: "grok",
+							editToolVariant: "gemini",
 							excludedTools: ["write_to_file", "browser_action"],
 						},
 					},
@@ -875,7 +875,7 @@ describe("getRooModels", () => {
 					// Versioned settings keyed by very high version - never met
 					versionedSettings: {
 						"99.0.0": {
-							editToolVariant: "grok",
+							editToolVariant: "gemini",
 						},
 					},
 				},
