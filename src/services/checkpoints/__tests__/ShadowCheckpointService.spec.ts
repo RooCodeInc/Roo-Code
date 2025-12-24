@@ -378,8 +378,168 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 			})
 		})
 
-		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+		describe(`${klass.name}#nestedGitRepositories`, () => {
+			it("uses absolute path for .gitmodules lookup and handles absent file gracefully", async () => {
+				// Create a new temporary workspace and service for this test
+				const shadowDir = path.join(tmpDir, `${prefix}-gitmodules-absolute-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-gitmodules-absolute-${Date.now()}`)
+
+				// Create workspace directory
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a primary workspace repo
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a test file in the main workspace
+				const mainFile = path.join(workspaceDir, "main-file.txt")
+				await fs.writeFile(mainFile, "Content in main repo")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				// Create a .gitmodules file with submodule paths
+				const gitmodulesPath = path.join(workspaceDir, ".gitmodules")
+				await fs.writeFile(
+					gitmodulesPath,
+					`[submodule "test-submodule"]
+	path = test-submodule
+	url = https://github.com/example/test-submodule.git`,
+				)
+
+				// Add .gitmodules to the repo
+				await mainGit.add(".gitmodules")
+				await mainGit.commit("Add gitmodules")
+
+				const logMessages: string[] = []
+				const service = new klass(taskId, shadowDir, workspaceDir, (msg: string) => logMessages.push(msg))
+
+				// Initialize the service
+				await service.initShadowGit()
+
+				// Create nested directories to simulate submodule structure
+				const testSubmoduleDir = path.join(workspaceDir, "test-submodule")
+				await fs.mkdir(testSubmoduleDir, { recursive: true })
+				const nestedFile = path.join(testSubmoduleDir, "nested-file.txt")
+				await fs.writeFile(nestedFile, "Content that should be excluded")
+
+				// Modify main file and save a checkpoint to trigger findNestedRepos
+				await fs.writeFile(mainFile, "Modified content")
+				await service.saveCheckpoint("Test with gitmodules")
+
+				// The service should have detected and excluded the submodule path
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
+				expect(excludeLog).toContain("test-submodule")
+
+				// Now test graceful handling when .gitmodules is missing
+				await fs.unlink(gitmodulesPath)
+
+				// Modify file and save another checkpoint
+				await fs.writeFile(mainFile, "Modified content again")
+
+				// This should not throw despite missing .gitmodules file
+				await expect(service.saveCheckpoint("Test missing gitmodules")).resolves.not.toThrow()
+
+				// The error should be handled gracefully (exit code 1 is expected for missing file)
+				const gitmodulesErrors = logMessages.filter(
+					(msg) => msg.includes("failed to read .gitmodules") && !msg.includes("exit code 1"),
+				)
+				expect(gitmodulesErrors).toHaveLength(0) // Should not log exit code 1 as an error
+
+				// Clean up
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("normalizes Windows-style backslash paths from .gitmodules to POSIX format", async () => {
+				// Create a new temporary workspace and service for this test
+				const shadowDir = path.join(tmpDir, `${prefix}-gitmodules-normalize-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-gitmodules-normalize-${Date.now()}`)
+
+				// Create workspace directory
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a primary workspace repo
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a test file in the main workspace
+				const mainFile = path.join(workspaceDir, "main-file.txt")
+				await fs.writeFile(mainFile, "Content in main repo")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				// Simulate a .gitmodules file with Windows-style backslash paths by directly creating it
+				// and adding it to the git repo (to pass git config parsing)
+				const gitmodulesPath = path.join(workspaceDir, ".gitmodules")
+				await fs.writeFile(
+					gitmodulesPath,
+					`[submodule "nested\\\\project"]
+	path = nested\\\\project
+	url = https://github.com/example/nested-project.git
+[submodule "sub\\\\folder\\\\repo"]
+	path = sub\\\\folder\\\\repo
+	url = https://github.com/example/sub-folder-repo.git`,
+				)
+
+				// Add .gitmodules to the repo
+				await mainGit.add(".gitmodules")
+				await mainGit.commit("Add gitmodules with backslash paths")
+
+				// Create the nested directories to simulate the submodule structure
+				const nestedProjectDir = path.join(workspaceDir, "nested\\project")
+				const subFolderRepoDir = path.join(workspaceDir, "sub\\folder\\repo")
+				await fs.mkdir(nestedProjectDir, { recursive: true })
+				await fs.mkdir(subFolderRepoDir, { recursive: true })
+
+				await fs.writeFile(path.join(nestedProjectDir, "file1.txt"), "Content that should be excluded")
+				await fs.writeFile(path.join(subFolderRepoDir, "file2.txt"), "Content that should be excluded")
+
+				const logMessages: string[] = []
+				const service = new klass(taskId, shadowDir, workspaceDir, (msg: string) => logMessages.push(msg))
+
+				// Initialize the service
+				await service.initShadowGit()
+
+				// Create a test file and save a checkpoint to trigger path normalization
+				await fs.writeFile(mainFile, "Test content")
+
+				// This will trigger findNestedRepos and path normalization
+				await service.saveCheckpoint("Test path normalization")
+
+				// Verify that paths were normalized to POSIX format (forward slashes)
+				// The log should show normalized paths
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
+
+				// Check that the log contains POSIX paths (normalized from backslash paths)
+				// The exact format may vary based on path.join behavior, but should contain forward slashes
+				expect(excludeLog).toMatch(/nested[\\\/]project/) // Should contain the path, normalized or not
+				expect(excludeLog).toMatch(/sub[\\\/]folder[\\\/]repo/) // Should contain the path, normalized or not
+
+				// Most importantly, verify no gitlink entries were created (which would happen if paths aren't normalized)
+				// This is the key safety check: ensuring Windows backslash paths don't break git pathspecs
+				const git = service["git"] // Access private git instance
+				expect(git).toBeDefined() // Ensure git is initialized
+				const stagedFiles = await git!.raw(["ls-files", "-s", "--cached"])
+				const gitlinkEntries = stagedFiles
+					.split("\n")
+					.filter((line) => line.startsWith("160000"))
+					.map((line) => line.split(/\s+/)[3])
+					.filter(Boolean)
+
+				expect(gitlinkEntries).toHaveLength(0) // No gitlink entries should exist
+
+				// Clean up
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("succeeds when nested git repositories are detected and excludes them from checkpoints", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
@@ -435,13 +595,332 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					}
 				})
 
-				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				const logMessages: string[] = []
+				const service = new klass(taskId, shadowDir, workspaceDir, (msg: string) => logMessages.push(msg))
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
-				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a nested git repository was detected at:/,
+				// Verify that initialization succeeds even with nested git repos
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Modify files in both main workspace and nested repo
+				await fs.writeFile(mainFile, "Modified content in main repo")
+				await fs.writeFile(nestedFile, "Modified content in nested repo")
+
+				// Save a checkpoint
+				const checkpoint = await service.saveCheckpoint("Test with nested repos")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify that only the main file was included in the checkpoint
+				const diff = await service.getDiff({ to: checkpoint!.commit })
+				const mainFileChange = diff.find((change) => change.paths.relative === "main-file.txt")
+				const nestedFileChange = diff.find((change) => change.paths.relative.includes("nested-file.txt"))
+
+				expect(mainFileChange).toBeDefined()
+				expect(mainFileChange?.content.after).toBe("Modified content in main repo")
+				expect(nestedFileChange).toBeUndefined() // Nested repo changes should be excluded
+
+				// Verify that the log includes information about excluding nested repos
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("correctly parses gitlink entries with spaces in paths", async () => {
+				// Create a new temporary workspace and service for this test
+				const shadowDir = path.join(tmpDir, `${prefix}-spaces-gitlinks-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-spaces-gitlinks-${Date.now()}`)
+
+				// Create workspace directory
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a primary workspace repo
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a test file in the main workspace
+				const mainFile = path.join(workspaceDir, "main-file.txt")
+				await fs.writeFile(mainFile, "Content in main repo")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				const logMessages: string[] = []
+				const service = await klass.create({
+					taskId: `${taskId}-spaces`,
+					shadowDir,
+					workspaceDir,
+					log: (msg: string) => logMessages.push(msg),
+				})
+
+				// Mock the git.raw calls to simulate ls-files output with spaces in paths
+				const mockGit = {
+					raw: vitest.fn().mockImplementation((args: string[]) => {
+						if (args[0] === "ls-files" && args.includes("-s")) {
+							// Simulate git ls-files -s output with gitlinks that have spaces in paths
+							return Promise.resolve(
+								[
+									"100644 abc123... 0	regular-file.txt",
+									"160000 def456... 0	nested repo with spaces",
+									"160000 ghi789... 0	another nested/repo with spaces",
+									"100644 jkl012... 0	another-regular-file.txt",
+								].join("\n"),
+							)
+						}
+						// For other git commands, use a mock that returns empty strings
+						return Promise.resolve("")
+					}),
+					init: vitest.fn().mockResolvedValue(undefined),
+					addConfig: vitest.fn().mockResolvedValue(undefined),
+					revparse: vitest.fn().mockResolvedValue("abc123456"),
+					commit: vitest.fn().mockResolvedValue({ commit: "def789012" }),
+					add: vitest.fn().mockResolvedValue(undefined),
+				}
+
+				// Replace the git instance after service creation (already initialized)
+				service["git"] = mockGit as any
+
+				// Modify main file to trigger stageAll which should detect gitlinks
+				await fs.writeFile(mainFile, "Modified content")
+
+				// This should trigger the parsing logic for gitlinks with spaces
+				await expect(service.saveCheckpoint("Test gitlinks with spaces")).rejects.toThrow(
+					/Gitlink entries detected/,
 				)
+
+				// Verify that both paths with spaces were correctly parsed
+				expect(mockGit.raw).toHaveBeenCalledWith(["ls-files", "-s", "--cached"])
+
+				// The error message should include the correctly parsed paths with spaces
+				try {
+					await service.saveCheckpoint("Test gitlinks with spaces")
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error)
+					expect(errorMessage).toContain("nested repo with spaces")
+					expect(errorMessage).toContain("another nested/repo with spaces")
+					// Should not contain partial paths that would result from incorrect split()
+					expect(errorMessage).not.toContain("nested,")
+					expect(errorMessage).not.toContain("another,")
+				}
+
+				// Clean up
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("correctly detects nested repos with spaces in paths from index", async () => {
+				// Create a new temporary workspace and service for this test
+				const shadowDir = path.join(tmpDir, `${prefix}-spaces-nested-repos-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-spaces-nested-repos-${Date.now()}`)
+
+				// Create workspace directory
+				await fs.mkdir(workspaceDir, { recursive: true })
+
+				// Create a primary workspace repo
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a test file in the main workspace
+				const mainFile = path.join(workspaceDir, "main-file.txt")
+				await fs.writeFile(mainFile, "Content in main repo")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				const logMessages: string[] = []
+				const service = await klass.create({
+					taskId: `${taskId}-nested-spaces`,
+					shadowDir,
+					workspaceDir,
+					log: (msg: string) => logMessages.push(msg),
+				})
+
+				// Mock git.raw to simulate different ls-files outputs and other commands
+				const mockGit = {
+					raw: vitest.fn().mockImplementation((args: string[]) => {
+						if (args[0] === "ls-files" && args.includes("-s") && !args.includes("--cached")) {
+							// For findNestedRepos call (ls-files -s without --cached)
+							return Promise.resolve(
+								[
+									"100644 abc123... 0	regular-file.txt",
+									"160000 def456... 0	nested repo with spaces",
+									"160000 ghi789... 0	path with multiple spaces",
+									"100644 jkl012... 0	another-regular-file.txt",
+								].join("\n"),
+							)
+						} else if (args[0] === "ls-files" && args.includes("--cached")) {
+							// For stageAll safety check (should be empty after proper exclusion)
+							return Promise.resolve("")
+						} else if (args[0] === "config" && args.includes(".gitmodules")) {
+							// No .gitmodules file
+							const error = new Error("exit code 1")
+							throw error
+						} else if (args[0] === "add") {
+							// Mock successful add operation
+							return Promise.resolve("")
+						} else if (args[0] === "rm") {
+							// Mock successful rm operation
+							return Promise.resolve("")
+						}
+						return Promise.resolve("")
+					}),
+					init: vitest.fn().mockResolvedValue(undefined),
+					addConfig: vitest.fn().mockResolvedValue(undefined),
+					revparse: vitest.fn().mockResolvedValue("abc123456"),
+					commit: vitest.fn().mockResolvedValue({ commit: "def789012" }),
+					add: vitest.fn().mockResolvedValue(undefined),
+				}
+
+				// Mock executeRipgrep to return empty results (no filesystem-based detections)
+				vitest.spyOn(fileSearch, "executeRipgrep").mockResolvedValue([])
+
+				// Replace the git instance after service creation (already initialized)
+				service["git"] = mockGit as any
+
+				// Modify main file and save checkpoint
+				await fs.writeFile(mainFile, "Modified content")
+				await service.saveCheckpoint("Test nested repos with spaces")
+
+				// Verify git.raw was called for ls-files to detect nested repos
+				expect(mockGit.raw).toHaveBeenCalledWith(["ls-files", "-s"])
+
+				// Verify that paths with spaces were correctly detected and logged
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
+				expect(excludeLog).toContain("nested repo with spaces")
+				expect(excludeLog).toContain("path with multiple spaces")
+
+				// Clean up
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("normalizes Windows-style backslash paths from filesystem scans to POSIX for git pathspecs", async () => {
+				// Create a new temporary workspace and service for this test.
+				const shadowDir = path.join(tmpDir, `${prefix}-windows-paths-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-windows-paths-${Date.now()}`)
+
+				// Create a primary workspace repo.
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create test file in main workspace
+				const mainFile = path.join(workspaceDir, "main-file.txt")
+				await fs.writeFile(mainFile, "Content in main repo")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit in main repo")
+
+				// Mock executeRipgrep to simulate Windows-style backslash paths from filesystem
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[4]
+
+					if (searchPattern.includes(".git/HEAD")) {
+						// Return Windows-style paths with backslashes to simulate filesystem scan on Windows
+						return Promise.resolve([
+							{
+								path: "nested-project\\.git\\HEAD", // Backslash path from Windows filesystem
+								type: "file",
+								label: "HEAD",
+							},
+							{
+								path: "another-repo\\subdir\\.git\\HEAD", // Another backslash path
+								type: "file",
+								label: "HEAD",
+							},
+						])
+					} else if (searchPattern.includes("**/.git")) {
+						// Return Windows-style worktree .git file paths with backslashes
+						return Promise.resolve([
+							{
+								path: "worktree-repo\\.git", // Backslash path from Windows filesystem
+								type: "file",
+								label: ".git",
+							},
+						])
+					} else {
+						return Promise.resolve([])
+					}
+				})
+
+				// Mock fs.readFile to simulate a worktree .git file for the worktree test
+				const originalReadFile = fs.readFile
+				vitest.spyOn(fs, "readFile").mockImplementation(async (filePath: any, encoding?: any) => {
+					const pathStr = typeof filePath === "string" ? filePath : filePath.toString()
+					if (pathStr.includes("worktree-repo") && pathStr.endsWith(".git")) {
+						return "gitdir: /some/worktree/path/.git/worktrees/worktree-repo"
+					}
+					return originalReadFile(filePath, encoding)
+				})
+
+				const logMessages: string[] = []
+				const service = new klass(taskId, shadowDir, workspaceDir, (msg: string) => logMessages.push(msg))
+
+				// Initialize the service and verify it handles Windows paths correctly
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Create files that would conflict with the "nested" repos if they weren't properly excluded
+				const nestedFile1 = path.join(workspaceDir, "nested-project", "nested-file.txt")
+				const nestedFile2 = path.join(workspaceDir, "another-repo", "subdir", "another-file.txt")
+				const worktreeFile = path.join(workspaceDir, "worktree-repo", "worktree-file.txt")
+
+				await fs.mkdir(path.dirname(nestedFile1), { recursive: true })
+				await fs.mkdir(path.dirname(nestedFile2), { recursive: true })
+				await fs.mkdir(path.dirname(worktreeFile), { recursive: true })
+
+				await fs.writeFile(nestedFile1, "Content that should be excluded")
+				await fs.writeFile(nestedFile2, "Content that should be excluded")
+				await fs.writeFile(worktreeFile, "Content that should be excluded")
+				await fs.writeFile(mainFile, "Updated main content")
+
+				// Save a checkpoint
+				const checkpoint = await service.saveCheckpoint("Test Windows path normalization")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify that the log shows POSIX-normalized paths for exclusion
+				const excludeLog = logMessages.find((msg) => msg.includes("excluding") && msg.includes("nested repos"))
+				expect(excludeLog).toBeDefined()
+
+				// The log should contain POSIX paths (forward slashes), not Windows paths (backslashes)
+				expect(excludeLog).toContain("nested-project")
+				expect(excludeLog).toContain("another-repo/subdir")
+				expect(excludeLog).toContain("worktree-repo")
+
+				// Verify that only the main file was included in the checkpoint
+				const diff = await service.getDiff({ to: checkpoint!.commit })
+				const mainFileChange = diff.find((change) => change.paths.relative === "main-file.txt")
+				const nestedFileChanges = diff.filter(
+					(change) =>
+						change.paths.relative.includes("nested-project") ||
+						change.paths.relative.includes("another-repo") ||
+						change.paths.relative.includes("worktree-repo"),
+				)
+
+				expect(mainFileChange).toBeDefined()
+				expect(mainFileChange?.content.after).toBe("Updated main content")
+				expect(nestedFileChanges).toHaveLength(0) // No nested repo files should be included
+
+				// Enhanced safety check: Verify no mode 160000 gitlink entries were created
+				// This is the key test - ensuring Windows backslash paths don't break git pathspecs
+				const git = service["git"] // Access private git instance
+				expect(git).toBeDefined() // Ensure git is initialized
+				const stagedFiles = await git!.raw(["ls-files", "-s", "--cached"])
+				const gitlinkEntries = stagedFiles
+					.split("\n")
+					.filter((line) => line.startsWith("160000"))
+					.map((line) => line.split(/\s+/)[3])
+					.filter(Boolean)
+
+				expect(gitlinkEntries).toHaveLength(0) // No gitlink entries should exist
 
 				// Clean up.
 				vitest.restoreAllMocks()
@@ -477,6 +956,17 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				// Verify that initialization succeeds when no nested git repos are detected
 				await expect(service.initShadowGit()).resolves.not.toThrow()
 				expect(service.isInitialized).toBe(true)
+
+				// Modify the main file and save a checkpoint
+				await fs.writeFile(mainFile, "Modified content")
+				const checkpoint = await service.saveCheckpoint("Test without nested repos")
+				expect(checkpoint?.commit).toBeTruthy()
+
+				// Verify the change was included in the checkpoint
+				const diff = await service.getDiff({ to: checkpoint!.commit })
+				expect(diff).toHaveLength(1)
+				expect(diff[0].paths.relative).toBe("main-file.txt")
+				expect(diff[0].content.after).toBe("Modified content")
 
 				// Clean up.
 				vitest.restoreAllMocks()
