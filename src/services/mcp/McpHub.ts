@@ -764,7 +764,9 @@ export class McpHub {
 				}
 			} else if (configInjected.type === "streamable-http") {
 				// Streamable HTTP connection
-				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
+				// Normalize URL by removing trailing slashes to avoid 405 errors
+				const normalizedUrl = configInjected.url.replace(/\/+$/, "")
+				transport = new StreamableHTTPClientTransport(new URL(normalizedUrl), {
 					requestInit: {
 						headers: configInjected.headers,
 					},
@@ -790,6 +792,8 @@ export class McpHub {
 				}
 			} else if (configInjected.type === "sse") {
 				// SSE connection
+				// Normalize URL by removing trailing slashes for consistency
+				const normalizedUrl = configInjected.url.replace(/\/+$/, "")
 				const sseOptions = {
 					requestInit: {
 						headers: configInjected.headers,
@@ -808,7 +812,7 @@ export class McpHub {
 					},
 				}
 				global.EventSource = ReconnectingEventSource
-				transport = new SSEClientTransport(new URL(configInjected.url), {
+				transport = new SSEClientTransport(new URL(normalizedUrl), {
 					...sseOptions,
 					eventSourceInit: reconnectingEventSourceOptions,
 				})
