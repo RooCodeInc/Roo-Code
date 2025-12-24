@@ -157,4 +157,102 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		const lastCall = stateManager.setSystemState.mock.calls[stateManager.setSystemState.mock.calls.length - 1]
 		expect(lastCall[0]).toBe("Error")
 	})
+
+	it("should perform incremental scan when indexed data already exists (window reload scenario)", async () => {
+		// Arrange: simulate window reload scenario where index already exists
+		vectorStore.initialize.mockResolvedValue(false) // existing collection (not newly created)
+		vectorStore.hasIndexedData.mockResolvedValue(true) // index data exists
+		vectorStore.markIndexingIncomplete.mockResolvedValue(undefined)
+		vectorStore.markIndexingComplete.mockResolvedValue(undefined)
+
+		// Mock scanner to return successful result for incremental scan
+		scanner.scanDirectory.mockResolvedValue({
+			stats: {
+				filesProcessed: 5,
+				blocksFound: 10,
+				blocksIndexed: 10,
+			},
+		})
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		// Act
+		await orchestrator.startIndexing()
+
+		// Assert
+		// Should check for existing data
+		expect(vectorStore.hasIndexedData).toHaveBeenCalledTimes(1)
+
+		// Should perform incremental scan (scanner called once)
+		expect(scanner.scanDirectory).toHaveBeenCalledTimes(1)
+
+		// Should NOT clear collection or cache (preserving existing index)
+		expect(vectorStore.clearCollection).not.toHaveBeenCalled()
+		expect(cacheManager.clearCacheFile).not.toHaveBeenCalled()
+
+		// Should mark indexing as incomplete at start and complete at end
+		expect(vectorStore.markIndexingIncomplete).toHaveBeenCalledTimes(1)
+		expect(vectorStore.markIndexingComplete).toHaveBeenCalledTimes(1)
+
+		// Should end in Indexed state
+		expect(stateManager.state).toBe("Indexed")
+	})
+
+	it("should perform full scan when collection is newly created", async () => {
+		// Arrange: new collection created
+		vectorStore.initialize.mockResolvedValue(true) // new collection created
+		vectorStore.hasIndexedData.mockResolvedValue(false) // no data yet
+		vectorStore.markIndexingIncomplete.mockResolvedValue(undefined)
+		vectorStore.markIndexingComplete.mockResolvedValue(undefined)
+
+		// Mock scanner to return successful result for full scan
+		scanner.scanDirectory.mockResolvedValue({
+			stats: {
+				filesProcessed: 100,
+				blocksFound: 500,
+				blocksIndexed: 500,
+			},
+		})
+
+		// Clear cache when new collection is created
+		cacheManager.clearCacheFile.mockResolvedValue(undefined)
+
+		const orchestrator = new CodeIndexOrchestrator(
+			configManager,
+			stateManager,
+			workspacePath,
+			cacheManager,
+			vectorStore,
+			scanner,
+			fileWatcher,
+		)
+
+		// Act
+		await orchestrator.startIndexing()
+
+		// Assert
+		// Should check for existing data
+		expect(vectorStore.hasIndexedData).toHaveBeenCalledTimes(1)
+
+		// Should clear cache since collection was newly created
+		expect(cacheManager.clearCacheFile).toHaveBeenCalledTimes(1)
+
+		// Should perform full scan
+		expect(scanner.scanDirectory).toHaveBeenCalledTimes(1)
+
+		// Should mark indexing as incomplete at start and complete at end
+		expect(vectorStore.markIndexingIncomplete).toHaveBeenCalledTimes(1)
+		expect(vectorStore.markIndexingComplete).toHaveBeenCalledTimes(1)
+
+		// Should end in Indexed state
+		expect(stateManager.state).toBe("Indexed")
+	})
 })
