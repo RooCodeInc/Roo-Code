@@ -44,7 +44,7 @@ describe("resolveToolProtocol", () => {
 			}
 			// undefined lockedProtocol should return native
 			const result = resolveToolProtocol(settings, undefined, undefined)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 	})
 
@@ -54,7 +54,7 @@ describe("resolveToolProtocol", () => {
 				apiProvider: "anthropic",
 			}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 
 		it("should use native even when user preference is XML (user prefs ignored)", () => {
@@ -63,7 +63,7 @@ describe("resolveToolProtocol", () => {
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 
 		it("should use native for OpenAI compatible provider", () => {
@@ -79,7 +79,7 @@ describe("resolveToolProtocol", () => {
 		it("should handle missing provider name gracefully", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Always native now
 		})
 
 		it("should handle undefined model info gracefully", () => {
@@ -87,13 +87,13 @@ describe("resolveToolProtocol", () => {
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings, undefined)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Always native now
 		})
 
 		it("should handle empty settings", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Always native now
 		})
 	})
 
@@ -137,13 +137,13 @@ describe("resolveToolProtocol", () => {
 	})
 
 	describe("Backward Compatibility - User Preferences Ignored", () => {
-		it("should ignore user preference for XML", () => {
+		it("should use user preference for XML", () => {
 			const settings: ProviderSettings = {
 				toolProtocol: "xml", // User explicitly wants XML - ignored
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Native is always used
+			expect(result).toBe(TOOL_PROTOCOL.XML) // Native is always used
 		})
 
 		it("should return native regardless of user preference", () => {

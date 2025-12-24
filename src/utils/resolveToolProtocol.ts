@@ -39,29 +39,19 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
-	if (["openai", "zgsm", "gemini-cli"].includes(_providerSettings.apiProvider || "")) {
-		// If model doesn't support native tools, return XML immediately
-		// 1. User Preference - Per-Profile (explicit profile setting, highest priority)
-		if (_providerSettings.toolProtocol) {
-			return _providerSettings.toolProtocol
-		}
-		// 2.Treat undefined as unsupported (only allow native when explicitly true)
-		if (_modelInfo?.supportsNativeTools === true) {
-			return TOOL_PROTOCOL.NATIVE
-		}
-
-		// 3. Model Default - model's preferred protocol
-		if (_modelInfo?.defaultToolProtocol) {
-			return _modelInfo.defaultToolProtocol
-		}
-
-		// 3. Native Fallback
-		return _providerSettings.apiProvider === "zgsm" ? TOOL_PROTOCOL.XML : TOOL_PROTOCOL.NATIVE
+	if (_providerSettings.toolProtocol) {
+		return _providerSettings.toolProtocol
 	}
 
-	// 2. Always return Native protocol for new tasks
-	// All models now support native tools; XML is deprecated
-	return TOOL_PROTOCOL.NATIVE
+	if (_modelInfo?.supportsNativeTools === true) {
+		return TOOL_PROTOCOL.NATIVE
+	}
+
+	if (_modelInfo?.defaultToolProtocol) {
+		return _modelInfo.defaultToolProtocol
+	}
+
+	return TOOL_PROTOCOL.XML
 }
 
 /**
