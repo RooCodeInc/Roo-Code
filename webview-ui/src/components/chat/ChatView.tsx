@@ -271,6 +271,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setEnableButtons(true)
 							setPrimaryButtonText(t("chat:retry.title"))
 							setSecondaryButtonText(t("chat:startNewTask.title"))
+							// Don't clear input on error - preserve user's message
 							break
 						case "mistake_limit_reached":
 							playSound("progress_loop")
@@ -408,10 +409,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								setSelectedImages([])
 								setClineAsk(undefined)
 								setEnableButtons(false)
+							} else if (
+								// Clear input only when tool execution starts successfully
+								// This happens after the user approves and the API starts processing
+								secondLastMessage?.ask === "tool" &&
+								!lastMessage.partial
+							) {
+								// Tool execution started successfully, safe to clear input
+								setInputValue("")
+								setSelectedImages([])
 							}
 							break
 						case "api_req_finished":
 						case "error":
+							// If we get an error, don't clear the input
+							// The input should already be preserved from not clearing it in handlePrimaryButtonClick
+							break
 						case "text":
 						case "browser_action":
 						case "browser_action_result":
@@ -687,9 +700,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							text: trimmedInput,
 							images: images,
 						})
-						// Clear input state after sending
-						setInputValue("")
-						setSelectedImages([])
+						// Don't clear input here - let handleChatReset do it when the tool succeeds
+						// This preserves the input if the tool fails
 					} else {
 						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
 					}
@@ -769,7 +781,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							text: trimmedInput,
 							images: images,
 						})
-						// Clear input state after sending
+						// For rejection, we can clear the input since the user explicitly rejected
+						// and the message won't be lost
 						setInputValue("")
 						setSelectedImages([])
 					} else {
