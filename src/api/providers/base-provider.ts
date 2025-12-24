@@ -6,6 +6,7 @@ import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
 import { isMcpTool } from "../../utils/mcp-name"
+import { normalizeToolSchema } from "../../utils/json-schema"
 
 /**
  * Base class for API providers that implements common functionality.
@@ -52,50 +53,22 @@ export abstract class BaseProvider implements ApiHandler {
 	}
 
 	/**
-	 * Converts tool schemas to be compatible with OpenAI's strict mode by:
-	 * - Ensuring all properties are in the required array (strict mode requirement)
-	 * - Converting nullable types (["type", "null"]) to non-nullable ("type")
-	 * - Recursively processing nested objects and arrays
+	 * Converts tool schemas to be compatible with OpenAI's strict mode and
+	 * JSON Schema draft 2020-12 by:
+	 * - Setting additionalProperties: false for object types (strict mode requirement)
+	 * - Converting nullable types (["type", "null"]) to anyOf format (draft 2020-12 requirement)
+	 * - Stripping unsupported format values for OpenAI Structured Outputs compatibility
+	 * - Recursively processing nested schemas
 	 *
-	 * This matches the behavior of ensureAllRequired in openai-native.ts
+	 * This uses normalizeToolSchema from json-schema.ts which handles all transformations.
+	 * Required by third-party proxies that enforce JSON Schema draft 2020-12 (e.g., Claude API proxies).
 	 */
 	protected convertToolSchemaForOpenAI(schema: any): any {
-		if (!schema || typeof schema !== "object" || schema.type !== "object") {
+		if (!schema || typeof schema !== "object") {
 			return schema
 		}
 
-		const result = { ...schema }
-
-		if (result.properties) {
-			const allKeys = Object.keys(result.properties)
-			// OpenAI strict mode requires ALL properties to be in required array
-			result.required = allKeys
-
-			// Recursively process nested objects and convert nullable types
-			const newProps = { ...result.properties }
-			for (const key of allKeys) {
-				const prop = newProps[key]
-
-				// Handle nullable types by removing null
-				if (prop && Array.isArray(prop.type) && prop.type.includes("null")) {
-					const nonNullTypes = prop.type.filter((t: string) => t !== "null")
-					prop.type = nonNullTypes.length === 1 ? nonNullTypes[0] : nonNullTypes
-				}
-
-				// Recursively process nested objects
-				if (prop && prop.type === "object") {
-					newProps[key] = this.convertToolSchemaForOpenAI(prop)
-				} else if (prop && prop.type === "array" && prop.items?.type === "object") {
-					newProps[key] = {
-						...prop,
-						items: this.convertToolSchemaForOpenAI(prop.items),
-					}
-				}
-			}
-			result.properties = newProps
-		}
-
-		return result
+		return normalizeToolSchema(schema as Record<string, unknown>)
 	}
 
 	/**
