@@ -846,7 +846,7 @@ describe("getRooModels", () => {
 		const models = await getRooModels(baseUrl, apiKey)
 
 		// Versioned settings should be used instead of plain settings
-		expect(models["test/versioned-model"].editToolVariant).toBe("grok")
+expect(models["test/versioned-model"].editToolVariant).toBe("gemini")
 		expect(models["test/versioned-model"].excludedTools).toEqual(["write_to_file", "browser_action"])
 	})
 
