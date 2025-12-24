@@ -49,6 +49,8 @@ const baseMarketplaceItemSchema = z.object({
  */
 export const modeMarketplaceItemSchema = baseMarketplaceItemSchema.extend({
 	content: z.string().min(1), // YAML content for modes
+	// Support for bundled submodes - when a mode has submodes, they are included here
+	submodes: z.array(z.string()).optional(), // Array of submode YAML content strings
 })
 
 export type ModeMarketplaceItem = z.infer<typeof modeMarketplaceItemSchema>
