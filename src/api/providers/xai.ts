@@ -16,7 +16,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
-const XAI_DEFAULT_TEMPERATURE = 0
+const XAI_DEFAULT_TEMPERATURE = 0.7
 
 export class XAIHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
