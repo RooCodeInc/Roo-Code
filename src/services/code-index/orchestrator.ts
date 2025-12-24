@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import * as path from "path"
+import * as os from "os"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CodeIndexStateManager, IndexingState } from "./state-manager"
 import { IFileWatcher, IVectorStore, BatchProcessingSummary } from "./interfaces"
@@ -15,6 +16,8 @@ import { t } from "../../i18n"
 export class CodeIndexOrchestrator {
 	private _fileWatcherSubscriptions: vscode.Disposable[] = []
 	private _isProcessing: boolean = false
+	private _lastProgressUpdate: number = 0
+	private _progressMonitorInterval: NodeJS.Timeout | undefined
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -92,6 +95,29 @@ export class CodeIndexOrchestrator {
 	 */
 
 	/**
+	 * Gets the current memory usage percentage
+	 */
+	private getMemoryUsagePercent(): number {
+		const totalMem = os.totalmem()
+		const freeMem = os.freemem()
+		const usedMem = totalMem - freeMem
+		return (usedMem / totalMem) * 100
+	}
+
+	/**
+	 * Checks if memory usage is at a critical level
+	 */
+	private isMemoryCritical(): boolean {
+		const memUsage = this.getMemoryUsagePercent()
+		const MEMORY_THRESHOLD = 90 // 90% memory usage is critical
+		if (memUsage > MEMORY_THRESHOLD) {
+			console.warn(`[CodeIndexOrchestrator] High memory usage detected: ${memUsage.toFixed(2)}%`)
+			return true
+		}
+		return false
+	}
+
+	/**
 	 * Initiates the indexing process (initial scan and starts watcher).
 	 */
 	public async startIndexing(): Promise<void> {
@@ -127,7 +153,33 @@ export class CodeIndexOrchestrator {
 		// This helps us decide whether to preserve cache on error
 		let indexingStarted = false
 
+		// Add timeout for the entire indexing process (5 minutes)
+		const INDEXING_TIMEOUT_MS = 5 * 60 * 1000
+		let indexingTimeout: NodeJS.Timeout | undefined
+
 		try {
+			// Set up timeout to prevent indefinite stuck state
+			indexingTimeout = setTimeout(() => {
+				console.error("[CodeIndexOrchestrator] Indexing timeout - process took too long")
+				this.stateManager.setSystemState("Error", "Indexing timeout - process took too long. Please try again.")
+				this._isProcessing = false
+				// Clean up any ongoing operations
+				this.stopWatcher()
+				this._stopProgressMonitor()
+			}, INDEXING_TIMEOUT_MS)
+
+			// Check initial memory before starting
+			if (this.isMemoryCritical()) {
+				this.stateManager.setSystemState(
+					"Error",
+					"Not enough memory available to start indexing. Please close other applications and try again.",
+				)
+				this._isProcessing = false
+				return
+			}
+
+			// Start progress monitoring to detect stuck state
+			this._startProgressMonitor()
 			const collectionCreated = await this.vectorStore.initialize()
 
 			// Successfully connected to Qdrant
@@ -158,11 +210,13 @@ export class CodeIndexOrchestrator {
 
 				const handleFileParsed = (fileBlockCount: number) => {
 					cumulativeBlocksFoundSoFar += fileBlockCount
+					this._lastProgressUpdate = Date.now()
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
 				const handleBlocksIndexed = (indexedCount: number) => {
 					cumulativeBlocksIndexed += indexedCount
+					this._lastProgressUpdate = Date.now()
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
@@ -198,6 +252,9 @@ export class CodeIndexOrchestrator {
 				// Mark indexing as complete after successful incremental scan
 				await this.vectorStore.markIndexingComplete()
 
+				// Stop progress monitor on successful completion
+				this._stopProgressMonitor()
+
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
 			} else {
 				// No existing data or collection was just created - do a full scan
@@ -212,11 +269,13 @@ export class CodeIndexOrchestrator {
 
 				const handleFileParsed = (fileBlockCount: number) => {
 					cumulativeBlocksFoundSoFar += fileBlockCount
+					this._lastProgressUpdate = Date.now()
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
 				const handleBlocksIndexed = (indexedCount: number) => {
 					cumulativeBlocksIndexed += indexedCount
+					this._lastProgressUpdate = Date.now()
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
@@ -281,7 +340,20 @@ export class CodeIndexOrchestrator {
 
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
 			}
+
+			// Clear timeout and stop progress monitor on successful completion
+			if (indexingTimeout) {
+				clearTimeout(indexingTimeout)
+				indexingTimeout = undefined
+			}
+			this._stopProgressMonitor()
 		} catch (error: any) {
+			// Clear timeout on error
+			if (indexingTimeout) {
+				clearTimeout(indexingTimeout)
+				indexingTimeout = undefined
+			}
+
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 				error: error instanceof Error ? error.message : String(error),
@@ -324,6 +396,12 @@ export class CodeIndexOrchestrator {
 			)
 			this.stopWatcher()
 		} finally {
+			// Always clear timeout, stop progress monitor, and clear processing flag
+			if (indexingTimeout) {
+				clearTimeout(indexingTimeout)
+				indexingTimeout = undefined
+			}
+			this._stopProgressMonitor()
 			this._isProcessing = false
 		}
 	}
@@ -335,6 +413,7 @@ export class CodeIndexOrchestrator {
 		this.fileWatcher.dispose()
 		this._fileWatcherSubscriptions.forEach((sub) => sub.dispose())
 		this._fileWatcherSubscriptions = []
+		this._stopProgressMonitor()
 
 		if (this.stateManager.state !== "Error") {
 			this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.fileWatcherStopped"))
@@ -383,5 +462,61 @@ export class CodeIndexOrchestrator {
 	 */
 	public get state(): IndexingState {
 		return this.stateManager.state
+	}
+
+	/**
+	 * Starts monitoring progress to detect stuck indexing
+	 */
+	private _startProgressMonitor(): void {
+		this._lastProgressUpdate = Date.now()
+		this._stopProgressMonitor() // Clear any existing monitor
+
+		// Check every 30 seconds if progress has been made
+		const PROGRESS_CHECK_INTERVAL = 30 * 1000
+		// Consider stuck if no progress for 2 minutes
+		const STUCK_THRESHOLD = 2 * 60 * 1000
+
+		this._progressMonitorInterval = setInterval(() => {
+			const timeSinceLastProgress = Date.now() - this._lastProgressUpdate
+
+			// Check memory usage
+			if (this.isMemoryCritical()) {
+				console.error(
+					`[CodeIndexOrchestrator] Critical memory usage detected during indexing - stopping process`,
+				)
+				this.stateManager.setSystemState(
+					"Error",
+					"Indexing stopped due to high memory usage. Try indexing smaller portions or increasing available memory.",
+				)
+				this._isProcessing = false
+				this.stopWatcher()
+				this._stopProgressMonitor()
+				return
+			}
+
+			if (this._isProcessing && timeSinceLastProgress > STUCK_THRESHOLD) {
+				console.error(
+					`[CodeIndexOrchestrator] Indexing appears stuck - no progress for ${timeSinceLastProgress / 1000} seconds`,
+				)
+
+				// Set error state and stop processing
+				this.stateManager.setSystemState(
+					"Error",
+					"Indexing appears stuck with no progress. Please try restarting the indexing process.",
+				)
+				this._isProcessing = false
+				this.stopWatcher()
+			}
+		}, PROGRESS_CHECK_INTERVAL)
+	}
+
+	/**
+	 * Stops the progress monitor
+	 */
+	private _stopProgressMonitor(): void {
+		if (this._progressMonitorInterval) {
+			clearInterval(this._progressMonitorInterval)
+			this._progressMonitorInterval = undefined
+		}
 	}
 }
