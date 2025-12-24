@@ -668,8 +668,8 @@ importers:
         specifier: ^3.922.0
         version: 3.922.0
       '@google/genai':
-        specifier: ^1.29.1
-        version: 1.29.1(@modelcontextprotocol/sdk@1.12.0)
+        specifier: ^1.30.0
+        version: 1.34.0(@modelcontextprotocol/sdk@1.12.0)
       '@lmstudio/sdk':
         specifier: ^1.1.1
         version: 1.2.0
@@ -1973,11 +1973,11 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@google/genai@1.29.1':
-    resolution: {integrity: sha512-Buywpq0A6xf9cOdhiWCi5KUiDBbZkjCH5xbl+xxNQRItoYQgd31p0OKyn5cUnT0YNzC/pAmszqXoOc7kncqfFQ==}
+  '@google/genai@1.34.0':
+    resolution: {integrity: sha512-vu53UMPvjmb7PGzlYu6Tzxso8Dfhn+a7eQFaS2uNemVtDZKwzSpJ5+ikqBbXplF7RGB1STcVDqCkPvquiwb2sw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
-      '@modelcontextprotocol/sdk': ^1.20.1
+      '@modelcontextprotocol/sdk': ^1.24.0
     peerDependenciesMeta:
       '@modelcontextprotocol/sdk':
         optional: true
@@ -11594,7 +11594,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@google/genai@1.29.1(@modelcontextprotocol/sdk@1.12.0)':
+  '@google/genai@1.34.0(@modelcontextprotocol/sdk@1.12.0)':
     dependencies:
       google-auth-library: 10.5.0
       ws: 8.18.3
@@ -11854,7 +11854,7 @@ snapshots:
 
   '@lmstudio/lms-isomorphic@0.4.5':
     dependencies:
-      ws: 8.18.2
+      ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -18954,7 +18954,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       devtools-protocol: 0.0.1452169
       typed-query-selector: 2.12.0
-      ws: 8.18.2
+      ws: 8.18.3
     transitivePeerDependencies:
       - bare-buffer
       - bufferutil
