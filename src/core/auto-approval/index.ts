@@ -115,7 +115,9 @@ export async function checkAutoApproval({
 			return { decision: "ask" }
 		}
 
-		if (state.alwaysAllowExecute === true) {
+		// Only auto-approve commands if both autoApprovalEnabled AND alwaysAllowExecute are true
+		// This prevents commands from being executed without user consent when auto-approval is disabled
+		if (state.autoApprovalEnabled === true && state.alwaysAllowExecute === true) {
 			const decision = getCommandDecision(text, state.allowedCommands || [], state.deniedCommands || [])
 
 			if (decision === "auto_approve") {
@@ -126,6 +128,9 @@ export async function checkAutoApproval({
 				return { decision: "ask" }
 			}
 		}
+
+		// If auto-approval is disabled or alwaysAllowExecute is false, always ask the user
+		return { decision: "ask" }
 	}
 
 	if (ask === "tool") {
