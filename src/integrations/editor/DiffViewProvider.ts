@@ -207,12 +207,49 @@ export class DiffViewProvider {
 		const updatedDocument = this.activeDiffEditor.document
 		const editedContent = updatedDocument.getText()
 
+		// Capture the cursor position (selection) and visible ranges before closing the diff view
+		const selection = this.activeDiffEditor.selection
+		const visibleRanges = this.activeDiffEditor.visibleRanges
+
 		if (updatedDocument.isDirty) {
 			await updatedDocument.save()
 		}
 
-		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
+		// Close diff views first to avoid interference with the text editor
 		await this.closeAllDiffViews()
+
+		// Show the text document
+		const editor = await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+			preview: false,
+			preserveFocus: true,
+		})
+
+		// Add a small delay to ensure the editor is fully initialized before restoring scroll position
+		await new Promise((resolve) => setTimeout(resolve, 50))
+
+		// Restore the cursor position and scroll position from the diff view
+		// Create new Position/Selection objects instead of direct assignment to ensure proper transfer
+		if (selection) {
+			editor.selection = new vscode.Selection(
+				new vscode.Position(selection.anchor.line, selection.anchor.character),
+				new vscode.Position(selection.active.line, selection.active.character),
+			)
+		}
+		// Then reveal the range to ensure it's visible
+		if (selection && !selection.isEmpty) {
+			// If there's an actual selection, reveal it
+			editor.revealRange(selection, vscode.TextEditorRevealType.InCenter)
+		} else if (selection) {
+			// If just a cursor position, reveal that position
+			editor.revealRange(
+				new vscode.Range(selection.active, selection.active),
+				vscode.TextEditorRevealType.InCenter,
+			)
+		} else if (visibleRanges && visibleRanges.length > 0) {
+			// Fallback to visible ranges if no selection
+			const midPoint = Math.floor((visibleRanges[0].start.line + visibleRanges[0].end.line) / 2)
+			editor.revealRange(new vscode.Range(midPoint, 0, midPoint, 0), vscode.TextEditorRevealType.InCenter)
+		}
 
 		// Getting diagnostics before and after the file edit is a better approach than
 		// automatically tracking problems in real-time. This method ensures we only
@@ -406,6 +443,10 @@ export class DiffViewProvider {
 		const updatedDocument = this.activeDiffEditor.document
 		const absolutePath = path.resolve(this.cwd, this.relPath)
 
+		// Capture the cursor position (selection) and visible ranges before closing the diff view
+		const selection = this.activeDiffEditor.selection
+		const visibleRanges = this.activeDiffEditor.visibleRanges
+
 		if (!fileExists) {
 			if (updatedDocument.isDirty) {
 				await updatedDocument.save()
@@ -435,14 +476,43 @@ export class DiffViewProvider {
 			await vscode.workspace.applyEdit(edit)
 			await updatedDocument.save()
 
+			// Close diff views first to avoid interference with the text editor
+			await this.closeAllDiffViews()
+
 			if (this.documentWasOpen) {
-				await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
+				// Show the text document
+				const editor = await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), {
 					preview: false,
 					preserveFocus: true,
 				})
-			}
 
-			await this.closeAllDiffViews()
+				// Add a small delay to ensure the editor is fully initialized before restoring scroll position
+				await new Promise((resolve) => setTimeout(resolve, 50))
+
+				// Restore the cursor position and scroll position from the diff view
+				// Create new Position/Selection objects instead of direct assignment to ensure proper transfer
+				if (selection) {
+					editor.selection = new vscode.Selection(
+						new vscode.Position(selection.anchor.line, selection.anchor.character),
+						new vscode.Position(selection.active.line, selection.active.character),
+					)
+				}
+				// Then reveal the range to ensure it's visible
+				if (selection && !selection.isEmpty) {
+					// If there's an actual selection, reveal it
+					editor.revealRange(selection, vscode.TextEditorRevealType.InCenter)
+				} else if (selection) {
+					// If just a cursor position, reveal that position
+					editor.revealRange(
+						new vscode.Range(selection.active, selection.active),
+						vscode.TextEditorRevealType.InCenter,
+					)
+				} else if (visibleRanges && visibleRanges.length > 0) {
+					// Fallback to visible ranges if no selection
+					const midPoint = Math.floor((visibleRanges[0].start.line + visibleRanges[0].end.line) / 2)
+					editor.revealRange(new vscode.Range(midPoint, 0, midPoint, 0), vscode.TextEditorRevealType.InCenter)
+				}
+			}
 		}
 
 		// Edit is done.
