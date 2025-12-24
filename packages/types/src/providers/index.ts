@@ -19,6 +19,7 @@ export * from "./moonshot.js"
 export * from "./ollama.js"
 export * from "./openai.js"
 export * from "./openrouter.js"
+export * from "./poe.js"
 export * from "./qwen-code.js"
 export * from "./requesty.js"
 export * from "./roo.js"
@@ -49,6 +50,7 @@ import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
 import { openRouterDefaultModelId } from "./openrouter.js"
+import { poeDefaultModelId } from "./poe.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { rooDefaultModelId } from "./roo.js"
@@ -141,6 +143,8 @@ export function getProviderDefaultModelId(
 			return qwenCodeDefaultModelId
 		case "vercel-ai-gateway":
 			return vercelAiGatewayDefaultModelId
+		case "poe":
+			return poeDefaultModelId
 		case "anthropic":
 		case "gemini-cli":
 		case "human-relay":
