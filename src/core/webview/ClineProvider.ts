@@ -1145,7 +1145,8 @@ export class ClineProvider
 		const openRouterBaseUrl = apiConfiguration.openRouterBaseUrl || "https://openrouter.ai"
 		// Extract the domain for CSP
 		const openRouterDomain = openRouterBaseUrl.match(/^(https?:\/\/[^\/]+)/)?.[1] || "https://openrouter.ai"
-
+		// Determine platform information
+		const platform = isJetbrainsPlatform() ? "jetbrains" : ""
 		const stylesUri = getUri(webview, this.contextProxy.extensionUri, [
 			"webview-ui",
 			"build",
@@ -1207,7 +1208,7 @@ export class ClineProvider
 					</script>
 					<title>CoStrict</title>
 				</head>
-				<body>
+				<body data-platform="${platform}">
 					<div id="root"></div>
 					${reactRefresh}
 					<script type="module" src="${scriptUri}"></script>
@@ -1268,7 +1269,8 @@ export class ClineProvider
 		const openRouterBaseUrl = apiConfiguration.openRouterBaseUrl || "https://openrouter.ai"
 		// Extract the domain for CSP
 		const openRouterDomain = openRouterBaseUrl.match(/^(https?:\/\/[^\/]+)/)?.[1] || "https://openrouter.ai"
-
+		// Determine platform information
+		const platform = isJetbrainsPlatform() ? "jetbrains" : ""
 		// Tip: Install the es6-string-html VS Code extension to enable code highlighting below
 		return /*html*/ `
         <!DOCTYPE html>
@@ -1292,7 +1294,7 @@ export class ClineProvider
 			</script>
             <title>CoStrict</title>
           </head>
-          <body>
+          <body data-platform="${platform}">
             <noscript>You need to enable JavaScript to run this app.</noscript>
             <div id="root"></div>
             <script nonce="${nonce}" type="module" src="${scriptUri}"></script>
@@ -2133,6 +2135,8 @@ export class ClineProvider
 			cloudUserInfo,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			// cloudOrganizations,
+			// cloudOrganizations,
+			cloudAuthSkipModel: this.context.globalState.get<boolean>("roo-auth-skip-model") ?? false,
 			sharingEnabled: sharingEnabled ?? false,
 			publicSharingEnabled: publicSharingEnabled ?? false,
 			organizationAllowList,

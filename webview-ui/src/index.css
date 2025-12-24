@@ -25,10 +25,11 @@
 @theme {
 	--font-display: var(--vscode-font-family);
 
-	--text-xs: 12px;
-	--text-sm: 14px;
-	--text-base: 16px;
-	--text-lg: calc(16px * 1.1);
+	/* 默认字体大小 */
+	--text-xs: calc(var(--vscode-font-size) * 0.85);
+	--text-sm: calc(var(--vscode-font-size) * 0.9);
+	--text-base: var(--vscode-font-size);
+	--text-lg: calc(var(--vscode-font-size) * 1.1);
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -180,6 +181,14 @@
 
 	body {
 		--vscode-input-border: var(--border);
+	}
+
+	/* JetBrains 平台 - 增大字体以适应 JetBrains 界面 */
+	[data-platform="jetbrains"] {
+		--text-xs: calc(var(--vscode-font-size) * 0.95);
+		--text-sm: calc(var(--vscode-font-size) * 1);
+		--text-base: calc(var(--vscode-font-size) * 1.15);
+		--text-lg: calc(var(--vscode-font-size) * 1.3);
 	}
 }
 
@@ -519,4 +528,30 @@ input[cmdk-input]:focus {
 }
 .diff-content-context {
 	background-color: color-mix(in srgb, var(--vscode-editorGroup-border) 100%, transparent);
+}
+
+@keyframes ground-slide {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(-30px);
+	}
+}
+
+.animate-ground-slide {
+	animation: ground-slide 1s linear infinite;
+}
+
+@keyframes sun {
+	0% {
+		transform: translateX(200px);
+	}
+	100% {
+		transform: translateX(-200px);
+	}
+}
+
+.animate-sun {
+	animation: sun 30s linear infinite;
 }

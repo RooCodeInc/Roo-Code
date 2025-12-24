@@ -519,6 +519,11 @@ const ApiOptions = ({
 				options.unshift(rooOption)
 			}
 		} else {
+			// Filter out roo from the welcome view
+			const filteredOptions = options.filter((opt) => opt.value !== "roo")
+			options.length = 0
+			options.push(...filteredOptions)
+
 			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
 			const zgsmIndex = options.findIndex((opt) => opt.value === "zgsm")
 			if (openRouterIndex > 0) {

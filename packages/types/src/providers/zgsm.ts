@@ -8,7 +8,7 @@ export const zgsmModels = {
 		contextWindow: 128_000,
 		maxTokensKey: undefined,
 		supportsImages: false,
-		supportsNativeTools: true,
+		supportsNativeTools: undefined,
 		supportsComputerUse: false,
 		supportsPromptCache: true,
 		supportsReasoningBudget: false,

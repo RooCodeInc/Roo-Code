@@ -7,6 +7,7 @@ import {
 	azureOpenAiDefaultApiVersion,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
+	NATIVE_TOOL_DEFAULTS,
 	zgsmDefaultModelId,
 	zgsmModels,
 } from "@roo-code/types"
@@ -332,7 +333,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				: { role: "system" as const, content: systemPrompt }
 
-			convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+			convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })]
 		}
 
 		// Apply cache control logic
@@ -427,7 +428,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 				: isLegacyFormat
 					? [systemMessage, ...convertToSimpleMessages(messages)]
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
+					: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })],
 			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			...(metadata?.toolProtocol === "native" && {
@@ -605,7 +606,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const id = this.options.zgsmModelId ?? zgsmDefaultModelId
 		const defaultInfo = this.modelInfo
 		const info = this.options.useZgsmCustomConfig
-			? (this.options.zgsmAiCustomModelInfo ?? defaultInfo)
+			? {
+				...NATIVE_TOOL_DEFAULTS,
+				...(this.options.zgsmAiCustomModelInfo ?? defaultInfo)
+			}
 			: defaultInfo
 		const params = getModelParams({ format: "zgsm", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
@@ -678,7 +682,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -716,7 +720,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,

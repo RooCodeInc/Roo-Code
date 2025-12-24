@@ -6,6 +6,7 @@ import {
 	type ModelInfo,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
+	NATIVE_TOOL_DEFAULTS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	OPENAI_AZURE_AI_INFERENCE_PATH,
 } from "@roo-code/types"
@@ -126,7 +127,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -234,7 +235,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: enabledLegacyFormat
 						? [systemMessage, ...convertToSimpleMessages(messages)]
-						: [systemMessage, ...convertToOpenAiMessages(messages)],
+						: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 				...(metadata?.toolProtocol === "native" && {
@@ -291,7 +292,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
-		const info = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
+		// Ensure OpenAI-compatible models default to supporting native tool calling.
+		// This is required for [`Task.attemptApiRequest()`](src/core/task/Task.ts:3817) to
+		// include tool definitions in the request.
+		const info: ModelInfo = {
+			...NATIVE_TOOL_DEFAULTS,
+			...(this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults),
+		}
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }
 	}
@@ -353,7 +360,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -390,7 +397,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,

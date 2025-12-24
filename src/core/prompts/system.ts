@@ -166,9 +166,9 @@ async function generatePrompt(data: {
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(effectiveProtocol)}${toolsCatalog}
+${getSharedToolUseSection(effectiveProtocol, experiments)}${toolsCatalog}
 
-${getToolUseGuidelinesSection(effectiveProtocol, parallelToolCallsEnabled)}
+${getToolUseGuidelinesSection(effectiveProtocol, experiments)}
 
 ${mcpServersSection}
 

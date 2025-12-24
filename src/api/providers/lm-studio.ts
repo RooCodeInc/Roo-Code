@@ -44,7 +44,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 	): ApiStream {
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
 		]
 
 		// LM Studio always supports native tools (https://lmstudio.ai/docs/developer/core/tools)
