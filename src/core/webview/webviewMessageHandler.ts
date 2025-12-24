@@ -909,6 +909,23 @@ export const webviewMessageHandler = async (
 				if (result.status === "fulfilled") {
 					routerModels[routerName] = result.value.models
 
+					// For OpenRouter: preserve the currently selected model if it's not in the cache
+					// This prevents newer models from being marked as invalid after cache refresh
+					if (routerName === "openrouter" && apiConfiguration.openRouterModelId) {
+						const selectedModelId = apiConfiguration.openRouterModelId
+						// Only add if not already in the models list
+						if (!routerModels[routerName][selectedModelId]) {
+							// Create a minimal model info for the selected model
+							// This allows users to continue using newer models that aren't in the API response yet
+							routerModels[routerName][selectedModelId] = {
+								maxTokens: 128000, // Default max tokens
+								contextWindow: 128000, // Default context window
+								supportsPromptCache: false,
+								description: `Model ${selectedModelId} (preserved from configuration)`,
+							}
+						}
+					}
+
 					// Ollama and LM Studio settings pages still need these events. They are not fetched here.
 				} else {
 					// Handle rejection: Post a specific error message for this provider.
