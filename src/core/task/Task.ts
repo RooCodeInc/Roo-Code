@@ -3205,8 +3205,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Build the assistant message content array
 					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
 
-					// Add text content if present
-					if (assistantMessage) {
+					// For native protocol, check if we already have text blocks in assistantMessageContent
+					// to avoid duplication. For XML protocol, use the accumulated assistantMessage.
+					const hasTextBlocks = this.assistantMessageContent.some((block) => block.type === "text")
+
+					if (!shouldUseXmlParser && hasTextBlocks) {
+						// Native protocol with text blocks - use the text blocks from assistantMessageContent
+						const textBlocks = this.assistantMessageContent.filter((block) => block.type === "text")
+						for (const block of textBlocks) {
+							if (block.type === "text" && block.content) {
+								assistantContent.push({
+									type: "text" as const,
+									text: block.content,
+								})
+							}
+						}
+					} else if (assistantMessage) {
+						// XML protocol or native protocol without text blocks - use accumulated assistantMessage
 						assistantContent.push({
 							type: "text" as const,
 							text: assistantMessage,
