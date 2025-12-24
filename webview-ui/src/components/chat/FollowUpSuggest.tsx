@@ -135,7 +135,7 @@ export const FollowUpSuggest = ({
 							</p>
 						)}
 						{suggestion.mode && (
-							<div className="absolute bottom-0 right-0 text-[10px] bg-vscode-badge-background text-vscode-badge-foreground px-1 py-0.5 border border-vscode-badge-background flex items-center gap-0.5">
+							<div className="absolute bottom-0 right-0 text-[10px] text-vscode-badge-foreground pl-1 pr-2.5 pt-0.5 pb-1.5 flex items-center gap-0.5 bg-transparent rounded-xl">
 								<span className="codicon codicon-arrow-right" style={{ fontSize: "8px" }} />
 								{suggestion.mode}
 							</div>
