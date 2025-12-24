@@ -662,6 +662,15 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 						// Call saveChanges to update the DiffViewProvider properties
 						await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 					}
+
+					// Send final tool message with diff stats to update the UI
+					const finalMessage = JSON.stringify({
+						...sharedMessageProps,
+						diff: diffContents,
+						content: unifiedPatch,
+						diffStats: computeDiffStats(unifiedPatch) || undefined,
+					} satisfies ClineSayTool)
+					await cline.ask("tool", finalMessage, false).catch(() => {})
 				} else {
 					// Batch operations - already approved above
 					if (isPreventFocusDisruptionEnabled) {
@@ -685,6 +694,18 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 						// Call saveChanges to update the DiffViewProvider properties
 						await cline.diffViewProvider.saveChanges(diagnosticsEnabled, writeDelayMs)
 					}
+
+					// Send final tool message with diff stats for batch operations
+					const diffContents = diffItems.map((item) => item.content).join("\n\n")
+					const unifiedPatchRaw = formatResponse.createPrettyPatch(relPath, beforeContent!, originalContent!)
+					const unifiedPatch = sanitizeUnifiedDiff(unifiedPatchRaw)
+					const finalMessage = JSON.stringify({
+						...sharedMessageProps,
+						diff: diffContents,
+						content: unifiedPatch,
+						diffStats: computeDiffStats(unifiedPatch) || undefined,
+					} satisfies ClineSayTool)
+					await cline.ask("tool", finalMessage, false).catch(() => {})
 				}
 
 				// Track file edit operation
