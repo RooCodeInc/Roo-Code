@@ -192,8 +192,13 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				activeToolCallIds.clear()
 			}
 
+			// Check for usage data in the chunk
+			// Open WebUI and other proxies might include usage data differently
 			if (chunk.usage) {
 				lastUsage = chunk.usage
+			} else if ((chunk as any).usage_metadata) {
+				// Some proxies use usage_metadata instead of usage
+				lastUsage = (chunk as any).usage_metadata
 			}
 		}
 
@@ -208,14 +213,33 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	protected processUsageMetrics(usage: any, modelInfo?: any): ApiStreamUsageChunk {
-		const inputTokens = usage?.prompt_tokens || 0
-		const outputTokens = usage?.completion_tokens || 0
-		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens || 0
-		const cacheReadTokens = usage?.prompt_tokens_details?.cached_tokens || 0
+		// Try different field names that various OpenAI-compatible proxies might use
+		const inputTokens = usage?.prompt_tokens || usage?.input_tokens || usage?.promptTokens || 0
+		const outputTokens = usage?.completion_tokens || usage?.output_tokens || usage?.completionTokens || 0
+
+		// Cache tokens might be in different locations
+		const cacheWriteTokens =
+			usage?.prompt_tokens_details?.cache_write_tokens ||
+			usage?.prompt_tokens_details?.cache_creation_input_tokens ||
+			usage?.cache_creation_input_tokens ||
+			0
+		const cacheReadTokens =
+			usage?.prompt_tokens_details?.cached_tokens ||
+			usage?.prompt_tokens_details?.cache_read_input_tokens ||
+			usage?.cache_read_input_tokens ||
+			0
 
 		const { totalCost } = modelInfo
 			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
 			: { totalCost: 0 }
+
+		// Log for debugging Open WebUI integration
+		if (usage && inputTokens === 0 && outputTokens === 0 && usage.total_tokens > 0) {
+			console.debug(
+				`[BaseOpenAiCompatibleProvider] Usage data present but tokens not extracted correctly:`,
+				usage,
+			)
+		}
 
 		return {
 			type: "usage",
