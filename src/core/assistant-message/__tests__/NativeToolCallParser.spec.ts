@@ -7,6 +7,26 @@ describe("NativeToolCallParser", () => {
 	})
 
 	describe("parseToolCall", () => {
+		it("should resolve apply_patch to edit_file and preserve originalName", () => {
+			const toolCall = {
+				id: "toolu_apply_patch_123",
+				name: "apply_patch" as any,
+				arguments: JSON.stringify({
+					patch: "*** Begin Patch\n*** End Patch",
+				}),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.name).toBe("edit_file")
+				expect(result.originalName).toBe("apply_patch")
+				expect(result.nativeArgs).toEqual({ patch: "*** Begin Patch\n*** End Patch" })
+			}
+		})
+
 		describe("read_file tool", () => {
 			it("should handle line_ranges as tuples (new format)", () => {
 				const toolCall = {

@@ -8,22 +8,30 @@ import type { McpHub } from "../../../services/mcp/McpHub"
 import { isToolAllowedForMode } from "../../../core/tools/validateToolUse"
 
 /**
- * Mapping from edit tool variant to internal tool name.
- * These are the tools that will be selected based on modelInfo.editToolVariant.
+ * Central edit tool configuration.
+ *
+ * `toolName` is the internal native tool name.
+ * `displayName` is the name shown to (and called by) the model.
+ *
+ * By default, edit tool variants are presented as "edit_file".
+ * The codex variant is presented as "apply_patch" so:
+ * - the model calls `apply_patch`
+ * - the tool is stored in API conversation history as `apply_patch`
+ * - execution is still routed through the canonical `edit_file` tool via aliases
  */
-const EDIT_TOOL_VARIANT_MAP: Record<EditToolVariant, string> = {
-	roo: "edit_file_roo",
-	anthropic: "edit_file_anthropic",
-	grok: "edit_file_grok",
-	gemini: "edit_file_gemini",
-	codex: "edit_file_codex",
+const EDIT_TOOL_VARIANTS: Record<EditToolVariant, { toolName: string; displayName: string }> = {
+	roo: { toolName: "edit_file_roo", displayName: "edit_file" },
+	anthropic: { toolName: "edit_file_anthropic", displayName: "edit_file" },
+	grok: { toolName: "edit_file_grok", displayName: "edit_file" },
+	gemini: { toolName: "edit_file_gemini", displayName: "edit_file" },
+	codex: { toolName: "edit_file_codex", displayName: "apply_patch" },
 }
 
 /**
  * All edit tool variant names that should be filtered.
- * Only one of these (based on editToolVariant) will be included and renamed to "edit_file".
+ * Only one of these (based on editToolVariant) will be included and renamed to the configured display name.
  */
-const ALL_EDIT_TOOL_VARIANTS = new Set(Object.values(EDIT_TOOL_VARIANT_MAP))
+const ALL_EDIT_TOOL_VARIANTS = new Set(Object.values(EDIT_TOOL_VARIANTS).map((variant) => variant.toolName))
 
 /**
  * Reverse lookup map - maps alias name to canonical tool name.
@@ -326,7 +334,8 @@ export function filterNativeToolsForMode(
 
 	// Determine which edit tool variant to use (default: "roo")
 	const editToolVariant: EditToolVariant = modelInfo?.editToolVariant ?? "roo"
-	const selectedEditToolName = EDIT_TOOL_VARIANT_MAP[editToolVariant]
+	const selectedEditToolName = EDIT_TOOL_VARIANTS[editToolVariant].toolName
+	const editToolDisplayName = EDIT_TOOL_VARIANTS[editToolVariant].displayName
 
 	// Check if diffs are disabled - if so, skip edit tool entirely
 	const diffEnabled = settings?.diffEnabled !== false
@@ -358,8 +367,9 @@ export function filterNativeToolsForMode(
 				// 3. Mode has "edit" group
 				// 4. edit_file is not excluded by model config
 				if (toolName === selectedEditToolName && diffEnabled && modeHasEditGroup && !isEditFileExcluded) {
-					// Rename the selected variant to "edit_file" so LLM always sees that name
-					filteredTools.push(getOrCreateRenamedTool(tool, "edit_file"))
+					// Rename the selected variant to the configured display name.
+					// The tool will still execute via the unified `edit_file` tool name through aliases.
+					filteredTools.push(getOrCreateRenamedTool(tool, editToolDisplayName))
 				}
 				continue
 			}

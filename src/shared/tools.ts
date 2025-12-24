@@ -339,12 +339,14 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
  * When a model calls a tool by its alias, the system resolves it to the canonical name for execution,
  * but preserves the alias in API conversation history for consistency.
  *
- * Note: Legacy edit tool aliases (apply_diff, search_and_replace, search_replace, apply_patch)
- * have been removed. Native protocol now uses editToolVariant to select the edit tool schema,
- * and all edit tools are presented to the LLM as "edit_file". XML protocol still uses apply_diff directly.
+ * Note: Legacy edit tool aliases (apply_diff, search_and_replace, search_replace)
+ * have been removed. Native protocol uses editToolVariant to select the edit tool schema.
+ * The codex variant can optionally be presented to the LLM as "apply_patch".
+ * XML protocol still uses apply_diff directly.
  */
 export const TOOL_ALIASES: Record<string, ToolName> = {
 	write_file: "write_to_file",
+	apply_patch: "edit_file",
 } as const
 
 export type DiffResult =
