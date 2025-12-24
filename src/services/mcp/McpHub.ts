@@ -78,7 +78,7 @@ const streamableHttpFieldsErrorMessage =
 const mixedFieldsErrorMessage =
 	"Cannot mix 'stdio' and ('sse' or 'streamable-http') fields. For 'stdio' use 'command', 'args', and 'env'. For 'sse'/'streamable-http' use 'url' and 'headers'"
 const missingFieldsErrorMessage =
-	"Server configuration must include either 'command' (for stdio) or 'url' (for sse/streamable-http) and a corresponding 'type' if 'url' is used."
+	"Server configuration must include either 'command' (for stdio) or 'url' (for sse/streamable-http). When 'url' is present without 'type', 'streamable-http' will be inferred."
 
 // Helper function to create a refined schema with better error messages
 const createServerTypeSchema = () => {
@@ -99,22 +99,7 @@ const createServerTypeSchema = () => {
 				type: "stdio" as const,
 			}))
 			.refine((data) => data.type === undefined || data.type === "stdio", { message: typeErrorMessage }),
-		// SSE config (has url field)
-		BaseConfigSchema.extend({
-			type: z.enum(["sse"]).optional(),
-			url: z.string().url("URL must be a valid URL format"),
-			headers: z.record(z.string()).optional(),
-			// Ensure no stdio fields are present
-			command: z.undefined().optional(),
-			args: z.undefined().optional(),
-			env: z.undefined().optional(),
-		})
-			.transform((data) => ({
-				...data,
-				type: "sse" as const,
-			}))
-			.refine((data) => data.type === undefined || data.type === "sse", { message: typeErrorMessage }),
-		// StreamableHTTP config (has url field)
+		// StreamableHTTP config (has url field, default for URL-based configs)
 		BaseConfigSchema.extend({
 			type: z.enum(["streamable-http"]).optional(),
 			url: z.string().url("URL must be a valid URL format"),
@@ -131,6 +116,16 @@ const createServerTypeSchema = () => {
 			.refine((data) => data.type === undefined || data.type === "streamable-http", {
 				message: typeErrorMessage,
 			}),
+		// SSE config (requires explicit type="sse")
+		BaseConfigSchema.extend({
+			type: z.enum(["sse"]),
+			url: z.string().url("URL must be a valid URL format"),
+			headers: z.record(z.string()).optional(),
+			// Ensure no stdio fields are present
+			command: z.undefined().optional(),
+			args: z.undefined().optional(),
+			env: z.undefined().optional(),
+		}).refine((data) => data.type === "sse", { message: typeErrorMessage }),
 	])
 }
 
@@ -211,9 +206,9 @@ export class McpHub {
 			config.type = "stdio"
 		}
 
-		// For url-based configs, type must be provided by the user
+		// For url-based configs, auto-infer type as 'streamable-http' if not provided
 		if (hasUrlFields && !config.type) {
-			throw new Error("Configuration with 'url' must explicitly specify 'type' as 'sse' or 'streamable-http'.")
+			config.type = "streamable-http"
 		}
 
 		// Validate type if provided
