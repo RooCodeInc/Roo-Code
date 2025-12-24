@@ -331,7 +331,7 @@ describe("searchAndReplaceTool", () => {
 
 			expect(mockTask.diffViewProvider.saveChanges).toHaveBeenCalled()
 			expect(mockTask.didEditFile).toBe(true)
-			expect(mockTask.recordToolUsage).toHaveBeenCalledWith("edit_file_anthropic")
+			// Tool usage metrics are recorded by presentAssistantMessage(), not in the tool itself
 		})
 
 		it("reverts changes when user rejects", async () => {
@@ -390,7 +390,7 @@ describe("searchAndReplaceTool", () => {
 
 			await executeSearchAndReplaceTool()
 
-			expect(mockHandleError).toHaveBeenCalledWith("search and replace", expect.any(Error))
+			expect(mockHandleError).toHaveBeenCalledWith("edit_file_anthropic", expect.any(Error))
 			expect(mockTask.diffViewProvider.reset).toHaveBeenCalled()
 		})
 	})
