@@ -20,6 +20,9 @@ export const scannerExtensions = allExtensions
  */
 export const fallbackExtensions = [
 	".vb", // Visual Basic .NET - no dedicated WASM parser
+	".mq4", // MetaQuotes Language 4 - no dedicated WASM parser
+	".mq5", // MetaQuotes Language 5 - no dedicated WASM parser
+	".mqh", // MetaQuotes Language Header - no dedicated WASM parser
 	".scala", // Scala - uses fallback chunking instead of Lua query workaround
 	".swift", // Swift - uses fallback chunking due to parser instability
 ]

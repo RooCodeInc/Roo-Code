@@ -77,6 +77,10 @@ const extensions = [
 	"mli",
 	// Lua
 	"lua",
+	// MQL (MetaQuotes Language)
+	"mq4",
+	"mq5",
+	"mqh",
 	// Scala
 	"scala",
 	// TOML

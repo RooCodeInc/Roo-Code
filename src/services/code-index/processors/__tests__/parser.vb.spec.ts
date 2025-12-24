@@ -234,12 +234,129 @@ End Namespace
 			expect(block.type).toBe("fallback_chunk")
 		})
 	})
+
+	it("should use fallback chunking for MQL files", async () => {
+		// Test with MQL4 file
+		const mql4Content = `//+------------------------------------------------------------------+
+//|                                                  ExpertAdvisor.mq4|
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2024"
+#property version   "1.00"
+#property strict
+
+// Input parameters
+input double LotSize = 0.01;
+input int StopLoss = 50;
+input int TakeProfit = 100;
+input int MagicNumber = 12345;
+
+// Global variables
+int ticket = 0;
+double lastPrice = 0;
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+	  Print("Expert Advisor initialized");
+	  lastPrice = Ask;
+	  return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+	  Print("Expert Advisor deinitialized");
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+	  double currentPrice = Ask;
+	  
+	  if(OrdersTotal() == 0)
+	  {
+	     // Open a buy order
+	     ticket = OrderSend(Symbol(), OP_BUY, LotSize, Ask, 3,
+	                       Ask - StopLoss * Point,
+	                       Ask + TakeProfit * Point,
+	                       "EA Trade", MagicNumber, 0, clrGreen);
+	     
+	     if(ticket < 0)
+	     {
+	        Print("Error opening order: ", GetLastError());
+	     }
+	  }
+	  
+	  lastPrice = currentPrice;
+}`
+
+		// Test .mq4 extension
+		const mq4Result = await parser.parseFile("expert.mq4", {
+			content: mql4Content,
+			fileHash: "test-hash-mq4",
+		})
+
+		expect(mq4Result.length).toBeGreaterThan(0)
+		mq4Result.forEach((block) => {
+			expect(block.type).toBe("fallback_chunk")
+		})
+
+		// Test .mq5 extension
+		const mq5Result = await parser.parseFile("expert.mq5", {
+			content: mql4Content,
+			fileHash: "test-hash-mq5",
+		})
+
+		expect(mq5Result.length).toBeGreaterThan(0)
+		mq5Result.forEach((block) => {
+			expect(block.type).toBe("fallback_chunk")
+		})
+
+		// Test .mqh extension (header file)
+		const mqhContent = `//+------------------------------------------------------------------+
+//|                                                       Common.mqh |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2024"
+#property version   "1.00"
+
+// Common functions and definitions
+#define MAX_ORDERS 10
+#define MIN_LOT_SIZE 0.01
+
+double CalculateLotSize(double riskPercent, double stopLoss)
+{
+	  double accountBalance = AccountBalance();
+	  double riskAmount = accountBalance * riskPercent / 100;
+	  double lotSize = riskAmount / (stopLoss * MarketInfo(Symbol(), MODE_TICKVALUE));
+	  
+	  return NormalizeDouble(lotSize, 2);
+}`
+
+		const mqhResult = await parser.parseFile("common.mqh", {
+			content: mqhContent,
+			fileHash: "test-hash-mqh",
+		})
+
+		expect(mqhResult.length).toBeGreaterThan(0)
+		mqhResult.forEach((block) => {
+			expect(block.type).toBe("fallback_chunk")
+		})
+	})
 })
 
 describe("Fallback Extensions Configuration", () => {
 	it("should correctly identify extensions that need fallback chunking", () => {
 		// Extensions that should use fallback
 		expect(shouldUseFallbackChunking(".vb")).toBe(true)
+		expect(shouldUseFallbackChunking(".mq4")).toBe(true)
+		expect(shouldUseFallbackChunking(".mq5")).toBe(true)
+		expect(shouldUseFallbackChunking(".mqh")).toBe(true)
 		expect(shouldUseFallbackChunking(".scala")).toBe(true)
 		expect(shouldUseFallbackChunking(".swift")).toBe(true)
 
@@ -256,6 +373,9 @@ describe("Fallback Extensions Configuration", () => {
 	it("should be case-insensitive", () => {
 		expect(shouldUseFallbackChunking(".VB")).toBe(true)
 		expect(shouldUseFallbackChunking(".Vb")).toBe(true)
+		expect(shouldUseFallbackChunking(".MQ4")).toBe(true)
+		expect(shouldUseFallbackChunking(".mQ5")).toBe(true)
+		expect(shouldUseFallbackChunking(".MQH")).toBe(true)
 		expect(shouldUseFallbackChunking(".SCALA")).toBe(true)
 		expect(shouldUseFallbackChunking(".Scala")).toBe(true)
 	})
