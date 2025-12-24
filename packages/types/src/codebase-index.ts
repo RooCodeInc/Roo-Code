@@ -20,7 +20,10 @@ export const CODEBASE_INDEX_DEFAULTS = {
 
 export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexEnabled: z.boolean().optional(),
+	codebaseIndexVectorStoreProvider: z.enum(["qdrant", "redis"]).optional(),
 	codebaseIndexQdrantUrl: z.string().optional(),
+	codebaseIndexRedisUrl: z.string().optional(),
+	codebaseIndexRedisDatabase: z.number().optional(),
 	codebaseIndexEmbedderProvider: z
 		.enum([
 			"openai",
@@ -78,6 +81,7 @@ export type CodebaseIndexModels = z.infer<typeof codebaseIndexModelsSchema>
 export const codebaseIndexProviderSchema = z.object({
 	codeIndexOpenAiKey: z.string().optional(),
 	codeIndexQdrantApiKey: z.string().optional(),
+	codebaseIndexRedisPassword: z.string().optional(),
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),
 	codebaseIndexOpenAiCompatibleApiKey: z.string().optional(),
 	codebaseIndexOpenAiCompatibleModelDimension: z.number().optional(),

@@ -30,6 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "连接 Qdrant 向量数据库失败。请确保 Qdrant 正在运行并可在 {{qdrantUrl}} 访问。错误：{{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "无法更新新模型的向量索引。请尝试清除索引并重新开始。详细信息：{{errorMessage}}"
 	},
 	"validation": {
@@ -60,6 +61,7 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "无法确定提供商 '{{provider}}' 的模型 '{{modelId}}' 的向量维度。请确保在 OpenAI 兼容提供商设置中正确设置了「嵌入维度」。",
 		"vectorDimensionNotDetermined": "无法确定提供商 '{{provider}}' 的模型 '{{modelId}}' 的向量维度。请检查模型配置文件或配置。",
 		"qdrantUrlMissing": "创建向量存储缺少 Qdrant URL",
+		"redisUrlMissing": "Redis URL missing for vector store creation",
 		"codeIndexingNotConfigured": "无法创建服务：代码索引未正确配置"
 	},
 	"orchestrator": {

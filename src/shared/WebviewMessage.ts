@@ -237,7 +237,10 @@ export interface WebviewMessage {
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean
+		codebaseIndexVectorStoreProvider?: "qdrant" | "redis"
 		codebaseIndexQdrantUrl: string
+		codebaseIndexRedisUrl?: string
+		codebaseIndexRedisDatabase?: number
 		codebaseIndexEmbedderProvider:
 			| "openai"
 			| "ollama"
@@ -260,6 +263,7 @@ export interface WebviewMessage {
 		// Secret settings
 		codeIndexOpenAiKey?: string
 		codeIndexQdrantApiKey?: string
+		codebaseIndexRedisPassword?: string
 		codebaseIndexOpenAiCompatibleApiKey?: string
 		codebaseIndexGeminiApiKey?: string
 		codebaseIndexMistralApiKey?: string

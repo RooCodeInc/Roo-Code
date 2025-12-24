@@ -12,7 +12,12 @@ export const DEFAULT_MAX_SEARCH_RESULTS = CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH
 
 /**File Watcher */
 export const QDRANT_CODE_BLOCK_NAMESPACE = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+export const REDIS_CODE_BLOCK_NAMESPACE = "e47bc10b-58cc-4372-a567-0e02b2c3d480"
 export const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024 // 1MB
+
+/**Redis Vector Store */
+export const DEFAULT_REDIS_URL = "redis://localhost:6379"
+export const DEFAULT_REDIS_DATABASE = 0
 
 /**Directory Scanner */
 export const MAX_LIST_FILES_LIMIT_CODE_INDEX = 50_000

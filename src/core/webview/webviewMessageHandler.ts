@@ -2440,7 +2440,10 @@ export const webviewMessageHandler = async (
 				const globalStateConfig = {
 					...currentConfig,
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
+					codebaseIndexVectorStoreProvider: settings.codebaseIndexVectorStoreProvider,
 					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
+					codebaseIndexRedisUrl: settings.codebaseIndexRedisUrl,
+					codebaseIndexRedisDatabase: settings.codebaseIndexRedisDatabase,
 					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
@@ -2462,6 +2465,12 @@ export const webviewMessageHandler = async (
 				}
 				if (settings.codeIndexQdrantApiKey !== undefined) {
 					await provider.contextProxy.storeSecret("codeIndexQdrantApiKey", settings.codeIndexQdrantApiKey)
+				}
+				if (settings.codebaseIndexRedisPassword !== undefined) {
+					await provider.contextProxy.storeSecret(
+						"codebaseIndexRedisPassword",
+						settings.codebaseIndexRedisPassword,
+					)
 				}
 				if (settings.codebaseIndexOpenAiCompatibleApiKey !== undefined) {
 					await provider.contextProxy.storeSecret(
@@ -2631,6 +2640,7 @@ export const webviewMessageHandler = async (
 				"codebaseIndexVercelAiGatewayApiKey",
 			))
 			const hasOpenRouterApiKey = !!(await provider.context.secrets.get("codebaseIndexOpenRouterApiKey"))
+			const hasRedisPassword = !!(await provider.context.secrets.get("codebaseIndexRedisPassword"))
 
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
@@ -2642,6 +2652,7 @@ export const webviewMessageHandler = async (
 					hasMistralApiKey,
 					hasVercelAiGatewayApiKey,
 					hasOpenRouterApiKey,
+					hasRedisPassword,
 				},
 			})
 			break

@@ -1,8 +1,13 @@
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
-import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import { CodeIndexConfig, PreviousConfigSnapshot, VectorStoreProvider } from "./interfaces/config"
+import {
+	DEFAULT_SEARCH_MIN_SCORE,
+	DEFAULT_MAX_SEARCH_RESULTS,
+	DEFAULT_REDIS_URL,
+	DEFAULT_REDIS_DATABASE,
+} from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -22,8 +27,12 @@ export class CodeIndexConfigManager {
 	private vercelAiGatewayOptions?: { apiKey: string }
 	private bedrockOptions?: { region: string; profile?: string }
 	private openRouterOptions?: { apiKey: string; specificProvider?: string }
+	private vectorStoreProvider: VectorStoreProvider = "qdrant"
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
+	private redisUrl?: string = DEFAULT_REDIS_URL
+	private redisPassword?: string
+	private redisDatabase?: number = DEFAULT_REDIS_DATABASE
 	private searchMinScore?: number
 	private searchMaxResults?: number
 
@@ -59,7 +68,10 @@ export class CodeIndexConfigManager {
 
 		const {
 			codebaseIndexEnabled,
+			codebaseIndexVectorStoreProvider,
 			codebaseIndexQdrantUrl,
+			codebaseIndexRedisUrl,
+			codebaseIndexRedisDatabase,
 			codebaseIndexEmbedderProvider,
 			codebaseIndexEmbedderBaseUrl,
 			codebaseIndexEmbedderModelId,
@@ -69,6 +81,7 @@ export class CodeIndexConfigManager {
 
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
+		const redisPassword = this.contextProxy?.getSecret("codebaseIndexRedisPassword") ?? ""
 		// Fix: Read OpenAI Compatible settings from the correct location within codebaseIndexConfig
 		const openAiCompatibleBaseUrl = codebaseIndexConfig.codebaseIndexOpenAiCompatibleBaseUrl ?? ""
 		const openAiCompatibleApiKey = this.contextProxy?.getSecret("codebaseIndexOpenAiCompatibleApiKey") ?? ""
@@ -82,8 +95,12 @@ export class CodeIndexConfigManager {
 
 		// Update instance variables with configuration
 		this.codebaseIndexEnabled = codebaseIndexEnabled ?? false
+		this.vectorStoreProvider = (codebaseIndexVectorStoreProvider as VectorStoreProvider) ?? "qdrant"
 		this.qdrantUrl = codebaseIndexQdrantUrl
 		this.qdrantApiKey = qdrantApiKey ?? ""
+		this.redisUrl = codebaseIndexRedisUrl ?? DEFAULT_REDIS_URL
+		this.redisPassword = redisPassword || undefined
+		this.redisDatabase = codebaseIndexRedisDatabase ?? DEFAULT_REDIS_DATABASE
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
 
@@ -192,8 +209,12 @@ export class CodeIndexConfigManager {
 			bedrockProfile: this.bedrockOptions?.profile ?? "",
 			openRouterApiKey: this.openRouterOptions?.apiKey ?? "",
 			openRouterSpecificProvider: this.openRouterOptions?.specificProvider ?? "",
+			vectorStoreProvider: this.vectorStoreProvider,
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
+			redisUrl: this.redisUrl ?? "",
+			redisPassword: this.redisPassword ?? "",
+			redisDatabase: this.redisDatabase ?? 0,
 		}
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
@@ -228,52 +249,57 @@ export class CodeIndexConfigManager {
 	}
 
 	/**
-	 * Checks if the service is properly configured based on the embedder type.
+	 * Checks if the service is properly configured based on the embedder type and vector store.
 	 */
 	public isConfigured(): boolean {
+		// First check vector store configuration
+		const vectorStoreConfigured = this.isVectorStoreConfigured()
+		if (!vectorStoreConfigured) {
+			return false
+		}
+
+		// Then check embedder configuration
 		if (this.embedderProvider === "openai") {
 			const openAiKey = this.openAiOptions?.openAiNativeApiKey
-			const qdrantUrl = this.qdrantUrl
-			return !!(openAiKey && qdrantUrl)
+			return !!openAiKey
 		} else if (this.embedderProvider === "ollama") {
 			// Ollama model ID has a default, so only base URL is strictly required for config
 			const ollamaBaseUrl = this.ollamaOptions?.ollamaBaseUrl
-			const qdrantUrl = this.qdrantUrl
-			return !!(ollamaBaseUrl && qdrantUrl)
+			return !!ollamaBaseUrl
 		} else if (this.embedderProvider === "openai-compatible") {
 			const baseUrl = this.openAiCompatibleOptions?.baseUrl
 			const apiKey = this.openAiCompatibleOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(baseUrl && apiKey && qdrantUrl)
-			return isConfigured
+			return !!(baseUrl && apiKey)
 		} else if (this.embedderProvider === "gemini") {
 			const apiKey = this.geminiOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!apiKey
 		} else if (this.embedderProvider === "mistral") {
 			const apiKey = this.mistralOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!apiKey
 		} else if (this.embedderProvider === "vercel-ai-gateway") {
 			const apiKey = this.vercelAiGatewayOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!apiKey
 		} else if (this.embedderProvider === "bedrock") {
 			// Only region is required for Bedrock (profile is optional)
 			const region = this.bedrockOptions?.region
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(region && qdrantUrl)
-			return isConfigured
+			return !!region
 		} else if (this.embedderProvider === "openrouter") {
 			const apiKey = this.openRouterOptions?.apiKey
-			const qdrantUrl = this.qdrantUrl
-			const isConfigured = !!(apiKey && qdrantUrl)
-			return isConfigured
+			return !!apiKey
 		}
 		return false // Should not happen if embedderProvider is always set correctly
+	}
+
+	/**
+	 * Checks if the vector store is properly configured.
+	 */
+	private isVectorStoreConfigured(): boolean {
+		if (this.vectorStoreProvider === "redis") {
+			// Redis requires URL (password is optional)
+			return !!this.redisUrl
+		}
+		// Default: Qdrant requires URL
+		return !!this.qdrantUrl
 	}
 
 	/**
@@ -311,8 +337,12 @@ export class CodeIndexConfigManager {
 		const prevBedrockProfile = prev?.bedrockProfile ?? ""
 		const prevOpenRouterApiKey = prev?.openRouterApiKey ?? ""
 		const prevOpenRouterSpecificProvider = prev?.openRouterSpecificProvider ?? ""
+		const prevVectorStoreProvider = prev?.vectorStoreProvider ?? "qdrant"
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
+		const prevRedisUrl = prev?.redisUrl ?? ""
+		const prevRedisPassword = prev?.redisPassword ?? ""
+		const prevRedisDatabase = prev?.redisDatabase ?? 0
 
 		// 1. Transition from disabled/unconfigured to enabled/configured
 		if ((!prevEnabled || !prevConfigured) && this.codebaseIndexEnabled && nowConfigured) {
@@ -353,8 +383,12 @@ export class CodeIndexConfigManager {
 		const currentBedrockProfile = this.bedrockOptions?.profile ?? ""
 		const currentOpenRouterApiKey = this.openRouterOptions?.apiKey ?? ""
 		const currentOpenRouterSpecificProvider = this.openRouterOptions?.specificProvider ?? ""
+		const currentVectorStoreProvider = this.vectorStoreProvider
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
+		const currentRedisUrl = this.redisUrl ?? ""
+		const currentRedisPassword = this.redisPassword ?? ""
+		const currentRedisDatabase = this.redisDatabase ?? 0
 
 		if (prevOpenAiKey !== currentOpenAiKey) {
 			return true
@@ -401,7 +435,21 @@ export class CodeIndexConfigManager {
 			return true
 		}
 
+		// Vector store provider change
+		if (prevVectorStoreProvider !== currentVectorStoreProvider) {
+			return true
+		}
+
 		if (prevQdrantUrl !== currentQdrantUrl || prevQdrantApiKey !== currentQdrantApiKey) {
+			return true
+		}
+
+		// Redis connection changes
+		if (
+			prevRedisUrl !== currentRedisUrl ||
+			prevRedisPassword !== currentRedisPassword ||
+			prevRedisDatabase !== currentRedisDatabase
+		) {
 			return true
 		}
 
@@ -456,8 +504,12 @@ export class CodeIndexConfigManager {
 			vercelAiGatewayOptions: this.vercelAiGatewayOptions,
 			bedrockOptions: this.bedrockOptions,
 			openRouterOptions: this.openRouterOptions,
+			vectorStoreProvider: this.vectorStoreProvider,
 			qdrantUrl: this.qdrantUrl,
 			qdrantApiKey: this.qdrantApiKey,
+			redisUrl: this.redisUrl,
+			redisPassword: this.redisPassword,
+			redisDatabase: this.redisDatabase,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
 		}
@@ -485,12 +537,30 @@ export class CodeIndexConfigManager {
 	}
 
 	/**
+	 * Gets the current vector store provider
+	 */
+	public get currentVectorStoreProvider(): VectorStoreProvider {
+		return this.vectorStoreProvider
+	}
+
+	/**
 	 * Gets the current Qdrant configuration
 	 */
 	public get qdrantConfig(): { url?: string; apiKey?: string } {
 		return {
 			url: this.qdrantUrl,
 			apiKey: this.qdrantApiKey,
+		}
+	}
+
+	/**
+	 * Gets the current Redis configuration
+	 */
+	public get redisConfig(): { url?: string; password?: string; database?: number } {
+		return {
+			url: this.redisUrl,
+			password: this.redisPassword,
+			database: this.redisDatabase,
 		}
 	}
 

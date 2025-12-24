@@ -30,6 +30,7 @@
 	},
 	"vectorStore": {
 		"qdrantConnectionFailed": "Qdrant वेक्टर डेटाबेस से कनेक्ट करने में विफल। कृपया सुनिश्चित करें कि Qdrant चल रहा है और {{qdrantUrl}} पर पहुंच योग्य है। त्रुटि: {{errorMessage}}",
+		"redisConnectionFailed": "Failed to connect to Redis vector database. Please ensure Redis Open Source is running and accessible at {{redisUrl}}. Error: {{errorMessage}}",
 		"vectorDimensionMismatch": "नए मॉडल के लिए वेक्टर इंडेक्स को अपडेट करने में विफल। कृपया इंडेक्स को साफ़ करने और फिर से शुरू करने का प्रयास करें। विवरण: {{errorMessage}}"
 	},
 	"validation": {
@@ -60,6 +61,7 @@
 		"vectorDimensionNotDeterminedOpenAiCompatible": "प्रदाता '{{provider}}' के साथ मॉडल '{{modelId}}' के लिए वेक्टर आयाम निर्धारित नहीं कर सका। कृपया सुनिश्चित करें कि OpenAI-संगत प्रदाता सेटिंग्स में 'एम्बेडिंग आयाम' सही तरीके से सेट है।",
 		"vectorDimensionNotDetermined": "प्रदाता '{{provider}}' के साथ मॉडल '{{modelId}}' के लिए वेक्टर आयाम निर्धारित नहीं कर सका। मॉडल प्रोफ़ाइल या कॉन्फ़िगरेशन की जांच करें।",
 		"qdrantUrlMissing": "वेक्टर स्टोर बनाने के लिए Qdrant URL गायब है",
+		"redisUrlMissing": "Redis URL missing for vector store creation",
 		"codeIndexingNotConfigured": "सेवाएं नहीं बना सकते: कोड इंडेक्सिंग ठीक से कॉन्फ़िगर नहीं है"
 	},
 	"orchestrator": {
