@@ -267,6 +267,48 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(await fs.readFile(testFile, "utf-8")).toBe("Changed tracked file")
 			})
 
+			it("preserves manually created files during rollback (fixes issue #9530)", async () => {
+				// This test simulates the exact scenario from the bug report:
+				// 1. Create a checkpoint
+				// 2. User manually creates a file outside of Roo Code
+				// 3. Rollback to the checkpoint
+				// 4. The manually created file should NOT be deleted
+
+				// Create initial checkpoint
+				await fs.writeFile(testFile, "Initial content")
+				const commit1 = await service.saveCheckpoint("Initial checkpoint")
+				expect(commit1?.commit).toBeTruthy()
+
+				// Make some changes and create another checkpoint
+				await fs.writeFile(testFile, "Modified by Roo Code")
+				const commit2 = await service.saveCheckpoint("Second checkpoint")
+				expect(commit2?.commit).toBeTruthy()
+
+				// Simulate user manually creating a file AFTER all checkpoints
+				// This file is never tracked by any checkpoint
+				const manuallyCreatedFile = path.join(service.workspaceDir, "manually-created.txt")
+				await fs.writeFile(manuallyCreatedFile, "I was created manually, not by Roo Code!")
+
+				// Now rollback to the first checkpoint
+				await service.restoreCheckpoint(commit1!.commit)
+
+				// The tracked file should be restored to its initial state
+				expect(await fs.readFile(testFile, "utf-8")).toBe("Initial content")
+
+				// IMPORTANT: The manually created file should still exist
+				// This is the fix for issue #9530 - manually created files should not be deleted
+				expect(await fs.readFile(manuallyCreatedFile, "utf-8")).toBe("I was created manually, not by Roo Code!")
+
+				// Rollback to the second checkpoint
+				await service.restoreCheckpoint(commit2!.commit)
+
+				// The tracked file should be at its second state
+				expect(await fs.readFile(testFile, "utf-8")).toBe("Modified by Roo Code")
+
+				// The manually created file should still persist
+				expect(await fs.readFile(manuallyCreatedFile, "utf-8")).toBe("I was created manually, not by Roo Code!")
+			})
+
 			it("handles file deletions correctly", async () => {
 				await fs.writeFile(testFile, "I am tracked!")
 				const untrackedFile = path.join(service.workspaceDir, "new.txt")

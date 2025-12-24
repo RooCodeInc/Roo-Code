@@ -342,7 +342,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			}
 
 			const start = Date.now()
-			await this.git.clean("f", ["-d", "-f"])
+			// Only reset tracked files to checkpoint state, preserve untracked files
 			await this.git.reset(["--hard", commitHash])
 
 			// Remove all checkpoints after the specified commitHash.
