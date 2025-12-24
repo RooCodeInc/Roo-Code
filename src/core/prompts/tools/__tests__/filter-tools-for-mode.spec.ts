@@ -11,7 +11,7 @@ import * as toolsModule from "../../../../shared/tools"
 // and replaced with the unified "edit_file" tool.
 
 describe("filterNativeToolsForMode", () => {
-	// Use edit_file_roo as the default edit tool variant in mock tools
+	// Include all edit tool variants to mirror the production native tools array.
 	const mockNativeTools: OpenAI.Chat.ChatCompletionTool[] = [
 		{
 			type: "function",
@@ -34,6 +34,38 @@ describe("filterNativeToolsForMode", () => {
 			function: {
 				name: "edit_file_roo",
 				description: "Edit file (Roo variant)",
+				parameters: {},
+			},
+		},
+		{
+			type: "function",
+			function: {
+				name: "edit_file_anthropic",
+				description: "Edit file (Anthropic variant)",
+				parameters: {},
+			},
+		},
+		{
+			type: "function",
+			function: {
+				name: "edit_file_grok",
+				description: "Edit file (Grok variant)",
+				parameters: {},
+			},
+		},
+		{
+			type: "function",
+			function: {
+				name: "edit_file_gemini",
+				description: "Edit file (Gemini variant)",
+				parameters: {},
+			},
+		},
+		{
+			type: "function",
+			function: {
+				name: "edit_file_codex",
+				description: "Edit file (Codex variant)",
 				parameters: {},
 			},
 		},
@@ -123,15 +155,39 @@ describe("filterNativeToolsForMode", () => {
 		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
 
 		// Should include all tools (code mode has all groups)
-		// Note: edit_file_roo gets renamed to edit_file
+		// Note: edit tool variants get renamed to a single display name.
+		// Default is "edit_file" (roo variant), but codex can be presented as "apply_patch".
 		expect(toolNames).toContain("read_file")
 		expect(toolNames).toContain("write_to_file")
-		expect(toolNames).toContain("edit_file") // Unified edit tool
+		expect(toolNames).toContain("edit_file") // Unified edit tool (default)
 		expect(toolNames).not.toContain("edit_file_roo") // Variant name should be renamed
 		expect(toolNames).toContain("execute_command")
 		expect(toolNames).toContain("browser_action")
 		expect(toolNames).toContain("ask_followup_question")
 		expect(toolNames).toContain("attempt_completion")
+	})
+
+	it("should present codex edit tool variant as apply_patch when editToolVariant is codex", () => {
+		const codeMode: ModeConfig = {
+			slug: "code",
+			name: "Code",
+			roleDefinition: "Test",
+			groups: ["read", "edit", "browser", "command", "mcp"] as const,
+		}
+
+		const filtered = filterNativeToolsForMode(mockNativeTools, "code", [codeMode], {}, undefined, {
+			modelInfo: {
+				contextWindow: 100000,
+				supportsPromptCache: false,
+				editToolVariant: "codex",
+			},
+		})
+
+		const toolNames = filtered.map((t) => ("function" in t ? t.function.name : ""))
+
+		expect(toolNames).toContain("apply_patch")
+		expect(toolNames).not.toContain("edit_file")
+		expect(toolNames).not.toContain("edit_file_codex")
 	})
 
 	it("should always include always-available tools regardless of mode groups", () => {
@@ -715,6 +771,38 @@ describe("filterMcpToolsForMode", () => {
 				function: {
 					name: "edit_file_roo",
 					description: "Edit file (Roo variant)",
+					parameters: {},
+				},
+			},
+			{
+				type: "function",
+				function: {
+					name: "edit_file_anthropic",
+					description: "Edit file (Anthropic variant)",
+					parameters: {},
+				},
+			},
+			{
+				type: "function",
+				function: {
+					name: "edit_file_grok",
+					description: "Edit file (Grok variant)",
+					parameters: {},
+				},
+			},
+			{
+				type: "function",
+				function: {
+					name: "edit_file_gemini",
+					description: "Edit file (Gemini variant)",
+					parameters: {},
+				},
+			},
+			{
+				type: "function",
+				function: {
+					name: "edit_file_codex",
+					description: "Edit file (Codex variant)",
 					parameters: {},
 				},
 			},
