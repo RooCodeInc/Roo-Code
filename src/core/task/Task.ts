@@ -342,6 +342,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
 	assistantMessageParser?: AssistantMessageParser
+	// XML fallback parser for native protocol - detects and parses XML tool calls in text when model outputs them
+	private xmlFallbackParser?: AssistantMessageParser
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
 
 	// Native tool call streaming state (track which index each tool is at)
@@ -2535,6 +2537,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 				const shouldUseXmlParser = streamProtocol === "xml"
 
+				// Initialize XML fallback parser for native protocol
+				// This allows detecting XML tool calls in text when models output them despite native tools being enabled
+				if (!shouldUseXmlParser) {
+					this.xmlFallbackParser = new AssistantMessageParser()
+				} else {
+					this.xmlFallbackParser = undefined
+				}
+
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
 				// limit error, which gets thrown on the first chunk).
@@ -2787,6 +2797,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											partial: true,
 										})
 										this.userMessageContentReady = false
+									}
+
+									// Also feed text to XML fallback parser to detect XML tool calls
+									// in case the model outputs them despite native tools being enabled
+									if (this.xmlFallbackParser) {
+										this.xmlFallbackParser.processChunk(chunk.text)
 									}
 
 									// Present content to user
@@ -3139,6 +3155,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const parsedBlocks = this.assistantMessageParser.getContentBlocks()
 					// For XML protocol: Use only parsed blocks (includes both text and tool_use parsed from XML)
 					this.assistantMessageContent = parsedBlocks
+				}
+
+				// XML Fallback for Native Protocol:
+				// If we're in native protocol mode but no native tool_call chunks were received,
+				// check if the XML fallback parser found any tool calls in the text stream.
+				// This handles models that output XML tool calls despite native tools being enabled.
+				if (!shouldUseXmlParser && this.xmlFallbackParser) {
+					this.xmlFallbackParser.finalizeContentBlocks()
+					const fallbackBlocks = this.xmlFallbackParser.getContentBlocks()
+
+					// Check if fallback parser found any tool uses
+					const fallbackHasToolUses = fallbackBlocks.some(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+
+					// Check if native protocol already found tool uses
+					const nativeHasToolUses = this.assistantMessageContent.some(
+						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					)
+
+					// If native protocol didn't find tools but XML fallback did, use the fallback results
+					if (!nativeHasToolUses && fallbackHasToolUses) {
+						console.log(
+							`[Task#${this.taskId}] XML fallback detected tool calls in native protocol text stream. Using fallback parser results.`,
+						)
+						this.assistantMessageContent = fallbackBlocks
+						// Mark that we have new content to process
+						this.userMessageContentReady = false
+						// Present the fallback tool calls
+						presentAssistantMessage(this)
+					}
+
+					// Reset the fallback parser for next request
+					this.xmlFallbackParser.reset()
+					this.xmlFallbackParser = undefined
 				}
 
 				// Present any partial blocks that were just completed
