@@ -279,6 +279,7 @@
 		"tooltipManage": "Zarządzaj ustawieniami automatycznego zatwierdzania",
 		"tooltipStatus": "Automatyczne zatwierdzanie włączone dla: {{toggles}}",
 		"title": "Automatyczne zatwierdzanie",
+		"helpTitle": "Auto-approve Options",
 		"toggle": "Przełącz automatyczne zatwierdzanie",
 		"all": "Wszystkie",
 		"none": "Żadne",
