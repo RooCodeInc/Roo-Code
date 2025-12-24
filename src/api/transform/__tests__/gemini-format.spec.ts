@@ -107,7 +107,7 @@ describe("convertAnthropicMessageToGemini", () => {
 		expect(() => convertAnthropicMessageToGemini(anthropicMessage)).toThrow("Unsupported image source type")
 	})
 
-	it("should convert a message with tool use", () => {
+	it("should convert a message with tool use without thoughtSignature when none exists", () => {
 		const anthropicMessage: Anthropic.Messages.MessageParam = {
 			role: "assistant",
 			content: [
@@ -133,7 +133,6 @@ describe("convertAnthropicMessageToGemini", () => {
 							name: "calculator",
 							args: { operation: "add", numbers: [2, 3] },
 						},
-						thoughtSignature: "skip_thought_signature_validator",
 					},
 				],
 			},
