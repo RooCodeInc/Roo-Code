@@ -18,7 +18,7 @@ export const xaiModels = {
 		cacheWritesPrice: 0.02,
 		cacheReadsPrice: 0.02,
 		description: "xAI's Grok Code Fast model with 256K context window",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-4-1-fast-reasoning": {
 		maxTokens: 65_536,
@@ -33,7 +33,7 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4.1 Fast model with 2M context window, optimized for high-performance agentic tool calling with reasoning",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-4-1-fast-non-reasoning": {
 		maxTokens: 65_536,
@@ -48,7 +48,7 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4.1 Fast model with 2M context window, optimized for high-performance agentic tool calling",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-4-fast-reasoning": {
 		maxTokens: 65_536,
@@ -63,7 +63,7 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4 Fast model with 2M context window, optimized for high-performance agentic tool calling with reasoning",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-4-fast-non-reasoning": {
 		maxTokens: 65_536,
@@ -78,7 +78,7 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4 Fast model with 2M context window, optimized for high-performance agentic tool calling",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-4-0709": {
 		maxTokens: 8192,
@@ -92,7 +92,7 @@ export const xaiModels = {
 		cacheWritesPrice: 0.75,
 		cacheReadsPrice: 0.75,
 		description: "xAI's Grok-4 model with 256K context window",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-3-mini": {
 		maxTokens: 8192,
@@ -108,7 +108,7 @@ export const xaiModels = {
 		description: "xAI's Grok-3 mini model with 128K context window",
 		supportsReasoningEffort: ["low", "high"],
 		reasoningEffort: "low",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 	"grok-3": {
 		maxTokens: 8192,
@@ -122,6 +122,6 @@ export const xaiModels = {
 		cacheWritesPrice: 0.75,
 		cacheReadsPrice: 0.75,
 		description: "xAI's Grok-3 model with 128K context window",
-		editToolVariant: "grok",
+		editToolVariant: "gemini",
 	},
 } as const satisfies Record<string, ModelInfo>

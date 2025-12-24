@@ -179,7 +179,7 @@ describe("editFileTool", () => {
 
 		const toolUse: ToolUse = {
 			type: "tool_use",
-			name: "edit_file",
+			name: "edit_file_gemini",
 			params: {
 				file_path: testFilePath,
 				old_string: testOldString,
@@ -193,7 +193,7 @@ describe("editFileTool", () => {
 			toolResult = result
 		})
 
-		await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+		await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file_gemini">, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -210,7 +210,7 @@ describe("editFileTool", () => {
 
 			expect(result).toBe("Missing param error")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file_gemini")
 		})
 
 		it("treats undefined new_string as empty string (deletion)", async () => {
@@ -268,7 +268,7 @@ describe("editFileTool", () => {
 			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file", "no_match")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file_gemini", "no_match")
 		})
 
 		it("returns error when occurrence count does not match expected_replacements", async () => {
@@ -280,7 +280,7 @@ describe("editFileTool", () => {
 			expect(result).toContain("Error:")
 			expect(result).toContain("Expected 1 occurrence(s) but found 3")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file", "occurrence_mismatch")
+			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file_gemini", "occurrence_mismatch")
 		})
 
 		it("succeeds when occurrence count matches expected_replacements", async () => {
@@ -380,9 +380,9 @@ describe("editFileTool", () => {
 		it("handles file read errors gracefully", async () => {
 			mockedFsReadFile.mockRejectedValueOnce(new Error("Read failed"))
 
-			const toolUse: ToolUse = {
+			const toolUse: ToolUse<"edit_file_gemini"> = {
 				type: "tool_use",
-				name: "edit_file",
+				name: "edit_file_gemini",
 				params: {
 					file_path: testFilePath,
 					old_string: testOldString,
@@ -396,7 +396,7 @@ describe("editFileTool", () => {
 				capturedResult = result
 			})
 
-			await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+			await editFileTool.handle(mockTask, toolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,
@@ -414,7 +414,7 @@ describe("editFileTool", () => {
 
 			await executeEditFileTool()
 
-			expect(mockHandleError).toHaveBeenCalledWith("edit_file", expect.any(Error))
+			expect(mockHandleError).toHaveBeenCalledWith("edit_file_gemini", expect.any(Error))
 			expect(mockTask.diffViewProvider.reset).toHaveBeenCalled()
 		})
 	})

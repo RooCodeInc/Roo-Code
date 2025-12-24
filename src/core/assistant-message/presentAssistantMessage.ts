@@ -944,7 +944,7 @@ export async function presentAssistantMessage(cline: Task) {
 							break
 						case "gemini":
 							// Route to Gemini variant (search/replace with expected_replacements)
-							await editFileGeminiTool.handle(cline, block as ToolUse<"edit_file">, {
+							await editFileGeminiTool.handle(cline, block as ToolUse<"edit_file_gemini">, {
 								askApproval,
 								handleError,
 								pushToolResult,
