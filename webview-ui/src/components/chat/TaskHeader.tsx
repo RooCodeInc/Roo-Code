@@ -16,6 +16,8 @@ import {
 	HardDriveUpload,
 	FoldVertical,
 	Globe,
+	Code,
+	Wrench,
 } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -203,6 +205,17 @@ const TaskHeader = ({
 						className="flex items-center justify-between text-sm text-muted-foreground/70"
 						onClick={(e) => e.stopPropagation()}>
 						<div className="flex items-center gap-2">
+							{currentTaskItem?.toolProtocol && (
+								<StandardTooltip
+									content={`${t("chat:task.toolProtocol")}: ${currentTaskItem.toolProtocol}`}>
+									{currentTaskItem.toolProtocol === "native" ? (
+										<Wrench className="size-3 shrink-0" />
+									) : (
+										<Code className="size-3 shrink-0" />
+									)}
+								</StandardTooltip>
+							)}
+							|
 							<Coins className="size-3 shrink-0" />
 							<StandardTooltip
 								content={
@@ -343,6 +356,19 @@ const TaskHeader = ({
 										</tr>
 									)}
 
+									{/* Tool Protocol display */}
+									{!!currentTaskItem?.toolProtocol && (
+										<tr>
+											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
+												{t("chat:task.toolProtocol")}
+											</th>
+											<td className="font-light align-top">
+												<span className="font-light align-top">
+													{currentTaskItem.toolProtocol}
+												</span>
+											</td>
+										</tr>
+									)}
 									<tr>
 										<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
 											{t("chat:task.tokens")}

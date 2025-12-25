@@ -10,6 +10,7 @@
 		"tokens": "Token 用量",
 		"cache": "缓存",
 		"apiCost": "API 费用",
+		"toolProtocol": "工具协议",
 		"size": "大小",
 		"contextWindow": "上下文长度",
 		"closeAndStart": "关闭任务并开始新任务",

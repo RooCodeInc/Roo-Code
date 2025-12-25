@@ -10,6 +10,7 @@
 		"tokens": "Tokens",
 		"cache": "Cache",
 		"apiCost": "API Cost",
+		"toolProtocol": "Tool Protocol",
 		"size": "Size",
 		"condenseContext": "Intelligently condense context",
 		"contextWindow": "Context Length",
