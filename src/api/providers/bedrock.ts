@@ -1052,6 +1052,15 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
+		// Check if 1M context is enabled for Claude Sonnet 4 / 4.5
+		// This must be applied here as well for prompt router responses that call getModelById
+		if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext) {
+			model.info = {
+				...model.info,
+				contextWindow: 1_000_000,
+			}
+		}
+
 		// Always allow user to override detected/guessed maxTokens and contextWindow
 		if (this.options.modelMaxTokens && this.options.modelMaxTokens > 0) {
 			model.info.maxTokens = this.options.modelMaxTokens
