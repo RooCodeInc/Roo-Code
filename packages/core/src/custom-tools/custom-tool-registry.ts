@@ -17,7 +17,7 @@ import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolPa
 
 import type { StoredCustomTool, LoadResult } from "./types.js"
 import { serializeCustomTool } from "./serialize.js"
-import { runEsbuild } from "./esbuild-runner.js"
+import { runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "./esbuild-runner.js"
 
 export interface RegistryOptions {
 	/** Directory for caching compiled TypeScript files. */
@@ -259,6 +259,11 @@ export class CustomToolRegistry {
 	/**
 	 * Dynamically import a TypeScript or JavaScript file.
 	 * TypeScript files are transpiled on-the-fly using esbuild.
+	 *
+	 * For TypeScript files, esbuild bundles the code with these considerations:
+	 * - Node.js built-in modules (fs, path, etc.) are kept external
+	 * - npm packages are bundled with a CommonJS shim for require() compatibility
+	 * - The tool's local node_modules is included in the resolution path
 	 */
 	private async import(filePath: string): Promise<Record<string, CustomToolDefinition>> {
 		const absolutePath = path.resolve(filePath)
@@ -289,7 +294,17 @@ export class CustomToolRegistry {
 			return import(`file://${tempFile}`)
 		}
 
+		// Get the tool's directory to include its node_modules in resolution path.
+		const toolDir = path.dirname(absolutePath)
+		const toolNodeModules = path.join(toolDir, "node_modules")
+
+		// Combine default nodePaths with tool-specific node_modules.
+		// Tool's node_modules takes priority (listed first).
+		const nodePaths = fs.existsSync(toolNodeModules) ? [toolNodeModules, ...this.nodePaths] : this.nodePaths
+
 		// Bundle the TypeScript file with dependencies using esbuild CLI.
+		// - Node.js built-ins are external (they can't be bundled and are always available)
+		// - npm packages are bundled with CommonJS require() shim for compatibility
 		await runEsbuild(
 			{
 				entryPoint: absolutePath,
@@ -300,13 +315,49 @@ export class CustomToolRegistry {
 				bundle: true,
 				sourcemap: "inline",
 				packages: "bundle",
-				nodePaths: this.nodePaths,
+				nodePaths,
+				external: NODE_BUILTIN_MODULES,
+				banner: COMMONJS_REQUIRE_BANNER,
 			},
 			this.extensionPath,
 		)
 
+		// Copy .env files from the tool's source directory to the cache directory.
+		// This allows tools that use dotenv with __dirname to find their .env files.
+		this.copyEnvFiles(toolDir)
+
 		this.tsCache.set(cacheKey, tempFile)
 		return import(`file://${tempFile}`)
+	}
+
+	/**
+	 * Copy .env files from the tool's source directory to the cache directory.
+	 * This allows tools that use dotenv with __dirname to find their .env files.
+	 *
+	 * @param toolDir - The directory containing the tool source files
+	 */
+	private copyEnvFiles(toolDir: string): void {
+		try {
+			const files = fs.readdirSync(toolDir)
+			const envFiles = files.filter((f) => f === ".env" || f.startsWith(".env."))
+
+			for (const envFile of envFiles) {
+				const srcPath = path.join(toolDir, envFile)
+				const destPath = path.join(this.cacheDir, envFile)
+
+				// Only copy if source is a file (not a directory).
+				const stat = fs.statSync(srcPath)
+				if (stat.isFile()) {
+					fs.copyFileSync(srcPath, destPath)
+					console.log(`[CustomToolRegistry] copied ${envFile} to cache directory`)
+				}
+			}
+		} catch (error) {
+			// Non-fatal: log but don't fail if we can't copy env files.
+			console.warn(
+				`[CustomToolRegistry] failed to copy .env files: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**
