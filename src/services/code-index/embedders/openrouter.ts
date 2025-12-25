@@ -58,12 +58,21 @@ export class OpenRouterEmbedder implements IEmbedder {
 	 * @param apiKey The API key for authentication
 	 * @param modelId Optional model identifier (defaults to "openai/text-embedding-3-large")
 	 * @param maxItemTokens Optional maximum tokens per item (defaults to MAX_ITEM_TOKENS)
+	 * @param openRouterBaseUrl Optional custom OpenRouter base URL
 	 * @param specificProvider Optional specific provider to route requests to
 	 */
-	constructor(apiKey: string, modelId?: string, maxItemTokens?: number, specificProvider?: string) {
+	constructor(
+		apiKey: string,
+		modelId?: string,
+		maxItemTokens?: number,
+		openRouterBaseUrl?: string,
+		specificProvider?: string,
+	) {
 		if (!apiKey) {
 			throw new Error(t("embeddings:validation.apiKeyRequired"))
 		}
+
+		let baseUrl = openRouterBaseUrl || "https://openrouter.ai/api/v1"
 
 		this.apiKey = apiKey
 		// Only set specificProvider if it's not the default value

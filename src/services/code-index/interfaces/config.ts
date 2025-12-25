@@ -16,7 +16,7 @@ export interface CodeIndexConfig {
 	mistralOptions?: { apiKey: string }
 	vercelAiGatewayOptions?: { apiKey: string }
 	bedrockOptions?: { region: string; profile?: string }
-	openRouterOptions?: { apiKey: string; specificProvider?: string }
+	openRouterOptions?: { apiKey: string; specificProvider?: string; openRouterBaseUrl?: string }
 	qdrantUrl?: string
 	qdrantApiKey?: string
 	searchMinScore?: number
@@ -42,6 +42,7 @@ export type PreviousConfigSnapshot = {
 	bedrockRegion?: string
 	bedrockProfile?: string
 	openRouterApiKey?: string
+	openRouterBaseUrl?: string
 	openRouterSpecificProvider?: string
 	qdrantUrl?: string
 	qdrantApiKey?: string
