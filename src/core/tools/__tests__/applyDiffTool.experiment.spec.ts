@@ -85,6 +85,7 @@ describe("applyDiffTool experiment routing", () => {
 				deref: vi.fn().mockReturnValue(mockProvider),
 			},
 			cwd: "/test",
+			taskToolProtocol: "native", // Set task-level protocol to native
 			diffStrategy: {
 				applyDiff: vi.fn(),
 				getProgressStatus: vi.fn(),
@@ -102,7 +103,7 @@ describe("applyDiffTool experiment routing", () => {
 						maxTokens: 4096,
 						contextWindow: 128000,
 						supportsPromptCache: false,
-						supportsNativeTools: false,
+						supportsNativeTools: true,
 					},
 				}),
 			},

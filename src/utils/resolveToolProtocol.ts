@@ -39,18 +39,22 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
+	// 2. User preference - second highest priority
 	if (_providerSettings.toolProtocol) {
 		return _providerSettings.toolProtocol
 	}
 
+	// 3. Model supports native tools
 	if (_modelInfo?.supportsNativeTools === true) {
 		return TOOL_PROTOCOL.NATIVE
 	}
 
+	// 4. Model default tool protocol
 	if (_modelInfo?.defaultToolProtocol) {
 		return _modelInfo.defaultToolProtocol
 	}
 
+	// 5. Final fallback
 	return TOOL_PROTOCOL.XML
 }
 

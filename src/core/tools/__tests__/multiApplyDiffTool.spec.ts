@@ -122,6 +122,11 @@ describe("multiApplyDiffTool", () => {
 	})
 
 	describe("Native protocol delegation", () => {
+		beforeEach(() => {
+			// Set up native protocol for this test suite
+			mockCline.taskToolProtocol = "native"
+		})
+
 		it("should delegate to applyDiffToolClass.handle for XML args format", async () => {
 			mockBlock = {
 				params: {
@@ -304,6 +309,11 @@ new content
 	})
 
 	describe("Edge cases for diff content", () => {
+		beforeEach(() => {
+			// Set up native protocol for this test suite
+			mockCline.taskToolProtocol = "native"
+		})
+
 		it("should handle empty diff by delegating to class-based tool", async () => {
 			mockBlock = {
 				params: {

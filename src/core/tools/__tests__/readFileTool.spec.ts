@@ -238,7 +238,10 @@ function createMockCline(): any {
 		}),
 		apiConfiguration: {
 			apiProvider: "anthropic",
+			toolProtocol: "native",
 		},
+		// Set taskToolProtocol to ensure native protocol is used
+		taskToolProtocol: "native",
 		// CRITICAL: Always ensure image support is enabled
 		api: {
 			getModel: vi.fn().mockReturnValue({
@@ -248,7 +251,7 @@ function createMockCline(): any {
 					contextWindow: 200000,
 					maxTokens: 4096,
 					supportsPromptCache: false,
-					supportsNativeTools: false,
+					supportsNativeTools: true,
 				},
 			}),
 		},
@@ -336,6 +339,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			path?: string
 			start_line?: string
 			end_line?: string
+			toolProtocol?: "xml" | "native"
 		} = {},
 	): Promise<ToolResponse | undefined> {
 		// Configure mocks based on test scenario
@@ -370,7 +374,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 				toolResult = result
 			},
 			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
+			toolProtocol: options.toolProtocol ?? "native",
 		})
 
 		return toolResult
