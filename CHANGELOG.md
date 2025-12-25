@@ -1,5 +1,18 @@
 # CoStrict Change Log
 
+## [2.1.4]
+
+- Fix Suppress 'ask promise was ignored' error in handleError (#9914)
+- Optimize response render configuration, adjust streaming limit parameters to improve performance
+- Enhance ReadFileTool file reading functionality
+- Add tool protocol display feature, showing current tool protocol (Native/XML) in task header
+- Add showSpeedInfo setting option to control speed info display in UI settings (CoStrict provider only)
+- Update resolveToolProtocol function to simplify decision tree
+- Update test cases to reflect new tool protocol behavior
+- Update protocol resolution test logic
+- Add multilingual support for tool protocol, performance metrics, and speed info display (English, Simplified Chinese, Traditional Chinese)
+- Fix known issues
+
 ## [2.1.3]
 
 - Update error detail copy button with visual indicator (red dot) and improved instructions

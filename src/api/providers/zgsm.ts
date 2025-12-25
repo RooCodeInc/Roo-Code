@@ -557,6 +557,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 
 		// chunk
 		for await (const chunk of stream) {
+			// Check if request was aborted
+			if (this.abortController?.signal.aborted) {
+				return
+			}
 			const delta = chunk.choices?.[0]?.delta ?? {}
 			const finishReason = chunk.choices?.[0]?.finish_reason
 			lastDeltaInfo.finishReason = finishReason
@@ -604,6 +608,11 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
+		}
+
+		// Check if request was aborted
+		if (this.abortController?.signal.aborted) {
+			return
 		}
 
 		// Process remaining content
@@ -890,6 +899,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const activeToolCallIds = new Set<string>()
 
 		for await (const chunk of stream) {
+			// Check if request was aborted
+			if (this.abortController?.signal.aborted) {
+				return
+			}
 			const delta = chunk.choices?.[0]?.delta
 			const finishReason = chunk.choices?.[0]?.finish_reason
 
