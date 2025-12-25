@@ -5,7 +5,6 @@ import type { MockedFunction } from "vitest"
 import { fileExistsAtPath, createDirectoriesForFile } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
-import { unescapeHtmlEntities } from "../../../utils/text-normalization"
 import { everyLineHasLineNumbers, stripLineNumbers } from "../../../integrations/misc/extract-text"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
 import { writeToFileTool } from "../WriteToFileTool"
@@ -45,10 +44,6 @@ vi.mock("../../../utils/pathUtils", () => ({
 
 vi.mock("../../../utils/path", () => ({
 	getReadablePath: vi.fn().mockReturnValue("test/path.txt"),
-}))
-
-vi.mock("../../../utils/text-normalization", () => ({
-	unescapeHtmlEntities: vi.fn().mockImplementation((content) => content),
 }))
 
 vi.mock("../../../integrations/misc/extract-text", () => ({
@@ -97,7 +92,6 @@ describe("writeToFileTool", () => {
 	const mockedCreateDirectoriesForFile = createDirectoriesForFile as MockedFunction<typeof createDirectoriesForFile>
 	const mockedIsPathOutsideWorkspace = isPathOutsideWorkspace as MockedFunction<typeof isPathOutsideWorkspace>
 	const mockedGetReadablePath = getReadablePath as MockedFunction<typeof getReadablePath>
-	const mockedUnescapeHtmlEntities = unescapeHtmlEntities as MockedFunction<typeof unescapeHtmlEntities>
 	const mockedEveryLineHasLineNumbers = everyLineHasLineNumbers as MockedFunction<typeof everyLineHasLineNumbers>
 	const mockedStripLineNumbers = stripLineNumbers as MockedFunction<typeof stripLineNumbers>
 	const mockedPathResolve = path.resolve as MockedFunction<typeof path.resolve>
@@ -116,7 +110,6 @@ describe("writeToFileTool", () => {
 		mockedFileExistsAtPath.mockResolvedValue(false)
 		mockedIsPathOutsideWorkspace.mockReturnValue(false)
 		mockedGetReadablePath.mockReturnValue("test/path.txt")
-		mockedUnescapeHtmlEntities.mockImplementation((content) => content)
 		mockedEveryLineHasLineNumbers.mockReturnValue(false)
 		mockedStripLineNumbers.mockImplementation((content) => content)
 
@@ -320,22 +313,6 @@ describe("writeToFileTool", () => {
 			await executeWriteFileTool({ content: "" })
 
 			expect(mockCline.diffViewProvider.update).toHaveBeenCalledWith("", true)
-		})
-
-		it("unescapes HTML entities for non-Claude models", async () => {
-			mockCline.api.getModel.mockReturnValue({ id: "gpt-4" })
-
-			await executeWriteFileTool({ content: "&lt;test&gt;" })
-
-			expect(mockedUnescapeHtmlEntities).toHaveBeenCalledWith("&lt;test&gt;")
-		})
-
-		it("skips HTML unescaping for Claude models", async () => {
-			mockCline.api.getModel.mockReturnValue({ id: "claude-3" })
-
-			await executeWriteFileTool({ content: "&lt;test&gt;" })
-
-			expect(mockedUnescapeHtmlEntities).not.toHaveBeenCalled()
 		})
 
 		it("strips line numbers from numbered content", async () => {

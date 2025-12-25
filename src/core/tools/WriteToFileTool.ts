@@ -11,7 +11,6 @@ import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
@@ -86,10 +85,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (newContent.endsWith("```")) {
 			newContent = newContent.split("\n").slice(0, -1).join("\n")
-		}
-
-		if (!task.api.getModel().id.includes("claude")) {
-			newContent = unescapeHtmlEntities(newContent)
 		}
 
 		const fullPath = relPath ? path.resolve(task.cwd, removeClosingTag("path", relPath)) : ""

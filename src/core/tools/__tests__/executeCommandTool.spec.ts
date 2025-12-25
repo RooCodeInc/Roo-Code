@@ -6,7 +6,6 @@ import * as vscode from "vscode"
 import { Task } from "../../task/Task"
 import { formatResponse } from "../../prompts/responses"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../../shared/tools"
-import { unescapeHtmlEntities } from "../../../utils/text-normalization"
 
 // Mock dependencies
 vitest.mock("execa", () => ({
@@ -103,36 +102,6 @@ describe("executeCommandTool", () => {
 			},
 			partial: false,
 		}
-	})
-
-	/**
-	 * Tests for HTML entity unescaping in commands
-	 * This verifies that HTML entities are properly converted to their actual characters
-	 */
-	describe("HTML entity unescaping", () => {
-		it("should unescape &lt; to < character", () => {
-			const input = "echo &lt;test&gt;"
-			const expected = "echo <test>"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
-
-		it("should unescape &gt; to > character", () => {
-			const input = "echo test &gt; output.txt"
-			const expected = "echo test > output.txt"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
-
-		it("should unescape &amp; to & character", () => {
-			const input = "echo foo &amp;&amp; echo bar"
-			const expected = "echo foo && echo bar"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
-
-		it("should handle multiple mixed HTML entities", () => {
-			const input = "grep -E 'pattern' &lt;file.txt &gt;output.txt 2&gt;&amp;1"
-			const expected = "grep -E 'pattern' <file.txt >output.txt 2>&1"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
 	})
 
 	// Now we can run these tests
