@@ -408,7 +408,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						if (supportedBinaryFormats && supportedBinaryFormats.includes(fileExtension)) {
 							// Use extractTextFromFile for supported binary formats (PDF, DOCX, etc.)
 							try {
-								const content = await extractTextFromFile(fullPath, perFileMaxLine, perFileMaxChar)
+								const content = await extractTextFromFile(fullPath)
 								const numberedContent = addLineNumbers(content)
 								const lines = content.split("\n")
 								const lineCount = lines.length
