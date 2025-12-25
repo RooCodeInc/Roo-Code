@@ -99,6 +99,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			toolProtocol,
 			isStealthModel: modelInfo?.isStealthModel,
 		},
+		undefined, // todoList
+		undefined, // modelId
+		provider.getSkillsManager(),
 	)
 
 	return systemPrompt
