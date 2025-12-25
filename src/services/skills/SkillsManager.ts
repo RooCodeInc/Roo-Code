@@ -3,7 +3,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import matter from "gray-matter"
 
-import { ClineProvider } from "../../core/webview/ClineProvider"
+import type { ClineProvider } from "../../core/webview/ClineProvider"
 import { getGlobalRooDirectory } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"

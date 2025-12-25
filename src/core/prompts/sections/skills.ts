@@ -1,6 +1,19 @@
 import { SkillsManager, SkillMetadata } from "../../../services/skills/SkillsManager"
 
 /**
+ * Get a display-friendly relative path for a skill.
+ * Converts absolute paths to relative paths to avoid leaking sensitive filesystem info.
+ *
+ * @param skill - The skill metadata
+ * @returns A relative path like ".roo/skills/name/SKILL.md" or "~/.roo/skills/name/SKILL.md"
+ */
+function getDisplayPath(skill: SkillMetadata): string {
+	const basePath = skill.source === "project" ? ".roo" : "~/.roo"
+	const skillsDir = skill.mode ? `skills-${skill.mode}` : "skills"
+	return `${basePath}/${skillsDir}/${skill.name}/SKILL.md`
+}
+
+/**
  * Generate the skills section for the system prompt.
  * Only includes skills relevant to the current mode.
  * Format matches the modes section style.
@@ -26,14 +39,17 @@ export async function getSkillsSection(
 
 	if (modeSpecificSkills.length > 0) {
 		skillsList += modeSpecificSkills
-			.map((skill) => `  * "${skill.name}" skill (${currentMode} mode) - ${skill.description} [${skill.path}]`)
+			.map(
+				(skill) =>
+					`  * "${skill.name}" skill (${currentMode} mode) - ${skill.description} [${getDisplayPath(skill)}]`,
+			)
 			.join("\n")
 	}
 
 	if (genericSkills.length > 0) {
 		if (skillsList) skillsList += "\n"
 		skillsList += genericSkills
-			.map((skill) => `  * "${skill.name}" skill - ${skill.description} [${skill.path}]`)
+			.map((skill) => `  * "${skill.name}" skill - ${skill.description} [${getDisplayPath(skill)}]`)
 			.join("\n")
 	}
 
