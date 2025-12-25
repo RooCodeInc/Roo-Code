@@ -471,5 +471,23 @@
 		"updated": "Updated the to-do list",
 		"completed": "Completed",
 		"started": "Started"
+	},
+	"taskHistoryWarning": {
+		"title": "High Task History",
+		"ariaLabel": "High Task History",
+		"tooltip": "You have {{count}} tasks in your history",
+		"message": "You have {{count}} tasks in your history. Consider cleaning up old tasks to improve performance.",
+		"performance": "Large task histories can slow down the extension.",
+		"cleanupButton": "Clean up {{count}} tasks older than 30 days",
+		"cleaning": "Cleaning up...",
+		"noOldTasks": "No tasks older than 30 days",
+		"allRecent": "All your tasks are from the last 30 days",
+		"dismiss": "Dismiss",
+		"confirmTitle": "Clean Up Old Tasks",
+		"confirmMessage": "This will permanently delete {{count}} tasks older than {{days}} days.",
+		"confirmWarning": "This action cannot be undone.",
+		"confirmButton": "Clean Up",
+		"cleanupSuccess": "Successfully deleted {{count}} old tasks",
+		"cleanupError": "Failed to clean up tasks: {{error}}"
 	}
 }
