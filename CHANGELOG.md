@@ -1,5 +1,20 @@
 # CoStrict Change Log
 
+## [2.1.3]
+
+- Update error detail copy button with visual indicator (red dot) and improved instructions
+- Enhance error messages for copying error details in English, Chinese (Simplified), and Chinese (Traditional)
+- Fix code review race condition in completion handling by adding async delay to cleanup operations
+- Add partial message check and completion flag to prevent duplicate completion handling in code review
+- Add ask_multiple_choice native tool support for structured user input collection
+- Update gemini-cli model configurations with tool protocol support
+- Update tool protocol resolution logic to prioritize user preferences (XML protocol now takes precedence over native tools)
+- Refactor resolveToolProtocol function with simplified decision tree
+- Update test cases to reflect new tool protocol behavior
+- Add ask_multiple_choice native tool support
+- Sync roocode [last commit](https://github.com/zgsm-ai/costrict/commit/1e71015e54e4d6a0feadaa891ff5f56cae3f056b)
+- Fix known issues
+
 ## [2.1.2]
 
 - Enhanced code review mode with improved UI behavior and provider support
