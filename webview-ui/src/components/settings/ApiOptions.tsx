@@ -474,7 +474,7 @@ const ApiOptions = ({
 	// }, [selectedProvider])
 
 	const defaultProtocol =
-		selectedModelInfo?.defaultToolProtocol ||
+		selectedModelInfo?.defaultToolProtocol ??
 		(selectedProvider === "zgsm" ? TOOL_PROTOCOL.XML : TOOL_PROTOCOL.NATIVE)
 	const showToolProtocolSelector =
 		["openai", "zgsm", "gemini-cli"].includes(selectedProvider) || selectedModelInfo?.supportsNativeTools === true

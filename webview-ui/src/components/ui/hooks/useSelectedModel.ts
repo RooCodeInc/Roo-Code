@@ -27,7 +27,7 @@ import {
 	internationalZAiModels,
 	mainlandZAiModels,
 	fireworksModels,
-	zgsmModels,
+	zgsmModelsConfig as zgsmModels,
 	featherlessModels,
 	ioIntelligenceModels,
 	basetenModels,

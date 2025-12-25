@@ -44,18 +44,8 @@ export function resolveToolProtocol(
 		return _providerSettings.toolProtocol
 	}
 
-	// 3. Model supports native tools
-	if (_modelInfo?.supportsNativeTools === true) {
-		return TOOL_PROTOCOL.NATIVE
-	}
-
-	// 4. Model default tool protocol
-	if (_modelInfo?.defaultToolProtocol) {
-		return _modelInfo.defaultToolProtocol
-	}
-
 	// 5. Final fallback
-	return TOOL_PROTOCOL.XML
+	return _providerSettings.apiProvider === "zgsm" ? TOOL_PROTOCOL.XML : TOOL_PROTOCOL.NATIVE
 }
 
 /**

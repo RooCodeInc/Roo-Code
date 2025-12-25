@@ -82,9 +82,8 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 					return acc
 				}
 				// todo: add support for native tools with api fetch
-				const _mid = model.id.toLocaleLowerCase()
-				model.supportsNativeTools = model.supportsNativeTools ?? (!_mid.includes("qwen-2.5"))
-				model.defaultToolProtocol = model.supportsNativeTools ? TOOL_PROTOCOL.NATIVE : TOOL_PROTOCOL.XML
+				// const _mid = model.id.toLocaleLowerCase()
+				// model.supportsNativeTools = model.supportsNativeTools ?? (!_mid.includes("qwen-2.5"))
 				acc[model.id] = model
 				return acc
 			}, {} as ModelRecord)

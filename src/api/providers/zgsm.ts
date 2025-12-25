@@ -9,7 +9,9 @@ import {
 	OPENAI_AZURE_AI_INFERENCE_PATH,
 	NATIVE_TOOL_DEFAULTS,
 	zgsmDefaultModelId,
-	zgsmModels,
+	zgsmModelsConfig as zgsmModels,
+	// TOOL_PROTOCOL,
+	isNativeProtocol,
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
@@ -225,7 +227,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					selectedLLM,
 					selectReason,
 					requestId,
-					metadata?.toolProtocol === "native",
+					isNativeProtocol(metadata?.toolProtocol),
 				)
 			} else {
 				// Non-streaming processing
@@ -278,7 +280,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		} catch (err) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-			isDev && this.logger.error(`[createMessage] ${err}`)
+			isDev && this.logger.error(`[createMessage] ${err.message}`)
 			throw err
 		} finally {
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -412,11 +414,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			stream: true as const,
 			...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 			...(reasoning && reasoning),
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(metadata?.toolProtocol === "native" && {
-				parallel_tool_calls: metadata.parallelToolCalls ?? false,
-			}),
+			...(isNativeProtocol(metadata?.toolProtocol)
+				? {
+						...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+						...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+						...{ parallel_tool_calls: metadata?.parallelToolCalls ?? false },
+					}
+				: undefined),
 			extra_body: {
 				mode: metadata?.mode,
 			},
@@ -442,7 +446,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			role: "user",
 			content: systemPrompt,
 		}
-
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & { extra_body: any } = {
 			model: modelId,
 			messages: isDeepseekReasoner
@@ -450,11 +453,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				: isLegacyFormat
 					? [systemMessage, ...convertToSimpleMessages(messages)]
 					: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })],
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(metadata?.toolProtocol === "native" && {
-				parallel_tool_calls: metadata.parallelToolCalls ?? false,
-			}),
+			...(isNativeProtocol(metadata?.toolProtocol)
+				? {
+						...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+						...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+						...{ parallel_tool_calls: metadata?.parallelToolCalls ?? false },
+					}
+				: undefined),
 			extra_body: {
 				prompt_mode: metadata?.mode,
 			},
@@ -476,6 +481,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		requestId?: string,
 		isNative?: boolean,
 	): ApiStream {
+		// Check if request was aborted
+		if (this.abortController?.signal.aborted) {
+			return
+		}
 		const matcher = new XmlMatcher(
 			"think",
 			(chunk) =>
@@ -636,23 +645,22 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async updateModelInfo() {
-		const id = this.options.zgsmModelId ?? zgsmDefaultModelId
-		const info =
-			(
-				await getModels({
-					provider: "zgsm",
-					baseUrl: `${this.options.zgsmBaseUrl?.trim() || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}`,
-					apiKey: this.options.zgsmAccessToken,
-				})
-			)[id] ?? zgsmModels.default
+		try {
+			const id = this.options.zgsmModelId ?? zgsmDefaultModelId
+			const info =
+				(
+					await getModels({
+						provider: "zgsm",
+						baseUrl: `${this.options.zgsmBaseUrl?.trim() || ZgsmAuthConfig.getInstance().getDefaultApiBaseUrl()}`,
+						apiKey: this.options.zgsmAccessToken,
+					})
+				)[id] ?? zgsmModels.default
 
-		if (id.toLowerCase().includes("gemini")) {
-			Object.assign(info, {
-				supportsNativeTools: false,
-			})
+			this.modelInfo = info
+		} catch (error) {
+			this.logger.error(`[updateModelInfo] ${error.message}`)
+			this.modelInfo = zgsmModels.default
 		}
-
-		this.modelInfo = info
 	}
 
 	override getModel() {
@@ -705,7 +713,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 							"user",
 						),
 					},
-					timeout: 15000,
+					timeout: 60_000,
 					signal: metadata?.signal,
 				}),
 			)
@@ -741,11 +749,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(isNativeProtocol(metadata?.toolProtocol)
+					? {
+							...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+							...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+							...{ parallel_tool_calls: metadata?.parallelToolCalls ?? false },
+						}
+					: undefined),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -777,11 +787,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(isNativeProtocol(metadata?.toolProtocol)
+					? {
+							...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+							...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+							...{ parallel_tool_calls: metadata?.parallelToolCalls ?? false },
+						}
+					: undefined),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -824,6 +836,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
+		// Check if request was aborted
+		if (this.abortController?.signal.aborted) {
+			return
+		}
 		const activeToolCallIds = new Set<string>()
 
 		for await (const chunk of stream) {

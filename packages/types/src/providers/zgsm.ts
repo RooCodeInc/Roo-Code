@@ -2,7 +2,7 @@ import { ModelInfo } from "../model.js"
 
 export const zgsmDefaultModelId = "Auto"
 
-export const zgsmModels = {
+export const zgsmModelsConfig = {
 	default: {
 		maxTokens: 8192,
 		contextWindow: 128_000,

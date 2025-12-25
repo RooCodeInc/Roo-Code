@@ -96,7 +96,7 @@ import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { buildNativeToolsArray } from "./build-tools"
-import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
+// import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -3997,7 +3997,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// tools continue using XML even if NTC settings have since changed.
 		const modelInfo = this.api.getModel().info
 		const taskProtocol = this._taskToolProtocol ?? TOOL_PROTOCOL.XML
-		const shouldIncludeTools = taskProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
+		const shouldIncludeTools =
+			taskProtocol === TOOL_PROTOCOL.NATIVE &&
+			(modelInfo.supportsNativeTools ?? ["zgsm", "gemini-cli"].includes(apiConfiguration?.apiProvider || ""))
 
 		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = []

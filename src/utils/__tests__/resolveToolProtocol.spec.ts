@@ -125,7 +125,7 @@ describe("resolveToolProtocol", () => {
 		it("should fallback to XML when no preference or model info", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.XML)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
 		it("should fallback to XML when model info is undefined", () => {
@@ -133,13 +133,13 @@ describe("resolveToolProtocol", () => {
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings, undefined)
-			expect(result).toBe(TOOL_PROTOCOL.XML)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should fallback to XML for empty settings", () => {
+		it("should fallback to NATIVE for empty settings", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.XML)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 	})
 

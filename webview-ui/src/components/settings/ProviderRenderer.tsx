@@ -4,7 +4,7 @@ import { ModelPicker } from "./ModelPicker"
 import {
 	type ProviderSettings,
 	type ModelInfo,
-	zgsmModels,
+	zgsmModelsConfig as zgsmModels,
 	zgsmDefaultModelId,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,

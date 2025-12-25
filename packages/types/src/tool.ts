@@ -95,7 +95,7 @@ export const NATIVE_TOOL_DEFAULTS = {
  * @param protocol - The tool protocol to check
  * @returns True if protocol is native
  */
-export function isNativeProtocol(protocol: ToolProtocol): boolean {
+export function isNativeProtocol(protocol?: ToolProtocol): boolean {
 	return protocol === TOOL_PROTOCOL.NATIVE
 }
 

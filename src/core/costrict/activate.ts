@@ -48,6 +48,8 @@ import { t } from "../../i18n"
 import prettyBytes from "pretty-bytes"
 import { ensureProjectWikiSubtasksExists } from "./wiki/projectWikiHelpers"
 import { isJetbrainsPlatform } from "../../utils/platform"
+import type { ModelRecord } from "../../shared/api"
+import type { ModelInfo } from "@roo-code/types"
 
 const HISTORY_WARN_SIZE = 1000 * 1000 * 1000 * 3
 
@@ -223,9 +225,21 @@ export async function activate(
 	})
 	setTimeout(() => {
 		loginTip()
-		flushModels({ provider: "zgsm" }, true)
 		// init project-wiki subtasks.
 		ensureProjectWikiSubtasksExists()
+		flushModels({ provider: "zgsm" }, true, (models: ModelRecord) => {
+			const openAiModels = [] as string[]
+			const fullResponseData = [] as ModelInfo[]
+			for (const [id, value] of Object.entries(models)) {
+				openAiModels.push(id)
+				fullResponseData.push(value)
+			}
+			provider.postMessageToWebview({
+				type: "zgsmModels",
+				openAiModels,
+				fullResponseData,
+			})
+		})
 	}, 2000)
 }
 

@@ -8,7 +8,7 @@ import {
 	type ModelInfo,
 	type ReasoningEffort,
 	azureOpenAiDefaultApiVersion,
-	zgsmModels,
+	zgsmModelsConfig as zgsmModels,
 	zgsmDefaultModelId,
 	OrganizationAllowList,
 } from "@roo-code/types"
