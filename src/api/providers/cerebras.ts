@@ -13,6 +13,16 @@ import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
 import { t } from "../../i18n"
 
+/**
+ * Creates an Error with an HTTP status code attached for proper UI error handling.
+ * The status property is used by ChatRow to display appropriate error messages.
+ */
+function throwWithStatus(message: string, status: number): never {
+	const error = new Error(message)
+	;(error as any).status = status
+	throw error
+}
+
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
 
@@ -150,18 +160,22 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					errorMessage = errorText || `HTTP ${response.status}`
 				}
 
-				// Provide more actionable error messages
+				// Provide more actionable error messages with HTTP status attached
 				if (response.status === 401) {
-					throw new Error(t("common:errors.cerebras.authenticationFailed"))
+					throwWithStatus(t("common:errors.cerebras.authenticationFailed"), response.status)
 				} else if (response.status === 403) {
-					throw new Error(t("common:errors.cerebras.accessForbidden"))
+					throwWithStatus(t("common:errors.cerebras.accessForbidden"), response.status)
 				} else if (response.status === 429) {
-					throw new Error(t("common:errors.cerebras.rateLimitExceeded"))
+					throwWithStatus(t("common:errors.cerebras.rateLimitExceeded"), response.status)
 				} else if (response.status >= 500) {
-					throw new Error(t("common:errors.cerebras.serverError", { status: response.status }))
+					throwWithStatus(
+						t("common:errors.cerebras.serverError", { status: response.status }),
+						response.status,
+					)
 				} else {
-					throw new Error(
+					throwWithStatus(
 						t("common:errors.cerebras.genericError", { status: response.status, message: errorMessage }),
+						response.status,
 					)
 				}
 			}
@@ -273,7 +287,12 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(t("common:errors.cerebras.completionError", { error: error.message }))
+				// Preserve HTTP status code if present on the original error
+				const wrappedError = new Error(t("common:errors.cerebras.completionError", { error: error.message }))
+				if ((error as any).status !== undefined) {
+					;(wrappedError as any).status = (error as any).status
+				}
+				throw wrappedError
 			}
 			throw error
 		}
@@ -304,18 +323,22 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			if (!response.ok) {
 				const errorText = await response.text()
 
-				// Provide consistent error handling with createMessage
+				// Provide consistent error handling with createMessage (with HTTP status attached)
 				if (response.status === 401) {
-					throw new Error(t("common:errors.cerebras.authenticationFailed"))
+					throwWithStatus(t("common:errors.cerebras.authenticationFailed"), response.status)
 				} else if (response.status === 403) {
-					throw new Error(t("common:errors.cerebras.accessForbidden"))
+					throwWithStatus(t("common:errors.cerebras.accessForbidden"), response.status)
 				} else if (response.status === 429) {
-					throw new Error(t("common:errors.cerebras.rateLimitExceeded"))
+					throwWithStatus(t("common:errors.cerebras.rateLimitExceeded"), response.status)
 				} else if (response.status >= 500) {
-					throw new Error(t("common:errors.cerebras.serverError", { status: response.status }))
+					throwWithStatus(
+						t("common:errors.cerebras.serverError", { status: response.status }),
+						response.status,
+					)
 				} else {
-					throw new Error(
+					throwWithStatus(
 						t("common:errors.cerebras.genericError", { status: response.status, message: errorText }),
+						response.status,
 					)
 				}
 			}
@@ -324,7 +347,12 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			return result.choices?.[0]?.message?.content || ""
 		} catch (error) {
 			if (error instanceof Error) {
-				throw new Error(t("common:errors.cerebras.completionError", { error: error.message }))
+				// Preserve HTTP status code if present on the original error
+				const wrappedError = new Error(t("common:errors.cerebras.completionError", { error: error.message }))
+				if ((error as any).status !== undefined) {
+					;(wrappedError as any).status = (error as any).status
+				}
+				throw wrappedError
 			}
 			throw error
 		}
