@@ -7,15 +7,15 @@ export const renderModes = {
 		interval: 10,
 	},
 	fast: {
-		limit: 1,
+		limit: 0,
 		interval: 25,
 	},
 	medium: {
-		limit: 5,
+		limit: 0,
 		interval: 50,
 	},
 	slow: {
-		limit: 10,
+		limit: 0,
 		interval: 100,
 	},
 }

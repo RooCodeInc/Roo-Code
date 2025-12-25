@@ -36,8 +36,10 @@ import { handleOpenAIError } from "./utils/openai-error-handler"
 import { getModels } from "./fetchers/modelCache"
 import { ClineApiReqCancelReason } from "../../shared/ExtensionMessage"
 import { getEditorType } from "../../utils/getEditorType"
+import { ChatCompletionChunk } from "openai/resources/index.mjs"
 
 const autoModeModelId = "Auto"
+const isDev = process.env.NODE_ENV === "development"
 
 export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -153,115 +155,134 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			)
 		}
 
-		// 5. Handle streaming and non-streaming requests
-		if (this.options.openAiStreamingEnabled ?? true) {
-			const convertedMessages = this.convertMessages(
-				systemPrompt,
-				messages,
-				deepseekReasoner,
-				ark,
-				enabledLegacyFormat,
-				modelInfo,
-			)
+		try {
+			// 5. Handle streaming and non-streaming requests
+			if (this.options.openAiStreamingEnabled ?? true) {
+				const convertedMessages = this.convertMessages(
+					systemPrompt,
+					messages,
+					deepseekReasoner,
+					ark,
+					enabledLegacyFormat,
+					modelInfo,
+				)
 
-			const requestOptions = this.buildStreamingRequestOptions(
-				modelId,
-				convertedMessages,
-				deepseekReasoner,
-				isGrokXAI,
-				reasoning,
-				modelInfo,
-				metadata,
-			)
-			requestOptions.extra_body.prompt_mode = fromWorkflow ? (metadata?.zgsmCodeMode ?? "vibe") : "vibe"
-			const isAuto = this.options.zgsmModelId === autoModeModelId
-			let stream: any
-			let selectedLLM: string | undefined = this.options.zgsmModelId
-			let selectReason: string | undefined
-			try {
-				this.logger.info(`[RequestID ${modelId}]:`, requestId)
+				const requestOptions = this.buildStreamingRequestOptions(
+					modelId,
+					convertedMessages,
+					deepseekReasoner,
+					isGrokXAI,
+					reasoning,
+					modelInfo,
+					metadata,
+				)
+				requestOptions.extra_body.prompt_mode = fromWorkflow ? (metadata?.zgsmCodeMode ?? "vibe") : "vibe"
+				const isAuto = this.options.zgsmModelId === autoModeModelId
+				let stream: any
+				let selectedLLM: string | undefined = this.options.zgsmModelId
+				let selectReason: string | undefined
+				try {
+					this.logger.info(`[RequestID ${modelId}]:`, requestId)
 
-				if (metadata?.onRequestHeadersReady && typeof metadata.onRequestHeadersReady === "function") {
-					metadata.onRequestHeadersReady(_headers)
+					if (metadata?.onRequestHeadersReady && typeof metadata.onRequestHeadersReady === "function") {
+						metadata.onRequestHeadersReady(_headers)
+					}
+
+					const { data, response } = await this.client.chat.completions
+						.create(
+							requestOptions,
+							Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
+								headers: _headers,
+								signal: this.abortController.signal,
+							}),
+						)
+						.withResponse()
+					this.logger.info(`[ResponseID ${modelId}]:`, response.headers.get("x-request-id"))
+					if (isAuto) {
+						selectedLLM = response.headers.get("x-select-llm") || ""
+						selectReason = response.headers.get("x-select-reason") || ""
+
+						const userInputHeader = isDev ? response.headers.get("x-user-input") : null
+						if (userInputHeader) {
+							const decodedUserInput = Buffer.from(userInputHeader, "base64").toString("utf-8")
+							this.logger.info(`[x-user-input]: ${decodedUserInput}`)
+						}
+					}
+
+					stream = data
+				} catch (error) {
+					throw handleOpenAIError(error, this.providerName)
 				}
 
-				const { data, response } = await this.client.chat.completions
-					.create(
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+				isDev && this.logger.info(`[ResponseID ${modelId} sse render start]:`, requestId)
+
+				// 6. Optimize stream processing - use batch processing and buffer
+				yield* this.handleOptimizedStream(
+					stream,
+					modelInfo,
+					isAuto,
+					selectedLLM,
+					selectReason,
+					requestId,
+					metadata?.toolProtocol === "native",
+				)
+			} else {
+				// Non-streaming processing
+				const requestOptions = this.buildNonStreamingRequestOptions(
+					modelId,
+					systemPrompt,
+					messages,
+					deepseekReasoner,
+					enabledLegacyFormat,
+					modelInfo,
+					metadata,
+				)
+				let response
+				requestOptions.extra_body.prompt_mode = fromWorkflow ? "strict" : "vibe"
+				try {
+					this.logger.info(`[RequestID]:`, requestId)
+					response = await this.client.chat.completions.create(
 						requestOptions,
 						Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
 							headers: _headers,
 							signal: this.abortController.signal,
 						}),
 					)
-					.withResponse()
-				this.logger.info(`[ResponseID ${modelId}]:`, response.headers.get("x-request-id"))
-				if (isAuto) {
-					selectedLLM = response.headers.get("x-select-llm") || ""
-					selectReason = response.headers.get("x-select-reason") || ""
-					const isDev = process.env.NODE_ENV === "development"
-
-					const userInputHeader = isDev ? response.headers.get("x-user-input") : null
-					if (userInputHeader) {
-						const decodedUserInput = Buffer.from(userInputHeader, "base64").toString("utf-8")
-						this.logger.info(`[x-user-input]: ${decodedUserInput}`)
-					}
+					this.logger.info(`[ResponseId]:`, response._request_id)
+				} catch (error) {
+					throw handleOpenAIError(error, this.providerName)
 				}
 
-				stream = data
-			} catch (error) {
-				throw handleOpenAIError(error, this.providerName)
-			}
+				const message = response.choices?.[0]?.message
 
-			// 6. Optimize stream processing - use batch processing and buffer
-			yield* this.handleOptimizedStream(stream, modelInfo, isAuto, selectedLLM, selectReason)
-		} else {
-			// Non-streaming processing
-			const requestOptions = this.buildNonStreamingRequestOptions(
-				modelId,
-				systemPrompt,
-				messages,
-				deepseekReasoner,
-				enabledLegacyFormat,
-				modelInfo,
-				metadata,
-			)
-			let response
-			requestOptions.extra_body.prompt_mode = fromWorkflow ? "strict" : "vibe"
-			try {
-				this.logger.info(`[RequestID]:`, requestId)
-				response = await this.client.chat.completions.create(
-					requestOptions,
-					Object.assign(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}, {
-						headers: _headers,
-						signal: this.abortController.signal,
-					}),
-				)
-				this.logger.info(`[ResponseId]:`, response._request_id)
-			} catch (error) {
-				throw handleOpenAIError(error, this.providerName)
-			}
-
-			const message = response.choices?.[0]?.message
-
-			if (message?.tool_calls) {
-				for (const toolCall of message.tool_calls) {
-					if (toolCall.type === "function") {
-						yield {
-							type: "tool_call",
-							id: toolCall.id,
-							name: toolCall.function.name,
-							arguments: toolCall.function.arguments,
+				if (message?.tool_calls) {
+					for (const toolCall of message.tool_calls) {
+						if (toolCall.type === "function") {
+							yield {
+								type: "tool_call",
+								id: toolCall.id,
+								name: toolCall.function.name,
+								arguments: toolCall.function.arguments,
+							}
 						}
 					}
 				}
-			}
 
-			yield {
-				type: "text",
-				text: message.content || "",
-			}
+				yield {
+					type: "text",
+					text: message.content || "",
+				}
 
-			yield this.processUsageMetrics(response.usage, modelInfo)
+				yield this.processUsageMetrics(response.usage, modelInfo)
+			}
+		} catch (err) {
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			isDev && this.logger.error(`[createMessage] ${err}`)
+			throw err
+		} finally {
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			isDev && this.logger.info(`[ResponseID ${modelId} sse createMessage end]:`, requestId)
 		}
 	}
 
@@ -452,6 +473,8 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		isAuto?: boolean,
 		selectedLLM?: string,
 		selectReason?: string,
+		requestId?: string,
+		isNative?: boolean,
 	): ApiStream {
 		const matcher = new XmlMatcher(
 			"think",
@@ -469,7 +492,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const contentBuffer: string[] = []
 		let time = Date.now()
 		let isPrinted = false
-		const isDev = process.env.NODE_ENV === "development"
 
 		// Yield selected LLM info if available (for Auto model mode)
 		if (isAuto) {
@@ -481,10 +503,20 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		}
 
+		const lastDeltaInfo = {
+			activeToolCallIds,
+		} as {
+			delta?: ChatCompletionChunk.Choice["delta"]
+			finishReason?: ChatCompletionChunk.Choice["finish_reason"]
+			activeToolCallIds?: Set<string>
+		}
+
 		// chunk
 		for await (const chunk of stream) {
 			const delta = chunk.choices?.[0]?.delta ?? {}
 			const finishReason = chunk.choices?.[0]?.finish_reason
+			lastDeltaInfo.finishReason = finishReason
+			lastDeltaInfo.delta = delta
 			// Cache content for batch processing
 			if (delta.content) {
 				contentBuffer.push(delta.content)
@@ -503,6 +535,13 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						yield processedChunk
 					}
 					contentBuffer.length = 0 // Clear buffer
+					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+					isDev &&
+						this.logger.info(
+							`[ResponseID ${this.options.zgsmModelId} sse rendering]:`,
+							requestId,
+							batchedContent,
+						)
 					time = now
 				}
 			}
@@ -515,7 +554,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
-			yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
+			yield* this.processToolCalls(delta, finishReason, activeToolCallIds, contentBuffer.length > 0)
 
 			// Cache usage information
 			if (chunk.usage) {
@@ -526,9 +565,18 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Process remaining content
 		if (contentBuffer.length > 0) {
 			const remainingContent = contentBuffer.join("")
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+			isDev &&
+				this.logger.info(
+					`[ResponseID ${this.options.zgsmModelId} sse render end]:`,
+					requestId,
+					remainingContent,
+				)
 			for (const processedChunk of matcher.update(remainingContent)) {
 				yield processedChunk
 			}
+			contentBuffer.length = 0 // Clear buffer
+			yield* this.processToolCalls(lastDeltaInfo.delta, lastDeltaInfo.finishReason, activeToolCallIds)
 		}
 
 		// Output final results
@@ -553,10 +601,15 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		delta: OpenAI.Chat.Completions.ChatCompletionChunk.Choice.Delta | undefined,
 		finishReason: string | null | undefined,
 		activeToolCallIds: Set<string>,
+		skip: boolean = false,
 	): Generator<
 		| { type: "tool_call_partial"; index: number; id?: string; name?: string; arguments?: string }
 		| { type: "tool_call_end"; id: string }
 	> {
+		if (skip) {
+			return
+		}
+
 		if (delta?.tool_calls) {
 			for (const toolCall of delta.tool_calls) {
 				if (toolCall.id) {
@@ -607,9 +660,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		const defaultInfo = this.modelInfo
 		const info = this.options.useZgsmCustomConfig
 			? {
-				...NATIVE_TOOL_DEFAULTS,
-				...(this.options.zgsmAiCustomModelInfo ?? defaultInfo)
-			}
+					...NATIVE_TOOL_DEFAULTS,
+					...(this.options.zgsmAiCustomModelInfo ?? defaultInfo),
+				}
 			: defaultInfo
 		const params = getModelParams({ format: "zgsm", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }

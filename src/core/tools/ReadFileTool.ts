@@ -1,6 +1,6 @@
 import path from "path"
 import type { FileEntry, LineRange } from "@roo-code/types"
-import { isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
+import { isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS, DEFAULT_FILE_READ_CHARACTER_LIMIT } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { ClineSayTool } from "../../shared/ExtensionMessage"
@@ -330,9 +330,22 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const state = await task.providerRef.deref()?.getState()
 			const {
 				maxReadFileLine = -1,
+				maxReadCharacterLimit = DEFAULT_FILE_READ_CHARACTER_LIMIT,
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
 			} = state ?? {}
+
+			// Calculate per-file limits when reading multiple files
+			// Similar to mentions/index.ts strategy to prevent context window overflow
+			const approvedFilesCount = fileResults.filter((f) => f.status === "approved").length
+			const [perFileMaxLine, perFileMaxChar] = [
+				maxReadFileLine > 0 && approvedFilesCount > 1
+					? Math.max(250, Math.ceil(maxReadFileLine / approvedFilesCount))
+					: maxReadFileLine,
+				maxReadCharacterLimit > 0 && approvedFilesCount > 1
+					? Math.max(20_000, Math.ceil(maxReadCharacterLimit / approvedFilesCount))
+					: maxReadCharacterLimit,
+			]
 
 			for (const fileResult of fileResults) {
 				if (fileResult.status !== "approved") continue
@@ -395,7 +408,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						if (supportedBinaryFormats && supportedBinaryFormats.includes(fileExtension)) {
 							// Use extractTextFromFile for supported binary formats (PDF, DOCX, etc.)
 							try {
-								const content = await extractTextFromFile(fullPath)
+								const content = await extractTextFromFile(fullPath, perFileMaxLine, perFileMaxChar)
 								const numberedContent = addLineNumbers(content)
 								const lines = content.split("\n")
 								const lineCount = lines.length
@@ -435,7 +448,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							continue
 						}
 					}
-
+					// todo: 截断文件内容 保证不要超过限制
 					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
 						const rangeResults: string[] = []
 						const nativeRangeResults: string[] = []
@@ -482,11 +495,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						continue
 					}
 
-					if (maxReadFileLine > 0 && totalLines > maxReadFileLine) {
-						const content = addLineNumbers(await readLines(fullPath, maxReadFileLine - 1, 0))
-						const lineRangeAttr = ` lines="1-${maxReadFileLine}"`
+					if (perFileMaxLine > 0 && totalLines > perFileMaxLine) {
+						const content = addLineNumbers(await readLines(fullPath, perFileMaxLine - 1, 0))
+						const lineRangeAttr = ` lines="1-${perFileMaxLine}"`
 						let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
-						let nativeInfo = `Lines 1-${maxReadFileLine}:\n${content}\n`
+						let nativeInfo = `Lines 1-${perFileMaxLine}:\n${content}\n`
 
 						try {
 							const defResult = await parseSourceCodeDefinitionsForFile(
@@ -494,12 +507,12 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								task.rooIgnoreController,
 							)
 							if (defResult) {
-								const truncatedDefs = truncateDefinitionsToLineLimit(defResult, maxReadFileLine)
+								const truncatedDefs = truncateDefinitionsToLineLimit(defResult, perFileMaxLine)
 								xmlInfo += `<list_code_definition_names>${truncatedDefs}</list_code_definition_names>\n`
 								nativeInfo += `\nCode Definitions:\n${truncatedDefs}\n`
 							}
 
-							const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
+							const notice = `Showing only ${perFileMaxLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
 							xmlInfo += `<notice>${notice}</notice>\n`
 							nativeInfo += `\nNote: ${notice}`
 
@@ -552,7 +565,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 						content = addLineNumbers(result.content)
 
-						if (!result.complete) {
+						// Apply character limit if specified and content exceeds it
+						if (perFileMaxChar > 0 && content.length > perFileMaxChar) {
+							const truncated = content.substring(0, perFileMaxChar)
+							const truncatedLines = truncated.split("\n").length
+							content = truncated
+							const charLimitNotice = `Content truncated to ${perFileMaxChar} characters (${truncatedLines} lines). Use line_range to read specific sections.`
+							const lineRangeAttr = truncatedLines > 0 ? ` lines="1-${truncatedLines}"` : ""
+							xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n<notice>${charLimitNotice}</notice>\n`
+							nativeInfo = `Lines 1-${truncatedLines}:\n${content}\n\nNote: ${charLimitNotice}`
+						} else if (!result.complete) {
 							// File was truncated
 							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
 							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
@@ -565,18 +587,28 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 									? `Lines 1-${result.lineCount}:\n${content}\n\nNote: ${notice}`
 									: `Note: ${notice}`
 						} else {
-							// Full file read
-							const lineRangeAttr = ` lines="1-${result.lineCount}"`
-							xmlInfo =
-								result.lineCount > 0
-									? `<content${lineRangeAttr}>\n${content}</content>\n`
-									: `<content/>`
-
-							if (result.lineCount === 0) {
-								xmlInfo += `<notice>File is empty</notice>\n`
-								nativeInfo = "Note: File is empty"
+							// Full file read - also check character limit
+							if (perFileMaxChar > 0 && content.length > perFileMaxChar) {
+								const truncated = content.substring(0, perFileMaxChar)
+								const truncatedLines = truncated.split("\n").length
+								content = truncated
+								const charLimitNotice = `Content truncated to ${perFileMaxChar} characters (${truncatedLines} lines).`
+								const lineRangeAttr = truncatedLines > 0 ? ` lines="1-${truncatedLines}"` : ""
+								xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n<notice>${charLimitNotice}</notice>\n`
+								nativeInfo = `Lines 1-${truncatedLines}:\n${content}\n\nNote: ${charLimitNotice}`
 							} else {
-								nativeInfo = `Lines 1-${result.lineCount}:\n${content}`
+								const lineRangeAttr = ` lines="1-${result.lineCount}"`
+								xmlInfo =
+									result.lineCount > 0
+										? `<content${lineRangeAttr}>\n${content}</content>\n`
+										: `<content/>`
+
+								if (result.lineCount === 0) {
+									xmlInfo += `<notice>File is empty</notice>\n`
+									nativeInfo = "Note: File is empty"
+								} else {
+									nativeInfo = `Lines 1-${result.lineCount}:\n${content}`
+								}
 							}
 						}
 					}
