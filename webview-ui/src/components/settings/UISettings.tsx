@@ -11,13 +11,17 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	showSpeedInfo: boolean
 	enterBehavior: "send" | "newline"
+	apiConfiguration?: any
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
+	showSpeedInfo,
 	enterBehavior,
+	apiConfiguration,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -35,6 +39,16 @@ export const UISettings = ({
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
 			enabled: value,
+		})
+	}
+
+	// showSpeedInfo
+	const handleShowSpeedInfoChange = (showSpeedInfo: boolean) => {
+		setCachedStateField("showSpeedInfo", showSpeedInfo)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_show_speed_info_changed", {
+			enabled: showSpeedInfo,
 		})
 	}
 
@@ -72,6 +86,20 @@ export const UISettings = ({
 						</div>
 					</div>
 
+					{/* Show Speed Info Setting */}
+					{apiConfiguration?.apiProvider === "zgsm" && (
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={showSpeedInfo}
+								onChange={(e: any) => handleShowSpeedInfoChange(e.target.checked)}
+								data-testid="show-speed-info-checkbox">
+								<span className="font-medium">{t("settings:ui.showSpeedInfo.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.showSpeedInfo.description")}
+							</div>
+						</div>
+					)}
 					{/* Enter Key Behavior Setting */}
 					<div className="flex flex-col gap-1">
 						<VSCodeCheckbox

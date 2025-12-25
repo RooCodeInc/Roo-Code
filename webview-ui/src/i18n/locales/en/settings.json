@@ -66,6 +66,10 @@
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
 		},
+		"showSpeedInfo": {
+			"label": "Show speed info",
+			"description": "When enabled, shows token generation speed metrics in messages"
+		},
 		"requireCtrlEnterToSend": {
 			"label": "Require {{primaryMod}}+Enter to send messages",
 			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"

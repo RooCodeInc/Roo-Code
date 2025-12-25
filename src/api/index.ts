@@ -100,6 +100,15 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Only applies when toolProtocol is "native".
 	 */
 	parallelToolCalls?: boolean
+	/**
+	 * Callback for performance timing data
+	 */
+	onPerformanceTiming?: (timing: {
+		requestIdTimestamp?: number
+		responseIdTimestamp?: number
+		responseEndTimestamp?: number
+		completionTokens?: number
+	}) => Promise<void>
 }
 
 export interface ApiHandler {

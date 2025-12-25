@@ -5,6 +5,10 @@ import { UISettings } from "../UISettings"
 describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
+		showSpeedInfo: false,
+		apiConfiguration: {
+			apiProvider: "zgsm",
+		},
 		enterBehavior: "send" as const,
 		setCachedStateField: vi.fn(),
 	}

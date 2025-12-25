@@ -201,8 +201,16 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages, reviewTask } =
-		useExtensionState()
+	const {
+		mcpServers,
+		alwaysAllowMcp,
+		currentCheckpoint,
+		mode,
+		apiConfiguration,
+		clineMessages,
+		reviewTask,
+		showSpeedInfo,
+	} = useExtensionState()
 	const { logoPic, userInfo } = useZgsmUserInfo(apiConfiguration?.zgsmAccessToken)
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [showCopySuccess, setShowCopySuccess] = useState(false)
@@ -265,23 +273,63 @@ export const ChatRowContent = ({
 		vscode.postMessage({ type: "selectImages", context: "edit", messageTs: message.ts })
 	}, [message.ts])
 
-	const [cost, apiReqCancelReason, apiReqStreamingFailedMessage, selectedLLM, selectReason, isAuto, originModelId] =
-		useMemo(() => {
-			if (message.text !== null && message.text !== undefined && message.say === "api_req_started") {
-				const info = safeJsonParse<ClineApiReqInfo>(message.text)
-				return [
-					info?.cost,
-					info?.cancelReason,
-					info?.streamingFailedMessage,
-					info?.selectedLLM,
-					info?.selectReason,
-					info?.isAuto,
-					info?.originModelId,
-				]
+	// Extract timing data and calculate performance metrics in the component
+	const [
+		cost,
+		apiReqCancelReason,
+		apiReqStreamingFailedMessage,
+		selectedLLM,
+		selectReason,
+		isAuto,
+		originModelId,
+		firstTokenLatency,
+		tokensPerSecond,
+		totalDuration,
+	] = useMemo(() => {
+		if (message.text !== null && message.text !== undefined && message.say === "api_req_started") {
+			const info = safeJsonParse<ClineApiReqInfo>(message.text)
+
+			let calculatedFirstTokenLatency: number | undefined
+			let calculatedTokensPerSecond: number | undefined
+			let calculatedTotalDuration: number | undefined
+
+			if (
+				info?.requestIdTimestamp &&
+				info?.responseIdTimestamp &&
+				info?.responseEndTimestamp &&
+				info?.completionTokens
+			) {
+				const generationTimeMs = info.responseEndTimestamp - info.responseIdTimestamp
+				const safeGenerationTimeMs = generationTimeMs > 0 ? generationTimeMs : Infinity
+
+				calculatedFirstTokenLatency = Number(
+					((info.responseIdTimestamp - info.requestIdTimestamp) / 1000).toFixed(1),
+				)
+				calculatedTotalDuration = Number(
+					((info.responseEndTimestamp - info.requestIdTimestamp) / 1000).toFixed(1),
+				)
+				calculatedTokensPerSecond =
+					safeGenerationTimeMs !== Infinity
+						? Number(((info.completionTokens / safeGenerationTimeMs) * 1000).toFixed(1))
+						: 0
 			}
 
-			return [undefined, undefined, undefined, undefined, undefined]
-		}, [message.text, message.say])
+			return [
+				info?.cost,
+				info?.cancelReason,
+				info?.streamingFailedMessage,
+				info?.selectedLLM,
+				info?.selectReason,
+				info?.isAuto,
+				info?.originModelId,
+				calculatedFirstTokenLatency,
+				calculatedTokensPerSecond,
+				calculatedTotalDuration,
+			]
+		}
+
+		return []
+	}, [message.text, message.say])
 
 	// When resuming task, last wont be api_req_failed but a resume_task
 	// message, so api_req_started will show loading spinner. That's why we just
@@ -1232,20 +1280,41 @@ export const ChatRowContent = ({
 									${Number(cost || 0)?.toFixed(4)}
 								</div>
 							</div>
-							{selectReason && (
+							{(selectReason || firstTokenLatency !== undefined || tokensPerSecond !== undefined) && (
 								<div className="mt-2 flex items-center flex-wrap gap-2">
-									{(selectedLLM || originModelId) && (
+									{/* {(selectedLLM || originModelId) && (
 										<div
 											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
 											title="Selected Model">
 											{isAuto ? t("chat:autoMode.selectedLLM", { selectedLLM }) : originModelId}
 										</div>
-									)}
+									)} */}
 									{selectReason && (
 										<div
 											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
 											title="Selection Reason">
 											{t("chat:autoMode.selectReason", { selectReason })}
+										</div>
+									)}
+									{showSpeedInfo && firstTokenLatency !== undefined && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title={t("chat:performance.firstToken")}>
+											{t("chat:performance.firstToken")}: {firstTokenLatency}s
+										</div>
+									)}
+									{showSpeedInfo && totalDuration !== undefined && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title={t("chat:performance.totalDuration")}>
+											{t("chat:performance.totalDuration")}: {totalDuration}s
+										</div>
+									)}
+									{showSpeedInfo && tokensPerSecond !== undefined && (
+										<div
+											className="text-xs text-vscode-descriptionForeground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
+											title={t("chat:performance.tokensPerSecond")}>
+											{t("chat:performance.tokensPerSecond", { time: tokensPerSecond })}
 										</div>
 									)}
 								</div>

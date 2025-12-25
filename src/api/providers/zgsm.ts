@@ -183,7 +183,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				let stream: any
 				let selectedLLM: string | undefined = this.options.zgsmModelId
 				let selectReason: string | undefined
+				let requestIdTimestamp: number | undefined
+				let responseIdTimestamp: number | undefined
 				try {
+					requestIdTimestamp = Date.now()
 					this.logger.info(`[RequestID ${modelId}]:`, requestId)
 
 					if (metadata?.onRequestHeadersReady && typeof metadata.onRequestHeadersReady === "function") {
@@ -200,6 +203,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						)
 						.withResponse()
 					this.logger.info(`[ResponseID ${modelId}]:`, response.headers.get("x-request-id"))
+					responseIdTimestamp = Date.now()
 					if (isAuto) {
 						selectedLLM = response.headers.get("x-select-llm") || ""
 						selectReason = response.headers.get("x-select-reason") || ""
@@ -228,6 +232,9 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 					selectReason,
 					requestId,
 					isNativeProtocol(metadata?.toolProtocol),
+					responseIdTimestamp,
+					requestIdTimestamp,
+					metadata?.onPerformanceTiming,
 				)
 			} else {
 				// Non-streaming processing
@@ -242,7 +249,10 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				)
 				let response
 				requestOptions.extra_body.prompt_mode = fromWorkflow ? "strict" : "vibe"
+				let requestIdTimestamp: number | undefined
+				let responseIdTimestamp: number | undefined
 				try {
+					requestIdTimestamp = Date.now()
 					this.logger.info(`[RequestID]:`, requestId)
 					response = await this.client.chat.completions.create(
 						requestOptions,
@@ -252,6 +262,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 						}),
 					)
 					this.logger.info(`[ResponseId]:`, response._request_id)
+					responseIdTimestamp = Date.now()
 				} catch (error) {
 					throw handleOpenAIError(error, this.providerName)
 				}
@@ -277,10 +288,26 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				yield this.processUsageMetrics(response.usage, modelInfo)
+
+				// Emit performance timing data via callback (frontend will calculate metrics)
+				const responseEndTimestamp = Date.now()
+				if (responseIdTimestamp && requestIdTimestamp && response.usage?.completion_tokens) {
+					// Emit timing data via callback
+					if (metadata?.onPerformanceTiming) {
+						metadata
+							.onPerformanceTiming({
+								requestIdTimestamp,
+								responseIdTimestamp,
+								responseEndTimestamp,
+								completionTokens: response.usage.completion_tokens,
+							})
+							.catch(() => {})
+					}
+				}
 			}
 		} catch (err) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-			isDev && this.logger.error(`[createMessage] ${err.message}`)
+			isDev && this.logger.error(`[createMessage] ${err}`)
 			throw err
 		} finally {
 			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -480,6 +507,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		selectReason?: string,
 		requestId?: string,
 		isNative?: boolean,
+		responseIdTimestamp?: number,
+		requestIdTimestamp?: number,
+		onPerformanceTiming?: (timing: {
+			requestIdTimestamp?: number
+			responseIdTimestamp?: number
+			responseEndTimestamp?: number
+			completionTokens?: number
+		}) => Promise<void>,
 	): ApiStream {
 		// Check if request was aborted
 		if (this.abortController?.signal.aborted) {
@@ -596,6 +631,18 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Process usage metrics
 		if (lastUsage) {
 			yield this.processUsageMetrics(lastUsage, modelInfo)
+
+			// Emit performance timing data via callback (frontend will calculate metrics)
+			const responseEndTimestamp = Date.now()
+			if (onPerformanceTiming && responseIdTimestamp && requestIdTimestamp && lastUsage.completion_tokens) {
+				// Emit timing data via callback
+				onPerformanceTiming({
+					requestIdTimestamp,
+					responseIdTimestamp,
+					responseEndTimestamp,
+					completionTokens: lastUsage.completion_tokens,
+				}).catch(() => {})
+			}
 		}
 	}
 

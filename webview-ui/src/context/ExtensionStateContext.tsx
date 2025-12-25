@@ -156,6 +156,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTerminalCompressProgressBar: (value: boolean) => void
 	setHistoryPreviewCollapsed: (value: boolean) => void
 	setReasoningBlockCollapsed: (value: boolean) => void
+	setShowSpeedInfo: (value: boolean) => void
+	showSpeedInfo?: boolean
 	enterBehavior?: "send" | "newline"
 	setEnterBehavior: (value: "send" | "newline") => void
 	autoCondenseContext: boolean
@@ -264,6 +266,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalCompressProgressBar: true, // Default to compress progress bar output
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
+		showSpeedInfo: false, // Default to not showing speed info
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
@@ -521,6 +524,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
+		showSpeedInfo: state.showSpeedInfo ?? false,
 		didHydrateState,
 		showWelcome,
 		theme,
@@ -647,6 +651,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, historyPreviewCollapsed: value })),
 		setReasoningBlockCollapsed: (value) =>
 			setState((prevState) => ({ ...prevState, reasoningBlockCollapsed: value })),
+		setShowSpeedInfo: (value) => setState((prevState) => ({ ...prevState, showSpeedInfo: value })),
 		enterBehavior: state.enterBehavior ?? "send",
 		setEnterBehavior: (value) => setState((prevState) => ({ ...prevState, enterBehavior: value })),
 		setHasOpenedModeSelector: (value) => setState((prevState) => ({ ...prevState, hasOpenedModeSelector: value })),

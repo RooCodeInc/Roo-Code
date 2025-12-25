@@ -214,6 +214,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
+		showSpeedInfo,
 		enterBehavior,
 		includeCurrentTime,
 		includeCurrentCost,
@@ -413,6 +414,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					condensingApiConfigId: condensingApiConfigId || "",
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
+					showSpeedInfo: showSpeedInfo ?? false,
 					enterBehavior: enterBehavior ?? "send",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
@@ -876,7 +878,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{activeTab === "ui" && (
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+							showSpeedInfo={showSpeedInfo ?? false}
 							enterBehavior={enterBehavior ?? "send"}
+							apiConfiguration={apiConfiguration}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

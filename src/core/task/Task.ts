@@ -3796,6 +3796,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			autoCondenseContext = true,
 			autoCondenseContextPercent = 100,
 			profileThresholds = {},
+			showSpeedInfo = false,
 		} = state ?? {}
 
 		// Get condensing configuration for automatic triggers.
@@ -4045,6 +4046,40 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			language: state?.language,
 			instanceId: this.instanceId,
 			userId: id,
+			onRequestHeadersReady: (headers: Record<string, string>) => {
+				this.lastApiRequestHeaders = headers
+			},
+			onPerformanceTiming:
+				!showSpeedInfo || apiConfiguration?.apiProvider !== "zgsm"
+					? undefined
+					: async (timing: {
+							requestIdTimestamp?: number
+							responseIdTimestamp?: number
+							responseEndTimestamp?: number
+							completionTokens?: number
+						}) => {
+							// Find and update the api_req_started message with raw timing data
+							const lastApiReqIndex = findLastIndex(
+								this.clineMessages,
+								(msg) => msg.type === "say" && msg.say === "api_req_started",
+							)
+							if (lastApiReqIndex >= 0 && this.clineMessages[lastApiReqIndex]) {
+								const existingData = JSON.parse(this.clineMessages[lastApiReqIndex].text || "{}")
+								this.clineMessages[lastApiReqIndex].text = JSON.stringify({
+									...existingData,
+									requestIdTimestamp: timing.requestIdTimestamp,
+									responseIdTimestamp: timing.responseIdTimestamp,
+									responseEndTimestamp: timing.responseEndTimestamp,
+									completionTokens: timing.completionTokens,
+								} satisfies ClineApiReqInfo)
+								// Notify frontend that the message has been updated
+								const provider = this.providerRef.deref()
+								await provider?.postMessageToWebview({
+									type: "messageUpdated",
+									clineMessage: this.clineMessages[lastApiReqIndex],
+								})
+							}
+						},
 			// Include tools and tool protocol when using native protocol and model supports it
 			...(shouldIncludeTools
 				? {
@@ -4067,12 +4102,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const stream = this.api.createMessage(
 			systemPrompt,
 			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
-			{
-				...metadata,
-				onRequestHeadersReady: (headers: Record<string, string>) => {
-					this.lastApiRequestHeaders = headers
-				},
-			},
+			metadata,
 		)
 		const iterator = stream[Symbol.asyncIterator]()
 

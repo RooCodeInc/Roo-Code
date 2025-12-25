@@ -321,6 +321,7 @@ export type ExtensionState = Pick<
 	| "openRouterImageGenerationSelectedModel"
 	| "includeTaskHistoryInEnhance"
 	| "reasoningBlockCollapsed"
+	| "showSpeedInfo"
 	| "errorCode"
 	| "enterBehavior"
 	| "includeCurrentTime"
@@ -518,6 +519,11 @@ export interface ClineApiReqInfo {
 	selectReason?: string
 	isAuto?: boolean
 	originModelId?: string
+	// Raw timing data for frontend calculation
+	requestIdTimestamp?: number
+	responseIdTimestamp?: number
+	responseEndTimestamp?: number
+	completionTokens?: number
 }
 
 export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"

@@ -1,5 +1,10 @@
 {
 	"greeting": "欢迎使用 Roo Code",
+	"performance": {
+		"firstToken": "首token达到时间",
+		"totalDuration": "推送总耗时",
+		"tokensPerSecond": "约 {{time}} token/s"
+	},
 	"task": {
 		"viewParentTask": "查看父任务",
 		"title": "任务",
