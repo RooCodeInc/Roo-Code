@@ -838,6 +838,57 @@ describe("reasoning.ts", () => {
 			const result = getGeminiReasoning(options) as GeminiReasoningParams | undefined
 			expect(result).toEqual({ thinkingLevel: "medium", includeThoughts: true })
 		})
+
+		it("should return thinkingLevel when model has fixed reasoningEffort without supportsReasoningEffort", () => {
+			// This tests the scenario where a model has a hardcoded default reasoning level
+			// (reasoningEffort) but doesn't expose UI controls (supportsReasoningEffort: false)
+			const geminiModel: ModelInfo = {
+				...baseModel,
+				// No supportsReasoningEffort - UI selector won't show
+				// But model has a fixed default reasoning level
+				reasoningEffort: "medium",
+			}
+
+			const settings: ProviderSettings = {
+				apiProvider: "gemini",
+			}
+
+			const options: GetModelReasoningOptions = {
+				model: geminiModel,
+				reasoningBudget: undefined,
+				reasoningEffort: undefined,
+				settings,
+			}
+
+			const result = getGeminiReasoning(options) as GeminiReasoningParams | undefined
+			// Should use the model's fixed default and send thinkingConfig
+			expect(result).toEqual({ thinkingLevel: "medium", includeThoughts: true })
+		})
+
+		it("should return undefined for models without any thinking support (e.g., Gemini 3)", () => {
+			// This tests that Gemini 3 models (no maxThinkingTokens, supportsReasoningBudget,
+			// supportsReasoningEffort, or reasoningEffort) don't receive thinkingConfig
+			const gemini3Model: ModelInfo = {
+				...baseModel,
+				// No thinking-related properties at all
+			}
+
+			const settings: ProviderSettings = {
+				apiProvider: "gemini",
+				reasoningEffort: "high", // Even if user tries to set this, model doesn't support it
+			}
+
+			const options: GetModelReasoningOptions = {
+				model: gemini3Model,
+				reasoningBudget: undefined,
+				reasoningEffort: "high",
+				settings,
+			}
+
+			const result = getGeminiReasoning(options)
+			// Should return undefined because model has no thinking support
+			expect(result).toBeUndefined()
+		})
 	})
 
 	describe("Integration scenarios", () => {
