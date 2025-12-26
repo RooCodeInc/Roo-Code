@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Berpikir selesai, tetapi tidak ada output yang dihasilkan.)",
 			"thinking_complete_truncated": "(Berpikir selesai, tetapi output terpotong karena batas token.)",
 			"thinking_complete_safety": "(Berpikir selesai, tetapi output diblokir karena pengaturan keamanan.)",
-			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)"
+			"thinking_complete_recitation": "(Berpikir selesai, tetapi output diblokir karena pemeriksaan resitasi.)",
+			"resource_exhausted": "Batas kecepatan tercapai untuk {{model}}. Batasnya adalah {{limit}} permintaan per menit. Silakan coba lagi dalam {{retry}} detik."
 		},
 		"cerebras": {
 			"authenticationFailed": "Autentikasi API Cerebras gagal. Silakan periksa apakah kunci API Anda valid dan belum kedaluwarsa.",

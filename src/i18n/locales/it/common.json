@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Pensiero completato, ma non è stato generato alcun output.)",
 			"thinking_complete_truncated": "(Pensiero completato, ma l'output è stato troncato a causa del limite di token.)",
 			"thinking_complete_safety": "(Pensiero completato, ma l'output è stato bloccato a causa delle impostazioni di sicurezza.)",
-			"thinking_complete_recitation": "(Pensiero completato, ma l'output è stato bloccato a causa del controllo di recitazione.)"
+			"thinking_complete_recitation": "(Pensiero completato, ma l'output è stato bloccato a causa del controllo di recitazione.)",
+			"resource_exhausted": "Limite di velocità raggiunto per {{model}}. Il limite è di {{limit}} richieste al minuto. Riprova tra {{retry}} secondi."
 		},
 		"cerebras": {
 			"authenticationFailed": "Autenticazione API Cerebras fallita. Verifica che la tua chiave API sia valida e non scaduta.",

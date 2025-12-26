@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Đã suy nghĩ xong nhưng không có kết quả đầu ra.)",
 			"thinking_complete_truncated": "(Đã suy nghĩ xong nhưng kết quả bị cắt ngắn do giới hạn token.)",
 			"thinking_complete_safety": "(Đã suy nghĩ xong nhưng kết quả bị chặn do cài đặt an toàn.)",
-			"thinking_complete_recitation": "(Đã suy nghĩ xong nhưng kết quả bị chặn do kiểm tra trích dẫn.)"
+			"thinking_complete_recitation": "(Đã suy nghĩ xong nhưng kết quả bị chặn do kiểm tra trích dẫn.)",
+			"resource_exhausted": "Đã đạt đến giới hạn tốc độ cho {{model}}. Giới hạn là {{limit}} yêu cầu mỗi phút. Vui lòng thử lại sau {{retry}} giây."
 		},
 		"cerebras": {
 			"authenticationFailed": "Xác thực API Cerebras thất bại. Vui lòng kiểm tra khóa API của bạn có hợp lệ và chưa hết hạn.",

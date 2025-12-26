@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Myślenie zakończone, ale nie wygenerowano żadnych danych wyjściowych.)",
 			"thinking_complete_truncated": "(Myślenie zakończone, ale dane wyjściowe zostały obcięte z powodu limitu tokenów.)",
 			"thinking_complete_safety": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez ustawienia bezpieczeństwa.)",
-			"thinking_complete_recitation": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez kontrolę recytacji.)"
+			"thinking_complete_recitation": "(Myślenie zakończone, ale dane wyjściowe zostały zablokowane przez kontrolę recytacji.)",
+			"resource_exhausted": "Osiągnięto limit stawek dla {{model}}. Limit wynosi {{limit}} żądań na minutę. Spróbuj ponownie za {{retry}} s."
 		},
 		"cerebras": {
 			"authenticationFailed": "Uwierzytelnianie API Cerebras nie powiodło się. Sprawdź, czy twój klucz API jest ważny i nie wygasł.",

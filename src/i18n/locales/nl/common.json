@@ -109,7 +109,8 @@
 			"thinking_complete_no_output": "(Nadenken voltooid, maar er is geen uitvoer gegenereerd.)",
 			"thinking_complete_truncated": "(Nadenken voltooid, maar uitvoer is afgekapt vanwege tokenlimiet.)",
 			"thinking_complete_safety": "(Nadenken voltooid, maar uitvoer is geblokkeerd vanwege veiligheidsinstellingen.)",
-			"thinking_complete_recitation": "(Nadenken voltooid, maar uitvoer is geblokkeerd vanwege recitatiecontrole.)"
+			"thinking_complete_recitation": "(Nadenken voltooid, maar uitvoer is geblokkeerd vanwege recitatiecontrole.)",
+			"resource_exhausted": "Snelheidslimiet bereikt voor {{model}}. De limiet is {{limit}} verzoeken per minuut. Probeer het opnieuw over {{retry}} seconden."
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API-authenticatie mislukt. Controleer of je API-sleutel geldig is en niet verlopen.",

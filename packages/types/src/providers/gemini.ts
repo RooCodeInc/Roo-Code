@@ -256,4 +256,44 @@ export const geminiModels = {
 		supportsReasoningBudget: true,
 		maxThinkingTokens: 24_576,
 	},
+
+	// Robotics models
+	"gemini-robotics-er-1.5-preview": {
+		maxTokens: 8192,
+		contextWindow: 1_000_000,
+		supportsImages: true,
+		supportsNativeTools: true,
+		supportsPromptCache: false,
+		inputPrice: 0.3,
+		outputPrice: 2.5,
+	},
+
+	// Gemma 3 models
+	"gemma-3-27b-it": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsNativeTools: false,
+		supportsPromptCache: false,
+		inputPrice: 0.07,
+		outputPrice: 0.5,
+	},
+	"gemma-3-12b-it": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsNativeTools: false,
+		supportsPromptCache: false,
+		inputPrice: 0.03,
+		outputPrice: 0.1,
+	},
+	"gemma-3-4b-it": {
+		maxTokens: 8192,
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsNativeTools: false,
+		supportsPromptCache: false,
+		inputPrice: 0.02,
+		outputPrice: 0.07,
+	},
 } as const satisfies Record<string, ModelInfo>
