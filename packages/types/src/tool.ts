@@ -11,6 +11,18 @@ export const toolGroupsSchema = z.enum(toolGroups)
 export type ToolGroup = z.infer<typeof toolGroupsSchema>
 
 /**
+ * EditToolVariant
+ *
+ * Determines which edit tool schema is presented to the LLM.
+ * Each variant has a schema optimized for different LLM families.
+ */
+export const editToolVariants = ["roo", "anthropic", "grok", "gemini", "codex"] as const
+
+export const editToolVariantSchema = z.enum(editToolVariants)
+
+export type EditToolVariant = z.infer<typeof editToolVariantSchema>
+
+/**
  * ToolName
  */
 
@@ -18,11 +30,17 @@ export const toolNames = [
 	"execute_command",
 	"read_file",
 	"write_to_file",
+	// apply_diff is kept for XML protocol backward compatibility
 	"apply_diff",
-	"search_and_replace",
-	"search_replace",
+	// Unified edit tool for native protocol (variant selected via modelInfo.editToolVariant)
 	"edit_file",
-	"apply_patch",
+	// Internal edit tool variant names (used by native protocol, presented to LLM as "edit_file")
+	"edit_file_roo",
+	"edit_file_anthropic",
+	"edit_file_grok",
+	"edit_file_gemini",
+	"edit_file_codex",
+	// Other tools
 	"search_files",
 	"list_files",
 	"browser_action",

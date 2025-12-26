@@ -64,6 +64,8 @@ export type ModelParameter = z.infer<typeof modelParametersSchema>
 export const isModelParameter = (value: string): value is ModelParameter =>
 	modelParameters.includes(value as ModelParameter)
 
+import { editToolVariantSchema } from "./tool.js"
+
 /**
  * ModelInfo
  */
@@ -120,6 +122,9 @@ export const modelInfoSchema = z.object({
 	// These tools will be added if they belong to an allowed group in the current mode
 	// Cannot force-add tools from groups the mode doesn't allow
 	includedTools: z.array(z.string()).optional(),
+	// Edit tool variant - determines which edit tool schema is presented to the LLM
+	// Each variant has a schema optimized for different LLM families (defaults to "roo")
+	editToolVariant: editToolVariantSchema.optional(),
 	/**
 	 * Service tiers with pricing information.
 	 * Each tier can have a name (for OpenAI service tiers) and pricing overrides.

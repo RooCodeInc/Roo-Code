@@ -1,5 +1,5 @@
 import { applyDiffTool } from "../MultiApplyDiffTool"
-import { applyDiffTool as applyDiffToolClass } from "../ApplyDiffTool"
+import { applyDiffTool as applyDiffToolClass } from "../EditFileRooTool"
 import { EXPERIMENT_IDS } from "../../../shared/experiments"
 import * as fs from "fs/promises"
 import * as fileUtils from "../../../utils/fs"
@@ -11,8 +11,8 @@ vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
 vi.mock("../../../utils/xml")
 
-// Mock the ApplyDiffTool class-based tool that MultiApplyDiffTool delegates to for native protocol
-vi.mock("../ApplyDiffTool", () => ({
+// Mock the EditFileRooTool class-based tool that MultiApplyDiffTool delegates to for native protocol
+vi.mock("../EditFileRooTool", () => ({
 	applyDiffTool: {
 		handle: vi.fn().mockResolvedValue(undefined),
 	},

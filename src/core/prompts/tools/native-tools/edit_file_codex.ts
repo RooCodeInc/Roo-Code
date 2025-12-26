@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-const apply_patch_DESCRIPTION = `Apply patches to files using a stripped-down, file-oriented diff format. This tool supports creating new files, deleting files, and updating existing files with precise changes.
+const EDIT_FILE_CODEX_DESCRIPTION = `Apply patches to files using a stripped-down, file-oriented diff format. This tool supports creating new files, deleting files, and updating existing files with precise changes.
 
 The patch format uses a simple, human-readable structure:
 
@@ -38,11 +38,11 @@ Example patch:
 *** Delete File: obsolete.txt
 *** End Patch`
 
-const apply_patch = {
+const edit_file_codex = {
 	type: "function",
 	function: {
-		name: "apply_patch",
-		description: apply_patch_DESCRIPTION,
+		name: "edit_file_codex",
+		description: EDIT_FILE_CODEX_DESCRIPTION,
 		parameters: {
 			type: "object",
 			properties: {
@@ -58,4 +58,7 @@ const apply_patch = {
 	},
 } satisfies OpenAI.Chat.ChatCompletionTool
 
-export default apply_patch
+export default edit_file_codex
+
+// Backward compatibility export
+export const apply_patch = edit_file_codex

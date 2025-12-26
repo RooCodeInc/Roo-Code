@@ -20,8 +20,8 @@ interface SearchReplaceParams {
 	new_string: string
 }
 
-export class SearchReplaceTool extends BaseTool<"search_replace"> {
-	readonly name = "search_replace" as const
+export class SearchReplaceTool extends BaseTool<"edit_file_grok"> {
+	readonly name = "edit_file_grok" as const
 
 	parseLegacy(params: Partial<Record<string, string>>): SearchReplaceParams {
 		return {
@@ -39,29 +39,29 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			// Validate required parameters
 			if (!file_path) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "file_path"))
+				task.recordToolError("edit_file_grok")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_grok", "file_path"))
 				return
 			}
 
 			if (!old_string) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "old_string"))
+				task.recordToolError("edit_file_grok")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_grok", "old_string"))
 				return
 			}
 
 			if (new_string === undefined) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
-				pushToolResult(await task.sayAndCreateMissingParamError("search_replace", "new_string"))
+				task.recordToolError("edit_file_grok")
+				pushToolResult(await task.sayAndCreateMissingParamError("edit_file_grok", "new_string"))
 				return
 			}
 
 			// Validate that old_string and new_string are different
 			if (old_string === new_string) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_grok")
 				pushToolResult(
 					formatResponse.toolError(
 						"The 'old_string' and 'new_string' parameters must be different.",
@@ -95,7 +95,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			const fileExists = await fileExistsAtPath(absolutePath)
 			if (!fileExists) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_grok")
 				const errorMessage = `File not found: ${relPath}. Cannot perform search and replace on a non-existent file.`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
@@ -109,7 +109,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 				fileContent = fileContent.replace(/\r\n/g, "\n")
 			} catch (error) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace")
+				task.recordToolError("edit_file_grok")
 				const errorMessage = `Failed to read file '${relPath}'. Please verify file permissions and try again.`
 				await task.say("error", errorMessage)
 				pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
@@ -125,7 +125,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 
 			if (matchCount === 0) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace", "no_match")
+				task.recordToolError("edit_file_grok", "no_match")
 				pushToolResult(
 					formatResponse.toolError(
 						`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including whitespace and indentation.`,
@@ -137,7 +137,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 
 			if (matchCount > 1) {
 				task.consecutiveMistakeCount++
-				task.recordToolError("search_replace", "multiple_matches")
+				task.recordToolError("edit_file_grok", "multiple_matches")
 				pushToolResult(
 					formatResponse.toolError(
 						`Found ${matchCount} matches for the specified 'old_string'. This tool can only replace ONE occurrence at a time. Please provide more context (3-5 lines before and after) to uniquely identify the specific instance you want to change.`,
@@ -237,8 +237,6 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			const message = await task.diffViewProvider.pushToolWriteResult(task, task.cwd, false)
 			pushToolResult(message)
 
-			// Record successful tool usage and cleanup
-			task.recordToolUsage("search_replace")
 			await task.diffViewProvider.reset()
 
 			// Process any queued messages after file edit completes
@@ -249,7 +247,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"search_replace">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse<"edit_file_grok">): Promise<void> {
 		const filePath: string | undefined = block.params.file_path
 		const oldString: string | undefined = block.params.old_string
 
@@ -281,3 +279,5 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 }
 
 export const searchReplaceTool = new SearchReplaceTool()
+// Alias for new naming convention
+export const editFileGrokTool = searchReplaceTool
