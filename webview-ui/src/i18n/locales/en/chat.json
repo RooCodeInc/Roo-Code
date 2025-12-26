@@ -278,7 +278,9 @@
 		"completionContent": "Subtask Completed",
 		"resultContent": "Subtask Results",
 		"defaultResult": "Please continue to the next task.",
-		"completionInstructions": "Subtask completed! You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
+		"completionInstructions": "Subtask completed! You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task.",
+		"editInstructions": "Edit subtask instructions",
+		"editPlaceholder": "Edit subtask instructions..."
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"
