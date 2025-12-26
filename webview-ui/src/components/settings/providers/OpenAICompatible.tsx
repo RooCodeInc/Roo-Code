@@ -8,6 +8,7 @@ import {
 	type ModelInfo,
 	type ReasoningEffort,
 	type OrganizationAllowList,
+	type ToolProtocol,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
 } from "@roo-code/types"
@@ -15,7 +16,15 @@ import {
 import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { Button, StandardTooltip } from "@src/components/ui"
+import {
+	Button,
+	StandardTooltip,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@src/components/ui"
 
 import { convertHeadersToObject } from "../utils/headers"
 import { inputEventTransform, noTransform } from "../transforms"
@@ -170,6 +179,24 @@ export const OpenAICompatible = ({
 				onChange={handleInputChange("openAiStreamingEnabled", noTransform)}>
 				{t("settings:modelInfo.enableStreaming")}
 			</Checkbox>
+			{/* Tool Protocol selector for backends that don't support native tool calling */}
+			<div>
+				<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+				<Select
+					value={apiConfiguration?.toolProtocol || "native"}
+					onValueChange={(value) => setApiConfigurationField("toolProtocol", value as ToolProtocol)}>
+					<SelectTrigger className="w-full">
+						<SelectValue placeholder={t("settings:common.select")} />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="native">{t("settings:toolProtocol.native")}</SelectItem>
+						<SelectItem value="xml">{t("settings:toolProtocol.xml")}</SelectItem>
+					</SelectContent>
+				</Select>
+				<div className="text-sm text-vscode-descriptionForeground mt-1">
+					{t("settings:toolProtocol.description")}
+				</div>
+			</div>
 			<div>
 				<Checkbox
 					checked={apiConfiguration?.includeMaxTokens ?? true}
