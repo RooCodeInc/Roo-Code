@@ -96,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	TerminalRegistry.initialize()
 
 	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context)
+	await claudeCodeOAuthManager.initialize(context)
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []
@@ -423,6 +423,9 @@ export async function deactivate() {
 	if (bridge) {
 		await bridge.disconnect()
 	}
+
+	// Cleanup Claude Code OAuth manager
+	claudeCodeOAuthManager.dispose()
 
 	await McpServerManager.cleanup(extensionContext)
 	TelemetryService.instance.shutdown()

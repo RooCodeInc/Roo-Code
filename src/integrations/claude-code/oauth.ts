@@ -3,6 +3,7 @@ import * as http from "http"
 import { URL } from "url"
 import type { ExtensionContext } from "vscode"
 import { z } from "zod"
+import { RefreshTimer } from "@roo-code/cloud"
 
 // OAuth Configuration
 export const CLAUDE_CODE_OAUTH_CONFIG = {
@@ -205,12 +206,21 @@ export class ClaudeCodeOAuthManager {
 		state: string
 		server?: http.Server
 	} | null = null
+	private refreshTimer: RefreshTimer | null = null
+	private refreshAttempts: number = 0
+	private maxRefreshAttempts: number = 3
 
 	/**
 	 * Initialize the OAuth manager with VS Code extension context
 	 */
-	initialize(context: ExtensionContext): void {
+	async initialize(context: ExtensionContext): Promise<void> {
 		this.context = context
+
+		// Load existing credentials and start refresh timer if authenticated
+		await this.loadCredentials()
+		if (this.credentials) {
+			this.startRefreshTimer()
+		}
 	}
 
 	/**
@@ -246,6 +256,14 @@ export class ClaudeCodeOAuthManager {
 
 		await this.context.secrets.store(CLAUDE_CODE_CREDENTIALS_KEY, JSON.stringify(credentials))
 		this.credentials = credentials
+
+		// Reset refresh attempts on successful save
+		this.refreshAttempts = 0
+
+		// Start refresh timer if not already running
+		if (!this.refreshTimer) {
+			this.startRefreshTimer()
+		}
 	}
 
 	/**
@@ -258,6 +276,8 @@ export class ClaudeCodeOAuthManager {
 
 		await this.context.secrets.delete(CLAUDE_CODE_CREDENTIALS_KEY)
 		this.credentials = null
+		this.stopRefreshTimer()
+		this.refreshAttempts = 0
 	}
 
 	/**
@@ -278,11 +298,25 @@ export class ClaudeCodeOAuthManager {
 			try {
 				const newCredentials = await refreshAccessToken(this.credentials.refresh_token)
 				await this.saveCredentials(newCredentials)
+				console.log("[claude-code-oauth] Token refreshed successfully")
 			} catch (error) {
 				console.error("[claude-code-oauth] Failed to refresh token:", error)
-				// Clear invalid credentials
-				await this.clearCredentials()
-				return null
+
+				// Increment refresh attempts
+				this.refreshAttempts++
+
+				// Only clear credentials after max attempts to allow retry
+				if (this.refreshAttempts >= this.maxRefreshAttempts) {
+					console.error(
+						`[claude-code-oauth] Max refresh attempts (${this.maxRefreshAttempts}) reached, clearing credentials`,
+					)
+					await this.clearCredentials()
+					await this.notifyReauthRequired()
+					return null
+				}
+
+				// Don't return null immediately - let the old token be tried
+				// It might still work for some grace period
 			}
 		}
 
@@ -472,6 +506,120 @@ export class ClaudeCodeOAuthManager {
 	 */
 	getCredentials(): ClaudeCodeCredentials | null {
 		return this.credentials
+	}
+
+	/**
+	 * Start the background token refresh timer
+	 * Refreshes tokens proactively before they expire
+	 */
+	private startRefreshTimer(): void {
+		// Don't start if already running
+		if (this.refreshTimer) {
+			return
+		}
+
+		this.refreshTimer = new RefreshTimer({
+			callback: async () => {
+				try {
+					await this.performBackgroundRefresh()
+					return true // Success
+				} catch (error) {
+					console.error("[claude-code-oauth] Background refresh failed:", error)
+					return false // Failure - will trigger backoff
+				}
+			},
+			// Refresh every 50 minutes (tokens typically last 1 hour, we refresh with 10min buffer)
+			successInterval: 50 * 60 * 1000,
+			initialBackoffMs: 1000,
+			maxBackoffMs: 5 * 60 * 1000, // Max 5 minutes backoff
+		})
+
+		this.refreshTimer.start()
+		console.log("[claude-code-oauth] Started background token refresh timer")
+	}
+
+	/**
+	 * Stop the background token refresh timer
+	 */
+	private stopRefreshTimer(): void {
+		if (this.refreshTimer) {
+			this.refreshTimer.stop()
+			this.refreshTimer = null
+			console.log("[claude-code-oauth] Stopped background token refresh timer")
+		}
+	}
+
+	/**
+	 * Perform a background token refresh
+	 */
+	private async performBackgroundRefresh(): Promise<void> {
+		if (!this.credentials) {
+			throw new Error("No credentials available for refresh")
+		}
+
+		// Only refresh if token is close to expiring (within 10 minutes)
+		const expiryTime = new Date(this.credentials.expired).getTime()
+		const timeUntilExpiry = expiryTime - Date.now()
+		const tenMinutes = 10 * 60 * 1000
+
+		if (timeUntilExpiry > tenMinutes) {
+			// Token is still fresh, no need to refresh yet
+			console.log(
+				`[claude-code-oauth] Token still valid for ${Math.round(timeUntilExpiry / 60000)} minutes, skipping refresh`,
+			)
+			return
+		}
+
+		console.log("[claude-code-oauth] Performing background token refresh...")
+
+		try {
+			const newCredentials = await refreshAccessToken(this.credentials.refresh_token)
+			await this.saveCredentials(newCredentials)
+			console.log("[claude-code-oauth] Background token refresh successful")
+		} catch (error) {
+			this.refreshAttempts++
+
+			if (this.refreshAttempts >= this.maxRefreshAttempts) {
+				console.error(
+					`[claude-code-oauth] Max refresh attempts (${this.maxRefreshAttempts}) reached in background refresh`,
+				)
+				await this.clearCredentials()
+				await this.notifyReauthRequired()
+				throw new Error("Failed to refresh token after multiple attempts")
+			}
+
+			throw error
+		}
+	}
+
+	/**
+	 * Notify the user that re-authentication is required
+	 */
+	private async notifyReauthRequired(): Promise<void> {
+		try {
+			const vscode = await import("vscode")
+			const action = await vscode.window.showWarningMessage(
+				"Your Claude.ai authentication has expired. Please sign in again to continue using Claude models.",
+				"Sign In",
+				"Later",
+			)
+
+			if (action === "Sign In") {
+				// Trigger the sign-in flow through the webview message handler
+				// This will be handled by the UI layer
+				console.log("[claude-code-oauth] User requested re-authentication")
+			}
+		} catch (error) {
+			console.error("[claude-code-oauth] Failed to show re-auth notification:", error)
+		}
+	}
+
+	/**
+	 * Dispose of resources (call this when extension deactivates)
+	 */
+	dispose(): void {
+		this.stopRefreshTimer()
+		this.cancelAuthorizationFlow()
 	}
 }
 
