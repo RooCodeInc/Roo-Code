@@ -62,8 +62,12 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	// Determine if partial reads are enabled based on maxReadFileLine setting.
 	const partialReadsEnabled = maxReadFileLine !== -1
 
-	// Build native tools with dynamic read_file tool based on partialReadsEnabled.
-	const nativeTools = getNativeTools(partialReadsEnabled)
+	// Build native tools with dynamic read_file tool based on partialReadsEnabled
+	// Pass maxReadFileLine so the tool description tells the model about the limit
+	const nativeTools = getNativeTools({
+		partialReadsEnabled,
+		maxReadFileLine: partialReadsEnabled ? maxReadFileLine : undefined,
+	})
 
 	// Filter native tools based on mode restrictions.
 	const filteredNativeTools = filterNativeToolsForMode(

@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (baris {{start}}-{{end}})",
+		"startingFromLine": " (mulai dari baris {{start}})",
 		"definitionsOnly": " (hanya definisi)",
 		"maxLines": " (maks {{max}} baris)",
 		"imageTooLarge": "File gambar terlalu besar ({{size}} MB). Ukuran maksimum yang diizinkan adalah {{max}} MB.",

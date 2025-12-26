@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (строки {{start}}-{{end}})",
+		"startingFromLine": " (начиная со строки {{start}})",
 		"definitionsOnly": " (только определения)",
 		"maxLines": " (макс. {{max}} строк)",
 		"imageTooLarge": "Файл изображения слишком большой ({{size}} МБ). Максимально допустимый размер {{max}} МБ.",

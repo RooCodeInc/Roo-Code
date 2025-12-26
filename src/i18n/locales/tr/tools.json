@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " (satır {{start}}-{{end}})",
+		"startingFromLine": " ({{start}} satırından başlayarak)",
 		"definitionsOnly": " (sadece tanımlar)",
 		"maxLines": " (maks. {{max}} satır)",
 		"imageTooLarge": "Görüntü dosyası çok büyük ({{size}} MB). İzin verilen maksimum boyut {{max}} MB.",

@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " ({{start}}-{{end}}行目)",
+		"startingFromLine": " ({{start}}行目から)",
 		"definitionsOnly": " (定義のみ)",
 		"maxLines": " (最大{{max}}行)",
 		"imageTooLarge": "画像ファイルが大きすぎます（{{size}} MB）。最大許可サイズは {{max}} MB です。",

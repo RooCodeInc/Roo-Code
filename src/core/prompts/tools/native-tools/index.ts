@@ -11,7 +11,7 @@ import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
 import newTask from "./new_task"
-import { createReadFileTool } from "./read_file"
+import { createReadFileTool, type CreateReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
 import searchAndReplace from "./search_and_replace"
 import searchReplace from "./search_replace"
@@ -25,12 +25,30 @@ export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
 
 /**
+ * Options for getting native tools
+ */
+export interface GetNativeToolsOptions {
+	/** Whether to include advanced reading parameters (offset, mode, indentation) in read_file tool */
+	partialReadsEnabled?: boolean
+	/** The configured max lines per read (shown in description for model awareness) */
+	maxReadFileLine?: number
+}
+
+/**
  * Get native tools array, optionally customizing based on settings.
  *
- * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param options - Configuration options (or boolean for backward compatibility)
  * @returns Array of native tool definitions
  */
-export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+export function getNativeTools(options: GetNativeToolsOptions | boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+	// Handle backward compatibility with boolean parameter
+	const opts: GetNativeToolsOptions = typeof options === "boolean" ? { partialReadsEnabled: options } : options
+
+	const readFileOptions: CreateReadFileToolOptions = {
+		partialReadsEnabled: opts.partialReadsEnabled ?? true,
+		maxReadFileLine: opts.maxReadFileLine,
+	}
+
 	return [
 		accessMcpResource,
 		apply_diff,
@@ -44,7 +62,7 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		generateImage,
 		listFiles,
 		newTask,
-		createReadFileTool(partialReadsEnabled),
+		createReadFileTool(readFileOptions),
 		runSlashCommand,
 		searchAndReplace,
 		searchReplace,
@@ -57,4 +75,4 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 }
 
 // Backward compatibility: export default tools with line ranges enabled
-export const nativeTools = getNativeTools(true)
+export const nativeTools = getNativeTools({ partialReadsEnabled: true })
