@@ -6,6 +6,11 @@ import App from "./App"
 import "../node_modules/@vscode/codicons/dist/codicon.css"
 
 import { getHighlighter } from "./utils/highlighter"
+import { initServiceWorkerPrevention } from "./utils/serviceWorkerPrevention"
+
+// Prevent ServiceWorker registration in VS Code webview environment
+// This must be done before any third-party libraries are initialized
+initServiceWorkerPrevention()
 
 // Initialize Shiki early to hide initialization latency (async)
 getHighlighter().catch((error: Error) => console.error("Failed to initialize Shiki highlighter:", error))
