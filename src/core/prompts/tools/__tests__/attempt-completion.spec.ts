@@ -66,4 +66,65 @@ describe("getAttemptCompletionDescription", () => {
 		// Should contain result parameter
 		expect(description).toContain("- result: (required)")
 	})
+
+	it("should include brief summary instruction when briefCompletionSummary setting is enabled", () => {
+		const args = {
+			cwd: "/test/path",
+			supportsComputerUse: false,
+			settings: {
+				briefCompletionSummary: true,
+			},
+		}
+
+		const description = getAttemptCompletionDescription(args)
+
+		// Should contain the brief summary mode instruction
+		expect(description).toContain("BRIEF SUMMARY MODE")
+		expect(description).toContain("Keep your completion result concise")
+		expect(description).toContain("one or two sentences")
+		expect(description).toContain("Avoid repeating details already visible in the todo list")
+	})
+
+	it("should NOT include brief summary instruction when briefCompletionSummary setting is disabled", () => {
+		const args = {
+			cwd: "/test/path",
+			supportsComputerUse: false,
+			settings: {
+				briefCompletionSummary: false,
+			},
+		}
+
+		const description = getAttemptCompletionDescription(args)
+
+		// Should NOT contain the brief summary mode instruction
+		expect(description).not.toContain("BRIEF SUMMARY MODE")
+		expect(description).not.toContain("Keep your completion result concise")
+	})
+
+	it("should NOT include brief summary instruction when briefCompletionSummary setting is not provided", () => {
+		const args = {
+			cwd: "/test/path",
+			supportsComputerUse: false,
+			settings: {},
+		}
+
+		const description = getAttemptCompletionDescription(args)
+
+		// Should NOT contain the brief summary mode instruction
+		expect(description).not.toContain("BRIEF SUMMARY MODE")
+		expect(description).not.toContain("Keep your completion result concise")
+	})
+
+	it("should NOT include brief summary instruction when settings is not provided", () => {
+		const args = {
+			cwd: "/test/path",
+			supportsComputerUse: false,
+		}
+
+		const description = getAttemptCompletionDescription(args)
+
+		// Should NOT contain the brief summary mode instruction
+		expect(description).not.toContain("BRIEF SUMMARY MODE")
+		expect(description).not.toContain("Keep your completion result concise")
+	})
 })

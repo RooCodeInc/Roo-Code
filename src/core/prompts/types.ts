@@ -12,4 +12,6 @@ export interface SystemPromptSettings {
 	toolProtocol?: ToolProtocol
 	/** When true, model should hide vendor/company identity in responses */
 	isStealthModel?: boolean
+	/** When true, instructs AI to keep completion summaries brief to reduce generation time */
+	briefCompletionSummary?: boolean
 }

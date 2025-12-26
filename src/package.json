@@ -347,6 +347,11 @@
 					"default": false,
 					"description": "%commands.preventCompletionWithOpenTodos.description%"
 				},
+				"roo-cline.briefCompletionSummary": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.briefCompletionSummary.description%"
+				},
 				"roo-cline.vsCodeLmModelSelector": {
 					"type": "object",
 					"properties": {

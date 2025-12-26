@@ -96,6 +96,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
+			briefCompletionSummary: vscode.workspace
+				.getConfiguration(Package.name)
+				.get<boolean>("briefCompletionSummary", false),
 			toolProtocol,
 			isStealthModel: modelInfo?.isStealthModel,
 		},

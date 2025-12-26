@@ -31,6 +31,7 @@
 	"commands.commandExecutionTimeout.description": "Maximum time in seconds to wait for command execution to complete before timing out (0 = no timeout, 1-600s, default: 0s)",
 	"commands.commandTimeoutAllowlist.description": "Command prefixes that are excluded from the command execution timeout. Commands matching these prefixes will run without timeout restrictions.",
 	"commands.preventCompletionWithOpenTodos.description": "Prevent task completion when there are incomplete todos in the todo list",
+	"settings.briefCompletionSummary.description": "Instruct the AI to keep task completion summaries brief instead of repeating information already visible in the todo list. This can reduce generation time at task completion.",
 	"settings.vsCodeLmModelSelector.description": "Settings for VSCode Language Model API",
 	"settings.vsCodeLmModelSelector.vendor.description": "The vendor of the language model (e.g. copilot)",
 	"settings.vsCodeLmModelSelector.family.description": "The family of the language model (e.g. gpt-4)",

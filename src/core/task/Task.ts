@@ -3533,6 +3533,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
+					briefCompletionSummary: vscode.workspace
+						.getConfiguration(Package.name)
+						.get<boolean>("briefCompletionSummary", false),
 					toolProtocol,
 					isStealthModel: modelInfo?.isStealthModel,
 				},
