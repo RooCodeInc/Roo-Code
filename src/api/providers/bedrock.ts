@@ -147,6 +147,9 @@ export interface StreamEvent {
 	}
 	contentBlockStart?: ContentBlockStartEvent
 	contentBlockDelta?: ContentBlockDeltaEvent
+	contentBlockStop?: {
+		contentBlockIndex?: number
+	}
 	metadata?: {
 		usage?: {
 			inputTokens: number
@@ -505,6 +508,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("No stream available in the response")
 			}
 
+			// Track active tool calls by content block index
+			// Maps contentBlockIndex -> toolUseId for emitting tool_call_end events
+			const activeToolCalls = new Map<number, string>()
+
 			for await (const chunk of response.stream) {
 				// Parse the chunk as JSON if it's a string (for tests)
 				let streamEvent: StreamEvent
@@ -618,9 +625,14 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					else if (cbStart.start?.toolUse || cbStart.contentBlock?.toolUse) {
 						const toolUse = cbStart.start?.toolUse || cbStart.contentBlock?.toolUse
 						if (toolUse) {
+							const blockIndex = cbStart.contentBlockIndex ?? 0
+							// Track this tool call for emitting tool_call_end later
+							if (toolUse.toolUseId) {
+								activeToolCalls.set(blockIndex, toolUse.toolUseId)
+							}
 							yield {
 								type: "tool_call_partial",
-								index: cbStart.contentBlockIndex ?? 0,
+								index: blockIndex,
 								id: toolUse.toolUseId,
 								name: toolUse.name,
 								arguments: undefined,
@@ -683,8 +695,33 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					}
 					continue
 				}
-				// Handle message stop
+
+				// Handle content block stop - emit tool_call_end for completed tool use blocks
+				if (streamEvent.contentBlockStop) {
+					const blockIndex = streamEvent.contentBlockStop.contentBlockIndex
+					if (blockIndex !== undefined && activeToolCalls.has(blockIndex)) {
+						const toolUseId = activeToolCalls.get(blockIndex)!
+						yield {
+							type: "tool_call_end",
+							id: toolUseId,
+						}
+						activeToolCalls.delete(blockIndex)
+					}
+					continue
+				}
+
+				// Handle message stop - emit tool_call_end for any remaining active tool calls
+				// This is a fallback in case contentBlockStop wasn't received
 				if (streamEvent.messageStop) {
+					if (streamEvent.messageStop.stopReason === "tool_use") {
+						for (const [, toolUseId] of activeToolCalls) {
+							yield {
+								type: "tool_call_end",
+								id: toolUseId,
+							}
+						}
+						activeToolCalls.clear()
+					}
 					continue
 				}
 			}

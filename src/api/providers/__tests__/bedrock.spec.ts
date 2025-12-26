@@ -1244,4 +1244,339 @@ describe("AwsBedrockHandler", () => {
 			expect(mockCaptureException).toHaveBeenCalled()
 		})
 	})
+
+	describe("native tool streaming support", () => {
+		beforeEach(() => {
+			mockConverseStreamCommand.mockReset()
+		})
+
+		it("should emit tool_call_end when contentBlockStop is received for a tool use block", async () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Get the mock send from the handler instance
+			const clientInstance =
+				vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]
+					?.value
+			const mockSendFn = clientInstance?.send as ReturnType<typeof vi.fn>
+
+			// Mock the stream response with tool use events
+			const mockStream = (async function* () {
+				yield { messageStart: { role: "assistant" } }
+				yield {
+					contentBlockStart: {
+						contentBlockIndex: 0,
+						start: {
+							toolUse: {
+								toolUseId: "toolu_123",
+								name: "write_to_file",
+							},
+						},
+					},
+				}
+				yield {
+					contentBlockDelta: {
+						contentBlockIndex: 0,
+						delta: {
+							toolUse: {
+								input: '{"path": "test(1).ts", "content": "hello"}',
+							},
+						},
+					},
+				}
+				yield {
+					contentBlockStop: {
+						contentBlockIndex: 0,
+					},
+				}
+				yield { messageStop: { stopReason: "tool_use" } }
+			})()
+
+			mockSendFn.mockResolvedValueOnce({ stream: mockStream })
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Create a file test(1).ts",
+				},
+			]
+
+			const generator = handler.createMessage("You are a helpful assistant", messages, {
+				taskId: "test-task-1",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "write_to_file",
+							description: "Write content to a file",
+							parameters: {
+								type: "object",
+								properties: {
+									path: { type: "string" },
+									content: { type: "string" },
+								},
+								required: ["path", "content"],
+							},
+						},
+					},
+				],
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_partial and tool_call_end events
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+
+			expect(partialChunks.length).toBeGreaterThan(0)
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0]).toEqual({ type: "tool_call_end", id: "toolu_123" })
+		})
+
+		it("should emit tool_call_end via messageStop fallback when contentBlockStop is not received", async () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Get the mock send from the handler instance
+			const clientInstance =
+				vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]
+					?.value
+			const mockSendFn = clientInstance?.send as ReturnType<typeof vi.fn>
+
+			// Mock the stream response WITHOUT contentBlockStop (fallback case)
+			const mockStream = (async function* () {
+				yield { messageStart: { role: "assistant" } }
+				yield {
+					contentBlockStart: {
+						contentBlockIndex: 0,
+						start: {
+							toolUse: {
+								toolUseId: "toolu_456",
+								name: "read_file",
+							},
+						},
+					},
+				}
+				yield {
+					contentBlockDelta: {
+						contentBlockIndex: 0,
+						delta: {
+							toolUse: {
+								input: '{"path": "test.ts"}',
+							},
+						},
+					},
+				}
+				// No contentBlockStop - directly to messageStop
+				yield { messageStop: { stopReason: "tool_use" } }
+			})()
+
+			mockSendFn.mockResolvedValueOnce({ stream: mockStream })
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Read a file",
+				},
+			]
+
+			const generator = handler.createMessage("You are a helpful assistant", messages, {
+				taskId: "test-task-2",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "read_file",
+							description: "Read a file",
+							parameters: {
+								type: "object",
+								properties: {
+									path: { type: "string" },
+								},
+								required: ["path"],
+							},
+						},
+					},
+				],
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Should emit tool_call_end via messageStop fallback
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0]).toEqual({ type: "tool_call_end", id: "toolu_456" })
+		})
+
+		it("should emit multiple tool_call_end events for parallel tool calls", async () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Get the mock send from the handler instance
+			const clientInstance =
+				vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]
+					?.value
+			const mockSendFn = clientInstance?.send as ReturnType<typeof vi.fn>
+
+			// Mock the stream response with multiple tool use blocks
+			const mockStream = (async function* () {
+				yield { messageStart: { role: "assistant" } }
+				// First tool
+				yield {
+					contentBlockStart: {
+						contentBlockIndex: 0,
+						start: {
+							toolUse: {
+								toolUseId: "toolu_first",
+								name: "read_file",
+							},
+						},
+					},
+				}
+				yield {
+					contentBlockDelta: {
+						contentBlockIndex: 0,
+						delta: {
+							toolUse: { input: '{"path": "file1.ts"}' },
+						},
+					},
+				}
+				yield { contentBlockStop: { contentBlockIndex: 0 } }
+				// Second tool
+				yield {
+					contentBlockStart: {
+						contentBlockIndex: 1,
+						start: {
+							toolUse: {
+								toolUseId: "toolu_second",
+								name: "read_file",
+							},
+						},
+					},
+				}
+				yield {
+					contentBlockDelta: {
+						contentBlockIndex: 1,
+						delta: {
+							toolUse: { input: '{"path": "file2.ts"}' },
+						},
+					},
+				}
+				yield { contentBlockStop: { contentBlockIndex: 1 } }
+				yield { messageStop: { stopReason: "tool_use" } }
+			})()
+
+			mockSendFn.mockResolvedValueOnce({ stream: mockStream })
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Read two files",
+				},
+			]
+
+			const generator = handler.createMessage("You are a helpful assistant", messages, {
+				taskId: "test-task-3",
+				tools: [
+					{
+						type: "function" as const,
+						function: {
+							name: "read_file",
+							description: "Read a file",
+							parameters: {
+								type: "object",
+								properties: { path: { type: "string" } },
+								required: ["path"],
+							},
+						},
+					},
+				],
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Should emit tool_call_end for both tools
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+			expect(endChunks).toHaveLength(2)
+			expect(endChunks).toEqual([
+				{ type: "tool_call_end", id: "toolu_first" },
+				{ type: "tool_call_end", id: "toolu_second" },
+			])
+		})
+
+		it("should not emit tool_call_end when stopReason is not tool_use", async () => {
+			const handler = new AwsBedrockHandler({
+				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+				awsAccessKey: "test",
+				awsSecretKey: "test",
+				awsRegion: "us-east-1",
+			})
+
+			// Get the mock send from the handler instance
+			const clientInstance =
+				vi.mocked(BedrockRuntimeClient).mock.results[vi.mocked(BedrockRuntimeClient).mock.results.length - 1]
+					?.value
+			const mockSendFn = clientInstance?.send as ReturnType<typeof vi.fn>
+
+			// Mock a text response (no tool use)
+			const mockStream = (async function* () {
+				yield { messageStart: { role: "assistant" } }
+				yield {
+					contentBlockStart: {
+						contentBlockIndex: 0,
+						start: { text: "" },
+					},
+				}
+				yield {
+					contentBlockDelta: {
+						contentBlockIndex: 0,
+						delta: { text: "Hello, how can I help you?" },
+					},
+				}
+				yield { contentBlockStop: { contentBlockIndex: 0 } }
+				yield { messageStop: { stopReason: "end_turn" } }
+			})()
+
+			mockSendFn.mockResolvedValueOnce({ stream: mockStream })
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello",
+				},
+			]
+
+			const generator = handler.createMessage("You are a helpful assistant", messages)
+
+			const chunks: any[] = []
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			// Should not have any tool_call_end events
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+			expect(endChunks).toHaveLength(0)
+		})
+	})
 })
