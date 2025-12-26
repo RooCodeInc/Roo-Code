@@ -298,12 +298,12 @@
 				"win": "ctrl+alt+a",
 				"linux": "ctrl+alt+a"
 			},
-            {
-                "command": "roo-cline.newTaskWithoutPrompt",
-                "key": "ctrl+m, ctrl+n",
-                "mac": "cmd+m, cmd+n",
-                "when": "roo-cline.sidebar.visible"
-            }
+			{
+				"command": "roo-cline.newTaskWithoutPrompt",
+				"key": "ctrl+m, ctrl+n",
+				"mac": "cmd+m, cmd+n",
+				"when": "roo-cline.sidebar.visible"
+			}
 		],
 		"submenus": [
 			{
