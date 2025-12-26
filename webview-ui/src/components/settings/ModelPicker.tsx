@@ -39,6 +39,11 @@ type ModelIdKey = keyof Pick<
 	| "apiModelId"
 >
 
+interface ExtraOption {
+	value: string
+	label: string
+}
+
 interface ModelPickerProps {
 	defaultModelId: string
 	models: Record<string, ModelInfo> | null
@@ -55,6 +60,7 @@ interface ModelPickerProps {
 	errorMessage?: string
 	simplifySettings?: boolean
 	hidePricing?: boolean
+	extraOptions?: ExtraOption[]
 }
 
 export const ModelPicker = ({
@@ -69,6 +75,7 @@ export const ModelPicker = ({
 	errorMessage,
 	simplifySettings,
 	hidePricing,
+	extraOptions,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 
@@ -228,6 +235,23 @@ export const ModelPicker = ({
 												className={cn(
 													"size-4 p-0.5 ml-auto",
 													model === selectedModelId ? "opacity-100" : "opacity-0",
+												)}
+											/>
+										</CommandItem>
+									))}
+									{extraOptions?.map((option) => (
+										<CommandItem
+											key={option.value}
+											value={option.value}
+											onSelect={onSelect}
+											data-testid={`model-option-${option.value}`}>
+											<span className="truncate" title={option.label}>
+												{option.label}
+											</span>
+											<Check
+												className={cn(
+													"size-4 p-0.5 ml-auto",
+													option.value === selectedModelId ? "opacity-100" : "opacity-0",
 												)}
 											/>
 										</CommandItem>
