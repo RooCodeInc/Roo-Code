@@ -40,7 +40,6 @@ export class OpenRouterEmbedder implements IEmbedder {
 	private readonly defaultModelId: string
 	private readonly apiKey: string
 	private readonly maxItemTokens: number
-	private readonly baseUrl: string = "https://openrouter.ai/api/v1"
 	private readonly specificProvider?: string
 
 	// Global rate limiting state shared across all instances
@@ -72,7 +71,7 @@ export class OpenRouterEmbedder implements IEmbedder {
 			throw new Error(t("embeddings:validation.apiKeyRequired"))
 		}
 
-		let baseUrl = openRouterBaseUrl || "https://openrouter.ai/api/v1"
+		const baseUrl = openRouterBaseUrl || "https://openrouter.ai/api/v1"
 
 		this.apiKey = apiKey
 		// Only set specificProvider if it's not the default value
