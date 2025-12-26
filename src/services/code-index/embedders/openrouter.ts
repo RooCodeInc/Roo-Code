@@ -82,7 +82,7 @@ export class OpenRouterEmbedder implements IEmbedder {
 		// Wrap OpenAI client creation to handle invalid API key characters
 		try {
 			this.embeddingsClient = new OpenAI({
-				baseURL: this.baseUrl,
+				baseURL: baseUrl,
 				apiKey: apiKey,
 				defaultHeaders: {
 					"HTTP-Referer": "https://github.com/RooCodeInc/Roo-Code",
