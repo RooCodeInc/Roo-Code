@@ -15,21 +15,23 @@ type ApiMessageForDetection = Anthropic.MessageParam & {
  * Resolve the effective tool protocol.
  *
  * **Deprecation Note (XML Protocol):**
- * XML tool protocol has been deprecated. All models now use Native tool calling.
- * User/profile preferences (`providerSettings.toolProtocol`) and model defaults
- * (`modelInfo.defaultToolProtocol`) are ignored.
+ * XML tool protocol has been deprecated for most providers. All models now use
+ * Native tool calling by default. However, for OpenAI Compatible providers,
+ * user preferences are still respected because third-party API proxies may not
+ * fully support native tool calling.
  *
  * Precedence:
  * 1. Locked Protocol (task-level lock for resumed tasks - highest priority)
- * 2. Native (always, for all new tasks)
+ * 2. User preference for OpenAI Compatible provider (allows XML for compatibility)
+ * 3. Native (default for all other providers and new tasks)
  *
- * @param _providerSettings - The provider settings (toolProtocol field is ignored)
+ * @param providerSettings - The provider settings (toolProtocol field is respected for openai provider)
  * @param _modelInfo - Unused, kept for API compatibility
  * @param lockedProtocol - Optional task-locked protocol that takes absolute precedence
  * @returns The resolved tool protocol (either "xml" or "native")
  */
 export function resolveToolProtocol(
-	_providerSettings: ProviderSettings,
+	providerSettings: ProviderSettings,
 	_modelInfo?: unknown,
 	lockedProtocol?: ToolProtocol,
 ): ToolProtocol {
@@ -39,8 +41,15 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
-	// 2. Always return Native protocol for new tasks
-	// All models now support native tools; XML is deprecated
+	// 2. For OpenAI Compatible provider, respect user preference
+	// Third-party API proxies may not fully support native tool calling,
+	// so users need the ability to select XML protocol as a workaround.
+	if (providerSettings.apiProvider === "openai" && providerSettings.toolProtocol) {
+		return providerSettings.toolProtocol
+	}
+
+	// 3. Default to Native protocol for new tasks
+	// All models now support native tools; XML is deprecated for standard providers
 	return TOOL_PROTOCOL.NATIVE
 }
 
