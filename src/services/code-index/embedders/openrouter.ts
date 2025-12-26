@@ -64,8 +64,8 @@ export class OpenRouterEmbedder implements IEmbedder {
 		apiKey: string,
 		modelId?: string,
 		maxItemTokens?: number,
-		openRouterBaseUrl?: string,
 		specificProvider?: string,
+		openRouterBaseUrl?: string,
 	) {
 		if (!apiKey) {
 			throw new Error(t("embeddings:validation.apiKeyRequired"))
