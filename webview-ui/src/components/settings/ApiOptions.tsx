@@ -106,7 +106,6 @@ import { ModelInfoView } from "./ModelInfoView"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
 import { Verbosity } from "./Verbosity"
-import { DiffSettingsControl } from "./DiffSettingsControl"
 import { TodoListSettingsControl } from "./TodoListSettingsControl"
 import { TemperatureControl } from "./TemperatureControl"
 import { RateLimitSecondsControl } from "./RateLimitSecondsControl"
@@ -861,11 +860,6 @@ const ApiOptions = ({
 					<CollapsibleContent className="space-y-3">
 						<TodoListSettingsControl
 							todoListEnabled={apiConfiguration.todoListEnabled}
-							onChange={(field, value) => setApiConfigurationField(field, value)}
-						/>
-						<DiffSettingsControl
-							diffEnabled={apiConfiguration.diffEnabled}
-							fuzzyMatchThreshold={apiConfiguration.fuzzyMatchThreshold}
 							onChange={(field, value) => setApiConfigurationField(field, value)}
 						/>
 						{selectedModelInfo?.supportsTemperature !== false && (

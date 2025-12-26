@@ -227,7 +227,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -250,7 +249,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -275,7 +273,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -298,7 +295,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -321,7 +317,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -330,78 +325,6 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
-	})
-
-	it("should include diff strategy tool description when diffEnabled is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			true, // diffEnabled
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-true.snap")
-	})
-
-	it("should exclude diff strategy tool description when diffEnabled is false", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false, // supportsImages
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			false, // diffEnabled
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-false.snap")
-	})
-
-	it("should exclude diff strategy tool description when diffEnabled is undefined", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-undefined.snap")
 	})
 
 	it("should include vscode language in custom instructions", async () => {
@@ -443,7 +366,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -504,7 +426,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			customModes, // customModes
 			"Global instructions", // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -542,7 +463,6 @@ describe("SYSTEM_PROMPT", () => {
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			false, // enableMcpServerCreation
 			undefined, // language
@@ -575,7 +495,6 @@ describe("SYSTEM_PROMPT", () => {
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			false, // enableMcpServerCreation
 			undefined, // language
@@ -607,7 +526,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -641,7 +559,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -674,7 +591,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -707,7 +623,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -738,7 +653,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined,
 			undefined,
 			defaultModeSlug,
-			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -779,7 +693,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
@@ -841,7 +754,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			true, // enableMcpServerCreation
 			undefined, // language
