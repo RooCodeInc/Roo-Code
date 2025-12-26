@@ -63,7 +63,7 @@ import { ApiStream, GroundingSource } from "../../api/transform/stream"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 
 // shared
-import { findLastIndex } from "../../shared/array"
+import { findLast, findLastIndex } from "../../shared/array"
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
@@ -262,6 +262,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	abort: boolean = false
 	currentRequestAbortController?: AbortController
 	skipPrevResponseIdOnce: boolean = false
+
+	// // Cancellation Token
+	// private cancellationTokenSource: vscode.CancellationTokenSource
+	// readonly cancellationToken: vscode.CancellationToken
 
 	// TaskStatus
 	idleAsk?: ClineMessage
@@ -495,6 +499,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.enableCheckpoints = enableCheckpoints
 		this.checkpointTimeout = checkpointTimeout
 		this.enableBridge = enableBridge
+
+		// // Initialize cancellation token
+		// this.cancellationTokenSource = new vscode.CancellationTokenSource()
+		// this.cancellationToken = this.cancellationTokenSource.token
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
@@ -2085,6 +2093,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveNoToolUseCount = 0
 		this.consecutiveNoAssistantMessagesCount = 0
 
+		// // Cancel the cancellation token to signal all operations to stop
+		// try {
+		// 	this.cancellationTokenSource.cancel()
+		// } catch (error) {
+		// 	console.error("Error cancelling cancellation token:", error)
+		// }
+
 		// Force final token usage update before abort event
 		this.emitFinalTokenUsageUpdate()
 
@@ -2218,6 +2233,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error("Error reverting diff changes:", error)
 		}
+
+		// // Dispose cancellation token source to free resources
+		// try {
+		// 	this.cancellationTokenSource.dispose()
+		// } catch (error) {
+		// 	console.error("Error disposing cancellation token source:", error)
+		// }
 	}
 
 	// Subtasks
@@ -2344,8 +2366,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// the user hits max requests and denies resetting the count.
 				break
 			} else {
+				const _nextUserContent = findLast(
+					nextUserContent,
+					(block) => block.type === "text" && typeof block.text === "string",
+				) as { type: string; text: string }
+
 				// Use the task's locked protocol, NOT the current settings (fallback to xml if not set)
-				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml") }]
+				nextUserContent = [
+					{
+						type: "text",
+						text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml", _nextUserContent?.text),
+					},
+				]
 			}
 		}
 	}
@@ -3404,7 +3436,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const didToolUse = this.assistantMessageContent.some(
 						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 					)
-
+					const preAssistantMessage =
+						this.assistantMessageContent[0] &&
+						["text", "reasoning"].includes(this.assistantMessageContent[0].type)
+							? (this.assistantMessageContent[0] as any).content ||
+								(this.assistantMessageContent[0] as any).text
+							: undefined
 					if (!didToolUse) {
 						// Increment consecutive no-tool-use counter
 						this.consecutiveNoToolUseCount++
@@ -3419,7 +3456,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Use the task's locked protocol for consistent behavior
 						this.userMessageContent.push({
 							type: "text",
-							text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml"),
+							text: formatResponse.noToolsUsed(
+								this._taskToolProtocol ?? "xml",
+								undefined,
+								preAssistantMessage,
+							),
 						})
 					} else {
 						// Reset counter when tools are used successfully

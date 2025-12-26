@@ -62,10 +62,14 @@ export const formatResponse = {
 		return `Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`
 	},
 
-	noToolsUsed: (protocol?: ToolProtocol) => {
+	noToolsUsed: (protocol?: ToolProtocol, preUserContent?: string, preAssistantMessage?: string) => {
 		const instructions = getToolInstructionsReminder(protocol)
 
 		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
+
+# Previous response history part of content
+${preUserContent ? `\nUser said: ${(preUserContent.length > 300 ? `${preUserContent.slice(0, 300)}...` : preUserContent).trim()}` : ""}
+${preAssistantMessage ? `\nAssistant said: ${(preAssistantMessage.length > 300 ? `${preAssistantMessage.slice(0, 300)}...` : preAssistantMessage).trim()}` : ""}
 
 ${instructions}
 

@@ -20,8 +20,7 @@ import { Task } from "../task/Task"
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
-import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/simpleReadFileTool"
-import { shouldUseSingleFileRead, TOOL_PROTOCOL } from "@roo-code/types"
+import { TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
@@ -369,18 +368,12 @@ export async function presentAssistantMessage(cline: Task) {
 					case "execute_command":
 						return `[${block.name} for '${block.params.command}']`
 					case "read_file":
-						// Check if this model should use the simplified description
-						const modelId = cline.api.getModel().id
-						if (shouldUseSingleFileRead(modelId)) {
-							return getSimpleReadFileToolDescription(block.name, block.params)
-						} else {
-							// Prefer native typed args when available; fall back to legacy params
-							// Check if nativeArgs exists (native protocol)
-							if (block.nativeArgs) {
-								return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
-							}
-							return readFileTool.getReadFileToolDescription(block.name, block.params)
+						// Prefer native typed args when available; fall back to legacy params
+						// Check if nativeArgs exists (native protocol)
+						if (block.nativeArgs) {
+							return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
 						}
+						return readFileTool.getReadFileToolDescription(block.name, block.params)
 					case "fetch_instructions":
 						return `[${block.name} for '${block.params.task}']`
 					case "write_to_file":
@@ -931,29 +924,14 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "read_file":
-					// Check if this model should use the simplified single-file read tool
-					// Only use simplified tool for XML protocol - native protocol works with standard tool
-					const modelId = cline.api.getModel().id
-					if (shouldUseSingleFileRead(modelId) && toolProtocol !== TOOL_PROTOCOL.NATIVE) {
-						await simpleReadFileTool(
-							cline,
-							block,
-							askApproval,
-							handleError,
-							pushToolResult,
-							removeClosingTag,
-							toolProtocol,
-						)
-					} else {
-						// Type assertion is safe here because we're in the "read_file" case
-						await readFileTool.handle(cline, block as ToolUse<"read_file">, {
-							askApproval,
-							handleError,
-							pushToolResult,
-							removeClosingTag,
-							toolProtocol,
-						})
-					}
+					// Type assertion is safe here because we're in the "read_file" case
+					await readFileTool.handle(cline, block as ToolUse<"read_file">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
 					break
 				case "fetch_instructions":
 					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, {

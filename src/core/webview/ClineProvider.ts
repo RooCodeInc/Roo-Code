@@ -2002,7 +2002,6 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
-			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
 		} = await this.getState()
@@ -2179,7 +2178,6 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
-			openRouterUseMiddleOutTransform,
 			featureRoomoteControlEnabled,
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", isJetbrainsPlatform()),
 			claudeCodeIsAuthenticated: await (async () => {
@@ -2375,7 +2373,6 @@ export class ClineProvider
 			customModes,
 			maxOpenTabsContext: stateValues.maxOpenTabsContext ?? 20,
 			maxWorkspaceFiles: stateValues.maxWorkspaceFiles ?? MAX_WORKSPACE_FILES,
-			openRouterUseMiddleOutTransform: stateValues.openRouterUseMiddleOutTransform,
 			browserToolEnabled: stateValues.browserToolEnabled ?? true,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,

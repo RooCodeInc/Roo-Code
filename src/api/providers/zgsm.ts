@@ -554,7 +554,6 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 			finishReason?: ChatCompletionChunk.Choice["finish_reason"]
 			activeToolCallIds?: Set<string>
 		}
-
 		// chunk
 		for await (const chunk of stream) {
 			// Check if request was aborted
@@ -580,29 +579,40 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				) {
 					const batchedContent = contentBuffer.join("")
 					for (const processedChunk of matcher.update(batchedContent)) {
+						if (this.abortController?.signal.aborted) {
+							break
+						}
+						// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+						isDev &&
+							this.logger.info(
+								`[ResponseID ${this.options.zgsmModelId} sse rendering]:`,
+								requestId,
+								batchedContent,
+							)
 						yield processedChunk
 					}
 					contentBuffer.length = 0 // Clear buffer
-					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-					isDev &&
-						this.logger.info(
-							`[ResponseID ${this.options.zgsmModelId} sse rendering]:`,
-							requestId,
-							batchedContent,
-						)
+
 					time = now
 				}
 			}
 
 			// Process reasoning content
 			if ("reasoning_content" in delta && delta.reasoning_content) {
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+				isDev &&
+					this.logger.warn(
+						`[ResponseID ${this.options.zgsmModelId} sse "reasoning_content":`,
+						requestId,
+						delta.reasoning_content,
+					)
 				yield {
 					type: "reasoning",
-					text: (delta.reasoning_content as string | undefined) || "",
+					text: delta.reasoning_content as string,
 				}
 			}
 
-			yield* this.processToolCalls(delta, finishReason, activeToolCallIds, contentBuffer.length > 0)
+			yield* this.processToolCalls(delta, finishReason, activeToolCallIds, requestId, contentBuffer.length > 0)
 
 			// Cache usage information
 			if (chunk.usage) {
@@ -618,25 +628,25 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		// Process remaining content
 		if (contentBuffer.length > 0) {
 			const remainingContent = contentBuffer.join("")
-			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-			isDev &&
-				this.logger.info(
-					`[ResponseID ${this.options.zgsmModelId} sse render end]:`,
-					requestId,
-					remainingContent,
-				)
 			for (const processedChunk of matcher.update(remainingContent)) {
+				if (this.abortController?.signal.aborted) {
+					break
+				}
 				yield processedChunk
 			}
 			contentBuffer.length = 0 // Clear buffer
-			yield* this.processToolCalls(lastDeltaInfo.delta, lastDeltaInfo.finishReason, activeToolCallIds)
+			yield* this.processToolCalls(lastDeltaInfo.delta, lastDeltaInfo.finishReason, activeToolCallIds, requestId)
 		}
 
 		// Output final results
 		for (const chunk of matcher.final()) {
+			if (this.abortController?.signal.aborted) {
+				break
+			}
 			yield chunk
 		}
-
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		isDev && this.logger.info(`[ResponseID ${this.options.zgsmModelId} sse render end]:`, requestId)
 		// Process usage metrics
 		if (lastUsage) {
 			yield this.processUsageMetrics(lastUsage, modelInfo)
@@ -666,6 +676,7 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 		delta: OpenAI.Chat.Completions.ChatCompletionChunk.Choice.Delta | undefined,
 		finishReason: string | null | undefined,
 		activeToolCallIds: Set<string>,
+		requestId?: string,
 		skip: boolean = false,
 	): Generator<
 		| { type: "tool_call_partial"; index: number; id?: string; name?: string; arguments?: string }
@@ -680,6 +691,14 @@ export class ZgsmAiHandler extends BaseProvider implements SingleCompletionHandl
 				if (toolCall.id) {
 					activeToolCallIds.add(toolCall.id)
 				}
+				// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+				isDev &&
+					this.logger.warn(
+						`[ResponseID ${this.options.zgsmModelId} sse "toolCall arguments":`,
+						requestId,
+						toolCall.function?.name,
+						toolCall.function?.arguments,
+					)
 				yield {
 					type: "tool_call_partial",
 					index: toolCall.index,
