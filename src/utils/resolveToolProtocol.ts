@@ -12,24 +12,40 @@ type ApiMessageForDetection = Anthropic.MessageParam & {
 }
 
 /**
+ * Providers that can benefit from XML tool protocol as a fallback option.
+ * These providers may proxy to models that don't fully support native tool calling,
+ * or may encounter compatibility issues with certain model configurations.
+ *
+ * - litellm: Proxies to various LLM backends; some may not support native tools
+ * - openai: OpenAI-compatible endpoints may have varying tool support
+ * - ollama: Local models may have limited native tool support
+ * - lmstudio: Local models may have limited native tool support
+ */
+const PROVIDERS_WITH_XML_FALLBACK = ["litellm", "openai", "ollama", "lmstudio"] as const
+
+/**
  * Resolve the effective tool protocol.
  *
- * **Deprecation Note (XML Protocol):**
- * XML tool protocol has been deprecated. All models now use Native tool calling.
- * User/profile preferences (`providerSettings.toolProtocol`) and model defaults
- * (`modelInfo.defaultToolProtocol`) are ignored.
+ * **Tool Protocol Configuration:**
+ * By default, Native tool calling is used for all providers. However, certain providers
+ * (LiteLLM, OpenAI Compatible, Ollama, LM Studio) allow users to explicitly set XML
+ * tool protocol via the `toolProtocol` setting. This is useful when:
+ * - Proxying through LiteLLM to models that don't support native tools
+ * - Using local models with limited tool calling capabilities
+ * - Encountering compatibility issues with specific model configurations
  *
  * Precedence:
  * 1. Locked Protocol (task-level lock for resumed tasks - highest priority)
- * 2. Native (always, for all new tasks)
+ * 2. User Preference (only for providers in PROVIDERS_WITH_XML_FALLBACK)
+ * 3. Native (default for all other cases)
  *
- * @param _providerSettings - The provider settings (toolProtocol field is ignored)
+ * @param providerSettings - The provider settings including optional toolProtocol
  * @param _modelInfo - Unused, kept for API compatibility
  * @param lockedProtocol - Optional task-locked protocol that takes absolute precedence
  * @returns The resolved tool protocol (either "xml" or "native")
  */
 export function resolveToolProtocol(
-	_providerSettings: ProviderSettings,
+	providerSettings: ProviderSettings,
 	_modelInfo?: unknown,
 	lockedProtocol?: ToolProtocol,
 ): ToolProtocol {
@@ -39,8 +55,18 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
-	// 2. Always return Native protocol for new tasks
-	// All models now support native tools; XML is deprecated
+	// 2. For providers with XML fallback support, respect user preference if explicitly set
+	// This allows users to work around compatibility issues with certain models/configurations
+	const provider = providerSettings.apiProvider
+	if (
+		provider &&
+		PROVIDERS_WITH_XML_FALLBACK.includes(provider as (typeof PROVIDERS_WITH_XML_FALLBACK)[number]) &&
+		providerSettings.toolProtocol
+	) {
+		return providerSettings.toolProtocol
+	}
+
+	// 3. Default to Native protocol for all new tasks
 	return TOOL_PROTOCOL.NATIVE
 }
 
