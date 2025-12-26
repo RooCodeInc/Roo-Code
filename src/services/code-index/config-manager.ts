@@ -21,7 +21,7 @@ export class CodeIndexConfigManager {
 	private mistralOptions?: { apiKey: string }
 	private vercelAiGatewayOptions?: { apiKey: string }
 	private bedrockOptions?: { region: string; profile?: string }
-	private openRouterOptions?: { apiKey: string; specificProvider?: string }
+	private openRouterOptions?: { apiKey: string; specificProvider?: string; openRouterBaseUrl?: string }
 	private qdrantUrl?: string = "http://localhost:6333"
 	private qdrantApiKey?: string
 	private searchMinScore?: number
@@ -142,7 +142,11 @@ export class CodeIndexConfigManager {
 		this.mistralOptions = mistralApiKey ? { apiKey: mistralApiKey } : undefined
 		this.vercelAiGatewayOptions = vercelAiGatewayApiKey ? { apiKey: vercelAiGatewayApiKey } : undefined
 		this.openRouterOptions = openRouterApiKey
-			? { apiKey: openRouterApiKey, specificProvider: openRouterSpecificProvider || undefined }
+			? {
+					apiKey: openRouterApiKey,
+					openRouterBaseUrl: codebaseIndexEmbedderBaseUrl,
+					specificProvider: openRouterSpecificProvider || undefined,
+				}
 			: undefined
 		// Set bedrockOptions if region is provided (profile is optional)
 		this.bedrockOptions = bedrockRegion
@@ -167,7 +171,7 @@ export class CodeIndexConfigManager {
 			mistralOptions?: { apiKey: string }
 			vercelAiGatewayOptions?: { apiKey: string }
 			bedrockOptions?: { region: string; profile?: string }
-			openRouterOptions?: { apiKey: string }
+			openRouterOptions?: { apiKey: string; specificProvider?: string; openRouterBaseUrl?: string }
 			qdrantUrl?: string
 			qdrantApiKey?: string
 			searchMinScore?: number
@@ -191,6 +195,7 @@ export class CodeIndexConfigManager {
 			bedrockRegion: this.bedrockOptions?.region ?? "",
 			bedrockProfile: this.bedrockOptions?.profile ?? "",
 			openRouterApiKey: this.openRouterOptions?.apiKey ?? "",
+			openRouterBaseUrl: this.openRouterOptions?.openRouterBaseUrl ?? "",
 			openRouterSpecificProvider: this.openRouterOptions?.specificProvider ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
@@ -269,6 +274,7 @@ export class CodeIndexConfigManager {
 			return isConfigured
 		} else if (this.embedderProvider === "openrouter") {
 			const apiKey = this.openRouterOptions?.apiKey
+			const openRouterBaseUrl = this.openRouterOptions?.openRouterBaseUrl
 			const qdrantUrl = this.qdrantUrl
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured
@@ -310,6 +316,7 @@ export class CodeIndexConfigManager {
 		const prevBedrockRegion = prev?.bedrockRegion ?? ""
 		const prevBedrockProfile = prev?.bedrockProfile ?? ""
 		const prevOpenRouterApiKey = prev?.openRouterApiKey ?? ""
+		const prevOpenRouterBaseUrl = prev?.openRouterBaseUrl ?? ""
 		const prevOpenRouterSpecificProvider = prev?.openRouterSpecificProvider ?? ""
 		const prevQdrantUrl = prev?.qdrantUrl ?? ""
 		const prevQdrantApiKey = prev?.qdrantApiKey ?? ""
@@ -353,6 +360,7 @@ export class CodeIndexConfigManager {
 		const currentBedrockProfile = this.bedrockOptions?.profile ?? ""
 		const currentOpenRouterApiKey = this.openRouterOptions?.apiKey ?? ""
 		const currentOpenRouterSpecificProvider = this.openRouterOptions?.specificProvider ?? ""
+		const currentOpenRouterBaseUrl = this.openRouterOptions?.openRouterBaseUrl ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
 
@@ -393,6 +401,10 @@ export class CodeIndexConfigManager {
 
 		// OpenRouter specific provider change
 		if (prevOpenRouterSpecificProvider !== currentOpenRouterSpecificProvider) {
+			return true
+		}
+
+		if (prevOpenRouterBaseUrl !== currentOpenRouterBaseUrl) {
 			return true
 		}
 

@@ -53,6 +53,7 @@ import {
 // Default URLs for providers
 const DEFAULT_QDRANT_URL = "http://localhost:6333"
 const DEFAULT_OLLAMA_URL = "http://localhost:11434"
+const DEFAULT_OPENROUTER_URL = "https://openrouter.ai/api/v1"
 
 interface CodeIndexPopoverProps {
 	children: React.ReactNode
@@ -1321,6 +1322,37 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 
 									{currentSettings.codebaseIndexEmbedderProvider === "openrouter" && (
 										<>
+											<div className="space-y-2">
+												<label className="text-sm font-medium">
+													{t("settings:codeIndex.openRouterBaseUrlLabel")}
+												</label>
+												<VSCodeTextField
+													value={currentSettings.codebaseIndexEmbedderBaseUrl || ""}
+													onInput={(e: any) =>
+														updateSetting("codebaseIndexEmbedderBaseUrl", e.target.value)
+													}
+													onBlur={(e: any) => {
+														// Set default OpenRouter URL if field is empty
+														if (!e.target.value.trim()) {
+															e.target.value = DEFAULT_OPENROUTER_URL
+															updateSetting(
+																"codebaseIndexEmbedderBaseUrl",
+																DEFAULT_OPENROUTER_URL,
+															)
+														}
+													}}
+													placeholder={t("settings:codeIndex.openRouterUrlPlaceholder")}
+													className={cn("w-full", {
+														"border-red-500": formErrors.codebaseIndexEmbedderBaseUrl,
+													})}
+												/>
+												{formErrors.codebaseIndexEmbedderBaseUrl && (
+													<p className="text-xs text-vscode-errorForeground mt-1 mb-0">
+														{formErrors.codebaseIndexEmbedderBaseUrl}
+													</p>
+												)}
+											</div>
+
 											<div className="space-y-2">
 												<label className="text-sm font-medium">
 													{t("settings:codeIndex.openRouterApiKeyLabel")}

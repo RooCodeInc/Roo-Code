@@ -40,7 +40,6 @@ export class OpenRouterEmbedder implements IEmbedder {
 	private readonly defaultModelId: string
 	private readonly apiKey: string
 	private readonly maxItemTokens: number
-	private readonly baseUrl: string = "https://openrouter.ai/api/v1"
 	private readonly specificProvider?: string
 
 	// Global rate limiting state shared across all instances
@@ -58,12 +57,21 @@ export class OpenRouterEmbedder implements IEmbedder {
 	 * @param apiKey The API key for authentication
 	 * @param modelId Optional model identifier (defaults to "openai/text-embedding-3-large")
 	 * @param maxItemTokens Optional maximum tokens per item (defaults to MAX_ITEM_TOKENS)
+	 * @param openRouterBaseUrl Optional custom OpenRouter base URL
 	 * @param specificProvider Optional specific provider to route requests to
 	 */
-	constructor(apiKey: string, modelId?: string, maxItemTokens?: number, specificProvider?: string) {
+	constructor(
+		apiKey: string,
+		modelId?: string,
+		maxItemTokens?: number,
+		specificProvider?: string,
+		openRouterBaseUrl?: string,
+	) {
 		if (!apiKey) {
 			throw new Error(t("embeddings:validation.apiKeyRequired"))
 		}
+
+		const baseUrl = openRouterBaseUrl || "https://openrouter.ai/api/v1"
 
 		this.apiKey = apiKey
 		// Only set specificProvider if it's not the default value
@@ -73,7 +81,7 @@ export class OpenRouterEmbedder implements IEmbedder {
 		// Wrap OpenAI client creation to handle invalid API key characters
 		try {
 			this.embeddingsClient = new OpenAI({
-				baseURL: this.baseUrl,
+				baseURL: baseUrl,
 				apiKey: apiKey,
 				defaultHeaders: {
 					"HTTP-Referer": "https://github.com/RooCodeInc/Roo-Code",
