@@ -34,6 +34,12 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 	private options: ApiHandlerOptions
 	private client: Anthropic
 	private readonly providerName = "Anthropic"
+	/**
+	 * Store the last thinking block signature for interleaved thinking with tool use.
+	 * This is captured from signature_delta events during streaming and
+	 * must be passed back to the API when providing tool results.
+	 */
+	private lastThinkingSignature?: string
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -48,11 +54,23 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		})
 	}
 
+	/**
+	 * Get the thinking signature from the last response.
+	 * Used by Task.addToApiConversationHistory to persist the signature
+	 * so it can be passed back to the API for tool use continuations.
+	 */
+	public getThoughtSignature(): string | undefined {
+		return this.lastThinkingSignature
+	}
+
 	async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Reset per-request state
+		this.lastThinkingSignature = undefined
+
 		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
 		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
 		let {
@@ -220,6 +238,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		let cacheWriteTokens = 0
 		let cacheReadTokens = 0
 
+		// Track thinking blocks by index to capture text and signature for interleaved thinking
+		// This is critical for tool use continuations where thinking blocks must be passed back
+		const thinkingBlocks: Map<number, { text: string; signature?: string }> = new Map()
+
 		for await (const chunk of stream) {
 			switch (chunk.type) {
 				case "message_start": {
@@ -262,6 +284,11 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				case "content_block_start":
 					switch (chunk.content_block.type) {
 						case "thinking":
+							// Initialize thinking block tracking for interleaved thinking
+							thinkingBlocks.set(chunk.index, {
+								text: chunk.content_block.thinking || "",
+							})
+
 							// We may receive multiple text blocks, in which
 							// case just insert a line break between them.
 							if (chunk.index > 0) {
@@ -292,13 +319,37 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 						}
 					}
 					break
-				case "content_block_delta":
-					switch (chunk.delta.type) {
-						case "thinking_delta":
-							yield { type: "reasoning", text: chunk.delta.thinking }
+				case "content_block_delta": {
+					const delta = chunk.delta as {
+						type: string
+						thinking?: string
+						signature?: string
+						text?: string
+						partial_json?: string
+					}
+					switch (delta.type) {
+						case "thinking_delta": {
+							// Accumulate thinking text for the block
+							const block = thinkingBlocks.get(chunk.index)
+							if (block && delta.thinking) {
+								block.text += delta.thinking
+							}
+							yield { type: "reasoning", text: delta.thinking || "" }
 							break
+						}
+						case "signature_delta": {
+							// Capture signature for interleaved thinking with tool use
+							// This signature must be passed back to the API for tool use continuations
+							const block = thinkingBlocks.get(chunk.index)
+							if (block && delta.signature) {
+								block.signature = (block.signature || "") + delta.signature
+								// Store the last signature for retrieval via getThoughtSignature()
+								this.lastThinkingSignature = block.signature
+							}
+							break
+						}
 						case "text_delta":
-							yield { type: "text", text: chunk.delta.text }
+							yield { type: "text", text: delta.text || "" }
 							break
 						case "input_json_delta": {
 							// Emit tool call partial chunks as arguments stream in
@@ -307,19 +358,27 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 								index: chunk.index,
 								id: undefined,
 								name: undefined,
-								arguments: chunk.delta.partial_json,
+								arguments: delta.partial_json,
 							}
 							break
 						}
 					}
 
 					break
-				case "content_block_stop":
-					// Block complete - no action needed for now.
+				}
+				case "content_block_stop": {
+					// Emit thinking_complete when a thinking block finishes with its signature
+					// This is critical for tool use continuations in interleaved thinking
+					const completedBlock = thinkingBlocks.get(chunk.index)
+					if (completedBlock?.signature) {
+						yield {
+							type: "thinking_complete",
+							signature: completedBlock.signature,
+						}
+					}
 					// NativeToolCallParser handles tool call completion
-					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
-					// after iteration completes, which requires restructuring the streaming approach.
 					break
+				}
 			}
 		}
 
