@@ -100,13 +100,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			model,
 			max_tokens,
 			temperature,
-			// Enable mergeToolResultText to merge environment_details and other text content
-			// after tool_results into the last tool message. This prevents reasoning/thinking
-			// models from dropping reasoning_content when they see a user message after tool results.
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
-			],
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
