@@ -20,7 +20,7 @@ import {
 	SearchResult,
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
-import { convertToMentionPath } from "@src/utils/path-mentions"
+import { convertToMentionPath, escapeSpaces } from "@src/utils/path-mentions"
 import { StandardTooltip } from "@src/components/ui"
 
 import Thumbnails from "../common/Thumbnails"
@@ -310,7 +310,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [showContextMenu, setShowContextMenu])
 
 		const handleMentionSelect = useCallback(
-			(type: ContextMenuOptionType, value?: string) => {
+			(type: ContextMenuOptionType, value?: string, trigger?: "Enter" | "Tab" | "Click") => {
 				if (type === ContextMenuOptionType.NoResults) {
 					return
 				}
@@ -356,6 +356,69 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						setSelectedMenuIndex(0)
 						return
 					}
+				}
+
+				// Special handling for folder drill-in via Tab only: keep picker open and do not add trailing space
+				if (type === ContextMenuOptionType.Folder && value && textAreaRef.current && trigger === "Tab") {
+					// Ensure trailing slash and escape spaces like insertMention does
+					let insertValue = value.endsWith("/") ? value : value + "/"
+					if (insertValue.startsWith("/") && insertValue.includes(" ") && !insertValue.includes("\\ ")) {
+						insertValue = escapeSpaces(insertValue)
+					}
+
+					const text = textAreaRef.current.value
+					const position = cursorPosition
+					const beforeCursor = text.slice(0, position)
+					const afterCursor = text.slice(position)
+					const lastAtIndex = beforeCursor.lastIndexOf("@")
+
+					// Mirror insertMention behavior for replacing after '@' without adding a trailing space
+					const afterCursorContent = /^[a-zA-Z0-9\s]*$/.test(afterCursor)
+						? afterCursor.replace(/^[^\s]*/, "")
+						: afterCursor
+
+					let newValue: string
+					let mentionIndex: number
+
+					if (lastAtIndex !== -1) {
+						const beforeMention = text.slice(0, lastAtIndex)
+						newValue = beforeMention + "@" + insertValue + afterCursorContent
+						mentionIndex = lastAtIndex
+					} else {
+						newValue = beforeCursor + "@" + insertValue + afterCursor
+						mentionIndex = position
+					}
+
+					setInputValue(newValue)
+
+					// Place caret right after the inserted folder path (after trailing slash)
+					const newCursorPos = mentionIndex + 1 + insertValue.length
+					setCursorPosition(newCursorPos)
+					setIntendedCursorPosition(newCursorPos)
+
+					// Keep the context menu open and immediately search within the folder
+					setShowContextMenu(true)
+					setSelectedType(null)
+					const folderQuery = insertValue.slice(1)
+					setSearchQuery(folderQuery)
+					setSelectedMenuIndex(0)
+
+					// Trigger immediate search (no debounce) to repopulate with folder children
+					const reqId = Math.random().toString(36).substring(2, 9)
+					setSearchRequestId(reqId)
+					setSearchLoading(true)
+					vscode.postMessage({
+						type: "searchFiles",
+						query: unescapeSpaces(folderQuery),
+						requestId: reqId,
+					})
+
+					// Position caret without blurring to avoid closing the menu
+					if (textAreaRef.current) {
+						textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos)
+					}
+
+					return
 				}
 
 				setShowContextMenu(false)
@@ -471,7 +534,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							selectedOption.type !== ContextMenuOptionType.NoResults &&
 							selectedOption.type !== ContextMenuOptionType.SectionHeader
 						) {
-							handleMentionSelect(selectedOption.type, selectedOption.value)
+							handleMentionSelect(selectedOption.type, selectedOption.value, event.key as "Enter" | "Tab")
 						}
 						return
 					}
@@ -605,7 +668,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					} else {
 						// Existing @ mention handling.
 						const lastAtIndex = newValue.lastIndexOf("@", newCursorPosition - 1)
-						const query = newValue.slice(lastAtIndex + 1, newCursorPosition)
+						const rawQuery = newValue.slice(lastAtIndex + 1, newCursorPosition)
+						const query = rawQuery.startsWith("/") ? rawQuery.slice(1) : rawQuery
 						setSearchQuery(query)
 
 						// Send file search request if query is not empty.
