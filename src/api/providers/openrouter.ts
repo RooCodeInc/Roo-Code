@@ -241,7 +241,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		]
 
 		// DeepSeek highly recommends using user instead of system role.
-		if (modelId.startsWith("deepseek/deepseek-r1") || modelId === "perplexity/sonar-reasoning") {
+		// Mistral 2512 models also require strict role alternation.
+		const requiresR1Format =
+			modelId.startsWith("deepseek/deepseek-r1") ||
+			modelId === "perplexity/sonar-reasoning" ||
+			/mistralai\/.*-2512/.test(modelId)
+
+		if (requiresR1Format) {
 			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 		}
 
