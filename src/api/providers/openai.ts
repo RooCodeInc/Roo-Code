@@ -95,6 +95,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
+		// Check if we're using Azure OpenAI (same logic as in constructor)
+		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
+		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || this.options.openAiUseAzure
+
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
 			return
@@ -113,7 +117,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			} else if (ark || enabledLegacyFormat) {
 				convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
 			} else {
-				if (modelInfo.supportsPromptCache) {
+				// Azure OpenAI doesn't support prompt caching, so skip it when using Azure
+				const shouldUsePromptCache = modelInfo.supportsPromptCache && !isAzureOpenAi
+
+				if (shouldUsePromptCache) {
 					systemMessage = {
 						role: "system",
 						content: [
@@ -129,7 +136,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })]
 
-				if (modelInfo.supportsPromptCache) {
+				if (shouldUsePromptCache) {
 					// Note: the following logic is copied from openrouter:
 					// Add cache_control to the last two user messages
 					// (note: this works because we only ever add one user message at a time, but if we added multiple we'd need to mark the user message before the last assistant message)

@@ -1191,6 +1191,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
 		if (!model.info.supportsPromptCache) return undefined
 
+		// Azure OpenAI doesn't support prompt cache retention, so skip it
+		// Check if we're using Azure by looking at the base URL
+		const baseUrl = this.options.openAiNativeBaseUrl || ""
+		const isAzure = baseUrl.includes("azure.com") || baseUrl.includes(".openai.azure.com")
+		if (isAzure) return undefined
+
 		if (model.info.promptCacheRetention === "24h") {
 			return "24h"
 		}
