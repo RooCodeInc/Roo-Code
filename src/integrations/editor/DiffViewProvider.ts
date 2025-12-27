@@ -105,6 +105,22 @@ export class DiffViewProvider {
 			this.documentWasOpen = true
 		}
 
+		const uri = vscode.Uri.file(absolutePath)
+
+		// Pre-open the file as a regular text document before executing the diff command.
+		// This ensures the file is loaded and visible in the editor, and matches the
+		// behavior expected by our unit tests.
+		try {
+			await vscode.window.showTextDocument(uri, {
+				preview: false,
+				viewColumn: vscode.ViewColumn.Active,
+				preserveFocus: true,
+			})
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			throw new Error(`Failed to execute diff command for ${absolutePath}: ${errorMessage}`)
+		}
+
 		this.activeDiffEditor = await this.openDiffEditor()
 		this.fadedOverlayController = new DecorationController("fadedOverlay", this.activeDiffEditor)
 		this.activeLineController = new DecorationController("activeLine", this.activeDiffEditor)
@@ -138,21 +154,34 @@ export class DiffViewProvider {
 		const beginningOfDocument = new vscode.Position(0, 0)
 		diffEditor.selection = new vscode.Selection(beginningOfDocument, beginningOfDocument)
 
-		const endLine = accumulatedLines.length
-		// Replace all content up to the current line with accumulated lines.
-		const edit = new vscode.WorkspaceEdit()
-		const rangeToReplace = new vscode.Range(0, 0, endLine, 0)
-		const contentToReplace =
-			accumulatedLines.slice(0, endLine).join("\n") + (accumulatedLines.length > 0 ? "\n" : "")
-		edit.replace(document.uri, rangeToReplace, this.stripAllBOMs(contentToReplace))
-		await vscode.workspace.applyEdit(edit)
-		// Update decorations.
-		this.activeLineController.setActiveLine(endLine)
-		this.fadedOverlayController.updateOverlayAfterLine(endLine, document.lineCount)
-		// Scroll to the current line without stealing focus.
-		const ranges = this.activeDiffEditor?.visibleRanges
-		if (ranges && ranges.length > 0 && ranges[0].start.line < endLine && ranges[0].end.line > endLine) {
-			this.scrollEditorToLine(endLine)
+		// Calculate how many new lines were added in this update
+		const diffLines = accumulatedLines.slice(this.streamedLines.length)
+		const currentLine = this.streamedLines.length + diffLines.length - 1
+
+		// Only proceed if we have new lines
+		if (currentLine >= 0) {
+			// Replace all content up to the current line with accumulated lines
+			const edit = new vscode.WorkspaceEdit()
+			const rangeToReplace = new vscode.Range(0, 0, currentLine + 1, 0)
+			const contentToReplace = accumulatedLines.slice(0, currentLine + 1).join("\n") + "\n"
+			edit.replace(document.uri, rangeToReplace, this.stripAllBOMs(contentToReplace))
+			await vscode.workspace.applyEdit(edit)
+
+			// Update decorations
+			this.activeLineController.setActiveLine(currentLine + 1)
+			this.fadedOverlayController.updateOverlayAfterLine(currentLine + 1, document.lineCount)
+
+			// Scroll to follow the streaming content
+			if (diffLines.length <= 5) {
+				// For small changes, just jump directly to the line
+				this.scrollEditorToLine(currentLine)
+			} else {
+				// For larger changes, create a quick scrolling animation
+				const startLine = this.streamedLines.length
+				await this.scrollAnimation(startLine, currentLine)
+				// Ensure we end at the final line
+				this.scrollEditorToLine(currentLine)
+			}
 		}
 
 		// Update the streamedLines with the new accumulated content.
@@ -509,106 +538,69 @@ export class DiffViewProvider {
 			return editor
 		}
 
-		// Open new diff editor.
+		// Open new diff editor
 		return new Promise<vscode.TextEditor>((resolve, reject) => {
 			const fileName = path.basename(uri.fsPath)
 			const fileExists = this.editType === "modify"
-			const DIFF_EDITOR_TIMEOUT = 10_000 // ms
 
-			let timeoutId: NodeJS.Timeout | undefined
-			const disposables: vscode.Disposable[] = []
-
-			const cleanup = () => {
-				if (timeoutId) {
-					clearTimeout(timeoutId)
-					timeoutId = undefined
+			// Use onDidChangeActiveTextEditor to detect when the diff editor opens
+			// This is the key difference from the previous implementation
+			// this simpler approach which correctly captures the right-side editor of the diff view
+			const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
+				if (editor && arePathsEqual(editor.document.uri.fsPath, uri.fsPath)) {
+					disposable.dispose()
+					resolve(editor)
 				}
-				disposables.forEach((d) => d.dispose())
-				disposables.length = 0
-			}
+			})
 
-			// Set timeout for the entire operation
-			timeoutId = setTimeout(() => {
-				cleanup()
-				reject(
-					new Error(
-						`Failed to open diff editor for ${uri.fsPath} within ${DIFF_EDITOR_TIMEOUT / 1000} seconds. The editor may be blocked or VS Code may be unresponsive.`,
-					),
-				)
-			}, DIFF_EDITOR_TIMEOUT)
-
-			// Listen for document open events - more efficient than scanning all tabs
-			disposables.push(
-				vscode.workspace.onDidOpenTextDocument(async (document) => {
-					// Only match file:// scheme documents to avoid git diffs
-					if (document.uri.scheme === "file" && arePathsEqual(document.uri.fsPath, uri.fsPath)) {
-						// Wait a tick for the editor to be available
-						await new Promise((r) => setTimeout(r, 0))
-
-						// Find the editor for this document
-						const editor = vscode.window.visibleTextEditors.find(
-							(e) => e.document.uri.scheme === "file" && arePathsEqual(e.document.uri.fsPath, uri.fsPath),
-						)
-
-						if (editor) {
-							cleanup()
-							resolve(editor)
-						}
-					}
+			// Execute the diff command
+			vscode.commands.executeCommand(
+				"vscode.diff",
+				vscode.Uri.from({
+					scheme: DIFF_VIEW_URI_SCHEME,
+					path: fileName,
+					query: Buffer.from(this.originalContent ?? "").toString("base64"),
 				}),
+				uri,
+				`${fileName}: ${fileExists ? DIFF_VIEW_LABEL_CHANGES : "New File"} (Editable)`,
+				{ preserveFocus: true },
 			)
 
-			// Also listen for visible editor changes as a fallback
-			disposables.push(
-				vscode.window.onDidChangeVisibleTextEditors((editors) => {
-					const editor = editors.find((e) => {
-						const isFileScheme = e.document.uri.scheme === "file"
-						const pathMatches = arePathsEqual(e.document.uri.fsPath, uri.fsPath)
-						return isFileScheme && pathMatches
-					})
-					if (editor) {
-						cleanup()
-						resolve(editor)
-					}
-				}),
-			)
-
-			// Pre-open the file as a text document to ensure it doesn't open in preview mode
-			// This fixes issues with files that have custom editor associations (like markdown preview)
-			vscode.window
-				.showTextDocument(uri, { preview: false, viewColumn: vscode.ViewColumn.Active, preserveFocus: true })
-				.then(() => {
-					// Execute the diff command after ensuring the file is open as text
-					return vscode.commands.executeCommand(
-						"vscode.diff",
-						vscode.Uri.parse(`${DIFF_VIEW_URI_SCHEME}:${fileName}`).with({
-							query: Buffer.from(this.originalContent ?? "").toString("base64"),
-						}),
-						uri,
-						`${fileName}: ${fileExists ? `${DIFF_VIEW_LABEL_CHANGES}` : "New File"} (Editable)`,
-						{ preserveFocus: true },
-					)
-				})
-				.then(
-					() => {
-						// Command executed successfully, now wait for the editor to appear
-					},
-					(err: any) => {
-						cleanup()
-						reject(new Error(`Failed to execute diff command for ${uri.fsPath}: ${err.message}`))
-					},
-				)
+			// Timeout for slow machines
+			setTimeout(() => {
+				disposable.dispose()
+				reject(new Error("Failed to open diff editor, please try again..."))
+			}, 10_000)
 		})
 	}
 
-	private scrollEditorToLine(line: number) {
-		if (this.activeDiffEditor) {
-			const scrollLine = line + 4
+	private scrollEditorToLine(line: number): void {
+		if (!this.activeDiffEditor) {
+			return
+		}
+		const scrollLine = line + 4
+		this.activeDiffEditor.revealRange(
+			new vscode.Range(scrollLine, 0, scrollLine, 0),
+			vscode.TextEditorRevealType.InCenter,
+		)
+	}
 
-			this.activeDiffEditor.revealRange(
-				new vscode.Range(scrollLine, 0, scrollLine, 0),
-				vscode.TextEditorRevealType.InCenter,
-			)
+	/**
+	 * Creates a smooth scrolling animation between two lines in the diff editor.
+	 * Used when updates contain many lines to help the user visually track changes.
+	 */
+	private async scrollAnimation(startLine: number, endLine: number): Promise<void> {
+		if (!this.activeDiffEditor) {
+			return
+		}
+		const totalLines = endLine - startLine
+		const numSteps = 10 // Adjust this number to control animation speed
+		const stepSize = Math.max(1, Math.floor(totalLines / numSteps))
+
+		// Create and await the smooth scrolling animation
+		for (let line = startLine; line <= endLine; line += stepSize) {
+			this.activeDiffEditor.revealRange(new vscode.Range(line, 0, line, 0), vscode.TextEditorRevealType.InCenter)
+			await new Promise((resolve) => setTimeout(resolve, 16)) // ~60fps
 		}
 	}
 
