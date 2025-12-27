@@ -1612,6 +1612,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				modeShortcutText={modeShortcutText}
 				isBrowserSessionActive={!!isBrowserSessionActive}
 				showBrowserDockToggle={showBrowserDockToggle}
+				enablePrimaryButton={enableButtons && !!primaryButtonText}
+				onPrimaryButtonClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}
 			/>
 
 			{isProfileDisabled && (
