@@ -1,0 +1,28 @@
+{
+	"name": "@roo-code/evally",
+	"version": "0.1.0",
+	"private": false,
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./runner/TestMatrixRunner": {
+			"import": "./dist/runner/TestMatrixRunner.js",
+			"require": "./dist/runner/TestMatrixRunner.js",
+			"types": "./dist/runner/types.d.ts"
+		},
+		"./runner/types": {
+			"import": "./dist/runner/types.js",
+			"require": "./dist/runner/types.js",
+			"types": "./dist/runner/types.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc --outDir dist --declaration --declarationDir dist",
+		"test:run": "tsx src/cli/standaloneRunner.ts examples/sampleMatrixTest.ts"
+	}
+}
