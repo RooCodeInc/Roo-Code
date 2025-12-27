@@ -2,6 +2,7 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import { t } from "i18next"
 
 import { TOOL_PROTOCOL } from "@roo-code/types"
 
@@ -371,6 +372,125 @@ describe("RequestyHandler", () => {
 					name: undefined,
 					arguments: '"New York"}',
 				})
+				expect(chunks[2]).toMatchObject({
+					type: "usage",
+					inputTokens: 10,
+					outputTokens: 20,
+				})
+			})
+		})
+
+		describe("reasoning-only response handling", () => {
+			it("should emit placeholder text when model returns only reasoning content", async () => {
+				const handler = new RequestyHandler(mockOptions)
+
+				// Mock stream that only returns reasoning content without actual text or tool calls
+				const mockStreamWithOnlyReasoning = {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							id: "test-id",
+							choices: [
+								{
+									delta: {
+										reasoning_content: "I am thinking about how to respond...",
+									},
+								},
+							],
+						}
+						yield {
+							id: "test-id",
+							choices: [
+								{
+									delta: {
+										reasoning_content:
+											"The user wants me to use a tool, but I'll format it wrong: <tool_call><function=get_weather>",
+									},
+								},
+							],
+						}
+						yield {
+							id: "test-id",
+							choices: [{ delta: {} }],
+							usage: { prompt_tokens: 10, completion_tokens: 20 },
+						}
+					},
+				}
+				mockCreate.mockResolvedValue(mockStreamWithOnlyReasoning)
+
+				const systemPrompt = "test system prompt"
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
+
+				const chunks = []
+				for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+					chunks.push(chunk)
+				}
+
+				// Expect two reasoning chunks, one fallback text chunk, and one usage chunk
+				expect(chunks).toHaveLength(4)
+				expect(chunks[0]).toEqual({ type: "reasoning", text: "I am thinking about how to respond..." })
+				expect(chunks[1]).toEqual({
+					type: "reasoning",
+					text: "The user wants me to use a tool, but I'll format it wrong: <tool_call><function=get_weather>",
+				})
+				// The fallback text to prevent empty response error
+				expect(chunks[2]).toEqual({
+					type: "text",
+					text: t("common:errors.gemini.thinking_complete_no_output"),
+				})
+				expect(chunks[3]).toMatchObject({
+					type: "usage",
+					inputTokens: 10,
+					outputTokens: 20,
+				})
+			})
+
+			it("should not emit placeholder when model returns actual content", async () => {
+				const handler = new RequestyHandler(mockOptions)
+
+				// Mock stream that returns both reasoning and text content
+				const mockStreamWithContent = {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							id: "test-id",
+							choices: [
+								{
+									delta: {
+										reasoning_content: "Thinking...",
+									},
+								},
+							],
+						}
+						yield {
+							id: "test-id",
+							choices: [
+								{
+									delta: {
+										content: "Here is my actual response",
+									},
+								},
+							],
+						}
+						yield {
+							id: "test-id",
+							choices: [{ delta: {} }],
+							usage: { prompt_tokens: 10, completion_tokens: 20 },
+						}
+					},
+				}
+				mockCreate.mockResolvedValue(mockStreamWithContent)
+
+				const systemPrompt = "test system prompt"
+				const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
+
+				const chunks = []
+				for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+					chunks.push(chunk)
+				}
+
+				// Expect one reasoning chunk, one text chunk, and one usage chunk (no fallback)
+				expect(chunks).toHaveLength(3)
+				expect(chunks[0]).toEqual({ type: "reasoning", text: "Thinking..." })
+				expect(chunks[1]).toEqual({ type: "text", text: "Here is my actual response" })
 				expect(chunks[2]).toMatchObject({
 					type: "usage",
 					inputTokens: 10,
