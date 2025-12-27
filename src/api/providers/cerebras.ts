@@ -88,6 +88,17 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			result.items = this.stripUnsupportedSchemaFields(result.items)
 		}
 
+		// Recursively process anyOf/oneOf/allOf arrays (for JSON Schema draft 2020-12 compliance)
+		if (result.anyOf) {
+			result.anyOf = result.anyOf.map((variant: any) => this.stripUnsupportedSchemaFields(variant))
+		}
+		if (result.oneOf) {
+			result.oneOf = result.oneOf.map((variant: any) => this.stripUnsupportedSchemaFields(variant))
+		}
+		if (result.allOf) {
+			result.allOf = result.allOf.map((variant: any) => this.stripUnsupportedSchemaFields(variant))
+		}
+
 		return result
 	}
 
