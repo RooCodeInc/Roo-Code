@@ -155,7 +155,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "dec-2025-v3.37.0-minimax-m21-glm47-custom-tools" // v3.37.0 MiniMax M2.1, GLM-4.7, & Experimental Custom Tools
+	public readonly latestAnnouncementId = "dec-2025-v3.38.0-skills-native-tool-calling" // v3.38.0 Skills & Native Tool Calling Required
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

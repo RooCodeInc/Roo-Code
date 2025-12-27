@@ -328,9 +328,8 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"minimaxM21": "Modelo rápido e acessível MiniMax M2.1 agora disponível no Roo Code Cloud, MiniMax e muito mais",
-			"glm47": "Modelo Z.AI GLM-4.7 com suporte para modo de pensamento adicionado ao Roo Code Cloud, Z.AI e muito mais",
-			"customTools": "Suporte experimental de ferramentas personalizadas para definir suas próprias ferramentas em TypeScript"
+			"skills": "Roo agora suporta <skillsLink>Agent Skills</skillsLink> - pacotes reutilizáveis de prompts, ferramentas e recursos para estender os recursos do Roo.",
+			"nativeToolCalling": "A chamada nativa de ferramentas agora é necessária para todas as novas tarefas. <blogLink>Saiba mais</blogLink> sobre a motivação e o que fazer se encontrar problemas."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
