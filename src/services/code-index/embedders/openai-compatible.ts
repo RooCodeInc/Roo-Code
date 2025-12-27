@@ -39,6 +39,7 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	private readonly apiKey: string
 	private readonly isFullUrl: boolean
 	private readonly maxItemTokens: number
+	private readonly maxBatchSize: number
 
 	// Global rate limiting state shared across all instances
 	private static globalRateLimitState = {
@@ -56,8 +57,9 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	 * @param apiKey The API key for authentication
 	 * @param modelId Optional model identifier (defaults to "text-embedding-3-small")
 	 * @param maxItemTokens Optional maximum tokens per item (defaults to MAX_ITEM_TOKENS)
+	 * @param maxBatchSize Optional maximum number of items per batch (defaults to no limit)
 	 */
-	constructor(baseUrl: string, apiKey: string, modelId?: string, maxItemTokens?: number) {
+	constructor(baseUrl: string, apiKey: string, modelId?: string, maxItemTokens?: number, maxBatchSize?: number) {
 		if (!baseUrl) {
 			throw new Error(t("embeddings:validation.baseUrlRequired"))
 		}
@@ -83,6 +85,9 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		// Cache the URL type check for performance
 		this.isFullUrl = this.isFullEndpointUrl(baseUrl)
 		this.maxItemTokens = maxItemTokens || MAX_ITEM_TOKENS
+		// Set max batch size - default to no limit (Infinity) unless specified
+		// For Qwen models, we should set this to 10 based on the issue
+		this.maxBatchSize = maxBatchSize || (this.isQwenModel(modelId) ? 10 : Infinity)
 	}
 
 	/**
@@ -144,7 +149,11 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 					continue
 				}
 
-				if (currentBatchTokens + itemTokens <= MAX_BATCH_TOKENS) {
+				// Check both token limits AND batch size limits
+				const withinTokenLimit = currentBatchTokens + itemTokens <= MAX_BATCH_TOKENS
+				const withinBatchSizeLimit = currentBatch.length < this.maxBatchSize
+
+				if (withinTokenLimit && withinBatchSizeLimit) {
 					currentBatch.push(text)
 					currentBatchTokens += itemTokens
 					processedIndices.push(i)
@@ -492,5 +501,21 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 		} finally {
 			release()
 		}
+	}
+
+	/**
+	 * Checks if the model is a Qwen model that requires batch size limits
+	 * @param modelId The model identifier to check
+	 * @returns true if it's a Qwen model, false otherwise
+	 */
+	private isQwenModel(modelId?: string): boolean {
+		if (!modelId) return false
+		const lowerModelId = modelId.toLowerCase()
+		// Check for various Qwen model patterns
+		return (
+			lowerModelId.includes("qwen") ||
+			lowerModelId.includes("text-embedding-v") || // Alibaba Cloud uses text-embedding-v4
+			lowerModelId.includes("text-embedding-3d")
+		) // Another Alibaba pattern
 	}
 }
