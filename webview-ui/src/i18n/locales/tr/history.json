@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Son görevler",
 	"history": "Geçmiş",
+	"import": "İçe Aktar",
+	"importTask": "Dışa aktarılan markdown dosyasından görevi içe aktar",
 	"exitSelectionMode": "Seçim Modundan Çık",
 	"enterSelectionMode": "Seçim Moduna Gir",
 	"done": "Tamam",

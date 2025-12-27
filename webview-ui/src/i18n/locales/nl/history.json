@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Recente taken",
 	"history": "Geschiedenis",
+	"import": "Importeren",
+	"importTask": "Taak importeren uit geëxporteerd markdown-bestand",
 	"exitSelectionMode": "Selectiemodus verlaten",
 	"enterSelectionMode": "Selectiemodus starten",
 	"done": "Gereed",

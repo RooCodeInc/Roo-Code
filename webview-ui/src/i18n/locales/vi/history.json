@@ -1,6 +1,8 @@
 {
 	"recentTasks": "Nhiệm vụ gần đây",
 	"history": "Lịch sử",
+	"import": "Nhập",
+	"importTask": "Nhập nhiệm vụ từ tệp markdown đã xuất",
 	"exitSelectionMode": "Thoát chế độ chọn",
 	"enterSelectionMode": "Vào chế độ chọn",
 	"done": "Hoàn thành",

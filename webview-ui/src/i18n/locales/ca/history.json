@@ -5,6 +5,8 @@
 	"cache": "Cau: +{{writes}} → {{reads}}",
 	"apiCost": "Cost d'API: ${{cost}}",
 	"history": "Historial",
+	"import": "Importar",
+	"importTask": "Importar tasca des d'un fitxer markdown exportat",
 	"exitSelectionMode": "Sortir del mode de selecció",
 	"enterSelectionMode": "Entrar en mode de selecció",
 	"done": "Fet",

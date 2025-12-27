@@ -2,6 +2,7 @@ import React, { memo, useState } from "react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
+import { UploadIcon } from "lucide-react"
 
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
@@ -16,6 +17,7 @@ import {
 	StandardTooltip,
 } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
+import { vscode } from "@/utils/vscode"
 
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { useTaskSearch } from "./useTaskSearch"
@@ -84,6 +86,15 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 				<div className="flex justify-between items-center">
 					<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					<div className="flex gap-2">
+						<StandardTooltip content={t("history:importTask")}>
+							<Button
+								variant="secondary"
+								onClick={() => vscode.postMessage({ type: "importTask" })}
+								data-testid="import-task-button">
+								<UploadIcon className="w-4 h-4 mr-1" />
+								{t("history:import")}
+							</Button>
+						</StandardTooltip>
 						<StandardTooltip
 							content={
 								isSelectionMode
