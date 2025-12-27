@@ -1600,6 +1600,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				selectedImages={selectedImages}
 				setSelectedImages={setSelectedImages}
 				onSend={() => handleSendMessage(inputValue, selectedImages)}
+				onAccept={
+					// When action buttons are visible, Enter should trigger approval (primary button click)
+					enableButtons && primaryButtonText
+						? () => handlePrimaryButtonClick(inputValue, selectedImages)
+						: undefined
+				}
 				onSelectImages={selectImages}
 				shouldDisableImages={shouldDisableImages}
 				onHeightChange={() => {
