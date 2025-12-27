@@ -190,12 +190,21 @@ export function convertToR1Format(
 				// Use reasoning from content blocks if not provided at top level
 				const finalReasoning = reasoningContent || extractedReasoning
 
+				// For thinking models (indicated by mergeToolResultText), always include reasoning_content
+				// DeepSeek's reasoner API requires this field to be present on all assistant messages
+				const shouldAlwaysIncludeReasoningContent = options?.mergeToolResultText === true
+
 				const assistantMessage: DeepSeekAssistantMessage = {
 					role: "assistant",
 					content: textParts.length > 0 ? textParts.join("\n") : null,
 					...(toolCalls.length > 0 && { tool_calls: toolCalls }),
 					// Preserve reasoning_content for DeepSeek interleaved thinking
-					...(finalReasoning && { reasoning_content: finalReasoning }),
+					// Always include for thinking models (even if empty) to satisfy DeepSeek's API requirement
+					...(finalReasoning
+						? { reasoning_content: finalReasoning }
+						: shouldAlwaysIncludeReasoningContent
+							? { reasoning_content: "" }
+							: {}),
 				}
 
 				// Check if we can merge with the last message (only if no tool calls)
@@ -229,10 +238,17 @@ export function convertToR1Format(
 						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = reasoningContent
 					}
 				} else {
+					// For thinking models (indicated by mergeToolResultText), always include reasoning_content
+					const shouldAlwaysIncludeReasoningContent = options?.mergeToolResultText === true
 					const assistantMessage: DeepSeekAssistantMessage = {
 						role: "assistant",
 						content: message.content,
-						...(reasoningContent && { reasoning_content: reasoningContent }),
+						// Always include for thinking models (even if empty) to satisfy DeepSeek's API requirement
+						...(reasoningContent
+							? { reasoning_content: reasoningContent }
+							: shouldAlwaysIncludeReasoningContent
+								? { reasoning_content: "" }
+								: {}),
 					}
 					result.push(assistantMessage)
 				}

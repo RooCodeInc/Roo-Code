@@ -614,6 +614,86 @@ describe("convertToR1Format", () => {
 				// Most importantly: NO user message after tool message
 				expect(result.filter((m) => m.role === "user")).toHaveLength(1)
 			})
+
+			it("should always include empty reasoning_content on assistant messages when mergeToolResultText is true", () => {
+				// This simulates a condensed summary message that has no reasoning_content
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Start" },
+					{
+						role: "assistant",
+						content: "This is a condensed summary of the previous conversation.",
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				expect(result).toHaveLength(2)
+				expect(result[0]).toEqual({ role: "user", content: "Start" })
+				// Should have empty reasoning_content for thinking models
+				expect((result[1] as any).reasoning_content).toBe("")
+				expect(result[1]).toEqual({
+					role: "assistant",
+					content: "This is a condensed summary of the previous conversation.",
+					reasoning_content: "",
+				})
+			})
+
+			it("should NOT add reasoning_content on assistant messages when mergeToolResultText is false", () => {
+				// For non-thinking models, reasoning_content should not be added
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Start" },
+					{
+						role: "assistant",
+						content: "This is a regular response.",
+					},
+				]
+
+				// Without mergeToolResultText option (default behavior)
+				const result = convertToR1Format(input)
+
+				expect(result).toHaveLength(2)
+				// Should NOT have reasoning_content for non-thinking models
+				expect((result[1] as any).reasoning_content).toBeUndefined()
+				expect(result[1]).toEqual({
+					role: "assistant",
+					content: "This is a regular response.",
+				})
+			})
+
+			it("should include empty reasoning_content on assistant messages with array content when mergeToolResultText is true", () => {
+				const input: Anthropic.Messages.MessageParam[] = [
+					{ role: "user", content: "Start" },
+					{
+						role: "assistant",
+						content: [{ type: "text", text: "Array content response without reasoning" }],
+					},
+				]
+
+				const result = convertToR1Format(input, { mergeToolResultText: true })
+
+				expect(result).toHaveLength(2)
+				// Should have empty reasoning_content for thinking models even with array content
+				expect((result[1] as any).reasoning_content).toBe("")
+			})
+
+			it("should preserve existing reasoning_content when present even with mergeToolResultText", () => {
+				const input = [
+					{ role: "user" as const, content: "Start" },
+					{
+						role: "assistant" as const,
+						content: "Response with reasoning",
+						reasoning_content: "My actual reasoning process",
+					},
+				]
+
+				const result = convertToR1Format(input as Anthropic.Messages.MessageParam[], {
+					mergeToolResultText: true,
+				})
+
+				expect(result).toHaveLength(2)
+				// Should preserve the actual reasoning_content, not replace with empty
+				expect((result[1] as any).reasoning_content).toBe("My actual reasoning process")
+			})
 		})
 	})
 })
