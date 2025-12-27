@@ -95,12 +95,13 @@ function parseHuggingFaceModel(model: HuggingFaceModel, provider?: HuggingFacePr
 		contextWindow: contextLength,
 		supportsImages: false, // HuggingFace API doesn't provide this info yet.
 		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
 		inputPrice: pricing?.input,
 		outputPrice: pricing?.output,
 		description,
 	}
 }
-
 /**
  * Fetches available models from HuggingFace
  *
