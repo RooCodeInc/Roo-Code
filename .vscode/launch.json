@@ -24,6 +24,56 @@
 				"group": "tasks",
 				"order": 1
 			}
+		},
+		{
+			"name": "Debug E2E Tests",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": [
+				"${workspaceFolder}/apps/vscode-e2e/test-workspace",
+				"--extensionDevelopmentPath=${workspaceFolder}/src",
+				"--extensionTestsPath=${workspaceFolder}/apps/vscode-e2e/out/suite/index"
+			],
+			"sourceMaps": true,
+			"outFiles": ["${workspaceFolder}/src/dist/**/*.js", "${workspaceFolder}/apps/vscode-e2e/out/**/*.js"],
+			"preLaunchTask": "build-e2e-tests",
+			"envFile": "${workspaceFolder}/apps/vscode-e2e/.env.local",
+			"env": {
+				"NODE_ENV": "development",
+				"VSCODE_DEBUG_MODE": "true"
+			},
+			"resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+			"presentation": {
+				"hidden": false,
+				"group": "tasks",
+				"order": 2
+			}
+		},
+		{
+			"name": "Debug E2E Tests (Quick - extension pre-built)",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": [
+				"${workspaceFolder}/apps/vscode-e2e/test-workspace",
+				"--extensionDevelopmentPath=${workspaceFolder}/src",
+				"--extensionTestsPath=${workspaceFolder}/apps/vscode-e2e/out/suite/index"
+			],
+			"sourceMaps": true,
+			"outFiles": ["${workspaceFolder}/src/dist/**/*.js", "${workspaceFolder}/apps/vscode-e2e/out/**/*.js"],
+			"preLaunchTask": "compile-e2e-only",
+			"envFile": "${workspaceFolder}/apps/vscode-e2e/.env.local",
+			"env": {
+				"NODE_ENV": "development",
+				"VSCODE_DEBUG_MODE": "true"
+			},
+			"resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+			"presentation": {
+				"hidden": false,
+				"group": "tasks",
+				"order": 4
+			}
 		}
 	]
 }
