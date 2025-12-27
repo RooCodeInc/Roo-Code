@@ -48,8 +48,47 @@ describe("resolveToolProtocol", () => {
 		})
 	})
 
-	describe("Native Protocol Always Used For New Tasks", () => {
-		it("should always use native for new tasks", () => {
+	describe("OpenAI-Compatible Provider Tool Protocol", () => {
+		it("should respect XML preference for OpenAI-Compatible provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "xml",
+			}
+			// OpenAI-Compatible provider should respect user preference
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
+		})
+
+		it("should respect native preference for OpenAI-Compatible provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "native",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should default to native when no preference set for OpenAI-Compatible provider", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should still honor locked protocol over user preference for OpenAI-Compatible", () => {
+			const settings: ProviderSettings = {
+				apiProvider: "openai",
+				toolProtocol: "xml", // User wants XML
+			}
+			// Locked protocol takes precedence
+			const result = resolveToolProtocol(settings, undefined, "native")
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+	})
+
+	describe("Native Protocol Always Used For Other Providers", () => {
+		it("should always use native for new tasks with other providers", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "anthropic",
 			}
@@ -57,20 +96,21 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should use native even when user preference is XML (user prefs ignored)", () => {
+		it("should use native even when user preference is XML for non-OpenAI-Compatible providers", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "xml", // User wants XML - ignored
+				toolProtocol: "xml", // User wants XML - ignored for non-OpenAI-Compatible
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings)
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should use native for OpenAI compatible provider", () => {
+		it("should ignore XML preference for Anthropic provider", () => {
 			const settings: ProviderSettings = {
-				apiProvider: "openai",
+				toolProtocol: "xml", // User preference - ignored for Anthropic
+				apiProvider: "anthropic",
 			}
-			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			const result = resolveToolProtocol(settings)
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 	})
