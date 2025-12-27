@@ -151,6 +151,22 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 	unregisterHumanRelayCallback: unregisterHumanRelayCallback,
 	handleHumanRelayResponse: handleHumanRelayResponse,
 	newTask: handleNewTask,
+	newTaskWithoutPrompt: async () => {
+		const provider = await ClineProvider.getInstance()
+		if (!provider) {
+			
+			return
+		}
+
+		TelemetryService.instance.captureTitleButtonClicked("plus")
+
+		await provider.removeClineFromStack()
+		await provider.refreshWorkspace()
+		await provider.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
+		// Send focusInput action immediately after chatButtonClicked
+		// This ensures the focus happens after the view has switched
+		await provider.postMessageToWebview({ type: "action", action: "focusInput" })
+	},
 	setCustomStoragePath: async () => {
 		const { promptForCustomStoragePath } = await import("../utils/storage")
 		await promptForCustomStoragePath()
