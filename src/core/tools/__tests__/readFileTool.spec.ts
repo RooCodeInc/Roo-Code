@@ -1771,3 +1771,188 @@ describe("read_file tool with image support", () => {
 		})
 	})
 })
+
+describe("read_file tool concurrent file reads limit", () => {
+	const mockedCountFileLines = vi.mocked(countFileLines)
+	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedPathResolve = vi.mocked(path.resolve)
+
+	let mockCline: any
+	let mockProvider: any
+	let toolResult: ToolResponse | undefined
+
+	beforeEach(() => {
+		// Clear specific mocks
+		mockedCountFileLines.mockClear()
+		mockedIsBinaryFile.mockClear()
+		mockedPathResolve.mockClear()
+		addLineNumbersMock.mockClear()
+		toolResultMock.mockClear()
+
+		// Use shared mock setup function
+		const mocks = createMockCline()
+		mockCline = mocks.mockCline
+		mockProvider = mocks.mockProvider
+
+		// Disable image support for these tests
+		setImageSupport(mockCline, false)
+
+		mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
+		mockedIsBinaryFile.mockResolvedValue(false)
+		mockedCountFileLines.mockResolvedValue(10)
+
+		toolResult = undefined
+	})
+
+	async function executeReadFileToolWithLimit(
+		fileCount: number,
+		maxConcurrentFileReads: number,
+	): Promise<ToolResponse | undefined> {
+		// Setup provider state with the specified limit
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine: -1,
+			maxConcurrentFileReads,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+		})
+
+		// Create args with the specified number of files
+		const files = Array.from({ length: fileCount }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
+		const argsContent = files.join("")
+
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: { args: argsContent },
+			partial: false,
+		}
+
+		// Configure mocks for successful file reads
+		mockReadFileWithTokenBudget.mockResolvedValue({
+			content: "test content",
+			tokenCount: 10,
+			lineCount: 1,
+			complete: true,
+		})
+
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
+		})
+
+		return toolResult
+	}
+
+	it("should reject when file count exceeds maxConcurrentFileReads", async () => {
+		// Try to read 6 files when limit is 5
+		const result = await executeReadFileToolWithLimit(6, 5)
+
+		// Verify error result
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 6 files")
+		expect(result).toContain("but the concurrent file reads limit is 5")
+		expect(result).toContain("Please read files in batches of 5 or fewer")
+
+		// Verify error tracking
+		expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Too many files requested"))
+	})
+
+	it("should allow reading files when count equals maxConcurrentFileReads", async () => {
+		// Try to read exactly 5 files when limit is 5
+		const result = await executeReadFileToolWithLimit(5, 5)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file results
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should allow reading files when count is below maxConcurrentFileReads", async () => {
+		// Try to read 3 files when limit is 5
+		const result = await executeReadFileToolWithLimit(3, 5)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file results
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should respect custom maxConcurrentFileReads value of 1", async () => {
+		// Try to read 2 files when limit is 1
+		const result = await executeReadFileToolWithLimit(2, 1)
+
+		// Verify error result with limit of 1
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 2 files")
+		expect(result).toContain("but the concurrent file reads limit is 1")
+	})
+
+	it("should allow single file read when maxConcurrentFileReads is 1", async () => {
+		// Try to read 1 file when limit is 1
+		const result = await executeReadFileToolWithLimit(1, 1)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file result
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should respect higher maxConcurrentFileReads value", async () => {
+		// Try to read 15 files when limit is 10
+		const result = await executeReadFileToolWithLimit(15, 10)
+
+		// Verify error result
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 15 files")
+		expect(result).toContain("but the concurrent file reads limit is 10")
+	})
+
+	it("should use default value of 5 when maxConcurrentFileReads is not set", async () => {
+		// Setup provider state without maxConcurrentFileReads
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine: -1,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+		})
+
+		// Create args with 6 files
+		const files = Array.from({ length: 6 }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
+		const argsContent = files.join("")
+
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: { args: argsContent },
+			partial: false,
+		}
+
+		mockReadFileWithTokenBudget.mockResolvedValue({
+			content: "test content",
+			tokenCount: 10,
+			lineCount: 1,
+			complete: true,
+		})
+
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
+		})
+
+		// Should use default limit of 5 and reject 6 files
+		expect(toolResult).toContain("Error: Too many files requested")
+		expect(toolResult).toContain("but the concurrent file reads limit is 5")
+	})
+})

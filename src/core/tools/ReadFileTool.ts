@@ -123,6 +123,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			return
 		}
 
+		// Enforce maxConcurrentFileReads limit
+		const { maxConcurrentFileReads = 5 } = (await task.providerRef.deref()?.getState()) ?? {}
+		if (fileEntries.length > maxConcurrentFileReads) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("read_file")
+			const errorMsg = `Too many files requested. You attempted to read ${fileEntries.length} files, but the concurrent file reads limit is ${maxConcurrentFileReads}. Please read files in batches of ${maxConcurrentFileReads} or fewer.`
+			await task.say("error", errorMsg)
+			const errorResult = useNative ? `Error: ${errorMsg}` : `<files><error>${errorMsg}</error></files>`
+			pushToolResult(errorResult)
+			return
+		}
+
 		const supportsImages = modelInfo.supportsImages ?? false
 
 		const fileResults: FileResult[] = fileEntries.map((entry) => ({
