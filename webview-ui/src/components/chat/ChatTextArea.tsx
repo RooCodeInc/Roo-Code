@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX, X } from "lucide-react"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -54,6 +54,9 @@ interface ChatTextAreaProps {
 	// Browser session status
 	isBrowserSessionActive?: boolean
 	showBrowserDockToggle?: boolean
+	// Streaming/cancel props
+	isStreaming?: boolean
+	onCancelTask?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -76,6 +79,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			onCancel,
 			isBrowserSessionActive = false,
 			showBrowserDockToggle = false,
+			isStreaming = false,
+			onCancelTask,
 		},
 		ref,
 	) => {
@@ -1184,30 +1189,53 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip
-									content={t("chat:pressToSend", { keyCombination: sendKeyCombination })}>
-									<button
-										aria-label={t("chat:pressToSend", { keyCombination: sendKeyCombination })}
-										disabled={false}
-										onClick={onSend}
-										className={cn(
-											"relative inline-flex items-center justify-center",
-											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
-											"text-vscode-descriptionForeground hover:text-vscode-foreground",
-											"transition-all duration-200",
-											hasInputContent
-												? "opacity-100 hover:opacity-100 pointer-events-auto"
-												: "opacity-0 pointer-events-none",
-											hasInputContent &&
+								{!isEditMode && isStreaming && onCancelTask && (
+									<StandardTooltip content={t("chat:cancel.tooltip")}>
+										<button
+											aria-label={t("chat:cancel.title")}
+											onClick={onCancelTask}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-errorForeground hover:text-vscode-errorForeground",
+												"transition-all duration-150",
+												"opacity-100 pointer-events-auto",
 												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-											hasInputContent && "cursor-pointer",
-										)}>
-										<SendHorizontal className="w-4 h-4" />
-									</button>
-								</StandardTooltip>
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<X className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
+								{(!isStreaming || isEditMode) && (
+									<StandardTooltip
+										content={t("chat:pressToSend", { keyCombination: sendKeyCombination })}>
+										<button
+											aria-label={t("chat:pressToSend", { keyCombination: sendKeyCombination })}
+											disabled={false}
+											onClick={onSend}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												hasInputContent
+													? "opacity-100 hover:opacity-100 pointer-events-auto"
+													: "opacity-0 pointer-events-none",
+												hasInputContent &&
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
+												hasInputContent && "cursor-pointer",
+											)}>
+											<SendHorizontal className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
 							</div>
 
 							{!inputValue && (
