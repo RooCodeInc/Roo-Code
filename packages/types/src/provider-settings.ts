@@ -257,6 +257,9 @@ const ollamaSchema = baseProviderSettingsSchema.extend({
 	ollamaModelId: z.string().optional(),
 	ollamaBaseUrl: z.string().optional(),
 	ollamaApiKey: z.string().optional(),
+	ollamaEmbeddingTimeoutMs: z.number().int().optional(),
+	// Negative values disable the validation timeout. If set to a positive integer, it specifies the timeout in milliseconds.
+	ollamaValidationTimeoutMs: z.number().int().optional(),
 	ollamaNumCtx: z.number().int().min(128).optional(),
 })
 

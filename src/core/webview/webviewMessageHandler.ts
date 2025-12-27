@@ -2445,6 +2445,8 @@ export const webviewMessageHandler = async (
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
 					codebaseIndexEmbedderModelDimension: settings.codebaseIndexEmbedderModelDimension, // Generic dimension
+					codebaseIndexOllamaEmbeddingTimeoutMs: settings.codebaseIndexOllamaEmbeddingTimeoutMs,
+					codebaseIndexOllamaValidationTimeoutMs: settings.codebaseIndexOllamaValidationTimeoutMs,
 					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
 					codebaseIndexBedrockRegion: settings.codebaseIndexBedrockRegion,
 					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,

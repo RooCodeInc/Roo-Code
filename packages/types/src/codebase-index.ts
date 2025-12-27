@@ -50,6 +50,9 @@ export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexBedrockProfile: z.string().optional(),
 	// OpenRouter specific fields
 	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
+	// Ollama specific timeout fields
+	codebaseIndexOllamaEmbeddingTimeoutMs: z.number().int().optional(),
+	codebaseIndexOllamaValidationTimeoutMs: z.number().int().optional(),
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>
