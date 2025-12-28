@@ -275,7 +275,6 @@ export class CodeIndexConfigManager {
 			return isConfigured
 		} else if (this.embedderProvider === "openrouter") {
 			const apiKey = this.openRouterOptions?.apiKey
-			const openRouterBaseUrl = this.openRouterOptions?.openRouterBaseUrl
 			const qdrantUrl = this.qdrantUrl
 			const isConfigured = !!(apiKey && qdrantUrl)
 			return isConfigured

@@ -205,6 +205,7 @@ const claudeCodeSchema = apiModelIdProviderModelSchema.extend({})
 const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterApiKey: z.string().optional(),
 	openRouterModelId: z.string().optional(),
+	openRouterBaseUrl: z.string().optional(),
 	openRouterSpecificProvider: z.string().optional(),
 })
 
