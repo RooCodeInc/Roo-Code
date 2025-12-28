@@ -80,6 +80,21 @@ vi.mock("@src/components/ui", () => ({
 	CollapsibleContent: ({ children }: any) => <div>{children}</div>,
 	Slider: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 	Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+	// Popover components (used by ModelPicker)
+	Popover: ({ children }: any) => <div>{children}</div>,
+	PopoverTrigger: ({ children }: any) => <div>{children}</div>,
+	PopoverContent: ({ children }: any) => <div>{children}</div>,
+	// Command components (used by ModelPicker)
+	Command: ({ children }: any) => <div>{children}</div>,
+	CommandInput: ({ ...props }: any) => <input {...props} />,
+	CommandList: ({ children }: any) => <div>{children}</div>,
+	CommandEmpty: ({ children }: any) => <div>{children}</div>,
+	CommandGroup: ({ children }: any) => <div>{children}</div>,
+	CommandItem: ({ children, value, onSelect }: any) => (
+		<div data-value={value} onClick={() => onSelect?.(value)}>
+			{children}
+		</div>
+	),
 }))
 
 describe("ApiOptions Provider Filtering", () => {
