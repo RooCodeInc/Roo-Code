@@ -695,8 +695,11 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			if (!block.partial) {
-				cline.recordToolUsage(block.name)
-				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
+				// Check if this is a custom tool - if so, record as "custom_tool" (like MCP tools)
+				const isCustomTool = stateExperiments?.customTools && customToolRegistry.has(block.name)
+				const recordName = isCustomTool ? "custom_tool" : block.name
+				cline.recordToolUsage(recordName)
+				TelemetryService.instance.captureToolUsage(cline.taskId, recordName, toolProtocol)
 			}
 
 			// Validate tool use before execution - ONLY for complete (non-partial) blocks.
@@ -1091,6 +1094,8 @@ export async function presentAssistantMessage(cline: Task) {
 							cline.consecutiveMistakeCount = 0
 						} catch (executionError: any) {
 							cline.consecutiveMistakeCount++
+							// Record custom tool error with static name
+							cline.recordToolError("custom_tool", executionError.message)
 							await handleError(`executing custom tool "${block.name}"`, executionError)
 						}
 
