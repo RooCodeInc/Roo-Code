@@ -78,6 +78,7 @@ export class CodeIndexConfigManager {
 		const bedrockRegion = codebaseIndexConfig.codebaseIndexBedrockRegion ?? "us-east-1"
 		const bedrockProfile = codebaseIndexConfig.codebaseIndexBedrockProfile ?? ""
 		const openRouterApiKey = this.contextProxy?.getSecret("codebaseIndexOpenRouterApiKey") ?? ""
+		const openRouterEmbedderBaseUrl = codebaseIndexConfig.codebaseIndexOpenRouterEmbedderBaseUrl ?? ""
 		const openRouterSpecificProvider = codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider ?? ""
 
 		// Update instance variables with configuration
@@ -144,7 +145,7 @@ export class CodeIndexConfigManager {
 		this.openRouterOptions = openRouterApiKey
 			? {
 					apiKey: openRouterApiKey,
-					openRouterBaseUrl: codebaseIndexEmbedderBaseUrl,
+					openRouterBaseUrl: openRouterEmbedderBaseUrl,
 					specificProvider: openRouterSpecificProvider || undefined,
 				}
 			: undefined
@@ -359,8 +360,8 @@ export class CodeIndexConfigManager {
 		const currentBedrockRegion = this.bedrockOptions?.region ?? ""
 		const currentBedrockProfile = this.bedrockOptions?.profile ?? ""
 		const currentOpenRouterApiKey = this.openRouterOptions?.apiKey ?? ""
-		const currentOpenRouterSpecificProvider = this.openRouterOptions?.specificProvider ?? ""
 		const currentOpenRouterBaseUrl = this.openRouterOptions?.openRouterBaseUrl ?? ""
+		const currentOpenRouterSpecificProvider = this.openRouterOptions?.specificProvider ?? ""
 		const currentQdrantUrl = this.qdrantUrl ?? ""
 		const currentQdrantApiKey = this.qdrantApiKey ?? ""
 

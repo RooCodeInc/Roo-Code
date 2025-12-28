@@ -49,6 +49,7 @@ export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexBedrockRegion: z.string().optional(),
 	codebaseIndexBedrockProfile: z.string().optional(),
 	// OpenRouter specific fields
+	codebaseIndexOpenRouterEmbedderBaseUrl: z.string().optional(),
 	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
 })
 
