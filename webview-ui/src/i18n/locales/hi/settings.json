@@ -68,6 +68,8 @@
 		"enableLabel": "कोडबेस इंडेक्सिंग सक्षम करें",
 		"enableDescription": "बेहतर खोज और संदर्भ समझने के लिए कोड इंडेक्सिंग सक्षम करें",
 		"providerLabel": "एम्बेडिंग प्रदाता",
+		"openRouterBaseUrlLabel": "OpenRouter बेस URL",
+		"openRouterBaseUrlPlaceholder": "https://openrouter.ai/api/v1",
 		"selectProviderPlaceholder": "प्रदाता चुनें",
 		"openaiProvider": "OpenAI",
 		"ollamaProvider": "Ollama",

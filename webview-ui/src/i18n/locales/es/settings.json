@@ -91,6 +91,8 @@
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Clave de API de OpenRouter",
 		"openRouterApiKeyPlaceholder": "Introduce tu clave de API de OpenRouter",
+		"openRouterBaseUrlLabel": "URL base de OpenRouter",
+		"openRouterBaseUrlPlaceholder": "https://openrouter.ai/api/v1",
 		"openRouterProviderRoutingLabel": "Enrutamiento de proveedores de OpenRouter",
 		"openRouterProviderRoutingDescription": "OpenRouter dirige las solicitudes a los mejores proveedores disponibles para su modelo de embedding. Por defecto, las solicitudes se equilibran entre los principales proveedores para maximizar el tiempo de actividad. Sin embargo, puede elegir un proveedor específico para este modelo.",
 		"mistralProvider": "Mistral",

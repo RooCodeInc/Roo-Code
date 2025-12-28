@@ -96,6 +96,8 @@
 		"openAiKeyPlaceholder": "Введите ваш ключ API OpenAI",
 		"openAiCompatibleBaseUrlLabel": "Базовый URL",
 		"openAiCompatibleApiKeyLabel": "Ключ API",
+		"openRouterBaseUrlLabel": "Базовый URL OpenRouter",
+		"openRouterBaseUrlPlaceholder": "https://openrouter.ai/api/v1",
 		"openAiCompatibleApiKeyPlaceholder": "Введите ваш ключ API",
 		"openAiCompatibleModelDimensionLabel": "Размерность эмбеддинга:",
 		"modelDimensionLabel": "Размерность модели",

@@ -64,6 +64,8 @@
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
 	},
 	"codeIndex": {
+		"openRouterBaseUrlLabel": "URL base d'OpenRouter",
+		"openRouterBaseUrlPlaceholder": "https://openrouter.ai/api/v1",
 		"title": "Indexació de codi",
 		"enableLabel": "Habilitar indexació de codi",
 		"enableDescription": "Habilita la indexació de codi per millorar la cerca i la comprensió del context",
