@@ -127,7 +127,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })]
+				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -235,7 +235,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: enabledLegacyFormat
 						? [systemMessage, ...convertToSimpleMessages(messages)]
-						: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })],
+						: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 				...(metadata?.toolProtocol === "native" && {
@@ -356,7 +356,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+					...convertToOpenAiMessages(messages),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -393,7 +393,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+					...convertToOpenAiMessages(messages),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,

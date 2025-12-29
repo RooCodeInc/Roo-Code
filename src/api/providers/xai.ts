@@ -66,7 +66,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
 			messages: [
 				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+				...convertToOpenAiMessages(messages),
 			] as OpenAI.Chat.ChatCompletionMessageParam[],
 			stream: true as const,
 			stream_options: { include_usage: true },

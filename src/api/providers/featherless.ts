@@ -44,10 +44,7 @@ export class FeatherlessHandler extends BaseOpenAiCompatibleProvider<Featherless
 			model,
 			max_tokens,
 			temperature,
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
-			],
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 		}

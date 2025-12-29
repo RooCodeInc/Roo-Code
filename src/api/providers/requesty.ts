@@ -140,7 +140,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+			...convertToOpenAiMessages(messages),
 		]
 
 		// Map extended efforts to OpenAI Chat Completions-accepted values (omit unsupported)

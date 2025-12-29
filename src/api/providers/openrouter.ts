@@ -229,15 +229,13 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 		// Convert Anthropic messages to OpenAI format.
 		// Pass normalization function for Mistral compatibility (requires 9-char alphanumeric IDs)
-		// Enable mergeToolResultText to merge environment_details after tool_results into the last
-		// tool message, preventing reasoning/thinking models from dropping reasoning_content.
 		const isMistral = modelId.toLowerCase().includes("mistral")
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, {
-				mergeToolResultText: true,
-				...(isMistral && { normalizeToolCallId: normalizeMistralToolCallId }),
-			}),
+			...convertToOpenAiMessages(
+				messages,
+				isMistral ? { normalizeToolCallId: normalizeMistralToolCallId } : undefined,
+			),
 		]
 
 		// DeepSeek highly recommends using user instead of system role.
