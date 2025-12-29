@@ -1,4 +1,5 @@
 import path from "path"
+import * as fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
 import type { FileEntry, LineRange } from "@roo-code/types"
 import { isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
@@ -350,6 +351,20 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				const fullPath = path.resolve(task.cwd, relPath)
 
 				try {
+					// Check if the path is a directory before attempting to read it
+					const stats = await fs.stat(fullPath)
+					if (stats.isDirectory()) {
+						const errorMsg = `Cannot read '${relPath}' because it is a directory. To view the contents of a directory, use the list_files tool instead.`
+						updateFileResult(relPath, {
+							status: "error",
+							error: errorMsg,
+							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+							nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
+						})
+						await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+						continue
+					}
+
 					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
 
 					if (isBinary) {
