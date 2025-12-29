@@ -864,7 +864,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = smallImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve for each image
@@ -940,7 +940,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = largeImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve for each image
@@ -1024,9 +1024,9 @@ describe("read_file tool output structure", () => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = exactLimitImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
 					if (image) {
-						return Promise.resolve({ size: image.sizeKB * 1024 })
+						return Promise.resolve({ size: image.sizeKB * 1024, isDirectory: () => false })
 					}
-					return Promise.resolve({ size: 1024 * 1024 }) // Default 1MB
+					return Promise.resolve({ size: 1024 * 1024, isDirectory: () => false }) // Default 1MB
 				})
 
 				// Mock path.resolve
@@ -1097,7 +1097,7 @@ describe("read_file tool output structure", () => {
 					const fileName = path.basename(filePath)
 					const baseName = path.parse(fileName).name
 					const image = mixedImages.find((img) => img.path.includes(baseName))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock provider state with 5MB individual limit
@@ -1151,9 +1151,9 @@ describe("read_file tool output structure", () => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const file = testImages.find((f) => normalizedFilePath.includes(path.normalize(f.path)))
 					if (file) {
-						return { size: file.sizeMB * 1024 * 1024 }
+						return { size: file.sizeMB * 1024 * 1024, isDirectory: () => false }
 					}
-					return { size: 1024 * 1024 } // Default 1MB
+					return { size: 1024 * 1024, isDirectory: () => false } // Default 1MB
 				})
 
 				const imagePaths = testImages.map((img) => img.path)
@@ -1213,7 +1213,7 @@ describe("read_file tool output structure", () => {
 				// Setup - first call with images that use memory
 				const firstBatch = [{ path: "test/first.png", sizeKB: 10240 }] // 10MB
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 10240 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 10240 * 1024, isDirectory: () => false })
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
 				// Execute first batch
@@ -1266,7 +1266,7 @@ describe("read_file tool output structure", () => {
 				mockedCountFileLines.mockClear()
 
 				// Reset mocks for second batch
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024, isDirectory: () => false })
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
 						"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -1315,7 +1315,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = manyImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve
@@ -1362,7 +1362,7 @@ describe("read_file tool output structure", () => {
 				// First invocation - use 15MB of memory
 				const firstBatch = [{ path: "test/large1.png", sizeKB: 15360 }] // 15MB
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024, isDirectory: () => false })
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
 				// Execute first batch
@@ -1383,7 +1383,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.readFile.mockClear()
 				mockedPathResolve.mockClear()
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 18432 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 18432 * 1024, isDirectory: () => false })
 				fsPromises.readFile.mockResolvedValue(imageBuffer)
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
