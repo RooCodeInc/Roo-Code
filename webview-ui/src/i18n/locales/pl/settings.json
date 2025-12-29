@@ -861,6 +861,8 @@
 		"enableStreaming": "Włącz strumieniowanie",
 		"enableR1Format": "Włącz parametry modelu R1",
 		"enableR1FormatTips": "Należy włączyć podczas korzystania z modeli R1, takich jak QWQ, aby uniknąć błędu 400",
+		"disableNativeTools": "Wyłącz natywne wywołania narzędzi",
+		"disableNativeToolsTips": "Włącz tę opcję, jeśli Twój model nie obsługuje wywołań funkcji (użycie narzędzi). Po wyłączeniu Roo będzie używać definicji narzędzi opartych na XML. Wymagane dla DeepSeek-R1 i podobnych modeli.",
 		"useAzure": "Użyj Azure",
 		"azureApiVersion": "Ustaw wersję API Azure",
 		"gemini": {

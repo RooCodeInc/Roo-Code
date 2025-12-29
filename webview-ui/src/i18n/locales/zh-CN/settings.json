@@ -861,6 +861,8 @@
 		"enableStreaming": "启用流式传输",
 		"enableR1Format": "启用 R1 模型参数",
 		"enableR1FormatTips": "使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误",
+		"disableNativeTools": "禁用原生工具调用",
+		"disableNativeToolsTips": "如果您的模型不支持函数调用（工具使用），请启用此选项。禁用后，Roo 将使用基于 XML 的工具定义。DeepSeek-R1 及类似模型需要启用此选项。",
 		"useAzure": "使用 Azure 服务",
 		"azureApiVersion": "设置 Azure API 版本",
 		"gemini": {

@@ -861,6 +861,8 @@
 		"enableStreaming": "Streaming inschakelen",
 		"enableR1Format": "R1-modelparameters inschakelen",
 		"enableR1FormatTips": "Moet ingeschakeld zijn bij gebruik van R1-modellen zoals QWQ om 400-fouten te voorkomen",
+		"disableNativeTools": "Schakel native tool-aanroepen uit",
+		"disableNativeToolsTips": "Schakel deze optie in als uw model geen functie-aanroepen (tool-gebruik) ondersteunt. Wanneer uitgeschakeld, gebruikt Roo XML-gebaseerde tool-definities. Vereist voor DeepSeek-R1 en vergelijkbare modellen.",
 		"useAzure": "Azure gebruiken",
 		"azureApiVersion": "Azure API-versie instellen",
 		"gemini": {

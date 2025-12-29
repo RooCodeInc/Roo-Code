@@ -861,6 +861,8 @@
 		"enableStreaming": "Akışı etkinleştir",
 		"enableR1Format": "R1 model parametrelerini etkinleştir",
 		"enableR1FormatTips": "QWQ gibi R1 modelleri kullanıldığında etkinleştirilmelidir, 400 hatası alınmaması için",
+		"disableNativeTools": "Yerel araç çağrılarını devre dışı bırak",
+		"disableNativeToolsTips": "Modeliniz fonksiyon çağrılarını (araç kullanımı) desteklemiyorsa bu seçeneği etkinleştirin. Devre dışı bırakıldığında, Roo XML tabanlı araç tanımları kullanacaktır. DeepSeek-R1 ve benzeri modeller için gereklidir.",
 		"useAzure": "Azure kullan",
 		"azureApiVersion": "Azure API sürümünü ayarla",
 		"gemini": {

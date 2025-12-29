@@ -861,6 +861,8 @@
 		"enableStreaming": "Bật streaming",
 		"enableR1Format": "Kích hoạt tham số mô hình R1",
 		"enableR1FormatTips": "Cần kích hoạt khi sử dụng các mô hình R1 như QWQ, để tránh lỗi 400",
+		"disableNativeTools": "Tắt gọi công cụ gốc",
+		"disableNativeToolsTips": "Bật tùy chọn này nếu mô hình của bạn không hỗ trợ gọi hàm (sử dụng công cụ). Khi tắt, Roo sẽ sử dụng định nghĩa công cụ dựa trên XML. Cần thiết cho DeepSeek-R1 và các mô hình tương tự.",
 		"useAzure": "Sử dụng Azure",
 		"azureApiVersion": "Đặt phiên bản API Azure",
 		"gemini": {

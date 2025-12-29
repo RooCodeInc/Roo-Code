@@ -156,6 +156,18 @@ export const OpenAICompatible = ({
 				openAiR1FormatEnabled={apiConfiguration?.openAiR1FormatEnabled ?? false}
 			/>
 			<div>
+				<div className="flex items-center gap-1">
+					<Checkbox
+						checked={apiConfiguration?.openAiDisableNativeTools ?? false}
+						onChange={handleInputChange("openAiDisableNativeTools", noTransform)}>
+						<span className="font-medium">{t("settings:modelInfo.disableNativeTools")}</span>
+					</Checkbox>
+				</div>
+				<p className="text-vscode-descriptionForeground text-sm mt-0 ml-6">
+					{t("settings:modelInfo.disableNativeToolsTips")}
+				</p>
+			</div>
+			<div>
 				<Checkbox
 					checked={openAiLegacyFormatSelected}
 					onChange={(checked: boolean) => {

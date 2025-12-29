@@ -861,6 +861,8 @@
 		"enableStreaming": "ストリーミングを有効化",
 		"enableR1Format": "R1モデルパラメータを有効にする",
 		"enableR1FormatTips": "QWQなどのR1モデルを使用する際には、有効にする必要があります。400エラーを防ぐために",
+		"disableNativeTools": "ネイティブツール呼び出しを無効化",
+		"disableNativeToolsTips": "モデルが関数呼び出し（ツール使用）をサポートしていない場合は、これを有効にしてください。無効にすると、RooはXMLベースのツール定義を使用します。DeepSeek-R1や類似のモデルに必要です。",
 		"useAzure": "Azureを使用",
 		"azureApiVersion": "Azure APIバージョンを設定",
 		"gemini": {

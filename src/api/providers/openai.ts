@@ -292,12 +292,23 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
+		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
+		const disableNativeTools = this.options.openAiDisableNativeTools ?? false
+
+		// Detect DeepSeek reasoner models that don't support native tool calling
+		const isDeepSeekReasoner =
+			id.includes("deepseek-reasoner") || id.includes("deepseek-r1") || enabledR1Format
+
 		// Ensure OpenAI-compatible models default to supporting native tool calling.
 		// This is required for [`Task.attemptApiRequest()`](src/core/task/Task.ts:3817) to
 		// include tool definitions in the request.
+		// However, disable native tools for DeepSeek reasoner models or when explicitly disabled
+		// by the user, as these models don't support function calling and will return 400 errors.
 		const info: ModelInfo = {
 			...NATIVE_TOOL_DEFAULTS,
 			...(this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults),
+			// Override: Disable native tools if user setting is enabled or model is a DeepSeek reasoner
+			...((disableNativeTools || isDeepSeekReasoner) && { supportsNativeTools: false }),
 		}
 		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
 		return { id, info, ...params }

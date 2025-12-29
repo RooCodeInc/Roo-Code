@@ -869,6 +869,8 @@
 		"enableStreaming": "Enable streaming",
 		"enableR1Format": "Enable R1 model parameters",
 		"enableR1FormatTips": "Must be enabled when using R1 models such as QWQ to prevent 400 errors",
+		"disableNativeTools": "Disable native tool calling",
+		"disableNativeToolsTips": "Enable this if your model does not support function calling (tool use). When disabled, Roo will use XML-based tool definitions instead. Required for DeepSeek-R1 and similar models.",
 		"useAzure": "Use Azure",
 		"azureApiVersion": "Set Azure API version",
 		"gemini": {
