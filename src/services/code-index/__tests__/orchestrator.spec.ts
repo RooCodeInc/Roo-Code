@@ -155,6 +155,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 						openRouterBaseUrl: testBaseUrl,
 					},
 				}),
+				// Use a valid EmbedderProvider value
 			}
 
 			const { CodeIndexServiceFactory } = await import("../service-factory")
@@ -196,12 +197,13 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			const prev = {
 				enabled: true,
 				configured: true,
-				embedderProvider: "openrouter",
+				embedderProvider: "openrouter" as import("../interfaces/manager").EmbedderProvider,
 				openRouterApiKey: "test-api-key",
 				openRouterBaseUrl: "https://old.openrouter.ai/api/v1",
 			}
 			const configManagerModule = await import("../config-manager")
-			const mgr = new configManagerModule.CodeIndexConfigManager({
+			// Provide a full ContextProxy mock with required properties/methods
+			const mockContextProxy = {
 				getGlobalState: vi.fn().mockReturnValue({
 					codebaseIndexEnabled: true,
 					codebaseIndexEmbedderProvider: "openrouter",
@@ -209,8 +211,14 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 				}),
 				getSecret: vi.fn().mockReturnValue("test-api-key"),
 				refreshSecrets: vi.fn(),
-			})
-			mgr._loadAndSetConfiguration()
+				setValue: vi.fn(),
+				setValues: vi.fn(),
+				getValue: vi.fn(),
+				getProviderSettings: vi.fn().mockReturnValue({}),
+				setProviderSettings: vi.fn(),
+			}
+			const mgr = new configManagerModule.CodeIndexConfigManager(mockContextProxy)
+			await mgr.loadConfiguration()
 			const requiresRestart = mgr.doesConfigChangeRequireRestart(prev)
 			expect(requiresRestart).toBe(true)
 		})

@@ -1543,6 +1543,13 @@ describe("CodeIndexConfigManager", () => {
 	})
 
 	describe("loadConfiguration", () => {
+		beforeEach(() => {
+			// Set default mock behaviors
+			mockedGetDefaultModelId.mockReturnValue("text-embedding-3-small")
+			mockedGetModelDimension.mockReturnValue(undefined)
+			mockedGetModelScoreThreshold.mockReturnValue(undefined)
+		})
+
 		it("should persist and load OpenRouter embedder base URL correctly", async () => {
 			const mockGlobalState = {
 				codebaseIndexEnabled: true,
@@ -1653,12 +1660,6 @@ describe("CodeIndexConfigManager", () => {
 			})
 			const result = await configManager.loadConfiguration()
 			expect(result.requiresRestart).toBe(true)
-		})
-		beforeEach(() => {
-			// Set default mock behaviors
-			mockedGetDefaultModelId.mockReturnValue("text-embedding-3-small")
-			mockedGetModelDimension.mockReturnValue(undefined)
-			mockedGetModelScoreThreshold.mockReturnValue(undefined)
 		})
 
 		it("should load configuration and return proper structure", async () => {
