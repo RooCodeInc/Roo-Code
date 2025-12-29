@@ -165,9 +165,8 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 			const callArgs = mockEmbedderCtor.mock.calls[0]
 			expect(callArgs[0]).toBe("test-api-key")
 			expect(callArgs[1]).toBe("openai/text-embedding-3-large")
-			expect(callArgs[3]).toBe(undefined)
-			expect(callArgs[4]).toBe(undefined)
-			// openRouterBaseUrl is not passed in current factory logic
+			expect(callArgs[3]).toBe(undefined) // specificProvider
+			expect(callArgs[4]).toBe(testBaseUrl) // openRouterBaseUrl is now passed correctly
 		})
 
 		it("should validate openRouterBaseUrl via OpenRouterEmbedder.validateConfiguration", async () => {

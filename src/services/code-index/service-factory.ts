@@ -96,6 +96,7 @@ export class CodeIndexServiceFactory {
 				config.modelId,
 				undefined, // maxItemTokens
 				config.openRouterOptions.specificProvider,
+				config.openRouterOptions.openRouterBaseUrl,
 			)
 		}
 
