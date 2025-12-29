@@ -1543,6 +1543,117 @@ describe("CodeIndexConfigManager", () => {
 	})
 
 	describe("loadConfiguration", () => {
+		it("should persist and load OpenRouter embedder base URL correctly", async () => {
+			const mockGlobalState = {
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openrouter",
+				codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+				codebaseIndexOpenRouterEmbedderBaseUrl: "https://openrouter.example.com/v1",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState
+				return undefined
+			})
+			setupSecretMocks({
+				codebaseIndexOpenRouterApiKey: "test-openrouter-key",
+				codeIndexQdrantApiKey: "test-qdrant-key",
+			})
+
+			const result = await configManager.loadConfiguration()
+			expect(result.currentConfig).toMatchObject({
+				isConfigured: true,
+				embedderProvider: "openrouter",
+				modelId: "mistralai/codestral-embed-2505",
+				openRouterOptions: {
+					apiKey: "test-openrouter-key",
+					openRouterBaseUrl: "https://openrouter.example.com/v1",
+				},
+				qdrantUrl: "http://qdrant.local",
+				qdrantApiKey: "test-qdrant-key",
+			})
+		})
+
+		it("should validate OpenRouter embedder base URL presence for configuration", async () => {
+			const mockGlobalState = {
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openrouter",
+				codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+				codebaseIndexOpenRouterEmbedderBaseUrl: "",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState
+				return undefined
+			})
+			setupSecretMocks({
+				codebaseIndexOpenRouterApiKey: "test-openrouter-key",
+				codeIndexQdrantApiKey: "test-qdrant-key",
+			})
+
+			const result = await configManager.loadConfiguration()
+			expect(result.currentConfig.openRouterOptions?.openRouterBaseUrl).toBe("")
+		})
+
+		it("should require restart when OpenRouter embedder base URL changes", async () => {
+			const mockGlobalState1 = {
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openrouter",
+				codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+				codebaseIndexOpenRouterEmbedderBaseUrl: "https://openrouter.example.com/v1",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState1
+				return undefined
+			})
+			setupSecretMocks({
+				codebaseIndexOpenRouterApiKey: "test-openrouter-key",
+				codeIndexQdrantApiKey: "test-qdrant-key",
+			})
+			await configManager.loadConfiguration()
+
+			const mockGlobalState2 = {
+				...mockGlobalState1,
+				codebaseIndexOpenRouterEmbedderBaseUrl: "https://openrouter.changed.com/v1",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState2
+				return undefined
+			})
+			const result = await configManager.loadConfiguration()
+			expect(result.requiresRestart).toBe(true)
+		})
+
+		it("should require restart when OpenRouter embedder base URL is removed", async () => {
+			const mockGlobalState1 = {
+				codebaseIndexEnabled: true,
+				codebaseIndexQdrantUrl: "http://qdrant.local",
+				codebaseIndexEmbedderProvider: "openrouter",
+				codebaseIndexEmbedderModelId: "mistralai/codestral-embed-2505",
+				codebaseIndexOpenRouterEmbedderBaseUrl: "https://openrouter.example.com/v1",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState1
+				return undefined
+			})
+			setupSecretMocks({
+				codebaseIndexOpenRouterApiKey: "test-openrouter-key",
+				codeIndexQdrantApiKey: "test-qdrant-key",
+			})
+			await configManager.loadConfiguration()
+
+			const mockGlobalState2 = {
+				...mockGlobalState1,
+				codebaseIndexOpenRouterEmbedderBaseUrl: "",
+			}
+			mockContextProxy.getGlobalState.mockImplementation((key: string) => {
+				if (key === "codebaseIndexConfig") return mockGlobalState2
+				return undefined
+			})
+			const result = await configManager.loadConfiguration()
+			expect(result.requiresRestart).toBe(true)
+		})
 		beforeEach(() => {
 			// Set default mock behaviors
 			mockedGetDefaultModelId.mockReturnValue("text-embedding-3-small")

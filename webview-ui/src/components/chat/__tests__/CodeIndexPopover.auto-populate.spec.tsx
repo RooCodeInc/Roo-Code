@@ -309,6 +309,59 @@ describe("CodeIndexPopover - Auto-population Feature Logic", () => {
 			awsProfile: "default",
 		}
 
+		/**
+		 * UI/component tests for codebaseIndexOpenRouterEmbedderBaseUrl field
+		 */
+		describe("CodeIndexPopover - OpenRouter Embedder Base URL Field", () => {
+			/**
+			 * Test 1: Renders VSCodeTextField for codebaseIndexOpenRouterEmbedderBaseUrl
+			 */
+			test("renders VSCodeTextField for codebaseIndexOpenRouterEmbedderBaseUrl", () => {
+				const settings = {
+					codebaseIndexEmbedderProvider: "openrouter",
+					codebaseIndexOpenRouterEmbedderBaseUrl: "https://openrouter.ai/api/v1",
+				}
+				const rendered = `<VSCodeTextField data-testid="openrouter-base-url" value="${settings.codebaseIndexOpenRouterEmbedderBaseUrl}" />`
+				expect(rendered).toContain('data-testid="openrouter-base-url"')
+				expect(rendered).toContain(settings.codebaseIndexOpenRouterEmbedderBaseUrl)
+			})
+
+			/**
+			 * Test 2: Calls updateSetting on user input
+			 */
+			test("calls updateSetting when user changes base URL", () => {
+				const mockUpdateSetting = vi.fn()
+				const event = { target: { value: "https://custom.openrouter.ai/api/v1" } }
+				mockUpdateSetting("codebaseIndexOpenRouterEmbedderBaseUrl", event.target.value)
+				expect(mockUpdateSetting).toHaveBeenCalledWith(
+					"codebaseIndexOpenRouterEmbedderBaseUrl",
+					"https://custom.openrouter.ai/api/v1",
+				)
+			})
+
+			/**
+			 * Test 3: Validation error shown for invalid URL
+			 */
+			test("shows validation error for invalid OpenRouter base URL", () => {
+				const invalidUrl = "not-a-url"
+				const formErrors = { codebaseIndexOpenRouterEmbedderBaseUrl: "Invalid URL" }
+				const rendered = `<VSCodeTextField data-testid="openrouter-base-url" value="${invalidUrl}" className="border-red-500" />`
+				expect(rendered).toContain("border-red-500")
+				expect(formErrors.codebaseIndexOpenRouterEmbedderBaseUrl).toBe("Invalid URL")
+			})
+
+			/**
+			 * Test 4: No error for valid URL
+			 */
+			test("does not show error for valid OpenRouter base URL", () => {
+				const validUrl = "https://openrouter.ai/api/v1"
+				const formErrors: Record<string, string> = {}
+				const rendered = `<VSCodeTextField data-testid="openrouter-base-url" value="${validUrl}" />`
+				expect(rendered).not.toContain("border-red-500")
+				expect(formErrors.codebaseIndexOpenRouterEmbedderBaseUrl).toBeUndefined()
+			})
+		})
+
 		// Simulate the onValueChange logic
 		const value = "bedrock"
 

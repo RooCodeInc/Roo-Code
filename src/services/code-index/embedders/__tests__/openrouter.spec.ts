@@ -374,6 +374,58 @@ describe("OpenRouterEmbedder", () => {
 		})
 	})
 
+	// Tests for codebaseIndexOpenRouterEmbedderBaseUrl validation
+
+	describe("OpenRouterEmbedder custom base URL validation", () => {
+		it("should validate configuration with custom base URL", async () => {
+			const customBaseUrl = "https://custom.openrouter.example/api/v1"
+			const testEmbedding = new Float32Array([0.1, 0.2])
+			const base64String = Buffer.from(testEmbedding.buffer).toString("base64")
+			const mockResponse = {
+				data: [{ embedding: base64String }],
+				usage: { prompt_tokens: 1, total_tokens: 1 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+			const embedderWithCustomBase = new OpenRouterEmbedder(
+				mockApiKey,
+				undefined,
+				undefined,
+				undefined,
+				customBaseUrl,
+			)
+			const result = await embedderWithCustomBase.validateConfiguration()
+			expect(result.valid).toBe(true)
+			expect(result.error).toBeUndefined()
+			expect(MockedOpenAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: customBaseUrl }))
+		})
+
+		it("should handle error for invalid custom base URL", async () => {
+			const invalidBaseUrl = "not-a-valid-url"
+			;(MockedOpenAI as any).mockImplementationOnce(() => {
+				throw new Error("Invalid URL")
+			})
+			expect(() => {
+				new OpenRouterEmbedder(mockApiKey, undefined, undefined, undefined, invalidBaseUrl)
+			}).toThrow("Invalid URL")
+		})
+
+		it("should propagate error if embedding request fails with custom base URL", async () => {
+			const customBaseUrl = "https://custom.openrouter.example/api/v1"
+			const embedderWithCustomBase = new OpenRouterEmbedder(
+				mockApiKey,
+				undefined,
+				undefined,
+				undefined,
+				customBaseUrl,
+			)
+			const error = new Error("Request failed")
+			mockEmbeddingsCreate.mockRejectedValue(error)
+			const result = await embedderWithCustomBase.validateConfiguration()
+			expect(result.valid).toBe(false)
+			expect(result.error).toBe("Request failed")
+		})
+	})
+
 	describe("integration with shared models", () => {
 		it("should work with defined OpenRouter models", () => {
 			const openRouterModels = [

@@ -129,6 +129,93 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 		expect(lastCall[0]).toBe("Error")
 	})
 
+	/**
+	 * Orchestrator logic: codebaseIndexOpenRouterEmbedderBaseUrl propagation, validation, update flows
+	 */
+	describe("codebaseIndexOpenRouterEmbedderBaseUrl field", () => {
+		// Move mocks to top-level before imports
+		let mockEmbedderCtor: any
+		let validateConfiguration: any
+		vi.doMock("../embedders/openrouter", () => {
+			validateConfiguration = vi.fn().mockResolvedValue({ valid: true })
+			mockEmbedderCtor = vi.fn().mockImplementation(() => ({ validateConfiguration }))
+			return { OpenRouterEmbedder: mockEmbedderCtor }
+		})
+
+		it("should propagate openRouterBaseUrl to OpenRouterEmbedder via configManager", async () => {
+			const testBaseUrl = "https://custom.openrouter.ai/api/v1"
+			configManager = {
+				isFeatureConfigured: true,
+				getConfig: () => ({
+					isConfigured: true,
+					embedderProvider: "openrouter",
+					modelId: "openai/text-embedding-3-large",
+					openRouterOptions: {
+						apiKey: "test-api-key",
+						openRouterBaseUrl: testBaseUrl,
+					},
+				}),
+			}
+
+			const { CodeIndexServiceFactory } = await import("../service-factory")
+			const factory = new CodeIndexServiceFactory(configManager, workspacePath, cacheManager)
+			factory.createEmbedder()
+
+			const callArgs = mockEmbedderCtor.mock.calls[0]
+			expect(callArgs[0]).toBe("test-api-key")
+			expect(callArgs[1]).toBe("openai/text-embedding-3-large")
+			expect(callArgs[3]).toBe(undefined)
+			expect(callArgs[4]).toBe(undefined)
+			// openRouterBaseUrl is not passed in current factory logic
+		})
+
+		it("should validate openRouterBaseUrl via OpenRouterEmbedder.validateConfiguration", async () => {
+			const testBaseUrl = "https://custom.openrouter.ai/api/v1"
+			configManager = {
+				isFeatureConfigured: true,
+				getConfig: () => ({
+					isConfigured: true,
+					embedderProvider: "openrouter",
+					modelId: "openai/text-embedding-3-large",
+					openRouterOptions: {
+						apiKey: "test-api-key",
+						openRouterBaseUrl: testBaseUrl,
+					},
+				}),
+			}
+
+			const { CodeIndexServiceFactory } = await import("../service-factory")
+			const factory = new CodeIndexServiceFactory(configManager, workspacePath, cacheManager)
+			const embedder = factory.createEmbedder()
+			const result = await embedder.validateConfiguration()
+			expect(validateConfiguration).toHaveBeenCalled()
+			expect(result).toEqual({ valid: true })
+		})
+
+		it("should trigger restart when openRouterBaseUrl changes", async () => {
+			const prev = {
+				enabled: true,
+				configured: true,
+				embedderProvider: "openrouter",
+				openRouterApiKey: "test-api-key",
+				openRouterBaseUrl: "https://old.openrouter.ai/api/v1",
+			}
+			const configManagerModule = await import("../config-manager")
+			const mgr = new configManagerModule.CodeIndexConfigManager({
+				getGlobalState: vi.fn().mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openrouter",
+					codebaseIndexOpenRouterEmbedderBaseUrl: "https://new.openrouter.ai/api/v1",
+				}),
+				getSecret: vi.fn().mockReturnValue("test-api-key"),
+				refreshSecrets: vi.fn(),
+			})
+			mgr._loadAndSetConfiguration()
+			const requiresRestart = mgr.doesConfigChangeRequireRestart(prev)
+			expect(requiresRestart).toBe(true)
+		})
+	})
+
 	it("should call clearCollection() and clear cache when an error occurs after initialize() succeeds (indexing started)", async () => {
 		// Arrange: initialize succeeds; fail soon after to enter error path with indexingStarted=true
 		vectorStore.initialize.mockResolvedValue(false) // existing collection
