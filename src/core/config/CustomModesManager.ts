@@ -15,6 +15,7 @@ import { logger } from "../../utils/logging"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { ensureSettingsDirectoryExists } from "../../utils/globalContext"
 import { t } from "../../i18n"
+import { getGitSubmodules, type SubmoduleInfo } from "../../utils/git-submodules"
 
 const ROOMODES_FILENAME = ".roomodes"
 
@@ -48,10 +49,12 @@ export class CustomModesManager {
 	private static readonly cacheTTL = 10_000
 
 	private disposables: vscode.Disposable[] = []
+	private submoduleWatchers: vscode.Disposable[] = []
 	private isWriting = false
 	private writeQueue: Array<() => Promise<void>> = []
 	private cachedModes: ModeConfig[] | null = null
 	private cachedAt: number = 0
+	private cachedSubmodules: SubmoduleInfo[] | null = null
 
 	constructor(
 		private readonly context: vscode.ExtensionContext,
@@ -60,6 +63,73 @@ export class CustomModesManager {
 		this.watchCustomModesFiles().catch((error) => {
 			console.error("[CustomModesManager] Failed to setup file watchers:", error)
 		})
+	}
+
+	/**
+	 * Checks if the includeSubmoduleModes setting is enabled
+	 */
+	private isSubmoduleModesEnabled(): boolean {
+		const includeSubmoduleModes = this.context.globalState.get<boolean>("includeSubmoduleModes")
+		return includeSubmoduleModes === true
+	}
+
+	/**
+	 * Loads modes from a submodule's .roomodes file
+	 * @param submodule - The submodule info containing paths
+	 * @returns Array of ModeConfig with source set to "submodule" and submodulePath set
+	 */
+	private async loadModesFromSubmodule(submodule: SubmoduleInfo): Promise<ModeConfig[]> {
+		const roomodesPath = path.join(submodule.absolutePath, ROOMODES_FILENAME)
+
+		if (!(await fileExistsAtPath(roomodesPath))) {
+			return []
+		}
+
+		try {
+			const modes = await this.loadModesFromFile(roomodesPath)
+			// Mark each mode as coming from a submodule
+			return modes.map((mode) => ({
+				...mode,
+				source: "submodule" as const,
+				submodulePath: submodule.fullRelativePath,
+			}))
+		} catch (error) {
+			console.error(
+				`[CustomModesManager] Error loading modes from submodule ${submodule.fullRelativePath}:`,
+				error,
+			)
+			return []
+		}
+	}
+
+	/**
+	 * Gets all modes from git submodules (recursively)
+	 * @returns Array of ModeConfig from all submodules
+	 */
+	private async getSubmoduleModes(): Promise<ModeConfig[]> {
+		if (!this.isSubmoduleModesEnabled()) {
+			return []
+		}
+
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return []
+		}
+
+		const workspaceRoot = getWorkspacePath()
+		const submodules = await getGitSubmodules(workspaceRoot, true)
+
+		// Cache submodules for file watcher setup
+		this.cachedSubmodules = submodules
+
+		const allSubmoduleModes: ModeConfig[] = []
+
+		for (const submodule of submodules) {
+			const modes = await this.loadModesFromSubmodule(submodule)
+			allSubmoduleModes.push(...modes)
+		}
+
+		return allSubmoduleModes
 	}
 
 	private async queueWrite(operation: () => Promise<void>): Promise<void> {
@@ -350,7 +420,74 @@ export class CustomModesManager {
 				}),
 			)
 			this.disposables.push(roomodesWatcher)
+
+			// Setup submodule watchers if enabled
+			await this.setupSubmoduleWatchers()
 		}
+	}
+
+	/**
+		* Sets up file watchers for .roomodes files in git submodules
+		* This is called during initialization and when the includeSubmoduleModes setting changes
+		*/
+	private async setupSubmoduleWatchers(): Promise<void> {
+		// First, dispose of any existing submodule watchers
+		for (const watcher of this.submoduleWatchers) {
+			watcher.dispose()
+		}
+		this.submoduleWatchers = []
+
+		if (!this.isSubmoduleModesEnabled()) {
+			return
+		}
+
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return
+		}
+
+		const workspaceRoot = getWorkspacePath()
+
+		try {
+			const submodules = await getGitSubmodules(workspaceRoot, true)
+
+			for (const submodule of submodules) {
+				const roomodesPath = path.join(submodule.absolutePath, ROOMODES_FILENAME)
+				const watcher = vscode.workspace.createFileSystemWatcher(roomodesPath)
+
+				const handleSubmoduleChange = async () => {
+					try {
+						logger.info(`Submodule .roomodes changed: ${submodule.fullRelativePath}`)
+						this.clearCache()
+						await this.getCustomModes() // This will refresh with submodule modes
+						await this.onUpdate()
+					} catch (error) {
+						console.error(
+							`[CustomModesManager] Error handling submodule .roomodes change in ${submodule.fullRelativePath}:`,
+							error,
+						)
+					}
+				}
+
+				this.submoduleWatchers.push(watcher.onDidChange(handleSubmoduleChange))
+				this.submoduleWatchers.push(watcher.onDidCreate(handleSubmoduleChange))
+				this.submoduleWatchers.push(watcher.onDidDelete(handleSubmoduleChange))
+				this.submoduleWatchers.push(watcher)
+			}
+
+			logger.info(`Set up ${submodules.length} submodule .roomodes watchers`)
+		} catch (error) {
+			console.error("[CustomModesManager] Failed to setup submodule watchers:", error)
+		}
+	}
+
+	/**
+		* Re-initializes submodule watchers. Call this when the includeSubmoduleModes setting changes.
+		*/
+	public async refreshSubmoduleWatchers(): Promise<void> {
+		await this.setupSubmoduleWatchers()
+		this.clearCache()
+		await this.onUpdate()
 	}
 
 	public async getCustomModes(): Promise<ModeConfig[]> {
@@ -369,29 +506,44 @@ export class CustomModesManager {
 		const roomodesPath = await this.getWorkspaceRoomodes()
 		const roomodesModes = roomodesPath ? await this.loadModesFromFile(roomodesPath) : []
 
-		// Create maps to store modes by source.
-		const projectModes = new Map<string, ModeConfig>()
-		const globalModes = new Map<string, ModeConfig>()
+		// Get modes from submodules if enabled.
+		const submoduleModes = await this.getSubmoduleModes()
 
-		// Add project modes (they take precedence).
+		// Create a set to track which slugs have been added (for deduplication).
+		const addedSlugs = new Set<string>()
+
+		// Precedence order (highest to lowest):
+		// 1. Project modes (.roomodes in workspace root)
+		// 2. Submodule modes (.roomodes in submodules)
+		// 3. Global modes (custom-modes.yaml)
+
+		const mergedModes: ModeConfig[] = []
+
+		// Add project modes first (highest precedence).
 		for (const mode of roomodesModes) {
-			projectModes.set(mode.slug, { ...mode, source: "project" as const })
-		}
-
-		// Add global modes.
-		for (const mode of settingsModes) {
-			if (!projectModes.has(mode.slug)) {
-				globalModes.set(mode.slug, { ...mode, source: "global" as const })
+			if (!addedSlugs.has(mode.slug)) {
+				addedSlugs.add(mode.slug)
+				mergedModes.push({ ...mode, source: "project" as const })
 			}
 		}
 
-		// Combine modes in the correct order: project modes first, then global modes.
-		const mergedModes = [
-			...roomodesModes.map((mode) => ({ ...mode, source: "project" as const })),
-			...settingsModes
-				.filter((mode) => !projectModes.has(mode.slug))
-				.map((mode) => ({ ...mode, source: "global" as const })),
-		]
+		// Add submodule modes (middle precedence).
+		// Only add if not already defined in project modes.
+		for (const mode of submoduleModes) {
+			if (!addedSlugs.has(mode.slug)) {
+				addedSlugs.add(mode.slug)
+				mergedModes.push(mode) // Already has source: "submodule" and submodulePath set
+			}
+		}
+
+		// Add global modes (lowest precedence).
+		// Only add if not already defined in project or submodule modes.
+		for (const mode of settingsModes) {
+			if (!addedSlugs.has(mode.slug)) {
+				addedSlugs.add(mode.slug)
+				mergedModes.push({ ...mode, source: "global" as const })
+			}
+		}
 
 		await this.context.globalState.update("customModes", mergedModes)
 
@@ -1010,6 +1162,11 @@ export class CustomModesManager {
 			disposable.dispose()
 		}
 
+		for (const disposable of this.submoduleWatchers) {
+			disposable.dispose()
+		}
+
 		this.disposables = []
+		this.submoduleWatchers = []
 	}
 }

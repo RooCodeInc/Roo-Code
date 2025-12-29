@@ -55,7 +55,7 @@ import { useEscapeKey } from "@src/hooks/useEscapeKey"
 // Get all available groups that should show in prompts view
 const availableGroups = (Object.keys(TOOL_GROUPS) as ToolGroup[]).filter((group) => !TOOL_GROUPS[group].alwaysAvailable)
 
-type ModeSource = "global" | "project"
+type ModeSource = "global" | "project" | "submodule"
 
 type ImportModeResult = { type: "importModeResult"; success: boolean; slug?: string; error?: string }
 
@@ -793,43 +793,53 @@ const ModesView = () => {
 																		.includes(searchValue.toLowerCase())
 																: true,
 														)
-														.map((modeConfig) => (
-															<CommandItem
-																key={modeConfig.slug}
-																value={`${modeConfig.name} ${modeConfig.slug}`}
-																onSelect={() => {
-																	handleModeSwitch(modeConfig)
-																	setOpen(false)
-																}}
-																data-testid={`mode-option-${modeConfig.slug}`}>
-																<div className="flex items-center justify-between w-full">
-																	<span
-																		style={{
-																			whiteSpace: "nowrap",
-																			overflow: "hidden",
-																			textOverflow: "ellipsis",
-																			flex: 2,
-																			minWidth: 0,
-																		}}>
-																		{modeConfig.name}
-																	</span>
-																	<span
-																		className="text-foreground"
-																		style={{
-																			whiteSpace: "nowrap",
-																			overflow: "hidden",
-																			textOverflow: "ellipsis",
-																			direction: "rtl",
-																			textAlign: "right",
-																			flex: 1,
-																			minWidth: 0,
-																			marginLeft: "0.5em",
-																		}}>
-																		{modeConfig.slug}
-																	</span>
-																</div>
-															</CommandItem>
-														))}
+														.map((modeConfig) => {
+															const isSubmoduleMode = modeConfig.source === "submodule"
+															return (
+																<CommandItem
+																	key={modeConfig.slug}
+																	value={`${modeConfig.name} ${modeConfig.slug}`}
+																	onSelect={() => {
+																		handleModeSwitch(modeConfig)
+																		setOpen(false)
+																	}}
+																	data-testid={`mode-option-${modeConfig.slug}`}>
+																	<div className="flex items-center justify-between w-full">
+																		<span
+																			style={{
+																				whiteSpace: "nowrap",
+																				overflow: "hidden",
+																				textOverflow: "ellipsis",
+																				flex: 2,
+																				minWidth: 0,
+																			}}>
+																			{modeConfig.name}
+																			{isSubmoduleMode && (
+																				<span
+																					className="ml-2 text-xs text-vscode-descriptionForeground"
+																					title={`From submodule: ${modeConfig.submodulePath}`}>
+																					📦 {modeConfig.submodulePath}
+																				</span>
+																			)}
+																		</span>
+																		<span
+																			className="text-foreground"
+																			style={{
+																				whiteSpace: "nowrap",
+																				overflow: "hidden",
+																				textOverflow: "ellipsis",
+																				direction: "rtl",
+																				textAlign: "right",
+																				flex: 1,
+																				minWidth: 0,
+																				marginLeft: "0.5em",
+																			}}>
+																			{modeConfig.slug}
+																		</span>
+																	</div>
+																</CommandItem>
+															)
+														})}
 												</CommandGroup>
 											</CommandList>
 										</Command>
@@ -847,26 +857,38 @@ const ModesView = () => {
 									</Button>
 								</StandardTooltip>
 
-								{/* Edit (rename) mode - only enabled for custom modes */}
-								<StandardTooltip content={t("settings:providers.renameProfile")}>
+								{/* Edit (rename) mode - only enabled for editable custom modes (not submodule) */}
+								<StandardTooltip content={(() => {
+									const customMode = findModeBySlug(visualMode, customModes)
+									if (customMode?.source === "submodule") {
+										return t("prompts:modes.readOnlySubmodule") || "Read-only (from submodule)"
+									}
+									return t("settings:providers.renameProfile")
+								})()}>
 									<Button
 										variant="ghost"
 										size="icon"
 										onClick={handleStartRenameMode}
 										data-testid="rename-mode-button"
-										disabled={!findModeBySlug(visualMode, customModes)}>
+										disabled={!findModeBySlug(visualMode, customModes) || findModeBySlug(visualMode, customModes)?.source === "submodule"}>
 										<span className="codicon codicon-edit" />
 									</Button>
 								</StandardTooltip>
 
-								{/* Delete mode - disabled for built-in modes */}
-								<StandardTooltip content={t("prompts:createModeDialog.deleteMode")}>
+								{/* Delete mode - disabled for built-in modes and submodule modes */}
+								<StandardTooltip content={(() => {
+									const customMode = findModeBySlug(visualMode, customModes)
+									if (customMode?.source === "submodule") {
+										return t("prompts:modes.readOnlySubmodule") || "Read-only (from submodule)"
+									}
+									return t("prompts:createModeDialog.deleteMode")
+								})()}>
 									<Button
 										variant="ghost"
 										size="icon"
 										onClick={() => {
 											const customMode = findModeBySlug(visualMode, customModes)
-											if (customMode) {
+											if (customMode && customMode.source !== "submodule") {
 												setModeToDelete({
 													slug: customMode.slug,
 													name: customMode.name,
@@ -880,7 +902,7 @@ const ModesView = () => {
 											}
 										}}
 										data-testid="delete-mode-button"
-										disabled={!findModeBySlug(visualMode, customModes)}>
+										disabled={!findModeBySlug(visualMode, customModes) || findModeBySlug(visualMode, customModes)?.source === "submodule"}>
 										<span className="codicon codicon-trash" />
 									</Button>
 								</StandardTooltip>
@@ -1106,13 +1128,26 @@ const ModesView = () => {
 					/>
 				</div>
 
+				{/* Submodule mode read-only indicator */}
+				{getCurrentMode()?.source === "submodule" && (
+					<div className="mb-4 p-3 bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder rounded">
+						<div className="flex items-center gap-2 text-sm">
+							<span>📦</span>
+							<span>
+								{t("prompts:modes.submoduleModeReadOnly") ||
+									`This mode is from submodule "${getCurrentMode()?.submodulePath}" and is read-only.`}
+							</span>
+						</div>
+					</div>
+				)}
+
 				{/* Mode settings */}
 				<>
 					{/* Show tools for all modes */}
 					<div className="mb-4">
 						<div className="flex justify-between items-center mb-1">
 							<div className="font-bold">{t("prompts:tools.title")}</div>
-							{findModeBySlug(visualMode, customModes) && (
+							{findModeBySlug(visualMode, customModes) && findModeBySlug(visualMode, customModes)?.source !== "submodule" && (
 								<StandardTooltip
 									content={
 										isToolsEditMode ? t("prompts:tools.doneEditing") : t("prompts:tools.editTools")

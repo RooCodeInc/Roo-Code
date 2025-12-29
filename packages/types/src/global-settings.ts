@@ -179,6 +179,13 @@ export const globalSettingsSchema = z.object({
 	mode: z.string().optional(),
 	modeApiConfigs: z.record(z.string(), z.string()).optional(),
 	customModes: z.array(modeConfigSchema).optional(),
+	/**
+	 * Whether to include custom modes from git submodules.
+	 * When enabled, Roo will recursively search for .roomodes files in git submodules
+	 * and make those modes available in the parent workspace (as read-only).
+	 * @default false
+	 */
+	includeSubmoduleModes: z.boolean().optional(),
 	customModePrompts: customModePromptsSchema.optional(),
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),

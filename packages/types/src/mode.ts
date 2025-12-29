@@ -69,7 +69,12 @@ export const modeConfigSchema = z.object({
 	description: z.string().optional(),
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
-	source: z.enum(["global", "project"]).optional(),
+	source: z.enum(["global", "project", "submodule"]).optional(),
+	/**
+	 * Relative path to the submodule from the workspace root.
+	 * Only set when source is "submodule".
+	 */
+	submodulePath: z.string().optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
