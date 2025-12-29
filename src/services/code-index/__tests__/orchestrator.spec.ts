@@ -216,6 +216,18 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 				getValue: vi.fn(),
 				getProviderSettings: vi.fn().mockReturnValue({}),
 				setProviderSettings: vi.fn(),
+				// Additional required properties/methods for ContextProxy
+				originalContext: {},
+				stateCache: {},
+				secretCache: {},
+				_isInitialized: true,
+				isInitialized: true,
+				extensionUri: {},
+				extensionPath: "",
+				globalStorageUri: {},
+				logUri: {},
+				extension: {},
+				extensionMode: 1,
 			}
 			const mgr = new configManagerModule.CodeIndexConfigManager(mockContextProxy as any)
 			await mgr.loadConfiguration()
