@@ -217,7 +217,7 @@ describe("CodeIndexOrchestrator - error path cleanup gating", () => {
 				getProviderSettings: vi.fn().mockReturnValue({}),
 				setProviderSettings: vi.fn(),
 			}
-			const mgr = new configManagerModule.CodeIndexConfigManager(mockContextProxy)
+			const mgr = new configManagerModule.CodeIndexConfigManager(mockContextProxy as any)
 			await mgr.loadConfiguration()
 			const requiresRestart = mgr.doesConfigChangeRequireRestart(prev)
 			expect(requiresRestart).toBe(true)
