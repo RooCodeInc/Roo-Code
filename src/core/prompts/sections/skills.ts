@@ -56,7 +56,7 @@ How to use skills:
 
 Activate a skill:
 1. Load the full SKILL.md content into context.
-   - Use execute_command to read it (e.g., cat "<location>").
+	- Read the file at "<location>" to load its contents into context.
 2. Follow the skill instructions precisely.
 3. Only load additional bundled files (scripts/, references/, assets/) if the SKILL.md instructions require them.
 `
