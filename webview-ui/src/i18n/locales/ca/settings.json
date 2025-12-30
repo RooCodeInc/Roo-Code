@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Restablir al valor per defecte (0.4)",
 		"searchMaxResultsLabel": "Màxim de resultats de cerca",
 		"searchMaxResultsDescription": "Nombre màxim de resultats de cerca a retornar quan es consulta l'índex de la base de codi. Els valors més alts proporcionen més context però poden incloure resultats menys rellevants.",
-		"resetToDefault": "Restablir al valor per defecte"
+		"resetToDefault": "Restablir al valor per defecte",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Pots configurar una drecera global per a aquesta configuració <SettingsLink>a les preferències del teu IDE</SettingsLink>.",

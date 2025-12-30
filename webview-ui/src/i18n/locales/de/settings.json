@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Auf Standardwert zurücksetzen (0.4)",
 		"searchMaxResultsLabel": "Maximale Suchergebnisse",
 		"searchMaxResultsDescription": "Maximale Anzahl von Suchergebnissen, die bei der Abfrage des Codebase-Index zurückgegeben werden. Höhere Werte bieten mehr Kontext, können aber weniger relevante Ergebnisse enthalten.",
-		"resetToDefault": "Auf Standard zurücksetzen"
+		"resetToDefault": "Auf Standard zurücksetzen",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Du kannst <SettingsLink>in deinen IDE-Einstellungen</SettingsLink> einen globalen Shortcut für diese Einstellung konfigurieren.",

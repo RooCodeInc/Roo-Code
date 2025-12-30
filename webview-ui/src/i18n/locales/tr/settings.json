@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Varsayılan değere sıfırla (0.4)",
 		"searchMaxResultsLabel": "Maksimum Arama Sonuçları",
 		"searchMaxResultsDescription": "Kod tabanı dizinini sorgularken döndürülecek maksimum arama sonucu sayısı. Daha yüksek değerler daha fazla bağlam sağlar ancak daha az alakalı sonuçlar içerebilir.",
-		"resetToDefault": "Varsayılana sıfırla"
+		"resetToDefault": "Varsayılana sıfırla",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",

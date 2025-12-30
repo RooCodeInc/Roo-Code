@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Reset ke nilai default (0.4)",
 		"searchMaxResultsLabel": "Hasil Pencarian Maksimum",
 		"searchMaxResultsDescription": "Jumlah maksimum hasil pencarian yang dikembalikan saat melakukan query indeks basis kode. Nilai yang lebih tinggi memberikan lebih banyak konteks tetapi mungkin menyertakan hasil yang kurang relevan.",
-		"resetToDefault": "Reset ke default"
+		"resetToDefault": "Reset ke default",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini <SettingsLink>di preferensi IDE Anda</SettingsLink>.",

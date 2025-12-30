@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Reset naar standaardwaarde (0.4)",
 		"searchMaxResultsLabel": "Maximum Zoekresultaten",
 		"searchMaxResultsDescription": "Maximum aantal zoekresultaten dat wordt geretourneerd bij het doorzoeken van de codebase-index. Hogere waarden bieden meer context maar kunnen minder relevante resultaten bevatten.",
-		"resetToDefault": "Reset naar standaard"
+		"resetToDefault": "Reset naar standaard",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "U kunt een globale sneltoets voor deze instelling configureren <SettingsLink>in de voorkeuren van uw IDE</SettingsLink>.",

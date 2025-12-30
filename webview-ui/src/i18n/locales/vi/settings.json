@@ -169,7 +169,16 @@
 		"searchMinScoreResetTooltip": "Đặt lại về giá trị mặc định (0.4)",
 		"searchMaxResultsLabel": "Số Kết Quả Tìm Kiếm Tối Đa",
 		"searchMaxResultsDescription": "Số lượng kết quả tìm kiếm tối đa được trả về khi truy vấn chỉ mục cơ sở mã. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng có thể bao gồm các kết quả ít liên quan hơn.",
-		"resetToDefault": "Đặt lại về mặc định"
+		"resetToDefault": "Đặt lại về mặc định",
+		"embeddingBatchSizeLabel": "Embedding Batch Size",
+		"embeddingBatchSizeDescription": "Number of code segments to batch together for embeddings. Higher values can speed up indexing on powerful hardware. Lower values reduce memory usage.",
+		"embeddingBatchSizeResetTooltip": "Reset to default value (60)",
+		"maxChunkSizeLabel": "Max Chunk Size",
+		"maxChunkSizeDescription": "Maximum characters per code chunk. Larger chunks provide more context but may reduce search precision. Smaller chunks enable finer-grained search results.",
+		"maxChunkSizeResetTooltip": "Reset to default value (1000)",
+		"parsingConcurrencyLabel": "Parsing Concurrency",
+		"parsingConcurrencyDescription": "Number of files to parse concurrently during indexing. Higher values speed up indexing but use more CPU and memory.",
+		"parsingConcurrencyResetTooltip": "Reset to default value (10)"
 	},
 	"autoApprove": {
 		"toggleShortcut": "Bạn có thể định cấu hình một phím tắt chung cho cài đặt này <SettingsLink>trong tùy chọn IDE của bạn</SettingsLink>.",
