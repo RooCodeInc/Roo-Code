@@ -2716,21 +2716,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											presentAssistantMessage(this)
 										} else if (toolUseIndex !== undefined) {
 											// finalizeStreamingToolCall returned null (malformed JSON or missing args)
-											// We still need to mark the tool as non-partial so it gets executed
-											// The tool's validation will catch any missing required parameters
+											// CRITICAL: Do NOT use the partial args from processStreamingChunk()
+											// as they may be truncated/incomplete (parsed by partial-json library).
+											// Instead, clear the params/nativeArgs so validation properly fails
+											// with "missing parameter" error rather than executing with truncated data.
 											const existingToolUse = this.assistantMessageContent[toolUseIndex]
 											if (existingToolUse && existingToolUse.type === "tool_use") {
 												existingToolUse.partial = false
+												// Clear potentially truncated args - validation will catch missing params
+												existingToolUse.params = {}
+												existingToolUse.nativeArgs = undefined
 												// Ensure it has the ID for native protocol
 												;(existingToolUse as any).id = event.id
 											}
-
+	
 											// Clean up tracking
 											this.streamingToolCallIndices.delete(event.id)
-
+	
 											// Mark that we have new content to process
 											this.userMessageContentReady = false
-
+	
 											// Present the tool call - validation will handle missing params
 											presentAssistantMessage(this)
 										}
@@ -2875,11 +2880,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								presentAssistantMessage(this)
 							} else if (toolUseIndex !== undefined) {
 								// finalizeStreamingToolCall returned null (malformed JSON or missing args)
-								// We still need to mark the tool as non-partial so it gets executed
-								// The tool's validation will catch any missing required parameters
+								// CRITICAL: Do NOT use the partial args from processStreamingChunk()
+								// as they may be truncated/incomplete (parsed by partial-json library).
+								// Instead, clear the params/nativeArgs so validation properly fails
+								// with "missing parameter" error rather than executing with truncated data.
 								const existingToolUse = this.assistantMessageContent[toolUseIndex]
 								if (existingToolUse && existingToolUse.type === "tool_use") {
 									existingToolUse.partial = false
+									// Clear potentially truncated args - validation will catch missing params
+									existingToolUse.params = {}
+									existingToolUse.nativeArgs = undefined
 									// Ensure it has the ID for native protocol
 									;(existingToolUse as any).id = event.id
 								}
