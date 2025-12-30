@@ -25,6 +25,7 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
+import { RateLimitCountdown } from "./RateLimitCountdown"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -1087,6 +1088,14 @@ export const ChatRowContent = ({
 						</>
 					)
 				case "api_req_retry_delayed":
+					// Check if this is user-configured rate limiting (not an API error)
+					if (message.text?.startsWith("Rate limiting for")) {
+						// Extract countdown from message text: "Rate limiting for X seconds..."
+						const rateLimitMatch = message.text.match(/Rate limiting for (\d+) seconds/)
+						const countdown = rateLimitMatch ? parseInt(rateLimitMatch[1], 10) : 0
+						return <RateLimitCountdown seconds={countdown} />
+					}
+	
 					let body = t(`chat:apiRequest.failed`)
 					let retryInfo, rawError, code, docsURL
 					if (message.text !== undefined) {
