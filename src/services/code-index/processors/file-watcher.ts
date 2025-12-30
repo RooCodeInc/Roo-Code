@@ -525,7 +525,7 @@ export class FileWatcher implements IFileWatcher {
 			// Check if file should be ignored
 			const relativeFilePath = generateRelativeFilePath(filePath, this.workspacePath)
 			if (
-				!this.ignoreController.validateAccess(filePath) ||
+				!this.ignoreController.validateAccess(relativeFilePath) ||
 				(this.ignoreInstance && this.ignoreInstance.ignores(relativeFilePath))
 			) {
 				return {

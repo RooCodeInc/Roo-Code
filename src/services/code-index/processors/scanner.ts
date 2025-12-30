@@ -86,7 +86,9 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// IMPORTANT: do not create a file watcher here (scan is short-lived).
 		let allowedPaths: string[]
 		{
-			const ignoreController = new RooIgnoreController(directoryPath, { watch: false })
+			// Root the controller at the effective workspace to ensure `.rooignore` checks
+			// are consistent with other workspace-relative filtering.
+			const ignoreController = new RooIgnoreController(scanWorkspace, { watch: false })
 			try {
 				await ignoreController.initialize()
 				// Filter paths using .rooignore
