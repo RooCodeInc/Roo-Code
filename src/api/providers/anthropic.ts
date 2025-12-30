@@ -66,11 +66,6 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			reasoning: thinking,
 		} = this.getModel()
 
-		// Accumulators for final response logging
-		const accumulatedText: string[] = []
-		const accumulatedReasoning: string[] = []
-		const toolCalls: Array<{ id?: string; name?: string }> = []
-
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
 		const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
@@ -263,30 +258,21 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 							// We may receive multiple text blocks, in which
 							// case just insert a line break between them.
 							if (chunk.index > 0) {
-								accumulatedReasoning.push("\n")
 								yield { type: "reasoning", text: "\n" }
 							}
 
-							accumulatedReasoning.push(chunk.content_block.thinking)
 							yield { type: "reasoning", text: chunk.content_block.thinking }
 							break
 						case "text":
 							// We may receive multiple text blocks, in which
 							// case just insert a line break between them.
 							if (chunk.index > 0) {
-								accumulatedText.push("\n")
 								yield { type: "text", text: "\n" }
 							}
 
-							accumulatedText.push(chunk.content_block.text)
 							yield { type: "text", text: chunk.content_block.text }
 							break
 						case "tool_use": {
-							// Track tool call for logging
-							toolCalls.push({
-								id: chunk.content_block.id,
-								name: chunk.content_block.name,
-							})
 							// Emit initial tool call partial with id and name
 							yield {
 								type: "tool_call_partial",
@@ -302,11 +288,9 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				case "content_block_delta":
 					switch (chunk.delta.type) {
 						case "thinking_delta":
-							accumulatedReasoning.push(chunk.delta.thinking)
 							yield { type: "reasoning", text: chunk.delta.thinking }
 							break
 						case "text_delta":
-							accumulatedText.push(chunk.delta.text)
 							yield { type: "text", text: chunk.delta.text }
 							break
 						case "input_json_delta": {

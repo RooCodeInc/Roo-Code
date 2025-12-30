@@ -102,9 +102,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 			requestOptions.toolChoice = "any"
 		}
 
-		// Temporary debug log for QA
-		// console.log("[MISTRAL DEBUG] Raw API request body:", requestOptions)
-
 		let response
 		try {
 			response = await this.client.chat.stream(requestOptions)

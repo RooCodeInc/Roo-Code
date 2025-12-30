@@ -6,7 +6,6 @@ import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
 import { isMcpTool } from "../../utils/mcp-name"
-import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
 
 /**
  * Base class for API providers that implements common functionality.
@@ -18,11 +17,8 @@ export abstract class BaseProvider implements ApiHandler {
 	protected abstract readonly providerName: string
 
 	/**
-	 * Reference to the API inference logger singleton for logging requests/responses.
-	 * Providers can use this to log inference calls when enabled.
+	 * Providers implement inference by streaming chunks from their underlying SDK/transport.
 	 */
-	protected readonly inferenceLogger = ApiInferenceLogger
-
 	abstract createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],

@@ -181,24 +181,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Accumulators for response logging
-		const accumulatedText: string[] = []
-		const accumulatedReasoning: string[] = []
-		const toolCalls: Array<{ id?: string; name?: string }> = []
 		let lastUsage: any
 
 		// Make the request (pass systemPrompt and messages for potential retry)
 		for await (const chunk of this.executeRequest(requestBody, model, metadata, systemPrompt, messages)) {
-			// Accumulate for logging
-			if (chunk.type === "text") {
-				accumulatedText.push(chunk.text)
-			} else if (chunk.type === "reasoning") {
-				accumulatedReasoning.push(chunk.text)
-			} else if (chunk.type === "tool_call" || chunk.type === "tool_call_partial") {
-				if (chunk.id || chunk.name) {
-					toolCalls.push({ id: chunk.id, name: chunk.name })
-				}
-			} else if (chunk.type === "usage") {
+			if (chunk.type === "usage") {
 				lastUsage = chunk
 			}
 

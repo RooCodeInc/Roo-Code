@@ -100,10 +100,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 		const ark = modelUrl.includes(".volces.com")
 
-		// Accumulators for final response logging
-		const accumulatedText: string[] = []
-		const accumulatedReasoning: string[] = []
-		const toolCalls: Array<{ id?: string; name?: string }> = []
 		let lastUsage: any
 
 		// Handle O3 family models separately with their own logging
@@ -214,31 +210,18 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (delta.content) {
 					for (const matchedChunk of matcher.update(delta.content)) {
-						if (matchedChunk.type === "text") {
-							accumulatedText.push(matchedChunk.text)
-						} else if (matchedChunk.type === "reasoning") {
-							accumulatedReasoning.push(matchedChunk.text)
-						}
 						yield matchedChunk
 					}
 				}
 
 				if ("reasoning_content" in delta && delta.reasoning_content) {
-					accumulatedReasoning.push((delta.reasoning_content as string | undefined) || "")
 					yield {
 						type: "reasoning",
 						text: (delta.reasoning_content as string | undefined) || "",
 					}
 				}
 
-				// Track tool calls for logging and use processToolCalls for proper tool_call_end events
-				if (delta.tool_calls) {
-					for (const toolCall of delta.tool_calls) {
-						if (toolCall.id || toolCall.function?.name) {
-							toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
-						}
-					}
-				}
+				// Use processToolCalls for proper tool_call_end events
 				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
 
 				if (chunk.usage) {
@@ -247,11 +230,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			for (const matchedChunk of matcher.final()) {
-				if (matchedChunk.type === "text") {
-					accumulatedText.push(matchedChunk.text)
-				} else if (matchedChunk.type === "reasoning") {
-					accumulatedReasoning.push(matchedChunk.text)
-				}
 				yield matchedChunk
 			}
 
@@ -292,7 +270,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			if (message?.tool_calls) {
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
-						toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
 						yield {
 							type: "tool_call",
 							id: toolCall.id,
@@ -303,7 +280,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
-			accumulatedText.push(message?.content || "")
 			yield {
 				type: "text",
 				text: message?.content || "",
@@ -380,9 +356,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 
-		// Accumulators for response logging
-		const accumulatedText: string[] = []
-		const toolCalls: Array<{ id?: string; name?: string }> = []
 		let lastUsage: any
 
 		if (this.options.openAiStreamingEnabled ?? true) {
@@ -431,21 +404,12 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 				if (delta) {
 					if (delta.content) {
-						accumulatedText.push(delta.content)
 						yield {
 							type: "text",
 							text: delta.content,
 						}
 					}
 
-					// Track tool calls for logging and use processToolCalls for proper tool_call_end events
-					if (delta.tool_calls) {
-						for (const toolCall of delta.tool_calls) {
-							if (toolCall.id || toolCall.function?.name) {
-								toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
-							}
-						}
-					}
 					yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
 				}
 
@@ -496,7 +460,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			if (message?.tool_calls) {
 				for (const toolCall of message.tool_calls) {
 					if (toolCall.type === "function") {
-						toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
 						yield {
 							type: "tool_call",
 							id: toolCall.id,
@@ -507,7 +470,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 			}
 
-			accumulatedText.push(message?.content || "")
 			yield {
 				type: "text",
 				text: message?.content || "",
@@ -515,34 +477,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			lastUsage = response.usage
 			yield this.processUsageMetrics(response.usage)
-		}
-	}
-
-	private async *handleStreamResponse(stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>): ApiStream {
-		const activeToolCallIds = new Set<string>()
-
-		for await (const chunk of stream) {
-			const delta = chunk.choices?.[0]?.delta
-			const finishReason = chunk.choices?.[0]?.finish_reason
-
-			if (delta) {
-				if (delta.content) {
-					yield {
-						type: "text",
-						text: delta.content,
-					}
-				}
-
-				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
-			}
-
-			if (chunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: chunk.usage.prompt_tokens || 0,
-					outputTokens: chunk.usage.completion_tokens || 0,
-				}
-			}
 		}
 	}
 
