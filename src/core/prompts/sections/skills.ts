@@ -1,16 +1,14 @@
 import { SkillsManager, SkillMetadata } from "../../../services/skills/SkillsManager"
 
-/**
- * Get a display-friendly relative path for a skill.
- * Converts absolute paths to relative paths to avoid leaking sensitive filesystem info.
- *
- * @param skill - The skill metadata
- * @returns A relative path like ".roo/skills/name/SKILL.md" or "~/.roo/skills/name/SKILL.md"
- */
-function getDisplayPath(skill: SkillMetadata): string {
-	const basePath = skill.source === "project" ? ".roo" : "~/.roo"
-	const skillsDir = skill.mode ? `skills-${skill.mode}` : "skills"
-	return `${basePath}/${skillsDir}/${skill.name}/SKILL.md`
+type SkillsManagerLike = Pick<SkillsManager, "getSkillsForMode">
+
+function escapeXml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/\"/g, "&quot;")
+		.replace(/'/g, "&apos;")
 }
 
 /**
@@ -22,7 +20,7 @@ function getDisplayPath(skill: SkillMetadata): string {
  * @param currentMode - The current mode slug (e.g., 'code', 'architect')
  */
 export async function getSkillsSection(
-	skillsManager: SkillsManager | undefined,
+	skillsManager: SkillsManagerLike | undefined,
 	currentMode: string | undefined,
 ): Promise<string> {
 	if (!skillsManager || !currentMode) return ""
@@ -31,41 +29,35 @@ export async function getSkillsSection(
 	const skills = skillsManager.getSkillsForMode(currentMode)
 	if (skills.length === 0) return ""
 
-	// Separate generic and mode-specific skills for display
-	const genericSkills = skills.filter((s) => !s.mode)
-	const modeSpecificSkills = skills.filter((s) => s.mode === currentMode)
-
-	let skillsList = ""
-
-	if (modeSpecificSkills.length > 0) {
-		skillsList += modeSpecificSkills
-			.map(
-				(skill) =>
-					`  * "${skill.name}" skill (${currentMode} mode) - ${skill.description} [${getDisplayPath(skill)}]`,
-			)
-			.join("\n")
-	}
-
-	if (genericSkills.length > 0) {
-		if (skillsList) skillsList += "\n"
-		skillsList += genericSkills
-			.map((skill) => `  * "${skill.name}" skill - ${skill.description} [${getDisplayPath(skill)}]`)
-			.join("\n")
-	}
+	const skillsXml = skills
+		.map((skill) => {
+			const name = escapeXml(skill.name)
+			const description = escapeXml(skill.description)
+			// Per the Agent Skills integration guidance for filesystem-based agents,
+			// location should be an absolute path to the SKILL.md file.
+			const location = escapeXml(skill.path)
+			return `  <skill>\n    <name>${name}</name>\n    <description>${description}</description>\n    <location>${location}</location>\n  </skill>`
+		})
+		.join("\n")
 
 	return `====
 
 AVAILABLE SKILLS
 
-Skills are pre-packaged instructions for specific tasks. When a user request matches a skill description, read the full SKILL.md file to get detailed instructions.
+<available_skills>
+${skillsXml}
+</available_skills>
 
-- These are the currently available skills for "${currentMode}" mode:
-${skillsList}
+How to use skills:
+- This list is already filtered for the current mode ("${currentMode}") and includes any mode-specific skills from skills-${currentMode}/ (with project overriding global).
+- Select a skill ONLY when the user's request clearly matches the skill's <description>.
+- If multiple skills match, prefer the most specific one for the current task.
+- Do NOT load every SKILL.md up front. Load the full SKILL.md only after you've decided to use that skill.
 
-To use a skill:
-1. Identify which skill matches the user's request based on the description
-2. Use read_file to load the full SKILL.md file from the path shown in brackets
-3. Follow the instructions in the skill file
-4. Access any bundled files (scripts, references, assets) as needed
+Activate a skill:
+1. Load the full SKILL.md content into context.
+   - Use execute_command to read it (e.g., cat "<location>").
+2. Follow the skill instructions precisely.
+3. Only load additional bundled files (scripts/, references/, assets/) if the SKILL.md instructions require them.
 `
 }
