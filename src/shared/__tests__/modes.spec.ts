@@ -45,6 +45,52 @@ describe("isToolAllowedForMode", () => {
 		expect(isToolAllowedForMode("browser_action", "markdown-editor", customModes)).toBe(true)
 	})
 
+	describe("read file restrictions", () => {
+		it("allows reading matching files", () => {
+			const customModesWithReadRestriction: ModeConfig[] = [
+				{
+					slug: "md-reader",
+					name: "Markdown Reader",
+					roleDefinition: "You can only read markdown",
+					groups: ["browser", ["read", { fileRegex: "\\.md$" }]],
+				},
+			]
+
+			expect(
+				isToolAllowedForMode("read_file", "md-reader", customModesWithReadRestriction, undefined, {
+					files: [{ path: "README.md" }],
+				}),
+			).toBe(true)
+		})
+
+		it("rejects reading non-matching files", () => {
+			const customModesWithReadRestriction: ModeConfig[] = [
+				{
+					slug: "md-reader",
+					name: "Markdown Reader",
+					roleDefinition: "You can only read markdown",
+					groups: [["read", { fileRegex: "\\.md$", description: "Markdown files only" }]],
+				},
+			]
+
+			expect(() =>
+				isToolAllowedForMode("read_file", "md-reader", customModesWithReadRestriction, undefined, {
+					files: [{ path: "src/index.ts" }],
+				}),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode("read_file", "md-reader", customModesWithReadRestriction, undefined, {
+					files: [{ path: "src/index.ts" }],
+				}),
+			).toThrow(/can only read files matching pattern/)
+			expect(() =>
+				isToolAllowedForMode("read_file", "md-reader", customModesWithReadRestriction, undefined, {
+					files: [{ path: "src/index.ts" }],
+				}),
+			).toThrow(/Markdown files only/)
+		})
+	})
+
 	describe("file restrictions", () => {
 		it("allows editing matching files", () => {
 			// Test markdown editor mode
@@ -395,6 +441,13 @@ describe("FileRestrictionError", () => {
 		expect(error.name).toBe("FileRestrictionError")
 	})
 
+	it("formats error message for read operations", () => {
+		const error = new FileRestrictionError("Markdown Reader", "\\.md$", undefined, "test.js", "read_file", "read")
+		expect(error.message).toBe(
+			"Tool 'read_file' in mode 'Markdown Reader' can only read files matching pattern: \\.md$. Got: test.js",
+		)
+	})
+
 	describe("debug mode", () => {
 		it("is configured correctly", () => {
 			const debugMode = modes.find((mode) => mode.slug === "debug")
@@ -409,6 +462,34 @@ describe("FileRestrictionError", () => {
 			expect(debugMode?.customInstructions).toContain(
 				"Reflect on 5-7 different possible sources of the problem, distill those down to 1-2 most likely sources, and then add logs to validate your assumptions. Explicitly ask the user to confirm the diagnosis before fixing the problem.",
 			)
+		})
+	})
+
+	describe("orchestrator mode", () => {
+		it("is configured to only read skill definition files", () => {
+			const orchestratorMode = modes.find((mode) => mode.slug === "orchestrator")
+			expect(orchestratorMode).toBeDefined()
+			expect(orchestratorMode?.groups).toEqual([
+				[
+					"read",
+					{
+						fileRegex: "^\\.roo\\/skills(-[a-zA-Z0-9-]+)?\\/[^\\/]+\\/SKILL\\.md$",
+						description: "Skill definition files only",
+					},
+				],
+			])
+
+			expect(
+				isToolAllowedForMode("read_file", "orchestrator", [], undefined, {
+					files: [{ path: ".roo/skills/example-skill/SKILL.md" }],
+				}),
+			).toBe(true)
+
+			expect(() =>
+				isToolAllowedForMode("read_file", "orchestrator", [], undefined, {
+					files: [{ path: "src/index.ts" }],
+				}),
+			).toThrow(FileRestrictionError)
 		})
 	})
 

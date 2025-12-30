@@ -714,13 +714,19 @@ export async function presentAssistantMessage(cline: Task) {
 				const { resolveToolAlias } = await import("../prompts/tools/filter-tools-for-mode")
 				const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))
 
+				// Prefer nativeArgs for validation when available (e.g., read_file uses nativeArgs.files).
+				// nativeArgs should win on key collisions.
+				const toolParamsForValidation = block.nativeArgs
+					? { ...block.params, ...block.nativeArgs }
+					: block.params
+
 				try {
 					validateToolUse(
 						block.name as ToolName,
 						mode ?? defaultModeSlug,
 						customModes ?? [],
 						{ apply_diff: cline.diffEnabled },
-						block.params,
+						toolParamsForValidation,
 						stateExperiments,
 						includedTools,
 					)

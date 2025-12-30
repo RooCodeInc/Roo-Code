@@ -78,6 +78,52 @@ function doesFileMatchRegex(filePath: string, pattern: string): boolean {
 	}
 }
 
+function extractReadFilePaths(toolParams: Record<string, unknown> | undefined): string[] {
+	if (!toolParams) {
+		return []
+	}
+
+	const paths: string[] = []
+
+	// Native protocol read_file: { files: [{ path: string }] }
+	const files = (toolParams as { files?: unknown }).files
+	if (Array.isArray(files)) {
+		for (const entry of files) {
+			if (typeof entry === "object" && entry !== null) {
+				const p = (entry as { path?: unknown }).path
+				if (typeof p === "string" && p.trim().length > 0) {
+					paths.push(p.trim())
+				}
+			}
+		}
+	}
+
+	// Legacy single-path read_file: { path: string }
+	const legacyPath = (toolParams as { path?: unknown }).path
+	if (typeof legacyPath === "string" && legacyPath.trim().length > 0) {
+		paths.push(legacyPath.trim())
+	}
+
+	// Legacy XML args read_file: { args: "<args><file><path>...</path>...</file></args>" }
+	const args = (toolParams as { args?: unknown }).args
+	if (typeof args === "string") {
+		const filePathMatches = args.match(/<path>([^<]+)<\/path>/g)
+		if (filePathMatches) {
+			for (const match of filePathMatches) {
+				const pathMatch = match.match(/<path>([^<]+)<\/path>/)
+				if (pathMatch && pathMatch[1]) {
+					const extractedPath = pathMatch[1].trim()
+					if (extractedPath && !extractedPath.includes("<") && !extractedPath.includes(">")) {
+						paths.push(extractedPath)
+					}
+				}
+			}
+		}
+	}
+
+	return Array.from(new Set(paths))
+}
+
 export function isToolAllowedForMode(
 	tool: string,
 	modeSlug: string,
@@ -197,6 +243,16 @@ export function isToolAllowedForMode(
 					}
 					// If XML parsing fails, log the error but don't block the operation
 					console.warn(`Failed to parse XML args for file restriction validation: ${error}`)
+				}
+			}
+		}
+
+		// For the read group, optionally restrict read_file paths if specified
+		if (groupName === "read" && options.fileRegex && tool === "read_file") {
+			const readPaths = extractReadFilePaths(toolParams)
+			for (const p of readPaths) {
+				if (!doesFileMatchRegex(p, options.fileRegex)) {
+					throw new FileRestrictionError(mode.name, options.fileRegex, options.description, p, tool, "read")
 				}
 			}
 		}

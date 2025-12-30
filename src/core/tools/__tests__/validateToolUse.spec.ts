@@ -185,6 +185,27 @@ describe("mode-validator", () => {
 			expect(() => validateToolUse("read_file", "architect", [])).not.toThrow()
 		})
 
+		it("enforces read fileRegex restrictions for read_file", () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "md-reader",
+					name: "Markdown Reader",
+					roleDefinition: "Read markdown only",
+					groups: [["read", { fileRegex: "\\.md$" }]] as const,
+				},
+			]
+
+			expect(() =>
+				validateToolUse("read_file", "md-reader", customModes, undefined, {
+					files: [{ path: "src/index.ts" }],
+				}),
+			).toThrow(/can only read files matching pattern/)
+
+			expect(() =>
+				validateToolUse("read_file", "md-reader", customModes, undefined, { files: [{ path: "README.md" }] }),
+			).not.toThrow()
+		})
+
 		it("throws error when tool requirement is not met", () => {
 			const requirements = { apply_diff: false }
 			expect(() => validateToolUse("apply_diff", codeMode, [], requirements)).toThrow(

@@ -133,10 +133,18 @@ export function getModeSelection(mode: string, promptComponent?: PromptComponent
 
 // Custom error class for file restrictions
 export class FileRestrictionError extends Error {
-	constructor(mode: string, pattern: string, description: string | undefined, filePath: string, tool?: string) {
+	constructor(
+		mode: string,
+		pattern: string,
+		description: string | undefined,
+		filePath: string,
+		tool?: string,
+		operation: "read" | "edit" = "edit",
+	) {
 		const toolInfo = tool ? `Tool '${tool}' in mode '${mode}'` : `This mode (${mode})`
+		const verb = operation === "read" ? "read" : "edit"
 		super(
-			`${toolInfo} can only edit files matching pattern: ${pattern}${description ? ` (${description})` : ""}. Got: ${filePath}`,
+			`${toolInfo} can only ${verb} files matching pattern: ${pattern}${description ? ` (${description})` : ""}. Got: ${filePath}`,
 		)
 		this.name = "FileRestrictionError"
 	}
