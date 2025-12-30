@@ -66,8 +66,10 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId,
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
-			codebaseIndexMaxBatchRetries,
-		} = codebaseIndexConfig as any
+		} = codebaseIndexConfig
+	
+		const codebaseIndexMaxBatchRetries = (codebaseIndexConfig as { codebaseIndexMaxBatchRetries?: number })
+			.codebaseIndexMaxBatchRetries
 
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
