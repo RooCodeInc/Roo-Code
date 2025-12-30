@@ -82,13 +82,19 @@ export class DirectoryScanner implements IDirectoryScanner {
 		// Filter out directories (marked with trailing '/')
 		const filePaths = allPaths.filter((p) => !p.endsWith("/"))
 
-		// Initialize RooIgnoreController if not provided
-		const ignoreController = new RooIgnoreController(directoryPath)
-
-		await ignoreController.initialize()
-
-		// Filter paths using .rooignore
-		const allowedPaths = ignoreController.filterPaths(filePaths)
+		// Create a short-lived RooIgnoreController for filtering.
+		// IMPORTANT: do not create a file watcher here (scan is short-lived).
+		let allowedPaths: string[]
+		{
+			const ignoreController = new RooIgnoreController(directoryPath, { watch: false })
+			try {
+				await ignoreController.initialize()
+				// Filter paths using .rooignore
+				allowedPaths = ignoreController.filterPaths(filePaths)
+			} finally {
+				ignoreController.dispose()
+			}
+		}
 
 		// Filter by supported extensions, ignore patterns, and excluded directories
 		const supportedPaths = allowedPaths.filter((filePath) => {

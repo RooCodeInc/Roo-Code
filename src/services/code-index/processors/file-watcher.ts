@@ -35,6 +35,7 @@ export class FileWatcher implements IFileWatcher {
 	private ignoreInstance?: Ignore
 	private fileWatcher?: vscode.FileSystemWatcher
 	private ignoreController: RooIgnoreController
+	private readonly ownsIgnoreController: boolean
 	private accumulatedEvents: Map<string, { uri: vscode.Uri; type: "create" | "change" | "delete" }> = new Map()
 	private batchProcessDebounceTimer?: NodeJS.Timeout
 	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
@@ -82,6 +83,7 @@ export class FileWatcher implements IFileWatcher {
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
 	) {
+		this.ownsIgnoreController = ignoreController === undefined
 		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
 		if (ignoreInstance) {
 			this.ignoreInstance = ignoreInstance
@@ -126,6 +128,9 @@ export class FileWatcher implements IFileWatcher {
 		this.fileWatcher?.dispose()
 		if (this.batchProcessDebounceTimer) {
 			clearTimeout(this.batchProcessDebounceTimer)
+		}
+		if (this.ownsIgnoreController) {
+			this.ignoreController.dispose()
 		}
 		this._onDidStartBatchProcessing.dispose()
 		this._onBatchProgressUpdate.dispose()
