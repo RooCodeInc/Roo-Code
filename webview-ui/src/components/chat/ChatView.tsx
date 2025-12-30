@@ -400,6 +400,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					// an "ask" while ask is waiting for response.
 					switch (lastMessage.say) {
 						case "api_req_retry_delayed":
+						case "api_req_rate_limit_wait":
 							setSendingDisabled(true)
 							break
 						case "api_req_started":
@@ -957,6 +958,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "api_req_deleted":
 					return false
 				case "api_req_retry_delayed":
+				case "api_req_rate_limit_wait":
 					const last1 = modifiedMessages.at(-1)
 					const last2 = modifiedMessages.at(-2)
 					if (last1?.ask === "resume_task" && last2 === message) {

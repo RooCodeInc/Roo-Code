@@ -138,6 +138,7 @@
 		"streaming": "Requisição API...",
 		"cancelled": "Requisição API cancelada",
 		"streamingFailed": "Streaming API falhou",
+		"rateLimitWait": "Limitação de taxa",
 		"errorTitle": "Erro do provedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentação",

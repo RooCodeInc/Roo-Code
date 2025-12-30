@@ -147,6 +147,7 @@
 		"streaming": "Permintaan API...",
 		"cancelled": "Permintaan API Dibatalkan",
 		"streamingFailed": "Streaming API Gagal",
+		"rateLimitWait": "Pembatasan rate",
 		"errorTitle": "Kesalahan Penyedia {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentasi",

@@ -138,6 +138,7 @@
 		"streaming": "API请求...",
 		"cancelled": "API请求已取消",
 		"streamingFailed": "API流式传输失败",
+		"rateLimitWait": "请求频率限制",
 		"errorTitle": "提供商错误 {{code}}",
 		"errorMessage": {
 			"docs": "文档",

@@ -133,6 +133,7 @@
 		"streaming": "API-запрос...",
 		"cancelled": "API-запрос отменен",
 		"streamingFailed": "Ошибка потокового API-запроса",
+		"rateLimitWait": "Ограничение частоты",
 		"errorTitle": "Ошибка провайдера {{code}}",
 		"errorMessage": {
 			"docs": "Документация",

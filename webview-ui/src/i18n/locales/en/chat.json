@@ -144,6 +144,7 @@
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed",
+		"rateLimitWait": "Rate limiting",
 		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
 			"docs": "Docs",

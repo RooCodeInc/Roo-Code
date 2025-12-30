@@ -301,6 +301,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 		"diff_error",
 		"condense_context",
 		"condense_context_error",
+		"api_req_rate_limit_wait",
 		"api_req_retry_delayed",
 		"api_req_retried",
 	]
@@ -314,7 +315,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 		if (
 			eventName === RooCodeEventName.Message &&
 			payload[0].message.say &&
-			["api_req_retry_delayed", "api_req_retried"].includes(payload[0].message.say)
+			["api_req_rate_limit_wait", "api_req_retry_delayed", "api_req_retried"].includes(payload[0].message.say)
 		) {
 			isApiUnstable = true
 		}

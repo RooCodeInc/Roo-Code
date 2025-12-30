@@ -144,6 +144,7 @@
 		"streaming": "正在處理 API 請求...",
 		"cancelled": "API 請求已取消",
 		"streamingFailed": "API 串流處理失敗",
+		"rateLimitWait": "速率限制",
 		"errorTitle": "提供商錯誤 {{code}}",
 		"errorMessage": {
 			"docs": "文件",

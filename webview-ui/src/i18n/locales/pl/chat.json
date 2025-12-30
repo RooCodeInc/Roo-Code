@@ -138,6 +138,7 @@
 		"streaming": "Zapytanie API...",
 		"cancelled": "Zapytanie API anulowane",
 		"streamingFailed": "Strumieniowanie API nie powiodło się",
+		"rateLimitWait": "Ograniczenie szybkości",
 		"errorTitle": "Błąd dostawcy {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentacja",

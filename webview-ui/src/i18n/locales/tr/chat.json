@@ -138,6 +138,7 @@
 		"streaming": "API İsteği...",
 		"cancelled": "API İsteği İptal Edildi",
 		"streamingFailed": "API Akışı Başarısız",
+		"rateLimitWait": "Hız sınırlaması",
 		"errorTitle": "Sağlayıcı Hatası {{code}}",
 		"errorMessage": {
 			"docs": "Belgeler",
