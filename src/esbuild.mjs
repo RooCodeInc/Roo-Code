@@ -17,6 +17,27 @@ async function main() {
 	const minify = production
 	const sourcemap = true // Always generate source maps for error handling.
 
+	// Navigator shim for Node.js 22+ compatibility (fixes PendingMigrationError in code-server)
+	// See: https://github.com/RooCodeInc/Roo-Code/issues/10391
+	const navigatorShimBanner = `// Navigator shim for Node.js 22+ compatibility
+if (typeof globalThis !== "undefined" && !globalThis._navigatorShimApplied) {
+	 const navigatorStub = {
+	   userAgent: "",
+	   platform: "",
+	   userLanguage: undefined,
+	   appName: "",
+	   appVersion: "",
+	   product: "",
+	   languages: [],
+	   hardwareConcurrency: 1,
+	   standalone: false,
+	   onLine: true,
+	 };
+	 globalThis.navigator = globalThis.navigator || navigatorStub;
+	 globalThis._navigatorShimApplied = true;
+}
+`
+
 	/**
 	 * @type {import('esbuild').BuildOptions}
 	 */
@@ -28,6 +49,9 @@ async function main() {
 		format: "cjs",
 		sourcesContent: false,
 		platform: "node",
+		banner: {
+			js: navigatorShimBanner,
+		},
 	}
 
 	const srcDir = __dirname
