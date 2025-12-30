@@ -190,7 +190,8 @@ describe("checkpointRestoreHandler", () => {
 			expect(mockProvider.getTaskWithId).toHaveBeenCalledWith("test-task-123")
 
 			// Verify createTaskWithHistoryItem was called with the correct history item
-			expect(mockProvider.createTaskWithHistoryItem).toHaveBeenCalledWith(expectedHistoryItem)
+			// startTask: false prevents the restored task from auto-resuming
+			expect(mockProvider.createTaskWithHistoryItem).toHaveBeenCalledWith(expectedHistoryItem, { startTask: false })
 		})
 
 		it("should not save messages or reinitialize for edit operation", async () => {

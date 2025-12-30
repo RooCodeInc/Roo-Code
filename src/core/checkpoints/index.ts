@@ -294,7 +294,11 @@ export async function checkpointRestore(
 		// I'd like to revisit this in the future and try to improve the
 		// task flow and the communication between the webview and the
 		// `Task` instance.
-		provider?.cancelTask()
+		//
+		// Pass startTask: false to prevent the rehydrated task from auto-resuming
+		// and re-executing the restored message history. The task should only
+		// display the restored state, not continue processing.
+		provider?.cancelTask({ startTask: false })
 	} catch (err) {
 		provider?.log("[checkpointRestore] disabling checkpoints for this task")
 		task.enableCheckpoints = false

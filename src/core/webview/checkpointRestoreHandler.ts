@@ -73,8 +73,11 @@ export async function handleCheckpointRestoreOperation(config: CheckpointRestore
 			})
 
 			// Get the updated history item and reinitialize
+			// Pass startTask: false to prevent the restored task from auto-resuming
+			// and re-executing the message history. The task should only display
+			// the restored state, not continue processing.
 			const { historyItem } = await provider.getTaskWithId(currentCline.taskId)
-			await provider.createTaskWithHistoryItem(historyItem)
+			await provider.createTaskWithHistoryItem(historyItem, { startTask: false })
 		}
 		// For edit operations, the task cancellation in checkpointRestore
 		// will trigger reinitialization, which will process pendingEditAfterRestore

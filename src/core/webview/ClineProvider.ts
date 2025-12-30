@@ -2739,7 +2739,7 @@ export class ClineProvider
 		return task
 	}
 
-	public async cancelTask(): Promise<void> {
+	public async cancelTask(options?: { startTask?: boolean }): Promise<void> {
 		const task = this.getCurrentTask()
 
 		if (!task) {
@@ -2807,7 +2807,10 @@ export class ClineProvider
 		}
 
 		// Clears task again, so we need to abortTask manually above.
-		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask })
+		// Pass startTask option to control whether the rehydrated task auto-resumes.
+		// When called from checkpoint restore, startTask should be false to prevent
+		// the task from re-executing its message history.
+		await this.createTaskWithHistoryItem({ ...historyItem, rootTask, parentTask }, { startTask: options?.startTask })
 	}
 
 	// Clear the current task without treating it as a subtask.
