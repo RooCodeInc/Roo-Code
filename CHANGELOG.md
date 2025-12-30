@@ -1,5 +1,17 @@
 # Roo Code Changelog
 
+## [3.38.1] - 2025-12-29
+
+![3.38.1 Release - Bug Fixes and Stability](/releases/3.38.1-release.png)
+
+- Fix: Flush pending tool results before condensing context (PR #10379 by @daniel-lxs)
+- Fix: Revert mergeToolResultText for OpenAI-compatible providers (PR #10381 by @hannesrudolph)
+- Fix: Enforce maxConcurrentFileReads limit in read_file tool (PR #10363 by @roomote)
+- Fix: Improve feedback message when read_file is used on a directory (PR #10371 by @roomote)
+- Fix: Handle custom tool use similarly to MCP tools for IPC schema purposes (PR #10364 by @jr)
+- Fix: Correct GitHub repository URL in marketing page (#10376 by @jishnuteegala, PR #10377 by @roomote)
+- Docs: Clarify path to Security Settings in privacy policy (PR #10367 by @roomote)
+
 ## [3.38.0] - 2025-12-27
 
 ![3.38.0 Release - Skills](/releases/3.38.0-release.png)
