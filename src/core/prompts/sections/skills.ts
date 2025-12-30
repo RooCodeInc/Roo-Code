@@ -48,16 +48,49 @@ AVAILABLE SKILLS
 ${skillsXml}
 </available_skills>
 
-How to use skills:
-- This list is already filtered for the current mode ("${currentMode}") and includes any mode-specific skills from skills-${currentMode}/ (with project overriding global).
-- Select a skill ONLY when the user's request clearly matches the skill's <description>.
-- If multiple skills match, prefer the most specific one for the current task.
-- Do NOT load every SKILL.md up front. Load the full SKILL.md only after you've decided to use that skill.
+<mandatory_skill_check>
+REQUIRED PRECONDITION
 
-Activate a skill:
-1. Load the full SKILL.md content into context.
-	- Read the file at "<location>" to load its contents into context.
-2. Follow the skill instructions precisely.
-3. Only load additional bundled files (scripts/, references/, assets/) if the SKILL.md instructions require them.
+Before producing ANY user-facing response, you MUST perform a skill applicability check.
+
+Step 1: Skill Evaluation
+- Evaluate the user's request against ALL available skill <description> entries in <available_skills>.
+- Determine whether at least one skill clearly and unambiguously applies.
+
+Step 2: Branching Decision
+
+<if_skill_applies>
+- Select EXACTLY ONE skill.
+- Prefer the most specific skill when multiple skills match.
+- Read the full SKILL.md file at the skill's <location>.
+- Load the SKILL.md contents fully into context BEFORE continuing.
+- Follow the SKILL.md instructions precisely.
+- Do NOT respond outside the skill-defined flow.
+</if_skill_applies>
+
+<if_no_skill_applies>
+- Proceed with a normal response.
+- Do NOT load any SKILL.md files.
+</if_no_skill_applies>
+
+CONSTRAINTS:
+- Do NOT load every SKILL.md up front.
+- Load SKILL.md ONLY after a skill is selected.
+- Do NOT skip this check.
+- FAILURE to perform this check is an error.
+</mandatory_skill_check>
+
+<context_notes>
+- The skill list is already filtered for the current mode: "${currentMode}".
+- Mode-specific skills may come from skills-${currentMode}/ with project-level overrides taking precedence over global skills.
+</context_notes>
+
+<internal_verification>
+This section is for internal control only.
+Do NOT include this section in user-facing output.
+
+After completing the evaluation, internally confirm:
+<skill_check_completed>true|false</skill_check_completed>
+</internal_verification>
 `
 }
