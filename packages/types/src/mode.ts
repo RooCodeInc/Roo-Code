@@ -192,7 +192,12 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 			[
 				"read",
 				{
-					fileRegex: "^\\.roo\\/skills(-[a-zA-Z0-9-]+)?\\/[^\\/]+\\/SKILL\\.md$",
+					// Allow both workspace-relative and absolute skill paths (cross-platform).
+					// Examples:
+					// - .roo/skills/example-skill/SKILL.md
+					// - /Users/alice/.roo/skills/example-skill/SKILL.md
+					// - C:\\Users\\alice\\.roo\\skills\\example-skill\\SKILL.md
+					fileRegex: "(^|.*[\\\\/])\\.roo[\\\\/]skills(-[a-zA-Z0-9-]+)?[\\\\/][^\\\\/]+[\\\\/]SKILL\\.md$",
 					description: "Skill definition files only",
 				},
 			],

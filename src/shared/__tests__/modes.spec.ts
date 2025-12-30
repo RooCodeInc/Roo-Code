@@ -473,7 +473,8 @@ describe("FileRestrictionError", () => {
 				[
 					"read",
 					{
-						fileRegex: "^\\.roo\\/skills(-[a-zA-Z0-9-]+)?\\/[^\\/]+\\/SKILL\\.md$",
+						fileRegex:
+							"(^|.*[\\\\/])\\.roo[\\\\/]skills(-[a-zA-Z0-9-]+)?[\\\\/][^\\\\/]+[\\\\/]SKILL\\.md$",
 						description: "Skill definition files only",
 					},
 				],
@@ -482,6 +483,12 @@ describe("FileRestrictionError", () => {
 			expect(
 				isToolAllowedForMode("read_file", "orchestrator", [], undefined, {
 					files: [{ path: ".roo/skills/example-skill/SKILL.md" }],
+				}),
+			).toBe(true)
+
+			expect(
+				isToolAllowedForMode("read_file", "orchestrator", [], undefined, {
+					files: [{ path: "/Users/test/.roo/skills/example-skill/SKILL.md" }],
 				}),
 			).toBe(true)
 
