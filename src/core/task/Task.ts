@@ -3685,16 +3685,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		)
 
 		// Only show the countdown UX on the first attempt. Retry flows have their own delay messaging.
-			if (rateLimitDelay > 0 && retryAttempt === 0) {
-				for (let i = rateLimitDelay; i > 0; i--) {
-					// Send structured JSON data for i18n-safe transport
-					const delayMessage = JSON.stringify({ seconds: i })
-					await this.say("api_req_rate_limit_wait", delayMessage, undefined, true)
-					await delay(1000)
-				}
-				// Finalize the partial message so the UI doesn't keep rendering an in-progress spinner.
-				await this.say("api_req_rate_limit_wait", undefined, undefined, false)
+		if (rateLimitDelay > 0 && retryAttempt === 0) {
+			for (let i = rateLimitDelay; i > 0; i--) {
+				// Send structured JSON data for i18n-safe transport
+				const delayMessage = JSON.stringify({ seconds: i })
+				await this.say("api_req_rate_limit_wait", delayMessage, undefined, true)
+				await delay(1000)
 			}
+			// Finalize the partial message so the UI doesn't keep rendering an in-progress spinner.
+			await this.say("api_req_rate_limit_wait", undefined, undefined, false)
+		}
 	}
 
 	public async *attemptApiRequest(
