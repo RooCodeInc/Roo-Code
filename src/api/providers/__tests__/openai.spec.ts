@@ -585,6 +585,56 @@ describe("OpenAiHandler", () => {
 			expect(model.id).toBe("")
 			expect(model.info).toBeDefined()
 		})
+
+		it("should default to supportsNativeTools true for standard models", () => {
+			const model = handler.getModel()
+			expect(model.info.supportsNativeTools).toBe(true)
+		})
+
+		it("should disable native tools when openAiDisableNativeTools is true", () => {
+			const handlerWithDisabledTools = new OpenAiHandler({
+				...mockOptions,
+				openAiDisableNativeTools: true,
+			})
+			const model = handlerWithDisabledTools.getModel()
+			expect(model.info.supportsNativeTools).toBe(false)
+		})
+
+		it("should disable native tools for deepseek-r1 model", () => {
+			const handlerWithDeepSeekR1 = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "deepseek-r1",
+			})
+			const model = handlerWithDeepSeekR1.getModel()
+			expect(model.info.supportsNativeTools).toBe(false)
+		})
+
+		it("should disable native tools for deepseek-reasoner model", () => {
+			const handlerWithDeepSeekReasoner = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "deepseek-reasoner",
+			})
+			const model = handlerWithDeepSeekReasoner.getModel()
+			expect(model.info.supportsNativeTools).toBe(false)
+		})
+
+		it("should disable native tools when openAiR1FormatEnabled is true", () => {
+			const handlerWithR1Format = new OpenAiHandler({
+				...mockOptions,
+				openAiR1FormatEnabled: true,
+			})
+			const model = handlerWithR1Format.getModel()
+			expect(model.info.supportsNativeTools).toBe(false)
+		})
+
+		it("should disable native tools for deepseek-r1 variants (e.g., deepseek-r1-distill-qwen-32b)", () => {
+			const handlerWithDeepSeekR1Variant = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "deepseek-r1-distill-qwen-32b",
+			})
+			const model = handlerWithDeepSeekR1Variant.getModel()
+			expect(model.info.supportsNativeTools).toBe(false)
+		})
 	})
 
 	describe("Azure AI Inference Service", () => {
