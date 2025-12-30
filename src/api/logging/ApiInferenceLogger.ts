@@ -27,6 +27,13 @@ export interface ApiInferenceHandle {
 	error: (errorPayload: unknown) => void
 }
 
+function extractModelFromPayload(payload: unknown): string | undefined {
+	if (!payload || typeof payload !== "object") return undefined
+	const rec = payload as Record<string, unknown>
+	const model = rec["model"]
+	return typeof model === "string" && model.trim().length > 0 ? model : undefined
+}
+
 /**
  * Configuration for payload size limiting to avoid freezing the Output Channel.
  */
@@ -245,11 +252,13 @@ class ApiInferenceLoggerSingleton {
 		const requestId = context.requestId ?? generateRequestId()
 		const startTime = Date.now()
 		const startTimestamp = new Date().toISOString()
+		const resolvedModel = context.model ?? extractModelFromPayload(requestPayload)
 
 		// Log the request
 		if (this.isEnabled()) {
 			this.logRequest({
 				...context,
+				...(resolvedModel ? { model: resolvedModel } : {}),
 				requestId,
 				timestamp: startTimestamp,
 				payload: requestPayload,
@@ -262,6 +271,7 @@ class ApiInferenceLoggerSingleton {
 					const endTime = Date.now()
 					this.logResponse({
 						...context,
+						...(resolvedModel ? { model: resolvedModel } : {}),
 						requestId,
 						timestamp: new Date().toISOString(),
 						durationMs: endTime - startTime,
@@ -274,6 +284,7 @@ class ApiInferenceLoggerSingleton {
 					const endTime = Date.now()
 					this.logError({
 						...context,
+						...(resolvedModel ? { model: resolvedModel } : {}),
 						requestId,
 						timestamp: new Date().toISOString(),
 						durationMs: endTime - startTime,

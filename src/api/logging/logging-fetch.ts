@@ -741,10 +741,11 @@ export function createLoggingFetch(options: LoggingFetchOptions, baseFetch: type
 
 			// Tee the stream so the consumer can read one branch while we buffer the other.
 			const [consumerStream, logStream] = response.body.tee()
+			// Note: returning a new Response means some Response properties (e.g. `url`) are not preserved.
 			const responseForConsumer = new Response(consumerStream, {
 				status: response.status,
 				statusText: response.statusText,
-				headers: response.headers,
+				headers: new Headers(response.headers),
 			})
 			void logSseResponse(logStream, options.provider, model, startedAt, maxBytes)
 			return responseForConsumer

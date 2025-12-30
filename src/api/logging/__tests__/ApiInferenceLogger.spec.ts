@@ -40,10 +40,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "OpenAI", operation: "createMessage" }, { model: "gpt-4" })
 
 			expect(mockSink).toHaveBeenCalledTimes(1)
-			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request][OpenAI][unknown]",
-				expect.objectContaining({ model: "gpt-4" }),
-			)
+			expect(mockSink).toHaveBeenCalledWith("[API][request][OpenAI][gpt-4]", { model: "gpt-4" })
 		})
 
 		it("should use context.model in the request label", () => {
@@ -61,6 +58,21 @@ describe("ApiInferenceLogger", () => {
 			expect(mockSink).toHaveBeenCalledWith(
 				"[API][request][Anthropic][claude-3]",
 				expect.objectContaining({ test: "data" }),
+			)
+		})
+
+		it("should fall back to payload.model when context.model is missing", () => {
+			ApiInferenceLogger.start(
+				{
+					provider: "OpenAI",
+					operation: "createMessage",
+				},
+				{ model: "gpt-4", foo: "bar" },
+			)
+
+			expect(mockSink).toHaveBeenCalledWith(
+				"[API][request][OpenAI][gpt-4]",
+				expect.objectContaining({ model: "gpt-4", foo: "bar" }),
 			)
 		})
 	})
@@ -202,13 +214,10 @@ describe("ApiInferenceLogger", () => {
 				{ model: "gpt-4", messages: [{ role: "user", content: "Hello" }] },
 			)
 
-			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request][test][unknown]",
-				expect.objectContaining({
-					model: "gpt-4",
-					messages: [{ role: "user", content: "Hello" }],
-				}),
-			)
+			expect(mockSink).toHaveBeenCalledWith("[API][request][test][gpt-4]", {
+				model: "gpt-4",
+				messages: [{ role: "user", content: "Hello" }],
+			})
 		})
 	})
 

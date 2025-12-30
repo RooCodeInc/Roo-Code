@@ -1,18 +1,27 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
 import * as path from "path"
+import * as fs from "fs"
 
-// Load environment variables from .env and .env.local files
+// Load environment variables from local development files if present.
+// In packaged production builds these files typically won't exist.
 try {
 	// Specify paths to .env and .env.local files in the project root directory
 	const envPath = path.join(__dirname, "..", ".env")
 	const envLocalPath = path.join(__dirname, "..", ".env.local")
 	// Load .env first, then .env.local (so .env.local can override)
-	dotenvx.config({ path: envPath })
-	dotenvx.config({ path: envLocalPath, override: true })
+	if (fs.existsSync(envPath)) {
+		dotenvx.config({ path: envPath })
+	}
+	if (fs.existsSync(envLocalPath)) {
+		dotenvx.config({ path: envLocalPath, override: true })
+	}
 } catch (e) {
-	// Silently handle environment loading errors
-	console.warn("Failed to load environment variables:", e)
+	// Don't let dotenv errors break extension activation.
+	// Avoid noisy logs for normal users.
+	if (process.env.NODE_ENV === "development") {
+		console.warn("Failed to load environment variables:", e)
+	}
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"

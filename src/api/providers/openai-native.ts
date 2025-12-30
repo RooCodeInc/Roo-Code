@@ -181,14 +181,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		let lastUsage: any
-
 		// Make the request (pass systemPrompt and messages for potential retry)
 		for await (const chunk of this.executeRequest(requestBody, model, metadata, systemPrompt, messages)) {
-			if (chunk.type === "usage") {
-				lastUsage = chunk
-			}
-
 			yield chunk
 		}
 	}
