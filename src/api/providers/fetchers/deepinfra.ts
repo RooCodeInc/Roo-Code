@@ -4,6 +4,7 @@ import { z } from "zod"
 import { type ModelInfo } from "@roo-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
+import { getRooAxiosAgentConfig } from "../../../utils/http-client"
 
 // DeepInfra models endpoint follows OpenAI /models shape with an added metadata object.
 
@@ -42,7 +43,7 @@ export async function getDeepInfraModels(
 	const url = `${baseUrl.replace(/\/$/, "")}/models`
 	const models: Record<string, ModelInfo> = {}
 
-	const response = await axios.get(url, { headers })
+	const response = await axios.get(url, { headers, ...getRooAxiosAgentConfig() })
 	const parsed = DeepInfraModelsResponseSchema.safeParse(response.data)
 	const data = parsed.success ? parsed.data.data : response.data?.data || []
 

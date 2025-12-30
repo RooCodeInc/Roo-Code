@@ -17,6 +17,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getRooAxiosAgentConfig } from "../../utils/http-client"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -224,7 +225,7 @@ export async function getLmStudioModels(baseUrl = "http://localhost:1234") {
 			return []
 		}
 
-		const response = await axios.get(`${baseUrl}/v1/models`)
+		const response = await axios.get(`${baseUrl}/v1/models`, getRooAxiosAgentConfig())
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		return [...new Set<string>(modelsArray)]
 	} catch (error) {

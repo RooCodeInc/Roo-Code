@@ -4,6 +4,7 @@ import { LLM, LLMInfo, LLMInstanceInfo, LMStudioClient } from "@lmstudio/sdk"
 import { type ModelInfo, lMStudioDefaultModelInfo } from "@roo-code/types"
 
 import { flushModels, getModels } from "./modelCache"
+import { getRooAxiosAgentConfig } from "../../../utils/http-client"
 
 const modelsWithLoadedDetails = new Set<string>()
 
@@ -13,7 +14,7 @@ export const forceFullModelDetailsLoad = async (baseUrl: string, modelId: string
 	try {
 		// Test the connection to LM Studio first
 		// Crrors will be caught further down.
-		await axios.get(`${baseUrl}/v1/models`)
+		await axios.get(`${baseUrl}/v1/models`, getRooAxiosAgentConfig())
 		const lmsUrl = baseUrl.replace(/^http:\/\//, "ws://").replace(/^https:\/\//, "wss://")
 
 		const client = new LMStudioClient({ baseUrl: lmsUrl })
@@ -66,7 +67,7 @@ export async function getLMStudioModels(baseUrl = "http://localhost:1234"): Prom
 
 		// test the connection to LM Studio first
 		// errors will be caught further down
-		await axios.get(`${baseUrl}/v1/models`)
+		await axios.get(`${baseUrl}/v1/models`, getRooAxiosAgentConfig())
 
 		const client = new LMStudioClient({ baseUrl: lmsUrl })
 

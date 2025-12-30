@@ -108,10 +108,17 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(
+				`${baseUrl}/api/tags`,
+				expect.objectContaining({ headers: {} }),
+			)
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.post).toHaveBeenCalledWith(`${baseUrl}/api/show`, { model: modelName }, { headers: {} })
+			expect(mockedAxios.post).toHaveBeenCalledWith(
+				`${baseUrl}/api/show`,
+				{ model: modelName },
+				expect.objectContaining({ headers: {} }),
+			)
 
 			expect(typeof result).toBe("object")
 			expect(result).not.toBeInstanceOf(Array)
@@ -130,7 +137,10 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(
+				`${baseUrl}/api/tags`,
+				expect.objectContaining({ headers: {} }),
+			)
 			expect(mockedAxios.post).not.toHaveBeenCalled()
 			expect(result).toEqual({})
 		})
@@ -146,7 +156,10 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(
+				`${baseUrl}/api/tags`,
+				expect.objectContaining({ headers: {} }),
+			)
 			expect(mockedAxios.post).not.toHaveBeenCalled()
 			expect(consoleInfoSpy).toHaveBeenCalledWith(`Failed connecting to Ollama at ${baseUrl}`)
 			expect(result).toEqual({})
@@ -204,10 +217,17 @@ describe("Ollama Fetcher", () => {
 			const result = await getOllamaModels(baseUrl)
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: {} })
+			expect(mockedAxios.get).toHaveBeenCalledWith(
+				`${baseUrl}/api/tags`,
+				expect.objectContaining({ headers: {} }),
+			)
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.post).toHaveBeenCalledWith(`${baseUrl}/api/show`, { model: modelName }, { headers: {} })
+			expect(mockedAxios.post).toHaveBeenCalledWith(
+				`${baseUrl}/api/show`,
+				{ model: modelName },
+				expect.objectContaining({ headers: {} }),
+			)
 
 			expect(typeof result).toBe("object")
 			expect(result).not.toBeInstanceOf(Array)
@@ -271,13 +291,16 @@ describe("Ollama Fetcher", () => {
 			const expectedHeaders = { Authorization: `Bearer ${apiKey}` }
 
 			expect(mockedAxios.get).toHaveBeenCalledTimes(1)
-			expect(mockedAxios.get).toHaveBeenCalledWith(`${baseUrl}/api/tags`, { headers: expectedHeaders })
+			expect(mockedAxios.get).toHaveBeenCalledWith(
+				`${baseUrl}/api/tags`,
+				expect.objectContaining({ headers: expectedHeaders }),
+			)
 
 			expect(mockedAxios.post).toHaveBeenCalledTimes(1)
 			expect(mockedAxios.post).toHaveBeenCalledWith(
 				`${baseUrl}/api/show`,
 				{ model: modelName },
-				{ headers: expectedHeaders },
+				expect.objectContaining({ headers: expectedHeaders }),
 			)
 
 			expect(typeof result).toBe("object")

@@ -1,6 +1,7 @@
 import * as net from "net"
 import axios from "axios"
 import * as dns from "dns"
+import { getRooAxiosAgentConfig } from "../../utils/http-client"
 
 /**
  * Check if a port is open on a given host
@@ -45,7 +46,7 @@ export async function isPortOpen(host: string, port: number, timeout = 1000): Pr
 export async function tryChromeHostUrl(chromeHostUrl: string): Promise<boolean> {
 	try {
 		console.log(`Trying to connect to Chrome at: ${chromeHostUrl}/json/version`)
-		await axios.get(`${chromeHostUrl}/json/version`, { timeout: 1000 })
+		await axios.get(`${chromeHostUrl}/json/version`, { timeout: 1000, ...getRooAxiosAgentConfig() })
 		return true
 	} catch (error) {
 		return false
