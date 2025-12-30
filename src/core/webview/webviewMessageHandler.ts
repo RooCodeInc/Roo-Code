@@ -3,7 +3,6 @@ import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
-import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
 import {
@@ -1101,23 +1100,29 @@ export const webviewMessageHandler = async (
 			break
 		case "checkpointRestore": {
 			const result = checkoutRestorePayloadSchema.safeParse(message.payload)
-
+	
 			if (result.success) {
-				await provider.cancelTask()
-
-				try {
-					await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 3_000 })
-				} catch (error) {
+				// Get the current task BEFORE any cancellation.
+				// The checkpoint service is only available on the current task.
+				const currentTask = provider.getCurrentTask()
+	
+				if (!currentTask) {
 					vscode.window.showErrorMessage(t("common:errors.checkpoint_timeout"))
+					break
 				}
-
+	
 				try {
-					await provider.getCurrentTask()?.checkpointRestore(result.data)
+					// Call checkpointRestore on the CURRENT task.
+					// This will:
+					// 1. Use the current task's checkpoint service to restore files
+					// 2. Truncate messages appropriately
+					// 3. Call cancelTask() internally to reinitialize the UI
+					await currentTask.checkpointRestore(result.data)
 				} catch (error) {
 					vscode.window.showErrorMessage(t("common:errors.checkpoint_failed"))
 				}
 			}
-
+	
 			break
 		}
 		case "cancelTask":
