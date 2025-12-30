@@ -2,7 +2,7 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS, MAX_BATCH_RETRIES } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -26,6 +26,7 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	private maxBatchRetries?: number
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -65,7 +66,8 @@ export class CodeIndexConfigManager {
 			codebaseIndexEmbedderModelId,
 			codebaseIndexSearchMinScore,
 			codebaseIndexSearchMaxResults,
-		} = codebaseIndexConfig
+			codebaseIndexMaxBatchRetries,
+		} = codebaseIndexConfig as any
 
 		const openAiKey = this.contextProxy?.getSecret("codeIndexOpenAiKey") ?? ""
 		const qdrantApiKey = this.contextProxy?.getSecret("codeIndexQdrantApiKey") ?? ""
@@ -86,6 +88,7 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+		this.maxBatchRetries = codebaseIndexMaxBatchRetries
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -540,5 +543,13 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets the configured maximum batch retries for indexing.
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentMaxBatchRetries(): number {
+		return this.maxBatchRetries ?? MAX_BATCH_RETRIES
 	}
 }

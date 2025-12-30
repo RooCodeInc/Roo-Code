@@ -133,6 +133,8 @@
 		"searchMinScoreResetTooltip": "Reset to default value (0.4)",
 		"searchMaxResultsLabel": "Maximum Search Results",
 		"searchMaxResultsDescription": "Maximum number of search results to return when querying the codebase index. Higher values provide more context but may include less relevant results.",
+		"maxBatchRetriesLabel": "Maximum Batch Retries",
+		"maxBatchRetriesDescription": "Maximum number of retry attempts for failed batch operations during indexing. Higher values improve reliability on unstable connections but may delay error detection.",
 		"resetToDefault": "Reset to default",
 		"startIndexingButton": "Start Indexing",
 		"clearIndexDataButton": "Clear Index Data",
