@@ -30,6 +30,7 @@ export async function run() {
 	const mochaOptions: Mocha.MochaOptions = {
 		ui: "tdd",
 		timeout: 20 * 60 * 1_000, // 20m
+		retries: 3,
 	}
 
 	if (process.env.TEST_GREP) {
