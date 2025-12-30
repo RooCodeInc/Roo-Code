@@ -17,8 +17,17 @@ import { sanitizeErrorMessage } from "../shared/validation-helpers"
 export class CodeParser implements ICodeParser {
 	private loadedParsers: LanguageParser = {}
 	private pendingLoads: Map<string, Promise<LanguageParser>> = new Map()
+	private readonly maxBlockChars: number
 	// Markdown files are now supported using the custom markdown parser
 	// which extracts headers and sections for semantic indexing
+
+	/**
+	 * Creates a new CodeParser instance
+	 * @param maxBlockChars Maximum characters per code chunk (default: MAX_BLOCK_CHARS from constants)
+	 */
+	constructor(maxBlockChars?: number) {
+		this.maxBlockChars = maxBlockChars ?? MAX_BLOCK_CHARS
+	}
 
 	/**
 	 * Parses a code file into code blocks
@@ -179,7 +188,7 @@ export class CodeParser implements ICodeParser {
 			// Check if the node meets the minimum character requirement
 			if (currentNode.text.length >= MIN_BLOCK_CHARS) {
 				// If it also exceeds the maximum character limit, try to break it down
-				if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
+					if (currentNode.text.length > this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR) {
 					if (currentNode.children.filter((child) => child !== null).length > 0) {
 						// If it has children, process them instead
 						queue.push(...currentNode.children.filter((child) => child !== null))
@@ -244,7 +253,7 @@ export class CodeParser implements ICodeParser {
 		let currentChunkLines: string[] = []
 		let currentChunkLength = 0
 		let chunkStartLineIndex = 0 // 0-based index within the `lines` array
-		const effectiveMaxChars = MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR
+		const effectiveMaxChars = this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR
 
 		const finalizeChunk = (endLineIndex: number) => {
 			if (currentChunkLength >= MIN_BLOCK_CHARS && currentChunkLines.length > 0) {
@@ -314,10 +323,10 @@ export class CodeParser implements ICodeParser {
 				let remainingLineContent = line
 				let currentSegmentStartChar = 0
 				while (remainingLineContent.length > 0) {
-					const segment = remainingLineContent.substring(0, MAX_BLOCK_CHARS)
-					remainingLineContent = remainingLineContent.substring(MAX_BLOCK_CHARS)
+					const segment = remainingLineContent.substring(0, this.maxBlockChars)
+					remainingLineContent = remainingLineContent.substring(this.maxBlockChars)
 					createSegmentBlock(segment, originalLineNumber, currentSegmentStartChar)
-					currentSegmentStartChar += MAX_BLOCK_CHARS
+					currentSegmentStartChar += this.maxBlockChars
 				}
 				// Update chunkStartLineIndex to continue processing from the next line
 				chunkStartLineIndex = i + 1
@@ -425,8 +434,8 @@ export class CodeParser implements ICodeParser {
 
 		// Check if content needs chunking (either total size or individual line size)
 		const needsChunking =
-			content.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR ||
-			lines.some((line) => line.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR)
+			content.length > this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR ||
+			lines.some((line) => line.length > this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR)
 
 		if (needsChunking) {
 			// Apply chunking for large content or oversized lines

@@ -9,7 +9,7 @@ import { BedrockEmbedder } from "./embedders/bedrock"
 import { OpenRouterEmbedder } from "./embedders/openrouter"
 import { EmbedderProvider, getDefaultModelId, getModelDimension } from "../../shared/embeddingModels"
 import { QdrantVectorStore } from "./vector-store/qdrant-client"
-import { codeParser, DirectoryScanner, FileWatcher } from "./processors"
+import { CodeParser, DirectoryScanner, FileWatcher } from "./processors"
 import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CacheManager } from "./cache-manager"
@@ -168,6 +168,14 @@ export class CodeIndexServiceFactory {
 	}
 
 	/**
+	 * Creates a code parser instance with the configured max chunk size.
+	 */
+	public createCodeParser(): ICodeParser {
+		const config = this.configManager.getConfig()
+		return new CodeParser(config.maxChunkSize)
+	}
+
+	/**
 	 * Creates a directory scanner instance with its required dependencies.
 	 */
 	public createDirectoryScanner(
@@ -202,6 +210,7 @@ export class CodeIndexServiceFactory {
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
+		parser?: ICodeParser,
 	): IFileWatcher {
 		// Get the configurable settings from config manager
 		const config = this.configManager.getConfig()
@@ -216,6 +225,7 @@ export class CodeIndexServiceFactory {
 			ignoreInstance,
 			rooIgnoreController,
 			batchSize,
+			parser,
 		)
 	}
 
@@ -241,7 +251,7 @@ export class CodeIndexServiceFactory {
 
 		const embedder = this.createEmbedder()
 		const vectorStore = this.createVectorStore()
-		const parser = codeParser
+		const parser = this.createCodeParser()
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
 		const fileWatcher = this.createFileWatcher(
 			context,
@@ -250,6 +260,7 @@ export class CodeIndexServiceFactory {
 			cacheManager,
 			ignoreInstance,
 			rooIgnoreController,
+			parser,
 		)
 
 		return {

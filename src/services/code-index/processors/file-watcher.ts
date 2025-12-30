@@ -18,8 +18,8 @@ import {
 	IVectorStore,
 	PointStruct,
 	BatchProcessingSummary,
+	ICodeParser,
 } from "../interfaces"
-import { codeParser } from "./parser"
 import { CacheManager } from "../cache-manager"
 import { generateNormalizedAbsolutePath, generateRelativeFilePath } from "../shared/get-relative-path"
 import { isPathInIgnoredDirectory } from "../../glob/ignore-utils"
@@ -68,9 +68,13 @@ export class FileWatcher implements IFileWatcher {
 	 * Creates a new file watcher
 	 * @param workspacePath Path to the workspace
 	 * @param context VS Code extension context
+	 * @param cacheManager Cache manager
 	 * @param embedder Optional embedder
 	 * @param vectorStore Optional vector store
-	 * @param cacheManager Cache manager
+	 * @param ignoreInstance Optional ignore instance
+	 * @param ignoreController Optional ignore controller
+	 * @param batchSegmentThreshold Optional batch segment threshold
+	 * @param codeParser Code parser for parsing files
 	 */
 	constructor(
 		private workspacePath: string,
@@ -81,6 +85,7 @@ export class FileWatcher implements IFileWatcher {
 		ignoreInstance?: Ignore,
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
+		private readonly codeParser?: ICodeParser,
 	) {
 		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
 		if (ignoreInstance) {
@@ -557,7 +562,14 @@ export class FileWatcher implements IFileWatcher {
 			}
 
 			// Parse file
-			const blocks = await codeParser.parseFile(filePath, { content, fileHash: newHash })
+			if (!this.codeParser) {
+				return {
+					path: filePath,
+					status: "local_error" as const,
+					error: new Error("No code parser configured"),
+				}
+			}
+			const blocks = await this.codeParser.parseFile(filePath, { content, fileHash: newHash })
 
 			// Prepare points for batch processing
 			let pointsToUpsert: PointStruct[] = []
