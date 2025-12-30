@@ -15,6 +15,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { formatPathTooltip } from "@src/utils/formatPathTooltip"
+import { getCurrencySymbol } from "@src/utils/getCurrencySymbol"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -1068,7 +1069,8 @@ export const ChatRowContent = ({
 								<div
 									className="text-xs text-vscode-dropdown-foreground border-vscode-dropdown-border/50 border px-1.5 py-0.5 rounded-lg"
 									style={{ opacity: cost !== null && cost !== undefined && cost > 0 ? 1 : 0 }}>
-									${Number(cost || 0)?.toFixed(4)}
+									{getCurrencySymbol(apiConfiguration)}
+									{Number(cost || 0)?.toFixed(4)}
 								</div>
 							</div>
 							{(((cost === null || cost === undefined) && apiRequestFailedMessage) ||

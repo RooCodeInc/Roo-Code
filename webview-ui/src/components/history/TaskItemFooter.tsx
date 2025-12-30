@@ -1,6 +1,8 @@
 import React from "react"
 import type { HistoryItem } from "@roo-code/types"
 import { formatTimeAgo } from "@/utils/format"
+import { getCurrencySymbol } from "@/utils/getCurrencySymbol"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { CopyButton } from "./CopyButton"
 import { ExportButton } from "./ExportButton"
 import { DeleteButton } from "./DeleteButton"
@@ -14,6 +16,9 @@ export interface TaskItemFooterProps {
 }
 
 const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelectionMode = false, onDelete }) => {
+	const { apiConfiguration } = useExtensionState()
+	const currencySymbol = getCurrencySymbol(apiConfiguration)
+
 	return (
 		<div className="text-xs text-vscode-descriptionForeground flex justify-between items-center">
 			<div className="flex gap-1 items-center text-vscode-descriptionForeground/60">
@@ -25,7 +30,7 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 				{/* Cost */}
 				{!!item.totalCost && (
 					<span className="flex items-center" data-testid="cost-footer-compact">
-						{"$" + item.totalCost.toFixed(2)}
+						{currencySymbol + item.totalCost.toFixed(2)}
 					</span>
 				)}
 			</div>

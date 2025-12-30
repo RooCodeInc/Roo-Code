@@ -77,7 +77,7 @@ export const AutoApproveSettings = ({
 	const { t } = useAppTranslation()
 	const [commandInput, setCommandInput] = useState("")
 	const [deniedCommandInput, setDeniedCommandInput] = useState("")
-	const { autoApprovalEnabled, setAutoApprovalEnabled } = useExtensionState()
+	const { autoApprovalEnabled, setAutoApprovalEnabled, apiConfiguration } = useExtensionState()
 
 	const toggles = useAutoApprovalToggles()
 
@@ -168,6 +168,7 @@ export const AutoApproveSettings = ({
 						allowedMaxCost={allowedMaxCost}
 						onMaxRequestsChange={(value) => setCachedStateField("allowedMaxRequests", value)}
 						onMaxCostChange={(value) => setCachedStateField("allowedMaxCost", value)}
+						apiConfiguration={apiConfiguration}
 					/>
 				</div>
 

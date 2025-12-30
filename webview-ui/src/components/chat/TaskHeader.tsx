@@ -26,6 +26,7 @@ import { StandardTooltip, Button } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 import { vscode } from "@src/utils/vscode"
+import { getCurrencySymbol } from "@src/utils/getCurrencySymbol"
 
 import Thumbnails from "../common/Thumbnails"
 
@@ -63,6 +64,7 @@ const TaskHeader = ({
 	const { t } = useTranslation()
 	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
+	const currencySymbol = getCurrencySymbol(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
 	const { isOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell({
@@ -248,7 +250,12 @@ const TaskHeader = ({
 									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
 								</span>
 							</StandardTooltip>
-							{!!totalCost && <span>${totalCost.toFixed(2)}</span>}
+							{!!totalCost && (
+								<span>
+									{currencySymbol}
+									{totalCost.toFixed(2)}
+								</span>
+							)}
 						</div>
 						{showBrowserGlobe && (
 							<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -386,7 +393,10 @@ const TaskHeader = ({
 												{t("chat:task.apiCost")}
 											</th>
 											<td className="font-light align-top">
-												<span>${totalCost?.toFixed(2)}</span>
+												<span>
+													{currencySymbol}
+													{totalCost?.toFixed(2)}
+												</span>
 											</td>
 										</tr>
 									)}

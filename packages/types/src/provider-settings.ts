@@ -373,6 +373,7 @@ const litellmSchema = baseProviderSettingsSchema.extend({
 	litellmApiKey: z.string().optional(),
 	litellmModelId: z.string().optional(),
 	litellmUsePromptCache: z.boolean().optional(),
+	litellmCurrencySymbol: z.string().optional(),
 })
 
 const cerebrasSchema = apiModelIdProviderModelSchema.extend({

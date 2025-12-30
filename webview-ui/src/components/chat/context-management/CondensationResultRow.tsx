@@ -5,6 +5,8 @@ import { FoldVertical } from "lucide-react"
 
 import type { ContextCondense } from "@roo-code/types"
 
+import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { getCurrencySymbol } from "@src/utils/getCurrencySymbol"
 import { Markdown } from "../Markdown"
 
 interface CondensationResultRowProps {
@@ -17,6 +19,8 @@ interface CondensationResultRowProps {
  */
 export function CondensationResultRow({ data }: CondensationResultRowProps) {
 	const { t } = useTranslation()
+	const { apiConfiguration } = useExtensionState()
+	const currencySymbol = getCurrencySymbol(apiConfiguration)
 	const [isExpanded, setIsExpanded] = useState(false)
 
 	const { cost, prevContextTokens, newContextTokens, summary } = data
@@ -41,7 +45,8 @@ export function CondensationResultRow({ data }: CondensationResultRowProps) {
 						{t("chat:contextManagement.tokens")}
 					</span>
 					<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
-						${displayCost.toFixed(2)}
+						{currencySymbol}
+						{displayCost.toFixed(2)}
 					</VSCodeBadge>
 				</div>
 				<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>

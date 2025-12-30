@@ -178,6 +178,21 @@ export const LiteLLM = ({
 				}
 				return null
 			})()}
+
+			{/* Currency symbol configuration */}
+			<div className="mt-4">
+				<VSCodeTextField
+					value={apiConfiguration?.litellmCurrencySymbol || ""}
+					onInput={handleInputChange("litellmCurrencySymbol")}
+					placeholder={t("settings:providers.litellmCurrencySymbolPlaceholder")}
+					className="w-full"
+					style={{ maxWidth: "200px" }}>
+					<label className="block font-medium mb-1">{t("settings:providers.litellmCurrencySymbol")}</label>
+				</VSCodeTextField>
+				<div className="text-sm text-vscode-descriptionForeground mt-1">
+					{t("settings:providers.litellmCurrencySymbolDescription")}
+				</div>
+			</div>
 		</>
 	)
 }

@@ -8,6 +8,7 @@ import { BrowserAction, BrowserActionResult, ClineSayBrowserAction } from "@roo/
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { getCurrencySymbol } from "@src/utils/getCurrencySymbol"
 
 import CodeBlock from "../common/CodeBlock"
 import { ProgressIndicator } from "./ProgressIndicator"
@@ -161,14 +162,18 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 	// Try to use ExtensionStateContext if available, otherwise use props
 	let browserViewportSize = props.browserViewportSizeProp || "900x600"
 	let isBrowserSessionActive = props.isBrowserSessionActiveProp || false
+	let apiConfiguration: import("@roo-code/types").ProviderSettings | undefined
 
 	try {
 		const extensionState = useExtensionState()
 		browserViewportSize = extensionState.browserViewportSize || "900x600"
 		isBrowserSessionActive = extensionState.isBrowserSessionActive || false
+		apiConfiguration = extensionState.apiConfiguration
 	} catch (_e) {
 		// Not in ExtensionStateContext, use props
 	}
+
+	const currencySymbol = getCurrencySymbol(apiConfiguration)
 
 	const [viewportWidth, viewportHeight] = browserViewportSize.split("x").map(Number)
 	const defaultMousePosition = `${Math.round(viewportWidth / 2)},${Math.round(viewportHeight / 2)}`
@@ -603,7 +608,8 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 						display: "flex",
 						alignItems: "center",
 					}}>
-					${totalApiCost.toFixed(4)}
+					{currencySymbol}
+					{totalApiCost.toFixed(4)}
 				</div>
 			)}
 
