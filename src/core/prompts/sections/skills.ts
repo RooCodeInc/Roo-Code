@@ -1,4 +1,4 @@
-import { SkillsManager, SkillMetadata } from "../../../services/skills/SkillsManager"
+import type { SkillsManager } from "../../../services/skills/SkillsManager"
 
 type SkillsManagerLike = Pick<SkillsManager, "getSkillsForMode">
 
