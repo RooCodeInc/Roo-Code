@@ -48,7 +48,7 @@ describe("ChatRow - rate limit wait", () => {
 			say: "api_req_rate_limit_wait",
 			ts: Date.now(),
 			partial: true,
-			text: "Rate limiting for 1 seconds...",
+			text: JSON.stringify({ seconds: 1 }),
 		}
 
 		renderChatRow(message)

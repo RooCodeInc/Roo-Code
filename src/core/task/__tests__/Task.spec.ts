@@ -1071,10 +1071,10 @@ describe("Cline", () => {
 				expect(mockDelay).toHaveBeenCalledTimes(mockApiConfig.rateLimitSeconds)
 				expect(mockDelay).toHaveBeenCalledWith(1000)
 
-				// Verify we used the non-error rate-limit wait message type
+				// Verify we used the non-error rate-limit wait message type (JSON format)
 				expect(saySpy).toHaveBeenCalledWith(
 					"api_req_rate_limit_wait",
-					expect.stringContaining("Rate limiting for"),
+					expect.stringMatching(/\{"seconds":\d+\}/),
 					undefined,
 					true,
 				)

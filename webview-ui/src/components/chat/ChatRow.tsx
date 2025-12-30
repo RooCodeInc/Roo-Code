@@ -1183,8 +1183,12 @@ export const ChatRowContent = ({
 
 					const waitSeconds = (() => {
 						if (!message.text) return undefined
-						const match = message.text.match(/Rate limiting for (\d+) seconds\.{3}/)
-						return match ? Number(match[1]) : undefined
+						try {
+							const data = JSON.parse(message.text)
+							return typeof data.seconds === "number" ? data.seconds : undefined
+						} catch {
+							return undefined
+						}
 					})()
 
 					return (
