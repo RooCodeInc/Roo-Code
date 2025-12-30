@@ -33,6 +33,7 @@ import { Package } from "../../../shared/package"
 
 export class DirectoryScanner implements IDirectoryScanner {
 	private readonly batchSegmentThreshold: number
+	private readonly parsingConcurrencyLimit: number
 
 	constructor(
 		private readonly embedder: IEmbedder,
@@ -41,6 +42,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
 		batchSegmentThreshold?: number,
+		parsingConcurrencyLimit?: number,
 	) {
 		// Get the configurable batch size from VSCode settings, fallback to default
 		// If not provided in constructor, try to get from VSCode settings
@@ -56,6 +58,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 				this.batchSegmentThreshold = BATCH_SEGMENT_THRESHOLD
 			}
 		}
+		// Set parsing concurrency (default from constants if not provided)
+		this.parsingConcurrencyLimit = parsingConcurrencyLimit ?? PARSING_CONCURRENCY
 	}
 
 	/**
@@ -109,7 +113,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let skippedCount = 0
 
 		// Initialize parallel processing tools
-		const parseLimiter = pLimit(PARSING_CONCURRENCY) // Concurrency for file parsing
+		const parseLimiter = pLimit(this.parsingConcurrencyLimit) // Concurrency for file parsing
 		const batchLimiter = pLimit(BATCH_PROCESSING_CONCURRENCY) // Concurrency for batch processing
 		const mutex = new Mutex()
 

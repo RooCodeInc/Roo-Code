@@ -12,6 +12,21 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	MAX_SEARCH_SCORE: 1,
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
+	// Embedding batch size settings
+	MIN_EMBEDDING_BATCH_SIZE: 10,
+	MAX_EMBEDDING_BATCH_SIZE: 200,
+	DEFAULT_EMBEDDING_BATCH_SIZE: 60,
+	EMBEDDING_BATCH_SIZE_STEP: 10,
+	// Max chunk size settings (characters per code chunk)
+	MIN_MAX_CHUNK_SIZE: 200,
+	MAX_MAX_CHUNK_SIZE: 5000,
+	DEFAULT_MAX_CHUNK_SIZE: 1000,
+	MAX_CHUNK_SIZE_STEP: 100,
+	// Parsing concurrency settings (concurrent file parsing)
+	MIN_PARSING_CONCURRENCY: 1,
+	MAX_PARSING_CONCURRENCY: 50,
+	DEFAULT_PARSING_CONCURRENCY: 10,
+	PARSING_CONCURRENCY_STEP: 1,
 } as const
 
 /**
@@ -41,6 +56,22 @@ export const codebaseIndexConfigSchema = z.object({
 		.number()
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SEARCH_RESULTS)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
+		.optional(),
+	// Advanced indexing parameters
+	codebaseIndexEmbeddingBatchSize: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_EMBEDDING_BATCH_SIZE)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_EMBEDDING_BATCH_SIZE)
+		.optional(),
+	codebaseIndexMaxChunkSize: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_MAX_CHUNK_SIZE)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_MAX_CHUNK_SIZE)
+		.optional(),
+	codebaseIndexParsingConcurrency: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_PARSING_CONCURRENCY)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_PARSING_CONCURRENCY)
 		.optional(),
 	// OpenAI Compatible specific fields
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),

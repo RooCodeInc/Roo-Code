@@ -2,7 +2,13 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import {
+	DEFAULT_SEARCH_MIN_SCORE,
+	DEFAULT_MAX_SEARCH_RESULTS,
+	BATCH_SEGMENT_THRESHOLD,
+	MAX_BLOCK_CHARS,
+	PARSING_CONCURRENCY,
+} from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -26,6 +32,10 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	// Advanced indexing parameters
+	private embeddingBatchSize?: number
+	private maxChunkSize?: number
+	private parsingConcurrency?: number
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -86,6 +96,11 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+
+		// Load advanced indexing parameters
+		this.embeddingBatchSize = codebaseIndexConfig.codebaseIndexEmbeddingBatchSize
+		this.maxChunkSize = codebaseIndexConfig.codebaseIndexMaxChunkSize
+		this.parsingConcurrency = codebaseIndexConfig.codebaseIndexParsingConcurrency
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -460,6 +475,10 @@ export class CodeIndexConfigManager {
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
+			// Advanced indexing parameters
+			embeddingBatchSize: this.currentEmbeddingBatchSize,
+			maxChunkSize: this.currentMaxChunkSize,
+			parsingConcurrency: this.currentParsingConcurrency,
 		}
 	}
 
@@ -540,5 +559,29 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets the configured embedding batch size.
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentEmbeddingBatchSize(): number {
+		return this.embeddingBatchSize ?? BATCH_SEGMENT_THRESHOLD
+	}
+
+	/**
+	 * Gets the configured max chunk size (characters per code chunk).
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentMaxChunkSize(): number {
+		return this.maxChunkSize ?? MAX_BLOCK_CHARS
+	}
+
+	/**
+	 * Gets the configured parsing concurrency (concurrent file parsing).
+	 * Returns user setting if configured, otherwise returns default.
+	 */
+	public get currentParsingConcurrency(): number {
+		return this.parsingConcurrency ?? PARSING_CONCURRENCY
 	}
 }

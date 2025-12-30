@@ -176,17 +176,20 @@ export class CodeIndexServiceFactory {
 		parser: ICodeParser,
 		ignoreInstance: Ignore,
 	): DirectoryScanner {
-		// Get the configurable batch size from VSCode settings
-		let batchSize: number
-		try {
-			batchSize = vscode.workspace
-				.getConfiguration(Package.name)
-				.get<number>("codeIndex.embeddingBatchSize", BATCH_SEGMENT_THRESHOLD)
-		} catch {
-			// In test environment, vscode.workspace might not be available
-			batchSize = BATCH_SEGMENT_THRESHOLD
-		}
-		return new DirectoryScanner(embedder, vectorStore, parser, this.cacheManager, ignoreInstance, batchSize)
+		// Get the configurable settings from config manager
+		const config = this.configManager.getConfig()
+		const batchSize = config.embeddingBatchSize ?? BATCH_SEGMENT_THRESHOLD
+		const parsingConcurrency = config.parsingConcurrency
+
+		return new DirectoryScanner(
+			embedder,
+			vectorStore,
+			parser,
+			this.cacheManager,
+			ignoreInstance,
+			batchSize,
+			parsingConcurrency,
+		)
 	}
 
 	/**
@@ -200,16 +203,10 @@ export class CodeIndexServiceFactory {
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
 	): IFileWatcher {
-		// Get the configurable batch size from VSCode settings
-		let batchSize: number
-		try {
-			batchSize = vscode.workspace
-				.getConfiguration(Package.name)
-				.get<number>("codeIndex.embeddingBatchSize", BATCH_SEGMENT_THRESHOLD)
-		} catch {
-			// In test environment, vscode.workspace might not be available
-			batchSize = BATCH_SEGMENT_THRESHOLD
-		}
+		// Get the configurable settings from config manager
+		const config = this.configManager.getConfig()
+		const batchSize = config.embeddingBatchSize ?? BATCH_SEGMENT_THRESHOLD
+
 		return new FileWatcher(
 			this.workspacePath,
 			context,

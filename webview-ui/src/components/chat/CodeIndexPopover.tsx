@@ -69,6 +69,10 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	// Advanced indexing parameters
+	codebaseIndexEmbeddingBatchSize?: number
+	codebaseIndexMaxChunkSize?: number
+	codebaseIndexParsingConcurrency?: number
 
 	// Bedrock-specific settings
 	codebaseIndexBedrockRegion?: string
@@ -217,6 +221,9 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		codebaseIndexEmbeddingBatchSize: CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+		codebaseIndexMaxChunkSize: CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE,
+		codebaseIndexParsingConcurrency: CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY,
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
 		codeIndexOpenAiKey: "",
@@ -256,6 +263,14 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				codebaseIndexEmbeddingBatchSize:
+					codebaseIndexConfig.codebaseIndexEmbeddingBatchSize ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+				codebaseIndexMaxChunkSize:
+					codebaseIndexConfig.codebaseIndexMaxChunkSize ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE,
+				codebaseIndexParsingConcurrency:
+					codebaseIndexConfig.codebaseIndexParsingConcurrency ??
+					CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codeIndexOpenAiKey: "",
@@ -1583,6 +1598,138 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													updateSetting(
 														"codebaseIndexSearchMaxResults",
 														CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
+													)
+												}>
+												<span className="codicon codicon-discard" />
+											</VSCodeButton>
+										</div>
+									</div>
+
+									{/* Embedding Batch Size Slider */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.embeddingBatchSizeLabel")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.embeddingBatchSizeDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<div className="flex items-center gap-2">
+											<Slider
+												min={CODEBASE_INDEX_DEFAULTS.MIN_EMBEDDING_BATCH_SIZE}
+												max={CODEBASE_INDEX_DEFAULTS.MAX_EMBEDDING_BATCH_SIZE}
+												step={CODEBASE_INDEX_DEFAULTS.EMBEDDING_BATCH_SIZE_STEP}
+												value={[
+													currentSettings.codebaseIndexEmbeddingBatchSize ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+												]}
+												onValueChange={(values) =>
+													updateSetting("codebaseIndexEmbeddingBatchSize", values[0])
+												}
+												className="flex-1"
+												data-testid="embedding-batch-size-slider"
+											/>
+											<span className="w-12 text-center">
+												{currentSettings.codebaseIndexEmbeddingBatchSize ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE}
+											</span>
+											<VSCodeButton
+												appearance="icon"
+												title={t("settings:codeIndex.resetToDefault")}
+												onClick={() =>
+													updateSetting(
+														"codebaseIndexEmbeddingBatchSize",
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE,
+													)
+												}>
+												<span className="codicon codicon-discard" />
+											</VSCodeButton>
+										</div>
+									</div>
+
+									{/* Max Chunk Size Slider */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.maxChunkSizeLabel")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.maxChunkSizeDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<div className="flex items-center gap-2">
+											<Slider
+												min={CODEBASE_INDEX_DEFAULTS.MIN_MAX_CHUNK_SIZE}
+												max={CODEBASE_INDEX_DEFAULTS.MAX_MAX_CHUNK_SIZE}
+												step={CODEBASE_INDEX_DEFAULTS.MAX_CHUNK_SIZE_STEP}
+												value={[
+													currentSettings.codebaseIndexMaxChunkSize ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE,
+												]}
+												onValueChange={(values) =>
+													updateSetting("codebaseIndexMaxChunkSize", values[0])
+												}
+												className="flex-1"
+												data-testid="max-chunk-size-slider"
+											/>
+											<span className="w-12 text-center">
+												{currentSettings.codebaseIndexMaxChunkSize ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE}
+											</span>
+											<VSCodeButton
+												appearance="icon"
+												title={t("settings:codeIndex.resetToDefault")}
+												onClick={() =>
+													updateSetting(
+														"codebaseIndexMaxChunkSize",
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE,
+													)
+												}>
+												<span className="codicon codicon-discard" />
+											</VSCodeButton>
+										</div>
+									</div>
+
+									{/* Parsing Concurrency Slider */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.parsingConcurrencyLabel")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.parsingConcurrencyDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<div className="flex items-center gap-2">
+											<Slider
+												min={CODEBASE_INDEX_DEFAULTS.MIN_PARSING_CONCURRENCY}
+												max={CODEBASE_INDEX_DEFAULTS.MAX_PARSING_CONCURRENCY}
+												step={CODEBASE_INDEX_DEFAULTS.PARSING_CONCURRENCY_STEP}
+												value={[
+													currentSettings.codebaseIndexParsingConcurrency ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY,
+												]}
+												onValueChange={(values) =>
+													updateSetting("codebaseIndexParsingConcurrency", values[0])
+												}
+												className="flex-1"
+												data-testid="parsing-concurrency-slider"
+											/>
+											<span className="w-12 text-center">
+												{currentSettings.codebaseIndexParsingConcurrency ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY}
+											</span>
+											<VSCodeButton
+												appearance="icon"
+												title={t("settings:codeIndex.resetToDefault")}
+												onClick={() =>
+													updateSetting(
+														"codebaseIndexParsingConcurrency",
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY,
 													)
 												}>
 												<span className="codicon codicon-discard" />

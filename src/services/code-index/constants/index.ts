@@ -1,7 +1,7 @@
 import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
 
 /**Parser */
-export const MAX_BLOCK_CHARS = 1000
+export const MAX_BLOCK_CHARS = CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CHUNK_SIZE
 export const MIN_BLOCK_CHARS = 50
 export const MIN_CHUNK_REMAINDER_CHARS = 200 // Minimum characters for the *next* chunk after a split
 export const MAX_CHARS_TOLERANCE_FACTOR = 1.15 // 15% tolerance for max chars
@@ -16,10 +16,10 @@ export const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024 // 1MB
 
 /**Directory Scanner */
 export const MAX_LIST_FILES_LIMIT_CODE_INDEX = 50_000
-export const BATCH_SEGMENT_THRESHOLD = 60 // Number of code segments to batch for embeddings/upserts
+export const BATCH_SEGMENT_THRESHOLD = CODEBASE_INDEX_DEFAULTS.DEFAULT_EMBEDDING_BATCH_SIZE // Number of code segments to batch for embeddings/upserts
 export const MAX_BATCH_RETRIES = 3
 export const INITIAL_RETRY_DELAY_MS = 500
-export const PARSING_CONCURRENCY = 10
+export const PARSING_CONCURRENCY = CODEBASE_INDEX_DEFAULTS.DEFAULT_PARSING_CONCURRENCY
 export const MAX_PENDING_BATCHES = 20 // Maximum number of batches to accumulate before waiting
 
 /**OpenAI Embedder */
