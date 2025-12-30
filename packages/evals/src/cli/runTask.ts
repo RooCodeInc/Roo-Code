@@ -302,6 +302,7 @@ export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskO
 		"condense_context",
 		"condense_context_error",
 		"api_req_retry_delayed",
+		"api_req_rate_limited",
 		"api_req_retried",
 	]
 

@@ -3706,10 +3706,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
 		if (rateLimitDelay > 0 && retryAttempt === 0) {
-			// Show countdown timer
+			// Show countdown timer using dedicated rate limit message type
 			for (let i = rateLimitDelay; i > 0; i--) {
-				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
+				await this.say("api_req_rate_limited", String(i), undefined, true)
 				await delay(1000)
 			}
 		}
