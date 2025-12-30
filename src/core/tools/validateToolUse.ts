@@ -78,6 +78,75 @@ function doesFileMatchRegex(filePath: string, pattern: string): boolean {
 	}
 }
 
+function tryParseJson(value: string): unknown | undefined {
+	const trimmed = value.trim()
+	if (!trimmed) {
+		return undefined
+	}
+
+	// Avoid attempting to parse arbitrary strings.
+	if (!(trimmed.startsWith("{") || trimmed.startsWith("[") || trimmed.startsWith('"'))) {
+		return undefined
+	}
+
+	try {
+		return JSON.parse(trimmed) as unknown
+	} catch {
+		return undefined
+	}
+}
+
+function parseJsonStringDeep(value: string, maxDepth = 2): unknown {
+	let current: unknown = value
+	for (let i = 0; i < maxDepth; i++) {
+		if (typeof current !== "string") {
+			break
+		}
+		const parsed = tryParseJson(current)
+		if (parsed === undefined) {
+			break
+		}
+		current = parsed
+	}
+	return current
+}
+
+function extractReadPathsFromFilesValue(value: unknown, paths: string[]): void {
+	if (Array.isArray(value)) {
+		for (const entry of value) {
+			if (typeof entry === "string" && entry.trim().length > 0) {
+				paths.push(entry.trim())
+				continue
+			}
+
+			if (typeof entry === "object" && entry !== null) {
+				const p = (entry as { path?: unknown }).path
+				if (typeof p === "string" && p.trim().length > 0) {
+					paths.push(p.trim())
+				}
+			}
+		}
+		return
+	}
+
+	// Support mis-typed payloads like: files: "[{ \"path\": \"README.md\" }]".
+	if (typeof value === "string") {
+		const parsed = parseJsonStringDeep(value)
+		if (parsed !== value) {
+			extractReadPathsFromFilesValue(parsed, paths)
+		}
+		return
+	}
+
+	// Support nested payloads like: files: "{ \"files\": [...] }".
+	if (typeof value === "object" && value !== null) {
+		const nested = (value as { files?: unknown }).files
+		if (nested !== undefined) {
+			extractReadPathsFromFilesValue(nested, paths)
+		}
+	}
+}
+
 function extractReadFilePaths(toolParams: Record<string, unknown> | undefined): string[] {
 	if (!toolParams) {
 		return []
@@ -87,16 +156,7 @@ function extractReadFilePaths(toolParams: Record<string, unknown> | undefined): 
 
 	// Native protocol read_file: { files: [{ path: string }] }
 	const files = (toolParams as { files?: unknown }).files
-	if (Array.isArray(files)) {
-		for (const entry of files) {
-			if (typeof entry === "object" && entry !== null) {
-				const p = (entry as { path?: unknown }).path
-				if (typeof p === "string" && p.trim().length > 0) {
-					paths.push(p.trim())
-				}
-			}
-		}
-	}
+	extractReadPathsFromFilesValue(files, paths)
 
 	// Legacy single-path read_file: { path: string }
 	const legacyPath = (toolParams as { path?: unknown }).path
