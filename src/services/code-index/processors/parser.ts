@@ -188,7 +188,7 @@ export class CodeParser implements ICodeParser {
 			// Check if the node meets the minimum character requirement
 			if (currentNode.text.length >= MIN_BLOCK_CHARS) {
 				// If it also exceeds the maximum character limit, try to break it down
-					if (currentNode.text.length > this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR) {
+				if (currentNode.text.length > this.maxBlockChars * MAX_CHARS_TOLERANCE_FACTOR) {
 					if (currentNode.children.filter((child) => child !== null).length > 0) {
 						// If it has children, process them instead
 						queue.push(...currentNode.children.filter((child) => child !== null))
