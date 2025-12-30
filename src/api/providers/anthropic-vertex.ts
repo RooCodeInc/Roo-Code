@@ -25,6 +25,8 @@ import {
 	convertOpenAIToolChoiceToAnthropic,
 } from "../../core/prompts/tools/native-tools/converters"
 
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
@@ -71,6 +73,9 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const startedAt = Date.now()
+		const shouldLog = ApiInferenceLogger.isEnabled()
+
 		let { id, info, temperature, maxTokens, reasoning: thinking, betas } = this.getModel()
 
 		const { supportsPromptCache } = info
@@ -94,6 +99,44 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata.tool_choice, metadata.parallelToolCalls),
 				}
 			: {}
+
+		const textParts: string[] = []
+		const reasoningParts: string[] = []
+		const toolCallsByIndex = new Map<
+			number,
+			{
+				index: number
+				id?: string
+				name?: string
+				argsParts: string[]
+			}
+		>()
+
+		let usageSnapshot:
+			| {
+					inputTokens: number
+					outputTokens: number
+					cacheWriteTokens?: number
+					cacheReadTokens?: number
+			  }
+			| undefined
+
+		function tryParseJsonString(input: string): unknown {
+			try {
+				return JSON.parse(input)
+			} catch {
+				return input
+			}
+		}
+
+		function getOrCreateToolCall(index: number) {
+			let current = toolCallsByIndex.get(index)
+			if (!current) {
+				current = { index, argsParts: [] }
+				toolCallsByIndex.set(index, current)
+			}
+			return current
+		}
 
 		/**
 		 * Vertex API has specific limitations for prompt caching:
@@ -125,97 +168,182 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		// and prompt caching
 		const requestOptions = betas?.length ? { headers: { "anthropic-beta": betas.join(",") } } : undefined
 
-		const stream = await this.client.messages.create(params, requestOptions)
+		if (shouldLog) {
+			ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${id}]`, {
+				...params,
+				...(requestOptions ? { __requestOptions: requestOptions } : {}),
+			})
+		}
 
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "message_start": {
-					const usage = chunk.message!.usage
+		let stream: Awaited<ReturnType<typeof this.client.messages.create>>
+		try {
+			stream = await this.client.messages.create(params, requestOptions)
+		} catch (error) {
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${id}][${durationMs}ms]`, error)
+			}
+			throw error
+		}
 
-					yield {
-						type: "usage",
-						inputTokens: usage.input_tokens || 0,
-						outputTokens: usage.output_tokens || 0,
-						cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
-						cacheReadTokens: usage.cache_read_input_tokens || undefined,
+		try {
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "message_start": {
+						const usage = chunk.message!.usage
+						usageSnapshot = {
+							inputTokens: usage.input_tokens || 0,
+							outputTokens: usage.output_tokens || 0,
+							cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+							cacheReadTokens: usage.cache_read_input_tokens || undefined,
+						}
+
+						yield {
+							type: "usage",
+							inputTokens: usageSnapshot.inputTokens,
+							outputTokens: usageSnapshot.outputTokens,
+							cacheWriteTokens: usageSnapshot.cacheWriteTokens,
+							cacheReadTokens: usageSnapshot.cacheReadTokens,
+						}
+
+						break
 					}
+					case "message_delta": {
+						const outputTokens = chunk.usage!.output_tokens || 0
+						if (usageSnapshot) usageSnapshot.outputTokens = outputTokens
+						yield {
+							type: "usage",
+							inputTokens: 0,
+							outputTokens,
+						}
 
-					break
-				}
-				case "message_delta": {
-					yield {
-						type: "usage",
-						inputTokens: 0,
-						outputTokens: chunk.usage!.output_tokens || 0,
+						break
 					}
+					case "content_block_start": {
+						switch (chunk.content_block!.type) {
+							case "text": {
+								if (chunk.index! > 0) {
+									textParts.push("\n")
+									yield { type: "text", text: "\n" }
+								}
 
-					break
-				}
-				case "content_block_start": {
-					switch (chunk.content_block!.type) {
-						case "text": {
-							if (chunk.index! > 0) {
-								yield { type: "text", text: "\n" }
+								textParts.push(chunk.content_block!.text)
+								yield { type: "text", text: chunk.content_block!.text }
+								break
 							}
+							case "thinking": {
+								if (chunk.index! > 0) {
+									reasoningParts.push("\n")
+									yield { type: "reasoning", text: "\n" }
+								}
 
-							yield { type: "text", text: chunk.content_block!.text }
-							break
-						}
-						case "thinking": {
-							if (chunk.index! > 0) {
-								yield { type: "reasoning", text: "\n" }
+								const thinkingText = (chunk.content_block as any).thinking as string
+								reasoningParts.push(thinkingText)
+								yield { type: "reasoning", text: thinkingText }
+								break
 							}
+							case "tool_use": {
+								const tc = getOrCreateToolCall(chunk.index ?? 0)
+								tc.id = chunk.content_block!.id
+								tc.name = chunk.content_block!.name
 
-							yield { type: "reasoning", text: (chunk.content_block as any).thinking }
-							break
-						}
-						case "tool_use": {
-							// Emit initial tool call partial with id and name
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: chunk.content_block!.id,
-								name: chunk.content_block!.name,
-								arguments: undefined,
+								// Emit initial tool call partial with id and name
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: chunk.content_block!.id,
+									name: chunk.content_block!.name,
+									arguments: undefined,
+								}
+								break
 							}
-							break
 						}
+
+						break
 					}
-
-					break
-				}
-				case "content_block_delta": {
-					switch (chunk.delta!.type) {
-						case "text_delta": {
-							yield { type: "text", text: chunk.delta!.text }
-							break
-						}
-						case "thinking_delta": {
-							yield { type: "reasoning", text: (chunk.delta as any).thinking }
-							break
-						}
-						case "input_json_delta": {
-							// Emit tool call partial chunks as arguments stream in
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: undefined,
-								name: undefined,
-								arguments: (chunk.delta as any).partial_json,
+					case "content_block_delta": {
+						switch (chunk.delta!.type) {
+							case "text_delta": {
+								textParts.push(chunk.delta!.text)
+								yield { type: "text", text: chunk.delta!.text }
+								break
 							}
-							break
+							case "thinking_delta": {
+								const thinkingText = (chunk.delta as any).thinking as string
+								reasoningParts.push(thinkingText)
+								yield { type: "reasoning", text: thinkingText }
+								break
+							}
+							case "input_json_delta": {
+								const partial = (chunk.delta as any).partial_json as string
+								const tc = getOrCreateToolCall(chunk.index ?? 0)
+								if (typeof partial === "string" && partial.length > 0) tc.argsParts.push(partial)
+								// Emit tool call partial chunks as arguments stream in
+								yield {
+									type: "tool_call_partial",
+									index: chunk.index,
+									id: undefined,
+									name: undefined,
+									arguments: partial,
+								}
+								break
+							}
 						}
-					}
 
-					break
+						break
+					}
+					case "content_block_stop": {
+						// Block complete - no action needed for now.
+						// NativeToolCallParser handles tool call completion
+						// Note: Signature for multi-turn thinking would require using stream.finalMessage()
+						// after iteration completes, which requires restructuring the streaming approach.
+						break
+					}
 				}
-				case "content_block_stop": {
-					// Block complete - no action needed for now.
-					// NativeToolCallParser handles tool call completion
-					// Note: Signature for multi-turn thinking would require using stream.finalMessage()
-					// after iteration completes, which requires restructuring the streaming approach.
-					break
-				}
+			}
+		} catch (error) {
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${id}][${durationMs}ms]`, error)
+			}
+			throw error
+		} finally {
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				const toolUseBlocks = Array.from(toolCallsByIndex.values())
+					.sort((a, b) => a.index - b.index)
+					.map((tc) => {
+						const joined = tc.argsParts.join("")
+						return {
+							type: "tool_use" as const,
+							...(tc.id ? { id: tc.id } : {}),
+							...(tc.name ? { name: tc.name } : {}),
+							...(joined.length > 0 ? { input: tryParseJsonString(joined) } : {}),
+						}
+					})
+
+				ApiInferenceLogger.logRaw(`[API][response][${this.providerName}][${id}][${durationMs}ms][streaming]`, {
+					type: "message",
+					role: "assistant",
+					model: id,
+					content: [
+						...(textParts.length > 0 ? ([{ type: "text", text: textParts.join("") }] as const) : []),
+						...(reasoningParts.length > 0
+							? ([{ type: "thinking", thinking: reasoningParts.join("") }] as const)
+							: []),
+						...toolUseBlocks,
+					],
+					...(usageSnapshot
+						? {
+								usage: {
+									input_tokens: usageSnapshot.inputTokens,
+									output_tokens: usageSnapshot.outputTokens,
+									cache_creation_input_tokens: usageSnapshot.cacheWriteTokens,
+									cache_read_input_tokens: usageSnapshot.cacheReadTokens,
+								},
+							}
+						: {}),
+				})
 			}
 		}
 	}
@@ -270,6 +398,7 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 	async completePrompt(prompt: string) {
 		try {
+			const startedAt = Date.now()
 			let {
 				id,
 				info: { supportsPromptCache },
@@ -294,7 +423,15 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 				stream: false,
 			}
 
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${id}]`, params)
+			}
+
 			const response = await this.client.messages.create(params)
+			if (ApiInferenceLogger.isEnabled()) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRaw(`[API][response][${this.providerName}][${id}][${durationMs}ms]`, response)
+			}
 			const content = response.content[0]
 
 			if (content.type === "text") {
@@ -303,6 +440,10 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 
 			return ""
 		} catch (error) {
+			const modelId = this.options.apiModelId ?? vertexDefaultModelId
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${modelId}][0ms]`, error)
+			}
 			if (error instanceof Error) {
 				throw new Error(`Vertex completion error: ${error.message}`)
 			}

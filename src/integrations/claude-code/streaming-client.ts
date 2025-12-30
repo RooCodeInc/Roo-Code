@@ -1,6 +1,8 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import type { ClaudeCodeRateLimitInfo } from "@roo-code/types"
 import { Package } from "../../shared/package"
+import { ApiInferenceLogger } from "../../api/logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../../api/logging/logging-fetch"
 
 /**
  * Set of content block types that are valid for Anthropic API.
@@ -370,6 +372,10 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	const { accessToken, model, systemPrompt, messages, maxTokens, thinking, tools, toolChoice, metadata, signal } =
 		options
 
+	const fetchFn: typeof fetch = ApiInferenceLogger.isEnabled()
+		? createLoggingFetch({ provider: "Claude Code" }, fetch)
+		: fetch
+
 	// Filter out non-Anthropic blocks before processing
 	const sanitizedMessages = filterNonAnthropicBlocks(messages)
 
@@ -430,7 +436,7 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	}
 
 	// Make the request
-	const response = await fetch(`${CLAUDE_CODE_API_CONFIG.endpoint}?beta=true`, {
+	const response = await fetchFn(`${CLAUDE_CODE_API_CONFIG.endpoint}?beta=true`, {
 		method: "POST",
 		headers,
 		body: JSON.stringify(body),
@@ -713,6 +719,10 @@ function parseRateLimitHeaders(headers: Headers): ClaudeCodeRateLimitInfo {
  * Uses a small request to get the response headers containing rate limit data
  */
 export async function fetchRateLimitInfo(accessToken: string): Promise<ClaudeCodeRateLimitInfo> {
+	const fetchFn: typeof fetch = ApiInferenceLogger.isEnabled()
+		? createLoggingFetch({ provider: "Claude Code" }, fetch)
+		: fetch
+
 	// Build minimal request body - use haiku for speed and lowest cost
 	const body = {
 		model: "claude-haiku-4-5",
@@ -731,7 +741,7 @@ export async function fetchRateLimitInfo(accessToken: string): Promise<ClaudeCod
 	}
 
 	// Make the request
-	const response = await fetch(`${CLAUDE_CODE_API_CONFIG.endpoint}?beta=true`, {
+	const response = await fetchFn(`${CLAUDE_CODE_API_CONFIG.endpoint}?beta=true`, {
 		method: "POST",
 		headers,
 		body: JSON.stringify(body),

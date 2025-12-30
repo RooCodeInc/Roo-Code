@@ -10,6 +10,7 @@ import { normalizeToolSchema } from "../../utils/json-schema"
 
 import { ApiStream } from "../transform/stream"
 import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../transform/vscode-lm-format"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -373,6 +374,21 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			...convertToVsCodeLmMessages(cleanedMessages),
 		]
 
+		// Inference logging (VS Code LM is not HTTP-based, so we log at provider level)
+		const modelId = this.getModel().id
+		const startedAt = Date.now()
+		if (ApiInferenceLogger.isEnabled()) {
+			ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${modelId}]`, {
+				model: modelId,
+				system: systemPrompt,
+				messages: cleanedMessages,
+				toolProtocol: metadata?.toolProtocol,
+				tool_choice: metadata?.tool_choice,
+				parallelToolCalls: metadata?.parallelToolCalls,
+				hasTools: Boolean(metadata?.tools && metadata.tools.length > 0),
+			})
+		}
+
 		// Initialize cancellation token for the request
 		this.currentRequestCancellation = new vscode.CancellationTokenSource()
 
@@ -482,6 +498,16 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			// Count tokens in the accumulated text after stream completion
 			const totalOutputTokens: number = await this.internalCountTokens(accumulatedText)
 
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRaw(
+					`[API][response][${this.providerName}][${modelId}][${Date.now() - startedAt}ms][streaming]`,
+					{
+						text: accumulatedText,
+						usage: { inputTokens: totalInputTokens, outputTokens: totalOutputTokens },
+					},
+				)
+			}
+
 			// Report final usage after stream completion
 			yield {
 				type: "usage",
@@ -490,6 +516,13 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			}
 		} catch (error: unknown) {
 			this.ensureCleanState()
+
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRawError(
+					`[API][error][${this.providerName}][${modelId}][${Date.now() - startedAt}ms]`,
+					error,
+				)
+			}
 
 			if (error instanceof vscode.CancellationError) {
 				throw new Error("Roo Code <Language Model API>: Request cancelled by user")

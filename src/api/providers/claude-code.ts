@@ -199,120 +199,84 @@ export class ClaudeCodeHandler extends BaseProvider implements ApiHandler, Singl
 			},
 		}
 
-		// Start inference logging with request params
-		const logHandle = this.inferenceLogger.start(
-			{
-				provider: this.providerName,
-				operation: "createMessage",
-				model: modelId,
-			},
-			requestParams,
-		)
+		// HTTP-level request/response logging is handled by logging-fetch injected into
+		// the Claude Code streaming client.
+		const stream = createStreamingMessage({
+			accessToken,
+			...requestParams,
+		})
 
-		// Accumulators for response logging
-		const accumulatedText: string[] = []
-		const accumulatedReasoning: string[] = []
-		const toolCalls: Array<{ id?: string; name?: string }> = []
+		// Track usage for cost calculation
+		let inputTokens = 0
+		let outputTokens = 0
+		let cacheReadTokens = 0
+		let cacheWriteTokens = 0
 
-		try {
-			// Create streaming request using OAuth
-			const stream = createStreamingMessage({
-				accessToken,
-				...requestParams,
-			})
+		for await (const chunk of stream) {
+			switch (chunk.type) {
+				case "text":
+					yield {
+						type: "text",
+						text: chunk.text,
+					}
+					break
 
-			// Track usage for cost calculation
-			let inputTokens = 0
-			let outputTokens = 0
-			let cacheReadTokens = 0
-			let cacheWriteTokens = 0
-			let lastUsage: any
+				case "reasoning":
+					yield {
+						type: "reasoning",
+						text: chunk.text,
+					}
+					break
 
-			for await (const chunk of stream) {
-				switch (chunk.type) {
-					case "text":
-						accumulatedText.push(chunk.text)
-						yield {
-							type: "text",
-							text: chunk.text,
-						}
-						break
+				case "thinking_complete":
+					// Capture the signature for persistence in api_conversation_history
+					// This enables tool use continuations where thinking blocks must be passed back
+					if (chunk.signature) {
+						this.lastThinkingSignature = chunk.signature
+					}
+					// Emit a complete thinking block with signature
+					// This is critical for interleaved thinking with tool use
+					// The signature must be included when passing thinking blocks back to the API
+					yield {
+						type: "reasoning",
+						text: chunk.thinking,
+						signature: chunk.signature,
+					}
+					break
 
-					case "reasoning":
-						accumulatedReasoning.push(chunk.text)
-						yield {
-							type: "reasoning",
-							text: chunk.text,
-						}
-						break
+				case "tool_call_partial":
+					yield {
+						type: "tool_call_partial",
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					}
+					break
 
-					case "thinking_complete":
-						// Capture the signature for persistence in api_conversation_history
-						// This enables tool use continuations where thinking blocks must be passed back
-						if (chunk.signature) {
-							this.lastThinkingSignature = chunk.signature
-						}
-						accumulatedReasoning.push(chunk.thinking)
-						// Emit a complete thinking block with signature
-						// This is critical for interleaved thinking with tool use
-						// The signature must be included when passing thinking blocks back to the API
-						yield {
-							type: "reasoning",
-							text: chunk.thinking,
-							signature: chunk.signature,
-						}
-						break
+				case "usage": {
+					inputTokens = chunk.inputTokens
+					outputTokens = chunk.outputTokens
+					cacheReadTokens = chunk.cacheReadTokens || 0
+					cacheWriteTokens = chunk.cacheWriteTokens || 0
 
-					case "tool_call_partial":
-						if (chunk.id || chunk.name) {
-							toolCalls.push({ id: chunk.id, name: chunk.name })
-						}
-						yield {
-							type: "tool_call_partial",
-							index: chunk.index,
-							id: chunk.id,
-							name: chunk.name,
-							arguments: chunk.arguments,
-						}
-						break
-
-					case "usage": {
-						inputTokens = chunk.inputTokens
-						outputTokens = chunk.outputTokens
-						cacheReadTokens = chunk.cacheReadTokens || 0
-						cacheWriteTokens = chunk.cacheWriteTokens || 0
-
-						// Claude Code is subscription-based, no per-token cost
-						const usageChunk: ApiStreamUsageChunk = {
-							type: "usage",
-							inputTokens,
-							outputTokens,
-							cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
-							cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
-							totalCost: 0,
-						}
-
-						lastUsage = usageChunk
-
-						yield usageChunk
-						break
+					// Claude Code is subscription-based, no per-token cost
+					const usageChunk: ApiStreamUsageChunk = {
+						type: "usage",
+						inputTokens,
+						outputTokens,
+						cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
+						cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
+						totalCost: 0,
 					}
 
-					case "error":
-						throw new Error(chunk.error)
+					yield usageChunk
+					break
 				}
-			}
 
-			// Log successful response
-			logHandle.success({
-				text: accumulatedText.join(""),
-				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
-				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-				usage: lastUsage,
-			})
-		} catch (error) {
-			logHandle.error(error)
-			throw error
+				case "error":
+					throw new Error(chunk.error)
+			}
 		}
 	}
 

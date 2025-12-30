@@ -58,6 +58,7 @@ import * as vscode from "vscode"
 import { VsCodeLmHandler } from "../vscode-lm"
 import type { ApiHandlerOptions } from "../../../shared/api"
 import type { Anthropic } from "@anthropic-ai/sdk"
+import { ApiInferenceLogger } from "../../logging/ApiInferenceLogger"
 
 const mockLanguageModelChat = {
 	id: "test-model",
@@ -139,6 +140,48 @@ describe("VsCodeLmHandler", () => {
 
 			// Override the default client with our test client
 			handler["client"] = mockLanguageModelChat
+		})
+
+		it("should log request/response when ApiInferenceLogger is enabled", async () => {
+			const sink = vi.fn()
+			ApiInferenceLogger.configure({ enabled: true, sink })
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user" as const,
+					content: "Hello",
+				},
+			]
+
+			const responseText = "Hello!"
+			mockLanguageModelChat.sendRequest.mockResolvedValueOnce({
+				stream: (async function* () {
+					yield new vscode.LanguageModelTextPart(responseText)
+					return
+				})(),
+				text: (async function* () {
+					yield responseText
+					return
+				})(),
+			})
+
+			for await (const _ of handler.createMessage(systemPrompt, messages)) {
+				// drain
+			}
+
+			expect(sink).toHaveBeenCalledWith(
+				expect.stringMatching(/^\[API\]\[request\]\[VS Code LM\]\[.+\]$/),
+				expect.objectContaining({
+					model: expect.any(String),
+					system: systemPrompt,
+					messages: expect.any(Array),
+				}),
+			)
+			expect(sink).toHaveBeenCalledWith(
+				expect.stringMatching(/^\[API\]\[response\]\[VS Code LM\]\[.+\]\[\d+ms\]\[streaming\]$/),
+				expect.objectContaining({ text: expect.any(String), usage: expect.any(Object) }),
+			)
 		})
 
 		it("should stream text responses", async () => {

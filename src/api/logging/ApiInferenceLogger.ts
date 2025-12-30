@@ -183,6 +183,41 @@ class ApiInferenceLoggerSingleton {
 	private sink: ((...args: unknown[]) => void) | null = null
 
 	/**
+	 * Emit an already-formatted log entry.
+	 * This is used by HTTP-level middleware to preserve exact label formats.
+	 */
+	logRaw(label: string, payload: unknown): void {
+		if (!this.isEnabled() || !this.sink) return
+		try {
+			this.sink(label, sanitizePayload(payload))
+		} catch {
+			// Silently ignore logging errors to avoid breaking the application
+		}
+	}
+
+	/**
+	 * Emit an already-formatted error log entry.
+	 */
+	logRawError(label: string, errorPayload: unknown): void {
+		if (!this.isEnabled() || !this.sink) return
+		try {
+			let errorData: unknown
+			if (errorPayload instanceof Error) {
+				errorData = {
+					name: errorPayload.name,
+					message: errorPayload.message,
+					stack: errorPayload.stack,
+				}
+			} else {
+				errorData = sanitizePayload(errorPayload)
+			}
+			this.sink(label, errorData)
+		} catch {
+			// Silently ignore logging errors to avoid breaking the application
+		}
+	}
+
+	/**
 	 * Configure the logger with enabled state and output sink.
 	 * Should be called once during extension activation.
 	 */
@@ -250,7 +285,7 @@ class ApiInferenceLoggerSingleton {
 	}
 
 	/**
-	 * Log a request with stable tag format.
+	 * Log a request - outputs only the raw request payload for debugging.
 	 */
 	private logRequest(data: {
 		provider: string
@@ -261,25 +296,11 @@ class ApiInferenceLoggerSingleton {
 		timestamp: string
 		payload: unknown
 	}): void {
-		if (!this.sink) return
-
-		try {
-			this.sink("[API][request]", {
-				provider: data.provider,
-				operation: data.operation,
-				model: data.model,
-				taskId: data.taskId,
-				requestId: data.requestId,
-				timestamp: data.timestamp,
-				payload: sanitizePayload(data.payload),
-			})
-		} catch {
-			// Silently ignore logging errors to avoid breaking the application
-		}
+		this.logRaw(`[API][request][${data.provider}][${data.model ?? "unknown"}]`, data.payload)
 	}
 
 	/**
-	 * Log a successful response with stable tag format.
+	 * Log a successful response - outputs only the raw response payload for debugging.
 	 */
 	private logResponse(data: {
 		provider: string
@@ -291,26 +312,11 @@ class ApiInferenceLoggerSingleton {
 		durationMs: number
 		payload: unknown
 	}): void {
-		if (!this.sink) return
-
-		try {
-			this.sink("[API][response]", {
-				provider: data.provider,
-				operation: data.operation,
-				model: data.model,
-				taskId: data.taskId,
-				requestId: data.requestId,
-				timestamp: data.timestamp,
-				durationMs: data.durationMs,
-				payload: sanitizePayload(data.payload),
-			})
-		} catch {
-			// Silently ignore logging errors to avoid breaking the application
-		}
+		this.logRaw(`[API][response][${data.provider}][${data.model ?? "unknown"}][${data.durationMs}ms]`, data.payload)
 	}
 
 	/**
-	 * Log an error response with stable tag format.
+	 * Log an error response - outputs only the error details for debugging.
 	 */
 	private logError(data: {
 		provider: string
@@ -322,34 +328,7 @@ class ApiInferenceLoggerSingleton {
 		durationMs: number
 		error: unknown
 	}): void {
-		if (!this.sink) return
-
-		try {
-			// Handle Error objects specially
-			let errorData: unknown
-			if (data.error instanceof Error) {
-				errorData = {
-					name: data.error.name,
-					message: data.error.message,
-					stack: data.error.stack,
-				}
-			} else {
-				errorData = sanitizePayload(data.error)
-			}
-
-			this.sink("[API][error]", {
-				provider: data.provider,
-				operation: data.operation,
-				model: data.model,
-				taskId: data.taskId,
-				requestId: data.requestId,
-				timestamp: data.timestamp,
-				durationMs: data.durationMs,
-				error: errorData,
-			})
-		} catch {
-			// Silently ignore logging errors to avoid breaking the application
-		}
+		this.logRawError(`[API][error][${data.provider}][${data.model ?? "unknown"}][${data.durationMs}ms]`, data.error)
 	}
 }
 

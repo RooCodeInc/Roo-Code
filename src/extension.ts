@@ -75,7 +75,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Configure API inference logger for debugging (enable via ROO_CODE_API_LOGGING=true)
 	ApiInferenceLogger.configure({
 		enabled: process.env.ROO_CODE_API_LOGGING === "true",
-		sink: createOutputChannelLogger(outputChannel),
+		// Log only to the Extension Host Debug Console.
+		sink: (...args: unknown[]) => console.log(...args),
 	})
 
 	// Set extension path for custom tool registry to find bundled esbuild

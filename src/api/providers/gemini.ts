@@ -27,6 +27,8 @@ import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { handleProviderError } from "./utils/error-handler"
 
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 
@@ -77,6 +79,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const startedAt = Date.now()
+		const loggingEnabled = ApiInferenceLogger.isEnabled()
+
 		const { id: model, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
 		// Reset per-request metadata that we persist into apiConversationHistory.
 		this.lastThoughtSignature = undefined
@@ -201,9 +206,20 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		const params: GenerateContentParameters = { model, contents, config }
+		if (loggingEnabled) {
+			ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${model}]`, params)
+		}
 
 		try {
 			const result = await this.client.models.generateContentStream(params)
+
+			// Accumulators for a coherent final response log.
+			const assembledParts: Array<{
+				thought?: boolean
+				text?: string
+				thoughtSignature?: string
+				functionCall?: { name: string; args: Record<string, unknown> }
+			}> = []
 
 			let lastUsageMetadata: GenerateContentResponseUsageMetadata | undefined
 			let pendingGroundingMetadata: GroundingMetadata | undefined
@@ -235,6 +251,17 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 							thoughtSignature?: string
 							functionCall?: { name: string; args: Record<string, unknown> }
 						}>) {
+							if (loggingEnabled) {
+								assembledParts.push({
+									...(typeof part.thought === "boolean" ? { thought: part.thought } : {}),
+									...(typeof part.text === "string" ? { text: part.text } : {}),
+									...(typeof part.thoughtSignature === "string"
+										? { thoughtSignature: part.thoughtSignature }
+										: {}),
+									...(part.functionCall ? { functionCall: part.functionCall } : {}),
+								})
+							}
+
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
 							// Persist encrypted reasoning when using reasoning. Both effort-based
@@ -331,7 +358,31 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					}),
 				}
 			}
+
+			if (loggingEnabled) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRaw(
+					`[API][response][${this.providerName}][${model}][${durationMs}ms][streaming]`,
+					{
+						responseId: this.lastResponseId,
+						model,
+						candidates: [
+							{
+								finishReason,
+								content: { parts: assembledParts },
+								...(pendingGroundingMetadata ? { groundingMetadata: pendingGroundingMetadata } : {}),
+							},
+						],
+						...(lastUsageMetadata ? { usageMetadata: lastUsageMetadata } : {}),
+					},
+				)
+			}
 		} catch (error) {
+			if (loggingEnabled) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${model}][${durationMs}ms]`, error)
+			}
+
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "createMessage")
 			TelemetryService.instance.captureException(apiError)
@@ -400,6 +451,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: model, info } = this.getModel()
+		const startedAt = Date.now()
+		const loggingEnabled = ApiInferenceLogger.isEnabled()
 
 		try {
 			const tools: GenerateContentConfig["tools"] = []
@@ -428,8 +481,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				contents: [{ role: "user", parts: [{ text: prompt }] }],
 				config: promptConfig,
 			}
+			if (loggingEnabled) {
+				ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${model}]`, request)
+			}
 
 			const result = await this.client.models.generateContent(request)
+			if (loggingEnabled) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRaw(`[API][response][${this.providerName}][${model}][${durationMs}ms]`, result)
+			}
 
 			let text = result.text ?? ""
 
@@ -443,6 +503,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			return text
 		} catch (error) {
+			if (loggingEnabled) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${model}][${durationMs}ms]`, error)
+			}
+
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "completePrompt")
 			TelemetryService.instance.captureException(apiError)

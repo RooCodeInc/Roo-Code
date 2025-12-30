@@ -12,6 +12,8 @@ import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from ".
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
 import { t } from "../../i18n"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
@@ -129,7 +131,9 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+			const fetchFn = ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : fetch
+
+			const response = await fetchFn(`${CEREBRAS_BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					...DEFAULT_HEADERS,
@@ -291,7 +295,9 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		}
 
 		try {
-			const response = await fetch(`${CEREBRAS_BASE_URL}/chat/completions`, {
+			const fetchFn = ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : fetch
+
+			const response = await fetchFn(`${CEREBRAS_BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					...DEFAULT_HEADERS,

@@ -8,6 +8,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { XmlMatcher } from "../../utils/xml-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
 
 interface OllamaChatOptions {
 	temperature: number
@@ -206,6 +207,9 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		const startedAt = Date.now()
+		const shouldLog = ApiInferenceLogger.isEnabled()
+
 		const client = this.ensureClient()
 		const { id: modelId, info: modelInfo } = await this.fetchModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
@@ -230,6 +234,19 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
 
 		try {
+			if (shouldLog) {
+				ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${modelId}]`, {
+					model: modelId,
+					messages: ollamaMessages,
+					stream: true,
+					options: {
+						temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+						...(this.options.ollamaNumCtx !== undefined ? { num_ctx: this.options.ollamaNumCtx } : {}),
+					},
+					...(useNativeTools ? { tools: this.convertToolsToOllama(metadata.tools) } : {}),
+				})
+			}
+
 			// Build options object conditionally
 			const chatOptions: OllamaChatOptions = {
 				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
@@ -254,12 +271,17 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			let totalOutputTokens = 0
 			// Track tool calls across chunks (Ollama may send complete tool_calls in final chunk)
 			let toolCallIndex = 0
+			const toolCalls: Array<{ id: string; name: string; arguments: unknown }> = []
+			let assembledText = ""
+			let assembledReasoning = ""
 
 			try {
 				for await (const chunk of stream) {
 					if (typeof chunk.message.content === "string" && chunk.message.content.length > 0) {
 						// Process content through matcher for reasoning detection
 						for (const matcherChunk of matcher.update(chunk.message.content)) {
+							if (matcherChunk.type === "text") assembledText += matcherChunk.text
+							if (matcherChunk.type === "reasoning") assembledReasoning += matcherChunk.text
 							yield matcherChunk
 						}
 					}
@@ -269,6 +291,11 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 						for (const toolCall of chunk.message.tool_calls) {
 							// Generate a unique ID for this tool call
 							const toolCallId = `ollama-tool-${toolCallIndex}`
+							toolCalls.push({
+								id: toolCallId,
+								name: toolCall.function.name,
+								arguments: toolCall.function.arguments,
+							})
 							yield {
 								type: "tool_call_partial",
 								index: toolCallIndex,
@@ -293,6 +320,8 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 				// Yield any remaining content from the matcher
 				for (const chunk of matcher.final()) {
+					if (chunk.type === "text") assembledText += chunk.text
+					if (chunk.type === "reasoning") assembledReasoning += chunk.text
 					yield chunk
 				}
 
@@ -304,11 +333,42 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 						outputTokens: totalOutputTokens,
 					}
 				}
+
+				if (shouldLog) {
+					const durationMs = Date.now() - startedAt
+					ApiInferenceLogger.logRaw(
+						`[API][response][${this.providerName}][${modelId}][${durationMs}ms][streaming]`,
+						{
+							model: modelId,
+							message: {
+								role: "assistant",
+								content: assembledText,
+								...(assembledReasoning.length > 0 ? { reasoning: assembledReasoning } : {}),
+								...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+							},
+							usage:
+								totalInputTokens > 0 || totalOutputTokens > 0
+									? { inputTokens: totalInputTokens, outputTokens: totalOutputTokens }
+									: undefined,
+						},
+					)
+				}
 			} catch (streamError: any) {
+				if (shouldLog) {
+					const durationMs = Date.now() - startedAt
+					ApiInferenceLogger.logRawError(
+						`[API][error][${this.providerName}][${modelId}][${durationMs}ms]`,
+						streamError,
+					)
+				}
 				console.error("Error processing Ollama stream:", streamError)
 				throw new Error(`Ollama stream processing error: ${streamError.message || "Unknown error"}`)
 			}
 		} catch (error: any) {
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${modelId}][${durationMs}ms]`, error)
+			}
 			// Enhance error reporting
 			const statusCode = error.status || error.statusCode
 			const errorMessage = error.message || "Unknown error"
@@ -343,6 +403,9 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
+			const startedAt = Date.now()
+			const shouldLog = ApiInferenceLogger.isEnabled()
+
 			const client = this.ensureClient()
 			const { id: modelId } = await this.fetchModel()
 			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
@@ -357,6 +420,15 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				chatOptions.num_ctx = this.options.ollamaNumCtx
 			}
 
+			if (shouldLog) {
+				ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${modelId}]`, {
+					model: modelId,
+					messages: [{ role: "user", content: prompt }],
+					stream: false,
+					options: chatOptions,
+				})
+			}
+
 			const response = await client.chat({
 				model: modelId,
 				messages: [{ role: "user", content: prompt }],
@@ -364,8 +436,20 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				options: chatOptions,
 			})
 
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRaw(
+					`[API][response][${this.providerName}][${modelId}][${durationMs}ms]`,
+					response,
+				)
+			}
+
 			return response.message?.content || ""
 		} catch (error) {
+			const modelId = this.options.ollamaModelId || this.options.apiModelId || "unknown"
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${modelId}][0ms]`, error)
+			}
 			if (error instanceof Error) {
 				throw new Error(`Ollama completion error: ${error.message}`)
 			}

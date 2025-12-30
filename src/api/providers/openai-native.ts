@@ -25,6 +25,8 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { isMcpTool } from "../../utils/mcp-name"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -68,7 +70,11 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableResponsesReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		this.client = new OpenAI({
+			baseURL: this.options.openAiNativeBaseUrl,
+			apiKey,
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
+		})
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -175,53 +181,28 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			metadata,
 		)
 
-		// Start inference logging with actual request body
-		const logHandle = this.inferenceLogger.start(
-			{
-				provider: this.providerName,
-				operation: "createMessage",
-				model: model.id,
-			},
-			requestBody,
-		)
-
 		// Accumulators for response logging
 		const accumulatedText: string[] = []
 		const accumulatedReasoning: string[] = []
 		const toolCalls: Array<{ id?: string; name?: string }> = []
 		let lastUsage: any
 
-		try {
-			// Make the request (pass systemPrompt and messages for potential retry)
-			for await (const chunk of this.executeRequest(requestBody, model, metadata, systemPrompt, messages)) {
-				// Accumulate for logging
-				if (chunk.type === "text") {
-					accumulatedText.push(chunk.text)
-				} else if (chunk.type === "reasoning") {
-					accumulatedReasoning.push(chunk.text)
-				} else if (chunk.type === "tool_call" || chunk.type === "tool_call_partial") {
-					if (chunk.id || chunk.name) {
-						toolCalls.push({ id: chunk.id, name: chunk.name })
-					}
-				} else if (chunk.type === "usage") {
-					lastUsage = chunk
+		// Make the request (pass systemPrompt and messages for potential retry)
+		for await (const chunk of this.executeRequest(requestBody, model, metadata, systemPrompt, messages)) {
+			// Accumulate for logging
+			if (chunk.type === "text") {
+				accumulatedText.push(chunk.text)
+			} else if (chunk.type === "reasoning") {
+				accumulatedReasoning.push(chunk.text)
+			} else if (chunk.type === "tool_call" || chunk.type === "tool_call_partial") {
+				if (chunk.id || chunk.name) {
+					toolCalls.push({ id: chunk.id, name: chunk.name })
 				}
-
-				yield chunk
+			} else if (chunk.type === "usage") {
+				lastUsage = chunk
 			}
 
-			// Log successful response
-			logHandle.success({
-				text: accumulatedText.join(""),
-				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
-				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-				usage: lastUsage,
-				responseId: this.lastResponseId,
-				responseOutput: this.lastResponseOutput,
-			})
-		} catch (error) {
-			logHandle.error(error)
-			throw error
+			yield chunk
 		}
 	}
 
@@ -517,7 +498,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.abortController = new AbortController()
 
 		try {
-			const response = await fetch(url, {
+			const fetchFn = ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : fetch
+			const response = await fetchFn(url, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

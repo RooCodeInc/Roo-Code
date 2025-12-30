@@ -8,6 +8,8 @@ import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 
 import { DEFAULT_HEADERS } from "./constants"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 type RouterProviderOptions = {
 	name: RouterName
@@ -56,6 +58,7 @@ export abstract class RouterProvider extends BaseProvider {
 				...DEFAULT_HEADERS,
 				...(options.openAiHeaders || {}),
 			},
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 		})
 	}
 

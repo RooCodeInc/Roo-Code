@@ -125,35 +125,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: model, info } = this.getModel()
-
-		// Get model parameters for logging
-		const params = getModelParams({
-			format: "openai",
-			modelId: model,
-			model: info,
-			settings: this.options,
-			defaultTemperature: this.defaultTemperature,
-		})
-
-		// Start inference logging
-		const logHandle = this.inferenceLogger.start(
-			{
-				provider: this.providerName,
-				operation: "createMessage",
-				model,
-				taskId: metadata?.taskId,
-			},
-			{
-				model,
-				maxTokens: params.maxTokens,
-				temperature: params.temperature,
-				messageCount: messages.length,
-				hasTools: !!metadata?.tools,
-				toolCount: metadata?.tools?.length ?? 0,
-				toolChoice: metadata?.tool_choice,
-			},
-		)
+		const { id: model } = this.getModel()
 
 		// Accumulators for final response logging
 		const accumulatedText: string[] = []
@@ -360,17 +332,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 					totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
 				}
 			}
-
-			// Log successful response
-			logHandle.success({
-				text: accumulatedText.join(""),
-				reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
-				toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-				usage: lastUsage,
-			})
 		} catch (error) {
-			logHandle.error(error)
-
 			const errorContext = {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,

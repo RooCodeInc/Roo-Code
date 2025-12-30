@@ -36,21 +36,17 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.configure({ enabled: true, sink: mockSink })
 		})
 
-		it("should emit a request log with [API][request] tag", () => {
+		it("should emit a request log with simplified label format", () => {
 			ApiInferenceLogger.start({ provider: "OpenAI", operation: "createMessage" }, { model: "gpt-4" })
 
 			expect(mockSink).toHaveBeenCalledTimes(1)
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
-				expect.objectContaining({
-					provider: "OpenAI",
-					operation: "createMessage",
-					payload: expect.objectContaining({ model: "gpt-4" }),
-				}),
+				"[API][request][OpenAI][unknown]",
+				expect.objectContaining({ model: "gpt-4" }),
 			)
 		})
 
-		it("should include context fields in the log", () => {
+		it("should use context.model in the request label", () => {
 			ApiInferenceLogger.start(
 				{
 					provider: "Anthropic",
@@ -63,25 +59,8 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
-				expect.objectContaining({
-					provider: "Anthropic",
-					operation: "createMessage",
-					model: "claude-3",
-					taskId: "task-123",
-					requestId: "req-456",
-				}),
-			)
-		})
-
-		it("should generate a requestId if not provided", () => {
-			ApiInferenceLogger.start({ provider: "test", operation: "test" }, {})
-
-			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
-				expect.objectContaining({
-					requestId: expect.stringMatching(/^req_\d+_[a-z0-9]+$/),
-				}),
+				"[API][request][Anthropic][claude-3]",
+				expect.objectContaining({ test: "data" }),
 			)
 		})
 	})
@@ -91,7 +70,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.configure({ enabled: true, sink: mockSink })
 		})
 
-		it("should emit a response log with [API][response] tag", () => {
+		it("should emit a response log with simplified label format", () => {
 			const handle = ApiInferenceLogger.start({ provider: "OpenAI", operation: "createMessage" }, {})
 			mockSink.mockClear()
 
@@ -99,29 +78,10 @@ describe("ApiInferenceLogger", () => {
 
 			expect(mockSink).toHaveBeenCalledTimes(1)
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][response]",
+				expect.stringMatching(/^\[API\]\[response\]\[OpenAI\]\[unknown\]\[\d+ms\]$/),
 				expect.objectContaining({
-					provider: "OpenAI",
-					operation: "createMessage",
-					payload: expect.objectContaining({
-						text: "Hello world",
-						usage: { inputTokens: 10, outputTokens: 20 },
-					}),
-				}),
-			)
-		})
-
-		it("should include duration in the response log", () => {
-			const handle = ApiInferenceLogger.start({ provider: "test", operation: "test" }, {})
-			mockSink.mockClear()
-
-			// Small delay to ensure measurable duration
-			handle.success({ response: "data" })
-
-			expect(mockSink).toHaveBeenCalledWith(
-				"[API][response]",
-				expect.objectContaining({
-					durationMs: expect.any(Number),
+					text: "Hello world",
+					usage: { inputTokens: 10, outputTokens: 20 },
 				}),
 			)
 		})
@@ -132,7 +92,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.configure({ enabled: true, sink: mockSink })
 		})
 
-		it("should emit an error log with [API][error] tag", () => {
+		it("should emit an error log with simplified label format", () => {
 			const handle = ApiInferenceLogger.start({ provider: "OpenAI", operation: "createMessage" }, {})
 			mockSink.mockClear()
 
@@ -140,28 +100,10 @@ describe("ApiInferenceLogger", () => {
 
 			expect(mockSink).toHaveBeenCalledTimes(1)
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][error]",
+				expect.stringMatching(/^\[API\]\[error\]\[OpenAI\]\[unknown\]\[\d+ms\]$/),
 				expect.objectContaining({
-					provider: "OpenAI",
-					operation: "createMessage",
-					error: expect.objectContaining({
-						name: "Error",
-						message: "API request failed",
-					}),
-				}),
-			)
-		})
-
-		it("should include duration in the error log", () => {
-			const handle = ApiInferenceLogger.start({ provider: "test", operation: "test" }, {})
-			mockSink.mockClear()
-
-			handle.error({ code: 500, message: "Internal error" })
-
-			expect(mockSink).toHaveBeenCalledWith(
-				"[API][error]",
-				expect.objectContaining({
-					durationMs: expect.any(Number),
+					name: "Error",
+					message: "API request failed",
 				}),
 			)
 		})
@@ -173,12 +115,10 @@ describe("ApiInferenceLogger", () => {
 			handle.error({ status: 401, message: "Unauthorized" })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][error]",
+				expect.stringMatching(/^\[API\]\[error\]\[test\]\[unknown\]\[\d+ms\]$/),
 				expect.objectContaining({
-					error: expect.objectContaining({
-						status: 401,
-						message: "Unauthorized",
-					}),
+					status: 401,
+					message: "Unauthorized",
 				}),
 			)
 		})
@@ -196,11 +136,9 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						headers: { Authorization: "[REDACTED]" },
-					}),
+					headers: { Authorization: "[REDACTED]" },
 				}),
 			)
 		})
@@ -209,11 +147,9 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { apiKey: "sk-secret-12345" })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						apiKey: "[REDACTED]",
-					}),
+					apiKey: "[REDACTED]",
 				}),
 			)
 		})
@@ -232,16 +168,14 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						config: {
-							auth: {
-								access_token: "[REDACTED]",
-								api_key: "[REDACTED]",
-							},
+					config: {
+						auth: {
+							access_token: "[REDACTED]",
+							api_key: "[REDACTED]",
 						},
-					}),
+					},
 				}),
 			)
 		})
@@ -255,11 +189,9 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						items: [{ apiKey: "[REDACTED]" }, { apiKey: "[REDACTED]" }],
-					}),
+					items: [{ apiKey: "[REDACTED]" }, { apiKey: "[REDACTED]" }],
 				}),
 			)
 		})
@@ -271,12 +203,10 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						model: "gpt-4",
-						messages: [{ role: "user", content: "Hello" }],
-					}),
+					model: "gpt-4",
+					messages: [{ role: "user", content: "Hello" }],
 				}),
 			)
 		})
@@ -292,11 +222,9 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { content: longString })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						content: "[Truncated len=15000]",
-					}),
+					content: "[Truncated len=15000]",
 				}),
 			)
 		})
@@ -306,11 +234,9 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { content: normalString })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						content: normalString,
-					}),
+					content: normalString,
 				}),
 			)
 		})
@@ -321,11 +247,9 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { image: imageData })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						image: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-					}),
+					image: expect.stringMatching(/^\[ImageData len=\d+\]$/),
 				}),
 			)
 		})
@@ -342,14 +266,12 @@ describe("ApiInferenceLogger", () => {
 			)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						png: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-						jpeg: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-						gif: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-						webp: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-					}),
+					png: expect.stringMatching(/^\[ImageData len=\d+\]$/),
+					jpeg: expect.stringMatching(/^\[ImageData len=\d+\]$/),
+					gif: expect.stringMatching(/^\[ImageData len=\d+\]$/),
+					webp: expect.stringMatching(/^\[ImageData len=\d+\]$/),
 				}),
 			)
 		})
@@ -359,7 +281,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { items: longArray })
 
 			const call = mockSink.mock.calls[0]
-			const payload = call[1].payload as { items: any[] }
+			const payload = call[1] as { items: any[] }
 
 			expect(payload.items.length).toBe(201)
 			expect(payload.items[200]).toBe("[...50 more items]")
@@ -370,7 +292,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { items: normalArray })
 
 			const call = mockSink.mock.calls[0]
-			const payload = call[1].payload as { items: any[] }
+			const payload = call[1] as { items: any[] }
 
 			expect(payload.items.length).toBe(50)
 		})
@@ -383,7 +305,7 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, bigObject)
 
 			const call = mockSink.mock.calls[0]
-			const payload = call[1].payload as Record<string, unknown>
+			const payload = call[1] as Record<string, unknown>
 
 			const keys = Object.keys(payload)
 			expect(keys.length).toBe(201)
@@ -402,14 +324,12 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, nested)
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						level1: expect.objectContaining({
-							longString: "[Truncated len=15000]",
-							level2: expect.objectContaining({
-								imageData: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-							}),
+					level1: expect.objectContaining({
+						longString: "[Truncated len=15000]",
+						level2: expect.objectContaining({
+							imageData: expect.stringMatching(/^\[ImageData len=\d+\]$/),
 						}),
 					}),
 				}),
@@ -424,20 +344,18 @@ describe("ApiInferenceLogger", () => {
 			ApiInferenceLogger.start({ provider: "test", operation: "test" }, { messages })
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						messages: [
-							expect.objectContaining({
-								role: "user",
-								content: "[Truncated len=15000]",
-							}),
-							expect.objectContaining({
-								role: "assistant",
-								content: expect.stringMatching(/^\[ImageData len=\d+\]$/),
-							}),
-						],
-					}),
+					messages: [
+						expect.objectContaining({
+							role: "user",
+							content: "[Truncated len=15000]",
+						}),
+						expect.objectContaining({
+							role: "assistant",
+							content: expect.stringMatching(/^\[ImageData len=\d+\]$/),
+						}),
+					],
 				}),
 			)
 		})
@@ -454,12 +372,10 @@ describe("ApiInferenceLogger", () => {
 			}).not.toThrow()
 
 			expect(mockSink).toHaveBeenCalledWith(
-				"[API][request]",
+				"[API][request][test][unknown]",
 				expect.objectContaining({
-					payload: expect.objectContaining({
-						value: null,
-						other: undefined,
-					}),
+					value: null,
+					other: undefined,
 				}),
 			)
 		})

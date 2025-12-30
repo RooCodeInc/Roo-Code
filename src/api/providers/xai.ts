@@ -15,6 +15,8 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 const XAI_DEFAULT_TEMPERATURE = 0
 
@@ -33,6 +35,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			baseURL: "https://api.x.ai/v1",
 			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 		})
 	}
 

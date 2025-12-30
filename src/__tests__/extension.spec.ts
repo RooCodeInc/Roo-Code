@@ -238,6 +238,43 @@ describe("extension.ts", () => {
 		authStateChangedHandler = undefined
 	})
 
+	test("API inference logging writes to Debug Console when ROO_CODE_API_LOGGING=true", async () => {
+		const previousValue = process.env.ROO_CODE_API_LOGGING
+		process.env.ROO_CODE_API_LOGGING = "true"
+
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+
+		try {
+			const { activate } = await import("../extension")
+			await activate(mockContext)
+
+			const { ApiInferenceLogger } = await import("../api/logging/ApiInferenceLogger")
+			ApiInferenceLogger.start(
+				{
+					provider: "Test Provider",
+					operation: "createMessage",
+					model: "test-model",
+					taskId: "test-task",
+					requestId: "test-request",
+				},
+				{ messageCount: 1 },
+			)
+
+			// New simplified format: [API][request][Provider][model] + raw payload
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				"[API][request][Test Provider][test-model]",
+				expect.objectContaining({ messageCount: 1 }),
+			)
+		} finally {
+			consoleLogSpy.mockRestore()
+			if (previousValue === undefined) {
+				delete process.env.ROO_CODE_API_LOGGING
+			} else {
+				process.env.ROO_CODE_API_LOGGING = previousValue
+			}
+		}
+	})
+
 	test("authStateChangedHandler calls BridgeOrchestrator.disconnect when logged-out event fires", async () => {
 		const { CloudService, BridgeOrchestrator } = await import("@roo-code/cloud")
 

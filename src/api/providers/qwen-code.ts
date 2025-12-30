@@ -15,6 +15,9 @@ import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { safeWriteJson } from "../../utils/safeWriteJson"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -70,6 +73,7 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			this.client = new OpenAI({
 				apiKey: "dummy-key-will-be-replaced",
 				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+				fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 			})
 		}
 		return this.client
@@ -147,7 +151,7 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 
 		const filePath = getQwenCachedCredentialPath(this.options.qwenCodeOauthPath)
 		try {
-			await fs.writeFile(filePath, JSON.stringify(newCredentials, null, 2))
+			await safeWriteJson(filePath, newCredentials)
 		} catch (error) {
 			console.error("Failed to save refreshed credentials:", error)
 			// Continue with the refreshed token in memory even if file write fails

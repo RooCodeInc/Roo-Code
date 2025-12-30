@@ -2,8 +2,13 @@ import { t } from "i18next"
 
 import { GeminiHandler } from "../gemini"
 import type { ApiHandlerOptions } from "../../../shared/api"
+import { ApiInferenceLogger } from "../../logging/ApiInferenceLogger"
 
 describe("GeminiHandler backend support", () => {
+	afterEach(() => {
+		ApiInferenceLogger.configure({ enabled: false, sink: () => {} })
+	})
+
 	it("passes tools for URL context and grounding in config", async () => {
 		const options = {
 			apiProvider: "gemini",
@@ -17,6 +22,46 @@ describe("GeminiHandler backend support", () => {
 		await handler.createMessage("instr", [] as any).next()
 		const config = stub.mock.calls[0][0].config
 		expect(config.tools).toEqual([{ urlContext: {} }, { googleSearch: {} }])
+	})
+
+	it("logs request/response via ApiInferenceLogger when enabled", async () => {
+		const sink = vi.fn()
+		ApiInferenceLogger.configure({ enabled: true, sink })
+
+		const options = {
+			apiProvider: "gemini",
+			apiModelId: "gemini-1.5-flash", // just needs to exist for getModel
+		} as ApiHandlerOptions
+		const handler = new GeminiHandler(options)
+
+		const mockStream = (async function* () {
+			yield {
+				candidates: [{ content: { parts: [{ text: "hi" }] }, finishReason: "STOP" }],
+				usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 2 },
+				responseId: "r_1",
+			}
+		})()
+
+		// @ts-ignore access private client
+		handler["client"].models.generateContentStream = vi.fn().mockResolvedValue(mockStream)
+
+		// Drain
+		for await (const _ of handler.createMessage("sys", [] as any)) {
+			// noop
+		}
+
+		expect(sink).toHaveBeenCalledWith(
+			expect.stringMatching(/^\[API\]\[request\]\[Gemini\]\[.+\]$/),
+			expect.objectContaining({
+				model: expect.any(String),
+				contents: expect.any(Array),
+				config: expect.any(Object),
+			}),
+		)
+		expect(sink).toHaveBeenCalledWith(
+			expect.stringMatching(/^\[API\]\[response\]\[Gemini\]\[.+\]\[\d+ms\]\[streaming\]$/),
+			expect.objectContaining({ candidates: expect.any(Array) }),
+		)
 	})
 
 	it("completePrompt passes config overrides without tools when URL context and grounding disabled", async () => {

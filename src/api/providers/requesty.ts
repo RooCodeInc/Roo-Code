@@ -25,6 +25,8 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -75,6 +77,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			baseURL: this.baseURL,
 			apiKey: apiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 		})
 	}
 

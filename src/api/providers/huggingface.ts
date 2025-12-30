@@ -9,6 +9,8 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	private client: OpenAI
@@ -28,6 +30,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			baseURL: "https://router.huggingface.co/v1",
 			apiKey: this.options.huggingFaceApiKey,
 			defaultHeaders: DEFAULT_HEADERS,
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 		})
 
 		// Try to get cached models first

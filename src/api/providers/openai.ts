@@ -26,6 +26,8 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
@@ -60,6 +62,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				defaultHeaders: headers,
 				defaultQuery: { "api-version": this.options.azureApiVersion || "2024-05-01-preview" },
 				timeout,
+				fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 			})
 		} else if (isAzureOpenAi) {
 			// Azure API shape slightly differs from the core API shape:
@@ -70,6 +73,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiVersion: this.options.azureApiVersion || azureOpenAiDefaultApiVersion,
 				defaultHeaders: headers,
 				timeout,
+				fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 			})
 		} else {
 			this.client = new OpenAI({
@@ -77,6 +81,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				apiKey,
 				defaultHeaders: headers,
 				timeout,
+				fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 			})
 		}
 	}
@@ -182,99 +187,76 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			// Start inference logging with actual request params
-			const logHandle = this.inferenceLogger.start(
-				{
-					provider: this.providerName,
-					operation: "createMessage",
-					model: modelId,
-				},
-				requestOptions,
+			let stream
+			try {
+				stream = await this.client.chat.completions.create(
+					requestOptions,
+					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
+
+			const matcher = new XmlMatcher(
+				"think",
+				(chunk) =>
+					({
+						type: chunk.matched ? "reasoning" : "text",
+						text: chunk.data,
+					}) as const,
 			)
 
-			try {
-				let stream
-				try {
-					stream = await this.client.chat.completions.create(
-						requestOptions,
-						isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-					)
-				} catch (error) {
-					throw handleOpenAIError(error, this.providerName)
+			const activeToolCallIds = new Set<string>()
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices?.[0]?.delta ?? {}
+				const finishReason = chunk.choices?.[0]?.finish_reason
+
+				if (delta.content) {
+					for (const matchedChunk of matcher.update(delta.content)) {
+						if (matchedChunk.type === "text") {
+							accumulatedText.push(matchedChunk.text)
+						} else if (matchedChunk.type === "reasoning") {
+							accumulatedReasoning.push(matchedChunk.text)
+						}
+						yield matchedChunk
+					}
 				}
 
-				const matcher = new XmlMatcher(
-					"think",
-					(chunk) =>
-						({
-							type: chunk.matched ? "reasoning" : "text",
-							text: chunk.data,
-						}) as const,
-				)
+				if ("reasoning_content" in delta && delta.reasoning_content) {
+					accumulatedReasoning.push((delta.reasoning_content as string | undefined) || "")
+					yield {
+						type: "reasoning",
+						text: (delta.reasoning_content as string | undefined) || "",
+					}
+				}
 
-				const activeToolCallIds = new Set<string>()
-
-				for await (const chunk of stream) {
-					const delta = chunk.choices?.[0]?.delta ?? {}
-					const finishReason = chunk.choices?.[0]?.finish_reason
-
-					if (delta.content) {
-						for (const matchedChunk of matcher.update(delta.content)) {
-							if (matchedChunk.type === "text") {
-								accumulatedText.push(matchedChunk.text)
-							} else if (matchedChunk.type === "reasoning") {
-								accumulatedReasoning.push(matchedChunk.text)
-							}
-							yield matchedChunk
+				// Track tool calls for logging and use processToolCalls for proper tool_call_end events
+				if (delta.tool_calls) {
+					for (const toolCall of delta.tool_calls) {
+						if (toolCall.id || toolCall.function?.name) {
+							toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
 						}
 					}
-
-					if ("reasoning_content" in delta && delta.reasoning_content) {
-						accumulatedReasoning.push((delta.reasoning_content as string | undefined) || "")
-						yield {
-							type: "reasoning",
-							text: (delta.reasoning_content as string | undefined) || "",
-						}
-					}
-
-					// Track tool calls for logging and use processToolCalls for proper tool_call_end events
-					if (delta.tool_calls) {
-						for (const toolCall of delta.tool_calls) {
-							if (toolCall.id || toolCall.function?.name) {
-								toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
-							}
-						}
-					}
-					yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
-
-					if (chunk.usage) {
-						lastUsage = chunk.usage
-					}
 				}
+				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
 
-				for (const matchedChunk of matcher.final()) {
-					if (matchedChunk.type === "text") {
-						accumulatedText.push(matchedChunk.text)
-					} else if (matchedChunk.type === "reasoning") {
-						accumulatedReasoning.push(matchedChunk.text)
-					}
-					yield matchedChunk
+				if (chunk.usage) {
+					lastUsage = chunk.usage
 				}
+			}
 
-				if (lastUsage) {
-					yield this.processUsageMetrics(lastUsage, modelInfo)
+			for (const matchedChunk of matcher.final()) {
+				if (matchedChunk.type === "text") {
+					accumulatedText.push(matchedChunk.text)
+				} else if (matchedChunk.type === "reasoning") {
+					accumulatedReasoning.push(matchedChunk.text)
 				}
+				yield matchedChunk
+			}
 
-				// Log successful response
-				logHandle.success({
-					text: accumulatedText.join(""),
-					reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
-					toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-					usage: lastUsage,
-				})
-			} catch (error) {
-				logHandle.error(error)
-				throw error
+			if (lastUsage) {
+				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
 			// Non-streaming path
@@ -295,63 +277,40 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			// Start inference logging with actual request params
-			const logHandle = this.inferenceLogger.start(
-				{
-					provider: this.providerName,
-					operation: "createMessage",
-					model: modelId,
-				},
-				requestOptions,
-			)
-
+			let response
 			try {
-				let response
-				try {
-					response = await this.client.chat.completions.create(
-						requestOptions,
-						this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-					)
-				} catch (error) {
-					throw handleOpenAIError(error, this.providerName)
-				}
+				response = await this.client.chat.completions.create(
+					requestOptions,
+					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
-				const message = response.choices?.[0]?.message
+			const message = response.choices?.[0]?.message
 
-				if (message?.tool_calls) {
-					for (const toolCall of message.tool_calls) {
-						if (toolCall.type === "function") {
-							toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
-							yield {
-								type: "tool_call",
-								id: toolCall.id,
-								name: toolCall.function.name,
-								arguments: toolCall.function.arguments,
-							}
+			if (message?.tool_calls) {
+				for (const toolCall of message.tool_calls) {
+					if (toolCall.type === "function") {
+						toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.function.name,
+							arguments: toolCall.function.arguments,
 						}
 					}
 				}
-
-				accumulatedText.push(message?.content || "")
-				yield {
-					type: "text",
-					text: message?.content || "",
-				}
-
-				lastUsage = response.usage
-				yield this.processUsageMetrics(response.usage, modelInfo)
-
-				// Log successful response
-				logHandle.success({
-					text: accumulatedText.join(""),
-					reasoning: accumulatedReasoning.length > 0 ? accumulatedReasoning.join("") : undefined,
-					toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-					usage: lastUsage,
-				})
-			} catch (error) {
-				logHandle.error(error)
-				throw error
 			}
+
+			accumulatedText.push(message?.content || "")
+			yield {
+				type: "text",
+				text: message?.content || "",
+			}
+
+			lastUsage = response.usage
+			yield this.processUsageMetrics(response.usage, modelInfo)
 		}
 	}
 
@@ -454,72 +413,50 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			// Start inference logging with actual request params
-			const logHandle = this.inferenceLogger.start(
-				{
-					provider: this.providerName,
-					operation: "createMessage",
-					model: modelId,
-				},
-				requestOptions,
-			)
-
+			let stream
 			try {
-				let stream
-				try {
-					stream = await this.client.chat.completions.create(
-						requestOptions,
-						methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-					)
-				} catch (error) {
-					throw handleOpenAIError(error, this.providerName)
-				}
-
-				const activeToolCallIds = new Set<string>()
-
-				for await (const chunk of stream) {
-					const delta = chunk.choices?.[0]?.delta
-					const finishReason = chunk.choices?.[0]?.finish_reason
-
-					if (delta) {
-						if (delta.content) {
-							accumulatedText.push(delta.content)
-							yield {
-								type: "text",
-								text: delta.content,
-							}
-						}
-
-						// Track tool calls for logging and use processToolCalls for proper tool_call_end events
-						if (delta.tool_calls) {
-							for (const toolCall of delta.tool_calls) {
-								if (toolCall.id || toolCall.function?.name) {
-									toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
-								}
-							}
-						}
-						yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
-					}
-
-					if (chunk.usage) {
-						lastUsage = chunk.usage
-						yield {
-							type: "usage",
-							inputTokens: chunk.usage.prompt_tokens || 0,
-							outputTokens: chunk.usage.completion_tokens || 0,
-						}
-					}
-				}
-
-				// Log successful response
-				logHandle.success({
-					text: accumulatedText.join(""),
-					toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-					usage: lastUsage,
-				})
+				stream = await this.client.chat.completions.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
 			} catch (error) {
-				logHandle.error(error)
-				throw error
+				throw handleOpenAIError(error, this.providerName)
+			}
+
+			const activeToolCallIds = new Set<string>()
+
+			for await (const chunk of stream) {
+				const delta = chunk.choices?.[0]?.delta
+				const finishReason = chunk.choices?.[0]?.finish_reason
+
+				if (delta) {
+					if (delta.content) {
+						accumulatedText.push(delta.content)
+						yield {
+							type: "text",
+							text: delta.content,
+						}
+					}
+
+					// Track tool calls for logging and use processToolCalls for proper tool_call_end events
+					if (delta.tool_calls) {
+						for (const toolCall of delta.tool_calls) {
+							if (toolCall.id || toolCall.function?.name) {
+								toolCalls.push({ id: toolCall.id, name: toolCall.function?.name })
+							}
+						}
+					}
+					yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
+				}
+
+				if (chunk.usage) {
+					lastUsage = chunk.usage
+					yield {
+						type: "usage",
+						inputTokens: chunk.usage.prompt_tokens || 0,
+						outputTokens: chunk.usage.completion_tokens || 0,
+					}
+				}
 			}
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
@@ -545,61 +482,39 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// This allows O3 models to limit response length when includeMaxTokens is enabled
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
-			// Start inference logging with actual request params
-			const logHandle = this.inferenceLogger.start(
-				{
-					provider: this.providerName,
-					operation: "createMessage",
-					model: modelId,
-				},
-				requestOptions,
-			)
-
+			let response
 			try {
-				let response
-				try {
-					response = await this.client.chat.completions.create(
-						requestOptions,
-						methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-					)
-				} catch (error) {
-					throw handleOpenAIError(error, this.providerName)
-				}
+				response = await this.client.chat.completions.create(
+					requestOptions,
+					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				)
+			} catch (error) {
+				throw handleOpenAIError(error, this.providerName)
+			}
 
-				const message = response.choices?.[0]?.message
-				if (message?.tool_calls) {
-					for (const toolCall of message.tool_calls) {
-						if (toolCall.type === "function") {
-							toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
-							yield {
-								type: "tool_call",
-								id: toolCall.id,
-								name: toolCall.function.name,
-								arguments: toolCall.function.arguments,
-							}
+			const message = response.choices?.[0]?.message
+			if (message?.tool_calls) {
+				for (const toolCall of message.tool_calls) {
+					if (toolCall.type === "function") {
+						toolCalls.push({ id: toolCall.id, name: toolCall.function.name })
+						yield {
+							type: "tool_call",
+							id: toolCall.id,
+							name: toolCall.function.name,
+							arguments: toolCall.function.arguments,
 						}
 					}
 				}
-
-				accumulatedText.push(message?.content || "")
-				yield {
-					type: "text",
-					text: message?.content || "",
-				}
-
-				lastUsage = response.usage
-				yield this.processUsageMetrics(response.usage)
-
-				// Log successful response
-				logHandle.success({
-					text: accumulatedText.join(""),
-					toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
-					usage: lastUsage,
-				})
-			} catch (error) {
-				logHandle.error(error)
-				throw error
 			}
+
+			accumulatedText.push(message?.content || "")
+			yield {
+				type: "text",
+				text: message?.content || "",
+			}
+
+			lastUsage = response.usage
+			yield this.processUsageMetrics(response.usage)
 		}
 	}
 

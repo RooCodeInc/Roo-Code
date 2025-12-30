@@ -8,6 +8,10 @@ vi.mock("node:fs", () => ({
 	},
 }))
 
+vi.mock("../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vi.fn().mockResolvedValue(undefined),
+}))
+
 const mockCreate = vi.fn()
 vi.mock("openai", () => {
 	return {
@@ -28,6 +32,7 @@ import { promises as fs } from "node:fs"
 import { QwenCodeHandler } from "../qwen-code"
 import { NativeToolCallParser } from "../../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../../shared/api"
+import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 describe("QwenCodeHandler Native Tools", () => {
 	let handler: QwenCodeHandler
@@ -52,6 +57,7 @@ describe("QwenCodeHandler Native Tools", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		vi.mocked(safeWriteJson).mockResolvedValue(undefined)
 
 		// Mock credentials file
 		const mockCredentials = {

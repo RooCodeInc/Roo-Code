@@ -45,6 +45,7 @@ import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { normalizeToolSchema } from "../../utils/json-schema"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
 
 /************************************************************************************
  *
@@ -356,6 +357,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		},
 	): ApiStream {
+		const startedAt = Date.now()
+		const shouldLog = ApiInferenceLogger.isEnabled()
+
 		const modelConfig = this.getModel()
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
@@ -483,6 +487,55 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			...(useServiceTier && { service_tier: this.options.awsBedrockServiceTier }),
 		}
 
+		if (shouldLog) {
+			ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${modelConfig.id}]`, payload)
+		}
+
+		const textParts: string[] = []
+		const reasoningParts: string[] = []
+		const toolCallsByIndex = new Map<
+			number,
+			{
+				index: number
+				id?: string
+				name?: string
+				argsParts: string[]
+			}
+		>()
+
+		let lastUsage:
+			| {
+					inputTokens: number
+					outputTokens: number
+					cacheReadTokens: number
+					cacheWriteTokens: number
+			  }
+			| undefined
+
+		const debugEvents: StreamEvent[] = []
+		let totalDebugEvents = 0
+		const MAX_DEBUG_EVENTS = 50
+
+		function appendToolCallPartial(entry: { index: number; id?: string; name?: string; arguments?: string }) {
+			let current = toolCallsByIndex.get(entry.index)
+			if (!current) {
+				current = { index: entry.index, argsParts: [] }
+				toolCallsByIndex.set(entry.index, current)
+			}
+			if (!current.id && entry.id) current.id = entry.id
+			if (!current.name && entry.name) current.name = entry.name
+			if (typeof entry.arguments === "string" && entry.arguments.length > 0)
+				current.argsParts.push(entry.arguments)
+		}
+
+		function tryParseJsonString(input: string): unknown {
+			try {
+				return JSON.parse(input)
+			} catch {
+				return input
+			}
+		}
+
 		// Create AbortController with 10 minute timeout
 		const controller = new AbortController()
 		let timeoutId: NodeJS.Timeout | undefined
@@ -519,6 +572,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					continue
 				}
 
+				totalDebugEvents++
+				if (shouldLog && debugEvents.length < MAX_DEBUG_EVENTS) {
+					debugEvents.push(streamEvent)
+				}
+
 				// Handle metadata events first
 				if (streamEvent.metadata?.usage) {
 					const usage = (streamEvent.metadata?.usage || {}) as UsageType
@@ -528,6 +586,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					const cacheWriteTokens = usage.cacheWriteInputTokens || usage.cacheWriteInputTokenCount || 0
 
 					// Always include all available token information
+					lastUsage = {
+						inputTokens: usage.inputTokens || 0,
+						outputTokens: usage.outputTokens || 0,
+						cacheReadTokens: cacheReadTokens,
+						cacheWriteTokens: cacheWriteTokens,
+					}
+
 					yield {
 						type: "usage",
 						inputTokens: usage.inputTokens || 0,
@@ -592,8 +657,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					// Check if this is a reasoning block (AWS SDK structure)
 					if (cbStart.contentBlock?.reasoningContent) {
 						if (cbStart.contentBlockIndex && cbStart.contentBlockIndex > 0) {
+							reasoningParts.push("\n")
 							yield { type: "reasoning", text: "\n" }
 						}
+						reasoningParts.push(cbStart.contentBlock.reasoningContent.text || "")
 						yield {
 							type: "reasoning",
 							text: cbStart.contentBlock.reasoningContent.text || "",
@@ -605,9 +672,11 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					else if (cbStart.contentBlock?.type === "thinking" || cbStart.content_block?.type === "thinking") {
 						const contentBlock = cbStart.contentBlock || cbStart.content_block
 						if (cbStart.contentBlockIndex && cbStart.contentBlockIndex > 0) {
+							reasoningParts.push("\n")
 							yield { type: "reasoning", text: "\n" }
 						}
 						if (contentBlock?.thinking) {
+							reasoningParts.push(contentBlock.thinking)
 							yield {
 								type: "reasoning",
 								text: contentBlock.thinking,
@@ -618,6 +687,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					else if (cbStart.start?.toolUse || cbStart.contentBlock?.toolUse) {
 						const toolUse = cbStart.start?.toolUse || cbStart.contentBlock?.toolUse
 						if (toolUse) {
+							appendToolCallPartial({
+								index: cbStart.contentBlockIndex ?? 0,
+								id: toolUse.toolUseId,
+								name: toolUse.name,
+								arguments: undefined,
+							})
 							yield {
 								type: "tool_call_partial",
 								index: cbStart.contentBlockIndex ?? 0,
@@ -627,6 +702,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 							}
 						}
 					} else if (cbStart.start?.text) {
+						textParts.push(cbStart.start.text)
 						yield {
 							type: "text",
 							text: cbStart.start.text,
@@ -649,6 +725,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					if (delta) {
 						// Check for reasoningContent property (AWS SDK structure)
 						if (delta.reasoningContent?.text) {
+							reasoningParts.push(delta.reasoningContent.text)
 							yield {
 								type: "reasoning",
 								text: delta.reasoningContent.text,
@@ -658,6 +735,12 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 						// Handle tool use input delta
 						if (delta.toolUse?.input) {
+							appendToolCallPartial({
+								index: cbDelta.contentBlockIndex ?? 0,
+								id: undefined,
+								name: undefined,
+								arguments: delta.toolUse.input,
+							})
 							yield {
 								type: "tool_call_partial",
 								index: cbDelta.contentBlockIndex ?? 0,
@@ -670,11 +753,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 						// Handle alternative thinking structure (fallback for older SDK versions)
 						if (delta.type === "thinking_delta" && delta.thinking) {
+							reasoningParts.push(delta.thinking)
 							yield {
 								type: "reasoning",
 								text: delta.thinking,
 							}
 						} else if (delta.text) {
+							textParts.push(delta.text)
 							yield {
 								type: "text",
 								text: delta.text,
@@ -688,11 +773,50 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 					continue
 				}
 			}
+
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				const toolCalls = Array.from(toolCallsByIndex.values())
+					.sort((a, b) => a.index - b.index)
+					.map((tc) => ({
+						index: tc.index,
+						...(tc.id ? { id: tc.id } : {}),
+						...(tc.name ? { name: tc.name } : {}),
+						...(tc.argsParts.length > 0 ? { arguments: tryParseJsonString(tc.argsParts.join("")) } : {}),
+					}))
+
+				ApiInferenceLogger.logRaw(
+					`[API][response][${this.providerName}][${modelConfig.id}][${durationMs}ms][streaming]`,
+					{
+						model: modelConfig.id,
+						message: {
+							role: "assistant",
+							content: textParts.join(""),
+							...(reasoningParts.length > 0 ? { reasoning: reasoningParts.join("") } : {}),
+							...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+						},
+						...(lastUsage ? { usage: lastUsage } : {}),
+						__stream: {
+							format: "bedrock",
+							totalEvents: totalDebugEvents,
+							events: debugEvents,
+						},
+					},
+				)
+			}
 			// Clear timeout after stream completes
 			clearTimeout(timeoutId)
 		} catch (error: unknown) {
 			// Clear timeout on error
 			clearTimeout(timeoutId)
+
+			if (shouldLog) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRawError(
+					`[API][error][${this.providerName}][${modelConfig.id}][${durationMs}ms]`,
+					error,
+				)
+			}
 
 			// Capture error in telemetry before processing
 			const errorMessage = error instanceof Error ? error.message : String(error)
@@ -748,6 +872,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
+			const startedAt = Date.now()
 			const modelConfig = this.getModel()
 
 			// For completePrompt, thinking is typically not used, but we should still check
@@ -782,8 +907,20 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				inferenceConfig,
 			}
 
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRaw(`[API][request][${this.providerName}][${modelConfig.id}]`, payload)
+			}
+
 			const command = new ConverseCommand(payload)
 			const response = await this.client.send(command)
+
+			if (ApiInferenceLogger.isEnabled()) {
+				const durationMs = Date.now() - startedAt
+				ApiInferenceLogger.logRaw(
+					`[API][response][${this.providerName}][${modelConfig.id}][${durationMs}ms]`,
+					response,
+				)
+			}
 
 			if (
 				response?.output?.message?.content &&
@@ -807,6 +944,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const telemetryErrorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(telemetryErrorMessage, this.providerName, model.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
+
+			if (ApiInferenceLogger.isEnabled()) {
+				ApiInferenceLogger.logRawError(`[API][error][${this.providerName}][${model.id}][0ms]`, error)
+			}
 
 			// Use the extracted error handling method for all errors
 			const errorResult = this.handleBedrockError(error, false) // false for non-streaming context

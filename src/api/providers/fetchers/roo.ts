@@ -5,6 +5,8 @@ import { parseApiPrice } from "../../../shared/cost"
 
 import { DEFAULT_HEADERS } from "../constants"
 import { resolveVersionedSettings, type VersionedSettings } from "./versionedSettings"
+import { ApiInferenceLogger } from "../../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../../logging/logging-fetch"
 
 /**
  * Fetches available models from the Roo Code Cloud provider
@@ -35,7 +37,8 @@ export async function getRooModels(baseUrl: string, apiKey?: string): Promise<Mo
 		const timeoutId = setTimeout(() => controller.abort(), 10000)
 
 		try {
-			const response = await fetch(url, {
+			const fetchFn = ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: "Roo Code Cloud" }) : fetch
+			const response = await fetchFn(url, {
 				headers,
 				signal: controller.signal,
 			})

@@ -15,6 +15,8 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
+import { ApiInferenceLogger } from "../logging/ApiInferenceLogger"
+import { createLoggingFetch } from "../logging/logging-fetch"
 
 /**
  * Converts OpenAI tool_choice to Anthropic ToolChoice format
@@ -74,6 +76,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		this.client = new Anthropic({
 			baseURL,
 			apiKey: options.minimaxApiKey,
+			fetch: ApiInferenceLogger.isEnabled() ? createLoggingFetch({ provider: this.providerName }) : undefined,
 		})
 	}
 

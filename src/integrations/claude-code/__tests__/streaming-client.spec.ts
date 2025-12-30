@@ -1,4 +1,5 @@
 import { CLAUDE_CODE_API_CONFIG } from "../streaming-client"
+import { ApiInferenceLogger } from "../../../api/logging/ApiInferenceLogger"
 
 describe("Claude Code Streaming Client", () => {
 	describe("CLAUDE_CODE_API_CONFIG", () => {
@@ -27,10 +28,46 @@ describe("Claude Code Streaming Client", () => {
 
 		beforeEach(() => {
 			originalFetch = global.fetch
+			// Ensure we start from disabled state per test
+			ApiInferenceLogger.configure({ enabled: false, sink: () => {} })
 		})
 
 		afterEach(() => {
 			global.fetch = originalFetch
+		})
+
+		test("should wrap fetch with logging when ApiInferenceLogger is enabled", async () => {
+			const sink = vi.fn()
+			ApiInferenceLogger.configure({ enabled: true, sink })
+
+			const emptyStream = new ReadableStream<Uint8Array>({
+				start(controller) {
+					controller.close()
+				},
+			})
+
+			const mockFetch = vi
+				.fn()
+				.mockResolvedValue(new Response(emptyStream, { headers: { "content-type": "text/event-stream" } }))
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [{ role: "user", content: "Hello" }],
+			})
+
+			for await (const _ of stream) {
+				// drain
+			}
+
+			expect(sink).toHaveBeenCalledWith(
+				expect.stringMatching(/^\[API\]\[request\]\[Claude Code\]\[.+\]$/),
+				expect.anything(),
+			)
 		})
 
 		test("should make request with correct headers", async () => {
