@@ -195,4 +195,34 @@ describe("Claude Code OAuth", () => {
 			expect(CLAUDE_CODE_OAUTH_CONFIG.callbackPort).toBe(54545)
 		})
 	})
+
+	describe("refresh token behavior", () => {
+		test("refresh responses may omit refresh_token (should be tolerated)", async () => {
+			const { refreshAccessToken } = await import("../oauth")
+
+			// Mock fetch to return a refresh response with no refresh_token
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					access_token: "new-access",
+					expires_in: 3600,
+					// refresh_token intentionally omitted
+				}),
+			})
+			global.fetch = mockFetch as any
+
+			const creds = {
+				type: "claude" as const,
+				access_token: "old-access",
+				refresh_token: "old-refresh",
+				expired: new Date(Date.now() - 1000).toISOString(),
+				email: "test@example.com",
+			}
+
+			const refreshed = await refreshAccessToken(creds)
+			expect(refreshed.access_token).toBe("new-access")
+			expect(refreshed.refresh_token).toBe("old-refresh")
+			expect(refreshed.email).toBe("test@example.com")
+		})
+	})
 })

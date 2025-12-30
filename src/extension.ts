@@ -96,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	TerminalRegistry.initialize()
 
 	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context)
+	claudeCodeOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []

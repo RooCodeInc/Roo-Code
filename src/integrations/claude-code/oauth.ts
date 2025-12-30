@@ -31,11 +31,73 @@ export type ClaudeCodeCredentials = z.infer<typeof claudeCodeCredentialsSchema>
 // Token response schema from Anthropic
 const tokenResponseSchema = z.object({
 	access_token: z.string(),
-	refresh_token: z.string(),
+	// Refresh responses may omit refresh_token (common OAuth behavior). When omitted,
+	// callers must preserve the existing refresh token.
+	refresh_token: z.string().min(1).optional(),
 	expires_in: z.number(),
 	email: z.string().optional(),
 	token_type: z.string().optional(),
 })
+
+class ClaudeCodeOAuthTokenError extends Error {
+	public readonly status?: number
+	public readonly errorCode?: string
+
+	constructor(message: string, opts?: { status?: number; errorCode?: string }) {
+		super(message)
+		this.name = "ClaudeCodeOAuthTokenError"
+		this.status = opts?.status
+		this.errorCode = opts?.errorCode
+	}
+
+	public isLikelyInvalidGrant(): boolean {
+		if (this.errorCode && /invalid_grant/i.test(this.errorCode)) {
+			return true
+		}
+		if (this.status === 400 || this.status === 401 || this.status === 403) {
+			return /invalid_grant|revoked|expired|invalid refresh/i.test(this.message)
+		}
+		return false
+	}
+}
+
+function parseOAuthErrorDetails(errorText: string): { errorCode?: string; errorMessage?: string } {
+	try {
+		const json: unknown = JSON.parse(errorText)
+		if (!json || typeof json !== "object") {
+			return {}
+		}
+
+		const obj = json as Record<string, unknown>
+		const errorField = obj.error
+
+		const errorCode: string | undefined =
+			typeof errorField === "string"
+				? errorField
+				: errorField &&
+					  typeof errorField === "object" &&
+					  typeof (errorField as Record<string, unknown>).type === "string"
+					? ((errorField as Record<string, unknown>).type as string)
+					: undefined
+
+		const errorDescription = obj.error_description
+		const errorMessageFromError =
+			errorField && typeof errorField === "object" ? (errorField as Record<string, unknown>).message : undefined
+
+		const errorMessage: string | undefined =
+			typeof errorDescription === "string"
+				? errorDescription
+				: typeof errorMessageFromError === "string"
+					? errorMessageFromError
+					: typeof obj.message === "string"
+						? obj.message
+						: undefined
+
+		return { errorCode, errorMessage }
+	} catch {
+		return {}
+	}
+}
 
 /**
  * Generates a cryptographically random PKCE code verifier
@@ -134,6 +196,11 @@ export async function exchangeCodeForTokens(
 	const data = await response.json()
 	const tokenResponse = tokenResponseSchema.parse(data)
 
+	if (!tokenResponse.refresh_token) {
+		// The access token is unusable without a refresh token for persistence.
+		throw new Error("Token exchange did not return a refresh_token")
+	}
+
 	// Calculate expiry time
 	const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000)
 
@@ -149,11 +216,11 @@ export async function exchangeCodeForTokens(
 /**
  * Refreshes the access token using the refresh token
  */
-export async function refreshAccessToken(refreshToken: string): Promise<ClaudeCodeCredentials> {
+export async function refreshAccessToken(credentials: ClaudeCodeCredentials): Promise<ClaudeCodeCredentials> {
 	const body = {
 		grant_type: "refresh_token",
 		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
-		refresh_token: refreshToken,
+		refresh_token: credentials.refresh_token,
 	}
 
 	const response = await fetch(CLAUDE_CODE_OAUTH_CONFIG.tokenEndpoint, {
@@ -167,7 +234,12 @@ export async function refreshAccessToken(refreshToken: string): Promise<ClaudeCo
 
 	if (!response.ok) {
 		const errorText = await response.text()
-		throw new Error(`Token refresh failed: ${response.status} ${response.statusText} - ${errorText}`)
+		const { errorCode, errorMessage } = parseOAuthErrorDetails(errorText)
+		const details = errorMessage ? errorMessage : errorText
+		throw new ClaudeCodeOAuthTokenError(
+			`Token refresh failed: ${response.status} ${response.statusText}${details ? ` - ${details}` : ""}`,
+			{ status: response.status, errorCode },
+		)
 	}
 
 	const data = await response.json()
@@ -179,9 +251,9 @@ export async function refreshAccessToken(refreshToken: string): Promise<ClaudeCo
 	return {
 		type: "claude",
 		access_token: tokenResponse.access_token,
-		refresh_token: tokenResponse.refresh_token,
+		refresh_token: tokenResponse.refresh_token ?? credentials.refresh_token,
 		expired: expiresAt.toISOString(),
-		email: tokenResponse.email,
+		email: tokenResponse.email ?? credentials.email,
 	}
 }
 
@@ -200,17 +272,80 @@ export function isTokenExpired(credentials: ClaudeCodeCredentials): boolean {
 export class ClaudeCodeOAuthManager {
 	private context: ExtensionContext | null = null
 	private credentials: ClaudeCodeCredentials | null = null
+	private logFn: ((message: string) => void) | null = null
+	private refreshPromise: Promise<ClaudeCodeCredentials> | null = null
 	private pendingAuth: {
 		codeVerifier: string
 		state: string
 		server?: http.Server
 	} | null = null
 
+	private log(message: string): void {
+		if (this.logFn) {
+			this.logFn(message)
+		} else {
+			console.log(message)
+		}
+	}
+
+	private logError(message: string, error?: unknown): void {
+		const details = error instanceof Error ? error.message : error !== undefined ? String(error) : undefined
+		const full = details ? `${message} ${details}` : message
+		this.log(full)
+		console.error(full)
+	}
+
 	/**
 	 * Initialize the OAuth manager with VS Code extension context
 	 */
-	initialize(context: ExtensionContext): void {
+	initialize(context: ExtensionContext, logFn?: (message: string) => void): void {
 		this.context = context
+		this.logFn = logFn ?? null
+	}
+
+	/**
+	 * Force a refresh using the stored refresh token even if the access token is not expired.
+	 * Useful when the server invalidates an access token early.
+	 */
+	async forceRefreshAccessToken(): Promise<string | null> {
+		if (!this.credentials) {
+			await this.loadCredentials()
+		}
+
+		if (!this.credentials) {
+			return null
+		}
+
+		try {
+			// De-dupe concurrent refreshes
+			if (!this.refreshPromise) {
+				const prevRefreshToken = this.credentials.refresh_token
+				this.log(`[claude-code-oauth] Forcing token refresh (expired=${this.credentials.expired})...`)
+				this.refreshPromise = refreshAccessToken(this.credentials).then((newCreds) => {
+					const rotated = newCreds.refresh_token !== prevRefreshToken
+					this.log(
+						`[claude-code-oauth] Forced refresh response received (expires_in≈${Math.round(
+							(new Date(newCreds.expired).getTime() - Date.now()) / 1000,
+						)}s, refresh_token_rotated=${rotated})`,
+					)
+					return newCreds
+				})
+			}
+
+			const newCredentials = await this.refreshPromise
+			this.refreshPromise = null
+			await this.saveCredentials(newCredentials)
+			this.log(`[claude-code-oauth] Forced token persisted (expired=${newCredentials.expired})`)
+			return newCredentials.access_token
+		} catch (error) {
+			this.refreshPromise = null
+			this.logError("[claude-code-oauth] Failed to force refresh token:", error)
+			if (error instanceof ClaudeCodeOAuthTokenError && error.isLikelyInvalidGrant()) {
+				this.log("[claude-code-oauth] Refresh token appears invalid; clearing stored credentials")
+				await this.clearCredentials()
+			}
+			return null
+		}
 	}
 
 	/**
@@ -231,7 +366,7 @@ export class ClaudeCodeOAuthManager {
 			this.credentials = claudeCodeCredentialsSchema.parse(parsed)
 			return this.credentials
 		} catch (error) {
-			console.error("[claude-code-oauth] Failed to load credentials:", error)
+			this.logError("[claude-code-oauth] Failed to load credentials:", error)
 			return null
 		}
 	}
@@ -276,12 +411,36 @@ export class ClaudeCodeOAuthManager {
 		// Check if token is expired and refresh if needed
 		if (isTokenExpired(this.credentials)) {
 			try {
-				const newCredentials = await refreshAccessToken(this.credentials.refresh_token)
+				// De-dupe concurrent refreshes
+				if (!this.refreshPromise) {
+					this.log(
+						`[claude-code-oauth] Access token expired (expired=${this.credentials.expired}). Refreshing...`,
+					)
+					const prevRefreshToken = this.credentials.refresh_token
+					this.refreshPromise = refreshAccessToken(this.credentials).then((newCreds) => {
+						const rotated = newCreds.refresh_token !== prevRefreshToken
+						this.log(
+							`[claude-code-oauth] Refresh response received (expires_in≈${Math.round(
+								(new Date(newCreds.expired).getTime() - Date.now()) / 1000,
+							)}s, refresh_token_rotated=${rotated})`,
+						)
+						return newCreds
+					})
+				}
+
+				const newCredentials = await this.refreshPromise
+				this.refreshPromise = null
 				await this.saveCredentials(newCredentials)
+				this.log(`[claude-code-oauth] Token persisted (expired=${newCredentials.expired})`)
 			} catch (error) {
-				console.error("[claude-code-oauth] Failed to refresh token:", error)
-				// Clear invalid credentials
-				await this.clearCredentials()
+				this.refreshPromise = null
+				this.logError("[claude-code-oauth] Failed to refresh token:", error)
+
+				// Only clear secrets when the refresh token is clearly invalid/revoked.
+				if (error instanceof ClaudeCodeOAuthTokenError && error.isLikelyInvalidGrant()) {
+					this.log("[claude-code-oauth] Refresh token appears invalid; clearing stored credentials")
+					await this.clearCredentials()
+				}
 				return null
 			}
 		}
