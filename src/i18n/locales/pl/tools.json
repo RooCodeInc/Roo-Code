@@ -25,7 +25,7 @@
 		"invalidImageFormat": "Otrzymano nieprawidłowy format obrazu",
 		"unknownError": "Wystąpił nieznany błąd",
 		"roo": {
-			"authRequired": "Uwierzytelnienie Roo Code Cloud jest wymagane do generowania obrazów. Zaloguj się do Roo Code Cloud."
+			"authRequired": "Uwierzytelnienie Datacoves Copilot Cloud jest wymagane do generowania obrazów. Zaloguj się do Datacoves Copilot Cloud."
 		}
 	}
 }

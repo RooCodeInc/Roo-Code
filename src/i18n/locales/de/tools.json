@@ -25,7 +25,7 @@
 		"invalidImageFormat": "Ungültiges Bildformat erhalten",
 		"unknownError": "Unbekannter Fehler aufgetreten",
 		"roo": {
-			"authRequired": "Roo Code Cloud-Authentifizierung ist für die Bildgenerierung erforderlich. Bitte melde dich bei Roo Code Cloud an."
+			"authRequired": "Datacoves Copilot Cloud-Authentifizierung ist für die Bildgenerierung erforderlich. Bitte melde dich bei Datacoves Copilot Cloud an."
 		}
 	}
 }

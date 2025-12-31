@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Datacoves Copilot",
 		"description": "您編輯器中的完整 AI 開發團隊。"
 	},
 	"number_format": {
@@ -120,7 +120,7 @@
 			"completionError": "Cerebras 完成錯誤：{{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
+			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Datacoves Copilot Cloud。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 金鑰包含無效字元。"
@@ -214,8 +214,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "您的組織需要 Roo Code Cloud 身份驗證。請登入以繼續。",
-			"organization_mismatch": "您必須使用組織的 Roo Code Cloud 帳戶進行身份驗證。",
+			"cloud_auth_required": "您的組織需要 Datacoves Copilot Cloud 身份驗證。請登入以繼續。",
+			"organization_mismatch": "您必須使用組織的 Datacoves Copilot Cloud 帳戶進行身份驗證。",
 			"manual_url_empty": "請輸入有效的回呼 URL",
 			"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",
 			"manual_url_missing_params": "無效的回呼 URL：缺少必要參數（code 和 state）",

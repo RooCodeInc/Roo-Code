@@ -25,7 +25,7 @@
 		"invalidImageFormat": "अमान्य छवि प्रारूप प्राप्त हुआ",
 		"unknownError": "एक अज्ञात त्रुटि हुई",
 		"roo": {
-			"authRequired": "छवि निर्माण के लिए Roo Code Cloud प्रमाणीकरण आवश्यक है। कृपया Roo Code Cloud में साइन इन करें।"
+			"authRequired": "छवि निर्माण के लिए Datacoves Copilot Cloud प्रमाणीकरण आवश्यक है। कृपया Datacoves Copilot Cloud में साइन इन करें।"
 		}
 	}
 }
