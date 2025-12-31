@@ -1165,21 +1165,6 @@ export const ChatRowContent = ({
 					)
 				case "api_req_rate_limit_wait": {
 					const isWaiting = message.partial === true
-					const getIconSpan = (iconName: string, color: string) => (
-						<div
-							style={{
-								width: 16,
-								height: 16,
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}>
-							<span
-								className={`codicon codicon-${iconName}`}
-								style={{ color, fontSize: 16, marginBottom: "-1.5px" }}
-							/>
-						</div>
-					)
 
 					const waitSeconds = (() => {
 						if (!message.text) return undefined
@@ -1191,25 +1176,21 @@ export const ChatRowContent = ({
 						}
 					})()
 
-					return (
+					return isWaiting && waitSeconds !== undefined ? (
 						<div
-							className={`group text-sm transition-opacity ${isWaiting ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+							className={`group text-sm transition-opacity opacity-100`}
 							style={{
 								...headerStyle,
 								marginBottom: 0,
 								justifyContent: "space-between",
 							}}>
 							<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
-								{isWaiting ? <ProgressIndicator /> : getIconSpan("clock", cancelledColor)}
+								<ProgressIndicator />
 								<span style={{ color: normalColor }}>{t("chat:apiRequest.rateLimitWait")}</span>
 							</div>
-							{isWaiting && waitSeconds !== undefined && (
-								<span className="text-xs font-light text-vscode-descriptionForeground">
-									{waitSeconds}s
-								</span>
-							)}
+							<span className="text-xs font-light text-vscode-descriptionForeground">{waitSeconds}s</span>
 						</div>
-					)
+					) : null
 				}
 				case "api_req_finished":
 					return null // we should never see this message type
