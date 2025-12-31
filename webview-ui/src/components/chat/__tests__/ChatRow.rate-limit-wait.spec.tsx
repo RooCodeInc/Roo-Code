@@ -59,7 +59,7 @@ describe("ChatRow - rate limit wait", () => {
 		expect(screen.queryByText("Details")).toBeNull()
 	})
 
-	it("renders a greyed-out completed row with a clock icon when wait is complete", () => {
+	it("renders nothing when rate limit wait is complete", () => {
 		const message: any = {
 			type: "say",
 			say: "api_req_rate_limit_wait",
@@ -68,12 +68,11 @@ describe("ChatRow - rate limit wait", () => {
 			text: undefined,
 		}
 
-		renderChatRow(message)
+		const { container } = renderChatRow(message)
 
-		expect(screen.getByText("Rate limiting")).toBeInTheDocument()
-		// Completed row should not show countdown
-		expect(screen.queryByText(/\ds/)).toBeNull()
-		// And should render a clock icon (codicon-clock) in the DOM.
-		expect(document.querySelector(".codicon-clock")).not.toBeNull()
+		// The row should be hidden when rate limiting is complete
+		expect(screen.queryByText("Rate limiting")).toBeNull()
+		// Nothing should be rendered
+		expect(container.firstChild).toBeNull()
 	})
 })
