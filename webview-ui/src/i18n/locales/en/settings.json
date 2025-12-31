@@ -54,7 +54,7 @@
 		}
 	},
 	"prompts": {
-		"description": "Configure support prompts that are used for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help Roo provide better assistance for common development tasks."
+		"description": "Configure support prompts that are used for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help Copilot provide better assistance for common development tasks."
 	},
 	"codeIndex": {
 		"title": "Codebase Indexing",
@@ -170,10 +170,10 @@
 		"enabled": "Auto-Approve Enabled",
 		"readOnly": {
 			"label": "Read",
-			"description": "When enabled, Roo will automatically view directory contents and read files without requiring you to click the Approve button.",
+			"description": "When enabled, Copilot will automatically view directory contents and read files without requiring you to click the Approve button.",
 			"outsideWorkspace": {
 				"label": "Include files outside workspace",
-				"description": "Allow Roo to read files outside the current workspace without requiring approval."
+				"description": "Allow Copilot to read files outside the current workspace without requiring approval."
 			}
 		},
 		"write": {
@@ -182,11 +182,11 @@
 			"delayLabel": "Delay after writes to allow diagnostics to detect potential problems",
 			"outsideWorkspace": {
 				"label": "Include files outside workspace",
-				"description": "Allow Roo to create and edit files outside the current workspace without requiring approval."
+				"description": "Allow Copilot to create and edit files outside the current workspace without requiring approval."
 			},
 			"protected": {
 				"label": "Include protected files",
-				"description": "Allow Roo to create and edit protected files (like .rooignore and .roo/ configuration files) without requiring approval."
+				"description": "Allow Copilot to create and edit protected files (like .rooignore and .roo/ configuration files) without requiring approval."
 			}
 		},
 		"browser": {
@@ -484,7 +484,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Error & Repetition Limit",
-			"description": "Number of consecutive errors or repeated actions before showing 'Roo is having trouble' dialog. Set to 0 to disable this safety mechanism (it will never trigger).",
+			"description": "Number of consecutive errors or repeated actions before showing 'Copilot is having trouble' dialog. Set to 0 to disable this safety mechanism (it will never trigger).",
 			"unlimitedDescription": "Unlimited retries enabled (auto-proceed). The dialog will never appear.",
 			"warning": "⚠️ Setting to 0 allows unlimited retries which may consume significant API usage"
 		},
@@ -516,7 +516,7 @@
 	"browser": {
 		"enable": {
 			"label": "Enable browser tool",
-			"description": "When enabled, Roo can use a browser to interact with websites when using models that support computer use. <0>Learn more</0>"
+			"description": "When enabled, Copilot can use a browser to interact with websites when using models that support computer use. <0>Learn more</0>"
 		},
 		"viewport": {
 			"label": "Viewport size",
@@ -548,18 +548,18 @@
 		},
 		"enable": {
 			"label": "Enable automatic checkpoints",
-			"description": "When enabled, Roo will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states. <0>Learn more</0>"
+			"description": "When enabled, Copilot will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states. <0>Learn more</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Enable sound effects",
-			"description": "When enabled, Roo will play sound effects for notifications and events.",
+			"description": "When enabled, Copilot will play sound effects for notifications and events.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Enable text-to-speech",
-			"description": "When enabled, Roo will read aloud its responses using text-to-speech.",
+			"description": "When enabled, Copilot will read aloud its responses using text-to-speech.",
 			"speedLabel": "Speed"
 		}
 	},
@@ -567,7 +567,7 @@
 		"description": "Control what information is included in the AI's context window, affecting token usage and response quality",
 		"autoCondenseContextPercent": {
 			"label": "Threshold to trigger intelligent context condensing",
-			"description": "When the context window reaches this threshold, Roo will automatically condense it."
+			"description": "When the context window reaches this threshold, Copilot will automatically condense it."
 		},
 		"condensingApiConfiguration": {
 			"label": "API Configuration for Context Condensing",
@@ -583,7 +583,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Automatically trigger intelligent context condensing",
-			"description": "When enabled, Roo will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
+			"description": "When enabled, Copilot will automatically condense the context when the threshold is reached. When disabled, you can still manually trigger context condensing."
 		},
 		"openTabs": {
 			"label": "Open tabs context limit",
@@ -603,7 +603,7 @@
 		},
 		"maxReadFile": {
 			"label": "File read auto-truncate threshold",
-			"description": "Roo reads this number of lines when the model omits start/end values. If this number is less than the file's total, Roo generates a line number index of code definitions. Special cases: -1 instructs Roo to read the entire file (without indexing), and 0 instructs it to read no lines and provides line indexes only for minimal context. Lower values minimize initial context usage, enabling precise subsequent line-range reads. Explicit start/end requests are not limited by this setting.",
+			"description": "Copilot reads this number of lines when the model omits start/end values. If this number is less than the file's total, Copilot generates a line number index of code definitions. Special cases: -1 instructs Copilot to read the entire file (without indexing), and 0 instructs it to read no lines and provides line indexes only for minimal context. Lower values minimize initial context usage, enabling precise subsequent line-range reads. Explicit start/end requests are not limited by this setting.",
 			"lines": "lines",
 			"always_full_read": "Always read entire file"
 		},
@@ -666,11 +666,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminal output limit",
-			"description": "Keeps the first and last lines and drops the middle to stay under the limit. Lower to save tokens; raise to give Roo more middle detail. Roo sees a placeholder where the content is skipped.<0>Learn more</0>"
+			"description": "Keeps the first and last lines and drops the middle to stay under the limit. Lower to save tokens; raise to give Copilot more middle detail. Copilot sees a placeholder where the content is skipped.<0>Learn more</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal character limit",
-			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
+			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Copilot where content is skipped. <0>Learn more</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell integration timeout",
@@ -678,7 +678,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Use Inline Terminal (recommended)",
-			"description": "Run commands in the Inline Terminal (chat) to bypass shell profiles/integration for faster, more reliable runs. When disabled Roo uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
+			"description": "Run commands in the Inline Terminal (chat) to bypass shell profiles/integration for faster, more reliable runs. When disabled Copilot uses the VS Code terminal with your shell profile, prompts, and plugins. <0>Learn more</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal command delay",
@@ -718,7 +718,7 @@
 	},
 	"toolProtocol": {
 		"label": "Tool Call Protocol",
-		"description": "Choose how Roo communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions.",
+		"description": "Choose how Copilot communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions.",
 		"default": "Default",
 		"xml": "XML",
 		"native": "Native",
@@ -727,7 +727,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Enable editing through diffs",
-			"description": "When enabled, Roo will be able to edit files more quickly and will automatically reject truncated full-file writes",
+			"description": "When enabled, Copilot will be able to edit files more quickly and will automatically reject truncated full-file writes",
 			"strategy": {
 				"label": "Diff strategy",
 				"options": {
@@ -748,7 +748,7 @@
 		},
 		"todoList": {
 			"label": "Enable todo list tool",
-			"description": "When enabled, Roo can create and manage todo lists to track task progress. This helps organize complex tasks into manageable steps."
+			"description": "When enabled, Copilot can create and manage todo lists to track task progress. This helps organize complex tasks into manageable steps."
 		}
 	},
 	"experimental": {
@@ -758,19 +758,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Use experimental insert content tool",
-			"description": "Enable the experimental insert content tool, allowing Roo to insert content at specific line numbers without needing to create a diff."
+			"description": "Enable the experimental insert content tool, allowing Copilot to insert content at specific line numbers without needing to create a diff."
 		},
 		"POWER_STEERING": {
 			"name": "Use experimental \"power steering\" mode",
-			"description": "When enabled, Roo will remind the model about the details of its current mode definition more frequently. This will lead to stronger adherence to role definitions and custom instructions, but will use more tokens per message."
+			"description": "When enabled, Copilot will remind the model about the details of its current mode definition more frequently. This will lead to stronger adherence to role definitions and custom instructions, but will use more tokens per message."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Enable concurrent file reads",
-			"description": "When enabled, Roo can read multiple files in a single request. When disabled, Roo must read files one at a time. Disabling this can help when working with less capable models or when you want more control over file access."
+			"description": "When enabled, Copilot can read multiple files in a single request. When disabled, Copilot must read files one at a time. Disabling this can help when working with less capable models or when you want more control over file access."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Use experimental multi block diff tool",
-			"description": "When enabled, Roo will use multi block diff tool. This will try to update multiple code blocks in the file in one request."
+			"description": "When enabled, Copilot will use multi block diff tool. This will try to update multiple code blocks in the file in one request."
 		},
 		"MARKETPLACE": {
 			"name": "Enable Marketplace",
@@ -778,11 +778,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Enable concurrent file edits",
-			"description": "When enabled, Roo can edit multiple files in a single request. When disabled, Roo must edit files one at a time. Disabling this can help when working with less capable models or when you want more control over file modifications."
+			"description": "When enabled, Copilot can edit multiple files in a single request. When disabled, Copilot must edit files one at a time. Disabling this can help when working with less capable models or when you want more control over file modifications."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Background editing",
-			"description": "Prevent editor focus disruption when enabled. File edits happen in the background without opening diff views or stealing focus. You can continue working uninterrupted while Roo makes changes. Files can be opened without focus to capture diagnostics or kept closed entirely."
+			"description": "Prevent editor focus disruption when enabled. File edits happen in the background without opening diff views or stealing focus. You can continue working uninterrupted while Copilot makes changes. Files can be opened without focus to capture diagnostics or kept closed entirely."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Use new message parser",
@@ -794,7 +794,7 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Enable AI image generation",
-			"description": "When enabled, Roo can generate images from text prompts using image generation models.",
+			"description": "When enabled, Copilot can generate images from text prompts using image generation models.",
 			"providerLabel": "Provider",
 			"providerDescription": "Select which provider to use for image generation.",
 			"openRouterApiKeyLabel": "OpenRouter API Key",
@@ -807,7 +807,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
-			"description": "When enabled, Roo can run your slash commands to execute workflows."
+			"description": "When enabled, Copilot can run your slash commands to execute workflows."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallel tool calls",
@@ -815,7 +815,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Enable custom tools",
-			"description": "When enabled, Roo can load and use custom TypeScript/JavaScript tools from your project's .roo/tools directory or ~/.roo/tools for global tools. Note: these tools will automatically be auto-approved.",
+			"description": "When enabled, Copilot can load and use custom TypeScript/JavaScript tools from your project's .roo/tools directory or ~/.roo/tools for global tools. Note: these tools will automatically be auto-approved.",
 			"toolsHeader": "Available Custom Tools",
 			"noTools": "No custom tools loaded. Add .ts or .js files to your project's .roo/tools directory or ~/.roo/tools for global tools.",
 			"refreshButton": "Refresh",
@@ -827,7 +827,7 @@
 	},
 	"promptCaching": {
 		"label": "Disable prompt caching",
-		"description": "When checked, Roo will not use prompt caching for this model."
+		"description": "When checked, Copilot will not use prompt caching for this model."
 	},
 	"temperature": {
 		"useCustom": "Use custom temperature",

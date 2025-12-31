@@ -8,7 +8,7 @@
 		"editModesConfig": "Edit modes configuration",
 		"editGlobalModes": "Edit Global Modes",
 		"editProjectModes": "Edit Project Modes (.roomodes)",
-		"createModeHelpText": "Modes are specialized personas that tailor Roo's behavior. <0>Learn about Using Modes</0> or <1>Customizing Modes.</1>",
+		"createModeHelpText": "Modes are specialized personas that tailor Copilot's behavior. <0>Learn about Using Modes</0> or <1>Customizing Modes.</1>",
 		"selectMode": "Search modes",
 		"noMatchFound": "No modes found"
 	},
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Role Definition",
 		"resetToDefault": "Reset to default",
-		"description": "Define Roo's expertise and personality for this mode. This description shapes how Roo presents itself and approaches tasks."
+		"description": "Define Copilot's expertise and personality for this mode. This description shapes how Copilot presents itself and approaches tasks."
 	},
 	"description": {
 		"title": "Short description (for humans)",
@@ -43,7 +43,7 @@
 	},
 	"whenToUse": {
 		"title": "When to Use (optional)",
-		"description": "Guidance for Roo for when this mode should be used. This helps the Orchestrator choose the right mode for a task.",
+		"description": "Guidance for Copilot for when this mode should be used. This helps the Orchestrator choose the right mode for a task.",
 		"resetToDefault": "Reset to default 'When to Use' description"
 	},
 	"customInstructions": {
@@ -105,7 +105,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Enhance Prompt",
-				"description": "Use prompt enhancement to get tailored suggestions or improvements for your inputs. This ensures Roo understands your intent and provides the best possible responses. Available via the ✨ icon in chat."
+				"description": "Use prompt enhancement to get tailored suggestions or improvements for your inputs. This ensures Copilot understands your intent and provides the best possible responses. Available via the ✨ icon in chat."
 			},
 			"CONDENSE": {
 				"label": "Context Condensing",
@@ -174,7 +174,7 @@
 		},
 		"roleDefinition": {
 			"label": "Role Definition",
-			"description": "Define Roo's expertise and personality for this mode."
+			"description": "Define Copilot's expertise and personality for this mode."
 		},
 		"description": {
 			"label": "Short description (for humans)",
@@ -182,7 +182,7 @@
 		},
 		"whenToUse": {
 			"label": "When to Use (optional)",
-			"description": "Guidance for Roo for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
+			"description": "Guidance for Copilot for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
 		},
 		"tools": {
 			"label": "Available Tools",
