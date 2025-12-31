@@ -7,7 +7,7 @@ const RooHero = () => {
 	})
 
 	return (
-		<div className="mb-4 relative forced-color-adjust-none group flex flex-col items-center w-30 pt-4 overflow-clip">
+		<div className="mb-4 relative forced-color-adjust-none group flex flex-col items-center w-full pt-4">
 			<div
 				style={{
 					backgroundColor: "var(--vscode-foreground)",
@@ -18,17 +18,9 @@ const RooHero = () => {
 					maskRepeat: "no-repeat",
 					maskSize: "contain",
 				}}
-				className="z-5 mr-auto group-hover:animate-bounce translate-y-0 transition-transform duration-500">
-				<img src={imagesBaseUri + "/datacoves-logo.svg"} alt="Datacoves logo" className="h-8 opacity-0" />
+				className="z-5 mx-auto group-hover:animate-bounce translate-y-0 transition-transform duration-500">
+				<img src={imagesBaseUri + "/datacoves-logo.svg"} alt="Datacoves logo" className="h-12 opacity-0" />
 			</div>
-			<div
-				className="w-[200%] -mt-0.25 h-0.5 overflow-hidden opacity-0 group-hover:opacity-70 transition-opacity duration-300"
-				data-testid="roo-hero-ground">
-				<div className="w-full border-b-1 group-hover:border-b-1 border-dashed border-vscode-foreground animate-ground-slide" />
-			</div>
-			<div className="z-4 bg-gradient-to-r from-transparent to-vscode-sideBar-background absolute top-0 right-0 bottom-0 w-10 opacity-100" />
-			<div className="z-3 bg-gradient-to-l from-transparent to-vscode-sideBar-background absolute top-0 left-0 bottom-0 w-10 opacity-100" />
-			<div className="bg-vscode-foreground/10 rounded-full size-10 z-1 absolute -bottom-4 animate-sun opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-[2px]" />
 		</div>
 	)
 }

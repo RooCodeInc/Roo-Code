@@ -21,8 +21,8 @@ const RooTips = () => {
 	const { t } = useTranslation("chat")
 
 	return (
-		<div className="flex flex-col gap-2 mb-4 max-w-[500px] text-vscode-descriptionForeground">
-			<p className="my-0 pr-2">
+		<div className="flex flex-col items-center gap-4 mb-4 w-full text-vscode-descriptionForeground">
+			<p className="my-0 text-center text-base">
 				<Trans
 					i18nKey="chat:about"
 					components={{
@@ -35,10 +35,10 @@ const RooTips = () => {
 					}}
 				/>
 			</p>
-			<div className="gap-4">
+			<div className="flex flex-col gap-3 mt-2">
 				{tips.map((tip) => (
-					<div key={tip.titleKey} className="flex items-start gap-2 mt-2 mr-6 leading-relaxed">
-						{tip.icon}
+					<div key={tip.titleKey} className="flex items-start gap-3 leading-relaxed text-base">
+						<span className="mt-0.5">{tip.icon}</span>
 						<span>
 							<strong>{t(tip.titleKey)}</strong>: {t(tip.descriptionKey)}
 						</span>
