@@ -1,4 +1,6 @@
-// Manual test for parseThemeString function
+import { parseThemeString } from "../getTheme"
+
+// Test cases for parseThemeString function
 // This tests the JSON parsing with comments and trailing commas
 
 const testCases = [
@@ -48,32 +50,6 @@ const testCases = [
 		shouldParse: true,
 	},
 ]
-
-function parseThemeString(themeString: string | undefined): any {
-	if (!themeString) {
-		return {}
-	}
-
-	// Remove comment lines
-	const withoutComments = themeString
-		.split("\n")
-		.filter((line) => {
-			return !line.trim().startsWith("//")
-		})
-		.join("\n")
-
-	// Remove trailing commas before closing braces/brackets
-	// This handles cases where removing comments leaves trailing commas
-	const cleaned = withoutComments.replace(/,(\s*[}\]])/g, "$1")
-
-	try {
-		return JSON.parse(cleaned)
-	} catch (e) {
-		console.error("Error parsing theme string:", e)
-		console.error("Cleaned theme string:", cleaned)
-		return {}
-	}
-}
 
 describe("parseThemeString", () => {
 	testCases.forEach(({ name, input, shouldParse }) => {

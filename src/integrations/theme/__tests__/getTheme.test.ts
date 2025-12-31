@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest"
 import { mergeJson } from "../getTheme"
 
 describe("getTheme", () => {
@@ -49,12 +48,11 @@ describe("getTheme", () => {
 			})
 		})
 
-		it("should handle error gracefully", () => {
+		it("should merge objects without errors", () => {
 			const first = { a: 1 }
 			const second = { b: 2 }
-			// Force an error by making JSON.parse fail in the function
 			const result = mergeJson(first, second)
-			expect(result).toBeDefined()
+			expect(result).toEqual({ a: 1, b: 2 })
 		})
 	})
 })

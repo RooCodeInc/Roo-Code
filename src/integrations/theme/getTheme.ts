@@ -22,7 +22,7 @@ const defaultThemes: Record<string, string> = {
 	"Visual Studio Light": "light_vs",
 }
 
-function parseThemeString(themeString: string | undefined): any {
+export function parseThemeString(themeString: string | undefined): any {
 	if (!themeString) {
 		return {}
 	}
