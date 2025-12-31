@@ -498,6 +498,84 @@ describe("FileRestrictionError", () => {
 				}),
 			).toThrow(FileRestrictionError)
 		})
+
+		it("restricts search_files to skills directories", () => {
+			// Should allow searching within .roo/skills directories
+			expect(
+				isToolAllowedForMode("search_files", "orchestrator", [], undefined, {
+					path: ".roo/skills",
+					regex: ".*",
+				}),
+			).toBe(true)
+
+			expect(
+				isToolAllowedForMode("search_files", "orchestrator", [], undefined, {
+					path: ".roo/skills-code",
+					regex: ".*",
+				}),
+			).toBe(true)
+
+			// Should reject searching outside skills directories
+			expect(() =>
+				isToolAllowedForMode("search_files", "orchestrator", [], undefined, {
+					path: "src",
+					regex: ".*",
+				}),
+			).toThrow(FileRestrictionError)
+		})
+
+		it("restricts codebase_search to skills directories", () => {
+			// Should allow searching within .roo/skills directories
+			expect(
+				isToolAllowedForMode("codebase_search", "orchestrator", [], undefined, {
+					path: ".roo/skills",
+					query: "test",
+				}),
+			).toBe(true)
+
+			// Should reject searching outside skills directories
+			expect(() =>
+				isToolAllowedForMode("codebase_search", "orchestrator", [], undefined, {
+					path: "src/core",
+					query: "test",
+				}),
+			).toThrow(FileRestrictionError)
+		})
+
+		it("restricts list_files to skills directories", () => {
+			// Should allow listing within .roo/skills directories
+			expect(
+				isToolAllowedForMode("list_files", "orchestrator", [], undefined, {
+					path: ".roo/skills",
+					recursive: true,
+				}),
+			).toBe(true)
+
+			// Should reject listing outside skills directories
+			expect(() =>
+				isToolAllowedForMode("list_files", "orchestrator", [], undefined, {
+					path: "node_modules",
+					recursive: false,
+				}),
+			).toThrow(FileRestrictionError)
+		})
+
+		it("allows empty path for search tools (workspace root)", () => {
+			// Empty path should be allowed (searches entire workspace which is allowed)
+			expect(
+				isToolAllowedForMode("search_files", "orchestrator", [], undefined, {
+					path: "",
+					regex: ".*",
+				}),
+			).toBe(true)
+
+			expect(
+				isToolAllowedForMode("codebase_search", "orchestrator", [], undefined, {
+					path: "",
+					query: "test",
+				}),
+			).toBe(true)
+		})
 	})
 
 	describe("getFullModeDetails", () => {

@@ -282,28 +282,64 @@ export function isToolAllowedForMode(
 			}
 
 			// Handle XML args parameter (used by MULTI_FILE_APPLY_DIFF experiment)
-				if (toolParams?.args && typeof toolParams.args === "string") {
-					const xmlPaths = extractPathsFromXmlArgs(toolParams.args)
-					for (const extractedPath of xmlPaths) {
-						if (!doesFileMatchRegex(extractedPath, options.fileRegex)) {
-							throw new FileRestrictionError(
-								mode.name,
-								options.fileRegex,
-								options.description,
-								extractedPath,
-								tool,
-							)
-						}
+			if (toolParams?.args && typeof toolParams.args === "string") {
+				const xmlPaths = extractPathsFromXmlArgs(toolParams.args)
+				for (const extractedPath of xmlPaths) {
+					if (!doesFileMatchRegex(extractedPath, options.fileRegex)) {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							extractedPath,
+							tool,
+						)
 					}
 				}
+			}
 		}
 
-		// For the read group, optionally restrict read_file paths if specified
-		if (groupName === "read" && options.fileRegex && tool === "read_file") {
-			const readPaths = extractReadFilePaths(toolParams)
-			for (const p of readPaths) {
-				if (!doesFileMatchRegex(p, options.fileRegex)) {
-					throw new FileRestrictionError(mode.name, options.fileRegex, options.description, p, tool, "read")
+		// For the read group, optionally restrict paths if fileRegex is specified
+		if (groupName === "read" && options.fileRegex) {
+			// Restrict read_file to only read files matching the pattern
+			if (tool === "read_file") {
+				const readPaths = extractReadFilePaths(toolParams)
+				for (const p of readPaths) {
+					if (!doesFileMatchRegex(p, options.fileRegex)) {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							p,
+							tool,
+							"read",
+						)
+					}
+				}
+			}
+
+			// Restrict search_files, codebase_search, and list_files path parameter
+			// These tools operate on directories, so we derive a directory pattern from the fileRegex
+			if (["search_files", "codebase_search", "list_files"].includes(tool)) {
+				const pathParam = toolParams?.path
+				if (typeof pathParam === "string" && pathParam.trim().length > 0) {
+					// Derive directory pattern: strip trailing file pattern (e.g., SKILL.md$) and match directory prefix
+					// For pattern like: (^|.*[\\/])\.roo[\\/]skills(-[a-zA-Z0-9-]+)?[\\/][^\\/]+[\\/]SKILL\.md$
+					// Directory should be within: .roo/skills or .roo/skills-<mode>
+					const dirPattern = options.fileRegex
+						.replace(/\[\^[^\]]*\]\+[\\\\/]?[^$]*\$$/, "") // Remove [^\/]+\/SKILL\.md$ part
+						.replace(/\$$/, "") // Remove trailing $ if present
+					const dirRegex = dirPattern ? `${dirPattern}($|[\\\\/])` : options.fileRegex
+
+					if (!doesFileMatchRegex(pathParam, dirRegex) && !doesFileMatchRegex(pathParam + "/", dirRegex)) {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							pathParam,
+							tool,
+							"read",
+						)
+					}
 				}
 			}
 		}
