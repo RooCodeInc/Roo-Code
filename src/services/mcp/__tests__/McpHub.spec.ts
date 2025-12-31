@@ -1660,6 +1660,491 @@ describe("McpHub", () => {
 			)
 		})
 	})
+
+	describe("File watcher cleanup", () => {
+		it("should clean up file watchers when server is disabled", async () => {
+			// Get the mocked chokidar
+			const chokidar = (await import("chokidar")).default
+			const mockWatcher = {
+				on: vi.fn().mockReturnThis(),
+				close: vi.fn(),
+			}
+			vi.mocked(chokidar.watch).mockReturnValue(mockWatcher as any)
+
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			const mockClient = {
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}
+
+			Client.mockImplementation(() => mockClient)
+
+			// Create server with watchPaths
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"watcher-test-server": {
+							command: "node",
+							args: ["test.js"],
+							watchPaths: ["/path/to/watch"],
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Verify watcher was created
+			expect(chokidar.watch).toHaveBeenCalledWith(["/path/to/watch"], expect.any(Object))
+
+			// Now disable the server
+			await mcpHub.toggleServerDisabled("watcher-test-server", true)
+
+			// Verify watcher was closed
+			expect(mockWatcher.close).toHaveBeenCalled()
+		})
+
+		it("should clean up all file watchers when server is deleted", async () => {
+			// Get the mocked chokidar
+			const chokidar = (await import("chokidar")).default
+			const mockWatcher1 = {
+				on: vi.fn().mockReturnThis(),
+				close: vi.fn(),
+			}
+			const mockWatcher2 = {
+				on: vi.fn().mockReturnThis(),
+				close: vi.fn(),
+			}
+
+			// Return different watchers for different paths
+			let watcherIndex = 0
+			vi.mocked(chokidar.watch).mockImplementation(() => {
+				return (watcherIndex++ === 0 ? mockWatcher1 : mockWatcher2) as any
+			})
+
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			const mockClient = {
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}
+
+			Client.mockImplementation(() => mockClient)
+
+			// Create server with multiple watchPaths
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"multi-watcher-server": {
+							command: "node",
+							args: ["test.js", "build/index.js"], // This will create a watcher for build/index.js
+							watchPaths: ["/path/to/watch1", "/path/to/watch2"],
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Verify watchers were created
+			expect(chokidar.watch).toHaveBeenCalled()
+
+			// Delete the connection (this should clean up all watchers)
+			await mcpHub.deleteConnection("multi-watcher-server")
+
+			// Verify all watchers were closed
+			expect(mockWatcher1.close).toHaveBeenCalled()
+			expect(mockWatcher2.close).toHaveBeenCalled()
+		})
+
+		it("should not create file watchers for disabled servers on initialization", async () => {
+			// Get the mocked chokidar
+			const chokidar = (await import("chokidar")).default
+
+			// Create disabled server with watchPaths
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"disabled-watcher-server": {
+							command: "node",
+							args: ["test.js"],
+							watchPaths: ["/path/to/watch"],
+							disabled: true,
+						},
+					},
+				}),
+			)
+
+			vi.mocked(chokidar.watch).mockClear()
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Verify no watcher was created for disabled server
+			expect(chokidar.watch).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("Null safety improvements", () => {
+		it("should handle null client safely in disconnected connections", async () => {
+			// Mock fs.readFile to return a disabled server config
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"null-safety-server": {
+							command: "node",
+							args: ["test.js"],
+							disabled: true,
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+
+			// Wait for initialization
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// The server should be created as a disconnected connection with null client/transport
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "null-safety-server")
+			expect(connection).toBeDefined()
+			expect(connection?.type).toBe("disconnected")
+
+			// Type guard to ensure it's a disconnected connection
+			if (connection?.type === "disconnected") {
+				expect(connection.client).toBeNull()
+				expect(connection.transport).toBeNull()
+			}
+
+			// Try to call tool on disconnected server
+			await expect(mcpHub.callTool("null-safety-server", "test-tool", {})).rejects.toThrow(
+				"No connection found for server: null-safety-server",
+			)
+
+			// Try to read resource on disconnected server
+			await expect(mcpHub.readResource("null-safety-server", "test-uri")).rejects.toThrow(
+				"No connection found for server: null-safety-server",
+			)
+		})
+
+		it("should handle connection type checks safely", async () => {
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			const mockClient = {
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}
+
+			Client.mockImplementation(() => mockClient)
+
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"type-check-server": {
+							command: "node",
+							args: ["test.js"],
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Get the connection
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "type-check-server")
+			expect(connection).toBeDefined()
+
+			// Safe type checking
+			if (connection?.type === "connected") {
+				expect(connection.client).toBeDefined()
+				expect(connection.transport).toBeDefined()
+			} else if (connection?.type === "disconnected") {
+				expect(connection.client).toBeNull()
+				expect(connection.transport).toBeNull()
+			}
+		})
+
+		it("should handle missing connections safely", async () => {
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Try operations on non-existent server
+			await expect(mcpHub.callTool("non-existent-server", "test-tool", {})).rejects.toThrow(
+				"No connection found for server: non-existent-server",
+			)
+
+			await expect(mcpHub.readResource("non-existent-server", "test-uri")).rejects.toThrow(
+				"No connection found for server: non-existent-server",
+			)
+		})
+
+		it("should handle connection deletion safely", async () => {
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: {
+					on: vi.fn(),
+				},
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			const mockClient = {
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("test instructions"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}
+
+			Client.mockImplementation(() => mockClient)
+
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"delete-safety-server": {
+							command: "node",
+							args: ["test.js"],
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			// Delete the connection
+			await mcpHub.deleteConnection("delete-safety-server")
+
+			// Verify connection is removed
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "delete-safety-server")
+			expect(connection).toBeUndefined()
+
+			// Verify transport and client were closed
+			expect(mockTransport.close).toHaveBeenCalled()
+			expect(mockClient.close).toHaveBeenCalled()
+		})
+	})
+
+	describe("toggleToolAlwaysAllow", () => {
+		it("should add tool to always allow list when enabling", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						alwaysAllow: [],
+					},
+				},
+			}
+
+			// Mock reading initial config
+			vi.mocked(fs.readFile).mockResolvedValueOnce(JSON.stringify(mockConfig))
+
+			// Set up mock connection without alwaysAllow
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					source: "global",
+				} as any,
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			await mcpHub.toggleToolAlwaysAllow("test-server", "global", "new-tool", true)
+
+			// Verify the config was updated correctly
+			const writeCalls = vi.mocked(fs.writeFile).mock.calls
+			expect(writeCalls.length).toBeGreaterThan(0)
+
+			// Find the write call
+			const callToUse = writeCalls[writeCalls.length - 1]
+			expect(callToUse).toBeTruthy()
+
+			// The path might be normalized differently on different platforms,
+			// so we'll just check that we have a call with valid content
+			const writtenConfig = JSON.parse(callToUse[1] as string)
+			expect(writtenConfig.mcpServers).toBeDefined()
+			expect(writtenConfig.mcpServers["test-server"]).toBeDefined()
+			expect(Array.isArray(writtenConfig.mcpServers["test-server"].alwaysAllow)).toBe(true)
+			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
+		})
+
+		it("should remove tool from always allow list when disabling", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						alwaysAllow: ["existing-tool"],
+					},
+				},
+			}
+
+			// Mock reading initial config
+			vi.mocked(fs.readFile).mockResolvedValueOnce(JSON.stringify(mockConfig))
+
+			// Set up mock connection
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					alwaysAllow: ["existing-tool"],
+					source: "global",
+				} as any,
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			await mcpHub.toggleToolAlwaysAllow("test-server", "global", "existing-tool", false)
+
+			// Verify the config was updated correctly
+			const writeCalls = vi.mocked(fs.writeFile).mock.calls
+			expect(writeCalls.length).toBeGreaterThan(0)
+
+			// Find the write call
+			const callToUse = writeCalls[writeCalls.length - 1]
+			expect(callToUse).toBeTruthy()
+
+			// The path might be normalized differently on different platforms,
+			// so we'll just check that we have a call with valid content
+			const writtenConfig = JSON.parse(callToUse[1] as string)
+			expect(writtenConfig.mcpServers).toBeDefined()
+			expect(writtenConfig.mcpServers["test-server"]).toBeDefined()
+			expect(Array.isArray(writtenConfig.mcpServers["test-server"].alwaysAllow)).toBe(true)
+			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).not.toContain("existing-tool")
+		})
+
+		it("should initialize alwaysAllow if it does not exist", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+					},
+				},
+			}
+
+			// Mock reading initial config
+			vi.mocked(fs.readFile).mockResolvedValueOnce(JSON.stringify(mockConfig))
+
+			// Set up mock connection
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					alwaysAllow: [],
+					source: "global",
+				} as any,
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			await mcpHub.toggleToolAlwaysAllow("test-server", "global", "new-tool", true)
+
+			// Verify the config was updated with initialized alwaysAllow
+			// Find the write call with the normalized path
+			const normalizedSettingsPath = "/mock/settings/path/cline_mcp_settings.json"
+			const writeCalls = vi.mocked(fs.writeFile).mock.calls
+
+			// Find the write call with the normalized path
+			const writeCall = writeCalls.find((call: any) => call[0] === normalizedSettingsPath)
+			const callToUse = writeCall || writeCalls[0]
+
+			const writtenConfig = JSON.parse(callToUse[1] as string)
+			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toBeDefined()
+			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
+		})
+	})
 })
 
 describe("Mode-to-Profile Mapping (MCP Profile Filtering)", () => {
