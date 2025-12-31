@@ -3209,12 +3209,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// tool use since user can exit at any moment and we wouldn't be
 				// able to save the assistant's response.
 
-				// Check if we have any content to process (text or tool uses)
+				// Check if we have any content to process (text, tool uses, or reasoning)
 				const hasTextContent = assistantMessage.length > 0
 
 				const hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
+
+				// Check if we have reasoning content (models like Gemini 3 may return ONLY reasoning)
+				const hasReasoning = reasoningMessage.length > 0
 
 				if (hasTextContent || hasToolUses) {
 					// Reset counter when we get a successful response with content
@@ -3345,7 +3348,37 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Add periodic yielding to prevent blocking
 						await new Promise((resolve) => setImmediate(resolve))
 					}
-
+	
+					continue
+				} else if (hasReasoning) {
+					// Handle reasoning-only response (e.g., Gemini 3 with high reasoning effort)
+					// The model returned reasoning/thinking content but no text or tool uses.
+					// This is a valid response that needs prompting to continue with actionable output.
+					// Reset error counters since we got a valid response (just not actionable yet)
+					this.consecutiveNoAssistantMessagesCount = 0
+					this.consecutiveNoToolUseCount = 0
+	
+					// Save the assistant message with reasoning to history (empty content with reasoning attached)
+					await this.addToApiConversationHistory(
+						{ role: "assistant", content: [] },
+						reasoningMessage || undefined,
+					)
+	
+					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
+	
+					// Prompt the model to continue with actionable output
+					// Use the task's locked protocol for consistent tool instructions
+					this.userMessageContent.push({
+						type: "text",
+						text: formatResponse.reasoningOnlyResponse(this._taskToolProtocol ?? "xml"),
+					})
+	
+					// Continue the loop with the prompting message
+					stack.push({
+						userContent: [...this.userMessageContent],
+						includeFileDetails: false,
+					})
+	
 					continue
 				} else {
 					// If there's no assistant_responses, that means we got no text

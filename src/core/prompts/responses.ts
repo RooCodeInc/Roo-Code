@@ -77,6 +77,24 @@ Otherwise, if you have not completed the task and do not need additional informa
 (This is an automated message, so do not respond to it conversationally.)`
 	},
 
+	reasoningOnlyResponse: (protocol?: ToolProtocol) => {
+		const instructions = getToolInstructionsReminder(protocol)
+
+		return `[CONTINUE] Your previous response contained only reasoning/thinking without any text content or tool use. While your reasoning process is valuable, you must now provide actionable output.
+
+${instructions}
+
+# Next Steps
+
+Based on your reasoning, please now:
+1. If you have completed the user's task, use the attempt_completion tool.
+2. If you need to perform an action, use the appropriate tool.
+3. If you require additional information from the user, use the ask_followup_question tool.
+4. If you need to communicate something to the user, include text content in your response.
+
+(This is an automated message, so do not respond to it conversationally.)`
+	},
+
 	tooManyMistakes: (feedback?: string, protocol?: ToolProtocol) => {
 		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
 			return JSON.stringify({
