@@ -8,8 +8,6 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 import { Button } from "@/components/ui"
 
-import { IconButton } from "./IconButton"
-
 interface ApiConfigSelectorProps {
 	value: string
 	displayName: string
@@ -80,7 +78,7 @@ export const ApiConfigSelector = ({
 		[onChange],
 	)
 
-	const handleEditClick = useCallback(() => {
+	const _handleEditClick = useCallback(() => {
 		vscode.postMessage({ type: "switchTab", tab: "settings" })
 		setOpen(false)
 	}, [])

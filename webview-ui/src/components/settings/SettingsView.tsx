@@ -12,7 +12,6 @@ import React, {
 import {
 	CheckCheck,
 	SquareMousePointer,
-	Webhook,
 	GitBranch,
 	Bell,
 	Database,
@@ -25,7 +24,6 @@ import {
 	LucideIcon,
 	SquareSlash,
 	Glasses,
-	Plug,
 	Server,
 	Users2,
 } from "lucide-react"
@@ -61,9 +59,6 @@ import {
 
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { SetCachedStateField, SetExperimentEnabled } from "./types"
-import { SectionHeader } from "./SectionHeader"
-import ApiConfigManager from "./ApiConfigManager"
-import ApiOptions from "./ApiOptions"
 import { AutoApproveSettings } from "./AutoApproveSettings"
 import { BrowserSettings } from "./BrowserSettings"
 import { CheckpointSettings } from "./CheckpointSettings"
@@ -73,7 +68,6 @@ import { TerminalSettings } from "./TerminalSettings"
 import { ExperimentalSettings } from "./ExperimentalSettings"
 import { LanguageSettings } from "./LanguageSettings"
 import { About } from "./About"
-import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
@@ -120,11 +114,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const { t } = useAppTranslation()
 
 	const extensionState = useExtensionState()
-	const { currentApiConfigName, listApiConfigMeta, uriScheme, settingsImportedAt } = extensionState
+	const { currentApiConfigName, listApiConfigMeta, settingsImportedAt } = extensionState
 
 	const [isDiscardDialogShow, setDiscardDialogShow] = useState(false)
 	const [isChangeDetected, setChangeDetected] = useState(false)
-	const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+	const [errorMessage, _setErrorMessage] = useState<string | undefined>(undefined)
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
