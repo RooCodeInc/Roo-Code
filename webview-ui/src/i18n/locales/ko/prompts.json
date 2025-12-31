@@ -9,7 +9,7 @@
 		"editModesConfig": "모드 구성 편집",
 		"editGlobalModes": "전역 모드 편집",
 		"editProjectModes": "프로젝트 모드 편집 (.roomodes)",
-		"createModeHelpText": "모드는 Roo의 행동을 맞춤화하는 특화된 페르소나입니다. <0>모드 사용에 대해 알아보기</0> 또는 <1>모드 사용자 정의하기.</1>",
+		"createModeHelpText": "모드는 Copilot의 행동을 맞춤화하는 특화된 페르소나입니다. <0>모드 사용에 대해 알아보기</0> 또는 <1>모드 사용자 정의하기.</1>",
 		"selectMode": "모드 검색"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "역할 정의",
 		"resetToDefault": "기본값으로 재설정",
-		"description": "이 모드에 대한 Roo의 전문성과 성격을 정의하세요. 이 설명은 Roo가 자신을 어떻게 표현하고 작업에 접근하는지 형성합니다."
+		"description": "이 모드에 대한 Copilot의 전문성과 성격을 정의하세요. 이 설명은 Copilot가 자신을 어떻게 표현하고 작업에 접근하는지 형성합니다."
 	},
 	"description": {
 		"title": "짧은 설명 (사람용)",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "프롬프트 향상",
-				"description": "입력에 맞춤화된 제안이나 개선을 얻기 위해 프롬프트 향상을 사용하세요. 이를 통해 Roo가 의도를 이해하고 최상의 응답을 제공할 수 있습니다. 채팅에서 ✨ 아이콘을 통해 이용 가능합니다."
+				"description": "입력에 맞춤화된 제안이나 개선을 얻기 위해 프롬프트 향상을 사용하세요. 이를 통해 Copilot가 의도를 이해하고 최상의 응답을 제공할 수 있습니다. 채팅에서 ✨ 아이콘을 통해 이용 가능합니다."
 			},
 			"CONDENSE": {
 				"label": "컨텍스트 압축",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "역할 정의",
-			"description": "이 모드에 대한 Roo의 전문성과 성격을 정의하세요."
+			"description": "이 모드에 대한 Copilot의 전문성과 성격을 정의하세요."
 		},
 		"whenToUse": {
 			"label": "사용 시기 (선택 사항)",

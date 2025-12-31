@@ -117,7 +117,7 @@
 		"title": "模式",
 		"marketplace": "模式市场",
 		"settings": "模式设置",
-		"description": "专门定制Roo行为的角色。",
+		"description": "专门定制Copilot行为的角色。",
 		"searchPlaceholder": "搜索模式...",
 		"noResults": "未找到结果"
 	},
@@ -131,7 +131,7 @@
 	"diffError": {
 		"title": "编辑失败"
 	},
-	"troubleMessage": "Roo遇到问题...",
+	"troubleMessage": "Copilot遇到问题...",
 	"apiRequest": {
 		"title": "API请求",
 		"failed": "API请求失败",
@@ -238,8 +238,8 @@
 		"youSaid": "你说"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo想在{{serverName}} MCP上使用工具",
-		"wantsToAccessResource": "Roo想访问{{serverName}} MCP服务上的资源"
+		"wantsToUseTool": "Copilot想在{{serverName}} MCP上使用工具",
+		"wantsToAccessResource": "Copilot想访问{{serverName}} MCP服务上的资源"
 	},
 	"modes": {
 		"wantsToSwitch": "即将切换至{{mode}}模式",
@@ -248,8 +248,8 @@
 		"didSwitchWithReason": "已切换至{{mode}}模式（原因：{{reason}}）"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo想在<code>{{mode}}</code>模式下创建新子任务",
-		"wantsToFinish": "Roo想完成此子任务",
+		"wantsToCreate": "Copilot想在<code>{{mode}}</code>模式下创建新子任务",
+		"wantsToFinish": "Copilot想完成此子任务",
 		"newTaskContent": "子任务说明",
 		"completionContent": "子任务已完成",
 		"resultContent": "子任务结果",
@@ -257,7 +257,7 @@
 		"completionInstructions": "子任务已完成！您可以查看结果并提出修改或下一步建议。如果一切正常，请确认以将结果返回给主任务。"
 	},
 	"questions": {
-		"hasQuestion": "Roo有一个问题"
+		"hasQuestion": "Copilot有一个问题"
 	},
 	"taskCompleted": "任务完成",
 	"modelResponseIncomplete": "模型响应不完整",
@@ -343,7 +343,7 @@
 	},
 	"browser": {
 		"session": "浏览器会话",
-		"rooWantsToUse": "Roo想使用浏览器",
+		"rooWantsToUse": "Copilot想使用浏览器",
 		"consoleLogs": "控制台日志",
 		"noNewLogs": "(没有新日志)",
 		"screenshot": "浏览器截图",
@@ -400,7 +400,7 @@
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "已达到自动批准的费用限额",
-			"description": "Roo已经达到了${{count}}的自动批准成本限制。您想重置成本并继续任务吗？",
+			"description": "Copilot已经达到了${{count}}的自动批准成本限制。您想重置成本并继续任务吗？",
 			"button": "重置并继续"
 		}
 	},

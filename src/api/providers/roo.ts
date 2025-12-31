@@ -54,7 +54,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		// The provider-proxy server will return 401 if authentication fails.
 		super({
 			...options,
-			providerName: "Roo Code Cloud",
+			providerName: "Datacoves Copilot Cloud",
 			baseURL, // Already has /v1 suffix
 			apiKey: sessionToken,
 			defaultProviderModelId: rooDefaultModelId,

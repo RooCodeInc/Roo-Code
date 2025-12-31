@@ -119,7 +119,7 @@ export class TerminalProcess extends BaseTerminalProcess {
 
 			// Only add the PowerShell counter workaround if enabled
 			if (Terminal.getPowershellCounter()) {
-				commandToExecute += ` ; "(Roo/PS Workaround: ${this.terminal.cmdCounter++})" > $null`
+				commandToExecute += ` ; "(Copilot/PS Workaround: ${this.terminal.cmdCounter++})" > $null`
 			}
 
 			// Only add the sleep command if the command delay is greater than 0

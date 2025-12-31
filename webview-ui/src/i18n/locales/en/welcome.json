@@ -13,8 +13,18 @@
 		}
 	},
 	"landing": {
-		"greeting": "Welcome to Datacoves Copilot!",
-		"introduction": "With a range of built-in and extensible Modes, Datacoves Copilot lets you plan, architect, code, debug and boost your productivity like never before.",
+		"greeting": "",
+		"introduction": "Generate, refactor, and debug code with AI assistance. Check out our <docsLink>documentation</docsLink> to learn more.",
+		"features": {
+			"modes": {
+				"title": "Customizable Modes",
+				"description": "Specialized personas with their own behaviors and assigned models"
+			},
+			"orchestration": {
+				"title": "Task Orchestration",
+				"description": "Split tasks into smaller, manageable parts"
+			}
+		},
 		"accountMention": "To get started, create your Datacoves Copilot Cloud account. Get powerful models, web control, analytics, support and more.",
 		"getStarted": "Get started",
 		"noAccount": "or use without an account"

@@ -44,7 +44,7 @@
 		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
 	},
 	"prompts": {
-		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Roo가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
+		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Copilot가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
 	},
 	"codeIndex": {
 		"title": "코드베이스 인덱싱",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",
-		"description": "Roo가 승인 없이 자동으로 작업을 수행할 수 있도록 허용합니다. AI를 완전히 신뢰하고 관련 보안 위험을 이해하는 경우에만 이러한 설정을 활성화하세요.",
+		"description": "Copilot가 승인 없이 자동으로 작업을 수행할 수 있도록 허용합니다. AI를 완전히 신뢰하고 관련 보안 위험을 이해하는 경우에만 이러한 설정을 활성화하세요.",
 		"enabled": "자동 승인 활성화됨",
 		"toggleAriaLabel": "자동 승인 전환",
 		"disabledAriaLabel": "자동 승인 비활성화됨 - 먼저 옵션을 선택하세요",
 		"readOnly": {
 			"label": "읽기",
-			"description": "활성화되면 Roo는 승인 버튼을 클릭하지 않고도 자동으로 디렉토리 내용을 보고 파일을 읽습니다.",
+			"description": "활성화되면 Copilot는 승인 버튼을 클릭하지 않고도 자동으로 디렉토리 내용을 보고 파일을 읽습니다.",
 			"outsideWorkspace": {
 				"label": "워크스페이스 외부 파일 포함",
-				"description": "Roo가 승인 없이 현재 워크스페이스 외부의 파일을 읽을 수 있도록 허용합니다."
+				"description": "Copilot가 승인 없이 현재 워크스페이스 외부의 파일을 읽을 수 있도록 허용합니다."
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "진단이 잠재적 문제를 감지할 수 있도록 쓰기 후 지연",
 			"outsideWorkspace": {
 				"label": "워크스페이스 외부 파일 포함",
-				"description": "Roo가 승인 없이 현재 워크스페이스 외부의 파일을 생성하고 편집할 수 있도록 허용합니다."
+				"description": "Copilot가 승인 없이 현재 워크스페이스 외부의 파일을 생성하고 편집할 수 있도록 허용합니다."
 			},
 			"protected": {
 				"label": "보호된 파일 포함",
-				"description": "Roo가 보호된 파일(.rooignore 및 .roo/ 구성 파일 등)을 승인 없이 생성하고 편집할 수 있도록 허용합니다."
+				"description": "Copilot가 보호된 파일(.rooignore 및 .roo/ 구성 파일 등)을 승인 없이 생성하고 편집할 수 있도록 허용합니다."
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "오류 및 반복 제한",
-			"description": "'Roo에 문제가 발생했습니다' 대화 상자를 표시하기 전의 연속 오류 또는 반복 작업 수. 이 안전 메커니즘을 비활성화하려면 0으로 설정하세요(절대 트리거되지 않음).",
+			"description": "'Copilot에 문제가 발생했습니다' 대화 상자를 표시하기 전의 연속 오류 또는 반복 작업 수. 이 안전 메커니즘을 비활성화하려면 0으로 설정하세요(절대 트리거되지 않음).",
 			"unlimitedDescription": "무제한 재시도 활성화 (자동 진행). 대화 상자가 나타나지 않습니다.",
 			"warning": "⚠️ 0으로 설정하면 무제한 재시도가 허용되어 상당한 API 사용량이 발생할 수 있습니다"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "브라우저 도구 활성화",
-			"description": "활성화되면 Roo는 컴퓨터 사용을 지원하는 모델을 사용할 때 웹사이트와 상호 작용하기 위해 브라우저를 사용할 수 있습니다. <0>더 알아보기</0>"
+			"description": "활성화되면 Copilot는 컴퓨터 사용을 지원하는 모델을 사용할 때 웹사이트와 상호 작용하기 위해 브라우저를 사용할 수 있습니다. <0>더 알아보기</0>"
 		},
 		"viewport": {
 			"label": "뷰포트 크기",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "자동 체크포인트 활성화",
-			"description": "활성화되면 Roo는 작업 실행 중에 자동으로 체크포인트를 생성하여 변경 사항을 검토하거나 이전 상태로 되돌리기 쉽게 합니다. <0>더 알아보기</0>"
+			"description": "활성화되면 Copilot는 작업 실행 중에 자동으로 체크포인트를 생성하여 변경 사항을 검토하거나 이전 상태로 되돌리기 쉽게 합니다. <0>더 알아보기</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "사운드 효과 활성화",
-			"description": "활성화되면 Roo는 알림 및 이벤트에 대한 사운드 효과를 재생합니다.",
+			"description": "활성화되면 Copilot는 알림 및 이벤트에 대한 사운드 효과를 재생합니다.",
 			"volumeLabel": "볼륨"
 		},
 		"tts": {
 			"label": "음성 합성 활성화",
-			"description": "활성화되면 Roo는 음성 합성을 사용하여 응답을 소리내어 읽습니다.",
+			"description": "활성화되면 Copilot는 음성 합성을 사용하여 응답을 소리내어 읽습니다.",
 			"speedLabel": "속도"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "AI의 컨텍스트 창에 포함되는 정보를 제어하여 token 사용량과 응답 품질에 영향을 미칩니다",
 		"autoCondenseContextPercent": {
 			"label": "지능적 컨텍스트 압축을 트리거하는 임계값",
-			"description": "컨텍스트 창이 이 임계값에 도달하면 Roo가 자동으로 압축합니다."
+			"description": "컨텍스트 창이 이 임계값에 도달하면 Copilot가 자동으로 압축합니다."
 		},
 		"condensingApiConfiguration": {
 			"label": "컨텍스트 압축을 위한 API 설정",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "지능적 컨텍스트 압축 자동 트리거",
-			"description": "활성화되면 Roo는 임계값에 도달했을 때 자동으로 컨텍스트를 압축합니다. 비활성화되면 여전히 수동으로 컨텍스트 압축을 트리거할 수 있습니다."
+			"description": "활성화되면 Copilot는 임계값에 도달했을 때 자동으로 컨텍스트를 압축합니다. 비활성화되면 여전히 수동으로 컨텍스트 압축을 트리거할 수 있습니다."
 		},
 		"openTabs": {
 			"label": "열린 탭 컨텍스트 제한",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "파일 읽기 자동 축소 임계값",
-			"description": "모델이 시작/끝 값을 지정하지 않을 때 Roo가 읽는 줄 수입니다. 이 수가 파일의 총 줄 수보다 적으면 Roo는 코드 정의의 줄 번호 인덱스를 생성합니다. 특수한 경우: -1은 Roo에게 전체 파일을 읽도록 지시하고(인덱싱 없이), 0은 줄을 읽지 않고 최소한의 컨텍스트를 위해 줄 인덱스만 제공하도록 지시합니다. 낮은 값은 초기 컨텍스트 사용을 최소화하고, 이후 정확한 줄 범위 읽기를 가능하게 합니다. 명시적 시작/끝 요청은 이 설정의 제한을 받지 않습니다.",
+			"description": "모델이 시작/끝 값을 지정하지 않을 때 Copilot가 읽는 줄 수입니다. 이 수가 파일의 총 줄 수보다 적으면 Copilot는 코드 정의의 줄 번호 인덱스를 생성합니다. 특수한 경우: -1은 Copilot에게 전체 파일을 읽도록 지시하고(인덱싱 없이), 0은 줄을 읽지 않고 최소한의 컨텍스트를 위해 줄 인덱스만 제공하도록 지시합니다. 낮은 값은 초기 컨텍스트 사용을 최소화하고, 이후 정확한 줄 범위 읽기를 가능하게 합니다. 명시적 시작/끝 요청은 이 설정의 제한을 받지 않습니다.",
 			"lines": "줄",
 			"always_full_read": "항상 전체 파일 읽기"
 		},
@@ -658,11 +658,11 @@
 		},
 		"outputLineLimit": {
 			"label": "터미널 출력 제한",
-			"description": "제한 내로 유지하기 위해 첫 줄과 마지막 줄을 유지하고 중간을 삭제합니다. 토큰을 절약하려면 낮추고; Roo에게 더 많은 중간 세부 정보를 제공하려면 높입니다. Roo는 콘텐츠가 건너뛴 곳에 자리 표시자를 봅니다.<0>자세히 알아보기</0>"
+			"description": "제한 내로 유지하기 위해 첫 줄과 마지막 줄을 유지하고 중간을 삭제합니다. 토큰을 절약하려면 낮추고; Copilot에게 더 많은 중간 세부 정보를 제공하려면 높입니다. Copilot는 콘텐츠가 건너뛴 곳에 자리 표시자를 봅니다.<0>자세히 알아보기</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "터미널 문자 제한",
-			"description": "출력 크기에 대한 엄격한 상한을 적용하여 메모리 문제를 방지하기 위해 줄 제한을 재정의합니다. 초과하면 시작과 끝을 유지하고 내용이 생략된 곳에 Roo에게 자리 표시자를 표시합니다. <0>자세히 알아보기</0>"
+			"description": "출력 크기에 대한 엄격한 상한을 적용하여 메모리 문제를 방지하기 위해 줄 제한을 재정의합니다. 초과하면 시작과 끝을 유지하고 내용이 생략된 곳에 Copilot에게 자리 표시자를 표시합니다. <0>자세히 알아보기</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "터미널 셸 통합 시간 초과",
@@ -670,7 +670,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "인라인 터미널 사용(권장)",
-			"description": "더 빠르고 안정적인 실행을 위해 셸 프로필/통합��� 우회하려면 인라인 터미널(채팅)에�� 명령을 실행하십시오. 비활성화하면 Roo는 셸 프로필, 프롬프트 및 플러그인과 함께 VS Code 터미널을 사용합니다. <0>자세히 알아보기</0>"
+			"description": "더 빠르고 안정적인 실행을 위해 셸 프로필/통합��� 우회하려면 인라인 터미널(채팅)에�� 명령을 실행하십시오. 비활성화하면 Copilot는 셸 프로필, 프롬프트 및 플러그인과 함께 VS Code 터미널을 사용합니다. <0>자세히 알아보기</0>"
 		},
 		"commandDelay": {
 			"label": "터미널 명령 지연",
@@ -710,7 +710,7 @@
 	},
 	"toolProtocol": {
 		"label": "도구 호출 프로토콜",
-		"description": "Roo가 API와 통신하는 방법을 선택합니다. 네이티브는 공급자의 함수 호출 API를 사용하고 XML은 XML 형식의 도구 정의를 사용합니다.",
+		"description": "Copilot가 API와 통신하는 방법을 선택합니다. 네이티브는 공급자의 함수 호출 API를 사용하고 XML은 XML 형식의 도구 정의를 사용합니다.",
 		"default": "기본값",
 		"xml": "XML",
 		"native": "네이티브",
@@ -719,7 +719,7 @@
 	"advanced": {
 		"diff": {
 			"label": "diff를 통한 편집 활성화",
-			"description": "활성화되면 Roo는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다",
+			"description": "활성화되면 Copilot는 파일을 더 빠르게 편집할 수 있으며 잘린 전체 파일 쓰기를 자동으로 거부합니다",
 			"strategy": {
 				"label": "Diff 전략",
 				"options": {
@@ -740,7 +740,7 @@
 		},
 		"todoList": {
 			"label": "할 일 목록 도구 활성화",
-			"description": "활성화하면 Roo가 작업 진행 상황을 추적하기 위한 할 일 목록을 만들고 관리할 수 있습니다. 이는 복잡한 작업을 관리 가능한 단계로 구성하는 데 도움이 됩니다."
+			"description": "활성화하면 Copilot가 작업 진행 상황을 추적하기 위한 할 일 목록을 만들고 관리할 수 있습니다. 이는 복잡한 작업을 관리 가능한 단계로 구성하는 데 도움이 됩니다."
 		}
 	},
 	"experimental": {
@@ -750,19 +750,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "실험적 콘텐츠 삽입 도구 사용",
-			"description": "실험적 콘텐츠 삽입 도구를 활성화하여 Roo가 diff를 만들 필요 없이 특정 줄 번호에 콘텐츠를 삽입할 수 있게 합니다."
+			"description": "실험적 콘텐츠 삽입 도구를 활성화하여 Copilot가 diff를 만들 필요 없이 특정 줄 번호에 콘텐츠를 삽입할 수 있게 합니다."
 		},
 		"POWER_STEERING": {
 			"name": "실험적 \"파워 스티어링\" 모드 사용",
-			"description": "활성화하면 Roo가 현재 모드 정의의 세부 정보를 모델에 더 자주 상기시킵니다. 이로 인해 역할 정의 및 사용자 지정 지침에 대한 준수가 강화되지만 메시지당 더 많은 token이 사용됩니다."
+			"description": "활성화하면 Copilot가 현재 모드 정의의 세부 정보를 모델에 더 자주 상기시킵니다. 이로 인해 역할 정의 및 사용자 지정 지침에 대한 준수가 강화되지만 메시지당 더 많은 token이 사용됩니다."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "실험적 다중 블록 diff 도구 사용",
-			"description": "활성화하면 Roo가 다중 블록 diff 도구를 사용합니다. 이것은 하나의 요청에서 파일의 여러 코드 블록을 업데이트하려고 시도합니다."
+			"description": "활성화하면 Copilot가 다중 블록 diff 도구를 사용합니다. 이것은 하나의 요청에서 파일의 여러 코드 블록을 업데이트하려고 시도합니다."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "동시 파일 읽기 활성화",
-			"description": "활성화하면 Roo가 한 번의 요청으로 여러 파일 을 읽을 수 있습니다. 비활성화하면 Roo는 파일을 하나씩 읽어야 합니다. 성능이 낮은 모델로 작업하거나 파일 액세스를 더 제어하려는 경우 비활성화하면 도움이 될 수 있습니다."
+			"description": "활성화하면 Copilot가 한 번의 요청으로 여러 파일 을 읽을 수 있습니다. 비활성화하면 Copilot는 파일을 하나씩 읽어야 합니다. 성능이 낮은 모델로 작업하거나 파일 액세스를 더 제어하려는 경우 비활성화하면 도움이 될 수 있습니다."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace 활성화",
@@ -770,11 +770,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "동시 파일 편집 활성화",
-			"description": "활성화하면 Roo가 단일 요청으로 여러 파일을 편집할 수 있습니다. 비활성화하면 Roo는 파일을 하나씩 편집해야 합니다. 이 기능을 비활성화하면 덜 강력한 모델로 작업하거나 파일 수정에 대한 더 많은 제어가 필요할 때 도움이 됩니다."
+			"description": "활성화하면 Copilot가 단일 요청으로 여러 파일을 편집할 수 있습니다. 비활성화하면 Copilot는 파일을 하나씩 편집해야 합니다. 이 기능을 비활성화하면 덜 강력한 모델로 작업하거나 파일 수정에 대한 더 많은 제어가 필요할 때 도움이 됩니다."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "백그라운드 편집",
-			"description": "활성화하면 편집기 포커스 방해를 방지합니다. 파일 편집이 diff 뷰를 열거나 포커스를 빼앗지 않고 백그라운드에서 수행됩니다. Roo가 변경사항을 적용하는 동안 방해받지 않고 계속 작업할 수 있습니다. 파일은 진단을 캡처하기 위해 포커스 없이 열거나 완전히 닫힌 상태로 유지할 수 있습니다."
+			"description": "활성화하면 편집기 포커스 방해를 방지합니다. 파일 편집이 diff 뷰를 열거나 포커스를 빼앗지 않고 백그라운드에서 수행됩니다. Copilot가 변경사항을 적용하는 동안 방해받지 않고 계속 작업할 수 있습니다. 파일은 진단을 캡처하기 위해 포커스 없이 열거나 완전히 닫힌 상태로 유지할 수 있습니다."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "새 메시지 파서 사용",
@@ -788,7 +788,7 @@
 			"providerLabel": "제공업체",
 			"providerDescription": "이미지 생성에 사용할 제공업체를 선택하세요.",
 			"name": "AI 이미지 생성 활성화",
-			"description": "활성화하면 Roo는 OpenRouter의 이미지 생성 모델을 사용하여 텍스트 프롬프트에서 이미지를 생성할 수 있습니다. OpenRouter API 키 구성이 필요합니다.",
+			"description": "활성화하면 Copilot는 OpenRouter의 이미지 생성 모델을 사용하여 텍스트 프롬프트에서 이미지를 생성할 수 있습니다. OpenRouter API 키 구성이 필요합니다.",
 			"openRouterApiKeyLabel": "OpenRouter API 키",
 			"openRouterApiKeyPlaceholder": "OpenRouter API 키를 입력하세요",
 			"getApiKeyText": "API 키를 받을 곳",
@@ -799,7 +799,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "모델 시작 슬래시 명령 활성화",
-			"description": "활성화되면 Roo가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
+			"description": "활성화되면 Copilot가 워크플로를 실행하기 위해 슬래시 명령을 실행할 수 있습니다."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "병렬 도구 호출",
@@ -807,7 +807,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "사용자 정의 도구 활성화",
-			"description": "활성화하면 Roo가 프로젝트의 .roo/tools 디렉터리 또는 전역 도구를 위한 ~/.roo/tools에서 사용자 정의 TypeScript/JavaScript 도구를 로드하고 사용할 수 있습니다. 참고: 이러한 도구는 자동으로 자동 승인됩니다.",
+			"description": "활성화하면 Copilot가 프로젝트의 .roo/tools 디렉터리 또는 전역 도구를 위한 ~/.roo/tools에서 사용자 정의 TypeScript/JavaScript 도구를 로드하고 사용할 수 있습니다. 참고: 이러한 도구는 자동으로 자동 승인됩니다.",
 			"toolsHeader": "사용 가능한 사용자 정의 도구",
 			"noTools": "로드된 사용자 정의 도구가 없습니다. 프로젝트의 .roo/tools 디렉터리 또는 전역 도구를 위한 ~/.roo/tools에 .ts 또는 .js 파일을 추가하세요.",
 			"refreshButton": "새로고침",
@@ -819,7 +819,7 @@
 	},
 	"promptCaching": {
 		"label": "프롬프트 캐싱 비활성화",
-		"description": "체크하면 Roo가 이 모델에 대해 프롬프트 캐싱을 사용하지 않습니다."
+		"description": "체크하면 Copilot가 이 모델에 대해 프롬프트 캐싱을 사용하지 않습니다."
 	},
 	"temperature": {
 		"useCustom": "사용자 정의 온도 사용",
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
 	},
 	"footer": {
-		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
+		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/CopilotInc/Copilot-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/Copilot</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {
 			"label": "익명 오류 및 사용 보고 허용",
 			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Datacoves Copilot 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."

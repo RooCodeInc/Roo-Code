@@ -856,7 +856,7 @@
 		"simplifiedExplanation": "Du kannst detaillierte Modelleinstellungen später anpassen."
 	},
 	"footer": {
-		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
+		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/CopilotInc/Copilot-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/Copilot</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
 		"telemetry": {
 			"label": "Anonyme Fehler- und Nutzungsberichte zulassen",
 			"description": "Hilf mit, Datacoves Copilot zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Diese Telemetrie sammelt keine Code-, Prompt- oder persönliche Informationen. Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."

@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "Ты сможешь настроить подробные параметры модели позже."
 	},
 	"footer": {
-		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/CopilotInc/Copilot-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/Copilot</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Разрешить анонимную отправку ошибок и статистики использования",
 			"description": "Помогите улучшить Datacoves Copilot, отправляя анонимные данные об использовании и отчеты об ошибках. Эта телеметрия не собирает код, промпты или личную информацию. Смотрите нашу <privacyLink>политику конфиденциальности</privacyLink> для получения подробной информации."

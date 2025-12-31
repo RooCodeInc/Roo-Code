@@ -59,7 +59,7 @@ interface ImagesApiOptions {
 }
 
 /**
- * Shared image generation implementation for OpenRouter and Roo Code Cloud providers
+ * Shared image generation implementation for OpenRouter and Datacoves Copilot Cloud providers
  */
 export async function generateImageWithProvider(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
 	const { baseURL, authToken, model, prompt, inputImage } = options
@@ -70,8 +70,8 @@ export async function generateImageWithProvider(options: ImageGenerationOptions)
 			headers: {
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
-				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-				"X-Title": "Roo Code",
+				"HTTP-Referer": "https://github.com/datacoves/Roo-Code",
+				"X-Title": "Datacoves Copilot",
 			},
 			body: JSON.stringify({
 				model,
@@ -216,8 +216,8 @@ export async function generateImageWithImagesApi(options: ImagesApiOptions): Pro
 			headers: {
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
-				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-				"X-Title": "Roo Code",
+				"HTTP-Referer": "https://github.com/datacoves/Roo-Code",
+				"X-Title": "Datacoves Copilot",
 			},
 			body: JSON.stringify(requestBody),
 		}

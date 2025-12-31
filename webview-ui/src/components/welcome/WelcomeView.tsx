@@ -32,10 +32,35 @@ const WelcomeView = () => {
 		<Tab>
 			<TabContent className="flex flex-col gap-5 p-16">
 				<RooHero />
-				<h2 className="mt-0 mb-0">{t("welcome:landing.greeting")}</h2>
-				<p className="font-bold">
-					<Trans i18nKey="welcome:landing.introduction" />
+				<p>
+					<Trans
+						i18nKey="welcome:landing.introduction"
+						components={{
+							docsLink: (
+								<VSCodeLink href="https://docs.datacoves.com/docs/how-tos/vs-code/datacoves-copilot/v2" />
+							),
+						}}
+					/>
 				</p>
+
+				<div className="flex flex-col gap-4 mt-2">
+					<div className="flex items-start gap-3">
+						<span className="codicon codicon-account text-lg mt-0.5" />
+						<div>
+							<span className="font-semibold">{t("welcome:landing.features.modes.title")}: </span>
+							<span className="opacity-80">{t("welcome:landing.features.modes.description")}</span>
+						</div>
+					</div>
+					<div className="flex items-start gap-3">
+						<span className="codicon codicon-list-tree text-lg mt-0.5" />
+						<div>
+							<span className="font-semibold">{t("welcome:landing.features.orchestration.title")}: </span>
+							<span className="opacity-80">
+								{t("welcome:landing.features.orchestration.description")}
+							</span>
+						</div>
+					</div>
+				</div>
 			</TabContent>
 			<div className="sticky bottom-0 bg-vscode-sideBar-background p-5">
 				<div className="flex flex-col gap-1">

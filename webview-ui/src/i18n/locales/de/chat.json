@@ -117,7 +117,7 @@
 		"title": "Modi",
 		"marketplace": "Modus-Marketplace",
 		"settings": "Modus-Einstellungen",
-		"description": "Spezialisierte Personas, die Roos Verhalten anpassen.",
+		"description": "Spezialisierte Personas, die Copilots Verhalten anpassen.",
 		"searchPlaceholder": "Modi suchen...",
 		"noResults": "Keine Ergebnisse gefunden"
 	},
@@ -329,7 +329,7 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"skills": "Copilot unterstützt jetzt <skillsLink>Agent Skills</skillsLink> - wiederverwendbare Pakete aus Prompts, Tools und Ressourcen, um Roos Funktionen zu erweitern.",
+			"skills": "Copilot unterstützt jetzt <skillsLink>Agent Skills</skillsLink> - wiederverwendbare Pakete aus Prompts, Tools und Ressourcen, um Copilots Funktionen zu erweitern.",
 			"nativeToolCalling": "Native Tool-Aufrufe sind jetzt für alle neuen Aufgaben erforderlich. <blogLink>Mehr erfahren</blogLink> über die Motivation und was zu tun ist, wenn du Probleme hast."
 		},
 		"cloudAgents": {

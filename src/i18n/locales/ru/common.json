@@ -135,7 +135,7 @@
 	"warnings": {
 		"no_terminal_content": "Не выбрано содержимое терминала",
 		"missing_task_files": "Файлы этой задачи отсутствуют. Хотите удалить её из списка задач?",
-		"auto_import_failed": "Не удалось автоматически импортировать настройки RooCode: {{error}}"
+		"auto_import_failed": "Не удалось автоматически импортировать настройки Copilot: {{error}}"
 	},
 	"info": {
 		"no_changes": "Изменения не найдены.",
@@ -144,7 +144,7 @@
 		"custom_storage_path_set": "Установлен пользовательский путь хранения: {{path}}",
 		"default_storage_path": "Возвращено использование пути хранения по умолчанию",
 		"settings_imported": "Настройки успешно импортированы.",
-		"auto_import_success": "Настройки RooCode автоматически импортированы из {{filename}}",
+		"auto_import_success": "Настройки Copilot автоматически импортированы из {{filename}}",
 		"share_link_copied": "Ссылка для совместного использования скопирована в буфер обмена",
 		"image_copied_to_clipboard": "URI данных изображения скопирован в буфер обмена",
 		"image_saved": "Изображение сохранено в {{path}}",
@@ -176,8 +176,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Введите пользовательский путь хранения истории разговоров, оставьте пустым для использования расположения по умолчанию",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\RooCodeStorage или /home/user/storage)",
+		"path_placeholder": "D:\\CopilotStorage",
+		"enter_absolute_path": "Пожалуйста, введите абсолютный путь (например, D:\\CopilotStorage или /home/user/storage)",
 		"enter_valid_path": "Пожалуйста, введите корректный путь"
 	},
 	"input": {

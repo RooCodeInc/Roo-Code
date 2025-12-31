@@ -135,7 +135,7 @@
 	"warnings": {
 		"no_terminal_content": "Nessun contenuto del terminale selezionato",
 		"missing_task_files": "I file di questa attività sono mancanti. Vuoi rimuoverla dall'elenco delle attività?",
-		"auto_import_failed": "Importazione automatica delle impostazioni RooCode fallita: {{error}}"
+		"auto_import_failed": "Importazione automatica delle impostazioni Copilot fallita: {{error}}"
 	},
 	"info": {
 		"no_changes": "Nessuna modifica trovata.",
@@ -144,7 +144,7 @@
 		"custom_storage_path_set": "Percorso di archiviazione personalizzato impostato: {{path}}",
 		"default_storage_path": "Tornato al percorso di archiviazione predefinito",
 		"settings_imported": "Impostazioni importate con successo.",
-		"auto_import_success": "Impostazioni RooCode importate automaticamente da {{filename}}",
+		"auto_import_success": "Impostazioni Copilot importate automaticamente da {{filename}}",
 		"share_link_copied": "Link di condivisione copiato negli appunti",
 		"image_copied_to_clipboard": "URI dati dell'immagine copiato negli appunti",
 		"image_saved": "Immagine salvata in {{path}}",
@@ -176,8 +176,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Inserisci il percorso di archiviazione personalizzato per la cronologia delle conversazioni, lascia vuoto per utilizzare la posizione predefinita",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Inserisci un percorso assoluto (ad esempio D:\\RooCodeStorage o /home/user/storage)",
+		"path_placeholder": "D:\\CopilotStorage",
+		"enter_absolute_path": "Inserisci un percorso assoluto (ad esempio D:\\CopilotStorage o /home/user/storage)",
 		"enter_valid_path": "Inserisci un percorso valido"
 	},
 	"input": {

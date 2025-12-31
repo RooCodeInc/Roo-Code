@@ -103,12 +103,12 @@
 	"onboarding": "What would you like to do?",
 	"rooTips": {
 		"customizableModes": {
-			"title": "Customizable modes that don't swerve",
-			"description": "Specialized personas that stay on-task and deliver."
+			"title": "Customizable Modes",
+			"description": "Specialized personas with their own behaviors and assigned models"
 		},
 		"modelAgnostic": {
-			"title": "Bring your own model, no markup or lock-in",
-			"description": "Use your own provider key or even run local inference — Copilot doesn't charge for it"
+			"title": "Task Orchestration",
+			"description": "Split tasks into smaller, manageable parts"
 		}
 	},
 	"selectMode": "Select mode for interaction",

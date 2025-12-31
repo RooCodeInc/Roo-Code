@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "始めるための最高の無料モデル",
-			"incentive": "Rooを無料で試す"
+			"incentive": "Copilotを無料で試す"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "プロバイダーを選択",
-		"chooseProvider": "Rooが機能するにはLLMプロバイダーが必要です。始めるために1つを選択してください。後から追加することもできます。",
+		"chooseProvider": "Copilotが機能するにはLLMプロバイダーが必要です。始めるために1つを選択してください。後から追加することもできます。",
 		"rooCloudProvider": "Datacoves Copilot Cloudプロバイダー",
 		"rooCloudDescription": "始める最も簡単な方法は、Datacoves Copilot Cloudプロバイダーを使用することです。無料および有料モデルの厳選されたミックスを低コストで提供します。",
 		"learnMore": "詳細を見る",

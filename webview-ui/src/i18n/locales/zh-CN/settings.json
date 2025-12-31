@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "错误和重复限制",
-			"description": "在显示“Roo遇到问题”对话框前允许的连续错误或重复操作次数。设置为 0 可禁用此安全机制（它将永远不会触发）。",
+			"description": "在显示“Copilot遇到问题”对话框前允许的连续错误或重复操作次数。设置为 0 可禁用此安全机制（它将永远不会触发）。",
 			"unlimitedDescription": "已启用无限重试（自动继续）。对话框将永远不会出现。",
 			"warning": "⚠️ 设置为 0 允许无限重试，这可能会消耗大量 API 使用量"
 		},
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
 	},
 	"footer": {
-		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/CopilotInc/Copilot-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/Copilot</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "允许匿名数据收集",
 			"description": "通过发送匿名使用数据和错误报告来帮助改进 Datacoves Copilot。此遥测不会收集代码、提示 或个人信息。详细信息请参阅我们的<privacyLink>隐私政策</privacyLink>。您可以随时关闭此功能。"

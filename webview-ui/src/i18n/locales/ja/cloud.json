@@ -6,7 +6,7 @@
 	"signIn": "Datacoves Copilot Cloud に接続",
 	"connect": "始める",
 	"cloudBenefitsTitle": "Datacoves Copilot Cloudを試す",
-	"cloudBenefitProvider": "Rooと相性の良い無料および有料モデルにアクセス",
+	"cloudBenefitProvider": "Copilotと相性の良い無料および有料モデルにアクセス",
 	"cloudBenefitCloudAgents": "自律型クラウドエージェントにタスクを依頼",
 	"cloudBenefitTriggers": "Githubでコードレビューを取得、Slackからタスクを開始など",
 	"cloudBenefitWalkaway": "どこからでも（スマートフォンを含む）タスクを追跡および制御",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "チームアカウントを作成",
 	"cloudUrlPillLabel": "Datacoves Copilot Cloud URL",
 	"upsell": {
-		"autoApprovePowerUser": "Rooに少し独立性を与えませんか？Datacoves Copilot Cloudでどこからでもコントロールできます。<learnMoreLink>詳細</learnMoreLink>。",
+		"autoApprovePowerUser": "Copilotに少し独立性を与えませんか？Datacoves Copilot Cloudでどこからでもコントロールできます。<learnMoreLink>詳細</learnMoreLink>。",
 		"longRunningTask": "これには時間がかかるかもしれません。Cloudを使えばどこからでも続けられます。",
-		"taskList": "Rooを楽しんでいますか？Datacoves Copilot Cloudをチェックしてください：どこからでもタスクを追跡および制御し、自律型クラウドエージェントを実行し、使用状況の統計を取得します。<learnMoreLink>詳細</learnMoreLink>。"
+		"taskList": "Copilotを楽しんでいますか？Datacoves Copilot Cloudをチェックしてください：どこからでもタスクを追跡および制御し、自律型クラウドエージェントを実行し、使用状況の統計を取得します。<learnMoreLink>詳細</learnMoreLink>。"
 	}
 }

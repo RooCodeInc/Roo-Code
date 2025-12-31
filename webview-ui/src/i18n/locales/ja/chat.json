@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "組織リンクをクリップボードにコピーしました",
 		"shareSuccessPublic": "公開リンクをクリップボードにコピーしました",
 		"openInCloud": "Datacoves Copilot Cloudでタスクを開く",
-		"openInCloudIntro": "どこからでもRooの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。",
+		"openInCloudIntro": "どこからでもCopilotの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。",
 		"openApiHistory": "API履歴を開く",
 		"openUiHistory": "UI履歴を開く"
 	},
@@ -117,7 +117,7 @@
 		"title": "モード",
 		"marketplace": "モードマーケットプレイス",
 		"settings": "モード設定",
-		"description": "Rooの動作をカスタマイズする専門的なペルソナ。",
+		"description": "Copilotの動作をカスタマイズする専門的なペルソナ。",
 		"searchPlaceholder": "モードを検索...",
 		"noResults": "結果が見つかりません"
 	},
@@ -131,7 +131,7 @@
 	"diffError": {
 		"title": "編集に失敗しました"
 	},
-	"troubleMessage": "Rooに問題が発生しています...",
+	"troubleMessage": "Copilotに問題が発生しています...",
 	"apiRequest": {
 		"title": "APIリクエスト",
 		"failed": "APIリクエスト失敗",
@@ -174,42 +174,42 @@
 		"current": "現在"
 	},
 	"instructions": {
-		"wantsToFetch": "Rooは現在のタスクを支援するための詳細な指示を取得したい"
+		"wantsToFetch": "Copilotは現在のタスクを支援するための詳細な指示を取得したい"
 	},
 	"fileOperations": {
-		"wantsToRead": "Rooはこのファイルを読みたい",
-		"wantsToReadOutsideWorkspace": "Rooはワークスペース外のこのファイルを読みたい",
-		"didRead": "Rooはこのファイルを読みました",
-		"wantsToEdit": "Rooはこのファイルを編集したい",
-		"wantsToEditOutsideWorkspace": "Rooはワークスペース外のこのファイルを編集したい",
-		"wantsToEditProtected": "Rooは保護された設定ファイルを編集したい",
-		"wantsToCreate": "Rooは新しいファイルを作成したい",
-		"wantsToSearchReplace": "Rooはこのファイルで検索と置換を行う",
-		"didSearchReplace": "Rooはこのファイルで検索と置換を実行しました",
-		"wantsToInsert": "Rooはこのファイルにコンテンツを挿入したい",
-		"wantsToInsertWithLineNumber": "Rooはこのファイルの{{lineNumber}}行目にコンテンツを挿入したい",
-		"wantsToInsertAtEnd": "Rooはこのファイルの末尾にコンテンツを追加したい",
+		"wantsToRead": "Copilotはこのファイルを読みたい",
+		"wantsToReadOutsideWorkspace": "Copilotはワークスペース外のこのファイルを読みたい",
+		"didRead": "Copilotはこのファイルを読みました",
+		"wantsToEdit": "Copilotはこのファイルを編集したい",
+		"wantsToEditOutsideWorkspace": "Copilotはワークスペース外のこのファイルを編集したい",
+		"wantsToEditProtected": "Copilotは保護された設定ファイルを編集したい",
+		"wantsToCreate": "Copilotは新しいファイルを作成したい",
+		"wantsToSearchReplace": "Copilotはこのファイルで検索と置換を行う",
+		"didSearchReplace": "Copilotはこのファイルで検索と置換を実行しました",
+		"wantsToInsert": "Copilotはこのファイルにコンテンツを挿入したい",
+		"wantsToInsertWithLineNumber": "Copilotはこのファイルの{{lineNumber}}行目にコンテンツを挿入したい",
+		"wantsToInsertAtEnd": "Copilotはこのファイルの末尾にコンテンツを追加したい",
 		"wantsToReadAndXMore": "Copilot はこのファイルと他に {{count}} 個のファイルを読み込もうとしています",
-		"wantsToReadMultiple": "Rooは複数のファイルを読み取ろうとしています",
-		"wantsToApplyBatchChanges": "Rooは複数のファイルに変更を適用したい",
-		"wantsToGenerateImage": "Rooは画像を生成したい",
-		"wantsToGenerateImageOutsideWorkspace": "Rooはワークスペース外で画像を生成したい",
-		"wantsToGenerateImageProtected": "Rooは保護された場所で画像を生成したい",
-		"didGenerateImage": "Rooは画像を生成しました"
+		"wantsToReadMultiple": "Copilotは複数のファイルを読み取ろうとしています",
+		"wantsToApplyBatchChanges": "Copilotは複数のファイルに変更を適用したい",
+		"wantsToGenerateImage": "Copilotは画像を生成したい",
+		"wantsToGenerateImageOutsideWorkspace": "Copilotはワークスペース外で画像を生成したい",
+		"wantsToGenerateImageProtected": "Copilotは保護された場所で画像を生成したい",
+		"didGenerateImage": "Copilotは画像を生成しました"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Rooはこのディレクトリのトップレベルファイルを表示したい",
-		"didViewTopLevel": "Rooはこのディレクトリのトップレベルファイルを表示しました",
-		"wantsToViewRecursive": "Rooはこのディレクトリのすべてのファイルを再帰的に表示したい",
-		"didViewRecursive": "Rooはこのディレクトリのすべてのファイルを再帰的に表示しました",
-		"wantsToSearch": "Rooはこのディレクトリで <code>{{regex}}</code> を検索したい",
-		"didSearch": "Rooはこのディレクトリで <code>{{regex}}</code> を検索しました",
-		"wantsToSearchOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索したい",
-		"didSearchOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索しました",
-		"wantsToViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
-		"didViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
-		"wantsToViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
-		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました"
+		"wantsToViewTopLevel": "Copilotはこのディレクトリのトップレベルファイルを表示したい",
+		"didViewTopLevel": "Copilotはこのディレクトリのトップレベルファイルを表示しました",
+		"wantsToViewRecursive": "Copilotはこのディレクトリのすべてのファイルを再帰的に表示したい",
+		"didViewRecursive": "Copilotはこのディレクトリのすべてのファイルを再帰的に表示しました",
+		"wantsToSearch": "Copilotはこのディレクトリで <code>{{regex}}</code> を検索したい",
+		"didSearch": "Copilotはこのディレクトリで <code>{{regex}}</code> を検索しました",
+		"wantsToSearchOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索したい",
+		"didSearchOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）で <code>{{regex}}</code> を検索しました",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
+		"didViewTopLevelOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
+		"didViewRecursiveOutsideWorkspace": "Copilotはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました"
 	},
 	"commandOutput": "コマンド出力",
 	"commandExecution": {
@@ -231,24 +231,24 @@
 	"response": "応答",
 	"arguments": "引数",
 	"text": {
-		"rooSaid": "Rooの発言"
+		"rooSaid": "Copilotの発言"
 	},
 	"feedback": {
 		"youSaid": "あなたの発言"
 	},
 	"mcp": {
-		"wantsToUseTool": "RooはMCPサーバー{{serverName}}でツールを使用したい",
-		"wantsToAccessResource": "RooはMCPサーバー{{serverName}}のリソースにアクセスしたい"
+		"wantsToUseTool": "CopilotはMCPサーバー{{serverName}}でツールを使用したい",
+		"wantsToAccessResource": "CopilotはMCPサーバー{{serverName}}のリソースにアクセスしたい"
 	},
 	"modes": {
-		"wantsToSwitch": "Rooは<code>{{mode}}</code>モードに切り替えたい",
-		"wantsToSwitchWithReason": "Rooは次の理由で<code>{{mode}}</code>モードに切り替えたい: {{reason}}",
-		"didSwitch": "Rooは<code>{{mode}}</code>モードに切り替えました",
-		"didSwitchWithReason": "Rooは次の理由で<code>{{mode}}</code>モードに切り替えました: {{reason}}"
+		"wantsToSwitch": "Copilotは<code>{{mode}}</code>モードに切り替えたい",
+		"wantsToSwitchWithReason": "Copilotは次の理由で<code>{{mode}}</code>モードに切り替えたい: {{reason}}",
+		"didSwitch": "Copilotは<code>{{mode}}</code>モードに切り替えました",
+		"didSwitchWithReason": "Copilotは次の理由で<code>{{mode}}</code>モードに切り替えました: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Rooは<code>{{mode}}</code>モードで新しいサブタスクを作成したい",
-		"wantsToFinish": "Rooはこのサブタスクを終了したい",
+		"wantsToCreate": "Copilotは<code>{{mode}}</code>モードで新しいサブタスクを作成したい",
+		"wantsToFinish": "Copilotはこのサブタスクを終了したい",
 		"newTaskContent": "サブタスク指示",
 		"completionContent": "サブタスク完了",
 		"resultContent": "サブタスク結果",
@@ -256,7 +256,7 @@
 		"completionInstructions": "サブタスク完了！結果を確認し、修正や次のステップを提案できます。問題なければ、親タスクに結果を返すために確認してください。"
 	},
 	"questions": {
-		"hasQuestion": "Rooは質問があります"
+		"hasQuestion": "Copilotは質問があります"
 	},
 	"taskCompleted": "タスク完了",
 	"modelResponseIncomplete": "モデルの応答が不完全",
@@ -329,7 +329,7 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"skills": "Rooが<skillsLink>Agent Skills</skillsLink>に対応しました - Rooの機能を拡張するためのプロンプト、ツール、リソースの再利用可能なパッケージです。",
+			"skills": "Copilotが<skillsLink>Agent Skills</skillsLink>に対応しました - Copilotの機能を拡張するためのプロンプト、ツール、リソースの再利用可能なパッケージです。",
 			"nativeToolCalling": "すべての新しいタスクではネイティブツール呼び出しが必須になりました。<blogLink>詳しく知る</blogLink>理由と問題が発生した場合の対応方法について。"
 		},
 		"cloudAgents": {
@@ -342,7 +342,7 @@
 	},
 	"browser": {
 		"session": "ブラウザセッション",
-		"rooWantsToUse": "Rooはブラウザを使用したい",
+		"rooWantsToUse": "Copilotはブラウザを使用したい",
 		"consoleLogs": "コンソールログ",
 		"noNewLogs": "(新しいログはありません)",
 		"screenshot": "ブラウザのスクリーンショット",
@@ -394,18 +394,18 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "自動承認リクエスト制限に達しました",
-			"description": "Rooは{{count}}件のAPI自動承認リクエスト制限に達しました。カウントをリセットしてタスクを続行しますか？",
+			"description": "Copilotは{{count}}件のAPI自動承認リクエスト制限に達しました。カウントをリセットしてタスクを続行しますか？",
 			"button": "リセットして続行"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "自動承認コスト制限に達しました",
-			"description": "Rooは自動承認されたコスト制限の${{count}}に達しました。コストをリセットしてタスクを続行しますか？",
+			"description": "Copilotは自動承認されたコスト制限の${{count}}に達しました。コストをリセットしてタスクを続行しますか？",
 			"button": "リセットして続ける"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Rooはコードベースで <code>{{query}}</code> を検索したい",
-		"wantsToSearchWithPath": "Rooは <code>{{path}}</code> 内のコードベースで <code>{{query}}</code> を検索したい",
+		"wantsToSearch": "Copilotはコードベースで <code>{{query}}</code> を検索したい",
+		"wantsToSearchWithPath": "Copilotは <code>{{path}}</code> 内のコードベースで <code>{{query}}</code> を検索したい",
 		"didSearch_one": "1件の結果が見つかりました",
 		"didSearch_other": "{{count}}件の結果が見つかりました",
 		"resultTooltip": "類似度スコア: {{score}} (クリックしてファイルを開く)"
@@ -470,8 +470,8 @@
 		"clickToEdit": "クリックしてメッセージを編集"
 	},
 	"slashCommand": {
-		"wantsToRun": "Rooはスラッシュコマンドを実行したい",
-		"didRun": "Rooはスラッシュコマンドを実行しました"
+		"wantsToRun": "Copilotはスラッシュコマンドを実行したい",
+		"didRun": "Copilotはスラッシュコマンドを実行しました"
 	},
 	"todo": {
 		"partial": "{{total}}件中{{completed}}件のTo-Doが完了",

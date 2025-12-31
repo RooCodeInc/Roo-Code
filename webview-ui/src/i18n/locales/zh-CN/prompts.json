@@ -9,7 +9,7 @@
 		"editModesConfig": "模式设置",
 		"editGlobalModes": "修改全局模式",
 		"editProjectModes": "编辑项目模式 (.roomodes)",
-		"createModeHelpText": "模式是Roo的专属角色，用于定制其行为。<0>了解如何使用模式</0>或<1>自定义模式。</1>",
+		"createModeHelpText": "模式是Copilot的专属角色，用于定制其行为。<0>了解如何使用模式</0>或<1>自定义模式。</1>",
 		"selectMode": "搜索模式"
 	},
 	"apiConfiguration": {

@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "공급자 선택",
-		"chooseProvider": "Roo가 작동하려면 LLM 공급자가 필요합니다. 시작하려면 하나를 선택하세요. 나중에 더 추가할 수 있습니다.",
+		"chooseProvider": "Copilot가 작동하려면 LLM 공급자가 필요합니다. 시작하려면 하나를 선택하세요. 나중에 더 추가할 수 있습니다.",
 		"rooCloudProvider": "Datacoves Copilot Cloud 공급자",
 		"rooCloudDescription": "시작하는 가장 쉬운 방법은 Datacoves Copilot Cloud 공급자를 사용하는 것입니다: 무료 및 유료 모델의 신중하게 선택된 믹스, 저렴한 비용으로.",
 		"learnMore": "자세히 알아보기",

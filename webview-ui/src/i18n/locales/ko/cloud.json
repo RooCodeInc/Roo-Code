@@ -6,7 +6,7 @@
 	"signIn": "Datacoves Copilot Cloud에 연결",
 	"connect": "시작하기",
 	"cloudBenefitsTitle": "Datacoves Copilot Cloud 체험하기",
-	"cloudBenefitProvider": "Roo와 잘 작동하는 무료 및 유료 모델에 액세스하세요",
+	"cloudBenefitProvider": "Copilot와 잘 작동하는 무료 및 유료 모델에 액세스하세요",
 	"cloudBenefitCloudAgents": "자율 클라우드 에이전트에게 작업 부여",
 	"cloudBenefitTriggers": "GitHub에서 코드 리뷰 받기, Slack에서 작업 시작 등",
 	"cloudBenefitWalkaway": "어디서나(휴대전화 포함) 작업을 팔로우하고 제어하세요",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "팀 계정 만들기",
 	"cloudUrlPillLabel": "Datacoves Copilot Cloud URL",
 	"upsell": {
-		"autoApprovePowerUser": "Roo에게 약간의 독립성을 부여하시겠습니까? Datacoves Copilot Cloud로 어디서든 제어하세요. <learnMoreLink>더 알아보기</learnMoreLink>.",
+		"autoApprovePowerUser": "Copilot에게 약간의 독립성을 부여하시겠습니까? Datacoves Copilot Cloud로 어디서든 제어하세요. <learnMoreLink>더 알아보기</learnMoreLink>.",
 		"longRunningTask": "시간이 좀 걸릴 수 있습니다. Cloud로 어디서든 계속하세요.",
-		"taskList": "Roo를 즐기고 계신가요? Datacoves Copilot Cloud를 확인해보세요: 어디서든 작업을 추적하고 제어하며, 자율적인 클라우드 에이전트를 실행하고, 사용 통계를 얻는 등 다양한 기능을 제공합니다. <learnMoreLink>더 알아보기</learnMoreLink>."
+		"taskList": "Copilot를 즐기고 계신가요? Datacoves Copilot Cloud를 확인해보세요: 어디서든 작업을 추적하고 제어하며, 자율적인 클라우드 에이전트를 실행하고, 사용 통계를 얻는 등 다양한 기능을 제공합니다. <learnMoreLink>더 알아보기</learnMoreLink>."
 	}
 }

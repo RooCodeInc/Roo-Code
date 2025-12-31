@@ -135,7 +135,7 @@
 	"warnings": {
 		"no_terminal_content": "No hay contenido de terminal seleccionado",
 		"missing_task_files": "Los archivos de esta tarea faltan. ¿Deseas eliminarla de la lista de tareas?",
-		"auto_import_failed": "Error al importar automáticamente la configuración de RooCode: {{error}}"
+		"auto_import_failed": "Error al importar automáticamente la configuración de Copilot: {{error}}"
 	},
 	"info": {
 		"no_changes": "No se encontraron cambios.",
@@ -144,7 +144,7 @@
 		"custom_storage_path_set": "Ruta de almacenamiento personalizada establecida: {{path}}",
 		"default_storage_path": "Se ha vuelto a usar la ruta de almacenamiento predeterminada",
 		"settings_imported": "Configuración importada correctamente.",
-		"auto_import_success": "Configuración de RooCode importada automáticamente desde {{filename}}",
+		"auto_import_success": "Configuración de Copilot importada automáticamente desde {{filename}}",
 		"share_link_copied": "Enlace de compartir copiado al portapapeles",
 		"image_copied_to_clipboard": "URI de datos de imagen copiada al portapapeles",
 		"image_saved": "Imagen guardada en {{path}}",
@@ -176,8 +176,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Ingresa la ruta de almacenamiento personalizada para el historial de conversaciones, déjala vacía para usar la ubicación predeterminada",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Por favor, ingresa una ruta absoluta (por ejemplo, D:\\RooCodeStorage o /home/user/storage)",
+		"path_placeholder": "D:\\CopilotStorage",
+		"enter_absolute_path": "Por favor, ingresa una ruta absoluta (por ejemplo, D:\\CopilotStorage o /home/user/storage)",
 		"enter_valid_path": "Por favor, ingresa una ruta válida"
 	},
 	"input": {

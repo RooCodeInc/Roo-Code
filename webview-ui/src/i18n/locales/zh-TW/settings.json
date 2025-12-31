@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
-		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
+		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/CopilotInc/Copilot-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/Copilot</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
 		"telemetry": {
 			"label": "允許匿名錯誤與使用情況回報",
 			"description": "透過發送匿名使用資料和錯誤回報來協助改善 Datacoves Copilot。此遙測不會收集程式碼、Prompt 或個人資訊。查看我們的<privacyLink>隱私政策</privacyLink>以了解更多詳情。您可以隨時關閉此功能。"
