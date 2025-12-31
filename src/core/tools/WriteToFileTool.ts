@@ -146,8 +146,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					const partialMessage = JSON.stringify(sharedMessageProps)
 					await task.ask("tool", partialMessage, true).catch(() => {})
 					await task.diffViewProvider.open(relPath)
-				} else {
-					task.diffViewProvider.setRelPath(relPath)
 				}
 
 				await task.diffViewProvider.update(
@@ -209,7 +207,14 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		if (!relPath || newContent === undefined) {
+		// During streaming, the partial-json library may return truncated string values
+		// when chunk boundaries fall mid-value. To avoid creating files at incorrect paths,
+		// we wait until the path stops changing between consecutive partial blocks before
+		// creating the file. This ensures we have the complete, final path value.
+		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === relPath
+		this.lastSeenPartialPath = relPath
+
+		if (!pathHasStabilized || !relPath || newContent === undefined) {
 			return
 		}
 
@@ -224,13 +229,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			return
 		}
 
-		// During streaming, the partial-json library may return truncated string values
-		// when chunk boundaries fall mid-value. To avoid creating files at incorrect paths,
-		// we wait until the path stops changing between consecutive partial blocks before
-		// creating the file. This ensures we have the complete, final path value.
-		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === relPath
-		this.lastSeenPartialPath = relPath
-
 		let fileExists: boolean
 		const absolutePath = path.resolve(task.cwd, relPath)
 
@@ -239,6 +237,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		} else {
 			fileExists = await fileExistsAtPath(absolutePath)
 			task.diffViewProvider.editType = fileExists ? "modify" : "create"
+		}
+
+		// Create parent directories early for new files to prevent ENOENT errors
+		// in subsequent operations (e.g., diffViewProvider.open)
+		if (!fileExists) {
+			await createDirectoriesForFile(absolutePath)
 		}
 
 		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
@@ -256,14 +260,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const partialMessage = JSON.stringify(sharedMessageProps)
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})
 
-		// Only create the file and start streaming when the path has stabilized
-		// (i.e., the same path was seen in consecutive partial blocks)
-		if (newContent && pathHasStabilized) {
-			// Create parent directories only when we're sure about the path
-			if (!fileExists) {
-				await createDirectoriesForFile(absolutePath)
-			}
-
+		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
 				await task.diffViewProvider.open(relPath)
 			}

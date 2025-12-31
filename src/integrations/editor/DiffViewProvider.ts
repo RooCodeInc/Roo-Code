@@ -46,15 +46,6 @@ export class DiffViewProvider {
 		this.taskRef = new WeakRef(task)
 	}
 
-	/**
-	 * Update the relative path without re-opening the diff view.
-	 * This is needed when the diff view was opened during streaming with a partial path
-	 * value, and we now have the complete path to use for the tool result.
-	 */
-	setRelPath(relPath: string): void {
-		this.relPath = relPath
-	}
-
 	async open(relPath: string): Promise<void> {
 		this.relPath = relPath
 		const fileExists = this.editType === "modify"

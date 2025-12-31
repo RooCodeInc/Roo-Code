@@ -399,14 +399,13 @@ describe("writeToFileTool", () => {
 		})
 
 		it("streams content updates during partial execution after path stabilizes", async () => {
-			// First call - path not yet stabilized, no file operations
+			// First call - path not yet stabilized, open is called but no update
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockCline.ask).toHaveBeenCalled()
-			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
 
 			// Second call with same path - path is now stabilized, file operations proceed
 			await executeWriteFileTool({}, { isPartial: true })
-			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
 			expect(mockCline.diffViewProvider.update).toHaveBeenCalledWith(testContent, false)
 		})
 	})
