@@ -274,26 +274,32 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 			throw buildNotAuthenticatedError()
 		}
 
-		let didRetryWithForceRefresh = false
-		while (true) {
+		// Try the request with at most one force-refresh retry on auth failure
+		for (let attempt = 0; attempt < 2; attempt++) {
 			try {
 				yield* streamOnce.call(this, accessToken)
 				return
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error)
 				const isAuthFailure = /unauthorized|invalid token|not authenticated|authentication/i.test(message)
-				if (!didRetryWithForceRefresh && isAuthFailure) {
-					didRetryWithForceRefresh = true
-					const refreshed = await claudeCodeOAuthManager.forceRefreshAccessToken()
-					if (!refreshed) {
-						throw buildNotAuthenticatedError()
-					}
-					accessToken = refreshed
-					continue
+
+				// Only retry on auth failure during first attempt
+				const canRetry = attempt === 0 && isAuthFailure
+				if (!canRetry) {
+					throw error
 				}
-				throw error
+
+				// Force refresh the token for retry
+				const refreshed = await claudeCodeOAuthManager.forceRefreshAccessToken()
+				if (!refreshed) {
+					throw buildNotAuthenticatedError()
+				}
+				accessToken = refreshed
 			}
 		}
+
+		// Unreachable: loop always returns on success or throws on failure
+		throw buildNotAuthenticatedError()
 	}
 
 	getModel(): { id: string; info: ModelInfo } {
