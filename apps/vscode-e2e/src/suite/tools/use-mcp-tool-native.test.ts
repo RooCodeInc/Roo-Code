@@ -45,14 +45,13 @@ function createVerificationState(): NativeProtocolVerification {
 function assertNativeProtocolUsed(verification: NativeProtocolVerification, testName: string): void {
 	assert.ok(verification.apiProtocol !== null, `[${testName}] apiProtocol should be set in api_req_started message.`)
 
-	assert.strictEqual(verification.responseIsNotXML, true, `[${testName}] Response should NOT contain XML tool tags.`)
-
 	assert.strictEqual(
-		verification.toolWasExecuted,
+		verification.hasNativeApiProtocol,
 		true,
-		`[${testName}] Tool should have been executed. Executed tool: ${verification.executedToolName || "none"}`,
+		`[${testName}] Native API protocol should be used. Expected apiProtocol to be "anthropic" or "openai", but got: ${verification.apiProtocol}`,
 	)
 
+	assert.strictEqual(verification.responseIsNotXML, true, `[${testName}] Response should NOT contain XML tool tags.`)
 	console.log(`[${testName}] ✓ Native protocol verification passed`)
 	console.log(`  - API Protocol: ${verification.apiProtocol}`)
 	console.log(`  - Response is not XML: ${verification.responseIsNotXML}`)
