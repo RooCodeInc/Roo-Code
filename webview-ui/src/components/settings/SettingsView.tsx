@@ -92,7 +92,7 @@ export interface SettingsViewRef {
 }
 
 const sectionNames = [
-	"providers",
+	// "providers",
 	"autoApprove",
 	"slashCommands",
 	"browser",
@@ -128,7 +128,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const [activeTab, setActiveTab] = useState<SectionName>(
 		targetSection && sectionNames.includes(targetSection as SectionName)
 			? (targetSection as SectionName)
-			: "providers",
+			: "autoApprove",
 	)
 
 	const scrollPositions = useRef<Record<SectionName, number>>(
@@ -504,7 +504,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
 		() => [
-			{ id: "providers", icon: Plug },
+			// { id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
 			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
@@ -655,7 +655,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 				{/* Content area */}
 				<TabContent ref={contentRef} className="p-0 flex-1 overflow-auto">
-					{/* Providers Section */}
+					{/* Providers Section - Hidden for Datacoves Copilot
 					{activeTab === "providers" && (
 						<div>
 							<SectionHeader>
@@ -703,6 +703,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							</Section>
 						</div>
 					)}
+					*/}
 
 					{/* Auto-Approve Section */}
 					{activeTab === "autoApprove" && (
