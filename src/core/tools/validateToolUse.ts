@@ -320,8 +320,23 @@ export function isToolAllowedForMode(
 			// Restrict search_files, codebase_search, and list_files path parameter
 			// These tools operate on directories, so we derive a directory pattern from the fileRegex
 			if (["search_files", "codebase_search", "list_files"].includes(tool)) {
-				const pathParam = toolParams?.path
-				if (typeof pathParam === "string" && pathParam.trim().length > 0) {
+				const rawPathParam = toolParams?.path
+
+				// IMPORTANT: When read group fileRegex is configured, we must not allow an empty/omitted
+				// path to be interpreted as an unrestricted workspace-root operation.
+				if (typeof rawPathParam !== "string" || rawPathParam.trim().length === 0) {
+					throw new FileRestrictionError(
+						mode.name,
+						options.fileRegex,
+						options.description,
+						typeof rawPathParam === "string" ? rawPathParam : "(missing path)",
+						tool,
+						"read",
+					)
+				}
+
+				const pathParam = rawPathParam.trim()
+				if (pathParam.length > 0) {
 					// Derive directory pattern: strip trailing file pattern (e.g., SKILL.md$) and match directory prefix
 					// For pattern like: (^|.*[\\/])\.roo[\\/]skills(-[a-zA-Z0-9-]+)?[\\/][^\\/]+[\\/]SKILL\.md$
 					// Directory should be within: .roo/skills or .roo/skills-<mode>

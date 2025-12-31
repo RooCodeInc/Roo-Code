@@ -561,20 +561,20 @@ describe("FileRestrictionError", () => {
 		})
 
 		it("allows empty path for search tools (workspace root)", () => {
-			// Empty path should be allowed (searches entire workspace which is allowed)
-			expect(
+			// Empty path must not be treated as an unrestricted workspace-root operation when fileRegex is set.
+			expect(() =>
 				isToolAllowedForMode("search_files", "orchestrator", [], undefined, {
 					path: "",
 					regex: ".*",
 				}),
-			).toBe(true)
+			).toThrow(FileRestrictionError)
 
-			expect(
+			expect(() =>
 				isToolAllowedForMode("codebase_search", "orchestrator", [], undefined, {
 					path: "",
 					query: "test",
 				}),
-			).toBe(true)
+			).toThrow(FileRestrictionError)
 		})
 	})
 

@@ -244,5 +244,56 @@ describe("mode-validator", () => {
 		it("handles undefined requirements gracefully", () => {
 			expect(() => validateToolUse("apply_diff", codeMode, [], undefined)).not.toThrow()
 		})
+
+		it("enforces read fileRegex restrictions for directory tools when path is empty/missing", () => {
+			const skillFileRegex = "(^|.*[\\\\/])\\.roo[\\\\/]skills(-[a-zA-Z0-9-]+)?[\\\\/][^\\\\/]+[\\\\/]SKILL\\.md$"
+
+			const customModes: ModeConfig[] = [
+				{
+					slug: "skills-reader",
+					name: "Skills Reader",
+					roleDefinition: "Read skill definition files only",
+					groups: [["read", { fileRegex: skillFileRegex }]] as const,
+				},
+			]
+
+			// Empty string path must not be treated as an unrestricted root operation.
+			expect(() => validateToolUse("list_files", "skills-reader", customModes, undefined, { path: "" })).toThrow(
+				/can only read files matching pattern/,
+			)
+			expect(() =>
+				validateToolUse("search_files", "skills-reader", customModes, undefined, { path: "", regex: ".*" }),
+			).toThrow(/can only read files matching pattern/)
+			expect(() =>
+				validateToolUse("codebase_search", "skills-reader", customModes, undefined, { query: "x", path: "" }),
+			).toThrow(/can only read files matching pattern/)
+
+			// Omitted path must also be rejected under read fileRegex.
+			expect(() =>
+				validateToolUse("codebase_search", "skills-reader", customModes, undefined, { query: "x" }),
+			).toThrow(/can only read files matching pattern/)
+
+			// Allowed directory should be accepted.
+			expect(() =>
+				validateToolUse("list_files", "skills-reader", customModes, undefined, { path: ".roo/skills" }),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("search_files", "skills-reader", customModes, undefined, {
+					path: ".roo/skills",
+					regex: ".*",
+				}),
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("codebase_search", "skills-reader", customModes, undefined, {
+					query: "x",
+					path: ".roo/skills",
+				}),
+			).not.toThrow()
+
+			// Disallowed directory should be rejected.
+			expect(() =>
+				validateToolUse("list_files", "skills-reader", customModes, undefined, { path: "src" }),
+			).toThrow(/can only read files matching pattern/)
+		})
 	})
 })
