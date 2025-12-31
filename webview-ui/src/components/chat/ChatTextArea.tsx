@@ -1291,7 +1291,6 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</StandardTooltip>
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
-						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 						{/* keep props referenced after moving browser button */}
 						<div
 							className="hidden"

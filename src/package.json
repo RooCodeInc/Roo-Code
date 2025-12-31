@@ -91,11 +91,6 @@
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "datacoves-copilot.cloudButtonClicked",
-				"title": "%command.cloud.title%",
-				"icon": "$(cloud)"
-			},
-			{
 				"command": "datacoves-copilot.settingsButtonClicked",
 				"title": "%command.settings.title%",
 				"icon": "$(settings-gear)"
@@ -224,11 +219,6 @@
 					"when": "view == datacoves-copilot.SidebarProvider"
 				},
 				{
-					"command": "datacoves-copilot.cloudButtonClicked",
-					"group": "navigation@3",
-					"when": "view == datacoves-copilot.SidebarProvider"
-				},
-				{
 					"command": "datacoves-copilot.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "view == datacoves-copilot.SidebarProvider"
@@ -253,11 +243,6 @@
 				{
 					"command": "datacoves-copilot.settingsButtonClicked",
 					"group": "navigation@2",
-					"when": "activeWebviewPanelId == datacoves-copilot.TabPanelProvider"
-				},
-				{
-					"command": "datacoves-copilot.cloudButtonClicked",
-					"group": "navigation@3",
 					"when": "activeWebviewPanelId == datacoves-copilot.TabPanelProvider"
 				},
 				{

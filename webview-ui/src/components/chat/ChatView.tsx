@@ -1437,10 +1437,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			) : (
 				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
 					<div className="flex flex-col items-start gap-2 justify-center h-full min-[400px]:px-6">
-						<VersionIndicator
-							onClick={() => setShowAnnouncementModal(true)}
-							className="absolute top-2 right-3 z-10"
-						/>
+						<VersionIndicator onClick={() => {}} className="absolute top-2 right-3 z-10" />
 						<div className="flex flex-col gap-4 w-full">
 							<RooHero />
 							{/* Show RooTips when authenticated or when user is new */}
@@ -1448,22 +1445,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							{/* Everyone should see their task history if any */}
 							{taskHistory.length > 0 && <HistoryPreview />}
 						</div>
-						{/* Logged out users should see a one-time upsell, but not for brand new users */}
-						{!cloudIsAuthenticated && taskHistory.length >= 6 && (
-							<DismissibleUpsell
-								upsellId="taskList2"
-								icon={<Cloud className="size-5 shrink-0" />}
-								onClick={() => openUpsell()}
-								dismissOnClick={false}
-								className="bg-none mt-6 border-border rounded-xl p-0 py-3 !text-base">
-								<Trans
-									i18nKey="cloud:upsell.taskList"
-									components={{
-										learnMoreLink: <VSCodeLink href="#" />,
-									}}
-								/>
-							</DismissibleUpsell>
-						)}
 					</div>
 				</div>
 			)}
@@ -1623,7 +1604,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			)}
 
 			<div id="roo-portal" />
-			<CloudUpsellDialog open={isUpsellOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>
 	)
 }

@@ -122,15 +122,6 @@ const TaskHeader = ({
 
 	return (
 		<div className="group pt-2 pb-0 px-3">
-			{showLongRunningTaskMessage && !isTaskComplete && (
-				<DismissibleUpsell
-					upsellId="longRunningTask"
-					onClick={() => openUpsell()}
-					dismissOnClick={false}
-					variant="banner">
-					{t("cloud:upsell.longRunningTask")}
-				</DismissibleUpsell>
-			)}
 			<div
 				className={cn(
 					"px-3 pt-2.5 pb-2 flex flex-col gap-1.5 relative z-1 cursor-pointer",
@@ -410,7 +401,6 @@ const TaskHeader = ({
 				{/* Todo list - always shown at bottom when todos exist */}
 				{hasTodos && <TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />}
 			</div>
-			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>
 	)
 }

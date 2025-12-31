@@ -225,9 +225,6 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 					onClick={handleShareButtonClick}
 					data-testid="share-button"></LucideIconButton>
 			)}
-
-			{/* Connect to Cloud Modal */}
-			<CloudUpsellDialog open={connectModalOpen} onOpenChange={closeUpsell} onConnect={handleConnectToCloud} />
 		</>
 	)
 }

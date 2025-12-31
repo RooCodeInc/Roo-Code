@@ -49,7 +49,6 @@ const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]
 	settingsButtonClicked: "settings",
 	historyButtonClicked: "history",
 	marketplaceButtonClicked: "marketplace",
-	cloudButtonClicked: "cloud",
 }
 
 const App = () => {
