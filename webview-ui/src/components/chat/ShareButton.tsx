@@ -8,7 +8,6 @@ import { vscode } from "@/utils/vscode"
 import { telemetryClient } from "@/utils/TelemetryClient"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCloudUpsell } from "@/hooks/useCloudUpsell"
-import { CloudUpsellDialog } from "@/components/cloud/CloudUpsellDialog"
 import {
 	Popover,
 	PopoverContent,
@@ -35,10 +34,7 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 
 	// Use enhanced cloud upsell hook with auto-open on auth success
 	const {
-		isOpen: connectModalOpen,
 		openUpsell,
-		closeUpsell,
-		handleConnect,
 		isAuthenticated: cloudIsAuthenticated,
 		sharingEnabled,
 		publicSharingEnabled,
@@ -95,12 +91,6 @@ export const ShareButton = ({ item, disabled = false }: ShareButtonProps) => {
 			visibility,
 		})
 		// Don't close the dropdown immediately - let success message show first
-	}
-
-	const handleConnectToCloud = () => {
-		setWasConnectInitiatedFromShare(true)
-		handleConnect()
-		setShareDropdownOpen(false)
 	}
 
 	const handleShareButtonClick = () => {

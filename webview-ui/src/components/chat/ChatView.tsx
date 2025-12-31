@@ -3,10 +3,8 @@ import { useDeepCompareEffect, useEvent } from "react-use"
 import debounce from "debounce"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import removeMd from "remove-markdown"
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import useSound from "use-sound"
 import { LRUCache } from "lru-cache"
-import { Trans } from "react-i18next"
 
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
@@ -31,7 +29,6 @@ import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 import RooHero from "@src/components/welcome/RooHero"
 import RooTips from "@src/components/welcome/RooTips"
 import { StandardTooltip, Button } from "@src/components/ui"
-import { CloudUpsellDialog } from "@src/components/cloud/CloudUpsellDialog"
 
 import TelemetryBanner from "../common/TelemetryBanner"
 import VersionIndicator from "../common/VersionIndicator"
@@ -46,9 +43,6 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
-import DismissibleUpsell from "../common/DismissibleUpsell"
-import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
-import { Cloud } from "lucide-react"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -93,7 +87,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		hasSystemPromptOverride,
 		soundEnabled,
 		soundVolume,
-		cloudIsAuthenticated,
 		messageQueue = [],
 		isBrowserSessionActive,
 	} = useExtensionState()
@@ -173,15 +166,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		clineAskRef.current = clineAsk
 	}, [clineAsk])
-
-	const {
-		isOpen: isUpsellOpen,
-		openUpsell,
-		closeUpsell,
-		handleConnect,
-	} = useCloudUpsell({
-		autoOpenOnAuth: false,
-	})
 
 	// Keep inputValueRef in sync with inputValue state
 	useEffect(() => {

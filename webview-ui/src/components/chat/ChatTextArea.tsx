@@ -31,7 +31,6 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
-import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 
 interface ChatTextAreaProps {
 	inputValue: string
