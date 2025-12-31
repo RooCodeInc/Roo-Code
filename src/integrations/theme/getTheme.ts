@@ -23,13 +23,29 @@ const defaultThemes: Record<string, string> = {
 }
 
 function parseThemeString(themeString: string | undefined): any {
-	themeString = themeString
-		?.split("\n")
+	if (!themeString) {
+		return {}
+	}
+
+	// Remove comment lines
+	const withoutComments = themeString
+		.split("\n")
 		.filter((line) => {
 			return !line.trim().startsWith("//")
 		})
 		.join("\n")
-	return JSON.parse(themeString ?? "{}")
+
+	// Remove trailing commas before closing braces/brackets
+	// This handles cases where removing comments leaves trailing commas
+	const cleaned = withoutComments.replace(/,(\s*[}\]])/g, "$1")
+
+	try {
+		return JSON.parse(cleaned)
+	} catch (e) {
+		console.error("Error parsing theme string:", e)
+		console.error("Cleaned theme string:", cleaned)
+		return {}
+	}
 }
 
 export async function getTheme() {
@@ -85,7 +101,7 @@ export async function getTheme() {
 
 		return converted
 	} catch (e) {
-		console.log("Error loading color theme: ", e)
+		console.error("Error loading color theme", e)
 	}
 	return undefined
 }
