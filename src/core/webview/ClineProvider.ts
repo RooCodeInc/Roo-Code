@@ -423,6 +423,12 @@ export class ClineProvider
 	}
 
 	async performPreparationTasks(cline: Task) {
+		// Set the active mode for MCP filtering
+		const mcpHub = this.getMcpHub()
+		if (mcpHub && cline.taskMode) {
+			await mcpHub.setActiveMode(cline.taskMode)
+		}
+
 		// LMStudio: We need to force model loading in order to read its context
 		// size; we do it now since we're starting a task with that model selected.
 		if (cline.apiConfiguration && cline.apiConfiguration.apiProvider === "lmstudio") {

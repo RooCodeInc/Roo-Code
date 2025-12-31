@@ -121,8 +121,6 @@ describe("ModesView MCP Server Selection UI", () => {
 		it("loads correct server selection when switching modes", async () => {
 			const modeToProfile = { code: ["serverA"], ask: ["serverB"] }
 			renderModesView({ mode: "code", modeToProfile })
-			const chipA = screen.getByTestId("mcp-server-serverA")
-			const chipB = screen.getByTestId("mcp-server-serverB")
 			// code mode: serverA selected
 			await waitFor(() => {
 				// The chip should be selected if it has the button background class
