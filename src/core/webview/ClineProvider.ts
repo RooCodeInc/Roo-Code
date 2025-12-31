@@ -1263,6 +1263,12 @@ export class ClineProvider
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
+		// Update MCP Hub with the new active mode
+		const mcpHub = this.getMcpHub()
+		if (mcpHub) {
+			await mcpHub.setActiveMode(newMode)
+		}
+
 		// Load the saved API config for the new mode if it exists.
 		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
 		const listApiConfig = await this.providerSettingsManager.listConfig()

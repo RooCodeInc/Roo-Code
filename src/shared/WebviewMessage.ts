@@ -87,6 +87,10 @@ export interface WebviewMessage {
 		| "toggleToolEnabledForPrompt"
 		| "toggleMcpServer"
 		| "updateMcpTimeout"
+		| "getModeToProfileMapping"
+		| "updateModeToProfileMapping"
+		| "setActiveModeForMcp"
+		| "modeToProfileMapping"
 		| "enhancePrompt"
 		| "enhancedPrompt"
 		| "draggedImages"
@@ -234,6 +238,7 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	mapping?: Record<string, string[]> // For MCP mode-to-profile mapping
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

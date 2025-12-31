@@ -75,6 +75,8 @@ const ModesView = () => {
 		customInstructions,
 		setCustomInstructions,
 		customModes,
+		mcpServers,
+		mcpEnabled,
 	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
@@ -123,6 +125,10 @@ const ModesView = () => {
 	const [localRenames, setLocalRenames] = useState<Record<string, string>>({})
 	// Display list that overlays optimistic names
 	const displayModes = (modes || []).map((m) => (localRenames[m.slug] ? { ...m, name: localRenames[m.slug] } : m))
+
+	// MCP server selection state
+	const [modeToProfile, setModeToProfile] = useState<Record<string, string[]>>({})
+	const [selectedMcpServers, setSelectedMcpServers] = useState<string[]>([])
 
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
@@ -217,6 +223,51 @@ const ModesView = () => {
 	useEffect(() => {
 		setVisualMode(mode)
 	}, [mode])
+
+	// Load modeToProfile mapping on mount
+	useEffect(() => {
+		vscode.postMessage({ type: "getModeToProfileMapping" })
+	}, [])
+
+	// Update selected MCP servers when mode changes
+	useEffect(() => {
+		if (visualMode && modeToProfile) {
+			setSelectedMcpServers(modeToProfile[visualMode] || [])
+		}
+	}, [visualMode, modeToProfile])
+
+	// Handle MCP server selection changes
+	const handleMcpServerToggle = useCallback(
+		(serverName: string) => {
+			setSelectedMcpServers((prev) => {
+				const newSelection = prev.includes(serverName)
+					? prev.filter((name) => name !== serverName)
+					: [...prev, serverName]
+
+				// Update the mapping
+				const newMapping = {
+					...modeToProfile,
+					[visualMode]: newSelection,
+				}
+
+				// If empty, remove the mode from mapping (meaning it uses all servers)
+				if (newSelection.length === 0) {
+					delete newMapping[visualMode]
+				}
+
+				setModeToProfile(newMapping)
+
+				// Send update to backend
+				vscode.postMessage({
+					type: "updateModeToProfileMapping",
+					mapping: newMapping,
+				})
+
+				return newSelection
+			})
+		},
+		[visualMode, modeToProfile],
+	)
 
 	// Handler for popover open state change
 	const onOpenChange = useCallback((open: boolean) => {
@@ -557,6 +608,11 @@ const ModesView = () => {
 					...prev,
 					[message.slug]: message.hasContent,
 				}))
+			} else if (message.type === "modeToProfileMapping") {
+				// Received the mode-to-profile mapping from backend
+				if (message.mapping) {
+					setModeToProfile(message.mapping)
+				}
 			} else if (message.type === "deleteCustomModeCheck") {
 				// Handle the check response
 				// Use the ref to get the current modeToDelete value
@@ -1194,6 +1250,39 @@ const ModesView = () => {
 						)}
 					</div>
 				</>
+
+				{/* MCP Servers section */}
+				{mcpEnabled && mcpServers && mcpServers.length > 0 && (
+					<div className="mb-4">
+						<div className="font-bold mb-1">MCP Servers</div>
+						<div className="text-sm text-vscode-descriptionForeground mb-2">
+							Select which MCP servers this mode can access. Leave empty to use all servers.
+						</div>
+						<div className="flex flex-wrap gap-2">
+							{mcpServers.map((server) => {
+								const isSelected = selectedMcpServers.includes(server.name)
+								return (
+									<button
+										key={server.name}
+										onClick={() => handleMcpServerToggle(server.name)}
+										className={`px-3 py-1.5 rounded text-sm transition-colors ${
+											isSelected
+												? "bg-vscode-button-background text-vscode-button-foreground hover:bg-vscode-button-hoverBackground"
+												: "bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border hover:bg-vscode-list-hoverBackground"
+										}`}
+										data-testid={`mcp-server-${server.name}`}>
+										{server.name}
+									</button>
+								)
+							})}
+						</div>
+						{selectedMcpServers.length === 0 && (
+							<div className="text-xs text-vscode-descriptionForeground mt-2 italic">
+								All servers available
+							</div>
+						)}
+					</div>
+				)}
 
 				{/* Role definition for both built-in and custom modes */}
 				<div className="mb-2">

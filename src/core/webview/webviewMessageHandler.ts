@@ -437,11 +437,15 @@ export const webviewMessageHandler = async (
 			getTheme().then((theme) => provider.postMessageToWebview({ type: "theme", text: JSON.stringify(theme) }))
 
 			// If MCP Hub is already initialized, update the webview with
-			// current server list.
+			// current server list and mode-to-profile mapping.
 			const mcpHub = provider.getMcpHub()
 
 			if (mcpHub) {
 				provider.postMessageToWebview({ type: "mcpServers", mcpServers: mcpHub.getAllServers() })
+				provider.postMessageToWebview({
+					type: "modeToProfileMapping",
+					mapping: mcpHub.getModeToProfileMapping(),
+				})
 			}
 
 			provider.providerSettingsManager
@@ -1394,6 +1398,34 @@ export const webviewMessageHandler = async (
 				await mcpHub.refreshAllConnections()
 			}
 
+			break
+		}
+
+		case "getModeToProfileMapping": {
+			const mcpHub = provider.getMcpHub()
+			if (mcpHub) {
+				const mapping = mcpHub.getModeToProfileMapping()
+				await provider.postMessageToWebview({
+					type: "modeToProfileMapping",
+					mapping,
+				})
+			}
+			break
+		}
+
+		case "updateModeToProfileMapping": {
+			const mcpHub = provider.getMcpHub()
+			if (mcpHub && message.mapping) {
+				await mcpHub.updateModeToProfileMapping(message.mapping)
+			}
+			break
+		}
+
+		case "setActiveModeForMcp": {
+			const mcpHub = provider.getMcpHub()
+			if (mcpHub && message.text) {
+				await mcpHub.setActiveMode(message.text)
+			}
 			break
 		}
 

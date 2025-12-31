@@ -73,6 +73,7 @@ export interface ExtensionMessage {
 		| "invoke"
 		| "messageUpdated"
 		| "mcpServers"
+		| "modeToProfileMapping"
 		| "enhancedPrompt"
 		| "commitSearchResults"
 		| "listApiConfig"
@@ -185,6 +186,7 @@ export interface ExtensionMessage {
 		}>
 	}>
 	mcpServers?: McpServer[]
+	mapping?: Record<string, string[]> // For modeToProfileMapping
 	commits?: GitCommit[]
 	listApiConfig?: ProviderSettingsEntry[]
 	mode?: Mode

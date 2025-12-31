@@ -28,6 +28,7 @@ import {
 	McpServer,
 	McpTool,
 	McpToolCallResponse,
+	ModeToProfileMapping,
 } from "../../shared/mcp"
 import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
@@ -140,6 +141,7 @@ export const ServerConfigSchema = createServerTypeSchema()
 // Settings schema
 const McpSettingsSchema = z.object({
 	mcpServers: z.record(ServerConfigSchema),
+	modeToProfile: z.record(z.array(z.string())).optional(),
 })
 
 export class McpHub {
@@ -156,6 +158,8 @@ export class McpHub {
 	private isProgrammaticUpdate: boolean = false
 	private flagResetTimer?: NodeJS.Timeout
 	private sanitizedNameRegistry: Map<string, string> = new Map()
+	private modeToProfile: ModeToProfileMapping = {}
+	private activeMode: string | undefined
 
 	constructor(provider: ClineProvider) {
 		this.providerRef = new WeakRef(provider)
@@ -451,7 +455,15 @@ export class McpHub {
 			// If existing is project and current is global, keep existing (project wins)
 		}
 
-		return Array.from(serversByName.values())
+		let servers = Array.from(serversByName.values())
+
+		// Filter servers based on active mode if a mode is set
+		if (this.activeMode && this.modeToProfile[this.activeMode]) {
+			const allowedServerNames = this.modeToProfile[this.activeMode]
+			servers = servers.filter((server) => allowedServerNames.includes(server.name))
+		}
+
+		return servers
 	}
 
 	getAllServers(): McpServer[] {
@@ -541,6 +553,11 @@ export class McpHub {
 			const result = McpSettingsSchema.safeParse(config)
 
 			if (result.success) {
+				// Merge modeToProfile mappings (project takes precedence over global)
+				if (result.data.modeToProfile) {
+					this.mergeModeToProfileMapping(result.data.modeToProfile, source)
+				}
+
 				// Pass all servers including disabled ones - they'll be handled in updateServerConnections
 				await this.updateServerConnections(result.data.mcpServers || {}, source, false)
 			} else {
@@ -591,6 +608,106 @@ export class McpHub {
 	// Initialize project-level MCP servers
 	private async initializeProjectMcpServers(): Promise<void> {
 		await this.initializeMcpServers("project")
+	}
+
+	/**
+	 * Merges mode-to-profile mapping from config into the current mapping
+	 * Project mappings take precedence over global mappings for the same mode
+	 * @param mapping The mode-to-profile mapping from config
+	 * @param source Whether this is from global or project config
+	 */
+	private mergeModeToProfileMapping(mapping: ModeToProfileMapping, source: "global" | "project"): void {
+		if (source === "global") {
+			// For global, only add modes that don't already exist (project wins)
+			for (const [mode, servers] of Object.entries(mapping)) {
+				if (!this.modeToProfile[mode]) {
+					this.modeToProfile[mode] = servers
+				}
+			}
+		} else {
+			// For project, overwrite any existing mappings
+			for (const [mode, servers] of Object.entries(mapping)) {
+				this.modeToProfile[mode] = servers
+			}
+		}
+
+		// Validate that server names in modeToProfile exist in mcpServers
+		this.validateModeToProfileMapping()
+	}
+
+	/**
+	 * Validates that all server names in modeToProfile mappings actually exist
+	 * Logs warnings for invalid references but doesn't fail
+	 */
+	private validateModeToProfileMapping(): void {
+		const allServerNames = new Set(this.connections.map((conn) => conn.server.name))
+
+		for (const [mode, serverNames] of Object.entries(this.modeToProfile)) {
+			for (const serverName of serverNames) {
+				if (!allServerNames.has(serverName)) {
+					console.warn(
+						`Mode "${mode}" references non-existent server "${serverName}" in modeToProfile mapping`,
+					)
+				}
+			}
+		}
+	}
+
+	/**
+	 * Sets the currently active mode for server filtering
+	 * @param modeSlug The mode slug to set as active, or undefined to clear
+	 */
+	public setActiveMode(modeSlug: string | undefined): void {
+		this.activeMode = modeSlug
+	}
+
+	/**
+	 * Gets the current mode-to-profile mapping
+	 * @returns The current mode-to-profile mapping
+	 */
+	public getModeToProfileMapping(): ModeToProfileMapping {
+		return { ...this.modeToProfile }
+	}
+
+	/**
+	 * Updates the mode-to-profile mapping in the config file
+	 * Updates both global and project configs if project exists, otherwise only global
+	 * @param mapping The new mode-to-profile mapping
+	 */
+	public async updateModeToProfileMapping(mapping: ModeToProfileMapping): Promise<void> {
+		try {
+			// Determine which config file(s) to update
+			const projectMcpPath = await this.getProjectMcpPath()
+			const configPath = projectMcpPath || (await this.getMcpSettingsFilePath())
+
+			// Read current config
+			const content = await fs.readFile(configPath, "utf-8")
+			const config = JSON.parse(content)
+
+			// Update modeToProfile in config
+			config.modeToProfile = mapping
+
+			// Set flag to prevent file watcher from triggering server restart
+			if (this.flagResetTimer) {
+				clearTimeout(this.flagResetTimer)
+			}
+			this.isProgrammaticUpdate = true
+
+			try {
+				await safeWriteJson(configPath, config)
+				// Update in-memory mapping
+				this.modeToProfile = { ...mapping }
+			} finally {
+				// Reset flag after watcher debounce period (non-blocking)
+				this.flagResetTimer = setTimeout(() => {
+					this.isProgrammaticUpdate = false
+					this.flagResetTimer = undefined
+				}, 600)
+			}
+		} catch (error) {
+			this.showErrorMessage("Failed to update mode-to-profile mapping", error)
+			throw error
+		}
 	}
 
 	/**
