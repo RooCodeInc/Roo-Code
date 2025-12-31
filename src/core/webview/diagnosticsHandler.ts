@@ -65,7 +65,7 @@ export async function generateErrorDiagnostics(params: GenerateDiagnosticsParams
 
 		// Prepend human-readable guidance comments before the JSON payload
 		const headerComment =
-			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster\n" +
+			"// Diagnostics export for troubleshooting\n" +
 			"// Just make sure you're OK sharing the contents of the conversation below.\n\n"
 		const jsonContent = JSON.stringify(diagnostics, null, 2)
 		const fullContent = headerComment + jsonContent

@@ -38,23 +38,6 @@
 		"about": "O Datacoves Copilot"
 	},
 	"about": {
-		"bugReport": {
-			"label": "Znalazłeś błąd?",
-			"link": "Zgłoś na GitHub"
-		},
-		"featureRequest": {
-			"label": "Masz pomysł?",
-			"link": "Podziel się nim z nami"
-		},
-		"securityIssue": {
-			"label": "Odkryłeś lukę w zabezpieczeniach?",
-			"link": "Postępuj zgodnie z naszym procesem ujawniania"
-		},
-		"contact": {
-			"label": "Musisz z nami porozmawiać? Napisz"
-		},
-		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami Datacoves Copilot? Dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "Kontakt i Społeczność",
 		"manageSettings": "Zarządzaj Ustawieniami"
 	},
 	"slashCommands": {

@@ -2,7 +2,7 @@
 	"name": "datacoves-copilot",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "RooVeterinaryInc",
+	"publisher": "Datacoves",
 	"version": "3.38.2",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
@@ -14,7 +14,7 @@
 		"node": "20.19.2"
 	},
 	"author": {
-		"name": "Datacoves Copilot"
+		"name": "Datacoves"
 	},
 	"repository": {
 		"type": "git",

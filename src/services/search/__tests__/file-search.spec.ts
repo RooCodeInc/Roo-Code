@@ -4,10 +4,10 @@ import * as vscode from "vscode"
 // Mock Package
 vi.mock("../../../shared/package", () => ({
 	Package: {
-		name: "roo-cline",
-		publisher: "RooVeterinaryInc",
+		name: "datacoves-copilot",
+		publisher: "Datacoves",
 		version: "1.0.0",
-		outputChannel: "Roo-Code",
+		outputChannel: "Datacoves-Copilot",
 	},
 }))
 

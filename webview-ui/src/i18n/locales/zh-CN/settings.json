@@ -38,23 +38,6 @@
 		"about": "关于 Datacoves Copilot"
 	},
 	"about": {
-		"bugReport": {
-			"label": "发现 Bug？",
-			"link": "在 GitHub 报告"
-		},
-		"featureRequest": {
-			"label": "有想法？",
-			"link": "与我们分享"
-		},
-		"securityIssue": {
-			"label": "发现安全漏洞？",
-			"link": "遵循我们的披露流程"
-		},
-		"contact": {
-			"label": "需要联系我们？请发送邮件至"
-		},
-		"community": "想要获取使用技巧或与其他 Datacoves Copilot 用户交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
-		"contactAndCommunity": "联系与社区",
 		"manageSettings": "管理设置"
 	},
 	"slashCommands": {

@@ -304,7 +304,7 @@ export const CloudView = ({ userInfo, isAuthenticated, cloudApiUrl, organization
 										value={manualUrl}
 										onChange={handleManualUrlChange}
 										onKeyDown={handleKeyDown}
-										placeholder="vscode://RooVeterinaryInc.roo-cline/auth/clerk/callback?state=..."
+										placeholder="vscode://Datacoves.datacoves-copilot/auth/clerk/callback?state=..."
 										className="w-full"
 									/>
 									<p className="mt-1">

@@ -38,23 +38,6 @@
 		"about": "Datacoves Copilotについて"
 	},
 	"about": {
-		"bugReport": {
-			"label": "バグを見つけましたか？",
-			"link": "GitHubで報告"
-		},
-		"featureRequest": {
-			"label": "アイデアがありますか？",
-			"link": "共有してください"
-		},
-		"securityIssue": {
-			"label": "脆弱性を発見しましたか？",
-			"link": "開示プロセスに従ってください"
-		},
-		"contact": {
-			"label": "お問い合わせが必要ですか？メールを送信"
-		},
-		"community": "ヒントが欲しいですか、または他のDatacoves Copilotユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
-		"contactAndCommunity": "お問い合わせとコミュニティ",
 		"manageSettings": "設定を管理"
 	},
 	"slashCommands": {

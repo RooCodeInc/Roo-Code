@@ -84,9 +84,7 @@ describe("generateErrorDiagnostics", () => {
 		const [writtenPath, writtenContent] = vi.mocked(fs.writeFile).mock.calls[0]
 		// taskId.slice(0, 8) = "test-tas" from "test-task-id"
 		expect(String(writtenPath)).toContain("roo-diagnostics-test-tas")
-		expect(String(writtenContent)).toContain(
-			"// Please share this file with Roo Code Support (support@roocode.com) to diagnose the issue faster",
-		)
+		expect(String(writtenContent)).toContain("// Diagnostics export for troubleshooting")
 		expect(String(writtenContent)).toContain('"error":')
 		expect(String(writtenContent)).toContain('"history":')
 		expect(String(writtenContent)).toContain('"version": "1.2.3"')
