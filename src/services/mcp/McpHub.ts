@@ -479,14 +479,7 @@ export class McpHub {
 		)
 		const fileExists = await fileExistsAtPath(mcpSettingsFilePath)
 		if (!fileExists) {
-			await fs.writeFile(
-				mcpSettingsFilePath,
-				`{
-  "mcpServers": {
-
-  }
-}`,
-			)
+			await safeWriteJson(mcpSettingsFilePath, { mcpServers: {} }, 2)
 		}
 		return mcpSettingsFilePath
 	}
@@ -1575,7 +1568,7 @@ export class McpHub {
 		}
 		this.isProgrammaticUpdate = true
 		try {
-			await safeWriteJson(configPath, updatedConfig)
+			await safeWriteJson(configPath, updatedConfig, 2)
 		} finally {
 			// Reset flag after watcher debounce period (non-blocking)
 			this.flagResetTimer = setTimeout(() => {
@@ -1660,7 +1653,7 @@ export class McpHub {
 					mcpServers: config.mcpServers,
 				}
 
-				await safeWriteJson(configPath, updatedConfig)
+				await safeWriteJson(configPath, updatedConfig, 2)
 
 				// Update server connections with the correct source
 				await this.updateServerConnections(config.mcpServers, serverSource)
@@ -1811,7 +1804,7 @@ export class McpHub {
 		}
 		this.isProgrammaticUpdate = true
 		try {
-			await safeWriteJson(normalizedPath, config)
+			await safeWriteJson(normalizedPath, config, 2)
 		} finally {
 			// Reset flag after watcher debounce period (non-blocking)
 			this.flagResetTimer = setTimeout(() => {

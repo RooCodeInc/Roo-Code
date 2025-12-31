@@ -41,11 +41,13 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 // Mock safeWriteJson
 vi.mock("../../../utils/safeWriteJson", () => ({
-	safeWriteJson: vi.fn(async (filePath, data) => {
+	safeWriteJson: vi.fn(async (filePath, data, indent) => {
 		// Instead of trying to write to the file system, just call fs.writeFile mock
 		// This avoids the complex file locking and temp file operations
 		const fs = await import("fs/promises")
-		return fs.writeFile(filePath, JSON.stringify(data), "utf8")
+		// Support indent parameter for formatting
+		const jsonString = indent !== undefined ? JSON.stringify(data, null, indent) : JSON.stringify(data)
+		return fs.writeFile(filePath, jsonString, "utf8")
 	}),
 }))
 
@@ -910,6 +912,61 @@ describe("McpHub", () => {
 			const writtenConfig = JSON.parse(callToUse[1] as string)
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toBeDefined()
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
+		})
+
+		it("should preserve JSON pretty-print formatting when toggling tool always allow", async () => {
+			const mockConfig = {
+				mcpServers: {
+					"test-server": {
+						type: "stdio",
+						command: "node",
+						args: ["test.js"],
+						alwaysAllow: [],
+					},
+				},
+			}
+
+			// Mock reading initial config
+			vi.mocked(fs.readFile).mockResolvedValueOnce(JSON.stringify(mockConfig))
+
+			// Set up mock connection
+			const mockConnection: ConnectedMcpConnection = {
+				type: "connected",
+				server: {
+					name: "test-server",
+					type: "stdio",
+					command: "node",
+					args: ["test.js"],
+					alwaysAllow: [],
+					source: "global",
+				} as any,
+				client: {} as any,
+				transport: {} as any,
+			}
+			mcpHub.connections = [mockConnection]
+
+			await mcpHub.toggleToolAlwaysAllow("test-server", "global", "new-tool", true)
+
+			// Verify safeWriteJson was called with indent parameter
+			const safeWriteJsonMock = vi.mocked(safeWriteJson)
+			expect(safeWriteJsonMock).toHaveBeenCalled()
+
+			// Get the last call to safeWriteJson (most recent write)
+			const lastCall = safeWriteJsonMock.mock.calls[safeWriteJsonMock.mock.calls.length - 1]
+
+			// Verify indent=2 was passed (third parameter)
+			expect(lastCall[2]).toBe(2)
+
+			// Verify the written content would be pretty-printed
+			const writeCalls = vi.mocked(fs.writeFile).mock.calls
+			const lastWriteCall = writeCalls[writeCalls.length - 1]
+			if (lastWriteCall) {
+				const writtenContent = lastWriteCall[1] as string
+				// Verify it contains newlines (not compact)
+				expect(writtenContent).toContain("\n")
+				// Verify proper indentation
+				expect(writtenContent).toMatch(/\{\s+"mcpServers":\s+\{/)
+			}
 		})
 	})
 

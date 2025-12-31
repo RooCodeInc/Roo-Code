@@ -15,10 +15,11 @@ import Stringer from "stream-json/Stringer"
  *
  * @param {string} filePath - The absolute path to the target file.
  * @param {any} data - The data to serialize to JSON and write.
+ * @param {number | string} indent - Optional indentation for pretty-printing. Use a number for spaces or a string (e.g., '\t') for custom indentation.
  * @returns {Promise<void>}
  */
 
-async function safeWriteJson(filePath: string, data: any): Promise<void> {
+async function safeWriteJson(filePath: string, data: any, indent?: number | string): Promise<void> {
 	const absoluteFilePath = path.resolve(filePath)
 	let releaseLock = async () => {} // Initialized to a no-op
 
@@ -75,7 +76,7 @@ async function safeWriteJson(filePath: string, data: any): Promise<void> {
 			`.${path.basename(absoluteFilePath)}.new_${Date.now()}_${Math.random().toString(36).substring(2)}.tmp`,
 		)
 
-		await _streamDataToFile(actualTempNewFilePath, data)
+		await _streamDataToFile(actualTempNewFilePath, data, indent)
 
 		// Step 2: Check if the target file exists. If so, rename it to a backup path.
 		try {
@@ -182,13 +183,28 @@ async function safeWriteJson(filePath: string, data: any): Promise<void> {
  * Helper function to stream JSON data to a file.
  * @param targetPath The path to write the stream to.
  * @param data The data to stream.
+ * @param indent Optional indentation for pretty-printing.
  * @returns Promise<void>
  */
-async function _streamDataToFile(targetPath: string, data: any): Promise<void> {
-	// Stream data to avoid high memory usage for large JSON objects.
+async function _streamDataToFile(targetPath: string, data: any, indent?: number | string): Promise<void> {
+	// If indent is specified, use JSON.stringify for pretty-printing
+	// This is suitable for small config files where readability is more important than memory efficiency
+	if (indent !== undefined) {
+		const fileWriteStream = fsSync.createWriteStream(targetPath, { encoding: "utf8" })
+		return new Promise<void>((resolve, reject) => {
+			fileWriteStream.on("error", reject)
+			fileWriteStream.on("finish", resolve)
+			
+			// Handle undefined data by converting to null for valid JSON
+			const jsonString = JSON.stringify(data === undefined ? null : data, null, indent)
+			fileWriteStream.write(jsonString)
+			fileWriteStream.end()
+		})
+	}
+
+	// For compact output, use streaming to avoid high memory usage for large JSON objects
 	const fileWriteStream = fsSync.createWriteStream(targetPath, { encoding: "utf8" })
 	const disassembler = Disassembler.disassembler()
-	// Output will be compact JSON as standard Stringer is used.
 	const stringer = Stringer.stringer()
 
 	return new Promise<void>((resolve, reject) => {

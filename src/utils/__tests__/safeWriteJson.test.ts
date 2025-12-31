@@ -477,4 +477,94 @@ describe("safeWriteJson", () => {
 
 		consoleErrorSpy.mockRestore()
 	})
+
+	// Tests for pretty-printing functionality
+	test("should write pretty-printed JSON with numeric indent parameter", async () => {
+		const data = { mcpServers: { test: { command: "node", args: ["test.js"] } } }
+		await safeWriteJson(currentTestFilePath, data, 2)
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// Verify data is correct
+		expect(parsed).toEqual(data)
+
+		// Verify it's pretty-printed (contains newlines and proper indentation)
+		expect(content).toContain("\n")
+		expect(content).toMatch(/\{\s+"mcpServers":\s+\{/)
+		expect(content).toMatch(/\s+"test":\s+\{/)
+	})
+
+	test("should write pretty-printed JSON with string indent parameter", async () => {
+		const data = { test: "value", nested: { key: "data" } }
+		await safeWriteJson(currentTestFilePath, data, "\t")
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// Verify data is correct
+		expect(parsed).toEqual(data)
+
+		// Verify it uses tab indentation
+		expect(content).toContain("\t")
+		expect(content).toContain("\n")
+	})
+
+	test("should maintain compact format when no indent parameter is specified", async () => {
+		const data = { test: "value", nested: { key: "data" } }
+		await safeWriteJson(currentTestFilePath, data)
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// Verify data is correct
+		expect(parsed).toEqual(data)
+
+		// Verify it's compact (no newlines except possibly at the very end)
+		// Compact JSON from stream-json should be all on one line
+		const lines = content.split("\n").filter((line) => line.trim().length > 0)
+		expect(lines.length).toBe(1)
+	})
+
+	test("should preserve formatting for complex nested structures with indent", async () => {
+		const data = {
+			mcpServers: {
+				server1: {
+					command: "node",
+					args: ["index.js", "--flag"],
+					env: { VAR: "value" },
+					alwaysAllow: ["tool1", "tool2"],
+				},
+				server2: {
+					command: "python",
+					args: ["script.py"],
+					disabled: true,
+				},
+			},
+		}
+		await safeWriteJson(currentTestFilePath, data, 2)
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// Verify data is correct
+		expect(parsed).toEqual(data)
+
+		// Verify proper formatting with multiple levels of nesting
+		expect(content).toContain("\n")
+		expect(content).toMatch(/"mcpServers":\s*{/)
+		expect(content).toMatch(/"server1":\s*{/)
+		expect(content).toMatch(/"alwaysAllow":\s*\[/)
+	})
+
+	test("should handle undefined data with indent parameter", async () => {
+		await safeWriteJson(currentTestFilePath, undefined, 2)
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// undefined should be converted to null
+		expect(parsed).toBeNull()
+		expect(content.trim()).toBe("null")
+	})
 })
