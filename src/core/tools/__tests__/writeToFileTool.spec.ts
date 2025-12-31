@@ -111,6 +111,7 @@ describe("writeToFileTool", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		writeToFileTool.resetPartialState()
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
 		mockedFileExistsAtPath.mockResolvedValue(false)
@@ -399,13 +400,15 @@ describe("writeToFileTool", () => {
 		})
 
 		it("streams content updates during partial execution after path stabilizes", async () => {
-			// First call - path not yet stabilized, open is called but no update
+			// First call - path not yet stabilized, early return (no file operations)
 			await executeWriteFileTool({}, { isPartial: true })
-			expect(mockCline.ask).toHaveBeenCalled()
-			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
+			expect(mockCline.ask).not.toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 
 			// Second call with same path - path is now stabilized, file operations proceed
 			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockCline.ask).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
 			expect(mockCline.diffViewProvider.update).toHaveBeenCalledWith(testContent, false)
 		})
 	})
