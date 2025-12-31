@@ -3,7 +3,6 @@ import axios from "axios"
 import type { ModelRecord } from "../../../shared/api"
 
 import { DEFAULT_HEADERS } from "../constants"
-import { getRooAxiosAgentConfig } from "../../../utils/http-client"
 /**
  * Fetches available models from a LiteLLM server
  *
@@ -29,7 +28,7 @@ export async function getLiteLLMModels(apiKey: string, baseUrl: string): Promise
 		urlObj.pathname = urlObj.pathname.replace(/\/+$/, "").replace(/\/+/g, "/") + "/v1/model/info"
 		const url = urlObj.href
 		// Added timeout to prevent indefinite hanging
-		const response = await axios.get(url, { headers, timeout: 5000, ...getRooAxiosAgentConfig() })
+		const response = await axios.get(url, { headers, timeout: 5000 })
 		const models: ModelRecord = {}
 
 		// Process the model info from the response

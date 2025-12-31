@@ -8,7 +8,6 @@ import delay from "delay"
 import axios from "axios"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
-import { getRooAxiosAgentConfig } from "../../utils/http-client"
 
 import {
 	type TaskProviderLike,
@@ -1064,7 +1063,7 @@ export class ClineProvider
 
 		// Check if local dev server is running.
 		try {
-			await axios.get(`http://${localServerUrl}`, getRooAxiosAgentConfig())
+			await axios.get(`http://${localServerUrl}`)
 		} catch (error) {
 			vscode.window.showErrorMessage(t("common:errors.hmr_not_running"))
 			return this.getHtmlContent(webview)
@@ -1512,7 +1511,7 @@ export class ClineProvider
 			const baseUrl = apiConfiguration.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 			// Extract the base domain for the auth endpoint.
 			const baseUrlDomain = baseUrl.match(/^(https?:\/\/[^\/]+)/)?.[1] || "https://openrouter.ai"
-			const response = await axios.post(`${baseUrlDomain}/api/v1/auth/keys`, { code }, getRooAxiosAgentConfig())
+			const response = await axios.post(`${baseUrlDomain}/api/v1/auth/keys`, { code })
 
 			if (response.data && response.data.key) {
 				apiKey = response.data.key

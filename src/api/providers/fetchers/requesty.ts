@@ -4,7 +4,6 @@ import type { ModelInfo } from "@roo-code/types"
 
 import { parseApiPrice } from "../../../shared/cost"
 import { toRequestyServiceUrl } from "../../../shared/utils/requesty"
-import { getRooAxiosAgentConfig } from "../../../utils/http-client"
 
 export async function getRequestyModels(baseUrl?: string, apiKey?: string): Promise<Record<string, ModelInfo>> {
 	const models: Record<string, ModelInfo> = {}
@@ -19,7 +18,7 @@ export async function getRequestyModels(baseUrl?: string, apiKey?: string): Prom
 		const resolvedBaseUrl = toRequestyServiceUrl(baseUrl)
 		const modelsUrl = new URL("v1/models", resolvedBaseUrl)
 
-		const response = await axios.get(modelsUrl.toString(), { headers, ...getRooAxiosAgentConfig() })
+		const response = await axios.get(modelsUrl.toString(), { headers })
 		const rawModels = response.data.data
 
 		for (const rawModel of rawModels) {

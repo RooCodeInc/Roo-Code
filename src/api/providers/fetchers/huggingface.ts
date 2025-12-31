@@ -10,7 +10,6 @@ import {
 } from "@roo-code/types"
 
 import type { ModelRecord } from "../../../shared/api"
-import { getRooAxiosAgentConfig } from "../../../utils/http-client"
 
 const huggingFaceProviderSchema = z.object({
 	provider: z.string(),
@@ -130,7 +129,6 @@ export async function getHuggingFaceModels(): Promise<ModelRecord> {
 				"Cache-Control": "no-cache",
 			},
 			timeout: 10000,
-			...getRooAxiosAgentConfig(),
 		})
 
 		const result = huggingFaceApiResponseSchema.safeParse(response.data)
@@ -239,7 +237,6 @@ export async function getHuggingFaceModelsWithMetadata(): Promise<HuggingFaceMod
 				"Cache-Control": "no-cache",
 			},
 			timeout: 10000,
-			...getRooAxiosAgentConfig(),
 		})
 
 		const models = response.data?.data || []

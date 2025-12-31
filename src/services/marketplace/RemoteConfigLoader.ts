@@ -9,7 +9,6 @@ import {
 	mcpMarketplaceItemSchema,
 } from "@roo-code/types"
 import { getRooCodeApiUrl } from "@roo-code/cloud"
-import { getRooAxiosAgentConfig } from "../../utils/http-client"
 
 const modeMarketplaceResponse = z.object({
 	items: z.array(modeMarketplaceItemSchema),
@@ -95,7 +94,6 @@ export class RemoteConfigLoader {
 						Accept: "application/json",
 						"Content-Type": "application/json",
 					},
-					...getRooAxiosAgentConfig(),
 				})
 				return response.data as T
 			} catch (error) {
