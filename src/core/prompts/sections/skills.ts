@@ -68,6 +68,13 @@ Step 2: Branching Decision
 - Do NOT respond outside the skill-defined flow.
 </if_skill_applies>
 
+<if_user_asks_to_list_skills>
+- When the user asks to list, show, display, or enumerate available skills, use ONLY the information already provided in <available_skills> above.
+- The <name>, <description>, and <location> fields provide all necessary information to describe available skills.
+- Do NOT read any SKILL.md files for informational queries about what skills exist.
+- This applies to requests like "list all skills", "what skills are available", "show me the skills", etc.
+</if_user_asks_to_list_skills>
+
 <if_no_skill_applies>
 - Proceed with a normal response.
 - Do NOT load any SKILL.md files.

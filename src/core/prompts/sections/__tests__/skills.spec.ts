@@ -29,4 +29,25 @@ describe("getSkillsSection", () => {
 		await expect(getSkillsSection(undefined, "code")).resolves.toBe("")
 		await expect(getSkillsSection({ getSkillsForMode: vi.fn() }, undefined)).resolves.toBe("")
 	})
+
+	it("should include instructions to not read SKILL.md files when listing skills", async () => {
+		const mockSkillsManager = {
+			getSkillsForMode: vi.fn().mockReturnValue([
+				{
+					name: "test-skill",
+					description: "Test skill description",
+					path: "/path/to/test-skill/SKILL.md",
+					source: "global" as const,
+				},
+			]),
+		}
+
+		const result = await getSkillsSection(mockSkillsManager, "code")
+
+		// Verify the new section for listing skills is present
+		expect(result).toContain("<if_user_asks_to_list_skills>")
+		expect(result).toContain("</if_user_asks_to_list_skills>")
+		expect(result).toContain("use ONLY the information already provided in <available_skills>")
+		expect(result).toContain("Do NOT read any SKILL.md files for informational queries")
+	})
 })
