@@ -1041,6 +1041,9 @@ describe("Cline", () => {
 					startTask: false,
 				})
 
+				// Spy on child.say to verify the emitted message type
+				const saySpy = vi.spyOn(child, "say")
+
 				// Mock the child's API stream
 				const childMockStream = {
 					async *[Symbol.asyncIterator]() {
@@ -1067,6 +1070,17 @@ describe("Cline", () => {
 				// Verify rate limiting was applied
 				expect(mockDelay).toHaveBeenCalledTimes(mockApiConfig.rateLimitSeconds)
 				expect(mockDelay).toHaveBeenCalledWith(1000)
+
+				// Verify we used the non-error rate-limit wait message type (JSON format)
+				expect(saySpy).toHaveBeenCalledWith(
+					"api_req_rate_limit_wait",
+					expect.stringMatching(/\{"seconds":\d+\}/),
+					undefined,
+					true,
+				)
+
+				// Verify the wait message was finalized
+				expect(saySpy).toHaveBeenCalledWith("api_req_rate_limit_wait", undefined, undefined, false)
 			}, 10000) // Increase timeout to 10 seconds
 
 			it("should not apply rate limiting if enough time has passed", async () => {

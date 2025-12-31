@@ -113,8 +113,6 @@ export interface WebviewMessage {
 		| "checkpointDiff"
 		| "checkpointRestore"
 		| "deleteMcpServer"
-		| "humanRelayResponse"
-		| "humanRelayCancel"
 		| "codebaseIndexEnabled"
 		| "telemetrySetting"
 		| "testBrowserConnection"

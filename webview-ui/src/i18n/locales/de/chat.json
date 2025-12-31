@@ -138,6 +138,7 @@
 		"streaming": "API-Anfrage...",
 		"cancelled": "API-Anfrage abgebrochen",
 		"streamingFailed": "API-Streaming fehlgeschlagen",
+		"rateLimitWait": "Ratenbegrenzung",
 		"errorTitle": "Anbieter-Fehler {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentation",

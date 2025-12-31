@@ -143,7 +143,6 @@ export function getProviderDefaultModelId(
 			return vercelAiGatewayDefaultModelId
 		case "anthropic":
 		case "gemini-cli":
-		case "human-relay":
 		case "fake-ai":
 		default:
 			return anthropicDefaultModelId

@@ -138,6 +138,7 @@
 		"streaming": "API अनुरोध...",
 		"cancelled": "API अनुरोध रद्द किया गया",
 		"streamingFailed": "API स्ट्रीमिंग विफल हुई",
+		"rateLimitWait": "दर सीमा",
 		"errorTitle": "प्रदाता त्रुटि {{code}}",
 		"errorMessage": {
 			"docs": "डॉक्स",

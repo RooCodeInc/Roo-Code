@@ -437,10 +437,6 @@
 		"getUnboundApiKey": "Dapatkan Unbound API Key",
 		"unboundRefreshModelsSuccess": "Daftar model diperbarui! Kamu sekarang dapat memilih dari model terbaru.",
 		"unboundInvalidApiKey": "API key tidak valid. Silakan periksa API key kamu dan coba lagi.",
-		"humanRelay": {
-			"description": "Tidak diperlukan API key, tetapi pengguna perlu membantu menyalin dan menempel informasi ke web chat AI.",
-			"instructions": "Selama penggunaan, kotak dialog akan muncul dan pesan saat ini akan disalin ke clipboard secara otomatis. Kamu perlu menempel ini ke versi web AI (seperti ChatGPT atau Claude), lalu salin balasan AI kembali ke kotak dialog dan klik tombol konfirmasi."
-		},
 		"roo": {
 			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
 			"connectButton": "Hubungkan ke Roo Code Cloud"

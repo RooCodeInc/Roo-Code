@@ -138,6 +138,7 @@
 		"streaming": "Sol·licitud API...",
 		"cancelled": "Sol·licitud API cancel·lada",
 		"streamingFailed": "Transmissió API ha fallat",
+		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
 			"docs": "Documentació",

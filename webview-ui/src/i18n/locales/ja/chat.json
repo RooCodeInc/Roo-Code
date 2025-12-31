@@ -138,6 +138,7 @@
 		"streaming": "APIリクエスト...",
 		"cancelled": "APIリクエストキャンセル",
 		"streamingFailed": "APIストリーミング失敗",
+		"rateLimitWait": "レート制限中",
 		"errorTitle": "プロバイダーエラー {{code}}",
 		"errorMessage": {
 			"docs": "ドキュメント",

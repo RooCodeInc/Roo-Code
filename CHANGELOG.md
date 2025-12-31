@@ -1,5 +1,16 @@
 # Roo Code Changelog
 
+## [3.38.2] - 2025-12-31
+
+![3.38.2 Release - Skill Alignment](/releases/3.38.2-release.png)
+
+- Align skills system with Agent Skills specification (PR #10409 by @hannesrudolph)
+- Prevent write_to_file from creating files at truncated paths (PR #10415 by @mrubens and @daniel-lxs)
+- Update Cerebras maxTokens to 16384 (PR #10387 by @sebastiand-cerebras)
+- Fix rate limit wait display (PR #10389 by @hannesrudolph)
+- Remove human-relay provider (PR #10388 by @hannesrudolph)
+- Replace Todo Lists video with Context Management video in documentation (PR #10375 by @SannidhyaSah)
+
 ## [3.38.1] - 2025-12-29
 
 ![3.38.1 Release - Bug Fixes and Stability](/releases/3.38.1-release.png)

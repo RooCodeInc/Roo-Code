@@ -741,17 +741,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "human-relay" && (
-				<>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.description")}
-					</div>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.instructions")}
-					</div>
-				</>
-			)}
-
 			{selectedProvider === "fireworks" && (
 				<Fireworks apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}

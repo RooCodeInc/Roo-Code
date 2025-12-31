@@ -16,7 +16,6 @@ import HistoryView from "./components/history/HistoryView"
 import SettingsView, { SettingsViewRef } from "./components/settings/SettingsView"
 import WelcomeView from "./components/welcome/WelcomeViewProvider"
 import { MarketplaceView } from "./components/marketplace/MarketplaceView"
-import { HumanRelayDialog } from "./components/human-relay/HumanRelayDialog"
 import { CheckpointRestoreDialog } from "./components/chat/CheckpointRestoreDialog"
 import { DeleteMessageDialog, EditMessageDialog } from "./components/chat/MessageModificationConfirmationDialog"
 import ErrorBoundary from "./components/ErrorBoundary"
@@ -26,12 +25,6 @@ import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
 
 type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud"
-
-interface HumanRelayDialogState {
-	isOpen: boolean
-	requestId: string
-	promptText: string
-}
 
 interface DeleteMessageDialogState {
 	isOpen: boolean
@@ -51,8 +44,6 @@ interface EditMessageDialogState {
 const MemoizedDeleteMessageDialog = React.memo(DeleteMessageDialog)
 const MemoizedEditMessageDialog = React.memo(EditMessageDialog)
 const MemoizedCheckpointRestoreDialog = React.memo(CheckpointRestoreDialog)
-const MemoizedHumanRelayDialog = React.memo(HumanRelayDialog)
-
 const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]>, Tab>> = {
 	chatButtonClicked: "chat",
 	settingsButtonClicked: "settings",
@@ -82,12 +73,6 @@ const App = () => {
 
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
 	const [tab, setTab] = useState<Tab>("chat")
-
-	const [humanRelayDialogState, setHumanRelayDialogState] = useState<HumanRelayDialogState>({
-		isOpen: false,
-		requestId: "",
-		promptText: "",
-	})
 
 	const [deleteMessageDialogState, setDeleteMessageDialogState] = useState<DeleteMessageDialogState>({
 		isOpen: false,
@@ -156,11 +141,6 @@ const App = () => {
 						setCurrentMarketplaceTab(marketplaceTab)
 					}
 				}
-			}
-
-			if (message.type === "showHumanRelayDialog" && message.requestId && message.promptText) {
-				const { requestId, promptText } = message
-				setHumanRelayDialogState({ isOpen: true, requestId, promptText })
 			}
 
 			if (message.type === "showDeleteMessageDialog" && message.messageTs) {
@@ -270,14 +250,6 @@ const App = () => {
 				isHidden={tab !== "chat"}
 				showAnnouncement={showAnnouncement}
 				hideAnnouncement={() => setShowAnnouncement(false)}
-			/>
-			<MemoizedHumanRelayDialog
-				isOpen={humanRelayDialogState.isOpen}
-				requestId={humanRelayDialogState.requestId}
-				promptText={humanRelayDialogState.promptText}
-				onClose={() => setHumanRelayDialogState((prev) => ({ ...prev, isOpen: false }))}
-				onSubmit={(requestId, text) => vscode.postMessage({ type: "humanRelayResponse", requestId, text })}
-				onCancel={(requestId) => vscode.postMessage({ type: "humanRelayCancel", requestId })}
 			/>
 			{deleteMessageDialogState.hasCheckpoint ? (
 				<MemoizedCheckpointRestoreDialog

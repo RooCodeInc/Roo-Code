@@ -133,6 +133,7 @@
 		"streaming": "API-verzoek...",
 		"cancelled": "API-verzoek geannuleerd",
 		"streamingFailed": "API-streaming mislukt",
+		"rateLimitWait": "Snelheidsbeperking",
 		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
 			"docs": "Documentatie",

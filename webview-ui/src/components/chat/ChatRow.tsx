@@ -298,6 +298,8 @@ export const ChatRowContent = ({
 						style={{ color: successColor, marginBottom: "-1.5px" }}></span>,
 					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
 				]
+			case "api_req_rate_limit_wait":
+				return []
 			case "api_req_retry_delayed":
 				return []
 			case "api_req_started":
@@ -327,8 +329,10 @@ export const ChatRowContent = ({
 						getIconSpan("arrow-swap", normalColor)
 					) : apiRequestFailedMessage ? (
 						getIconSpan("error", errorColor)
-					) : (
+					) : isLast ? (
 						<ProgressIndicator />
+					) : (
+						getIconSpan("arrow-swap", normalColor)
 					),
 					apiReqCancelReason !== null && apiReqCancelReason !== undefined ? (
 						apiReqCancelReason === "user_cancelled" ? (
@@ -356,7 +360,17 @@ export const ChatRowContent = ({
 			default:
 				return [null, null]
 		}
-	}, [type, isCommandExecuting, message, isMcpServerResponding, apiReqCancelReason, cost, apiRequestFailedMessage, t])
+	}, [
+		type,
+		isCommandExecuting,
+		message,
+		isMcpServerResponding,
+		apiReqCancelReason,
+		cost,
+		apiRequestFailedMessage,
+		t,
+		isLast,
+	])
 
 	const headerStyle: React.CSSProperties = {
 		display: "flex",
@@ -1149,6 +1163,35 @@ export const ChatRowContent = ({
 							errorDetails={rawError}
 						/>
 					)
+				case "api_req_rate_limit_wait": {
+					const isWaiting = message.partial === true
+
+					const waitSeconds = (() => {
+						if (!message.text) return undefined
+						try {
+							const data = JSON.parse(message.text)
+							return typeof data.seconds === "number" ? data.seconds : undefined
+						} catch {
+							return undefined
+						}
+					})()
+
+					return isWaiting && waitSeconds !== undefined ? (
+						<div
+							className={`group text-sm transition-opacity opacity-100`}
+							style={{
+								...headerStyle,
+								marginBottom: 0,
+								justifyContent: "space-between",
+							}}>
+							<div style={{ display: "flex", alignItems: "center", gap: "10px", flexGrow: 1 }}>
+								<ProgressIndicator />
+								<span style={{ color: normalColor }}>{t("chat:apiRequest.rateLimitWait")}</span>
+							</div>
+							<span className="text-xs font-light text-vscode-descriptionForeground">{waitSeconds}s</span>
+						</div>
+					) : null
+				}
 				case "api_req_finished":
 					return null // we should never see this message type
 				case "text":
