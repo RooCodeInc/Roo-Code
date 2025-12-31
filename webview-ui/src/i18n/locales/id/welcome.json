@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "Selamat datang di Roo Code!",
-		"introduction": "Dengan berbagai Mode bawaan dan dapat diperluas, Roo Code memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
-		"accountMention": "Untuk memulai, buat akun Roo Code Cloud Anda. Dapatkan model yang kuat, kontrol web, analitik, dukungan, dan banyak lagi.",
+		"greeting": "Selamat datang di Datacoves Copilot!",
+		"introduction": "Dengan berbagai Mode bawaan dan dapat diperluas, Datacoves Copilot memungkinkan Anda merencanakan, merancang, coding, debug, dan meningkatkan produktivitas seperti yang belum pernah terjadi sebelumnya.",
+		"accountMention": "Untuk memulai, buat akun Datacoves Copilot Cloud Anda. Dapatkan model yang kuat, kontrol web, analitik, dukungan, dan banyak lagi.",
 		"getStarted": "Memulai",
 		"noAccount": "atau gunakan tanpa akun"
 	},
 	"providerSignup": {
 		"heading": "Pilih penyedia Anda",
 		"chooseProvider": "Roo memerlukan penyedia LLM untuk bekerja. Pilih satu untuk memulai, Anda dapat menambahkan lebih banyak nanti.",
-		"rooCloudProvider": "Penyedia Roo Code Cloud",
-		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia Roo Code Cloud: campuran model gratis dan berbayar yang dikurasi dengan hati-hati dengan biaya rendah.",
+		"rooCloudProvider": "Penyedia Datacoves Copilot Cloud",
+		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia Datacoves Copilot Cloud: campuran model gratis dan berbayar yang dikurasi dengan hati-hati dengan biaya rendah.",
 		"learnMore": "Pelajari lebih lanjut",
 		"useAnotherProvider": "Penyedia Pihak Ketiga",
 		"useAnotherProviderDescription": "Masukkan kunci API dan mulai.",
 		"noApiKeys": "Tidak ingin berurusan dengan kunci API dan akun terpisah?",
-		"backToRoo": "Pilih Penyedia Roo Code Cloud.",
+		"backToRoo": "Pilih Penyedia Datacoves Copilot Cloud.",
 		"goBack": "Kembali",
 		"finish": "Selesai"
 	},
 	"waitingForCloud": {
-		"heading": "Masuk ke Roo Code Cloud...",
-		"description": "Kami akan membawa Anda ke browser Anda untuk mendaftar Roo Code Cloud. Kemudian kami akan membawa Anda kembali ke sini untuk menyelesaikannya.",
+		"heading": "Masuk ke Datacoves Copilot Cloud...",
+		"description": "Kami akan membawa Anda ke browser Anda untuk mendaftar Datacoves Copilot Cloud. Kemudian kami akan membawa Anda kembali ke sini untuk menyelesaikannya.",
 		"noPrompt": "Jika Anda tidak diminta untuk membuka URL, <clickHere>klik di sini</clickHere>.",
 		"havingTrouble": "Jika Anda telah menyelesaikan pendaftaran tetapi mengalami masalah, <clickHere>klik di sini</clickHere>.",
 		"pasteUrl": "Tempel URL callback dari browser Anda:",
 		"docsLink": "Tidak bekerja? <DocsLink>Periksa dokumentasi</DocsLink>.",
-		"invalidURL": "Itu tidak terlihat seperti URL callback yang valid. Harap salin apa yang ditampilkan Roo Code Cloud di browser Anda.",
+		"invalidURL": "Itu tidak terlihat seperti URL callback yang valid. Harap salin apa yang ditampilkan Datacoves Copilot Cloud di browser Anda.",
 		"goBack": "Kembali"
 	},
 	"startRouter": "Kami merekomendasikan menggunakan router LLM:",
 	"startCustom": "Atau Anda dapat membawa kunci API Anda sendiri:",
 	"telemetry": {
-		"helpImprove": "Bantu Tingkatkan Roo Code",
-		"helpImproveMessage": "Roo Code mengumpulkan data kesalahan dan penggunaan untuk membantu kami memperbaiki bug dan meningkatkan ekstensi. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Anda dapat menonaktifkannya di <settingsLink>pengaturan</settingsLink>."
+		"helpImprove": "Bantu Tingkatkan Datacoves Copilot",
+		"helpImproveMessage": "Datacoves Copilot mengumpulkan data kesalahan dan penggunaan untuk membantu kami memperbaiki bug dan meningkatkan ekstensi. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Anda dapat menonaktifkannya di <settingsLink>pengaturan</settingsLink>."
 	},
 	"importSettings": "Impor Pengaturan"
 }

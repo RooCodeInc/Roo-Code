@@ -219,7 +219,7 @@ export const ApiConfigSelector = ({
 						</div>
 					)}
 
-					{/* Bottom bar with buttons on left and title on right */}
+					{/* Bottom bar with buttons on left and title on right - Hidden for Datacoves Copilot
 					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
 						<div className="flex flex-row gap-1">
 							<IconButton
@@ -230,7 +230,6 @@ export const ApiConfigSelector = ({
 							/>
 						</div>
 
-						{/* Info icon and title on the right with matching spacing */}
 						<div className="flex items-center gap-1 pr-1">
 							{listApiConfigMeta.length > 6 && (
 								<StandardTooltip content={t("prompts:apiConfiguration.select")}>
@@ -242,6 +241,7 @@ export const ApiConfigSelector = ({
 							</h4>
 						</div>
 					</div>
+					*/}
 				</div>
 			</PopoverContent>
 		</Popover>
