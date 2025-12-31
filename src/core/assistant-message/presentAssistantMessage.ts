@@ -100,6 +100,13 @@ export async function presentAssistantMessage(cline: Task) {
 		return
 	}
 
+	if (block.type === "tool_use" && !block.partial) {
+		const freshBlock = cline.assistantMessageContent[cline.currentStreamingContentIndex]
+		if (freshBlock && freshBlock.type === "tool_use" && !freshBlock.partial) {
+			block = cloneDeep(freshBlock)
+		}
+	}
+
 	switch (block.type) {
 		case "mcp_tool_use": {
 			// Handle native MCP tool calls (from mcp_serverName_toolName dynamic tools)
