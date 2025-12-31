@@ -32,29 +32,10 @@ const WelcomeView = () => {
 		<Tab>
 			<TabContent className="flex flex-col gap-5 p-16">
 				<RooHero />
-				<h2 className="mt-0 mb-0">{t("welcome:greeting")}</h2>
-
-				<div className="font-bold">
-					<p>
-						<Trans i18nKey="welcome:introduction" />
-					</p>
-					<p>
-						<Trans i18nKey="welcome:chooseProvider" />
-					</p>
-				</div>
-
-				<div className="mb-4">
-					<p className="font-bold mt-0">
-						<Trans
-							i18nKey="welcome:startRouter"
-							components={{
-								docsLink: (
-									<VSCodeLink href="https://docs.datacoves.com/docs/how-tos/vs-code/datacoves-copilot/v2" />
-								),
-							}}
-						/>
-					</p>
-				</div>
+				<h2 className="mt-0 mb-0">{t("welcome:landing.greeting")}</h2>
+				<p className="font-bold">
+					<Trans i18nKey="welcome:landing.introduction" />
+				</p>
 			</TabContent>
 			<div className="sticky bottom-0 bg-vscode-sideBar-background p-5">
 				<div className="flex flex-col gap-1">
@@ -70,7 +51,7 @@ const WelcomeView = () => {
 						</VSCodeLink>
 					</div>
 					<VSCodeButton onClick={handleSubmit} appearance="primary">
-						{t("welcome:start")}
+						{t("welcome:landing.getStarted")}
 					</VSCodeButton>
 					{errorMessage && <div className="text-vscode-errorForeground">{errorMessage}</div>}
 				</div>
