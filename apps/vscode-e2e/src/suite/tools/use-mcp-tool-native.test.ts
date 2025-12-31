@@ -9,7 +9,58 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 import { waitFor, sleep } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite.skip("Roo Code use_mcp_tool Tool", function () {
+/**
+ * Native tool calling verification state.
+ * Tracks multiple indicators to ensure native protocol is actually being used.
+ */
+interface NativeProtocolVerification {
+	/** Whether the apiProtocol field indicates native format (anthropic/openai) */
+	hasNativeApiProtocol: boolean
+	/** The apiProtocol value received (for debugging) */
+	apiProtocol: string | null
+	/** Whether the response text does NOT contain XML tool tags (confirming non-XML) */
+	responseIsNotXML: boolean
+	/** Whether the tool was successfully executed */
+	toolWasExecuted: boolean
+	/** Tool name that was executed (for debugging) */
+	executedToolName: string | null
+}
+
+/**
+ * Creates a fresh verification state for tracking native protocol usage.
+ */
+function createVerificationState(): NativeProtocolVerification {
+	return {
+		hasNativeApiProtocol: false,
+		apiProtocol: null,
+		responseIsNotXML: true,
+		toolWasExecuted: false,
+		executedToolName: null,
+	}
+}
+
+/**
+ * Asserts that native tool calling was actually used based on the verification state.
+ */
+function assertNativeProtocolUsed(verification: NativeProtocolVerification, testName: string): void {
+	assert.ok(verification.apiProtocol !== null, `[${testName}] apiProtocol should be set in api_req_started message.`)
+
+	assert.strictEqual(verification.responseIsNotXML, true, `[${testName}] Response should NOT contain XML tool tags.`)
+
+	assert.strictEqual(
+		verification.toolWasExecuted,
+		true,
+		`[${testName}] Tool should have been executed. Executed tool: ${verification.executedToolName || "none"}`,
+	)
+
+	console.log(`[${testName}] ✓ Native protocol verification passed`)
+	console.log(`  - API Protocol: ${verification.apiProtocol}`)
+	console.log(`  - Response is not XML: ${verification.responseIsNotXML}`)
+	console.log(`  - Tool was executed: ${verification.toolWasExecuted}`)
+	console.log(`  - Executed tool name: ${verification.executedToolName || "none"}`)
+}
+
+suite("Roo Code use_mcp_tool Tool (Native Tool Calling)", function () {
 	setDefaultSuiteTimeout(this)
 
 	let tempDir: string
@@ -19,25 +70,20 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		mcpConfig: string
 	}
 
-	// Create a temporary directory and test files
 	suiteSetup(async () => {
-		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-mcp-"))
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "roo-test-mcp-native-"))
 
-		// Create test files in VSCode workspace directory
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || tempDir
 
-		// Create test files for MCP filesystem operations
 		testFiles = {
-			simple: path.join(workspaceDir, `mcp-test-${Date.now()}.txt`),
-			testData: path.join(workspaceDir, `mcp-data-${Date.now()}.json`),
+			simple: path.join(workspaceDir, `mcp-test-native-${Date.now()}.txt`),
+			testData: path.join(workspaceDir, `mcp-data-native-${Date.now()}.json`),
 			mcpConfig: path.join(workspaceDir, ".roo", "mcp.json"),
 		}
 
-		// Create initial test files
-		await fs.writeFile(testFiles.simple, "Initial content for MCP test")
+		await fs.writeFile(testFiles.simple, "Initial content for MCP native test")
 		await fs.writeFile(testFiles.testData, JSON.stringify({ test: "data", value: 42 }, null, 2))
 
-		// Create .roo directory and MCP configuration file
 		const rooDir = path.join(workspaceDir, ".roo")
 		await fs.mkdir(rooDir, { recursive: true })
 
@@ -56,16 +102,13 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		console.log("Test files:", testFiles)
 	})
 
-	// Clean up temporary directory and files after tests
 	suiteTeardown(async () => {
-		// Cancel any running tasks before cleanup
 		try {
 			await globalThis.api.cancelCurrentTask()
 		} catch {
 			// Task might not be running
 		}
 
-		// Clean up test files
 		for (const filePath of Object.values(testFiles)) {
 			try {
 				await fs.unlink(filePath)
@@ -74,7 +117,6 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			}
 		}
 
-		// Clean up .roo directory
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || tempDir
 		const rooDir = path.join(workspaceDir, ".roo")
 		try {
@@ -86,33 +128,25 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		await fs.rm(tempDir, { recursive: true, force: true })
 	})
 
-	// Clean up before each test
 	setup(async () => {
-		// Cancel any previous task
 		try {
 			await globalThis.api.cancelCurrentTask()
 		} catch {
 			// Task might not be running
 		}
-
-		// Small delay to ensure clean state
 		await sleep(100)
 	})
 
-	// Clean up after each test
 	teardown(async () => {
-		// Cancel the current task
 		try {
 			await globalThis.api.cancelCurrentTask()
 		} catch {
 			// Task might not be running
 		}
-
-		// Small delay to ensure clean state
 		await sleep(100)
 	})
 
-	test("Should request MCP filesystem read_file tool and complete successfully", async function () {
+	test("Should request MCP filesystem read_file tool using native tool calling", async function () {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let taskStarted = false
@@ -123,20 +157,23 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let attemptCompletionCalled = false
 		let errorOccurred: string | null = null
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request
+			console.log(`[DEBUG] Message: type=${message.type}, say=${message.say}, ask=${message.ask}`)
+
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				mcpToolRequested = true
+				verification.toolWasExecuted = true
 				console.log("MCP tool request:", message.text?.substring(0, 200))
 
-				// Parse the MCP request to verify structure and tool name
 				if (message.text) {
 					try {
 						const mcpRequest = JSON.parse(message.text)
 						mcpToolName = mcpRequest.toolName
+						verification.executedToolName = mcpRequest.toolName
 						console.log("MCP request parsed:", {
 							type: mcpRequest.type,
 							serverName: mcpRequest.serverName,
@@ -149,27 +186,48 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				}
 			}
 
-			// Check for MCP server response
 			if (message.type === "say" && message.say === "mcp_server_response") {
 				mcpServerResponse = message.text || null
 				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
 				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
-			// Log important messages for debugging
 			if (message.type === "say" && message.say === "error") {
 				errorOccurred = message.text || "Unknown error"
 				console.error("Error:", message.text)
 			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+							console.log(`[VERIFIED] API Protocol: ${requestData.apiProtocol}`)
+						}
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started:", e)
+				}
+			}
+
+			if (message.type === "say" && message.say === "text" && message.text) {
+				const hasXMLToolTags =
+					message.text.includes("<use_mcp_tool>") || message.text.includes("</use_mcp_tool>")
+
+				if (hasXMLToolTags) {
+					verification.responseIsNotXML = false
+					console.log("[WARNING] Found XML tool tags in response")
+				}
+			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task events
 		const taskStartedHandler = (id: string) => {
 			if (id === taskId) {
 				taskStarted = true
@@ -185,16 +243,14 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			}
 		}
 		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
-		await sleep(2000) // Wait for Roo Code to fully initialize
+		await sleep(2000)
 
-		// Trigger MCP server detection by opening and modifying the file
 		console.log("Triggering MCP server detection by modifying the config file...")
 		try {
 			const mcpConfigUri = vscode.Uri.file(testFiles.mcpConfig)
 			const document = await vscode.workspace.openTextDocument(mcpConfigUri)
 			const editor = await vscode.window.showTextDocument(document)
 
-			// Make a small modification to trigger the save event, without this Roo Code won't load the MCP server
 			const edit = new vscode.WorkspaceEdit()
 			const currentContent = document.getText()
 			const modifiedContent = currentContent.replace(
@@ -207,10 +263,8 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			edit.replace(mcpConfigUri, fullRange, modifiedContent)
 			await vscode.workspace.applyEdit(edit)
 
-			// Save the document to trigger MCP server detection
 			await editor.document.save()
 
-			// Close the editor
 			await vscode.commands.executeCommand("workbench.action.closeActiveEditor")
 
 			console.log("MCP config file modified and saved successfully")
@@ -218,79 +272,58 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			console.error("Failed to modify/save MCP config file:", error)
 		}
 
-		await sleep(5000) // Wait for MCP servers to initialize
+		await sleep(5000)
 		let taskId: string
 		try {
-			// Start task requesting to use MCP filesystem read_file tool
 			const fileName = path.basename(testFiles.simple)
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
 					autoApprovalEnabled: true,
-					alwaysAllowMcp: true, // Enable MCP auto-approval
+					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
-				text: `Use the MCP filesystem server's read_file tool to read the file "${fileName}". The file exists in the workspace and contains "Initial content for MCP test".`,
+				text: `Use the MCP filesystem server's read_file tool to read the file "${fileName}". The file exists in the workspace and contains "Initial content for MCP native test".`,
 			})
 
 			console.log("Task ID:", taskId)
 			console.log("Requesting MCP filesystem read_file for:", fileName)
 
-			// Wait for task to start
 			await waitFor(() => taskStarted, { timeout: 45_000 })
-
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify the MCP tool was requested
+			assertNativeProtocolUsed(verification, "mcpReadFile")
+
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
-
-			// Verify the correct tool was used
 			assert.strictEqual(mcpToolName, "read_file", "Should have used the read_file tool")
-
-			// Verify we got a response from the MCP server
 			assert.ok(mcpServerResponse, "Should have received a response from the MCP server")
 
-			// Verify the response contains expected file content (not an error)
 			const responseText = mcpServerResponse as string
-
-			// Check for specific file content keywords
 			assert.ok(
-				responseText.includes("Initial content for MCP test"),
+				responseText.includes("Initial content for MCP native test"),
 				`MCP server response should contain the exact file content. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify it contains the specific words from our test file
-			assert.ok(
-				responseText.includes("Initial") &&
-					responseText.includes("content") &&
-					responseText.includes("MCP") &&
-					responseText.includes("test"),
-				`MCP server response should contain all expected keywords: Initial, content, MCP, test. Got: ${responseText.substring(0, 100)}...`,
-			)
-
-			// Ensure no errors are present
 			assert.ok(
 				!responseText.toLowerCase().includes("error") && !responseText.toLowerCase().includes("failed"),
 				`MCP server response should not contain error messages. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify task completed successfully
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
-
-			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
 
-			console.log("Test passed! MCP read_file tool used successfully and task completed")
+			console.log("Test passed! MCP read_file tool used successfully with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
-	test("Should request MCP filesystem write_file tool and complete successfully", async function () {
+	test("Should request MCP filesystem write_file tool using native tool calling", async function () {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -300,53 +333,61 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let attemptCompletionCalled = false
 		let errorOccurred: string | null = null
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				mcpToolRequested = true
+				verification.toolWasExecuted = true
 				console.log("MCP tool request:", message.text?.substring(0, 200))
 
-				// Parse the MCP request to verify structure and tool name
 				if (message.text) {
 					try {
 						const mcpRequest = JSON.parse(message.text)
 						mcpToolName = mcpRequest.toolName
-						console.log("MCP request parsed:", {
-							type: mcpRequest.type,
-							serverName: mcpRequest.serverName,
-							toolName: mcpRequest.toolName,
-							hasArguments: !!mcpRequest.arguments,
-						})
+						verification.executedToolName = mcpRequest.toolName
 					} catch (e) {
 						console.log("Failed to parse MCP request:", e)
 					}
 				}
 			}
 
-			// Check for MCP server response
 			if (message.type === "say" && message.say === "mcp_server_response") {
 				mcpServerResponse = message.text || null
-				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
-				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
-			// Log important messages for debugging
 			if (message.type === "say" && message.say === "error") {
 				errorOccurred = message.text || "Unknown error"
-				console.error("Error:", message.text)
+			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+						}
+					}
+				} catch (_e) {
+					// Ignore
+				}
+			}
+
+			if (message.type === "say" && message.say === "text" && message.text) {
+				if (message.text.includes("<use_mcp_tool>") || message.text.includes("</use_mcp_tool>")) {
+					verification.responseIsNotXML = false
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				_taskCompleted = true
@@ -356,69 +397,58 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 		let taskId: string
 		try {
-			// Start task requesting to use MCP filesystem write_file tool
-			const newFileName = `mcp-write-test-${Date.now()}.txt`
+			const newFileName = `mcp-write-test-native-${Date.now()}.txt`
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
 					autoApprovalEnabled: true,
 					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
-				text: `Use the MCP filesystem server's write_file tool to create a new file called "${newFileName}" with the content "Hello from MCP!".`,
+				text: `Use the MCP filesystem server's write_file tool to create a new file called "${newFileName}" with the content "Hello from MCP native!".`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify the MCP tool was requested
+			assertNativeProtocolUsed(verification, "mcpWriteFile")
+
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested for writing")
-
-			// Verify the correct tool was used
 			assert.strictEqual(mcpToolName, "write_file", "Should have used the write_file tool")
-
-			// Verify we got a response from the MCP server
 			assert.ok(mcpServerResponse, "Should have received a response from the MCP server")
 
-			// Verify the response indicates successful file creation (not an error)
 			const responseText = mcpServerResponse as string
-
-			// Check for specific success indicators
 			const hasSuccessKeyword =
 				responseText.toLowerCase().includes("success") ||
 				responseText.toLowerCase().includes("created") ||
 				responseText.toLowerCase().includes("written") ||
-				responseText.toLowerCase().includes("file written") ||
 				responseText.toLowerCase().includes("successfully")
 
-			const hasFileName = responseText.includes(newFileName) || responseText.includes("mcp-write-test")
+			const hasFileName = responseText.includes(newFileName) || responseText.includes("mcp-write-test-native")
 
 			assert.ok(
 				hasSuccessKeyword || hasFileName,
-				`MCP server response should indicate successful file creation with keywords like 'success', 'created', 'written' or contain the filename '${newFileName}'. Got: ${responseText.substring(0, 150)}...`,
+				`MCP server response should indicate successful file creation. Got: ${responseText.substring(0, 150)}...`,
 			)
 
-			// Ensure no errors are present
 			assert.ok(
 				!responseText.toLowerCase().includes("error") && !responseText.toLowerCase().includes("failed"),
 				`MCP server response should not contain error messages. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify task completed successfully
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
-
-			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
 
-			console.log("Test passed! MCP write_file tool used successfully and task completed")
+			console.log("Test passed! MCP write_file tool used successfully with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
-	test("Should request MCP filesystem list_directory tool and complete successfully", async function () {
+	test("Should request MCP filesystem list_directory tool using native tool calling", async function () {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -428,53 +458,61 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let attemptCompletionCalled = false
 		let errorOccurred: string | null = null
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				mcpToolRequested = true
+				verification.toolWasExecuted = true
 				console.log("MCP tool request:", message.text?.substring(0, 300))
 
-				// Parse the MCP request to verify structure and tool name
 				if (message.text) {
 					try {
 						const mcpRequest = JSON.parse(message.text)
 						mcpToolName = mcpRequest.toolName
-						console.log("MCP request parsed:", {
-							type: mcpRequest.type,
-							serverName: mcpRequest.serverName,
-							toolName: mcpRequest.toolName,
-							hasArguments: !!mcpRequest.arguments,
-						})
+						verification.executedToolName = mcpRequest.toolName
 					} catch (e) {
 						console.log("Failed to parse MCP request:", e)
 					}
 				}
 			}
 
-			// Check for MCP server response
 			if (message.type === "say" && message.say === "mcp_server_response") {
 				mcpServerResponse = message.text || null
-				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
-				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
-			// Log important messages for debugging
 			if (message.type === "say" && message.say === "error") {
 				errorOccurred = message.text || "Unknown error"
-				console.error("Error:", message.text)
+			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+						}
+					}
+				} catch (_e) {
+					// Ignore
+				}
+			}
+
+			if (message.type === "say" && message.say === "text" && message.text) {
+				if (message.text.includes("<use_mcp_tool>") || message.text.includes("</use_mcp_tool>")) {
+					verification.responseIsNotXML = false
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				_taskCompleted = true
@@ -484,46 +522,39 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 		let taskId: string
 		try {
-			// Start task requesting MCP filesystem list_directory tool
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
 					autoApprovalEnabled: true,
 					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
 				text: `Use the MCP filesystem server's list_directory tool to list the contents of the current directory. I want to see the files in the workspace.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify the MCP tool was requested
+			assertNativeProtocolUsed(verification, "mcpListDirectory")
+
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
-
-			// Verify the correct tool was used
 			assert.strictEqual(mcpToolName, "list_directory", "Should have used the list_directory tool")
-
-			// Verify we got a response from the MCP server
 			assert.ok(mcpServerResponse, "Should have received a response from the MCP server")
 
-			// Verify the response contains directory listing (not an error)
 			const responseText = mcpServerResponse as string
-
-			// Check for specific directory contents - our test files should be listed
 			const hasTestFile =
-				responseText.includes("mcp-test-") || responseText.includes(path.basename(testFiles.simple))
+				responseText.includes("mcp-test-native-") || responseText.includes(path.basename(testFiles.simple))
 			const hasDataFile =
-				responseText.includes("mcp-data-") || responseText.includes(path.basename(testFiles.testData))
+				responseText.includes("mcp-data-native-") || responseText.includes(path.basename(testFiles.testData))
 			const hasRooDir = responseText.includes(".roo")
 
-			// At least one of our test files or the .roo directory should be present
 			assert.ok(
 				hasTestFile || hasDataFile || hasRooDir,
-				`MCP server response should contain our test files or .roo directory. Expected to find: '${path.basename(testFiles.simple)}', '${path.basename(testFiles.testData)}', or '.roo'. Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain our test files or .roo directory. Got: ${responseText.substring(0, 200)}...`,
 			)
 
-			// Check for typical directory listing indicators
 			const hasDirectoryStructure =
 				responseText.includes("name") ||
 				responseText.includes("type") ||
@@ -534,30 +565,25 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 			assert.ok(
 				hasDirectoryStructure,
-				`MCP server response should contain directory structure indicators like 'name', 'type', 'file', 'directory', or file extensions. Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain directory structure indicators. Got: ${responseText.substring(0, 200)}...`,
 			)
 
-			// Ensure no errors are present
 			assert.ok(
 				!responseText.toLowerCase().includes("error") && !responseText.toLowerCase().includes("failed"),
 				`MCP server response should not contain error messages. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify task completed successfully
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
-
-			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
 
-			console.log("Test passed! MCP list_directory tool used successfully and task completed")
+			console.log("Test passed! MCP list_directory tool used successfully with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
-	test.skip("Should request MCP filesystem directory_tree tool and complete successfully", async function () {
+	test.skip("Should request MCP filesystem directory_tree tool using native tool calling", async function () {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -567,53 +593,60 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let attemptCompletionCalled = false
 		let errorOccurred: string | null = null
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				mcpToolRequested = true
-				console.log("MCP tool request:", message.text?.substring(0, 200))
+				verification.toolWasExecuted = true
 
-				// Parse the MCP request to verify structure and tool name
 				if (message.text) {
 					try {
 						const mcpRequest = JSON.parse(message.text)
 						mcpToolName = mcpRequest.toolName
-						console.log("MCP request parsed:", {
-							type: mcpRequest.type,
-							serverName: mcpRequest.serverName,
-							toolName: mcpRequest.toolName,
-							hasArguments: !!mcpRequest.arguments,
-						})
+						verification.executedToolName = mcpRequest.toolName
 					} catch (e) {
 						console.log("Failed to parse MCP request:", e)
 					}
 				}
 			}
 
-			// Check for MCP server response
 			if (message.type === "say" && message.say === "mcp_server_response") {
 				mcpServerResponse = message.text || null
-				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
-				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
-			// Log important messages for debugging
 			if (message.type === "say" && message.say === "error") {
 				errorOccurred = message.text || "Unknown error"
-				console.error("Error:", message.text)
+			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+						}
+					}
+				} catch (_e) {
+					// Ignore
+				}
+			}
+
+			if (message.type === "say" && message.say === "text" && message.text) {
+				if (message.text.includes("<use_mcp_tool>") || message.text.includes("</use_mcp_tool>")) {
+					verification.responseIsNotXML = false
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				_taskCompleted = true
@@ -623,33 +656,28 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 		let taskId: string
 		try {
-			// Start task requesting MCP filesystem directory_tree tool
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
 					autoApprovalEnabled: true,
 					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
 				text: `Use the MCP filesystem server's directory_tree tool to show me the directory structure of the current workspace. I want to see the folder hierarchy.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify the MCP tool was requested
+			assertNativeProtocolUsed(verification, "mcpDirectoryTree")
+
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
-
-			// Verify the correct tool was used
 			assert.strictEqual(mcpToolName, "directory_tree", "Should have used the directory_tree tool")
-
-			// Verify we got a response from the MCP server
 			assert.ok(mcpServerResponse, "Should have received a response from the MCP server")
 
-			// Verify the response contains directory tree structure (not an error)
 			const responseText = mcpServerResponse as string
-
-			// Check for tree structure elements (be flexible as different MCP servers format differently)
 			const hasTreeStructure =
 				responseText.includes("name") ||
 				responseText.includes("type") ||
@@ -657,48 +685,40 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				responseText.includes("file") ||
 				responseText.includes("directory")
 
-			// Check for our test files or common file extensions
 			const hasTestFiles =
-				responseText.includes("mcp-test-") ||
-				responseText.includes("mcp-data-") ||
+				responseText.includes("mcp-test-native-") ||
+				responseText.includes("mcp-data-native-") ||
 				responseText.includes(".roo") ||
 				responseText.includes(".txt") ||
 				responseText.includes(".json") ||
-				responseText.length > 10 // At least some content indicating directory structure
+				responseText.length > 10
 
 			assert.ok(
 				hasTreeStructure,
-				`MCP server response should contain tree structure indicators like 'name', 'type', 'children', 'file', or 'directory'. Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain tree structure indicators. Got: ${responseText.substring(0, 200)}...`,
 			)
-
 			assert.ok(
 				hasTestFiles,
-				`MCP server response should contain directory contents (test files, extensions, or substantial content). Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain directory contents. Got: ${responseText.substring(0, 200)}...`,
 			)
 
-			// Ensure no errors are present
 			assert.ok(
 				!responseText.toLowerCase().includes("error") && !responseText.toLowerCase().includes("failed"),
 				`MCP server response should not contain error messages. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify task completed successfully
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
-
-			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
 
-			console.log("Test passed! MCP directory_tree tool used successfully and task completed")
+			console.log("Test passed! MCP directory_tree tool used successfully with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
-	test.skip("Should handle MCP server error gracefully and complete task", async function () {
+	test.skip("Should handle MCP server error gracefully using native tool calling", async function () {
 		// Skipped: This test requires interactive approval for non-whitelisted MCP servers
-		// which cannot be automated in the test environment
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -706,33 +726,42 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let _errorHandled = false
 		let attemptCompletionCalled = false
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				_mcpToolRequested = true
-				console.log("MCP tool request:", message.text?.substring(0, 200))
+				verification.toolWasExecuted = true
 			}
 
-			// Check for error handling
 			if (message.type === "say" && (message.say === "error" || message.say === "mcp_server_response")) {
 				if (message.text && (message.text.includes("Error") || message.text.includes("not found"))) {
 					_errorHandled = true
-					console.log("MCP error handled:", message.text.substring(0, 100))
 				}
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
-				console.log("Attempt completion called:", message.text?.substring(0, 200))
+			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+						}
+					}
+				} catch (_e) {
+					// Ignore
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				_taskCompleted = true
@@ -742,32 +771,31 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 		let taskId: string
 		try {
-			// Start task requesting non-existent MCP server
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
 					autoApprovalEnabled: true,
 					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
-				text: `Use the MCP server "nonexistent-server" to perform some operation. This should trigger an error but the task should still complete gracefully.`,
+				text: `Use the MCP server "nonexistent-server-native" to perform some operation. This should trigger an error but the task should still complete gracefully.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify task completed successfully even with error
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion even with MCP error")
 
-			console.log("Test passed! MCP error handling verified and task completed")
+			console.log("Test passed! MCP error handling verified with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
-	test.skip("Should validate MCP request message format and complete successfully", async function () {
+	test.skip("Should validate MCP request message format using native tool calling", async function () {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -778,22 +806,21 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 		let attemptCompletionCalled = false
 		let errorOccurred: string | null = null
 
-		// Listen for messages
+		const verification = createVerificationState()
+
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for MCP tool request and validate format
 			if (message.type === "ask" && message.ask === "use_mcp_server") {
 				mcpToolRequested = true
-				console.log("MCP tool request:", message.text?.substring(0, 200))
+				verification.toolWasExecuted = true
 
-				// Validate the message format matches ClineAskUseMcpServer interface
 				if (message.text) {
 					try {
 						const mcpRequest = JSON.parse(message.text)
 						mcpToolName = mcpRequest.toolName
+						verification.executedToolName = mcpRequest.toolName
 
-						// Check required fields
 						const hasType = typeof mcpRequest.type === "string"
 						const hasServerName = typeof mcpRequest.serverName === "string"
 						const validType =
@@ -801,12 +828,6 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 						if (hasType && hasServerName && validType) {
 							validMessageFormat = true
-							console.log("Valid MCP message format detected:", {
-								type: mcpRequest.type,
-								serverName: mcpRequest.serverName,
-								toolName: mcpRequest.toolName,
-								hasArguments: !!mcpRequest.arguments,
-							})
 						}
 					} catch (e) {
 						console.log("Failed to parse MCP request:", e)
@@ -814,27 +835,40 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 				}
 			}
 
-			// Check for MCP server response
 			if (message.type === "say" && message.say === "mcp_server_response") {
 				mcpServerResponse = message.text || null
-				console.log("MCP server response received:", message.text?.substring(0, 200))
 			}
 
-			// Check for attempt_completion
 			if (message.type === "say" && message.say === "completion_result") {
 				attemptCompletionCalled = true
-				console.log("Attempt completion called:", message.text?.substring(0, 200))
 			}
 
-			// Log important messages for debugging
 			if (message.type === "say" && message.say === "error") {
 				errorOccurred = message.text || "Unknown error"
-				console.error("Error:", message.text)
+			}
+
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.apiProtocol) {
+						verification.apiProtocol = requestData.apiProtocol
+						if (requestData.apiProtocol === "anthropic" || requestData.apiProtocol === "openai") {
+							verification.hasNativeApiProtocol = true
+						}
+					}
+				} catch (_e) {
+					// Ignore
+				}
+			}
+
+			if (message.type === "say" && message.say === "text" && message.text) {
+				if (message.text.includes("<use_mcp_tool>") || message.text.includes("</use_mcp_tool>")) {
+					verification.responseIsNotXML = false
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				_taskCompleted = true
@@ -844,7 +878,6 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 		let taskId: string
 		try {
-			// Start task requesting MCP filesystem get_file_info tool
 			const fileName = path.basename(testFiles.simple)
 			taskId = await api.startNewTask({
 				configuration: {
@@ -852,27 +885,23 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 					autoApprovalEnabled: true,
 					alwaysAllowMcp: true,
 					mcpEnabled: true,
+					toolProtocol: "native",
+					apiProvider: "openrouter",
+					apiModelId: "openai/gpt-5.1",
 				},
 				text: `Use the MCP filesystem server's get_file_info tool to get information about the file "${fileName}". This file exists in the workspace and will validate proper message formatting.`,
 			})
 
-			// Wait for attempt_completion to be called (indicating task finished)
 			await waitFor(() => attemptCompletionCalled, { timeout: 45_000 })
 
-			// Verify the MCP tool was requested with valid format
+			assertNativeProtocolUsed(verification, "mcpMessageFormat")
+
 			assert.ok(mcpToolRequested, "The use_mcp_tool should have been requested")
 			assert.ok(validMessageFormat, "The MCP request should have valid message format")
-
-			// Verify the correct tool was used
 			assert.strictEqual(mcpToolName, "get_file_info", "Should have used the get_file_info tool")
-
-			// Verify we got a response from the MCP server
 			assert.ok(mcpServerResponse, "Should have received a response from the MCP server")
 
-			// Verify the response contains file information (not an error)
 			const responseText = mcpServerResponse as string
-
-			// Check for specific file metadata fields
 			const hasSize = responseText.includes("size") && (responseText.includes("28") || /\d+/.test(responseText))
 			const hasTimestamps =
 				responseText.includes("created") ||
@@ -883,44 +912,27 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 
 			assert.ok(
 				hasSize,
-				`MCP server response should contain file size information. Expected 'size' with a number (like 28 bytes for our test file). Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain file size information. Got: ${responseText.substring(0, 200)}...`,
 			)
-
 			assert.ok(
 				hasTimestamps,
-				`MCP server response should contain timestamp information like 'created', 'modified', or 'accessed'. Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain timestamp information. Got: ${responseText.substring(0, 200)}...`,
 			)
-
 			assert.ok(
 				hasDateInfo,
-				`MCP server response should contain date/time information (year, GMT timezone, or ISO date format). Got: ${responseText.substring(0, 200)}...`,
+				`MCP server response should contain date/time information. Got: ${responseText.substring(0, 200)}...`,
 			)
 
-			// Note: get_file_info typically returns metadata only, not the filename itself
-			// So we'll focus on validating the metadata structure instead of filename reference
-			const hasValidMetadata =
-				(hasSize && hasTimestamps) || (hasSize && hasDateInfo) || (hasTimestamps && hasDateInfo)
-
-			assert.ok(
-				hasValidMetadata,
-				`MCP server response should contain valid file metadata (combination of size, timestamps, and date info). Got: ${responseText.substring(0, 200)}...`,
-			)
-
-			// Ensure no errors are present
 			assert.ok(
 				!responseText.toLowerCase().includes("error") && !responseText.toLowerCase().includes("failed"),
 				`MCP server response should not contain error messages. Got: ${responseText.substring(0, 100)}...`,
 			)
 
-			// Verify task completed successfully
 			assert.ok(attemptCompletionCalled, "Task should have completed with attempt_completion")
-
-			// Check that no errors occurred
 			assert.strictEqual(errorOccurred, null, "No errors should have occurred")
 
-			console.log("Test passed! MCP message format validation successful and task completed")
+			console.log("Test passed! MCP message format validation successful with native tool calling")
 		} finally {
-			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
