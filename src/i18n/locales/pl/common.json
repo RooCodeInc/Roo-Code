@@ -121,7 +121,7 @@
 			"completionError": "Błąd uzupełniania Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Datacoves Copilot Cloud."
+			"authenticationRequired": "Dostawca Copilot wymaga uwierzytelnienia w chmurze. Zaloguj się do Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Wprowadź prawidłową ścieżkę"
 	},
 	"input": {
-		"task_prompt": "Co ma zrobić Roo?",
+		"task_prompt": "Co ma zrobić Copilot?",
 		"task_placeholder": "Wpisz swoje zadanie tutaj"
 	},
 	"settings": {

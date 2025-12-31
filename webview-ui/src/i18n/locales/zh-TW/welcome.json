@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "開始使用的最佳免費模型",
-			"incentive": "免費試用 Roo"
+			"incentive": "免費試用 Copilot"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "選擇您的供應商",
-		"chooseProvider": "Roo 需要 LLM 提供商才能運作。選擇一個開始使用，您可以稍後新增更多。",
+		"chooseProvider": "Copilot 需要 LLM 提供商才能運作。選擇一個開始使用，您可以稍後新增更多。",
 		"rooCloudProvider": "Datacoves Copilot Cloud 提供商",
 		"rooCloudDescription": "開始使用最簡單的方式是使用 Datacoves Copilot Cloud 提供商：精選的免費和付費模型組合，價格低廉。",
 		"learnMore": "深入瞭解",

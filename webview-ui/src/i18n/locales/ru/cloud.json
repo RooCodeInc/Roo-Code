@@ -6,7 +6,7 @@
 	"signIn": "Подключиться к Datacoves Copilot Cloud",
 	"connect": "Начать",
 	"cloudBenefitsTitle": "Попробуйте Datacoves Copilot Cloud",
-	"cloudBenefitProvider": "Доступ к бесплатным и платным моделям, которые отлично работают с Roo",
+	"cloudBenefitProvider": "Доступ к бесплатным и платным моделям, которые отлично работают с Copilot",
 	"cloudBenefitCloudAgents": "Поручайте задачи автономным облачным агентам",
 	"cloudBenefitTriggers": "Получайте код-ревью на Github, запускайте задачи из Slack и многое другое",
 	"cloudBenefitWalkaway": "Отслеживайте и управляйте задачами откуда угодно (включая телефон)",
@@ -15,9 +15,9 @@
 	"visitCloudWebsite": "Посетить Datacoves Copilot Cloud",
 	"taskSync": "Синхронизация задач",
 	"taskSyncDescription": "Синхронизируйте свои задачи для просмотра и обмена в Datacoves Copilot Cloud",
-	"remoteControl": "Roomote Control",
+	"remoteControl": "Remote Control",
 	"remoteControlDescription": "Разрешить управление задачами из Datacoves Copilot Cloud",
-	"remoteControlRequiresTaskSync": "Для использования Roomote Control должна быть включена синхронизация задач",
+	"remoteControlRequiresTaskSync": "Для использования Remote Control должна быть включена синхронизация задач",
 	"taskSyncManagedByOrganization": "Синхронизация задач управляется вашей организацией",
 	"usageMetricsAlwaysReported": "Информация об использовании модели всегда сообщается при входе в систему",
 	"authWaiting": "Ожидание завершения аутентификации...",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "Создать командный аккаунт",
 	"cloudUrlPillLabel": "URL Datacoves Copilot Cloud",
 	"upsell": {
-		"autoApprovePowerUser": "Предоставить Roo немного независимости? Управляйте им из любого места с помощью Datacoves Copilot Cloud. <learnMoreLink>Узнать больше</learnMoreLink>.",
+		"autoApprovePowerUser": "Предоставить Copilot немного независимости? Управляйте им из любого места с помощью Datacoves Copilot Cloud. <learnMoreLink>Узнать больше</learnMoreLink>.",
 		"longRunningTask": "Это может занять некоторое время. Продолжайте из любого места с помощью Облака.",
-		"taskList": "Нравится Roo? Посмотрите Datacoves Copilot Cloud: отслеживайте и контролируйте свои задачи из любого места, запускайте автономных облачных агентов, получайте статистику использования и многое другое. <learnMoreLink>Узнать больше</learnMoreLink>."
+		"taskList": "Нравится Copilot? Посмотрите Datacoves Copilot Cloud: отслеживайте и контролируйте свои задачи из любого места, запускайте автономных облачных агентов, получайте статистику использования и многое другое. <learnMoreLink>Узнать больше</learnMoreLink>."
 	}
 }

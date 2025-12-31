@@ -9,7 +9,7 @@
 		"editModesConfig": "Modifica configurazione modalità",
 		"editGlobalModes": "Modifica modalità globali",
 		"editProjectModes": "Modifica modalità di progetto (.roomodes)",
-		"createModeHelpText": "Le modalità sono personas specializzate che personalizzano il comportamento di Roo. <0>Scopri di più sull'uso delle modalità</0> o <1>sulla personalizzazione delle modalità.</1>",
+		"createModeHelpText": "Le modalità sono personas specializzate che personalizzano il comportamento di Copilot. <0>Scopri di più sull'uso delle modalità</0> o <1>sulla personalizzazione delle modalità.</1>",
 		"selectMode": "Cerca modalità"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Definizione del ruolo",
 		"resetToDefault": "Ripristina predefiniti",
-		"description": "Definisci l'esperienza e la personalità di Roo per questa modalità. Questa descrizione modella come Roo si presenta e affronta i compiti."
+		"description": "Definisci l'esperienza e la personalità di Copilot per questa modalità. Questa descrizione modella come Copilot si presenta e affronta i compiti."
 	},
 	"description": {
 		"title": "Descrizione breve (per umani)",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Migliora prompt",
-				"description": "Utilizza il miglioramento dei prompt per ottenere suggerimenti o miglioramenti personalizzati per i tuoi input. Questo assicura che Roo comprenda la tua intenzione e fornisca le migliori risposte possibili. Disponibile tramite l'icona ✨ nella chat."
+				"description": "Utilizza il miglioramento dei prompt per ottenere suggerimenti o miglioramenti personalizzati per i tuoi input. Questo assicura che Copilot comprenda la tua intenzione e fornisca le migliori risposte possibili. Disponibile tramite l'icona ✨ nella chat."
 			},
 			"CONDENSE": {
 				"label": "Condensazione del contesto",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "Definizione del ruolo",
-			"description": "Definisci l'esperienza e la personalità di Roo per questa modalità."
+			"description": "Definisci l'esperienza e la personalità di Copilot per questa modalità."
 		},
 		"description": {
 			"label": "Descrizione breve (per umani)",

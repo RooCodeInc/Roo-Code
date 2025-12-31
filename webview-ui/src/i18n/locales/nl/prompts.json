@@ -9,7 +9,7 @@
 		"editModesConfig": "Modusconfiguratie bewerken",
 		"editGlobalModes": "Globale modi bewerken",
 		"editProjectModes": "Projectmodi bewerken (.roomodes)",
-		"createModeHelpText": "Modi zijn gespecialiseerde persona's die het gedrag van Roo aanpassen. <0>Meer informatie over het gebruik van modi</0> of <1>het aanpassen van modi.</1>",
+		"createModeHelpText": "Modi zijn gespecialiseerde persona's die het gedrag van Copilot aanpassen. <0>Meer informatie over het gebruik van modi</0> of <1>het aanpassen van modi.</1>",
 		"selectMode": "Modus zoeken"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Roldefinitie",
 		"resetToDefault": "Terugzetten naar standaard",
-		"description": "Definieer Roo's expertise en persoonlijkheid voor deze modus. Deze beschrijving bepaalt hoe Roo zich presenteert en taken benadert."
+		"description": "Definieer Copilot's expertise en persoonlijkheid voor deze modus. Deze beschrijving bepaalt hoe Copilot zich presenteert en taken benadert."
 	},
 	"description": {
 		"title": "Korte beschrijving (voor mensen)",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Prompt verbeteren",
-				"description": "Gebruik promptverbetering om op maat gemaakte suggesties of verbeteringen voor je invoer te krijgen. Zo begrijpt Roo je intentie en krijg je de best mogelijke antwoorden. Beschikbaar via het ✨-icoon in de chat."
+				"description": "Gebruik promptverbetering om op maat gemaakte suggesties of verbeteringen voor je invoer te krijgen. Zo begrijpt Copilot je intentie en krijg je de best mogelijke antwoorden. Beschikbaar via het ✨-icoon in de chat."
 			},
 			"CONDENSE": {
 				"label": "Contextcondensatie",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "Roldefinitie",
-			"description": "Definieer Roo's expertise en persoonlijkheid voor deze modus."
+			"description": "Definieer Copilot's expertise en persoonlijkheid voor deze modus."
 		},
 		"whenToUse": {
 			"label": "Wanneer te gebruiken (optioneel)",

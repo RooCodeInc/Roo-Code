@@ -6,7 +6,7 @@
 	"signIn": "Verbind met Datacoves Copilot Cloud",
 	"connect": "Aan de slag",
 	"cloudBenefitsTitle": "Probeer Datacoves Copilot Cloud",
-	"cloudBenefitProvider": "Toegang tot gratis en betaalde modellen die geweldig werken met Roo",
+	"cloudBenefitProvider": "Toegang tot gratis en betaalde modellen die geweldig werken met Copilot",
 	"cloudBenefitCloudAgents": "Geef taken aan autonome Cloud-agents",
 	"cloudBenefitTriggers": "Krijg code reviews op Github, start taken vanuit Slack en meer",
 	"cloudBenefitWalkaway": "Volg en beheer taken van overal (inclusief je telefoon)",
@@ -15,9 +15,9 @@
 	"visitCloudWebsite": "Bezoek Datacoves Copilot Cloud",
 	"taskSync": "Taaksynchronisatie",
 	"taskSyncDescription": "Synchroniseer je taken om ze te bekijken en delen op Datacoves Copilot Cloud",
-	"remoteControl": "Roomote Control",
+	"remoteControl": "Remote Control",
 	"remoteControlDescription": "Sta toe taken te besturen vanuit Datacoves Copilot Cloud",
-	"remoteControlRequiresTaskSync": "Taaksynchronisatie moet ingeschakeld zijn om Roomote Control te gebruiken",
+	"remoteControlRequiresTaskSync": "Taaksynchronisatie moet ingeschakeld zijn om Remote Control te gebruiken",
 	"taskSyncManagedByOrganization": "Taaksynchronisatie wordt beheerd door uw organisatie",
 	"usageMetricsAlwaysReported": "Modelgebruiksinformatie wordt altijd gerapporteerd wanneer ingelogd",
 	"authWaiting": "Wachten tot authenticatie voltooid is...",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "Teamaccount aanmaken",
 	"cloudUrlPillLabel": "Datacoves Copilot Cloud URL",
 	"upsell": {
-		"autoApprovePowerUser": "Roo wat onafhankelijkheid geven? Bedien het overal met Datacoves Copilot Cloud. <learnMoreLink>Meer informatie</learnMoreLink>.",
+		"autoApprovePowerUser": "Copilot wat onafhankelijkheid geven? Bedien het overal met Datacoves Copilot Cloud. <learnMoreLink>Meer informatie</learnMoreLink>.",
 		"longRunningTask": "Dit kan even duren. Ga overal verder met de Cloud.",
-		"taskList": "Geniet je van Roo? Bekijk Datacoves Copilot Cloud: volg en beheer je taken overal, voer autonome Cloud-agents uit, krijg gebruiksstatistieken en meer. <learnMoreLink>Meer informatie</learnMoreLink>."
+		"taskList": "Geniet je van Copilot? Bekijk Datacoves Copilot Cloud: volg en beheer je taken overal, voer autonome Cloud-agents uit, krijg gebruiksstatistieken en meer. <learnMoreLink>Meer informatie</learnMoreLink>."
 	}
 }

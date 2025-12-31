@@ -44,7 +44,7 @@
 		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
 	},
 	"prompts": {
-		"description": "Konfigurasi support prompt yang digunakan untuk aksi cepat seperti meningkatkan prompt, menjelaskan kode, dan memperbaiki masalah. Prompt ini membantu Roo memberikan bantuan yang lebih baik untuk tugas pengembangan umum."
+		"description": "Konfigurasi support prompt yang digunakan untuk aksi cepat seperti meningkatkan prompt, menjelaskan kode, dan memperbaiki masalah. Prompt ini membantu Copilot memberikan bantuan yang lebih baik untuk tugas pengembangan umum."
 	},
 	"codeIndex": {
 		"title": "Pengindeksan Codebase",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "Anda dapat mengonfigurasi pintasan global untuk pengaturan ini <SettingsLink>di preferensi IDE Anda</SettingsLink>.",
-		"description": "Izinkan Roo untuk secara otomatis melakukan operasi tanpa memerlukan persetujuan. Aktifkan pengaturan ini hanya jika kamu sepenuhnya mempercayai AI dan memahami risiko keamanan yang terkait.",
+		"description": "Izinkan Copilot untuk secara otomatis melakukan operasi tanpa memerlukan persetujuan. Aktifkan pengaturan ini hanya jika kamu sepenuhnya mempercayai AI dan memahami risiko keamanan yang terkait.",
 		"enabled": "Auto-Approve Diaktifkan",
 		"toggleAriaLabel": "Beralih persetujuan otomatis",
 		"disabledAriaLabel": "Persetujuan otomatis dinonaktifkan - pilih opsi terlebih dahulu",
 		"readOnly": {
 			"label": "Baca",
-			"description": "Ketika diaktifkan, Roo akan secara otomatis melihat konten direktori dan membaca file tanpa memerlukan kamu mengklik tombol Setujui.",
+			"description": "Ketika diaktifkan, Copilot akan secara otomatis melihat konten direktori dan membaca file tanpa memerlukan kamu mengklik tombol Setujui.",
 			"outsideWorkspace": {
 				"label": "Sertakan file di luar workspace",
-				"description": "Izinkan Roo membaca file di luar workspace saat ini tanpa memerlukan persetujuan."
+				"description": "Izinkan Copilot membaca file di luar workspace saat ini tanpa memerlukan persetujuan."
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "Delay setelah menulis untuk memungkinkan diagnostik mendeteksi masalah potensial",
 			"outsideWorkspace": {
 				"label": "Sertakan file di luar workspace",
-				"description": "Izinkan Roo membuat dan mengedit file di luar workspace saat ini tanpa memerlukan persetujuan."
+				"description": "Izinkan Copilot membuat dan mengedit file di luar workspace saat ini tanpa memerlukan persetujuan."
 			},
 			"protected": {
 				"label": "Sertakan file yang dilindungi",
-				"description": "Izinkan Roo membuat dan mengedit file yang dilindungi (seperti .rooignore dan file konfigurasi .roo/) tanpa memerlukan persetujuan."
+				"description": "Izinkan Copilot membuat dan mengedit file yang dilindungi (seperti .rooignore dan file konfigurasi .roo/) tanpa memerlukan persetujuan."
 			}
 		},
 		"browser": {
@@ -479,7 +479,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Batas Kesalahan & Pengulangan",
-			"description": "Jumlah kesalahan berturut-turut atau tindakan berulang sebelum menampilkan dialog 'Roo mengalami masalah'. Atur ke 0 untuk menonaktifkan mekanisme keamanan ini (tidak akan pernah terpicu).",
+			"description": "Jumlah kesalahan berturut-turut atau tindakan berulang sebelum menampilkan dialog 'Copilot mengalami masalah'. Atur ke 0 untuk menonaktifkan mekanisme keamanan ini (tidak akan pernah terpicu).",
 			"unlimitedDescription": "Percobaan ulang tak terbatas diaktifkan (lanjut otomatis). Dialog tidak akan pernah muncul.",
 			"warning": "⚠️ Mengatur ke 0 memungkinkan percobaan ulang tak terbatas yang dapat menghabiskan penggunaan API yang signifikan"
 		},
@@ -511,7 +511,7 @@
 	"browser": {
 		"enable": {
 			"label": "Aktifkan tool browser",
-			"description": "Ketika diaktifkan, Roo dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. <0>Pelajari lebih lanjut</0>"
+			"description": "Ketika diaktifkan, Copilot dapat menggunakan browser untuk berinteraksi dengan website ketika menggunakan model yang mendukung computer use. <0>Pelajari lebih lanjut</0>"
 		},
 		"viewport": {
 			"label": "Ukuran viewport",
@@ -543,18 +543,18 @@
 		},
 		"enable": {
 			"label": "Aktifkan checkpoint otomatis",
-			"description": "Ketika diaktifkan, Roo akan secara otomatis membuat checkpoint selama eksekusi tugas, memudahkan untuk meninjau perubahan atau kembali ke state sebelumnya. <0>Pelajari lebih lanjut</0>"
+			"description": "Ketika diaktifkan, Copilot akan secara otomatis membuat checkpoint selama eksekusi tugas, memudahkan untuk meninjau perubahan atau kembali ke state sebelumnya. <0>Pelajari lebih lanjut</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Aktifkan efek suara",
-			"description": "Ketika diaktifkan, Roo akan memutar efek suara untuk notifikasi dan event.",
+			"description": "Ketika diaktifkan, Copilot akan memutar efek suara untuk notifikasi dan event.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Aktifkan text-to-speech",
-			"description": "Ketika diaktifkan, Roo akan membacakan responnya menggunakan text-to-speech.",
+			"description": "Ketika diaktifkan, Copilot akan membacakan responnya menggunakan text-to-speech.",
 			"speedLabel": "Kecepatan"
 		}
 	},
@@ -562,7 +562,7 @@
 		"description": "Kontrol informasi apa yang disertakan dalam context window AI, mempengaruhi penggunaan token dan kualitas respons",
 		"autoCondenseContextPercent": {
 			"label": "Ambang batas untuk memicu kondensasi konteks cerdas",
-			"description": "Ketika context window mencapai ambang batas ini, Roo akan secara otomatis mengondensasikannya."
+			"description": "Ketika context window mencapai ambang batas ini, Copilot akan secara otomatis mengondensasikannya."
 		},
 		"condensingApiConfiguration": {
 			"label": "Konfigurasi API untuk Kondensasi Konteks",
@@ -578,7 +578,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Secara otomatis memicu kondensasi konteks cerdas",
-			"description": "Ketika diaktifkan, Roo akan secara otomatis mengondensasi konteks ketika ambang batas tercapai. Ketika dinonaktifkan, kamu masih dapat memicu kondensasi konteks secara manual."
+			"description": "Ketika diaktifkan, Copilot akan secara otomatis mengondensasi konteks ketika ambang batas tercapai. Ketika dinonaktifkan, kamu masih dapat memicu kondensasi konteks secara manual."
 		},
 		"diagnostics": {
 			"includeMessages": {
@@ -624,7 +624,7 @@
 		},
 		"maxReadFile": {
 			"label": "Ambang batas auto-truncate pembacaan file",
-			"description": "Roo membaca sejumlah baris ini ketika model menghilangkan nilai start/end. Jika angka ini kurang dari total file, Roo menghasilkan indeks nomor baris dari definisi kode. Kasus khusus: -1 menginstruksikan Roo untuk membaca seluruh file (tanpa indexing), dan 0 menginstruksikannya untuk tidak membaca baris dan hanya menyediakan indeks baris untuk konteks minimal. Nilai yang lebih rendah meminimalkan penggunaan konteks awal, memungkinkan pembacaan rentang baris yang tepat selanjutnya. Permintaan start/end eksplisit tidak dibatasi oleh pengaturan ini.",
+			"description": "Copilot membaca sejumlah baris ini ketika model menghilangkan nilai start/end. Jika angka ini kurang dari total file, Copilot menghasilkan indeks nomor baris dari definisi kode. Kasus khusus: -1 menginstruksikan Copilot untuk membaca seluruh file (tanpa indexing), dan 0 menginstruksikannya untuk tidak membaca baris dan hanya menyediakan indeks baris untuk konteks minimal. Nilai yang lebih rendah meminimalkan penggunaan konteks awal, memungkinkan pembacaan rentang baris yang tepat selanjutnya. Permintaan start/end eksplisit tidak dibatasi oleh pengaturan ini.",
 			"lines": "baris",
 			"always_full_read": "Selalu baca seluruh file"
 		},
@@ -662,11 +662,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Batas keluaran terminal",
-			"description": "Menyimpan baris pertama dan terakhir dan membuang yang tengah agar tetap di bawah batas. Turunkan untuk menghemat token; naikkan untuk memberi Roo lebih banyak detail tengah. Roo melihat placeholder di mana konten dilewati.<0>Pelajari lebih lanjut</0>"
+			"description": "Menyimpan baris pertama dan terakhir dan membuang yang tengah agar tetap di bawah batas. Turunkan untuk menghemat token; naikkan untuk memberi Copilot lebih banyak detail tengah. Copilot melihat placeholder di mana konten dilewati.<0>Pelajari lebih lanjut</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Batas karakter terminal",
-			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
+			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Copilot di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrasi shell terminal",
@@ -674,7 +674,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Gunakan Terminal Inline (disarankan)",
-			"description": "Jalankan perintah di Terminal Inline (obrolan) untuk melewati profil/integrasi shell untuk proses lebih cepat dan andal. Saat dinonaktifkan, Roo menggunakan terminal VS Code dengan profil shell, prompt, dan plugin Anda. <0>Pelajari lebih lanjut</0>"
+			"description": "Jalankan perintah di Terminal Inline (obrolan) untuk melewati profil/integrasi shell untuk proses lebih cepat dan andal. Saat dinonaktifkan, Copilot menggunakan terminal VS Code dengan profil shell, prompt, dan plugin Anda. <0>Pelajari lebih lanjut</0>"
 		},
 		"commandDelay": {
 			"label": "Delay perintah terminal",
@@ -714,7 +714,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protokol Panggilan Alat",
-		"description": "Pilih bagaimana Roo berkomunikasi dengan API. Asli menggunakan API panggilan fungsi penyedia, sedangkan XML menggunakan definisi alat berformat XML.",
+		"description": "Pilih bagaimana Copilot berkomunikasi dengan API. Asli menggunakan API panggilan fungsi penyedia, sedangkan XML menggunakan definisi alat berformat XML.",
 		"default": "Default",
 		"xml": "XML",
 		"native": "Asli",
@@ -723,7 +723,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Aktifkan editing melalui diff",
-			"description": "Ketika diaktifkan, Roo akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong",
+			"description": "Ketika diaktifkan, Copilot akan dapat mengedit file lebih cepat dan akan secara otomatis menolak penulisan file penuh yang terpotong",
 			"strategy": {
 				"label": "Strategi diff",
 				"options": {
@@ -744,14 +744,14 @@
 		},
 		"todoList": {
 			"label": "Aktifkan alat daftar tugas",
-			"description": "Saat diaktifkan, Roo dapat membuat dan mengelola daftar tugas untuk melacak kemajuan tugas. Ini membantu mengatur tugas kompleks menjadi langkah-langkah yang dapat dikelola."
+			"description": "Saat diaktifkan, Copilot dapat membuat dan mengelola daftar tugas untuk melacak kemajuan tugas. Ini membantu mengatur tugas kompleks menjadi langkah-langkah yang dapat dikelola."
 		}
 	},
 	"experimental": {
 		"warning": "⚠️",
 		"autoCondenseContextPercent": {
 			"label": "Ambang batas untuk memicu kondensasi konteks cerdas",
-			"description": "Ketika context window mencapai ambang batas ini, Roo akan secara otomatis mengondensasikannya."
+			"description": "Ketika context window mencapai ambang batas ini, Copilot akan secara otomatis mengondensasikannya."
 		},
 		"condensingApiConfiguration": {
 			"label": "Konfigurasi API untuk Kondensasi Konteks",
@@ -775,23 +775,23 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Gunakan tool insert content eksperimental",
-			"description": "Aktifkan tool insert content eksperimental, memungkinkan Roo menyisipkan konten pada nomor baris spesifik tanpa perlu membuat diff."
+			"description": "Aktifkan tool insert content eksperimental, memungkinkan Copilot menyisipkan konten pada nomor baris spesifik tanpa perlu membuat diff."
 		},
 		"POWER_STEERING": {
 			"name": "Gunakan mode \"power steering\" eksperimental",
-			"description": "Ketika diaktifkan, Roo akan mengingatkan model tentang detail definisi mode saat ini lebih sering. Ini akan menghasilkan kepatuhan yang lebih kuat terhadap definisi peran dan instruksi kustom, tetapi akan menggunakan lebih banyak token per pesan."
+			"description": "Ketika diaktifkan, Copilot akan mengingatkan model tentang detail definisi mode saat ini lebih sering. Ini akan menghasilkan kepatuhan yang lebih kuat terhadap definisi peran dan instruksi kustom, tetapi akan menggunakan lebih banyak token per pesan."
 		},
 		"AUTOCOMPLETE": {
 			"name": "Gunakan fitur \"autocomplete\" eksperimental",
-			"description": "Ketika diaktifkan, Roo akan memberikan saran kode inline saat kamu mengetik. Memerlukan Datacoves Copilot API Provider."
+			"description": "Ketika diaktifkan, Copilot akan memberikan saran kode inline saat kamu mengetik. Memerlukan Datacoves Copilot API Provider."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Aktifkan pembacaan file bersamaan",
-			"description": "Ketika diaktifkan, Roo dapat membaca beberapa file dalam satu permintaan. Ketika dinonaktifkan, Roo harus membaca file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap akses file."
+			"description": "Ketika diaktifkan, Copilot dapat membaca beberapa file dalam satu permintaan. Ketika dinonaktifkan, Copilot harus membaca file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap akses file."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Gunakan tool multi block diff eksperimental",
-			"description": "Ketika diaktifkan, Roo akan menggunakan tool multi block diff. Ini akan mencoba memperbarui beberapa blok kode dalam file dalam satu permintaan."
+			"description": "Ketika diaktifkan, Copilot akan menggunakan tool multi block diff. Ini akan mencoba memperbarui beberapa blok kode dalam file dalam satu permintaan."
 		},
 		"MARKETPLACE": {
 			"name": "Aktifkan Marketplace",
@@ -799,11 +799,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Aktifkan edit file bersamaan",
-			"description": "Ketika diaktifkan, Roo dapat mengedit beberapa file dalam satu permintaan. Ketika dinonaktifkan, Roo harus mengedit file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap modifikasi file."
+			"description": "Ketika diaktifkan, Copilot dapat mengedit beberapa file dalam satu permintaan. Ketika dinonaktifkan, Copilot harus mengedit file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap modifikasi file."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Pengeditan Latar Belakang",
-			"description": "Ketika diaktifkan, mencegah gangguan fokus editor. Pengeditan file terjadi di latar belakang tanpa membuka tampilan diff atau mencuri fokus. Anda dapat terus bekerja tanpa gangguan saat Roo melakukan perubahan. File mungkin dibuka tanpa fokus untuk menangkap diagnostik atau tetap tertutup sepenuhnya."
+			"description": "Ketika diaktifkan, mencegah gangguan fokus editor. Pengeditan file terjadi di latar belakang tanpa membuka tampilan diff atau mencuri fokus. Anda dapat terus bekerja tanpa gangguan saat Copilot melakukan perubahan. File mungkin dibuka tanpa fokus untuk menangkap diagnostik atau tetap tertutup sepenuhnya."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Gunakan parser pesan baru",
@@ -815,7 +815,7 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Aktifkan pembuatan gambar AI",
-			"description": "Ketika diaktifkan, Roo dapat menghasilkan gambar dari prompt teks menggunakan model pembuatan gambar.",
+			"description": "Ketika diaktifkan, Copilot dapat menghasilkan gambar dari prompt teks menggunakan model pembuatan gambar.",
 			"providerLabel": "Penyedia",
 			"providerDescription": "Pilih penyedia untuk menghasilkan gambar.",
 			"openRouterApiKeyLabel": "Kunci API OpenRouter",
@@ -828,7 +828,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
-			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
+			"description": "Ketika diaktifkan, Copilot dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Panggilan tool paralel",
@@ -836,7 +836,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Aktifkan tool kustom",
-			"description": "Ketika diaktifkan, Roo dapat memuat dan menggunakan tool TypeScript/JavaScript kustom dari direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global. Catatan: tool ini akan disetujui otomatis.",
+			"description": "Ketika diaktifkan, Copilot dapat memuat dan menggunakan tool TypeScript/JavaScript kustom dari direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global. Catatan: tool ini akan disetujui otomatis.",
 			"toolsHeader": "Tool Kustom yang Tersedia",
 			"noTools": "Tidak ada tool kustom yang dimuat. Tambahkan file .ts atau .js ke direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global.",
 			"refreshButton": "Refresh",
@@ -848,7 +848,7 @@
 	},
 	"promptCaching": {
 		"label": "Nonaktifkan prompt caching",
-		"description": "Ketika dicentang, Roo tidak akan menggunakan prompt caching untuk model ini."
+		"description": "Ketika dicentang, Copilot tidak akan menggunakan prompt caching untuk model ini."
 	},
 	"temperature": {
 		"useCustom": "Gunakan temperature kustom",
@@ -886,7 +886,7 @@
 		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
 	"footer": {
-		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Izinkan pelaporan error dan penggunaan anonim",
 			"description": "Bantu tingkatkan Datacoves Copilot dengan mengirimkan data penggunaan anonim dan laporan error. Telemetri ini tidak mengumpulkan kode, prompt, atau informasi pribadi. Lihat <privacyLink>kebijakan privasi</privacyLink> kami untuk detail lebih lanjut. Anda dapat menonaktifkannya kapan saja."

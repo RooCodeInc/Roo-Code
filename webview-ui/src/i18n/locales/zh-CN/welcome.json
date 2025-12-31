@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "开始使用的最佳免费模型",
-			"incentive": "免费尝试 Roo"
+			"incentive": "免费尝试 Copilot"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "选择你的供应商",
-		"chooseProvider": "Roo 需要 LLM 提供商才能工作。选择一个开始使用，你可以稍后添加更多。",
+		"chooseProvider": "Copilot 需要 LLM 提供商才能工作。选择一个开始使用，你可以稍后添加更多。",
 		"rooCloudProvider": "Datacoves Copilot Cloud 提供商",
 		"rooCloudDescription": "开始使用最简单的方式是使用 Datacoves Copilot Cloud 提供商：精心选择的免费和付费模型组合，价格低廉。",
 		"learnMore": "了解更多",

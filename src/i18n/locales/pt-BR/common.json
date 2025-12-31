@@ -1,6 +1,6 @@
 {
 	"input": {
-		"task_prompt": "O que você quer que o Roo faça?",
+		"task_prompt": "O que você quer que o Copilot faça?",
 		"task_placeholder": "Digite sua tarefa aqui"
 	},
 	"extension": {
@@ -125,7 +125,7 @@
 			"completionError": "Erro de conclusão do Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "O provedor Roo requer autenticação na nuvem. Faça login no Datacoves Copilot Cloud."
+			"authenticationRequired": "O provedor Copilot requer autenticação na nuvem. Faça login no Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "A chave API contém caracteres inválidos."

@@ -121,7 +121,7 @@
 			"completionError": "Cerebras-Vervollständigungsfehler: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Datacoves Copilot Cloud an."
+			"authenticationRequired": "Copilot-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Datacoves Copilot Cloud an."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API-Schlüssel enthält ungültige Zeichen."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Bitte gib einen gültigen Pfad ein"
 	},
 	"input": {
-		"task_prompt": "Was soll Roo tun?",
+		"task_prompt": "Was soll Copilot tun?",
 		"task_placeholder": "Gib deine Aufgabe hier ein"
 	},
 	"settings": {

@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "Model gratis terbaik untuk memulai",
-			"incentive": "Coba Roo gratis"
+			"incentive": "Coba Copilot gratis"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "Pilih penyedia Anda",
-		"chooseProvider": "Roo memerlukan penyedia LLM untuk bekerja. Pilih satu untuk memulai, Anda dapat menambahkan lebih banyak nanti.",
+		"chooseProvider": "Copilot memerlukan penyedia LLM untuk bekerja. Pilih satu untuk memulai, Anda dapat menambahkan lebih banyak nanti.",
 		"rooCloudProvider": "Penyedia Datacoves Copilot Cloud",
 		"rooCloudDescription": "Cara termudah untuk memulai adalah dengan Penyedia Datacoves Copilot Cloud: campuran model gratis dan berbayar yang dikurasi dengan hati-hati dengan biaya rendah.",
 		"learnMore": "Pelajari lebih lanjut",

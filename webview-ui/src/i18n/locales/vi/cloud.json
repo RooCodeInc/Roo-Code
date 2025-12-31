@@ -6,7 +6,7 @@
 	"signIn": "Kết nối với Datacoves Copilot Cloud",
 	"connect": "Bắt đầu",
 	"cloudBenefitsTitle": "Dùng thử Datacoves Copilot Cloud",
-	"cloudBenefitProvider": "Truy cập các mô hình miễn phí và trả phí hoạt động tuyệt vời với Roo",
+	"cloudBenefitProvider": "Truy cập các mô hình miễn phí và trả phí hoạt động tuyệt vời với Copilot",
 	"cloudBenefitCloudAgents": "Giao nhiệm vụ cho các agent đám mây tự trị",
 	"cloudBenefitTriggers": "Nhận đánh giá mã trên Github, bắt đầu tác vụ từ Slack và hơn thế nữa",
 	"cloudBenefitWalkaway": "Theo dõi và kiểm soát các tác vụ từ mọi nơi (bao gồm cả điện thoại của bạn)",
@@ -15,9 +15,9 @@
 	"visitCloudWebsite": "Truy cập Datacoves Copilot Cloud",
 	"taskSync": "Đồng bộ tác vụ",
 	"taskSyncDescription": "Đồng bộ tác vụ của bạn để xem và chia sẻ trên Datacoves Copilot Cloud",
-	"remoteControl": "Roomote Control",
+	"remoteControl": "Remote Control",
 	"remoteControlDescription": "Cho phép điều khiển tác vụ từ Datacoves Copilot Cloud",
-	"remoteControlRequiresTaskSync": "Đồng bộ tác vụ phải được bật để sử dụng Roomote Control",
+	"remoteControlRequiresTaskSync": "Đồng bộ tác vụ phải được bật để sử dụng Remote Control",
 	"taskSyncManagedByOrganization": "Việc đồng bộ hóa công việc được quản lý bởi tổ chức của bạn",
 	"usageMetricsAlwaysReported": "Thông tin sử dụng mô hình luôn được báo cáo khi đăng nhập",
 	"authWaiting": "Đang chờ hoàn tất xác thực...",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "Tạo Tài Khoản Nhóm",
 	"cloudUrlPillLabel": "URL Datacoves Copilot Cloud",
 	"upsell": {
-		"autoApprovePowerUser": "Trao cho Roo một chút độc lập? Kiểm soát nó từ mọi nơi với Datacoves Copilot Cloud. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>.",
+		"autoApprovePowerUser": "Trao cho Copilot một chút độc lập? Kiểm soát nó từ mọi nơi với Datacoves Copilot Cloud. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>.",
 		"longRunningTask": "Việc này có thể mất một lúc. Tiếp tục từ mọi nơi với Cloud.",
-		"taskList": "Bạn có thích Roo không? Hãy xem Datacoves Copilot Cloud: theo dõi và kiểm soát các tác vụ của bạn từ mọi nơi, chạy các agent đám mây tự trị, nhận số liệu thống kê sử dụng và hơn thế nữa. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>."
+		"taskList": "Bạn có thích Copilot không? Hãy xem Datacoves Copilot Cloud: theo dõi và kiểm soát các tác vụ của bạn từ mọi nơi, chạy các agent đám mây tự trị, nhận số liệu thống kê sử dụng và hơn thế nữa. <learnMoreLink>Tìm hiểu thêm</learnMoreLink>."
 	}
 }

@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "Organizasyon bağlantısı panoya kopyalandı",
 		"shareSuccessPublic": "Genel bağlantı panoya kopyalandı",
 		"openInCloud": "Görevi Datacoves Copilot Cloud'da aç",
-		"openInCloudIntro": "Roo'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
+		"openInCloudIntro": "Copilot'yu her yerden izlemeye veya etkileşime devam et. Açmak için tara, tıkla veya kopyala.",
 		"openApiHistory": "API Geçmişini Aç",
 		"openUiHistory": "UI Geçmişini Aç"
 	},
@@ -117,7 +117,7 @@
 		"title": "Modlar",
 		"marketplace": "Mod Pazaryeri",
 		"settings": "Mod Ayarları",
-		"description": "Roo'nun davranışını özelleştiren uzmanlaşmış kişilikler.",
+		"description": "Copilot'nun davranışını özelleştiren uzmanlaşmış kişilikler.",
 		"searchPlaceholder": "Modları ara...",
 		"noResults": "Sonuç bulunamadı"
 	},
@@ -131,7 +131,7 @@
 	"diffError": {
 		"title": "Düzenleme Başarısız"
 	},
-	"troubleMessage": "Roo sorun yaşıyor...",
+	"troubleMessage": "Copilot sorun yaşıyor...",
 	"apiRequest": {
 		"title": "API İsteği",
 		"failed": "API İsteği Başarısız",
@@ -174,42 +174,42 @@
 		"current": "Mevcut"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo mevcut göreve yardımcı olmak için ayrıntılı talimatlar almak istiyor"
+		"wantsToFetch": "Copilot mevcut göreve yardımcı olmak için ayrıntılı talimatlar almak istiyor"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo bu dosyayı okumak istiyor",
-		"wantsToReadOutsideWorkspace": "Roo çalışma alanı dışındaki bu dosyayı okumak istiyor",
-		"didRead": "Roo bu dosyayı okudu",
-		"wantsToEdit": "Roo bu dosyayı düzenlemek istiyor",
-		"wantsToEditOutsideWorkspace": "Roo çalışma alanı dışındaki bu dosyayı düzenlemek istiyor",
-		"wantsToEditProtected": "Roo korumalı bir yapılandırma dosyasını düzenlemek istiyor",
-		"wantsToCreate": "Roo yeni bir dosya oluşturmak istiyor",
-		"wantsToSearchReplace": "Roo bu dosyada arama ve değiştirme yapmak istiyor",
-		"didSearchReplace": "Roo bu dosyada arama ve değiştirme yaptı",
-		"wantsToInsert": "Roo bu dosyaya içerik eklemek istiyor",
-		"wantsToInsertWithLineNumber": "Roo bu dosyanın {{lineNumber}}. satırına içerik eklemek istiyor",
-		"wantsToInsertAtEnd": "Roo bu dosyanın sonuna içerik eklemek istiyor",
-		"wantsToReadAndXMore": "Roo bu dosyayı ve {{count}} tane daha okumak istiyor",
-		"wantsToReadMultiple": "Roo birden fazla dosya okumak istiyor",
-		"wantsToApplyBatchChanges": "Roo birden fazla dosyaya değişiklik uygulamak istiyor",
-		"wantsToGenerateImage": "Roo bir görsel oluşturmak istiyor",
-		"wantsToGenerateImageOutsideWorkspace": "Roo çalışma alanının dışında bir görsel oluşturmak istiyor",
-		"wantsToGenerateImageProtected": "Roo korumalı bir konumda görsel oluşturmak istiyor",
-		"didGenerateImage": "Roo bir görsel oluşturdu"
+		"wantsToRead": "Copilot bu dosyayı okumak istiyor",
+		"wantsToReadOutsideWorkspace": "Copilot çalışma alanı dışındaki bu dosyayı okumak istiyor",
+		"didRead": "Copilot bu dosyayı okudu",
+		"wantsToEdit": "Copilot bu dosyayı düzenlemek istiyor",
+		"wantsToEditOutsideWorkspace": "Copilot çalışma alanı dışındaki bu dosyayı düzenlemek istiyor",
+		"wantsToEditProtected": "Copilot korumalı bir yapılandırma dosyasını düzenlemek istiyor",
+		"wantsToCreate": "Copilot yeni bir dosya oluşturmak istiyor",
+		"wantsToSearchReplace": "Copilot bu dosyada arama ve değiştirme yapmak istiyor",
+		"didSearchReplace": "Copilot bu dosyada arama ve değiştirme yaptı",
+		"wantsToInsert": "Copilot bu dosyaya içerik eklemek istiyor",
+		"wantsToInsertWithLineNumber": "Copilot bu dosyanın {{lineNumber}}. satırına içerik eklemek istiyor",
+		"wantsToInsertAtEnd": "Copilot bu dosyanın sonuna içerik eklemek istiyor",
+		"wantsToReadAndXMore": "Copilot bu dosyayı ve {{count}} tane daha okumak istiyor",
+		"wantsToReadMultiple": "Copilot birden fazla dosya okumak istiyor",
+		"wantsToApplyBatchChanges": "Copilot birden fazla dosyaya değişiklik uygulamak istiyor",
+		"wantsToGenerateImage": "Copilot bir görsel oluşturmak istiyor",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot çalışma alanının dışında bir görsel oluşturmak istiyor",
+		"wantsToGenerateImageProtected": "Copilot korumalı bir konumda görsel oluşturmak istiyor",
+		"didGenerateImage": "Copilot bir görsel oluşturdu"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo bu dizindeki üst düzey dosyaları görüntülemek istiyor",
-		"didViewTopLevel": "Roo bu dizindeki üst düzey dosyaları görüntüledi",
-		"wantsToViewRecursive": "Roo bu dizindeki tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
-		"didViewRecursive": "Roo bu dizindeki tüm dosyaları özyinelemeli olarak görüntüledi",
-		"wantsToSearch": "Roo bu dizinde <code>{{regex}}</code> için arama yapmak istiyor",
-		"didSearch": "Roo bu dizinde <code>{{regex}}</code> için arama yaptı",
-		"wantsToSearchOutsideWorkspace": "Roo bu dizinde (çalışma alanı dışında) <code>{{regex}}</code> için arama yapmak istiyor",
-		"didSearchOutsideWorkspace": "Roo bu dizinde (çalışma alanı dışında) <code>{{regex}}</code> için arama yaptı",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntülemek istiyor",
-		"didViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntüledi",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
-		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi"
+		"wantsToViewTopLevel": "Copilot bu dizindeki üst düzey dosyaları görüntülemek istiyor",
+		"didViewTopLevel": "Copilot bu dizindeki üst düzey dosyaları görüntüledi",
+		"wantsToViewRecursive": "Copilot bu dizindeki tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
+		"didViewRecursive": "Copilot bu dizindeki tüm dosyaları özyinelemeli olarak görüntüledi",
+		"wantsToSearch": "Copilot bu dizinde <code>{{regex}}</code> için arama yapmak istiyor",
+		"didSearch": "Copilot bu dizinde <code>{{regex}}</code> için arama yaptı",
+		"wantsToSearchOutsideWorkspace": "Copilot bu dizinde (çalışma alanı dışında) <code>{{regex}}</code> için arama yapmak istiyor",
+		"didSearchOutsideWorkspace": "Copilot bu dizinde (çalışma alanı dışında) <code>{{regex}}</code> için arama yaptı",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntülemek istiyor",
+		"didViewTopLevelOutsideWorkspace": "Copilot bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntüledi",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
+		"didViewRecursiveOutsideWorkspace": "Copilot bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi"
 	},
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
@@ -232,24 +232,24 @@
 	"response": "Yanıt",
 	"arguments": "Argümanlar",
 	"text": {
-		"rooSaid": "Roo dedi"
+		"rooSaid": "Copilot dedi"
 	},
 	"feedback": {
 		"youSaid": "Dediniz ki"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo {{serverName}} MCP sunucusunda bir araç kullanmak istiyor",
-		"wantsToAccessResource": "Roo {{serverName}} MCP sunucusundaki bir kaynağa erişmek istiyor"
+		"wantsToUseTool": "Copilot {{serverName}} MCP sunucusunda bir araç kullanmak istiyor",
+		"wantsToAccessResource": "Copilot {{serverName}} MCP sunucusundaki bir kaynağa erişmek istiyor"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo <code>{{mode}}</code> moduna geçmek istiyor",
-		"wantsToSwitchWithReason": "Roo <code>{{mode}}</code> moduna geçmek istiyor çünkü: {{reason}}",
-		"didSwitch": "Roo <code>{{mode}}</code> moduna geçti",
-		"didSwitchWithReason": "Roo <code>{{mode}}</code> moduna geçti çünkü: {{reason}}"
+		"wantsToSwitch": "Copilot <code>{{mode}}</code> moduna geçmek istiyor",
+		"wantsToSwitchWithReason": "Copilot <code>{{mode}}</code> moduna geçmek istiyor çünkü: {{reason}}",
+		"didSwitch": "Copilot <code>{{mode}}</code> moduna geçti",
+		"didSwitchWithReason": "Copilot <code>{{mode}}</code> moduna geçti çünkü: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo <code>{{mode}}</code> modunda yeni bir alt görev oluşturmak istiyor",
-		"wantsToFinish": "Roo bu alt görevi bitirmek istiyor",
+		"wantsToCreate": "Copilot <code>{{mode}}</code> modunda yeni bir alt görev oluşturmak istiyor",
+		"wantsToFinish": "Copilot bu alt görevi bitirmek istiyor",
 		"newTaskContent": "Alt Görev Talimatları",
 		"completionContent": "Alt Görev Tamamlandı",
 		"resultContent": "Alt Görev Sonuçları",
@@ -257,7 +257,7 @@
 		"completionInstructions": "Alt görev tamamlandı! Sonuçları inceleyebilir ve düzeltmeler veya sonraki adımlar önerebilirsiniz. Her şey iyi görünüyorsa, sonucu üst göreve döndürmek için onaylayın."
 	},
 	"questions": {
-		"hasQuestion": "Roo'nun bir sorusu var"
+		"hasQuestion": "Copilot'nun bir sorusu var"
 	},
 	"taskCompleted": "Görev Tamamlandı",
 	"modelResponseIncomplete": "Model yanıtı eksik",
@@ -330,7 +330,7 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"skills": "Roo artık <skillsLink>Agent Skills</skillsLink>'i destekliyor - Roo'nun yeteneklerini genişletmek için yeniden kullanılabilir istem, araç ve kaynak paketleri.",
+			"skills": "Copilot artık <skillsLink>Agent Skills</skillsLink>'i destekliyor - Copilot'nun yeteneklerini genişletmek için yeniden kullanılabilir istem, araç ve kaynak paketleri.",
 			"nativeToolCalling": "Tüm yeni görevler için artık yerel araç çağrısı gereklidir. <blogLink>Daha fazla bilgi edinin</blogLink> motivasyon ve sorunlarla karşılaşırsanız ne yapacağınız hakkında."
 		},
 		"cloudAgents": {
@@ -343,7 +343,7 @@
 	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",
-		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
+		"rooWantsToUse": "Copilot tarayıcıyı kullanmak istiyor",
 		"consoleLogs": "Konsol Kayıtları",
 		"noNewLogs": "(Yeni kayıt yok)",
 		"screenshot": "Tarayıcı ekran görüntüsü",
@@ -395,18 +395,18 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Otomatik Onaylanan İstek Limiti Aşıldı",
-			"description": "Roo, {{count}} API isteği/istekleri için otomatik onaylanan limite ulaştı. Sayacı sıfırlamak ve göreve devam etmek istiyor musunuz?",
+			"description": "Copilot, {{count}} API isteği/istekleri için otomatik onaylanan limite ulaştı. Sayacı sıfırlamak ve göreve devam etmek istiyor musunuz?",
 			"button": "Sıfırla ve Devam Et"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Otomatik Onaylanan Maliyet Sınırına Ulaşıldı",
-			"description": "Roo otomatik olarak onaylanmış ${{count}} maliyet sınırına ulaştı. Maliyeti sıfırlamak ve göreve devam etmek ister misiniz?",
+			"description": "Copilot otomatik olarak onaylanmış ${{count}} maliyet sınırına ulaştı. Maliyeti sıfırlamak ve göreve devam etmek ister misiniz?",
 			"button": "Sıfırla ve Devam Et"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo kod tabanında <code>{{query}}</code> aramak istiyor",
-		"wantsToSearchWithPath": "Roo <code>{{path}}</code> içinde kod tabanında <code>{{query}}</code> aramak istiyor",
+		"wantsToSearch": "Copilot kod tabanında <code>{{query}}</code> aramak istiyor",
+		"wantsToSearchWithPath": "Copilot <code>{{path}}</code> içinde kod tabanında <code>{{query}}</code> aramak istiyor",
 		"didSearch_one": "1 sonuç bulundu",
 		"didSearch_other": "{{count}} sonuç bulundu",
 		"resultTooltip": "Benzerlik puanı: {{score}} (dosyayı açmak için tıklayın)"
@@ -471,8 +471,8 @@
 		"clickToEdit": "Mesajı düzenlemek için tıkla"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo bir slash komutu çalıştırmak istiyor",
-		"didRun": "Roo bir slash komutu çalıştırdı"
+		"wantsToRun": "Copilot bir slash komutu çalıştırmak istiyor",
+		"didRun": "Copilot bir slash komutu çalıştırdı"
 	},
 	"todo": {
 		"partial": "{{total}} yapılacaklar listesinden {{completed}} tanesi tamamlandı",

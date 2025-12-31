@@ -44,7 +44,7 @@
 		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"
 	},
 	"prompts": {
-		"description": "Configurez les invites de support utilisées pour les actions rapides comme l'amélioration des invites, l'explication du code et la résolution des problèmes. Ces invites aident Roo à fournir une meilleure assistance pour les tâches de développement courantes."
+		"description": "Configurez les invites de support utilisées pour les actions rapides comme l'amélioration des invites, l'explication du code et la résolution des problèmes. Ces invites aident Copilot à fournir une meilleure assistance pour les tâches de développement courantes."
 	},
 	"codeIndex": {
 		"title": "Indexation de la base de code",
@@ -156,17 +156,17 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "Vous pouvez configurer un raccourci global pour ce paramètre <SettingsLink>dans les préférences de votre IDE</SettingsLink>.",
-		"description": "Permettre à Roo d'effectuer automatiquement des opérations sans requérir d'approbation. Activez ces paramètres uniquement si vous faites entièrement confiance à l'IA et que vous comprenez les risques de sécurité associés.",
+		"description": "Permettre à Copilot d'effectuer automatiquement des opérations sans requérir d'approbation. Activez ces paramètres uniquement si vous faites entièrement confiance à l'IA et que vous comprenez les risques de sécurité associés.",
 		"enabled": "Auto-approbation activée",
 		"toggleAriaLabel": "Activer/désactiver l'approbation automatique",
 		"disabledAriaLabel": "Approbation automatique désactivée - sélectionnez d'abord les options",
 		"selectOptionsFirst": "Sélectionnez au moins une option ci-dessous pour activer l'approbation automatique",
 		"readOnly": {
 			"label": "Lecture",
-			"description": "Lorsque cette option est activée, Roo affichera automatiquement le contenu des répertoires et lira les fichiers sans que vous ayez à cliquer sur le bouton Approuver.",
+			"description": "Lorsque cette option est activée, Copilot affichera automatiquement le contenu des répertoires et lira les fichiers sans que vous ayez à cliquer sur le bouton Approuver.",
 			"outsideWorkspace": {
 				"label": "Inclure les fichiers en dehors de l'espace de travail",
-				"description": "Permettre à Roo de lire des fichiers en dehors de l'espace de travail actuel sans nécessiter d'approbation."
+				"description": "Permettre à Copilot de lire des fichiers en dehors de l'espace de travail actuel sans nécessiter d'approbation."
 			}
 		},
 		"write": {
@@ -175,11 +175,11 @@
 			"delayLabel": "Délai après les écritures pour permettre aux diagnostics de détecter les problèmes potentiels",
 			"outsideWorkspace": {
 				"label": "Inclure les fichiers en dehors de l'espace de travail",
-				"description": "Permettre à Roo de créer et modifier des fichiers en dehors de l'espace de travail actuel sans nécessiter d'approbation."
+				"description": "Permettre à Copilot de créer et modifier des fichiers en dehors de l'espace de travail actuel sans nécessiter d'approbation."
 			},
 			"protected": {
 				"label": "Inclure les fichiers protégés",
-				"description": "Permettre à Roo de créer et modifier des fichiers protégés (comme .rooignore et les fichiers de configuration .roo/) sans nécessiter d'approbation."
+				"description": "Permettre à Copilot de créer et modifier des fichiers protégés (comme .rooignore et les fichiers de configuration .roo/) sans nécessiter d'approbation."
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limite d'erreurs et de répétitions",
-			"description": "Nombre d'erreurs consécutives ou d'actions répétées avant d'afficher la boîte de dialogue 'Roo a des difficultés'. Mettre à 0 pour désactiver ce mécanisme de sécurité (il ne se déclenchera jamais).",
+			"description": "Nombre d'erreurs consécutives ou d'actions répétées avant d'afficher la boîte de dialogue 'Copilot a des difficultés'. Mettre à 0 pour désactiver ce mécanisme de sécurité (il ne se déclenchera jamais).",
 			"unlimitedDescription": "Réessais illimités activés (poursuite automatique). La boîte de dialogue n'apparaîtra jamais.",
 			"warning": "⚠️ Mettre à 0 autorise des réessais illimités, ce qui peut consommer une utilisation importante de l'API"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "Activer l'outil de navigateur",
-			"description": "Lorsque cette option est activée, Roo peut utiliser un navigateur pour interagir avec des sites web lors de l'utilisation de modèles qui prennent en charge l'utilisation de l'ordinateur. <0>En savoir plus</0>"
+			"description": "Lorsque cette option est activée, Copilot peut utiliser un navigateur pour interagir avec des sites web lors de l'utilisation de modèles qui prennent en charge l'utilisation de l'ordinateur. <0>En savoir plus</0>"
 		},
 		"viewport": {
 			"label": "Taille de la fenêtre d'affichage",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "Activer les points de contrôle automatiques",
-			"description": "Lorsque cette option est activée, Roo créera automatiquement des points de contrôle pendant l'exécution des tâches, facilitant la révision des modifications ou le retour à des états antérieurs. <0>En savoir plus</0>"
+			"description": "Lorsque cette option est activée, Copilot créera automatiquement des points de contrôle pendant l'exécution des tâches, facilitant la révision des modifications ou le retour à des états antérieurs. <0>En savoir plus</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Activer les effets sonores",
-			"description": "Lorsque cette option est activée, Roo jouera des effets sonores pour les notifications et les événements.",
+			"description": "Lorsque cette option est activée, Copilot jouera des effets sonores pour les notifications et les événements.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Activer la synthèse vocale",
-			"description": "Lorsque cette option est activée, Roo lira ses réponses à haute voix en utilisant la synthèse vocale.",
+			"description": "Lorsque cette option est activée, Copilot lira ses réponses à haute voix en utilisant la synthèse vocale.",
 			"speedLabel": "Vitesse"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "Contrôlez quelles informations sont incluses dans la fenêtre de contexte de l'IA, affectant l'utilisation de token et la qualité des réponses",
 		"autoCondenseContextPercent": {
 			"label": "Seuil de déclenchement de la condensation intelligente du contexte",
-			"description": "Lorsque la fenêtre de contexte atteint ce seuil, Roo la condensera automatiquement."
+			"description": "Lorsque la fenêtre de contexte atteint ce seuil, Copilot la condensera automatiquement."
 		},
 		"condensingApiConfiguration": {
 			"label": "Configuration API pour la condensation du contexte",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Déclencher automatiquement la condensation intelligente du contexte",
-			"description": "Lorsque cette option est activée, Roo condensera automatiquement le contexte lorsque le seuil est atteint. Lorsqu'elle est désactivée, vous pouvez toujours déclencher manuellement la condensation du contexte."
+			"description": "Lorsque cette option est activée, Copilot condensera automatiquement le contexte lorsque le seuil est atteint. Lorsqu'elle est désactivée, vous pouvez toujours déclencher manuellement la condensation du contexte."
 		},
 		"openTabs": {
 			"label": "Limite de contexte des onglets ouverts",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "Seuil d'auto-troncature de lecture de fichier",
-			"description": "Roo lit ce nombre de lignes lorsque le modèle omet les valeurs de début/fin. Si ce nombre est inférieur au total du fichier, Roo génère un index des numéros de ligne des définitions de code. Cas spéciaux : -1 indique à Roo de lire le fichier entier (sans indexation), et 0 indique de ne lire aucune ligne et de fournir uniquement les index de ligne pour un contexte minimal. Des valeurs plus basses minimisent l'utilisation initiale du contexte, permettant des lectures ultérieures de plages de lignes précises. Les requêtes avec début/fin explicites ne sont pas limitées par ce paramètre.",
+			"description": "Copilot lit ce nombre de lignes lorsque le modèle omet les valeurs de début/fin. Si ce nombre est inférieur au total du fichier, Copilot génère un index des numéros de ligne des définitions de code. Cas spéciaux : -1 indique à Copilot de lire le fichier entier (sans indexation), et 0 indique de ne lire aucune ligne et de fournir uniquement les index de ligne pour un contexte minimal. Des valeurs plus basses minimisent l'utilisation initiale du contexte, permettant des lectures ultérieures de plages de lignes précises. Les requêtes avec début/fin explicites ne sont pas limitées par ce paramètre.",
 			"lines": "lignes",
 			"always_full_read": "Toujours lire le fichier entier"
 		},
@@ -657,11 +657,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Limite de sortie du terminal",
-			"description": "Conserve les premières et dernières lignes et supprime celles du milieu pour rester sous la limite. Réduire pour économiser des jetons ; augmenter pour donner à Roo plus de détails intermédiaires. Roo voit un espace réservé là où le contenu est ignoré.<0>En savoir plus</0>"
+			"description": "Conserve les premières et dernières lignes et supprime celles du milieu pour rester sous la limite. Réduire pour économiser des jetons ; augmenter pour donner à Copilot plus de détails intermédiaires. Copilot voit un espace réservé là où le contenu est ignoré.<0>En savoir plus</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Limite de caractères du terminal",
-			"description": "Remplace la limite de lignes pour éviter les problèmes de mémoire en imposant un plafond strict sur la taille de sortie. Si dépassé, conserve le début et la fin et affiche un espace réservé à Roo là où le contenu est ignoré. <0>En savoir plus</0>"
+			"description": "Remplace la limite de lignes pour éviter les problèmes de mémoire en imposant un plafond strict sur la taille de sortie. Si dépassé, conserve le début et la fin et affiche un espace réservé à Copilot là où le contenu est ignoré. <0>En savoir plus</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Délai d'attente d'intégration du shell du terminal",
@@ -669,7 +669,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Utiliser le terminal en ligne (recommandé)",
-			"description": "Exécute des commandes dans le terminal en ligne (chat) pour contourner les profils/intégration du shell pour des exécutions plus rapides et fiables. Lorsque désactivé, Roo utilise le terminal VS Code avec votre profil de shell, invites et plugins. <0>En savoir plus</0>"
+			"description": "Exécute des commandes dans le terminal en ligne (chat) pour contourner les profils/intégration du shell pour des exécutions plus rapides et fiables. Lorsque désactivé, Copilot utilise le terminal VS Code avec votre profil de shell, invites et plugins. <0>En savoir plus</0>"
 		},
 		"commandDelay": {
 			"label": "Délai de commande du terminal",
@@ -709,7 +709,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protocole d'appel d'outil",
-		"description": "Choisissez comment Roo communique avec l'API. Natif utilise l'API d'appel de fonction du fournisseur, tandis que XML utilise des définitions d'outils au format XML.",
+		"description": "Choisissez comment Copilot communique avec l'API. Natif utilise l'API d'appel de fonction du fournisseur, tandis que XML utilise des définitions d'outils au format XML.",
 		"default": "Défaut",
 		"xml": "XML",
 		"native": "Natif",
@@ -718,7 +718,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Activer l'édition via des diffs",
-			"description": "Lorsque cette option est activée, Roo pourra éditer des fichiers plus rapidement et rejettera automatiquement les écritures de fichiers complets tronqués",
+			"description": "Lorsque cette option est activée, Copilot pourra éditer des fichiers plus rapidement et rejettera automatiquement les écritures de fichiers complets tronqués",
 			"strategy": {
 				"label": "Stratégie de diff",
 				"options": {
@@ -739,7 +739,7 @@
 		},
 		"todoList": {
 			"label": "Activer l'outil de liste de tâches",
-			"description": "Lorsqu'activé, Roo peut créer et gérer des listes de tâches pour suivre la progression. Cela aide à organiser les tâches complexes en étapes gérables."
+			"description": "Lorsqu'activé, Copilot peut créer et gérer des listes de tâches pour suivre la progression. Cela aide à organiser les tâches complexes en étapes gérables."
 		}
 	},
 	"experimental": {
@@ -749,19 +749,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Utiliser l'outil d'insertion de contenu expérimental",
-			"description": "Activer l'outil d'insertion de contenu expérimental, permettant à Roo d'insérer du contenu à des numéros de ligne spécifiques sans avoir besoin de créer un diff."
+			"description": "Activer l'outil d'insertion de contenu expérimental, permettant à Copilot d'insérer du contenu à des numéros de ligne spécifiques sans avoir besoin de créer un diff."
 		},
 		"POWER_STEERING": {
 			"name": "Utiliser le mode \"direction assistée\" expérimental",
-			"description": "Lorsqu'il est activé, Roo rappellera plus fréquemment au modèle les détails de sa définition de mode actuelle. Cela conduira à une adhérence plus forte aux définitions de rôles et aux instructions personnalisées, mais utilisera plus de tokens par message."
+			"description": "Lorsqu'il est activé, Copilot rappellera plus fréquemment au modèle les détails de sa définition de mode actuelle. Cela conduira à une adhérence plus forte aux définitions de rôles et aux instructions personnalisées, mais utilisera plus de tokens par message."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Utiliser l'outil diff multi-blocs expérimental",
-			"description": "Lorsqu'il est activé, Roo utilisera l'outil diff multi-blocs. Cela tentera de mettre à jour plusieurs blocs de code dans le fichier en une seule requête."
+			"description": "Lorsqu'il est activé, Copilot utilisera l'outil diff multi-blocs. Cela tentera de mettre à jour plusieurs blocs de code dans le fichier en une seule requête."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Activer la lecture simultanée de fichiers",
-			"description": "Lorsqu'activé, Roo peut lire plusieurs fichiers dans une seule requête. Lorsque désactivé, Roo doit lire les fichiers un par un. La désactivation peut aider lors du travail avec des modèles moins performants ou lorsque tu souhaites plus de contrôle sur l'accès aux fichiers."
+			"description": "Lorsqu'activé, Copilot peut lire plusieurs fichiers dans une seule requête. Lorsque désactivé, Copilot doit lire les fichiers un par un. La désactivation peut aider lors du travail avec des modèles moins performants ou lorsque tu souhaites plus de contrôle sur l'accès aux fichiers."
 		},
 		"MARKETPLACE": {
 			"name": "Activer le Marketplace",
@@ -769,11 +769,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Activer les éditions de fichiers concurrentes",
-			"description": "Lorsque cette option est activée, Roo peut éditer plusieurs fichiers en une seule requête. Lorsqu'elle est désactivée, Roo doit éditer les fichiers un par un. Désactiver cette option peut aider lorsque tu travailles avec des modèles moins capables ou lorsque tu veux plus de contrôle sur les modifications de fichiers."
+			"description": "Lorsque cette option est activée, Copilot peut éditer plusieurs fichiers en une seule requête. Lorsqu'elle est désactivée, Copilot doit éditer les fichiers un par un. Désactiver cette option peut aider lorsque tu travailles avec des modèles moins capables ou lorsque tu veux plus de contrôle sur les modifications de fichiers."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Édition en arrière-plan",
-			"description": "Empêche la perturbation du focus de l'éditeur lorsqu'activé. Les modifications de fichiers se font en arrière-plan sans ouvrir de vues de différences ou voler le focus. Vous pouvez continuer à travailler sans interruption pendant que Roo effectue des changements. Les fichiers peuvent être ouverts sans focus pour capturer les diagnostics ou rester complètement fermés."
+			"description": "Empêche la perturbation du focus de l'éditeur lorsqu'activé. Les modifications de fichiers se font en arrière-plan sans ouvrir de vues de différences ou voler le focus. Vous pouvez continuer à travailler sans interruption pendant que Copilot effectue des changements. Les fichiers peuvent être ouverts sans focus pour capturer les diagnostics ou rester complètement fermés."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Utiliser le nouveau parseur de messages",
@@ -787,7 +787,7 @@
 			"name": "Activer la génération d'images IA",
 			"providerLabel": "Fournisseur",
 			"providerDescription": "Sélectionnez le fournisseur pour la génération d'images.",
-			"description": "Lorsqu'activé, Roo peut générer des images à partir de prompts textuels en utilisant les modèles de génération d'images d'OpenRouter. Nécessite qu'une clé API OpenRouter soit configurée.",
+			"description": "Lorsqu'activé, Copilot peut générer des images à partir de prompts textuels en utilisant les modèles de génération d'images d'OpenRouter. Nécessite qu'une clé API OpenRouter soit configurée.",
 			"openRouterApiKeyLabel": "Clé API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Entrez votre clé API OpenRouter",
 			"getApiKeyText": "Obtenez votre clé API depuis",
@@ -798,7 +798,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",
-			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
+			"description": "Lorsque activé, Copilot peut exécuter tes commandes slash pour lancer des workflows."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Appels d'outils parallèles",
@@ -806,7 +806,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Activer les outils personnalisés",
-			"description": "Lorsqu'activé, Roo peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",
+			"description": "Lorsqu'activé, Copilot peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",
 			"toolsHeader": "Outils personnalisés disponibles",
 			"noTools": "Aucun outil personnalisé chargé. Ajoutez des fichiers .ts ou .js au répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux.",
 			"refreshButton": "Actualiser",
@@ -818,7 +818,7 @@
 	},
 	"promptCaching": {
 		"label": "Désactiver la mise en cache des prompts",
-		"description": "Lorsque cette option est cochée, Roo n'utilisera pas la mise en cache des prompts pour ce modèle."
+		"description": "Lorsque cette option est cochée, Copilot n'utilisera pas la mise en cache des prompts pour ce modèle."
 	},
 	"temperature": {
 		"useCustom": "Utiliser une température personnalisée",
@@ -856,7 +856,7 @@
 		"simplifiedExplanation": "Tu peux ajuster les paramètres détaillés du modèle ultérieurement."
 	},
 	"footer": {
-		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Autoriser les rapports anonymes d'erreurs et d'utilisation",
 			"description": "Aidez à améliorer Datacoves Copilot en envoyant des données d'utilisation anonymes et des rapports d'erreurs. Cette télémétrie ne collecte pas de code, de prompts ou d'informations personnelles. Consultez notre <privacyLink>politique de confidentialité</privacyLink> pour plus de détails."

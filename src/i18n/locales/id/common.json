@@ -121,7 +121,7 @@
 			"completionError": "Kesalahan penyelesaian Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Penyedia Roo memerlukan autentikasi cloud. Silakan masuk ke Datacoves Copilot Cloud."
+			"authenticationRequired": "Penyedia Copilot memerlukan autentikasi cloud. Silakan masuk ke Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "Kunci API mengandung karakter tidak valid."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Silakan masukkan path yang valid"
 	},
 	"input": {
-		"task_prompt": "Apa yang harus Roo lakukan?",
+		"task_prompt": "Apa yang harus Copilot lakukan?",
 		"task_placeholder": "Ketik tugas kamu di sini"
 	},
 	"settings": {

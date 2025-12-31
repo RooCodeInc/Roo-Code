@@ -44,7 +44,7 @@
 		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
 	},
 	"prompts": {
-		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Roo'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
+		"description": "Prompt geliştirme, kod açıklama ve sorun çözme gibi hızlı eylemler için kullanılan destek promptlarını yapılandırın. Bu promptlar, Copilot'nun yaygın geliştirme görevleri için daha iyi destek sağlamasına yardımcı olur."
 	},
 	"codeIndex": {
 		"title": "Kod Tabanı İndeksleme",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE tercihlerinizde</SettingsLink> bu ayar için genel bir kısayol yapılandırabilirsiniz.",
-		"description": "Roo'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
+		"description": "Copilot'nun onay gerektirmeden otomatik olarak işlemler gerçekleştirmesine izin verin. Bu ayarları yalnızca yapay zekaya tamamen güveniyorsanız ve ilgili güvenlik risklerini anlıyorsanız etkinleştirin.",
 		"enabled": "Oto-onay etkinleştirildi",
 		"toggleAriaLabel": "Otomatik onayı değiştir",
 		"disabledAriaLabel": "Otomatik onay devre dışı - önce seçenekleri belirleyin",
 		"readOnly": {
 			"label": "Okuma",
-			"description": "Etkinleştirildiğinde, Roo otomatik olarak dizin içeriğini görüntüleyecek ve Onayla düğmesine tıklamanıza gerek kalmadan dosyaları okuyacaktır.",
+			"description": "Etkinleştirildiğinde, Copilot otomatik olarak dizin içeriğini görüntüleyecek ve Onayla düğmesine tıklamanıza gerek kalmadan dosyaları okuyacaktır.",
 			"outsideWorkspace": {
 				"label": "Çalışma alanı dışındaki dosyaları dahil et",
-				"description": "Roo'nun onay gerektirmeden mevcut çalışma alanı dışındaki dosyaları okumasına izin ver."
+				"description": "Copilot'nun onay gerektirmeden mevcut çalışma alanı dışındaki dosyaları okumasına izin ver."
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "Tanılamanın potansiyel sorunları tespit etmesine izin vermek için yazmalardan sonra gecikme",
 			"outsideWorkspace": {
 				"label": "Çalışma alanı dışındaki dosyaları dahil et",
-				"description": "Roo'nun onay gerektirmeden mevcut çalışma alanı dışında dosya oluşturmasına ve düzenlemesine izin ver."
+				"description": "Copilot'nun onay gerektirmeden mevcut çalışma alanı dışında dosya oluşturmasına ve düzenlemesine izin ver."
 			},
 			"protected": {
 				"label": "Korumalı dosyaları dahil et",
-				"description": "Roo'nun korumalı dosyaları (.rooignore ve .roo/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
+				"description": "Copilot'nun korumalı dosyaları (.rooignore ve .roo/ yapılandırma dosyaları gibi) onay gerektirmeden oluşturmasına ve düzenlemesine izin ver."
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Hata ve Tekrar Limiti",
-			"description": "'Roo sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı. Bu güvenlik mekanizmasını devre dışı bırakmak için 0 olarak ayarlayın (asla tetiklenmez).",
+			"description": "'Copilot sorun yaşıyor' iletişim kutusunu göstermeden önceki ardışık hata veya tekrarlanan eylem sayısı. Bu güvenlik mekanizmasını devre dışı bırakmak için 0 olarak ayarlayın (asla tetiklenmez).",
 			"unlimitedDescription": "Sınırsız yeniden deneme etkin (otomatik devam et). Diyalog asla görünmeyecek.",
 			"warning": "⚠️ 0'a ayarlamak, önemli API kullanımına neden olabilecek sınırsız yeniden denemeye izin verir"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "Tarayıcı aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
+			"description": "Etkinleştirildiğinde, Copilot bilgisayar kullanımını destekleyen modeller kullanırken web siteleriyle etkileşim kurmak için bir tarayıcı kullanabilir. <0>Daha fazla bilgi</0>"
 		},
 		"viewport": {
 			"label": "Görünüm alanı boyutu",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "Otomatik kontrol noktalarını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
+			"description": "Etkinleştirildiğinde, Copilot görev yürütme sırasında otomatik olarak kontrol noktaları oluşturarak değişiklikleri gözden geçirmeyi veya önceki durumlara dönmeyi kolaylaştırır. <0>Daha fazla bilgi</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Ses efektlerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo bildirimler ve olaylar için ses efektleri çalacaktır.",
+			"description": "Etkinleştirildiğinde, Copilot bildirimler ve olaylar için ses efektleri çalacaktır.",
 			"volumeLabel": "Ses Düzeyi"
 		},
 		"tts": {
 			"label": "Metinden sese özelliğini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo yanıtlarını metinden sese teknolojisi kullanarak sesli okuyacaktır.",
+			"description": "Etkinleştirildiğinde, Copilot yanıtlarını metinden sese teknolojisi kullanarak sesli okuyacaktır.",
 			"speedLabel": "Hız"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "Yapay zekanın bağlam penceresine hangi bilgilerin dahil edileceğini kontrol edin, token kullanımını ve yanıt kalitesini etkiler",
 		"autoCondenseContextPercent": {
 			"label": "Akıllı bağlam sıkıştırmayı tetikleyecek eşik",
-			"description": "Bağlam penceresi bu eşiğe ulaştığında, Roo otomatik olarak sıkıştıracaktır."
+			"description": "Bağlam penceresi bu eşiğe ulaştığında, Copilot otomatik olarak sıkıştıracaktır."
 		},
 		"condensingApiConfiguration": {
 			"label": "Bağlam Yoğunlaştırma için API Yapılandırması",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Akıllı bağlam sıkıştırmayı otomatik olarak tetikle",
-			"description": "Etkinleştirildiğinde, Roo eşiğe ulaşıldığında bağlamı otomatik olarak sıkıştırır. Devre dışı bırakıldığında, bağlam sıkıştırmayı hala manuel olarak tetikleyebilirsiniz."
+			"description": "Etkinleştirildiğinde, Copilot eşiğe ulaşıldığında bağlamı otomatik olarak sıkıştırır. Devre dışı bırakıldığında, bağlam sıkıştırmayı hala manuel olarak tetikleyebilirsiniz."
 		},
 		"openTabs": {
 			"label": "Açık sekmeler bağlam sınırı",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "Dosya okuma otomatik kısaltma eşiği",
-			"description": "Model başlangıç/bitiş değerlerini belirtmediğinde Roo bu sayıda satırı okur. Bu sayı dosyanın toplam satır sayısından azsa, Roo kod tanımlamalarının satır numarası dizinini oluşturur. Özel durumlar: -1, Roo'ya tüm dosyayı okumasını (dizinleme olmadan), 0 ise hiç satır okumamasını ve minimum bağlam için yalnızca satır dizinleri sağlamasını belirtir. Düşük değerler başlangıç bağlam kullanımını en aza indirir ve sonraki hassas satır aralığı okumalarına olanak tanır. Açık başlangıç/bitiş istekleri bu ayarla sınırlı değildir.",
+			"description": "Model başlangıç/bitiş değerlerini belirtmediğinde Copilot bu sayıda satırı okur. Bu sayı dosyanın toplam satır sayısından azsa, Copilot kod tanımlamalarının satır numarası dizinini oluşturur. Özel durumlar: -1, Copilot'ya tüm dosyayı okumasını (dizinleme olmadan), 0 ise hiç satır okumamasını ve minimum bağlam için yalnızca satır dizinleri sağlamasını belirtir. Düşük değerler başlangıç bağlam kullanımını en aza indirir ve sonraki hassas satır aralığı okumalarına olanak tanır. Açık başlangıç/bitiş istekleri bu ayarla sınırlı değildir.",
 			"lines": "satır",
 			"always_full_read": "Her zaman tüm dosyayı oku"
 		},
@@ -658,11 +658,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Terminal çıktı sınırı",
-			"description": "Sınırın altında kalmak için ilk ve son satırları tutar ve ortadakileri atar. Jetonları kaydetmek için düşürün; Roo'ya daha fazla orta ayrıntı vermek için yükseltin. Roo, içeriğin atlandığı yerde bir yer tutucu görür.<0>Daha fazla bilgi edinin</0>"
+			"description": "Sınırın altında kalmak için ilk ve son satırları tutar ve ortadakileri atar. Jetonları kaydetmek için düşürün; Copilot'ya daha fazla orta ayrıntı vermek için yükseltin. Copilot, içeriğin atlandığı yerde bir yer tutucu görür.<0>Daha fazla bilgi edinin</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Terminal karakter sınırı",
-			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Roo'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
+			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Copilot'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell entegrasyon timeout",
@@ -670,7 +670,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Satır İçi Terminal Kullan (önerilir)",
-			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında Roo, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
+			"description": "Daha hızlı, daha güvenilir çalıştırmalar için kabuk profillerini/entegrasyonunu atlamak için Satır İçi Terminal'de (sohbet) komutları çalıştırın. Devre dışı bırakıldığında Copilot, kabuk profiliniz, istemleriniz ve eklentilerinizle VS Code terminalini kullanır. <0>Daha fazla bilgi edinin</0>"
 		},
 		"commandDelay": {
 			"label": "Terminal komut delay",
@@ -710,7 +710,7 @@
 	},
 	"toolProtocol": {
 		"label": "Araç Çağrı Protokolü",
-		"description": "Roo'nun API ile nasıl iletişim kuracağını seçin. Yerel, sağlayıcının işlev çağırma API'sini kullanırken, XML, XML biçimli araç tanımlarını kullanır.",
+		"description": "Copilot'nun API ile nasıl iletişim kuracağını seçin. Yerel, sağlayıcının işlev çağırma API'sini kullanırken, XML, XML biçimli araç tanımlarını kullanır.",
 		"default": "Varsayılan",
 		"xml": "XML",
 		"native": "Yerel",
@@ -719,7 +719,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir",
+			"description": "Etkinleştirildiğinde, Copilot dosyaları daha hızlı düzenleyebilecek ve kesik tam dosya yazımlarını otomatik olarak reddedecektir",
 			"strategy": {
 				"label": "Diff stratejisi",
 				"options": {
@@ -740,7 +740,7 @@
 		},
 		"todoList": {
 			"label": "Yapılacaklar listesi aracını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo görev ilerlemesini takip etmek için yapılacaklar listeleri oluşturabilir ve yönetebilir. Bu, karmaşık görevleri yönetilebilir adımlara organize etmeye yardımcı olur."
+			"description": "Etkinleştirildiğinde, Copilot görev ilerlemesini takip etmek için yapılacaklar listeleri oluşturabilir ve yönetebilir. Bu, karmaşık görevleri yönetilebilir adımlara organize etmeye yardımcı olur."
 		}
 	},
 	"experimental": {
@@ -750,19 +750,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Deneysel içerik ekleme aracını kullan",
-			"description": "Deneysel içerik ekleme aracını etkinleştir, Roo'nun bir diff oluşturma gereği duymadan belirli satır numaralarına içerik eklemesine olanak tanır."
+			"description": "Deneysel içerik ekleme aracını etkinleştir, Copilot'nun bir diff oluşturma gereği duymadan belirli satır numaralarına içerik eklemesine olanak tanır."
 		},
 		"POWER_STEERING": {
 			"name": "Deneysel \"güç direksiyon\" modunu kullan",
-			"description": "Etkinleştirildiğinde, Roo modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
+			"description": "Etkinleştirildiğinde, Copilot modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Deneysel çoklu blok diff aracını kullan",
-			"description": "Etkinleştirildiğinde, Roo çoklu blok diff aracını kullanacaktır. Bu, tek bir istekte dosyadaki birden fazla kod bloğunu güncellemeye çalışacaktır."
+			"description": "Etkinleştirildiğinde, Copilot çoklu blok diff aracını kullanacaktır. Bu, tek bir istekte dosyadaki birden fazla kod bloğunu güncellemeye çalışacaktır."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Eşzamanlı dosya okumayı etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Roo dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Copilot tek bir istekte birden fazla dosya okuyabilir. Devre dışı bırakıldığında, Copilot dosyaları birer birer okumalıdır. Daha az yetenekli modellerle çalışırken veya dosya erişimi üzerinde daha fazla kontrol istediğinizde devre dışı bırakmak yardımcı olabilir."
 		},
 		"MARKETPLACE": {
 			"name": "Marketplace'i Etkinleştir",
@@ -770,11 +770,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Eşzamanlı dosya düzenlemelerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
+			"description": "Etkinleştirildiğinde, Copilot tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Copilot dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Arka plan düzenleme",
-			"description": "Etkinleştirildiğinde editör odak kesintisini önler. Dosya düzenlemeleri diff görünümlerini açmadan veya odağı çalmadan arka planda gerçekleşir. Roo değişiklikler yaparken kesintisiz çalışmaya devam edebilirsiniz. Dosyalar tanılamayı yakalamak için odaksız açılabilir veya tamamen kapalı kalabilir."
+			"description": "Etkinleştirildiğinde editör odak kesintisini önler. Dosya düzenlemeleri diff görünümlerini açmadan veya odağı çalmadan arka planda gerçekleşir. Copilot değişiklikler yaparken kesintisiz çalışmaya devam edebilirsiniz. Dosyalar tanılamayı yakalamak için odaksız açılabilir veya tamamen kapalı kalabilir."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Yeni mesaj ayrıştırıcıyı kullan",
@@ -788,7 +788,7 @@
 			"providerLabel": "Sağlayıcı",
 			"providerDescription": "Görüntü oluşturma için kullanılacak sağlayıcıyı seçin.",
 			"name": "AI görüntü üretimini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
+			"description": "Etkinleştirildiğinde, Copilot OpenRouter'ın görüntü üretim modellerini kullanarak metin istemlerinden görüntüler üretebilir. Yapılandırılmış bir OpenRouter API anahtarı gerektirir.",
 			"openRouterApiKeyLabel": "OpenRouter API Anahtarı",
 			"openRouterApiKeyPlaceholder": "OpenRouter API anahtarınızı girin",
 			"getApiKeyText": "API anahtarınızı alın",
@@ -799,7 +799,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
+			"description": "Etkinleştirildiğinde, Copilot iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Paralel araç çağrıları",
@@ -807,7 +807,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Özel araçları etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo projenizin .roo/tools dizininden veya global araçlar için ~/.roo/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: Bu araçlar otomatik olarak onaylanacaktır.",
+			"description": "Etkinleştirildiğinde, Copilot projenizin .roo/tools dizininden veya global araçlar için ~/.roo/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: Bu araçlar otomatik olarak onaylanacaktır.",
 			"toolsHeader": "Kullanılabilir Özel Araçlar",
 			"noTools": "Özel araç yüklenmedi. Projenizin .roo/tools dizinine veya global araçlar için ~/.roo/tools dizinine .ts veya .js dosyaları ekleyin.",
 			"refreshButton": "Yenile",
@@ -819,7 +819,7 @@
 	},
 	"promptCaching": {
 		"label": "Prompt önbelleğini devre dışı bırak",
-		"description": "İşaretlendiğinde, Roo bu model için prompt önbelleğini kullanmayacaktır."
+		"description": "İşaretlendiğinde, Copilot bu model için prompt önbelleğini kullanmayacaktır."
 	},
 	"temperature": {
 		"useCustom": "Özel sıcaklık kullan",
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
-		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
+		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
 			"description": "Anonim kullanım verileri ve hata raporları göndererek Datacoves Copilot'u geliştirmeye yardım edin. Bu telemetri kod, prompt veya kişisel bilgi toplamaz. Daha fazla ayrıntı için <privacyLink>gizlilik politikamıza</privacyLink> bakın. Bunu istediğiniz zaman kapatabilirsiniz."

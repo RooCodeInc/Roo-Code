@@ -121,7 +121,7 @@
 			"completionError": "Error de finalización de Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "El proveedor Roo requiere autenticación en la nube. Por favor, inicia sesión en Datacoves Copilot Cloud."
+			"authenticationRequired": "El proveedor Copilot requiere autenticación en la nube. Por favor, inicia sesión en Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "La clave API contiene caracteres inválidos."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Por favor, ingresa una ruta válida"
 	},
 	"input": {
-		"task_prompt": "¿Qué debe hacer Roo?",
+		"task_prompt": "¿Qué debe hacer Copilot?",
 		"task_placeholder": "Escribe tu tarea aquí"
 	},
 	"settings": {

@@ -121,7 +121,7 @@
 			"completionError": "Cerebras tamamlama hatası: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Datacoves Copilot Cloud'a giriş yapın."
+			"authenticationRequired": "Copilot sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Datacoves Copilot Cloud'a giriş yapın."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Lütfen geçerli bir yol girin"
 	},
 	"input": {
-		"task_prompt": "Roo ne yapsın?",
+		"task_prompt": "Copilot ne yapsın?",
 		"task_placeholder": "Görevini buraya yaz"
 	},
 	"settings": {

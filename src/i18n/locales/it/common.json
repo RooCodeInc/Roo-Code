@@ -121,7 +121,7 @@
 			"completionError": "Errore di completamento Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Il provider Roo richiede l'autenticazione cloud. Accedi a Datacoves Copilot Cloud."
+			"authenticationRequired": "Il provider Copilot richiede l'autenticazione cloud. Accedi a Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "La chiave API contiene caratteri non validi."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Inserisci un percorso valido"
 	},
 	"input": {
-		"task_prompt": "Cosa deve fare Roo?",
+		"task_prompt": "Cosa deve fare Copilot?",
 		"task_placeholder": "Scrivi il tuo compito qui"
 	},
 	"settings": {

@@ -44,7 +44,7 @@
 		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
 	},
 	"prompts": {
-		"description": "Skonfiguruj podpowiedzi wsparcia używane do szybkich działań, takich jak ulepszanie podpowiedzi, wyjaśnianie kodu i rozwiązywanie problemów. Te podpowiedzi pomagają Roo zapewnić lepsze wsparcie dla typowych zadań programistycznych."
+		"description": "Skonfiguruj podpowiedzi wsparcia używane do szybkich działań, takich jak ulepszanie podpowiedzi, wyjaśnianie kodu i rozwiązywanie problemów. Te podpowiedzi pomagają Copilot zapewnić lepsze wsparcie dla typowych zadań programistycznych."
 	},
 	"codeIndex": {
 		"title": "Indeksowanie kodu",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "Możesz skonfigurować globalny skrót dla tego ustawienia <SettingsLink>w preferencjach swojego IDE</SettingsLink>.",
-		"description": "Pozwól Roo na automatyczne wykonywanie operacji bez wymagania zatwierdzenia. Włącz te ustawienia tylko jeśli w pełni ufasz AI i rozumiesz związane z tym zagrożenia bezpieczeństwa.",
+		"description": "Pozwól Copilot na automatyczne wykonywanie operacji bez wymagania zatwierdzenia. Włącz te ustawienia tylko jeśli w pełni ufasz AI i rozumiesz związane z tym zagrożenia bezpieczeństwa.",
 		"enabled": "Auto-zatwierdzanie włączone",
 		"toggleAriaLabel": "Przełącz automatyczne zatwierdzanie",
 		"disabledAriaLabel": "Automatyczne zatwierdzanie wyłączone - najpierw wybierz opcje",
 		"readOnly": {
 			"label": "Odczyt",
-			"description": "Gdy włączone, Roo automatycznie będzie wyświetlać zawartość katalogów i czytać pliki bez konieczności klikania przycisku Zatwierdź.",
+			"description": "Gdy włączone, Copilot automatycznie będzie wyświetlać zawartość katalogów i czytać pliki bez konieczności klikania przycisku Zatwierdź.",
 			"outsideWorkspace": {
 				"label": "Uwzględnij pliki poza obszarem roboczym",
-				"description": "Pozwól Roo na odczyt plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
+				"description": "Pozwól Copilot na odczyt plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "Opóźnienie po zapisach, aby umożliwić diagnostyce wykrycie potencjalnych problemów",
 			"outsideWorkspace": {
 				"label": "Uwzględnij pliki poza obszarem roboczym",
-				"description": "Pozwól Roo na tworzenie i edycję plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
+				"description": "Pozwól Copilot na tworzenie i edycję plików poza bieżącym obszarem roboczym bez konieczności zatwierdzania."
 			},
 			"protected": {
 				"label": "Uwzględnij pliki chronione",
-				"description": "Pozwól Roo na tworzenie i edycję plików chronionych (takich jak .rooignore i pliki konfiguracyjne .roo/) bez konieczności zatwierdzania."
+				"description": "Pozwól Copilot na tworzenie i edycję plików chronionych (takich jak .rooignore i pliki konfiguracyjne .roo/) bez konieczności zatwierdzania."
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Limit błędów i powtórzeń",
-			"description": "Liczba kolejnych błędów lub powtórzonych akcji przed wyświetleniem okna dialogowego 'Roo ma problemy'. Ustaw na 0, aby wyłączyć ten mechanizm bezpieczeństwa (nigdy się nie uruchomi).",
+			"description": "Liczba kolejnych błędów lub powtórzonych akcji przed wyświetleniem okna dialogowego 'Copilot ma problemy'. Ustaw na 0, aby wyłączyć ten mechanizm bezpieczeństwa (nigdy się nie uruchomi).",
 			"unlimitedDescription": "Włączono nieograniczone próby (automatyczne kontynuowanie). Okno dialogowe nigdy się nie pojawi.",
 			"warning": "⚠️ Ustawienie na 0 pozwala na nieograniczone próby, co może zużyć znaczną ilość API"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "Włącz narzędzie przeglądarki",
-			"description": "Gdy włączone, Roo może używać przeglądarki do interakcji ze stronami internetowymi podczas korzystania z modeli obsługujących używanie komputera. <0>Dowiedz się więcej</0>"
+			"description": "Gdy włączone, Copilot może używać przeglądarki do interakcji ze stronami internetowymi podczas korzystania z modeli obsługujących używanie komputera. <0>Dowiedz się więcej</0>"
 		},
 		"viewport": {
 			"label": "Rozmiar viewportu",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "Włącz automatyczne punkty kontrolne",
-			"description": "Gdy włączone, Roo automatycznie utworzy punkty kontrolne podczas wykonywania zadań, ułatwiając przeglądanie zmian lub powrót do wcześniejszych stanów. <0>Dowiedz się więcej</0>"
+			"description": "Gdy włączone, Copilot automatycznie utworzy punkty kontrolne podczas wykonywania zadań, ułatwiając przeglądanie zmian lub powrót do wcześniejszych stanów. <0>Dowiedz się więcej</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Włącz efekty dźwiękowe",
-			"description": "Gdy włączone, Roo będzie odtwarzać efekty dźwiękowe dla powiadomień i zdarzeń.",
+			"description": "Gdy włączone, Copilot będzie odtwarzać efekty dźwiękowe dla powiadomień i zdarzeń.",
 			"volumeLabel": "Głośność"
 		},
 		"tts": {
 			"label": "Włącz syntezę mowy",
-			"description": "Gdy włączone, Roo będzie czytać na głos swoje odpowiedzi za pomocą syntezy mowy.",
+			"description": "Gdy włączone, Copilot będzie czytać na głos swoje odpowiedzi za pomocą syntezy mowy.",
 			"speedLabel": "Szybkość"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "Kontroluj, jakie informacje są zawarte w oknie kontekstu AI, wpływając na zużycie token i jakość odpowiedzi",
 		"autoCondenseContextPercent": {
 			"label": "Próg wyzwalający inteligentną kondensację kontekstu",
-			"description": "Gdy okno kontekstu osiągnie ten próg, Roo automatycznie je skondensuje."
+			"description": "Gdy okno kontekstu osiągnie ten próg, Copilot automatycznie je skondensuje."
 		},
 		"condensingApiConfiguration": {
 			"label": "Konfiguracja API dla kondensacji kontekstu",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Automatycznie wyzwalaj inteligentną kondensację kontekstu",
-			"description": "Gdy włączone, Roo automatycznie skondensuje kontekst po osiągnięciu progu. Gdy wyłączone, nadal możesz ręcznie wyzwolić kondensację kontekstu."
+			"description": "Gdy włączone, Copilot automatycznie skondensuje kontekst po osiągnięciu progu. Gdy wyłączone, nadal możesz ręcznie wyzwolić kondensację kontekstu."
 		},
 		"openTabs": {
 			"label": "Limit kontekstu otwartych kart",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "Próg automatycznego skracania odczytu pliku",
-			"description": "Roo odczytuje tę liczbę linii, gdy model nie określa wartości początkowej/końcowej. Jeśli ta liczba jest mniejsza niż całkowita liczba linii pliku, Roo generuje indeks numerów linii definicji kodu. Przypadki specjalne: -1 nakazuje Roo odczytać cały plik (bez indeksowania), a 0 nakazuje nie czytać żadnych linii i dostarczyć tylko indeksy linii dla minimalnego kontekstu. Niższe wartości minimalizują początkowe użycie kontekstu, umożliwiając późniejsze precyzyjne odczyty zakresów linii. Jawne żądania początku/końca nie są ograniczone tym ustawieniem.",
+			"description": "Copilot odczytuje tę liczbę linii, gdy model nie określa wartości początkowej/końcowej. Jeśli ta liczba jest mniejsza niż całkowita liczba linii pliku, Copilot generuje indeks numerów linii definicji kodu. Przypadki specjalne: -1 nakazuje Copilot odczytać cały plik (bez indeksowania), a 0 nakazuje nie czytać żadnych linii i dostarczyć tylko indeksy linii dla minimalnego kontekstu. Niższe wartości minimalizują początkowe użycie kontekstu, umożliwiając późniejsze precyzyjne odczyty zakresów linii. Jawne żądania początku/końca nie są ograniczone tym ustawieniem.",
 			"lines": "linii",
 			"always_full_read": "Zawsze czytaj cały plik"
 		},
@@ -658,11 +658,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Limit wyjścia terminala",
-			"description": "Zachowuje pierwsze i ostatnie linie i odrzuca środkowe, aby zmieścić się w limicie. Zmniejsz, aby oszczędzać tokeny; zwiększ, aby dać Roo więcej szczegółów ze środka. Roo widzi symbol zastępczy tam, gdzie treść jest pomijana.<0>Dowiedz się więcej</0>"
+			"description": "Zachowuje pierwsze i ostatnie linie i odrzuca środkowe, aby zmieścić się w limicie. Zmniejsz, aby oszczędzać tokeny; zwiększ, aby dać Copilot więcej szczegółów ze środka. Copilot widzi symbol zastępczy tam, gdzie treść jest pomijana.<0>Dowiedz się więcej</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Limit znaków terminala",
-			"description": "Zastępuje limit linii, aby zapobiec problemom z pamięcią, narzucając twardy limit rozmiaru wyjścia. W przypadku przekroczenia zachowuje początek i koniec i pokazuje symbol zastępczy Roo tam, gdzie treść jest pomijana. <0>Dowiedz się więcej</0>"
+			"description": "Zastępuje limit linii, aby zapobiec problemom z pamięcią, narzucając twardy limit rozmiaru wyjścia. W przypadku przekroczenia zachowuje początek i koniec i pokazuje symbol zastępczy Copilot tam, gdzie treść jest pomijana. <0>Dowiedz się więcej</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Limit czasu integracji powłoki terminala",
@@ -670,7 +670,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Użyj terminala wbudowanego (zalecane)",
-			"description": "Uruchamiaj polecenia w terminalu wbudowanym (czat), aby ominąć profile/integrację powłoki dla szybszych, bardziej niezawodnych uruchomień. Gdy wyłączony, Roo używa terminala VS Code z twoim profilem powłoki, monitami i wtyczkami. <0>Dowiedz się więcej</0>"
+			"description": "Uruchamiaj polecenia w terminalu wbudowanym (czat), aby ominąć profile/integrację powłoki dla szybszych, bardziej niezawodnych uruchomień. Gdy wyłączony, Copilot używa terminala VS Code z twoim profilem powłoki, monitami i wtyczkami. <0>Dowiedz się więcej</0>"
 		},
 		"commandDelay": {
 			"label": "Opóźnienie polecenia terminala",
@@ -710,7 +710,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protokół wywołania narzędzia",
-		"description": "Wybierz, jak Roo komunikuje się z API. Natywny używa API wywołania funkcji dostawcy, podczas gdy XML używa definicji narzędzi w formacie XML.",
+		"description": "Wybierz, jak Copilot komunikuje się z API. Natywny używa API wywołania funkcji dostawcy, podczas gdy XML używa definicji narzędzi w formacie XML.",
 		"default": "Domyślny",
 		"xml": "XML",
 		"native": "Natywny",
@@ -719,7 +719,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Włącz edycję przez różnice",
-			"description": "Gdy włączone, Roo będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików",
+			"description": "Gdy włączone, Copilot będzie w stanie edytować pliki szybciej i automatycznie odrzuci obcięte pełne zapisy plików",
 			"strategy": {
 				"label": "Strategia diff",
 				"options": {
@@ -740,7 +740,7 @@
 		},
 		"todoList": {
 			"label": "Włącz narzędzie listy zadań",
-			"description": "Po włączeniu Roo może tworzyć i zarządzać listami zadań do śledzenia postępu zadań. Pomaga to organizować złożone zadania w łatwe do zarządzania kroki."
+			"description": "Po włączeniu Copilot może tworzyć i zarządzać listami zadań do śledzenia postępu zadań. Pomaga to organizować złożone zadania w łatwe do zarządzania kroki."
 		}
 	},
 	"experimental": {
@@ -750,19 +750,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Użyj eksperymentalnego narzędzia do wstawiania treści",
-			"description": "Włącz eksperymentalne narzędzie do wstawiania treści, umożliwiając Roo wstawianie treści w określonych numerach linii bez konieczności tworzenia diff."
+			"description": "Włącz eksperymentalne narzędzie do wstawiania treści, umożliwiając Copilot wstawianie treści w określonych numerach linii bez konieczności tworzenia diff."
 		},
 		"POWER_STEERING": {
 			"name": "Użyj eksperymentalnego trybu \"wspomagania kierownicy\"",
-			"description": "Po włączeniu, Roo będzie częściej przypominać modelowi o szczegółach jego bieżącej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji ról i niestandardowych instrukcji, ale będzie używać więcej tokenów na wiadomość."
+			"description": "Po włączeniu, Copilot będzie częściej przypominać modelowi o szczegółach jego bieżącej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji ról i niestandardowych instrukcji, ale będzie używać więcej tokenów na wiadomość."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Użyj eksperymentalnego narzędzia diff wieloblokowego",
-			"description": "Po włączeniu, Roo użyje narzędzia diff wieloblokowego. Spróbuje to zaktualizować wiele bloków kodu w pliku w jednym żądaniu."
+			"description": "Po włączeniu, Copilot użyje narzędzia diff wieloblokowego. Spróbuje to zaktualizować wiele bloków kodu w pliku w jednym żądaniu."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Włącz jednoczesne odczytywanie plików",
-			"description": "Po włączeniu Roo może odczytać wiele plików w jednym żądaniu. Po wyłączeniu Roo musi odczytywać pliki pojedynczo. Wyłączenie może pomóc podczas pracy z mniej wydajnymi modelami lub gdy chcesz mieć większą kontrolę nad dostępem do plików."
+			"description": "Po włączeniu Copilot może odczytać wiele plików w jednym żądaniu. Po wyłączeniu Copilot musi odczytywać pliki pojedynczo. Wyłączenie może pomóc podczas pracy z mniej wydajnymi modelami lub gdy chcesz mieć większą kontrolę nad dostępem do plików."
 		},
 		"MARKETPLACE": {
 			"name": "Włącz Marketplace",
@@ -770,11 +770,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Włącz równoczesne edycje plików",
-			"description": "Gdy włączone, Roo może edytować wiele plików w jednym żądaniu. Gdy wyłączone, Roo musi edytować pliki jeden po drugim. Wyłączenie tego może pomóc podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieć większą kontrolę nad modyfikacjami plików."
+			"description": "Gdy włączone, Copilot może edytować wiele plików w jednym żądaniu. Gdy wyłączone, Copilot musi edytować pliki jeden po drugim. Wyłączenie tego może pomóc podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieć większą kontrolę nad modyfikacjami plików."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edycja w tle",
-			"description": "Zapobiega zakłócaniu fokusa edytora gdy włączone. Edycje plików odbywają się w tle bez otwierania widoków różnic lub kradzieży fokusa. Możesz kontynuować pracę bez przeszkód podczas gdy Roo wprowadza zmiany. Pliki mogą być otwierane bez fokusa aby przechwycić diagnostykę lub pozostać całkowicie zamknięte."
+			"description": "Zapobiega zakłócaniu fokusa edytora gdy włączone. Edycje plików odbywają się w tle bez otwierania widoków różnic lub kradzieży fokusa. Możesz kontynuować pracę bez przeszkód podczas gdy Copilot wprowadza zmiany. Pliki mogą być otwierane bez fokusa aby przechwycić diagnostykę lub pozostać całkowicie zamknięte."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Użyj nowego parsera wiadomości",
@@ -788,7 +788,7 @@
 			"providerLabel": "Dostawca",
 			"providerDescription": "Wybierz dostawcę do generowania obrazów.",
 			"name": "Włącz generowanie obrazów AI",
-			"description": "Gdy włączone, Roo może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
+			"description": "Gdy włączone, Copilot może generować obrazy z promptów tekstowych używając modeli generowania obrazów OpenRouter. Wymaga skonfigurowanego klucza API OpenRouter.",
 			"openRouterApiKeyLabel": "Klucz API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Wprowadź swój klucz API OpenRouter",
 			"getApiKeyText": "Uzyskaj swój klucz API od",
@@ -799,7 +799,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
-			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
+			"description": "Gdy włączone, Copilot może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Równoległe wywołania narzędzi",
@@ -807,7 +807,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Włącz niestandardowe narzędzia",
-			"description": "Gdy włączone, Roo może ładować i używać niestandardowych narzędzi TypeScript/JavaScript z katalogu .roo/tools Twojego projektu lub ~/.roo/tools dla narzędzi globalnych. Uwaga: te narzędzia będą automatycznie zatwierdzane.",
+			"description": "Gdy włączone, Copilot może ładować i używać niestandardowych narzędzi TypeScript/JavaScript z katalogu .roo/tools Twojego projektu lub ~/.roo/tools dla narzędzi globalnych. Uwaga: te narzędzia będą automatycznie zatwierdzane.",
 			"toolsHeader": "Dostępne niestandardowe narzędzia",
 			"noTools": "Nie załadowano niestandardowych narzędzi. Dodaj pliki .ts lub .js do katalogu .roo/tools swojego projektu lub ~/.roo/tools dla narzędzi globalnych.",
 			"refreshButton": "Odśwież",
@@ -819,7 +819,7 @@
 	},
 	"promptCaching": {
 		"label": "Wyłącz buforowanie promptów",
-		"description": "Po zaznaczeniu, Roo nie będzie używać buforowania promptów dla tego modelu."
+		"description": "Po zaznaczeniu, Copilot nie będzie używać buforowania promptów dla tego modelu."
 	},
 	"temperature": {
 		"useCustom": "Użyj niestandardowej temperatury",
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
 	},
 	"footer": {
-		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Zezwól na anonimowe raportowanie błędów i użycia",
 			"description": "Pomóż ulepszyć Datacoves Copilot, wysyłając anonimowe dane użytkowania i raporty błędów. Ta telemetria nie zbiera kodu, promptów ani danych osobowych. Zobacz naszą <privacyLink>politykę prywatności</privacyLink>, aby uzyskać więcej szczegółów. Możesz to wyłączyć w dowolnym momencie."

@@ -6,7 +6,7 @@
 	"signIn": "Conectar ao Datacoves Copilot Cloud",
 	"connect": "Começar",
 	"cloudBenefitsTitle": "Experimente o Datacoves Copilot Cloud",
-	"cloudBenefitProvider": "Acesse modelos gratuitos e pagos que funcionam muito bem com o Roo",
+	"cloudBenefitProvider": "Acesse modelos gratuitos e pagos que funcionam muito bem com o Copilot",
 	"cloudBenefitCloudAgents": "Dê tarefas a agentes autônomos na nuvem",
 	"cloudBenefitTriggers": "Obtenha revisões de código no Github, inicie tarefas do Slack e muito mais",
 	"cloudBenefitWalkaway": "Acompanhe e controle tarefas de qualquer lugar (incluindo seu telefone)",
@@ -15,9 +15,9 @@
 	"visitCloudWebsite": "Visitar Datacoves Copilot Cloud",
 	"taskSync": "Sincronização de tarefas",
 	"taskSyncDescription": "Sincronize suas tarefas para visualizar e compartilhar no Datacoves Copilot Cloud",
-	"remoteControl": "Roomote Control",
+	"remoteControl": "Remote Control",
 	"remoteControlDescription": "Permite controlar tarefas a partir do Datacoves Copilot Cloud",
-	"remoteControlRequiresTaskSync": "A sincronização de tarefas deve estar habilitada para usar o Roomote Control",
+	"remoteControlRequiresTaskSync": "A sincronização de tarefas deve estar habilitada para usar o Remote Control",
 	"taskSyncManagedByOrganization": "A sincronização de tarefas é gerenciada pela sua organização",
 	"usageMetricsAlwaysReported": "As informações de uso do modelo são sempre reportadas quando conectado",
 	"authWaiting": "Aguardando conclusão da autenticação...",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "Criar Conta de Equipe",
 	"cloudUrlPillLabel": "URL do Datacoves Copilot Cloud ",
 	"upsell": {
-		"autoApprovePowerUser": "Dando um pouco de independência ao Roo? Controle-o de qualquer lugar com o Datacoves Copilot Cloud. <learnMoreLink>Saiba mais</learnMoreLink>.",
+		"autoApprovePowerUser": "Dando um pouco de independência ao Copilot? Controle-o de qualquer lugar com o Datacoves Copilot Cloud. <learnMoreLink>Saiba mais</learnMoreLink>.",
 		"longRunningTask": "Isso pode levar um tempo. Continue de qualquer lugar com a Nuvem.",
-		"taskList": "Gostando do Roo? Confira o Datacoves Copilot Cloud: acompanhe e controle suas tarefas de qualquer lugar, execute agentes de nuvem autônomos, obtenha estatísticas de uso e muito mais. <learnMoreLink>Saiba mais</learnMoreLink>."
+		"taskList": "Gostando do Copilot? Confira o Datacoves Copilot Cloud: acompanhe e controle suas tarefas de qualquer lugar, execute agentes de nuvem autônomos, obtenha estatísticas de uso e muito mais. <learnMoreLink>Saiba mais</learnMoreLink>."
 	}
 }

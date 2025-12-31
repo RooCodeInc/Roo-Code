@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "Liên kết tổ chức đã được sao chép vào clipboard",
 		"shareSuccessPublic": "Liên kết công khai đã được sao chép vào clipboard",
 		"openInCloud": "Mở tác vụ trong Datacoves Copilot Cloud",
-		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
+		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Copilot từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
 		"openApiHistory": "Mở lịch sử API",
 		"openUiHistory": "Mở lịch sử UI"
 	},
@@ -117,7 +117,7 @@
 		"title": "Chế độ",
 		"marketplace": "Chợ Chế độ",
 		"settings": "Cài đặt Chế độ",
-		"description": "Các nhân cách chuyên biệt điều chỉnh hành vi của Roo.",
+		"description": "Các nhân cách chuyên biệt điều chỉnh hành vi của Copilot.",
 		"searchPlaceholder": "Tìm kiếm chế độ...",
 		"noResults": "Không tìm thấy kết quả nào"
 	},
@@ -131,7 +131,7 @@
 	"diffError": {
 		"title": "Chỉnh sửa không thành công"
 	},
-	"troubleMessage": "Roo đang gặp sự cố...",
+	"troubleMessage": "Copilot đang gặp sự cố...",
 	"apiRequest": {
 		"title": "Yêu cầu API",
 		"failed": "Yêu cầu API thất bại",
@@ -174,42 +174,42 @@
 		"current": "Hiện tại"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo muốn lấy hướng dẫn chi tiết để hỗ trợ nhiệm vụ hiện tại"
+		"wantsToFetch": "Copilot muốn lấy hướng dẫn chi tiết để hỗ trợ nhiệm vụ hiện tại"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo muốn đọc tệp này",
-		"wantsToReadOutsideWorkspace": "Roo muốn đọc tệp này bên ngoài không gian làm việc",
-		"didRead": "Roo đã đọc tệp này",
-		"wantsToEdit": "Roo muốn chỉnh sửa tệp này",
-		"wantsToEditOutsideWorkspace": "Roo muốn chỉnh sửa tệp này bên ngoài không gian làm việc",
-		"wantsToEditProtected": "Roo muốn chỉnh sửa tệp cấu hình được bảo vệ",
-		"wantsToCreate": "Roo muốn tạo một tệp mới",
-		"wantsToSearchReplace": "Roo muốn thực hiện tìm kiếm và thay thế trong tệp này",
-		"didSearchReplace": "Roo đã thực hiện tìm kiếm và thay thế trong tệp này",
-		"wantsToInsert": "Roo muốn chèn nội dung vào tệp này",
-		"wantsToInsertWithLineNumber": "Roo muốn chèn nội dung vào dòng {{lineNumber}} của tệp này",
-		"wantsToInsertAtEnd": "Roo muốn thêm nội dung vào cuối tệp này",
-		"wantsToReadAndXMore": "Roo muốn đọc tệp này và {{count}} tệp khác",
-		"wantsToReadMultiple": "Roo muốn đọc nhiều tệp",
-		"wantsToApplyBatchChanges": "Roo muốn áp dụng thay đổi cho nhiều tệp",
-		"wantsToGenerateImage": "Roo muốn tạo một hình ảnh",
-		"wantsToGenerateImageOutsideWorkspace": "Roo muốn tạo hình ảnh bên ngoài không gian làm việc",
-		"wantsToGenerateImageProtected": "Roo muốn tạo hình ảnh ở vị trí được bảo vệ",
-		"didGenerateImage": "Roo đã tạo một hình ảnh"
+		"wantsToRead": "Copilot muốn đọc tệp này",
+		"wantsToReadOutsideWorkspace": "Copilot muốn đọc tệp này bên ngoài không gian làm việc",
+		"didRead": "Copilot đã đọc tệp này",
+		"wantsToEdit": "Copilot muốn chỉnh sửa tệp này",
+		"wantsToEditOutsideWorkspace": "Copilot muốn chỉnh sửa tệp này bên ngoài không gian làm việc",
+		"wantsToEditProtected": "Copilot muốn chỉnh sửa tệp cấu hình được bảo vệ",
+		"wantsToCreate": "Copilot muốn tạo một tệp mới",
+		"wantsToSearchReplace": "Copilot muốn thực hiện tìm kiếm và thay thế trong tệp này",
+		"didSearchReplace": "Copilot đã thực hiện tìm kiếm và thay thế trong tệp này",
+		"wantsToInsert": "Copilot muốn chèn nội dung vào tệp này",
+		"wantsToInsertWithLineNumber": "Copilot muốn chèn nội dung vào dòng {{lineNumber}} của tệp này",
+		"wantsToInsertAtEnd": "Copilot muốn thêm nội dung vào cuối tệp này",
+		"wantsToReadAndXMore": "Copilot muốn đọc tệp này và {{count}} tệp khác",
+		"wantsToReadMultiple": "Copilot muốn đọc nhiều tệp",
+		"wantsToApplyBatchChanges": "Copilot muốn áp dụng thay đổi cho nhiều tệp",
+		"wantsToGenerateImage": "Copilot muốn tạo một hình ảnh",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot muốn tạo hình ảnh bên ngoài không gian làm việc",
+		"wantsToGenerateImageProtected": "Copilot muốn tạo hình ảnh ở vị trí được bảo vệ",
+		"didGenerateImage": "Copilot đã tạo một hình ảnh"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo muốn xem các tệp cấp cao nhất trong thư mục này",
-		"didViewTopLevel": "Roo đã xem các tệp cấp cao nhất trong thư mục này",
-		"wantsToViewRecursive": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này",
-		"didViewRecursive": "Roo đã xem đệ quy tất cả các tệp trong thư mục này",
-		"wantsToSearch": "Roo muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
-		"didSearch": "Roo đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo đã tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
-		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)"
+		"wantsToViewTopLevel": "Copilot muốn xem các tệp cấp cao nhất trong thư mục này",
+		"didViewTopLevel": "Copilot đã xem các tệp cấp cao nhất trong thư mục này",
+		"wantsToViewRecursive": "Copilot muốn xem đệ quy tất cả các tệp trong thư mục này",
+		"didViewRecursive": "Copilot đã xem đệ quy tất cả các tệp trong thư mục này",
+		"wantsToSearch": "Copilot muốn tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
+		"didSearch": "Copilot đã tìm kiếm trong thư mục này cho <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Copilot muốn tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Copilot đã tìm kiếm trong thư mục này (ngoài không gian làm việc) cho <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot muốn xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
+		"didViewTopLevelOutsideWorkspace": "Copilot đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
+		"didViewRecursiveOutsideWorkspace": "Copilot đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)"
 	},
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {
@@ -232,24 +232,24 @@
 	"response": "Phản hồi",
 	"arguments": "Tham số",
 	"text": {
-		"rooSaid": "Roo đã nói"
+		"rooSaid": "Copilot đã nói"
 	},
 	"feedback": {
 		"youSaid": "Bạn đã nói"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
-		"wantsToAccessResource": "Roo muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"
+		"wantsToUseTool": "Copilot muốn sử dụng một công cụ trên máy chủ MCP {{serverName}}",
+		"wantsToAccessResource": "Copilot muốn truy cập một tài nguyên trên máy chủ MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo muốn chuyển sang chế độ <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo muốn chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}",
-		"didSwitch": "Roo đã chuyển sang chế độ <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo đã chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}"
+		"wantsToSwitch": "Copilot muốn chuyển sang chế độ <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "Copilot muốn chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}",
+		"didSwitch": "Copilot đã chuyển sang chế độ <code>{{mode}}</code>",
+		"didSwitchWithReason": "Copilot đã chuyển sang chế độ <code>{{mode}}</code> vì: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo muốn tạo một nhiệm vụ phụ mới trong chế độ <code>{{mode}}</code>",
-		"wantsToFinish": "Roo muốn hoàn thành nhiệm vụ phụ này",
+		"wantsToCreate": "Copilot muốn tạo một nhiệm vụ phụ mới trong chế độ <code>{{mode}}</code>",
+		"wantsToFinish": "Copilot muốn hoàn thành nhiệm vụ phụ này",
 		"newTaskContent": "Hướng dẫn nhiệm vụ phụ",
 		"completionContent": "Nhiệm vụ phụ đã hoàn thành",
 		"resultContent": "Kết quả nhiệm vụ phụ",
@@ -257,7 +257,7 @@
 		"completionInstructions": "Nhiệm vụ phụ đã hoàn thành! Bạn có thể xem lại kết quả và đề xuất các sửa đổi hoặc bước tiếp theo. Nếu mọi thứ có vẻ tốt, hãy xác nhận để trả kết quả về nhiệm vụ chính."
 	},
 	"questions": {
-		"hasQuestion": "Roo có một câu hỏi"
+		"hasQuestion": "Copilot có một câu hỏi"
 	},
 	"taskCompleted": "Nhiệm vụ hoàn thành",
 	"modelResponseIncomplete": "Phản hồi của mô hình không đầy đủ",
@@ -330,7 +330,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"skills": "Roo hiện hỗ trợ <skillsLink>Agent Skills</skillsLink> - các gói có thể tái sử dụng gồm các lời nhắc, công cụ và tài nguyên để mở rộng khả năng của Roo.",
+			"skills": "Copilot hiện hỗ trợ <skillsLink>Agent Skills</skillsLink> - các gói có thể tái sử dụng gồm các lời nhắc, công cụ và tài nguyên để mở rộng khả năng của Copilot.",
 			"nativeToolCalling": "Gọi công cụ gốc hiện được yêu cầu cho tất cả các tác vụ mới. <blogLink>Tìm hiểu thêm</blogLink> về động lực và những gì cần làm nếu bạn gặp sự cố."
 		},
 		"cloudAgents": {
@@ -343,7 +343,7 @@
 	},
 	"browser": {
 		"session": "Phiên trình duyệt",
-		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
+		"rooWantsToUse": "Copilot muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",
 		"screenshot": "Ảnh chụp màn hình trình duyệt",
@@ -395,18 +395,18 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Đã Đạt Giới Hạn Yêu Cầu Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
+			"description": "Copilot đã đạt đến giới hạn tự động phê duyệt là {{count}} yêu cầu API. Bạn có muốn đặt lại bộ đếm và tiếp tục nhiệm vụ không?",
 			"button": "Đặt lại và Tiếp tục"
 		},
 		"autoApprovedCostLimitReached": {
 			"button": "Đặt lại và Tiếp tục",
 			"title": "Đã Đạt Giới Hạn Chi Phí Tự Động Phê Duyệt",
-			"description": "Roo đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?"
+			"description": "Copilot đã đạt đến giới hạn chi phí tự động phê duyệt là ${{count}}. Bạn có muốn đặt lại chi phí và tiếp tục với nhiệm vụ không?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>",
+		"wantsToSearch": "Copilot muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot muốn tìm kiếm trong cơ sở mã cho <code>{{query}}</code> trong <code>{{path}}</code>",
 		"didSearch_one": "Đã tìm thấy 1 kết quả",
 		"didSearch_other": "Đã tìm thấy {{count}} kết quả",
 		"resultTooltip": "Điểm tương tự: {{score}} (nhấp để mở tệp)"
@@ -471,8 +471,8 @@
 		"clickToEdit": "Nhấp để chỉnh sửa tin nhắn"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo muốn chạy lệnh slash",
-		"didRun": "Roo đã chạy lệnh slash"
+		"wantsToRun": "Copilot muốn chạy lệnh slash",
+		"didRun": "Copilot đã chạy lệnh slash"
 	},
 	"todo": {
 		"partial": "{{completed}} trong tổng số {{total}} công việc đã hoàn thành",

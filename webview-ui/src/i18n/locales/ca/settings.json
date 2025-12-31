@@ -44,7 +44,7 @@
 		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
 	},
 	"prompts": {
-		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
+		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Copilot a proporcionar millor assistència per a tasques comunes de desenvolupament."
 	},
 	"codeIndex": {
 		"title": "Indexació de codi",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "Pots configurar una drecera global per a aquesta configuració <SettingsLink>a les preferències del teu IDE</SettingsLink>.",
-		"description": "Permet que Roo realitzi operacions automàticament sense requerir aprovació. Activeu aquesta configuració només si confieu plenament en la IA i enteneu els riscos de seguretat associats.",
+		"description": "Permet que Copilot realitzi operacions automàticament sense requerir aprovació. Activeu aquesta configuració només si confieu plenament en la IA i enteneu els riscos de seguretat associats.",
 		"enabled": "Auto-aprovació activada",
 		"toggleAriaLabel": "Commuta l'aprovació automàtica",
 		"disabledAriaLabel": "Aprovació automàtica desactivada: seleccioneu primer les opcions",
 		"readOnly": {
 			"label": "Llegir",
-			"description": "Quan està activat, Roo veurà automàticament el contingut del directori i llegirà fitxers sense que calgui fer clic al botó Aprovar.",
+			"description": "Quan està activat, Copilot veurà automàticament el contingut del directori i llegirà fitxers sense que calgui fer clic al botó Aprovar.",
 			"outsideWorkspace": {
 				"label": "Incloure fitxers fora de l'espai de treball",
-				"description": "Permetre a Roo llegir fitxers fora de l'espai de treball actual sense requerir aprovació."
+				"description": "Permetre a Copilot llegir fitxers fora de l'espai de treball actual sense requerir aprovació."
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "Retard després d'escriptura per permetre que els diagnòstics detectin possibles problemes",
 			"outsideWorkspace": {
 				"label": "Incloure fitxers fora de l'espai de treball",
-				"description": "Permetre a Roo crear i editar fitxers fora de l'espai de treball actual sense requerir aprovació."
+				"description": "Permetre a Copilot crear i editar fitxers fora de l'espai de treball actual sense requerir aprovació."
 			},
 			"protected": {
 				"label": "Incloure fitxers protegits",
-				"description": "Permetre a Roo crear i editar fitxers protegits (com .rooignore i fitxers de configuració .roo/) sense requerir aprovació."
+				"description": "Permetre a Copilot crear i editar fitxers protegits (com .rooignore i fitxers de configuració .roo/) sense requerir aprovació."
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "Límit d'errors i repeticions",
-			"description": "Nombre d'errors consecutius o accions repetides abans de mostrar el diàleg 'En Roo està tenint problemes'. Estableix a 0 per desactivar aquest mecanisme de seguretat (no s'activarà mai).",
+			"description": "Nombre d'errors consecutius o accions repetides abans de mostrar el diàleg 'En Copilot està tenint problemes'. Estableix a 0 per desactivar aquest mecanisme de seguretat (no s'activarà mai).",
 			"unlimitedDescription": "Reintents il·limitats habilitats (procediment automàtic). El diàleg no apareixerà mai.",
 			"warning": "⚠️ Establir a 0 permet reintents il·limitats que poden consumir un ús significatiu de l'API"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "Habilitar eina de navegador",
-			"description": "Quan està habilitat, Roo pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
+			"description": "Quan està habilitat, Copilot pot utilitzar un navegador per interactuar amb llocs web quan s'utilitzen models que admeten l'ús de l'ordinador. <0>Més informació</0>"
 		},
 		"viewport": {
 			"label": "Mida del viewport",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "Habilitar punts de control automàtics",
-			"description": "Quan està habilitat, Roo crearà automàticament punts de control durant l'execució de tasques, facilitant la revisió de canvis o la reversió a estats anteriors. <0>Més informació</0>"
+			"description": "Quan està habilitat, Copilot crearà automàticament punts de control durant l'execució de tasques, facilitant la revisió de canvis o la reversió a estats anteriors. <0>Més informació</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Habilitar efectes de so",
-			"description": "Quan està habilitat, Roo reproduirà efectes de so per a notificacions i esdeveniments.",
+			"description": "Quan està habilitat, Copilot reproduirà efectes de so per a notificacions i esdeveniments.",
 			"volumeLabel": "Volum"
 		},
 		"tts": {
 			"label": "Habilitar text a veu",
-			"description": "Quan està habilitat, Roo llegirà en veu alta les seves respostes utilitzant text a veu.",
+			"description": "Quan està habilitat, Copilot llegirà en veu alta les seves respostes utilitzant text a veu.",
 			"speedLabel": "Velocitat"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "Controleu quina informació s'inclou a la finestra de context de la IA, afectant l'ús de token i la qualitat de resposta",
 		"autoCondenseContextPercent": {
 			"label": "Llindar per activar la condensació intel·ligent de context",
-			"description": "Quan la finestra de context assoleix aquest llindar, Roo la condensarà automàticament."
+			"description": "Quan la finestra de context assoleix aquest llindar, Copilot la condensarà automàticament."
 		},
 		"condensingApiConfiguration": {
 			"label": "Configuració d'API per a la condensació de context",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "Activar automàticament la condensació intel·ligent de context",
-			"description": "Quan està activat, Roo condensarà automàticament el context quan s'assoleixi el llindar. Quan està desactivat, encara pots activar manualment la condensació de context."
+			"description": "Quan està activat, Copilot condensarà automàticament el context quan s'assoleixi el llindar. Quan està desactivat, encara pots activar manualment la condensació de context."
 		},
 		"openTabs": {
 			"label": "Límit de context de pestanyes obertes",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "Llindar d'auto-truncament de lectura de fitxers",
-			"description": "Roo llegeix aquest nombre de línies quan el model omet els valors d'inici/final. Si aquest nombre és menor que el total del fitxer, Roo genera un índex de números de línia de les definicions de codi. Casos especials: -1 indica a Roo que llegeixi tot el fitxer (sense indexació), i 0 indica que no llegeixi cap línia i proporcioni només índexs de línia per a un context mínim. Valors més baixos minimitzen l'ús inicial de context, permetent lectures posteriors de rangs de línies precisos. Les sol·licituds amb inici/final explícits no estan limitades per aquesta configuració.",
+			"description": "Copilot llegeix aquest nombre de línies quan el model omet els valors d'inici/final. Si aquest nombre és menor que el total del fitxer, Copilot genera un índex de números de línia de les definicions de codi. Casos especials: -1 indica a Copilot que llegeixi tot el fitxer (sense indexació), i 0 indica que no llegeixi cap línia i proporcioni només índexs de línia per a un context mínim. Valors més baixos minimitzen l'ús inicial de context, permetent lectures posteriors de rangs de línies precisos. Les sol·licituds amb inici/final explícits no estan limitades per aquesta configuració.",
 			"lines": "línies",
 			"always_full_read": "Llegeix sempre el fitxer sencer"
 		},
@@ -657,11 +657,11 @@
 		},
 		"outputLineLimit": {
 			"label": "Límit de sortida del terminal",
-			"description": "Conserva les primeres i últimes línies i descarta les del mig per mantenir-se sota el límit. Redueix per estalviar tokens; augmenta per donar a Roo més detalls del mig. Roo veu un marcador on s'ha omès el contingut.<0>Aprèn-ne més</0>"
+			"description": "Conserva les primeres i últimes línies i descarta les del mig per mantenir-se sota el límit. Redueix per estalviar tokens; augmenta per donar a Copilot més detalls del mig. Copilot veu un marcador on s'ha omès el contingut.<0>Aprèn-ne més</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "Límit de caràcters del terminal",
-			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a Roo on s'ha omès el contingut. <0>Aprèn-ne més</0>"
+			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a Copilot on s'ha omès el contingut. <0>Aprèn-ne més</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "Temps d'espera d'integració del shell del terminal",
@@ -669,7 +669,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "Utilitza terminal en línia (recomanat)",
-			"description": "Executa comandes al terminal en línia (xat) per evitar perfils/integració del shell per a execucions més ràpides i fiables. Quan està desactivat, Roo usa el terminal de VS Code amb el teu perfil de shell, prompts i connectors. <0>Aprèn-ne més</0>"
+			"description": "Executa comandes al terminal en línia (xat) per evitar perfils/integració del shell per a execucions més ràpides i fiables. Quan està desactivat, Copilot usa el terminal de VS Code amb el teu perfil de shell, prompts i connectors. <0>Aprèn-ne més</0>"
 		},
 		"commandDelay": {
 			"label": "Retard de comanda del terminal",
@@ -709,7 +709,7 @@
 	},
 	"toolProtocol": {
 		"label": "Protocol de crida d'eines",
-		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
+		"description": "Trieu com es comunica en Copilot amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
 		"default": "Per defecte",
 		"xml": "XML",
 		"native": "Natiu",
@@ -718,7 +718,7 @@
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",
-			"description": "Quan està habilitat, Roo podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats",
+			"description": "Quan està habilitat, Copilot podrà editar fitxers més ràpidament i rebutjarà automàticament escriptures completes de fitxers truncats",
 			"strategy": {
 				"label": "Estratègia de diff",
 				"options": {
@@ -739,7 +739,7 @@
 		},
 		"todoList": {
 			"label": "Habilitar eina de llista de tasques",
-			"description": "Quan està habilitat, Roo pot crear i gestionar llistes de tasques per fer el seguiment del progrés de les tasques. Això ajuda a organitzar tasques complexes en passos manejables."
+			"description": "Quan està habilitat, Copilot pot crear i gestionar llistes de tasques per fer el seguiment del progrés de les tasques. Això ajuda a organitzar tasques complexes en passos manejables."
 		}
 	},
 	"experimental": {
@@ -749,19 +749,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "Utilitzar eina d'inserció de contingut experimental",
-			"description": "Activar l'eina d'inserció de contingut experimental, permetent a Roo inserir contingut a números de línia específics sense necessitat de crear un diff."
+			"description": "Activar l'eina d'inserció de contingut experimental, permetent a Copilot inserir contingut a números de línia específics sense necessitat de crear un diff."
 		},
 		"POWER_STEERING": {
 			"name": "Utilitzar mode \"direcció assistida\" experimental",
-			"description": "Quan està activat, Roo recordarà al model els detalls de la seva definició de mode actual amb més freqüència. Això portarà a una adherència més forta a les definicions de rol i instruccions personalitzades, però utilitzarà més tokens per missatge."
+			"description": "Quan està activat, Copilot recordarà al model els detalls de la seva definició de mode actual amb més freqüència. Això portarà a una adherència més forta a les definicions de rol i instruccions personalitzades, però utilitzarà més tokens per missatge."
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Utilitzar eina diff de blocs múltiples experimental",
-			"description": "Quan està activat, Roo utilitzarà l'eina diff de blocs múltiples. Això intentarà actualitzar múltiples blocs de codi a l'arxiu en una sola petició."
+			"description": "Quan està activat, Copilot utilitzarà l'eina diff de blocs múltiples. Això intentarà actualitzar múltiples blocs de codi a l'arxiu en una sola petició."
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Habilitar lectura concurrent de fitxers",
-			"description": "Quan està habilitat, Roo pot llegir múltiples fitxers en una sola sol·licitud. Quan està deshabilitat, Roo ha de llegir fitxers un per un. Deshabilitar-ho pot ajudar quan es treballa amb models menys capaços o quan voleu més control sobre l'accés als fitxers."
+			"description": "Quan està habilitat, Copilot pot llegir múltiples fitxers en una sola sol·licitud. Quan està deshabilitat, Copilot ha de llegir fitxers un per un. Deshabilitar-ho pot ajudar quan es treballa amb models menys capaços o quan voleu més control sobre l'accés als fitxers."
 		},
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
@@ -769,11 +769,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "Habilita edicions de fitxers concurrents",
-			"description": "Quan està activat, Roo pot editar múltiples fitxers en una sola petició. Quan està desactivat, Roo ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb models menys capaços o quan vols més control sobre les modificacions de fitxers."
+			"description": "Quan està activat, Copilot pot editar múltiples fitxers en una sola petició. Quan està desactivat, Copilot ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb models menys capaços o quan vols més control sobre les modificacions de fitxers."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edició en segon pla",
-			"description": "Quan s'activa, evita la interrupció del focus de l'editor. Les edicions de fitxers es produeixen en segon pla sense obrir la vista diff o robar el focus. Pots continuar treballant sense interrupcions mentre Roo fa canvis. Els fitxers poden obrir-se sense focus per capturar diagnòstics o romandre completament tancats."
+			"description": "Quan s'activa, evita la interrupció del focus de l'editor. Les edicions de fitxers es produeixen en segon pla sense obrir la vista diff o robar el focus. Pots continuar treballant sense interrupcions mentre Copilot fa canvis. Els fitxers poden obrir-se sense focus per capturar diagnòstics o romandre completament tancats."
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "Utilitza el nou analitzador de missatges",
@@ -787,7 +787,7 @@
 			"name": "Habilitar generació d'imatges amb IA",
 			"providerLabel": "Proveïdor",
 			"providerDescription": "Selecciona el proveïdor per a la generació d'imatges.",
-			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
+			"description": "Quan estigui habilitat, Copilot pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
 			"openRouterApiKeyLabel": "Clau API d'OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introdueix la teva clau API d'OpenRouter",
 			"getApiKeyText": "Obté la teva clau API de",
@@ -798,7 +798,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
-			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
+			"description": "Quan està habilitat, Copilot pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Crides paral·leles a eines",
@@ -806,7 +806,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar eines personalitzades",
-			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
+			"description": "Quan està habilitat, Copilot pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
 			"toolsHeader": "Eines personalitzades disponibles",
 			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals.",
 			"refreshButton": "Actualitzar",
@@ -818,7 +818,7 @@
 	},
 	"promptCaching": {
 		"label": "Desactivar la memòria cau de prompts",
-		"description": "Quan està marcat, Roo no utilitzarà la memòria cau de prompts per a aquest model."
+		"description": "Quan està marcat, Copilot no utilitzarà la memòria cau de prompts per a aquest model."
 	},
 	"temperature": {
 		"useCustom": "Utilitzar temperatura personalitzada",
@@ -856,7 +856,7 @@
 		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
 	},
 	"footer": {
-		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permetre informes anònims d'errors i ús",
 			"description": "Ajuda a millorar Datacoves Copilot enviant dades d'ús anònimes i informes d'error. Aquesta telemetria no recull codi, prompts o informació personal. Consulta la nostra <privacyLink>política de privacitat</privacyLink> per a més detalls. Pots desactivar-ho en qualsevol moment."

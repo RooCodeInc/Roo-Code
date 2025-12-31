@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "組織連結已複製到剪貼簿",
 		"shareSuccessPublic": "公開連結已複製到剪貼簿",
 		"openInCloud": "在 Datacoves Copilot Cloud 中開啟工作",
-		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點擊或複製以開啟。",
+		"openInCloudIntro": "從任何地方繼續監控或與 Copilot 互動。掃描、點擊或複製以開啟。",
 		"openApiHistory": "開啟 API 歷史紀錄",
 		"openUiHistory": "開啟 UI 歷史紀錄"
 	},
@@ -118,7 +118,7 @@
 		"title": "模式",
 		"marketplace": "模式市集",
 		"settings": "模式設定",
-		"description": "專門量身打造 Roo 行為的角色。",
+		"description": "專門量身打造 Copilot 行為的角色。",
 		"searchPlaceholder": "搜尋模式...",
 		"noResults": "沒有找到結果"
 	},
@@ -195,46 +195,46 @@
 		}
 	},
 	"instructions": {
-		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
+		"wantsToFetch": "Copilot 想要取得詳細指示以協助目前工作"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo 想要讀取此檔案",
-		"wantsToReadMultiple": "Roo 想要讀取多個檔案",
-		"wantsToReadAndXMore": "Roo 想要讀取此檔案以及另外 {{count}} 個檔案",
-		"wantsToReadOutsideWorkspace": "Roo 想要讀取此工作區外的檔案",
-		"didRead": "Roo 已讀取此檔案",
-		"wantsToEdit": "Roo 想要編輯此檔案",
-		"wantsToEditOutsideWorkspace": "Roo 想要編輯此工作區外的檔案",
-		"wantsToEditProtected": "Roo 想要編輯受保護的設定檔案",
-		"wantsToApplyBatchChanges": "Roo 想要對多個檔案套用變更",
-		"wantsToGenerateImage": "Roo 想要產生圖片",
-		"wantsToGenerateImageOutsideWorkspace": "Roo 想要在工作區外產生圖片",
-		"wantsToGenerateImageProtected": "Roo 想要在受保護位置產生圖片",
-		"didGenerateImage": "Roo 已產生圖片",
-		"wantsToCreate": "Roo 想要建立新檔案",
-		"wantsToSearchReplace": "Roo 想要在此檔案中搜尋和取代",
-		"didSearchReplace": "Roo 已在此檔案執行搜尋和取代",
-		"wantsToInsert": "Roo 想要在此檔案中插入內容",
-		"wantsToInsertWithLineNumber": "Roo 想要在此檔案第 {{lineNumber}} 行插入內容",
-		"wantsToInsertAtEnd": "Roo 想要在此檔案尾端新增內容"
+		"wantsToRead": "Copilot 想要讀取此檔案",
+		"wantsToReadMultiple": "Copilot 想要讀取多個檔案",
+		"wantsToReadAndXMore": "Copilot 想要讀取此檔案以及另外 {{count}} 個檔案",
+		"wantsToReadOutsideWorkspace": "Copilot 想要讀取此工作區外的檔案",
+		"didRead": "Copilot 已讀取此檔案",
+		"wantsToEdit": "Copilot 想要編輯此檔案",
+		"wantsToEditOutsideWorkspace": "Copilot 想要編輯此工作區外的檔案",
+		"wantsToEditProtected": "Copilot 想要編輯受保護的設定檔案",
+		"wantsToApplyBatchChanges": "Copilot 想要對多個檔案套用變更",
+		"wantsToGenerateImage": "Copilot 想要產生圖片",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot 想要在工作區外產生圖片",
+		"wantsToGenerateImageProtected": "Copilot 想要在受保護位置產生圖片",
+		"didGenerateImage": "Copilot 已產生圖片",
+		"wantsToCreate": "Copilot 想要建立新檔案",
+		"wantsToSearchReplace": "Copilot 想要在此檔案中搜尋和取代",
+		"didSearchReplace": "Copilot 已在此檔案執行搜尋和取代",
+		"wantsToInsert": "Copilot 想要在此檔案中插入內容",
+		"wantsToInsertWithLineNumber": "Copilot 想要在此檔案第 {{lineNumber}} 行插入內容",
+		"wantsToInsertAtEnd": "Copilot 想要在此檔案尾端新增內容"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo 想要檢視此目錄中最上層的檔案",
-		"didViewTopLevel": "Roo 已檢視此目錄中最上層的檔案",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo 想要檢視此目錄（工作區外）中最上層的檔案",
-		"didViewTopLevelOutsideWorkspace": "Roo 已檢視此目錄（工作區外）中最上層的檔案",
-		"wantsToViewRecursive": "Roo 想要遞迴檢視此目錄中的所有檔案",
-		"didViewRecursive": "Roo 已遞迴檢視此目錄中的所有檔案",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo 想要遞迴檢視此目錄（工作區外）中的所有檔案",
-		"didViewRecursiveOutsideWorkspace": "Roo 已遞迴檢視此目錄（工作區外）中的所有檔案",
-		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
-		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
+		"wantsToViewTopLevel": "Copilot 想要檢視此目錄中最上層的檔案",
+		"didViewTopLevel": "Copilot 已檢視此目錄中最上層的檔案",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot 想要檢視此目錄（工作區外）中最上層的檔案",
+		"didViewTopLevelOutsideWorkspace": "Copilot 已檢視此目錄（工作區外）中最上層的檔案",
+		"wantsToViewRecursive": "Copilot 想要遞迴檢視此目錄中的所有檔案",
+		"didViewRecursive": "Copilot 已遞迴檢視此目錄中的所有檔案",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot 想要遞迴檢視此目錄（工作區外）中的所有檔案",
+		"didViewRecursiveOutsideWorkspace": "Copilot 已遞迴檢視此目錄（工作區外）中的所有檔案",
+		"wantsToSearch": "Copilot 想要在此目錄中搜尋 <code>{{regex}}</code>",
+		"didSearch": "Copilot 已在此目錄中搜尋 <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Copilot 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Copilot 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
+		"wantsToSearch": "Copilot 想要在程式碼庫中搜尋 <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot 想要在 <code>{{path}}</code> 中搜尋程式碼庫 <code>{{query}}</code>",
 		"didSearch_one": "找到 1 個結果",
 		"didSearch_other": "找到 {{count}} 個結果",
 		"resultTooltip": "相似度評分：{{score}} (點選開啟檔案)"
@@ -260,24 +260,24 @@
 	"response": "回應",
 	"arguments": "參數",
 	"text": {
-		"rooSaid": "Roo 說"
+		"rooSaid": "Copilot 說"
 	},
 	"feedback": {
 		"youSaid": "您說"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo 想要在 {{serverName}} MCP 伺服器上使用工具",
-		"wantsToAccessResource": "Roo 想要存取 {{serverName}} MCP 伺服器上的資源"
+		"wantsToUseTool": "Copilot 想要在 {{serverName}} MCP 伺服器上使用工具",
+		"wantsToAccessResource": "Copilot 想要存取 {{serverName}} MCP 伺服器上的資源"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo 想要切換至 {{mode}} 模式",
-		"wantsToSwitchWithReason": "Roo 想要切換至 {{mode}} 模式，原因：{{reason}}",
-		"didSwitch": "Roo 已切換至 {{mode}} 模式",
-		"didSwitchWithReason": "Roo 已切換至 {{mode}} 模式，原因：{{reason}}"
+		"wantsToSwitch": "Copilot 想要切換至 {{mode}} 模式",
+		"wantsToSwitchWithReason": "Copilot 想要切換至 {{mode}} 模式，原因：{{reason}}",
+		"didSwitch": "Copilot 已切換至 {{mode}} 模式",
+		"didSwitchWithReason": "Copilot 已切換至 {{mode}} 模式，原因：{{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo 想要在 {{mode}} 模式下建立新的子工作",
-		"wantsToFinish": "Roo 想要完成此子工作",
+		"wantsToCreate": "Copilot 想要在 {{mode}} 模式下建立新的子工作",
+		"wantsToFinish": "Copilot 想要完成此子工作",
 		"newTaskContent": "子工作指示",
 		"completionContent": "子工作已完成",
 		"resultContent": "子工作結果",
@@ -285,7 +285,7 @@
 		"completionInstructions": "子工作已完成！您可以檢閱結果並提出修正或後續步驟。如果一切順利，請確認以將結果回傳給主任務。"
 	},
 	"questions": {
-		"hasQuestion": "Roo 有一個問題"
+		"hasQuestion": "Copilot 有一個問題"
 	},
 	"taskCompleted": "工作完成",
 	"error": "錯誤",
@@ -299,7 +299,7 @@
 	"diffError": {
 		"title": "編輯失敗"
 	},
-	"troubleMessage": "Roo 遇到問題...",
+	"troubleMessage": "Copilot 遇到問題...",
 	"errorDetails": {
 		"link": "詳情",
 		"title": "錯誤詳細資訊",
@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"skills": "Roo 現已支援 <skillsLink>Agent Skills</skillsLink> - 可重複使用的提示詞、工具和資源套件，用於擴展 Roo 的功能。",
+			"skills": "Copilot 現已支援 <skillsLink>Agent Skills</skillsLink> - 可重複使用的提示詞、工具和資源套件，用於擴展 Copilot 的功能。",
 			"nativeToolCalling": "所有新工作現在都需要原生工具呼叫。<blogLink>深入了解</blogLink>相關動機以及遇到問題時的解決方案。"
 		},
 		"cloudAgents": {
@@ -361,7 +361,7 @@
 	},
 	"browser": {
 		"session": "瀏覽器會話",
-		"rooWantsToUse": "Roo 想要使用瀏覽器",
+		"rooWantsToUse": "Copilot 想要使用瀏覽器",
 		"consoleLogs": "主控台記錄",
 		"noNewLogs": "（沒有新記錄）",
 		"screenshot": "瀏覽器螢幕擷圖",
@@ -413,12 +413,12 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "已達自動核准請求上限",
-			"description": "Roo 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
+			"description": "Copilot 已達到 {{count}} 次 API 請求的自動核准上限。您想重設計數並繼續工作嗎？",
 			"button": "重設並繼續"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "已達自動核准費用上限",
-			"description": "Roo 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
+			"description": "Copilot 已達到 ${{count}} 的自動核准費用上限。您想重設費用並繼續工作嗎？",
 			"button": "重設並繼續"
 		}
 	},
@@ -434,7 +434,7 @@
 	},
 	"rooCloudCTA": {
 		"title": "Datacoves Copilot Cloud 正在進化！",
-		"description": "在雲端執行 Roomote 遠端代理、隨時隨地存取您的工作、與他人協作等等。",
+		"description": "在雲端執行 Remote 遠端代理、隨時隨地存取您的工作、與他人協作等等。",
 		"joinWaitlist": "註冊以獲得最新更新。"
 	},
 	"command": {
@@ -471,8 +471,8 @@
 		"clickToEdit": "點選以編輯訊息"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo 想要執行斜線指令",
-		"didRun": "Roo 執行了斜線指令"
+		"wantsToRun": "Copilot 想要執行斜線指令",
+		"didRun": "Copilot 執行了斜線指令"
 	},
 	"todo": {
 		"partial": "已完成 {{completed}} / {{total}} 個待辦事項",

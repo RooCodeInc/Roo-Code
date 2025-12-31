@@ -8,7 +8,7 @@
 		"editModesConfig": "編輯模式設定",
 		"editGlobalModes": "編輯全域模式",
 		"editProjectModes": "編輯專案模式 (.roomodes)",
-		"createModeHelpText": "模式是 Roo 的專屬角色，用於客製化其行為。<0>了解如何使用模式</0>或<1>自訂模式。</1>",
+		"createModeHelpText": "模式是 Copilot 的專屬角色，用於客製化其行為。<0>了解如何使用模式</0>或<1>自訂模式。</1>",
 		"selectMode": "搜尋模式",
 		"noMatchFound": "找不到任何模式"
 	},
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "角色定義",
 		"resetToDefault": "重設為預設值",
-		"description": "定義此模式下 Roo 的專業知識和個性。此描述將會形塑 Roo 展現自我及處理工作的方式。"
+		"description": "定義此模式下 Copilot 的專業知識和個性。此描述將會形塑 Copilot 展現自我及處理工作的方式。"
 	},
 	"description": {
 		"title": "簡短描述（給人看的）",
@@ -43,7 +43,7 @@
 	},
 	"whenToUse": {
 		"title": "使用時機（選用）",
-		"description": "為 Roo 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。",
+		"description": "為 Copilot 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。",
 		"resetToDefault": "將「使用時機」描述重設為預設值"
 	},
 	"customInstructions": {
@@ -105,7 +105,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "強化提示詞",
-				"description": "使用提示詞強化功能，為您的輸入取得量身打造的建議或改進。這能確保 Roo 理解您的意圖並提供最佳回應。可透過聊天室中的 ✨ 圖示使用。"
+				"description": "使用提示詞強化功能，為您的輸入取得量身打造的建議或改進。這能確保 Copilot 理解您的意圖並提供最佳回應。可透過聊天室中的 ✨ 圖示使用。"
 			},
 			"CONDENSE": {
 				"label": "上下文壓縮",
@@ -174,7 +174,7 @@
 		},
 		"roleDefinition": {
 			"label": "角色定義",
-			"description": "定義此模式下 Roo 的專業知識和個性。"
+			"description": "定義此模式下 Copilot 的專業知識和個性。"
 		},
 		"description": {
 			"label": "簡短描述（供人檢視）",
@@ -182,7 +182,7 @@
 		},
 		"whenToUse": {
 			"label": "使用時機（選用）",
-			"description": "為 Roo 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
+			"description": "為 Copilot 提供何時應使用此模式的指引。這有助於「Orchestrator」為任務選擇正確的模式。"
 		},
 		"tools": {
 			"label": "可用工具",

@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "Ссылка организации скопирована в буфер обмена",
 		"shareSuccessPublic": "Публичная ссылка скопирована в буфер обмена",
 		"openInCloud": "Открыть задачу в Datacoves Copilot Cloud",
-		"openInCloudIntro": "Продолжай отслеживать или взаимодействовать с Roo откуда угодно. Отсканируй, нажми или скопируй для открытия.",
+		"openInCloudIntro": "Продолжай отслеживать или взаимодействовать с Copilot откуда угодно. Отсканируй, нажми или скопируй для открытия.",
 		"openApiHistory": "Открыть историю API",
 		"openUiHistory": "Открыть историю UI"
 	},
@@ -108,7 +108,7 @@
 		"title": "Режимы",
 		"marketplace": "Маркетплейс режимов",
 		"settings": "Настройки режимов",
-		"description": "Специализированные персоны, которые настраивают поведение Roo.",
+		"description": "Специализированные персоны, которые настраивают поведение Copilot.",
 		"searchPlaceholder": "Поиск режимов...",
 		"noResults": "Ничего не найдено"
 	},
@@ -169,42 +169,42 @@
 		"current": "Текущая"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo хочет получить подробные инструкции для помощи с текущей задачей"
+		"wantsToFetch": "Copilot хочет получить подробные инструкции для помощи с текущей задачей"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo хочет прочитать этот файл",
-		"wantsToReadOutsideWorkspace": "Roo хочет прочитать этот файл вне рабочей области",
-		"didRead": "Roo прочитал этот файл",
-		"wantsToEdit": "Roo хочет отредактировать этот файл",
-		"wantsToEditOutsideWorkspace": "Roo хочет отредактировать этот файл вне рабочей области",
-		"wantsToEditProtected": "Roo хочет отредактировать защищённый файл конфигурации",
-		"wantsToCreate": "Roo хочет создать новый файл",
-		"wantsToSearchReplace": "Roo хочет выполнить поиск и замену в этом файле",
-		"didSearchReplace": "Roo выполнил поиск и замену в этом файле",
-		"wantsToInsert": "Roo хочет вставить содержимое в этот файл",
-		"wantsToInsertWithLineNumber": "Roo хочет вставить содержимое в этот файл на строку {{lineNumber}}",
-		"wantsToInsertAtEnd": "Roo хочет добавить содержимое в конец этого файла",
-		"wantsToReadAndXMore": "Roo хочет прочитать этот файл и еще {{count}}",
-		"wantsToReadMultiple": "Roo хочет прочитать несколько файлов",
-		"wantsToApplyBatchChanges": "Roo хочет применить изменения к нескольким файлам",
-		"wantsToGenerateImage": "Roo хочет сгенерировать изображение",
-		"wantsToGenerateImageOutsideWorkspace": "Roo хочет сгенерировать изображение вне рабочего пространства",
-		"wantsToGenerateImageProtected": "Roo хочет сгенерировать изображение в защищённом месте",
-		"didGenerateImage": "Roo сгенерировал изображение"
+		"wantsToRead": "Copilot хочет прочитать этот файл",
+		"wantsToReadOutsideWorkspace": "Copilot хочет прочитать этот файл вне рабочей области",
+		"didRead": "Copilot прочитал этот файл",
+		"wantsToEdit": "Copilot хочет отредактировать этот файл",
+		"wantsToEditOutsideWorkspace": "Copilot хочет отредактировать этот файл вне рабочей области",
+		"wantsToEditProtected": "Copilot хочет отредактировать защищённый файл конфигурации",
+		"wantsToCreate": "Copilot хочет создать новый файл",
+		"wantsToSearchReplace": "Copilot хочет выполнить поиск и замену в этом файле",
+		"didSearchReplace": "Copilot выполнил поиск и замену в этом файле",
+		"wantsToInsert": "Copilot хочет вставить содержимое в этот файл",
+		"wantsToInsertWithLineNumber": "Copilot хочет вставить содержимое в этот файл на строку {{lineNumber}}",
+		"wantsToInsertAtEnd": "Copilot хочет добавить содержимое в конец этого файла",
+		"wantsToReadAndXMore": "Copilot хочет прочитать этот файл и еще {{count}}",
+		"wantsToReadMultiple": "Copilot хочет прочитать несколько файлов",
+		"wantsToApplyBatchChanges": "Copilot хочет применить изменения к нескольким файлам",
+		"wantsToGenerateImage": "Copilot хочет сгенерировать изображение",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot хочет сгенерировать изображение вне рабочего пространства",
+		"wantsToGenerateImageProtected": "Copilot хочет сгенерировать изображение в защищённом месте",
+		"didGenerateImage": "Copilot сгенерировал изображение"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo хочет просмотреть файлы верхнего уровня в этой директории",
-		"didViewTopLevel": "Roo просмотрел файлы верхнего уровня в этой директории",
-		"wantsToViewRecursive": "Roo хочет рекурсивно просмотреть все файлы в этой директории",
-		"didViewRecursive": "Roo рекурсивно просмотрел все файлы в этой директории",
-		"wantsToSearch": "Roo хочет выполнить поиск в этой директории по <code>{{regex}}</code>",
-		"didSearch": "Roo выполнил поиск в этой директории по <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo хочет выполнить поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo выполнил поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo хочет просмотреть файлы верхнего уровня в этой директории (вне рабочего пространства)",
-		"didViewTopLevelOutsideWorkspace": "Roo просмотрел файлы верхнего уровня в этой директории (вне рабочего пространства)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo хочет рекурсивно просмотреть все файлы в этой директории (вне рабочего пространства)",
-		"didViewRecursiveOutsideWorkspace": "Roo рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства)"
+		"wantsToViewTopLevel": "Copilot хочет просмотреть файлы верхнего уровня в этой директории",
+		"didViewTopLevel": "Copilot просмотрел файлы верхнего уровня в этой директории",
+		"wantsToViewRecursive": "Copilot хочет рекурсивно просмотреть все файлы в этой директории",
+		"didViewRecursive": "Copilot рекурсивно просмотрел все файлы в этой директории",
+		"wantsToSearch": "Copilot хочет выполнить поиск в этой директории по <code>{{regex}}</code>",
+		"didSearch": "Copilot выполнил поиск в этой директории по <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Copilot хочет выполнить поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Copilot выполнил поиск в этой директории (вне рабочего пространства) по <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot хочет просмотреть файлы верхнего уровня в этой директории (вне рабочего пространства)",
+		"didViewTopLevelOutsideWorkspace": "Copilot просмотрел файлы верхнего уровня в этой директории (вне рабочего пространства)",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot хочет рекурсивно просмотреть все файлы в этой директории (вне рабочего пространства)",
+		"didViewRecursiveOutsideWorkspace": "Copilot рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства)"
 	},
 	"commandOutput": "Вывод команды",
 	"commandExecution": {
@@ -233,18 +233,18 @@
 		"youSaid": "Вы сказали"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo хочет использовать инструмент на сервере MCP {{serverName}}",
-		"wantsToAccessResource": "Roo хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
+		"wantsToUseTool": "Copilot хочет использовать инструмент на сервере MCP {{serverName}}",
+		"wantsToAccessResource": "Copilot хочет получить доступ к ресурсу на сервере MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo хочет переключиться в режим {{mode}}",
-		"wantsToSwitchWithReason": "Roo хочет переключиться в режим {{mode}}, потому что: {{reason}}",
-		"didSwitch": "Roo переключился в режим {{mode}}",
-		"didSwitchWithReason": "Roo переключился в режим {{mode}}, потому что: {{reason}}"
+		"wantsToSwitch": "Copilot хочет переключиться в режим {{mode}}",
+		"wantsToSwitchWithReason": "Copilot хочет переключиться в режим {{mode}}, потому что: {{reason}}",
+		"didSwitch": "Copilot переключился в режим {{mode}}",
+		"didSwitchWithReason": "Copilot переключился в режим {{mode}}, потому что: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo хочет создать новую подзадачу в режиме {{mode}}",
-		"wantsToFinish": "Roo хочет завершить эту подзадачу",
+		"wantsToCreate": "Copilot хочет создать новую подзадачу в режиме {{mode}}",
+		"wantsToFinish": "Copilot хочет завершить эту подзадачу",
 		"newTaskContent": "Инструкции по подзадаче",
 		"completionContent": "Подзадача завершена",
 		"resultContent": "Результаты подзадачи",
@@ -252,7 +252,7 @@
 		"completionInstructions": "Подзадача завершена! Вы можете просмотреть результаты и предложить исправления или следующие шаги. Если всё в порядке, подтвердите для возврата результата в родительскую задачу."
 	},
 	"questions": {
-		"hasQuestion": "У Roo есть вопрос"
+		"hasQuestion": "У Copilot есть вопрос"
 	},
 	"taskCompleted": "Задача завершена",
 	"error": "Ошибка",
@@ -266,7 +266,7 @@
 	"diffError": {
 		"title": "Не удалось выполнить редактирование"
 	},
-	"troubleMessage": "У Roo возникли проблемы...",
+	"troubleMessage": "У Copilot возникли проблемы...",
 	"errorDetails": {
 		"link": "Подробности",
 		"title": "Детали ошибки",
@@ -307,7 +307,7 @@
 		},
 		"release": {
 			"heading": "Что нового:",
-			"skills": "Roo теперь поддерживает <skillsLink>Agent Skills</skillsLink> - переиспользуемые пакеты промптов, инструментов и ресурсов для расширения возможностей Roo.",
+			"skills": "Copilot теперь поддерживает <skillsLink>Agent Skills</skillsLink> - переиспользуемые пакеты промптов, инструментов и ресурсов для расширения возможностей Copilot.",
 			"nativeToolCalling": "Нативный вызов инструментов теперь требуется для всех новых задач. <blogLink>Узнайте больше</blogLink> о мотивации и что делать, если вы столкнулись с проблемами."
 		},
 		"cloudAgents": {
@@ -343,7 +343,7 @@
 	},
 	"browser": {
 		"session": "Сеанс браузера",
-		"rooWantsToUse": "Roo хочет использовать браузер",
+		"rooWantsToUse": "Copilot хочет использовать браузер",
 		"consoleLogs": "Логи консоли",
 		"noNewLogs": "(Новых логов нет)",
 		"screenshot": "Скриншот браузера",
@@ -395,7 +395,7 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Достигнут лимит автоматически одобренных запросов",
-			"description": "Roo достиг автоматически одобренного лимита в {{count}} API-запрос(ов). Хотите сбросить счетчик и продолжить задачу?",
+			"description": "Copilot достиг автоматически одобренного лимита в {{count}} API-запрос(ов). Хотите сбросить счетчик и продолжить задачу?",
 			"button": "Сбросить и продолжить"
 		},
 		"autoApprovedCostLimitReached": {
@@ -405,8 +405,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo хочет выполнить поиск в кодовой базе по <code>{{query}}</code> в <code>{{path}}</code>",
+		"wantsToSearch": "Copilot хочет выполнить поиск в кодовой базе по <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot хочет выполнить поиск в кодовой базе по <code>{{query}}</code> в <code>{{path}}</code>",
 		"didSearch_one": "Найден 1 результат",
 		"didSearch_other": "Найдено {{count}} результатов",
 		"resultTooltip": "Оценка схожести: {{score}} (нажмите, чтобы открыть файл)"
@@ -471,8 +471,8 @@
 		"clickToEdit": "Нажмите, чтобы редактировать сообщение"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo хочет выполнить слеш-команду",
-		"didRun": "Roo выполнил слеш-команду"
+		"wantsToRun": "Copilot хочет выполнить слеш-команду",
+		"didRun": "Copilot выполнил слеш-команду"
 	},
 	"todo": {
 		"partial": "{{completed}} из {{total}} задач выполнено",

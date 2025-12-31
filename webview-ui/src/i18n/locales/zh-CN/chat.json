@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
 		"shareSuccessPublic": "公开链接已复制到剪贴板",
 		"openInCloud": "在 Datacoves Copilot Cloud 中打开任务",
-		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。",
+		"openInCloudIntro": "从任何地方继续监控或与 Copilot 交互。扫描、点击或复制以打开。",
 		"openApiHistory": "打开 API 历史",
 		"openUiHistory": "打开 UI 历史"
 	},
@@ -174,7 +174,7 @@
 		"current": "当前"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo 想要获取详细指示以协助当前任务"
+		"wantsToFetch": "Copilot 想要获取详细指示以协助当前任务"
 	},
 	"fileOperations": {
 		"wantsToRead": "需要读取文件",
@@ -189,9 +189,9 @@
 		"wantsToInsert": "需要在此文件中插入内容",
 		"wantsToInsertWithLineNumber": "需要在第 {{lineNumber}} 行插入内容",
 		"wantsToInsertAtEnd": "需要在文件末尾添加内容",
-		"wantsToReadAndXMore": "Roo 想读取此文件以及另外 {{count}} 个文件",
-		"wantsToReadMultiple": "Roo 想要读取多个文件",
-		"wantsToApplyBatchChanges": "Roo 想要对多个文件应用更改",
+		"wantsToReadAndXMore": "Copilot 想读取此文件以及另外 {{count}} 个文件",
+		"wantsToReadMultiple": "Copilot 想要读取多个文件",
+		"wantsToApplyBatchChanges": "Copilot 想要对多个文件应用更改",
 		"wantsToGenerateImage": "需要生成图片",
 		"wantsToGenerateImageOutsideWorkspace": "需要在工作区外生成图片",
 		"wantsToGenerateImageProtected": "需要在受保护位置生成图片",
@@ -232,7 +232,7 @@
 	"response": "响应",
 	"arguments": "参数",
 	"text": {
-		"rooSaid": "Roo 说"
+		"rooSaid": "Copilot 说"
 	},
 	"feedback": {
 		"youSaid": "你说"
@@ -330,7 +330,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"skills": "Roo 现支持 <skillsLink>Agent Skills</skillsLink> - 可复用的提示词、工具和资源包，扩展 Roo 的功能。",
+			"skills": "Copilot 现支持 <skillsLink>Agent Skills</skillsLink> - 可复用的提示词、工具和资源包，扩展 Copilot 的功能。",
 			"nativeToolCalling": "所有新任务现在需要使用原生工具调用。<blogLink>了解更多</blogLink>相关信息和解决方案。"
 		},
 		"cloudAgents": {
@@ -395,7 +395,7 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "已达自动批准请求限制",
-			"description": "Roo 已达到 {{count}} 次 API 请求的自动批准限制。您想重置计数并继续任务吗？",
+			"description": "Copilot 已达到 {{count}} 次 API 请求的自动批准限制。您想重置计数并继续任务吗？",
 			"button": "重置并继续"
 		},
 		"autoApprovedCostLimitReached": {
@@ -405,8 +405,8 @@
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo 需要搜索代码库: <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo 需要在 <code>{{path}}</code> 中搜索: <code>{{query}}</code>",
+		"wantsToSearch": "Copilot 需要搜索代码库: <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot 需要在 <code>{{path}}</code> 中搜索: <code>{{query}}</code>",
 		"didSearch_one": "找到 1 个结果",
 		"didSearch_other": "找到 {{count}} 个结果",
 		"resultTooltip": "相似度评分: {{score}} (点击打开文件)"
@@ -471,8 +471,8 @@
 		"clickToEdit": "点击编辑消息"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo 想要运行斜杠命令",
-		"didRun": "Roo 运行了斜杠命令"
+		"wantsToRun": "Copilot 想要运行斜杠命令",
+		"didRun": "Copilot 运行了斜杠命令"
 	},
 	"todo": {
 		"partial": "已完成 {{completed}} / {{total}} 个待办事项",

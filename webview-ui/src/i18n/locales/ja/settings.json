@@ -670,7 +670,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "インラインターミナルを使用（推奨）",
-			"description": "より高速で信頼性の高い実行のため、シェルプロファイル/統合をバイパスしてインラインターミナル（チャット）でコマンドを実行します。無効にすると、Roo はシェルプロファイル、プロンプト、プラグインと共に VS Code ターミナルを使用します。<0>詳細情報</0>"
+			"description": "より高速で信頼性の高い実行のため、シェルプロファイル/統合をバイパスしてインラインターミナル（チャット）でコマンドを実行します。無効にすると、Copilot はシェルプロファイル、プロンプト、プラグインと共に VS Code ターミナルを使用します。<0>詳細情報</0>"
 		},
 		"commandDelay": {
 			"label": "ターミナルコマンド遅延",
@@ -710,7 +710,7 @@
 	},
 	"toolProtocol": {
 		"label": "ツールコールプロトコル",
-		"description": "Roo が API と通信する方法を選択します。ネイティブはプロバイダーの関数呼び出し API を使用し、XML は XML 形式のツール定義を使用します。",
+		"description": "Copilot が API と通信する方法を選択します。ネイティブはプロバイダーの関数呼び出し API を使用し、XML は XML 形式のツール定義を使用します。",
 		"default": "デフォルト",
 		"xml": "XML",
 		"native": "ネイティブ",
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
-		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Copilot-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
 			"description": "匿名の使用データとエラーレポートを送信してDatacoves Copilotの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"

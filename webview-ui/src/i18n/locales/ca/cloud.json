@@ -6,7 +6,7 @@
 	"signIn": "Connecta't a Datacoves Copilot Cloud",
 	"connect": "Comença",
 	"cloudBenefitsTitle": "Prova Datacoves Copilot Cloud",
-	"cloudBenefitProvider": "Accedeix a models gratuïts i de pagament que funcionen molt bé amb Roo",
+	"cloudBenefitProvider": "Accedeix a models gratuïts i de pagament que funcionen molt bé amb Copilot",
 	"cloudBenefitCloudAgents": "Dona tasques a agents autònoms al núvol",
 	"cloudBenefitTriggers": "Obtén revisions de codi a Github, inicia tasques des de Slack i més",
 	"cloudBenefitWalkaway": "Segueix i controla tasques des de qualsevol lloc (inclòs el telèfon)",
@@ -15,9 +15,9 @@
 	"visitCloudWebsite": "Visita Datacoves Copilot Cloud",
 	"taskSync": "Sincronització de tasques",
 	"taskSyncDescription": "Sincronitza les teves tasques per veure-les i compartir-les a Datacoves Copilot Cloud",
-	"remoteControl": "Roomote Control",
+	"remoteControl": "Remote Control",
 	"remoteControlDescription": "Permet controlar tasques des de Datacoves Copilot Cloud",
-	"remoteControlRequiresTaskSync": "La sincronització de tasques ha d'estar habilitada per utilitzar Roomote Control",
+	"remoteControlRequiresTaskSync": "La sincronització de tasques ha d'estar habilitada per utilitzar Remote Control",
 	"taskSyncManagedByOrganization": "La sincronització de tasques la gestiona la teva organització",
 	"usageMetricsAlwaysReported": "La informació d'ús del model sempre es reporta quan s'ha iniciat sessió",
 	"cloudUrlPillLabel": "URL de Datacoves Copilot Cloud",
@@ -29,8 +29,8 @@
 	"createTeamAccount": "Crear Compte d'Equip",
 	"switchAccount": "Canviar Compte de Datacoves Copilot Cloud",
 	"upsell": {
-		"autoApprovePowerUser": "Donant-li una mica d'independència a Roo? Controla'l des de qualsevol lloc amb Datacoves Copilot Cloud. <learnMoreLink>Més informació</learnMoreLink>.",
+		"autoApprovePowerUser": "Donant-li una mica d'independència a Copilot? Controla'l des de qualsevol lloc amb Datacoves Copilot Cloud. <learnMoreLink>Més informació</learnMoreLink>.",
 		"longRunningTask": "Això pot trigar una estona. Continua des de qualsevol lloc amb Cloud.",
-		"taskList": "T'agrada Roo? Fes una ullada a Datacoves Copilot Cloud: segueix i controla les teves tasques des de qualsevol lloc, executa agents autònoms al núvol, obtén estadístiques d'ús i més. <learnMoreLink>Aprèn-ne més</learnMoreLink>."
+		"taskList": "T'agrada Copilot? Fes una ullada a Datacoves Copilot Cloud: segueix i controla les teves tasques des de qualsevol lloc, executa agents autònoms al núvol, obtén estadístiques d'ús i més. <learnMoreLink>Aprèn-ne més</learnMoreLink>."
 	}
 }

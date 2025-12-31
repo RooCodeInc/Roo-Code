@@ -9,7 +9,7 @@
 		"editModesConfig": "Editar configuração de modos",
 		"editGlobalModes": "Editar modos globais",
 		"editProjectModes": "Editar modos do projeto (.roomodes)",
-		"createModeHelpText": "Modos são personas especializadas que adaptam o comportamento do Roo. <0>Saiba mais sobre o uso de modos</0> ou <1>Personalização de modos.</1>",
+		"createModeHelpText": "Modos são personas especializadas que adaptam o comportamento do Copilot. <0>Saiba mais sobre o uso de modos</0> ou <1>Personalização de modos.</1>",
 		"selectMode": "Buscar modos"
 	},
 	"apiConfiguration": {
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Definição de função",
 		"resetToDefault": "Restaurar para padrão",
-		"description": "Defina a expertise e personalidade do Roo para este modo. Esta descrição molda como o Roo se apresenta e aborda tarefas."
+		"description": "Defina a expertise e personalidade do Copilot para este modo. Esta descrição molda como o Copilot se apresenta e aborda tarefas."
 	},
 	"description": {
 		"title": "Descrição curta (para humanos)",
@@ -106,7 +106,7 @@
 		"types": {
 			"ENHANCE": {
 				"label": "Aprimorar Prompt",
-				"description": "Use o aprimoramento de prompt para obter sugestões ou melhorias personalizadas para suas entradas. Isso garante que o Roo entenda sua intenção e forneça as melhores respostas possíveis. Disponível através do ícone ✨ no chat."
+				"description": "Use o aprimoramento de prompt para obter sugestões ou melhorias personalizadas para suas entradas. Isso garante que o Copilot entenda sua intenção e forneça as melhores respostas possíveis. Disponível através do ícone ✨ no chat."
 			},
 			"CONDENSE": {
 				"label": "Condensação de Contexto",
@@ -175,7 +175,7 @@
 		},
 		"roleDefinition": {
 			"label": "Definição de função",
-			"description": "Defina a expertise e personalidade do Roo para este modo."
+			"description": "Defina a expertise e personalidade do Copilot para este modo."
 		},
 		"whenToUse": {
 			"label": "Quando usar (opcional)",

@@ -121,7 +121,7 @@
 			"completionError": "Cerebras-voltooiingsfout: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Datacoves Copilot Cloud."
+			"authenticationRequired": "Copilot provider vereist cloud authenticatie. Log in bij Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters."
@@ -181,7 +181,7 @@
 		"enter_valid_path": "Voer een geldig pad in"
 	},
 	"input": {
-		"task_prompt": "Wat moet Roo doen?",
+		"task_prompt": "Wat moet Copilot doen?",
 		"task_placeholder": "Typ hier je taak"
 	},
 	"settings": {

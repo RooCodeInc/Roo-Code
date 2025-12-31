@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "Başlamak için en iyi ücretsiz modeller",
-			"incentive": "Roo'yu ücretsiz dene"
+			"incentive": "Copilot'yu ücretsiz dene"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "Sağlayıcınızı seçin",
-		"chooseProvider": "Roo'nun çalışması için bir LLM sağlayıcısına ihtiyacı var. Başlamak için bir tane seç, sonra daha fazlasını ekleyebilirsin.",
+		"chooseProvider": "Copilot'nun çalışması için bir LLM sağlayıcısına ihtiyacı var. Başlamak için bir tane seç, sonra daha fazlasını ekleyebilirsin.",
 		"rooCloudProvider": "Datacoves Copilot Cloud Sağlayıcı",
 		"rooCloudDescription": "Başlamak için en kolay yol Datacoves Copilot Cloud Sağlayıcısı'nı kullanmaktır: ücretsiz ve ücretli modellerin dikkatli seçilmiş bir karışımı, düşük maliyette.",
 		"learnMore": "Daha fazla bilgi",

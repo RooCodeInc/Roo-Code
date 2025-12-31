@@ -44,7 +44,7 @@
 		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
 	},
 	"prompts": {
-		"description": "設定用於快速操作的支援提示詞，如增強提示詞、解釋程式碼和修復問題。這些提示詞幫助 Roo 為常見開發工作提供更好的支援。"
+		"description": "設定用於快速操作的支援提示詞，如增強提示詞、解釋程式碼和修復問題。這些提示詞幫助 Copilot 為常見開發工作提供更好的支援。"
 	},
 	"codeIndex": {
 		"title": "程式碼庫索引",
@@ -156,16 +156,16 @@
 	},
 	"autoApprove": {
 		"toggleShortcut": "您可以<SettingsLink>在 IDE 偏好設定中</SettingsLink>為此設定設定全域快捷鍵。",
-		"description": "允許 Roo 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
+		"description": "允許 Copilot 無需核准即執行操作。僅在您完全信任 AI 並了解相關安全風險時啟用這些設定。",
 		"enabled": "自動核准已啟用",
 		"toggleAriaLabel": "切換自動核准",
 		"disabledAriaLabel": "自動核准已停用 - 請先選取選項",
 		"readOnly": {
 			"label": "讀取",
-			"description": "啟用後，Roo 將自動檢視目錄內容並讀取檔案，無需點選核准按鈕。",
+			"description": "啟用後，Copilot 將自動檢視目錄內容並讀取檔案，無需點選核准按鈕。",
 			"outsideWorkspace": {
 				"label": "包含工作區外的檔案",
-				"description": "允許 Roo 讀取目前工作區外的檔案，無需核准。"
+				"description": "允許 Copilot 讀取目前工作區外的檔案，無需核准。"
 			}
 		},
 		"write": {
@@ -174,11 +174,11 @@
 			"delayLabel": "寫入後延遲以允許診斷偵測潛在問題",
 			"outsideWorkspace": {
 				"label": "包含工作區外的檔案",
-				"description": "允許 Roo 在目前工作區外建立和編輯檔案，無需核准。"
+				"description": "允許 Copilot 在目前工作區外建立和編輯檔案，無需核准。"
 			},
 			"protected": {
 				"label": "包含受保護的檔案",
-				"description": "允許 Roo 建立和編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔），無需核准。"
+				"description": "允許 Copilot 建立和編輯受保護的檔案（如 .rooignore 和 .roo/ 設定檔），無需核准。"
 			}
 		},
 		"browser": {
@@ -475,7 +475,7 @@
 		},
 		"consecutiveMistakeLimit": {
 			"label": "錯誤和重複限制",
-			"description": "在顯示「Roo 遇到問題」對話方塊前允許的連續錯誤或重複操作次數。設定為 0 可停用此安全機制（永不觸發）。",
+			"description": "在顯示「Copilot 遇到問題」對話方塊前允許的連續錯誤或重複操作次數。設定為 0 可停用此安全機制（永不觸發）。",
 			"unlimitedDescription": "已啟用無限重試（自動繼續）。對話方塊將永遠不會出現。",
 			"warning": "⚠️ 設定為 0 允許無限重試，這可能會消耗大量 API 使用量"
 		},
@@ -507,7 +507,7 @@
 	"browser": {
 		"enable": {
 			"label": "啟用瀏覽器工具",
-			"description": "啟用後，Roo 可在使用支援電腦使用的模型時使用瀏覽器與網站互動。 <0>了解更多</0>"
+			"description": "啟用後，Copilot 可在使用支援電腦使用的模型時使用瀏覽器與網站互動。 <0>了解更多</0>"
 		},
 		"viewport": {
 			"label": "視窗大小",
@@ -539,18 +539,18 @@
 		},
 		"enable": {
 			"label": "啟用自動檢查點",
-			"description": "啟用後，Roo 將在工作執行期間自動建立檢查點，使審核變更或回到早期狀態變得容易。 <0>了解更多</0>"
+			"description": "啟用後，Copilot 將在工作執行期間自動建立檢查點，使審核變更或回到早期狀態變得容易。 <0>了解更多</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "啟用音效",
-			"description": "啟用後，Roo 將為通知和事件播放音效。",
+			"description": "啟用後，Copilot 將為通知和事件播放音效。",
 			"volumeLabel": "音量"
 		},
 		"tts": {
 			"label": "啟用文字轉語音",
-			"description": "啟用後，Roo 將使用文字轉語音功能朗讀其回應。",
+			"description": "啟用後，Copilot 將使用文字轉語音功能朗讀其回應。",
 			"speedLabel": "速度"
 		}
 	},
@@ -558,7 +558,7 @@
 		"description": "控制 AI 上下文視窗中要包含哪些資訊，會影響 token 用量和回應品質",
 		"autoCondenseContextPercent": {
 			"label": "觸發智慧上下文壓縮的閾值",
-			"description": "當上下文視窗達到此閾值時，Roo 將自動壓縮它。"
+			"description": "當上下文視窗達到此閾值時，Copilot 將自動壓縮它。"
 		},
 		"condensingApiConfiguration": {
 			"label": "上下文壓縮的 API 設定",
@@ -574,7 +574,7 @@
 		},
 		"autoCondenseContext": {
 			"name": "自動觸發智慧上下文壓縮",
-			"description": "啟用時，Roo 會在達到閾值時自動壓縮上下文。停用時，您仍可手動觸發上下文壓縮。"
+			"description": "啟用時，Copilot 會在達到閾值時自動壓縮上下文。停用時，您仍可手動觸發上下文壓縮。"
 		},
 		"openTabs": {
 			"label": "開啟分頁的上下文限制",
@@ -590,7 +590,7 @@
 		},
 		"maxReadFile": {
 			"label": "檔案讀取自動截斷閾值",
-			"description": "當模型未指定起始/結束值時，Roo 讀取的行數。如果此數值小於檔案總行數，Roo 將產生程式碼定義的行號索引。特殊情況：-1 指示 Roo 讀取整個檔案（不建立索引），0 指示不讀取任何行並僅提供行索引以取得最小上下文。較低的值可最小化初始上下文使用，允許後續精確的行範圍讀取。明確指定起始/結束的請求不受此設定限制。 <0>了解更多</0>",
+			"description": "當模型未指定起始/結束值時，Copilot 讀取的行數。如果此數值小於檔案總行數，Copilot 將產生程式碼定義的行號索引。特殊情況：-1 指示 Copilot 讀取整個檔案（不建立索引），0 指示不讀取任何行並僅提供行索引以取得最小上下文。較低的值可最小化初始上下文使用，允許後續精確的行範圍讀取。明確指定起始/結束的請求不受此設定限制。 <0>了解更多</0>",
 			"lines": "行",
 			"always_full_read": "始終讀取整個檔案"
 		},
@@ -658,11 +658,11 @@
 		},
 		"outputLineLimit": {
 			"label": "終端機輸出限制",
-			"description": "保留首尾行並丟棄中間行以保持在限制內。降低可節省 token；提高可為 Roo 提供更多中間細節。Roo 看到內容被跳過的佔位符。<0>了解更多</0>"
+			"description": "保留首尾行並丟棄中間行以保持在限制內。降低可節省 token；提高可為 Copilot 提供更多中間細節。Copilot 看到內容被跳過的佔位符。<0>了解更多</0>"
 		},
 		"outputCharacterLimit": {
 			"label": "終端機字元限制",
-			"description": "透過強制限制輸出大小來覆寫行限制以防止記憶體問題。如果超出，保留開頭和結尾並向 Roo 顯示內容被跳過的佔位符。<0>了解更多</0>"
+			"description": "透過強制限制輸出大小來覆寫行限制以防止記憶體問題。如果超出，保留開頭和結尾並向 Copilot 顯示內容被跳過的佔位符。<0>了解更多</0>"
 		},
 		"shellIntegrationTimeout": {
 			"label": "終端機 shell 整合逾時",
@@ -670,7 +670,7 @@
 		},
 		"shellIntegrationDisabled": {
 			"label": "使用內嵌終端機（建議）",
-			"description": "在內嵌終端機（聊天）中執行命令以繞過 shell 設定檔/整合，實現更快、更可靠的執行。停用時，Roo 使用 VS Code 終端機及您的 shell 設定檔、提示和外掛程式。<0>了解更多</0>"
+			"description": "在內嵌終端機（聊天）中執行命令以繞過 shell 設定檔/整合，實現更快、更可靠的執行。停用時，Copilot 使用 VS Code 終端機及您的 shell 設定檔、提示和外掛程式。<0>了解更多</0>"
 		},
 		"commandDelay": {
 			"label": "終端機命令延遲",
@@ -710,7 +710,7 @@
 	},
 	"toolProtocol": {
 		"label": "工具呼叫協議",
-		"description": "選擇 Roo 如何與 API 通信。原生使用提供者的函數呼叫 API，而 XML 使用 XML 格式的工具定義。",
+		"description": "選擇 Copilot 如何與 API 通信。原生使用提供者的函數呼叫 API，而 XML 使用 XML 格式的工具定義。",
 		"default": "預設",
 		"xml": "XML",
 		"native": "原生",
@@ -719,7 +719,7 @@
 	"advanced": {
 		"diff": {
 			"label": "透過差異比對編輯",
-			"description": "啟用後，Roo 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫",
+			"description": "啟用後，Copilot 可更快速地編輯檔案，並自動拒絕不完整的整檔覆寫",
 			"strategy": {
 				"label": "差異比對策略",
 				"options": {
@@ -740,7 +740,7 @@
 		},
 		"todoList": {
 			"label": "啟用待辦事項清單工具",
-			"description": "啟用後，Roo 可以建立和管理待辦事項清單來追蹤任務進度。這有助於將複雜任務組織成可管理的步驟。"
+			"description": "啟用後，Copilot 可以建立和管理待辦事項清單來追蹤任務進度。這有助於將複雜任務組織成可管理的步驟。"
 		}
 	},
 	"experimental": {
@@ -750,19 +750,19 @@
 		},
 		"INSERT_BLOCK": {
 			"name": "使用實驗性插入內容工具",
-			"description": "啟用實驗性的插入內容工具，允許 Roo 直接在指定行號插入內容，而無需產生差異比對。"
+			"description": "啟用實驗性的插入內容工具，允許 Copilot 直接在指定行號插入內容，而無需產生差異比對。"
 		},
 		"POWER_STEERING": {
 			"name": "使用實驗性「動力輔助」模式",
-			"description": "啟用後，Roo 將更頻繁地提醒模型目前模式的詳細設定。這能讓模型更嚴格遵守角色定義和自訂指令，但每則訊息會使用更多 token。"
+			"description": "啟用後，Copilot 將更頻繁地提醒模型目前模式的詳細設定。這能讓模型更嚴格遵守角色定義和自訂指令，但每則訊息會使用更多 token。"
 		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "使用實驗性多區塊差異比對工具",
-			"description": "啟用後，Roo 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
+			"description": "啟用後，Copilot 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
 		},
 		"CONCURRENT_FILE_READS": {
 			"name": "啟用並行檔案讀取",
-			"description": "啟用後，Roo 可以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，Roo 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
+			"description": "啟用後，Copilot 可以在單一請求中讀取多個檔案（最多 15 個檔案）。停用後，Copilot 必須逐一讀取檔案。在使用能力較弱的模型或希望對檔案存取有更多控制時，停用此功能可能會有所幫助。"
 		},
 		"MARKETPLACE": {
 			"name": "啟用 Marketplace",
@@ -770,11 +770,11 @@
 		},
 		"MULTI_FILE_APPLY_DIFF": {
 			"name": "啟用並行檔案編輯",
-			"description": "啟用後 Roo 可在單個請求中編輯多個檔案。停用後 Roo 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
+			"description": "啟用後 Copilot 可在單個請求中編輯多個檔案。停用後 Copilot 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "背景編輯",
-			"description": "啟用後可防止編輯器焦點中斷。檔案編輯會在背景進行，不會開啟 diff 檢視或搶奪焦點。您可以在 Roo 進行變更時繼續不受干擾地工作。檔案可能會在不獲得焦點的情況下開啟以捕獲診斷，或保持完全關閉。"
+			"description": "啟用後可防止編輯器焦點中斷。檔案編輯會在背景進行，不會開啟 diff 檢視或搶奪焦點。您可以在 Copilot 進行變更時繼續不受干擾地工作。檔案可能會在不獲得焦點的情況下開啟以捕獲診斷，或保持完全關閉。"
 		},
 		"ASSISTANT_MESSAGE_PARSER": {
 			"name": "使用全新訊息解析器",
@@ -788,7 +788,7 @@
 			"providerLabel": "提供商",
 			"providerDescription": "選擇用於圖像生成的提供商。",
 			"name": "啟用 AI 圖像生成",
-			"description": "啟用後，Roo 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。",
+			"description": "啟用後，Copilot 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。",
 			"openRouterApiKeyLabel": "OpenRouter API 金鑰",
 			"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
 			"getApiKeyText": "取得您的 API 金鑰從",
@@ -799,7 +799,7 @@
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "啟用模型啟動的斜線命令",
-			"description": "啟用時，Roo 可以執行您的斜線命令來執行工作流程。"
+			"description": "啟用時，Copilot 可以執行您的斜線命令來執行工作流程。"
 		},
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "並行工具呼叫",
@@ -807,7 +807,7 @@
 		},
 		"CUSTOM_TOOLS": {
 			"name": "啟用自訂工具",
-			"description": "啟用後，Roo 可以從專案中的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 載入並使用自訂 TypeScript/JavaScript 工具。注意：這些工具將自動獲得核准。",
+			"description": "啟用後，Copilot 可以從專案中的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 載入並使用自訂 TypeScript/JavaScript 工具。注意：這些工具將自動獲得核准。",
 			"toolsHeader": "可用自訂工具",
 			"noTools": "未載入自訂工具。請向專案的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 新增 .ts 或 .js 檔案。",
 			"refreshButton": "重新整理",
@@ -819,7 +819,7 @@
 	},
 	"promptCaching": {
 		"label": "停用提示詞快取",
-		"description": "勾選後，Roo 將不會為此模型使用提示詞快取。"
+		"description": "勾選後，Copilot 將不會為此模型使用提示詞快取。"
 	},
 	"temperature": {
 		"useCustom": "使用自訂溫度",
@@ -857,7 +857,7 @@
 		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
-		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
+		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Copilot-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
 		"telemetry": {
 			"label": "允許匿名錯誤與使用情況回報",
 			"description": "透過發送匿名使用資料和錯誤回報來協助改善 Datacoves Copilot。此遙測不會收集程式碼、Prompt 或個人資訊。查看我們的<privacyLink>隱私政策</privacyLink>以了解更多詳情。您可以隨時關閉此功能。"

@@ -126,7 +126,7 @@
 			"completionError": "Cerebras 完成错误：{{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo 提供商需要云认证。请登录 Datacoves Copilot Cloud。"
+			"authenticationRequired": "Copilot 提供商需要云认证。请登录 Datacoves Copilot Cloud。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 密钥包含无效字符。"

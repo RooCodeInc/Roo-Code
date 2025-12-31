@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "Los mejores modelos gratuitos para empezar",
-			"incentive": "Prueba Roo gratis"
+			"incentive": "Prueba Copilot gratis"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "Elige tu proveedor",
-		"chooseProvider": "Roo necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
+		"chooseProvider": "Copilot necesita un proveedor de LLM para funcionar. Elige uno para comenzar, puedes añadir más después.",
 		"rooCloudProvider": "Proveedor de Datacoves Copilot Cloud",
 		"rooCloudDescription": "La forma más sencilla de comenzar es con el Proveedor Datacoves Copilot Cloud: una mezcla seleccionada de modelos gratuitos y de pago a bajo costo.",
 		"learnMore": "Más información",

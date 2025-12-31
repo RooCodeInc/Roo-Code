@@ -1,6 +1,6 @@
 {
 	"input": {
-		"task_prompt": "Què vols que faci Roo?",
+		"task_prompt": "Què vols que faci Copilot?",
 		"task_placeholder": "Escriu la teva tasca aquí"
 	},
 	"extension": {
@@ -124,7 +124,7 @@
 			"completionError": "Error de finalització de Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "El proveïdor Roo requereix autenticació al núvol. Si us plau, inicieu sessió a Datacoves Copilot Cloud."
+			"authenticationRequired": "El proveïdor Copilot requereix autenticació al núvol. Si us plau, inicieu sessió a Datacoves Copilot Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "La clau API conté caràcters no vàlids."

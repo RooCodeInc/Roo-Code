@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "Tautan organisasi disalin ke clipboard",
 		"shareSuccessPublic": "Tautan publik disalin ke clipboard",
 		"openInCloud": "Buka tugas di Datacoves Copilot Cloud",
-		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka.",
+		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Copilot dari mana saja. Pindai, klik atau salin untuk membuka.",
 		"openApiHistory": "Buka Riwayat API",
 		"openUiHistory": "Buka Riwayat UI"
 	},
@@ -122,7 +122,7 @@
 		"title": "Mode",
 		"marketplace": "Marketplace Mode",
 		"settings": "Pengaturan Mode",
-		"description": "Persona khusus yang menyesuaikan perilaku Roo.",
+		"description": "Persona khusus yang menyesuaikan perilaku Copilot.",
 		"searchPlaceholder": "Cari mode...",
 		"noResults": "Tidak ada hasil yang ditemukan"
 	},
@@ -198,46 +198,46 @@
 		}
 	},
 	"instructions": {
-		"wantsToFetch": "Roo ingin mengambil instruksi detail untuk membantu tugas saat ini"
+		"wantsToFetch": "Copilot ingin mengambil instruksi detail untuk membantu tugas saat ini"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo ingin membaca file ini",
-		"wantsToReadMultiple": "Roo ingin membaca beberapa file",
-		"wantsToReadAndXMore": "Roo ingin membaca file ini dan {{count}} lainnya",
-		"wantsToReadOutsideWorkspace": "Roo ingin membaca file ini di luar workspace",
-		"didRead": "Roo membaca file ini",
-		"wantsToEdit": "Roo ingin mengedit file ini",
-		"wantsToEditOutsideWorkspace": "Roo ingin mengedit file ini di luar workspace",
-		"wantsToEditProtected": "Roo ingin mengedit file konfigurasi yang dilindungi",
-		"wantsToApplyBatchChanges": "Roo ingin menerapkan perubahan ke beberapa file",
-		"wantsToGenerateImage": "Roo ingin menghasilkan gambar",
-		"wantsToGenerateImageOutsideWorkspace": "Roo ingin menghasilkan gambar di luar workspace",
-		"wantsToGenerateImageProtected": "Roo ingin menghasilkan gambar di lokasi yang dilindungi",
-		"didGenerateImage": "Roo telah menghasilkan gambar",
-		"wantsToCreate": "Roo ingin membuat file baru",
-		"wantsToSearchReplace": "Roo ingin mencari dan mengganti di file ini",
-		"didSearchReplace": "Roo melakukan pencarian dan penggantian pada file ini",
-		"wantsToInsert": "Roo ingin menyisipkan konten ke file ini",
-		"wantsToInsertWithLineNumber": "Roo ingin menyisipkan konten ke file ini di baris {{lineNumber}}",
-		"wantsToInsertAtEnd": "Roo ingin menambahkan konten ke akhir file ini"
+		"wantsToRead": "Copilot ingin membaca file ini",
+		"wantsToReadMultiple": "Copilot ingin membaca beberapa file",
+		"wantsToReadAndXMore": "Copilot ingin membaca file ini dan {{count}} lainnya",
+		"wantsToReadOutsideWorkspace": "Copilot ingin membaca file ini di luar workspace",
+		"didRead": "Copilot membaca file ini",
+		"wantsToEdit": "Copilot ingin mengedit file ini",
+		"wantsToEditOutsideWorkspace": "Copilot ingin mengedit file ini di luar workspace",
+		"wantsToEditProtected": "Copilot ingin mengedit file konfigurasi yang dilindungi",
+		"wantsToApplyBatchChanges": "Copilot ingin menerapkan perubahan ke beberapa file",
+		"wantsToGenerateImage": "Copilot ingin menghasilkan gambar",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot ingin menghasilkan gambar di luar workspace",
+		"wantsToGenerateImageProtected": "Copilot ingin menghasilkan gambar di lokasi yang dilindungi",
+		"didGenerateImage": "Copilot telah menghasilkan gambar",
+		"wantsToCreate": "Copilot ingin membuat file baru",
+		"wantsToSearchReplace": "Copilot ingin mencari dan mengganti di file ini",
+		"didSearchReplace": "Copilot melakukan pencarian dan penggantian pada file ini",
+		"wantsToInsert": "Copilot ingin menyisipkan konten ke file ini",
+		"wantsToInsertWithLineNumber": "Copilot ingin menyisipkan konten ke file ini di baris {{lineNumber}}",
+		"wantsToInsertAtEnd": "Copilot ingin menambahkan konten ke akhir file ini"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo ingin melihat file tingkat atas di direktori ini",
-		"didViewTopLevel": "Roo melihat file tingkat atas di direktori ini",
-		"wantsToViewRecursive": "Roo ingin melihat semua file secara rekursif di direktori ini",
-		"didViewRecursive": "Roo melihat semua file secara rekursif di direktori ini",
-		"wantsToSearch": "Roo ingin mencari direktori ini untuk <code>{{regex}}</code>",
-		"didSearch": "Roo mencari direktori ini untuk <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo ingin mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
-		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
+		"wantsToViewTopLevel": "Copilot ingin melihat file tingkat atas di direktori ini",
+		"didViewTopLevel": "Copilot melihat file tingkat atas di direktori ini",
+		"wantsToViewRecursive": "Copilot ingin melihat semua file secara rekursif di direktori ini",
+		"didViewRecursive": "Copilot melihat semua file secara rekursif di direktori ini",
+		"wantsToSearch": "Copilot ingin mencari direktori ini untuk <code>{{regex}}</code>",
+		"didSearch": "Copilot mencari direktori ini untuk <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Copilot ingin mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Copilot mencari direktori ini (di luar workspace) untuk <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot ingin melihat file tingkat atas di direktori ini (di luar workspace)",
+		"didViewTopLevelOutsideWorkspace": "Copilot melihat file tingkat atas di direktori ini (di luar workspace)",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"didViewRecursiveOutsideWorkspace": "Copilot melihat semua file secara rekursif di direktori ini (di luar workspace)"
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo ingin mencari codebase untuk <code>{{query}}</code> di <code>{{path}}</code>",
+		"wantsToSearch": "Copilot ingin mencari codebase untuk <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot ingin mencari codebase untuk <code>{{query}}</code> di <code>{{path}}</code>",
 		"didSearch_one": "Ditemukan 1 hasil",
 		"didSearch_other": "Ditemukan {{count}} hasil",
 		"resultTooltip": "Skor kemiripan: {{score}} (klik untuk membuka file)"
@@ -262,24 +262,24 @@
 	"response": "Respons",
 	"arguments": "Argumen",
 	"text": {
-		"rooSaid": "Roo berkata"
+		"rooSaid": "Copilot berkata"
 	},
 	"feedback": {
 		"youSaid": "Anda bilang"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo ingin menggunakan tool di server MCP {{serverName}}",
-		"wantsToAccessResource": "Roo ingin mengakses resource di server MCP {{serverName}}"
+		"wantsToUseTool": "Copilot ingin menggunakan tool di server MCP {{serverName}}",
+		"wantsToAccessResource": "Copilot ingin mengakses resource di server MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo ingin beralih ke mode {{mode}}",
-		"wantsToSwitchWithReason": "Roo ingin beralih ke mode {{mode}} karena: {{reason}}",
-		"didSwitch": "Roo beralih ke mode {{mode}}",
-		"didSwitchWithReason": "Roo beralih ke mode {{mode}} karena: {{reason}}"
+		"wantsToSwitch": "Copilot ingin beralih ke mode {{mode}}",
+		"wantsToSwitchWithReason": "Copilot ingin beralih ke mode {{mode}} karena: {{reason}}",
+		"didSwitch": "Copilot beralih ke mode {{mode}}",
+		"didSwitchWithReason": "Copilot beralih ke mode {{mode}} karena: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo ingin membuat subtugas baru dalam mode {{mode}}",
-		"wantsToFinish": "Roo ingin menyelesaikan subtugas ini",
+		"wantsToCreate": "Copilot ingin membuat subtugas baru dalam mode {{mode}}",
+		"wantsToFinish": "Copilot ingin menyelesaikan subtugas ini",
 		"newTaskContent": "Instruksi Subtugas",
 		"completionContent": "Subtugas Selesai",
 		"resultContent": "Hasil Subtugas",
@@ -287,7 +287,7 @@
 		"completionInstructions": "Subtugas selesai! Kamu bisa meninjau hasilnya dan menyarankan koreksi atau langkah selanjutnya. Jika semuanya terlihat baik, konfirmasi untuk mengembalikan hasil ke tugas induk."
 	},
 	"questions": {
-		"hasQuestion": "Roo punya pertanyaan"
+		"hasQuestion": "Copilot punya pertanyaan"
 	},
 	"taskCompleted": "Tugas Selesai",
 	"error": "Error",
@@ -301,7 +301,7 @@
 	"diffError": {
 		"title": "Edit Tidak Berhasil"
 	},
-	"troubleMessage": "Roo mengalami masalah...",
+	"troubleMessage": "Copilot mengalami masalah...",
 	"errorDetails": {
 		"link": "Details",
 		"title": "Detail Kesalahan",
@@ -342,7 +342,7 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"skills": "Roo sekarang mendukung <skillsLink>Agent Skills</skillsLink> - paket yang dapat digunakan kembali dari prompt, alat, dan sumber daya untuk memperluas kemampuan Roo.",
+			"skills": "Copilot sekarang mendukung <skillsLink>Agent Skills</skillsLink> - paket yang dapat digunakan kembali dari prompt, alat, dan sumber daya untuk memperluas kemampuan Copilot.",
 			"nativeToolCalling": "Pemanggilan alat native sekarang diperlukan untuk semua tugas baru. <blogLink>Pelajari lebih lanjut</blogLink> tentang motivasi dan apa yang harus dilakukan jika mengalami masalah."
 		},
 		"cloudAgents": {
@@ -363,7 +363,7 @@
 	},
 	"browser": {
 		"session": "Sesi Browser",
-		"rooWantsToUse": "Roo ingin menggunakan browser",
+		"rooWantsToUse": "Copilot ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",
 		"screenshot": "Screenshot browser",
@@ -415,12 +415,12 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Batas Permintaan yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
+			"description": "Copilot telah mencapai batas {{count}} permintaan API yang disetujui otomatis. Apakah Anda ingin mengatur ulang hitungan dan melanjutkan tugas?",
 			"button": "Setel Ulang dan Lanjutkan"
 		},
 		"autoApprovedCostLimitReached": {
 			"title": "Batas Biaya yang Disetujui Otomatis Tercapai",
-			"description": "Roo telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
+			"description": "Copilot telah mencapai batas biaya yang disetujui otomatis sebesar ${{count}}. Apakah Anda ingin mengatur ulang biaya dan melanjutkan tugas?",
 			"button": "Setel Ulang dan Lanjutkan"
 		}
 	},
@@ -476,8 +476,8 @@
 		"clickToEdit": "Klik untuk mengedit pesan"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo ingin menjalankan perintah slash",
-		"didRun": "Roo telah menjalankan perintah slash"
+		"wantsToRun": "Copilot ingin menjalankan perintah slash",
+		"didRun": "Copilot telah menjalankan perintah slash"
 	},
 	"todo": {
 		"partial": "{{completed}} dari {{total}} to-do selesai",

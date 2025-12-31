@@ -26,7 +26,7 @@
 		"shareSuccessOrganization": "Link organizacji skopiowany do schowka",
 		"shareSuccessPublic": "Link publiczny skopiowany do schowka",
 		"openInCloud": "Otwórz zadanie w Datacoves Copilot Cloud",
-		"openInCloudIntro": "Kontynuuj monitorowanie lub interakcję z Roo z dowolnego miejsca. Zeskanuj, kliknij lub skopiuj, aby otworzyć.",
+		"openInCloudIntro": "Kontynuuj monitorowanie lub interakcję z Copilot z dowolnego miejsca. Zeskanuj, kliknij lub skopiuj, aby otworzyć.",
 		"openApiHistory": "Otwórz historię API",
 		"openUiHistory": "Otwórz historię UI"
 	},
@@ -117,7 +117,7 @@
 		"title": "Tryby",
 		"marketplace": "Marketplace Trybów",
 		"settings": "Ustawienia Trybów",
-		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Roo.",
+		"description": "Wyspecjalizowane persony, które dostosowują zachowanie Copilot.",
 		"searchPlaceholder": "Szukaj trybów...",
 		"noResults": "Nie znaleziono wyników"
 	},
@@ -131,7 +131,7 @@
 	"diffError": {
 		"title": "Edycja nieudana"
 	},
-	"troubleMessage": "Roo ma problemy...",
+	"troubleMessage": "Copilot ma problemy...",
 	"apiRequest": {
 		"title": "Zapytanie API",
 		"failed": "Zapytanie API nie powiodło się",
@@ -174,42 +174,42 @@
 		"current": "Bieżący"
 	},
 	"instructions": {
-		"wantsToFetch": "Roo chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
+		"wantsToFetch": "Copilot chce pobrać szczegółowe instrukcje, aby pomóc w bieżącym zadaniu"
 	},
 	"fileOperations": {
-		"wantsToRead": "Roo chce przeczytać ten plik",
-		"wantsToReadOutsideWorkspace": "Roo chce przeczytać ten plik poza obszarem roboczym",
-		"didRead": "Roo przeczytał ten plik",
-		"wantsToEdit": "Roo chce edytować ten plik",
-		"wantsToEditOutsideWorkspace": "Roo chce edytować ten plik poza obszarem roboczym",
-		"wantsToEditProtected": "Roo chce edytować chroniony plik konfiguracyjny",
-		"wantsToCreate": "Roo chce utworzyć nowy plik",
-		"wantsToSearchReplace": "Roo chce wykonać wyszukiwanie i zamianę w tym pliku",
-		"didSearchReplace": "Roo wykonał wyszukiwanie i zamianę w tym pliku",
-		"wantsToInsert": "Roo chce wstawić zawartość do tego pliku",
-		"wantsToInsertWithLineNumber": "Roo chce wstawić zawartość do tego pliku w linii {{lineNumber}}",
-		"wantsToInsertAtEnd": "Roo chce dodać zawartość na końcu tego pliku",
-		"wantsToReadAndXMore": "Roo chce przeczytać ten plik i {{count}} więcej",
-		"wantsToReadMultiple": "Roo chce odczytać wiele plików",
-		"wantsToApplyBatchChanges": "Roo chce zastosować zmiany do wielu plików",
-		"wantsToGenerateImage": "Roo chce wygenerować obraz",
-		"wantsToGenerateImageOutsideWorkspace": "Roo chce wygenerować obraz poza obszarem roboczym",
-		"wantsToGenerateImageProtected": "Roo chce wygenerować obraz w chronionym miejscu",
-		"didGenerateImage": "Roo wygenerował obraz"
+		"wantsToRead": "Copilot chce przeczytać ten plik",
+		"wantsToReadOutsideWorkspace": "Copilot chce przeczytać ten plik poza obszarem roboczym",
+		"didRead": "Copilot przeczytał ten plik",
+		"wantsToEdit": "Copilot chce edytować ten plik",
+		"wantsToEditOutsideWorkspace": "Copilot chce edytować ten plik poza obszarem roboczym",
+		"wantsToEditProtected": "Copilot chce edytować chroniony plik konfiguracyjny",
+		"wantsToCreate": "Copilot chce utworzyć nowy plik",
+		"wantsToSearchReplace": "Copilot chce wykonać wyszukiwanie i zamianę w tym pliku",
+		"didSearchReplace": "Copilot wykonał wyszukiwanie i zamianę w tym pliku",
+		"wantsToInsert": "Copilot chce wstawić zawartość do tego pliku",
+		"wantsToInsertWithLineNumber": "Copilot chce wstawić zawartość do tego pliku w linii {{lineNumber}}",
+		"wantsToInsertAtEnd": "Copilot chce dodać zawartość na końcu tego pliku",
+		"wantsToReadAndXMore": "Copilot chce przeczytać ten plik i {{count}} więcej",
+		"wantsToReadMultiple": "Copilot chce odczytać wiele plików",
+		"wantsToApplyBatchChanges": "Copilot chce zastosować zmiany do wielu plików",
+		"wantsToGenerateImage": "Copilot chce wygenerować obraz",
+		"wantsToGenerateImageOutsideWorkspace": "Copilot chce wygenerować obraz poza obszarem roboczym",
+		"wantsToGenerateImageProtected": "Copilot chce wygenerować obraz w chronionym miejscu",
+		"didGenerateImage": "Copilot wygenerował obraz"
 	},
 	"directoryOperations": {
-		"wantsToViewTopLevel": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu",
-		"didViewTopLevel": "Roo zobaczył pliki najwyższego poziomu w tym katalogu",
-		"wantsToViewRecursive": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu",
-		"didViewRecursive": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu",
-		"wantsToSearch": "Roo chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>",
-		"didSearch": "Roo przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>",
-		"wantsToSearchOutsideWorkspace": "Roo chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
-		"wantsToViewTopLevelOutsideWorkspace": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
-		"didViewTopLevelOutsideWorkspace": "Roo zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
-		"wantsToViewRecursiveOutsideWorkspace": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)"
+		"wantsToViewTopLevel": "Copilot chce zobaczyć pliki najwyższego poziomu w tym katalogu",
+		"didViewTopLevel": "Copilot zobaczył pliki najwyższego poziomu w tym katalogu",
+		"wantsToViewRecursive": "Copilot chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu",
+		"didViewRecursive": "Copilot rekurencyjnie zobaczył wszystkie pliki w tym katalogu",
+		"wantsToSearch": "Copilot chce przeszukać ten katalog w poszukiwaniu <code>{{regex}}</code>",
+		"didSearch": "Copilot przeszukał ten katalog w poszukiwaniu <code>{{regex}}</code>",
+		"wantsToSearchOutsideWorkspace": "Copilot chce przeszukać ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
+		"didSearchOutsideWorkspace": "Copilot przeszukał ten katalog (poza obszarem roboczym) w poszukiwaniu <code>{{regex}}</code>",
+		"wantsToViewTopLevelOutsideWorkspace": "Copilot chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
+		"didViewTopLevelOutsideWorkspace": "Copilot zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
+		"wantsToViewRecursiveOutsideWorkspace": "Copilot chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
+		"didViewRecursiveOutsideWorkspace": "Copilot rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)"
 	},
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
@@ -231,24 +231,24 @@
 	"response": "Odpowiedź",
 	"arguments": "Argumenty",
 	"text": {
-		"rooSaid": "Roo powiedział"
+		"rooSaid": "Copilot powiedział"
 	},
 	"feedback": {
 		"youSaid": "Powiedziałeś"
 	},
 	"mcp": {
-		"wantsToUseTool": "Roo chce użyć narzędzia na serwerze MCP {{serverName}}",
-		"wantsToAccessResource": "Roo chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}"
+		"wantsToUseTool": "Copilot chce użyć narzędzia na serwerze MCP {{serverName}}",
+		"wantsToAccessResource": "Copilot chce uzyskać dostęp do zasobu na serwerze MCP {{serverName}}"
 	},
 	"modes": {
-		"wantsToSwitch": "Roo chce przełączyć się na tryb <code>{{mode}}</code>",
-		"wantsToSwitchWithReason": "Roo chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
-		"didSwitch": "Roo przełączył się na tryb <code>{{mode}}</code>",
-		"didSwitchWithReason": "Roo przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
+		"wantsToSwitch": "Copilot chce przełączyć się na tryb <code>{{mode}}</code>",
+		"wantsToSwitchWithReason": "Copilot chce przełączyć się na tryb <code>{{mode}}</code> ponieważ: {{reason}}",
+		"didSwitch": "Copilot przełączył się na tryb <code>{{mode}}</code>",
+		"didSwitchWithReason": "Copilot przełączył się na tryb <code>{{mode}}</code> ponieważ: {{reason}}"
 	},
 	"subtasks": {
-		"wantsToCreate": "Roo chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>",
-		"wantsToFinish": "Roo chce zakończyć to podzadanie",
+		"wantsToCreate": "Copilot chce utworzyć nowe podzadanie w trybie <code>{{mode}}</code>",
+		"wantsToFinish": "Copilot chce zakończyć to podzadanie",
 		"newTaskContent": "Instrukcje podzadania",
 		"completionContent": "Podzadanie zakończone",
 		"resultContent": "Wyniki podzadania",
@@ -256,7 +256,7 @@
 		"completionInstructions": "Podzadanie zakończone! Możesz przejrzeć wyniki i zasugerować poprawki lub następne kroki. Jeśli wszystko wygląda dobrze, potwierdź, aby zwrócić wynik do zadania nadrzędnego."
 	},
 	"questions": {
-		"hasQuestion": "Roo ma pytanie"
+		"hasQuestion": "Copilot ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
 	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",
@@ -329,7 +329,7 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"skills": "Roo obsługuje teraz <skillsLink>Agent Skills</skillsLink> - pakiety narzędzi, podpowiedzi i zasobów do rozszerzenia możliwości Roo.",
+			"skills": "Copilot obsługuje teraz <skillsLink>Agent Skills</skillsLink> - pakiety narzędzi, podpowiedzi i zasobów do rozszerzenia możliwości Copilot.",
 			"nativeToolCalling": "Natywne wywoływanie narzędzi jest teraz wymagane dla wszystkich nowych zadań. <blogLink>Dowiedz się więcej</blogLink> o motywacji i co robić, jeśli napotkasz problemy."
 		},
 		"cloudAgents": {
@@ -342,7 +342,7 @@
 	},
 	"browser": {
 		"session": "Sesja przeglądarki",
-		"rooWantsToUse": "Roo chce użyć przeglądarki",
+		"rooWantsToUse": "Copilot chce użyć przeglądarki",
 		"consoleLogs": "Logi konsoli",
 		"noNewLogs": "(Brak nowych logów)",
 		"screenshot": "Zrzut ekranu przeglądarki",
@@ -394,18 +394,18 @@
 	"ask": {
 		"autoApprovedRequestLimitReached": {
 			"title": "Osiągnięto limit automatycznie zatwierdzonych żądań",
-			"description": "Roo osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
+			"description": "Copilot osiągnął automatycznie zatwierdzony limit {{count}} żądania/żądań API. Czy chcesz zresetować licznik i kontynuować zadanie?",
 			"button": "Zresetuj i kontynuuj"
 		},
 		"autoApprovedCostLimitReached": {
 			"button": "Zresetuj i Kontynuuj",
 			"title": "Osiągnięto limit kosztów z automatycznym zatwierdzaniem",
-			"description": "Roo osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
+			"description": "Copilot osiągnął automatycznie zatwierdzony limit kosztów wynoszący ${{count}}. Czy chcesz zresetować koszt i kontynuować zadanie?"
 		}
 	},
 	"codebaseSearch": {
-		"wantsToSearch": "Roo chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>",
-		"wantsToSearchWithPath": "Roo chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>",
+		"wantsToSearch": "Copilot chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code>",
+		"wantsToSearchWithPath": "Copilot chce przeszukać bazę kodu w poszukiwaniu <code>{{query}}</code> w <code>{{path}}</code>",
 		"didSearch_one": "Znaleziono 1 wynik",
 		"didSearch_other": "Znaleziono {{count}} wyników",
 		"resultTooltip": "Wynik podobieństwa: {{score}} (kliknij, aby otworzyć plik)"
@@ -470,8 +470,8 @@
 		"clickToEdit": "Kliknij, aby edytować wiadomość"
 	},
 	"slashCommand": {
-		"wantsToRun": "Roo chce uruchomić komendę slash",
-		"didRun": "Roo uruchomił komendę slash"
+		"wantsToRun": "Copilot chce uruchomić komendę slash",
+		"didRun": "Copilot uruchomił komendę slash"
 	},
 	"todo": {
 		"partial": "Ukończono {{completed}} z {{total}} zadań do wykonania",

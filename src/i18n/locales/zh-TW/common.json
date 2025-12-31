@@ -120,7 +120,7 @@
 			"completionError": "Cerebras 完成錯誤：{{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Datacoves Copilot Cloud。"
+			"authenticationRequired": "Copilot 提供者需要雲端認證。請登入 Datacoves Copilot Cloud。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API 金鑰包含無效字元。"
@@ -181,7 +181,7 @@
 		"enter_valid_path": "請輸入有效的路徑"
 	},
 	"input": {
-		"task_prompt": "讓 Roo 做什麼？",
+		"task_prompt": "讓 Copilot 做什麼？",
 		"task_placeholder": "在這裡輸入工作"
 	},
 	"settings": {

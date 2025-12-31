@@ -9,7 +9,7 @@
 		},
 		"roo": {
 			"description": "Các mô hình miễn phí tốt nhất để bắt đầu",
-			"incentive": "Dùng thử Roo miễn phí"
+			"incentive": "Dùng thử Copilot miễn phí"
 		}
 	},
 	"landing": {
@@ -21,7 +21,7 @@
 	},
 	"providerSignup": {
 		"heading": "Chọn nhà cung cấp của bạn",
-		"chooseProvider": "Roo cần một nhà cung cấp LLM để hoạt động. Chọn một để bắt đầu, bạn có thể thêm nhiều hơn sau.",
+		"chooseProvider": "Copilot cần một nhà cung cấp LLM để hoạt động. Chọn một để bắt đầu, bạn có thể thêm nhiều hơn sau.",
 		"rooCloudProvider": "Nhà cung cấp Datacoves Copilot Cloud",
 		"rooCloudDescription": "Cách dễ nhất để bắt đầu là với Nhà cung cấp Datacoves Copilot Cloud: một sự kết hợp được sắp xếp cẩn thận của các mô hình miễn phí và trả tiền với chi phí thấp.",
 		"learnMore": "Tìm hiểu thêm",
