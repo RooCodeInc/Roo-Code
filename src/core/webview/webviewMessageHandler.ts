@@ -1735,6 +1735,17 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "toggleTodoBreakpoint": {
+			const { todoId, breakpoint } = (message.values ?? {}) as { todoId?: string; breakpoint?: boolean }
+			const currentTask = provider.getCurrentTask()
+			if (todoId && currentTask?.todoList) {
+				const todo = currentTask.todoList.find((t) => t.id === todoId)
+				if (todo) {
+					todo.breakpoint = breakpoint
+				}
+			}
+			break
+		}
 		case "refreshCustomTools": {
 			try {
 				const toolDirs = getRooDirectoriesForCwd(getCurrentCwd()).map((dir) => path.join(dir, "tools"))

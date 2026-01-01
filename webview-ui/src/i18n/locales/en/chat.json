@@ -470,6 +470,8 @@
 		"complete": "{{total}} to-dos done",
 		"updated": "Updated the to-do list",
 		"completed": "Completed",
-		"started": "Started"
+		"started": "Started",
+		"addBreakpoint": "Add breakpoint (pauses auto-approve)",
+		"removeBreakpoint": "Remove breakpoint"
 	}
 }

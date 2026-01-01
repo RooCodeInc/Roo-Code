@@ -29,6 +29,7 @@ export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "imag
 export interface WebviewMessage {
 	type:
 		| "updateTodoList"
+		| "toggleTodoBreakpoint"
 		| "deleteMultipleTasksWithIds"
 		| "currentApiConfigName"
 		| "saveApiConfiguration"

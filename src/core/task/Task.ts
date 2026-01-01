@@ -1150,12 +1150,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Automatically approve if the ask according to the user's settings.
 		const provider = this.providerRef.deref()
 		const state = provider ? await provider.getState() : undefined
-		const approval = await checkAutoApproval({ state, ask: type, text, isProtected })
+		const approval = await checkAutoApproval({ state, ask: type, text, isProtected, todoList: this.todoList })
 
 		if (approval.decision === "approve") {
 			this.approveAsk()
 		} else if (approval.decision === "deny") {
 			this.denyAsk()
+		} else if (approval.decision === "ask" && "breakpointHit" in approval && approval.breakpointHit) {
+			// Breakpoint hit: send notification to play celebration sound and clear the breakpoint
+			provider?.postMessageToWebview({ type: "breakpointHit" })
+			// Clear the breakpoint after it's hit (disposable, as per user request)
+			const inProgressTodo = this.todoList?.find((t) => t.status === "in_progress")
+			if (inProgressTodo) {
+				inProgressTodo.breakpoint = false
+			}
 		} else if (approval.decision === "timeout") {
 			// Store the auto-approval timeout so it can be cancelled if user interacts
 			this.autoApprovalTimeoutRef = setTimeout(() => {

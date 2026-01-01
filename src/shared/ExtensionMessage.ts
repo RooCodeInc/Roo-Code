@@ -128,6 +128,7 @@ export interface ExtensionMessage {
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
 		| "interactionRequired"
+		| "breakpointHit"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
 		| "claudeCodeRateLimits"
