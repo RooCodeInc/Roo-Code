@@ -263,50 +263,48 @@ const ModesView = () => {
 					type: "updateModeToProfileMapping",
 					mapping: newMapping,
 				})
-			// If switching to 'selected' mode, keep current selections (or start with empty)
-		} else {
-			// Add mode to mapping with current selection (or empty array)
-			const newMapping = {
-				...modeToProfile,
-				[visualMode]: selectedMcpServers,
+				// If switching to 'selected' mode, keep current selections (or start with empty)
+			} else {
+				// Add mode to mapping with current selection (or empty array)
+				const newMapping = {
+					...modeToProfile,
+					[visualMode]: selectedMcpServers,
+				}
+				setModeToProfile(newMapping)
+				vscode.postMessage({
+					type: "updateModeToProfileMapping",
+					mapping: newMapping,
+				})
 			}
-			setModeToProfile(newMapping)
-			vscode.postMessage({
-				type: "updateModeToProfileMapping",
-				mapping: newMapping,
-			})
-		}
 		},
-		[visualMode, modeToProfile],
+		[visualMode, modeToProfile, selectedMcpServers],
 	)
 
 	// Handle MCP server selection changes
 	const handleMcpServerToggle = useCallback(
 		(serverName: string) => {
-			setSelectedMcpServers((prev) => {
-				const newSelection = prev.includes(serverName)
-					? prev.filter((name) => name !== serverName)
-					: [...prev, serverName]
+			const newSelection = selectedMcpServers.includes(serverName)
+				? selectedMcpServers.filter((name) => name !== serverName)
+				: [...selectedMcpServers, serverName]
 
-				// Update the mapping - keep empty array to indicate "selected mode with no servers"
-				// This is different from missing/undefined which means "use all servers"
-				const newMapping = {
-					...modeToProfile,
-					[visualMode]: newSelection,
-				}
+			setSelectedMcpServers(newSelection)
 
-				setModeToProfile(newMapping)
+			// Update the mapping - keep empty array to indicate "selected mode with no servers"
+			// This is different from missing/undefined which means "use all servers"
+			const newMapping = {
+				...modeToProfile,
+				[visualMode]: newSelection,
+			}
 
-				// Send update to backend
-				vscode.postMessage({
-					type: "updateModeToProfileMapping",
-					mapping: newMapping,
-				})
+			setModeToProfile(newMapping)
 
-				return newSelection
+			// Send update to backend
+			vscode.postMessage({
+				type: "updateModeToProfileMapping",
+				mapping: newMapping,
 			})
 		},
-		[visualMode, modeToProfile],
+		[visualMode, modeToProfile, selectedMcpServers],
 	)
 
 	// Handler for popover open state change
