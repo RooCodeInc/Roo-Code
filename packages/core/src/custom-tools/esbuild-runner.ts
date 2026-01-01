@@ -166,7 +166,7 @@ export async function runEsbuild(options: EsbuildOptions, extensionPath?: string
 	}
 
 	try {
-		await execa(process.execPath, args, { env, stdin: "ignore" })
+		await execa(process.execPath, args, { env, stdin: "ignore", timeout: 30000 })
 	} catch (error) {
 		const execaError = error as { stderr?: string; stdout?: string; exitCode?: number; message: string }
 		const errorMessage = execaError.stderr || execaError.stdout || `esbuild exited with code ${execaError.exitCode}`
