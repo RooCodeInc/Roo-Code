@@ -14,6 +14,28 @@ vitest.mock("@src/utils/vscode", () => ({
 
 const baseMcpServers = [{ name: "serverA" }, { name: "serverB" }, { name: "serverC" }]
 
+// Mock modes with mcp group enabled
+const mockModesWithMcp = [
+	{
+		slug: "code",
+		name: "Code",
+		roleDefinition: "You are a code assistant",
+		groups: ["read", "edit", "browser", "command", "mcp"] as const,
+	},
+	{
+		slug: "ask",
+		name: "Ask",
+		roleDefinition: "You are a helpful assistant",
+		groups: ["read", "mcp"] as const,
+	},
+	{
+		slug: "architect",
+		name: "Architect",
+		roleDefinition: "You are an architect",
+		groups: ["read", "mcp"] as const,
+	},
+]
+
 const mockExtensionState = {
 	customModePrompts: {},
 	listApiConfigMeta: [
@@ -23,7 +45,7 @@ const mockExtensionState = {
 	enhancementApiConfigId: "",
 	setEnhancementApiConfigId: vitest.fn(),
 	mode: "code",
-	customModes: [],
+	customModes: mockModesWithMcp,
 	customSupportPrompts: [],
 	currentApiConfigName: "",
 	customInstructions: "Initial instructions",
@@ -98,7 +120,8 @@ describe("PromptsView", () => {
 	})
 
 	it("handles prompt changes correctly", async () => {
-		renderPromptsView()
+		// Use customModes: [] to ensure code is treated as a built-in mode for this test
+		renderPromptsView({ customModes: [] })
 
 		// Get the textarea
 		const textarea = await waitFor(() => screen.getByTestId("code-prompt-textarea"))
@@ -389,9 +412,8 @@ describe("ModesView MCP Server Selection UI", () => {
 
 		it("handles undefined mode correctly", async () => {
 			renderModesView({ mode: undefined })
-			await waitFor(() => {
-				expect(screen.getByText("All servers available")).toBeInTheDocument()
-			})
+			// MCP section should not show for undefined mode (no mcp group)
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
 		})
 	})
 
@@ -432,9 +454,8 @@ describe("ModesView MCP Server Selection UI", () => {
 
 		it("handles mode not in mapping", () => {
 			renderModesView({ mode: "nonexistent", modeToProfile: { code: ["serverA"] } })
-			baseMcpServers.forEach((s) => {
-				expect(screen.getByTestId(`mcp-server-${s.name}`)).toBeInTheDocument()
-			})
+			// MCP section should not show for nonexistent mode (no mcp group)
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
 		})
 
 		it("handles invalid server names gracefully", () => {

@@ -1252,37 +1252,44 @@ const ModesView = () => {
 				</>
 
 				{/* MCP Servers section */}
-				{mcpEnabled && mcpServers && mcpServers.length > 0 && (
-					<div className="mb-4">
-						<div className="font-bold mb-1">MCP Servers</div>
-						<div className="text-sm text-vscode-descriptionForeground mb-2">
-							Select which MCP servers this mode can access. Leave empty to use all servers.
-						</div>
-						<div className="flex flex-wrap gap-2">
-							{mcpServers.map((server) => {
-								const isSelected = selectedMcpServers.includes(server.name)
-								return (
-									<button
-										key={server.name}
-										onClick={() => handleMcpServerToggle(server.name)}
-										className={`px-3 py-1.5 rounded text-sm transition-colors ${
-											isSelected
-												? "bg-vscode-button-background text-vscode-button-foreground hover:bg-vscode-button-hoverBackground"
-												: "bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border hover:bg-vscode-list-hoverBackground"
-										}`}
-										data-testid={`mcp-server-${server.name}`}>
-										{server.name}
-									</button>
-								)
-							})}
-						</div>
-						{selectedMcpServers.length === 0 && (
-							<div className="text-xs text-vscode-descriptionForeground mt-2 italic">
-								All servers available
+				{mcpEnabled &&
+					mcpServers &&
+					mcpServers.length > 0 &&
+					(() => {
+						const currentMode = getCurrentMode()
+						const enabledGroups = currentMode?.groups || []
+						return enabledGroups.some((group) => getGroupName(group) === "mcp")
+					})() && (
+						<div className="mb-4">
+							<div className="font-bold mb-1">MCP Servers</div>
+							<div className="text-sm text-vscode-descriptionForeground mb-2">
+								Select which MCP servers this mode can access. Leave empty to use all servers.
 							</div>
-						)}
-					</div>
-				)}
+							<div className="flex flex-wrap gap-2">
+								{mcpServers.map((server) => {
+									const isSelected = selectedMcpServers.includes(server.name)
+									return (
+										<button
+											key={server.name}
+											onClick={() => handleMcpServerToggle(server.name)}
+											className={`px-3 py-1.5 rounded text-sm transition-colors ${
+												isSelected
+													? "bg-vscode-button-background text-vscode-button-foreground hover:bg-vscode-button-hoverBackground"
+													: "bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border hover:bg-vscode-list-hoverBackground"
+											}`}
+											data-testid={`mcp-server-${server.name}`}>
+											{server.name}
+										</button>
+									)
+								})}
+							</div>
+							{selectedMcpServers.length === 0 && (
+								<div className="text-xs text-vscode-descriptionForeground mt-2 italic">
+									All servers available
+								</div>
+							)}
+						</div>
+					)}
 
 				{/* Role definition for both built-in and custom modes */}
 				<div className="mb-2">
