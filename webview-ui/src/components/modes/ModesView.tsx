@@ -263,8 +263,19 @@ const ModesView = () => {
 					type: "updateModeToProfileMapping",
 					mapping: newMapping,
 				})
-			}
 			// If switching to 'selected' mode, keep current selections (or start with empty)
+		} else {
+			// Add mode to mapping with current selection (or empty array)
+			const newMapping = {
+				...modeToProfile,
+				[visualMode]: selectedMcpServers,
+			}
+			setModeToProfile(newMapping)
+			vscode.postMessage({
+				type: "updateModeToProfileMapping",
+				mapping: newMapping,
+			})
+		}
 		},
 		[visualMode, modeToProfile],
 	)
