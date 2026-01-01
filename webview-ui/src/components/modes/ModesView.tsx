@@ -1299,9 +1299,9 @@ const ModesView = () => {
 						return enabledGroups.some((group) => getGroupName(group) === "mcp")
 					})() && (
 						<div className="mb-4">
-							<div className="font-bold mb-1">MCP Servers</div>
+							<div className="font-bold mb-1">{t("prompts:mcpServers.title")}</div>
 							<div className="text-sm text-vscode-descriptionForeground mb-3">
-								Configure which MCP servers this mode can access.
+								{t("prompts:mcpServers.description")}
 							</div>
 
 							{/* Radio button selection */}
@@ -1318,7 +1318,7 @@ const ModesView = () => {
 										className="cursor-pointer"
 									/>
 									<span style={{ fontWeight: mcpSelectionMode === "all" ? "500" : "400" }}>
-										Use all servers (default)
+										{t("prompts:mcpServers.useAllServers")}
 									</span>
 								</label>
 								<label className="flex items-center gap-2 cursor-pointer">
@@ -1333,7 +1333,7 @@ const ModesView = () => {
 										className="cursor-pointer"
 									/>
 									<span style={{ fontWeight: mcpSelectionMode === "selected" ? "500" : "400" }}>
-										Use selected servers only
+										{t("prompts:mcpServers.useSelectedServers")}
 									</span>
 								</label>
 							</div>

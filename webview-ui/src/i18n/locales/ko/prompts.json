@@ -31,6 +31,12 @@
 		},
 		"noTools": "없음"
 	},
+	"mcpServers": {
+		"title": "MCP 서버",
+		"description": "이 모드가 액세스할 수 있는 MCP 서버를 구성합니다.",
+		"useAllServers": "모든 서버 사용 (기본값)",
+		"useSelectedServers": "선택한 서버만 사용"
+	},
 	"roleDefinition": {
 		"title": "역할 정의",
 		"resetToDefault": "기본값으로 재설정",

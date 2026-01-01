@@ -207,5 +207,11 @@
 		"descriptionNoRules": "Sei sicuro di voler eliminare questa modalità personalizzata?",
 		"confirm": "Elimina",
 		"cancel": "Annulla"
+	},
+	"mcpServers": {
+		"title": "Server MCP",
+		"description": "Configura quali server MCP questo modo può accedere.",
+		"useAllServers": "Usa tutti i server (predefinito)",
+		"useSelectedServers": "Usa solo i server selezionati"
 	}
 }

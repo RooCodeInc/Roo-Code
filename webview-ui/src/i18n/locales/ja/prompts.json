@@ -31,6 +31,12 @@
 		},
 		"noTools": "なし"
 	},
+	"mcpServers": {
+		"title": "MCPサーバー",
+		"description": "このモードがアクセスできるMCPサーバーを設定します。",
+		"useAllServers": "すべてのサーバーを使用（デフォルト）",
+		"useSelectedServers": "選択したサーバーのみを使用"
+	},
 	"roleDefinition": {
 		"title": "役割の定義",
 		"resetToDefault": "デフォルトにリセット",

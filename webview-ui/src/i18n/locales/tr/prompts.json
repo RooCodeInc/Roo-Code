@@ -207,5 +207,11 @@
 		"descriptionNoRules": "Bu özel modu silmek istediğinizden emin misiniz?",
 		"confirm": "Sil",
 		"cancel": "İptal"
+	},
+	"mcpServers": {
+		"title": "MCP Sunucuları",
+		"description": "Bu modun hangi MCP sunucularına erişebileceğini yapılandırın.",
+		"useAllServers": "Tüm sunucuları kullan (varsayılan)",
+		"useSelectedServers": "Yalnızca seçili sunucuları kullan"
 	}
 }

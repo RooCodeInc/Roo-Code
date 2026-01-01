@@ -12,6 +12,22 @@ vitest.mock("@src/utils/vscode", () => ({
 	},
 }))
 
+// Mock i18n TranslationContext
+vitest.mock("@src/i18n/TranslationContext", () => ({
+	useAppTranslation: () => ({
+		t: (key: string) => {
+			// Return actual English translations for MCP server keys
+			const translations: Record<string, string> = {
+				"prompts:mcpServers.title": "MCP Servers",
+				"prompts:mcpServers.description": "Configure which MCP servers this mode can access.",
+				"prompts:mcpServers.useAllServers": "Use all servers (default)",
+				"prompts:mcpServers.useSelectedServers": "Use selected servers only",
+			}
+			return translations[key] || key
+		},
+	}),
+}))
+
 const baseMcpServers = [{ name: "serverA" }, { name: "serverB" }, { name: "serverC" }]
 
 // Mock modes with mcp group enabled

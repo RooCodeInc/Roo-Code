@@ -31,6 +31,12 @@
 		},
 		"noTools": "Keine"
 	},
+	"mcpServers": {
+		"title": "MCP-Server",
+		"description": "Konfigurieren Sie, auf welche MCP-Server dieser Modus zugreifen kann.",
+		"useAllServers": "Alle Server verwenden (Standard)",
+		"useSelectedServers": "Nur ausgewählte Server verwenden"
+	},
 	"roleDefinition": {
 		"title": "Rollendefinition",
 		"resetToDefault": "Auf Standardwerte zurücksetzen",
