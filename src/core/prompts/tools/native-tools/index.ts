@@ -28,9 +28,13 @@ export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./c
  * Get native tools array, optionally customizing based on settings.
  *
  * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param supportsImages - Whether the model supports image processing (default: false)
  * @returns Array of native tool definitions
  */
-export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+export function getNativeTools(
+	partialReadsEnabled: boolean = true,
+	supportsImages: boolean = false,
+): OpenAI.Chat.ChatCompletionTool[] {
 	return [
 		accessMcpResource,
 		apply_diff,
@@ -44,7 +48,7 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		generateImage,
 		listFiles,
 		newTask,
-		createReadFileTool(partialReadsEnabled),
+		createReadFileTool(partialReadsEnabled, supportsImages),
 		runSlashCommand,
 		searchAndReplace,
 		searchReplace,

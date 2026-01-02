@@ -2,16 +2,31 @@ import type OpenAI from "openai"
 
 const READ_FILE_BASE_DESCRIPTION = `Read one or more files and return their contents with line numbers for diffing or discussion.`
 
-const READ_FILE_SUPPORTS_NOTE = `Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.`
+/**
+ * Generates the file support note, optionally including image format support.
+ *
+ * @param supportsImages - Whether the model supports image processing
+ * @returns Support note string
+ */
+function getReadFileSupportsNote(supportsImages: boolean): string {
+	if (supportsImages) {
+		return `Supports text extraction from PDF and DOCX files. Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis. May not handle other binary files properly.`
+	}
+	return `Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.`
+}
 
 /**
  * Creates the read_file tool definition, optionally including line_ranges support
  * based on whether partial reads are enabled.
  *
  * @param partialReadsEnabled - Whether to include line_ranges parameter
+ * @param supportsImages - Whether the model supports image processing
  * @returns Native tool definition for read_file
  */
-export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool {
+export function createReadFileTool(
+	partialReadsEnabled: boolean = true,
+	supportsImages: boolean = false,
+): OpenAI.Chat.ChatCompletionTool {
 	const baseDescription =
 		READ_FILE_BASE_DESCRIPTION +
 		" Structure: { files: [{ path: 'relative/path.ts'" +
@@ -30,7 +45,7 @@ export function createReadFileTool(partialReadsEnabled: boolean = true): OpenAI.
 		: "Example single file: { files: [{ path: 'src/app.ts' }] }. " +
 			"Example multiple files: { files: [{ path: 'file1.ts' }, { path: 'file2.ts' }] }"
 
-	const description = baseDescription + optionalRangesDescription + READ_FILE_SUPPORTS_NOTE + " " + examples
+	const description = baseDescription + optionalRangesDescription + getReadFileSupportsNote(supportsImages) + " " + examples
 
 	// Build the properties object conditionally
 	const fileProperties: Record<string, any> = {
