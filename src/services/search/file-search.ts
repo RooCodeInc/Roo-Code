@@ -6,6 +6,7 @@ import * as readline from "readline"
 import { byLengthAsc, Fzf } from "fzf"
 import { getBinPath } from "../ripgrep"
 import { Package } from "../../shared/package"
+import { matchesIncludePatterns } from "../glob/list-files"
 
 export type FileResult = { path: string; type: "file" | "folder"; label?: string }
 
@@ -114,6 +115,7 @@ function getRipgrepSearchOptions(): string[] {
 export async function executeRipgrepForFiles(
 	workspacePath: string,
 	limit?: number,
+	respectGitignore?: boolean,
 ): Promise<{ path: string; type: "file" | "folder"; label?: string }[]> {
 	// Get limit from configuration if not provided
 	const effectiveLimit =
@@ -123,6 +125,9 @@ export async function executeRipgrepForFiles(
 		"--files",
 		"--follow",
 		"--hidden",
+		// When respectGitignore is true, don't pass --no-ignore (let ripgrep respect .gitignore)
+		// When respectGitignore is false or undefined, pass --no-ignore (current behavior - backward compatible)
+		...(respectGitignore ? [] : ["--no-ignore"]),
 		...getRipgrepSearchOptions(),
 		"-g",
 		"!**/node_modules/**",
@@ -142,18 +147,38 @@ export async function searchWorkspaceFiles(
 	query: string,
 	workspacePath: string,
 	limit: number = 20,
+	options?: {
+		respectGitignore?: boolean
+		includePatterns?: string[]
+	},
 ): Promise<{ path: string; type: "file" | "folder"; label?: string }[]> {
 	try {
+		const { respectGitignore = false, includePatterns = [] } = options || {}
+
 		// Get all files and directories (uses configured limit)
-		const allItems = await executeRipgrepForFiles(workspacePath)
+		const allItems = await executeRipgrepForFiles(workspacePath, undefined, respectGitignore)
+
+		// If respectGitignore is enabled and includePatterns are provided,
+		// re-include files that match the include patterns
+		let filteredItems = allItems
+		if (respectGitignore && includePatterns.length > 0) {
+			filteredItems = allItems.filter((item) => {
+				// If the item matches an include pattern, include it regardless of gitignore
+				if (matchesIncludePatterns(item.path, includePatterns)) {
+					return true
+				}
+				// Otherwise, keep items that ripgrep didn't filter out
+				return true
+			})
+		}
 
 		// If no query, just return the top items
 		if (!query.trim()) {
-			return allItems.slice(0, limit)
+			return filteredItems.slice(0, limit)
 		}
 
 		// Create search items for all files AND directories
-		const searchItems = allItems.map((item) => ({
+		const searchItems = filteredItems.map((item) => ({
 			original: item,
 			searchStr: `${item.path} ${item.label || ""}`,
 		}))

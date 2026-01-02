@@ -144,6 +144,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					qdrantApiKey: "test-key",
 					searchMinScore: 0.4,
 				}),
+				getCodeIndexRespectGitignore: vi.fn().mockReturnValue(true),
+				getCodeIndexIncludePatterns: vi.fn().mockReturnValue([]),
+				getMentionsRespectGitignore: vi.fn().mockReturnValue(false),
 			}
 			;(manager as any)._configManager = mockConfigManager
 
@@ -211,6 +214,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					qdrantApiKey: "test-key",
 					searchMinScore: 0.4,
 				}),
+				getCodeIndexRespectGitignore: vi.fn().mockReturnValue(true),
+				getCodeIndexIncludePatterns: vi.fn().mockReturnValue([]),
+				getMentionsRespectGitignore: vi.fn().mockReturnValue(false),
 			}
 			;(manager as any)._configManager = mockConfigManager
 
@@ -337,6 +343,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					qdrantApiKey: "test-key",
 					searchMinScore: 0.4,
 				}),
+				getCodeIndexRespectGitignore: vitest.fn().mockReturnValue(true),
+				getCodeIndexIncludePatterns: vitest.fn().mockReturnValue([]),
+				getMentionsRespectGitignore: vitest.fn().mockReturnValue(false),
 			}
 			;(manager as any)._configManager = mockConfigManager
 		})
@@ -434,6 +443,9 @@ describe("CodeIndexManager - handleSettingsChange regression", () => {
 					qdrantApiKey: "test-key",
 					searchMinScore: 0.4,
 				}),
+				getCodeIndexRespectGitignore: vi.fn().mockReturnValue(true),
+				getCodeIndexIncludePatterns: vi.fn().mockReturnValue([]),
+				getMentionsRespectGitignore: vi.fn().mockReturnValue(false),
 			}
 			;(manager as any)._configManager = mockConfigManager
 

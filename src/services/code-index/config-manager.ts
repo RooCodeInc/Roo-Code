@@ -1,9 +1,11 @@
+import * as vscode from "vscode"
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
 import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
+import { Package } from "../../shared/package"
 
 /**
  * Manages configuration state and validation for the code indexing feature.
@@ -540,5 +542,38 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets whether code indexing should respect .gitignore files
+	 */
+	public getCodeIndexRespectGitignore(): boolean {
+		try {
+			return vscode.workspace.getConfiguration(Package.name).get<boolean>("codeIndex.respectGitignore", true)
+		} catch {
+			return true // Default to respecting gitignore
+		}
+	}
+
+	/**
+	 * Gets glob patterns to include in code indexing even if gitignored
+	 */
+	public getCodeIndexIncludePatterns(): string[] {
+		try {
+			return vscode.workspace.getConfiguration(Package.name).get<string[]>("codeIndex.includePatterns", [])
+		} catch {
+			return [] // Default to no include patterns
+		}
+	}
+
+	/**
+	 * Gets whether mentions should respect .gitignore files
+	 */
+	public getMentionsRespectGitignore(): boolean {
+		try {
+			return vscode.workspace.getConfiguration(Package.name).get<boolean>("mentions.respectGitignore", false)
+		} catch {
+			return false // Default to not respecting gitignore for mentions
+		}
 	}
 }

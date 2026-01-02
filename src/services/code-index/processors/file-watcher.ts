@@ -27,6 +27,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
 import { Package } from "../../../shared/package"
+import { matchesIncludePatterns } from "../../glob/list-files"
 
 /**
  * Implementation of the file watcher interface
@@ -40,6 +41,7 @@ export class FileWatcher implements IFileWatcher {
 	private readonly BATCH_DEBOUNCE_DELAY_MS = 500
 	private readonly FILE_PROCESSING_CONCURRENCY_LIMIT = 10
 	private readonly batchSegmentThreshold: number
+	private readonly includePatterns: string[]
 
 	private readonly _onDidStartBatchProcessing = new vscode.EventEmitter<string[]>()
 	private readonly _onBatchProgressUpdate = new vscode.EventEmitter<{
@@ -81,6 +83,7 @@ export class FileWatcher implements IFileWatcher {
 		ignoreInstance?: Ignore,
 		ignoreController?: RooIgnoreController,
 		batchSegmentThreshold?: number,
+		includePatterns?: string[],
 	) {
 		this.ignoreController = ignoreController || new RooIgnoreController(workspacePath)
 		if (ignoreInstance) {
@@ -100,6 +103,7 @@ export class FileWatcher implements IFileWatcher {
 				this.batchSegmentThreshold = BATCH_SEGMENT_THRESHOLD
 			}
 		}
+		this.includePatterns = includePatterns || []
 	}
 
 	/**
@@ -519,14 +523,25 @@ export class FileWatcher implements IFileWatcher {
 
 			// Check if file should be ignored
 			const relativeFilePath = generateRelativeFilePath(filePath, this.workspacePath)
-			if (
-				!this.ignoreController.validateAccess(filePath) ||
-				(this.ignoreInstance && this.ignoreInstance.ignores(relativeFilePath))
-			) {
+
+			// Priority 1: .rooignore - always excluded (cannot be overridden)
+			if (!this.ignoreController.validateAccess(filePath)) {
 				return {
 					path: filePath,
 					status: "skipped" as const,
-					reason: "File is ignored by .rooignore or .gitignore",
+					reason: "File is ignored by .rooignore",
+				}
+			}
+
+			// Priority 2: .roogitinclude + includePatterns - force include (overrides gitignore)
+			const shouldInclude = matchesIncludePatterns(relativeFilePath, this.includePatterns)
+
+			// Priority 3: .gitignore - exclude if not included by patterns
+			if (!shouldInclude && this.ignoreInstance && this.ignoreInstance.ignores(relativeFilePath)) {
+				return {
+					path: filePath,
+					status: "skipped" as const,
+					reason: "File is ignored by .gitignore",
 				}
 			}
 
