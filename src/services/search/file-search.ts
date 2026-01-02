@@ -156,21 +156,55 @@ export async function searchWorkspaceFiles(
 		const { respectGitignore = false, includePatterns = [] } = options || {}
 
 		// Get all files and directories (uses configured limit)
-		const allItems = await executeRipgrepForFiles(workspacePath, undefined, respectGitignore)
+		let allItems = await executeRipgrepForFiles(workspacePath, undefined, respectGitignore)
 
 		// If respectGitignore is enabled and includePatterns are provided,
-		// re-include files that match the include patterns
-		let filteredItems = allItems
+		// we need to fetch gitignored files matching the patterns and merge them
 		if (respectGitignore && includePatterns.length > 0) {
-			filteredItems = allItems.filter((item) => {
-				// If the item matches an include pattern, include it regardless of gitignore
-				if (matchesIncludePatterns(item.path, includePatterns)) {
-					return true
-				}
-				// Otherwise, keep items that ripgrep didn't filter out
-				return true
+			// Make a second ripgrep call without gitignore filtering, but limited to include patterns
+			const includeArgs = [
+				"--files",
+				"--follow",
+				"--hidden",
+				"--no-ignore", // Bypass gitignore to get files matching include patterns
+				...getRipgrepSearchOptions(),
+				"-g",
+				"!**/node_modules/**",
+				"-g",
+				"!**/.git/**",
+				"-g",
+				"!**/out/**",
+				"-g",
+				"!**/dist/**",
+			]
+
+			// Add glob patterns for each include pattern
+			for (const pattern of includePatterns) {
+				includeArgs.push("-g", pattern)
+			}
+
+			includeArgs.push(workspacePath)
+
+			// Execute ripgrep to get files matching include patterns
+			const includeItems = await executeRipgrep({
+				args: includeArgs,
+				workspacePath,
+				limit: vscode.workspace
+					.getConfiguration(Package.name)
+					.get<number>("maximumIndexedFilesForFileSearch", 10000),
 			})
+
+			// Merge the two lists, removing duplicates based on path
+			const pathSet = new Set(allItems.map((item) => item.path))
+			for (const item of includeItems) {
+				if (!pathSet.has(item.path)) {
+					allItems.push(item)
+					pathSet.add(item.path)
+				}
+			}
 		}
+
+		const filteredItems = allItems
 
 		// If no query, just return the top items
 		if (!query.trim()) {
