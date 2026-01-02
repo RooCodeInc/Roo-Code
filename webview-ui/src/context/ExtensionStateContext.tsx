@@ -111,6 +111,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTaskSyncEnabled: (value: boolean) => void
 	featureRoomoteControlEnabled: boolean
 	setFeatureRoomoteControlEnabled: (value: boolean) => void
+	hideCosts?: boolean
 	setCurrentApiConfigName: (value: string) => void
 	setListApiConfigMeta: (value: ProviderSettingsEntry[]) => void
 	mode: Mode
@@ -216,6 +217,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		remoteControlEnabled: false,
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,
+		hideCosts: false,
 		currentApiConfigName: "default",
 		listApiConfigMeta: [],
 		mode: defaultModeSlug,
@@ -473,6 +475,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		remoteControlEnabled: state.remoteControlEnabled ?? false,
 		taskSyncEnabled: state.taskSyncEnabled,
 		featureRoomoteControlEnabled: state.featureRoomoteControlEnabled ?? false,
+		hideCosts: state.hideCosts ?? false,
 		setExperimentEnabled: (id, enabled) =>
 			setState((prevState) => ({ ...prevState, experiments: { ...prevState.experiments, [id]: enabled } })),
 		setApiConfiguration,

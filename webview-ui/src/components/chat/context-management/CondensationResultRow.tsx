@@ -42,9 +42,11 @@ export function CondensationResultRow({ data }: CondensationResultRowProps) {
 						{prevTokens.toLocaleString()} → {newTokens.toLocaleString()}{" "}
 						{t("chat:contextManagement.tokens")}
 					</span>
-					<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
-						${displayCost.toFixed(2)}
-					</VSCodeBadge>
+					{!hideCosts && (
+						<VSCodeBadge className={displayCost > 0 ? "opacity-100" : "opacity-0"}>
+							${displayCost.toFixed(2)}
+						</VSCodeBadge>
+					)}
 				</div>
 				<span className={`codicon codicon-chevron-${isExpanded ? "up" : "down"}`}></span>
 			</div>

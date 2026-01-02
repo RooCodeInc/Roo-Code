@@ -62,7 +62,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive, hideCosts } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -249,7 +249,7 @@ const TaskHeader = ({
 									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
 								</span>
 							</StandardTooltip>
-							{!!totalCost && <span>${totalCost.toFixed(2)}</span>}
+							{!hideCosts && !!totalCost && <span>${totalCost.toFixed(2)}</span>}
 						</div>
 						{showBrowserGlobe && (
 							<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -381,7 +381,7 @@ const TaskHeader = ({
 										</tr>
 									)}
 
-									{!!totalCost && (
+									{!hideCosts && !!totalCost && (
 										<tr>
 											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
 												{t("chat:task.apiCost")}

@@ -358,6 +358,7 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
+	hideCosts?: boolean
 	claudeCodeIsAuthenticated?: boolean
 	debug?: boolean
 }
