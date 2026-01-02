@@ -185,6 +185,37 @@ describe("getRulesSection shell-aware command chaining", () => {
 		expect(result).toContain("Note: Using `&` for cmd.exe command chaining")
 	})
 
+	it("includes Unix utility guidance for PowerShell", () => {
+		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+		const result = getRulesSection(cwd)
+
+		expect(result).toContain("IMPORTANT: When using PowerShell, avoid Unix-specific utilities")
+		expect(result).toContain("`sed`, `grep`, `awk`, `cat`, `rm`, `cp`, `mv`")
+		expect(result).toContain("`Select-String` for grep")
+		expect(result).toContain("`Get-Content` for cat")
+		expect(result).toContain("PowerShell's `-replace` operator")
+	})
+
+	it("includes Unix utility guidance for cmd.exe", () => {
+		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\cmd.exe")
+		const result = getRulesSection(cwd)
+
+		expect(result).toContain("IMPORTANT: When using cmd.exe, avoid Unix-specific utilities")
+		expect(result).toContain("`sed`, `grep`, `awk`, `cat`, `rm`, `cp`, `mv`")
+		expect(result).toContain("`type` for cat")
+		expect(result).toContain("`del` for rm")
+		expect(result).toContain("`find`/`findstr` for grep")
+	})
+
+	it("does not include Unix utility guidance for Unix shells", () => {
+		vi.spyOn(shellUtils, "getShell").mockReturnValue("/bin/bash")
+		const result = getRulesSection(cwd)
+
+		expect(result).not.toContain("IMPORTANT: When using PowerShell")
+		expect(result).not.toContain("IMPORTANT: When using cmd.exe")
+		expect(result).not.toContain("`Select-String` for grep")
+	})
+
 	it("does not include note for Unix shells", () => {
 		vi.spyOn(shellUtils, "getShell").mockReturnValue("/bin/zsh")
 		const result = getRulesSection(cwd)
