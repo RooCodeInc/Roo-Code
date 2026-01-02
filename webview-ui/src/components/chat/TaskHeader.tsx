@@ -43,6 +43,7 @@ export interface TaskHeaderProps {
 	cacheReads?: number
 	totalCost: number
 	contextTokens: number
+	hideCosts?: boolean
 	buttonsDisabled: boolean
 	handleCondenseContext: (taskId: string) => void
 	todos?: any[]

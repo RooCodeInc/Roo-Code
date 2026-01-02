@@ -5,6 +5,7 @@ import { FoldVertical } from "lucide-react"
 
 import type { ContextCondense } from "@roo-code/types"
 
+import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Markdown } from "../Markdown"
 
 interface CondensationResultRowProps {
@@ -17,6 +18,7 @@ interface CondensationResultRowProps {
  */
 export function CondensationResultRow({ data }: CondensationResultRowProps) {
 	const { t } = useTranslation()
+	const { hideCosts } = useExtensionState()
 	const [isExpanded, setIsExpanded] = useState(false)
 
 	const { cost, prevContextTokens, newContextTokens, summary } = data
