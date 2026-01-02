@@ -141,16 +141,21 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			}
 
 			const { response, text, images } = await task.ask("completion_result", "", false)
-
+	
 			if (response === "yesButtonClicked") {
+				// Process any queued messages after task completion is accepted
+				task.processQueuedMessages()
 				return
 			}
-
+	
 			// User provided feedback - push tool result to continue the conversation
 			await task.say("user_feedback", text ?? "", images)
-
+	
 			const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`
 			pushToolResult(formatResponse.toolResult(feedbackText, images))
+	
+			// Process any queued messages after feedback is provided
+			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}
