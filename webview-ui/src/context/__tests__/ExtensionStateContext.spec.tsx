@@ -198,6 +198,7 @@ describe("mergeExtensionState", () => {
 			apiConfiguration: { providerId: "openrouter" } as ProviderSettings,
 			telemetrySetting: "unset",
 			showRooIgnoredFiles: true,
+			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			maxReadFileLine: 500,
 			cloudUserInfo: null,

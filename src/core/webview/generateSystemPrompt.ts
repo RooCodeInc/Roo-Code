@@ -93,7 +93,9 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 			todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 			useAgentRules: vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
-			newTaskRequireTodos: vscode.workspace
+				enableSubfolderRules:
+					vscode.workspace.getConfiguration(Package.name).get<boolean>("enableSubfolderRules") ?? false,
+				newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
 			toolProtocol,

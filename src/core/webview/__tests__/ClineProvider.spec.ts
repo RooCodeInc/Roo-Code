@@ -568,6 +568,7 @@ describe("ClineProvider", () => {
 			browserToolEnabled: true,
 			telemetrySetting: "unset",
 			showRooIgnoredFiles: false,
+			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			maxReadFileLine: 500,
 			maxImageFileSize: 5,

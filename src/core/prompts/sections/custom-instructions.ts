@@ -194,14 +194,20 @@ function formatDirectoryContent(dirPath: string, files: Array<{ filename: string
 }
 
 /**
- * Load rule files from global, project-local, and subfolder directories
+ * Load rule files from global, project-local, and optionally subfolder directories
  * Rules are loaded in order: global first, then project-local, then subfolders (alphabetically)
+ *
+ * @param cwd - Current working directory (project root)
+ * @param enableSubfolderRules - Whether to include rules from subdirectories (default: false)
  */
-export async function loadRuleFiles(cwd: string): Promise<string> {
+export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean = false): Promise<string> {
 	const rules: string[] = []
-	const rooDirectories = await getAllRooDirectoriesForCwd(cwd)
+	// Use recursive discovery only if enableSubfolderRules is true
+	const rooDirectories = enableSubfolderRules
+		? await getAllRooDirectoriesForCwd(cwd)
+		: getRooDirectoriesForCwd(cwd)
 
-	// Check for .roo/rules/ directories in order (global, project-local, subfolders)
+	// Check for .roo/rules/ directories in order (global, project-local, and optionally subfolders)
 	for (const rooDir of rooDirectories) {
 		const rulesDir = path.join(rooDir, "rules")
 		if (await directoryExists(rulesDir)) {
@@ -296,14 +302,26 @@ async function loadAgentRulesFile(cwd: string): Promise<string> {
 }
 
 /**
- * Load all AGENTS.md files from project root and subdirectories with .roo folders
+ * Load all AGENTS.md files from project root and optionally subdirectories with .roo folders
  * Returns combined content with clear path headers for each file
  *
  * @param cwd - Current working directory (project root)
+ * @param enableSubfolderRules - Whether to include AGENTS.md from subdirectories (default: false)
  * @returns Combined AGENTS.md content from all locations
  */
-async function loadAllAgentRulesFiles(cwd: string): Promise<string> {
+async function loadAllAgentRulesFiles(cwd: string, enableSubfolderRules: boolean = false): Promise<string> {
 	const agentRules: string[] = []
+
+	// When subfolder rules are disabled, only load from root
+	if (!enableSubfolderRules) {
+		const content = await loadAgentRulesFileFromDirectory(cwd, false)
+		if (content && content.trim()) {
+			agentRules.push(content.trim())
+		}
+		return agentRules.join("\n\n")
+	}
+
+	// When enabled, load from root and all subdirectories with .roo folders
 	const directories = await getAgentsDirectoriesForCwd(cwd)
 
 	for (const directory of directories) {
@@ -331,16 +349,21 @@ export async function addCustomInstructions(
 ): Promise<string> {
 	const sections = []
 
+	// Get the enableSubfolderRules setting (default: false)
+	const enableSubfolderRules = options.settings?.enableSubfolderRules ?? false
+
 	// Load mode-specific rules if mode is provided
 	let modeRuleContent = ""
 	let usedRuleFile = ""
 
 	if (mode) {
 		const modeRules: string[] = []
-		// Use getAllRooDirectoriesForCwd to include subfolders
-		const rooDirectories = await getAllRooDirectoriesForCwd(cwd)
+		// Use recursive discovery only if enableSubfolderRules is true
+		const rooDirectories = enableSubfolderRules
+			? await getAllRooDirectoriesForCwd(cwd)
+			: getRooDirectoriesForCwd(cwd)
 
-		// Check for .roo/rules-${mode}/ directories in order (global, project-local, subfolders)
+		// Check for .roo/rules-${mode}/ directories in order (global, project-local, and optionally subfolders)
 		for (const rooDir of rooDirectories) {
 			const modeRulesDir = path.join(rooDir, `rules-${mode}`)
 			if (await directoryExists(modeRulesDir)) {
@@ -407,16 +430,16 @@ export async function addCustomInstructions(
 	}
 
 	// Add AGENTS.md content if enabled (default: true)
-	// Load from root and all subdirectories with .roo folders
+	// Load from root and optionally subdirectories with .roo folders based on enableSubfolderRules setting
 	if (options.settings?.useAgentRules !== false) {
-		const agentRulesContent = await loadAllAgentRulesFiles(cwd)
+		const agentRulesContent = await loadAllAgentRulesFiles(cwd, enableSubfolderRules)
 		if (agentRulesContent && agentRulesContent.trim()) {
 			rules.push(agentRulesContent.trim())
 		}
 	}
 
 	// Add generic rules
-	const genericRuleContent = await loadRuleFiles(cwd)
+	const genericRuleContent = await loadRuleFiles(cwd, enableSubfolderRules)
 	if (genericRuleContent && genericRuleContent.trim()) {
 		rules.push(genericRuleContent.trim())
 	}
