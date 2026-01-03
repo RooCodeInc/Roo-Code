@@ -1,6 +1,6 @@
 import * as vscode from "vscode"
 
-export type IndexingState = "Standby" | "Indexing" | "Indexed" | "Error"
+export type IndexingState = "Standby" | "Indexing" | "Indexed" | "IndexedPaused" | "Error"
 
 export class CodeIndexStateManager {
 	private _systemStatus: IndexingState = "Standby"
@@ -46,9 +46,11 @@ export class CodeIndexStateManager {
 				this._totalItems = 0
 				this._currentItemUnit = "blocks" // Reset to default unit
 				// Optionally clear the message or set a default for non-indexing states
-				if (newState === "Standby" && message === undefined) this._statusMessage = "Ready."
-				if (newState === "Indexed" && message === undefined) this._statusMessage = "Index up-to-date."
-				if (newState === "Error" && message === undefined) this._statusMessage = "An error occurred."
+					if (newState === "Standby" && message === undefined) this._statusMessage = "Ready."
+					if (newState === "Indexed" && message === undefined) this._statusMessage = "Index up-to-date."
+					if (newState === "IndexedPaused" && message === undefined)
+						this._statusMessage = "Index ready. File watching paused."
+					if (newState === "Error" && message === undefined) this._statusMessage = "An error occurred."
 			}
 
 			this._progressEmitter.fire(this.getCurrentStatus())

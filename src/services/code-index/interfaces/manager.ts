@@ -69,7 +69,7 @@ export interface ICodeIndexManager {
 	dispose(): void
 }
 
-export type IndexingState = "Standby" | "Indexing" | "Indexed" | "Error"
+export type IndexingState = "Standby" | "Indexing" | "Indexed" | "IndexedPaused" | "Error"
 export type EmbedderProvider =
 	| "openai"
 	| "ollama"

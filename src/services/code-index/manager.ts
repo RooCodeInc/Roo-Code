@@ -98,10 +98,18 @@ export class CodeIndexManager {
 	}
 
 	public get isFeatureConfigured(): boolean {
-		return this._configManager?.isFeatureConfigured ?? false
-	}
-
-	public get isInitialized(): boolean {
+			return this._configManager?.isFeatureConfigured ?? false
+		}
+	
+		/**
+		 * Gets whether file watching is enabled for the current workspace.
+		 * When disabled, the index can still be used for searches but won't auto-update.
+		 */
+		public get isFileWatchingEnabled(): boolean {
+			return this._configManager?.isFileWatchingEnabled ?? true
+		}
+	
+		public get isInitialized(): boolean {
 		try {
 			this.assertInitialized()
 			return true

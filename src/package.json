@@ -401,13 +401,19 @@
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
-					"type": "number",
-					"default": 60,
-					"minimum": 1,
-					"maximum": 200,
-					"description": "%settings.codeIndex.embeddingBatchSize.description%"
-				},
-				"roo-cline.debug": {
+						"type": "number",
+						"default": 60,
+						"minimum": 1,
+						"maximum": 200,
+						"description": "%settings.codeIndex.embeddingBatchSize.description%"
+					},
+					"roo-cline.codeIndex.fileWatchingEnabled": {
+						"type": "boolean",
+						"default": true,
+						"scope": "resource",
+						"description": "%settings.codeIndex.fileWatchingEnabled.description%"
+					},
+					"roo-cline.debug": {
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.debug.description%"

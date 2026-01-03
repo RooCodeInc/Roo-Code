@@ -1,9 +1,11 @@
+import * as vscode from "vscode"
 import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
 import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
+import { Package } from "../../shared/package"
 
 /**
  * Manages configuration state and validation for the code indexing feature.
@@ -540,5 +542,20 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets whether file watching is enabled for the current workspace.
+	 * This is a workspace-scoped setting that allows users to disable file watching
+	 * to reduce CPU usage while still using the codebase search with an existing index.
+	 * Defaults to true (file watching enabled).
+	 */
+	public get isFileWatchingEnabled(): boolean {
+		try {
+			return vscode.workspace.getConfiguration(Package.name).get<boolean>("codeIndex.fileWatchingEnabled", true)
+		} catch {
+			// In test environment, vscode.workspace might not be available
+			return true
+		}
 	}
 }

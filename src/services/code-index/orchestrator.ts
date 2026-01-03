@@ -109,11 +109,12 @@ export class CodeIndexOrchestrator {
 		}
 
 		if (
-			this._isProcessing ||
-			(this.stateManager.state !== "Standby" &&
-				this.stateManager.state !== "Error" &&
-				this.stateManager.state !== "Indexed")
-		) {
+				this._isProcessing ||
+				(this.stateManager.state !== "Standby" &&
+					this.stateManager.state !== "Error" &&
+					this.stateManager.state !== "Indexed" &&
+					this.stateManager.state !== "IndexedPaused")
+			) {
 			console.warn(
 				`[CodeIndexOrchestrator] Start rejected: Already processing or in state ${this.stateManager.state}.`,
 			)
@@ -193,12 +194,20 @@ export class CodeIndexOrchestrator {
 					console.log("[CodeIndexOrchestrator] No new or changed files found")
 				}
 
-				await this._startWatcher()
-
-				// Mark indexing as complete after successful incremental scan
-				await this.vectorStore.markIndexingComplete()
-
-				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+				// Check if file watching is enabled before starting watcher
+					if (this.configManager.isFileWatchingEnabled) {
+						await this._startWatcher()
+						// Mark indexing as complete after successful incremental scan
+						await this.vectorStore.markIndexingComplete()
+						this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+					} else {
+						// Mark indexing as complete but skip file watching
+						await this.vectorStore.markIndexingComplete()
+						this.stateManager.setSystemState(
+							"IndexedPaused",
+							"Index ready. File watching disabled. Use 'Re-Index' to update.",
+						)
+					}
 			} else {
 				// No existing data or collection was just created - do a full scan
 				this.stateManager.setSystemState("Indexing", "Services ready. Starting workspace scan...")
@@ -274,12 +283,20 @@ export class CodeIndexOrchestrator {
 					throw new Error(t("embeddings:orchestrator.indexingFailedCritical"))
 				}
 
-				await this._startWatcher()
-
-				// Mark indexing as complete after successful full scan
-				await this.vectorStore.markIndexingComplete()
-
-				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+				// Check if file watching is enabled before starting watcher
+					if (this.configManager.isFileWatchingEnabled) {
+						await this._startWatcher()
+						// Mark indexing as complete after successful full scan
+						await this.vectorStore.markIndexingComplete()
+						this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+					} else {
+						// Mark indexing as complete but skip file watching
+						await this.vectorStore.markIndexingComplete()
+						this.stateManager.setSystemState(
+							"IndexedPaused",
+							"Index ready. File watching disabled. Use 'Re-Index' to update.",
+						)
+					}
 			}
 		} catch (error: any) {
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
