@@ -661,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max fichiers",
 			"description": "Nombre maximum de fichiers à inclure dans le contexte de statut git. Mettre à 0 pour désactiver. Les informations de branche et les commits sont toujours affichés si > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activer les règles des sous-dossiers",
+			"description": "Découvrir et charger récursivement les fichiers .roo/rules et AGENTS.md depuis les sous-répertoires. Utile pour les monorepos avec des règles par package."
 		}
 	},
 	"terminal": {

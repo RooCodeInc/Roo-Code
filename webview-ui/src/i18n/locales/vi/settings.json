@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status tệp tối đa",
 			"description": "Số lượng mục tệp tối đa để bao gồm trong ngữ cảnh trạng thái git. Đặt thành 0 để tắt. Thông tin nhánh và các commit luôn được hiển thị khi > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Bật quy tắc thư mục con",
+			"description": "Khám phá và tải đệ quy các tệp .roo/rules và AGENTS.md từ các thư mục con. Hữu ích cho monorepo có quy tắc theo gói."
 		}
 	},
 	"terminal": {

@@ -661,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git-Status max. Dateien",
 			"description": "Maximale Anzahl von Dateieinträgen, die in den Git-Status-Kontext aufgenommen werden sollen. Auf 0 setzen, um zu deaktivieren. Branch-Informationen und Commits werden immer angezeigt, wenn > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Unterordner-Regeln aktivieren",
+			"description": "Rekursiv .roo/rules und AGENTS.md-Dateien aus Unterverzeichnissen laden. Nützlich für Monorepos mit paketspezifischen Regeln."
 		}
 	},
 	"terminal": {

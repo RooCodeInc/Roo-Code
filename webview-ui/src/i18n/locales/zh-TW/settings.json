@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 狀態最大檔案數",
 			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
+		},
+		"enableSubfolderRules": {
+			"label": "啟用子資料夾規則",
+			"description": "遞迴發現並載入子目錄中的 .roo/rules 和 AGENTS.md 檔案。適用於具有每包規則的 monorepo。"
 		}
 	},
 	"terminal": {
