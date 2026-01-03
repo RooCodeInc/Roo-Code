@@ -39,7 +39,6 @@
 	"settings.autoImportSettingsPath.description": "Percorso di un file di configurazione di RooCode da importare automaticamente all'avvio dell'estensione. Supporta percorsi assoluti e percorsi relativi alla directory home (ad es. '~/Documents/roo-code-settings.json'). Lasciare vuoto per disabilitare l'importazione automatica.",
 	"settings.maximumIndexedFilesForFileSearch.description": "Numero massimo di file da indicizzare per la funzionalità di ricerca file @. Valori più alti forniscono migliori risultati di ricerca in progetti grandi ma possono consumare più memoria. Predefinito: 10.000.",
 	"settings.useAgentRules.description": "Abilita il caricamento dei file AGENTS.md per regole specifiche dell'agente (vedi https://agent-rules.org/)",
-	"settings.enableSubfolderRules.description": "Scopri e carica ricorsivamente i file .roo/rules e AGENTS.md dalle sottocartelle. Utile per monorepo con regole per pacchetto.",
 	"settings.apiRequestTimeout.description": "Tempo massimo in secondi di attesa per le risposte API (0 = nessun timeout, 1-3600s, predefinito: 600s). Valori più alti sono consigliati per provider locali come LM Studio e Ollama che potrebbero richiedere più tempo di elaborazione.",
 	"settings.newTaskRequireTodos.description": "Richiedere il parametro todos quando si creano nuove attività con lo strumento new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "La dimensione del batch per le operazioni di embedding durante l'indicizzazione del codice. Regola questo in base ai limiti del tuo provider API. Il valore predefinito è 60.",

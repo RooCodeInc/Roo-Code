@@ -384,16 +384,11 @@
 					"description": "%settings.maximumIndexedFilesForFileSearch.description%"
 				},
 				"roo-cline.useAgentRules": {
-						"type": "boolean",
-						"default": true,
-						"description": "%settings.useAgentRules.description%"
-					},
-					"roo-cline.enableSubfolderRules": {
-						"type": "boolean",
-						"default": false,
-						"description": "%settings.enableSubfolderRules.description%"
-					},
-					"roo-cline.apiRequestTimeout": {
+					"type": "boolean",
+					"default": true,
+					"description": "%settings.useAgentRules.description%"
+				},
+				"roo-cline.apiRequestTimeout": {
 					"type": "number",
 					"default": 600,
 					"minimum": 0,
