@@ -182,21 +182,16 @@ async function readTextFilesFromDirectory(dirPath: string): Promise<Array<{ file
 
 /**
  * Format content from multiple files with filenames as headers
- * @param dirPath - The directory path being processed (unused, kept for API compatibility)
  * @param files - Array of files with filename (absolute path) and content
  * @param cwd - Current working directory for computing relative paths
  */
-function formatDirectoryContent(
-	dirPath: string,
-	files: Array<{ filename: string; content: string }>,
-	cwd?: string,
-): string {
+function formatDirectoryContent(files: Array<{ filename: string; content: string }>, cwd: string): string {
 	if (files.length === 0) return ""
 
 	return files
 		.map((file) => {
-			// Compute relative path if cwd is provided, otherwise use absolute path
-			const displayPath = cwd ? path.relative(cwd, file.filename) : file.filename
+			// Compute relative path for display
+			const displayPath = path.relative(cwd, file.filename)
 			return `# Rules from ${displayPath}:\n${file.content}`
 		})
 		.join("\n\n")
@@ -220,7 +215,7 @@ export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean =
 		if (await directoryExists(rulesDir)) {
 			const files = await readTextFilesFromDirectory(rulesDir)
 			if (files.length > 0) {
-				const content = formatDirectoryContent(rulesDir, files, cwd)
+				const content = formatDirectoryContent(files, cwd)
 				rules.push(content)
 			}
 		}
@@ -383,7 +378,7 @@ export async function addCustomInstructions(
 			if (await directoryExists(modeRulesDir)) {
 				const files = await readTextFilesFromDirectory(modeRulesDir)
 				if (files.length > 0) {
-					const content = formatDirectoryContent(modeRulesDir, files, cwd)
+					const content = formatDirectoryContent(files, cwd)
 					modeRules.push(content)
 				}
 			}
