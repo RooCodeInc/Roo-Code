@@ -182,13 +182,22 @@ async function readTextFilesFromDirectory(dirPath: string): Promise<Array<{ file
 
 /**
  * Format content from multiple files with filenames as headers
+ * @param dirPath - The directory path being processed (unused, kept for API compatibility)
+ * @param files - Array of files with filename (absolute path) and content
+ * @param cwd - Current working directory for computing relative paths
  */
-function formatDirectoryContent(dirPath: string, files: Array<{ filename: string; content: string }>): string {
+function formatDirectoryContent(
+	dirPath: string,
+	files: Array<{ filename: string; content: string }>,
+	cwd?: string,
+): string {
 	if (files.length === 0) return ""
 
 	return files
 		.map((file) => {
-			return `# Rules from ${file.filename}:\n${file.content}`
+			// Compute relative path if cwd is provided, otherwise use absolute path
+			const displayPath = cwd ? path.relative(cwd, file.filename) : file.filename
+			return `# Rules from ${displayPath}:\n${file.content}`
 		})
 		.join("\n\n")
 }
@@ -203,9 +212,7 @@ function formatDirectoryContent(dirPath: string, files: Array<{ filename: string
 export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean = false): Promise<string> {
 	const rules: string[] = []
 	// Use recursive discovery only if enableSubfolderRules is true
-	const rooDirectories = enableSubfolderRules
-		? await getAllRooDirectoriesForCwd(cwd)
-		: getRooDirectoriesForCwd(cwd)
+	const rooDirectories = enableSubfolderRules ? await getAllRooDirectoriesForCwd(cwd) : getRooDirectoriesForCwd(cwd)
 
 	// Check for .roo/rules/ directories in order (global, project-local, and optionally subfolders)
 	for (const rooDir of rooDirectories) {
@@ -213,7 +220,7 @@ export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean =
 		if (await directoryExists(rulesDir)) {
 			const files = await readTextFilesFromDirectory(rulesDir)
 			if (files.length > 0) {
-				const content = formatDirectoryContent(rulesDir, files)
+				const content = formatDirectoryContent(rulesDir, files, cwd)
 				rules.push(content)
 			}
 		}
@@ -243,8 +250,13 @@ export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean =
  *
  * @param directory - Directory to check for AGENTS.md
  * @param showPath - Whether to include the directory path in the header
+ * @param cwd - Current working directory for computing relative paths (optional)
  */
-async function loadAgentRulesFileFromDirectory(directory: string, showPath: boolean = false): Promise<string> {
+async function loadAgentRulesFileFromDirectory(
+	directory: string,
+	showPath: boolean = false,
+	cwd?: string,
+): Promise<string> {
 	// Try both filenames - AGENTS.md (standard) first, then AGENT.md (alternative)
 	const filenames = ["AGENTS.md", "AGENT.md"]
 
@@ -279,8 +291,10 @@ async function loadAgentRulesFileFromDirectory(directory: string, showPath: bool
 			// Read the content from the resolved path
 			const content = await safeReadFile(resolvedPath)
 			if (content) {
+				// Compute relative path for display if cwd is provided
+				const displayPath = cwd ? path.relative(cwd, directory) : directory
 				const header = showPath
-					? `# Agent Rules Standard (${filename}) from ${directory}:`
+					? `# Agent Rules Standard (${filename}) from ${displayPath}:`
 					: `# Agent Rules Standard (${filename}):`
 				return `${header}\n${content}`
 			}
@@ -298,7 +312,7 @@ async function loadAgentRulesFileFromDirectory(directory: string, showPath: bool
  * @deprecated Use loadAllAgentRulesFiles for loading from all directories
  */
 async function loadAgentRulesFile(cwd: string): Promise<string> {
-	return loadAgentRulesFileFromDirectory(cwd, false)
+	return loadAgentRulesFileFromDirectory(cwd, false, cwd)
 }
 
 /**
@@ -314,7 +328,7 @@ async function loadAllAgentRulesFiles(cwd: string, enableSubfolderRules: boolean
 
 	// When subfolder rules are disabled, only load from root
 	if (!enableSubfolderRules) {
-		const content = await loadAgentRulesFileFromDirectory(cwd, false)
+		const content = await loadAgentRulesFileFromDirectory(cwd, false, cwd)
 		if (content && content.trim()) {
 			agentRules.push(content.trim())
 		}
@@ -327,7 +341,7 @@ async function loadAllAgentRulesFiles(cwd: string, enableSubfolderRules: boolean
 	for (const directory of directories) {
 		// Show path for all directories except the root
 		const showPath = directory !== cwd
-		const content = await loadAgentRulesFileFromDirectory(directory, showPath)
+		const content = await loadAgentRulesFileFromDirectory(directory, showPath, cwd)
 		if (content && content.trim()) {
 			agentRules.push(content.trim())
 		}
@@ -369,7 +383,7 @@ export async function addCustomInstructions(
 			if (await directoryExists(modeRulesDir)) {
 				const files = await readTextFilesFromDirectory(modeRulesDir)
 				if (files.length > 0) {
-					const content = formatDirectoryContent(modeRulesDir, files)
+					const content = formatDirectoryContent(modeRulesDir, files, cwd)
 					modeRules.push(content)
 				}
 			}
