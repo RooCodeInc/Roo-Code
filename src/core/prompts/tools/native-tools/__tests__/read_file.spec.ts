@@ -1,10 +1,11 @@
 import type OpenAI from "openai"
 import { createReadFileTool, type ReadFileToolOptions } from "../read_file"
 
+// Helper type to access function tools
+type FunctionTool = OpenAI.Chat.ChatCompletionTool & { type: "function" }
+
 // Helper to get function definition from tool
-function getFunctionDef(tool: OpenAI.Chat.ChatCompletionTool): OpenAI.Chat.ChatCompletionTool["function"] {
-	return (tool as any).function
-}
+const getFunctionDef = (tool: OpenAI.Chat.ChatCompletionTool) => (tool as FunctionTool).function
 
 describe("createReadFileTool", () => {
 	describe("maxConcurrentFileReads documentation", () => {
