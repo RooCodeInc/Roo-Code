@@ -19,6 +19,7 @@ interface BuildToolsOptions {
 	experiments: Record<string, boolean> | undefined
 	apiConfiguration: ProviderSettings | undefined
 	maxReadFileLine: number
+	maxConcurrentFileReads: number
 	browserToolEnabled: boolean
 	modelInfo?: ModelInfo
 	diffEnabled: boolean
@@ -40,6 +41,7 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		experiments,
 		apiConfiguration,
 		maxReadFileLine,
+		maxConcurrentFileReads,
 		browserToolEnabled,
 		modelInfo,
 		diffEnabled,
@@ -62,8 +64,11 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 	// Determine if partial reads are enabled based on maxReadFileLine setting.
 	const partialReadsEnabled = maxReadFileLine !== -1
 
-	// Build native tools with dynamic read_file tool based on partialReadsEnabled.
-	const nativeTools = getNativeTools(partialReadsEnabled)
+	// Build native tools with dynamic read_file tool based on settings.
+	const nativeTools = getNativeTools({
+		partialReadsEnabled,
+		maxConcurrentFileReads,
+	})
 
 	// Filter native tools based on mode restrictions.
 	const filteredNativeTools = filterNativeToolsForMode(
