@@ -23,38 +23,16 @@ pnpm --filter @roo-code/cli build
 
 ```bash
 cd apps/cli
+export OPENROUTER_API_KEY=sk-or-v1-...
 
-# Basic usage with API key
-node dist/index.js "Tell me a joke" --api-key "your-api-key"
-
-# Using OpenRouter provider
-node dist/index.js "Tell me a joke" -p openrouter -k "your-openrouter-key"
-
-# With a specific model
-node dist/index.js "Tell me a joke" -p openrouter -k "your-key" -m "anthropic/claude-sonnet-4"
-
-# Specify a workspace directory
-node dist/index.js "Explain this codebase" --workspace /path/to/project --api-key "your-key"
-
-# Quiet mode - only show assistant output
-node dist/index.js "Tell me a joke" -q -k "your-key"
-
-# Exit automatically when task completes (useful for scripts/testing)
-node dist/index.js "Tell me a joke" -x -k "your-key"
-
-# Verbose mode for debugging
-node dist/index.js "Tell me a joke" --verbose --api-key "your-key"
-
-# Specify a custom extension path
-node dist/index.js "Tell me a joke" --extension /path/to/extension/dist --api-key "your-key"
-
-# Using environment variables for API key
-export ANTHROPIC_API_KEY="your-key"
-node dist/index.js "Tell me a joke"
-
-# Using OpenRouter with env var
-export OPENROUTER_API_KEY="your-key"
-node dist/index.js "Tell me a joke" -p openrouter
+pnpm --filter @roo-code/cli start \
+  -q \
+  -x \
+  -p openrouter \
+  -k $OPENROUTER_API_KEY \
+  -m anthropic/claude-sonnet-4.5 \
+  --workspace ~/Roo-Code-Cloud \
+  "What is this project?"
 ```
 
 ## Options
