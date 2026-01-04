@@ -76,6 +76,34 @@ export function insertMention(
 	return { newValue, mentionIndex }
 }
 
+export function insertSkill(text: string, position: number, value: string): { newValue: string; skillIndex: number } {
+	const beforeCursor = text.slice(0, position)
+	const afterCursor = text.slice(position)
+
+	// Find the position of the last '$' symbol before the cursor
+	const lastDollarIndex = beforeCursor.lastIndexOf("$")
+
+	let newValue: string
+	let skillIndex: number
+
+	if (lastDollarIndex !== -1) {
+		// If there's a '$' symbol, replace everything after it with the new skill
+		const beforeSkill = text.slice(0, lastDollarIndex)
+		// Only replace if afterCursor is all alphanumerical
+		const afterCursorContent = /^[a-zA-Z0-9\s]*$/.test(afterCursor)
+			? afterCursor.replace(/^[^\s]*/, "")
+			: afterCursor
+		newValue = beforeSkill + "$" + value + " " + afterCursorContent
+		skillIndex = lastDollarIndex
+	} else {
+		// If there's no '$' symbol, insert the skill at the cursor position
+		newValue = beforeCursor + "$" + value + " " + afterCursor
+		skillIndex = position
+	}
+
+	return { newValue, skillIndex }
+}
+
 export function removeMention(text: string, position: number): { newText: string; newPosition: number } {
 	const beforeCursor = text.slice(0, position)
 	const afterCursor = text.slice(position)
@@ -109,6 +137,12 @@ export enum ContextMenuOptionType {
 	Mode = "mode", // Add mode type
 	Command = "command", // Add command type
 	SectionHeader = "sectionHeader", // Add section header type
+	Skill = "skill", // Add skill type
+}
+
+export interface Skill {
+	name: string
+	description: string
 }
 
 export interface ContextMenuQueryItem {
@@ -129,7 +163,52 @@ export function getContextMenuOptions(
 	dynamicSearchResults: SearchResult[] = [],
 	modes?: ModeConfig[],
 	commands?: Command[],
+	skills?: Skill[],
 ): ContextMenuQueryItem[] {
+	// Handle dollar sign for skills
+	if (query.startsWith("$")) {
+		const skillQuery = query.slice(1)
+		const results: ContextMenuQueryItem[] = []
+
+		if (skills?.length) {
+			// Create searchable strings array for fzf
+			const searchableSkills = skills.map((skill) => ({
+				original: skill,
+				searchStr: skill.name,
+			}))
+
+			// Initialize fzf instance for fuzzy search
+			const fzf = new Fzf(searchableSkills, {
+				selector: (item) => item.searchStr,
+			})
+
+			// Get fuzzy matching skills
+			const matchingSkills = skillQuery
+				? fzf.find(skillQuery).map((result) => ({
+						type: ContextMenuOptionType.Skill,
+						value: result.item.original.name,
+						label: `$${result.item.original.name}`,
+						description: result.item.original.description,
+					}))
+				: skills.map((skill) => ({
+						type: ContextMenuOptionType.Skill,
+						value: skill.name,
+						label: `$${skill.name}`,
+						description: skill.description,
+					}))
+
+			if (matchingSkills.length > 0) {
+				results.push({
+					type: ContextMenuOptionType.SectionHeader,
+					label: "Skills",
+				})
+				results.push(...matchingSkills)
+			}
+		}
+
+		return results.length > 0 ? results : [{ type: ContextMenuOptionType.NoResults }]
+	}
+
 	// Handle slash commands for modes and commands
 	// Only process as slash command if the query itself starts with "/" (meaning we're typing a slash command)
 	if (query.startsWith("/")) {
@@ -371,6 +450,23 @@ export function shouldShowContextMenu(text: string, position: number): boolean {
 	// Check if we're in a slash command context (at the beginning and no space yet)
 	if (text.startsWith("/") && !text.includes(" ") && position <= text.length) {
 		return true
+	}
+
+	// Check for $ skill context anywhere after whitespace/newline or at start
+	const dollarIndex = beforeCursor.lastIndexOf("$")
+	if (dollarIndex !== -1) {
+		// Check if $ is at start or preceded by whitespace/newline
+		const charBeforeDollar = dollarIndex > 0 ? beforeCursor[dollarIndex - 1] : null
+		const isDollarAfterWhitespace = !charBeforeDollar || /\s/.test(charBeforeDollar)
+
+		if (isDollarAfterWhitespace) {
+			const textAfterDollar = beforeCursor.slice(dollarIndex + 1)
+			// No space after $ means we're still typing the skill name
+			const hasSpace = /\s/.test(textAfterDollar)
+			if (!hasSpace) {
+				return true
+			}
+		}
 	}
 
 	// Check for @ mention context

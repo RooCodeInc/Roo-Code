@@ -2870,6 +2870,43 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestSkills": {
+			try {
+				const skillsManager = provider.getSkillsManager()
+				const currentMode = getGlobalState("mode") || "code"
+
+				if (!skillsManager) {
+					// No skills manager available, send empty array
+					await provider.postMessageToWebview({
+						type: "skills",
+						skills: [],
+					})
+					break
+				}
+
+				// Get skills filtered by current mode
+				const skills = skillsManager.getSkillsForMode(currentMode)
+
+				// Convert to the format expected by the frontend
+				const skillList = skills.map((skill) => ({
+					name: skill.name,
+					description: skill.description,
+				}))
+
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: skillList,
+				})
+			} catch (error) {
+				provider.log(`Error fetching skills: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				// Send empty array on error
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: [],
+				})
+			}
+			break
+		}
 		case "openCommandFile": {
 			try {
 				if (message.text) {

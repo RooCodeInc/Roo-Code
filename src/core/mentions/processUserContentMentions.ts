@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { parseMentions, ParseMentionsResult } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import { SkillsManager } from "../../services/skills/SkillsManager"
 
 export interface ProcessUserContentMentionsResult {
 	content: Anthropic.Messages.ContentBlockParam[]
@@ -21,6 +22,8 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 	maxReadFileLine,
+	skillsManager,
+	currentMode,
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -31,6 +34,8 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	maxReadFileLine?: number
+	skillsManager?: SkillsManager
+	currentMode?: string
 }): Promise<ProcessUserContentMentionsResult> {
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
@@ -65,6 +70,8 @@ export async function processUserContentMentions({
 						includeDiagnosticMessages,
 						maxDiagnosticMessages,
 						maxReadFileLine,
+						skillsManager,
+						currentMode,
 					)
 					// Capture the first mode found
 					if (!commandMode && result.mode) {
@@ -90,6 +97,8 @@ export async function processUserContentMentions({
 							includeDiagnosticMessages,
 							maxDiagnosticMessages,
 							maxReadFileLine,
+							skillsManager,
+							currentMode,
 						)
 						// Capture the first mode found
 						if (!commandMode && result.mode) {
@@ -116,6 +125,8 @@ export async function processUserContentMentions({
 									includeDiagnosticMessages,
 									maxDiagnosticMessages,
 									maxReadFileLine,
+									skillsManager,
+									currentMode,
 								)
 								// Capture the first mode found
 								if (!commandMode && result.mode) {

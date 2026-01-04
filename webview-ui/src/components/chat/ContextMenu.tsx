@@ -10,6 +10,7 @@ import {
 	ContextMenuQueryItem,
 	getContextMenuOptions,
 	SearchResult,
+	Skill,
 } from "@src/utils/context-mentions"
 import { removeLeadingNonAlphanumeric } from "@src/utils/removeLeadingNonAlphanumeric"
 import { vscode } from "@src/utils/vscode"
@@ -30,6 +31,7 @@ interface ContextMenuProps {
 	loading?: boolean
 	dynamicSearchResults?: SearchResult[]
 	commands?: Command[]
+	skills?: Skill[]
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -43,13 +45,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	modes,
 	dynamicSearchResults = [],
 	commands = [],
+	skills = [],
 }) => {
 	const [materialIconsBaseUri, setMaterialIconsBaseUri] = useState("")
 	const menuRef = useRef<HTMLDivElement>(null)
 
 	const filteredOptions = useMemo(() => {
-		return getContextMenuOptions(searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands)
-	}, [searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands])
+		return getContextMenuOptions(
+			searchQuery,
+			selectedType,
+			queryItems,
+			dynamicSearchResults,
+			modes,
+			commands,
+			skills,
+		)
+	}, [searchQuery, selectedType, queryItems, dynamicSearchResults, modes, commands, skills])
 
 	useEffect(() => {
 		if (menuRef.current) {
@@ -85,6 +96,27 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						}}>
 						{option.label}
 					</span>
+				)
+			case ContextMenuOptionType.Skill:
+				return (
+					<div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+						<div style={{ lineHeight: "1.2" }}>
+							<span>{option.label}</span>
+						</div>
+						{option.description && (
+							<span
+								style={{
+									opacity: 0.5,
+									fontSize: "0.9em",
+									lineHeight: "1.2",
+									whiteSpace: "nowrap",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+								}}>
+								{option.description}
+							</span>
+						)}
+					</div>
 				)
 			case ContextMenuOptionType.Mode:
 				return (
@@ -212,6 +244,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	const getIconForOption = (option: ContextMenuQueryItem): string => {
 		switch (option.type) {
+			case ContextMenuOptionType.Skill:
+				return "lightbulb"
 			case ContextMenuOptionType.Mode:
 				return "symbol-misc"
 			case ContextMenuOptionType.Command:

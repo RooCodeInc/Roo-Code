@@ -2372,6 +2372,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine = -1,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
+			const provider = this.providerRef.deref()
+			const skillsManager = provider?.getSkillsManager()
+			const currentMode = await this.getTaskMode()
+
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent,
 				cwd: this.cwd,
@@ -2382,11 +2386,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
 				maxReadFileLine,
+				skillsManager,
+				currentMode,
 			})
 
 			// Switch mode if specified in a slash command's frontmatter
 			if (slashCommandMode) {
-				const provider = this.providerRef.deref()
 				if (provider) {
 					const state = await provider.getState()
 					const targetMode = getModeBySlug(slashCommandMode, state?.customModes)

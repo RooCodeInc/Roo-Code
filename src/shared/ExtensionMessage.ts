@@ -32,6 +32,12 @@ export interface Command {
 	argumentHint?: string
 }
 
+// Skill interface for frontend/backend communication
+export interface Skill {
+	name: string
+	description: string
+}
+
 // Type for marketplace installed metadata
 export interface MarketplaceInstalledMetadata {
 	project: Record<string, { type: string }>
@@ -132,6 +138,7 @@ export interface ExtensionMessage {
 		| "browserSessionNavigate"
 		| "claudeCodeRateLimits"
 		| "customToolsResult"
+		| "skills"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
 	// Checkpoint warning message
@@ -211,6 +218,7 @@ export interface ExtensionMessage {
 	hasCheckpoint?: boolean
 	context?: string
 	commands?: Command[]
+	skills?: Skill[]
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult

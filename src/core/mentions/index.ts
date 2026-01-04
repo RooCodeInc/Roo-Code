@@ -4,7 +4,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import { isBinaryFile } from "isbinaryfile"
 
-import { mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "../../shared/context-mentions"
+import { mentionRegexGlobal, commandRegexGlobal, skillRegexGlobal, unescapeSpaces } from "../../shared/context-mentions"
 
 import { getCommitInfo, getWorkingState } from "../../utils/git"
 
@@ -18,6 +18,7 @@ import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getCommand, type Command } from "../../services/command/commands"
+import { SkillsManager } from "../../services/skills/SkillsManager"
 
 import { t } from "../../i18n"
 
@@ -86,9 +87,12 @@ export async function parseMentions(
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
 	maxReadFileLine?: number,
+	skillsManager?: SkillsManager,
+	currentMode?: string,
 ): Promise<ParseMentionsResult> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
+	const validSkills: Map<string, { name: string; path: string }> = new Map()
 	let commandMode: string | undefined // Track mode from the first slash command that has one
 
 	// First pass: check which command mentions exist and cache the results
@@ -118,11 +122,43 @@ export async function parseMentions(
 		}
 	}
 
+	// Check which skill mentions exist and cache the results
+	const skillMatches = Array.from(text.matchAll(skillRegexGlobal))
+	const uniqueSkillNames = new Set(skillMatches.map(([, skillName]) => skillName))
+
+	if (skillsManager && currentMode) {
+		const skillExistenceChecks = await Promise.all(
+			Array.from(uniqueSkillNames).map(async (skillName) => {
+				try {
+					const skillContent = await skillsManager.getSkillContent(skillName, currentMode)
+					return { skillName, skillContent }
+				} catch (error) {
+					// If there's an error checking skill existence, treat it as non-existent
+					return { skillName, skillContent: undefined }
+				}
+			}),
+		)
+
+		// Store valid skills for later use
+		for (const { skillName, skillContent } of skillExistenceChecks) {
+			if (skillContent) {
+				validSkills.set(skillName, { name: skillContent.name, path: skillContent.path })
+			}
+		}
+	}
+
 	// Only replace text for commands that actually exist
 	let parsedText = text
 	for (const [match, commandName] of commandMatches) {
 		if (validCommands.has(commandName)) {
 			parsedText = parsedText.replace(match, `Command '${commandName}' (see below for command content)`)
+		}
+	}
+
+	// Replace skill mentions with placeholders
+	for (const [match, skillName] of skillMatches) {
+		if (validSkills.has(skillName)) {
+			parsedText = parsedText.replace(match, `Skill '$${skillName}' (see below for skill content)`)
 		}
 	}
 
@@ -256,6 +292,19 @@ export async function parseMentions(
 			parsedText += `\n\n<command name="${commandName}">\n${commandOutput}\n</command>`
 		} catch (error) {
 			parsedText += `\n\n<command name="${commandName}">\nError loading command '${commandName}': ${error.message}\n</command>`
+		}
+	}
+
+	// Process valid skill mentions using cached results
+	if (skillsManager) {
+		for (const [skillName, skillInfo] of validSkills) {
+			try {
+				// Read the full SKILL.md content
+				const skillContent = await fs.readFile(skillInfo.path, "utf-8")
+				parsedText += `\n\n<skill name="${skillName}">\n${skillContent}\n</skill>`
+			} catch (error) {
+				parsedText += `\n\n<skill name="${skillName}">\nError loading skill '${skillName}': ${error.message}\n</skill>`
+			}
 		}
 	}
 

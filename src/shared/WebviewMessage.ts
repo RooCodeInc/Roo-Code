@@ -156,6 +156,7 @@ export interface WebviewMessage {
 		| "saveCodeIndexSettingsAtomic"
 		| "requestCodeIndexSecretStatus"
 		| "requestCommands"
+		| "requestSkills"
 		| "openCommandFile"
 		| "deleteCommand"
 		| "createCommand"

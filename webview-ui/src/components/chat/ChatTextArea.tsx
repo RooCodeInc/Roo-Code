@@ -3,7 +3,13 @@ import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
 import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
 
-import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
+import {
+	mentionRegex,
+	mentionRegexGlobal,
+	commandRegexGlobal,
+	skillRegexGlobal,
+	unescapeSpaces,
+} from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
 import { Mode, getAllModes } from "@roo/modes"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
@@ -15,9 +21,11 @@ import {
 	ContextMenuOptionType,
 	getContextMenuOptions,
 	insertMention,
+	insertSkill,
 	removeMention,
 	shouldShowContextMenu,
 	SearchResult,
+	Skill,
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
@@ -107,6 +115,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [listApiConfigMeta, currentApiConfigName])
 
 		const [gitCommits, setGitCommits] = useState<any[]>([])
+		const [skills, setSkills] = useState<Skill[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
@@ -192,6 +201,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					}))
 
 					setGitCommits(commits)
+				} else if (message.type === "skills") {
+					setSkills(message.skills || [])
 				} else if (message.type === "fileSearchResults") {
 					setSearchLoading(false)
 					if (message.requestId === searchRequestId) {
@@ -345,6 +356,30 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return
 				}
 
+				if (type === ContextMenuOptionType.Skill && value) {
+					// Handle skill selection using insertSkill
+					setShowContextMenu(false)
+					setSelectedType(null)
+
+					if (textAreaRef.current) {
+						const { newValue, skillIndex } = insertSkill(textAreaRef.current.value, cursorPosition, value)
+
+						setInputValue(newValue)
+						const newCursorPosition = newValue.indexOf(" ", skillIndex + value.length + 1) + 1
+						setCursorPosition(newCursorPosition)
+						setIntendedCursorPosition(newCursorPosition)
+
+						// Scroll to cursor.
+						setTimeout(() => {
+							if (textAreaRef.current) {
+								textAreaRef.current.blur()
+								textAreaRef.current.focus()
+							}
+						}, 0)
+					}
+					return
+				}
+
 				if (
 					type === ContextMenuOptionType.File ||
 					type === ContextMenuOptionType.Folder ||
@@ -426,6 +461,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								fileSearchResults,
 								allModes,
 								commands,
+								skills,
 							)
 							const optionsLength = options.length
 
@@ -464,6 +500,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							fileSearchResults,
 							allModes,
 							commands,
+							skills,
 						)[selectedMenuIndex]
 						if (
 							selectedOption &&
@@ -565,6 +602,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				skills,
 				enterBehavior,
 			],
 		)
@@ -603,6 +641,31 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						// Request commands fresh each time slash menu is shown
 						vscode.postMessage({ type: "requestCommands" })
 					} else {
+						// Check for $ skill autocomplete
+						const beforeCursor = newValue.slice(0, newCursorPosition)
+						const lastDollarIndex = beforeCursor.lastIndexOf("$")
+
+						if (lastDollarIndex !== -1) {
+							// Check if $ is at start or preceded by whitespace
+							const charBeforeDollar = lastDollarIndex > 0 ? beforeCursor[lastDollarIndex - 1] : null
+							const isDollarAfterWhitespace = !charBeforeDollar || /\s/.test(charBeforeDollar)
+
+							if (isDollarAfterWhitespace) {
+								const textAfterDollar = beforeCursor.slice(lastDollarIndex)
+								const hasSpace = /\s/.test(textAfterDollar.slice(1))
+
+								if (!hasSpace) {
+									// We're in skill autocomplete mode
+									const query = textAfterDollar
+									setSearchQuery(query)
+									setSelectedMenuIndex(1) // Skip section header
+									// Request skills from extension
+									vscode.postMessage({ type: "requestSkills" })
+									return
+								}
+							}
+						}
+
 						// Existing @ mention handling.
 						const lastAtIndex = newValue.lastIndexOf("@", newCursorPosition - 1)
 						const query = newValue.slice(lastAtIndex + 1, newCursorPosition)
@@ -754,6 +817,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return commands?.some((cmd) => cmd.name === commandName) || false
 			}
 
+			// Helper function to check if a skill is valid
+			const isValidSkill = (skillName: string): boolean => {
+				return skills?.some((skill) => skill.name === skillName) || false
+			}
+
 			// Process the text to highlight mentions and valid commands
 			let processedText = text
 				.replace(/\n$/, "\n\n")
@@ -779,11 +847,30 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				return match // Return unhighlighted if command is not valid
 			})
 
+			// Custom replacement for skills - only highlight valid ones
+			processedText = processedText.replace(skillRegexGlobal, (match, skillName) => {
+				// Only highlight if the skill exists in the valid skills list
+				if (isValidSkill(skillName)) {
+					// Check if the match starts with a space
+					const startsWithSpace = match.startsWith(" ")
+					const skillPart = `$${skillName}`
+
+					if (startsWithSpace) {
+						// Keep the space but only highlight the skill part
+						return ` <mark class="mention-context-textarea-highlight">${skillPart}</mark>`
+					} else {
+						// Highlight the entire skill (starts at beginning of line)
+						return `<mark class="mention-context-textarea-highlight">${skillPart}</mark>`
+					}
+				}
+				return match // Return unhighlighted if skill is not valid
+			})
+
 			highlightLayerRef.current.innerHTML = processedText
 
 			highlightLayerRef.current.scrollTop = textAreaRef.current.scrollTop
 			highlightLayerRef.current.scrollLeft = textAreaRef.current.scrollLeft
-		}, [commands])
+		}, [commands, skills])
 
 		useLayoutEffect(() => {
 			updateHighlights()
@@ -997,6 +1084,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									loading={searchLoading}
 									dynamicSearchResults={fileSearchResults}
 									commands={commands}
+									skills={skills}
 								/>
 							</div>
 						)}
