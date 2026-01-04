@@ -21,8 +21,11 @@ pnpm --filter @roo-code/cli build
 
 ## Usage
 
+### Interactive Mode (Default)
+
+By default, the CLI prompts for approval before executing actions:
+
 ```bash
-cd apps/cli
 export OPENROUTER_API_KEY=sk-or-v1-...
 
 pnpm --filter @roo-code/cli start \
@@ -31,9 +34,38 @@ pnpm --filter @roo-code/cli start \
   -p openrouter \
   -k $OPENROUTER_API_KEY \
   -m anthropic/claude-sonnet-4.5 \
-  --workspace ~/Roo-Code-Cloud \
+  --workspace ~/Documents/my-project \
   "What is this project?"
 ```
+
+In interactive mode:
+
+- Tool executions prompt for yes/no approval
+- Commands prompt for yes/no approval
+- Followup questions show suggestions and wait for user input
+- Browser and MCP actions prompt for approval
+
+### Non-Interactive Mode (`-y`)
+
+For automation and scripts, use `-y` to auto-approve all actions:
+
+```bash
+pnpm --filter @roo-code/cli start \
+  -y \
+  -q \
+  -x \
+  -p openrouter \
+  -k $OPENROUTER_API_KEY \
+  -m anthropic/claude-sonnet-4.5 \
+  --workspace ~/Documents/my-project \
+  "Refactor the utils.ts file"
+```
+
+In non-interactive mode:
+
+- Tool, command, browser, and MCP actions are auto-approved
+- Followup questions show a 10-second timeout, then auto-select the first suggestion
+- Typing any key cancels the timeout and allows manual input
 
 ## Options
 
@@ -44,6 +76,7 @@ pnpm --filter @roo-code/cli start \
 | `-v, --verbose`             | Enable verbose logging                                      | `false`           |
 | `-q, --quiet`               | Suppress VSCode/extension logs (only show assistant output) | `false`           |
 | `-x, --exit-on-complete`    | Exit the process when task completes (useful for testing)   | `false`           |
+| `-y, --yes`                 | Non-interactive mode: auto-approve all actions              | `false`           |
 | `-k, --api-key <key>`       | API key for the LLM provider                                | From env var      |
 | `-p, --provider <provider>` | API provider (anthropic, openai, openrouter, etc.)          | `anthropic`       |
 | `-m, --model <model>`       | Model to use                                                | Provider default  |
@@ -103,11 +136,8 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 ## Current Limitations
 
-This is a minimal proof-of-concept implementation:
-
-- **No TUI**: Output is plain console.log (no React/Ink UI yet)
-- **Auto-approval**: All tool requests are auto-approved
-- **No configuration**: Uses extension defaults
+- **No TUI**: Output is plain text (no React/Ink UI yet)
+- **No configuration file**: Settings are passed via command line flags
 - **No persistence**: Each run is a fresh session
 
 ## Development

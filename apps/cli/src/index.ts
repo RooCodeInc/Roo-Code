@@ -6,6 +6,7 @@
  */
 
 import { Command } from "commander"
+import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 import { ExtensionHost } from "./extension-host.js"
@@ -25,6 +26,7 @@ program
 	.option("-v, --verbose", "Enable verbose logging", false)
 	.option("-q, --quiet", "Suppress VSCode and extension logs (only show assistant output)", false)
 	.option("-x, --exit-on-complete", "Exit the process when the task completes (useful for testing)", false)
+	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
 	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to ANTHROPIC_API_KEY env var)")
 	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "anthropic")
 	.option("-m, --model <model>", "Model to use")
@@ -37,6 +39,7 @@ program
 				verbose: boolean
 				quiet: boolean
 				exitOnComplete: boolean
+				yes: boolean
 				apiKey?: string
 				provider: string
 				model?: string
@@ -56,6 +59,7 @@ program
 
 			// Get API key from option or environment variable
 			const apiKey = options.apiKey || getApiKeyFromEnv(options.provider)
+			const workspacePath = path.resolve(options.workspace)
 
 			if (!apiKey) {
 				console.error(
@@ -65,9 +69,14 @@ program
 				process.exit(1)
 			}
 
+			if (!fs.existsSync(workspacePath)) {
+				console.error(`[CLI] Error: Workspace path does not exist: ${workspacePath}`)
+				process.exit(1)
+			}
+
 			if (options.verbose) {
 				console.log(`[CLI] Prompt: ${prompt}`)
-				console.log(`[CLI] Workspace: ${options.workspace}`)
+				console.log(`[CLI] Workspace: ${workspacePath}`)
 				console.log(`[CLI] Extension path: ${extensionPath}`)
 				console.log(`[CLI] Provider: ${options.provider}`)
 				console.log(`[CLI] Model: ${options.model || "default"}`)
@@ -75,10 +84,11 @@ program
 			}
 
 			const host = new ExtensionHost({
-				workspacePath: path.resolve(options.workspace),
+				workspacePath,
 				extensionPath: path.resolve(extensionPath),
 				verbose: options.verbose, // Allow verbose with quiet mode for debug output
 				quiet: options.quiet,
+				nonInteractive: options.yes,
 				apiKey,
 				apiProvider: options.provider,
 				model: options.model,

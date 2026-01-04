@@ -463,58 +463,72 @@ describe("ExtensionHost", () => {
 
 	describe("handleSayMessage", () => {
 		let host: ExtensionHost
-		let mockLog: ReturnType<typeof vi.fn>
-		let mockError: ReturnType<typeof vi.fn>
+		let outputSpy: ReturnType<typeof vi.spyOn>
+		let outputErrorSpy: ReturnType<typeof vi.spyOn>
 
 		beforeEach(() => {
 			host = createTestHost()
-			mockLog = vi.fn()
-			mockError = vi.fn()
+			// Mock process.stdout.write and process.stderr.write which are used by output() and outputError()
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			vi.spyOn(process.stderr, "write").mockImplementation(() => true)
+			// Spy on the output methods
+			outputSpy = spyOnPrivate(host, "output")
+			outputErrorSpy = spyOnPrivate(host, "outputError")
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
 		})
 
 		it("should emit taskComplete for completion_result", () => {
 			const emitSpy = vi.spyOn(host, "emit")
 
-			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false, mockLog, mockError)
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false)
 
 			expect(emitSpy).toHaveBeenCalledWith("taskComplete")
-			expect(mockLog).toHaveBeenCalledWith("\n[Task Complete]", "Task done")
+			expect(outputSpy).toHaveBeenCalledWith("\n[Task Complete]", "Task done")
 		})
 
 		it("should emit taskError for error messages", () => {
 			const emitSpy = vi.spyOn(host, "emit")
 
-			callPrivate(host, "handleSayMessage", 123, "error", "Something went wrong", false, mockLog, mockError)
+			callPrivate(host, "handleSayMessage", 123, "error", "Something went wrong", false)
 
 			expect(emitSpy).toHaveBeenCalledWith("taskError", "Something went wrong")
-			expect(mockError).toHaveBeenCalledWith("\n[Error]", "Something went wrong")
+			expect(outputErrorSpy).toHaveBeenCalledWith("\n[Error]", "Something went wrong")
 		})
 
 		it("should handle command_output messages", () => {
-			callPrivate(host, "handleSayMessage", 123, "command_output", "output text", false, mockLog, mockError)
+			// Mock writeStream since command_output now uses it directly
+			const writeStreamSpy = spyOnPrivate(host, "writeStream")
 
-			expect(mockLog).toHaveBeenCalledWith("\n[Command Output]", "output text")
+			callPrivate(host, "handleSayMessage", 123, "command_output", "output text", false)
+
+			// command_output now uses writeStream to bypass quiet mode
+			expect(writeStreamSpy).toHaveBeenCalledWith("\n[Command Output] ")
+			expect(writeStreamSpy).toHaveBeenCalledWith("output text")
+			expect(writeStreamSpy).toHaveBeenCalledWith("\n")
 		})
 
 		it("should handle tool messages", () => {
-			callPrivate(host, "handleSayMessage", 123, "tool", "tool usage", false, mockLog, mockError)
+			callPrivate(host, "handleSayMessage", 123, "tool", "tool usage", false)
 
-			expect(mockLog).toHaveBeenCalledWith("\n[Tool]", "tool usage")
+			expect(outputSpy).toHaveBeenCalledWith("\n[Tool]", "tool usage")
 		})
 
 		it("should skip already displayed complete messages", () => {
 			// First display
-			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false, mockLog, mockError)
-			mockLog.mockClear()
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false)
+			outputSpy.mockClear()
 
 			// Second display should be skipped
-			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false, mockLog, mockError)
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false)
 
-			expect(mockLog).not.toHaveBeenCalled()
+			expect(outputSpy).not.toHaveBeenCalled()
 		})
 
 		it("should track displayed messages", () => {
-			callPrivate(host, "handleSayMessage", 123, "tool", "test", false, mockLog, mockError)
+			callPrivate(host, "handleSayMessage", 123, "tool", "test", false)
 
 			const displayed = getPrivate<Map<number, unknown>>(host, "displayedMessages")
 			expect(displayed.has(123)).toBe(true)
@@ -523,63 +537,306 @@ describe("ExtensionHost", () => {
 
 	describe("handleAskMessage", () => {
 		let host: ExtensionHost
-		let mockLog: ReturnType<typeof vi.fn>
+		let outputSpy: ReturnType<typeof vi.spyOn>
 
 		beforeEach(() => {
-			host = createTestHost()
-			mockLog = vi.fn()
+			// Use nonInteractive mode for display-only behavior tests
+			host = createTestHost({ nonInteractive: true })
+			// Mock process.stdout.write which is used by output()
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			outputSpy = spyOnPrivate(host, "output")
 		})
 
-		it("should handle command type", () => {
-			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false, mockLog)
-
-			expect(mockLog).toHaveBeenCalledWith("\n[Running Command]", "ls -la")
+		afterEach(() => {
+			vi.restoreAllMocks()
 		})
 
-		it("should handle tool type with JSON parsing", () => {
+		it("should handle command type in non-interactive mode", () => {
+			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false)
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Command]", "ls -la")
+		})
+
+		it("should handle tool type with JSON parsing in non-interactive mode", () => {
 			const toolInfo = JSON.stringify({ tool: "write_file", path: "/test/file.txt" })
 
-			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false, mockLog)
+			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
 
-			expect(mockLog).toHaveBeenCalledWith("\n[Tool Call] write_file")
-			expect(mockLog).toHaveBeenCalledWith("  Path: /test/file.txt")
+			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool] write_file")
+			expect(outputSpy).toHaveBeenCalledWith("  Path: /test/file.txt")
 		})
 
-		it("should handle tool type with content preview", () => {
+		it("should handle tool type with content preview in non-interactive mode", () => {
 			const toolInfo = JSON.stringify({
 				tool: "write_file",
 				content: "This is the content that will be written to the file. It might be long.",
 			})
 
-			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false, mockLog)
+			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
 
-			expect(mockLog).toHaveBeenCalledWith(expect.stringContaining("Content:"))
+			// In non-interactive mode, content is not shown (just tool name and path)
+			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool] write_file")
 		})
 
-		it("should handle tool type with invalid JSON", () => {
-			callPrivate(host, "handleAskMessage", 123, "tool", "not json", false, mockLog)
+		it("should handle tool type with invalid JSON in non-interactive mode", () => {
+			callPrivate(host, "handleAskMessage", 123, "tool", "not json", false)
 
-			expect(mockLog).toHaveBeenCalledWith("\n[Tool Call]", "not json")
+			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool]", "not json")
 		})
 
-		it("should track seen tool calls to avoid duplicates", () => {
+		it("should not display duplicate messages for same ts", () => {
 			const toolInfo = JSON.stringify({ tool: "read_file" })
 
 			// First call
-			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false, mockLog)
-			mockLog.mockClear()
+			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
+			outputSpy.mockClear()
 
-			// Same ts - should be duplicate
-			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false, mockLog)
+			// Same ts - should be duplicate (already displayed)
+			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
 
-			// Tool call log should not be called again
-			expect(mockLog).not.toHaveBeenCalledWith("\n[Tool Call] read_file")
+			// Should not log again
+			expect(outputSpy).not.toHaveBeenCalled()
 		})
 
-		it("should handle other ask types", () => {
-			callPrivate(host, "handleAskMessage", 123, "question", "What is your name?", false, mockLog)
+		it("should handle other ask types in non-interactive mode", () => {
+			callPrivate(host, "handleAskMessage", 123, "question", "What is your name?", false)
 
-			expect(mockLog).toHaveBeenCalledWith("\n[Assistant asks]", "What is your name?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving question]", "What is your name?")
+		})
+
+		it("should skip partial messages", () => {
+			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", true)
+
+			// Partial messages should be skipped
+			expect(outputSpy).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("handleAskMessage - interactive mode", () => {
+		let host: ExtensionHost
+		let outputSpy: ReturnType<typeof vi.spyOn>
+
+		beforeEach(() => {
+			// Default interactive mode
+			host = createTestHost({ nonInteractive: false })
+			// Mock process.stdout.write which is used by output()
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			outputSpy = spyOnPrivate(host, "output")
+			// Mock readline to prevent actual prompting
+			vi.spyOn(process.stdin, "on").mockImplementation(() => process.stdin)
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		it("should mark ask as pending in interactive mode", () => {
+			// This will try to prompt, but we're testing the pendingAsks tracking
+			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false)
+
+			const pendingAsks = getPrivate<Set<number>>(host, "pendingAsks")
+			expect(pendingAsks.has(123)).toBe(true)
+		})
+
+		it("should skip already pending asks", () => {
+			// First call - marks as pending
+			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false)
+			const callCount1 = outputSpy.mock.calls.length
+
+			// Second call - should skip
+			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false)
+			const callCount2 = outputSpy.mock.calls.length
+
+			// Should not have logged again
+			expect(callCount2).toBe(callCount1)
+		})
+	})
+
+	describe("handleFollowupQuestion", () => {
+		let host: ExtensionHost
+		let outputSpy: ReturnType<typeof vi.spyOn>
+
+		beforeEach(() => {
+			host = createTestHost({ nonInteractive: false })
+			// Mock process.stdout.write which is used by output()
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			outputSpy = spyOnPrivate(host, "output")
+			// Mock readline to prevent actual prompting
+			vi.spyOn(process.stdin, "on").mockImplementation(() => process.stdin)
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+		})
+
+		it("should parse followup question JSON with suggestion objects containing answer and mode", async () => {
+			// This is the format from AskFollowupQuestionTool
+			// { question: "...", suggest: [{ answer: "text", mode: "code" }, ...] }
+			const text = JSON.stringify({
+				question: "What would you like to do?",
+				suggest: [
+					{ answer: "Write code", mode: "code" },
+					{ answer: "Debug issue", mode: "debug" },
+					{ answer: "Just explain", mode: null },
+				],
+			})
+
+			// Call the handler (it will try to prompt but we just want to test parsing)
+			callPrivate(host, "handleFollowupQuestion", 123, text)
+
+			// Should display the question
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What would you like to do?")
+
+			// Should display suggestions with answer text and mode hints
+			expect(outputSpy).toHaveBeenCalledWith("\nSuggested answers:")
+			expect(outputSpy).toHaveBeenCalledWith("  1. Write code (mode: code)")
+			expect(outputSpy).toHaveBeenCalledWith("  2. Debug issue (mode: debug)")
+			expect(outputSpy).toHaveBeenCalledWith("  3. Just explain")
+		})
+
+		it("should handle followup question with suggestions that have no mode", async () => {
+			const text = JSON.stringify({
+				question: "What path?",
+				suggest: [{ answer: "./src/file.ts" }, { answer: "./lib/other.ts" }],
+			})
+
+			callPrivate(host, "handleFollowupQuestion", 123, text)
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What path?")
+			expect(outputSpy).toHaveBeenCalledWith("  1. ./src/file.ts")
+			expect(outputSpy).toHaveBeenCalledWith("  2. ./lib/other.ts")
+		})
+
+		it("should handle plain text (non-JSON) as the question", async () => {
+			callPrivate(host, "handleFollowupQuestion", 123, "What is your name?")
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What is your name?")
+		})
+
+		it("should handle empty suggestions array", async () => {
+			const text = JSON.stringify({
+				question: "Tell me more",
+				suggest: [],
+			})
+
+			callPrivate(host, "handleFollowupQuestion", 123, text)
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "Tell me more")
+			// Should not show "Suggested answers:" if array is empty
+			expect(outputSpy).not.toHaveBeenCalledWith("\nSuggested answers:")
+		})
+	})
+
+	describe("handleFollowupQuestionWithTimeout", () => {
+		let host: ExtensionHost
+		let outputSpy: ReturnType<typeof vi.spyOn>
+		const originalIsTTY = process.stdin.isTTY
+
+		beforeEach(() => {
+			// Non-interactive mode uses the timeout variant
+			host = createTestHost({ nonInteractive: true })
+			// Mock process.stdout.write which is used by output()
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			outputSpy = spyOnPrivate(host, "output")
+			// Mock stdin - set isTTY to false so setRawMode is not called
+			Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true })
+			vi.spyOn(process.stdin, "on").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "resume").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "pause").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "removeListener").mockImplementation(() => process.stdin)
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+			Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, writable: true })
+		})
+
+		it("should parse followup question JSON and display question with suggestions", () => {
+			const text = JSON.stringify({
+				question: "What would you like to do?",
+				suggest: [
+					{ answer: "Option A", mode: "code" },
+					{ answer: "Option B", mode: null },
+				],
+			})
+
+			// Call the handler - it will display the question and start the timeout
+			callPrivate(host, "handleFollowupQuestionWithTimeout", 123, text)
+
+			// Should display the question
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What would you like to do?")
+
+			// Should display suggestions
+			expect(outputSpy).toHaveBeenCalledWith("\nSuggested answers:")
+			expect(outputSpy).toHaveBeenCalledWith("  1. Option A (mode: code)")
+			expect(outputSpy).toHaveBeenCalledWith("  2. Option B")
+		})
+
+		it("should handle non-JSON text as plain question", () => {
+			callPrivate(host, "handleFollowupQuestionWithTimeout", 123, "Plain question text")
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "Plain question text")
+		})
+
+		it("should include auto-select hint in prompt when suggestions exist", () => {
+			const stdoutWriteSpy = vi.spyOn(process.stdout, "write")
+			const text = JSON.stringify({
+				question: "Choose one",
+				suggest: [{ answer: "First option" }],
+			})
+
+			callPrivate(host, "handleFollowupQuestionWithTimeout", 123, text)
+
+			// Should show prompt with timeout hint
+			expect(stdoutWriteSpy).toHaveBeenCalledWith(expect.stringContaining("auto-select in 10s"))
+		})
+	})
+
+	describe("handleAskMessageNonInteractive - followup handling", () => {
+		let host: ExtensionHost
+		let _outputSpy: ReturnType<typeof vi.spyOn>
+		let handleFollowupTimeoutSpy: ReturnType<typeof vi.spyOn>
+		const originalIsTTY = process.stdin.isTTY
+
+		beforeEach(() => {
+			host = createTestHost({ nonInteractive: true })
+			vi.spyOn(process.stdout, "write").mockImplementation(() => true)
+			_outputSpy = spyOnPrivate(host, "output")
+			handleFollowupTimeoutSpy = spyOnPrivate(host, "handleFollowupQuestionWithTimeout")
+			// Mock stdin - set isTTY to false so setRawMode is not called
+			Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true })
+			vi.spyOn(process.stdin, "on").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "resume").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "pause").mockImplementation(() => process.stdin)
+			vi.spyOn(process.stdin, "removeListener").mockImplementation(() => process.stdin)
+		})
+
+		afterEach(() => {
+			vi.restoreAllMocks()
+			Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, writable: true })
+		})
+
+		it("should call handleFollowupQuestionWithTimeout for followup asks in non-interactive mode", () => {
+			const text = JSON.stringify({
+				question: "What to do?",
+				suggest: [{ answer: "Do something" }],
+			})
+
+			callPrivate(host, "handleAskMessageNonInteractive", 123, "followup", text)
+
+			expect(handleFollowupTimeoutSpy).toHaveBeenCalledWith(123, text)
+		})
+
+		it("should add ts to pendingAsks for followup in non-interactive mode", () => {
+			const text = JSON.stringify({
+				question: "What to do?",
+				suggest: [{ answer: "Do something" }],
+			})
+
+			callPrivate(host, "handleAskMessageNonInteractive", 123, "followup", text)
+
+			const pendingAsks = getPrivate<Set<number>>(host, "pendingAsks")
+			expect(pendingAsks.has(123)).toBe(true)
 		})
 	})
 

@@ -13,6 +13,7 @@ import { createRequire } from "module"
 import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
+import readline from "readline"
 import { createVSCodeAPI } from "@roo-code/vscode-shim"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -25,6 +26,7 @@ export interface ExtensionHostOptions {
 	extensionPath: string
 	verbose?: boolean
 	quiet?: boolean
+	nonInteractive?: boolean
 	apiKey?: string
 	apiProvider?: string
 	model?: string
@@ -62,6 +64,10 @@ export class ExtensionHost extends EventEmitter {
 	private isWaitingForResponse = false
 	// Track seen tool calls to avoid duplicate display
 	private seenToolCalls: Set<string> = new Set()
+	// Track pending asks that need a response (by ts)
+	private pendingAsks: Set<number> = new Set()
+	// Readline interface for interactive prompts
+	private rl: readline.Interface | null = null
 	// Track displayed messages by ts to avoid duplicates and show updates
 	private displayedMessages: Map<number, { text: string; partial: boolean }> = new Map()
 	// Track streamed content by ts for delta computation
@@ -482,29 +488,45 @@ export class ExtensionHost extends EventEmitter {
 		// Set up message listener for extension responses
 		this.setupMessageListener()
 
-		// Inject auto-approval settings first (so tools execute without prompts)
-		this.log("Injecting auto-approval settings...")
-		this.sendToExtension({
-			type: "updateSettings",
-			updatedSettings: {
-				autoApprovalEnabled: true,
-				alwaysAllowReadOnly: true,
-				alwaysAllowReadOnlyOutsideWorkspace: true,
-				alwaysAllowWrite: true,
-				alwaysAllowWriteOutsideWorkspace: true,
-				alwaysAllowWriteProtected: false, // Keep protected files safe
-				alwaysAllowBrowser: true,
-				alwaysAllowMcp: true,
-				alwaysAllowModeSwitch: true,
-				alwaysAllowSubtasks: true,
-				alwaysAllowExecute: true,
-				alwaysAllowFollowupQuestions: true,
-				followupAutoApproveTimeoutMs: 0, // Instant approval
-				// Enable reasoning/thinking tokens for models that support it
-				enableReasoningEffort: true,
-				reasoningEffort: "medium",
-			},
-		})
+		// Configure approval settings based on mode
+		// In non-interactive mode (-y flag), enable auto-approval for everything
+		// In interactive mode (default), we'll prompt the user for each action
+		if (this.options.nonInteractive) {
+			this.log("Non-interactive mode: enabling auto-approval settings...")
+			this.sendToExtension({
+				type: "updateSettings",
+				updatedSettings: {
+					autoApprovalEnabled: true,
+					alwaysAllowReadOnly: true,
+					alwaysAllowReadOnlyOutsideWorkspace: true,
+					alwaysAllowWrite: true,
+					alwaysAllowWriteOutsideWorkspace: true,
+					alwaysAllowWriteProtected: false, // Keep protected files safe.
+					alwaysAllowBrowser: true,
+					alwaysAllowMcp: true,
+					alwaysAllowModeSwitch: true,
+					alwaysAllowSubtasks: true,
+					alwaysAllowExecute: true,
+					alwaysAllowFollowupQuestions: true,
+					// Enable reasoning/thinking tokens for models that support it.
+					enableReasoningEffort: true,
+					reasoningEffort: "medium",
+					// Allow all commands with wildcard (required for command auto-approval).
+					allowedCommands: ["*"],
+				},
+			})
+		} else {
+			this.log("Interactive mode: user will be prompted for approvals...")
+			this.sendToExtension({
+				type: "updateSettings",
+				updatedSettings: {
+					autoApprovalEnabled: false,
+					// Enable reasoning/thinking tokens for models that support it
+					enableReasoningEffort: true,
+					reasoningEffort: "medium",
+				},
+			})
+		}
 
 		// Give the extension a moment to process the settings
 		await new Promise<void>((resolve) => setTimeout(resolve, 100))
@@ -589,17 +611,21 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	/**
-	 * Get console.log that bypasses quiet mode suppression
+	 * Output a message to the user (bypasses quiet mode)
+	 * Use this for all user-facing output instead of console.log
 	 */
-	private getOutputLog(): typeof console.log {
-		return this.originalConsole?.log || console.log
+	private output(...args: unknown[]): void {
+		const text = args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")
+		process.stdout.write(text + "\n")
 	}
 
 	/**
-	 * Get console.error that bypasses quiet mode suppression
+	 * Output an error message to the user (bypasses quiet mode)
+	 * Use this for all user-facing errors instead of console.error
 	 */
-	private getOutputError(): typeof console.error {
-		return this.originalConsole?.error || console.error
+	private outputError(...args: unknown[]): void {
+		const text = args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" ")
+		process.stderr.write(text + "\n")
 	}
 
 	/**
@@ -612,10 +638,6 @@ export class ExtensionHost extends EventEmitter {
 		const clineMessages = state.clineMessages as Array<Record<string, unknown>> | undefined
 
 		if (clineMessages && clineMessages.length > 0) {
-			// Use original console methods to bypass quiet mode for user-facing output
-			const log = this.getOutputLog()
-			const error = this.getOutputError()
-
 			// Track message processing for verbose debug output
 			this.processedMessageCount++
 
@@ -639,11 +661,11 @@ export class ExtensionHost extends EventEmitter {
 
 				// Handle "say" type messages
 				if (type === "say" && say) {
-					this.handleSayMessage(ts, say, text, isPartial, log, error)
+					this.handleSayMessage(ts, say, text, isPartial)
 				}
 				// Handle "ask" type messages
 				else if (type === "ask" && ask) {
-					this.handleAskMessage(ts, ask, text, isPartial, log)
+					this.handleAskMessage(ts, ask, text, isPartial)
 				}
 			}
 		}
@@ -666,17 +688,13 @@ export class ExtensionHost extends EventEmitter {
 
 		if (!ts) return
 
-		// Use original console methods to bypass quiet mode for user-facing output
-		const log = this.getOutputLog()
-		const error = this.getOutputError()
-
 		// Handle "say" type messages
 		if (type === "say" && say) {
-			this.handleSayMessage(ts, say, text, isPartial, log, error)
+			this.handleSayMessage(ts, say, text, isPartial)
 		}
 		// Handle "ask" type messages
 		else if (type === "ask" && ask) {
-			this.handleAskMessage(ts, ask, text, isPartial, log)
+			this.handleAskMessage(ts, ask, text, isPartial)
 		}
 	}
 
@@ -720,14 +738,7 @@ export class ExtensionHost extends EventEmitter {
 	/**
 	 * Handle "say" type messages
 	 */
-	private handleSayMessage(
-		ts: number,
-		say: string,
-		text: string,
-		isPartial: boolean | undefined,
-		log: typeof console.log,
-		error: typeof console.error,
-	): void {
+	private handleSayMessage(ts: number, say: string, text: string, isPartial: boolean | undefined): void {
 		const previousDisplay = this.displayedMessages.get(ts)
 		const alreadyDisplayedComplete = previousDisplay && !previousDisplay.partial
 
@@ -755,7 +766,7 @@ export class ExtensionHost extends EventEmitter {
 						this.finishStream(ts)
 					} else {
 						// Not streamed yet - output complete message
-						log("\n[Assistant]", text)
+						this.output("\n[Assistant]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
 					this.streamedContent.set(ts, { text, headerShown: true })
@@ -778,16 +789,32 @@ export class ExtensionHost extends EventEmitter {
 						}
 						this.finishStream(ts)
 					} else {
-						log("\n[reasoning]", text)
+						this.output("\n[reasoning]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
 
 			case "command_output":
-				// Show command output (usually not partial)
-				if (text && !alreadyDisplayedComplete) {
-					log("\n[Command Output]", text)
+				// Stream command output in real-time
+				if (isPartial && text) {
+					this.streamContent(ts, text, "[Command Output]")
+					this.displayedMessages.set(ts, { text, partial: true })
+				} else if (!isPartial && text && !alreadyDisplayedComplete) {
+					// Command output complete - finish the stream
+					const streamed = this.streamedContent.get(ts)
+					if (streamed) {
+						if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+							const delta = text.slice(streamed.text.length)
+							this.writeStream(delta)
+						}
+						this.finishStream(ts)
+					} else {
+						// Use writeStream to bypass quiet mode suppression
+						this.writeStream("\n[Command Output] ")
+						this.writeStream(text)
+						this.writeStream("\n")
+					}
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
@@ -795,7 +822,7 @@ export class ExtensionHost extends EventEmitter {
 			case "completion_result":
 				if (!alreadyDisplayedComplete) {
 					this.isWaitingForResponse = false
-					log("\n[Task Complete]", text || "")
+					this.output("\n[Task Complete]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskComplete")
 				}
@@ -804,7 +831,7 @@ export class ExtensionHost extends EventEmitter {
 			case "error":
 				if (!alreadyDisplayedComplete) {
 					this.isWaitingForResponse = false
-					error("\n[Error]", text || "Unknown error")
+					this.outputError("\n[Error]", text || "Unknown error")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskError", text)
 				}
@@ -813,7 +840,7 @@ export class ExtensionHost extends EventEmitter {
 			case "tool":
 				// Tool usage - show when complete
 				if (text && !alreadyDisplayedComplete) {
-					log("\n[Tool]", text)
+					this.output("\n[Tool]", text)
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
@@ -825,93 +852,685 @@ export class ExtensionHost extends EventEmitter {
 			default:
 				// Other say types - show in verbose mode
 				if (this.options.verbose && text && !alreadyDisplayedComplete) {
-					log(`\n[${say}]`, text || "")
+					this.output(`\n[${say}]`, text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 		}
 	}
 
 	/**
-	 * Handle "ask" type messages
+	 * Handle "ask" type messages - these require user responses
+	 * In interactive mode: prompt user for input
+	 * In non-interactive mode: auto-approve (handled by extension settings)
 	 */
-	private handleAskMessage(
-		ts: number,
-		ask: string,
-		text: string,
-		isPartial: boolean | undefined,
-		log: typeof console.log,
-	): void {
+	private handleAskMessage(ts: number, ask: string, text: string, isPartial: boolean | undefined): void {
+		// Special handling for command_output - stream it in real-time
+		// This needs to happen before the isPartial skip
+		if (ask === "command_output") {
+			this.handleCommandOutputAsk(ts, text, isPartial)
+			return
+		}
+
+		// Skip partial messages - wait for the complete ask
+		if (isPartial) {
+			return
+		}
+
+		// Check if we already handled this ask
+		if (this.pendingAsks.has(ts)) {
+			return
+		}
+
+		// In non-interactive mode, the extension's auto-approval settings handle everything
+		// We just need to display the action being taken
+		if (this.options.nonInteractive) {
+			this.handleAskMessageNonInteractive(ts, ask, text)
+			return
+		}
+
+		// Interactive mode - prompt user for input
+		this.handleAskMessageInteractive(ts, ask, text)
+	}
+
+	/**
+	 * Handle ask messages in non-interactive mode
+	 * For followup questions: show prompt with 10s timeout, auto-select first option if no input
+	 * For everything else: auto-approval handles responses
+	 */
+	private handleAskMessageNonInteractive(ts: number, ask: string, text: string): void {
 		const previousDisplay = this.displayedMessages.get(ts)
-		const alreadyDisplayedComplete = previousDisplay && !previousDisplay.partial
+		const alreadyDisplayed = !!previousDisplay
 
 		switch (ask) {
+			case "followup":
+				if (!alreadyDisplayed) {
+					// In non-interactive mode, still prompt the user but with a 10s timeout
+					// that auto-selects the first option if no input is received
+					this.pendingAsks.add(ts)
+					this.handleFollowupQuestionWithTimeout(ts, text)
+					this.displayedMessages.set(ts, { text, partial: false })
+				}
+				break
+
 			case "command":
-				if (!alreadyDisplayedComplete) {
-					log("\n[Running Command]", text || "")
+				if (!alreadyDisplayed) {
+					this.output("\n[Auto-approving Command]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
 
-			case "command_output":
-				// This is asking to show output - no need to display again
-				break
+			// Note: command_output is handled separately in handleCommandOutputAsk
 
 			case "tool":
-				// Tool call request - parse and display the tool info
-				if (text) {
+				if (!alreadyDisplayed && text) {
 					try {
 						const toolInfo = JSON.parse(text)
 						const toolName = toolInfo.tool || "unknown"
-
-						// Create a unique key for this tool call - use ts only (not partial state)
-						// This ensures each tool call is displayed only once
-						const toolCallKey = `${toolName}-${ts}`
-						const isDuplicate = this.seenToolCalls.has(toolCallKey)
-
-						// Verbose debug logging for tool calls
-						if (this.options.verbose) {
-							this.log(
-								`Tool call: name=${toolName}, partial=${isPartial}, ` +
-									`ts=${ts}, isDuplicate=${isDuplicate}, key=${toolCallKey}`,
-							)
-						}
-
-						// Only display if not already shown for this ts
-						if (!isDuplicate) {
-							this.seenToolCalls.add(toolCallKey)
-							log(`\n[Tool Call] ${toolName}`)
-							// Show key parameters
-							if (toolInfo.path) {
-								log(`  Path: ${toolInfo.path}`)
-							}
-							if (toolInfo.content) {
-								const preview =
-									toolInfo.content.length > 100
-										? toolInfo.content.substring(0, 100) + "..."
-										: toolInfo.content
-								log(`  Content: ${preview}`)
-							}
-						}
+						this.output(`\n[Auto-approving Tool] ${toolName}`)
+						if (toolInfo.path) this.output(`  Path: ${toolInfo.path}`)
 					} catch {
-						// If not JSON, just show the text
-						if (!alreadyDisplayedComplete) {
-							log("\n[Tool Call]", text)
-							this.displayedMessages.set(ts, { text, partial: false })
-						}
+						this.output("\n[Auto-approving Tool]", text)
 					}
+					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
 
+			case "browser_action_launch":
+				if (!alreadyDisplayed) {
+					this.output("\n[Auto-approving Browser Action]", text || "")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+				break
+
+			case "use_mcp_server":
+				if (!alreadyDisplayed) {
+					try {
+						const mcpInfo = JSON.parse(text)
+						this.output(`\n[Auto-approving MCP] ${mcpInfo.server_name || "unknown"}`)
+					} catch {
+						this.output("\n[Auto-approving MCP]", text || "")
+					}
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+				break
+
+			case "api_req_failed":
+				if (!alreadyDisplayed) {
+					this.output("\n[Auto-retrying API Request]")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+				break
+
+			case "resume_task":
+			case "resume_completed_task":
+				if (!alreadyDisplayed) {
+					this.output("\n[Auto-continuing Task]")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+				break
+
+			case "completion_result":
+				// Task completion - no action needed
+				break
+
 			default:
-				// Other ask types - show what's being asked
-				if (text && !alreadyDisplayedComplete) {
-					log("\n[Assistant asks]", text)
+				if (!alreadyDisplayed && text) {
+					this.output(`\n[Auto-approving ${ask}]`, text)
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 		}
+	}
 
-		// Auto-approval is handled by extension settings (configured in runTask)
-		// The extension will automatically approve based on alwaysAllow* settings
+	/**
+	 * Handle ask messages in interactive mode - prompt user for input
+	 */
+	private handleAskMessageInteractive(ts: number, ask: string, text: string): void {
+		// Mark this ask as pending so we don't handle it again
+		this.pendingAsks.add(ts)
+
+		switch (ask) {
+			case "followup":
+				this.handleFollowupQuestion(ts, text)
+				break
+
+			case "command":
+				this.handleCommandApproval(ts, text)
+				break
+
+			// Note: command_output is handled separately in handleCommandOutputAsk
+
+			case "tool":
+				this.handleToolApproval(ts, text)
+				break
+
+			case "browser_action_launch":
+				this.handleBrowserApproval(ts, text)
+				break
+
+			case "use_mcp_server":
+				this.handleMcpApproval(ts, text)
+				break
+
+			case "api_req_failed":
+				this.handleApiFailedRetry(ts, text)
+				break
+
+			case "resume_task":
+			case "resume_completed_task":
+				this.handleResumeTask(ts, ask, text)
+				break
+
+			case "completion_result":
+				// Task completion - handled by say message, no response needed
+				this.pendingAsks.delete(ts)
+				break
+
+			default:
+				// Unknown ask type - try to handle as yes/no
+				this.handleGenericApproval(ts, ask, text)
+		}
+	}
+
+	/**
+	 * Handle followup questions - prompt for text input with suggestions
+	 */
+	private async handleFollowupQuestion(ts: number, text: string): Promise<void> {
+		let question = text
+		// Suggestions are objects with { answer: string, mode?: string }
+		let suggestions: Array<{ answer: string; mode?: string | null }> = []
+
+		// Parse the followup question JSON
+		// Format: { question: "...", suggest: [{ answer: "text", mode: "code" }, ...] }
+		try {
+			const data = JSON.parse(text)
+			question = data.question || text
+			suggestions = Array.isArray(data.suggest) ? data.suggest : []
+		} catch {
+			// Use raw text if not JSON
+		}
+
+		this.output("\n[Question]", question)
+
+		// Show numbered suggestions
+		if (suggestions.length > 0) {
+			this.output("\nSuggested answers:")
+			suggestions.forEach((suggestion, index) => {
+				const suggestionText = suggestion.answer || String(suggestion)
+				const modeHint = suggestion.mode ? ` (mode: ${suggestion.mode})` : ""
+				this.output(`  ${index + 1}. ${suggestionText}${modeHint}`)
+			})
+			this.output("")
+		}
+
+		try {
+			const answer = await this.promptForInput(
+				suggestions.length > 0
+					? "Enter number (1-" + suggestions.length + ") or type your answer: "
+					: "Your answer: ",
+			)
+
+			let responseText = answer.trim()
+
+			// Check if user entered a number corresponding to a suggestion
+			const num = parseInt(responseText, 10)
+			if (!isNaN(num) && num >= 1 && num <= suggestions.length) {
+				const selectedSuggestion = suggestions[num - 1]
+				if (selectedSuggestion) {
+					responseText = selectedSuggestion.answer || String(selectedSuggestion)
+					this.output(`Selected: ${responseText}`)
+				}
+			}
+
+			this.sendFollowupResponse(responseText)
+			// Don't delete from pendingAsks - keep it to prevent re-processing
+			// if the extension sends another state update before processing our response
+		} catch {
+			// If prompt fails (e.g., stdin closed), use first suggestion answer or empty
+			const firstSuggestion = suggestions.length > 0 ? suggestions[0] : null
+			const fallback = firstSuggestion?.answer ?? ""
+			this.output(`[Using default: ${fallback || "(empty)"}]`)
+			this.sendFollowupResponse(fallback)
+		}
+		// Note: We intentionally don't delete from pendingAsks here.
+		// The ts stays in the set to prevent duplicate handling if the extension
+		// sends another state update before it processes our response.
+		// The set is cleared when the task completes or the host is disposed.
+	}
+
+	/**
+	 * Handle followup questions with a timeout (for non-interactive mode)
+	 * Shows the prompt but auto-selects the first option after 10 seconds
+	 * if the user doesn't type anything. Cancels the timeout on any keypress.
+	 */
+	private async handleFollowupQuestionWithTimeout(ts: number, text: string): Promise<void> {
+		let question = text
+		// Suggestions are objects with { answer: string, mode?: string }
+		let suggestions: Array<{ answer: string; mode?: string | null }> = []
+
+		// Parse the followup question JSON
+		try {
+			const data = JSON.parse(text)
+			question = data.question || text
+			suggestions = Array.isArray(data.suggest) ? data.suggest : []
+		} catch {
+			// Use raw text if not JSON
+		}
+
+		this.output("\n[Question]", question)
+
+		// Show numbered suggestions
+		if (suggestions.length > 0) {
+			this.output("\nSuggested answers:")
+			suggestions.forEach((suggestion, index) => {
+				const suggestionText = suggestion.answer || String(suggestion)
+				const modeHint = suggestion.mode ? ` (mode: ${suggestion.mode})` : ""
+				this.output(`  ${index + 1}. ${suggestionText}${modeHint}`)
+			})
+			this.output("")
+		}
+
+		// Default to first suggestion or empty string
+		const firstSuggestion = suggestions.length > 0 ? suggestions[0] : null
+		const defaultAnswer = firstSuggestion?.answer ?? ""
+
+		try {
+			const answer = await this.promptForInputWithTimeout(
+				suggestions.length > 0
+					? `Enter number (1-${suggestions.length}) or type your answer (auto-select in 10s): `
+					: "Your answer (auto-select in 10s): ",
+				10000, // 10 second timeout
+				defaultAnswer,
+			)
+
+			let responseText = answer.trim()
+
+			// Check if user entered a number corresponding to a suggestion
+			const num = parseInt(responseText, 10)
+			if (!isNaN(num) && num >= 1 && num <= suggestions.length) {
+				const selectedSuggestion = suggestions[num - 1]
+				if (selectedSuggestion) {
+					responseText = selectedSuggestion.answer || String(selectedSuggestion)
+					this.output(`Selected: ${responseText}`)
+				}
+			}
+
+			this.sendFollowupResponse(responseText)
+		} catch {
+			// If prompt fails, use default
+			this.output(`[Using default: ${defaultAnswer || "(empty)"}]`)
+			this.sendFollowupResponse(defaultAnswer)
+		}
+	}
+
+	/**
+	 * Prompt user for text input with a timeout
+	 * Returns defaultValue if timeout expires before any input
+	 * Cancels timeout as soon as any character is typed
+	 */
+	private promptForInputWithTimeout(prompt: string, timeoutMs: number, defaultValue: string): Promise<string> {
+		return new Promise((resolve) => {
+			// Temporarily restore console for interactive prompts
+			const wasQuiet = this.options.quiet
+			if (wasQuiet) {
+				this.restoreConsole()
+			}
+
+			// Put stdin in raw mode to detect individual keypresses
+			const wasRaw = process.stdin.isRaw
+			if (process.stdin.isTTY) {
+				process.stdin.setRawMode(true)
+			}
+			process.stdin.resume()
+
+			let inputBuffer = ""
+			let timeoutCancelled = false
+			let resolved = false
+
+			// Set up the timeout
+			const timeout = setTimeout(() => {
+				if (!resolved) {
+					resolved = true
+					cleanup()
+					this.output(`\n[Timeout - using default: ${defaultValue || "(empty)"}]`)
+					resolve(defaultValue)
+				}
+			}, timeoutMs)
+
+			// Show the prompt
+			process.stdout.write(prompt)
+
+			// Cleanup function
+			const cleanup = () => {
+				clearTimeout(timeout)
+				process.stdin.removeListener("data", onData)
+				if (process.stdin.isTTY && wasRaw !== undefined) {
+					process.stdin.setRawMode(wasRaw)
+				}
+				process.stdin.pause()
+				if (wasQuiet) {
+					this.setupQuietMode()
+				}
+			}
+
+			// Handle keypress data
+			const onData = (data: Buffer) => {
+				const char = data.toString()
+
+				// Check for Ctrl+C
+				if (char === "\x03") {
+					cleanup()
+					resolved = true
+					this.output("\n[Cancelled]")
+					resolve(defaultValue)
+					return
+				}
+
+				// Cancel timeout on first character
+				if (!timeoutCancelled) {
+					timeoutCancelled = true
+					clearTimeout(timeout)
+				}
+
+				// Handle Enter key
+				if (char === "\r" || char === "\n") {
+					if (!resolved) {
+						resolved = true
+						cleanup()
+						process.stdout.write("\n")
+						resolve(inputBuffer)
+					}
+					return
+				}
+
+				// Handle Backspace
+				if (char === "\x7f" || char === "\b") {
+					if (inputBuffer.length > 0) {
+						inputBuffer = inputBuffer.slice(0, -1)
+						// Erase character on screen: move back, write space, move back
+						process.stdout.write("\b \b")
+					}
+					return
+				}
+
+				// Regular character - add to buffer and echo
+				inputBuffer += char
+				process.stdout.write(char)
+			}
+
+			process.stdin.on("data", onData)
+		})
+	}
+
+	/**
+	 * Handle command execution approval
+	 */
+	private async handleCommandApproval(ts: number, text: string): Promise<void> {
+		this.output("\n[Command Request]")
+		this.output(`  Command: ${text || "(no command specified)"}`)
+
+		try {
+			const approved = await this.promptForYesNo("Execute this command? (y/n): ")
+			this.sendApprovalResponse(approved)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle tool execution approval
+	 */
+	private async handleToolApproval(ts: number, text: string): Promise<void> {
+		let toolName = "unknown"
+		let toolPath = ""
+		let toolContent = ""
+
+		try {
+			const toolInfo = JSON.parse(text)
+			toolName = toolInfo.tool || "unknown"
+			toolPath = toolInfo.path || ""
+			toolContent = toolInfo.content || ""
+		} catch {
+			// Use raw text if not JSON
+		}
+
+		this.output(`\n[Tool Request] ${toolName}`)
+		if (toolPath) this.output(`  Path: ${toolPath}`)
+		if (toolContent) {
+			const preview = toolContent.length > 200 ? toolContent.substring(0, 200) + "..." : toolContent
+			this.output(`  Content: ${preview}`)
+		}
+
+		try {
+			const approved = await this.promptForYesNo("Approve this action? (y/n): ")
+			this.sendApprovalResponse(approved)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle browser action approval
+	 */
+	private async handleBrowserApproval(ts: number, text: string): Promise<void> {
+		this.output("\n[Browser Action Request]")
+		if (text) this.output(`  Action: ${text}`)
+
+		try {
+			const approved = await this.promptForYesNo("Allow browser action? (y/n): ")
+			this.sendApprovalResponse(approved)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle MCP server access approval
+	 */
+	private async handleMcpApproval(ts: number, text: string): Promise<void> {
+		let serverName = "unknown"
+		let toolName = ""
+		let resourceUri = ""
+
+		try {
+			const mcpInfo = JSON.parse(text)
+			serverName = mcpInfo.server_name || "unknown"
+			if (mcpInfo.type === "use_mcp_tool") {
+				toolName = mcpInfo.tool_name || ""
+			} else if (mcpInfo.type === "access_mcp_resource") {
+				resourceUri = mcpInfo.uri || ""
+			}
+		} catch {
+			// Use raw text if not JSON
+		}
+
+		this.output("\n[MCP Server Request]")
+		this.output(`  Server: ${serverName}`)
+		if (toolName) this.output(`  Tool: ${toolName}`)
+		if (resourceUri) this.output(`  Resource: ${resourceUri}`)
+
+		try {
+			const approved = await this.promptForYesNo("Allow MCP access? (y/n): ")
+			this.sendApprovalResponse(approved)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle API request failed - retry prompt
+	 */
+	private async handleApiFailedRetry(ts: number, text: string): Promise<void> {
+		this.output("\n[API Request Failed]")
+		this.output(`  Error: ${text || "Unknown error"}`)
+
+		try {
+			const retry = await this.promptForYesNo("Retry the request? (y/n): ")
+			this.sendApprovalResponse(retry)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle task resume prompt
+	 */
+	private async handleResumeTask(ts: number, ask: string, text: string): Promise<void> {
+		const isCompleted = ask === "resume_completed_task"
+		this.output(`\n[Resume ${isCompleted ? "Completed " : ""}Task]`)
+		if (text) this.output(`  ${text}`)
+
+		try {
+			const resume = await this.promptForYesNo("Continue with this task? (y/n): ")
+			this.sendApprovalResponse(resume)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle generic approval prompts for unknown ask types
+	 */
+	private async handleGenericApproval(ts: number, ask: string, text: string): Promise<void> {
+		this.output(`\n[${ask}]`)
+		if (text) this.output(`  ${text}`)
+
+		try {
+			const approved = await this.promptForYesNo("Approve? (y/n): ")
+			this.sendApprovalResponse(approved)
+		} catch {
+			this.output("[Defaulting to: no]")
+			this.sendApprovalResponse(false)
+		}
+		// Note: Don't delete from pendingAsks - see handleFollowupQuestion comment
+	}
+
+	/**
+	 * Handle command_output ask messages - stream the output in real-time
+	 * This is called for both partial (streaming) and complete messages
+	 */
+	private handleCommandOutputAsk(ts: number, text: string, isPartial: boolean | undefined): void {
+		const previousDisplay = this.displayedMessages.get(ts)
+		const alreadyDisplayedComplete = previousDisplay && !previousDisplay.partial
+
+		// Stream partial content
+		if (isPartial && text) {
+			this.streamContent(ts, text, "[Command Output]")
+			this.displayedMessages.set(ts, { text, partial: true })
+		} else if (!isPartial) {
+			// Message complete - output any remaining content and send approval
+			if (text && !alreadyDisplayedComplete) {
+				const streamed = this.streamedContent.get(ts)
+				if (streamed) {
+					// We were streaming - output any remaining delta and finish
+					if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+						const delta = text.slice(streamed.text.length)
+						this.writeStream(delta)
+					}
+					this.finishStream(ts)
+				} else {
+					// Not streamed yet - output complete message using writeStream
+					this.writeStream("\n[Command Output] ")
+					this.writeStream(text)
+					this.writeStream("\n")
+				}
+				this.displayedMessages.set(ts, { text, partial: false })
+				this.streamedContent.set(ts, { text, headerShown: true })
+			}
+
+			// Send approval response (only once per ts)
+			if (!this.pendingAsks.has(ts)) {
+				this.pendingAsks.add(ts)
+				this.sendApprovalResponse(true)
+			}
+		}
+	}
+
+	/**
+	 * Prompt user for text input via readline
+	 */
+	private promptForInput(prompt: string): Promise<string> {
+		return new Promise((resolve, reject) => {
+			// Temporarily restore console for interactive prompts
+			const wasQuiet = this.options.quiet
+			if (wasQuiet) {
+				this.restoreConsole()
+			}
+
+			const rl = readline.createInterface({
+				input: process.stdin,
+				output: process.stdout,
+			})
+
+			rl.question(prompt, (answer) => {
+				rl.close()
+
+				// Restore quiet mode if it was enabled
+				if (wasQuiet) {
+					this.setupQuietMode()
+				}
+
+				resolve(answer)
+			})
+
+			// Handle stdin close (e.g., piped input ended)
+			rl.on("close", () => {
+				if (wasQuiet) {
+					this.setupQuietMode()
+				}
+			})
+
+			// Handle errors
+			rl.on("error", (err) => {
+				rl.close()
+				if (wasQuiet) {
+					this.setupQuietMode()
+				}
+				reject(err)
+			})
+		})
+	}
+
+	/**
+	 * Prompt user for yes/no input
+	 */
+	private async promptForYesNo(prompt: string): Promise<boolean> {
+		const answer = await this.promptForInput(prompt)
+		const normalized = answer.trim().toLowerCase()
+		// Accept y, yes, Y, Yes, YES, etc.
+		return normalized === "y" || normalized === "yes"
+	}
+
+	/**
+	 * Send a followup response (text answer) to the extension
+	 */
+	private sendFollowupResponse(text: string): void {
+		this.sendToExtension({
+			type: "askResponse",
+			askResponse: "messageResponse",
+			text,
+		})
+	}
+
+	/**
+	 * Send an approval response (yes/no) to the extension
+	 */
+	private sendApprovalResponse(approved: boolean): void {
+		this.sendToExtension({
+			type: "askResponse",
+			askResponse: approved ? "yesButtonClicked" : "noButtonClicked",
+		})
 	}
 
 	/**
@@ -982,6 +1601,15 @@ export class ExtensionHost extends EventEmitter {
 
 		// Reset waiting state
 		this.isWaitingForResponse = false
+
+		// Clear pending asks
+		this.pendingAsks.clear()
+
+		// Close readline interface if open
+		if (this.rl) {
+			this.rl.close()
+			this.rl = null
+		}
 
 		// Remove message listener
 		if (this.messageListener) {
