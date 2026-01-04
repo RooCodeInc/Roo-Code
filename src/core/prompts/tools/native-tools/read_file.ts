@@ -1,7 +1,5 @@
 import type OpenAI from "openai"
 
-const READ_FILE_BASE_DESCRIPTION = `Read one or more files and return their contents with line numbers for diffing or discussion.`
-
 const READ_FILE_SUPPORTS_NOTE = `Supports text extraction from PDF and DOCX files, but may not handle other binary files properly.`
 
 /**
@@ -25,15 +23,13 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 	const { partialReadsEnabled = true, maxConcurrentFileReads = 5 } = options
 	const isMultipleReadsEnabled = maxConcurrentFileReads > 1
 
-	// Build concurrent reads limit message
-	const concurrentReadsNote = isMultipleReadsEnabled
-		? `IMPORTANT: You can read a maximum of ${maxConcurrentFileReads} files in a single request. If you need to read more files, use multiple sequential read_file requests. `
-		: "IMPORTANT: Multiple file reads are currently disabled. You can only read one file at a time. "
+	// Build description intro with concurrent reads limit message
+	const descriptionIntro = isMultipleReadsEnabled
+		? `Read one or more files and return their contents with line numbers for diffing or discussion. IMPORTANT: You can read a maximum of ${maxConcurrentFileReads} files in a single request. If you need to read more files, use multiple sequential read_file requests. `
+		: "Read a file and return its contents with line numbers for diffing or discussion. IMPORTANT: Multiple file reads are currently disabled. You can only read one file at a time. "
 
 	const baseDescription =
-		READ_FILE_BASE_DESCRIPTION +
-		" " +
-		concurrentReadsNote +
+		descriptionIntro +
 		"Structure: { files: [{ path: 'relative/path.ts'" +
 		(partialReadsEnabled ? ", line_ranges: [[1, 50], [100, 150]]" : "") +
 		" }] }. " +

@@ -34,6 +34,21 @@ describe("createReadFileTool", () => {
 			expect(description).not.toContain("Example multiple files")
 		})
 
+		it("should use singular 'Read a file' in base description when maxConcurrentFileReads is 1", () => {
+			const tool = createReadFileTool({ maxConcurrentFileReads: 1 })
+			const description = getFunctionDef(tool).description
+
+			expect(description).toMatch(/^Read a file/)
+			expect(description).not.toContain("Read one or more files")
+		})
+
+		it("should use plural 'Read one or more files' in base description when maxConcurrentFileReads is > 1", () => {
+			const tool = createReadFileTool({ maxConcurrentFileReads: 5 })
+			const description = getFunctionDef(tool).description
+
+			expect(description).toMatch(/^Read one or more files/)
+		})
+
 		it("should not show multiple files example when maxConcurrentFileReads is 1", () => {
 			const tool = createReadFileTool({ maxConcurrentFileReads: 1, partialReadsEnabled: true })
 			const description = getFunctionDef(tool).description
