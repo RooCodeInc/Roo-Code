@@ -5,9 +5,10 @@
 	"exports": "./src/index.ts",
 	"scripts": {
 		"format": "prettier --write 'src/**/*.ts'",
-		"lint": "eslint src --ext .ts",
+		"lint": "eslint src --ext .ts --max-warnings=0",
 		"check-types": "tsc --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"clean": "rimraf .turbo"
 	},
 	"devDependencies": {
 		"@roo-code/config-eslint": "workspace:^",

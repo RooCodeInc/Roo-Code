@@ -1,0 +1,54 @@
+/**
+ * Utility functions for the Roo Code CLI
+ */
+
+import path from "path"
+import fs from "fs"
+
+/**
+ * Get the environment variable name for a provider's API key
+ */
+export function getEnvVarName(provider: string): string {
+	const envVarMap: Record<string, string> = {
+		anthropic: "ANTHROPIC_API_KEY",
+		openai: "OPENAI_API_KEY",
+		openrouter: "OPENROUTER_API_KEY",
+		google: "GOOGLE_API_KEY",
+		gemini: "GOOGLE_API_KEY",
+		bedrock: "AWS_ACCESS_KEY_ID",
+		ollama: "OLLAMA_API_KEY",
+		mistral: "MISTRAL_API_KEY",
+		deepseek: "DEEPSEEK_API_KEY",
+	}
+	return envVarMap[provider.toLowerCase()] || `${provider.toUpperCase()}_API_KEY`
+}
+
+/**
+ * Get API key from environment variable based on provider
+ */
+export function getApiKeyFromEnv(provider: string): string | undefined {
+	const envVar = getEnvVarName(provider)
+	return process.env[envVar]
+}
+
+/**
+ * Get the default path to the extension bundle.
+ * This assumes the CLI is installed alongside the built extension.
+ *
+ * @param dirname - The __dirname equivalent for the calling module
+ */
+export function getDefaultExtensionPath(dirname: string): string {
+	// __dirname is apps/cli/dist when bundled
+	// The extension is at src/dist (relative to monorepo root)
+	// So from apps/cli/dist, we need to go ../../../src/dist
+	const monorepoPath = path.resolve(dirname, "../../../src/dist")
+
+	// Try monorepo path first (for development)
+	if (fs.existsSync(path.join(monorepoPath, "extension.js"))) {
+		return monorepoPath
+	}
+
+	// Fallback: when installed as npm package, extension might be at ../extension
+	const packagePath = path.resolve(dirname, "../extension")
+	return packagePath
+}

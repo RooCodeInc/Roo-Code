@@ -9,13 +9,13 @@
 		"roo": "dist/index.js"
 	},
 	"scripts": {
+		"format": "prettier --write 'src/**/*.ts'",
+		"lint": "eslint src --ext .ts --max-warnings=0",
+		"check-types": "tsc --noEmit",
+		"test": "vitest run",
 		"build": "tsup",
 		"start": "node dist/index.js",
-		"clean": "rimraf dist",
-		"check-types": "tsc --noEmit",
-		"lint": "eslint src --ext .ts",
-		"format": "prettier --write 'src/**/*.ts'",
-		"test": "vitest run"
+		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
 		"@roo-code/vscode-shim": "workspace:^",

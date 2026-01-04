@@ -7,10 +7,10 @@
 
 import { Command } from "commander"
 import path from "path"
-import fs from "fs"
 import { fileURLToPath } from "url"
 import { ExtensionHost } from "./extension-host.js"
 import { setLogger } from "@roo-code/vscode-shim"
+import { getEnvVarName, getApiKeyFromEnv, getDefaultExtensionPath } from "./utils.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -52,7 +52,7 @@ program
 				})
 			}
 
-			const extensionPath = options.extension || getDefaultExtensionPath()
+			const extensionPath = options.extension || getDefaultExtensionPath(__dirname)
 
 			// Get API key from option or environment variable
 			const apiKey = options.apiKey || getApiKeyFromEnv(options.provider)
@@ -117,49 +117,3 @@ program
 	)
 
 program.parse()
-
-/**
- * Get the default path to the extension bundle.
- * This assumes the CLI is installed alongside the built extension.
- */
-function getDefaultExtensionPath(): string {
-	// __dirname is apps/cli/dist when bundled
-	// The extension is at src/dist (relative to monorepo root)
-	// So from apps/cli/dist, we need to go ../../../src/dist
-	const monorepoPath = path.resolve(__dirname, "../../../src/dist")
-
-	// Try monorepo path first (for development)
-	if (fs.existsSync(path.join(monorepoPath, "extension.js"))) {
-		return monorepoPath
-	}
-
-	// Fallback: when installed as npm package, extension might be at ../extension
-	const packagePath = path.resolve(__dirname, "../extension")
-	return packagePath
-}
-
-/**
- * Get API key from environment variable based on provider
- */
-function getApiKeyFromEnv(provider: string): string | undefined {
-	const envVar = getEnvVarName(provider)
-	return process.env[envVar]
-}
-
-/**
- * Get the environment variable name for a provider's API key
- */
-function getEnvVarName(provider: string): string {
-	const envVarMap: Record<string, string> = {
-		anthropic: "ANTHROPIC_API_KEY",
-		openai: "OPENAI_API_KEY",
-		openrouter: "OPENROUTER_API_KEY",
-		google: "GOOGLE_API_KEY",
-		gemini: "GOOGLE_API_KEY",
-		bedrock: "AWS_ACCESS_KEY_ID",
-		ollama: "OLLAMA_API_KEY",
-		mistral: "MISTRAL_API_KEY",
-		deepseek: "DEEPSEEK_API_KEY",
-	}
-	return envVarMap[provider.toLowerCase()] || `${provider.toUpperCase()}_API_KEY`
-}

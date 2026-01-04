@@ -13,7 +13,7 @@ import { createRequire } from "module"
 import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
-import ora, { type Ora } from "ora"
+import type { Ora } from "ora"
 import { createVSCodeAPI } from "@roo-code/vscode-shim"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -115,7 +115,7 @@ export class ExtensionHost extends EventEmitter {
 			this.debugLogFile = fs.openSync(logPath, "w")
 			this.debugLog("=== CLI Streaming Debug Log ===")
 			this.debugLog(`Started at: ${new Date().toISOString()}`)
-		} catch (err) {
+		} catch {
 			// If we can't create the log file, just disable debug logging
 			this.debugLogFile = null
 		}
@@ -698,9 +698,7 @@ export class ExtensionHost extends EventEmitter {
 				const ts = message.ts as number | undefined
 				const isPartial = message.partial as boolean | undefined
 				const text = message.text as string
-				const type = message.type as string
 				const say = message.say as string | undefined
-				const ask = message.ask as string | undefined
 
 				if (say === "reasoning" || say === "text" || say === "thinking") {
 					const prevLen = this.streamedContent.get(ts!)?.text.length ?? 0
