@@ -4,11 +4,8 @@
 
 import { ExtensionHost, type ExtensionHostOptions } from "../extension-host.js"
 import { EventEmitter } from "events"
-import fs from "fs"
-import path from "path"
 
 // Mock modules
-vi.mock("fs")
 vi.mock("@roo-code/vscode-shim", () => ({
 	createVSCodeAPI: vi.fn(() => ({
 		context: { extensionPath: "/test/extension" },
@@ -774,18 +771,6 @@ describe("ExtensionHost", () => {
 
 		beforeEach(() => {
 			host = createTestHost()
-			vi.mocked(fs.openSync).mockReturnValue(1)
-			vi.mocked(fs.writeSync).mockReturnValue(0)
-			vi.mocked(fs.closeSync).mockReturnValue(undefined)
-		})
-
-		it("should close debug log file", async () => {
-			// Initialize debug log first
-			callPrivate(host, "initDebugLog")
-
-			await host.dispose()
-
-			expect(fs.closeSync).toHaveBeenCalled()
 		})
 
 		it("should remove message listener", async () => {
@@ -856,71 +841,6 @@ describe("ExtensionHost", () => {
 			await host.dispose()
 
 			expect(restoreConsoleSpy).toHaveBeenCalled()
-		})
-	})
-
-	describe("debug logging", () => {
-		let host: ExtensionHost
-
-		beforeEach(() => {
-			host = createTestHost()
-			vi.mocked(fs.openSync).mockReturnValue(42)
-			vi.mocked(fs.writeSync).mockReturnValue(0)
-			vi.mocked(fs.closeSync).mockReturnValue(undefined)
-		})
-
-		describe("initDebugLog", () => {
-			it("should create log file in workspace path", () => {
-				callPrivate(host, "initDebugLog")
-
-				expect(fs.openSync).toHaveBeenCalledWith(path.join("/test/workspace", "cli-stream-debug.log"), "w")
-			})
-
-			it("should handle file creation errors gracefully", () => {
-				vi.mocked(fs.openSync).mockImplementation(() => {
-					throw new Error("Permission denied")
-				})
-
-				expect(() => {
-					callPrivate(host, "initDebugLog")
-				}).not.toThrow()
-
-				expect(getPrivate(host, "debugLogFile")).toBeNull()
-			})
-		})
-
-		describe("debugLog", () => {
-			it("should write timestamped message to log file", () => {
-				callPrivate(host, "initDebugLog")
-				callPrivate(host, "debugLog", "Test message")
-
-				expect(fs.writeSync).toHaveBeenCalledWith(42, expect.stringContaining("Test message"))
-			})
-
-			it("should do nothing when debugLogFile is null", () => {
-				// Don't init, so debugLogFile is null
-				callPrivate(host, "debugLog", "Test message")
-
-				// writeSync should only be called for initDebugLog, not debugLog
-				expect(fs.writeSync).not.toHaveBeenCalled()
-			})
-		})
-
-		describe("closeDebugLog", () => {
-			it("should write closing message and close file", () => {
-				callPrivate(host, "initDebugLog")
-				callPrivate(host, "closeDebugLog")
-
-				expect(fs.writeSync).toHaveBeenCalledWith(42, expect.stringContaining("Log ended"))
-				expect(fs.closeSync).toHaveBeenCalledWith(42)
-			})
-
-			it("should set debugLogFile to null", () => {
-				callPrivate(host, "initDebugLog")
-				callPrivate(host, "closeDebugLog")
-
-				expect(getPrivate(host, "debugLogFile")).toBeNull()
-			})
 		})
 	})
 

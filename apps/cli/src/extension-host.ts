@@ -73,8 +73,6 @@ export class ExtensionHost extends EventEmitter {
 	private lastProcessedMessageTs: number | undefined = undefined
 	// Track if we're currently streaming a message (to manage newlines)
 	private currentlyStreamingTs: number | null = null
-	// Debug log file handle
-	private debugLogFile: number | null = null
 
 	constructor(options: ExtensionHostOptions) {
 		super()
@@ -103,44 +101,6 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	private stopSpinner(_success?: boolean, _text?: string): void {
 		// Disabled - ora interferes with streaming
-	}
-
-	/**
-	 * Initialize debug log file for tracking streaming output
-	 */
-	private initDebugLog(): void {
-		const logPath = path.join(this.options.workspacePath, "cli-stream-debug.log")
-		try {
-			// Truncate or create the log file
-			this.debugLogFile = fs.openSync(logPath, "w")
-			this.debugLog("=== CLI Streaming Debug Log ===")
-			this.debugLog(`Started at: ${new Date().toISOString()}`)
-		} catch {
-			// If we can't create the log file, just disable debug logging
-			this.debugLogFile = null
-		}
-	}
-
-	/**
-	 * Write to debug log file
-	 */
-	private debugLog(message: string): void {
-		if (this.debugLogFile !== null) {
-			const timestamp = new Date().toISOString()
-			const line = `[${timestamp}] ${message}\n`
-			fs.writeSync(this.debugLogFile, line)
-		}
-	}
-
-	/**
-	 * Close debug log file
-	 */
-	private closeDebugLog(): void {
-		if (this.debugLogFile !== null) {
-			this.debugLog("=== Log ended ===")
-			fs.closeSync(this.debugLogFile)
-			this.debugLogFile = null
-		}
 	}
 
 	private log(...args: unknown[]): void {
@@ -216,9 +176,6 @@ export class ExtensionHost extends EventEmitter {
 
 		// Set up quiet mode before loading extension
 		this.setupQuietMode()
-
-		// Initialize debug log for streaming analysis
-		this.initDebugLog()
 
 		// Verify extension path exists
 		const bundlePath = path.join(this.options.extensionPath, "extension.js")
@@ -689,25 +646,6 @@ export class ExtensionHost extends EventEmitter {
 			// Track message processing for verbose debug output
 			this.processedMessageCount++
 
-			// Log every state update received
-			this.debugLog(`\n=== STATE UPDATE #${this.processedMessageCount} (${clineMessages.length} messages) ===`)
-
-			// Log summary of each message in this state update
-			for (const message of clineMessages) {
-				if (!message) continue
-				const ts = message.ts as number | undefined
-				const isPartial = message.partial as boolean | undefined
-				const text = message.text as string
-				const say = message.say as string | undefined
-
-				if (say === "reasoning" || say === "text" || say === "thinking") {
-					const prevLen = this.streamedContent.get(ts!)?.text.length ?? 0
-					this.debugLog(
-						`  MSG ts=${ts} say=${say} partial=${isPartial} textLen=${text?.length ?? 0} prevLen=${prevLen}`,
-					)
-				}
-			}
-
 			// Verbose: log state update summary
 			if (this.options.verbose) {
 				this.log(`State update #${this.processedMessageCount}: ${clineMessages.length} messages`)
@@ -759,10 +697,6 @@ export class ExtensionHost extends EventEmitter {
 		const log = this.getOutputLog()
 		const error = this.getOutputError()
 
-		this.debugLog(
-			`messageUpdated: ts=${ts} say=${say} ask=${ask} partial=${isPartial} textLen=${text?.length ?? 0}`,
-		)
-
 		// Handle "say" type messages
 		if (type === "say" && say) {
 			this.handleSayMessage(ts, say, text, isPartial, log, error)
@@ -777,11 +711,6 @@ export class ExtensionHost extends EventEmitter {
 	 * Write streaming output directly to stdout (bypassing quiet mode if needed)
 	 */
 	private writeStream(text: string): void {
-		// Log to debug file
-		const preview = text.length > 50 ? text.slice(0, 50) + "..." : text
-		this.debugLog(`WRITE: "${preview.replace(/\n/g, "\\n")}" (${text.length} chars)`)
-
-		// Write to stdout
 		process.stdout.write(text)
 	}
 
@@ -791,13 +720,8 @@ export class ExtensionHost extends EventEmitter {
 	private streamContent(ts: number, text: string, header: string): void {
 		const previous = this.streamedContent.get(ts)
 
-		this.debugLog(
-			`streamContent: ts=${ts}, header=${header}, textLen=${text.length}, prevLen=${previous?.text.length ?? 0}`,
-		)
-
 		if (!previous) {
 			// First time seeing this message - output header and initial text
-			this.debugLog(`  -> NEW MESSAGE: outputting header + initial text`)
 			this.writeStream(`\n${header} `)
 			this.writeStream(text)
 			this.streamedContent.set(ts, { text, headerShown: true })
@@ -805,11 +729,8 @@ export class ExtensionHost extends EventEmitter {
 		} else if (text.length > previous.text.length && text.startsWith(previous.text)) {
 			// Text has grown - output delta
 			const delta = text.slice(previous.text.length)
-			this.debugLog(`  -> DELTA: ${delta.length} new chars`)
 			this.writeStream(delta)
 			this.streamedContent.set(ts, { text, headerShown: true })
-		} else {
-			this.debugLog(`  -> SKIPPED: text hasn't grown or doesn't match prefix`)
 		}
 	}
 
@@ -1117,9 +1038,6 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	async dispose(): Promise<void> {
 		this.log("Disposing extension host...")
-
-		// Close debug log
-		this.closeDebugLog()
 
 		// Stop spinner if running
 		this.isWaitingForResponse = false
