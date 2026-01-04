@@ -1,9 +1,18 @@
 import * as path from "path"
+import * as fs from "fs"
 import { Uri } from "../classes/Uri.js"
 import { FileMemento } from "../storage/Memento.js"
 import { FileSecretStorage } from "../storage/SecretStorage.js"
 import { hashWorkspacePath, ensureDirectoryExists } from "../utils/paths.js"
-import type { ExtensionContext, Disposable, Memento, SecretStorage, ExtensionMode } from "../types.js"
+import type {
+	ExtensionContext,
+	Extension,
+	Disposable,
+	Memento,
+	SecretStorage,
+	ExtensionMode,
+	ExtensionKind,
+} from "../types.js"
 
 /**
  * Options for creating an ExtensionContext
@@ -62,6 +71,7 @@ export class ExtensionContextImpl implements ExtensionContext {
 	public logUri: Uri
 	public logPath: string
 	public extensionMode: ExtensionMode
+	public extension: Extension<unknown> | undefined
 
 	constructor(options: ExtensionContextOptions) {
 		this.extensionPath = options.extensionPath
@@ -99,6 +109,37 @@ export class ExtensionContextImpl implements ExtensionContext {
 		})
 
 		this.secrets = new FileSecretStorage(this.globalStoragePath)
+
+		// Load extension metadata (packageJSON)
+		this.extension = this.loadExtensionMetadata()
+	}
+
+	/**
+	 * Load extension metadata from package.json
+	 */
+	private loadExtensionMetadata(): Extension<unknown> | undefined {
+		try {
+			// Try to load package.json from extension path
+			const packageJsonPath = path.join(this.extensionPath, "package.json")
+			if (fs.existsSync(packageJsonPath)) {
+				const packageJSON = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"))
+				const extensionId = `${packageJSON.publisher || "unknown"}.${packageJSON.name || "unknown"}`
+
+				return {
+					id: extensionId,
+					extensionUri: this.extensionUri,
+					extensionPath: this.extensionPath,
+					isActive: true,
+					packageJSON,
+					exports: undefined,
+					extensionKind: 1 as ExtensionKind, // UI
+					activate: () => Promise.resolve(undefined),
+				}
+			}
+		} catch {
+			// Ignore errors loading package.json
+		}
+		return undefined
 	}
 
 	/**

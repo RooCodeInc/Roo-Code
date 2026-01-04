@@ -56,6 +56,7 @@ export {
 	EndOfLine,
 	UIKind,
 	ExtensionMode,
+	ExtensionKind,
 	FileType,
 	DecorationRangeBehavior,
 	OverviewRulerLane,

@@ -166,6 +166,28 @@ export interface SecretStorageChangeEvent {
 }
 
 /**
+ * Represents an extension
+ */
+export interface Extension<T> {
+	id: string
+	extensionUri: IUri
+	extensionPath: string
+	isActive: boolean
+	packageJSON: Record<string, unknown>
+	exports: T
+	extensionKind: ExtensionKind
+	activate(): Thenable<T>
+}
+
+/**
+ * Extension kind enum
+ */
+export enum ExtensionKind {
+	UI = 1,
+	Workspace = 2,
+}
+
+/**
  * Extension context provided to extension activation
  */
 export interface ExtensionContext {
@@ -183,6 +205,7 @@ export interface ExtensionContext {
 	logUri: IUri
 	logPath: string
 	extensionMode: ExtensionMode
+	extension: Extension<unknown> | undefined
 }
 
 /**

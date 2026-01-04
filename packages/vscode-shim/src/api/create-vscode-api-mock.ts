@@ -60,9 +60,25 @@ import type { UriHandler } from "../interfaces/webview.js"
 const Package = { version: "1.0.0" }
 
 /**
+ * Options for creating the VSCode API mock
+ */
+export interface VSCodeAPIMockOptions {
+	/**
+	 * Custom app root path (for locating ripgrep and other VSCode resources).
+	 * Defaults to the directory containing this module.
+	 */
+	appRoot?: string
+}
+
+/**
  * Create a complete VSCode API mock for CLI mode
  */
-export function createVSCodeAPIMock(extensionRootPath: string, workspacePath: string, identity?: IdentityInfo) {
+export function createVSCodeAPIMock(
+	extensionRootPath: string,
+	workspacePath: string,
+	identity?: IdentityInfo,
+	options?: VSCodeAPIMockOptions,
+) {
 	const context = new ExtensionContextImpl({
 		extensionPath: extensionRootPath,
 		workspacePath: workspacePath,
@@ -77,7 +93,7 @@ export function createVSCodeAPIMock(extensionRootPath: string, workspacePath: st
 	// Environment mock with identity values
 	const env = {
 		appName: `wrapper|cli|cli|${Package.version}`,
-		appRoot: import.meta.dirname,
+		appRoot: options?.appRoot || import.meta.dirname,
 		language: "en",
 		machineId: identity?.machineId || machineIdSync(),
 		sessionId: identity?.sessionId || "cli-session-id",
