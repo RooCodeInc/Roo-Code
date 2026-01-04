@@ -1,0 +1,35 @@
+{
+	"name": "@roo-code/cli",
+	"version": "0.1.0",
+	"description": "Roo Code CLI - Run the Roo Code agent from the command line",
+	"private": true,
+	"type": "module",
+	"main": "dist/index.js",
+	"bin": {
+		"roo": "dist/index.js"
+	},
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"start": "node dist/index.js",
+		"clean": "rimraf dist",
+		"check-types": "tsc --noEmit",
+		"lint": "eslint src --ext .ts",
+		"format": "prettier --write 'src/**/*.ts'",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@roo-code/vscode-shim": "workspace:^",
+		"@vscode/ripgrep": "^1.15.9",
+		"commander": "^12.1.0"
+	},
+	"devDependencies": {
+		"@roo-code/config-eslint": "workspace:^",
+		"@roo-code/config-typescript": "workspace:^",
+		"@types/node": "^24.1.0",
+		"rimraf": "^6.0.1",
+		"tsup": "^8.4.0",
+		"typescript": "5.8.3",
+		"vitest": "^3.2.3"
+	}
+}

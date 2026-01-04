@@ -53,6 +53,9 @@
 		]
 	},
 	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@vscode/ripgrep"
+		],
 		"overrides": {
 			"tar-fs": ">=3.1.1",
 			"esbuild": ">=0.25.0",
