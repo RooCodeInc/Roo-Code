@@ -527,6 +527,31 @@ describe("ExtensionHost", () => {
 			expect(outputSpy).not.toHaveBeenCalled()
 		})
 
+		it("should not output completion_result for partial messages", () => {
+			const emitSpy = vi.spyOn(host, "emit")
+
+			// Partial message should not trigger output or taskComplete
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "", true)
+
+			expect(outputSpy).not.toHaveBeenCalled()
+			expect(emitSpy).not.toHaveBeenCalledWith("taskComplete")
+		})
+
+		it("should output completion_result text when complete message arrives after partial", () => {
+			const emitSpy = vi.spyOn(host, "emit")
+
+			// First, a partial message with empty text (simulates streaming)
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "", true)
+			outputSpy.mockClear()
+			emitSpy.mockClear()
+
+			// Then, the complete message with the actual completion text
+			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task completed successfully!", false)
+
+			expect(outputSpy).toHaveBeenCalledWith("\n[Task Complete]", "Task completed successfully!")
+			expect(emitSpy).toHaveBeenCalledWith("taskComplete")
+		})
+
 		it("should track displayed messages", () => {
 			callPrivate(host, "handleSayMessage", 123, "tool", "test", false)
 

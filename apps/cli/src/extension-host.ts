@@ -820,11 +820,15 @@ export class ExtensionHost extends EventEmitter {
 				break
 
 			case "completion_result":
-				if (!alreadyDisplayedComplete) {
+				// Only process when message is complete (not partial)
+				if (!isPartial && !alreadyDisplayedComplete) {
 					this.isWaitingForResponse = false
 					this.output("\n[Task Complete]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskComplete")
+				} else if (isPartial) {
+					// Track partial messages but don't output yet - wait for complete message
+					this.displayedMessages.set(ts, { text: text || "", partial: true })
 				}
 				break
 
