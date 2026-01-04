@@ -30,6 +30,7 @@ export interface ExtensionHostOptions {
 	apiKey?: string
 	apiProvider?: string
 	model?: string
+	mode?: string
 }
 
 interface ExtensionModule {
@@ -493,38 +494,48 @@ export class ExtensionHost extends EventEmitter {
 		// In interactive mode (default), we'll prompt the user for each action
 		if (this.options.nonInteractive) {
 			this.log("Non-interactive mode: enabling auto-approval settings...")
+			const settings: Record<string, unknown> = {
+				autoApprovalEnabled: true,
+				alwaysAllowReadOnly: true,
+				alwaysAllowReadOnlyOutsideWorkspace: true,
+				alwaysAllowWrite: true,
+				alwaysAllowWriteOutsideWorkspace: true,
+				alwaysAllowWriteProtected: false, // Keep protected files safe.
+				alwaysAllowBrowser: true,
+				alwaysAllowMcp: true,
+				alwaysAllowModeSwitch: true,
+				alwaysAllowSubtasks: true,
+				alwaysAllowExecute: true,
+				alwaysAllowFollowupQuestions: true,
+				// Enable reasoning/thinking tokens for models that support it.
+				enableReasoningEffort: true,
+				reasoningEffort: "medium",
+				// Allow all commands with wildcard (required for command auto-approval).
+				allowedCommands: ["*"],
+			}
+			// Include mode if specified
+			if (this.options.mode) {
+				settings.mode = this.options.mode
+			}
 			this.sendToExtension({
 				type: "updateSettings",
-				updatedSettings: {
-					autoApprovalEnabled: true,
-					alwaysAllowReadOnly: true,
-					alwaysAllowReadOnlyOutsideWorkspace: true,
-					alwaysAllowWrite: true,
-					alwaysAllowWriteOutsideWorkspace: true,
-					alwaysAllowWriteProtected: false, // Keep protected files safe.
-					alwaysAllowBrowser: true,
-					alwaysAllowMcp: true,
-					alwaysAllowModeSwitch: true,
-					alwaysAllowSubtasks: true,
-					alwaysAllowExecute: true,
-					alwaysAllowFollowupQuestions: true,
-					// Enable reasoning/thinking tokens for models that support it.
-					enableReasoningEffort: true,
-					reasoningEffort: "medium",
-					// Allow all commands with wildcard (required for command auto-approval).
-					allowedCommands: ["*"],
-				},
+				updatedSettings: settings,
 			})
 		} else {
 			this.log("Interactive mode: user will be prompted for approvals...")
+			const settings: Record<string, unknown> = {
+				autoApprovalEnabled: false,
+				// Enable reasoning/thinking tokens for models that support it
+				enableReasoningEffort: true,
+				reasoningEffort: "medium",
+			}
+			// Include mode if specified
+			if (this.options.mode) {
+				settings.mode = this.options.mode
+			}
 			this.sendToExtension({
 				type: "updateSettings",
-				updatedSettings: {
-					autoApprovalEnabled: false,
-					// Enable reasoning/thinking tokens for models that support it
-					enableReasoningEffort: true,
-					reasoningEffort: "medium",
-				},
+				updatedSettings: settings,
 			})
 		}
 

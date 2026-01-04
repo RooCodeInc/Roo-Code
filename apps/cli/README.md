@@ -80,6 +80,7 @@ In non-interactive mode:
 | `-k, --api-key <key>`       | API key for the LLM provider                                | From env var      |
 | `-p, --provider <provider>` | API provider (anthropic, openai, openrouter, etc.)          | `anthropic`       |
 | `-m, --model <model>`       | Model to use                                                | Provider default  |
+| `-M, --mode <mode>`         | Mode to start in (code, architect, ask, debug, etc.)        | Default mode      |
 
 ## Environment Variables
 

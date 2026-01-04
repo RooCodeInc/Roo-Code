@@ -30,6 +30,7 @@ program
 	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to ANTHROPIC_API_KEY env var)")
 	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "anthropic")
 	.option("-m, --model <model>", "Model to use")
+	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)")
 	.action(
 		async (
 			prompt: string,
@@ -43,6 +44,7 @@ program
 				apiKey?: string
 				provider: string
 				model?: string
+				mode?: string
 			},
 		) => {
 			// Set up quiet mode - suppress VSCode shim logs
@@ -92,6 +94,7 @@ program
 				apiKey,
 				apiProvider: options.provider,
 				model: options.model,
+				mode: options.mode,
 			})
 
 			// Handle SIGINT (Ctrl+C)
