@@ -13,6 +13,7 @@ import { createRequire } from "module"
 import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
+import ora, { type Ora } from "ora"
 import { createVSCodeAPI } from "@roo-code/vscode-shim"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -59,25 +60,114 @@ export class ExtensionHost extends EventEmitter {
 		info: typeof console.info
 	} | null = null
 	private originalProcessEmitWarning: typeof process.emitWarning | null = null
+	private spinner: Ora | null = null
+	private isWaitingForResponse = false
+	// Track seen tool calls to avoid duplicate display
+	private seenToolCalls: Set<string> = new Set()
+	// Track displayed messages by ts to avoid duplicates and show updates
+	private displayedMessages: Map<number, { text: string; partial: boolean }> = new Map()
+	// Track streamed content by ts for delta computation
+	private streamedContent: Map<number, { text: string; headerShown: boolean }> = new Map()
+	// Track message processing for verbose debug output
+	private processedMessageCount = 0
+	private lastProcessedMessageTs: number | undefined = undefined
+	// Track if we're currently streaming a message (to manage newlines)
+	private currentlyStreamingTs: number | null = null
+	// Debug log file handle
+	private debugLogFile: number | null = null
 
 	constructor(options: ExtensionHostOptions) {
 		super()
 		this.options = options
 	}
 
+	/**
+	 * Start the loading spinner with the given text
+	 * DISABLED - ora interferes with streaming output
+	 */
+	private startSpinner(_text: string): void {
+		// Disabled - ora interferes with streaming
+	}
+
+	/**
+	 * Update the spinner text without stopping it
+	 * DISABLED - ora interferes with streaming output
+	 */
+	private updateSpinner(_text: string): void {
+		// Disabled - ora interferes with streaming
+	}
+
+	/**
+	 * Stop the spinner (optionally with success/fail indicator)
+	 * DISABLED - ora interferes with streaming output
+	 */
+	private stopSpinner(_success?: boolean, _text?: string): void {
+		// Disabled - ora interferes with streaming
+	}
+
+	/**
+	 * Initialize debug log file for tracking streaming output
+	 */
+	private initDebugLog(): void {
+		const logPath = path.join(this.options.workspacePath, "cli-stream-debug.log")
+		try {
+			// Truncate or create the log file
+			this.debugLogFile = fs.openSync(logPath, "w")
+			this.debugLog("=== CLI Streaming Debug Log ===")
+			this.debugLog(`Started at: ${new Date().toISOString()}`)
+		} catch (err) {
+			// If we can't create the log file, just disable debug logging
+			this.debugLogFile = null
+		}
+	}
+
+	/**
+	 * Write to debug log file
+	 */
+	private debugLog(message: string): void {
+		if (this.debugLogFile !== null) {
+			const timestamp = new Date().toISOString()
+			const line = `[${timestamp}] ${message}\n`
+			fs.writeSync(this.debugLogFile, line)
+		}
+	}
+
+	/**
+	 * Close debug log file
+	 */
+	private closeDebugLog(): void {
+		if (this.debugLogFile !== null) {
+			this.debugLog("=== Log ended ===")
+			fs.closeSync(this.debugLogFile)
+			this.debugLogFile = null
+		}
+	}
+
 	private log(...args: unknown[]): void {
-		if (this.options.verbose && !this.options.quiet) {
-			// Use original console if available to avoid suppression
+		if (this.options.verbose) {
+			// Use original console if available to avoid quiet mode suppression
 			const logFn = this.originalConsole?.log || console.log
 			logFn("[ExtensionHost]", ...args)
 		}
 	}
 
 	/**
+	 * Suppress Node.js warnings (like MaxListenersExceededWarning)
+	 * This is called regardless of quiet mode to prevent warnings from interrupting output
+	 */
+	private suppressNodeWarnings(): void {
+		// Suppress process warnings (like MaxListenersExceededWarning)
+		this.originalProcessEmitWarning = process.emitWarning
+		process.emitWarning = () => {}
+
+		// Also suppress via the warning event handler
+		process.on("warning", () => {})
+	}
+
+	/**
 	 * Suppress console output from the extension when quiet mode is enabled.
 	 * This intercepts console.log, console.warn, console.info, console.debug
 	 * but allows console.error through for critical errors.
-	 * Also suppresses Node.js process warnings (like MaxListenersExceededWarning).
 	 */
 	private setupQuietMode(): void {
 		if (!this.options.quiet) return
@@ -91,18 +181,12 @@ export class ExtensionHost extends EventEmitter {
 			info: console.info,
 		}
 
-		// Save original process.emitWarning
-		this.originalProcessEmitWarning = process.emitWarning
-
 		// Replace with no-op functions (except error)
 		console.log = () => {}
 		console.warn = () => {}
 		console.debug = () => {}
 		console.info = () => {}
 		// Keep console.error for critical errors
-
-		// Suppress process warnings (like MaxListenersExceededWarning)
-		process.emitWarning = () => {}
 	}
 
 	/**
@@ -127,8 +211,14 @@ export class ExtensionHost extends EventEmitter {
 	async activate(): Promise<void> {
 		this.log("Activating extension...")
 
+		// Suppress Node.js warnings (like MaxListenersExceededWarning) before anything else
+		this.suppressNodeWarnings()
+
 		// Set up quiet mode before loading extension
 		this.setupQuietMode()
+
+		// Initialize debug log for streaming analysis
+		this.initDebugLog()
 
 		// Verify extension path exists
 		const bundlePath = path.join(this.options.extensionPath, "extension.js")
@@ -301,6 +391,9 @@ export class ExtensionHost extends EventEmitter {
 			case "openrouter":
 				if (apiKey) config.openRouterApiKey = apiKey
 				if (model) config.openRouterModelId = model
+				// Enable reasoning/thinking for models that support it
+				config.enableReasoningEffort = true
+				config.reasoningEffort = "medium"
 				break
 
 			case "gemini":
@@ -458,7 +551,34 @@ export class ExtensionHost extends EventEmitter {
 		// Set up message listener for extension responses
 		this.setupMessageListener()
 
-		// Inject API configuration first
+		// Inject auto-approval settings first (so tools execute without prompts)
+		this.log("Injecting auto-approval settings...")
+		this.sendToExtension({
+			type: "updateSettings",
+			updatedSettings: {
+				autoApprovalEnabled: true,
+				alwaysAllowReadOnly: true,
+				alwaysAllowReadOnlyOutsideWorkspace: true,
+				alwaysAllowWrite: true,
+				alwaysAllowWriteOutsideWorkspace: true,
+				alwaysAllowWriteProtected: false, // Keep protected files safe
+				alwaysAllowBrowser: true,
+				alwaysAllowMcp: true,
+				alwaysAllowModeSwitch: true,
+				alwaysAllowSubtasks: true,
+				alwaysAllowExecute: true,
+				alwaysAllowFollowupQuestions: true,
+				followupAutoApproveTimeoutMs: 0, // Instant approval
+				// Enable reasoning/thinking tokens for models that support it
+				enableReasoningEffort: true,
+				reasoningEffort: "medium",
+			},
+		})
+
+		// Give the extension a moment to process the settings
+		await new Promise<void>((resolve) => setTimeout(resolve, 100))
+
+		// Inject API configuration
 		if (this.options.apiKey) {
 			this.log("Injecting API configuration...")
 			const apiConfiguration = this.buildApiConfiguration()
@@ -474,6 +594,10 @@ export class ExtensionHost extends EventEmitter {
 			// Give the extension a moment to process the config
 			await new Promise<void>((resolve) => setTimeout(resolve, 100))
 		}
+
+		// Start the loading spinner
+		this.isWaitingForResponse = true
+		this.startSpinner("Thinking...")
 
 		// Send the task message
 		// This matches the WebviewMessage type from the extension
@@ -511,6 +635,11 @@ export class ExtensionHost extends EventEmitter {
 		switch (msg.type) {
 			case "state":
 				this.handleStateMessage(msg)
+				break
+
+			case "messageUpdated":
+				// This is the streaming update - handle individual message updates
+				this.handleMessageUpdated(msg)
 				break
 
 			case "action":
@@ -553,106 +682,376 @@ export class ExtensionHost extends EventEmitter {
 		const clineMessages = state.clineMessages as Array<Record<string, unknown>> | undefined
 
 		if (clineMessages && clineMessages.length > 0) {
-			// Get the last message - TypeScript needs explicit undefined check
-			const lastMessage = clineMessages[clineMessages.length - 1]
-			if (!lastMessage) return
-
 			// Use original console methods to bypass quiet mode for user-facing output
 			const log = this.getOutputLog()
 			const error = this.getOutputError()
 
-			// Display assistant messages
-			if (lastMessage.type === "say") {
-				const say = lastMessage.say as string
-				const text = lastMessage.text as string
+			// Track message processing for verbose debug output
+			this.processedMessageCount++
 
-				switch (say) {
-					case "text":
-					case "thinking":
-						if (text) {
-							log("\n[Assistant]", text)
-						}
-						break
+			// Log every state update received
+			this.debugLog(`\n=== STATE UPDATE #${this.processedMessageCount} (${clineMessages.length} messages) ===`)
 
-					case "command_output":
-						// Show command output
-						if (text) {
-							log("\n[Command Output]", text)
-						}
-						break
+			// Log summary of each message in this state update
+			for (const message of clineMessages) {
+				if (!message) continue
+				const ts = message.ts as number | undefined
+				const isPartial = message.partial as boolean | undefined
+				const text = message.text as string
+				const type = message.type as string
+				const say = message.say as string | undefined
+				const ask = message.ask as string | undefined
 
-					case "completion_result":
-						log("\n[Task Complete]", text || "")
-						this.emit("taskComplete")
-						break
-
-					case "error":
-						error("\n[Error]", text || "Unknown error")
-						this.emit("taskError", text)
-						break
-
-					case "tool":
-						// Tool usage - always show (important for understanding agent actions)
-						if (text) {
-							log("\n[Tool]", text)
-						}
-						break
-
-					default:
-						// Other say types - show in verbose mode
-						if (this.options.verbose && !this.options.quiet) {
-							log(`\n[${say}]`, text || "")
-						}
+				if (say === "reasoning" || say === "text" || say === "thinking") {
+					const prevLen = this.streamedContent.get(ts!)?.text.length ?? 0
+					this.debugLog(
+						`  MSG ts=${ts} say=${say} partial=${isPartial} textLen=${text?.length ?? 0} prevLen=${prevLen}`,
+					)
 				}
-			} else if (lastMessage.type === "ask") {
-				const ask = lastMessage.ask as string
-				const text = lastMessage.text as string
+			}
 
-				// Handle different ask types
-				switch (ask) {
-					case "command":
-						// Show the command being requested
-						log("\n[Running Command]", text || "")
-						break
-					case "command_output":
-						// This is asking to show output - no need to display again
-						break
-					case "tool":
-						// Tool call request - parse and display the tool info
-						if (text) {
-							try {
-								const toolInfo = JSON.parse(text)
-								const toolName = toolInfo.tool || "unknown"
-								log(`\n[Tool Call] ${toolName}`)
-								// Show key parameters
-								if (toolInfo.path) {
-									log(`  Path: ${toolInfo.path}`)
-								}
-								if (toolInfo.content) {
-									const preview =
-										toolInfo.content.length > 100
-											? toolInfo.content.substring(0, 100) + "..."
-											: toolInfo.content
-									log(`  Content: ${preview}`)
-								}
-							} catch {
-								// If not JSON, just show the text
-								log("\n[Tool Call]", text)
-							}
-						}
-						break
-					default:
-						// Other ask types - show what's being asked
-						if (text) {
-							log("\n[Assistant asks]", text)
-						}
+			// Verbose: log state update summary
+			if (this.options.verbose) {
+				this.log(`State update #${this.processedMessageCount}: ${clineMessages.length} messages`)
+			}
+
+			// Process all messages to find new or updated ones
+			for (const message of clineMessages) {
+				if (!message) continue
+
+				const ts = message.ts as number | undefined
+				const isPartial = message.partial as boolean | undefined
+				const text = message.text as string
+				const type = message.type as string
+				const say = message.say as string | undefined
+				const ask = message.ask as string | undefined
+
+				if (!ts) continue
+
+				// Handle "say" type messages
+				if (type === "say" && say) {
+					this.handleSayMessage(ts, say, text, isPartial, log, error)
 				}
-
-				// For now, auto-approve everything
-				// In a real implementation, this would prompt the user
-				this.autoApprove(ask)
+				// Handle "ask" type messages
+				else if (type === "ask" && ask) {
+					this.handleAskMessage(ts, ask, text, isPartial, log)
+				}
 			}
 		}
+	}
+
+	/**
+	 * Handle messageUpdated - individual streaming updates for a single message
+	 * This is where real-time streaming happens!
+	 */
+	private handleMessageUpdated(msg: Record<string, unknown>): void {
+		const clineMessage = msg.clineMessage as Record<string, unknown> | undefined
+		if (!clineMessage) return
+
+		const ts = clineMessage.ts as number | undefined
+		const isPartial = clineMessage.partial as boolean | undefined
+		const text = clineMessage.text as string
+		const type = clineMessage.type as string
+		const say = clineMessage.say as string | undefined
+		const ask = clineMessage.ask as string | undefined
+
+		if (!ts) return
+
+		// Use original console methods to bypass quiet mode for user-facing output
+		const log = this.getOutputLog()
+		const error = this.getOutputError()
+
+		this.debugLog(
+			`messageUpdated: ts=${ts} say=${say} ask=${ask} partial=${isPartial} textLen=${text?.length ?? 0}`,
+		)
+
+		// Handle "say" type messages
+		if (type === "say" && say) {
+			this.handleSayMessage(ts, say, text, isPartial, log, error)
+		}
+		// Handle "ask" type messages
+		else if (type === "ask" && ask) {
+			this.handleAskMessage(ts, ask, text, isPartial, log)
+		}
+	}
+
+	/**
+	 * Write streaming output directly to stdout (bypassing quiet mode if needed)
+	 */
+	private writeStream(text: string): void {
+		// Log to debug file
+		const preview = text.length > 50 ? text.slice(0, 50) + "..." : text
+		this.debugLog(`WRITE: "${preview.replace(/\n/g, "\\n")}" (${text.length} chars)`)
+
+		// Write to stdout
+		process.stdout.write(text)
+	}
+
+	/**
+	 * Stream content with delta computation - only output new characters
+	 */
+	private streamContent(ts: number, text: string, header: string): void {
+		const previous = this.streamedContent.get(ts)
+
+		this.debugLog(
+			`streamContent: ts=${ts}, header=${header}, textLen=${text.length}, prevLen=${previous?.text.length ?? 0}`,
+		)
+
+		if (!previous) {
+			// First time seeing this message - output header and initial text
+			this.debugLog(`  -> NEW MESSAGE: outputting header + initial text`)
+			this.writeStream(`\n${header} `)
+			this.writeStream(text)
+			this.streamedContent.set(ts, { text, headerShown: true })
+			this.currentlyStreamingTs = ts
+		} else if (text.length > previous.text.length && text.startsWith(previous.text)) {
+			// Text has grown - output delta
+			const delta = text.slice(previous.text.length)
+			this.debugLog(`  -> DELTA: ${delta.length} new chars`)
+			this.writeStream(delta)
+			this.streamedContent.set(ts, { text, headerShown: true })
+		} else {
+			this.debugLog(`  -> SKIPPED: text hasn't grown or doesn't match prefix`)
+		}
+	}
+
+	/**
+	 * Finish streaming a message (add newline) and optionally restart spinner
+	 */
+	private finishStream(ts: number, restartSpinner = false): void {
+		if (this.currentlyStreamingTs === ts) {
+			this.writeStream("\n")
+			this.currentlyStreamingTs = null
+			// Restart spinner if requested and we're still waiting for response
+			if (restartSpinner && this.isWaitingForResponse) {
+				this.startSpinner("Processing...")
+			}
+		}
+	}
+
+	/**
+	 * Handle "say" type messages
+	 */
+	private handleSayMessage(
+		ts: number,
+		say: string,
+		text: string,
+		isPartial: boolean | undefined,
+		log: typeof console.log,
+		error: typeof console.error,
+	): void {
+		const previousDisplay = this.displayedMessages.get(ts)
+		const alreadyDisplayedComplete = previousDisplay && !previousDisplay.partial
+
+		switch (say) {
+			case "text":
+				// Skip the initial user prompt echo (first message with no prior messages)
+				if (this.displayedMessages.size === 0 && !previousDisplay) {
+					this.displayedMessages.set(ts, { text, partial: !!isPartial })
+					break
+				}
+
+				if (isPartial && text) {
+					// Stream partial content
+					this.streamContent(ts, text, "[Assistant]")
+					this.displayedMessages.set(ts, { text, partial: true })
+				} else if (!isPartial && text && !alreadyDisplayedComplete) {
+					// Message complete - ensure all content is output
+					const streamed = this.streamedContent.get(ts)
+					if (streamed) {
+						// We were streaming - output any remaining delta and finish
+						if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+							const delta = text.slice(streamed.text.length)
+							this.writeStream(delta)
+						}
+						this.finishStream(ts)
+					} else {
+						// Not streamed yet - output complete message
+						this.stopSpinner()
+						log("\n[Assistant]", text)
+					}
+					this.displayedMessages.set(ts, { text, partial: false })
+					this.streamedContent.set(ts, { text, headerShown: true })
+
+					if (this.isWaitingForResponse) {
+						this.startSpinner("Thinking...")
+					}
+				}
+				break
+
+			case "thinking":
+			case "reasoning":
+				// Stream reasoning content in real-time
+				if (isPartial && text) {
+					this.streamContent(ts, text, "[reasoning]")
+					this.displayedMessages.set(ts, { text, partial: true })
+				} else if (!isPartial && text && !alreadyDisplayedComplete) {
+					// Reasoning complete - finish the stream
+					const streamed = this.streamedContent.get(ts)
+					if (streamed) {
+						if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+							const delta = text.slice(streamed.text.length)
+							this.writeStream(delta)
+						}
+						this.finishStream(ts)
+					} else {
+						this.stopSpinner()
+						log("\n[reasoning]", text)
+					}
+					this.displayedMessages.set(ts, { text, partial: false })
+				}
+				break
+
+			case "command_output":
+				// Show command output (usually not partial)
+				if (text && !alreadyDisplayedComplete) {
+					this.stopSpinner()
+					log("\n[Command Output]", text)
+					if (this.isWaitingForResponse) {
+						this.startSpinner("Processing...")
+					}
+					this.displayedMessages.set(ts, { text, partial: false })
+				}
+				break
+
+			case "completion_result":
+				if (!alreadyDisplayedComplete) {
+					this.isWaitingForResponse = false
+					this.stopSpinner(true, "Task completed")
+					log("\n[Task Complete]", text || "")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+					this.emit("taskComplete")
+				}
+				break
+
+			case "error":
+				if (!alreadyDisplayedComplete) {
+					this.isWaitingForResponse = false
+					this.stopSpinner(false, "Error occurred")
+					error("\n[Error]", text || "Unknown error")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+					this.emit("taskError", text)
+				}
+				break
+
+			case "tool":
+				// Tool usage - show when complete
+				if (text && !alreadyDisplayedComplete) {
+					this.stopSpinner()
+					log("\n[Tool]", text)
+					if (this.isWaitingForResponse) {
+						this.startSpinner("Processing...")
+					}
+					this.displayedMessages.set(ts, { text, partial: false })
+				}
+				break
+
+			case "api_req_started":
+				// API request started - update spinner
+				this.updateSpinner("Waiting for API response...")
+				break
+
+			default:
+				// Other say types - show in verbose mode
+				if (this.options.verbose && text && !alreadyDisplayedComplete) {
+					this.stopSpinner()
+					log(`\n[${say}]`, text || "")
+					if (this.isWaitingForResponse) {
+						this.startSpinner("Processing...")
+					}
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+		}
+	}
+
+	/**
+	 * Handle "ask" type messages
+	 */
+	private handleAskMessage(
+		ts: number,
+		ask: string,
+		text: string,
+		isPartial: boolean | undefined,
+		log: typeof console.log,
+	): void {
+		const previousDisplay = this.displayedMessages.get(ts)
+		const alreadyDisplayedComplete = previousDisplay && !previousDisplay.partial
+
+		switch (ask) {
+			case "command":
+				if (!alreadyDisplayedComplete) {
+					this.stopSpinner()
+					log("\n[Running Command]", text || "")
+					this.startSpinner("Running command...")
+					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				}
+				break
+
+			case "command_output":
+				// This is asking to show output - no need to display again
+				break
+
+			case "tool":
+				// Tool call request - parse and display the tool info
+				if (text) {
+					try {
+						const toolInfo = JSON.parse(text)
+						const toolName = toolInfo.tool || "unknown"
+
+						// Create a unique key for this tool call - use ts only (not partial state)
+						// This ensures each tool call is displayed only once
+						const toolCallKey = `${toolName}-${ts}`
+						const isDuplicate = this.seenToolCalls.has(toolCallKey)
+
+						// Verbose debug logging for tool calls
+						if (this.options.verbose) {
+							this.log(
+								`Tool call: name=${toolName}, partial=${isPartial}, ` +
+									`ts=${ts}, isDuplicate=${isDuplicate}, key=${toolCallKey}`,
+							)
+						}
+
+						// Only display if not already shown for this ts
+						if (!isDuplicate) {
+							this.seenToolCalls.add(toolCallKey)
+							this.stopSpinner()
+							log(`\n[Tool Call] ${toolName}`)
+							// Show key parameters
+							if (toolInfo.path) {
+								log(`  Path: ${toolInfo.path}`)
+							}
+							if (toolInfo.content) {
+								const preview =
+									toolInfo.content.length > 100
+										? toolInfo.content.substring(0, 100) + "..."
+										: toolInfo.content
+								log(`  Content: ${preview}`)
+							}
+							this.startSpinner(`Executing ${toolName}...`)
+						}
+					} catch {
+						// If not JSON, just show the text
+						if (!alreadyDisplayedComplete) {
+							this.stopSpinner()
+							log("\n[Tool Call]", text)
+							this.startSpinner("Executing tool...")
+							this.displayedMessages.set(ts, { text, partial: false })
+						}
+					}
+				}
+				break
+
+			default:
+				// Other ask types - show what's being asked
+				if (text && !alreadyDisplayedComplete) {
+					this.stopSpinner()
+					log("\n[Assistant asks]", text)
+					this.displayedMessages.set(ts, { text, partial: false })
+				}
+		}
+
+		// Auto-approval is handled by extension settings (configured in runTask)
+		// The extension will automatically approve based on alwaysAllow* settings
 	}
 
 	/**
@@ -675,20 +1074,6 @@ export class ExtensionHost extends EventEmitter {
 		if (this.options.verbose) {
 			this.log("Invoke:", invoke)
 		}
-	}
-
-	/**
-	 * Auto-approve requests from the extension
-	 * This is a simplified implementation - in a real CLI we'd prompt the user
-	 */
-	private autoApprove(askType: string): void {
-		this.log("Auto-approving:", askType)
-
-		// Send approval response
-		this.sendToExtension({
-			type: "askResponse",
-			askResponse: "yesButtonClicked",
-		})
 	}
 
 	/**
@@ -734,6 +1119,13 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	async dispose(): Promise<void> {
 		this.log("Disposing extension host...")
+
+		// Close debug log
+		this.closeDebugLog()
+
+		// Stop spinner if running
+		this.isWaitingForResponse = false
+		this.stopSpinner()
 
 		// Remove message listener
 		if (this.messageListener) {

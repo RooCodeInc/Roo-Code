@@ -65,7 +65,7 @@ program
 				process.exit(1)
 			}
 
-			if (options.verbose && !options.quiet) {
+			if (options.verbose) {
 				console.log(`[CLI] Prompt: ${prompt}`)
 				console.log(`[CLI] Workspace: ${options.workspace}`)
 				console.log(`[CLI] Extension path: ${extensionPath}`)
@@ -77,7 +77,7 @@ program
 			const host = new ExtensionHost({
 				workspacePath: path.resolve(options.workspace),
 				extensionPath: path.resolve(extensionPath),
-				verbose: options.verbose && !options.quiet,
+				verbose: options.verbose, // Allow verbose with quiet mode for debug output
 				quiet: options.quiet,
 				apiKey,
 				apiProvider: options.provider,
