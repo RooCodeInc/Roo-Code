@@ -370,20 +370,33 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		}
 	}
 
-	// The rest of the logic is identical to runTask - handle IPC events
+	// For CLI mode, we need to create taskMetrics immediately because the CLI starts
+	// the task right away (from command line args). By the time we connect to IPC,
+	// the TaskStarted event may have already been sent and missed.
+	// This is different from VSCode mode where we send StartNewTask via IPC and can
+	// reliably receive TaskStarted.
+	const taskMetrics = await createTaskMetrics({
+		cost: 0,
+		tokensIn: 0,
+		tokensOut: 0,
+		tokensContext: 0,
+		duration: 0,
+		cacheWrites: 0,
+		cacheReads: 0,
+	})
+
+	await updateTask(task.id, { taskMetricsId: taskMetrics.id, startedAt: new Date() })
+	logger.info(`created taskMetrics with id ${taskMetrics.id}`)
+
+	// The rest of the logic handles IPC events for metrics updates
 	let taskStartedAt = Date.now()
 	let taskFinishedAt: number | undefined
 	let taskAbortedAt: number | undefined
 	let taskTimedOut: boolean = false
-	let taskMetricsId: number | undefined
+	const taskMetricsId = taskMetrics.id // Already set, no need to wait for TaskStarted
 	let rooTaskId: string | undefined
 	let isClientDisconnected = false
 	const accumulatedToolUsage: ToolUsage = {}
-
-	let resolveTaskMetricsReady: () => void
-	const taskMetricsReady = new Promise<void>((resolve) => {
-		resolveTaskMetricsReady = resolve
-	})
 
 	// For CLI mode, we don't need verbose IPC message logging since we're logging stdout instead.
 	// We only track what's needed for metrics and task state management.
@@ -408,26 +421,12 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		}
 
 		// Handle task lifecycle events
+		// For CLI mode, we already created taskMetrics before connecting to IPC,
+		// but we still want to capture the rooTaskId from TaskStarted if we receive it
 		if (eventName === RooCodeEventName.TaskStarted) {
 			taskStartedAt = Date.now()
-
-			const taskMetrics = await createTaskMetrics({
-				cost: 0,
-				tokensIn: 0,
-				tokensOut: 0,
-				tokensContext: 0,
-				duration: 0,
-				cacheWrites: 0,
-				cacheReads: 0,
-			})
-
-			await updateTask(task.id, { taskMetricsId: taskMetrics.id, startedAt: new Date() })
-
-			taskStartedAt = Date.now()
-			taskMetricsId = taskMetrics.id
 			rooTaskId = payload[0]
-
-			resolveTaskMetricsReady()
+			logger.info(`received TaskStarted event, rooTaskId: ${rooTaskId}`)
 		}
 
 		if (eventName === RooCodeEventName.TaskToolFailed) {
@@ -436,12 +435,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		}
 
 		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
-			await taskMetricsReady
-
-			if (!taskMetricsId) {
-				logger.info(`skipping metrics update: taskMetricsId not set (event: ${eventName})`)
-				return
-			}
+			// In CLI mode, taskMetricsId is always set before we register event handlers
 
 			const duration = Date.now() - taskStartedAt
 
@@ -486,7 +480,8 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 	client.on(IpcMessageType.Disconnect, async () => {
 		logger.info(`disconnected from IPC socket -> ${ipcSocketPath}`)
 		isClientDisconnected = true
-		resolveTaskMetricsReady()
+		// Note: In CLI mode, we don't need to resolve taskMetricsReady since
+		// taskMetrics is created synchronously before event handlers are registered
 	})
 
 	// Note: We do NOT send StartNewTask via IPC here because the CLI already
