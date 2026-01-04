@@ -53,13 +53,18 @@ export const runEvals = async (runId: number) => {
 	}
 
 	try {
-		// Add tasks with staggered start times when concurrency > 1
+		// Add tasks with staggered start times when concurrency > 1.
 		for (let i = 0; i < filteredTasks.length; i++) {
 			const task = filteredTasks[i]
-			if (!task) continue
+
+			if (!task) {
+				continue
+			}
+
 			if (run.concurrency > 1 && i > 0) {
 				await new Promise((resolve) => setTimeout(resolve, STAGGER_DELAY_MS))
 			}
+
 			queue.add(createTaskRunner(task))
 		}
 

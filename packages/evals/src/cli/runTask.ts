@@ -123,8 +123,14 @@ export const processTask = async ({
 			await redis.publish(getPubSubKey(run.id), JSON.stringify(e))
 		}
 
-		logger.info(`running task ${task.id} (${language}/${exercise})...`)
-		await runTask({ run, task, jobToken, publish, logger })
+		const executionMethod = run.executionMethod || "vscode"
+		logger.info(`running task ${task.id} (${language}/${exercise}) via ${executionMethod}...`)
+
+		if (executionMethod === "cli") {
+			await runTaskWithCli({ run, task, jobToken, publish, logger })
+		} else {
+			await runTask({ run, task, jobToken, publish, logger })
+		}
 
 		logger.info(`testing task ${task.id} (${language}/${exercise})...`)
 		const passed = await runUnitTest({ task, logger })
@@ -162,6 +168,22 @@ export const processTaskInContainer = async ({
 
 	if (jobToken) {
 		baseArgs.push(`-e ROO_CODE_CLOUD_TOKEN=${jobToken}`)
+	}
+
+	// Pass API keys to the container so the CLI can authenticate
+	const apiKeyEnvVars = [
+		"OPENROUTER_API_KEY",
+		"ANTHROPIC_API_KEY",
+		"OPENAI_API_KEY",
+		"GOOGLE_API_KEY",
+		"DEEPSEEK_API_KEY",
+		"MISTRAL_API_KEY",
+	]
+
+	for (const envVar of apiKeyEnvVars) {
+		if (process.env[envVar]) {
+			baseArgs.push(`-e ${envVar}=${process.env[envVar]}`)
+		}
 	}
 
 	const command = `pnpm --filter @roo-code/evals cli --taskId ${taskId}`
@@ -218,6 +240,349 @@ type RunTaskOptions = {
 	logger: Logger
 }
 
+/**
+ * Run a task using the Roo Code CLI (headless mode).
+ * Uses the same IPC protocol as VSCode since the CLI loads the same extension bundle.
+ */
+export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {
+	const { language, exercise } = task
+	const prompt = fs.readFileSync(path.resolve(EVALS_REPO_PATH, `prompts/${language}.md`), "utf-8")
+	const workspacePath = path.resolve(EVALS_REPO_PATH, language, exercise)
+	const ipcSocketPath = path.resolve(os.tmpdir(), `evals-cli-${run.id}-${task.id}.sock`)
+
+	const env: Record<string, string> = {
+		...(process.env as Record<string, string>),
+		ROO_CODE_IPC_SOCKET_PATH: ipcSocketPath,
+	}
+
+	if (jobToken) {
+		env.ROO_CODE_CLOUD_TOKEN = jobToken
+	}
+
+	const controller = new AbortController()
+	const cancelSignal = controller.signal
+
+	// Build CLI command arguments
+	const cliArgs = [
+		"--filter",
+		"@roo-code/cli",
+		"start",
+		"-y", // Non-interactive mode (auto-approve)
+		"-x", // Exit on complete
+		"-q", // Quiet mode
+		"-w",
+		workspacePath, // Workspace path
+	]
+
+	// Add mode configuration - default to "code" for evals (from EVALS_SETTINGS)
+	const mode = run.settings?.mode || "code"
+	cliArgs.push("-M", mode)
+
+	// Add provider configuration from run settings
+	if (run.settings?.apiProvider) {
+		cliArgs.push("-p", run.settings.apiProvider)
+	}
+
+	// Add model configuration
+	const modelId = run.settings?.apiModelId || run.settings?.openRouterModelId
+
+	if (modelId) {
+		cliArgs.push("-m", modelId)
+	}
+
+	// Add the prompt as the final argument
+	cliArgs.push(prompt)
+
+	logger.info(
+		`CLI command: pnpm --filter @roo-code/cli start -y -x -q -w ${workspacePath} -M ${mode} -p ${run.settings?.apiProvider} -m ${modelId} [prompt...]`,
+	)
+
+	const subprocess = execa("pnpm", cliArgs, { env, cancelSignal, cwd: process.cwd() })
+
+	// Buffer for accumulating streaming output until we have complete lines
+	let stdoutBuffer = ""
+	let stderrBuffer = ""
+	// Track subprocess exit code - with -x flag the CLI exits immediately after task completion
+	let subprocessExitCode: number | null = null
+
+	// Pipe CLI stdout/stderr to the logger for easier debugging
+	// Buffer output and only log complete lines to avoid fragmented token-by-token logging
+	// Use logger.raw() to output without the verbose prefix (timestamp, tag, etc.)
+	subprocess.stdout?.on("data", (data: Buffer) => {
+		stdoutBuffer += data.toString()
+		const lines = stdoutBuffer.split("\n")
+		// Keep the last incomplete line in the buffer
+		stdoutBuffer = lines.pop() || ""
+		// Log all complete lines without the verbose prefix
+		for (const line of lines) {
+			if (line.trim()) {
+				logger.raw(line)
+			}
+		}
+	})
+
+	subprocess.stderr?.on("data", (data: Buffer) => {
+		stderrBuffer += data.toString()
+		const lines = stderrBuffer.split("\n")
+		// Keep the last incomplete line in the buffer
+		stderrBuffer = lines.pop() || ""
+		// Log all complete lines without the verbose prefix
+		for (const line of lines) {
+			if (line.trim()) {
+				logger.raw(line)
+			}
+		}
+	})
+
+	// Log any remaining buffered output when the subprocess exits
+	subprocess.on("exit", (code) => {
+		subprocessExitCode = code
+		if (stdoutBuffer.trim()) {
+			logger.raw(stdoutBuffer)
+		}
+		if (stderrBuffer.trim()) {
+			logger.raw(stderrBuffer)
+		}
+	})
+
+	// Give CLI some time to start and create IPC server
+	await new Promise((resolve) => setTimeout(resolve, 5_000))
+
+	let client: IpcClient | undefined = undefined
+	let attempts = 10 // More attempts for CLI startup
+
+	while (true) {
+		try {
+			client = new IpcClient(ipcSocketPath)
+			await pWaitFor(() => client!.isReady, { interval: 500, timeout: 2_000 })
+			break
+		} catch (_error) {
+			client?.disconnect()
+			attempts--
+
+			if (attempts <= 0) {
+				logger.error(`unable to connect to IPC socket -> ${ipcSocketPath}`)
+				throw new Error("Unable to connect to CLI IPC socket.")
+			}
+
+			// Wait a bit before retrying
+			await new Promise((resolve) => setTimeout(resolve, 1_000))
+		}
+	}
+
+	// The rest of the logic is identical to runTask - handle IPC events
+	let taskStartedAt = Date.now()
+	let taskFinishedAt: number | undefined
+	let taskAbortedAt: number | undefined
+	let taskTimedOut: boolean = false
+	let taskMetricsId: number | undefined
+	let rooTaskId: string | undefined
+	let isClientDisconnected = false
+	const accumulatedToolUsage: ToolUsage = {}
+
+	let resolveTaskMetricsReady: () => void
+	const taskMetricsReady = new Promise<void>((resolve) => {
+		resolveTaskMetricsReady = resolve
+	})
+
+	// For CLI mode, we don't need verbose IPC message logging since we're logging stdout instead.
+	// We only track what's needed for metrics and task state management.
+	const ignoreEventsForBroadcast = [RooCodeEventName.Message]
+	let isApiUnstable = false
+
+	client.on(IpcMessageType.TaskEvent, async (taskEvent) => {
+		const { eventName, payload } = taskEvent
+
+		// Track API instability for retry logic
+		if (
+			eventName === RooCodeEventName.Message &&
+			payload[0].message.say &&
+			["api_req_retry_delayed", "api_req_retried"].includes(payload[0].message.say)
+		) {
+			isApiUnstable = true
+		}
+
+		// Publish events to Redis (except Message events) for the web UI
+		if (!ignoreEventsForBroadcast.includes(eventName)) {
+			await publish({ ...taskEvent, taskId: task.id })
+		}
+
+		// Handle task lifecycle events
+		if (eventName === RooCodeEventName.TaskStarted) {
+			taskStartedAt = Date.now()
+
+			const taskMetrics = await createTaskMetrics({
+				cost: 0,
+				tokensIn: 0,
+				tokensOut: 0,
+				tokensContext: 0,
+				duration: 0,
+				cacheWrites: 0,
+				cacheReads: 0,
+			})
+
+			await updateTask(task.id, { taskMetricsId: taskMetrics.id, startedAt: new Date() })
+
+			taskStartedAt = Date.now()
+			taskMetricsId = taskMetrics.id
+			rooTaskId = payload[0]
+
+			resolveTaskMetricsReady()
+		}
+
+		if (eventName === RooCodeEventName.TaskToolFailed) {
+			const [_taskId, toolName, error] = payload
+			await createToolError({ taskId: task.id, toolName, error })
+		}
+
+		if (eventName === RooCodeEventName.TaskTokenUsageUpdated || eventName === RooCodeEventName.TaskCompleted) {
+			await taskMetricsReady
+
+			if (!taskMetricsId) {
+				logger.info(`skipping metrics update: taskMetricsId not set (event: ${eventName})`)
+				return
+			}
+
+			const duration = Date.now() - taskStartedAt
+
+			const { totalCost, totalTokensIn, totalTokensOut, contextTokens, totalCacheWrites, totalCacheReads } =
+				payload[1]
+
+			const incomingToolUsage: ToolUsage = payload[2] ?? {}
+
+			for (const [toolName, usage] of Object.entries(incomingToolUsage)) {
+				const existing = accumulatedToolUsage[toolName as keyof ToolUsage]
+				if (existing) {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = {
+						attempts: Math.max(existing.attempts, usage.attempts),
+						failures: Math.max(existing.failures, usage.failures),
+					}
+				} else {
+					accumulatedToolUsage[toolName as keyof ToolUsage] = { ...usage }
+				}
+			}
+
+			await updateTaskMetrics(taskMetricsId, {
+				cost: totalCost,
+				tokensIn: totalTokensIn,
+				tokensOut: totalTokensOut,
+				tokensContext: contextTokens,
+				duration,
+				cacheWrites: totalCacheWrites ?? 0,
+				cacheReads: totalCacheReads ?? 0,
+				toolUsage: accumulatedToolUsage,
+			})
+		}
+
+		if (eventName === RooCodeEventName.TaskAborted) {
+			taskAbortedAt = Date.now()
+		}
+
+		if (eventName === RooCodeEventName.TaskCompleted) {
+			taskFinishedAt = Date.now()
+		}
+	})
+
+	client.on(IpcMessageType.Disconnect, async () => {
+		logger.info(`disconnected from IPC socket -> ${ipcSocketPath}`)
+		isClientDisconnected = true
+		resolveTaskMetricsReady()
+	})
+
+	// Note: We do NOT send StartNewTask via IPC here because the CLI already
+	// starts the task from its command line arguments. The IPC connection is
+	// only used to receive events (TaskStarted, TaskCompleted, etc.) and metrics.
+	// Sending StartNewTask here would start a SECOND task.
+
+	try {
+		const timeoutMs = (run.timeout || 5) * 60 * 1_000
+		await pWaitFor(() => !!taskFinishedAt || !!taskAbortedAt || isClientDisconnected, {
+			interval: 1_000,
+			timeout: timeoutMs,
+		})
+	} catch (_error) {
+		taskTimedOut = true
+		logger.error("time limit reached")
+
+		if (rooTaskId && !isClientDisconnected) {
+			logger.info("cancelling task")
+			client.sendCommand({ commandName: TaskCommandName.CancelTask, data: rooTaskId })
+			await new Promise((resolve) => setTimeout(resolve, 5_000))
+		}
+
+		taskFinishedAt = Date.now()
+	}
+
+	if (!taskFinishedAt && !taskTimedOut) {
+		// With -x flag, CLI exits immediately after task completion, which can cause
+		// IPC disconnection before we receive the TaskCompleted event.
+		// If subprocess exited cleanly (code 0), treat as successful completion.
+		if (subprocessExitCode === 0) {
+			taskFinishedAt = Date.now()
+			logger.info("subprocess exited cleanly (code 0), treating as task completion")
+		} else {
+			logger.error(`client disconnected before task finished (subprocess exit code: ${subprocessExitCode})`)
+			throw new Error("Client disconnected before task completion.")
+		}
+	}
+
+	logger.info("setting task finished at")
+	await updateTask(task.id, { finishedAt: new Date() })
+
+	if (rooTaskId && !isClientDisconnected) {
+		logger.info("closing task")
+		client.sendCommand({ commandName: TaskCommandName.CloseTask, data: rooTaskId })
+		await new Promise((resolve) => setTimeout(resolve, 2_000))
+	}
+
+	if (!isClientDisconnected) {
+		logger.info("disconnecting client")
+		client.disconnect()
+	}
+
+	logger.info("waiting for subprocess to finish")
+	controller.abort()
+
+	const SUBPROCESS_TIMEOUT = 10_000
+
+	try {
+		await Promise.race([
+			subprocess,
+			new Promise((_, reject) =>
+				setTimeout(() => reject(new SubprocessTimeoutError(SUBPROCESS_TIMEOUT)), SUBPROCESS_TIMEOUT),
+			),
+		])
+
+		logger.info("subprocess finished gracefully")
+	} catch (error) {
+		if (error instanceof SubprocessTimeoutError) {
+			logger.error("subprocess did not finish within timeout, force killing")
+
+			try {
+				if (subprocess.kill("SIGKILL")) {
+					logger.info("SIGKILL sent to subprocess")
+				} else {
+					logger.error("failed to send SIGKILL to subprocess")
+				}
+			} catch (killError) {
+				logger.error("subprocess.kill(SIGKILL) failed:", killError)
+			}
+		} else {
+			throw error
+		}
+	}
+
+	logger.close()
+
+	if (isApiUnstable && !taskFinishedAt) {
+		throw new Error("API is unstable, throwing to trigger a retry.")
+	}
+}
+
+/**
+ * Run a task using VSCode (GUI mode with extension).
+ * This is the original implementation.
+ */
 export const runTask = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {
 	const { language, exercise } = task
 	const prompt = fs.readFileSync(path.resolve(EVALS_REPO_PATH, `prompts/${language}.md`), "utf-8")

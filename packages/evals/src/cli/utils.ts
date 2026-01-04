@@ -107,6 +107,22 @@ export class Logger {
 		this.info(message, ...args)
 	}
 
+	/**
+	 * Write raw output without any prefix (timestamp, level, tag).
+	 * Useful for streaming CLI output where the prefix would be noise.
+	 */
+	public raw(message: string): void {
+		try {
+			console.log(message)
+
+			if (this.logStream) {
+				this.logStream.write(message + "\n")
+			}
+		} catch (error) {
+			console.error(`Failed to write to log file ${this.logFilePath}:`, error)
+		}
+	}
+
 	public close(): void {
 		if (this.logStream) {
 			this.logStream.end()

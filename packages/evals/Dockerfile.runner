@@ -83,6 +83,7 @@ WORKDIR /roo/repo
 # Install npm packages
 RUN mkdir -p \
   scripts \
+  apps/cli \
   packages/build \
   packages/config-eslint \
   packages/config-typescript \
@@ -92,6 +93,7 @@ RUN mkdir -p \
   packages/telemetry \
   packages/types \
   packages/cloud \
+  packages/vscode-shim \
   src \
   webview-ui
 
@@ -99,6 +101,7 @@ COPY ./package.json                            ./
 COPY ./pnpm-lock.yaml                          ./
 COPY ./pnpm-workspace.yaml                     ./
 COPY ./scripts/bootstrap.mjs                   ./scripts/
+COPY ./apps/cli/package.json                   ./apps/cli/
 COPY ./packages/build/package.json             ./packages/build/
 COPY ./packages/config-eslint/package.json     ./packages/config-eslint/
 COPY ./packages/config-typescript/package.json ./packages/config-typescript/
@@ -108,6 +111,7 @@ COPY ./packages/ipc/package.json               ./packages/ipc/
 COPY ./packages/telemetry/package.json         ./packages/telemetry/
 COPY ./packages/types/package.json             ./packages/types/
 COPY ./packages/cloud/package.json             ./packages/cloud/
+COPY ./packages/vscode-shim/package.json       ./packages/vscode-shim/
 COPY ./src/package.json                        ./src/
 COPY ./webview-ui/package.json                 ./webview-ui/
 
@@ -128,9 +132,14 @@ COPY packages/evals/.env.local ./packages/evals/
 # Copy the pre-installed VS Code extensions
 RUN cp -r /roo/.vscode-template /roo/.vscode
 
-# Build the Roo Code extension
+# Build the Roo Code extension (for VSCode execution method)
 RUN pnpm vsix -- --out ../bin/roo-code.vsix \
     && yes | code --no-sandbox --user-data-dir /roo/.vscode --install-extension bin/roo-code.vsix
+
+# Build the extension bundle and CLI (for CLI execution method)
+# The CLI requires the extension bundle (src/dist/extension.js) and the CLI build (apps/cli/dist/index.js)
+RUN pnpm --filter roo-cline bundle \
+    && pnpm --filter @roo-code/cli build
 
 # Copy entrypoint script
 COPY packages/evals/.docker/entrypoints/runner.sh /usr/local/bin/entrypoint.sh

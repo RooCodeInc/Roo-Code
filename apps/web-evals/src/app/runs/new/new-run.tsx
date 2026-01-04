@@ -7,7 +7,18 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, Info, Plus, Minus } from "lucide-react"
+import {
+	X,
+	Rocket,
+	Check,
+	ChevronsUpDown,
+	SlidersHorizontal,
+	Info,
+	Plus,
+	Minus,
+	Terminal,
+	MonitorPlay,
+} from "lucide-react"
 
 import {
 	globalSettingsSchema,
@@ -23,6 +34,7 @@ import { getExercises } from "@/actions/exercises"
 
 import {
 	type CreateRun,
+	type ExecutionMethod,
 	createRunSchema,
 	CONCURRENCY_MIN,
 	CONCURRENCY_MAX,
@@ -95,6 +107,7 @@ export function NewRun() {
 	const router = useRouter()
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
+	const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>("vscode")
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
 	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
 	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
@@ -134,6 +147,7 @@ export function NewRun() {
 			timeout: TIMEOUT_DEFAULT,
 			iterations: ITERATIONS_DEFAULT,
 			jobToken: "",
+			executionMethod: "vscode",
 		},
 	})
 
@@ -361,6 +375,7 @@ export function NewRun() {
 					}
 
 					const runValues = { ...values }
+					runValues.executionMethod = executionMethod
 
 					if (provider === "openrouter") {
 						runValues.model = selection.model
@@ -411,6 +426,7 @@ export function NewRun() {
 		},
 		[
 			provider,
+			executionMethod,
 			modelSelections,
 			configSelections,
 			importedSettings,
@@ -970,6 +986,52 @@ export function NewRun() {
 							</div>
 						</FormItem>
 					</div>
+
+					{/* Execution Method */}
+					<FormField
+						control={form.control}
+						name="executionMethod"
+						render={() => (
+							<FormItem>
+								<div className="flex items-center gap-1">
+									<FormLabel>Execution Method</FormLabel>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Info className="size-4 text-muted-foreground cursor-help" />
+										</TooltipTrigger>
+										<TooltipContent side="right" className="max-w-xs">
+											<p>
+												<strong>VSCode:</strong> Uses the VSCode extension with GUI. Required
+												for containerized runs with Xvfb.
+											</p>
+											<p className="mt-2">
+												<strong>CLI:</strong> Uses the headless CLI without GUI. Ideal for local
+												testing and servers without display.
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</div>
+								<Tabs
+									value={executionMethod}
+									onValueChange={(value) => {
+										setExecutionMethod(value as ExecutionMethod)
+										setValue("executionMethod", value as ExecutionMethod)
+									}}>
+									<TabsList>
+										<TabsTrigger value="vscode" className="flex items-center gap-2">
+											<MonitorPlay className="size-4" />
+											VSCode Extension
+										</TabsTrigger>
+										<TabsTrigger value="cli" className="flex items-center gap-2">
+											<Terminal className="size-4" />
+											CLI (Headless)
+										</TabsTrigger>
+									</TabsList>
+								</Tabs>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
 					<FormField
 						control={form.control}
