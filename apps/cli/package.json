@@ -20,8 +20,7 @@
 	"dependencies": {
 		"@roo-code/vscode-shim": "workspace:^",
 		"@vscode/ripgrep": "^1.15.9",
-		"commander": "^12.1.0",
-		"ora": "^9.0.0"
+		"commander": "^12.1.0"
 	},
 	"devDependencies": {
 		"@roo-code/config-eslint": "workspace:^",

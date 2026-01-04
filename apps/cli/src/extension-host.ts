@@ -13,7 +13,6 @@ import { createRequire } from "module"
 import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
-import type { Ora } from "ora"
 import { createVSCodeAPI } from "@roo-code/vscode-shim"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -60,7 +59,6 @@ export class ExtensionHost extends EventEmitter {
 		info: typeof console.info
 	} | null = null
 	private originalProcessEmitWarning: typeof process.emitWarning | null = null
-	private spinner: Ora | null = null
 	private isWaitingForResponse = false
 	// Track seen tool calls to avoid duplicate display
 	private seenToolCalls: Set<string> = new Set()
@@ -77,30 +75,6 @@ export class ExtensionHost extends EventEmitter {
 	constructor(options: ExtensionHostOptions) {
 		super()
 		this.options = options
-	}
-
-	/**
-	 * Start the loading spinner with the given text
-	 * DISABLED - ora interferes with streaming output
-	 */
-	private startSpinner(_text: string): void {
-		// Disabled - ora interferes with streaming
-	}
-
-	/**
-	 * Update the spinner text without stopping it
-	 * DISABLED - ora interferes with streaming output
-	 */
-	private updateSpinner(_text: string): void {
-		// Disabled - ora interferes with streaming
-	}
-
-	/**
-	 * Stop the spinner (optionally with success/fail indicator)
-	 * DISABLED - ora interferes with streaming output
-	 */
-	private stopSpinner(_success?: boolean, _text?: string): void {
-		// Disabled - ora interferes with streaming
 	}
 
 	private log(...args: unknown[]): void {
@@ -552,9 +526,8 @@ export class ExtensionHost extends EventEmitter {
 			await new Promise<void>((resolve) => setTimeout(resolve, 100))
 		}
 
-		// Start the loading spinner
+		// Mark that we're waiting for response
 		this.isWaitingForResponse = true
-		this.startSpinner("Thinking...")
 
 		// Send the task message
 		// This matches the WebviewMessage type from the extension
@@ -735,16 +708,12 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	/**
-	 * Finish streaming a message (add newline) and optionally restart spinner
+	 * Finish streaming a message (add newline)
 	 */
-	private finishStream(ts: number, restartSpinner = false): void {
+	private finishStream(ts: number): void {
 		if (this.currentlyStreamingTs === ts) {
 			this.writeStream("\n")
 			this.currentlyStreamingTs = null
-			// Restart spinner if requested and we're still waiting for response
-			if (restartSpinner && this.isWaitingForResponse) {
-				this.startSpinner("Processing...")
-			}
 		}
 	}
 
@@ -786,15 +755,10 @@ export class ExtensionHost extends EventEmitter {
 						this.finishStream(ts)
 					} else {
 						// Not streamed yet - output complete message
-						this.stopSpinner()
 						log("\n[Assistant]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
 					this.streamedContent.set(ts, { text, headerShown: true })
-
-					if (this.isWaitingForResponse) {
-						this.startSpinner("Thinking...")
-					}
 				}
 				break
 
@@ -814,7 +778,6 @@ export class ExtensionHost extends EventEmitter {
 						}
 						this.finishStream(ts)
 					} else {
-						this.stopSpinner()
 						log("\n[reasoning]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
@@ -824,11 +787,7 @@ export class ExtensionHost extends EventEmitter {
 			case "command_output":
 				// Show command output (usually not partial)
 				if (text && !alreadyDisplayedComplete) {
-					this.stopSpinner()
 					log("\n[Command Output]", text)
-					if (this.isWaitingForResponse) {
-						this.startSpinner("Processing...")
-					}
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
@@ -836,7 +795,6 @@ export class ExtensionHost extends EventEmitter {
 			case "completion_result":
 				if (!alreadyDisplayedComplete) {
 					this.isWaitingForResponse = false
-					this.stopSpinner(true, "Task completed")
 					log("\n[Task Complete]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskComplete")
@@ -846,7 +804,6 @@ export class ExtensionHost extends EventEmitter {
 			case "error":
 				if (!alreadyDisplayedComplete) {
 					this.isWaitingForResponse = false
-					this.stopSpinner(false, "Error occurred")
 					error("\n[Error]", text || "Unknown error")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskError", text)
@@ -856,28 +813,19 @@ export class ExtensionHost extends EventEmitter {
 			case "tool":
 				// Tool usage - show when complete
 				if (text && !alreadyDisplayedComplete) {
-					this.stopSpinner()
 					log("\n[Tool]", text)
-					if (this.isWaitingForResponse) {
-						this.startSpinner("Processing...")
-					}
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
 
 			case "api_req_started":
-				// API request started - update spinner
-				this.updateSpinner("Waiting for API response...")
+				// API request started - no action needed
 				break
 
 			default:
 				// Other say types - show in verbose mode
 				if (this.options.verbose && text && !alreadyDisplayedComplete) {
-					this.stopSpinner()
 					log(`\n[${say}]`, text || "")
-					if (this.isWaitingForResponse) {
-						this.startSpinner("Processing...")
-					}
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 		}
@@ -899,9 +847,7 @@ export class ExtensionHost extends EventEmitter {
 		switch (ask) {
 			case "command":
 				if (!alreadyDisplayedComplete) {
-					this.stopSpinner()
 					log("\n[Running Command]", text || "")
-					this.startSpinner("Running command...")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
@@ -933,7 +879,6 @@ export class ExtensionHost extends EventEmitter {
 						// Only display if not already shown for this ts
 						if (!isDuplicate) {
 							this.seenToolCalls.add(toolCallKey)
-							this.stopSpinner()
 							log(`\n[Tool Call] ${toolName}`)
 							// Show key parameters
 							if (toolInfo.path) {
@@ -946,14 +891,11 @@ export class ExtensionHost extends EventEmitter {
 										: toolInfo.content
 								log(`  Content: ${preview}`)
 							}
-							this.startSpinner(`Executing ${toolName}...`)
 						}
 					} catch {
 						// If not JSON, just show the text
 						if (!alreadyDisplayedComplete) {
-							this.stopSpinner()
 							log("\n[Tool Call]", text)
-							this.startSpinner("Executing tool...")
 							this.displayedMessages.set(ts, { text, partial: false })
 						}
 					}
@@ -963,7 +905,6 @@ export class ExtensionHost extends EventEmitter {
 			default:
 				// Other ask types - show what's being asked
 				if (text && !alreadyDisplayedComplete) {
-					this.stopSpinner()
 					log("\n[Assistant asks]", text)
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
@@ -1039,9 +980,8 @@ export class ExtensionHost extends EventEmitter {
 	async dispose(): Promise<void> {
 		this.log("Disposing extension host...")
 
-		// Stop spinner if running
+		// Reset waiting state
 		this.isWaitingForResponse = false
-		this.stopSpinner()
 
 		// Remove message listener
 		if (this.messageListener) {
