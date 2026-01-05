@@ -993,8 +993,9 @@ export function NewRun() {
 								<Tabs
 									value={executionMethod}
 									onValueChange={(value) => {
-										setExecutionMethod(value)
-										setValue("executionMethod", value)
+										const newExecutionMethod = value as ExecutionMethod
+										setExecutionMethod(newExecutionMethod)
+										setValue("executionMethod", newExecutionMethod)
 									}}>
 									<TabsList>
 										<TabsTrigger value="vscode" className="flex items-center gap-2">
