@@ -48,6 +48,9 @@ import {
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
 
+import { loadRooLastModelSelection, saveRooLastModelSelection } from "@/lib/roo-last-model-selection"
+import { normalizeCreateRunForSubmit } from "@/lib/normalize-create-run"
+
 import { useOpenRouterModels } from "@/hooks/use-open-router-models"
 import { useRooCodeCloudModels } from "@/hooks/use-roo-code-cloud-models"
 
@@ -147,6 +150,7 @@ export function NewRun() {
 	})
 
 	const {
+		register,
 		setValue,
 		clearErrors,
 		watch,
@@ -155,6 +159,33 @@ export function NewRun() {
 
 	const [suite, settings] = watch(["suite", "settings", "concurrency"])
 
+	const selectedModelIds = useMemo(
+		() => modelSelections.map((s) => s.model).filter((m) => m.length > 0),
+		[modelSelections],
+	)
+
+	const applyModelIds = useCallback(
+		(modelIds: string[]) => {
+			const unique = Array.from(new Set(modelIds.map((m) => m.trim()).filter((m) => m.length > 0)))
+
+			if (unique.length === 0) {
+				setModelSelections([{ id: crypto.randomUUID(), model: "", popoverOpen: false }])
+				setValue("model", "")
+				return
+			}
+
+			setModelSelections(unique.map((model) => ({ id: crypto.randomUUID(), model, popoverOpen: false })))
+			setValue("model", unique[0] ?? "")
+		},
+		[setValue],
+	)
+
+	// Ensure the `exercises` field is registered so RHF always includes it in submit values.
+	useEffect(() => {
+		register("exercises")
+	}, [register])
+
+	// Load settings from localStorage on mount
 	useEffect(() => {
 		const savedConcurrency = localStorage.getItem("evals-concurrency")
 
@@ -215,6 +246,24 @@ export function NewRun() {
 		}
 	}, [setValue])
 
+	// When switching to Roo provider, restore last-used selection if current selection is empty
+	useEffect(() => {
+		if (provider !== "roo") return
+		if (selectedModelIds.length > 0) return
+
+		const last = loadRooLastModelSelection()
+		if (last.length > 0) {
+			applyModelIds(last)
+		}
+	}, [applyModelIds, provider, selectedModelIds.length])
+
+	// Persist last-used Roo provider model selection
+	useEffect(() => {
+		if (provider !== "roo") return
+		saveRooLastModelSelection(selectedModelIds)
+	}, [provider, selectedModelIds])
+
+	// Extract unique languages from exercises
 	const languages = useMemo(() => {
 		if (!exercises.data) {
 			return []
@@ -337,7 +386,10 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
-				if (provider === "roo" && !values.jobToken?.trim()) {
+				const baseValues = normalizeCreateRunForSubmit(values, selectedExercises, suite)
+
+				// Validate jobToken for Roo Code Cloud provider
+				if (provider === "roo" && !baseValues.jobToken?.trim()) {
 					toast.error("Roo Code Cloud Token is required")
 					return
 				}
@@ -374,8 +426,7 @@ export function NewRun() {
 						await new Promise((resolve) => setTimeout(resolve, 20_000))
 					}
 
-					const runValues = { ...values }
-					runValues.executionMethod = executionMethod
+					const runValues = { ...baseValues }
 
 					if (provider === "openrouter") {
 						runValues.model = selection.model
@@ -424,6 +475,8 @@ export function NewRun() {
 			}
 		},
 		[
+			suite,
+			selectedExercises,
 			provider,
 			executionMethod,
 			modelSelections,
