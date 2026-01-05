@@ -2,8 +2,9 @@
  * Network Proxy Configuration Module
  *
  * Provides proxy configuration for all outbound HTTP/HTTPS requests from the Roo Code extension.
- * When running in debug mode (F5), TLS certificate verification is bypassed to allow
- * MITM proxy inspection. Normal runs enforce full TLS verification.
+ * When running in debug mode (F5), a proxy can be enabled for outbound traffic.
+ * Optionally, TLS certificate verification can be disabled (debug only) to allow
+ * MITM proxy inspection.
  *
  * Uses global-agent to globally route all HTTP/HTTPS traffic through the proxy,
  * which works with axios, fetch, and most SDKs that use native Node.js http/https.
@@ -18,6 +19,8 @@ import { Package } from "../shared/package"
 export interface ProxyConfig {
 	/** The proxy URL (e.g., http://localhost:8080) */
 	proxyUrl: string | undefined
+	/** Debug-only: disable TLS certificate verification (dangerous) */
+	disableTlsVerification: boolean
 	/** Whether running in debug/development mode */
 	isDebugMode: boolean
 }
@@ -28,6 +31,9 @@ let undiciProxyInitialized = false
 let fetchPatched = false
 let originalFetch: typeof fetch | undefined
 let outputChannel: vscode.OutputChannel | null = null
+
+let tlsVerificationOverridden = false
+let originalNodeTlsRejectUnauthorized: string | undefined
 
 function redactProxyUrl(proxyUrl: string | undefined): string {
 	if (!proxyUrl) {
@@ -58,6 +64,43 @@ function restoreGlobalFetchPatch(): void {
 	originalFetch = undefined
 }
 
+function restoreTlsVerificationOverride(): void {
+	if (!tlsVerificationOverridden) {
+		return
+	}
+
+	if (typeof originalNodeTlsRejectUnauthorized === "string") {
+		process.env.NODE_TLS_REJECT_UNAUTHORIZED = originalNodeTlsRejectUnauthorized
+	} else {
+		delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
+	}
+
+	tlsVerificationOverridden = false
+	originalNodeTlsRejectUnauthorized = undefined
+}
+
+function applyTlsVerificationOverride(config: ProxyConfig): void {
+	// Only relevant in debug mode with an active proxy.
+	if (!config.isDebugMode || !config.proxyUrl) {
+		restoreTlsVerificationOverride()
+		return
+	}
+
+	if (!config.disableTlsVerification) {
+		restoreTlsVerificationOverride()
+		return
+	}
+
+	if (!tlsVerificationOverridden) {
+		originalNodeTlsRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED
+	}
+
+	// CodeQL: debug-only opt-in for MITM debugging.
+	// lgtm[js/disabling-certificate-validation]
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+	tlsVerificationOverridden = true
+}
+
 /**
  * Initialize the network proxy module with the extension context.
  * Must be called early in extension activation before any network requests.
@@ -78,7 +121,9 @@ export async function initializeNetworkProxy(
 	)
 
 	const config = getProxyConfig()
-	log(`Proxy config: proxyUrl=${redactProxyUrl(config.proxyUrl)}, isDebugMode=${config.isDebugMode}`)
+	log(
+		`Proxy config: proxyUrl=${redactProxyUrl(config.proxyUrl)}, disableTlsVerification=${config.disableTlsVerification}, isDebugMode=${config.isDebugMode}`,
+	)
 
 	// Listen for configuration changes (always register; but only applies proxy in debug mode)
 	// In unit tests, vscode.workspace.onDidChangeConfiguration may not be mocked.
@@ -86,7 +131,10 @@ export async function initializeNetworkProxy(
 	if (typeof onDidChangeConfiguration === "function") {
 		context.subscriptions.push(
 			onDidChangeConfiguration((e) => {
-				if (e.affectsConfiguration(`${Package.name}.proxyUrl`)) {
+				if (
+					e.affectsConfiguration(`${Package.name}.proxyUrl`) ||
+					e.affectsConfiguration(`${Package.name}.proxyDisableTlsVerification`)
+				) {
 					const newConfig = getProxyConfig()
 					if (!newConfig.isDebugMode) {
 						log(
@@ -97,12 +145,14 @@ export async function initializeNetworkProxy(
 
 					// Debug mode: apply proxy if configured.
 					if (newConfig.proxyUrl) {
+						applyTlsVerificationOverride(newConfig)
 						configureGlobalProxy(newConfig)
 						configureUndiciProxy(newConfig)
 					} else {
 						// Proxy removed - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
 						// We *can* restore any global fetch patch immediately.
 						restoreGlobalFetchPatch()
+						restoreTlsVerificationOverride()
 						log("Proxy URL removed. Restart VS Code to fully disable proxy routing.")
 					}
 				}
@@ -112,6 +162,14 @@ export async function initializeNetworkProxy(
 		log("vscode.workspace.onDidChangeConfiguration is not available; skipping config change listener")
 	}
 
+	// Ensure we restore any overrides when the extension unloads.
+	context.subscriptions.push({
+		dispose: () => {
+			restoreGlobalFetchPatch()
+			restoreTlsVerificationOverride()
+		},
+	})
+
 	// Security policy:
 	// - Debug (F5): route traffic through proxy if configured.
 	// - Normal runs: do NOT route through proxy even if configured.
@@ -119,15 +177,22 @@ export async function initializeNetworkProxy(
 		if (config.proxyUrl) {
 			log(`Proxy URL is set but will be ignored because extension is not running in debug mode`)
 		}
+		if (config.disableTlsVerification) {
+			log(
+				`proxyDisableTlsVerification is enabled but will be ignored because extension is not running in debug mode`,
+			)
+		}
 		log(`Not in debug mode - proxy disabled`)
 		return
 	}
 
 	if (config.proxyUrl) {
+		applyTlsVerificationOverride(config)
 		await configureGlobalProxy(config)
 		await configureUndiciProxy(config)
 	} else {
 		log(`No proxy URL configured (debug mode).`)
+		restoreTlsVerificationOverride()
 	}
 
 	// (configuration listener registered above)
@@ -141,6 +206,7 @@ export function getProxyConfig(): ProxyConfig {
 		// Fallback if called before initialization
 		return {
 			proxyUrl: undefined,
+			disableTlsVerification: false,
 			isDebugMode: false,
 		}
 	}
@@ -148,12 +214,14 @@ export function getProxyConfig(): ProxyConfig {
 	const config = vscode.workspace.getConfiguration(Package.name)
 	const rawProxyUrl = config.get<unknown>("proxyUrl")
 	const proxyUrl = typeof rawProxyUrl === "string" ? rawProxyUrl : undefined
+	const disableTlsVerification = Boolean(config.get<unknown>("proxyDisableTlsVerification"))
 
 	// Debug mode only.
 	const isDebugMode = extensionContext.extensionMode === vscode.ExtensionMode.Development
 
 	return {
 		proxyUrl: proxyUrl?.trim() || undefined,
+		disableTlsVerification,
 		isDebugMode,
 	}
 }
@@ -220,7 +288,14 @@ async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
 			fetch: undiciFetch,
 		} = (await import("undici")) as typeof import("undici")
 
-		const proxyAgent = new ProxyAgent({ uri: config.proxyUrl })
+		const proxyAgent = new ProxyAgent({
+			uri: config.proxyUrl,
+			// If the user enabled TLS verification disablement (debug only), apply it to undici.
+			// lgtm[js/disabling-certificate-validation]
+			requestTls: config.disableTlsVerification ? { rejectUnauthorized: false } : undefined,
+			// lgtm[js/disabling-certificate-validation]
+			proxyTls: config.disableTlsVerification ? { rejectUnauthorized: false } : undefined,
+		})
 		setGlobalDispatcher(proxyAgent)
 		undiciProxyInitialized = true
 		log(`undici global dispatcher configured for proxy: ${redactProxyUrl(config.proxyUrl)}`)

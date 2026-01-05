@@ -67,6 +67,7 @@ describe("networkProxy", () => {
 		delete process.env.GLOBAL_AGENT_HTTP_PROXY
 		delete process.env.GLOBAL_AGENT_HTTPS_PROXY
 		delete process.env.GLOBAL_AGENT_NO_PROXY
+		delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
 
 		mockConfig = {
 			get: vi.fn().mockReturnValue(""),
@@ -100,7 +101,10 @@ describe("networkProxy", () => {
 		})
 
 		it("should configure proxy environment variables when proxyUrl is set", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://localhost:8080"
+				return ""
+			})
 			// Proxy is only applied in debug mode.
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
@@ -110,13 +114,30 @@ describe("networkProxy", () => {
 			expect(process.env.GLOBAL_AGENT_HTTPS_PROXY).toBe("http://localhost:8080")
 		})
 
-		it("should not modify TLS settings in debug mode", () => {
-			mockConfig.get.mockReturnValue("")
+		it("should not modify TLS settings in debug mode by default", () => {
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://localhost:8080"
+				if (key === "proxyDisableTlsVerification") return false
+				return ""
+			})
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
 			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
+		})
+
+		it("should disable TLS verification when explicitly enabled (debug mode only)", () => {
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://localhost:8080"
+				if (key === "proxyDisableTlsVerification") return true
+				return ""
+			})
+			const context = createMockContext(vscode.ExtensionMode.Development)
+
+			void initializeNetworkProxy(context, mockOutputChannel)
+
+			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe("0")
 		})
 
 		it("should register configuration change listener", () => {
@@ -150,18 +171,26 @@ describe("networkProxy", () => {
 		})
 
 		it("should return correct config after initialization", () => {
-			mockConfig.get.mockReturnValue("http://proxy.example.com:3128")
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://proxy.example.com:3128"
+				if (key === "proxyDisableTlsVerification") return true
+				return ""
+			})
 			const context = createMockContext(vscode.ExtensionMode.Production)
 
 			void initializeNetworkProxy(context, mockOutputChannel)
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBe("http://proxy.example.com:3128")
+			expect(config.disableTlsVerification).toBe(true)
 			expect(config.isDebugMode).toBe(false)
 		})
 
 		it("should trim whitespace from proxy URL", () => {
-			mockConfig.get.mockReturnValue("  http://proxy.example.com:3128  ")
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "  http://proxy.example.com:3128  "
+				return ""
+			})
 			const context = createMockContext()
 
 			void initializeNetworkProxy(context, mockOutputChannel)
@@ -171,7 +200,10 @@ describe("networkProxy", () => {
 		})
 
 		it("should return undefined for empty proxy URL", () => {
-			mockConfig.get.mockReturnValue("   ")
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "   "
+				return ""
+			})
 			const context = createMockContext()
 
 			void initializeNetworkProxy(context, mockOutputChannel)
@@ -192,7 +224,10 @@ describe("networkProxy", () => {
 		})
 
 		it("should return true when proxy is configured", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://localhost:8080"
+				return ""
+			})
 			// Proxy is only applied in debug mode.
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
@@ -229,8 +264,12 @@ describe("networkProxy", () => {
 	})
 
 	describe("security", () => {
-		it("should never disable TLS verification via NODE_TLS_REJECT_UNAUTHORIZED", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
+		it("should not disable TLS verification unless explicitly enabled", () => {
+			mockConfig.get.mockImplementation((key: string) => {
+				if (key === "proxyUrl") return "http://localhost:8080"
+				if (key === "proxyDisableTlsVerification") return false
+				return ""
+			})
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
 			void initializeNetworkProxy(context, mockOutputChannel)

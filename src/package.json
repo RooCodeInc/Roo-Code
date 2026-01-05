@@ -416,6 +416,11 @@
 					"type": "string",
 					"default": "",
 					"description": "%settings.proxyUrl.description%"
+				},
+				"roo-cline.proxyDisableTlsVerification": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.proxyDisableTlsVerification.description%"
 				}
 			}
 		}
