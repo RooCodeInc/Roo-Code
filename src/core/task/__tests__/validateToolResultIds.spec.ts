@@ -482,6 +482,126 @@ describe("validateAndFixToolResultIds", () => {
 			expect(resultContent[1].type).toBe("text")
 			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Some additional context")
 		})
+
+		/**
+		 * CRITICAL TEST: Terminal Fallback Duplicate tool_result Scenario
+		 *
+		 * This test verifies the fix for GitHub Issue #10465:
+		 * "Terminal Fallback Causes Duplicate Tool Results and Doom Loop in Unattended Mode"
+		 *
+		 * THE BUG:
+		 * When an external terminal (e.g., PuTTY) fails during long-running commands and
+		 * falls back to the integrated terminal, a race condition can generate duplicate
+		 * tool_result blocks for the SAME valid tool_use_id. This caused:
+		 * 1. API protocol violation ("toolResult blocks exceeds toolUse blocks")
+		 * 2. Unrecoverable "doom loop" breaking unattended access
+		 *
+		 * WHY EXISTING LOGIC DIDN'T CATCH THIS:
+		 * The validation used a Set (existingToolResultIds) which automatically deduplicates,
+		 * so it saw only ONE unique ID. With the ID being valid:
+		 * - missingToolUseIds.length === 0 (ID exists in Set)
+		 * - hasInvalidIds === false (ID is valid)
+		 * Early return triggered, passing BOTH duplicates to the API.
+		 *
+		 * THE FIX:
+		 * Explicit deduplication step that filters out duplicate tool_results
+		 * BEFORE any other processing, keeping only the first occurrence.
+		 */
+		it("should filter out duplicate tool_results with identical valid tool_use_ids (terminal fallback scenario)", () => {
+			// Scenario: Assistant made a single tool call
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g",
+						name: "execute_command",
+						input: { command: "ps aux | grep test", cwd: "/path/to/project" },
+					},
+				],
+			}
+
+			// Bug scenario: Two tool_results with the SAME valid tool_use_id
+			// This happens when terminal fallback generates a second result during the race condition
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // First result from command execution
+						content: "No test processes found",
+					},
+					{
+						type: "tool_result",
+						tool_use_id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // Duplicate from user approval during fallback
+						content: '{"status":"approved","message":"The user approved this operation"}',
+					},
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+
+			// CRITICAL ASSERTION: Only ONE tool_result should remain
+			// This prevents the API protocol violation that caused the doom loop
+			expect(resultContent.length).toBe(1)
+			expect(resultContent[0].tool_use_id).toBe("tooluse_QZ-pU8v2QKO8L8fHoJRI2g")
+			// The first occurrence should be kept (with original content)
+			expect(resultContent[0].content).toBe("No test processes found")
+		})
+
+		/**
+		 * Test that deduplication preserves text blocks alongside tool_results.
+		 * This ensures the fix doesn't accidentally filter out non-tool_result content.
+		 */
+		it("should preserve text blocks while deduplicating tool_results with same valid ID", () => {
+			const assistantMessage: Anthropic.MessageParam = {
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tool-123",
+						name: "read_file",
+						input: { path: "test.txt" },
+					},
+				],
+			}
+
+			const userMessage: Anthropic.MessageParam = {
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123",
+						content: "First result",
+					},
+					{
+						type: "text",
+						text: "Environment details here",
+					},
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123", // Duplicate with same valid ID
+						content: "Duplicate result from fallback",
+					},
+				],
+			}
+
+			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
+
+			expect(Array.isArray(result.content)).toBe(true)
+			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+
+			// Should have: 1 tool_result + 1 text block (duplicate filtered out)
+			expect(resultContent.length).toBe(2)
+			expect(resultContent[0].type).toBe("tool_result")
+			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
+			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe("First result")
+			expect(resultContent[1].type).toBe("text")
+			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Environment details here")
+		})
 	})
 
 	describe("when there are more tool_uses than tool_results", () => {

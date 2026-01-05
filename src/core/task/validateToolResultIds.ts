@@ -78,9 +78,76 @@ export function validateAndFixToolResultIds(
 	}
 
 	// Find tool_result blocks in the user message
-	const toolResults = userMessage.content.filter(
+	let toolResults = userMessage.content.filter(
 		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
 	)
+
+	// ============================================================================
+	// CRITICAL: Explicit deduplication of tool_result blocks
+	// ============================================================================
+	//
+	// WHY THIS IS NECESSARY:
+	// This deduplication step prevents a "doom loop" that can occur when the external
+	// terminal (e.g., PuTTY) fails during long-running commands and falls back to
+	// the integrated terminal. The race condition between terminal fallback and user
+	// approval can generate duplicate tool_result blocks for the same tool_use_id.
+	//
+	// THE BUG SCENARIO:
+	// 1. Assistant calls execute_command with tool_use_id="tooluse_XYZ"
+	// 2. Long-running command executes via external terminal
+	// 3. External terminal fails, triggering fallback to integrated terminal
+	// 4. First tool_result is generated for "tooluse_XYZ"
+	// 5. User approval arrives during/after fallback, generating ANOTHER tool_result
+	//    for the same "tooluse_XYZ"
+	// 6. Result: 2 tool_result blocks for 1 tool_use block
+	//
+	// WHY EXISTING CHECKS DIDN'T CATCH THIS:
+	// The checks below use a Set (existingToolResultIds) which automatically dedupes,
+	// so it sees only ONE unique ID. With:
+	//   - missingToolUseIds.length === 0 (the ID exists in the Set)
+	//   - hasInvalidIds === false (the ID is valid)
+	// The early return at the end of this block triggers, and BOTH duplicate
+	// tool_results pass through to the API, causing a protocol violation.
+	//
+	// THE FIX:
+	// Explicitly filter out duplicate tool_results BEFORE any other processing.
+	// This ensures exactly one tool_result per tool_use_id, regardless of how
+	// the duplicates were generated.
+	//
+	// REFERENCE: GitHub Issue #10465
+	// ============================================================================
+
+	const seenToolResultIds = new Set<string>()
+	const deduplicatedContent = userMessage.content.filter((block) => {
+		// Keep all non-tool_result blocks unchanged
+		if (block.type !== "tool_result") {
+			return true
+		}
+
+		// For tool_result blocks: keep only the first occurrence of each tool_use_id
+		if (seenToolResultIds.has(block.tool_use_id)) {
+			// This is a duplicate - filter it out to prevent API protocol violation
+			return false
+		}
+
+		seenToolResultIds.add(block.tool_use_id)
+		return true
+	})
+
+	// Update userMessage with deduplicated content
+	userMessage = {
+		...userMessage,
+		content: deduplicatedContent,
+	}
+
+	// Re-extract tool_results from deduplicated content for subsequent processing
+	toolResults = deduplicatedContent.filter(
+		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
+	)
+
+	// ============================================================================
+	// End of deduplication logic
+	// ============================================================================
 
 	// Build a set of valid tool_use IDs
 	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.id))
