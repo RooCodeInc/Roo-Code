@@ -149,18 +149,19 @@ export class WorktreeService {
 	 */
 	async deleteWorktree(cwd: string, worktreePath: string, force = false): Promise<WorktreeResult> {
 		try {
+			// Get worktree info BEFORE deletion to capture the branch name
+			const worktrees = await this.listWorktrees(cwd)
+			const worktreeToDelete = worktrees.find(
+				(wt) => this.normalizePath(wt.path) === this.normalizePath(worktreePath),
+			)
+
 			const forceFlag = force ? " --force" : ""
 			await execAsync(`git worktree remove${forceFlag} "${worktreePath}"`, { cwd })
 
 			// Also try to delete the branch if it exists
-			const worktrees = await this.listWorktrees(cwd)
-			const deletedWorktree = worktrees.find(
-				(wt) => this.normalizePath(wt.path) === this.normalizePath(worktreePath),
-			)
-
-			if (deletedWorktree?.branch) {
+			if (worktreeToDelete?.branch) {
 				try {
-					await execAsync(`git branch -d "${deletedWorktree.branch}"`, { cwd })
+					await execAsync(`git branch -d "${worktreeToDelete.branch}"`, { cwd })
 				} catch {
 					// Branch deletion is best-effort
 				}
