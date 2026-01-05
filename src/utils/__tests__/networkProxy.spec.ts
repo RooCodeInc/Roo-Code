@@ -93,7 +93,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("")
 			const context = createMockContext()
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.GLOBAL_AGENT_HTTP_PROXY).toBeUndefined()
 			expect(process.env.GLOBAL_AGENT_HTTPS_PROXY).toBeUndefined()
@@ -104,7 +104,7 @@ describe("networkProxy", () => {
 			// Proxy is only applied in debug mode.
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.GLOBAL_AGENT_HTTP_PROXY).toBe("http://localhost:8080")
 			expect(process.env.GLOBAL_AGENT_HTTPS_PROXY).toBe("http://localhost:8080")
@@ -114,7 +114,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("")
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
 		})
@@ -122,10 +122,19 @@ describe("networkProxy", () => {
 		it("should register configuration change listener", () => {
 			const context = createMockContext()
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(vscode.workspace.onDidChangeConfiguration).toHaveBeenCalled()
 			expect(context.subscriptions.length).toBeGreaterThan(0)
+		})
+
+		it("should not throw in non-debug mode if proxy deps are not installed", () => {
+			mockConfig.get.mockReturnValue("http://localhost:8080")
+			const context = createMockContext(vscode.ExtensionMode.Production)
+
+			expect(() => {
+				void initializeNetworkProxy(context, mockOutputChannel)
+			}).not.toThrow()
 		})
 	})
 
@@ -144,7 +153,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("http://proxy.example.com:3128")
 			const context = createMockContext(vscode.ExtensionMode.Production)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBe("http://proxy.example.com:3128")
@@ -155,7 +164,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("  http://proxy.example.com:3128  ")
 			const context = createMockContext()
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBe("http://proxy.example.com:3128")
@@ -165,7 +174,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("   ")
 			const context = createMockContext()
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBeUndefined()
@@ -177,7 +186,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("")
 			const context = createMockContext()
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(isProxyEnabled()).toBe(false)
 		})
@@ -187,7 +196,7 @@ describe("networkProxy", () => {
 			// Proxy is only applied in debug mode.
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(isProxyEnabled()).toBe(true)
 		})
@@ -197,7 +206,7 @@ describe("networkProxy", () => {
 		it("should return false in production mode", () => {
 			const context = createMockContext(vscode.ExtensionMode.Production)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(isDebugMode()).toBe(false)
 		})
@@ -205,7 +214,7 @@ describe("networkProxy", () => {
 		it("should return true in development mode", () => {
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(isDebugMode()).toBe(true)
 		})
@@ -224,7 +233,7 @@ describe("networkProxy", () => {
 			mockConfig.get.mockReturnValue("http://localhost:8080")
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
-			initializeNetworkProxy(context, mockOutputChannel)
+			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
 		})

@@ -10,8 +10,6 @@
  */
 
 import * as vscode from "vscode"
-import { bootstrap } from "global-agent"
-import { ProxyAgent, setGlobalDispatcher, fetch as undiciFetch } from "undici"
 import { Package } from "../shared/package"
 
 /**
@@ -67,7 +65,10 @@ function restoreGlobalFetchPatch(): void {
  * @param context The VS Code extension context
  * @param channel Optional output channel for logging
  */
-export function initializeNetworkProxy(context: vscode.ExtensionContext, channel?: vscode.OutputChannel): void {
+export async function initializeNetworkProxy(
+	context: vscode.ExtensionContext,
+	channel?: vscode.OutputChannel,
+): Promise<void> {
 	extensionContext = context
 	outputChannel = channel ?? null
 
@@ -123,8 +124,8 @@ export function initializeNetworkProxy(context: vscode.ExtensionContext, channel
 	}
 
 	if (config.proxyUrl) {
-		configureGlobalProxy(config)
-		configureUndiciProxy(config)
+		await configureGlobalProxy(config)
+		await configureUndiciProxy(config)
 	} else {
 		log(`No proxy URL configured (debug mode).`)
 	}
@@ -160,7 +161,7 @@ export function getProxyConfig(): ProxyConfig {
 /**
  * Configure global-agent to route all HTTP/HTTPS traffic through the proxy.
  */
-function configureGlobalProxy(config: ProxyConfig): void {
+async function configureGlobalProxy(config: ProxyConfig): Promise<void> {
 	if (proxyInitialized) {
 		// global-agent can only be bootstrapped once
 		// Update environment variables for any new connections
@@ -172,6 +173,17 @@ function configureGlobalProxy(config: ProxyConfig): void {
 	// Set up environment variables before bootstrapping
 	log(`Setting proxy environment variables before bootstrap (values redacted)...`)
 	updateProxyEnvVars(config)
+
+	let bootstrap: (() => void) | undefined
+	try {
+		const mod = (await import("global-agent")) as typeof import("global-agent")
+		bootstrap = mod.bootstrap
+	} catch (error) {
+		log(
+			`Failed to load global-agent (proxy support is only available in debug/dev builds): ${error instanceof Error ? error.message : String(error)}`,
+		)
+		return
+	}
 
 	// Bootstrap global-agent to intercept all HTTP/HTTPS requests
 	log(`Calling global-agent bootstrap()...`)
@@ -191,7 +203,7 @@ function configureGlobalProxy(config: ProxyConfig): void {
  * Configure undici's global dispatcher so Node's built-in `fetch()` and any undici-based
  * clients route through the proxy.
  */
-function configureUndiciProxy(config: ProxyConfig): void {
+async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
 	if (!config.proxyUrl) {
 		return
 	}
@@ -202,10 +214,13 @@ function configureUndiciProxy(config: ProxyConfig): void {
 	}
 
 	try {
-		const proxyAgent = new ProxyAgent({
-			uri: config.proxyUrl,
-		})
+		const {
+			ProxyAgent,
+			setGlobalDispatcher,
+			fetch: undiciFetch,
+		} = (await import("undici")) as typeof import("undici")
 
+		const proxyAgent = new ProxyAgent({ uri: config.proxyUrl })
 		setGlobalDispatcher(proxyAgent)
 		undiciProxyInitialized = true
 		log(`undici global dispatcher configured for proxy: ${redactProxyUrl(config.proxyUrl)}`)
