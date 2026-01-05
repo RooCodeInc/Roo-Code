@@ -14,22 +14,19 @@ type ApiMessageForDetection = Anthropic.MessageParam & {
 /**
  * Resolve the effective tool protocol.
  *
- * **Deprecation Note (XML Protocol):**
- * XML tool protocol has been deprecated. All models now use Native tool calling.
- * User/profile preferences (`providerSettings.toolProtocol`) and model defaults
- * (`modelInfo.defaultToolProtocol`) are ignored.
- *
  * Precedence:
  * 1. Locked Protocol (task-level lock for resumed tasks - highest priority)
- * 2. Native (always, for all new tasks)
+ * 2. User/Profile Preference (providerSettings.toolProtocol) - allows forcing XML for models
+ *    that don't handle native tool calling well (e.g., some OpenAI-compatible models like Qwen3, Kimi2)
+ * 3. Native (default for all new tasks without explicit preference)
  *
- * @param _providerSettings - The provider settings (toolProtocol field is ignored)
+ * @param providerSettings - The provider settings (toolProtocol field used for user preference)
  * @param _modelInfo - Unused, kept for API compatibility
  * @param lockedProtocol - Optional task-locked protocol that takes absolute precedence
  * @returns The resolved tool protocol (either "xml" or "native")
  */
 export function resolveToolProtocol(
-	_providerSettings: ProviderSettings,
+	providerSettings: ProviderSettings,
 	_modelInfo?: unknown,
 	lockedProtocol?: ToolProtocol,
 ): ToolProtocol {
@@ -39,8 +36,14 @@ export function resolveToolProtocol(
 		return lockedProtocol
 	}
 
-	// 2. Always return Native protocol for new tasks
-	// All models now support native tools; XML is deprecated
+	// 2. User/Profile Preference - allow users to explicitly force XML protocol
+	// This is useful for models that don't handle native tool calling well
+	// (e.g., some OpenAI-compatible models like Qwen3, Kimi2)
+	if (providerSettings.toolProtocol) {
+		return providerSettings.toolProtocol
+	}
+
+	// 3. Default to Native protocol for new tasks
 	return TOOL_PROTOCOL.NATIVE
 }
 

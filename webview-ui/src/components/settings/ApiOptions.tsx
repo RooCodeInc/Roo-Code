@@ -877,6 +877,33 @@ const ApiOptions = ({
 							}
 							onChange={(value) => setApiConfigurationField("consecutiveMistakeLimit", value)}
 						/>
+						<div>
+							<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+							<Select
+								value={apiConfiguration?.toolProtocol || "default"}
+								onValueChange={(value) =>
+									setApiConfigurationField(
+										"toolProtocol",
+										value === "default" ? undefined : (value as "xml" | "native"),
+									)
+								}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder={t("settings:common.select")} />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="default">
+										{t("settings:toolProtocol.currentDefault", {
+											protocol: t("settings:toolProtocol.native"),
+										})}
+									</SelectItem>
+									<SelectItem value="native">{t("settings:toolProtocol.native")}</SelectItem>
+									<SelectItem value="xml">{t("settings:toolProtocol.xml")}</SelectItem>
+								</SelectContent>
+							</Select>
+							<div className="text-sm text-vscode-descriptionForeground mt-1">
+								{t("settings:toolProtocol.description")}
+							</div>
+						</div>
 						{selectedProvider === "openrouter" &&
 							openRouterModelProviders &&
 							Object.keys(openRouterModelProviders).length > 0 && (

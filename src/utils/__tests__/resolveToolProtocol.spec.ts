@@ -6,20 +6,19 @@ import type { Anthropic } from "@anthropic-ai/sdk"
 
 describe("resolveToolProtocol", () => {
 	/**
-	 * XML Protocol Deprecation:
-	 *
-	 * XML tool protocol has been fully deprecated. All models now use Native
-	 * tool calling. User preferences and model defaults are ignored.
+	 * Tool Protocol Resolution:
 	 *
 	 * Precedence:
-	 * 1. Locked Protocol (for resumed tasks that used XML)
-	 * 2. Native (always, for all new tasks)
+	 * 1. Locked Protocol (for resumed tasks - highest priority)
+	 * 2. User/Profile Preference (providerSettings.toolProtocol) - allows users to force XML
+	 *    for models that don't handle native tool calling well (e.g., Qwen3, Kimi2)
+	 * 3. Native (default for all new tasks without explicit preference)
 	 */
 
 	describe("Locked Protocol (Precedence Level 0 - Highest Priority)", () => {
-		it("should return lockedProtocol when provided", () => {
+		it("should return lockedProtocol when provided, ignoring user preference", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "xml", // Ignored
+				toolProtocol: "xml", // User preference - overridden by locked protocol
 				apiProvider: "openai-native",
 			}
 			// lockedProtocol overrides everything
@@ -29,7 +28,7 @@ describe("resolveToolProtocol", () => {
 
 		it("should return XML lockedProtocol for resumed tasks that used XML", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "native", // Ignored
+				toolProtocol: "native", // User preference - overridden by locked protocol
 				apiProvider: "anthropic",
 			}
 			// lockedProtocol forces XML for backward compatibility
@@ -37,19 +36,50 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 
-		it("should fall through to Native when lockedProtocol is undefined", () => {
+		it("should fall through to user preference when lockedProtocol is undefined", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "xml", // Ignored
+				toolProtocol: "xml", // User preference takes effect
 				apiProvider: "anthropic",
 			}
-			// undefined lockedProtocol should return native
+			// undefined lockedProtocol should use user preference
 			const result = resolveToolProtocol(settings, undefined, undefined)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 	})
 
-	describe("Native Protocol Always Used For New Tasks", () => {
-		it("should always use native for new tasks", () => {
+	describe("User/Profile Preference (Precedence Level 1)", () => {
+		it("should respect user preference for XML protocol", () => {
+			const settings: ProviderSettings = {
+				toolProtocol: "xml",
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
+		})
+
+		it("should respect user preference for native protocol", () => {
+			const settings: ProviderSettings = {
+				toolProtocol: "native",
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should allow XML for OpenAI-compatible models when user prefers XML", () => {
+			// This is the key scenario for models like Qwen3, Kimi2 that
+			// don't handle native tool calling well
+			const settings: ProviderSettings = {
+				toolProtocol: "xml",
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
+		})
+	})
+
+	describe("Default Protocol (Precedence Level 2 - No User Preference)", () => {
+		it("should default to native for new tasks without user preference", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "anthropic",
 			}
@@ -57,16 +87,7 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should use native even when user preference is XML (user prefs ignored)", () => {
-			const settings: ProviderSettings = {
-				toolProtocol: "xml", // User wants XML - ignored
-				apiProvider: "openai-native",
-			}
-			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
-		})
-
-		it("should use native for OpenAI compatible provider", () => {
+		it("should default to native for OpenAI compatible provider without preference", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "openai",
 			}
@@ -79,7 +100,7 @@ describe("resolveToolProtocol", () => {
 		it("should handle missing provider name gracefully", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Default to native
 		})
 
 		it("should handle undefined model info gracefully", () => {
@@ -87,18 +108,26 @@ describe("resolveToolProtocol", () => {
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings, undefined)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Default to native
 		})
 
 		it("should handle empty settings", () => {
 			const settings: ProviderSettings = {}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Always native now
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Default to native
+		})
+
+		it("should respect user XML preference even with empty provider", () => {
+			const settings: ProviderSettings = {
+				toolProtocol: "xml",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 	})
 
 	describe("Real-world Scenarios", () => {
-		it("should use Native for OpenAI models", () => {
+		it("should default to Native for OpenAI models", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "openai-native",
 			}
@@ -112,7 +141,7 @@ describe("resolveToolProtocol", () => {
 			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
 		})
 
-		it("should use Native for Claude models", () => {
+		it("should default to Native for Claude models", () => {
 			const settings: ProviderSettings = {
 				apiProvider: "anthropic",
 			}
@@ -134,21 +163,40 @@ describe("resolveToolProtocol", () => {
 			const result = resolveToolProtocol(settings, undefined, "xml")
 			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
+
+		it("should allow user to force XML for OpenAI-compatible models (Qwen3, Kimi2 use case)", () => {
+			// This is the primary use case from issue #10459
+			// Users with Qwen3 or Kimi2 models need XML protocol
+			const settings: ProviderSettings = {
+				toolProtocol: "xml",
+				apiProvider: "openai",
+			}
+			const result = resolveToolProtocol(settings, openAiModelInfoSaneDefaults)
+			expect(result).toBe(TOOL_PROTOCOL.XML)
+		})
 	})
 
-	describe("Backward Compatibility - User Preferences Ignored", () => {
-		it("should ignore user preference for XML", () => {
+	describe("Backward Compatibility - User Preferences Now Respected", () => {
+		it("should respect user preference for XML when set", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "xml", // User explicitly wants XML - ignored
+				toolProtocol: "xml",
 				apiProvider: "openai-native",
 			}
 			const result = resolveToolProtocol(settings)
-			expect(result).toBe(TOOL_PROTOCOL.NATIVE) // Native is always used
+			expect(result).toBe(TOOL_PROTOCOL.XML)
 		})
 
-		it("should return native regardless of user preference", () => {
+		it("should respect user preference for native when set", () => {
 			const settings: ProviderSettings = {
-				toolProtocol: "native", // User preference - ignored but happens to match
+				toolProtocol: "native",
+				apiProvider: "anthropic",
+			}
+			const result = resolveToolProtocol(settings)
+			expect(result).toBe(TOOL_PROTOCOL.NATIVE)
+		})
+
+		it("should default to native when no preference set", () => {
+			const settings: ProviderSettings = {
 				apiProvider: "anthropic",
 			}
 			const result = resolveToolProtocol(settings)
