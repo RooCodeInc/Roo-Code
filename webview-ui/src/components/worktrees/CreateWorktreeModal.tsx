@@ -131,7 +131,7 @@ export const CreateWorktreeModal = ({
 
 				<div className="flex flex-col gap-3">
 					{/* No .worktreeinclude warning */}
-					{includeStatus && !(includeStatus as any).worktreeIncludeExists && (
+					{includeStatus && !includeStatus.exists && (
 						<div className="flex items-center gap-2 px-2 py-1.5 rounded bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder text-sm">
 							<span className="codicon codicon-warning text-vscode-charts-yellow flex-shrink-0" />
 							<span className="text-vscode-foreground">
