@@ -31,15 +31,19 @@ program
 	.argument("<prompt>", "The prompt/task to execute")
 	.option("-w, --workspace <path>", "Workspace path to operate in", process.cwd())
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
-	.option("-v, --verbose", "Enable verbose logging", false)
-	.option("-q, --quiet", "Suppress VSCode and extension logs (only show assistant output)", false)
+	.option("-v, --verbose", "Enable verbose output (show VSCode and extension logs)", false)
+	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
 	.option("-x, --exit-on-complete", "Exit the process when the task completes (useful for testing)", false)
 	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
 	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to ANTHROPIC_API_KEY env var)")
 	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "openrouter")
-	.option("-m, --model <model>", "Model to use")
-	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)")
-	.option("-r, --reasoning-effort <effort>", "Reasoning effort level (none, minimal, low, medium, high, xhigh)")
+	.option("-m, --model <model>", "Model to use", "anthropic/claude-sonnet-4.5")
+	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", "code")
+	.option(
+		"-r, --reasoning-effort <effort>",
+		"Reasoning effort level (none, minimal, low, medium, high, xhigh)",
+		"medium",
+	)
 	.action(
 		async (
 			prompt: string,
@@ -47,7 +51,7 @@ program
 				workspace: string
 				extension?: string
 				verbose: boolean
-				quiet: boolean
+				debug: boolean
 				exitOnComplete: boolean
 				yes: boolean
 				apiKey?: string
@@ -57,8 +61,8 @@ program
 				reasoningEffort?: ReasoningEffortExtended
 			},
 		) => {
-			// Set up quiet mode - suppress VSCode shim logs
-			if (options.quiet) {
+			// Default is quiet mode - suppress VSCode shim logs unless verbose or debug is specified
+			if (!options.verbose && !options.debug) {
 				setLogger({
 					info: () => {},
 					warn: () => {},
@@ -97,21 +101,24 @@ program
 				process.exit(1)
 			}
 
-			if (options.verbose) {
+			// Log basic info after processing options
+			console.log(`[CLI] Workspace: ${workspacePath}`)
+			console.log(`[CLI] Provider: ${options.provider}`)
+			console.log(`[CLI] Model: ${options.model || "default"}`)
+			console.log(`[CLI] Mode: ${options.mode || "default"}`)
+			console.log(`[CLI] Reasoning Effort: ${options.reasoningEffort || "default"}`)
+
+			if (options.debug) {
 				console.log(`[CLI] Prompt: ${prompt}`)
-				console.log(`[CLI] Workspace: ${workspacePath}`)
 				console.log(`[CLI] Extension path: ${extensionPath}`)
-				console.log(`[CLI] Provider: ${options.provider}`)
-				console.log(`[CLI] Model: ${options.model || "default"}`)
-				console.log(`[CLI] Reasoning Effort: ${options.reasoningEffort || "default"}`)
 				console.log(`[CLI] API Key: ${apiKey.substring(0, 8)}...`)
 			}
 
 			const host = new ExtensionHost({
 				workspacePath,
 				extensionPath: path.resolve(extensionPath),
-				verbose: options.verbose, // Allow verbose with quiet mode for debug output
-				quiet: options.quiet,
+				verbose: options.debug, // debug flag enables verbose logging in ExtensionHost
+				quiet: !options.verbose && !options.debug, // quiet by default unless verbose or debug
 				nonInteractive: options.yes,
 				apiKey,
 				apiProvider: options.provider,
@@ -143,7 +150,7 @@ program
 				}
 			} catch (error) {
 				console.error("[CLI] Error:", error instanceof Error ? error.message : String(error))
-				if (options.verbose && error instanceof Error) {
+				if (options.debug && error instanceof Error) {
 					console.error(error.stack)
 				}
 				await host.dispose()

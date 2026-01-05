@@ -482,7 +482,7 @@ describe("ExtensionHost", () => {
 			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task done", false)
 
 			expect(emitSpy).toHaveBeenCalledWith("taskComplete")
-			expect(outputSpy).toHaveBeenCalledWith("\n[Task Complete]", "Task done")
+			expect(outputSpy).toHaveBeenCalledWith("\n[task complete]", "Task done")
 		})
 
 		it("should output error messages without emitting taskError", () => {
@@ -493,7 +493,7 @@ describe("ExtensionHost", () => {
 			// Errors are informational - they don't terminate the task
 			// The agent should decide what to do next
 			expect(emitSpy).not.toHaveBeenCalledWith("taskError", "Something went wrong")
-			expect(outputErrorSpy).toHaveBeenCalledWith("\n[Error]", "Something went wrong")
+			expect(outputErrorSpy).toHaveBeenCalledWith("\n[error]", "Something went wrong")
 		})
 
 		it("should handle command_output messages", () => {
@@ -503,7 +503,7 @@ describe("ExtensionHost", () => {
 			callPrivate(host, "handleSayMessage", 123, "command_output", "output text", false)
 
 			// command_output now uses writeStream to bypass quiet mode
-			expect(writeStreamSpy).toHaveBeenCalledWith("\n[Command Output] ")
+			expect(writeStreamSpy).toHaveBeenCalledWith("\n[command output] ")
 			expect(writeStreamSpy).toHaveBeenCalledWith("output text")
 			expect(writeStreamSpy).toHaveBeenCalledWith("\n")
 		})
@@ -511,7 +511,7 @@ describe("ExtensionHost", () => {
 		it("should handle tool messages", () => {
 			callPrivate(host, "handleSayMessage", 123, "tool", "tool usage", false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Tool]", "tool usage")
+			expect(outputSpy).toHaveBeenCalledWith("\n[tool]", "tool usage")
 		})
 
 		it("should skip already displayed complete messages", () => {
@@ -546,7 +546,7 @@ describe("ExtensionHost", () => {
 			// Then, the complete message with the actual completion text
 			callPrivate(host, "handleSayMessage", 123, "completion_result", "Task completed successfully!", false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Task Complete]", "Task completed successfully!")
+			expect(outputSpy).toHaveBeenCalledWith("\n[task complete]", "Task completed successfully!")
 			expect(emitSpy).toHaveBeenCalledWith("taskComplete")
 		})
 
@@ -711,7 +711,7 @@ describe("ExtensionHost", () => {
 			callPrivate(host, "handleFollowupQuestion", 123, text)
 
 			// Should display the question
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What would you like to do?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "What would you like to do?")
 
 			// Should display suggestions with answer text and mode hints
 			expect(outputSpy).toHaveBeenCalledWith("\nSuggested answers:")
@@ -728,7 +728,7 @@ describe("ExtensionHost", () => {
 
 			callPrivate(host, "handleFollowupQuestion", 123, text)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What path?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "What path?")
 			expect(outputSpy).toHaveBeenCalledWith("  1. ./src/file.ts")
 			expect(outputSpy).toHaveBeenCalledWith("  2. ./lib/other.ts")
 		})
@@ -736,7 +736,7 @@ describe("ExtensionHost", () => {
 		it("should handle plain text (non-JSON) as the question", async () => {
 			callPrivate(host, "handleFollowupQuestion", 123, "What is your name?")
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What is your name?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "What is your name?")
 		})
 
 		it("should handle empty suggestions array", async () => {
@@ -747,7 +747,7 @@ describe("ExtensionHost", () => {
 
 			callPrivate(host, "handleFollowupQuestion", 123, text)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "Tell me more")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "Tell me more")
 			// Should not show "Suggested answers:" if array is empty
 			expect(outputSpy).not.toHaveBeenCalledWith("\nSuggested answers:")
 		})
@@ -790,7 +790,7 @@ describe("ExtensionHost", () => {
 			callPrivate(host, "handleFollowupQuestionWithTimeout", 123, text)
 
 			// Should display the question
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "What would you like to do?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "What would you like to do?")
 
 			// Should display suggestions
 			expect(outputSpy).toHaveBeenCalledWith("\nSuggested answers:")
@@ -801,7 +801,7 @@ describe("ExtensionHost", () => {
 		it("should handle non-JSON text as plain question", () => {
 			callPrivate(host, "handleFollowupQuestionWithTimeout", 123, "Plain question text")
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Question]", "Plain question text")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "Plain question text")
 		})
 
 		it("should include auto-select hint in prompt when suggestions exist", () => {
