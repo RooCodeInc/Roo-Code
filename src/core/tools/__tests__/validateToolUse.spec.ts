@@ -257,20 +257,27 @@ describe("mode-validator", () => {
 				},
 			]
 
-			// Empty string path must not be treated as an unrestricted root operation.
-			expect(() => validateToolUse("list_files", "skills-reader", customModes, undefined, { path: "" })).toThrow(
-				/can only read files matching pattern/,
-			)
+			// search_files & list_files: empty/missing path is treated as a missing-param error by the tool
+			// implementation (no filesystem operation), so permission checks should allow it.
+			expect(() =>
+				validateToolUse("list_files", "skills-reader", customModes, undefined, { path: "" }),
+			).not.toThrow()
 			expect(() =>
 				validateToolUse("search_files", "skills-reader", customModes, undefined, { path: "", regex: ".*" }),
-			).toThrow(/can only read files matching pattern/)
+			).not.toThrow()
+			expect(() =>
+				validateToolUse("search_files", "skills-reader", customModes, undefined, { regex: ".*" }),
+			).not.toThrow()
+
+			// codebase_search: missing/empty path means “search entire workspace”, so it must be rejected.
 			expect(() =>
 				validateToolUse("codebase_search", "skills-reader", customModes, undefined, { query: "x", path: "" }),
 			).toThrow(/can only read files matching pattern/)
-
-			// Omitted path must also be rejected under read fileRegex.
 			expect(() =>
 				validateToolUse("codebase_search", "skills-reader", customModes, undefined, { query: "x" }),
+			).toThrow(/can only read files matching pattern/)
+			expect(() =>
+				validateToolUse("codebase_search", "skills-reader", customModes, undefined, { query: "x", path: null }),
 			).toThrow(/can only read files matching pattern/)
 
 			// Allowed directory should be accepted.

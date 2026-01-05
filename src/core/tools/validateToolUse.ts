@@ -317,44 +317,74 @@ export function isToolAllowedForMode(
 				}
 			}
 
-			// Restrict search_files, codebase_search, and list_files path parameter
-			// These tools operate on directories, so we derive a directory pattern from the fileRegex
+			// Restrict directory-scoped tools to the directories implied by fileRegex.
+			// NOTE: Some tools treat a missing/empty path as a *missing param* (no operation),
+			// while others treat it as an *unrestricted workspace search*.
 			if (["search_files", "codebase_search", "list_files"].includes(tool)) {
 				const rawPathParam = toolParams?.path
 
-				// IMPORTANT: When read group fileRegex is configured, we must not allow an empty/omitted
-				// path to be interpreted as an unrestricted workspace-root operation.
-				if (typeof rawPathParam !== "string" || rawPathParam.trim().length === 0) {
-					throw new FileRestrictionError(
-						mode.name,
-						options.fileRegex,
-						options.description,
-						typeof rawPathParam === "string" ? rawPathParam : "(missing path)",
-						tool,
-						"read",
-					)
-				}
-
-				const pathParam = rawPathParam.trim()
-				if (pathParam.length > 0) {
-					// Derive directory pattern: strip trailing file pattern (e.g., SKILL.md$) and match directory prefix
-					// For pattern like: (^|.*[\\/])\.roo[\\/]skills(-[a-zA-Z0-9-]+)?[\\/][^\\/]+[\\/]SKILL\.md$
-					// Directory should be within: .roo/skills or .roo/skills-<mode>
-					const dirPattern = options.fileRegex
-						.replace(/\[\^[^\]]*\]\+[\\\\/]?[^$]*\$$/, "") // Remove [^\/]+\/SKILL\.md$ part
-						.replace(/\$$/, "") // Remove trailing $ if present
-					const dirRegex = dirPattern ? `${dirPattern}($|[\\\\/])` : options.fileRegex
-
-					if (!doesFileMatchRegex(pathParam, dirRegex) && !doesFileMatchRegex(pathParam + "/", dirRegex)) {
+				// codebase_search: path is optional at the tool layer, and missing/null typically
+				// means “search the entire workspace”, so we must reject missing/empty here.
+				if (tool === "codebase_search") {
+					if (typeof rawPathParam !== "string" || rawPathParam.trim().length === 0) {
 						throw new FileRestrictionError(
 							mode.name,
 							options.fileRegex,
 							options.description,
-							pathParam,
+							typeof rawPathParam === "string" ? rawPathParam : "(missing path)",
 							tool,
 							"read",
 						)
 					}
+				} else {
+					// search_files & list_files: missing/empty path is treated as a missing param by the tool
+					// implementation (no filesystem access), so allow it to pass validation.
+					if (rawPathParam === undefined || rawPathParam === null || rawPathParam === "") {
+						return true
+					}
+
+					// Reject non-string types and whitespace-only strings (tools treat these as “present” and
+					// could attempt filesystem access).
+					if (typeof rawPathParam !== "string") {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							"(invalid path)",
+							tool,
+							"read",
+						)
+					}
+					if (rawPathParam.trim().length === 0) {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							rawPathParam,
+							tool,
+							"read",
+						)
+					}
+				}
+
+				const pathParam = (rawPathParam as string).trim()
+				// Derive directory pattern: strip trailing file pattern (e.g., SKILL.md$) and match directory prefix
+				// For pattern like: (^|.*[\\/])\.roo[\\/]skills(-[a-zA-Z0-9-]+)?[\\/][^\\/]+[\\/]SKILL\.md$
+				// Directory should be within: .roo/skills or .roo/skills-<mode>
+				const dirPattern = options.fileRegex
+					.replace(/\[\^[^\]]*\]\+[\\\\/]?[^$]*\$$/, "") // Remove [^\/]+\/SKILL\.md$ part
+					.replace(/\$$/, "") // Remove trailing $ if present
+				const dirRegex = dirPattern ? `${dirPattern}($|[\\\\/])` : options.fileRegex
+
+				if (!doesFileMatchRegex(pathParam, dirRegex) && !doesFileMatchRegex(pathParam + "/", dirRegex)) {
+					throw new FileRestrictionError(
+						mode.name,
+						options.fileRegex,
+						options.description,
+						pathParam,
+						tool,
+						"read",
+					)
 				}
 			}
 		}
