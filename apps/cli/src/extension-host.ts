@@ -14,7 +14,9 @@ import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
 import readline from "readline"
+
 import { createVSCodeAPI } from "@roo-code/vscode-shim"
+import { ProviderName, ReasoningEffortExtended, RooCodeSettings } from "@roo-code/types"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
 // When bundled, import.meta.url points to dist/index.js, so go up to package root
@@ -28,9 +30,10 @@ export interface ExtensionHostOptions {
 	quiet?: boolean
 	nonInteractive?: boolean
 	apiKey?: string
-	apiProvider?: string
+	apiProvider?: ProviderName
 	model?: string
 	mode?: string
+	reasoningEffort?: ReasoningEffortExtended
 }
 
 interface ExtensionModule {
@@ -54,6 +57,7 @@ export class ExtensionHost extends EventEmitter {
 	private isWebviewReady = false
 	private pendingMessages: unknown[] = []
 	private messageListener: ((message: unknown) => void) | null = null
+
 	private originalConsole: {
 		log: typeof console.log
 		warn: typeof console.warn
@@ -61,21 +65,24 @@ export class ExtensionHost extends EventEmitter {
 		debug: typeof console.debug
 		info: typeof console.info
 	} | null = null
+
 	private originalProcessEmitWarning: typeof process.emitWarning | null = null
-	private isWaitingForResponse = false
-	// Track seen tool calls to avoid duplicate display
-	private seenToolCalls: Set<string> = new Set()
+
 	// Track pending asks that need a response (by ts)
 	private pendingAsks: Set<number> = new Set()
+
 	// Readline interface for interactive prompts
 	private rl: readline.Interface | null = null
+
 	// Track displayed messages by ts to avoid duplicates and show updates
 	private displayedMessages: Map<number, { text: string; partial: boolean }> = new Map()
+
 	// Track streamed content by ts for delta computation
 	private streamedContent: Map<number, { text: string; headerShown: boolean }> = new Map()
+
 	// Track message processing for verbose debug output
 	private processedMessageCount = 0
-	private lastProcessedMessageTs: number | undefined = undefined
+
 	// Track if we're currently streaming a message (to manage newlines)
 	private currentlyStreamingTs: number | null = null
 
@@ -291,7 +298,7 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	/**
-	 * Send a message to the extension (simulating webview -> extension communication)
+	 * Send a message to the extension (simulating webview -> extension communication).
 	 */
 	sendToExtension(message: unknown): void {
 		if (!this.isWebviewReady) {
@@ -308,18 +315,17 @@ export class ExtensionHost extends EventEmitter {
 	 * Build the provider-specific API configuration
 	 * Each provider uses different field names for API key and model
 	 */
-	private buildApiConfiguration(): Record<string, unknown> {
+	private buildApiConfiguration(): RooCodeSettings {
 		const provider = this.options.apiProvider || "anthropic"
 		const apiKey = this.options.apiKey
 		const model = this.options.model
 
-		// Base config with provider
-		const config: Record<string, unknown> = {
+		// Base config with provider.
+		const config: RooCodeSettings = {
 			apiProvider: provider,
 		}
 
-		// Map provider to the correct API key and model field names
-		// Based on packages/types/src/provider-settings.ts
+		// Map provider to the correct API key and model field names.
 		switch (provider) {
 			case "anthropic":
 				if (apiKey) config.apiKey = apiKey
@@ -329,9 +335,6 @@ export class ExtensionHost extends EventEmitter {
 			case "openrouter":
 				if (apiKey) config.openRouterApiKey = apiKey
 				if (model) config.openRouterModelId = model
-				// Enable reasoning/thinking for models that support it
-				config.enableReasoningEffort = true
-				config.reasoningEffort = "medium"
 				break
 
 			case "gemini":
@@ -464,7 +467,7 @@ export class ExtensionHost extends EventEmitter {
 				break
 
 			default:
-				// Default to apiKey and apiModelId for unknown providers
+				// Default to apiKey and apiModelId for unknown providers.
 				if (apiKey) config.apiKey = apiKey
 				if (model) config.apiModelId = model
 		}
@@ -494,7 +497,7 @@ export class ExtensionHost extends EventEmitter {
 		// In interactive mode (default), we'll prompt the user for each action
 		if (this.options.nonInteractive) {
 			this.log("Non-interactive mode: enabling auto-approval settings...")
-			const settings: Record<string, unknown> = {
+			const settings: RooCodeSettings = {
 				autoApprovalEnabled: true,
 				alwaysAllowReadOnly: true,
 				alwaysAllowReadOnlyOutsideWorkspace: true,
@@ -507,36 +510,41 @@ export class ExtensionHost extends EventEmitter {
 				alwaysAllowSubtasks: true,
 				alwaysAllowExecute: true,
 				alwaysAllowFollowupQuestions: true,
-				// Enable reasoning/thinking tokens for models that support it.
-				enableReasoningEffort: true,
-				reasoningEffort: "medium",
 				// Allow all commands with wildcard (required for command auto-approval).
 				allowedCommands: ["*"],
+				commandExecutionTimeout: 20,
 			}
-			// Include mode if specified
+
 			if (this.options.mode) {
 				settings.mode = this.options.mode
 			}
+
+			if (this.options.reasoningEffort) {
+				settings.enableReasoningEffort = true
+				settings.reasoningEffort = this.options.reasoningEffort
+			}
+
 			this.sendToExtension({
 				type: "updateSettings",
 				updatedSettings: settings,
 			})
 		} else {
 			this.log("Interactive mode: user will be prompted for approvals...")
-			const settings: Record<string, unknown> = {
+
+			const settings: RooCodeSettings = {
 				autoApprovalEnabled: false,
-				// Enable reasoning/thinking tokens for models that support it
-				enableReasoningEffort: true,
-				reasoningEffort: "medium",
 			}
-			// Include mode if specified
+
 			if (this.options.mode) {
 				settings.mode = this.options.mode
 			}
-			this.sendToExtension({
-				type: "updateSettings",
-				updatedSettings: settings,
-			})
+
+			if (this.options.reasoningEffort) {
+				settings.enableReasoningEffort = true
+				settings.reasoningEffort = this.options.reasoningEffort
+			}
+
+			this.sendToExtension({ type: "updateSettings", updatedSettings: settings })
 		}
 
 		// Give the extension a moment to process the settings
@@ -559,15 +567,9 @@ export class ExtensionHost extends EventEmitter {
 			await new Promise<void>((resolve) => setTimeout(resolve, 100))
 		}
 
-		// Mark that we're waiting for response
-		this.isWaitingForResponse = true
-
 		// Send the task message
 		// This matches the WebviewMessage type from the extension
-		this.sendToExtension({
-			type: "newTask",
-			text: prompt,
-		})
+		this.sendToExtension({ type: "newTask", text: prompt })
 
 		// Wait for task completion
 		await this.waitForCompletion()
@@ -763,7 +765,7 @@ export class ExtensionHost extends EventEmitter {
 
 				if (isPartial && text) {
 					// Stream partial content
-					this.streamContent(ts, text, "[Assistant]")
+					this.streamContent(ts, text, "[assistant]")
 					this.displayedMessages.set(ts, { text, partial: true })
 				} else if (!isPartial && text && !alreadyDisplayedComplete) {
 					// Message complete - ensure all content is output
@@ -809,7 +811,7 @@ export class ExtensionHost extends EventEmitter {
 			case "command_output":
 				// Stream command output in real-time
 				if (isPartial && text) {
-					this.streamContent(ts, text, "[Command Output]")
+					this.streamContent(ts, text, "[command output]")
 					this.displayedMessages.set(ts, { text, partial: true })
 				} else if (!isPartial && text && !alreadyDisplayedComplete) {
 					// Command output complete - finish the stream
@@ -833,7 +835,6 @@ export class ExtensionHost extends EventEmitter {
 			case "completion_result":
 				// Only process when message is complete (not partial)
 				if (!isPartial && !alreadyDisplayedComplete) {
-					this.isWaitingForResponse = false
 					this.output("\n[Task Complete]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskComplete")
@@ -845,7 +846,6 @@ export class ExtensionHost extends EventEmitter {
 
 			case "error":
 				if (!alreadyDisplayedComplete) {
-					this.isWaitingForResponse = false
 					this.outputError("\n[Error]", text || "Unknown error")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskError", text)
@@ -1441,7 +1441,7 @@ export class ExtensionHost extends EventEmitter {
 
 		// Stream partial content
 		if (isPartial && text) {
-			this.streamContent(ts, text, "[Command Output]")
+			this.streamContent(ts, text, "[command output]")
 			this.displayedMessages.set(ts, { text, partial: true })
 		} else if (!isPartial) {
 			// Message complete - output any remaining content and send approval
@@ -1613,9 +1613,6 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	async dispose(): Promise<void> {
 		this.log("Disposing extension host...")
-
-		// Reset waiting state
-		this.isWaitingForResponse = false
 
 		// Clear pending asks
 		this.pendingAsks.clear()

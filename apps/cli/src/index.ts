@@ -9,8 +9,16 @@ import { Command } from "commander"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { ExtensionHost } from "./extension-host.js"
+
+import {
+	type ProviderName,
+	type ReasoningEffortExtended,
+	isProviderName,
+	reasoningEffortsExtended,
+} from "@roo-code/types"
 import { setLogger } from "@roo-code/vscode-shim"
+
+import { ExtensionHost } from "./extension-host.js"
 import { getEnvVarName, getApiKeyFromEnv, getDefaultExtensionPath } from "./utils.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -28,9 +36,10 @@ program
 	.option("-x, --exit-on-complete", "Exit the process when the task completes (useful for testing)", false)
 	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
 	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to ANTHROPIC_API_KEY env var)")
-	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "anthropic")
+	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "openrouter")
 	.option("-m, --model <model>", "Model to use")
 	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)")
+	.option("-r, --reasoning-effort <effort>", "Reasoning effort level (none, minimal, low, medium, high, xhigh)")
 	.action(
 		async (
 			prompt: string,
@@ -42,9 +51,10 @@ program
 				exitOnComplete: boolean
 				yes: boolean
 				apiKey?: string
-				provider: string
+				provider: ProviderName
 				model?: string
 				mode?: string
+				reasoningEffort?: ReasoningEffortExtended
 			},
 		) => {
 			// Set up quiet mode - suppress VSCode shim logs
@@ -76,12 +86,24 @@ program
 				process.exit(1)
 			}
 
+			if (!isProviderName(options.provider)) {
+				console.error(`[CLI] Error: Invalid provider: ${options.provider}`)
+				process.exit(1)
+			}
+
+			if (options.reasoningEffort && !reasoningEffortsExtended.includes(options.reasoningEffort)) {
+				console.error(`[CLI] Error: Invalid reasoning effort: ${options.reasoningEffort}`)
+				console.error(`[CLI] Valid values: ${reasoningEffortsExtended.join(", ")}`)
+				process.exit(1)
+			}
+
 			if (options.verbose) {
 				console.log(`[CLI] Prompt: ${prompt}`)
 				console.log(`[CLI] Workspace: ${workspacePath}`)
 				console.log(`[CLI] Extension path: ${extensionPath}`)
 				console.log(`[CLI] Provider: ${options.provider}`)
 				console.log(`[CLI] Model: ${options.model || "default"}`)
+				console.log(`[CLI] Reasoning Effort: ${options.reasoningEffort || "default"}`)
 				console.log(`[CLI] API Key: ${apiKey.substring(0, 8)}...`)
 			}
 
@@ -95,6 +117,7 @@ program
 				apiProvider: options.provider,
 				model: options.model,
 				mode: options.mode,
+				reasoningEffort: options.reasoningEffort,
 			})
 
 			// Handle SIGINT (Ctrl+C)

@@ -18,6 +18,7 @@
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
+		"@roo-code/types": "workspace:^",
 		"@roo-code/vscode-shim": "workspace:^",
 		"@vscode/ripgrep": "^1.15.9",
 		"commander": "^12.1.0"
