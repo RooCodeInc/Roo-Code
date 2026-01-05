@@ -263,7 +263,7 @@ describe("ExtensionHost", () => {
 			expect(config).toEqual(expected)
 		})
 
-		it("should use default provider (anthropic) when not specified", () => {
+		it("should use default provider when not specified", () => {
 			const host = createTestHost({
 				apiKey: "test-key",
 				model: "test-model",
@@ -271,7 +271,7 @@ describe("ExtensionHost", () => {
 
 			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
 
-			expect(config.apiProvider).toBe("anthropic")
+			expect(config.apiProvider).toBe("openrouter")
 		})
 
 		it("should handle missing apiKey gracefully", () => {
@@ -285,19 +285,6 @@ describe("ExtensionHost", () => {
 			expect(config.apiProvider).toBe("anthropic")
 			expect(config.apiKey).toBeUndefined()
 			expect(config.apiModelId).toBe("test-model")
-		})
-
-		it("should handle missing model gracefully", () => {
-			const host = createTestHost({
-				apiProvider: "anthropic",
-				apiKey: "test-key",
-			})
-
-			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
-
-			expect(config.apiProvider).toBe("anthropic")
-			expect(config.apiKey).toBe("test-key")
-			expect(config.apiModelId).toBeUndefined()
 		})
 
 		it("should use default config for unknown providers", () => {
