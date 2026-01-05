@@ -7,6 +7,8 @@ import { t } from "../../i18n"
 import { ApiHandler } from "../../api"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
+import { findLast } from "../../shared/array"
+import { ToolResultIdMismatchError } from "../task/validateToolResultIds"
 
 /**
  * Checks if a message contains tool_result blocks.
@@ -440,6 +442,10 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
  * This allows non-destructive condensing and truncation where messages are tagged but not deleted,
  * enabling accurate rewind operations while still sending condensed/truncated history to the API.
  *
+ * CRITICAL FIX: After filtering, validates tool_result IDs in the last user message to ensure
+ * they reference tool_use blocks that still exist in the effective history. This prevents 400 errors
+ * when condensation removes the assistant message that tool_results were originally paired with.
+ *
  * @param messages - The full API conversation history including tagged messages
  * @returns The filtered history that should be sent to the API
  */
@@ -461,7 +467,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 	// Filter out messages whose condenseParent points to an existing summary
 	// or whose truncationParent points to an existing truncation marker.
 	// Messages with orphaned parents (summary/marker was deleted) are included
-	return messages.filter((msg) => {
+	const filteredMessages = messages.filter((msg) => {
 		// Filter out condensed messages if their summary exists
 		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
 			return false
@@ -472,6 +478,133 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 		return true
 	})
+
+	// CRITICAL FIX for tool_use/tool_result ID mismatches after condensation:
+	// Validate and fix tool_result IDs in the last user message.
+	// When condensation filters out assistant messages, tool_results can reference
+	// condensed-away tool_use blocks, causing 400 errors from the API.
+
+	if (filteredMessages.length < 2) {
+		return filteredMessages
+	}
+
+	// Find the last assistant message using findLast
+	const lastAssistant = findLast(filteredMessages, (msg) => msg.role === "assistant")
+	if (!lastAssistant) {
+		return filteredMessages
+	}
+
+	// Find its index and check if there's a user message after it
+	const lastAssistantIdx = filteredMessages.indexOf(lastAssistant)
+	const userMessageIdx = lastAssistantIdx + 1
+
+	if (userMessageIdx >= filteredMessages.length) {
+		return filteredMessages
+	}
+
+	const userMessage = filteredMessages[userMessageIdx]
+	if (userMessage.role !== "user" || !Array.isArray(userMessage.content)) {
+		return filteredMessages
+	}
+
+	// Get tool_use blocks from the assistant message
+	const assistantContent = lastAssistant.content
+	if (!Array.isArray(assistantContent)) {
+		return filteredMessages
+	}
+
+	const toolUseBlocks = assistantContent.filter((block): block is Anthropic.ToolUseBlock => block.type === "tool_use")
+
+	if (toolUseBlocks.length === 0) {
+		return filteredMessages
+	}
+
+	// Find tool_result blocks in the user message
+	const toolResults = userMessage.content.filter(
+		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
+	)
+
+	if (toolResults.length === 0) {
+		return filteredMessages
+	}
+
+	// Build a set of valid tool_use IDs
+	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.id))
+
+	// Check if any tool_result has an invalid ID
+	const hasInvalidIds = toolResults.some((result) => !validToolUseIds.has(result.tool_use_id))
+
+	if (!hasInvalidIds) {
+		return filteredMessages
+	}
+
+	// We have mismatched IDs - fix them
+	const toolResultIdList = toolResults.map((r) => r.tool_use_id)
+	const toolUseIdList = toolUseBlocks.map((b) => b.id)
+
+	// Report ID mismatches to PostHog error tracking
+	if (TelemetryService.hasInstance()) {
+		TelemetryService.instance.captureException(
+			new ToolResultIdMismatchError(
+				`Detected tool_result ID mismatch after condensation filtering. tool_result IDs: [${toolResultIdList.join(", ")}], tool_use IDs: [${toolUseIdList.join(", ")}]`,
+				toolResultIdList,
+				toolUseIdList,
+			),
+			{
+				toolResultIds: toolResultIdList,
+				toolUseIds: toolUseIdList,
+				toolResultCount: toolResults.length,
+				toolUseCount: toolUseBlocks.length,
+				context: "getEffectiveApiHistory",
+			},
+		)
+	}
+
+	// Match tool_results to tool_uses by position and fix incorrect IDs
+	const usedToolUseIds = new Set<string>()
+	const contentArray = userMessage.content as Anthropic.Messages.ContentBlockParam[]
+
+	const correctedContent = contentArray
+		.map((block: Anthropic.Messages.ContentBlockParam) => {
+			if (block.type !== "tool_result") {
+				return block
+			}
+
+			// If the ID is already valid and not yet used, keep it
+			if (validToolUseIds.has(block.tool_use_id) && !usedToolUseIds.has(block.tool_use_id)) {
+				usedToolUseIds.add(block.tool_use_id)
+				return block
+			}
+
+			// Find which tool_result index this block is by comparing references
+			const toolResultIndex = toolResults.indexOf(block as Anthropic.ToolResultBlockParam)
+
+			// Try to match by position - only fix if there's a corresponding tool_use
+			if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
+				const correctId = toolUseBlocks[toolResultIndex].id
+				// Only use this ID if it hasn't been used yet
+				if (!usedToolUseIds.has(correctId)) {
+					usedToolUseIds.add(correctId)
+					return {
+						...block,
+						tool_use_id: correctId,
+					}
+				}
+			}
+
+			// No corresponding tool_use for this tool_result, or the ID is already used
+			return null
+		})
+		.filter((block): block is NonNullable<typeof block> => block !== null)
+
+	// Create a copy with the corrected user message
+	const result = [...filteredMessages]
+	result[userMessageIdx] = {
+		...userMessage,
+		content: correctedContent,
+	}
+
+	return result
 }
 
 /**
