@@ -1,6 +1,8 @@
 import OpenAI from "openai"
 
 import { OpenAiHandler } from "../openai"
+import { OpenAiNativeHandler } from "../openai-native"
+import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("OpenAiHandler native tools", () => {
 	it("includes tools in request when custom model info lacks supportsNativeTools (regression test)", async () => {
@@ -73,5 +75,222 @@ describe("OpenAiHandler native tools", () => {
 			}),
 			expect.anything(),
 		)
+	})
+})
+
+describe("OpenAiNativeHandler MCP tool schema handling", () => {
+	it("should add additionalProperties: false to MCP tools while keeping strict: false", async () => {
+		let capturedRequestBody: any
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		// Mock the responses API call
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation((body: any) => {
+					capturedRequestBody = body
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
+									usage: { input_tokens: 10, output_tokens: 5 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const mcpTools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "mcp--github--get_me",
+					description: "Get current GitHub user",
+					parameters: {
+						type: "object",
+						properties: {
+							token: { type: "string", description: "API token" },
+						},
+						required: ["token"],
+					},
+				},
+			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools: mcpTools,
+			toolProtocol: "native" as const,
+		})
+
+		// Consume the stream
+		for await (const _ of stream) {
+			// Just consume
+		}
+
+		// Verify the request body
+		expect(capturedRequestBody.tools).toBeDefined()
+		expect(capturedRequestBody.tools.length).toBe(1)
+
+		const tool = capturedRequestBody.tools[0]
+		expect(tool.name).toBe("mcp--github--get_me")
+		expect(tool.strict).toBe(false) // MCP tools should have strict: false
+		expect(tool.parameters.additionalProperties).toBe(false) // Should have additionalProperties: false
+		expect(tool.parameters.required).toEqual(["token"]) // Should preserve original required array
+	})
+
+	it("should add additionalProperties: false and required array to non-MCP tools with strict: true", async () => {
+		let capturedRequestBody: any
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		// Mock the responses API call
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation((body: any) => {
+					capturedRequestBody = body
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
+									usage: { input_tokens: 10, output_tokens: 5 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const regularTools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "read_file",
+					description: "Read a file from the filesystem",
+					parameters: {
+						type: "object",
+						properties: {
+							path: { type: "string", description: "File path" },
+							encoding: { type: "string", description: "File encoding" },
+						},
+					},
+				},
+			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools: regularTools,
+			toolProtocol: "native" as const,
+		})
+
+		// Consume the stream
+		for await (const _ of stream) {
+			// Just consume
+		}
+
+		// Verify the request body
+		expect(capturedRequestBody.tools).toBeDefined()
+		expect(capturedRequestBody.tools.length).toBe(1)
+
+		const tool = capturedRequestBody.tools[0]
+		expect(tool.name).toBe("read_file")
+		expect(tool.strict).toBe(true) // Non-MCP tools should have strict: true
+		expect(tool.parameters.additionalProperties).toBe(false) // Should have additionalProperties: false
+		expect(tool.parameters.required).toEqual(["path", "encoding"]) // Should have all properties as required
+	})
+
+	it("should recursively add additionalProperties: false to nested objects in MCP tools", async () => {
+		let capturedRequestBody: any
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		// Mock the responses API call
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation((body: any) => {
+					capturedRequestBody = body
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
+									usage: { input_tokens: 10, output_tokens: 5 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const mcpToolsWithNestedObjects: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "mcp--linear--create_issue",
+					description: "Create a Linear issue",
+					parameters: {
+						type: "object",
+						properties: {
+							title: { type: "string" },
+							metadata: {
+								type: "object",
+								properties: {
+									priority: { type: "number" },
+									labels: {
+										type: "array",
+										items: {
+											type: "object",
+											properties: {
+												name: { type: "string" },
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools: mcpToolsWithNestedObjects,
+			toolProtocol: "native" as const,
+		})
+
+		// Consume the stream
+		for await (const _ of stream) {
+			// Just consume
+		}
+
+		// Verify the request body
+		const tool = capturedRequestBody.tools[0]
+		expect(tool.strict).toBe(false) // MCP tool should have strict: false
+		expect(tool.parameters.additionalProperties).toBe(false) // Root level
+		expect(tool.parameters.properties.metadata.additionalProperties).toBe(false) // Nested object
+		expect(tool.parameters.properties.metadata.properties.labels.items.additionalProperties).toBe(false) // Array items
 	})
 })
