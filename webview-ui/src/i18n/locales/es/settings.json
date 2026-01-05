@@ -661,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status máx. archivos",
 			"description": "Número máximo de entradas de archivo para incluir en el contexto de estado de git. Establézcalo en 0 para deshabilitar. La información de la rama y los commits siempre se muestran cuando es > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activar reglas de subcarpetas",
+			"description": "Descubrir y cargar recursivamente archivos .roo/rules y AGENTS.md desde subdirectorios. Útil para monorepos con reglas por paquete."
 		}
 	},
 	"terminal": {

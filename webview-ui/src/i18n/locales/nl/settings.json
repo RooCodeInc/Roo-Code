@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max bestanden",
 			"description": "Maximum aantal bestandsvermeldingen dat in de git-statuscontext moet worden opgenomen. Stel in op 0 om uit te schakelen. Branch-info en commits worden altijd getoond wanneer > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Submap-regels inschakelen",
+			"description": "Recursief .roo/rules en AGENTS.md-bestanden uit submappen ontdekken en laden. Handig voor monorepo's met regels per pakket."
 		}
 	},
 	"terminal": {

@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max file",
 			"description": "Numero massimo di voci di file da includere nel contesto dello stato di git. Imposta a 0 per disabilitare. Le informazioni sul ramo e sui commit vengono sempre mostrate quando > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Abilita regole sottocartelle",
+			"description": "Scopri e carica ricorsivamente i file .roo/rules e AGENTS.md dalle sottodirectory. Utile per i monorepo con regole per pacchetto."
 		}
 	},
 	"terminal": {

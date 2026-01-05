@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Gitステータス最大ファイル数",
 			"description": "gitステータスコンテキストに含めるファイルエントリの最大数。無効にするには0に設定します。ブランチ情報とコミットは、> 0の場合に常に表示されます。"
+		},
+		"enableSubfolderRules": {
+			"label": "サブフォルダルールを有効化",
+			"description": "サブディレクトリから.roo/rulesとAGENTS.mdファイルを再帰的に検出してロードします。パッケージごとのルールを持つモノレポに便利です。"
 		}
 	},
 	"terminal": {

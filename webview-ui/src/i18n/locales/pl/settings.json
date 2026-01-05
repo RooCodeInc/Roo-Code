@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status maks. plików",
 			"description": "Maksymalna liczba wpisów plików do uwzględnienia w kontekście statusu git. Ustaw na 0, aby wyłączyć. Informacje o gałęzi i zatwierdzenia są zawsze pokazywane, gdy > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Włącz reguły podfolderów",
+			"description": "Rekursywnie odkrywaj i ładuj pliki .roo/rules i AGENTS.md z podkatalogów. Przydatne dla monorepo z regułami dla poszczególnych pakietów."
 		}
 	},
 	"terminal": {

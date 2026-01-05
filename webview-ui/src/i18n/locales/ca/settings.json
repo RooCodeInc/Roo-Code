@@ -661,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status màx. fitxers",
 			"description": "Nombre màxim d'entrades de fitxers a incloure en el context d'estat de git. Establiu a 0 per desactivar. La informació de la branca i els commits sempre es mostren quan és > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activa les regles dels subdirectoris",
+			"description": "Descobreix i carrega recursivament fitxers .roo/rules i AGENTS.md des de subdirectoris. Útil per a monorepos amb regles per paquet."
 		}
 	},
 	"terminal": {

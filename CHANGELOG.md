@@ -1,5 +1,12 @@
 # Roo Code Changelog
 
+## [3.38.3] - 2026-01-03
+
+- Feat: Add option in Context settings to recursively load `.roo/rules` and `AGENTS.md` from subdirectories (PR #10446 by @mrubens)
+- Fix: Stop frequent Claude Code sign-ins by hardening OAuth refresh token handling (PR #10410 by @hannesrudolph)
+- Fix: Add `maxConcurrentFileReads` limit to native `read_file` tool schema (PR #10449 by @app/roomote)
+- Fix: Add type check for `lastMessage.text` in TTS useEffect to prevent runtime errors (PR #10431 by @app/roomote)
+
 ## [3.38.2] - 2025-12-31
 
 ![3.38.2 Release - Skill Alignment](/releases/3.38.2-release.png)

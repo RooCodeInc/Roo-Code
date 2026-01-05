@@ -670,6 +670,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Enable subfolder rules",
+			"description": "Recursively discover and load .roo/rules and AGENTS.md files from subdirectories. Useful for monorepos with per-package rules."
 		}
 	},
 	"terminal": {

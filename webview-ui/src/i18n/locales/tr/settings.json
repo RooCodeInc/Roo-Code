@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git durumu maks. dosya",
 			"description": "Git durum bağlamına dahil edilecek maksimum dosya girişi sayısı. Devre dışı bırakmak için 0 olarak ayarlayın. Dal bilgisi ve commit'ler > 0 olduğunda her zaman gösterilir."
+		},
+		"enableSubfolderRules": {
+			"label": "Alt klasör kurallarını etkinleştir",
+			"description": "Alt dizinlerden .roo/rules ve AGENTS.md dosyalarını yinelemeli olarak keşfet ve yükle. Paket başına kuralları olan monorepo'lar için kullanışlı."
 		}
 	},
 	"terminal": {

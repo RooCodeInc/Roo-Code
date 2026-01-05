@@ -662,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 상태 최대 파일",
 			"description": "git 상태 컨텍스트에 포함할 최대 파일 항목 수입니다. 비활성화하려면 0으로 설정하세요. 분기 정보와 커밋은 > 0일 때 항상 표시됩니다."
+		},
+		"enableSubfolderRules": {
+			"label": "하위 폴더 규칙 활성화",
+			"description": "하위 디렉토리에서 .roo/rules 및 AGENTS.md 파일을 재귀적으로 검색하고 로드합니다. 패키지별 규칙이 있는 모노레포에 유용합니다."
 		}
 	},
 	"terminal": {
