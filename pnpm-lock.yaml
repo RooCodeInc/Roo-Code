@@ -80,6 +80,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@roo-code/types':
+        specifier: workspace:^
+        version: link:../../packages/types
       '@roo-code/vscode-shim':
         specifier: workspace:^
         version: link:../../packages/vscode-shim

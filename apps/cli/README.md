@@ -69,18 +69,19 @@ In non-interactive mode:
 
 ## Options
 
-| Option                      | Description                                                 | Default           |
-| --------------------------- | ----------------------------------------------------------- | ----------------- |
-| `-w, --workspace <path>`    | Workspace path to operate in                                | Current directory |
-| `-e, --extension <path>`    | Path to the extension bundle directory                      | Auto-detected     |
-| `-v, --verbose`             | Enable verbose logging                                      | `false`           |
-| `-q, --quiet`               | Suppress VSCode/extension logs (only show assistant output) | `false`           |
-| `-x, --exit-on-complete`    | Exit the process when task completes (useful for testing)   | `false`           |
-| `-y, --yes`                 | Non-interactive mode: auto-approve all actions              | `false`           |
-| `-k, --api-key <key>`       | API key for the LLM provider                                | From env var      |
-| `-p, --provider <provider>` | API provider (anthropic, openai, openrouter, etc.)          | `anthropic`       |
-| `-m, --model <model>`       | Model to use                                                | Provider default  |
-| `-M, --mode <mode>`         | Mode to start in (code, architect, ask, debug, etc.)        | Default mode      |
+| Option                            | Description                                                      | Default           |
+| --------------------------------- | ---------------------------------------------------------------- | ----------------- |
+| `-w, --workspace <path>`          | Workspace path to operate in                                     | Current directory |
+| `-e, --extension <path>`          | Path to the extension bundle directory                           | Auto-detected     |
+| `-v, --verbose`                   | Enable verbose logging                                           | `false`           |
+| `-q, --quiet`                     | Suppress VSCode/extension logs (only show assistant output)      | `false`           |
+| `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)        | `false`           |
+| `-y, --yes`                       | Non-interactive mode: auto-approve all actions                   | `false`           |
+| `-k, --api-key <key>`             | API key for the LLM provider                                     | From env var      |
+| `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, etc.)               | `anthropic`       |
+| `-m, --model <model>`             | Model to use                                                     | Provider default  |
+| `-M, --mode <mode>`               | Mode to start in (code, architect, ask, debug, etc.)             | Default mode      |
+| `-r, --reasoning-effort <effort>` | Reasoning effort level (none, minimal, low, medium, high, xhigh) | Model default     |
 
 ## Environment Variables
 

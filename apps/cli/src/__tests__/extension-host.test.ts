@@ -1,11 +1,9 @@
-/**
- * Unit tests for ExtensionHost class
- */
+// pnpm --filter @roo-code/cli test src/__tests__/extension-host.test.ts
 
 import { ExtensionHost, type ExtensionHostOptions } from "../extension-host.js"
 import { EventEmitter } from "events"
+import type { ProviderName } from "@roo-code/types"
 
-// Mock modules
 vi.mock("@roo-code/vscode-shim", () => ({
 	createVSCodeAPI: vi.fn(() => ({
 		context: { extensionPath: "/test/extension" },
@@ -61,7 +59,7 @@ describe("ExtensionHost", () => {
 
 	describe("constructor", () => {
 		it("should store options correctly", () => {
-			const options = {
+			const options: ExtensionHostOptions = {
 				workspacePath: "/my/workspace",
 				extensionPath: "/my/extension",
 				verbose: true,
@@ -107,8 +105,6 @@ describe("ExtensionHost", () => {
 					apiProvider: "openrouter",
 					openRouterApiKey: "or-key",
 					openRouterModelId: "or-model",
-					enableReasoningEffort: true,
-					reasoningEffort: "medium",
 				},
 			],
 			[
@@ -248,7 +244,7 @@ describe("ExtensionHost", () => {
 			],
 		])("should configure %s provider correctly", (provider, apiKey, model, expected) => {
 			const host = createTestHost({
-				apiProvider: provider,
+				apiProvider: provider as ProviderName,
 				apiKey,
 				model,
 			})
@@ -297,7 +293,7 @@ describe("ExtensionHost", () => {
 
 		it("should use default config for unknown providers", () => {
 			const host = createTestHost({
-				apiProvider: "unknown-provider",
+				apiProvider: "unknown-provider" as ProviderName,
 				apiKey: "test-key",
 				model: "test-model",
 			})
