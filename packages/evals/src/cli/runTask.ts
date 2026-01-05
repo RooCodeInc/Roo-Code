@@ -262,7 +262,17 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 	const controller = new AbortController()
 	const cancelSignal = controller.signal
 
-	const cliArgs = ["--filter", "@roo-code/cli", "start", "--yes", "--exit-on-complete", "--workspace", workspacePath]
+	const cliArgs = [
+		"--filter",
+		"@roo-code/cli",
+		"start",
+		"--yes",
+		"--exit-on-complete",
+		"--reasoning-effort",
+		"disabled",
+		"--workspace",
+		workspacePath,
+	]
 
 	if (run.settings?.mode) {
 		cliArgs.push("-M", run.settings.mode)
