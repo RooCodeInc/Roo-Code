@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "Yêu cầu tham số todos khi tạo nhiệm vụ mới với công cụ new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "Kích thước lô cho các hoạt động nhúng trong quá trình lập chỉ mục mã. Điều chỉnh điều này dựa trên giới hạn của nhà cung cấp API của bạn. Mặc định là 60.",
 	"settings.debug.description": "Bật chế độ gỡ lỗi để hiển thị các nút bổ sung để xem lịch sử hội thoại API và thông điệp giao diện người dùng dưới dạng JSON được định dạng trong các tệp tạm thời.",
-	"settings.proxyUrl.description": "URL proxy HTTP(S) cho tất cả các yêu cầu mạng đi ra. Khi chạy ở chế độ gỡ lỗi (F5), việc xác minh chứng chỉ TLS sẽ bị bỏ qua để cho phép kiểm tra qua proxy MITM. Để trống để tắt proxy. Ví dụ: http://localhost:8080"
+	"settings.proxyUrl.description": "URL proxy HTTP(S) cho tất cả các yêu cầu mạng đi ra. Chỉ được áp dụng khi bạn chạy ở chế độ gỡ lỗi (F5). Để trống để tắt proxy. Ví dụ: http://localhost:8080 (thông tin xác thực sẽ được ẩn trong log)"
 }

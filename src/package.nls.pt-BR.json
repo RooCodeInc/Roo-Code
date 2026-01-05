@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "Exigir parâmetro todos ao criar novas tarefas com a ferramenta new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "O tamanho do lote para operações de embedding durante a indexação de código. Ajuste isso com base nos limites do seu provedor de API. O padrão é 60.",
 	"settings.debug.description": "Ativa o modo de depuração para mostrar botões adicionais para visualizar o histórico de conversas da API e mensagens da interface como JSON formatado em arquivos temporários.",
-	"settings.proxyUrl.description": "URL de proxy HTTP(S) para todas as solicitações de rede de saída. Ao executar no modo de depuração (F5), a verificação do certificado TLS é ignorada para permitir a inspeção por um proxy MITM. Deixa em branco para desativar o proxy. Exemplo: http://localhost:8080"
+	"settings.proxyUrl.description": "URL de proxy HTTP(S) para todas as solicitações de rede de saída. Só é aplicada quando você estiver executando em modo de depuração (F5). Deixe em branco para desativar o proxy. Exemplo: http://localhost:8080 (as credenciais serão ocultadas nos logs)"
 }

@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具创建新任务时需要 todos 参数",
 	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
 	"settings.debug.description": "启用调试模式以显示额外按钮，用于在临时文件中以格式化 JSON 查看 API 对话历史和 UI 消息。",
-	"settings.proxyUrl.description": "用于所有出站网络请求的 HTTP(S) 代理 URL。在调试模式 (F5) 下运行时，为了允许 MITM 代理检查，会跳过 TLS 证书验证。留空以禁用代理。示例: http://localhost:8080"
+	"settings.proxyUrl.description": "用于所有出站网络请求的 HTTP(S) 代理 URL。只有在调试模式 (F5) 下运行时才会生效。留空以禁用代理。示例: http://localhost:8080（日志中会隐藏凭据）"
 }

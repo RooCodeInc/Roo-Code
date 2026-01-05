@@ -20,8 +20,6 @@ import { Package } from "../shared/package"
 export interface ProxyConfig {
 	/** The proxy URL (e.g., http://localhost:8080) */
 	proxyUrl: string | undefined
-	/** Whether to reject unauthorized TLS certificates */
-	rejectUnauthorized: boolean
 	/** Whether running in debug/development mode */
 	isDebugMode: boolean
 }
@@ -30,7 +28,37 @@ let extensionContext: vscode.ExtensionContext | null = null
 let proxyInitialized = false
 let undiciProxyInitialized = false
 let fetchPatched = false
+let originalFetch: typeof fetch | undefined
 let outputChannel: vscode.OutputChannel | null = null
+
+function redactProxyUrl(proxyUrl: string | undefined): string {
+	if (!proxyUrl) {
+		return "(not set)"
+	}
+
+	try {
+		const url = new URL(proxyUrl)
+		url.username = ""
+		url.password = ""
+		return url.toString()
+	} catch {
+		// Fallback for invalid URLs: redact basic auth if present.
+		return proxyUrl.replace(/\/\/[^@/]+@/g, "//REDACTED@")
+	}
+}
+
+function restoreGlobalFetchPatch(): void {
+	if (!fetchPatched) {
+		return
+	}
+
+	if (originalFetch) {
+		globalThis.fetch = originalFetch
+	}
+
+	fetchPatched = false
+	originalFetch = undefined
+}
 
 /**
  * Initialize the network proxy module with the extension context.
@@ -49,9 +77,7 @@ export function initializeNetworkProxy(context: vscode.ExtensionContext, channel
 	)
 
 	const config = getProxyConfig()
-	log(
-		`Proxy config: proxyUrl=${config.proxyUrl || "(not set)"}, isDebugMode=${config.isDebugMode}, rejectUnauthorized=${config.rejectUnauthorized}`,
-	)
+	log(`Proxy config: proxyUrl=${redactProxyUrl(config.proxyUrl)}, isDebugMode=${config.isDebugMode}`)
 
 	// Listen for configuration changes (always register; but only applies proxy in debug mode)
 	// In unit tests, vscode.workspace.onDidChangeConfiguration may not be mocked.
@@ -68,15 +94,15 @@ export function initializeNetworkProxy(context: vscode.ExtensionContext, channel
 						return
 					}
 
-					// Debug mode: apply TLS bypass regardless; apply proxy if configured.
-					disableTlsVerification()
+					// Debug mode: apply proxy if configured.
 					if (newConfig.proxyUrl) {
 						configureGlobalProxy(newConfig)
 						configureUndiciProxy(newConfig)
 					} else {
 						// Proxy removed - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
-						// User will need to restart the extension host.
-						log("Proxy URL removed. Restart VS Code to fully disable proxy.")
+						// We *can* restore any global fetch patch immediately.
+						restoreGlobalFetchPatch()
+						log("Proxy URL removed. Restart VS Code to fully disable proxy routing.")
 					}
 				}
 			}),
@@ -86,24 +112,21 @@ export function initializeNetworkProxy(context: vscode.ExtensionContext, channel
 	}
 
 	// Security policy:
-	// - Debug (F5): allow MITM inspection by disabling TLS verification; optionally route through proxy if configured.
-	// - Normal runs: do NOT disable TLS verification, and do NOT route through proxy even if configured.
+	// - Debug (F5): route traffic through proxy if configured.
+	// - Normal runs: do NOT route through proxy even if configured.
 	if (!config.isDebugMode) {
 		if (config.proxyUrl) {
 			log(`Proxy URL is set but will be ignored because extension is not running in debug mode`)
 		}
-		log(`Not in debug mode - proxy disabled and TLS verification enforced`)
+		log(`Not in debug mode - proxy disabled`)
 		return
 	}
-
-	// Debug mode: always disable TLS verification (MITM-friendly).
-	disableTlsVerification()
 
 	if (config.proxyUrl) {
 		configureGlobalProxy(config)
 		configureUndiciProxy(config)
 	} else {
-		log(`No proxy URL configured (debug mode). TLS verification disabled only.`)
+		log(`No proxy URL configured (debug mode).`)
 	}
 
 	// (configuration listener registered above)
@@ -117,7 +140,6 @@ export function getProxyConfig(): ProxyConfig {
 		// Fallback if called before initialization
 		return {
 			proxyUrl: undefined,
-			rejectUnauthorized: true,
 			isDebugMode: false,
 		}
 	}
@@ -126,12 +148,11 @@ export function getProxyConfig(): ProxyConfig {
 	const rawProxyUrl = config.get<unknown>("proxyUrl")
 	const proxyUrl = typeof rawProxyUrl === "string" ? rawProxyUrl : undefined
 
-	// In debug/development mode, disable TLS verification for MITM proxy inspection
+	// Debug mode only.
 	const isDebugMode = extensionContext.extensionMode === vscode.ExtensionMode.Development
 
 	return {
 		proxyUrl: proxyUrl?.trim() || undefined,
-		rejectUnauthorized: !isDebugMode,
 		isDebugMode,
 	}
 }
@@ -149,13 +170,8 @@ function configureGlobalProxy(config: ProxyConfig): void {
 	}
 
 	// Set up environment variables before bootstrapping
-	log(`Setting proxy environment variables before bootstrap...`)
+	log(`Setting proxy environment variables before bootstrap (values redacted)...`)
 	updateProxyEnvVars(config)
-
-	log(`Environment after setup:`)
-	log(`  GLOBAL_AGENT_HTTP_PROXY=${process.env.GLOBAL_AGENT_HTTP_PROXY}`)
-	log(`  GLOBAL_AGENT_HTTPS_PROXY=${process.env.GLOBAL_AGENT_HTTPS_PROXY}`)
-	log(`  NODE_TLS_REJECT_UNAUTHORIZED=${process.env.NODE_TLS_REJECT_UNAUTHORIZED}`)
 
 	// Bootstrap global-agent to intercept all HTTP/HTTPS requests
 	log(`Calling global-agent bootstrap()...`)
@@ -168,9 +184,7 @@ function configureGlobalProxy(config: ProxyConfig): void {
 		return
 	}
 
-	log(
-		`Network proxy configured: ${config.proxyUrl} (TLS verification: ${config.rejectUnauthorized ? "enabled" : "disabled"})`,
-	)
+	log(`Network proxy configured: ${redactProxyUrl(config.proxyUrl)}`)
 }
 
 /**
@@ -190,22 +204,31 @@ function configureUndiciProxy(config: ProxyConfig): void {
 	try {
 		const proxyAgent = new ProxyAgent({
 			uri: config.proxyUrl,
-			// Debug mode uses rejectUnauthorized=false to allow MITM inspection.
-			requestTls: { rejectUnauthorized: config.rejectUnauthorized },
-			proxyTls: { rejectUnauthorized: config.rejectUnauthorized },
 		})
 
 		setGlobalDispatcher(proxyAgent)
 		undiciProxyInitialized = true
-		log(`undici global dispatcher configured for proxy: ${config.proxyUrl}`)
+		log(`undici global dispatcher configured for proxy: ${redactProxyUrl(config.proxyUrl)}`)
 
 		// Node's built-in `fetch()` (Node 18+) is powered by an internal undici copy.
 		// Setting a dispatcher on our `undici` dependency does NOT affect that internal fetch.
 		// To ensure Roo Code's `fetch()` calls are proxied, patch global fetch in debug mode.
+		// This patch is scoped to the extension lifecycle (restored on deactivate) and can be restored
+		// immediately if the proxyUrl is removed.
 		if (!fetchPatched) {
+			if (typeof globalThis.fetch === "function") {
+				originalFetch = globalThis.fetch
+			}
+
 			globalThis.fetch = undiciFetch as unknown as typeof fetch
 			fetchPatched = true
 			log(`globalThis.fetch patched to undici.fetch (debug proxy mode)`)
+
+			if (extensionContext) {
+				extensionContext.subscriptions.push({
+					dispose: () => restoreGlobalFetchPatch(),
+				})
+			}
 		}
 	} catch (error) {
 		log(`Failed to configure undici proxy dispatcher: ${error instanceof Error ? error.message : String(error)}`)
@@ -222,17 +245,6 @@ function updateProxyEnvVars(config: ProxyConfig): void {
 		process.env.GLOBAL_AGENT_HTTPS_PROXY = config.proxyUrl
 		process.env.GLOBAL_AGENT_NO_PROXY = "" // Proxy all requests
 	}
-
-	// TLS bypass is controlled separately and ONLY in debug mode.
-}
-
-/**
- * Disable TLS verification without setting up a proxy.
- * Used in debug mode when no proxy is configured but user might add one later.
- */
-function disableTlsVerification(): void {
-	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
-	log("TLS certificate verification disabled (debug mode)")
 }
 
 /**

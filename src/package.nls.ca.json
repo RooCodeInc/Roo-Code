@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "Requerir el paràmetre de tasques pendents quan es creïn noves tasques amb l'eina new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "La mida del lot per a operacions d'incrustació durant la indexació de codi. Ajusta això segons els límits del teu proveïdor d'API. Per defecte és 60.",
 	"settings.debug.description": "Activa el mode de depuració per mostrar botons addicionals per veure l'historial de conversa de l'API i els missatges de la interfície d'usuari com a JSON embellert en fitxers temporals.",
-	"settings.proxyUrl.description": "URL de proxy HTTP(S) per a totes les sol·licituds de xarxa sortints. Quan s'executa en mode debug (F5), la verificació del certificat TLS es salta per permetre la inspecció del proxy MITM. Deixa-ho en blanc per desactivar el proxy. Exemple: http://localhost:8080"
+	"settings.proxyUrl.description": "URL de proxy HTTP(S) per a totes les sol·licituds de xarxa sortints. Només s'aplica quan s'executa en mode debug (F5). Deixa-ho en blanc per desactivar el proxy. Exemple: http://localhost:8080 (les credencials s'ocultaran als logs)"
 }

@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具建立新工作時需要 todos 參數",
 	"settings.codeIndex.embeddingBatchSize.description": "程式碼索引期間嵌入操作的批次大小。根據 API 提供商的限制調整此設定。預設值為 60。",
 	"settings.debug.description": "啟用偵錯模式以顯示額外按鈕，用於在暫存檔案中以格式化 JSON 檢視 API 對話歷史紀錄和使用者介面訊息。",
-	"settings.proxyUrl.description": "用於所有出站網路請求的 HTTP(S) 代理 URL。在偵錯模式 (F5) 下執行時，為了允許 MITM 代理檢查，會略過 TLS 憑證驗證。留空以停用代理。範例: http://localhost:8080"
+	"settings.proxyUrl.description": "用於所有出站網路要求的 HTTP(S) 代理 URL。只有在除錯模式 (F5) 執行時才會生效。留空以停用代理。範例: http://localhost:8080（憑證資訊會在記錄中被隱藏）"
 }

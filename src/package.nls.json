@@ -43,5 +43,5 @@
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
 	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
 	"settings.debug.description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files.",
-	"settings.proxyUrl.description": "HTTP(S) proxy URL for all outbound network requests. When running in debug mode (F5), TLS certificate verification is bypassed to allow MITM proxy inspection. Leave empty to disable proxy. Example: http://localhost:8080"
+	"settings.proxyUrl.description": "HTTP(S) proxy URL for all outbound network requests. Only applied when running in debug mode (F5). Leave empty to disable proxy. Example: http://localhost:8080 (credentials will be redacted from logs)"
 }

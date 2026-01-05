@@ -71,7 +71,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize network proxy configuration early, before any network requests.
 	// When proxyUrl is configured, all HTTP/HTTPS traffic will be routed through it.
-	// In debug mode, TLS verification is disabled to allow MITM proxy inspection.
+	// Only applied in debug mode (F5).
 	initializeNetworkProxy(context, outputChannel)
 
 	// Set extension path for custom tool registry to find bundled esbuild
@@ -102,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	TerminalRegistry.initialize()
 
 	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
+	claudeCodeOAuthManager.initialize(context)
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []

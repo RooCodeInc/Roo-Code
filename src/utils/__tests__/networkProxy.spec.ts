@@ -67,7 +67,6 @@ describe("networkProxy", () => {
 		delete process.env.GLOBAL_AGENT_HTTP_PROXY
 		delete process.env.GLOBAL_AGENT_HTTPS_PROXY
 		delete process.env.GLOBAL_AGENT_NO_PROXY
-		delete process.env.NODE_TLS_REJECT_UNAUTHORIZED
 
 		mockConfig = {
 			get: vi.fn().mockReturnValue(""),
@@ -111,32 +110,13 @@ describe("networkProxy", () => {
 			expect(process.env.GLOBAL_AGENT_HTTPS_PROXY).toBe("http://localhost:8080")
 		})
 
-		it("should disable TLS verification in debug mode", () => {
+		it("should not modify TLS settings in debug mode", () => {
 			mockConfig.get.mockReturnValue("")
 			const context = createMockContext(vscode.ExtensionMode.Development)
-
-			initializeNetworkProxy(context, mockOutputChannel)
-
-			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe("0")
-		})
-
-		it("should NOT disable TLS verification in production mode without proxy", () => {
-			mockConfig.get.mockReturnValue("")
-			const context = createMockContext(vscode.ExtensionMode.Production)
 
 			initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
-		})
-
-		it("should disable TLS verification in debug mode with proxy", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
-			const context = createMockContext(vscode.ExtensionMode.Development)
-
-			initializeNetworkProxy(context, mockOutputChannel)
-
-			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe("0")
-			expect(process.env.GLOBAL_AGENT_HTTP_PROXY).toBe("http://localhost:8080")
 		})
 
 		it("should register configuration change listener", () => {
@@ -157,7 +137,6 @@ describe("networkProxy", () => {
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBeUndefined()
-			expect(config.rejectUnauthorized).toBe(true)
 			expect(config.isDebugMode).toBe(false)
 		})
 
@@ -169,7 +148,6 @@ describe("networkProxy", () => {
 			const config = getProxyConfig()
 
 			expect(config.proxyUrl).toBe("http://proxy.example.com:3128")
-			expect(config.rejectUnauthorized).toBe(true)
 			expect(config.isDebugMode).toBe(false)
 		})
 
@@ -242,35 +220,13 @@ describe("networkProxy", () => {
 	})
 
 	describe("security", () => {
-		it("should enable TLS verification in production mode", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
-			const context = createMockContext(vscode.ExtensionMode.Production)
-
-			initializeNetworkProxy(context, mockOutputChannel)
-			const config = getProxyConfig()
-
-			expect(config.rejectUnauthorized).toBe(true)
-		})
-
-		it("should disable TLS verification only in development mode", () => {
+		it("should never disable TLS verification via NODE_TLS_REJECT_UNAUTHORIZED", () => {
 			mockConfig.get.mockReturnValue("http://localhost:8080")
 			const context = createMockContext(vscode.ExtensionMode.Development)
 
 			initializeNetworkProxy(context, mockOutputChannel)
-			const config = getProxyConfig()
 
-			expect(config.rejectUnauthorized).toBe(false)
-		})
-
-		it("should not modify TLS in test mode with proxy", () => {
-			mockConfig.get.mockReturnValue("http://localhost:8080")
-			const context = createMockContext(vscode.ExtensionMode.Test)
-
-			initializeNetworkProxy(context, mockOutputChannel)
-			const config = getProxyConfig()
-
-			// Test mode is not development mode, so TLS should be enabled
-			expect(config.rejectUnauthorized).toBe(true)
+			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBeUndefined()
 		})
 	})
 })
