@@ -13,6 +13,7 @@ describe("normalizeCreateRunForSubmit", () => {
 				timeout: 5,
 				iterations: 1,
 				jobToken: "",
+				executionMethod: "vscode",
 			},
 			["js/foo", "py/bar"],
 		)
@@ -33,6 +34,7 @@ describe("normalizeCreateRunForSubmit", () => {
 				timeout: 5,
 				iterations: 1,
 				jobToken: "",
+				executionMethod: "vscode",
 			},
 			["js/foo"],
 		)
