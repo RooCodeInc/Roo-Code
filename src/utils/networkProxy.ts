@@ -96,8 +96,7 @@ function applyTlsVerificationOverride(config: ProxyConfig): void {
 	}
 
 	// CodeQL: debug-only opt-in for MITM debugging.
-	// lgtm[js/disabling-certificate-validation]
-	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0" // lgtm[js/disabling-certificate-validation]
 	tlsVerificationOverridden = true
 }
 
@@ -291,10 +290,12 @@ async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
 		const proxyAgent = new ProxyAgent({
 			uri: config.proxyUrl,
 			// If the user enabled TLS verification disablement (debug only), apply it to undici.
-			// lgtm[js/disabling-certificate-validation]
-			requestTls: config.disableTlsVerification ? { rejectUnauthorized: false } : undefined,
-			// lgtm[js/disabling-certificate-validation]
-			proxyTls: config.disableTlsVerification ? { rejectUnauthorized: false } : undefined,
+			requestTls: config.disableTlsVerification
+				? ({ rejectUnauthorized: false } satisfies import("tls").ConnectionOptions) // lgtm[js/disabling-certificate-validation]
+				: undefined,
+			proxyTls: config.disableTlsVerification
+				? ({ rejectUnauthorized: false } satisfies import("tls").ConnectionOptions) // lgtm[js/disabling-certificate-validation]
+				: undefined,
 		})
 		setGlobalDispatcher(proxyAgent)
 		undiciProxyInitialized = true

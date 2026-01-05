@@ -43,5 +43,6 @@
 	"settings.newTaskRequireTodos.description": "new_task 도구로 새 작업을 생성할 때 todos 매개변수 필요",
 	"settings.codeIndex.embeddingBatchSize.description": "코드 인덱싱 중 임베딩 작업의 배치 크기입니다. API 공급자의 제한에 따라 이를 조정하세요. 기본값은 60입니다.",
 	"settings.debug.description": "디버그 모드를 활성화하여 API 대화 기록과 UI 메시지를 임시 파일에 포맷된 JSON으로 보기 위한 추가 버튼을 표시합니다.",
-	"settings.proxyUrl.description": "모든 출력 네트워크 요청에 사용할 HTTP(S) 프록시 URL입니다. 디버그 모드(F5)로 실행 중일 때만 적용됩니다. 프록시를 비활성화하려면 비워 두세요. 예: http://localhost:8080 (자격 증명은 로그에서 마스킹됩니다)"
+	"settings.proxyUrl.description": "모든 출력 네트워크 요청에 사용할 HTTP(S) 프록시 URL입니다. 디버그 모드(F5)로 실행 중일 때만 적용됩니다. 프록시를 비활성화하려면 비워 두세요. 예: http://localhost:8080 (자격 증명은 로그에서 마스킹됩니다)",
+	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
 }
