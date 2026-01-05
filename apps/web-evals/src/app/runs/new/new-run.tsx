@@ -246,6 +246,18 @@ export function NewRun() {
 		}
 	}, [setValue])
 
+	// Track previous provider to detect switches
+	const [prevProvider, setPrevProvider] = useState(provider)
+
+	// Reset model selections when switching providers to avoid cross-contamination
+	useEffect(() => {
+		if (provider !== prevProvider) {
+			setModelSelections([{ id: crypto.randomUUID(), model: "", popoverOpen: false }])
+			setValue("model", "")
+			setPrevProvider(provider)
+		}
+	}, [provider, prevProvider, setValue])
+
 	// When switching to Roo provider, restore last-used selection if current selection is empty
 	useEffect(() => {
 		if (provider !== "roo") return
@@ -478,7 +490,6 @@ export function NewRun() {
 			suite,
 			selectedExercises,
 			provider,
-			executionMethod,
 			modelSelections,
 			configSelections,
 			importedSettings,
