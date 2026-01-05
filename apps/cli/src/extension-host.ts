@@ -15,7 +15,7 @@ import { fileURLToPath } from "url"
 import fs from "fs"
 import readline from "readline"
 
-import { createVSCodeAPI } from "@roo-code/vscode-shim"
+import { createVSCodeAPI, setRuntimeConfigValues } from "@roo-code/vscode-shim"
 import { ProviderName, ReasoningEffortExtended, RooCodeSettings } from "@roo-code/types"
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -325,6 +325,13 @@ export class ExtensionHost extends EventEmitter {
 			apiProvider: provider,
 		}
 
+		// Include reasoning settings in the API configuration.
+		// This ensures they're associated with the API profile, not just global settings.
+		if (this.options.reasoningEffort) {
+			config.enableReasoningEffort = true
+			config.reasoningEffort = this.options.reasoningEffort
+		}
+
 		// Map provider to the correct API key and model field names.
 		switch (provider) {
 			case "anthropic":
@@ -524,6 +531,11 @@ export class ExtensionHost extends EventEmitter {
 				settings.reasoningEffort = this.options.reasoningEffort
 			}
 
+			this.log("Settings being sent to extension:", JSON.stringify(settings, null, 2))
+
+			// Update vscode-shim runtime configuration so vscode.workspace.getConfiguration() returns correct values.
+			setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
+
 			this.sendToExtension({
 				type: "updateSettings",
 				updatedSettings: settings,
@@ -544,6 +556,9 @@ export class ExtensionHost extends EventEmitter {
 				settings.reasoningEffort = this.options.reasoningEffort
 			}
 
+			// Update vscode-shim runtime configuration so vscode.workspace.getConfiguration() returns correct values
+			setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
+
 			this.sendToExtension({ type: "updateSettings", updatedSettings: settings })
 		}
 
@@ -554,6 +569,7 @@ export class ExtensionHost extends EventEmitter {
 		if (this.options.apiKey) {
 			this.log("Injecting API configuration...")
 			const apiConfiguration = this.buildApiConfiguration()
+			this.log("API configuration being sent:", JSON.stringify(apiConfiguration, null, 2))
 			// The upsertApiConfiguration message expects:
 			// - text: the profile name
 			// - apiConfiguration: the config object with provider-specific field names
@@ -779,7 +795,7 @@ export class ExtensionHost extends EventEmitter {
 						this.finishStream(ts)
 					} else {
 						// Not streamed yet - output complete message
-						this.output("\n[Assistant]", text)
+						this.output("\n[assistant]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
 					this.streamedContent.set(ts, { text, headerShown: true })
@@ -788,12 +804,13 @@ export class ExtensionHost extends EventEmitter {
 
 			case "thinking":
 			case "reasoning":
-				// Stream reasoning content in real-time
+				// Stream reasoning content in real-time.
+				this.log(`Received ${say} message: partial=${isPartial}, textLength=${text?.length ?? 0}`)
 				if (isPartial && text) {
 					this.streamContent(ts, text, "[reasoning]")
 					this.displayedMessages.set(ts, { text, partial: true })
 				} else if (!isPartial && text && !alreadyDisplayedComplete) {
-					// Reasoning complete - finish the stream
+					// Reasoning complete - finish the stream.
 					const streamed = this.streamedContent.get(ts)
 					if (streamed) {
 						if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
@@ -809,12 +826,12 @@ export class ExtensionHost extends EventEmitter {
 				break
 
 			case "command_output":
-				// Stream command output in real-time
+				// Stream command output in real-time.
 				if (isPartial && text) {
 					this.streamContent(ts, text, "[command output]")
 					this.displayedMessages.set(ts, { text, partial: true })
 				} else if (!isPartial && text && !alreadyDisplayedComplete) {
-					// Command output complete - finish the stream
+					// Command output complete - finish the stream.
 					const streamed = this.streamedContent.get(ts)
 					if (streamed) {
 						if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
@@ -823,8 +840,7 @@ export class ExtensionHost extends EventEmitter {
 						}
 						this.finishStream(ts)
 					} else {
-						// Use writeStream to bypass quiet mode suppression
-						this.writeStream("\n[Command Output] ")
+						this.writeStream("\n[command output] ")
 						this.writeStream(text)
 						this.writeStream("\n")
 					}
@@ -835,7 +851,7 @@ export class ExtensionHost extends EventEmitter {
 			case "completion_result":
 				// Only process when message is complete (not partial)
 				if (!isPartial && !alreadyDisplayedComplete) {
-					this.output("\n[Task Complete]", text || "")
+					this.output("\n[task complete]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 					this.emit("taskComplete")
 				} else if (isPartial) {
@@ -845,30 +861,37 @@ export class ExtensionHost extends EventEmitter {
 				break
 
 			case "error":
+				// Display errors to the user but don't terminate the task
+				// Errors like command timeouts are informational - the agent should decide what to do next
 				if (!alreadyDisplayedComplete) {
-					this.outputError("\n[Error]", text || "Unknown error")
+					this.outputError("\n[error]", text || "Unknown error")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
-					this.emit("taskError", text)
 				}
 				break
 
 			case "tool":
 				// Tool usage - show when complete
 				if (text && !alreadyDisplayedComplete) {
-					this.output("\n[Tool]", text)
+					this.output("\n[tool]", text)
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 				break
 
 			case "api_req_started":
-				// API request started - no action needed
+				// API request started - log in verbose mode
+				if (this.options.verbose) {
+					this.log(`API request started: ts=${ts}`)
+				}
 				break
 
 			default:
 				// Other say types - show in verbose mode
-				if (this.options.verbose && text && !alreadyDisplayedComplete) {
-					this.output(`\n[${say}]`, text || "")
-					this.displayedMessages.set(ts, { text: text || "", partial: false })
+				if (this.options.verbose) {
+					this.log(`Unknown say type: ${say}, text length: ${text?.length ?? 0}, partial: ${isPartial}`)
+					if (text && !alreadyDisplayedComplete) {
+						this.output(`\n[${say}]`, text || "")
+						this.displayedMessages.set(ts, { text: text || "", partial: false })
+					}
 				}
 		}
 	}
@@ -929,7 +952,7 @@ export class ExtensionHost extends EventEmitter {
 
 			case "command":
 				if (!alreadyDisplayed) {
-					this.output("\n[Auto-approving Command]", text || "")
+					this.output("\n[command]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
@@ -941,10 +964,24 @@ export class ExtensionHost extends EventEmitter {
 					try {
 						const toolInfo = JSON.parse(text)
 						const toolName = toolInfo.tool || "unknown"
-						this.output(`\n[Auto-approving Tool] ${toolName}`)
-						if (toolInfo.path) this.output(`  Path: ${toolInfo.path}`)
+						this.output(`\n[tool] ${toolName}`)
+						// Display all tool parameters (excluding 'tool' which is the name)
+						for (const [key, value] of Object.entries(toolInfo)) {
+							if (key === "tool") continue
+							// Format the value - truncate long strings
+							let displayValue: string
+							if (typeof value === "string") {
+								displayValue = value.length > 200 ? value.substring(0, 200) + "..." : value
+							} else if (typeof value === "object" && value !== null) {
+								const json = JSON.stringify(value)
+								displayValue = json.length > 200 ? json.substring(0, 200) + "..." : json
+							} else {
+								displayValue = String(value)
+							}
+							this.output(`  ${key}: ${displayValue}`)
+						}
 					} catch {
-						this.output("\n[Auto-approving Tool]", text)
+						this.output("\n[tool]", text)
 					}
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
@@ -952,7 +989,7 @@ export class ExtensionHost extends EventEmitter {
 
 			case "browser_action_launch":
 				if (!alreadyDisplayed) {
-					this.output("\n[Auto-approving Browser Action]", text || "")
+					this.output("\n[browser action]", text || "")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
@@ -961,9 +998,9 @@ export class ExtensionHost extends EventEmitter {
 				if (!alreadyDisplayed) {
 					try {
 						const mcpInfo = JSON.parse(text)
-						this.output(`\n[Auto-approving MCP] ${mcpInfo.server_name || "unknown"}`)
+						this.output(`\n[mcp] ${mcpInfo.server_name || "unknown"}`)
 					} catch {
-						this.output("\n[Auto-approving MCP]", text || "")
+						this.output("\n[mcp]", text || "")
 					}
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
@@ -971,7 +1008,7 @@ export class ExtensionHost extends EventEmitter {
 
 			case "api_req_failed":
 				if (!alreadyDisplayed) {
-					this.output("\n[Auto-retrying API Request]")
+					this.output("\n[retrying api Request]")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
@@ -979,7 +1016,7 @@ export class ExtensionHost extends EventEmitter {
 			case "resume_task":
 			case "resume_completed_task":
 				if (!alreadyDisplayed) {
-					this.output("\n[Auto-continuing Task]")
+					this.output("\n[continuing task]")
 					this.displayedMessages.set(ts, { text: text || "", partial: false })
 				}
 				break
@@ -990,7 +1027,7 @@ export class ExtensionHost extends EventEmitter {
 
 			default:
 				if (!alreadyDisplayed && text) {
-					this.output(`\n[Auto-approving ${ask}]`, text)
+					this.output(`\n[${ask}]`, text)
 					this.displayedMessages.set(ts, { text, partial: false })
 				}
 		}
@@ -1064,7 +1101,7 @@ export class ExtensionHost extends EventEmitter {
 			// Use raw text if not JSON
 		}
 
-		this.output("\n[Question]", question)
+		this.output("\n[question]", question)
 
 		// Show numbered suggestions
 		if (suggestions.length > 0) {
@@ -1131,7 +1168,7 @@ export class ExtensionHost extends EventEmitter {
 			// Use raw text if not JSON
 		}
 
-		this.output("\n[Question]", question)
+		this.output("\n[question]", question)
 
 		// Show numbered suggestions
 		if (suggestions.length > 0) {
@@ -1235,7 +1272,7 @@ export class ExtensionHost extends EventEmitter {
 				if (char === "\x03") {
 					cleanup()
 					resolved = true
-					this.output("\n[Cancelled]")
+					this.output("\n[cancelled]")
 					resolve(defaultValue)
 					return
 				}
@@ -1280,7 +1317,7 @@ export class ExtensionHost extends EventEmitter {
 	 * Handle command execution approval
 	 */
 	private async handleCommandApproval(ts: number, text: string): Promise<void> {
-		this.output("\n[Command Request]")
+		this.output("\n[command request]")
 		this.output(`  Command: ${text || "(no command specified)"}`)
 
 		try {
@@ -1298,23 +1335,30 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	private async handleToolApproval(ts: number, text: string): Promise<void> {
 		let toolName = "unknown"
-		let toolPath = ""
-		let toolContent = ""
+		let toolInfo: Record<string, unknown> = {}
 
 		try {
-			const toolInfo = JSON.parse(text)
-			toolName = toolInfo.tool || "unknown"
-			toolPath = toolInfo.path || ""
-			toolContent = toolInfo.content || ""
+			toolInfo = JSON.parse(text) as Record<string, unknown>
+			toolName = (toolInfo.tool as string) || "unknown"
 		} catch {
 			// Use raw text if not JSON
 		}
 
 		this.output(`\n[Tool Request] ${toolName}`)
-		if (toolPath) this.output(`  Path: ${toolPath}`)
-		if (toolContent) {
-			const preview = toolContent.length > 200 ? toolContent.substring(0, 200) + "..." : toolContent
-			this.output(`  Content: ${preview}`)
+		// Display all tool parameters (excluding 'tool' which is the name)
+		for (const [key, value] of Object.entries(toolInfo)) {
+			if (key === "tool") continue
+			// Format the value - truncate long strings
+			let displayValue: string
+			if (typeof value === "string") {
+				displayValue = value.length > 200 ? value.substring(0, 200) + "..." : value
+			} else if (typeof value === "object" && value !== null) {
+				const json = JSON.stringify(value)
+				displayValue = json.length > 200 ? json.substring(0, 200) + "..." : json
+			} else {
+				displayValue = String(value)
+			}
+			this.output(`  ${key}: ${displayValue}`)
 		}
 
 		try {
@@ -1331,7 +1375,7 @@ export class ExtensionHost extends EventEmitter {
 	 * Handle browser action approval
 	 */
 	private async handleBrowserApproval(ts: number, text: string): Promise<void> {
-		this.output("\n[Browser Action Request]")
+		this.output("\n[browser action request]")
 		if (text) this.output(`  Action: ${text}`)
 
 		try {
@@ -1364,7 +1408,7 @@ export class ExtensionHost extends EventEmitter {
 			// Use raw text if not JSON
 		}
 
-		this.output("\n[MCP Server Request]")
+		this.output("\n[mcp request]")
 		this.output(`  Server: ${serverName}`)
 		if (toolName) this.output(`  Tool: ${toolName}`)
 		if (resourceUri) this.output(`  Resource: ${resourceUri}`)
@@ -1383,7 +1427,7 @@ export class ExtensionHost extends EventEmitter {
 	 * Handle API request failed - retry prompt
 	 */
 	private async handleApiFailedRetry(ts: number, text: string): Promise<void> {
-		this.output("\n[API Request Failed]")
+		this.output("\n[api request failed]")
 		this.output(`  Error: ${text || "Unknown error"}`)
 
 		try {
@@ -1448,15 +1492,14 @@ export class ExtensionHost extends EventEmitter {
 			if (text && !alreadyDisplayedComplete) {
 				const streamed = this.streamedContent.get(ts)
 				if (streamed) {
-					// We were streaming - output any remaining delta and finish
+					// We were streaming - output any remaining delta and finish.
 					if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
 						const delta = text.slice(streamed.text.length)
 						this.writeStream(delta)
 					}
 					this.finishStream(ts)
 				} else {
-					// Not streamed yet - output complete message using writeStream
-					this.writeStream("\n[Command Output] ")
+					this.writeStream("\n[command output] ")
 					this.writeStream(text)
 					this.writeStream("\n")
 				}
@@ -1464,7 +1507,7 @@ export class ExtensionHost extends EventEmitter {
 				this.streamedContent.set(ts, { text, headerShown: true })
 			}
 
-			// Send approval response (only once per ts)
+			// Send approval response (only once per ts).
 			if (!this.pendingAsks.has(ts)) {
 				this.pendingAsks.add(ts)
 				this.sendApprovalResponse(true)

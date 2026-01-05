@@ -12,6 +12,55 @@ import type { WorkspaceConfiguration } from "../interfaces/workspace.js"
 import type { ExtensionContextImpl } from "../context/ExtensionContext.js"
 
 /**
+ * In-memory runtime configuration store shared across all MockWorkspaceConfiguration instances.
+ * This allows configuration to be updated at runtime (e.g., from CLI settings) without
+ * persisting to disk. Values in this store take precedence over disk-based mementos.
+ */
+const runtimeConfig: Map<string, unknown> = new Map()
+
+/**
+ * Set a runtime configuration value.
+ * @param section The configuration section (e.g., "roo-cline")
+ * @param key The configuration key (e.g., "commandExecutionTimeout")
+ * @param value The value to set
+ */
+export function setRuntimeConfig(section: string, key: string, value: unknown): void {
+	const fullKey = `${section}.${key}`
+	runtimeConfig.set(fullKey, value)
+	logs.debug(`Runtime config set: ${fullKey} = ${JSON.stringify(value)}`, "VSCode.MockWorkspaceConfiguration")
+}
+
+/**
+ * Set multiple runtime configuration values at once.
+ * @param section The configuration section (e.g., "roo-cline")
+ * @param values Object containing key-value pairs to set
+ */
+export function setRuntimeConfigValues(section: string, values: Record<string, unknown>): void {
+	for (const [key, value] of Object.entries(values)) {
+		if (value !== undefined) {
+			setRuntimeConfig(section, key, value)
+		}
+	}
+}
+
+/**
+ * Clear all runtime configuration values.
+ */
+export function clearRuntimeConfig(): void {
+	runtimeConfig.clear()
+	logs.debug("Runtime config cleared", "VSCode.MockWorkspaceConfiguration")
+}
+
+/**
+ * Get a runtime configuration value.
+ * @param fullKey The full configuration key (e.g., "roo-cline.commandExecutionTimeout")
+ * @returns The value or undefined if not set
+ */
+export function getRuntimeConfig(fullKey: string): unknown {
+	return runtimeConfig.get(fullKey)
+}
+
+/**
  * Mock workspace configuration for CLI mode
  * Persists configuration to JSON files
  */
@@ -43,13 +92,19 @@ export class MockWorkspaceConfiguration implements WorkspaceConfiguration {
 	get<T>(section: string, defaultValue?: T): T | undefined {
 		const fullSection = this.section ? `${this.section}.${section}` : section
 
-		// Check workspace configuration first (higher priority)
+		// Check runtime configuration first (highest priority - set by CLI at runtime)
+		const runtimeValue = runtimeConfig.get(fullSection)
+		if (runtimeValue !== undefined) {
+			return runtimeValue as T
+		}
+
+		// Check workspace configuration (persisted to disk)
 		const workspaceValue = this.workspaceMemento.get(fullSection)
 		if (workspaceValue !== undefined && workspaceValue !== null) {
 			return workspaceValue as T
 		}
 
-		// Check global configuration
+		// Check global configuration (persisted to disk)
 		const globalValue = this.globalMemento.get(fullSection)
 		if (globalValue !== undefined && globalValue !== null) {
 			return globalValue as T

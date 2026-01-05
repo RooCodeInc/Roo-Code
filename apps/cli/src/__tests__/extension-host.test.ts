@@ -485,12 +485,14 @@ describe("ExtensionHost", () => {
 			expect(outputSpy).toHaveBeenCalledWith("\n[Task Complete]", "Task done")
 		})
 
-		it("should emit taskError for error messages", () => {
+		it("should output error messages without emitting taskError", () => {
 			const emitSpy = vi.spyOn(host, "emit")
 
 			callPrivate(host, "handleSayMessage", 123, "error", "Something went wrong", false)
 
-			expect(emitSpy).toHaveBeenCalledWith("taskError", "Something went wrong")
+			// Errors are informational - they don't terminate the task
+			// The agent should decide what to do next
+			expect(emitSpy).not.toHaveBeenCalledWith("taskError", "Something went wrong")
 			expect(outputErrorSpy).toHaveBeenCalledWith("\n[Error]", "Something went wrong")
 		})
 
@@ -575,7 +577,7 @@ describe("ExtensionHost", () => {
 		it("should handle command type in non-interactive mode", () => {
 			callPrivate(host, "handleAskMessage", 123, "command", "ls -la", false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Command]", "ls -la")
+			expect(outputSpy).toHaveBeenCalledWith("\n[command]", "ls -la")
 		})
 
 		it("should handle tool type with JSON parsing in non-interactive mode", () => {
@@ -583,8 +585,8 @@ describe("ExtensionHost", () => {
 
 			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool] write_file")
-			expect(outputSpy).toHaveBeenCalledWith("  Path: /test/file.txt")
+			expect(outputSpy).toHaveBeenCalledWith("\n[tool] write_file")
+			expect(outputSpy).toHaveBeenCalledWith("  path: /test/file.txt")
 		})
 
 		it("should handle tool type with content preview in non-interactive mode", () => {
@@ -595,14 +597,17 @@ describe("ExtensionHost", () => {
 
 			callPrivate(host, "handleAskMessage", 123, "tool", toolInfo, false)
 
-			// In non-interactive mode, content is not shown (just tool name and path)
-			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool] write_file")
+			// Content is now shown (all tool parameters are displayed)
+			expect(outputSpy).toHaveBeenCalledWith("\n[tool] write_file")
+			expect(outputSpy).toHaveBeenCalledWith(
+				"  content: This is the content that will be written to the file. It might be long.",
+			)
 		})
 
 		it("should handle tool type with invalid JSON in non-interactive mode", () => {
 			callPrivate(host, "handleAskMessage", 123, "tool", "not json", false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving Tool]", "not json")
+			expect(outputSpy).toHaveBeenCalledWith("\n[tool]", "not json")
 		})
 
 		it("should not display duplicate messages for same ts", () => {
@@ -622,7 +627,7 @@ describe("ExtensionHost", () => {
 		it("should handle other ask types in non-interactive mode", () => {
 			callPrivate(host, "handleAskMessage", 123, "question", "What is your name?", false)
 
-			expect(outputSpy).toHaveBeenCalledWith("\n[Auto-approving question]", "What is your name?")
+			expect(outputSpy).toHaveBeenCalledWith("\n[question]", "What is your name?")
 		})
 
 		it("should skip partial messages", () => {

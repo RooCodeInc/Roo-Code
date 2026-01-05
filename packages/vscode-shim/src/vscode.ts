@@ -41,7 +41,13 @@ export { ExtensionContextImpl as ExtensionContext } from "./context/ExtensionCon
 // API Classes from ./api/
 // ============================================================================
 export { FileSystemAPI } from "./api/FileSystemAPI.js"
-export { MockWorkspaceConfiguration } from "./api/WorkspaceConfiguration.js"
+export {
+	MockWorkspaceConfiguration,
+	setRuntimeConfig,
+	setRuntimeConfigValues,
+	clearRuntimeConfig,
+	getRuntimeConfig,
+} from "./api/WorkspaceConfiguration.js"
 export { WorkspaceAPI } from "./api/WorkspaceAPI.js"
 export { TabGroupsAPI, type Tab, type TabInputText, type TabGroup } from "./api/TabGroupsAPI.js"
 export { WindowAPI } from "./api/WindowAPI.js"
