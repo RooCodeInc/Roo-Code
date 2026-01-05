@@ -356,6 +356,10 @@ export async function presentAssistantMessage(cline: Task) {
 			// Fetch state early so it's available for toolDescription and validation
 			const state = await cline.providerRef.deref()?.getState()
 			const { mode, customModes, experiments: stateExperiments } = state ?? {}
+			const activeModeConfig = getModeBySlug(mode ?? defaultModeSlug, customModes)
+			const readGroupEntry = activeModeConfig?.groups.find((g) => (Array.isArray(g) ? g[0] : g) === "read")
+			const readGroupOptions = Array.isArray(readGroupEntry) ? readGroupEntry[1] : undefined
+			const readFileRegex = readGroupOptions?.fileRegex
 
 			const toolDescription = (): string => {
 				switch (block.name) {
@@ -719,6 +723,34 @@ export async function presentAssistantMessage(cline: Task) {
 				const toolParamsForValidation = block.nativeArgs
 					? { ...block.params, ...block.nativeArgs }
 					: block.params
+
+				// In modes that restrict read access via fileRegex (e.g., Orchestrator),
+				// codebase_search must NOT run with a missing/empty path because that implies
+				// an unrestricted workspace search.
+				//
+				// Instead of throwing a FileRestrictionError (which is confusing here), treat
+				// it like a missing required parameter so the model can retry with a safe path.
+				if (block.name === "codebase_search" && typeof readFileRegex === "string" && readFileRegex.length > 0) {
+					const rawPath = (toolParamsForValidation as { path?: unknown }).path
+					if (typeof rawPath !== "string" || rawPath.trim().length === 0) {
+						cline.consecutiveMistakeCount++
+						cline.didToolFailInCurrentTurn = true
+						const missingParamError = await cline.sayAndCreateMissingParamError("codebase_search", "path")
+
+						if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
+							cline.userMessageContent.push({
+								type: "tool_result",
+								tool_use_id: toolCallId,
+								content:
+									typeof missingParamError === "string" ? missingParamError : "(missing parameter)",
+								is_error: true,
+							} as Anthropic.ToolResultBlockParam)
+						} else {
+							pushToolResult(missingParamError)
+						}
+						break
+					}
+				}
 
 				try {
 					validateToolUse(
