@@ -199,7 +199,6 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 			psTree(this.pid, async (err, children) => {
 				if (!err) {
 					const pids = children.map((p) => parseInt(p.PID))
-					console.error(`[ExecaTerminalProcess#abort] SIGKILL children -> ${pids.join(", ")}`)
 
 					for (const pid of pids) {
 						try {

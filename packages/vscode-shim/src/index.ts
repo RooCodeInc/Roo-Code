@@ -46,6 +46,12 @@ export {
 	FileSystemAPI,
 	MockWorkspaceConfiguration,
 
+	// Runtime configuration utilities
+	setRuntimeConfig,
+	setRuntimeConfigValues,
+	clearRuntimeConfig,
+	getRuntimeConfig,
+
 	// Enums
 	ConfigurationTarget,
 	ViewColumn,
