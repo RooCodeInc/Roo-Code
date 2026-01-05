@@ -262,40 +262,25 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 	const controller = new AbortController()
 	const cancelSignal = controller.signal
 
-	// Build CLI command arguments
-	const cliArgs = [
-		"--filter",
-		"@roo-code/cli",
-		"start",
-		"-y", // Non-interactive mode (auto-approve)
-		"-x", // Exit on complete
-		"-q", // Quiet mode
-		"-w",
-		workspacePath, // Workspace path
-	]
+	const cliArgs = ["--filter", "@roo-code/cli", "start", "--yes", "--exit-on-complete", "--workspace", workspacePath]
 
-	// Add mode configuration - default to "code" for evals (from EVALS_SETTINGS)
-	const mode = run.settings?.mode || "code"
-	cliArgs.push("-M", mode)
+	if (run.settings?.mode) {
+		cliArgs.push("-M", run.settings.mode)
+	}
 
-	// Add provider configuration from run settings
 	if (run.settings?.apiProvider) {
 		cliArgs.push("-p", run.settings.apiProvider)
 	}
 
-	// Add model configuration
 	const modelId = run.settings?.apiModelId || run.settings?.openRouterModelId
 
 	if (modelId) {
 		cliArgs.push("-m", modelId)
 	}
 
-	// Add the prompt as the final argument
 	cliArgs.push(prompt)
 
-	logger.info(
-		`CLI command: pnpm --filter @roo-code/cli start -y -x -q -w ${workspacePath} -M ${mode} -p ${run.settings?.apiProvider} -m ${modelId} [prompt...]`,
-	)
+	logger.info(`CLI command: pnpm ${cliArgs.join(" ")}`)
 
 	const subprocess = execa("pnpm", cliArgs, { env, cancelSignal, cwd: process.cwd() })
 
