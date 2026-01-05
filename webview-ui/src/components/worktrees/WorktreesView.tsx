@@ -70,7 +70,7 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 				}
 				case "worktreeIncludeStatus": {
 					console.log("[WorktreesView] Received worktreeIncludeStatus:", message)
-					setIncludeStatus(message as WorktreeIncludeStatus)
+					setIncludeStatus(message.worktreeIncludeStatus)
 					break
 				}
 				case "worktreeResult": {
