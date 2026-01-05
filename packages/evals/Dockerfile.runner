@@ -55,7 +55,6 @@ ARG PYTHON_VERSION=3.13.2
 ARG GO_VERSION=1.24.2
 ARG RUST_VERSION=1.85.1
 ARG JAVA_VERSION=openjdk-17
-ARG GRADLE_VERSION=8.7
 ARG UV_VERSION=0.7.11
 
 # Install language runtimes via mise
@@ -64,12 +63,11 @@ RUN mise use --global node@${NODE_VERSION} \
   && mise use --global go@${GO_VERSION} \
   && mise use --global rust@${RUST_VERSION} \
   && mise use --global java@${JAVA_VERSION} \
-  && mise use --global gradle@${GRADLE_VERSION} \
   && mise use --global uv@${UV_VERSION} \
   && mise reshim
 
 # Verify installations
-RUN node --version && python --version && go version && rustc --version && java --version && gradle --version && uv --version
+RUN node --version && python --version && go version && rustc --version && java --version && uv --version
 
 # Install pnpm (after node is available from mise)
 ENV PNPM_HOME="/root/.local/share/pnpm"
@@ -96,6 +94,10 @@ ARG EVALS_REPO_URL=https://github.com/RooCodeInc/Roo-Code-Evals.git
 RUN git clone ${EVALS_REPO_URL} evals \
   && cd evals \
   && git checkout ${EVALS_COMMIT}
+
+# Pre-warm Gradle wrapper cache (./gradlew downloads its own Gradle regardless of system install).
+# Find a Java project with gradlew and run it to cache the distribution.
+RUN find /roo/evals -name "gradlew" -type f | head -1 | xargs -I {} sh -c 'cd $(dirname {}) && ./gradlew --version'
 
 # Sync python dependencies for evals
 WORKDIR /roo/evals/python
