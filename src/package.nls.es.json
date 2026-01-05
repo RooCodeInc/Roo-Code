@@ -42,5 +42,6 @@
 	"settings.apiRequestTimeout.description": "Tiempo máximo en segundos de espera para las respuestas de la API (0 = sin tiempo de espera, 1-3600s, por defecto: 600s). Se recomiendan valores más altos para proveedores locales como LM Studio y Ollama que puedan necesitar más tiempo de procesamiento.",
 	"settings.newTaskRequireTodos.description": "Requerir el parámetro todos al crear nuevas tareas con la herramienta new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "El tamaño del lote para operaciones de embedding durante la indexación de código. Ajusta esto según los límites de tu proveedor de API. Por defecto es 60.",
-	"settings.debug.description": "Activa el modo de depuración para mostrar botones adicionales para ver el historial de conversación de API y los mensajes de la interfaz de usuario como JSON embellecido en archivos temporales."
+	"settings.debug.description": "Activa el modo de depuración para mostrar botones adicionales para ver el historial de conversación de API y los mensajes de la interfaz de usuario como JSON embellecido en archivos temporales.",
+	"settings.proxyUrl.description": "URL de proxy HTTP(S) para todas las solicitudes de red salientes. Al ejecutar en modo depuración (F5), la verificación del certificado TLS se omite para permitir la inspección del proxy MITM. Deja vacío para desactivar el proxy. Ejemplo: http://localhost:8080"
 }

@@ -42,5 +42,6 @@
 	"settings.apiRequestTimeout.description": "एपीआई प्रतिक्रियाओं की प्रतीक्षा करने के लिए सेकंड में अधिकतम समय (0 = कोई टाइमआउट नहीं, 1-3600s, डिफ़ॉल्ट: 600s)। एलएम स्टूडियो और ओलामा जैसे स्थानीय प्रदाताओं के लिए उच्च मानों की सिफारिश की जाती है जिन्हें अधिक प्रसंस्करण समय की आवश्यकता हो सकती है।",
 	"settings.newTaskRequireTodos.description": "new_task टूल के साथ नए कार्य बनाते समय टूडू पैरामीटर की आवश्यकता होती है",
 	"settings.codeIndex.embeddingBatchSize.description": "कोड इंडेक्सिंग के दौरान एम्बेडिंग ऑपरेशन के लिए बैच साइज़। इसे अपने API प्रदाता की सीमाओं के अनुसार समायोजित करें। डिफ़ॉल्ट 60 है।",
-	"settings.debug.description": "API conversation history और UI messages को temporary files में prettified JSON के रूप में देखने के लिए अतिरिक्त बटन दिखाने के लिए debug mode सक्षम करें।"
+	"settings.debug.description": "API conversation history और UI messages को temporary files में prettified JSON के रूप में देखने के लिए अतिरिक्त बटन दिखाने के लिए debug mode सक्षम करें।",
+	"settings.proxyUrl.description": "सभी आउटबाउंड नेटवर्क रिक्वेस्ट के लिए HTTP(S) प्रॉक्सी URL। डिबग मोड (F5) में चलाते समय, MITM प्रॉक्सी निरीक्षण की अनुमति देने के लिए TLS सर्टिफिकेट वेरिफिकेशन को बायपास किया जाता है। प्रॉक्सी को निष्क्रिय करने के लिए खाली छोड़ दो। उदाहरण: http://localhost:8080"
 }

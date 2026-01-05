@@ -42,5 +42,6 @@
 	"settings.apiRequestTimeout.description": "Maximale Wartezeit in Sekunden auf API-Antworten (0 = kein Timeout, 1-3600s, Standard: 600s). Höhere Werte werden für lokale Anbieter wie LM Studio und Ollama empfohlen, die möglicherweise mehr Verarbeitungszeit benötigen.",
 	"settings.newTaskRequireTodos.description": "Todos-Parameter beim Erstellen neuer Aufgaben mit dem new_task-Tool erfordern",
 	"settings.codeIndex.embeddingBatchSize.description": "Die Batch-Größe für Embedding-Operationen während der Code-Indexierung. Passe dies an die Limits deines API-Anbieters an. Standard ist 60.",
-	"settings.debug.description": "Aktiviere den Debug-Modus, um zusätzliche Schaltflächen zum Anzeigen des API-Konversationsverlaufs und der UI-Nachrichten als formatiertes JSON in temporären Dateien anzuzeigen."
+	"settings.debug.description": "Aktiviere den Debug-Modus, um zusätzliche Schaltflächen zum Anzeigen des API-Konversationsverlaufs und der UI-Nachrichten als formatiertes JSON in temporären Dateien anzuzeigen.",
+	"settings.proxyUrl.description": "HTTP(S)-Proxy-URL für alle ausgehenden Netzwerkanfragen. Im Debug-Modus (F5) wird die TLS-Zertifikatsüberprüfung umgangen, um MITM-Proxy-Inspektion zu ermöglichen. Leer lassen, um Proxy zu deaktivieren. Beispiel: http://localhost:8080"
 }

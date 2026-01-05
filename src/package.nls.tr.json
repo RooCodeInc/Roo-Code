@@ -42,5 +42,6 @@
 	"settings.apiRequestTimeout.description": "API yanıtları için beklenecek maksimum süre (saniye cinsinden) (0 = zaman aşımı yok, 1-3600s, varsayılan: 600s). LM Studio ve Ollama gibi daha fazla işlem süresi gerektirebilecek yerel sağlayıcılar için daha yüksek değerler önerilir.",
 	"settings.newTaskRequireTodos.description": "new_task aracıyla yeni görevler oluştururken todos parametresini gerekli kıl",
 	"settings.codeIndex.embeddingBatchSize.description": "Kod indeksleme sırasında gömme işlemleri için toplu iş boyutu. Bunu API sağlayıcınızın sınırlarına göre ayarlayın. Varsayılan 60'tır.",
-	"settings.debug.description": "API konuşma geçmişini ve kullanıcı arayüzü mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere hata ayıklama modunu etkinleştir."
+	"settings.debug.description": "API konuşma geçmişini ve kullanıcı arayüzü mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere hata ayıklama modunu etkinleştir.",
+	"settings.proxyUrl.description": "Tüm giden ağ istekleri için HTTP(S) proxy URL’si. Hata ayıklama modunda (F5) çalışırken, MITM proxy incelemesine izin vermek için TLS sertifika doğrulaması atlanır. Proxy’yi devre dışı bırakmak için boş bırak. Örnek: http://localhost:8080"
 }
