@@ -242,7 +242,7 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 				{/* Worktree include status */}
 				{includeStatus && (
 					<div className="flex items-center gap-2 text-sm">
-						{(includeStatus as any).worktreeIncludeExists ? (
+						{includeStatus.exists ? (
 							<>
 								<span className="codicon codicon-check text-vscode-charts-green" />
 								<span className="text-vscode-descriptionForeground">
