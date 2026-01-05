@@ -54,30 +54,36 @@ export function initializeNetworkProxy(context: vscode.ExtensionContext, channel
 	)
 
 	// Listen for configuration changes (always register; but only applies proxy in debug mode)
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration(`${Package.name}.proxyUrl`)) {
-				const newConfig = getProxyConfig()
-				if (!newConfig.isDebugMode) {
-					log(
-						`Proxy setting changed, but proxy is only applied in debug mode. Restart VS Code after changing debug mode.`,
-					)
-					return
-				}
+	// In unit tests, vscode.workspace.onDidChangeConfiguration may not be mocked.
+	const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration
+	if (typeof onDidChangeConfiguration === "function") {
+		context.subscriptions.push(
+			onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(`${Package.name}.proxyUrl`)) {
+					const newConfig = getProxyConfig()
+					if (!newConfig.isDebugMode) {
+						log(
+							`Proxy setting changed, but proxy is only applied in debug mode. Restart VS Code after changing debug mode.`,
+						)
+						return
+					}
 
-				// Debug mode: apply TLS bypass regardless; apply proxy if configured.
-				disableTlsVerification()
-				if (newConfig.proxyUrl) {
-					configureGlobalProxy(newConfig)
-					configureUndiciProxy(newConfig)
-				} else {
-					// Proxy removed - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
-					// User will need to restart the extension host.
-					log("Proxy URL removed. Restart VS Code to fully disable proxy.")
+					// Debug mode: apply TLS bypass regardless; apply proxy if configured.
+					disableTlsVerification()
+					if (newConfig.proxyUrl) {
+						configureGlobalProxy(newConfig)
+						configureUndiciProxy(newConfig)
+					} else {
+						// Proxy removed - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
+						// User will need to restart the extension host.
+						log("Proxy URL removed. Restart VS Code to fully disable proxy.")
+					}
 				}
-			}
-		}),
-	)
+			}),
+		)
+	} else {
+		log("vscode.workspace.onDidChangeConfiguration is not available; skipping config change listener")
+	}
 
 	// Security policy:
 	// - Debug (F5): allow MITM inspection by disabling TLS verification; optionally route through proxy if configured.
@@ -117,7 +123,8 @@ export function getProxyConfig(): ProxyConfig {
 	}
 
 	const config = vscode.workspace.getConfiguration(Package.name)
-	const proxyUrl = config.get<string>("proxyUrl") || undefined
+	const rawProxyUrl = config.get<unknown>("proxyUrl")
+	const proxyUrl = typeof rawProxyUrl === "string" ? rawProxyUrl : undefined
 
 	// In debug/development mode, disable TLS verification for MITM proxy inspection
 	const isDebugMode = extensionContext.extensionMode === vscode.ExtensionMode.Development
