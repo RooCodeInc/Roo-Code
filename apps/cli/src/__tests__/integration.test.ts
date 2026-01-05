@@ -84,11 +84,12 @@ describe.skipIf(!hasApiKey || !hasExtension)(
 		 */
 		it("should complete end-to-end task execution with proper lifecycle", async () => {
 			host = new ExtensionHost({
+				mode: "code",
+				apiProvider: "openrouter",
+				apiKey: OPENROUTER_API_KEY!,
+				model: "anthropic/claude-haiku-4.5", // Use fast, cheap model for tests.
 				workspacePath,
 				extensionPath: extensionPath!,
-				apiKey: OPENROUTER_API_KEY!,
-				apiProvider: "openrouter",
-				model: "anthropic/claude-haiku-4.5", // Use fast, cheap model for tests
 				quiet: true,
 			})
 

@@ -24,16 +24,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const CLI_PACKAGE_ROOT = path.resolve(__dirname, "..")
 
 export interface ExtensionHostOptions {
+	mode: string
+	reasoningEffort?: ReasoningEffortExtended | "disabled"
+	apiProvider: ProviderName
+	apiKey?: string
+	model: string
 	workspacePath: string
 	extensionPath: string
 	verbose?: boolean
 	quiet?: boolean
 	nonInteractive?: boolean
-	apiKey?: string
-	apiProvider?: ProviderName
-	model?: string
-	mode?: string
-	reasoningEffort?: ReasoningEffortExtended
 }
 
 interface ExtensionModule {
@@ -118,7 +118,9 @@ export class ExtensionHost extends EventEmitter {
 	 * but allows console.error through for critical errors.
 	 */
 	private setupQuietMode(): void {
-		if (!this.options.quiet) return
+		if (!this.options.quiet) {
+			return
+		}
 
 		// Save original console methods
 		this.originalConsole = {
@@ -311,6 +313,25 @@ export class ExtensionHost extends EventEmitter {
 		this.emit("webviewMessage", message)
 	}
 
+	private applyRuntimeSettings(settings: RooCodeSettings): void {
+		if (this.options.mode) {
+			settings.mode = this.options.mode
+		}
+
+		if (this.options.reasoningEffort) {
+			if (this.options.reasoningEffort === "disabled") {
+				settings.enableReasoningEffort = false
+			} else {
+				settings.enableReasoningEffort = true
+				settings.reasoningEffort = this.options.reasoningEffort
+			}
+		}
+
+		// Update vscode-shim runtime configuration so
+		// vscode.workspace.getConfiguration() returns correct values.
+		setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
+	}
+
 	/**
 	 * Build the provider-specific API configuration
 	 * Each provider uses different field names for API key and model
@@ -321,16 +342,7 @@ export class ExtensionHost extends EventEmitter {
 		const model = this.options.model
 
 		// Base config with provider.
-		const config: RooCodeSettings = {
-			apiProvider: provider,
-		}
-
-		// Include reasoning settings in the API configuration.
-		// This ensures they're associated with the API profile, not just global settings.
-		if (this.options.reasoningEffort) {
-			config.enableReasoningEffort = true
-			config.reasoningEffort = this.options.reasoningEffort
-		}
+		const config: RooCodeSettings = { apiProvider: provider }
 
 		// Map provider to the correct API key and model field names.
 		switch (provider) {
@@ -504,6 +516,7 @@ export class ExtensionHost extends EventEmitter {
 		// In interactive mode (default), we'll prompt the user for each action
 		if (this.options.nonInteractive) {
 			this.log("Non-interactive mode: enabling auto-approval settings...")
+
 			const settings: RooCodeSettings = {
 				autoApprovalEnabled: true,
 				alwaysAllowReadOnly: true,
@@ -522,72 +535,23 @@ export class ExtensionHost extends EventEmitter {
 				commandExecutionTimeout: 20,
 			}
 
-			if (this.options.mode) {
-				settings.mode = this.options.mode
-			}
-
-			if (this.options.reasoningEffort) {
-				settings.enableReasoningEffort = true
-				settings.reasoningEffort = this.options.reasoningEffort
-			}
-
-			this.log("Settings being sent to extension:", JSON.stringify(settings, null, 2))
-
-			// Update vscode-shim runtime configuration so vscode.workspace.getConfiguration() returns correct values.
-			setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
-
-			this.sendToExtension({
-				type: "updateSettings",
-				updatedSettings: settings,
-			})
+			this.applyRuntimeSettings(settings)
+			this.sendToExtension({ type: "updateSettings", updatedSettings: settings })
+			await new Promise<void>((resolve) => setTimeout(resolve, 100))
 		} else {
 			this.log("Interactive mode: user will be prompted for approvals...")
-
-			const settings: RooCodeSettings = {
-				autoApprovalEnabled: false,
-			}
-
-			if (this.options.mode) {
-				settings.mode = this.options.mode
-			}
-
-			if (this.options.reasoningEffort) {
-				settings.enableReasoningEffort = true
-				settings.reasoningEffort = this.options.reasoningEffort
-			}
-
-			// Update vscode-shim runtime configuration so vscode.workspace.getConfiguration() returns correct values
-			setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
-
+			const settings: RooCodeSettings = { autoApprovalEnabled: false }
+			this.applyRuntimeSettings(settings)
 			this.sendToExtension({ type: "updateSettings", updatedSettings: settings })
-		}
-
-		// Give the extension a moment to process the settings
-		await new Promise<void>((resolve) => setTimeout(resolve, 100))
-
-		// Inject API configuration
-		if (this.options.apiKey) {
-			this.log("Injecting API configuration...")
-			const apiConfiguration = this.buildApiConfiguration()
-			this.log("API configuration being sent:", JSON.stringify(apiConfiguration, null, 2))
-			// The upsertApiConfiguration message expects:
-			// - text: the profile name
-			// - apiConfiguration: the config object with provider-specific field names
-			this.sendToExtension({
-				type: "upsertApiConfiguration",
-				text: "cli-config", // Profile name
-				apiConfiguration,
-			})
-
-			// Give the extension a moment to process the config
 			await new Promise<void>((resolve) => setTimeout(resolve, 100))
 		}
 
-		// Send the task message
-		// This matches the WebviewMessage type from the extension
-		this.sendToExtension({ type: "newTask", text: prompt })
+		if (this.options.apiKey) {
+			this.sendToExtension({ type: "updateSettings", updatedSettings: this.buildApiConfiguration() })
+			await new Promise<void>((resolve) => setTimeout(resolve, 100))
+		}
 
-		// Wait for task completion
+		this.sendToExtension({ type: "newTask", text: prompt })
 		await this.waitForCompletion()
 	}
 
