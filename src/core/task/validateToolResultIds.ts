@@ -82,72 +82,29 @@ export function validateAndFixToolResultIds(
 		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
 	)
 
-	// ============================================================================
-	// CRITICAL: Explicit deduplication of tool_result blocks
-	// ============================================================================
-	//
-	// WHY THIS IS NECESSARY:
-	// This deduplication step prevents a "doom loop" that can occur when the external
-	// terminal (e.g., PuTTY) fails during long-running commands and falls back to
-	// the integrated terminal. The race condition between terminal fallback and user
-	// approval can generate duplicate tool_result blocks for the same tool_use_id.
-	//
-	// THE BUG SCENARIO:
-	// 1. Assistant calls execute_command with tool_use_id="tooluse_XYZ"
-	// 2. Long-running command executes via external terminal
-	// 3. External terminal fails, triggering fallback to integrated terminal
-	// 4. First tool_result is generated for "tooluse_XYZ"
-	// 5. User approval arrives during/after fallback, generating ANOTHER tool_result
-	//    for the same "tooluse_XYZ"
-	// 6. Result: 2 tool_result blocks for 1 tool_use block
-	//
-	// WHY EXISTING CHECKS DIDN'T CATCH THIS:
-	// The checks below use a Set (existingToolResultIds) which automatically dedupes,
-	// so it sees only ONE unique ID. With:
-	//   - missingToolUseIds.length === 0 (the ID exists in the Set)
-	//   - hasInvalidIds === false (the ID is valid)
-	// The early return at the end of this block triggers, and BOTH duplicate
-	// tool_results pass through to the API, causing a protocol violation.
-	//
-	// THE FIX:
-	// Explicitly filter out duplicate tool_results BEFORE any other processing.
-	// This ensures exactly one tool_result per tool_use_id, regardless of how
-	// the duplicates were generated.
-	//
-	// REFERENCE: GitHub Issue #10465
-	// ============================================================================
-
+	// Deduplicate tool_result blocks to prevent API protocol violations (GitHub #10465)
+	// Terminal fallback race conditions can generate duplicate tool_results with the same tool_use_id.
+	// Filter out duplicates before validation since Set-based checks below would miss them.
 	const seenToolResultIds = new Set<string>()
 	const deduplicatedContent = userMessage.content.filter((block) => {
-		// Keep all non-tool_result blocks unchanged
 		if (block.type !== "tool_result") {
 			return true
 		}
-
-		// For tool_result blocks: keep only the first occurrence of each tool_use_id
 		if (seenToolResultIds.has(block.tool_use_id)) {
-			// This is a duplicate - filter it out to prevent API protocol violation
-			return false
+			return false // Duplicate - filter out
 		}
-
 		seenToolResultIds.add(block.tool_use_id)
 		return true
 	})
 
-	// Update userMessage with deduplicated content
 	userMessage = {
 		...userMessage,
 		content: deduplicatedContent,
 	}
 
-	// Re-extract tool_results from deduplicated content for subsequent processing
 	toolResults = deduplicatedContent.filter(
 		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
 	)
-
-	// ============================================================================
-	// End of deduplication logic
-	// ============================================================================
 
 	// Build a set of valid tool_use IDs
 	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.id))
@@ -206,15 +163,12 @@ export function validateAndFixToolResultIds(
 		)
 	}
 
-	// Create a mapping of tool_result IDs to corrected IDs
-	// Strategy: Match by position (first tool_result -> first tool_use, etc.)
-	// This handles most cases where the mismatch is due to ID confusion
-	//
-	// Track which tool_use IDs have been used to prevent duplicates
+	// Match tool_results to tool_uses by position and fix incorrect IDs
 	const usedToolUseIds = new Set<string>()
+	const contentArray = userMessage.content as Anthropic.Messages.ContentBlockParam[]
 
-	const correctedContent = userMessage.content
-		.map((block) => {
+	const correctedContent = contentArray
+		.map((block: Anthropic.Messages.ContentBlockParam) => {
 			if (block.type !== "tool_result") {
 				return block
 			}
@@ -244,17 +198,18 @@ export function validateAndFixToolResultIds(
 			}
 
 			// No corresponding tool_use for this tool_result, or the ID is already used
-			// Filter out this orphaned tool_result by returning null
 			return null
 		})
 		.filter((block): block is NonNullable<typeof block> => block !== null)
 
 	// Add missing tool_result blocks for any tool_use that doesn't have one
-	// After the ID correction above, recalculate which tool_use IDs are now covered
 	const coveredToolUseIds = new Set(
 		correctedContent
-			.filter((b): b is Anthropic.ToolResultBlockParam => b.type === "tool_result")
-			.map((r) => r.tool_use_id),
+			.filter(
+				(b: Anthropic.Messages.ContentBlockParam): b is Anthropic.ToolResultBlockParam =>
+					b.type === "tool_result",
+			)
+			.map((r: Anthropic.ToolResultBlockParam) => r.tool_use_id),
 	)
 
 	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.id))

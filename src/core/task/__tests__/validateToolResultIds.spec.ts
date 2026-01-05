@@ -483,32 +483,9 @@ describe("validateAndFixToolResultIds", () => {
 			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Some additional context")
 		})
 
-		/**
-		 * CRITICAL TEST: Terminal Fallback Duplicate tool_result Scenario
-		 *
-		 * This test verifies the fix for GitHub Issue #10465:
-		 * "Terminal Fallback Causes Duplicate Tool Results and Doom Loop in Unattended Mode"
-		 *
-		 * THE BUG:
-		 * When an external terminal (e.g., PuTTY) fails during long-running commands and
-		 * falls back to the integrated terminal, a race condition can generate duplicate
-		 * tool_result blocks for the SAME valid tool_use_id. This caused:
-		 * 1. API protocol violation ("toolResult blocks exceeds toolUse blocks")
-		 * 2. Unrecoverable "doom loop" breaking unattended access
-		 *
-		 * WHY EXISTING LOGIC DIDN'T CATCH THIS:
-		 * The validation used a Set (existingToolResultIds) which automatically deduplicates,
-		 * so it saw only ONE unique ID. With the ID being valid:
-		 * - missingToolUseIds.length === 0 (ID exists in Set)
-		 * - hasInvalidIds === false (ID is valid)
-		 * Early return triggered, passing BOTH duplicates to the API.
-		 *
-		 * THE FIX:
-		 * Explicit deduplication step that filters out duplicate tool_results
-		 * BEFORE any other processing, keeping only the first occurrence.
-		 */
+		// Verifies fix for GitHub #10465: Terminal fallback race condition can generate
+		// duplicate tool_results with the same valid tool_use_id, causing API protocol violations.
 		it("should filter out duplicate tool_results with identical valid tool_use_ids (terminal fallback scenario)", () => {
-			// Scenario: Assistant made a single tool call
 			const assistantMessage: Anthropic.MessageParam = {
 				role: "assistant",
 				content: [
@@ -521,8 +498,7 @@ describe("validateAndFixToolResultIds", () => {
 				],
 			}
 
-			// Bug scenario: Two tool_results with the SAME valid tool_use_id
-			// This happens when terminal fallback generates a second result during the race condition
+			// Two tool_results with the SAME valid tool_use_id from terminal fallback race condition
 			const userMessage: Anthropic.MessageParam = {
 				role: "user",
 				content: [
@@ -544,18 +520,12 @@ describe("validateAndFixToolResultIds", () => {
 			expect(Array.isArray(result.content)).toBe(true)
 			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
 
-			// CRITICAL ASSERTION: Only ONE tool_result should remain
-			// This prevents the API protocol violation that caused the doom loop
+			// Only ONE tool_result should remain to prevent API protocol violation
 			expect(resultContent.length).toBe(1)
 			expect(resultContent[0].tool_use_id).toBe("tooluse_QZ-pU8v2QKO8L8fHoJRI2g")
-			// The first occurrence should be kept (with original content)
 			expect(resultContent[0].content).toBe("No test processes found")
 		})
 
-		/**
-		 * Test that deduplication preserves text blocks alongside tool_results.
-		 * This ensures the fix doesn't accidentally filter out non-tool_result content.
-		 */
 		it("should preserve text blocks while deduplicating tool_results with same valid ID", () => {
 			const assistantMessage: Anthropic.MessageParam = {
 				role: "assistant",
