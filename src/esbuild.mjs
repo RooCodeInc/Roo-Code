@@ -102,7 +102,8 @@ async function main() {
 		outfile: "dist/extension.js",
 		// global-agent must be external because it dynamically patches Node.js http/https modules
 		// which breaks when bundled. It needs access to the actual Node.js module instances.
-		external: ["vscode", "esbuild", "global-agent", "undici"],
+		// undici must be bundled because our VSIX is packaged with `--no-dependencies`.
+		external: ["vscode", "esbuild", "global-agent"],
 	}
 
 	/**
