@@ -1,4 +1,4 @@
-import { MessageLogDeduper } from "./messageLogDeduper.js"
+import { MessageLogDeduper } from "../messageLogDeduper.js"
 
 describe("MessageLogDeduper", () => {
 	it("dedupes identical messages for same action+ts", () => {

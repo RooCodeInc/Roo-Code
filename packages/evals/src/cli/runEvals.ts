@@ -5,7 +5,7 @@ import { EVALS_REPO_PATH } from "../exercises/index.js"
 
 import { Logger, getTag, isDockerContainer, resetEvalsRepo, commitEvalsRepoChanges } from "./utils.js"
 import { startHeartbeat, stopHeartbeat } from "./redis.js"
-import { processTask, processTaskInContainer } from "./runTask.js"
+import { processTask, processTaskInContainer } from "./processTask.js"
 
 export const runEvals = async (runId: number) => {
 	const run = await findRun(runId)
