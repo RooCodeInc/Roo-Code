@@ -412,15 +412,20 @@
 					"default": false,
 					"description": "%settings.debug.description%"
 				},
-				"roo-cline.proxyUrl": {
-					"type": "string",
-					"default": "",
-					"description": "%settings.proxyUrl.description%"
-				},
-				"roo-cline.proxyDisableTlsVerification": {
+				"roo-cline.debugProxy.enabled": {
 					"type": "boolean",
 					"default": false,
-					"description": "%settings.proxyDisableTlsVerification.description%"
+					"markdownDescription": "%settings.debugProxy.enabled.description%"
+				},
+				"roo-cline.debugProxy.serverUrl": {
+					"type": "string",
+					"default": "http://127.0.0.1:8888",
+					"markdownDescription": "%settings.debugProxy.serverUrl.description%"
+				},
+				"roo-cline.debugProxy.tlsInsecure": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
 				}
 			}
 		}

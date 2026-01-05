@@ -43,6 +43,7 @@
 	"settings.newTaskRequireTodos.description": "Requerir el parámetro todos al crear nuevas tareas con la herramienta new_task",
 	"settings.codeIndex.embeddingBatchSize.description": "El tamaño del lote para operaciones de embedding durante la indexación de código. Ajusta esto según los límites de tu proveedor de API. Por defecto es 60.",
 	"settings.debug.description": "Activa el modo de depuración para mostrar botones adicionales para ver el historial de conversación de API y los mensajes de la interfaz de usuario como JSON embellecido en archivos temporales.",
-	"settings.proxyUrl.description": "URL de proxy HTTP(S) para todas las solicitudes de red salientes. Solo se aplica cuando se ejecuta en modo depuración (F5). Déjalo vacío para desactivar el proxy. Ejemplo: http://localhost:8080 (las credenciales se ocultarán en los registros)",
-	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
+	"settings.debugProxy.enabled.description": "**Activar Debug Proxy** — Redirige todas las solicitudes de red salientes a través de un proxy para depuración MITM. Solo está activo cuando se ejecuta en modo depuración (F5).",
+	"settings.debugProxy.serverUrl.description": "URL del proxy (p. ej., `http://127.0.0.1:8888`). Solo se usa cuando **Debug Proxy** está activado.",
+	"settings.debugProxy.tlsInsecure.description": "Aceptar certificados autofirmados del proxy. **Necesario para la inspección MITM.** ⚠️ Inseguro: úsalo solo para depuración local."
 }

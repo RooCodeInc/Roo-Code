@@ -43,6 +43,7 @@
 	"settings.newTaskRequireTodos.description": "new_task 도구로 새 작업을 생성할 때 todos 매개변수 필요",
 	"settings.codeIndex.embeddingBatchSize.description": "코드 인덱싱 중 임베딩 작업의 배치 크기입니다. API 공급자의 제한에 따라 이를 조정하세요. 기본값은 60입니다.",
 	"settings.debug.description": "디버그 모드를 활성화하여 API 대화 기록과 UI 메시지를 임시 파일에 포맷된 JSON으로 보기 위한 추가 버튼을 표시합니다.",
-	"settings.proxyUrl.description": "모든 출력 네트워크 요청에 사용할 HTTP(S) 프록시 URL입니다. 디버그 모드(F5)로 실행 중일 때만 적용됩니다. 프록시를 비활성화하려면 비워 두세요. 예: http://localhost:8080 (자격 증명은 로그에서 마스킹됩니다)",
-	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
+	"settings.debugProxy.enabled.description": "**Debug Proxy 활성화** — 모든 아웃바운드 네트워크 요청을 MITM 디버깅을 위해 프록시를 통해 라우팅합니다. 디버그 모드(F5)로 실행 중일 때만 활성화됩니다.",
+	"settings.debugProxy.serverUrl.description": "프록시 URL(예: `http://127.0.0.1:8888`). **Debug Proxy** 가 활성화된 경우에만 사용됩니다.",
+	"settings.debugProxy.tlsInsecure.description": "프록시의 self-signed 인증서를 허용합니다. **MITM 검사에 필요합니다.** ⚠️ 안전하지 않으므로 로컬 디버깅에만 사용하세요."
 }

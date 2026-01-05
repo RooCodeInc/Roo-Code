@@ -17,10 +17,12 @@ import { Package } from "../shared/package"
  * Proxy configuration state
  */
 export interface ProxyConfig {
-	/** The proxy URL (e.g., http://localhost:8080) */
-	proxyUrl: string | undefined
-	/** Debug-only: disable TLS certificate verification (dangerous) */
-	disableTlsVerification: boolean
+	/** Whether the debug proxy is enabled */
+	enabled: boolean
+	/** The proxy server URL (e.g., http://127.0.0.1:8888) */
+	serverUrl: string
+	/** Accept self-signed/insecure TLS certificates from the proxy (required for MITM) */
+	tlsInsecure: boolean
 	/** Whether running in debug/development mode */
 	isDebugMode: boolean
 }
@@ -81,12 +83,12 @@ function restoreTlsVerificationOverride(): void {
 
 function applyTlsVerificationOverride(config: ProxyConfig): void {
 	// Only relevant in debug mode with an active proxy.
-	if (!config.isDebugMode || !config.proxyUrl) {
+	if (!config.isDebugMode || !config.enabled) {
 		restoreTlsVerificationOverride()
 		return
 	}
 
-	if (!config.disableTlsVerification) {
+	if (!config.tlsInsecure) {
 		restoreTlsVerificationOverride()
 		return
 	}
@@ -121,7 +123,7 @@ export async function initializeNetworkProxy(
 
 	const config = getProxyConfig()
 	log(
-		`Proxy config: proxyUrl=${redactProxyUrl(config.proxyUrl)}, disableTlsVerification=${config.disableTlsVerification}, isDebugMode=${config.isDebugMode}`,
+		`Proxy config: enabled=${config.enabled}, serverUrl=${redactProxyUrl(config.serverUrl)}, tlsInsecure=${config.tlsInsecure}, isDebugMode=${config.isDebugMode}`,
 	)
 
 	// Listen for configuration changes (always register; but only applies proxy in debug mode)
@@ -131,8 +133,9 @@ export async function initializeNetworkProxy(
 		context.subscriptions.push(
 			onDidChangeConfiguration((e) => {
 				if (
-					e.affectsConfiguration(`${Package.name}.proxyUrl`) ||
-					e.affectsConfiguration(`${Package.name}.proxyDisableTlsVerification`)
+					e.affectsConfiguration(`${Package.name}.debugProxy.enabled`) ||
+					e.affectsConfiguration(`${Package.name}.debugProxy.serverUrl`) ||
+					e.affectsConfiguration(`${Package.name}.debugProxy.tlsInsecure`)
 				) {
 					const newConfig = getProxyConfig()
 					if (!newConfig.isDebugMode) {
@@ -142,17 +145,17 @@ export async function initializeNetworkProxy(
 						return
 					}
 
-					// Debug mode: apply proxy if configured.
-					if (newConfig.proxyUrl) {
+					// Debug mode: apply proxy if enabled.
+					if (newConfig.enabled) {
 						applyTlsVerificationOverride(newConfig)
 						configureGlobalProxy(newConfig)
 						configureUndiciProxy(newConfig)
 					} else {
-						// Proxy removed - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
+						// Proxy disabled - but we can't easily un-bootstrap global-agent or reset undici dispatcher safely.
 						// We *can* restore any global fetch patch immediately.
 						restoreGlobalFetchPatch()
 						restoreTlsVerificationOverride()
-						log("Proxy URL removed. Restart VS Code to fully disable proxy routing.")
+						log("Debug proxy disabled. Restart VS Code to fully disable proxy routing.")
 					}
 				}
 			}),
@@ -170,27 +173,25 @@ export async function initializeNetworkProxy(
 	})
 
 	// Security policy:
-	// - Debug (F5): route traffic through proxy if configured.
-	// - Normal runs: do NOT route through proxy even if configured.
+	// - Debug (F5): route traffic through proxy if enabled.
+	// - Normal runs: do NOT route through proxy even if enabled.
 	if (!config.isDebugMode) {
-		if (config.proxyUrl) {
-			log(`Proxy URL is set but will be ignored because extension is not running in debug mode`)
+		if (config.enabled) {
+			log(`Debug proxy is enabled but will be ignored because extension is not running in debug mode`)
 		}
-		if (config.disableTlsVerification) {
-			log(
-				`proxyDisableTlsVerification is enabled but will be ignored because extension is not running in debug mode`,
-			)
+		if (config.tlsInsecure) {
+			log(`tlsInsecure is enabled but will be ignored because extension is not running in debug mode`)
 		}
 		log(`Not in debug mode - proxy disabled`)
 		return
 	}
 
-	if (config.proxyUrl) {
+	if (config.enabled) {
 		applyTlsVerificationOverride(config)
 		await configureGlobalProxy(config)
 		await configureUndiciProxy(config)
 	} else {
-		log(`No proxy URL configured (debug mode).`)
+		log(`Debug proxy not enabled.`)
 		restoreTlsVerificationOverride()
 	}
 
@@ -201,26 +202,31 @@ export async function initializeNetworkProxy(
  * Get the current proxy configuration based on VS Code settings and extension mode.
  */
 export function getProxyConfig(): ProxyConfig {
+	const defaultServerUrl = "http://127.0.0.1:8888"
+
 	if (!extensionContext) {
 		// Fallback if called before initialization
 		return {
-			proxyUrl: undefined,
-			disableTlsVerification: false,
+			enabled: false,
+			serverUrl: defaultServerUrl,
+			tlsInsecure: false,
 			isDebugMode: false,
 		}
 	}
 
 	const config = vscode.workspace.getConfiguration(Package.name)
-	const rawProxyUrl = config.get<unknown>("proxyUrl")
-	const proxyUrl = typeof rawProxyUrl === "string" ? rawProxyUrl : undefined
-	const disableTlsVerification = Boolean(config.get<unknown>("proxyDisableTlsVerification"))
+	const enabled = Boolean(config.get<unknown>("debugProxy.enabled"))
+	const rawServerUrl = config.get<unknown>("debugProxy.serverUrl")
+	const serverUrl = typeof rawServerUrl === "string" && rawServerUrl.trim() ? rawServerUrl.trim() : defaultServerUrl
+	const tlsInsecure = Boolean(config.get<unknown>("debugProxy.tlsInsecure"))
 
 	// Debug mode only.
 	const isDebugMode = extensionContext.extensionMode === vscode.ExtensionMode.Development
 
 	return {
-		proxyUrl: proxyUrl?.trim() || undefined,
-		disableTlsVerification,
+		enabled,
+		serverUrl,
+		tlsInsecure,
 		isDebugMode,
 	}
 }
@@ -263,7 +269,7 @@ async function configureGlobalProxy(config: ProxyConfig): Promise<void> {
 		return
 	}
 
-	log(`Network proxy configured: ${redactProxyUrl(config.proxyUrl)}`)
+	log(`Network proxy configured: ${redactProxyUrl(config.serverUrl)}`)
 }
 
 /**
@@ -271,7 +277,7 @@ async function configureGlobalProxy(config: ProxyConfig): Promise<void> {
  * clients route through the proxy.
  */
 async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
-	if (!config.proxyUrl) {
+	if (!config.enabled || !config.serverUrl) {
 		return
 	}
 
@@ -288,24 +294,24 @@ async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
 		} = (await import("undici")) as typeof import("undici")
 
 		const proxyAgent = new ProxyAgent({
-			uri: config.proxyUrl,
-			// If the user enabled TLS verification disablement (debug only), apply it to undici.
-			requestTls: config.disableTlsVerification
+			uri: config.serverUrl,
+			// If the user enabled TLS insecure mode (debug only), apply it to undici.
+			requestTls: config.tlsInsecure
 				? ({ rejectUnauthorized: false } satisfies import("tls").ConnectionOptions) // lgtm[js/disabling-certificate-validation]
 				: undefined,
-			proxyTls: config.disableTlsVerification
+			proxyTls: config.tlsInsecure
 				? ({ rejectUnauthorized: false } satisfies import("tls").ConnectionOptions) // lgtm[js/disabling-certificate-validation]
 				: undefined,
 		})
 		setGlobalDispatcher(proxyAgent)
 		undiciProxyInitialized = true
-		log(`undici global dispatcher configured for proxy: ${redactProxyUrl(config.proxyUrl)}`)
+		log(`undici global dispatcher configured for proxy: ${redactProxyUrl(config.serverUrl)}`)
 
 		// Node's built-in `fetch()` (Node 18+) is powered by an internal undici copy.
 		// Setting a dispatcher on our `undici` dependency does NOT affect that internal fetch.
 		// To ensure Roo Code's `fetch()` calls are proxied, patch global fetch in debug mode.
 		// This patch is scoped to the extension lifecycle (restored on deactivate) and can be restored
-		// immediately if the proxyUrl is removed.
+		// immediately if the proxy is disabled.
 		if (!fetchPatched) {
 			if (typeof globalThis.fetch === "function") {
 				originalFetch = globalThis.fetch
@@ -330,10 +336,10 @@ async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
  * global-agent reads from GLOBAL_AGENT_* environment variables.
  */
 function updateProxyEnvVars(config: ProxyConfig): void {
-	if (config.proxyUrl) {
+	if (config.serverUrl) {
 		// global-agent uses these environment variables
-		process.env.GLOBAL_AGENT_HTTP_PROXY = config.proxyUrl
-		process.env.GLOBAL_AGENT_HTTPS_PROXY = config.proxyUrl
+		process.env.GLOBAL_AGENT_HTTP_PROXY = config.serverUrl
+		process.env.GLOBAL_AGENT_HTTPS_PROXY = config.serverUrl
 		process.env.GLOBAL_AGENT_NO_PROXY = "" // Proxy all requests
 	}
 }
@@ -344,7 +350,7 @@ function updateProxyEnvVars(config: ProxyConfig): void {
 export function isProxyEnabled(): boolean {
 	const config = getProxyConfig()
 	// Active proxy is only applied in debug mode.
-	return Boolean(config.proxyUrl) && config.isDebugMode
+	return config.enabled && config.isDebugMode
 }
 
 /**

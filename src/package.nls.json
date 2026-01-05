@@ -43,6 +43,7 @@
 	"settings.newTaskRequireTodos.description": "Require todos parameter when creating new tasks with the new_task tool",
 	"settings.codeIndex.embeddingBatchSize.description": "The batch size for embedding operations during code indexing. Adjust this based on your API provider's limits. Default is 60.",
 	"settings.debug.description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files.",
-	"settings.proxyUrl.description": "HTTP(S) proxy URL for all outbound network requests. Only applied when running in debug mode (F5). Leave empty to disable proxy. Example: http://localhost:8080 (credentials will be redacted from logs)",
-	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
+	"settings.debugProxy.enabled.description": "**Enable Debug Proxy** — Route all outbound network requests through a proxy for MITM debugging. Only active when running in debug mode (F5).",
+	"settings.debugProxy.serverUrl.description": "Proxy URL (e.g., `http://127.0.0.1:8888`). Only used when **Debug Proxy** is enabled.",
+	"settings.debugProxy.tlsInsecure.description": "Accept self-signed certificates from the proxy. **Required for MITM inspection.** ⚠️ Insecure — only use for local debugging."
 }

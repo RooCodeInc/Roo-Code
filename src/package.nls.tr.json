@@ -43,6 +43,7 @@
 	"settings.newTaskRequireTodos.description": "new_task aracıyla yeni görevler oluştururken todos parametresini gerekli kıl",
 	"settings.codeIndex.embeddingBatchSize.description": "Kod indeksleme sırasında gömme işlemleri için toplu iş boyutu. Bunu API sağlayıcınızın sınırlarına göre ayarlayın. Varsayılan 60'tır.",
 	"settings.debug.description": "API konuşma geçmişini ve kullanıcı arayüzü mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere hata ayıklama modunu etkinleştir.",
-	"settings.proxyUrl.description": "Tüm giden ağ istekleri için HTTP(S) proxy URL’si. Yalnızca hata ayıklama modunda (F5) çalıştırırken uygulanır. Proxy’yi devre dışı bırakmak için boş bırak. Örnek: http://localhost:8080 (kimlik bilgileri loglarda gizlenecek)",
-	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
+	"settings.debugProxy.enabled.description": "**Debug Proxy'yi etkinleştir** — Tüm giden ağ isteklerini MITM hata ayıklaması için bir proxy üzerinden yönlendir. Yalnızca debug modunda (F5) çalıştırırken aktiftir.",
+	"settings.debugProxy.serverUrl.description": "Proxy URL'si (ör. `http://127.0.0.1:8888`). Yalnızca **Debug Proxy** etkin olduğunda kullanılır.",
+	"settings.debugProxy.tlsInsecure.description": "Proxy'den gelen self-signed sertifikaları kabul et. **MITM incelemesi için gerekli.** ⚠️ Güvensiz — yalnızca lokal debugging için kullan."
 }

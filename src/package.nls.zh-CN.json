@@ -43,6 +43,7 @@
 	"settings.newTaskRequireTodos.description": "使用 new_task 工具创建新任务时需要 todos 参数",
 	"settings.codeIndex.embeddingBatchSize.description": "代码索引期间嵌入操作的批处理大小。根据 API 提供商的限制调整此设置。默认值为 60。",
 	"settings.debug.description": "启用调试模式以显示额外按钮，用于在临时文件中以格式化 JSON 查看 API 对话历史和 UI 消息。",
-	"settings.proxyUrl.description": "用于所有出站网络请求的 HTTP(S) 代理 URL。只有在调试模式 (F5) 下运行时才会生效。留空以禁用代理。示例: http://localhost:8080（日志中会隐藏凭据）",
-	"settings.proxyDisableTlsVerification.description": "[Debug only] Disable TLS certificate verification for outbound requests when using proxyUrl. This is insecure and should only be used for local MITM debugging."
+	"settings.debugProxy.enabled.description": "**启用 Debug Proxy** — 通过代理转发所有出站网络请求，用于 MITM 调试。只在调试模式 (F5) 运行时生效。",
+	"settings.debugProxy.serverUrl.description": "代理 URL（例如 `http://127.0.0.1:8888`）。仅在启用 **Debug Proxy** 时使用。",
+	"settings.debugProxy.tlsInsecure.description": "接受来自代理的 self-signed 证书。**MITM 检查所必需。** ⚠️ 不安全——只在本地调试时使用。"
 }
