@@ -34,6 +34,9 @@ let fetchPatched = false
 let originalFetch: typeof fetch | undefined
 let outputChannel: vscode.OutputChannel | null = null
 
+let loggingEnabled = false
+let consoleLoggingEnabled = false
+
 let tlsVerificationOverridden = false
 let originalNodeTlsRejectUnauthorized: string | undefined
 
@@ -116,12 +119,14 @@ export async function initializeNetworkProxy(
 	extensionContext = context
 	outputChannel = channel ?? null
 
+	const config = getProxyConfig()
+	loggingEnabled = config.isDebugMode || config.enabled || config.tlsInsecure
+	consoleLoggingEnabled = config.isDebugMode && !outputChannel
+
 	log(`Initializing network proxy module...`)
 	log(
 		`Extension mode: ${context.extensionMode} (Development=${vscode.ExtensionMode.Development}, Production=${vscode.ExtensionMode.Production}, Test=${vscode.ExtensionMode.Test})`,
 	)
-
-	const config = getProxyConfig()
 	log(
 		`Proxy config: enabled=${config.enabled}, serverUrl=${redactProxyUrl(config.serverUrl)}, tlsInsecure=${config.tlsInsecure}, isDebugMode=${config.isDebugMode}`,
 	)
@@ -138,6 +143,9 @@ export async function initializeNetworkProxy(
 					e.affectsConfiguration(`${Package.name}.debugProxy.tlsInsecure`)
 				) {
 					const newConfig = getProxyConfig()
+					loggingEnabled = newConfig.isDebugMode || newConfig.enabled || newConfig.tlsInsecure
+					consoleLoggingEnabled = newConfig.isDebugMode && !outputChannel
+
 					if (!newConfig.isDebugMode) {
 						log(
 							`Proxy setting changed, but proxy is only applied in debug mode. Restart VS Code after changing debug mode.`,
@@ -367,9 +375,15 @@ export function isDebugMode(): boolean {
  * Log a message to the output channel if available.
  */
 function log(message: string): void {
+	if (!loggingEnabled) {
+		return
+	}
+
 	const logMessage = `[NetworkProxy] ${message}`
 	if (outputChannel) {
 		outputChannel.appendLine(logMessage)
 	}
-	console.log(logMessage)
+	if (consoleLoggingEnabled) {
+		console.log(logMessage)
+	}
 }
