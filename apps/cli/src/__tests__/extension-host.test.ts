@@ -13,8 +13,16 @@ vi.mock("@roo-code/vscode-shim", () => ({
 /**
  * Create a test ExtensionHost with default options
  */
-function createTestHost(options?: Partial<ExtensionHostOptions>): ExtensionHost {
+function createTestHost({
+	mode = "code",
+	apiProvider = "openrouter",
+	model = "test-model",
+	...options
+}: Partial<ExtensionHostOptions> = {}): ExtensionHost {
 	return new ExtensionHost({
+		mode,
+		apiProvider,
+		model,
 		workspacePath: "/test/workspace",
 		extensionPath: "/test/extension",
 		...options,
@@ -60,6 +68,7 @@ describe("ExtensionHost", () => {
 	describe("constructor", () => {
 		it("should store options correctly", () => {
 			const options: ExtensionHostOptions = {
+				mode: "code",
 				workspacePath: "/my/workspace",
 				extensionPath: "/my/extension",
 				verbose: true,
