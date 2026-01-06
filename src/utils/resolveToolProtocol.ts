@@ -39,7 +39,7 @@ export function resolveToolProtocol(
 	// 2. User/Profile Preference - allow users to explicitly force XML protocol
 	// This is useful for models that don't handle native tool calling well
 	// (e.g., some OpenAI-compatible models like Qwen3, Kimi2)
-	if (providerSettings.toolProtocol) {
+	if (providerSettings?.toolProtocol) {
 		return providerSettings.toolProtocol
 	}
 

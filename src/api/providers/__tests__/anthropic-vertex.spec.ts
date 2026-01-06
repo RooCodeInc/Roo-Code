@@ -1200,8 +1200,9 @@ describe("VertexHandler", () => {
 			)
 		})
 
-		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
-			// XML protocol deprecation: user preference is now ignored when model supports native tools
+		it("should NOT include tools when toolProtocol is set to xml (user preference is now respected)", async () => {
+			// User preference is now respected: when XML protocol is selected, tools are NOT sent to the API
+			// (tools are handled via XML in the system prompt instead)
 			handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-5-sonnet-v2@20241022",
 				vertexProjectId: "test-project",
@@ -1242,14 +1243,10 @@ describe("VertexHandler", () => {
 				// Just consume
 			}
 
-			// Native is forced when supportsNativeTools===true, so tools should still be included
+			// User preference for XML is now respected, so tools should NOT be included
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							name: "get_weather",
-						}),
-					]),
+				expect.not.objectContaining({
+					tools: expect.anything(),
 				}),
 				undefined,
 			)
