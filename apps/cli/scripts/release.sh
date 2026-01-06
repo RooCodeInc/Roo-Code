@@ -331,7 +331,7 @@ print_summary() {
     echo ""
     printf "${GREEN}${BOLD}✓ Release v$VERSION created successfully!${NC}\n"
     echo ""
-    echo "  Release URL: https://github.com/RooVetGit/Roo-Code/releases/tag/$TAG"
+    echo "  Release URL: https://github.com/RooCodeInc/Roo-Code/releases/tag/$TAG"
     echo ""
     echo "  Install with:"
     echo "    curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh"
