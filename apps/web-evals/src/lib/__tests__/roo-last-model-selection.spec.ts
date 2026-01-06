@@ -55,4 +55,24 @@ describe("roo-last-model-selection", () => {
 		saveRooLastModelSelection([])
 		expect(localStorage.getItem(ROO_LAST_MODEL_SELECTION_KEY)).toBeNull()
 	})
+
+	it("does not throw if localStorage access fails", () => {
+		Object.defineProperty(globalThis, "localStorage", {
+			value: {
+				getItem: () => {
+					throw new Error("blocked")
+				},
+				setItem: () => {
+					throw new Error("blocked")
+				},
+				removeItem: () => {
+					throw new Error("blocked")
+				},
+			},
+			configurable: true,
+		})
+
+		expect(() => loadRooLastModelSelection()).not.toThrow()
+		expect(() => saveRooLastModelSelection(["roo/model-a"])).not.toThrow()
+	})
 })

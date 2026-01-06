@@ -12,6 +12,30 @@ function hasLocalStorage(): boolean {
 	}
 }
 
+function safeGetItem(key: string): string | null {
+	try {
+		return localStorage.getItem(key)
+	} catch {
+		return null
+	}
+}
+
+function safeSetItem(key: string, value: string): void {
+	try {
+		localStorage.setItem(key, value)
+	} catch {
+		// ignore
+	}
+}
+
+function safeRemoveItem(key: string): void {
+	try {
+		localStorage.removeItem(key)
+	} catch {
+		// ignore
+	}
+}
+
 function tryParseJson(raw: string | null): unknown {
 	if (raw === null) return undefined
 	try {
@@ -33,7 +57,7 @@ function normalizeModelIds(modelIds: string[]): string[] {
 export function loadRooLastModelSelection(): string[] {
 	if (!hasLocalStorage()) return []
 
-	const parsed = modelIdListSchema.safeParse(tryParseJson(localStorage.getItem(ROO_LAST_MODEL_SELECTION_KEY)))
+	const parsed = modelIdListSchema.safeParse(tryParseJson(safeGetItem(ROO_LAST_MODEL_SELECTION_KEY)))
 	if (!parsed.success) return []
 
 	return normalizeModelIds(parsed.data)
@@ -44,9 +68,9 @@ export function saveRooLastModelSelection(modelIds: string[]): void {
 
 	const normalized = normalizeModelIds(modelIds)
 	if (normalized.length === 0) {
-		localStorage.removeItem(ROO_LAST_MODEL_SELECTION_KEY)
+		safeRemoveItem(ROO_LAST_MODEL_SELECTION_KEY)
 		return
 	}
 
-	localStorage.setItem(ROO_LAST_MODEL_SELECTION_KEY, JSON.stringify(normalized))
+	safeSetItem(ROO_LAST_MODEL_SELECTION_KEY, JSON.stringify(normalized))
 }

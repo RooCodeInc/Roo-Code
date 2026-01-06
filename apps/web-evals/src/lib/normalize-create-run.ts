@@ -10,10 +10,11 @@ export function normalizeCreateRunForSubmit(
 	suiteOverride?: CreateRun["suite"],
 ): CreateRun {
 	const suite = suiteOverride ?? values.suite
+	const normalizedSelectedExercises = Array.from(new Set(selectedExercises))
 
 	return {
 		...values,
 		suite,
-		exercises: suite === "partial" ? selectedExercises : [],
+		exercises: suite === "partial" ? normalizedSelectedExercises : [],
 	}
 }

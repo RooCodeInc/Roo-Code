@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useQuery } from "@tanstack/react-query"
@@ -106,6 +106,8 @@ type ConfigSelection = {
 
 export function NewRun() {
 	const router = useRouter()
+	const modelSelectionsByProviderRef = useRef<Record<string, ModelSelection[]>>({})
+	const modelValueByProviderRef = useRef<Record<string, string>>({})
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
 	const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>("vscode")
@@ -154,6 +156,7 @@ export function NewRun() {
 		setValue,
 		clearErrors,
 		watch,
+		getValues,
 		formState: { isSubmitting },
 	} = form
 
@@ -249,14 +252,29 @@ export function NewRun() {
 	// Track previous provider to detect switches
 	const [prevProvider, setPrevProvider] = useState(provider)
 
-	// Reset model selections when switching providers to avoid cross-contamination
+	// Preserve selections per provider; avoids cross-contamination while keeping UX stable.
 	useEffect(() => {
-		if (provider !== prevProvider) {
-			setModelSelections([{ id: crypto.randomUUID(), model: "", popoverOpen: false }])
-			setValue("model", "")
-			setPrevProvider(provider)
-		}
-	}, [provider, prevProvider, setValue])
+		if (provider === prevProvider) return
+
+		modelSelectionsByProviderRef.current[prevProvider] = modelSelections
+		modelValueByProviderRef.current[prevProvider] = getValues("model")
+
+		const nextModelSelections =
+			modelSelectionsByProviderRef.current[provider] ??
+			([{ id: crypto.randomUUID(), model: "", popoverOpen: false }] satisfies ModelSelection[])
+
+		setModelSelections(nextModelSelections)
+
+		const nextModelValue =
+			modelValueByProviderRef.current[provider] ??
+			nextModelSelections.find((s) => s.model.trim().length > 0)?.model ??
+			(provider === "other" && importedSettings && configSelections[0]?.configName
+				? (getModelId(importedSettings.apiConfigs[configSelections[0].configName] ?? {}) ?? "")
+				: "")
+
+		setValue("model", nextModelValue)
+		setPrevProvider(provider)
+	}, [provider, prevProvider, modelSelections, setValue, getValues, importedSettings, configSelections])
 
 	// When switching to Roo provider, restore last-used selection if current selection is empty
 	useEffect(() => {

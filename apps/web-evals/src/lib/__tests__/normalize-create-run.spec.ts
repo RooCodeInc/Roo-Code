@@ -22,6 +22,26 @@ describe("normalizeCreateRunForSubmit", () => {
 		expect(result.exercises).toEqual(["js/foo", "py/bar"])
 	})
 
+	it("dedupes selectedExercises for partial suite", () => {
+		const result = normalizeCreateRunForSubmit(
+			{
+				model: "roo/model-a",
+				description: "",
+				suite: "partial",
+				exercises: [],
+				settings: undefined,
+				concurrency: 1,
+				timeout: 5,
+				iterations: 1,
+				jobToken: "",
+				executionMethod: "vscode",
+			},
+			["js/foo", "js/foo", "py/bar"],
+		)
+
+		expect(result.exercises).toEqual(["js/foo", "py/bar"])
+	})
+
 	it("clears exercises for full suite", () => {
 		const result = normalizeCreateRunForSubmit(
 			{
