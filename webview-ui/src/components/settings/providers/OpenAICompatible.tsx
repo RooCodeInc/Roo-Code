@@ -84,17 +84,20 @@ export const OpenAICompatible = ({
 		setCustomHeaders((prev) => prev.filter((_, i) => i !== index))
 	}, [])
 
-	// Helper to convert array of tuples to object
-
 	// Add effect to update the parent component's state when local headers change
 	useEffect(() => {
 		const timer = setTimeout(() => {
+			const currentConfigHeaders = apiConfiguration?.openAiHeaders || {}
 			const headerObject = convertHeadersToObject(customHeaders)
-			setApiConfigurationField("openAiHeaders", headerObject)
+
+			// Only update if the processed object is different from the current config.
+			if (JSON.stringify(currentConfigHeaders) !== JSON.stringify(headerObject)) {
+				setApiConfigurationField("openAiHeaders", headerObject)
+			}
 		}, 300)
 
 		return () => clearTimeout(timer)
-	}, [customHeaders, setApiConfigurationField])
+	}, [customHeaders, apiConfiguration?.openAiHeaders, setApiConfigurationField])
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
