@@ -22,7 +22,6 @@ export const geminiModels = {
 		inputPrice: 4.0,
 		outputPrice: 18.0,
 		cacheReadsPrice: 0.4,
-		cacheWritesPrice: 0.0,
 		tiers: [
 			{
 				contextWindow: 200_000,
@@ -54,7 +53,6 @@ export const geminiModels = {
 		inputPrice: 0.5,
 		outputPrice: 3.0,
 		cacheReadsPrice: 0.05,
-		cacheWritesPrice: 0.0,
 	},
 	// 2.5 Pro models
 	"gemini-2.5-pro": {

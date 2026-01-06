@@ -22,7 +22,6 @@ export const vertexModels = {
 		inputPrice: 4.0,
 		outputPrice: 18.0,
 		cacheReadsPrice: 0.4,
-		cacheWritesPrice: 0.0,
 		tiers: [
 			{
 				contextWindow: 200_000,
@@ -54,7 +53,6 @@ export const vertexModels = {
 		inputPrice: 0.5,
 		outputPrice: 3.0,
 		cacheReadsPrice: 0.05,
-		cacheWritesPrice: 0.0,
 	},
 	"gemini-2.5-flash-preview-05-20:thinking": {
 		maxTokens: 65_535,
