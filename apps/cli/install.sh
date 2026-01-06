@@ -1,6 +1,6 @@
 #!/bin/sh
 # Roo Code CLI Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/RooVetGit/Roo-Code/main/apps/cli/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
 #
 # Environment variables:
 #   ROO_INSTALL_DIR - Installation directory (default: ~/.roo/cli)
