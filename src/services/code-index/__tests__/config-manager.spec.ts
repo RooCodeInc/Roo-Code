@@ -1689,7 +1689,7 @@ describe("CodeIndexConfigManager", () => {
 				vi.clearAllMocks()
 			})
 
-			it("should return model's built-in dimension when available", async () => {
+			it("should prioritize user-configured dimension over model's built-in dimension", async () => {
 				// Mock getModelDimension to return a built-in dimension
 				mockedGetModelDimension.mockReturnValue(1536)
 
@@ -1697,7 +1697,7 @@ describe("CodeIndexConfigManager", () => {
 					codebaseIndexEnabled: true,
 					codebaseIndexEmbedderProvider: "openai",
 					codebaseIndexEmbedderModelId: "text-embedding-3-small",
-					codebaseIndexEmbedderModelDimension: 2048, // Custom dimension should be ignored
+					codebaseIndexEmbedderModelDimension: 2048, // Custom dimension takes priority
 					codebaseIndexQdrantUrl: "http://localhost:6333",
 				})
 				mockContextProxy.getSecret.mockImplementation((key: string) => {
@@ -1708,12 +1708,36 @@ describe("CodeIndexConfigManager", () => {
 				configManager = new CodeIndexConfigManager(mockContextProxy)
 				await configManager.loadConfiguration()
 
-				// Should return model's built-in dimension, not custom
+				// Should return user-configured dimension, not model's built-in
+				expect(configManager.currentModelDimension).toBe(2048)
+				// getModelDimension should not be called when user has configured dimension
+			})
+
+			it("should fall back to model's built-in dimension when no custom dimension set", async () => {
+				// Mock getModelDimension to return a built-in dimension
+				mockedGetModelDimension.mockReturnValue(1536)
+
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexEmbedderModelId: "text-embedding-3-small",
+					// No custom dimension set
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+
+				// Should fall back to model's built-in dimension
 				expect(configManager.currentModelDimension).toBe(1536)
 				expect(mockedGetModelDimension).toHaveBeenCalledWith("openai", "text-embedding-3-small")
 			})
 
-			it("should use custom dimension only when model has no built-in dimension", async () => {
+			it("should use custom dimension even when model has no built-in dimension", async () => {
 				// Mock getModelDimension to return undefined (no built-in dimension)
 				mockedGetModelDimension.mockReturnValue(undefined)
 
@@ -1732,9 +1756,8 @@ describe("CodeIndexConfigManager", () => {
 				configManager = new CodeIndexConfigManager(mockContextProxy)
 				await configManager.loadConfiguration()
 
-				// Should use custom dimension as fallback
+				// Custom dimension takes priority regardless of model's built-in dimension
 				expect(configManager.currentModelDimension).toBe(2048)
-				expect(mockedGetModelDimension).toHaveBeenCalledWith("openai-compatible", "custom-model")
 			})
 
 			it("should return undefined when neither model dimension nor custom dimension is available", async () => {

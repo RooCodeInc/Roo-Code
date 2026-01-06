@@ -141,12 +141,13 @@ export class CodeIndexServiceFactory {
 
 		let vectorSize: number | undefined
 
-		// First try to get the model-specific dimension from profiles
-		vectorSize = getModelDimension(provider, modelId)
-
-		// Only use manual dimension if model doesn't have a built-in dimension
-		if (!vectorSize && config.modelDimension && config.modelDimension > 0) {
+		// User-configured dimension takes priority as the single source of truth
+		// This ensures consistency between collection creation and embedding generation
+		if (config.modelDimension && config.modelDimension > 0) {
 			vectorSize = config.modelDimension
+		} else {
+			// Fall back to model's built-in dimension from profiles
+			vectorSize = getModelDimension(provider, modelId)
 		}
 
 		if (vectorSize === undefined || vectorSize <= 0) {
