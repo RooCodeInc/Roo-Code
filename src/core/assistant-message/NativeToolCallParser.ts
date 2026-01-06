@@ -3,6 +3,9 @@ import { parseJSON } from "partial-json"
 import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 
+import { repairJson } from "../../utils/json-repair"
+import { logger } from "../../utils/logging"
+
 import {
 	type ToolUse,
 	type McpToolUse,
@@ -51,6 +54,25 @@ export type ToolCallStreamEvent = ApiStreamToolCallStartChunk | ApiStreamToolCal
  * provider-level raw chunks into start/delta/end events.
  */
 export class NativeToolCallParser {
+	// Configuration for malformed JSON repair (experimental feature)
+	private static malformedJsonRepairEnabled = false
+
+	/**
+	 * Enable or disable malformed JSON repair.
+	 * When enabled, the parser will attempt to repair malformed JSON
+	 * in tool call arguments before parsing.
+	 */
+	public static setMalformedJsonRepairEnabled(enabled: boolean): void {
+		this.malformedJsonRepairEnabled = enabled
+	}
+
+	/**
+	 * Check if malformed JSON repair is enabled.
+	 */
+	public static isMalformedJsonRepairEnabled(): boolean {
+		return this.malformedJsonRepairEnabled
+	}
+
 	// Streaming state management for argument accumulation (keyed by tool call id)
 	// Note: name is string to accommodate dynamic MCP tools (mcp_serverName_toolName)
 	private static streamingToolCalls = new Map<
@@ -593,7 +615,29 @@ export class NativeToolCallParser {
 
 		try {
 			// Parse the arguments JSON string
-			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			// If malformed JSON repair is enabled, attempt to repair before parsing
+			let args: Record<string, unknown>
+			if (toolCall.arguments === "") {
+				args = {}
+			} else {
+				try {
+					args = JSON.parse(toolCall.arguments)
+				} catch (parseError) {
+					// JSON parsing failed - attempt repair if enabled
+					if (this.malformedJsonRepairEnabled) {
+						const repaired = repairJson(toolCall.arguments)
+						if (repaired) {
+							logger.info(`[NativeToolCallParser] Repaired malformed JSON for tool ${toolCall.name}`)
+							args = JSON.parse(repaired)
+						} else {
+							// Repair failed, re-throw original error
+							throw parseError
+						}
+					} else {
+						throw parseError
+					}
+				}
+			}
 
 			// Build legacy params object for backward compatibility with XML protocol and UI.
 			// Native execution path uses nativeArgs instead, which has proper typing.

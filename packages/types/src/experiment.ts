@@ -14,6 +14,7 @@ export const experimentIds = [
 	"runSlashCommand",
 	"multipleNativeToolCalls",
 	"customTools",
+	"malformedJsonRepair",
 ] as const
 
 export const experimentIdsSchema = z.enum(experimentIds)
@@ -32,6 +33,11 @@ export const experimentsSchema = z.object({
 	runSlashCommand: z.boolean().optional(),
 	multipleNativeToolCalls: z.boolean().optional(),
 	customTools: z.boolean().optional(),
+	/**
+	 * Enable automatic repair of malformed JSON in LLM tool call responses.
+	 * Useful for models like Grok that struggle with strict JSON formatting.
+	 */
+	malformedJsonRepair: z.boolean().optional(),
 })
 
 export type Experiments = z.infer<typeof experimentsSchema>

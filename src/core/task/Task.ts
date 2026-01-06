@@ -541,6 +541,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			})
 		}
 
+		// Check malformed JSON repair experiment asynchronously.
+		// This enables repair of malformed JSON in tool call arguments from models like Grok.
+		provider.getState().then((state) => {
+			const isMalformedJsonRepairEnabled = experiments.isEnabled(
+				state.experiments ?? {},
+				EXPERIMENT_IDS.MALFORMED_JSON_REPAIR,
+			)
+			NativeToolCallParser.setMalformedJsonRepairEnabled(isMalformedJsonRepairEnabled)
+		})
+
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
 
 		// Initialize todo list if provided
