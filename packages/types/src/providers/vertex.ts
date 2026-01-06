@@ -365,7 +365,7 @@ export const vertexModels = {
 		description: "Qwen3 235B A22B Instruct. Available in us-south1",
 	},
 	"moonshotai/kimi-k2-thinking-maas": {
-		maxTokens: 262_144,
+		maxTokens: 16_384,
 		contextWindow: 262_144,
 		supportsPromptCache: false,
 		supportsImages: false,
