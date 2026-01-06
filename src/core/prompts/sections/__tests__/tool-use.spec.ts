@@ -3,11 +3,10 @@ import { TOOL_PROTOCOL } from "@roo-code/types"
 
 describe("getSharedToolUseSection", () => {
 	describe("XML protocol", () => {
-		it("should include one tool per message requirement", () => {
+		it("should include step-by-step tool usage guidance", () => {
 			const section = getSharedToolUseSection(TOOL_PROTOCOL.XML)
 
-			expect(section).toContain("You must use exactly one tool per message")
-			expect(section).toContain("every assistant message must include a tool call")
+			expect(section).toContain("You use tools step-by-step to accomplish a given task")
 		})
 
 		it("should include XML formatting instructions", () => {
@@ -19,28 +18,23 @@ describe("getSharedToolUseSection", () => {
 	})
 
 	describe("native protocol", () => {
-		it("should include one tool per message requirement when experiment is disabled", () => {
+		it("should include single tool guidance when experiment is disabled", () => {
 			// No experiment flags passed (default: disabled)
 			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE)
 
-			expect(section).toContain("You must use exactly one tool call per assistant response")
-			expect(section).toContain("Do not call zero tools or more than one tool")
+			expect(section).toContain("When using tools, use exactly one tool call per assistant response")
 		})
 
-		it("should include one tool per message requirement when experiment is explicitly disabled", () => {
+		it("should include single tool guidance when experiment is explicitly disabled", () => {
 			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE, { multipleNativeToolCalls: false })
 
-			expect(section).toContain("You must use exactly one tool call per assistant response")
-			expect(section).toContain("Do not call zero tools or more than one tool")
+			expect(section).toContain("When using tools, use exactly one tool call per assistant response")
 		})
 
-		it("should NOT include one tool per message requirement when experiment is enabled", () => {
+		it("should include multiple tools guidance when experiment is enabled", () => {
 			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE, { multipleNativeToolCalls: true })
 
-			expect(section).not.toContain("You must use exactly one tool per message")
-			expect(section).not.toContain("every assistant message must include a tool call")
-			expect(section).toContain("You must call at least one tool per assistant response")
-			expect(section).toContain("Prefer calling as many tools as are reasonably needed")
+			expect(section).toContain("When using tools, prefer calling as many tools as are reasonably needed")
 		})
 
 		it("should include native tool-calling instructions", () => {
@@ -63,7 +57,7 @@ describe("getSharedToolUseSection", () => {
 			const section = getSharedToolUseSection()
 
 			expect(section).toContain("XML-style tags")
-			expect(section).toContain("You must use exactly one tool per message")
+			expect(section).toContain("You use tools step-by-step to accomplish a given task")
 		})
 	})
 })
