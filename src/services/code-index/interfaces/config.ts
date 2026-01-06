@@ -21,6 +21,9 @@ export interface CodeIndexConfig {
 	qdrantApiKey?: string
 	searchMinScore?: number
 	searchMaxResults?: number
+	// File watcher performance settings for multi-worktree optimization
+	fileWatcherDebounceMs?: number
+	fileWatcherConcurrency?: number
 }
 
 /**

@@ -191,6 +191,7 @@ export class CodeIndexServiceFactory {
 
 	/**
 	 * Creates a file watcher instance with its required dependencies.
+	 * Passes configurable performance settings for multi-worktree optimization.
 	 */
 	public createFileWatcher(
 		context: vscode.ExtensionContext,
@@ -200,6 +201,8 @@ export class CodeIndexServiceFactory {
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
 	): IFileWatcher {
+		const config = this.configManager.getConfig()
+
 		// Get the configurable batch size from VSCode settings
 		let batchSize: number
 		try {
@@ -210,6 +213,12 @@ export class CodeIndexServiceFactory {
 			// In test environment, vscode.workspace might not be available
 			batchSize = BATCH_SEGMENT_THRESHOLD
 		}
+
+		// Get configurable file watcher performance settings from config manager
+		// These allow users to optimize CPU usage for multi-worktree scenarios
+		const debounceMs = config.fileWatcherDebounceMs
+		const concurrencyLimit = config.fileWatcherConcurrency
+
 		return new FileWatcher(
 			this.workspacePath,
 			context,
@@ -219,6 +228,8 @@ export class CodeIndexServiceFactory {
 			ignoreInstance,
 			rooIgnoreController,
 			batchSize,
+			debounceMs,
+			concurrencyLimit,
 		)
 	}
 
