@@ -200,6 +200,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		enterBehavior,
+		chatFontSizeMultiplier,
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
@@ -892,6 +893,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							<UISettings
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								enterBehavior={enterBehavior ?? "send"}
+								chatFontSizeMultiplier={chatFontSizeMultiplier ?? 1}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
