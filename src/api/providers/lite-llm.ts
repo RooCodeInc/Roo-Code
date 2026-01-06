@@ -148,26 +148,23 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 
 				// Check for reasoning/thinking content in the delta
 				// LiteLLM may pass through reasoning content from underlying models
+				// Use else-if chain to emit at most one reasoning chunk per delta
 				if (delta) {
 					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
 						yield { type: "reasoning", text: delta.reasoning }
-					}
-
-					// Also check for thinking content (alternative field name)
-					if ("thinking" in delta && delta.thinking && typeof delta.thinking === "string") {
+					} else if ("thinking" in delta && delta.thinking && typeof delta.thinking === "string") {
+						// Also check for thinking content (alternative field name)
 						yield { type: "reasoning", text: delta.thinking }
-					}
-
-					// Check for reasoning_content (another possible field name)
-					if (
+					} else if (
 						"reasoning_content" in delta &&
 						delta.reasoning_content &&
 						typeof delta.reasoning_content === "string"
 					) {
+						// Check for reasoning_content (another possible field name)
 						yield { type: "reasoning", text: delta.reasoning_content }
 					}
 
-					if (delta.content) {
+					if (delta.content && typeof delta.content === "string") {
 						yield { type: "text", text: delta.content }
 					}
 				}
