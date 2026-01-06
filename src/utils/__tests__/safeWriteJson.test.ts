@@ -478,10 +478,10 @@ describe("safeWriteJson", () => {
 		consoleErrorSpy.mockRestore()
 	})
 
-	// Tests for pretty-printing functionality
-	test("should write pretty-printed JSON with numeric indent parameter", async () => {
+	// Tests for pretty-printing functionality (always enabled)
+	test("should always write pretty-printed JSON with 2-space indentation", async () => {
 		const data = { mcpServers: { test: { command: "node", args: ["test.js"] } } }
-		await safeWriteJson(currentTestFilePath, data, 2)
+		await safeWriteJson(currentTestFilePath, data)
 
 		const content = await fs.readFile(currentTestFilePath, "utf-8")
 		const parsed = JSON.parse(content)
@@ -495,38 +495,7 @@ describe("safeWriteJson", () => {
 		expect(content).toMatch(/\s+"test":\s+\{/)
 	})
 
-	test("should write pretty-printed JSON with string indent parameter", async () => {
-		const data = { test: "value", nested: { key: "data" } }
-		await safeWriteJson(currentTestFilePath, data, "\t")
-
-		const content = await fs.readFile(currentTestFilePath, "utf-8")
-		const parsed = JSON.parse(content)
-
-		// Verify data is correct
-		expect(parsed).toEqual(data)
-
-		// Verify it uses tab indentation
-		expect(content).toContain("\t")
-		expect(content).toContain("\n")
-	})
-
-	test("should maintain compact format when no indent parameter is specified", async () => {
-		const data = { test: "value", nested: { key: "data" } }
-		await safeWriteJson(currentTestFilePath, data)
-
-		const content = await fs.readFile(currentTestFilePath, "utf-8")
-		const parsed = JSON.parse(content)
-
-		// Verify data is correct
-		expect(parsed).toEqual(data)
-
-		// Verify it's compact (no newlines except possibly at the very end)
-		// Compact JSON from stream-json should be all on one line
-		const lines = content.split("\n").filter((line) => line.trim().length > 0)
-		expect(lines.length).toBe(1)
-	})
-
-	test("should preserve formatting for complex nested structures with indent", async () => {
+	test("should preserve formatting for complex nested structures", async () => {
 		const data = {
 			mcpServers: {
 				server1: {
@@ -542,7 +511,7 @@ describe("safeWriteJson", () => {
 				},
 			},
 		}
-		await safeWriteJson(currentTestFilePath, data, 2)
+		await safeWriteJson(currentTestFilePath, data)
 
 		const content = await fs.readFile(currentTestFilePath, "utf-8")
 		const parsed = JSON.parse(content)
@@ -557,8 +526,8 @@ describe("safeWriteJson", () => {
 		expect(content).toMatch(/"alwaysAllow":\s*\[/)
 	})
 
-	test("should handle undefined data with indent parameter", async () => {
-		await safeWriteJson(currentTestFilePath, undefined, 2)
+	test("should handle undefined data by converting to null", async () => {
+		await safeWriteJson(currentTestFilePath, undefined)
 
 		const content = await fs.readFile(currentTestFilePath, "utf-8")
 		const parsed = JSON.parse(content)
@@ -566,5 +535,28 @@ describe("safeWriteJson", () => {
 		// undefined should be converted to null
 		expect(parsed).toBeNull()
 		expect(content.trim()).toBe("null")
+	})
+
+	test("should un-compact previously compacted JSON files on save", async () => {
+		// Simulate a previously compacted JSON file
+		const compactJson = '{"mcpServers":{"test":{"command":"node","args":["test.js"],"alwaysAllow":["tool1"]}}}'
+		await fs.writeFile(currentTestFilePath, compactJson)
+
+		// Read the data and write it back using safeWriteJson
+		const data = JSON.parse(compactJson)
+		await safeWriteJson(currentTestFilePath, data)
+
+		const content = await fs.readFile(currentTestFilePath, "utf-8")
+		const parsed = JSON.parse(content)
+
+		// Verify data is correct
+		expect(parsed).toEqual(data)
+
+		// Verify the output is now pretty-printed (un-compacted)
+		expect(content).toContain("\n")
+		expect(content).toMatch(/\{\s+"mcpServers"/)
+		// Should have multiple lines now
+		const lines = content.split("\n").filter((line) => line.trim().length > 0)
+		expect(lines.length).toBeGreaterThan(1)
 	})
 })

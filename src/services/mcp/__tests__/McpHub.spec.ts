@@ -41,12 +41,12 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 // Mock safeWriteJson
 vi.mock("../../../utils/safeWriteJson", () => ({
-	safeWriteJson: vi.fn(async (filePath, data, indent) => {
+	safeWriteJson: vi.fn(async (filePath, data) => {
 		// Instead of trying to write to the file system, just call fs.writeFile mock
 		// This avoids the complex file locking and temp file operations
 		const fs = await import("fs/promises")
-		// Support indent parameter for formatting
-		const jsonString = indent !== undefined ? JSON.stringify(data, null, indent) : JSON.stringify(data)
+		// Always pretty-print with 2-space indentation (matching the real implementation)
+		const jsonString = JSON.stringify(data, null, 2)
 		return fs.writeFile(filePath, jsonString, "utf8")
 	}),
 }))
@@ -914,7 +914,7 @@ describe("McpHub", () => {
 			expect(writtenConfig.mcpServers["test-server"].alwaysAllow).toContain("new-tool")
 		})
 
-		it("should preserve JSON pretty-print formatting when toggling tool always allow", async () => {
+		it("should always write pretty-printed JSON when toggling tool always allow", async () => {
 			const mockConfig = {
 				mcpServers: {
 					"test-server": {
@@ -947,17 +947,11 @@ describe("McpHub", () => {
 
 			await mcpHub.toggleToolAlwaysAllow("test-server", "global", "new-tool", true)
 
-			// Verify safeWriteJson was called with indent parameter
+			// Verify safeWriteJson was called (it always pretty-prints now)
 			const safeWriteJsonMock = vi.mocked(safeWriteJson)
 			expect(safeWriteJsonMock).toHaveBeenCalled()
 
-			// Get the last call to safeWriteJson (most recent write)
-			const lastCall = safeWriteJsonMock.mock.calls[safeWriteJsonMock.mock.calls.length - 1]
-
-			// Verify indent=2 was passed (third parameter)
-			expect(lastCall[2]).toBe(2)
-
-			// Verify the written content would be pretty-printed
+			// Verify the written content is pretty-printed
 			const writeCalls = vi.mocked(fs.writeFile).mock.calls
 			const lastWriteCall = writeCalls[writeCalls.length - 1]
 			if (lastWriteCall) {
