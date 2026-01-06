@@ -2,7 +2,7 @@ import {
 	type ModelInfo,
 	type ProviderSettings,
 	type VerbosityLevel,
-	type ReasoningEffortWithMinimal,
+	type ReasoningEffortExtended,
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 } from "@roo-code/types"
 
@@ -39,9 +39,10 @@ type GetModelParamsOptions<T extends Format> = {
 type BaseModelParams = {
 	maxTokens: number | undefined
 	temperature: number | undefined
-	reasoningEffort: ReasoningEffortWithMinimal | undefined
+	reasoningEffort: ReasoningEffortExtended | undefined
 	reasoningBudget: number | undefined
 	verbosity: VerbosityLevel | undefined
+	tools?: boolean
 }
 
 type AnthropicModelParams = {
@@ -94,7 +95,7 @@ export function getModelParams({
 		format,
 	})
 
-	let temperature = customTemperature ?? defaultTemperature
+	let temperature = customTemperature ?? model.defaultTemperature ?? defaultTemperature
 	let reasoningBudget: ModelParams["reasoningBudget"] = undefined
 	let reasoningEffort: ModelParams["reasoningEffort"] = undefined
 	let verbosity: VerbosityLevel | undefined = customVerbosity
@@ -129,8 +130,18 @@ export function getModelParams({
 		temperature = 1.0
 	} else if (shouldUseReasoningEffort({ model, settings })) {
 		// "Traditional" reasoning models use the `reasoningEffort` parameter.
-		const effort = customReasoningEffort ?? model.reasoningEffort
-		reasoningEffort = effort as ReasoningEffortWithMinimal
+		// Only fallback to model default if user hasn't explicitly set a value.
+		// If customReasoningEffort is "disable", don't fallback to model default.
+		const effort =
+			customReasoningEffort !== undefined
+				? customReasoningEffort
+				: (model.reasoningEffort as ReasoningEffortExtended | "disable" | undefined)
+		// Capability and settings checks are handled by shouldUseReasoningEffort.
+		// Here we simply propagate the resolved effort into the params, while
+		// still treating "disable" as an omission.
+		if (effort && effort !== "disable") {
+			reasoningEffort = effort as ReasoningEffortExtended
+		}
 	}
 
 	const params: BaseModelParams = { maxTokens, temperature, reasoningEffort, reasoningBudget, verbosity }
@@ -152,6 +163,7 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getOpenAiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
+			tools: model.supportsNativeTools,
 		}
 	} else if (format === "gemini") {
 		return {

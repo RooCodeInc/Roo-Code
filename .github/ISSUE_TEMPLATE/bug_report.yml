@@ -76,16 +76,14 @@ body:
       label: API Provider (optional)
       options:
         - Anthropic
-        - AWS Bedrock
+        - Amazon Bedrock
         - Chutes AI
         - DeepSeek
         - Featherless AI
         - Fireworks AI
-        - Glama
         - Google Gemini
         - Google Vertex AI
         - Groq
-        - Human Relay Provider
         - LiteLLM
         - LM Studio
         - Mistral AI

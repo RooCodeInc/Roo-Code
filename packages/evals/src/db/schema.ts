@@ -6,6 +6,12 @@ import type { RooCodeSettings, ToolName, ToolUsage } from "@roo-code/types"
 import type { ExerciseLanguage } from "../exercises/index.js"
 
 /**
+ * ExecutionMethod
+ */
+
+export type ExecutionMethod = "vscode" | "cli"
+
+/**
  * runs
  */
 
@@ -21,8 +27,10 @@ export const runs = pgTable("runs", {
 	cacheWritesPrice: real(),
 	cacheReadsPrice: real(),
 	settings: jsonb().$type<RooCodeSettings>(),
+	jobToken: text(),
 	pid: integer(),
 	socketPath: text("socket_path").notNull(),
+	executionMethod: text("execution_method").default("vscode").notNull().$type<ExecutionMethod>(),
 	concurrency: integer().default(2).notNull(),
 	timeout: integer().default(5).notNull(),
 	passed: integer().default(0).notNull(),
@@ -49,17 +57,25 @@ export const tasks = pgTable(
 	{
 		id: integer().primaryKey().generatedAlwaysAsIdentity(),
 		runId: integer("run_id")
-			.references(() => runs.id)
+			.references(() => runs.id, { onDelete: "cascade" })
 			.notNull(),
-		taskMetricsId: integer("task_metrics_id").references(() => taskMetrics.id),
+		taskMetricsId: integer("task_metrics_id").references(() => taskMetrics.id, { onDelete: "set null" }),
 		language: text().notNull().$type<ExerciseLanguage>(),
 		exercise: text().notNull(),
+		iteration: integer().default(1).notNull(),
 		passed: boolean(),
 		startedAt: timestamp("started_at"),
 		finishedAt: timestamp("finished_at"),
 		createdAt: timestamp("created_at").notNull(),
 	},
-	(table) => [uniqueIndex("tasks_language_exercise_idx").on(table.runId, table.language, table.exercise)],
+	(table) => [
+		uniqueIndex("tasks_language_exercise_iteration_idx").on(
+			table.runId,
+			table.language,
+			table.exercise,
+			table.iteration,
+		),
+	],
 )
 
 export const tasksRelations = relations(tasks, ({ one }) => ({
@@ -102,8 +118,8 @@ export type UpdateTaskMetrics = Partial<Omit<TaskMetrics, "id" | "createdAt">>
 
 export const toolErrors = pgTable("toolErrors", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity(),
-	runId: integer("run_id").references(() => runs.id),
-	taskId: integer("task_id").references(() => tasks.id),
+	runId: integer("run_id").references(() => runs.id, { onDelete: "cascade" }),
+	taskId: integer("task_id").references(() => tasks.id, { onDelete: "cascade" }),
 	toolName: text("tool_name").notNull().$type<ToolName>(),
 	error: text().notNull(),
 	createdAt: timestamp("created_at").notNull(),

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { runSlashCommandTool } from "../runSlashCommandTool"
+import { runSlashCommandTool } from "../RunSlashCommandTool"
 import { Task } from "../../task/Task"
 import { formatResponse } from "../../prompts/responses"
 import { getCommand, getCommandNames } from "../../../services/command/commands"
+import type { ToolUse } from "../../../shared/tools"
 
 // Mock dependencies
 vi.mock("../../../services/command/commands", () => ({
@@ -12,10 +13,7 @@ vi.mock("../../../services/command/commands", () => ({
 
 describe("runSlashCommandTool", () => {
 	let mockTask: any
-	let mockAskApproval: any
-	let mockHandleError: any
-	let mockPushToolResult: any
-	let mockRemoveClosingTag: any
+	let mockCallbacks: any
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -24,7 +22,7 @@ describe("runSlashCommandTool", () => {
 			consecutiveMistakeCount: 0,
 			recordToolError: vi.fn(),
 			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing parameter error"),
-			ask: vi.fn(),
+			ask: vi.fn().mockResolvedValue({}),
 			cwd: "/test/project",
 			providerRef: {
 				deref: vi.fn().mockReturnValue({
@@ -37,37 +35,32 @@ describe("runSlashCommandTool", () => {
 			},
 		}
 
-		mockAskApproval = vi.fn().mockResolvedValue(true)
-		mockHandleError = vi.fn()
-		mockPushToolResult = vi.fn()
-		mockRemoveClosingTag = vi.fn((tag, text) => text || "")
+		mockCallbacks = {
+			askApproval: vi.fn().mockResolvedValue(true),
+			handleError: vi.fn(),
+			pushToolResult: vi.fn(),
+			removeClosingTag: vi.fn((tag, text) => text || ""),
+		}
 	})
 
 	it("should handle missing command parameter", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {},
 			partial: false,
 		}
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
 		expect(mockTask.consecutiveMistakeCount).toBe(1)
 		expect(mockTask.recordToolError).toHaveBeenCalledWith("run_slash_command")
 		expect(mockTask.sayAndCreateMissingParamError).toHaveBeenCalledWith("run_slash_command", "command")
-		expect(mockPushToolResult).toHaveBeenCalledWith("Missing parameter error")
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith("Missing parameter error")
 	})
 
 	it("should handle command not found", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -79,23 +72,16 @@ describe("runSlashCommandTool", () => {
 		vi.mocked(getCommand).mockResolvedValue(undefined)
 		vi.mocked(getCommandNames).mockResolvedValue(["init", "test", "deploy"])
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
 		expect(mockTask.recordToolError).toHaveBeenCalledWith("run_slash_command")
-		expect(mockPushToolResult).toHaveBeenCalledWith(
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			formatResponse.toolError("Command 'nonexistent' not found. Available commands: init, test, deploy"),
 		)
 	})
 
 	it("should handle user rejection", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -113,23 +99,16 @@ describe("runSlashCommandTool", () => {
 		}
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
-		mockAskApproval.mockResolvedValue(false)
+		mockCallbacks.askApproval.mockResolvedValue(false)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockAskApproval).toHaveBeenCalled()
-		expect(mockPushToolResult).not.toHaveBeenCalled()
+		expect(mockCallbacks.askApproval).toHaveBeenCalled()
+		expect(mockCallbacks.pushToolResult).not.toHaveBeenCalled()
 	})
 
 	it("should successfully execute built-in command", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -148,16 +127,9 @@ describe("runSlashCommandTool", () => {
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockAskApproval).toHaveBeenCalledWith(
+		expect(mockCallbacks.askApproval).toHaveBeenCalledWith(
 			"tool",
 			JSON.stringify({
 				tool: "runSlashCommand",
@@ -168,7 +140,7 @@ describe("runSlashCommandTool", () => {
 			}),
 		)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Command: /init
 Description: Analyze codebase and create AGENTS.md
 Source: built-in
@@ -180,7 +152,7 @@ Initialize project content here`,
 	})
 
 	it("should successfully execute command with arguments", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -201,16 +173,9 @@ Initialize project content here`,
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Command: /test
 Description: Run project tests
 Argument hint: test type or focus area
@@ -224,7 +189,7 @@ Run tests with specific focus`,
 	})
 
 	it("should handle global command", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -242,16 +207,9 @@ Run tests with specific focus`,
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Command: /deploy
 Source: global
 
@@ -262,7 +220,7 @@ Deploy application to production`,
 	})
 
 	it("should handle partial block", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -271,14 +229,7 @@ Deploy application to production`,
 			partial: true,
 		}
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
 		expect(mockTask.ask).toHaveBeenCalledWith(
 			"tool",
@@ -290,11 +241,11 @@ Deploy application to production`,
 			true,
 		)
 
-		expect(mockPushToolResult).not.toHaveBeenCalled()
+		expect(mockCallbacks.pushToolResult).not.toHaveBeenCalled()
 	})
 
 	it("should handle errors during execution", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -306,20 +257,13 @@ Deploy application to production`,
 		const error = new Error("Test error")
 		vi.mocked(getCommand).mockRejectedValue(error)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockHandleError).toHaveBeenCalledWith("running slash command", error)
+		expect(mockCallbacks.handleError).toHaveBeenCalledWith("running slash command", error)
 	})
 
 	it("should handle empty available commands list", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -331,22 +275,15 @@ Deploy application to production`,
 		vi.mocked(getCommand).mockResolvedValue(undefined)
 		vi.mocked(getCommandNames).mockResolvedValue([])
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			formatResponse.toolError("Command 'nonexistent' not found. Available commands: (none)"),
 		)
 	})
 
 	it("should reset consecutive mistake count on valid command", async () => {
-		const block = {
+		const block: ToolUse<"run_slash_command"> = {
 			type: "tool_use" as const,
 			name: "run_slash_command" as const,
 			params: {
@@ -366,15 +303,137 @@ Deploy application to production`,
 
 		vi.mocked(getCommand).mockResolvedValue(mockCommand)
 
-		await runSlashCommandTool(
-			mockTask as Task,
-			block,
-			mockAskApproval,
-			mockHandleError,
-			mockPushToolResult,
-			mockRemoveClosingTag,
-		)
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
 
 		expect(mockTask.consecutiveMistakeCount).toBe(0)
+	})
+
+	it("should switch mode when mode is specified in command", async () => {
+		const mockHandleModeSwitch = vi.fn()
+		const block: ToolUse<"run_slash_command"> = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "debug-app",
+			},
+			partial: false,
+		}
+
+		const mockCommand = {
+			name: "debug-app",
+			content: "Start debugging the application",
+			source: "project" as const,
+			filePath: ".roo/commands/debug-app.md",
+			description: "Debug the application",
+			mode: "debug",
+		}
+
+		mockTask.providerRef.deref = vi.fn().mockReturnValue({
+			getState: vi.fn().mockResolvedValue({
+				experiments: {
+					runSlashCommand: true,
+				},
+				customModes: undefined,
+			}),
+			handleModeSwitch: mockHandleModeSwitch,
+		})
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
+
+		expect(mockHandleModeSwitch).toHaveBeenCalledWith("debug")
+		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
+			`Command: /debug-app
+Description: Debug the application
+Mode: debug
+Source: project
+
+--- Command Content ---
+
+Start debugging the application`,
+		)
+	})
+
+	it("should not switch mode when mode is not specified in command", async () => {
+		const mockHandleModeSwitch = vi.fn()
+		const block: ToolUse<"run_slash_command"> = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "test",
+			},
+			partial: false,
+		}
+
+		const mockCommand = {
+			name: "test",
+			content: "Run tests",
+			source: "project" as const,
+			filePath: ".roo/commands/test.md",
+			description: "Run project tests",
+		}
+
+		mockTask.providerRef.deref = vi.fn().mockReturnValue({
+			getState: vi.fn().mockResolvedValue({
+				experiments: {
+					runSlashCommand: true,
+				},
+				customModes: undefined,
+			}),
+			handleModeSwitch: mockHandleModeSwitch,
+		})
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
+
+		expect(mockHandleModeSwitch).not.toHaveBeenCalled()
+	})
+
+	it("should include mode in askApproval message when mode is specified", async () => {
+		const block: ToolUse<"run_slash_command"> = {
+			type: "tool_use" as const,
+			name: "run_slash_command" as const,
+			params: {
+				command: "debug-app",
+			},
+			partial: false,
+		}
+
+		const mockCommand = {
+			name: "debug-app",
+			content: "Start debugging",
+			source: "project" as const,
+			filePath: ".roo/commands/debug-app.md",
+			description: "Debug the application",
+			mode: "debug",
+		}
+
+		mockTask.providerRef.deref = vi.fn().mockReturnValue({
+			getState: vi.fn().mockResolvedValue({
+				experiments: {
+					runSlashCommand: true,
+				},
+				customModes: undefined,
+			}),
+			handleModeSwitch: vi.fn(),
+		})
+
+		vi.mocked(getCommand).mockResolvedValue(mockCommand)
+
+		await runSlashCommandTool.handle(mockTask as Task, block, mockCallbacks)
+
+		expect(mockCallbacks.askApproval).toHaveBeenCalledWith(
+			"tool",
+			JSON.stringify({
+				tool: "runSlashCommand",
+				command: "debug-app",
+				args: undefined,
+				source: "project",
+				description: "Debug the application",
+				mode: "debug",
+			}),
+		)
 	})
 })

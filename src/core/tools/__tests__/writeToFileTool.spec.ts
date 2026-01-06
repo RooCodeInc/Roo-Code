@@ -2,14 +2,13 @@ import * as path from "path"
 
 import type { MockedFunction } from "vitest"
 
-import { fileExistsAtPath } from "../../../utils/fs"
-import { detectCodeOmission } from "../../../integrations/editor/detect-omission"
+import { fileExistsAtPath, createDirectoriesForFile } from "../../../utils/fs"
 import { isPathOutsideWorkspace } from "../../../utils/pathUtils"
 import { getReadablePath } from "../../../utils/path"
 import { unescapeHtmlEntities } from "../../../utils/text-normalization"
 import { everyLineHasLineNumbers, stripLineNumbers } from "../../../integrations/misc/extract-text"
 import { ToolUse, ToolResponse } from "../../../shared/tools"
-import { writeToFileTool } from "../writeToFileTool"
+import { writeToFileTool } from "../WriteToFileTool"
 
 vi.mock("path", async () => {
 	const originalPath = await vi.importActual("path")
@@ -29,21 +28,15 @@ vi.mock("delay", () => ({
 
 vi.mock("../../../utils/fs", () => ({
 	fileExistsAtPath: vi.fn().mockResolvedValue(false),
+	createDirectoriesForFile: vi.fn().mockResolvedValue([]),
 }))
 
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
 		toolError: vi.fn((msg) => `Error: ${msg}`),
 		rooIgnoreError: vi.fn((path) => `Access denied: ${path}`),
-		lineCountTruncationError: vi.fn(
-			(count, isNew, diffEnabled) => `Line count error: ${count}, new: ${isNew}, diff: ${diffEnabled}`,
-		),
 		createPrettyPatch: vi.fn(() => "mock-diff"),
 	},
-}))
-
-vi.mock("../../../integrations/editor/detect-omission", () => ({
-	detectCodeOmission: vi.fn().mockReturnValue(false),
 }))
 
 vi.mock("../../../utils/pathUtils", () => ({
@@ -101,7 +94,7 @@ describe("writeToFileTool", () => {
 
 	// Mocked functions with correct types
 	const mockedFileExistsAtPath = fileExistsAtPath as MockedFunction<typeof fileExistsAtPath>
-	const mockedDetectCodeOmission = detectCodeOmission as MockedFunction<typeof detectCodeOmission>
+	const mockedCreateDirectoriesForFile = createDirectoriesForFile as MockedFunction<typeof createDirectoriesForFile>
 	const mockedIsPathOutsideWorkspace = isPathOutsideWorkspace as MockedFunction<typeof isPathOutsideWorkspace>
 	const mockedGetReadablePath = getReadablePath as MockedFunction<typeof getReadablePath>
 	const mockedUnescapeHtmlEntities = unescapeHtmlEntities as MockedFunction<typeof unescapeHtmlEntities>
@@ -118,10 +111,10 @@ describe("writeToFileTool", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
+		writeToFileTool.resetPartialState()
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
 		mockedFileExistsAtPath.mockResolvedValue(false)
-		mockedDetectCodeOmission.mockReturnValue(false)
 		mockedIsPathOutsideWorkspace.mockReturnValue(false)
 		mockedGetReadablePath.mockReturnValue("test/path.txt")
 		mockedUnescapeHtmlEntities.mockImplementation((content) => content)
@@ -222,22 +215,22 @@ describe("writeToFileTool", () => {
 			params: {
 				path: testFilePath,
 				content: testContent,
-				line_count: "3",
 				...params,
 			},
 			partial: isPartial,
 		}
 
-		await writeToFileTool(
-			mockCline,
-			toolUse,
-			mockAskApproval,
-			mockHandleError,
-			(result: ToolResponse) => {
-				toolResult = result
-			},
-			mockRemoveClosingTag,
-		)
+		mockPushToolResult = vi.fn((result: ToolResponse) => {
+			toolResult = result
+		})
+
+		await writeToFileTool.handle(mockCline, toolUse as ToolUse<"write_to_file">, {
+			askApproval: mockAskApproval,
+			handleError: mockHandleError,
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: mockRemoveClosingTag,
+			toolProtocol: "xml",
+		})
 
 		return toolResult
 	}
@@ -272,6 +265,52 @@ describe("writeToFileTool", () => {
 			await executeWriteFileTool({})
 
 			expect(mockedFileExistsAtPath).not.toHaveBeenCalled()
+		})
+	})
+
+	describe("directory creation for new files", () => {
+		it.skipIf(process.platform === "win32")(
+			"creates parent directories early when file does not exist (execute)",
+			async () => {
+				await executeWriteFileTool({}, { fileExists: false })
+
+				expect(mockedCreateDirectoriesForFile).toHaveBeenCalledWith(absoluteFilePath)
+			},
+		)
+
+		it.skipIf(process.platform === "win32")(
+			"creates parent directories when path has stabilized (partial)",
+			async () => {
+				// First call - path not yet stabilized
+				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
+				expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
+
+				// Second call with same path - path is now stabilized
+				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
+				expect(mockedCreateDirectoriesForFile).toHaveBeenCalledWith(absoluteFilePath)
+			},
+		)
+
+		it("does not create directories when file exists", async () => {
+			await executeWriteFileTool({}, { fileExists: true })
+
+			expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
+		})
+
+		it("does not create directories when editType is cached as modify", async () => {
+			mockCline.diffViewProvider.editType = "modify"
+
+			await executeWriteFileTool({})
+
+			expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
+		})
+
+		it.skipIf(process.platform === "win32")("creates directories when editType is cached as create", async () => {
+			mockCline.diffViewProvider.editType = "create"
+
+			await executeWriteFileTool({})
+
+			expect(mockedCreateDirectoriesForFile).toHaveBeenCalledWith(absoluteFilePath)
 		})
 	})
 
@@ -338,8 +377,9 @@ describe("writeToFileTool", () => {
 			expect(mockedIsPathOutsideWorkspace).toHaveBeenCalled()
 		})
 
-		it("processes files with very large line counts", async () => {
-			await executeWriteFileTool({ line_count: "999999" })
+		it("processes files with large content", async () => {
+			const largeContent = "Line\n".repeat(10000)
+			await executeWriteFileTool({ content: largeContent })
 
 			// Should process normally without issues
 			expect(mockCline.consecutiveMistakeCount).toBe(0)
@@ -359,9 +399,14 @@ describe("writeToFileTool", () => {
 			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 		})
 
-		it("streams content updates during partial execution", async () => {
+		it("streams content updates during partial execution after path stabilizes", async () => {
+			// First call - path not yet stabilized, early return (no file operations)
 			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockCline.ask).not.toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 
+			// Second call with same path - path is now stabilized, file operations proceed
+			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockCline.ask).toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
 			expect(mockCline.diffViewProvider.update).toHaveBeenCalledWith(testContent, false)
@@ -407,13 +452,16 @@ describe("writeToFileTool", () => {
 			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
 		})
 
-		it("handles partial streaming errors", async () => {
+		it("handles partial streaming errors after path stabilizes", async () => {
 			mockCline.diffViewProvider.open.mockRejectedValue(new Error("Open failed"))
 
+			// First call - path not yet stabilized, no error yet
 			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockHandleError).not.toHaveBeenCalled()
 
-			expect(mockHandleError).toHaveBeenCalledWith("writing file", expect.any(Error))
-			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
+			// Second call with same path - path is now stabilized, error occurs
+			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockHandleError).toHaveBeenCalledWith("handling partial write_to_file", expect.any(Error))
 		})
 	})
 })

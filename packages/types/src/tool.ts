@@ -19,10 +19,12 @@ export const toolNames = [
 	"read_file",
 	"write_to_file",
 	"apply_diff",
-	"insert_content",
+	"search_and_replace",
+	"search_replace",
+	"edit_file",
+	"apply_patch",
 	"search_files",
 	"list_files",
-	"list_code_definition_names",
 	"browser_action",
 	"use_mcp_tool",
 	"access_mcp_resource",
@@ -35,6 +37,7 @@ export const toolNames = [
 	"update_todo_list",
 	"run_slash_command",
 	"generate_image",
+	"custom_tool",
 ] as const
 
 export const toolNamesSchema = z.enum(toolNames)
@@ -68,3 +71,34 @@ export const TOOL_PROTOCOL = {
  * Derived from TOOL_PROTOCOL constants to ensure type safety
  */
 export type ToolProtocol = (typeof TOOL_PROTOCOL)[keyof typeof TOOL_PROTOCOL]
+
+/**
+ * Default model info properties for native tool support.
+ * Used to merge with cached model info that may lack these fields.
+ * Router providers (Requesty, Unbound, LiteLLM) assume all models support native tools.
+ */
+export const NATIVE_TOOL_DEFAULTS = {
+	supportsNativeTools: true,
+	defaultToolProtocol: TOOL_PROTOCOL.NATIVE,
+} as const
+
+/**
+ * Checks if the protocol is native (non-XML).
+ *
+ * @param protocol - The tool protocol to check
+ * @returns True if protocol is native
+ */
+export function isNativeProtocol(protocol: ToolProtocol): boolean {
+	return protocol === TOOL_PROTOCOL.NATIVE
+}
+
+/**
+ * Gets the effective protocol from settings or falls back to the default XML.
+ * This function is safe to use in webview-accessible code as it doesn't depend on vscode module.
+ *
+ * @param toolProtocol - Optional tool protocol from settings
+ * @returns The effective tool protocol (defaults to "xml")
+ */
+export function getEffectiveProtocol(toolProtocol?: ToolProtocol): ToolProtocol {
+	return toolProtocol || TOOL_PROTOCOL.XML
+}

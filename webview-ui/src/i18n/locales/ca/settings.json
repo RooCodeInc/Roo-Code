@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Proveïdors",
+		"modes": "Modes",
+		"mcp": "Servidors MCP",
 		"autoApprove": "Auto-aprovació",
 		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
@@ -34,6 +36,26 @@
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
+	},
+	"about": {
+		"bugReport": {
+			"label": "Has trobat un error?",
+			"link": "Informa'n a GitHub"
+		},
+		"featureRequest": {
+			"label": "Tens una idea?",
+			"link": "Comparteix-la amb nosaltres"
+		},
+		"securityIssue": {
+			"label": "Has descobert una vulnerabilitat?",
+			"link": "Segueix el nostre procés de divulgació"
+		},
+		"contact": {
+			"label": "Necessites parlar amb nosaltres? Escriu"
+		},
+		"community": "Vols consells o simplement passar l'estona amb altres usuaris de Roo Code? Uneix-te a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Contacte i Comunitat",
+		"manageSettings": "Gestionar Configuració"
 	},
 	"slashCommands": {
 		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
@@ -58,9 +80,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Clau API",
 		"vercelAiGatewayApiKeyPlaceholder": "Introduïu la vostra clau API de Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Regió d'AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Perfil d'AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nom del perfil d'AWS de ~/.aws/credentials (obligatori).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Clau de l'API d'OpenRouter",
 		"openRouterApiKeyPlaceholder": "Introduïu la vostra clau de l'API d'OpenRouter",
+		"openRouterProviderRoutingLabel": "Encaminament de proveïdors d'OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter dirigeix les sol·licituds als millors proveïdors disponibles per al vostre model d'embedding. Per defecte, les sol·licituds s'equilibren entre els principals proveïdors per maximitzar el temps de funcionament. No obstant això, podeu triar un proveïdor específic per utilitzar amb aquest model.",
 		"openaiCompatibleProvider": "Compatible amb OpenAI",
 		"openAiKeyLabel": "Clau API OpenAI",
 		"openAiKeyPlaceholder": "Introduïu la vostra clau API OpenAI",
@@ -125,11 +155,14 @@
 			"geminiApiKeyRequired": "Cal una clau d'API de Gemini",
 			"mistralApiKeyRequired": "La clau de l'API de Mistral és requerida",
 			"vercelAiGatewayApiKeyRequired": "Es requereix la clau API de Vercel AI Gateway",
+			"bedrockRegionRequired": "Es requereix la regió d'AWS",
+			"bedrockProfileRequired": "Es requereix el perfil d'AWS",
 			"ollamaBaseUrlRequired": "Cal una URL base d'Ollama",
 			"baseUrlRequired": "Cal una URL base",
 			"modelDimensionMinValue": "La dimensió del model ha de ser superior a 0",
 			"openRouterApiKeyRequired": "Clau API d'OpenRouter és requerida"
 		},
+		"optional": "opcional",
 		"advancedConfigLabel": "Configuració avançada",
 		"searchMinScoreLabel": "Llindar de puntuació de cerca",
 		"searchMinScoreDescription": "Puntuació mínima de similitud (0.0-1.0) requerida per als resultats de la cerca. Valors més baixos retornen més resultats però poden ser menys rellevants. Valors més alts retornen menys resultats però més rellevants.",
@@ -169,11 +202,6 @@
 			"label": "Navegador",
 			"description": "Realitzar accions del navegador automàticament sense requerir aprovació. Nota: Només s'aplica quan el model admet l'ús de l'ordinador"
 		},
-		"retry": {
-			"label": "Reintentar",
-			"description": "Tornar a intentar sol·licituds d'API fallides automàticament quan el servidor retorna una resposta d'error",
-			"delayLabel": "Retard abans de tornar a intentar la sol·licitud"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Habilitar l'aprovació automàtica d'eines MCP individuals a la vista de Servidors MCP (requereix tant aquesta configuració com la casella \"Permetre sempre\" de l'eina)"
@@ -203,10 +231,6 @@
 			"addButton": "Afegir",
 			"autoDenied": "Les comandes amb el prefix `{{prefix}}` han estat prohibides per l'usuari. No eludeixis aquesta restricció executant una altra comanda."
 		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "La llista de tasques es actualitza automàticament sense aprovació"
-		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",
 			"description": "Fes aquesta quantitat de sol·licituds API automàticament abans de demanar aprovació per continuar amb la tasca.",
@@ -226,6 +250,7 @@
 		"configProfile": "Perfil de configuració",
 		"description": "Deseu diferents configuracions d'API per canviar ràpidament entre proveïdors i configuracions.",
 		"apiProvider": "Proveïdor d'API",
+		"apiProviderDocs": "Documentació del proveïdor",
 		"model": "Model",
 		"nameEmpty": "El nom no pot estar buit",
 		"nameExists": "Ja existeix un perfil amb aquest nom",
@@ -250,8 +275,6 @@
 		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
-		"glamaApiKey": "Clau API de Glama",
-		"getGlamaApiKey": "Obtenir clau API de Glama",
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
 		"useReasoning": "Activar raonament",
 		"useHostHeader": "Utilitzar capçalera Host personalitzada",
@@ -271,7 +294,6 @@
 		"getRequestyApiKey": "Obtenir clau API de Requesty",
 		"getRequestyBaseUrl": "URL base",
 		"requestyUseCustomBaseUrl": "Utilitza l'URL base personalitzada",
-		"openRouterTransformsText": "Comprimir prompts i cadenes de missatges a la mida del context (<a>Transformacions d'OpenRouter</a>)",
 		"anthropicApiKey": "Clau API d'Anthropic",
 		"getAnthropicApiKey": "Obtenir clau API d'Anthropic",
 		"anthropicUseAuthToken": "Passar la clau API d'Anthropic com a capçalera d'autorització en lloc de X-Api-Key",
@@ -279,6 +301,10 @@
 		"anthropic1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Activa la finestra de context d'1M (Beta)",
+		"vertex1MContextBetaDescription": "Amplia la finestra de context a 1 milió de tokens per a Claude Sonnet 4",
+		"basetenApiKey": "Clau API de Baseten",
+		"getBasetenApiKey": "Obtenir clau API de Baseten",
 		"cerebrasApiKey": "Clau API de Cerebras",
 		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
 		"chutesApiKey": "Clau API de Chutes",
@@ -345,6 +371,14 @@
 		"awsRegion": "Regió d'AWS",
 		"awsCrossRegion": "Utilitzar inferència entre regions",
 		"awsGlobalInference": "Utilitzar la inferència global (selecció automàtica de la regió òptima d'AWS)",
+		"awsServiceTier": "Nivell de servei",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "Rendiment i cost equilibrats",
+		"awsServiceTierFlex": "Flex (50% de descompte)",
+		"awsServiceTierFlexDesc": "Cost menor, latència més alta per a tasques no crítiques",
+		"awsServiceTierPriority": "Priority (75% de sobrecost)",
+		"awsServiceTierPriorityDesc": "Rendiment més ràpid per a aplicacions crítiques",
+		"awsServiceTierNote": "Els nivells de servei afecten als preus i al rendiment. Flex ofereix un 50% de descompte amb latència més alta, Priority ofereix un 25% de millor rendiment amb un 75% de sobrecost.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Utilitzar punt final VPC personalitzat",
 			"vpcEndpointUrlPlaceholder": "Introduïu l'URL del punt final VPC (opcional)",
@@ -399,10 +433,6 @@
 		"getUnboundApiKey": "Obtenir clau API d'Unbound",
 		"unboundRefreshModelsSuccess": "Llista de models actualitzada! Ara podeu seleccionar entre els últims models.",
 		"unboundInvalidApiKey": "Clau API no vàlida. Si us plau, comproveu la vostra clau API i torneu-ho a provar.",
-		"humanRelay": {
-			"description": "No es requereix clau API, però l'usuari necessita ajuda per copiar i enganxar informació al xat d'IA web.",
-			"instructions": "Durant l'ús, apareixerà un diàleg i el missatge actual es copiarà automàticament al porta-retalls. Necessiteu enganxar-lo a les versions web d'IA (com ChatGPT o Claude), després copiar la resposta de l'IA de nou al diàleg i fer clic al botó de confirmació."
-		},
 		"roo": {
 			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
 			"connectButton": "Connecta amb Roo Code Cloud"
@@ -471,6 +501,7 @@
 			"none": "Cap",
 			"minimal": "Mínim (el més ràpid)",
 			"high": "Alt",
+			"xhigh": "Molt alt",
 			"medium": "Mitjà",
 			"low": "Baix"
 		},
@@ -626,6 +657,14 @@
 		"includeCurrentCost": {
 			"label": "Inclou el cost actual en el context",
 			"description": "Quan està activat, el cost d'ús actual de l'API s'inclourà a la indicació del sistema. Desactiveu-ho si els models deixen de funcionar per problemes amb el cost."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status màx. fitxers",
+			"description": "Nombre màxim d'entrades de fitxers a incloure en el context d'estat de git. Establiu a 0 per desactivar. La informació de la branca i els commits sempre es mostren quan és > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activa les regles dels subdirectoris",
+			"description": "Descobreix i carrega recursivament fitxers .roo/rules i AGENTS.md des de subdirectoris. Útil per a monorepos amb regles per paquet."
 		}
 	},
 	"terminal": {
@@ -688,6 +727,14 @@
 	},
 	"advancedSettings": {
 		"title": "Configuració avançada"
+	},
+	"toolProtocol": {
+		"label": "Protocol de crida d'eines",
+		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
+		"default": "Per defecte",
+		"xml": "XML",
+		"native": "Natiu",
+		"currentDefault": "Per defecte: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
@@ -759,6 +806,8 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Habilitar generació d'imatges amb IA",
+			"providerLabel": "Proveïdor",
+			"providerDescription": "Selecciona el proveïdor per a la generació d'imatges.",
 			"description": "Quan estigui habilitat, Roo pot generar imatges a partir de prompts de text utilitzant els models de generació d'imatges d'OpenRouter. Requereix que es configuri una clau d'API d'OpenRouter.",
 			"openRouterApiKeyLabel": "Clau API d'OpenRouter",
 			"openRouterApiKeyPlaceholder": "Introdueix la teva clau API d'OpenRouter",
@@ -771,6 +820,21 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Crides paral·leles a eines",
+			"description": "Quan està activat, el protocol natiu pot executar múltiples eines en un sol torn de missatge de l'assistent."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Habilitar eines personalitzades",
+			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",
+			"toolsHeader": "Eines personalitzades disponibles",
+			"noTools": "No s'han carregat eines personalitzades. Afegiu fitxers .ts o .js al directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals.",
+			"refreshButton": "Actualitzar",
+			"refreshing": "Actualitzant...",
+			"refreshSuccess": "Eines actualitzades correctament",
+			"refreshError": "Error en actualitzar les eines",
+			"toolParameters": "Paràmetres"
 		}
 	},
 	"promptCaching": {
@@ -809,7 +873,8 @@
 		"label": "Model",
 		"searchPlaceholder": "Cerca",
 		"noMatchFound": "No s'ha trobat cap coincidència",
-		"useCustomModel": "Utilitzar personalitzat: {{modelId}}"
+		"useCustomModel": "Utilitzar personalitzat: {{modelId}}",
+		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
 	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
@@ -901,6 +966,10 @@
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Requereix {{primaryMod}}+Intro per enviar missatges",
+			"description": "Quan estigui activat, has de prémer {{primaryMod}}+Intro per enviar missatges en lloc de només Intro"
 		}
 	}
 }

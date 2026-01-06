@@ -2,7 +2,44 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { convertToMistralMessages } from "../mistral-format"
+import { convertToMistralMessages, normalizeMistralToolCallId } from "../mistral-format"
+
+describe("normalizeMistralToolCallId", () => {
+	it("should strip non-alphanumeric characters and truncate to 9 characters", () => {
+		// OpenAI-style tool call ID: "call_5019f900..." -> "call5019f900..." -> first 9 chars = "call5019f"
+		expect(normalizeMistralToolCallId("call_5019f900a247472bacde0b82")).toBe("call5019f")
+	})
+
+	it("should handle Anthropic-style tool call IDs", () => {
+		// Anthropic-style tool call ID
+		expect(normalizeMistralToolCallId("toolu_01234567890abcdef")).toBe("toolu0123")
+	})
+
+	it("should pad short IDs to 9 characters", () => {
+		expect(normalizeMistralToolCallId("abc")).toBe("abc000000")
+		expect(normalizeMistralToolCallId("tool-1")).toBe("tool10000")
+	})
+
+	it("should handle IDs that are exactly 9 alphanumeric characters", () => {
+		expect(normalizeMistralToolCallId("abcd12345")).toBe("abcd12345")
+	})
+
+	it("should return consistent results for the same input", () => {
+		const id = "call_5019f900a247472bacde0b82"
+		expect(normalizeMistralToolCallId(id)).toBe(normalizeMistralToolCallId(id))
+	})
+
+	it("should handle edge cases", () => {
+		// Empty string
+		expect(normalizeMistralToolCallId("")).toBe("000000000")
+
+		// Only non-alphanumeric characters
+		expect(normalizeMistralToolCallId("---___---")).toBe("000000000")
+
+		// Mixed special characters
+		expect(normalizeMistralToolCallId("a-b_c.d@e")).toBe("abcde0000")
+	})
+})
 
 describe("convertToMistralMessages", () => {
 	it("should convert simple text messages for user and assistant roles", () => {
@@ -83,10 +120,14 @@ describe("convertToMistralMessages", () => {
 			},
 		]
 
-		// Based on the implementation, tool results without accompanying text/image
-		// don't generate any messages
+		// Tool results are converted to Mistral "tool" role messages
 		const mistralMessages = convertToMistralMessages(anthropicMessages)
-		expect(mistralMessages).toHaveLength(0)
+		expect(mistralMessages).toHaveLength(1)
+		expect(mistralMessages[0].role).toBe("tool")
+		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe(
+			normalizeMistralToolCallId("weather-123"),
+		)
+		expect(mistralMessages[0].content).toBe("Current temperature in London: 20°C")
 	})
 
 	it("should handle user messages with mixed content (text, image, and tool results)", () => {
@@ -116,24 +157,16 @@ describe("convertToMistralMessages", () => {
 		]
 
 		const mistralMessages = convertToMistralMessages(anthropicMessages)
-		// Based on the implementation, only the text and image content is included
-		// Tool results are not converted to separate messages
+		// Mistral doesn't allow user messages after tool messages, so only tool results are converted
+		// User content (text/images) is intentionally skipped when there are tool results
 		expect(mistralMessages).toHaveLength(1)
 
-		// Message should be the user message with text and image
-		expect(mistralMessages[0].role).toBe("user")
-		const userContent = mistralMessages[0].content as Array<{
-			type: string
-			text?: string
-			imageUrl?: { url: string }
-		}>
-		expect(Array.isArray(userContent)).toBe(true)
-		expect(userContent).toHaveLength(2)
-		expect(userContent[0]).toEqual({ type: "text", text: "Here's the weather data and an image:" })
-		expect(userContent[1]).toEqual({
-			type: "image_url",
-			imageUrl: { url: "data:image/png;base64,imagedata123" },
-		})
+		// Only the tool result should be present
+		expect(mistralMessages[0].role).toBe("tool")
+		expect((mistralMessages[0] as { toolCallId?: string }).toolCallId).toBe(
+			normalizeMistralToolCallId("weather-123"),
+		)
+		expect(mistralMessages[0].content).toBe("Current temperature in London: 20°C")
 	})
 
 	it("should handle assistant messages with text content", () => {
@@ -254,8 +287,8 @@ describe("convertToMistralMessages", () => {
 		]
 
 		const mistralMessages = convertToMistralMessages(anthropicMessages)
-		// Based on the implementation, user messages with only tool results don't generate messages
-		expect(mistralMessages).toHaveLength(3)
+		// Tool results are now converted to tool messages
+		expect(mistralMessages).toHaveLength(4)
 
 		// User message with image
 		expect(mistralMessages[0].role).toBe("user")
@@ -267,12 +300,19 @@ describe("convertToMistralMessages", () => {
 		expect(Array.isArray(userContent)).toBe(true)
 		expect(userContent).toHaveLength(2)
 
-		// Assistant message with text (tool_use is not included in Mistral format)
+		// Assistant message with text and toolCalls
 		expect(mistralMessages[1].role).toBe("assistant")
 		expect(mistralMessages[1].content).toBe("This image shows a landscape with mountains.")
 
+		// Tool result message
+		expect(mistralMessages[2].role).toBe("tool")
+		expect((mistralMessages[2] as { toolCallId?: string }).toolCallId).toBe(
+			normalizeMistralToolCallId("search-123"),
+		)
+		expect(mistralMessages[2].content).toBe("Found information about different mountain types.")
+
 		// Final assistant message
-		expect(mistralMessages[2]).toEqual({
+		expect(mistralMessages[3]).toEqual({
 			role: "assistant",
 			content: "Based on the search results, I can tell you more about the mountains in the image.",
 		})

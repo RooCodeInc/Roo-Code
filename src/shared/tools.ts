@@ -1,6 +1,14 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ClineAsk, ToolProgressStatus, ToolGroup, ToolName } from "@roo-code/types"
+import type {
+	ClineAsk,
+	ToolProgressStatus,
+	ToolGroup,
+	ToolName,
+	FileEntry,
+	BrowserActionParams,
+	GenerateImageParams,
+} from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 
@@ -31,7 +39,6 @@ export const toolParamNames = [
 	"command",
 	"path",
 	"content",
-	"line_count",
 	"regex",
 	"file_pattern",
 	"recursive",
@@ -62,105 +69,169 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
+	"files", // Native protocol parameter for read_file
+	"operations", // search_and_replace parameter for multiple operations
+	"patch", // apply_patch parameter
+	"file_path", // search_replace and edit_file parameter
+	"old_string", // search_replace and edit_file parameter
+	"new_string", // search_replace and edit_file parameter
+	"expected_replacements", // edit_file parameter for multiple occurrences
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
 
-export interface ToolUse {
+export type ToolProtocol = "xml" | "native"
+
+/**
+ * Type map defining the native (typed) argument structure for each tool.
+ * Tools not listed here will fall back to `any` for backward compatibility.
+ */
+export type NativeToolArgs = {
+	access_mcp_resource: { server_name: string; uri: string }
+	read_file: { files: FileEntry[] }
+	attempt_completion: { result: string }
+	execute_command: { command: string; cwd?: string }
+	apply_diff: { path: string; diff: string }
+	search_and_replace: { path: string; operations: Array<{ search: string; replace: string }> }
+	search_replace: { file_path: string; old_string: string; new_string: string }
+	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
+	apply_patch: { patch: string }
+	ask_followup_question: {
+		question: string
+		follow_up: Array<{ text: string; mode?: string }>
+	}
+	browser_action: BrowserActionParams
+	codebase_search: { query: string; path?: string }
+	fetch_instructions: { task: string }
+	generate_image: GenerateImageParams
+	run_slash_command: { command: string; args?: string }
+	search_files: { path: string; regex: string; file_pattern?: string | null }
+	switch_mode: { mode_slug: string; reason: string }
+	update_todo_list: { todos: string }
+	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
+	write_to_file: { path: string; content: string }
+	// Add more tools as they are migrated to native protocol
+}
+
+/**
+ * Generic ToolUse interface that provides proper typing for both protocols.
+ *
+ * @template TName - The specific tool name, which determines the nativeArgs type
+ */
+export interface ToolUse<TName extends ToolName = ToolName> {
 	type: "tool_use"
-	name: ToolName
+	id?: string // Optional ID to track tool calls
+	name: TName
+	/**
+	 * The original tool name as called by the model (e.g. an alias like "edit_file"),
+	 * if it differs from the canonical tool name used for execution.
+	 * Used to preserve tool names in API conversation history.
+	 */
+	originalName?: string
 	// params is a partial record, allowing only some or none of the possible parameters to be used
 	params: Partial<Record<ToolParamName, string>>
 	partial: boolean
+	// nativeArgs is properly typed based on TName if it's in NativeToolArgs, otherwise never
+	nativeArgs?: TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
 }
 
-export interface ExecuteCommandToolUse extends ToolUse {
+/**
+ * Represents a native MCP tool call from the model.
+ * In native mode, MCP tools are called directly with their prefixed name (e.g., "mcp_serverName_toolName")
+ * rather than through the use_mcp_tool wrapper. This type preserves the original tool name
+ * so it appears correctly in API conversation history.
+ */
+export interface McpToolUse {
+	type: "mcp_tool_use"
+	id?: string // Tool call ID from the API
+	/** The original tool name from the API (e.g., "mcp_serverName_toolName") */
+	name: string
+	/** Extracted server name from the tool name */
+	serverName: string
+	/** Extracted tool name from the tool name */
+	toolName: string
+	/** Arguments passed to the MCP tool */
+	arguments: Record<string, unknown>
+	partial: boolean
+}
+
+export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
 }
 
-export interface ReadFileToolUse extends ToolUse {
+export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	name: "read_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line">>
+	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line" | "files">>
 }
 
-export interface FetchInstructionsToolUse extends ToolUse {
+export interface FetchInstructionsToolUse extends ToolUse<"fetch_instructions"> {
 	name: "fetch_instructions"
 	params: Partial<Pick<Record<ToolParamName, string>, "task">>
 }
 
-export interface WriteToFileToolUse extends ToolUse {
+export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
 	name: "write_to_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content" | "line_count">>
+	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
 }
 
-export interface InsertCodeBlockToolUse extends ToolUse {
-	name: "insert_content"
-	params: Partial<Pick<Record<ToolParamName, string>, "path" | "line" | "content">>
-}
-
-export interface CodebaseSearchToolUse extends ToolUse {
+export interface CodebaseSearchToolUse extends ToolUse<"codebase_search"> {
 	name: "codebase_search"
 	params: Partial<Pick<Record<ToolParamName, string>, "query" | "path">>
 }
 
-export interface SearchFilesToolUse extends ToolUse {
+export interface SearchFilesToolUse extends ToolUse<"search_files"> {
 	name: "search_files"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "regex" | "file_pattern">>
 }
 
-export interface ListFilesToolUse extends ToolUse {
+export interface ListFilesToolUse extends ToolUse<"list_files"> {
 	name: "list_files"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "recursive">>
 }
 
-export interface ListCodeDefinitionNamesToolUse extends ToolUse {
-	name: "list_code_definition_names"
-	params: Partial<Pick<Record<ToolParamName, string>, "path">>
-}
-
-export interface BrowserActionToolUse extends ToolUse {
+export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
 	name: "browser_action"
-	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size">>
+	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
 }
 
-export interface UseMcpToolToolUse extends ToolUse {
+export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
 	name: "use_mcp_tool"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "tool_name" | "arguments">>
 }
 
-export interface AccessMcpResourceToolUse extends ToolUse {
+export interface AccessMcpResourceToolUse extends ToolUse<"access_mcp_resource"> {
 	name: "access_mcp_resource"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "uri">>
 }
 
-export interface AskFollowupQuestionToolUse extends ToolUse {
+export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_question"> {
 	name: "ask_followup_question"
 	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
 }
 
-export interface AttemptCompletionToolUse extends ToolUse {
+export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {
 	name: "attempt_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
 }
 
-export interface SwitchModeToolUse extends ToolUse {
+export interface SwitchModeToolUse extends ToolUse<"switch_mode"> {
 	name: "switch_mode"
 	params: Partial<Pick<Record<ToolParamName, string>, "mode_slug" | "reason">>
 }
 
-export interface NewTaskToolUse extends ToolUse {
+export interface NewTaskToolUse extends ToolUse<"new_task"> {
 	name: "new_task"
 	params: Partial<Pick<Record<ToolParamName, string>, "mode" | "message" | "todos">>
 }
 
-export interface RunSlashCommandToolUse extends ToolUse {
+export interface RunSlashCommandToolUse extends ToolUse<"run_slash_command"> {
 	name: "run_slash_command"
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "args">>
 }
 
-export interface GenerateImageToolUse extends ToolUse {
+export interface GenerateImageToolUse extends ToolUse<"generate_image"> {
 	name: "generate_image"
 	params: Partial<Pick<Record<ToolParamName, string>, "prompt" | "path" | "image">>
 }
@@ -169,6 +240,7 @@ export interface GenerateImageToolUse extends ToolUse {
 export type ToolGroupConfig = {
 	tools: readonly string[]
 	alwaysAvailable?: boolean // Whether this group is always available and shouldn't show in prompts view
+	customTools?: readonly string[] // Opt-in only tools - only available when explicitly included via model's includedTools
 }
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
@@ -177,9 +249,12 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
+	search_and_replace: "apply changes using search and replace",
+	search_replace: "apply single search and replace",
+	edit_file: "edit files using search and replace",
+	apply_patch: "apply patches using codex format",
 	search_files: "search files",
 	list_files: "list files",
-	list_code_definition_names: "list definitions",
 	browser_action: "use a browser",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
@@ -187,27 +262,21 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	attempt_completion: "complete tasks",
 	switch_mode: "switch modes",
 	new_task: "create new task",
-	insert_content: "insert content",
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	custom_tool: "use custom tools",
 } as const
 
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: [
-			"read_file",
-			"fetch_instructions",
-			"search_files",
-			"list_files",
-			"list_code_definition_names",
-			"codebase_search",
-		],
+		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
-		tools: ["apply_diff", "write_to_file", "insert_content", "generate_image"],
+		tools: ["apply_diff", "write_to_file", "generate_image"],
+		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
 	},
 	browser: {
 		tools: ["browser_action"],
@@ -233,6 +302,20 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"update_todo_list",
 	"run_slash_command",
 ] as const
+
+/**
+ * Central registry of tool aliases.
+ * Maps alias name -> canonical tool name.
+ *
+ * This allows models to use alternative names for tools (e.g., "edit_file" instead of "apply_diff").
+ * When a model calls a tool by its alias, the system resolves it to the canonical name for execution,
+ * but preserves the alias in API conversation history for consistency.
+ *
+ * To add a new alias, simply add an entry here. No other files need to be modified.
+ */
+export const TOOL_ALIASES: Record<string, ToolName> = {
+	write_file: "write_to_file",
+} as const
 
 export type DiffResult =
 	| { success: true; content: string; failParts?: DiffResult[] }

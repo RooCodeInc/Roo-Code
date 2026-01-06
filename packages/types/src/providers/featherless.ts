@@ -13,6 +13,7 @@ export const featherlessModels = {
 		contextWindow: 32678,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsNativeTools: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "DeepSeek V3 0324 model.",
@@ -22,6 +23,7 @@ export const featherlessModels = {
 		contextWindow: 32678,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsNativeTools: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "DeepSeek R1 0528 model.",
@@ -31,6 +33,7 @@ export const featherlessModels = {
 		contextWindow: 32678,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsNativeTools: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "Kimi K2 Instruct model.",
@@ -40,6 +43,7 @@ export const featherlessModels = {
 		contextWindow: 32678,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsNativeTools: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "GPT-OSS 120B model.",
@@ -49,10 +53,11 @@ export const featherlessModels = {
 		contextWindow: 32678,
 		supportsImages: false,
 		supportsPromptCache: false,
+		supportsNativeTools: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "Qwen3 Coder 480B A35B Instruct model.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
-export const featherlessDefaultModelId: FeatherlessModelId = "deepseek-ai/DeepSeek-R1-0528"
+export const featherlessDefaultModelId: FeatherlessModelId = "moonshotai/Kimi-K2-Instruct"

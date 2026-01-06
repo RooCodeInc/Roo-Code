@@ -3,6 +3,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk"
 
+import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
+
 import { ApiStreamChunk } from "../../transform/stream"
 
 import { AnthropicVertexHandler } from "../anthropic-vertex"
@@ -159,35 +161,39 @@ describe("VertexHandler", () => {
 				outputTokens: 5,
 			})
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: "claude-3-5-sonnet-v2@20241022",
-				max_tokens: 8192,
-				temperature: 0,
-				system: [
-					{
-						type: "text",
-						text: "You are a helpful assistant",
-						cache_control: { type: "ephemeral" },
-					},
-				],
-				messages: [
-					{
-						role: "user",
-						content: [
-							{
-								type: "text",
-								text: "Hello",
-								cache_control: { type: "ephemeral" },
-							},
-						],
-					},
-					{
-						role: "assistant",
-						content: "Hi there!",
-					},
-				],
-				stream: true,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				{
+					model: "claude-3-5-sonnet-v2@20241022",
+					max_tokens: 8192,
+					temperature: 0,
+					thinking: undefined,
+					system: [
+						{
+							type: "text",
+							text: "You are a helpful assistant",
+							cache_control: { type: "ephemeral" },
+						},
+					],
+					messages: [
+						{
+							role: "user",
+							content: [
+								{
+									type: "text",
+									text: "Hello",
+									cache_control: { type: "ephemeral" },
+								},
+							],
+						},
+						{
+							role: "assistant",
+							content: "Hi there!",
+						},
+					],
+					stream: true,
+				},
+				undefined,
+			)
 		})
 
 		it("should handle multiple content blocks with line breaks for Claude", async () => {
@@ -401,6 +407,7 @@ describe("VertexHandler", () => {
 						}),
 					],
 				}),
+				undefined,
 			)
 		})
 
@@ -601,6 +608,146 @@ describe("VertexHandler", () => {
 				text: "Second thinking block",
 			})
 		})
+
+		it("should filter out internal reasoning blocks before sending to API", async () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const mockCreate = vitest.fn().mockImplementation(async (options) => {
+				return {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							type: "message_start",
+							message: {
+								usage: {
+									input_tokens: 10,
+									output_tokens: 0,
+								},
+							},
+						}
+						yield {
+							type: "content_block_start",
+							index: 0,
+							content_block: {
+								type: "text",
+								text: "Response",
+							},
+						}
+					},
+				}
+			})
+			;(handler["client"].messages as any).create = mockCreate
+
+			// Messages with internal reasoning blocks (from stored conversation history)
+			const messagesWithReasoning: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello",
+				},
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "reasoning" as any,
+							text: "This is internal reasoning that should be filtered",
+						},
+						{
+							type: "text",
+							text: "This is the response",
+						},
+					],
+				},
+				{
+					role: "user",
+					content: "Continue",
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, messagesWithReasoning)
+			const chunks: ApiStreamChunk[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify the API was called with filtered messages (no reasoning blocks)
+			const calledMessages = mockCreate.mock.calls[0][0].messages
+			expect(calledMessages).toHaveLength(3)
+
+			// Check user message 1
+			expect(calledMessages[0]).toMatchObject({
+				role: "user",
+			})
+
+			// Check assistant message - should have reasoning block filtered out
+			const assistantMessage = calledMessages.find((m: any) => m.role === "assistant")
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.content).toEqual([{ type: "text", text: "This is the response" }])
+
+			// Verify reasoning blocks were NOT sent to the API
+			expect(assistantMessage.content).not.toContainEqual(expect.objectContaining({ type: "reasoning" }))
+		})
+
+		it("should filter empty messages after removing all reasoning blocks", async () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const mockCreate = vitest.fn().mockImplementation(async (options) => {
+				return {
+					async *[Symbol.asyncIterator]() {
+						yield {
+							type: "message_start",
+							message: {
+								usage: {
+									input_tokens: 10,
+									output_tokens: 0,
+								},
+							},
+						}
+					},
+				}
+			})
+			;(handler["client"].messages as any).create = mockCreate
+
+			// Message with only reasoning content (should be completely filtered)
+			const messagesWithOnlyReasoning: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello",
+				},
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "reasoning" as any,
+							text: "Only reasoning, no actual text",
+						},
+					],
+				},
+				{
+					role: "user",
+					content: "Continue",
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, messagesWithOnlyReasoning)
+			const chunks: ApiStreamChunk[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify empty message was filtered out
+			const calledMessages = mockCreate.mock.calls[0][0].messages
+			expect(calledMessages).toHaveLength(2) // Only the two user messages
+			expect(calledMessages.every((m: any) => m.role === "user")).toBe(true)
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -718,6 +865,162 @@ describe("VertexHandler", () => {
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
 		})
+
+		it("should enable 1M context for Claude Sonnet 4 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
+		it("should enable 1M context for Claude Sonnet 4.5 when beta flag is set", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[1],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(1_000_000)
+			expect(model.info.inputPrice).toBe(6.0)
+			expect(model.info.outputPrice).toBe(22.5)
+			expect(model.betas).toContain("context-1m-2025-08-07")
+		})
+
+		it("should not enable 1M context when flag is disabled", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: false,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(200_000)
+			expect(model.info.inputPrice).toBe(3.0)
+			expect(model.info.outputPrice).toBe(15.0)
+			expect(model.betas).toBeUndefined()
+		})
+
+		it("should not enable 1M context for non-supported models even with flag", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const model = handler.getModel()
+			expect(model.info.contextWindow).toBe(200_000)
+			expect(model.betas).toBeUndefined()
+		})
+	})
+
+	describe("1M context beta header", () => {
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		const systemPrompt = "You are a helpful assistant"
+
+		it("should include anthropic-beta header when 1M context is enabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Verify the API was called with the beta header
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.anything(),
+				expect.objectContaining({
+					headers: { "anthropic-beta": "context-1m-2025-08-07" },
+				}),
+			)
+		})
+
+		it("should not include anthropic-beta header when 1M context is disabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: false,
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Verify the API was called without the beta header
+			expect(mockCreate).toHaveBeenCalledWith(expect.anything(), undefined)
+		})
 	})
 
 	describe("thinking model configuration", () => {
@@ -806,7 +1109,311 @@ describe("VertexHandler", () => {
 					thinking: { type: "enabled", budget_tokens: 4096 },
 					temperature: 1.0, // Thinking requires temperature 1.0
 				}),
+				undefined,
 			)
+		})
+	})
+
+	describe("native tool calling", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text" as const, text: "What's the weather in London?" }],
+			},
+		]
+
+		const mockTools = [
+			{
+				type: "function" as const,
+				function: {
+					name: "get_weather",
+					description: "Get the current weather",
+					parameters: {
+						type: "object",
+						properties: {
+							location: { type: "string" },
+						},
+						required: ["location"],
+					},
+				},
+			},
+		]
+
+		it("should include tools in request when native protocol is used", async () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.arrayContaining([
+						expect.objectContaining({
+							name: "get_weather",
+							description: "Get the current weather",
+							input_schema: expect.objectContaining({
+								type: "object",
+								properties: expect.objectContaining({
+									location: { type: "string" },
+								}),
+							}),
+						}),
+					]),
+					tool_choice: { type: "auto", disable_parallel_tool_use: true },
+				}),
+				undefined,
+			)
+		})
+
+		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
+			// XML protocol deprecation: user preference is now ignored when model supports native tools
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				toolProtocol: "xml",
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 10,
+							output_tokens: 0,
+						},
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+				// Just consume
+			}
+
+			// Native is forced when supportsNativeTools===true, so tools should still be included
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.arrayContaining([
+						expect.objectContaining({
+							name: "get_weather",
+						}),
+					]),
+				}),
+				undefined,
+			)
+		})
+
+		it("should handle tool_use blocks in stream and emit tool_call_partial", async () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 100,
+							output_tokens: 50,
+						},
+					},
+				},
+				{
+					type: "content_block_start",
+					index: 0,
+					content_block: {
+						type: "tool_use",
+						id: "toolu_123",
+						name: "get_weather",
+					},
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+
+			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Find the tool_call_partial chunk
+			const toolCallChunk = chunks.find((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallChunk).toBeDefined()
+			expect(toolCallChunk).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "toolu_123",
+				name: "get_weather",
+				arguments: undefined,
+			})
+		})
+
+		it("should handle input_json_delta in stream and emit tool_call_partial arguments", async () => {
+			handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const mockStream = [
+				{
+					type: "message_start",
+					message: {
+						usage: {
+							input_tokens: 100,
+							output_tokens: 50,
+						},
+					},
+				},
+				{
+					type: "content_block_start",
+					index: 0,
+					content_block: {
+						type: "tool_use",
+						id: "toolu_123",
+						name: "get_weather",
+					},
+				},
+				{
+					type: "content_block_delta",
+					index: 0,
+					delta: {
+						type: "input_json_delta",
+						partial_json: '{"location":',
+					},
+				},
+				{
+					type: "content_block_delta",
+					index: 0,
+					delta: {
+						type: "input_json_delta",
+						partial_json: '"London"}',
+					},
+				},
+				{
+					type: "content_block_stop",
+					index: 0,
+				},
+			]
+
+			const asyncIterator = {
+				async *[Symbol.asyncIterator]() {
+					for (const chunk of mockStream) {
+						yield chunk
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(asyncIterator)
+			;(handler["client"].messages as any).create = mockCreate
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+
+			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Find the tool_call_partial chunks
+			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			expect(toolCallChunks).toHaveLength(3)
+
+			// First chunk has id and name
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "toolu_123",
+				name: "get_weather",
+				arguments: undefined,
+			})
+
+			// Subsequent chunks have arguments
+			expect(toolCallChunks[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '{"location":',
+			})
+
+			expect(toolCallChunks[2]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '"London"}',
+			})
 		})
 	})
 })

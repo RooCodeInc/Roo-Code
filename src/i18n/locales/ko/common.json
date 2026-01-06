@@ -91,8 +91,7 @@
 			"errorOutput": "오류 출력: {{output}}",
 			"processExitedWithError": "Claude Code 프로세스가 코드 {{exitCode}}로 종료되었습니다. 오류 출력: {{output}}",
 			"stoppedWithReason": "Claude Code가 다음 이유로 중지되었습니다: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan.",
-			"notFound": "Claude Code executable '{{claudePath}}' not found.\n\nPlease install Claude Code CLI:\n1. Visit {{installationUrl}} to download Claude Code\n2. Follow the installation instructions for your operating system\n3. Ensure the 'claude' command is available in your PATH\n4. Alternatively, configure a custom path in Roo settings under 'Claude Code Path'\n\nOriginal error: {{originalError}}"
+			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
 		},
 		"message": {
 			"no_active_task_to_delete": "메시지를 삭제할 활성 작업이 없습니다",
@@ -106,7 +105,11 @@
 		"gemini": {
 			"generate_stream": "Gemini 생성 컨텍스트 스트림 오류: {{error}}",
 			"generate_complete_prompt": "Gemini 완료 오류: {{error}}",
-			"sources": "출처:"
+			"sources": "출처:",
+			"thinking_complete_no_output": "(생각 완료, 출력 없음)",
+			"thinking_complete_truncated": "(생각 완료, 토큰 제한으로 출력 잘림)",
+			"thinking_complete_safety": "(생각 완료, 안전 설정으로 출력 차단됨)",
+			"thinking_complete_recitation": "(생각 완료, 암송 확인으로 출력 차단됨)"
 		},
 		"cerebras": {
 			"authenticationFailed": "Cerebras API 인증에 실패했습니다. API 키가 유효하고 만료되지 않았는지 확인하세요.",
@@ -184,12 +187,7 @@
 	"settings": {
 		"providers": {
 			"groqApiKey": "Groq API 키",
-			"getGroqApiKey": "Groq API 키 받기",
-			"claudeCode": {
-				"pathLabel": "Claude Code 경로",
-				"description": "Claude Code CLI의 선택적 경로입니다. 설정되지 않은 경우 기본값은 'claude'입니다.",
-				"placeholder": "기본값: claude"
-			}
+			"getGroqApiKey": "Groq API 키 받기"
 		}
 	},
 	"customModes": {

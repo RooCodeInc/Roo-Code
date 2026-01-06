@@ -23,16 +23,17 @@ type RequestyProps = {
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
 	uriScheme?: string
+	simplifySettings?: boolean
 }
 
 export const Requesty = ({
 	apiConfiguration,
 	setApiConfigurationField,
 	routerModels,
-	refetchRouterModels,
 	organizationAllowList,
 	modelValidationError,
 	uriScheme,
+	simplifySettings,
 }: RequestyProps) => {
 	const { t } = useAppTranslation()
 
@@ -125,8 +126,7 @@ export const Requesty = ({
 			<Button
 				variant="outline"
 				onClick={() => {
-					vscode.postMessage({ type: "flushRouterModels", text: "requesty" })
-					refetchRouterModels()
+					vscode.postMessage({ type: "requestRouterModels", values: { provider: "requesty", refresh: true } })
 				}}>
 				<div className="flex items-center gap-2">
 					<span className="codicon codicon-refresh" />
@@ -143,6 +143,7 @@ export const Requesty = ({
 				serviceUrl="https://requesty.ai"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 		</>
 	)

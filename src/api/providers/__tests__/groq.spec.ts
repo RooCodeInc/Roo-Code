@@ -1,8 +1,5 @@
 // npx vitest run src/api/providers/__tests__/groq.spec.ts
 
-// Mock vscode first to avoid import errors
-vitest.mock("vscode", () => ({}))
-
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
@@ -112,9 +109,10 @@ describe("GroqHandler", () => {
 			type: "usage",
 			inputTokens: 10,
 			outputTokens: 20,
-			cacheWriteTokens: 0,
-			cacheReadTokens: 0,
 		})
+		// cacheWriteTokens and cacheReadTokens will be undefined when 0
+		expect(firstChunk.value.cacheWriteTokens).toBeUndefined()
+		expect(firstChunk.value.cacheReadTokens).toBeUndefined()
 		// Check that totalCost is a number (we don't need to test the exact value as that's tested in cost.spec.ts)
 		expect(typeof firstChunk.value.totalCost).toBe("number")
 	})
@@ -151,9 +149,10 @@ describe("GroqHandler", () => {
 			type: "usage",
 			inputTokens: 100,
 			outputTokens: 50,
-			cacheWriteTokens: 0,
 			cacheReadTokens: 30,
 		})
+		// cacheWriteTokens will be undefined when 0
+		expect(firstChunk.value.cacheWriteTokens).toBeUndefined()
 		expect(typeof firstChunk.value.totalCost).toBe("number")
 	})
 

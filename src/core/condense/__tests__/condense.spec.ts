@@ -6,7 +6,12 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { BaseProvider } from "../../../api/providers/base-provider"
 import { ApiMessage } from "../../task-persistence/apiMessages"
-import { summarizeConversation, getMessagesSinceLastSummary, N_MESSAGES_TO_KEEP } from "../index"
+import {
+	summarizeConversation,
+	getMessagesSinceLastSummary,
+	getEffectiveApiHistory,
+	N_MESSAGES_TO_KEEP,
+} from "../index"
 
 // Create a mock ApiHandler for testing
 class MockApiHandler extends BaseProvider {
@@ -81,13 +86,27 @@ describe("Condense", () => {
 			// Verify we have a summary message
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
 			expect(summaryMessage).toBeTruthy()
-			expect(summaryMessage?.content).toBe("Mock summary of the conversation")
+			// Summary content is now always an array with a synthetic reasoning block + text block
+			// for DeepSeek-reasoner compatibility
+			expect(Array.isArray(summaryMessage?.content)).toBe(true)
+			const contentArray = summaryMessage?.content as Anthropic.Messages.ContentBlockParam[]
+			expect(contentArray).toHaveLength(2)
+			expect(contentArray[0]).toEqual({
+				type: "reasoning",
+				text: "Condensing conversation context. The summary below captures the key information from the prior conversation.",
+			})
+			expect(contentArray[1]).toEqual({
+				type: "text",
+				text: "Mock summary of the conversation",
+			})
 
-			// Verify we have the expected number of messages
-			// [first message, summary, last N messages]
-			expect(result.messages.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP)
+			// With non-destructive condensing, all messages are retained (tagged but not deleted)
+			// Use getEffectiveApiHistory to verify the effective view matches the old behavior
+			expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
+			const effectiveHistory = getEffectiveApiHistory(result.messages)
+			expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last N
 
-			// Verify the last N messages are preserved
+			// Verify the last N messages are preserved (same messages by reference)
 			const lastMessages = result.messages.slice(-N_MESSAGES_TO_KEEP)
 			expect(lastMessages).toEqual(messages.slice(-N_MESSAGES_TO_KEEP))
 		})

@@ -1,18 +1,31 @@
 // npx vitest run src/api/providers/__tests__/gemini.spec.ts
 
+const mockCaptureException = vitest.fn()
+
+vitest.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureException: (...args: unknown[]) => mockCaptureException(...args),
+		},
+	},
+}))
+
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { type ModelInfo, geminiDefaultModelId } from "@roo-code/types"
+import { type ModelInfo, geminiDefaultModelId, ApiProviderError } from "@roo-code/types"
 
 import { t } from "i18next"
 import { GeminiHandler } from "../gemini"
 
-const GEMINI_20_FLASH_THINKING_NAME = "gemini-2.0-flash-thinking-exp-1219"
+const GEMINI_MODEL_NAME = geminiDefaultModelId
 
 describe("GeminiHandler", () => {
 	let handler: GeminiHandler
 
 	beforeEach(() => {
+		// Reset mocks
+		mockCaptureException.mockClear()
+
 		// Create mock functions
 		const mockGenerateContentStream = vitest.fn()
 		const mockGenerateContent = vitest.fn()
@@ -20,7 +33,7 @@ describe("GeminiHandler", () => {
 
 		handler = new GeminiHandler({
 			apiKey: "test-key",
-			apiModelId: GEMINI_20_FLASH_THINKING_NAME,
+			apiModelId: GEMINI_MODEL_NAME,
 			geminiApiKey: "test-key",
 		})
 
@@ -37,7 +50,7 @@ describe("GeminiHandler", () => {
 	describe("constructor", () => {
 		it("should initialize with provided config", () => {
 			expect(handler["options"].geminiApiKey).toBe("test-key")
-			expect(handler["options"].apiModelId).toBe(GEMINI_20_FLASH_THINKING_NAME)
+			expect(handler["options"].apiModelId).toBe(GEMINI_MODEL_NAME)
 		})
 	})
 
@@ -76,14 +89,14 @@ describe("GeminiHandler", () => {
 			expect(chunks.length).toBe(3)
 			expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
 			expect(chunks[1]).toEqual({ type: "text", text: " world!" })
-			expect(chunks[2]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 5 })
+			expect(chunks[2]).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 5 })
 
 			// Verify the call to generateContentStream
 			expect(handler["client"].models.generateContentStream).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: GEMINI_20_FLASH_THINKING_NAME,
+					model: GEMINI_MODEL_NAME,
 					config: expect.objectContaining({
-						temperature: 0,
+						temperature: 1,
 						systemInstruction: systemPrompt,
 					}),
 				}),
@@ -116,11 +129,11 @@ describe("GeminiHandler", () => {
 
 			// Verify the call to generateContent
 			expect(handler["client"].models.generateContent).toHaveBeenCalledWith({
-				model: GEMINI_20_FLASH_THINKING_NAME,
+				model: GEMINI_MODEL_NAME,
 				contents: [{ role: "user", parts: [{ text: "Test prompt" }] }],
 				config: {
 					httpOptions: undefined,
-					temperature: 0,
+					temperature: 1,
 				},
 			})
 		})
@@ -148,10 +161,8 @@ describe("GeminiHandler", () => {
 	describe("getModel", () => {
 		it("should return correct model info", () => {
 			const modelInfo = handler.getModel()
-			expect(modelInfo.id).toBe(GEMINI_20_FLASH_THINKING_NAME)
+			expect(modelInfo.id).toBe(GEMINI_MODEL_NAME)
 			expect(modelInfo.info).toBeDefined()
-			expect(modelInfo.info.maxTokens).toBe(8192)
-			expect(modelInfo.info.contextWindow).toBe(32_767)
 		})
 
 		it("should return default model if invalid model specified", () => {
@@ -208,23 +219,6 @@ describe("GeminiHandler", () => {
 			expect(handler.calculateCost({ info: mockInfo, inputTokens: 0, outputTokens })).toBeCloseTo(expectedCost)
 		})
 
-		it("should calculate cost with cache write tokens", () => {
-			const inputTokens = 10000
-			const outputTokens = 20000
-			const cacheWriteTokens = 5000
-			const CACHE_TTL = 5 // Match the constant in gemini.ts
-
-			// Added non-null assertions (!)
-			const expectedInputCost = (inputTokens / 1_000_000) * mockInfo.inputPrice!
-			const expectedOutputCost = (outputTokens / 1_000_000) * mockInfo.outputPrice!
-			const expectedCacheWriteCost =
-				mockInfo.cacheWritesPrice! * (cacheWriteTokens / 1_000_000) * (CACHE_TTL / 60)
-			const expectedCost = expectedInputCost + expectedOutputCost + expectedCacheWriteCost
-
-			const cost = handler.calculateCost({ info: mockInfo, inputTokens, outputTokens })
-			expect(cost).toBeCloseTo(expectedCost)
-		})
-
 		it("should calculate cost with cache read tokens", () => {
 			const inputTokens = 10000 // Total logical input
 			const outputTokens = 20000
@@ -246,6 +240,84 @@ describe("GeminiHandler", () => {
 			const incompleteInfo: ModelInfo = { ...mockInfo, outputPrice: undefined }
 			const cost = handler.calculateCost({ info: incompleteInfo, inputTokens: 1000, outputTokens: 1000 })
 			expect(cost).toBeUndefined()
+		})
+	})
+
+	describe("error telemetry", () => {
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+		]
+
+		const systemPrompt = "You are a helpful assistant"
+
+		it("should capture telemetry on createMessage error", async () => {
+			const mockError = new Error("Gemini API error")
+			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should throw before yielding any chunks
+				}
+			}).rejects.toThrow()
+
+			// Verify telemetry was captured
+			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Gemini API error",
+					provider: "Gemini",
+					modelId: GEMINI_MODEL_NAME,
+					operation: "createMessage",
+				}),
+			)
+
+			// Verify it's an ApiProviderError
+			const capturedError = mockCaptureException.mock.calls[0][0]
+			expect(capturedError).toBeInstanceOf(ApiProviderError)
+		})
+
+		it("should capture telemetry on completePrompt error", async () => {
+			const mockError = new Error("Gemini completion error")
+			;(handler["client"].models.generateContent as any).mockRejectedValue(mockError)
+
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow()
+
+			// Verify telemetry was captured
+			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Gemini completion error",
+					provider: "Gemini",
+					modelId: GEMINI_MODEL_NAME,
+					operation: "completePrompt",
+				}),
+			)
+
+			// Verify it's an ApiProviderError
+			const capturedError = mockCaptureException.mock.calls[0][0]
+			expect(capturedError).toBeInstanceOf(ApiProviderError)
+		})
+
+		it("should still throw the error after capturing telemetry", async () => {
+			const mockError = new Error("Gemini API error")
+			;(handler["client"].models.generateContentStream as any).mockRejectedValue(mockError)
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			// Verify the error is still thrown
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should throw
+				}
+			}).rejects.toThrow()
+
+			// Telemetry should have been captured before the error was thrown
+			expect(mockCaptureException).toHaveBeenCalled()
 		})
 	})
 })

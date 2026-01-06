@@ -5,7 +5,7 @@ import { EVALS_REPO_PATH } from "../exercises/index.js"
 
 import { Logger, getTag, isDockerContainer, resetEvalsRepo, commitEvalsRepoChanges } from "./utils.js"
 import { startHeartbeat, stopHeartbeat } from "./redis.js"
-import { processTask, processTaskInContainer } from "./runTask.js"
+import { processTask, processTaskInContainer } from "./processTask.js"
 
 export const runEvals = async (runId: number) => {
 	const run = await findRun(runId)
@@ -37,22 +37,38 @@ export const runEvals = async (runId: number) => {
 	const heartbeat = await startHeartbeat(run.id)
 	const queue = new PQueue({ concurrency: run.concurrency })
 
+	const STAGGER_DELAY_MS = 5000
+	const filteredTasks = tasks.filter((task) => task.finishedAt === null)
+
+	const createTaskRunner = (task: (typeof filteredTasks)[number]) => async () => {
+		try {
+			if (containerized) {
+				await processTaskInContainer({ taskId: task.id, jobToken: run.jobToken, logger })
+			} else {
+				await processTask({ taskId: task.id, jobToken: run.jobToken, logger })
+			}
+		} catch (error) {
+			logger.error("error processing task", error)
+		}
+	}
+
 	try {
-		await queue.addAll(
-			tasks
-				.filter((task) => task.finishedAt === null)
-				.map((task) => async () => {
-					try {
-						if (containerized) {
-							await processTaskInContainer({ taskId: task.id, logger })
-						} else {
-							await processTask({ taskId: task.id, logger })
-						}
-					} catch (error) {
-						logger.error("error processing task", error)
-					}
-				}),
-		)
+		// Add tasks with staggered start times when concurrency > 1.
+		for (let i = 0; i < filteredTasks.length; i++) {
+			const task = filteredTasks[i]
+
+			if (!task) {
+				continue
+			}
+
+			if (run.concurrency > 1 && i > 0) {
+				await new Promise((resolve) => setTimeout(resolve, STAGGER_DELAY_MS))
+			}
+
+			queue.add(createTaskRunner(task))
+		}
+
+		await queue.onIdle()
 
 		logger.info("finishRun")
 		const result = await finishRun(run.id)

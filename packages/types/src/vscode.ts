@@ -30,8 +30,6 @@ export const commandIds = [
 	"activationCompleted",
 
 	"plusButtonClicked",
-	"promptsButtonClicked",
-	"mcpButtonClicked",
 	"historyButtonClicked",
 	"marketplaceButtonClicked",
 	"popoutButtonClicked",
@@ -39,11 +37,6 @@ export const commandIds = [
 	"settingsButtonClicked",
 
 	"openInNewTab",
-
-	"showHumanRelayDialog",
-	"registerHumanRelayCallback",
-	"unregisterHumanRelayCallback",
-	"handleHumanRelayResponse",
 
 	"newTask",
 

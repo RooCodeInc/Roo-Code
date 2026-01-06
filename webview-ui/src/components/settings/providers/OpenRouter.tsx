@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react"
-import { Trans } from "react-i18next"
 import { Checkbox } from "vscrui"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
@@ -11,7 +10,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { getOpenRouterAuthUrl } from "@src/oauth/urls"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 
-import { inputEventTransform, noTransform } from "../transforms"
+import { inputEventTransform } from "../transforms"
 
 import { ModelPicker } from "../ModelPicker"
 import { OpenRouterBalanceDisplay } from "./OpenRouterBalanceDisplay"
@@ -22,7 +21,7 @@ type OpenRouterProps = {
 	routerModels?: RouterModels
 	selectedModelId: string
 	uriScheme: string | undefined
-	fromWelcomeView?: boolean
+	simplifySettings?: boolean
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
 }
@@ -32,7 +31,7 @@ export const OpenRouter = ({
 	setApiConfigurationField,
 	routerModels,
 	uriScheme,
-	fromWelcomeView,
+	simplifySettings,
 	organizationAllowList,
 	modelValidationError,
 }: OpenRouterProps) => {
@@ -77,41 +76,29 @@ export const OpenRouter = ({
 					{t("settings:providers.getOpenRouterApiKey")}
 				</VSCodeButtonLink>
 			)}
-			{!fromWelcomeView && (
-				<>
-					<div>
-						<Checkbox
-							checked={openRouterBaseUrlSelected}
-							onChange={(checked: boolean) => {
-								setOpenRouterBaseUrlSelected(checked)
-
-								if (!checked) {
-									setApiConfigurationField("openRouterBaseUrl", "")
-								}
-							}}>
-							{t("settings:providers.useCustomBaseUrl")}
-						</Checkbox>
-						{openRouterBaseUrlSelected && (
-							<VSCodeTextField
-								value={apiConfiguration?.openRouterBaseUrl || ""}
-								type="url"
-								onInput={handleInputChange("openRouterBaseUrl")}
-								placeholder="Default: https://openrouter.ai/api/v1"
-								className="w-full mt-1"
-							/>
-						)}
-					</div>
+			{!simplifySettings && (
+				<div>
 					<Checkbox
-						checked={apiConfiguration?.openRouterUseMiddleOutTransform ?? true}
-						onChange={handleInputChange("openRouterUseMiddleOutTransform", noTransform)}>
-						<Trans
-							i18nKey="settings:providers.openRouterTransformsText"
-							components={{
-								a: <a href="https://openrouter.ai/docs/transforms" />,
-							}}
-						/>
+						checked={openRouterBaseUrlSelected}
+						onChange={(checked: boolean) => {
+							setOpenRouterBaseUrlSelected(checked)
+
+							if (!checked) {
+								setApiConfigurationField("openRouterBaseUrl", "")
+							}
+						}}>
+						{t("settings:providers.useCustomBaseUrl")}
 					</Checkbox>
-				</>
+					{openRouterBaseUrlSelected && (
+						<VSCodeTextField
+							value={apiConfiguration?.openRouterBaseUrl || ""}
+							type="url"
+							onInput={handleInputChange("openRouterBaseUrl")}
+							placeholder="Default: https://openrouter.ai/api/v1"
+							className="w-full mt-1"
+						/>
+					)}
+				</div>
 			)}
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
@@ -123,6 +110,7 @@ export const OpenRouter = ({
 				serviceUrl="https://openrouter.ai/models"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
+				simplifySettings={simplifySettings}
 			/>
 		</>
 	)

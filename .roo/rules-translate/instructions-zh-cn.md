@@ -16,7 +16,6 @@
 | Auto-approve          | 自动批准          | 始终批准     | 权限相关术语  |
 | Checkpoint            | 存档点            | 检查点/快照  | 技术概念统一  |
 | MCP Server            | MCP 服务          | MCP 服务器   | 技术组件      |
-| Human Relay           | 人工辅助模式      | 人工中继     | 功能描述清晰  |
 | Network Timeout       | 请求超时          | 网络超时     | 更准确描述    |
 | Terminal              | 终端              | 命令行       | 技术术语统一  |
 | diff                  | 差异更新          | 差分/补丁    | 代码变更      |
@@ -115,7 +114,7 @@
 
     - 保留英文品牌名
     - 技术术语保持一致性
-    - 保留英文专有名词：如"AWS Bedrock ARN"
+    - 保留英文专有名词：如"Amazon Bedrock ARN"
 
 4. **用户操作**
     - 操作动词统一：

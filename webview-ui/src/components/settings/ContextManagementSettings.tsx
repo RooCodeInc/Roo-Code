@@ -19,6 +19,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxOpenTabsContext: number
 	maxWorkspaceFiles: number
 	showRooIgnoredFiles?: boolean
+	enableSubfolderRules?: boolean
 	maxReadFileLine?: number
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
@@ -29,12 +30,14 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	writeDelayMs: number
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
+	maxGitStatusFiles?: number
 	setCachedStateField: SetCachedStateField<
 		| "autoCondenseContext"
 		| "autoCondenseContextPercent"
 		| "maxOpenTabsContext"
 		| "maxWorkspaceFiles"
 		| "showRooIgnoredFiles"
+		| "enableSubfolderRules"
 		| "maxReadFileLine"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
@@ -45,6 +48,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "writeDelayMs"
 		| "includeCurrentTime"
 		| "includeCurrentCost"
+		| "maxGitStatusFiles"
 	>
 }
 
@@ -55,6 +59,7 @@ export const ContextManagementSettings = ({
 	maxOpenTabsContext,
 	maxWorkspaceFiles,
 	showRooIgnoredFiles,
+	enableSubfolderRules,
 	setCachedStateField,
 	maxReadFileLine,
 	maxImageFileSize,
@@ -66,6 +71,7 @@ export const ContextManagementSettings = ({
 	writeDelayMs,
 	includeCurrentTime,
 	includeCurrentCost,
+	maxGitStatusFiles,
 	className,
 	...props
 }: ContextManagementSettingsProps) => {
@@ -148,6 +154,26 @@ export const ContextManagementSettings = ({
 
 				<div>
 					<span className="block font-medium mb-1">
+						{t("settings:contextManagement.maxGitStatusFiles.label")}
+					</span>
+					<div className="flex items-center gap-2">
+						<Slider
+							min={0}
+							max={50}
+							step={1}
+							value={[maxGitStatusFiles ?? 0]}
+							onValueChange={([value]) => setCachedStateField("maxGitStatusFiles", value)}
+							data-testid="max-git-status-files-slider"
+						/>
+						<span className="w-10">{maxGitStatusFiles ?? 0}</span>
+					</div>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:contextManagement.maxGitStatusFiles.description")}
+					</div>
+				</div>
+
+				<div>
+					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.maxConcurrentFileReads.label")}
 					</span>
 					<div className="flex items-center gap-2">
@@ -177,6 +203,20 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.rooignore.description")}
+					</div>
+				</div>
+
+				<div>
+					<VSCodeCheckbox
+						checked={enableSubfolderRules}
+						onChange={(e: any) => setCachedStateField("enableSubfolderRules", e.target.checked)}
+						data-testid="enable-subfolder-rules-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.enableSubfolderRules.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.enableSubfolderRules.description")}
 					</div>
 				</div>
 

@@ -47,20 +47,6 @@ describe("ProfileValidator", () => {
 			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(false)
 		})
 
-		it("should allow human-relay provider regardless of model", () => {
-			const allowList: OrganizationAllowList = {
-				allowAll: false,
-				providers: {
-					"human-relay": { allowAll: false },
-				},
-			}
-			const profile: ProviderSettings = {
-				apiProvider: "human-relay",
-			}
-
-			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)
-		})
-
 		it("should allow providers with allowAll=true regardless of model", () => {
 			const allowList: OrganizationAllowList = {
 				allowAll: false,
@@ -301,21 +287,6 @@ describe("ProfileValidator", () => {
 			const profile: ProviderSettings = {
 				apiProvider: "openrouter",
 				openRouterModelId: "openrouter-model",
-			}
-
-			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)
-		})
-
-		it("should extract glamaModelId for glama provider", () => {
-			const allowList: OrganizationAllowList = {
-				allowAll: false,
-				providers: {
-					glama: { allowAll: false, models: ["glama-model"] },
-				},
-			}
-			const profile: ProviderSettings = {
-				apiProvider: "glama",
-				glamaModelId: "glama-model",
 			}
 
 			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)

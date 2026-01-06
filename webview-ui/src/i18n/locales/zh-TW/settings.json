@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "供應商",
+		"modes": "模式",
+		"mcp": "MCP 伺服器",
 		"autoApprove": "自動核准",
 		"browser": "電腦存取",
 		"checkpoints": "檢查點",
@@ -34,6 +36,26 @@
 		"experimental": "實驗性",
 		"language": "語言",
 		"about": "關於 Roo Code"
+	},
+	"about": {
+		"bugReport": {
+			"label": "發現錯誤？",
+			"link": "在 GitHub 回報"
+		},
+		"featureRequest": {
+			"label": "有想法？",
+			"link": "與我們分享"
+		},
+		"securityIssue": {
+			"label": "發現安全漏洞？",
+			"link": "遵循我們的揭露流程"
+		},
+		"contact": {
+			"label": "需要與我們聯絡？請寫信"
+		},
+		"community": "想要獲取使用技巧或與其他 Roo Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "聯絡與社群",
+		"manageSettings": "管理設定"
 	},
 	"slashCommands": {
 		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
@@ -55,9 +77,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "API 金鑰",
 		"vercelAiGatewayApiKeyPlaceholder": "輸入您的 Vercel AI Gateway API 金鑰",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "AWS 區域",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "AWS 設定檔",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "來自 ~/.aws/credentials 的 AWS 設定檔名稱（必需）。",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "OpenRouter API 金鑰",
 		"openRouterApiKeyPlaceholder": "輸入您的 OpenRouter API 金鑰",
+		"openRouterProviderRoutingLabel": "OpenRouter 供應商路由",
+		"openRouterProviderRoutingDescription": "OpenRouter 會將請求路由到適合您嵌入模型的最佳可用供應商。預設情況下，請求會在頂尖供應商之間進行負載平衡以最大化正常運作時間。您也可以為此模型選擇特定的供應商。",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "API 金鑰：",
 		"mistralApiKeyPlaceholder": "輸入您的 Mistral API 金鑰",
@@ -125,11 +155,14 @@
 			"geminiApiKeyRequired": "需要 Gemini API 金鑰",
 			"mistralApiKeyRequired": "需要 Mistral API 金鑰",
 			"vercelAiGatewayApiKeyRequired": "需要 Vercel AI Gateway API 金鑰",
+			"bedrockRegionRequired": "AWS 區域為必填",
+			"bedrockProfileRequired": "AWS 設定檔為必填",
 			"ollamaBaseUrlRequired": "需要 Ollama 基礎 URL",
 			"baseUrlRequired": "需要基礎 URL",
 			"modelDimensionMinValue": "模型維度必須大於 0",
 			"openRouterApiKeyRequired": "OpenRouter API 密鑰是必需的"
 		},
+		"optional": "可選",
 		"advancedConfigLabel": "進階設定",
 		"searchMinScoreLabel": "搜尋分數閾值",
 		"searchMinScoreDescription": "搜尋結果所需的最低相似度分數（0.0-1.0）。較低的值會傳回更多結果，但可能較不相關。較高的值會傳回較少但更相關的結果。",
@@ -169,11 +202,6 @@
 			"label": "瀏覽器",
 			"description": "自動執行瀏覽器操作而無需核准 — 注意：僅適用於模型支援電腦使用時"
 		},
-		"retry": {
-			"label": "重試",
-			"description": "當伺服器回傳錯誤回應時自動重試失敗的 API 請求",
-			"delayLabel": "重試請求前的延遲"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "在 MCP 伺服器檢視中啟用個別 MCP 工具的自動核准（需要此設定和工具的「始終允許」核取方塊）"
@@ -203,10 +231,6 @@
 			"addButton": "新增",
 			"autoDenied": "前綴為 `{{prefix}}` 的命令已被使用者禁止。不要透過執行其他命令來繞過此限制。"
 		},
-		"updateTodoList": {
-			"label": "待辦",
-			"description": "自動更新待辦清單無需核准"
-		},
 		"apiRequestLimit": {
 			"title": "最大請求數",
 			"description": "在請求核准以繼續執行工作之前，自動發出此數量的 API 請求。",
@@ -226,6 +250,7 @@
 		"configProfile": "設定檔",
 		"description": "儲存不同的 API 設定以快速切換供應商和設定。",
 		"apiProvider": "API 供應商",
+		"apiProviderDocs": "供應商文檔",
 		"model": "模型",
 		"nameEmpty": "名稱不能為空",
 		"nameExists": "已存在同名的設定檔",
@@ -250,8 +275,6 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 金鑰",
 		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
 		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
-		"glamaApiKey": "Glama API 金鑰",
-		"getGlamaApiKey": "取得 Glama API 金鑰",
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",
@@ -271,7 +294,6 @@
 		"getRequestyApiKey": "取得 Requesty API 金鑰",
 		"getRequestyBaseUrl": "基礎 URL",
 		"requestyUseCustomBaseUrl": "使用自訂基礎 URL",
-		"openRouterTransformsText": "將提示和訊息鏈壓縮到上下文大小 (<a>OpenRouter 轉換</a>)",
 		"anthropicApiKey": "Anthropic API 金鑰",
 		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
 		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
@@ -279,6 +301,10 @@
 		"anthropic1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
 		"awsBedrock1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
 		"awsBedrock1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"vertex1MContextBetaLabel": "啟用 1M 上下文視窗 (Beta)",
+		"vertex1MContextBetaDescription": "為 Claude Sonnet 4 將上下文視窗擴展至 100 萬個 token",
+		"basetenApiKey": "Baseten API 金鑰",
+		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"cerebrasApiKey": "Cerebras API 金鑰",
 		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
 		"chutesApiKey": "Chutes API 金鑰",
@@ -345,6 +371,14 @@
 		"awsRegion": "AWS 區域",
 		"awsCrossRegion": "使用跨區域推論",
 		"awsGlobalInference": "使用全域推論 (自動選取最佳 AWS 區域)",
+		"awsServiceTier": "服務層級",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "效能和成本均衡",
+		"awsServiceTierFlex": "Flex (50% 折扣)",
+		"awsServiceTierFlexDesc": "低成本，非關鍵工作的延遲較高",
+		"awsServiceTierPriority": "Priority (75% 溢價)",
+		"awsServiceTierPriorityDesc": "為關鍵業務應用提供最快效能",
+		"awsServiceTierNote": "服務層級會影響定價和效能。Flex 提供 50% 折扣但延遲較高，Priority 提供 25% 更好的效能但費用溢價 75%。",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "使用自訂 VPC 端點",
 			"vpcEndpointUrlPlaceholder": "輸入 VPC 端點 URL（選填）",
@@ -399,10 +433,6 @@
 		"getUnboundApiKey": "取得 Unbound API 金鑰",
 		"unboundRefreshModelsSuccess": "模型列表已更新！您現在可以從最新模型中選擇。",
 		"unboundInvalidApiKey": "無效的 API 金鑰。請檢查您的 API 金鑰並重試。",
-		"humanRelay": {
-			"description": "不需要 API 金鑰，但使用者需要協助將資訊複製並貼上到網頁聊天 AI。",
-			"instructions": "使用期間會彈出對話框，並自動將目前訊息複製到剪貼簿。您需要將這些內容貼上到網頁版 AI（如 ChatGPT 或 Claude），然後將 AI 的回覆複製回對話框並點選確認按鈕。"
-		},
 		"roo": {
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
 			"connectButton": "連接到 Roo Code Cloud"
@@ -471,6 +501,7 @@
 			"none": "無",
 			"minimal": "最小 (最快)",
 			"high": "高",
+			"xhigh": "超高",
 			"medium": "中",
 			"low": "低"
 		},
@@ -627,6 +658,14 @@
 		"includeCurrentCost": {
 			"label": "在上下文中包含目前成本",
 			"description": "啟用後，目前 API 使用成本將包含在系統提示中。如果模型因成本問題停止工作，請停用此選項。"
+		},
+		"maxGitStatusFiles": {
+			"label": "Git 狀態最大檔案數",
+			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
+		},
+		"enableSubfolderRules": {
+			"label": "啟用子資料夾規則",
+			"description": "遞迴發現並載入子目錄中的 .roo/rules 和 AGENTS.md 檔案。適用於具有每包規則的 monorepo。"
 		}
 	},
 	"terminal": {
@@ -689,6 +728,14 @@
 	},
 	"advancedSettings": {
 		"title": "進階設定"
+	},
+	"toolProtocol": {
+		"label": "工具呼叫協議",
+		"description": "選擇 Roo 如何與 API 通信。原生使用提供者的函數呼叫 API，而 XML 使用 XML 格式的工具定義。",
+		"default": "預設",
+		"xml": "XML",
+		"native": "原生",
+		"currentDefault": "預設: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
@@ -759,6 +806,8 @@
 			"description": "啟用後，new_task 工具將需要提供 todos 參數。這可以確保所有新工作都以明確的目標列表開始。停用時（預設），todos 參數保持可選，以實現向後相容。"
 		},
 		"IMAGE_GENERATION": {
+			"providerLabel": "提供商",
+			"providerDescription": "選擇用於圖像生成的提供商。",
 			"name": "啟用 AI 圖像生成",
 			"description": "啟用後，Roo 可以使用 OpenRouter 的圖像生成模型從文字提示生成圖像。需要設定 OpenRouter API 金鑰。",
 			"openRouterApiKeyLabel": "OpenRouter API 金鑰",
@@ -772,6 +821,21 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "啟用模型啟動的斜線命令",
 			"description": "啟用時，Roo 可以執行您的斜線命令來執行工作流程。"
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "並行工具呼叫",
+			"description": "啟用後，原生協定可在單個助理訊息輪次中執行多個工具。"
+		},
+		"CUSTOM_TOOLS": {
+			"name": "啟用自訂工具",
+			"description": "啟用後，Roo 可以從專案中的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 載入並使用自訂 TypeScript/JavaScript 工具。注意：這些工具將自動獲得核准。",
+			"toolsHeader": "可用自訂工具",
+			"noTools": "未載入自訂工具。請向專案的 .roo/tools 目錄或全域工具目錄 ~/.roo/tools 新增 .ts 或 .js 檔案。",
+			"refreshButton": "重新整理",
+			"refreshing": "正在重新整理...",
+			"refreshSuccess": "工具重新整理成功",
+			"refreshError": "工具重新整理失敗",
+			"toolParameters": "參數"
 		}
 	},
 	"promptCaching": {
@@ -810,7 +874,8 @@
 		"label": "模型",
 		"searchPlaceholder": "搜尋",
 		"noMatchFound": "找不到符合的項目",
-		"useCustomModel": "使用自訂模型：{{modelId}}"
+		"useCustomModel": "使用自訂模型：{{modelId}}",
+		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
 		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
@@ -900,8 +965,12 @@
 	},
 	"ui": {
 		"collapseThinking": {
-			"label": "預設折疊“思考”訊息",
-			"description": "啟用後，“思考”塊將預設折疊，直到您與其互動"
+			"label": "預設折疊「思考」訊息",
+			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "需要 {{primaryMod}}+Enter 傳送訊息",
+			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
 		}
 	}
 }

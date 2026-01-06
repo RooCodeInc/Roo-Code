@@ -22,6 +22,8 @@
 	},
 	"sections": {
 		"providers": "Fournisseurs",
+		"modes": "Modes",
+		"mcp": "Serveurs MCP",
 		"autoApprove": "Auto-approbation",
 		"browser": "Accès ordinateur",
 		"checkpoints": "Points de contrôle",
@@ -34,6 +36,26 @@
 		"experimental": "Expérimental",
 		"language": "Langue",
 		"about": "À propos de Roo Code"
+	},
+	"about": {
+		"bugReport": {
+			"label": "Vous avez trouvé un bug ?",
+			"link": "Signaler sur GitHub"
+		},
+		"featureRequest": {
+			"label": "Vous avez une idée ?",
+			"link": "Partagez-la avec nous"
+		},
+		"securityIssue": {
+			"label": "Vous avez découvert une vulnérabilité ?",
+			"link": "Suivez notre processus de divulgation"
+		},
+		"contact": {
+			"label": "Besoin de nous parler ? Écrivez"
+		},
+		"community": "Vous voulez des conseils ou simplement discuter avec d'autres utilisateurs de Roo Code ? Rejoignez <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
+		"contactAndCommunity": "Contact et Communauté",
+		"manageSettings": "Gérer les Paramètres"
 	},
 	"slashCommands": {
 		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"
@@ -60,9 +82,17 @@
 		"vercelAiGatewayProvider": "Vercel AI Gateway",
 		"vercelAiGatewayApiKeyLabel": "Clé API",
 		"vercelAiGatewayApiKeyPlaceholder": "Entrez votre clé API Vercel AI Gateway",
+		"bedrockProvider": "Amazon Bedrock",
+		"bedrockRegionLabel": "Région AWS",
+		"bedrockRegionPlaceholder": "us-east-1",
+		"bedrockProfileLabel": "Profil AWS",
+		"bedrockProfilePlaceholder": "default",
+		"bedrockProfileDescription": "Nom du profil AWS depuis ~/.aws/credentials (requis).",
 		"openRouterProvider": "OpenRouter",
 		"openRouterApiKeyLabel": "Clé d'API OpenRouter",
 		"openRouterApiKeyPlaceholder": "Entrez votre clé d'API OpenRouter",
+		"openRouterProviderRoutingLabel": "Routage des fournisseurs OpenRouter",
+		"openRouterProviderRoutingDescription": "OpenRouter dirige les requêtes vers les meilleurs fournisseurs disponibles pour votre modèle d'embedding. Par défaut, les requêtes sont équilibrées entre les principaux fournisseurs pour maximiser la disponibilité. Cependant, vous pouvez choisir un fournisseur spécifique à utiliser pour ce modèle.",
 		"mistralProvider": "Mistral",
 		"mistralApiKeyLabel": "Clé d'API:",
 		"mistralApiKeyPlaceholder": "Entrez votre clé d'API Mistral",
@@ -125,11 +155,14 @@
 			"geminiApiKeyRequired": "La clé API Gemini est requise",
 			"mistralApiKeyRequired": "La clé API Mistral est requise",
 			"vercelAiGatewayApiKeyRequired": "La clé API Vercel AI Gateway est requise",
+			"bedrockRegionRequired": "La région AWS est requise",
+			"bedrockProfileRequired": "Le profil AWS est requis",
 			"ollamaBaseUrlRequired": "L'URL de base Ollama est requise",
 			"baseUrlRequired": "L'URL de base est requise",
 			"modelDimensionMinValue": "La dimension du modèle doit être supérieure à 0",
 			"openRouterApiKeyRequired": "Clé API OpenRouter est requise"
 		},
+		"optional": "optionnel",
 		"advancedConfigLabel": "Configuration avancée",
 		"searchMinScoreLabel": "Seuil de score de recherche",
 		"searchMinScoreDescription": "Score de similarité minimum (0.0-1.0) requis pour les résultats de recherche. Des valeurs plus faibles renvoient plus de résultats mais peuvent être moins pertinents. Des valeurs plus élevées renvoient moins de résultats mais plus pertinents.",
@@ -170,11 +203,6 @@
 			"label": "Navigateur",
 			"description": "Effectuer automatiquement des actions du navigateur sans nécessiter d'approbation. Remarque : S'applique uniquement lorsque le modèle prend en charge l'utilisation de l'ordinateur"
 		},
-		"retry": {
-			"label": "Réessayer",
-			"description": "Réessayer automatiquement les requêtes API échouées lorsque le serveur renvoie une réponse d'erreur",
-			"delayLabel": "Délai avant de réessayer la requête"
-		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Activer l'approbation automatique des outils MCP individuels dans la vue des serveurs MCP (nécessite à la fois ce paramètre et la case à cocher \"Toujours autoriser\" de l'outil)"
@@ -204,10 +232,6 @@
 			"addButton": "Ajouter",
 			"autoDenied": "Les commandes avec le préfixe `{{prefix}}` ont été interdites par l'utilisateur. Ne contourne pas cette restriction en exécutant une autre commande."
 		},
-		"updateTodoList": {
-			"label": "Todo",
-			"description": "La liste de tâches est mise à jour automatiquement sans approbation"
-		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",
 			"description": "Effectuer automatiquement ce nombre de requêtes API avant de demander l'approbation pour continuer la tâche.",
@@ -226,6 +250,7 @@
 		"configProfile": "Profil de configuration",
 		"description": "Enregistrez différentes configurations d'API pour basculer rapidement entre les fournisseurs et les paramètres.",
 		"apiProvider": "Fournisseur d'API",
+		"apiProviderDocs": "Documentation du Fournisseur",
 		"model": "Modèle",
 		"nameEmpty": "Le nom ne peut pas être vide",
 		"nameExists": "Un profil avec ce nom existe déjà",
@@ -250,8 +275,6 @@
 		"vercelAiGatewayApiKey": "Clé API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir la clé API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les clés API sont stockées en toute sécurité dans le stockage sécurisé de VSCode",
-		"glamaApiKey": "Clé API Glama",
-		"getGlamaApiKey": "Obtenir la clé API Glama",
 		"useCustomBaseUrl": "Utiliser une URL de base personnalisée",
 		"useReasoning": "Activer le raisonnement",
 		"useHostHeader": "Utiliser un en-tête Host personnalisé",
@@ -271,7 +294,6 @@
 		"getRequestyApiKey": "Obtenir la clé API Requesty",
 		"getRequestyBaseUrl": "URL de base",
 		"requestyUseCustomBaseUrl": "Utiliser une URL de base personnalisée",
-		"openRouterTransformsText": "Compresser les prompts et chaînes de messages à la taille du contexte (<a>Transformations OpenRouter</a>)",
 		"anthropicApiKey": "Clé API Anthropic",
 		"getAnthropicApiKey": "Obtenir la clé API Anthropic",
 		"anthropicUseAuthToken": "Passer la clé API Anthropic comme en-tête d'autorisation au lieu de X-Api-Key",
@@ -279,6 +301,10 @@
 		"anthropic1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Activer la fenêtre de contexte de 1M (Bêta)",
 		"awsBedrock1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Activer la fenêtre de contexte de 1M (Bêta)",
+		"vertex1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
+		"basetenApiKey": "Clé API Baseten",
+		"getBasetenApiKey": "Obtenir la clé API Baseten",
 		"cerebrasApiKey": "Clé API Cerebras",
 		"getCerebrasApiKey": "Obtenir la clé API Cerebras",
 		"chutesApiKey": "Clé API Chutes",
@@ -345,6 +371,14 @@
 		"awsRegion": "Région AWS",
 		"awsCrossRegion": "Utiliser l'inférence inter-régions",
 		"awsGlobalInference": "Utiliser l'inférence globale (sélection automatique de la région AWS optimale)",
+		"awsServiceTier": "Niveau de service",
+		"awsServiceTierStandard": "Standard",
+		"awsServiceTierStandardDesc": "Performances et coûts équilibrés",
+		"awsServiceTierFlex": "Flexible (50% de réduction)",
+		"awsServiceTierFlexDesc": "Coût inférieur, latence plus élevée pour les tâches non critiques",
+		"awsServiceTierPriority": "Priorité (75% de prime)",
+		"awsServiceTierPriorityDesc": "Performances optimales pour les applications critiques",
+		"awsServiceTierNote": "Les niveaux de service affectent les prix et les performances. Flexible offre une réduction de 50% avec une latence plus élevée, Priorité offre 25% de meilleures performances avec une prime de 75%.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Utiliser un point de terminaison VPC personnalisé",
 			"vpcEndpointUrlPlaceholder": "Entrer l'URL du point de terminaison VPC (optionnel)",
@@ -399,10 +433,6 @@
 		"getUnboundApiKey": "Obtenir la clé API Unbound",
 		"unboundRefreshModelsSuccess": "Liste des modèles mise à jour ! Vous pouvez maintenant sélectionner parmi les derniers modèles.",
 		"unboundInvalidApiKey": "Clé API invalide. Veuillez vérifier votre clé API et réessayer.",
-		"humanRelay": {
-			"description": "Aucune clé API n'est requise, mais l'utilisateur doit aider à copier et coller les informations dans le chat web de l'IA.",
-			"instructions": "Pendant l'utilisation, une boîte de dialogue apparaîtra et le message actuel sera automatiquement copié dans le presse-papiers. Vous devez le coller dans les versions web de l'IA (comme ChatGPT ou Claude), puis copier la réponse de l'IA dans la boîte de dialogue et cliquer sur le bouton de confirmation."
-		},
 		"roo": {
 			"authenticatedMessage": "Authentifié de manière sécurisée via ton compte Roo Code Cloud.",
 			"connectButton": "Se connecter à Roo Code Cloud"
@@ -471,6 +501,7 @@
 			"none": "Aucun",
 			"minimal": "Minimal (le plus rapide)",
 			"high": "Élevé",
+			"xhigh": "Très élevé",
 			"medium": "Moyen",
 			"low": "Faible"
 		},
@@ -626,6 +657,14 @@
 		"includeCurrentCost": {
 			"label": "Inclure le coût actuel dans le contexte",
 			"description": "Lorsque cette option est activée, le coût d'utilisation actuel de l'API sera inclus dans le prompt système. Désactivez cette option si les modèles cessent de fonctionner en raison de problèmes de coût."
+		},
+		"maxGitStatusFiles": {
+			"label": "Git status max fichiers",
+			"description": "Nombre maximum de fichiers à inclure dans le contexte de statut git. Mettre à 0 pour désactiver. Les informations de branche et les commits sont toujours affichés si > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activer les règles des sous-dossiers",
+			"description": "Découvrir et charger récursivement les fichiers .roo/rules et AGENTS.md depuis les sous-répertoires. Utile pour les monorepos avec des règles par package."
 		}
 	},
 	"terminal": {
@@ -688,6 +727,14 @@
 	},
 	"advancedSettings": {
 		"title": "Paramètres avancés"
+	},
+	"toolProtocol": {
+		"label": "Protocole d'appel d'outil",
+		"description": "Choisissez comment Roo communique avec l'API. Natif utilise l'API d'appel de fonction du fournisseur, tandis que XML utilise des définitions d'outils au format XML.",
+		"default": "Défaut",
+		"xml": "XML",
+		"native": "Natif",
+		"currentDefault": "Défaut: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {
@@ -759,6 +806,8 @@
 		},
 		"IMAGE_GENERATION": {
 			"name": "Activer la génération d'images IA",
+			"providerLabel": "Fournisseur",
+			"providerDescription": "Sélectionnez le fournisseur pour la génération d'images.",
 			"description": "Lorsqu'activé, Roo peut générer des images à partir de prompts textuels en utilisant les modèles de génération d'images d'OpenRouter. Nécessite qu'une clé API OpenRouter soit configurée.",
 			"openRouterApiKeyLabel": "Clé API OpenRouter",
 			"openRouterApiKeyPlaceholder": "Entrez votre clé API OpenRouter",
@@ -771,6 +820,21 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",
 			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
+		},
+		"MULTIPLE_NATIVE_TOOL_CALLS": {
+			"name": "Appels d'outils parallèles",
+			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Activer les outils personnalisés",
+			"description": "Lorsqu'activé, Roo peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",
+			"toolsHeader": "Outils personnalisés disponibles",
+			"noTools": "Aucun outil personnalisé chargé. Ajoutez des fichiers .ts ou .js au répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux.",
+			"refreshButton": "Actualiser",
+			"refreshing": "Actualisation...",
+			"refreshSuccess": "Outils actualisés avec succès",
+			"refreshError": "Échec de l'actualisation des outils",
+			"toolParameters": "Paramètres"
 		}
 	},
 	"promptCaching": {
@@ -809,7 +873,8 @@
 		"label": "Modèle",
 		"searchPlaceholder": "Rechercher",
 		"noMatchFound": "Aucune correspondance trouvée",
-		"useCustomModel": "Utiliser personnalisé : {{modelId}}"
+		"useCustomModel": "Utiliser personnalisé : {{modelId}}",
+		"simplifiedExplanation": "Tu peux ajuster les paramètres détaillés du modèle ultérieurement."
 	},
 	"footer": {
 		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
@@ -901,6 +966,10 @@
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
+		},
+		"requireCtrlEnterToSend": {
+			"label": "Exiger {{primaryMod}}+Entrée pour envoyer les messages",
+			"description": "Lorsqu'activé, tu dois appuyer sur {{primaryMod}}+Entrée pour envoyer des messages au lieu de simplement Entrée"
 		}
 	}
 }

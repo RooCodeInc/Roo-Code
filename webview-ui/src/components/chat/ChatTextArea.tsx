@@ -51,6 +51,9 @@ interface ChatTextAreaProps {
 	// Edit mode props
 	isEditMode?: boolean
 	onCancel?: () => void
+	// Browser session status
+	isBrowserSessionActive?: boolean
+	showBrowserDockToggle?: boolean
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -71,6 +74,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			modeShortcutText,
 			isEditMode = false,
 			onCancel,
+			isBrowserSessionActive = false,
+			showBrowserDockToggle = false,
 		},
 		ref,
 	) => {
@@ -89,6 +94,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			clineMessages,
 			commands,
 			cloudUserInfo,
+			enterBehavior,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -251,6 +257,17 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		const hasInputContent = useMemo(() => {
 			return inputValue.trim().length > 0 || selectedImages.length > 0
 		}, [inputValue, selectedImages])
+
+		// Compute the key combination text for the send button tooltip based on enterBehavior
+		const sendKeyCombination = useMemo(() => {
+			if (enterBehavior === "newline") {
+				// When Enter = newline, Ctrl/Cmd+Enter sends
+				const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
+				return isMac ? "⌘+Enter" : "Ctrl+Enter"
+			}
+			// Default: Enter sends
+			return "Enter"
+		}, [enterBehavior])
 
 		const queryItems = useMemo(() => {
 			return [
@@ -467,12 +484,24 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					return
 				}
 
-				if (event.key === "Enter" && !event.shiftKey && !isComposing) {
-					event.preventDefault()
-
-					// Always call onSend - let ChatView handle queueing when disabled
-					resetHistoryNavigation()
-					onSend()
+				// Handle Enter key based on enterBehavior setting
+				if (event.key === "Enter" && !isComposing) {
+					if (enterBehavior === "newline") {
+						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send
+						if (event.shiftKey || event.ctrlKey || event.metaKey) {
+							event.preventDefault()
+							resetHistoryNavigation()
+							onSend()
+						}
+						// Otherwise, let Enter create newline (don't preventDefault)
+					} else {
+						// Default behavior: Enter = send, Shift+Enter = newline
+						if (!event.shiftKey) {
+							event.preventDefault()
+							resetHistoryNavigation()
+							onSend()
+						}
+					}
 				}
 
 				if (event.key === "Backspace" && !isComposing) {
@@ -536,6 +565,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				handleHistoryNavigation,
 				resetHistoryNavigation,
 				commands,
+				enterBehavior,
 			],
 		)
 
@@ -1154,9 +1184,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip content={t("chat:sendMessage")}>
+								<StandardTooltip
+									content={t("chat:pressToSend", { keyCombination: sendKeyCombination })}>
 									<button
-										aria-label={t("chat:sendMessage")}
+										aria-label={t("chat:pressToSend", { keyCombination: sendKeyCombination })}
 										disabled={false}
 										onClick={onSend}
 										className={cn(
@@ -1236,7 +1267,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					</div>
 					<div
 						className={cn(
-							"flex flex-shrink-0 items-center gap-0.5",
+							"flex flex-shrink-0 items-center gap-0.5 h-5 leading-none",
 							!isEditMode && cloudUserInfo ? "" : "pr-2",
 						)}>
 						{isTtsPlaying && (
@@ -1261,6 +1292,12 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
+						{/* keep props referenced after moving browser button */}
+						<div
+							className="hidden"
+							data-browser-session-active={isBrowserSessionActive}
+							data-show-browser-dock-toggle={showBrowserDockToggle}
+						/>
 					</div>
 				</div>
 			</div>

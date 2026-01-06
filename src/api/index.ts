@@ -1,11 +1,11 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
 import {
-	GlamaHandler,
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
@@ -22,7 +22,6 @@ import {
 	VsCodeLmHandler,
 	UnboundHandler,
 	RequestyHandler,
-	HumanRelayHandler,
 	FakeAIHandler,
 	XAIHandler,
 	GroqHandler,
@@ -41,6 +40,7 @@ import {
 	VercelAiGatewayHandler,
 	DeepInfraHandler,
 	MiniMaxHandler,
+	BasetenHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -63,6 +63,37 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * - Unbound: Sent in unbound_metadata
 	 */
 	mode?: string
+	suppressPreviousResponseId?: boolean
+	/**
+	 * Controls whether the response should be stored for 30 days in OpenAI's Responses API.
+	 * When true (default), responses are stored and can be referenced in future requests
+	 * using the previous_response_id for efficient conversation continuity.
+	 * Set to false to opt out of response storage for privacy or compliance reasons.
+	 * @default true
+	 */
+	store?: boolean
+	/**
+	 * Optional array of tool definitions to pass to the model.
+	 * For OpenAI-compatible providers, these are ChatCompletionTool definitions.
+	 */
+	tools?: OpenAI.Chat.ChatCompletionTool[]
+	/**
+	 * Controls which (if any) tool is called by the model.
+	 * Can be "none", "auto", "required", or a specific tool choice.
+	 */
+	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
+	/**
+	 * The tool protocol being used (XML or Native).
+	 * Used by providers to determine whether to include native tool definitions.
+	 */
+	toolProtocol?: ToolProtocol
+	/**
+	 * Controls whether the model can return multiple tool calls in a single response.
+	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
+	 * When false (default), only one tool call is returned per response.
+	 * Only applies when toolProtocol is "native".
+	 */
+	parallelToolCalls?: boolean
 }
 
 export interface ApiHandler {
@@ -93,8 +124,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new AnthropicHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
-		case "glama":
-			return new GlamaHandler(options)
 		case "openrouter":
 			return new OpenRouterHandler(options)
 		case "bedrock":
@@ -129,8 +158,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new UnboundHandler(options)
 		case "requesty":
 			return new RequestyHandler(options)
-		case "human-relay":
-			return new HumanRelayHandler()
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
@@ -165,8 +192,9 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new VercelAiGatewayHandler(options)
 		case "minimax":
 			return new MiniMaxHandler(options)
+		case "baseten":
+			return new BasetenHandler(options)
 		default:
-			apiProvider satisfies "gemini-cli" | undefined
 			return new AnthropicHandler(options)
 	}
 }

@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
+import { z } from "zod"
 
 import {
 	openRouterDefaultModelId,
@@ -7,11 +8,18 @@ import {
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
+
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
 import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { normalizeMistralToolCallId } from "../transform/mistral-format"
+import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import { TOOL_PROTOCOL } from "@roo-code/types"
 import { ApiStreamChunk } from "../transform/stream"
 import { convertToR1Format } from "../transform/r1-format"
 import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transform/caching/anthropic"
@@ -24,35 +32,10 @@ import { getModelEndpoints } from "./fetchers/modelEndpointCache"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler } from "../index"
+import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
-
-// Image generation types
-interface ImageGenerationResponse {
-	choices?: Array<{
-		message?: {
-			content?: string
-			images?: Array<{
-				type?: string
-				image_url?: {
-					url?: string
-				}
-			}>
-		}
-	}>
-	error?: {
-		message?: string
-		type?: string
-		code?: string
-	}
-}
-
-export interface ImageGenerationResult {
-	success: boolean
-	imageData?: string
-	imageFormat?: string
-	error?: string
-}
+import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Add custom interface for OpenRouter params.
 type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
@@ -60,6 +43,77 @@ type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
 	include_reasoning?: boolean
 	// https://openrouter.ai/docs/use-cases/reasoning-tokens
 	reasoning?: OpenRouterReasoningParams
+}
+
+// Zod schema for OpenRouter error response structure (for caught exceptions)
+const OpenRouterErrorResponseSchema = z.object({
+	error: z
+		.object({
+			message: z.string().optional(),
+			code: z.number().optional(),
+			metadata: z
+				.object({
+					raw: z.string().optional(),
+				})
+				.optional(),
+		})
+		.optional(),
+})
+
+// OpenRouter error structure that may include error.metadata.raw with actual upstream error
+// This is for caught exceptions which have the error wrapped in an "error" property
+interface OpenRouterErrorResponse {
+	error?: {
+		message?: string
+		code?: number
+		metadata?: { raw?: string }
+	}
+}
+
+// Direct error object structure (for streaming errors passed directly)
+interface OpenRouterError {
+	message?: string
+	code?: number
+	metadata?: { raw?: string }
+}
+
+/**
+ * Helper function to parse and extract error message from metadata.raw
+ * metadata.raw is often a JSON encoded string that may contain .message or .error fields
+ * Example structures:
+ * - {"message": "Error text"}
+ * - {"error": "Error text"}
+ * - {"error": {"message": "Error text"}}
+ * - {"type":"error","error":{"type":"invalid_request_error","message":"tools: Tool names must be unique."}}
+ */
+function extractErrorFromMetadataRaw(raw: string | undefined): string | undefined {
+	if (!raw) {
+		return undefined
+	}
+
+	try {
+		const parsed = JSON.parse(raw)
+		// Check for common error message fields
+		if (typeof parsed === "object" && parsed !== null) {
+			// Check for direct message field
+			if (typeof parsed.message === "string") {
+				return parsed.message
+			}
+			// Check for nested error.message field (e.g., Anthropic error format)
+			if (typeof parsed.error === "object" && parsed.error !== null && typeof parsed.error.message === "string") {
+				return parsed.error.message
+			}
+			// Check for error as a string
+			if (typeof parsed.error === "string") {
+				return parsed.error
+			}
+		}
+		// If we can't extract a specific field, return the raw string
+		return raw
+	} catch {
+		// If it's not valid JSON, return as-is
+		return raw
+	}
 }
 
 // See `OpenAI.Chat.Completions.ChatCompletionChunk["usage"]`
@@ -87,6 +141,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
+	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -96,21 +151,75 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 
 		this.client = new OpenAI({ baseURL, apiKey, defaultHeaders: DEFAULT_HEADERS })
+
+		// Load models asynchronously to populate cache before getModel() is called
+		this.loadDynamicModels().catch((error) => {
+			console.error("[OpenRouterHandler] Failed to load dynamic models:", error)
+		})
+	}
+
+	private async loadDynamicModels(): Promise<void> {
+		try {
+			const [models, endpoints] = await Promise.all([
+				getModels({ provider: "openrouter" }),
+				getModelEndpoints({
+					router: "openrouter",
+					modelId: this.options.openRouterModelId,
+					endpoint: this.options.openRouterSpecificProvider,
+				}),
+			])
+
+			this.models = models
+			this.endpoints = endpoints
+		} catch (error) {
+			console.error("[OpenRouterHandler] Error loading dynamic models:", {
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			})
+		}
+	}
+
+	getReasoningDetails(): any[] | undefined {
+		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
+	}
+
+	/**
+	 * Handle OpenRouter streaming error response and report to telemetry.
+	 * OpenRouter may include metadata.raw with the actual upstream provider error.
+	 * @param error The error object (not wrapped - receives the error directly)
+	 */
+	private handleStreamingError(error: OpenRouterError, modelId: string, operation: string): never {
+		const rawString = error?.metadata?.raw
+		const parsedError = extractErrorFromMetadataRaw(rawString)
+		const rawErrorMessage = parsedError || error?.message || "Unknown error"
+
+		const apiError = Object.assign(
+			new ApiProviderError(rawErrorMessage, this.providerName, modelId, operation, error?.code),
+			{ status: error?.code, error },
+		)
+
+		TelemetryService.instance.captureException(apiError)
+
+		throw new Error(`OpenRouter API Error ${error?.code}: ${rawErrorMessage}`)
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
 		const model = await this.fetchModel()
 
 		let { id: modelId, maxTokens, temperature, topP, reasoning } = model
 
-		// OpenRouter sends reasoning tokens by default for Gemini 2.5 Pro
-		// Preview even if you don't request them. This is not the default for
+		// Reset reasoning_details accumulator for this request
+		this.currentReasoningDetails = []
+
+		// OpenRouter sends reasoning tokens by default for Gemini 2.5 Pro models
+		// even if you don't request them. This is not the default for
 		// other providers (including Gemini), so we need to explicitly disable
-		// i We should generalize this using the logic in `getModelParams`, but
-		// this is easier for now.
+		// them unless the user has explicitly configured reasoning.
+		// Note: Gemini 3 models use reasoning_details format and should not be excluded.
 		if (
 			(modelId === "google/gemini-2.5-pro-preview" || modelId === "google/gemini-2.5-pro") &&
 			typeof reasoning === "undefined"
@@ -119,14 +228,57 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Convert Anthropic messages to OpenAI format.
+		// Pass normalization function for Mistral compatibility (requires 9-char alphanumeric IDs)
+		const isMistral = modelId.toLowerCase().includes("mistral")
 		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(
+				messages,
+				isMistral ? { normalizeToolCallId: normalizeMistralToolCallId } : undefined,
+			),
 		]
 
 		// DeepSeek highly recommends using user instead of system role.
 		if (modelId.startsWith("deepseek/deepseek-r1") || modelId === "perplexity/sonar-reasoning") {
 			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+		}
+
+		// Process reasoning_details when switching models to Gemini for native tool call compatibility
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
+		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+		const isGemini = modelId.startsWith("google/gemini")
+
+		// For Gemini with native protocol: inject fake reasoning.encrypted blocks for tool calls
+		// This is required when switching from other models to Gemini to satisfy API validation
+		if (isNativeProtocol && isGemini) {
+			openAiMessages = openAiMessages.map((msg) => {
+				if (msg.role === "assistant") {
+					const toolCalls = (msg as any).tool_calls as any[] | undefined
+					const existingDetails = (msg as any).reasoning_details as any[] | undefined
+
+					// Only inject if there are tool calls and no existing encrypted reasoning
+					if (toolCalls && toolCalls.length > 0) {
+						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
+
+						if (!hasEncrypted) {
+							const fakeEncrypted = toolCalls.map((tc, idx) => ({
+								id: tc.id,
+								type: "reasoning.encrypted",
+								data: "skip_thought_signature_validator",
+								format: "google-gemini-v1",
+								index: (existingDetails?.length ?? 0) + idx,
+							}))
+
+							return {
+								...msg,
+								reasoning_details: [...(existingDetails ?? []), ...fakeEncrypted],
+							}
+						}
+					}
+				}
+				return msg
+			})
 		}
 
 		// https://openrouter.ai/docs/features/prompt-caching
@@ -138,8 +290,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				addAnthropicCacheBreakpoints(systemPrompt, openAiMessages)
 			}
 		}
-
-		const transforms = (this.options.openRouterUseMiddleOutTransform ?? true) ? ["middle-out"] : undefined
 
 		// https://openrouter.ai/docs/transforms
 		const completionParams: OpenRouterChatCompletionParams = {
@@ -159,40 +309,197 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						allow_fallbacks: false,
 					},
 				}),
-			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
+
+		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models
+		const requestOptions = modelId.startsWith("anthropic/")
+			? { headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } }
+			: undefined
 
 		let stream
 		try {
-			stream = await this.client.chat.completions.create(completionParams)
+			stream = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			throw handleOpenAIError(error, this.providerName)
+			// Try to parse as OpenRouter error structure using Zod
+			const parseResult = OpenRouterErrorResponseSchema.safeParse(error)
+
+			if (parseResult.success && parseResult.data.error) {
+				const openRouterError = parseResult.data
+				const rawString = openRouterError.error?.metadata?.raw
+				const parsedError = extractErrorFromMetadataRaw(rawString)
+				const rawErrorMessage = parsedError || openRouterError.error?.message || "Unknown error"
+
+				const apiError = Object.assign(
+					new ApiProviderError(
+						rawErrorMessage,
+						this.providerName,
+						modelId,
+						"createMessage",
+						openRouterError.error?.code,
+					),
+					{
+						status: openRouterError.error?.code,
+						error: openRouterError.error,
+					},
+				)
+
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			} else {
+				// Fallback for non-OpenRouter errors
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			}
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
+		// Accumulator for reasoning_details FROM the API.
+		// We preserve the original shape of reasoning_details to prevent malformed responses.
+		const reasoningDetailsAccumulator = new Map<
+			string,
+			{
+				type: string
+				text?: string
+				summary?: string
+				data?: string
+				id?: string | null
+				format?: string
+				signature?: string
+				index: number
+			}
+		>()
+
+		// Track whether we've yielded displayable text from reasoning_details.
+		// When reasoning_details has displayable content (reasoning.text or reasoning.summary),
+		// we skip yielding the top-level reasoning field to avoid duplicate display.
+		let hasYieldedReasoningFromDetails = false
 
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
 			if ("error" in chunk) {
-				const error = chunk.error as { message?: string; code?: number }
-				console.error(`OpenRouter API Error: ${error?.code} - ${error?.message}`)
-				throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
+				this.handleStreamingError(chunk.error as OpenRouterError, modelId, "createMessage")
 			}
 
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
-			if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-				yield { type: "reasoning", text: delta.reasoning }
+			if (delta) {
+				// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
+				// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
+				// Priority: Check for reasoning_details first, as it's the newer format
+				const deltaWithReasoning = delta as typeof delta & {
+					reasoning_details?: Array<{
+						type: string
+						text?: string
+						summary?: string
+						data?: string
+						id?: string | null
+						format?: string
+						signature?: string
+						index?: number
+					}>
+				}
+
+				if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
+					for (const detail of deltaWithReasoning.reasoning_details) {
+						const index = detail.index ?? 0
+						const key = `${detail.type}-${index}`
+						const existing = reasoningDetailsAccumulator.get(key)
+
+						if (existing) {
+							// Accumulate text/summary/data for existing reasoning detail
+							if (detail.text !== undefined) {
+								existing.text = (existing.text || "") + detail.text
+							}
+							if (detail.summary !== undefined) {
+								existing.summary = (existing.summary || "") + detail.summary
+							}
+							if (detail.data !== undefined) {
+								existing.data = (existing.data || "") + detail.data
+							}
+							// Update other fields if provided
+							if (detail.id !== undefined) existing.id = detail.id
+							if (detail.format !== undefined) existing.format = detail.format
+							if (detail.signature !== undefined) existing.signature = detail.signature
+						} else {
+							// Start new reasoning detail accumulation
+							reasoningDetailsAccumulator.set(key, {
+								type: detail.type,
+								text: detail.text,
+								summary: detail.summary,
+								data: detail.data,
+								id: detail.id,
+								format: detail.format,
+								signature: detail.signature,
+								index,
+							})
+						}
+
+						// Yield text for display (still fragmented for live streaming)
+						// Only reasoning.text and reasoning.summary have displayable content
+						// reasoning.encrypted is intentionally skipped as it contains redacted content
+						let reasoningText: string | undefined
+						if (detail.type === "reasoning.text" && typeof detail.text === "string") {
+							reasoningText = detail.text
+						} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
+							reasoningText = detail.summary
+						}
+
+						if (reasoningText) {
+							hasYieldedReasoningFromDetails = true
+							yield { type: "reasoning", text: reasoningText }
+						}
+					}
+				}
+
+				// Handle top-level reasoning field for UI display.
+				// Skip if we've already yielded from reasoning_details to avoid duplicate display.
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					if (!hasYieldedReasoningFromDetails) {
+						yield { type: "reasoning", text: delta.reasoning }
+					}
+				}
+
+				// Emit raw tool call chunks - NativeToolCallParser handles state management
+				if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
+					for (const toolCall of delta.tool_calls) {
+						yield {
+							type: "tool_call_partial",
+							index: toolCall.index,
+							id: toolCall.id,
+							name: toolCall.function?.name,
+							arguments: toolCall.function?.arguments,
+						}
+					}
+				}
+
+				if (delta.content) {
+					yield { type: "text", text: delta.content }
+				}
 			}
 
-			if (delta?.content) {
-				yield { type: "text", text: delta.content }
+			// Process finish_reason to emit tool_call_end events
+			// This ensures tool calls are finalized even if the stream doesn't properly close
+			if (finishReason) {
+				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+				for (const event of endEvents) {
+					yield event
+				}
 			}
 
 			if (chunk.usage) {
 				lastUsage = chunk.usage
 			}
+		}
+
+		// After streaming completes, store ONLY the reasoning_details we received from the API.
+		if (reasoningDetailsAccumulator.size > 0) {
+			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
 		}
 
 		if (lastUsage) {
@@ -232,6 +539,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
+
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 
 		const params = getModelParams({
@@ -266,16 +576,52 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(reasoning && { reasoning }),
 		}
 
+		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models
+		const requestOptions = modelId.startsWith("anthropic/")
+			? { headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } }
+			: undefined
+
 		let response
+
 		try {
-			response = await this.client.chat.completions.create(completionParams)
+			response = await this.client.chat.completions.create(completionParams, requestOptions)
 		} catch (error) {
-			throw handleOpenAIError(error, this.providerName)
+			// Try to parse as OpenRouter error structure using Zod
+			const parseResult = OpenRouterErrorResponseSchema.safeParse(error)
+
+			if (parseResult.success && parseResult.data.error) {
+				const openRouterError = parseResult.data
+				const rawString = openRouterError.error?.metadata?.raw
+				const parsedError = extractErrorFromMetadataRaw(rawString)
+				const rawErrorMessage = parsedError || openRouterError.error?.message || "Unknown error"
+
+				const apiError = Object.assign(
+					new ApiProviderError(
+						rawErrorMessage,
+						this.providerName,
+						modelId,
+						"completePrompt",
+						openRouterError.error?.code,
+					),
+					{
+						status: openRouterError.error?.code,
+						error: openRouterError.error,
+					},
+				)
+
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			} else {
+				// Fallback for non-OpenRouter errors
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+				TelemetryService.instance.captureException(apiError)
+				throw handleOpenAIError(error, this.providerName)
+			}
 		}
 
 		if ("error" in response) {
-			const error = response.error as { message?: string; code?: number }
-			throw new Error(`OpenRouter API Error ${error?.code}: ${error?.message}`)
+			this.handleStreamingError(response.error as OpenRouterError, modelId, "completePrompt")
 		}
 
 		const completion = response as OpenAI.Chat.ChatCompletion
@@ -283,7 +629,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	/**
-	 * Generate an image using OpenRouter's image generation API
+	 * Generate an image using OpenRouter's image generation API (chat completions with modalities)
+	 * Note: OpenRouter only supports the chat completions approach, not the /images/generations endpoint
 	 * @param prompt The text prompt for image generation
 	 * @param model The model to use for generation
 	 * @param apiKey The OpenRouter API key (must be explicitly provided)
@@ -303,103 +650,15 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		try {
-			const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
-			const response = await fetch(`${baseURL}/chat/completions`, {
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${apiKey}`,
-					"Content-Type": "application/json",
-					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-					"X-Title": "Roo Code",
-				},
-				body: JSON.stringify({
-					model,
-					messages: [
-						{
-							role: "user",
-							content: inputImage
-								? [
-										{
-											type: "text",
-											text: prompt,
-										},
-										{
-											type: "image_url",
-											image_url: {
-												url: inputImage,
-											},
-										},
-									]
-								: prompt,
-						},
-					],
-					modalities: ["image", "text"],
-				}),
-			})
+		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 
-			if (!response.ok) {
-				const errorText = await response.text()
-				let errorMessage = `Failed to generate image: ${response.status} ${response.statusText}`
-				try {
-					const errorJson = JSON.parse(errorText)
-					if (errorJson.error?.message) {
-						errorMessage = `Failed to generate image: ${errorJson.error.message}`
-					}
-				} catch {
-					// Use default error message
-				}
-				return {
-					success: false,
-					error: errorMessage,
-				}
-			}
-
-			const result: ImageGenerationResponse = await response.json()
-
-			if (result.error) {
-				return {
-					success: false,
-					error: `Failed to generate image: ${result.error.message}`,
-				}
-			}
-
-			// Extract the generated image from the response
-			const images = result.choices?.[0]?.message?.images
-			if (!images || images.length === 0) {
-				return {
-					success: false,
-					error: "No image was generated in the response",
-				}
-			}
-
-			const imageData = images[0]?.image_url?.url
-			if (!imageData) {
-				return {
-					success: false,
-					error: "Invalid image data in response",
-				}
-			}
-
-			// Extract base64 data from data URL
-			const base64Match = imageData.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/)
-			if (!base64Match) {
-				return {
-					success: false,
-					error: "Invalid image format received",
-				}
-			}
-
-			return {
-				success: true,
-				imageData: imageData,
-				imageFormat: base64Match[1],
-			}
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : "Unknown error occurred",
-			}
-		}
+		// OpenRouter only supports chat completions approach for image generation
+		return generateImageWithProvider({
+			baseURL,
+			authToken: apiKey,
+			model,
+			prompt,
+			inputImage,
+		})
 	}
 }

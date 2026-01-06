@@ -4,11 +4,46 @@ import { SystemMessage } from "@mistralai/mistralai/models/components/systemmess
 import { ToolMessage } from "@mistralai/mistralai/models/components/toolmessage"
 import { UserMessage } from "@mistralai/mistralai/models/components/usermessage"
 
+/**
+ * Normalizes a tool call ID to be compatible with Mistral's strict ID requirements.
+ * Mistral requires tool call IDs to be:
+ * - Only alphanumeric characters (a-z, A-Z, 0-9)
+ * - Exactly 9 characters in length
+ *
+ * This function extracts alphanumeric characters from the original ID and
+ * pads/truncates to exactly 9 characters, ensuring deterministic output.
+ *
+ * @param id - The original tool call ID (e.g., "call_5019f900a247472bacde0b82" or "toolu_123")
+ * @returns A normalized 9-character alphanumeric ID compatible with Mistral
+ */
+export function normalizeMistralToolCallId(id: string): string {
+	// Extract only alphanumeric characters
+	const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "")
+
+	// Take first 9 characters, or pad with zeros if shorter
+	if (alphanumeric.length >= 9) {
+		return alphanumeric.slice(0, 9)
+	}
+
+	// Pad with zeros to reach 9 characters
+	return alphanumeric.padEnd(9, "0")
+}
+
 export type MistralMessage =
 	| (SystemMessage & { role: "system" })
 	| (UserMessage & { role: "user" })
 	| (AssistantMessage & { role: "assistant" })
 	| (ToolMessage & { role: "tool" })
+
+// Type for Mistral tool calls in assistant messages
+type MistralToolCallMessage = {
+	id: string
+	type: "function"
+	function: {
+		name: string
+		arguments: string
+	}
+}
 
 export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): MistralMessage[] {
 	const mistralMessages: MistralMessage[] = []
@@ -21,7 +56,7 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 			})
 		} else {
 			if (anthropicMessage.role === "user") {
-				const { nonToolMessages } = anthropicMessage.content.reduce<{
+				const { nonToolMessages, toolMessages } = anthropicMessage.content.reduce<{
 					nonToolMessages: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[]
 					toolMessages: Anthropic.ToolResultBlockParam[]
 				}>(
@@ -36,7 +71,35 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 					{ nonToolMessages: [], toolMessages: [] },
 				)
 
-				if (nonToolMessages.length > 0) {
+				// If there are tool results, handle them
+				// Mistral's message order is strict: user → assistant → tool → assistant
+				// We CANNOT put user messages after tool messages
+				if (toolMessages.length > 0) {
+					// Convert tool_result blocks to Mistral tool messages
+					for (const toolResult of toolMessages) {
+						let resultContent: string
+						if (typeof toolResult.content === "string") {
+							resultContent = toolResult.content
+						} else if (Array.isArray(toolResult.content)) {
+							// Extract text from content blocks
+							resultContent = toolResult.content
+								.filter((block): block is Anthropic.TextBlockParam => block.type === "text")
+								.map((block) => block.text)
+								.join("\n")
+						} else {
+							resultContent = ""
+						}
+
+						mistralMessages.push({
+							role: "tool",
+							toolCallId: normalizeMistralToolCallId(toolResult.tool_use_id),
+							content: resultContent,
+						} as ToolMessage & { role: "tool" })
+					}
+					// Note: We intentionally skip any non-tool user content when there are tool results
+					// because Mistral doesn't allow user messages after tool messages
+				} else if (nonToolMessages.length > 0) {
+					// Only add user content if there are NO tool results
 					mistralMessages.push({
 						role: "user",
 						content: nonToolMessages.map((part) => {
@@ -53,7 +116,7 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 					})
 				}
 			} else if (anthropicMessage.role === "assistant") {
-				const { nonToolMessages } = anthropicMessage.content.reduce<{
+				const { nonToolMessages, toolMessages } = anthropicMessage.content.reduce<{
 					nonToolMessages: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[]
 					toolMessages: Anthropic.ToolUseBlockParam[]
 				}>(
@@ -80,10 +143,37 @@ export function convertToMistralMessages(anthropicMessages: Anthropic.Messages.M
 						.join("\n")
 				}
 
-				mistralMessages.push({
+				// Convert tool_use blocks to Mistral toolCalls format
+				let toolCalls: MistralToolCallMessage[] | undefined
+				if (toolMessages.length > 0) {
+					toolCalls = toolMessages.map((toolUse) => ({
+						id: normalizeMistralToolCallId(toolUse.id),
+						type: "function" as const,
+						function: {
+							name: toolUse.name,
+							arguments:
+								typeof toolUse.input === "string" ? toolUse.input : JSON.stringify(toolUse.input),
+						},
+					}))
+				}
+
+				// Mistral requires either content or toolCalls to be non-empty
+				// If we have toolCalls but no content, we need to handle this properly
+				const assistantMessage: AssistantMessage & { role: "assistant" } = {
 					role: "assistant",
 					content,
-				})
+				}
+
+				if (toolCalls && toolCalls.length > 0) {
+					;(
+						assistantMessage as AssistantMessage & {
+							role: "assistant"
+							toolCalls?: MistralToolCallMessage[]
+						}
+					).toolCalls = toolCalls
+				}
+
+				mistralMessages.push(assistantMessage)
 			}
 		}
 	}
