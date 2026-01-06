@@ -198,7 +198,7 @@ export const ModeSelector = ({
 					disabled={disabled}
 					data-testid="mode-selector-trigger"
 					className={cn(
-						"inline-flex items-center gap-1 relative whitespace-nowrap px-1.5 py-1 text-xs",
+						"inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
 						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
 						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
 						disabled
@@ -311,7 +311,11 @@ export const ModeSelector = ({
 								iconClass="codicon-settings-gear"
 								title={t("chat:modeSelector.settings")}
 								onClick={() => {
-									vscode.postMessage({ type: "switchTab", tab: "modes" })
+									vscode.postMessage({
+										type: "switchTab",
+										tab: "settings",
+										values: { section: "modes" },
+									})
 									setOpen(false)
 								}}
 							/>
