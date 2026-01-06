@@ -15,6 +15,35 @@ export const CODEBASE_INDEX_DEFAULTS = {
 } as const
 
 /**
+ * List of directories that are excluded from codebase indexing.
+ * These directories are typically large and would slow down indexing.
+ * The list is shared between the indexer and the UI to provide transparency.
+ */
+export const EXCLUDED_INDEXING_DIRECTORIES = [
+	"node_modules",
+	"__pycache__",
+	"env",
+	"venv",
+	"target/dependency",
+	"build/dependencies",
+	"dist",
+	"out",
+	"bundle",
+	"vendor",
+	"tmp",
+	"temp",
+	"deps",
+	"pkg",
+	"Pods",
+	".git",
+] as const
+
+/**
+ * Pattern for hidden directories (directories starting with a dot)
+ */
+export const EXCLUDED_HIDDEN_DIRECTORY_PATTERN = ".*" as const
+
+/**
  * CodebaseIndexConfig
  */
 

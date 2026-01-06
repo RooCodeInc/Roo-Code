@@ -12,7 +12,11 @@ import {
 import * as ProgressPrimitive from "@radix-ui/react-progress"
 import { AlertTriangle } from "lucide-react"
 
-import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+import {
+	CODEBASE_INDEX_DEFAULTS,
+	EXCLUDED_INDEXING_DIRECTORIES,
+	EXCLUDED_HIDDEN_DIRECTORY_PATTERN,
+} from "@roo-code/types"
 
 import type { EmbedderProvider } from "@roo/embeddingModels"
 import type { IndexingStatus } from "@roo/ExtensionMessage"
@@ -194,6 +198,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
+	const [isExcludedDirsOpen, setIsExcludedDirsOpen] = useState(false)
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>(externalIndexingStatus)
 
@@ -1589,6 +1594,41 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 											</VSCodeButton>
 										</div>
 									</div>
+								</div>
+							)}
+						</div>
+
+						{/* Excluded Directories Info Section */}
+						<div className="mt-4">
+							<button
+								onClick={() => setIsExcludedDirsOpen(!isExcludedDirsOpen)}
+								className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+								aria-expanded={isExcludedDirsOpen}>
+								<span
+									className={`codicon codicon-${isExcludedDirsOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+								<span className="text-base font-semibold">
+									{t("settings:codeIndex.excludedDirectories.title")}
+								</span>
+							</button>
+
+							{isExcludedDirsOpen && (
+								<div className="mt-2 space-y-2">
+									<p className="text-sm text-vscode-descriptionForeground">
+										{t("settings:codeIndex.excludedDirectories.description")}
+									</p>
+									<div className="flex flex-wrap gap-1">
+										{EXCLUDED_INDEXING_DIRECTORIES.map((dir) => (
+											<span
+												key={dir}
+												className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-vscode-badge-background text-vscode-badge-foreground">
+												{dir}
+											</span>
+										))}
+									</div>
+									<p className="text-xs text-vscode-descriptionForeground italic">
+										{t("settings:codeIndex.excludedDirectories.hiddenDirectoriesNote")} (
+										{EXCLUDED_HIDDEN_DIRECTORY_PATTERN})
+									</p>
 								</div>
 							)}
 						</div>
