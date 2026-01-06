@@ -565,6 +565,30 @@ export const BEDROCK_1M_CONTEXT_MODEL_IDS = [
 	"anthropic.claude-sonnet-4-5-20250929-v1:0",
 ] as const
 
+// Amazon Bedrock models that support cross-region inference profiles
+// Based on AWS documentation: https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
+// Cross-region inference is primarily supported for Anthropic Claude models
+export const BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS = [
+	// Claude 4.x models
+	"anthropic.claude-sonnet-4-5-20250929-v1:0",
+	"anthropic.claude-sonnet-4-20250514-v1:0",
+	"anthropic.claude-opus-4-1-20250805-v1:0",
+	"anthropic.claude-opus-4-5-20251101-v1:0",
+	"anthropic.claude-opus-4-20250514-v1:0",
+	// Claude 3.7 models
+	"anthropic.claude-3-7-sonnet-20250219-v1:0",
+	// Claude 3.5 models
+	"anthropic.claude-3-5-sonnet-20241022-v2:0",
+	"anthropic.claude-3-5-haiku-20241022-v1:0",
+	"anthropic.claude-3-5-sonnet-20240620-v1:0",
+	// Claude Haiku 4.5
+	"anthropic.claude-haiku-4-5-20251001-v1:0",
+	// Claude 3 models
+	"anthropic.claude-3-opus-20240229-v1:0",
+	"anthropic.claude-3-sonnet-20240229-v1:0",
+	"anthropic.claude-3-haiku-20240307-v1:0",
+] as const
+
 // Amazon Bedrock models that support Global Inference profiles
 // As of Nov 2025, AWS supports Global Inference for:
 // - Claude Sonnet 4
