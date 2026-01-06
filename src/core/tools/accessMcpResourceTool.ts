@@ -3,6 +3,7 @@ import type { ToolUse } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { handleMcpResponse } from "./helpers/mcpResponseHandler"
 
 interface AccessMcpResourceParams {
 	server_name: string
@@ -82,7 +83,20 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 			})
 
 			await task.say("mcp_server_response", resourceResultPretty, images)
-			pushToolResult(formatResponse.toolResult(resourceResultPretty, images))
+
+			// Handle potentially oversized MCP responses by checking against available context budget
+			const mcpResponseResult = await handleMcpResponse(task, resourceResultPretty, {
+				fileNamePrefix: `mcp-resource-${server_name}`,
+			})
+
+			if (mcpResponseResult.savedToFile) {
+				console.log(
+					`[AccessMcpResourceTool] MCP response saved to file: ${mcpResponseResult.filePath} ` +
+						`(${mcpResponseResult.originalTokenCount} tokens -> ${mcpResponseResult.returnedTokenCount} tokens)`,
+				)
+			}
+
+			pushToolResult(formatResponse.toolResult(mcpResponseResult.content, images))
 		} catch (error) {
 			await handleError("accessing MCP resource", error instanceof Error ? error : new Error(String(error)))
 		}

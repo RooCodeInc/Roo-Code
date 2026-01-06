@@ -4,6 +4,16 @@ import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 
+// Mock the mcpResponseHandler to pass through content unchanged in tests
+vi.mock("../helpers/mcpResponseHandler", () => ({
+	handleMcpResponse: vi.fn().mockImplementation(async (_task, response) => ({
+		content: response,
+		savedToFile: false,
+		originalTokenCount: 100,
+		returnedTokenCount: 100,
+	})),
+}))
+
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {

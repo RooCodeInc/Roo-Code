@@ -5,6 +5,7 @@ import { McpExecutionStatus } from "@roo-code/types"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+import { handleMcpResponse } from "./helpers/mcpResponseHandler"
 
 interface UseMcpToolParams {
 	server_name: string
@@ -340,7 +341,20 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		}
 
 		await task.say("mcp_server_response", toolResultPretty)
-		pushToolResult(formatResponse.toolResult(toolResultPretty))
+
+		// Handle potentially oversized MCP responses by checking against available context budget
+		const mcpResponseResult = await handleMcpResponse(task, toolResultPretty, {
+			fileNamePrefix: `mcp-tool-${serverName}-${toolName}`,
+		})
+
+		if (mcpResponseResult.savedToFile) {
+			console.log(
+				`[UseMcpToolTool] MCP response saved to file: ${mcpResponseResult.filePath} ` +
+					`(${mcpResponseResult.originalTokenCount} tokens -> ${mcpResponseResult.returnedTokenCount} tokens)`,
+			)
+		}
+
+		pushToolResult(formatResponse.toolResult(mcpResponseResult.content))
 	}
 }
 
