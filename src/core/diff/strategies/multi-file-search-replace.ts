@@ -32,6 +32,9 @@ function getSimilarity(original: string, search: string): number {
 /**
  * Performs a "middle-out" search of `lines` (between [startIndex, endIndex]) to find
  * the slice that is most similar to `searchChunk`. Returns the best score, index, and matched text.
+ *
+ * Performance optimization: Returns immediately when a perfect match (similarity === 1) is found,
+ * avoiding unnecessary Levenshtein distance calculations which are O(m*n) per comparison.
  */
 function fuzzySearch(lines: string[], searchChunk: string, startIndex: number, endIndex: number) {
 	let bestScore = 0
@@ -54,6 +57,10 @@ function fuzzySearch(lines: string[], searchChunk: string, startIndex: number, e
 				bestScore = similarity
 				bestMatchIndex = leftIndex
 				bestMatchContent = originalChunk
+				// Early termination: perfect match found, no need to continue searching
+				if (similarity === 1) {
+					return { bestScore, bestMatchIndex, bestMatchContent }
+				}
 			}
 			leftIndex--
 		}
@@ -66,6 +73,10 @@ function fuzzySearch(lines: string[], searchChunk: string, startIndex: number, e
 				bestScore = similarity
 				bestMatchIndex = rightIndex
 				bestMatchContent = originalChunk
+				// Early termination: perfect match found, no need to continue searching
+				if (similarity === 1) {
+					return { bestScore, bestMatchIndex, bestMatchContent }
+				}
 			}
 			rightIndex++
 		}
