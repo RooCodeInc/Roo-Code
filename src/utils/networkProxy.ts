@@ -117,43 +117,37 @@ export async function initializeNetworkProxy(
 	channel?: vscode.OutputChannel,
 ): Promise<void> {
 	extensionContext = context
+
+	// extensionMode is immutable for the process lifetime - exit early if not in debug mode.
+	// This avoids any overhead (listeners, logging, etc.) in production.
+	const isDebugMode = context.extensionMode === vscode.ExtensionMode.Development
+	if (!isDebugMode) {
+		return
+	}
+
 	outputChannel = channel ?? null
+	loggingEnabled = true
+	consoleLoggingEnabled = !outputChannel
 
 	const config = getProxyConfig()
-	loggingEnabled = config.isDebugMode || config.enabled || config.tlsInsecure
-	consoleLoggingEnabled = config.isDebugMode && !outputChannel
 
 	log(`Initializing network proxy module...`)
 	log(
-		`Extension mode: ${context.extensionMode} (Development=${vscode.ExtensionMode.Development}, Production=${vscode.ExtensionMode.Production}, Test=${vscode.ExtensionMode.Test})`,
-	)
-	log(
-		`Proxy config: enabled=${config.enabled}, serverUrl=${redactProxyUrl(config.serverUrl)}, tlsInsecure=${config.tlsInsecure}, isDebugMode=${config.isDebugMode}`,
+		`Proxy config: enabled=${config.enabled}, serverUrl=${redactProxyUrl(config.serverUrl)}, tlsInsecure=${config.tlsInsecure}`,
 	)
 
-	// Listen for configuration changes (always register; but only applies proxy in debug mode)
-	// In unit tests, vscode.workspace.onDidChangeConfiguration may not be mocked.
-	const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration
-	if (typeof onDidChangeConfiguration === "function") {
+	// Listen for configuration changes to allow toggling proxy during a debug session.
+	// Guard for test environments where onDidChangeConfiguration may not be mocked.
+	if (typeof vscode.workspace.onDidChangeConfiguration === "function") {
 		context.subscriptions.push(
-			onDidChangeConfiguration((e) => {
+			vscode.workspace.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(`${Package.name}.debugProxy.enabled`) ||
 					e.affectsConfiguration(`${Package.name}.debugProxy.serverUrl`) ||
 					e.affectsConfiguration(`${Package.name}.debugProxy.tlsInsecure`)
 				) {
 					const newConfig = getProxyConfig()
-					loggingEnabled = newConfig.isDebugMode || newConfig.enabled || newConfig.tlsInsecure
-					consoleLoggingEnabled = newConfig.isDebugMode && !outputChannel
 
-					if (!newConfig.isDebugMode) {
-						log(
-							`Proxy setting changed, but proxy is only applied in debug mode. Restart VS Code after changing debug mode.`,
-						)
-						return
-					}
-
-					// Debug mode: apply proxy if enabled.
 					if (newConfig.enabled) {
 						applyTlsVerificationOverride(newConfig)
 						configureGlobalProxy(newConfig)
@@ -168,8 +162,6 @@ export async function initializeNetworkProxy(
 				}
 			}),
 		)
-	} else {
-		log("vscode.workspace.onDidChangeConfiguration is not available; skipping config change listener")
 	}
 
 	// Ensure we restore any overrides when the extension unloads.
@@ -180,30 +172,13 @@ export async function initializeNetworkProxy(
 		},
 	})
 
-	// Security policy:
-	// - Debug (F5): route traffic through proxy if enabled.
-	// - Normal runs: do NOT route through proxy even if enabled.
-	if (!config.isDebugMode) {
-		if (config.enabled) {
-			log(`Debug proxy is enabled but will be ignored because extension is not running in debug mode`)
-		}
-		if (config.tlsInsecure) {
-			log(`tlsInsecure is enabled but will be ignored because extension is not running in debug mode`)
-		}
-		log(`Not in debug mode - proxy disabled`)
-		return
-	}
-
 	if (config.enabled) {
 		applyTlsVerificationOverride(config)
 		await configureGlobalProxy(config)
 		await configureUndiciProxy(config)
 	} else {
 		log(`Debug proxy not enabled.`)
-		restoreTlsVerificationOverride()
 	}
-
-	// (configuration listener registered above)
 }
 
 /**

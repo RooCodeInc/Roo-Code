@@ -147,13 +147,22 @@ describe("networkProxy", () => {
 			expect(process.env.NODE_TLS_REJECT_UNAUTHORIZED).toBe("0")
 		})
 
-		it("should register configuration change listener", () => {
-			const context = createMockContext()
+		it("should register configuration change listener in debug mode", () => {
+			const context = createMockContext(vscode.ExtensionMode.Development)
 
 			void initializeNetworkProxy(context, mockOutputChannel)
 
 			expect(vscode.workspace.onDidChangeConfiguration).toHaveBeenCalled()
 			expect(context.subscriptions.length).toBeGreaterThan(0)
+		})
+
+		it("should not register listeners in production mode (early exit)", () => {
+			const context = createMockContext(vscode.ExtensionMode.Production)
+
+			void initializeNetworkProxy(context, mockOutputChannel)
+
+			expect(vscode.workspace.onDidChangeConfiguration).not.toHaveBeenCalled()
+			expect(context.subscriptions.length).toBe(0)
 		})
 
 		it("should not throw in non-debug mode if proxy deps are not installed", () => {
