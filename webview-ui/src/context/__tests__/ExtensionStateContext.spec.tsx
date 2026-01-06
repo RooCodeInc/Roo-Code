@@ -242,6 +242,7 @@ describe("mergeExtensionState", () => {
 				nativeToolCalling: false,
 				multipleNativeToolCalls: false,
 				customTools: false,
+				llmResponseRepair: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
 		}
@@ -266,6 +267,7 @@ describe("mergeExtensionState", () => {
 			nativeToolCalling: false,
 			multipleNativeToolCalls: false,
 			customTools: false,
+			llmResponseRepair: false,
 		})
 	})
 })

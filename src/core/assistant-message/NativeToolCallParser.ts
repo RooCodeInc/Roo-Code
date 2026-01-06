@@ -17,6 +17,7 @@ import type {
 	ApiStreamToolCallEndChunk,
 } from "../../api/transform/stream"
 import { MCP_TOOL_PREFIX, MCP_TOOL_SEPARATOR, parseMcpToolName } from "../../utils/mcp-name"
+import { repairToolCallJson } from "../../utils/repair-json"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -51,6 +52,28 @@ export type ToolCallStreamEvent = ApiStreamToolCallStartChunk | ApiStreamToolCal
  * provider-level raw chunks into start/delta/end events.
  */
 export class NativeToolCallParser {
+	/**
+	 * Configuration for LLM response repair feature.
+	 * When enabled, attempts to repair malformed JSON from LLM responses.
+	 * @see Issue #10481
+	 */
+	private static repairEnabled = false
+
+	/**
+	 * Enable or disable the LLM response repair feature.
+	 * This should be called when the experimental setting changes.
+	 */
+	public static setRepairEnabled(enabled: boolean): void {
+		this.repairEnabled = enabled
+	}
+
+	/**
+	 * Check if the repair feature is enabled.
+	 */
+	public static isRepairEnabled(): boolean {
+		return this.repairEnabled
+	}
+
 	// Streaming state management for argument accumulation (keyed by tool call id)
 	// Note: name is string to accommodate dynamic MCP tools (mcp_serverName_toolName)
 	private static streamingToolCalls = new Map<
@@ -593,7 +616,39 @@ export class NativeToolCallParser {
 
 		try {
 			// Parse the arguments JSON string
-			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
+			let args: Record<string, any>
+			let wasRepaired = false
+
+			if (toolCall.arguments === "") {
+				args = {}
+			} else {
+				try {
+					args = JSON.parse(toolCall.arguments)
+				} catch (parseError) {
+					// If repair is enabled, attempt to fix malformed JSON
+					if (this.repairEnabled) {
+						const repairResult = repairToolCallJson(toolCall.arguments)
+						if (repairResult.parsed !== undefined) {
+							args = repairResult.parsed
+							wasRepaired = true
+							console.log(
+								`[NativeToolCallParser] Successfully repaired malformed JSON for tool '${resolvedName}'`,
+							)
+						} else {
+							// Repair failed, re-throw original error
+							throw parseError
+						}
+					} else {
+						// Repair not enabled, re-throw original error
+						throw parseError
+					}
+				}
+			}
+
+			// Log repair for debugging (can be removed in production)
+			if (wasRepaired) {
+				console.log(`[NativeToolCallParser] Original JSON: ${toolCall.arguments.substring(0, 200)}...`)
+			}
 
 			// Build legacy params object for backward compatibility with XML protocol and UI.
 			// Native execution path uses nativeArgs instead, which has proper typing.
@@ -863,7 +918,29 @@ export class NativeToolCallParser {
 	public static parseDynamicMcpTool(toolCall: { id: string; name: string; arguments: string }): McpToolUse | null {
 		try {
 			// Parse the arguments - these are the actual tool arguments passed directly
-			const args = JSON.parse(toolCall.arguments || "{}")
+			let args: Record<string, any>
+			const argsString = toolCall.arguments || "{}"
+
+			try {
+				args = JSON.parse(argsString)
+			} catch (parseError) {
+				// If repair is enabled, attempt to fix malformed JSON
+				if (this.repairEnabled) {
+					const repairResult = repairToolCallJson(argsString)
+					if (repairResult.parsed !== undefined) {
+						args = repairResult.parsed
+						console.log(
+							`[NativeToolCallParser] Successfully repaired malformed JSON for MCP tool '${toolCall.name}'`,
+						)
+					} else {
+						// Repair failed, re-throw original error
+						throw parseError
+					}
+				} else {
+					// Repair not enabled, re-throw original error
+					throw parseError
+				}
+			}
 
 			// Extract server_name and tool_name from the tool name itself
 			// Format: mcp--serverName--toolName (using -- separator)
