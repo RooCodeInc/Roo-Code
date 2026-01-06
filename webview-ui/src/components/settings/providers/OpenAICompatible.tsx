@@ -421,6 +421,32 @@ export const OpenAICompatible = ({
 				</div>
 
 				<div>
+					<div className="flex items-center gap-1">
+						<Checkbox
+							checked={apiConfiguration?.openAiCustomModelInfo?.supportsNativeTools ?? true}
+							onChange={handleInputChange("openAiCustomModelInfo", (checked) => {
+								return {
+									...(apiConfiguration?.openAiCustomModelInfo || openAiModelInfoSaneDefaults),
+									supportsNativeTools: checked,
+								}
+							})}>
+							<span className="font-medium">
+								{t("settings:providers.customModel.nativeToolCalling.label")}
+							</span>
+						</Checkbox>
+						<StandardTooltip content={t("settings:providers.customModel.nativeToolCalling.description")}>
+							<i
+								className="codicon codicon-info text-vscode-descriptionForeground"
+								style={{ fontSize: "12px" }}
+							/>
+						</StandardTooltip>
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground pt-1">
+						{t("settings:providers.customModel.nativeToolCalling.description")}
+					</div>
+				</div>
+
+				<div>
 					<VSCodeTextField
 						value={
 							apiConfiguration?.openAiCustomModelInfo?.inputPrice?.toString() ??

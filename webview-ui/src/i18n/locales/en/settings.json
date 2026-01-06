@@ -475,6 +475,10 @@
 				"label": "Prompt Caching",
 				"description": "Is this model capable of caching prompts?"
 			},
+			"nativeToolCalling": {
+				"label": "Native Tool Calling",
+				"description": "Enable OpenAI-style function calling for this model. Disable if the model does not support native tool calling and falls back to XML-based tool definitions."
+			},
 			"pricing": {
 				"input": {
 					"label": "Input Price",
