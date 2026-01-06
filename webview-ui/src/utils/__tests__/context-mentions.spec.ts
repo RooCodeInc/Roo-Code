@@ -1,5 +1,6 @@
 import {
 	insertMention,
+	needsSpaceBeforeMention,
 	removeMention,
 	getContextMenuOptions,
 	shouldShowContextMenu,
@@ -7,6 +8,28 @@ import {
 	ContextMenuQueryItem,
 	SearchResult,
 } from "@src/utils/context-mentions"
+
+describe("needsSpaceBeforeMention", () => {
+	it("should return false for empty text", () => {
+		expect(needsSpaceBeforeMention("")).toBe(false)
+	})
+
+	it("should return true for text ending with non-whitespace", () => {
+		expect(needsSpaceBeforeMention("Hello")).toBe(true)
+		expect(needsSpaceBeforeMention("Check")).toBe(true)
+		expect(needsSpaceBeforeMention("test123")).toBe(true)
+	})
+
+	it("should return false for text ending with space", () => {
+		expect(needsSpaceBeforeMention("Hello ")).toBe(false)
+		expect(needsSpaceBeforeMention("Check ")).toBe(false)
+	})
+
+	it("should return false for text ending with newline", () => {
+		expect(needsSpaceBeforeMention("Hello\n")).toBe(false)
+		expect(needsSpaceBeforeMention("Check\r")).toBe(false)
+	})
+})
 
 describe("insertMention", () => {
 	it("should insert mention at cursor position when no @ symbol exists", () => {
@@ -114,6 +137,47 @@ describe("insertMention", () => {
 		expect(result.newValue).toBe(`Simple @${simplePath} `)
 		expect(result.mentionIndex).toBe(7)
 		expect(result.newValue.includes("\\ ")).toBe(false)
+	})
+
+	// --- Tests for active @ detection (guarding earlier mentions) ---
+	describe("active @ detection", () => {
+		it("should not replace earlier @ when cursor is after whitespace", () => {
+			// Text: "Hello @file.ts now I want another"
+			// Cursor at position 21 (at 'w' in "want"), so beforeCursor = "Hello @file.ts now I " (ends with space)
+			// The @ at position 6 should NOT be replaced because there's whitespace between it and cursor
+			const result = insertMention("Hello @file.ts now I want another", 21, "test")
+			// Should insert new mention at cursor position, not replace the earlier @file.ts
+			// Since beforeCursor ends with space, no extra space is added
+			expect(result.newValue).toBe("Hello @file.ts now I @test want another")
+			expect(result.mentionIndex).toBe(21)
+		})
+
+		it("should replace @ when cursor is directly after it with no whitespace", () => {
+			// Text: "Hello @fi"
+			// Cursor at position 9 (right after "fi")
+			const result = insertMention("Hello @fi", 9, "file.ts")
+			// Should replace from @ since cursor is directly after partial mention
+			expect(result.newValue).toBe("Hello @file.ts ")
+			expect(result.mentionIndex).toBe(6)
+		})
+
+		it("should handle multiple @ symbols - only active one is affected", () => {
+			// Text: "Check @file1.ts and @fi"
+			// Cursor at position 23 (after "@fi")
+			// Should replace from the second @ (at position 20), not the first one
+			const result = insertMention("Check @file1.ts and @fi", 23, "file2.ts")
+			expect(result.newValue).toBe("Check @file1.ts and @file2.ts ")
+			expect(result.mentionIndex).toBe(20)
+		})
+
+		it("should insert new mention when cursor is far from any @", () => {
+			// Text: "Check @file.ts and then some text here"
+			// Cursor at position 38 (at the end after "here")
+			const result = insertMention("Check @file.ts and then some text here", 38, "test")
+			// No active @, should insert new mention at cursor
+			expect(result.newValue).toBe("Check @file.ts and then some text here @test ")
+			expect(result.mentionIndex).toBe(39)
+		})
 	})
 
 	// --- Tests for isSlashCommand parameter ---

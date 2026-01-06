@@ -25,6 +25,45 @@ function getBasename(filepath: string): string {
 	return filepath.split("/").pop() || filepath
 }
 
+/**
+ * Helper function to determine if a space is needed before inserting a mention.
+ * Returns true if the text has content and doesn't end with whitespace.
+ * @param text - The text to check
+ * @returns true if a space should be inserted before the mention
+ */
+export function needsSpaceBeforeMention(text: string): boolean {
+	if (text.length === 0) {
+		return false
+	}
+	const lastChar = text[text.length - 1]
+	return lastChar !== " " && lastChar !== "\n" && lastChar !== "\r"
+}
+
+/**
+ * Finds the active @ symbol position for mention insertion.
+ * An @ is "active" if there's no unescaped whitespace between it and the cursor.
+ * @param text - Text before cursor
+ * @returns The index of the active @, or -1 if no active @ exists
+ */
+function findActiveAtIndex(text: string): number {
+	const lastAtIndex = text.lastIndexOf("@")
+	if (lastAtIndex === -1) {
+		return -1
+	}
+
+	// Check if there's any unescaped whitespace between @ and cursor
+	const textAfterAt = text.slice(lastAtIndex + 1)
+	// Look for unescaped whitespace (space not preceded by backslash)
+	const hasUnescapedWhitespace = /(?<!\\)\s/.test(textAfterAt)
+
+	if (hasUnescapedWhitespace) {
+		// The @ is not active - there's whitespace between @ and cursor
+		return -1
+	}
+
+	return lastAtIndex
+}
+
 export function insertMention(
 	text: string,
 	position: number,
@@ -42,8 +81,8 @@ export function insertMention(
 	const beforeCursor = text.slice(0, position)
 	const afterCursor = text.slice(position)
 
-	// Find the position of the last '@' symbol before the cursor
-	const lastAtIndex = beforeCursor.lastIndexOf("@")
+	// Find the active '@' symbol - only considers @ with no whitespace between it and cursor
+	const activeAtIndex = findActiveAtIndex(beforeCursor)
 
 	// Process the value - escape spaces if it's a file path
 	let processedValue = value
@@ -57,13 +96,13 @@ export function insertMention(
 	let newValue: string
 	let mentionIndex: number
 
-	if (lastAtIndex !== -1) {
-		// If there's an '@' symbol, check if we need to add a space before it
-		const beforeAt = text.slice(0, lastAtIndex)
-		const needsSpaceBefore = beforeAt.length > 0 && !beforeAt.endsWith(" ") && !beforeAt.endsWith("\n")
+	if (activeAtIndex !== -1) {
+		// If there's an active '@' symbol, check if we need to add a space before it
+		const beforeAt = text.slice(0, activeAtIndex)
+		const spaceBefore = needsSpaceBeforeMention(beforeAt)
 
 		// If we need a space before @, add it
-		const beforeMention = needsSpaceBefore ? beforeAt + " " : beforeAt
+		const beforeMention = spaceBefore ? beforeAt + " " : beforeAt
 
 		// Only replace if afterCursor is all alphanumerical
 		// This is required to handle languages that don't use space as a word separator (chinese, japanese, korean, etc)
@@ -71,15 +110,15 @@ export function insertMention(
 			? afterCursor.replace(/^[^\s]*/, "")
 			: afterCursor
 		newValue = beforeMention + "@" + processedValue + " " + afterCursorContent
-		mentionIndex = needsSpaceBefore ? lastAtIndex + 1 : lastAtIndex
+		mentionIndex = spaceBefore ? activeAtIndex + 1 : activeAtIndex
 	} else {
-		// If there's no '@' symbol, insert the mention at the cursor position
+		// If there's no active '@' symbol, insert the mention at the cursor position
 		// Check if we need to add a space before the mention
-		const needsSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(" ") && !beforeCursor.endsWith("\n")
-		const prefix = needsSpaceBefore ? " " : ""
+		const spaceBefore = needsSpaceBeforeMention(beforeCursor)
+		const prefix = spaceBefore ? " " : ""
 
 		newValue = beforeCursor + prefix + "@" + processedValue + " " + afterCursor
-		mentionIndex = position + (needsSpaceBefore ? 1 : 0)
+		mentionIndex = position + (spaceBefore ? 1 : 0)
 	}
 
 	return { newValue, mentionIndex }
