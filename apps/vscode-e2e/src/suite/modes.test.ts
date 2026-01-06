@@ -14,7 +14,12 @@ suite("Roo Code Modes", function () {
 		globalThis.api.on(RooCodeEventName.TaskModeSwitched, (_taskId, mode) => modes.push(mode))
 
 		const switchModesTaskId = await globalThis.api.startNewTask({
-			configuration: { mode: "code", alwaysAllowModeSwitch: true, autoApprovalEnabled: true },
+			configuration: {
+				mode: "code",
+				alwaysAllowModeSwitch: true,
+				autoApprovalEnabled: true,
+				alwaysAllowFollowupQuestions: true,
+			},
 			text: "For each of `architect`, `ask`, and `debug` use the `switch_mode` tool to switch to that mode.",
 		})
 
