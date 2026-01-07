@@ -74,8 +74,8 @@ export function CliPreviewContent() {
 						Get an early preview of the Roo Code CLI
 					</h1>
 					<p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-						If you like Roo Code in VS Code, you will love scripting it. Join the early preview to help
-						shape a CLI designed for power users, automation, and teams.
+						Bring Roo Code&apos;s iterative agent capabilities to your terminal. Pipe context directly to
+						the agent, automate repetitive refactors across files, and run tasks without the IDE overhead.
 					</p>
 				</div>
 			</section>

@@ -7,7 +7,7 @@ import { CliPreviewContent } from "./cli-preview-content"
 
 const TITLE = "CLI Early Preview"
 const DESCRIPTION =
-	"If you like Roo Code in VS Code, you will love scripting it. Join the early preview to help shape a CLI designed for power users, automation, and teams."
+	"Bring Roo Code's iterative agent capabilities to your terminal. Pipe context directly to the agent, automate repetitive refactors across files, and run tasks without the IDE overhead."
 const OG_DESCRIPTION = "Early preview of the Roo Code CLI"
 const PATH = "/cli-preview"
 
