@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
@@ -45,5 +46,12 @@ export const metadata: Metadata = {
 }
 
 export default function CliPreviewPage() {
-	return <CliPreviewContent />
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900" />
+			}>
+			<CliPreviewContent />
+		</Suspense>
+	)
 }
