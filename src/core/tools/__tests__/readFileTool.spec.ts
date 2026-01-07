@@ -2,6 +2,8 @@
 
 import * as path from "path"
 
+import * as vscode from "vscode"
+
 import { countFileLines } from "../../../integrations/misc/line-counter"
 import { readLines } from "../../../integrations/misc/read-lines"
 import { extractTextFromFile } from "../../../integrations/misc/extract-text"
@@ -22,6 +24,21 @@ vi.mock("path", async () => {
 // Already mocked above with hoisted fsPromises
 
 vi.mock("isbinaryfile")
+
+vi.mock("vscode", () => ({
+	Uri: {
+		file: vi.fn((fsPath: string) => ({ fsPath })),
+	},
+	workspace: {
+		// Default: behave like VSCode isn't available in this test environment.
+		openTextDocument: vi.fn().mockRejectedValue(new Error("vscode not available")),
+	},
+}))
+
+// Avoid spawning tokenizer workers from `read-text-with-budget` in unit tests.
+vi.mock("../../../utils/countTokens", () => ({
+	countTokens: vi.fn().mockResolvedValue(1),
+}))
 
 vi.mock("../../../integrations/misc/line-counter")
 vi.mock("../../../integrations/misc/read-lines")
@@ -2009,5 +2026,99 @@ describe("read_file tool concurrent file reads limit", () => {
 		// Should use default limit of 5 and reject 6 files
 		expect(toolResult).toContain("Error: Too many files requested")
 		expect(toolResult).toContain("but the concurrent file reads limit is 5")
+	})
+})
+
+describe("read_file tool native protocol - VSCode decoding path", () => {
+	const testFilePath = "test/encoded.txt"
+	const absoluteFilePath = "/test/encoded.txt"
+
+	const mockedCountFileLines = vi.mocked(countFileLines)
+	const mockedReadLines = vi.mocked(readLines)
+	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedPathResolve = vi.mocked(path.resolve)
+	const mockedOpenTextDocument = vi.mocked(vscode.workspace.openTextDocument)
+
+	let mockCline: any
+	let mockProvider: any
+	let toolResult: ToolResponse | undefined
+
+	beforeEach(() => {
+		mockedCountFileLines.mockClear()
+		mockedReadLines.mockClear()
+		mockedIsBinaryFile.mockClear()
+		mockedPathResolve.mockClear()
+		mockedOpenTextDocument.mockClear()
+		mockReadFileWithTokenBudget.mockClear()
+
+		const mocks = createMockCline()
+		mockCline = mocks.mockCline
+		mockProvider = mocks.mockProvider
+		setImageSupport(mockCline, false)
+
+		mockedPathResolve.mockReturnValue(absoluteFilePath)
+		mockedIsBinaryFile.mockResolvedValue(false)
+		mockedCountFileLines.mockResolvedValue(1)
+
+		fsPromises.stat.mockResolvedValue({
+			isDirectory: () => false,
+			isFile: () => true,
+			isSymbolicLink: () => false,
+		} as any)
+
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine: -1,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+		})
+
+		toolResult = undefined
+	})
+
+	async function executeReadFile(args: string): Promise<ToolResponse | undefined> {
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: { args },
+			partial: false,
+		}
+
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
+		})
+
+		return toolResult
+	}
+
+	it("should prefer vscode.workspace.openTextDocument() when available (full read)", async () => {
+		mockedOpenTextDocument.mockResolvedValue({ getText: () => "caf\u00e9" } as any)
+		mockReadFileWithTokenBudget.mockRejectedValue(new Error("should not be called"))
+
+		const result = await executeReadFile(`<file><path>${testFilePath}</path></file>`)
+
+		expect(mockedOpenTextDocument).toHaveBeenCalledTimes(1)
+		expect(result).toContain(`File: ${testFilePath}`)
+		expect(result).toContain("caf\u00e9")
+		expect(mockReadFileWithTokenBudget).not.toHaveBeenCalled()
+	})
+
+	it("should use vscode-decoded text for line_range reads", async () => {
+		mockedCountFileLines.mockResolvedValue(3)
+		mockedOpenTextDocument.mockResolvedValue({ getText: () => "L1\nL2\nL3" } as any)
+		mockedReadLines.mockRejectedValue(new Error("should not be called"))
+
+		const result = await executeReadFile(`<file><path>${testFilePath}</path><line_range>2-3</line_range></file>`)
+
+		expect(mockedOpenTextDocument).toHaveBeenCalledTimes(1)
+		expect(mockedReadLines).not.toHaveBeenCalled()
+		expect(result).toContain(`File: ${testFilePath}`)
+		expect(result).toContain("2 | L2")
+		expect(result).toContain("3 | L3")
 	})
 })
