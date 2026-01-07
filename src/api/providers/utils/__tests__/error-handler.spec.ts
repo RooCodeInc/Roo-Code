@@ -11,6 +11,8 @@ describe("handleProviderError", () => {
 			const result = handleProviderError(error, providerName)
 
 			expect(result).toBeInstanceOf(Error)
+			// Message should be prefixed with status code for UI parsing
+			expect(result.message).toMatch(/^401/)
 			expect(result.message).toContain("TestProvider completion error")
 			expect((result as any).status).toBe(401)
 		})
@@ -257,6 +259,111 @@ describe("handleProviderError", () => {
 			expect(result.message).toContain("Invalid API key")
 		})
 	})
+
+	describe("HTTP status code prefixing for UI parsing", () => {
+		it("should prefix error message with status code 402 (Payment Required)", () => {
+			const error = new Error("Insufficient balance") as any
+			error.status = 402
+
+			const result = handleProviderError(error, "DeepSeek")
+
+			// Message should start with status code for UI to parse
+			expect(result.message).toMatch(/^402/)
+			expect(result.message).toContain("DeepSeek completion error")
+			expect(result.message).toContain("Insufficient balance")
+			expect((result as any).status).toBe(402)
+		})
+
+		it("should prefix error message with status code 401 (Unauthorized)", () => {
+			const error = new Error("Invalid API key") as any
+			error.status = 401
+
+			const result = handleProviderError(error, "OpenAI")
+
+			expect(result.message).toMatch(/^401/)
+			expect(result.message).toContain("OpenAI completion error")
+			expect((result as any).status).toBe(401)
+		})
+
+		it("should prefix error message with status code 403 (Forbidden)", () => {
+			const error = new Error("Access denied") as any
+			error.status = 403
+
+			const result = handleProviderError(error, "Anthropic")
+
+			expect(result.message).toMatch(/^403/)
+			expect(result.message).toContain("Anthropic completion error")
+			expect((result as any).status).toBe(403)
+		})
+
+		it("should prefix error message with status code 429 (Rate Limit)", () => {
+			const error = new Error("Too many requests") as any
+			error.status = 429
+
+			const result = handleProviderError(error, "Mistral")
+
+			expect(result.message).toMatch(/^429/)
+			expect(result.message).toContain("Mistral completion error")
+			expect((result as any).status).toBe(429)
+		})
+
+		it("should prefix error message with status code 500 (Server Error)", () => {
+			const error = new Error("Internal server error") as any
+			error.status = 500
+
+			const result = handleProviderError(error, "Groq")
+
+			expect(result.message).toMatch(/^500/)
+			expect(result.message).toContain("Groq completion error")
+			expect((result as any).status).toBe(500)
+		})
+
+		it("should not prefix with status code when using custom messageTransformer", () => {
+			const error = new Error("Payment required") as any
+			error.status = 402
+
+			const result = handleProviderError(error, "TestProvider", {
+				messageTransformer: (msg) => `Custom: ${msg}`,
+			})
+
+			// Custom transformer should be used as-is
+			expect(result.message).toBe("Custom: Payment required")
+			// Status should still be preserved
+			expect((result as any).status).toBe(402)
+		})
+
+		it("should not prefix with status code for non-HTTP errors (no status)", () => {
+			const error = new Error("Network timeout")
+
+			const result = handleProviderError(error, "TestProvider")
+
+			// Should not have status prefix
+			expect(result.message).not.toMatch(/^\d{3}/)
+			expect(result.message).toBe("TestProvider completion error: Network timeout")
+		})
+
+		it("should not prefix with status code for status < 400", () => {
+			const error = new Error("Redirect") as any
+			error.status = 301
+
+			const result = handleProviderError(error, "TestProvider")
+
+			// Should not have status prefix for non-error status codes
+			expect(result.message).not.toMatch(/^301/)
+			expect(result.message).toBe("TestProvider completion error: Redirect")
+		})
+
+		it("should work with custom messagePrefix option", () => {
+			const error = new Error("No funds") as any
+			error.status = 402
+
+			const result = handleProviderError(error, "DeepSeek", { messagePrefix: "streaming" })
+
+			expect(result.message).toMatch(/^402/)
+			expect(result.message).toContain("DeepSeek streaming error")
+			expect(result.message).toContain("No funds")
+		})
+	})
 })
 
 describe("handleOpenAIError (backward compatibility)", () => {
@@ -267,6 +374,8 @@ describe("handleOpenAIError (backward compatibility)", () => {
 		const result = handleOpenAIError(error, "OpenAI")
 
 		expect(result).toBeInstanceOf(Error)
+		// Should be prefixed with status code for UI parsing
+		expect(result.message).toMatch(/^500/)
 		expect(result.message).toContain("OpenAI completion error")
 		expect((result as any).status).toBe(500)
 	})
@@ -277,7 +386,8 @@ describe("handleOpenAIError (backward compatibility)", () => {
 
 		const result = handleOpenAIError(error, "Roo Code Cloud")
 
-		expect(result.message).toBe("Roo Code Cloud completion error: Authentication failed")
+		// Message should now include status prefix for UI parsing
+		expect(result.message).toBe("401 - Roo Code Cloud completion error: Authentication failed")
 		expect((result as any).status).toBe(401)
 	})
 })
