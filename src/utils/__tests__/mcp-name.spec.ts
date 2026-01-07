@@ -1,10 +1,40 @@
-import { sanitizeMcpName, buildMcpToolName, parseMcpToolName, MCP_TOOL_SEPARATOR, MCP_TOOL_PREFIX } from "../mcp-name"
+import {
+	sanitizeMcpName,
+	buildMcpToolName,
+	parseMcpToolName,
+	isMcpTool,
+	MCP_TOOL_SEPARATOR,
+	MCP_TOOL_PREFIX,
+} from "../mcp-name"
 
 describe("mcp-name utilities", () => {
 	describe("constants", () => {
 		it("should have correct separator and prefix", () => {
 			expect(MCP_TOOL_SEPARATOR).toBe("--")
 			expect(MCP_TOOL_PREFIX).toBe("mcp")
+		})
+	})
+
+	describe("isMcpTool", () => {
+		it("should return true for valid MCP tool names", () => {
+			expect(isMcpTool("mcp--server--tool")).toBe(true)
+			expect(isMcpTool("mcp--my_server--get_forecast")).toBe(true)
+		})
+
+		it("should return false for non-MCP tool names", () => {
+			expect(isMcpTool("server--tool")).toBe(false)
+			expect(isMcpTool("tool")).toBe(false)
+			expect(isMcpTool("read_file")).toBe(false)
+			expect(isMcpTool("")).toBe(false)
+		})
+
+		it("should return false for old underscore format", () => {
+			expect(isMcpTool("mcp_server_tool")).toBe(false)
+		})
+
+		it("should return false for partial prefix", () => {
+			expect(isMcpTool("mcp-server")).toBe(false)
+			expect(isMcpTool("mcp")).toBe(false)
 		})
 	})
 

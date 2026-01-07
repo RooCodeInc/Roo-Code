@@ -122,153 +122,184 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 		// Reset per-request state that we persist into apiConversationHistory
 		this.lastThinkingSignature = undefined
 
-		// Get access token from OAuth manager
-		const accessToken = await claudeCodeOAuthManager.getAccessToken()
-
-		if (!accessToken) {
-			throw new Error(
+		const buildNotAuthenticatedError = () =>
+			new Error(
 				t("common:errors.claudeCode.notAuthenticated", {
 					defaultValue:
 						"Not authenticated with Claude Code. Please sign in using the Claude Code OAuth flow.",
 				}),
 			)
-		}
 
-		// Get user email for generating user_id metadata
-		const email = await claudeCodeOAuthManager.getEmail()
+		async function* streamOnce(this: ClaudeCodeHandler, accessToken: string): ApiStream {
+			// Get user email for generating user_id metadata
+			const email = await claudeCodeOAuthManager.getEmail()
 
-		const model = this.getModel()
+			const model = this.getModel()
 
-		// Validate that the model ID is a valid ClaudeCodeModelId
-		const modelId = Object.hasOwn(claudeCodeModels, model.id)
-			? (model.id as ClaudeCodeModelId)
-			: claudeCodeDefaultModelId
+			// Validate that the model ID is a valid ClaudeCodeModelId
+			const modelId = Object.hasOwn(claudeCodeModels, model.id)
+				? (model.id as ClaudeCodeModelId)
+				: claudeCodeDefaultModelId
 
-		// Generate user_id metadata in the format required by Claude Code API
-		const userId = generateUserId(email || undefined)
+			// Generate user_id metadata in the format required by Claude Code API
+			const userId = generateUserId(email || undefined)
 
-		// Convert OpenAI tools to Anthropic format if provided and protocol is native
-		// Exclude tools when tool_choice is "none" since that means "don't use tools"
-		const shouldIncludeNativeTools =
-			metadata?.tools &&
-			metadata.tools.length > 0 &&
-			metadata?.toolProtocol !== "xml" &&
-			metadata?.tool_choice !== "none"
+			// Convert OpenAI tools to Anthropic format if provided and protocol is native
+			// Exclude tools when tool_choice is "none" since that means "don't use tools"
+			const shouldIncludeNativeTools =
+				metadata?.tools &&
+				metadata.tools.length > 0 &&
+				metadata?.toolProtocol !== "xml" &&
+				metadata?.tool_choice !== "none"
 
-		const anthropicTools = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
+			const anthropicTools = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
 
-		const anthropicToolChoice = shouldIncludeNativeTools
-			? convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls)
-			: undefined
+			const anthropicToolChoice = shouldIncludeNativeTools
+				? convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls)
+				: undefined
 
-		// Determine reasoning effort and thinking configuration
-		const reasoningLevel = this.getReasoningEffort(model.info)
+			// Determine reasoning effort and thinking configuration
+			const reasoningLevel = this.getReasoningEffort(model.info)
 
-		let thinking: ThinkingConfig
-		// With interleaved thinking (enabled via beta header), budget_tokens can exceed max_tokens
-		// as the token limit becomes the entire context window. We use the model's maxTokens.
-		// See: https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#interleaved-thinking
-		const maxTokens = model.info.maxTokens ?? 16384
+			let thinking: ThinkingConfig
+			// With interleaved thinking (enabled via beta header), budget_tokens can exceed max_tokens
+			// as the token limit becomes the entire context window. We use the model's maxTokens.
+			// See: https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#interleaved-thinking
+			const maxTokens = model.info.maxTokens ?? 16384
 
-		if (reasoningLevel) {
-			// Use thinking mode with budget_tokens from config
-			const config = claudeCodeReasoningConfig[reasoningLevel]
-			thinking = {
-				type: "enabled",
-				budget_tokens: config.budgetTokens,
+			if (reasoningLevel) {
+				// Use thinking mode with budget_tokens from config
+				const config = claudeCodeReasoningConfig[reasoningLevel]
+				thinking = {
+					type: "enabled",
+					budget_tokens: config.budgetTokens,
+				}
+			} else {
+				// Explicitly disable thinking
+				thinking = { type: "disabled" }
 			}
-		} else {
-			// Explicitly disable thinking
-			thinking = { type: "disabled" }
+
+			// Create streaming request using OAuth
+			const stream = createStreamingMessage({
+				accessToken,
+				model: modelId,
+				systemPrompt,
+				messages,
+				maxTokens,
+				thinking,
+				tools: anthropicTools,
+				toolChoice: anthropicToolChoice,
+				metadata: {
+					user_id: userId,
+				},
+			})
+
+			// Track usage for cost calculation
+			let inputTokens = 0
+			let outputTokens = 0
+			let cacheReadTokens = 0
+			let cacheWriteTokens = 0
+
+			for await (const chunk of stream) {
+				switch (chunk.type) {
+					case "text":
+						yield {
+							type: "text",
+							text: chunk.text,
+						}
+						break
+
+					case "reasoning":
+						yield {
+							type: "reasoning",
+							text: chunk.text,
+						}
+						break
+
+					case "thinking_complete":
+						// Capture the signature for persistence in api_conversation_history
+						// This enables tool use continuations where thinking blocks must be passed back
+						if (chunk.signature) {
+							this.lastThinkingSignature = chunk.signature
+						}
+						// Emit a complete thinking block with signature
+						// This is critical for interleaved thinking with tool use
+						// The signature must be included when passing thinking blocks back to the API
+						yield {
+							type: "reasoning",
+							text: chunk.thinking,
+							signature: chunk.signature,
+						}
+						break
+
+					case "tool_call_partial":
+						yield {
+							type: "tool_call_partial",
+							index: chunk.index,
+							id: chunk.id,
+							name: chunk.name,
+							arguments: chunk.arguments,
+						}
+						break
+
+					case "usage": {
+						inputTokens = chunk.inputTokens
+						outputTokens = chunk.outputTokens
+						cacheReadTokens = chunk.cacheReadTokens || 0
+						cacheWriteTokens = chunk.cacheWriteTokens || 0
+
+						// Claude Code is subscription-based, no per-token cost
+						const usageChunk: ApiStreamUsageChunk = {
+							type: "usage",
+							inputTokens,
+							outputTokens,
+							cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
+							cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
+							totalCost: 0,
+						}
+
+						yield usageChunk
+						break
+					}
+
+					case "error":
+						throw new Error(chunk.error)
+				}
+			}
 		}
 
-		// Create streaming request using OAuth
-		const stream = createStreamingMessage({
-			accessToken,
-			model: modelId,
-			systemPrompt,
-			messages,
-			maxTokens,
-			thinking,
-			tools: anthropicTools,
-			toolChoice: anthropicToolChoice,
-			metadata: {
-				user_id: userId,
-			},
-		})
+		// Get access token from OAuth manager
+		let accessToken = await claudeCodeOAuthManager.getAccessToken()
+		if (!accessToken) {
+			throw buildNotAuthenticatedError()
+		}
 
-		// Track usage for cost calculation
-		let inputTokens = 0
-		let outputTokens = 0
-		let cacheReadTokens = 0
-		let cacheWriteTokens = 0
+		// Try the request with at most one force-refresh retry on auth failure
+		for (let attempt = 0; attempt < 2; attempt++) {
+			try {
+				yield* streamOnce.call(this, accessToken)
+				return
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error)
+				const isAuthFailure = /unauthorized|invalid token|not authenticated|authentication/i.test(message)
 
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "text":
-					yield {
-						type: "text",
-						text: chunk.text,
-					}
-					break
-
-				case "reasoning":
-					yield {
-						type: "reasoning",
-						text: chunk.text,
-					}
-					break
-
-				case "thinking_complete":
-					// Capture the signature for persistence in api_conversation_history
-					// This enables tool use continuations where thinking blocks must be passed back
-					if (chunk.signature) {
-						this.lastThinkingSignature = chunk.signature
-					}
-					// Emit a complete thinking block with signature
-					// This is critical for interleaved thinking with tool use
-					// The signature must be included when passing thinking blocks back to the API
-					yield {
-						type: "reasoning",
-						text: chunk.thinking,
-						signature: chunk.signature,
-					}
-					break
-
-				case "tool_call_partial":
-					yield {
-						type: "tool_call_partial",
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					}
-					break
-
-				case "usage": {
-					inputTokens = chunk.inputTokens
-					outputTokens = chunk.outputTokens
-					cacheReadTokens = chunk.cacheReadTokens || 0
-					cacheWriteTokens = chunk.cacheWriteTokens || 0
-
-					// Claude Code is subscription-based, no per-token cost
-					const usageChunk: ApiStreamUsageChunk = {
-						type: "usage",
-						inputTokens,
-						outputTokens,
-						cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
-						cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
-						totalCost: 0,
-					}
-
-					yield usageChunk
-					break
+				// Only retry on auth failure during first attempt
+				const canRetry = attempt === 0 && isAuthFailure
+				if (!canRetry) {
+					throw error
 				}
 
-				case "error":
-					throw new Error(chunk.error)
+				// Force refresh the token for retry
+				const refreshed = await claudeCodeOAuthManager.forceRefreshAccessToken()
+				if (!refreshed) {
+					throw buildNotAuthenticatedError()
+				}
+				accessToken = refreshed
 			}
 		}
+
+		// Unreachable: loop always returns on success or throws on failure
+		throw buildNotAuthenticatedError()
 	}
 
 	getModel(): { id: string; info: ModelInfo } {

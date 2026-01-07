@@ -5,6 +5,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import type { ToolName, ClineAsk, ToolProgressStatus } from "@roo-code/types"
 import { ConsecutiveMistakeError } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
+import { customToolRegistry } from "@roo-code/core"
 
 import { t } from "../../i18n"
 
@@ -18,8 +19,7 @@ import { Task } from "../task/Task"
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
-import { getSimpleReadFileToolDescription, simpleReadFileTool } from "../tools/simpleReadFileTool"
-import { shouldUseSingleFileRead, TOOL_PROTOCOL } from "@roo-code/types"
+import { TOOL_PROTOCOL } from "@roo-code/types"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { applyDiffTool } from "../tools/MultiApplyDiffTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
@@ -115,12 +115,12 @@ export async function presentAssistantMessage(cline: Task) {
 					: `MCP tool ${mcpBlock.name} was interrupted and not executed due to user rejecting a previous tool.`
 
 				if (toolCallId) {
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: errorMessage,
 						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
+					})
 				}
 				break
 			}
@@ -130,12 +130,12 @@ export async function presentAssistantMessage(cline: Task) {
 				const errorMessage = `MCP tool [${mcpBlock.name}] was not executed because a tool has already been used in this message. Only one tool may be used per message.`
 
 				if (toolCallId) {
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: errorMessage,
 						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
+					})
 				}
 				break
 			}
@@ -167,11 +167,11 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 
 				if (toolCallId) {
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: resultContent,
-					} as Anthropic.ToolResultBlockParam)
+					})
 
 					if (imageBlocks.length > 0) {
 						cline.userMessageContent.push(...imageBlocks)
@@ -362,18 +362,12 @@ export async function presentAssistantMessage(cline: Task) {
 					case "execute_command":
 						return `[${block.name} for '${block.params.command}']`
 					case "read_file":
-						// Check if this model should use the simplified description
-						const modelId = cline.api.getModel().id
-						if (shouldUseSingleFileRead(modelId)) {
-							return getSimpleReadFileToolDescription(block.name, block.params)
-						} else {
-							// Prefer native typed args when available; fall back to legacy params
-							// Check if nativeArgs exists (native protocol)
-							if (block.nativeArgs) {
-								return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
-							}
-							return readFileTool.getReadFileToolDescription(block.name, block.params)
+						// Prefer native typed args when available; fall back to legacy params
+						// Check if nativeArgs exists (native protocol)
+						if (block.nativeArgs) {
+							return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
 						}
+						return readFileTool.getReadFileToolDescription(block.name, block.params)
 					case "fetch_instructions":
 						return `[${block.name} for '${block.params.task}']`
 					case "write_to_file":
@@ -452,12 +446,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (toolCallId) {
 					// Native protocol: MUST send tool_result for every tool_use
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: errorMessage,
 						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
+					})
 				} else {
 					// XML protocol: send as text
 					cline.userMessageContent.push({
@@ -477,12 +471,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (toolCallId) {
 					// Native protocol: MUST send tool_result for every tool_use
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: errorMessage,
 						is_error: true,
-					} as Anthropic.ToolResultBlockParam)
+					})
 				} else {
 					// XML protocol: send as text
 					cline.userMessageContent.push({
@@ -536,11 +530,11 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					// Add tool_result with text content only
-					cline.userMessageContent.push({
+					cline.pushToolResultToUserContent({
 						type: "tool_result",
 						tool_use_id: toolCallId,
 						content: resultContent,
-					} as Anthropic.ToolResultBlockParam)
+					})
 
 					// Add image blocks separately after tool_result
 					if (imageBlocks.length > 0) {
@@ -701,8 +695,11 @@ export async function presentAssistantMessage(cline: Task) {
 			}
 
 			if (!block.partial) {
-				cline.recordToolUsage(block.name)
-				TelemetryService.instance.captureToolUsage(cline.taskId, block.name, toolProtocol)
+				// Check if this is a custom tool - if so, record as "custom_tool" (like MCP tools)
+				const isCustomTool = stateExperiments?.customTools && customToolRegistry.has(block.name)
+				const recordName = isCustomTool ? "custom_tool" : block.name
+				cline.recordToolUsage(recordName)
+				TelemetryService.instance.captureToolUsage(cline.taskId, recordName, toolProtocol)
 			}
 
 			// Validate tool use before execution - ONLY for complete (non-partial) blocks.
@@ -738,12 +735,12 @@ export async function presentAssistantMessage(cline: Task) {
 
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
 						// For native protocol, push tool_result directly without setting didAlreadyUseTool
-						cline.userMessageContent.push({
+						cline.pushToolResultToUserContent({
 							type: "tool_result",
 							tool_use_id: toolCallId,
 							content: typeof errorContent === "string" ? errorContent : "(validation error)",
 							is_error: true,
-						} as Anthropic.ToolResultBlockParam)
+						})
 					} else {
 						// For XML protocol, use the standard pushToolResult
 						pushToolResult(errorContent)
@@ -908,29 +905,14 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "read_file":
-					// Check if this model should use the simplified single-file read tool
-					// Only use simplified tool for XML protocol - native protocol works with standard tool
-					const modelId = cline.api.getModel().id
-					if (shouldUseSingleFileRead(modelId) && toolProtocol !== TOOL_PROTOCOL.NATIVE) {
-						await simpleReadFileTool(
-							cline,
-							block,
-							askApproval,
-							handleError,
-							pushToolResult,
-							removeClosingTag,
-							toolProtocol,
-						)
-					} else {
-						// Type assertion is safe here because we're in the "read_file" case
-						await readFileTool.handle(cline, block as ToolUse<"read_file">, {
-							askApproval,
-							handleError,
-							pushToolResult,
-							removeClosingTag,
-							toolProtocol,
-						})
-					}
+					// Type assertion is safe here because we're in the "read_file" case
+					await readFileTool.handle(cline, block as ToolUse<"read_file">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
 					break
 				case "fetch_instructions":
 					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, {
@@ -1070,9 +1052,8 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				default: {
-					// Handle unknown/invalid tool names
+					// Handle unknown/invalid tool names OR custom tools
 					// This is critical for native protocol where every tool_use MUST have a tool_result
-					// Note: This case should rarely be reached since validateToolUse now checks for unknown tools
 
 					// CRITICAL: Don't process partial blocks for unknown tools - just let them stream in.
 					// If we try to show errors for partial blocks, we'd show the error on every streaming chunk,
@@ -1081,6 +1062,47 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					}
 
+					const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
+
+					if (customTool) {
+						try {
+							let customToolArgs
+
+							if (customTool.parameters) {
+								try {
+									customToolArgs = customTool.parameters.parse(block.nativeArgs || block.params || {})
+								} catch (parseParamsError) {
+									const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
+									console.error(message)
+									cline.consecutiveMistakeCount++
+									await cline.say("error", message)
+									pushToolResult(formatResponse.toolError(message, toolProtocol))
+									break
+								}
+							}
+
+							const result = await customTool.execute(customToolArgs, {
+								mode: mode ?? defaultModeSlug,
+								task: cline,
+							})
+
+							console.log(
+								`${customTool.name}.execute(): ${JSON.stringify(customToolArgs)} -> ${JSON.stringify(result)}`,
+							)
+
+							pushToolResult(result)
+							cline.consecutiveMistakeCount = 0
+						} catch (executionError: any) {
+							cline.consecutiveMistakeCount++
+							// Record custom tool error with static name
+							cline.recordToolError("custom_tool", executionError.message)
+							await handleError(`executing custom tool "${block.name}"`, executionError)
+						}
+
+						break
+					}
+
+					// Not a custom tool - handle as unknown tool error
 					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
 					cline.consecutiveMistakeCount++
 					cline.recordToolError(block.name as ToolName, errorMessage)
@@ -1088,12 +1110,12 @@ export async function presentAssistantMessage(cline: Task) {
 					// Push tool_result directly for native protocol WITHOUT setting didAlreadyUseTool
 					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
-						cline.userMessageContent.push({
+						cline.pushToolResultToUserContent({
 							type: "tool_result",
 							tool_use_id: toolCallId,
 							content: formatResponse.toolError(errorMessage, toolProtocol),
 							is_error: true,
-						} as Anthropic.ToolResultBlockParam)
+						})
 					} else {
 						pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
 					}

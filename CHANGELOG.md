@@ -1,5 +1,81 @@
 # Roo Code Changelog
 
+## [3.38.3] - 2026-01-03
+
+- Feat: Add option in Context settings to recursively load `.roo/rules` and `AGENTS.md` from subdirectories (PR #10446 by @mrubens)
+- Fix: Stop frequent Claude Code sign-ins by hardening OAuth refresh token handling (PR #10410 by @hannesrudolph)
+- Fix: Add `maxConcurrentFileReads` limit to native `read_file` tool schema (PR #10449 by @app/roomote)
+- Fix: Add type check for `lastMessage.text` in TTS useEffect to prevent runtime errors (PR #10431 by @app/roomote)
+
+## [3.38.2] - 2025-12-31
+
+![3.38.2 Release - Skill Alignment](/releases/3.38.2-release.png)
+
+- Align skills system with Agent Skills specification (PR #10409 by @hannesrudolph)
+- Prevent write_to_file from creating files at truncated paths (PR #10415 by @mrubens and @daniel-lxs)
+- Update Cerebras maxTokens to 16384 (PR #10387 by @sebastiand-cerebras)
+- Fix rate limit wait display (PR #10389 by @hannesrudolph)
+- Remove human-relay provider (PR #10388 by @hannesrudolph)
+- Replace Todo Lists video with Context Management video in documentation (PR #10375 by @SannidhyaSah)
+
+## [3.38.1] - 2025-12-29
+
+![3.38.1 Release - Bug Fixes and Stability](/releases/3.38.1-release.png)
+
+- Fix: Flush pending tool results before condensing context (PR #10379 by @daniel-lxs)
+- Fix: Revert mergeToolResultText for OpenAI-compatible providers (PR #10381 by @hannesrudolph)
+- Fix: Enforce maxConcurrentFileReads limit in read_file tool (PR #10363 by @roomote)
+- Fix: Improve feedback message when read_file is used on a directory (PR #10371 by @roomote)
+- Fix: Handle custom tool use similarly to MCP tools for IPC schema purposes (PR #10364 by @jr)
+- Fix: Correct GitHub repository URL in marketing page (#10376 by @jishnuteegala, PR #10377 by @roomote)
+- Docs: Clarify path to Security Settings in privacy policy (PR #10367 by @roomote)
+
+## [3.38.0] - 2025-12-27
+
+![3.38.0 Release - Skills](/releases/3.38.0-release.png)
+
+- Add support for [Agent Skills](https://agentskills.io/), enabling reusable packages of prompts, tools, and resources to extend Roo's capabilities (PR #10335 by @mrubens)
+- Add optional mode field to slash command front matter, allowing commands to automatically switch to a specific mode when triggered (PR #10344 by @app/roomote)
+- Add support for npm packages and .env files to custom tools, allowing custom tools to import dependencies and access environment variables (PR #10336 by @cte)
+- Remove simpleReadFileTool feature, streamlining the file reading experience (PR #10254 by @app/roomote)
+- Remove OpenRouter Transforms feature (PR #10341 by @app/roomote)
+- Fix mergeToolResultText handling in Roo provider (PR #10359 by @mrubens)
+
+## [3.37.1] - 2025-12-23
+
+![3.37.1 Release - Tool Fixes and Provider Improvements](/releases/3.37.1-release.png)
+
+- Fix: Send native tool definitions by default for OpenAI to ensure proper tool usage (PR #10314 by @hannesrudolph)
+- Fix: Preserve reasoning_details shape to prevent malformed responses when processing model output (PR #10313 by @hannesrudolph)
+- Fix: Drain queued messages while waiting for ask to prevent message loss (PR #10315 by @hannesrudolph)
+- Feat: Add grace retry for empty assistant messages to improve reliability (PR #10297 by @hannesrudolph)
+- Feat: Enable mergeToolResultText for all OpenAI-compatible providers for better tool result handling (PR #10299 by @hannesrudolph)
+- Feat: Enable mergeToolResultText for Roo Code Cloud provider (PR #10301 by @hannesrudolph)
+- Feat: Strengthen native tool-use guidance in prompts for improved model behavior (PR #10311 by @hannesrudolph)
+- UX: Account-centric signup flow for improved onboarding experience (PR #10306 by @brunobergher)
+
+## [3.37.0] - 2025-12-22
+
+![3.37.0 Release - Custom Tool Calling](/releases/3.37.0-release.png)
+
+- Add MiniMax M2.1 and improve environment_details handling for Minimax thinking models (PR #10284 by @hannesrudolph)
+- Add GLM-4.7 model with thinking mode support for Zai provider (PR #10282 by @hannesrudolph)
+- Add experimental custom tool calling - define custom tools that integrate seamlessly with your AI workflow (PR #10083 by @cte)
+- Deprecate XML tool protocol selection and force native tool format for new tasks (PR #10281 by @daniel-lxs)
+- Fix: Emit tool_call_end events in OpenAI handler when streaming ends (#10275 by @torxeon, PR #10280 by @daniel-lxs)
+- Fix: Emit tool_call_end events in BaseOpenAiCompatibleProvider (PR #10293 by @hannesrudolph)
+- Fix: Disable strict mode for MCP tools to preserve optional parameters (PR #10220 by @daniel-lxs)
+- Fix: Move array-specific properties into anyOf variant in normalizeToolSchema (PR #10276 by @daniel-lxs)
+- Fix: Add CRLF line ending normalization to search_replace and search_and_replace tools (PR #10288 by @hannesrudolph)
+- Fix: Add graceful fallback for model parsing in Chutes provider (PR #10279 by @hannesrudolph)
+- Fix: Enable Requesty refresh models with credentials (PR #10273 by @daniel-lxs)
+- Fix: Improve reasoning_details accumulation and serialization (PR #10285 by @hannesrudolph)
+- Fix: Preserve reasoning_content in condense summary for DeepSeek-reasoner (PR #10292 by @hannesrudolph)
+- Refactor Zai provider to merge environment_details into tool result instead of system message (PR #10289 by @hannesrudolph)
+- Remove parallel_tool_calls parameter from litellm provider (PR #10274 by @roomote)
+- Add Cloud Team page with comprehensive team management features (PR #10267 by @roomote)
+- Add message log deduper utility for evals (PR #10286 by @hannesrudolph)
+
 ## [3.36.16] - 2025-12-19
 
 - Fix: Normalize tool schemas for VS Code LM API to resolve error 400 when using VS Code Language Model API providers (PR #10221 by @hannesrudolph)

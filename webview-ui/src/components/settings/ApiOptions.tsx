@@ -38,8 +38,6 @@ import {
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
 	minimaxDefaultModelId,
-	type ToolProtocol,
-	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -413,17 +411,6 @@ const ApiOptions = ({
 		}
 	}, [selectedProvider])
 
-	// Calculate the default protocol that would be used if toolProtocol is not set
-	// Mirrors the simplified logic in resolveToolProtocol.ts:
-	// 1. User preference (toolProtocol) - handled by the select value binding
-	// 2. Model default - use if available
-	// 3. Native fallback
-	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.NATIVE
-
-	// Show the tool protocol selector when model supports native tools.
-	// For OpenAI Compatible providers we always show it so users can force XML/native explicitly.
-	const showToolProtocolSelector = selectedProvider === "openai" || selectedModelInfo?.supportsNativeTools === true
-
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list
@@ -465,6 +452,11 @@ const ApiOptions = ({
 				options.unshift(rooOption)
 			}
 		} else {
+			// Filter out roo from the welcome view
+			const filteredOptions = options.filter((opt) => opt.value !== "roo")
+			options.length = 0
+			options.push(...filteredOptions)
+
 			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
 			if (openRouterIndex > 0) {
 				const [openRouterOption] = options.splice(openRouterIndex, 1)
@@ -485,7 +477,7 @@ const ApiOptions = ({
 					) : (
 						docs && (
 							<VSCodeLink href={docs.url} target="_blank" className="flex gap-2">
-								{docs.name}
+								{t("settings:providers.apiProviderDocs")}
 								<BookOpenText className="size-4 inline ml-2" />
 							</VSCodeLink>
 						)
@@ -749,17 +741,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "human-relay" && (
-				<>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.description")}
-					</div>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.instructions")}
-					</div>
-				</>
-			)}
-
 			{selectedProvider === "fireworks" && (
 				<Fireworks apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -938,39 +919,6 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
-						{showToolProtocolSelector && (
-							<div>
-								<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
-								<Select
-									value={apiConfiguration.toolProtocol || "default"}
-									onValueChange={(value) => {
-										const newValue = value === "default" ? undefined : (value as ToolProtocol)
-										setApiConfigurationField("toolProtocol", newValue)
-									}}>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder={t("settings:common.select")} />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="default">
-											{t("settings:toolProtocol.default")} (
-											{defaultProtocol === TOOL_PROTOCOL.NATIVE
-												? t("settings:toolProtocol.native")
-												: t("settings:toolProtocol.xml")}
-											)
-										</SelectItem>
-										<SelectItem value={TOOL_PROTOCOL.XML}>
-											{t("settings:toolProtocol.xml")}
-										</SelectItem>
-										<SelectItem value={TOOL_PROTOCOL.NATIVE}>
-											{t("settings:toolProtocol.native")}
-										</SelectItem>
-									</SelectContent>
-								</Select>
-								<div className="text-sm text-vscode-descriptionForeground mt-1">
-									{t("settings:toolProtocol.description")}
-								</div>
-							</div>
-						)}
 					</CollapsibleContent>
 				</Collapsible>
 			)}

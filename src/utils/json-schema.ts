@@ -24,6 +24,28 @@ const OPENAI_SUPPORTED_FORMATS = new Set([
 ])
 
 /**
+ * Array-specific JSON Schema properties that must be nested inside array type variants
+ * when converting to anyOf format (JSON Schema draft 2020-12).
+ */
+const ARRAY_SPECIFIC_PROPERTIES = ["items", "minItems", "maxItems", "uniqueItems"] as const
+
+/**
+ * Applies array-specific properties from source to target object.
+ * Only copies properties that are defined in the source.
+ */
+function applyArrayProperties(
+	target: Record<string, unknown>,
+	source: Record<string, unknown>,
+): Record<string, unknown> {
+	for (const prop of ARRAY_SPECIFIC_PROPERTIES) {
+		if (source[prop] !== undefined) {
+			target[prop] = source[prop]
+		}
+	}
+	return target
+}
+
+/**
  * Zod schema for JSON Schema primitive types
  */
 const JsonSchemaPrimitiveTypeSchema = z.enum(["string", "number", "integer", "boolean", "null"])
@@ -133,18 +155,42 @@ const NormalizedToolSchemaInternal: z.ZodType<Record<string, unknown>, z.ZodType
 			})
 			.passthrough()
 			.transform((schema) => {
-				const { type, required, properties, additionalProperties, format, ...rest } = schema
+				const {
+					type,
+					required,
+					properties,
+					additionalProperties,
+					format,
+					items,
+					minItems,
+					maxItems,
+					uniqueItems,
+					...rest
+				} = schema
 				const result: Record<string, unknown> = { ...rest }
 
 				// Determine if this schema represents an object type
 				const isObjectType =
 					type === "object" || (Array.isArray(type) && type.includes("object")) || properties !== undefined
 
+				// Collect array-specific properties for potential use in type handling
+				const arrayProps = { items, minItems, maxItems, uniqueItems }
+
 				// If type is an array, convert to anyOf format (JSON Schema 2020-12)
+				// Array-specific properties must be moved inside the array variant
 				if (Array.isArray(type)) {
-					result.anyOf = type.map((t) => ({ type: t }))
+					result.anyOf = type.map((t) => {
+						if (t === "array") {
+							return applyArrayProperties({ type: t }, arrayProps)
+						}
+						return { type: t }
+					})
 				} else if (type !== undefined) {
 					result.type = type
+					// For single "array" type, preserve array-specific properties at root
+					if (type === "array") {
+						applyArrayProperties(result, arrayProps)
+					}
 				}
 
 				// Strip unsupported format values for OpenAI compatibility

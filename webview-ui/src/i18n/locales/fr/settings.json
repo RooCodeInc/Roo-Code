@@ -250,6 +250,7 @@
 		"configProfile": "Profil de configuration",
 		"description": "Enregistrez différentes configurations d'API pour basculer rapidement entre les fournisseurs et les paramètres.",
 		"apiProvider": "Fournisseur d'API",
+		"apiProviderDocs": "Documentation du Fournisseur",
 		"model": "Modèle",
 		"nameEmpty": "Le nom ne peut pas être vide",
 		"nameExists": "Un profil avec ce nom existe déjà",
@@ -293,7 +294,6 @@
 		"getRequestyApiKey": "Obtenir la clé API Requesty",
 		"getRequestyBaseUrl": "URL de base",
 		"requestyUseCustomBaseUrl": "Utiliser une URL de base personnalisée",
-		"openRouterTransformsText": "Compresser les prompts et chaînes de messages à la taille du contexte (<a>Transformations OpenRouter</a>)",
 		"anthropicApiKey": "Clé API Anthropic",
 		"getAnthropicApiKey": "Obtenir la clé API Anthropic",
 		"anthropicUseAuthToken": "Passer la clé API Anthropic comme en-tête d'autorisation au lieu de X-Api-Key",
@@ -433,10 +433,6 @@
 		"getUnboundApiKey": "Obtenir la clé API Unbound",
 		"unboundRefreshModelsSuccess": "Liste des modèles mise à jour ! Vous pouvez maintenant sélectionner parmi les derniers modèles.",
 		"unboundInvalidApiKey": "Clé API invalide. Veuillez vérifier votre clé API et réessayer.",
-		"humanRelay": {
-			"description": "Aucune clé API n'est requise, mais l'utilisateur doit aider à copier et coller les informations dans le chat web de l'IA.",
-			"instructions": "Pendant l'utilisation, une boîte de dialogue apparaîtra et le message actuel sera automatiquement copié dans le presse-papiers. Vous devez le coller dans les versions web de l'IA (comme ChatGPT ou Claude), puis copier la réponse de l'IA dans la boîte de dialogue et cliquer sur le bouton de confirmation."
-		},
 		"roo": {
 			"authenticatedMessage": "Authentifié de manière sécurisée via ton compte Roo Code Cloud.",
 			"connectButton": "Se connecter à Roo Code Cloud"
@@ -665,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max fichiers",
 			"description": "Nombre maximum de fichiers à inclure dans le contexte de statut git. Mettre à 0 pour désactiver. Les informations de branche et les commits sont toujours affichés si > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activer les règles des sous-dossiers",
+			"description": "Découvrir et charger récursivement les fichiers .roo/rules et AGENTS.md depuis les sous-répertoires. Utile pour les monorepos avec des règles par package."
 		}
 	},
 	"terminal": {
@@ -824,6 +824,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Appels d'outils parallèles",
 			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Activer les outils personnalisés",
+			"description": "Lorsqu'activé, Roo peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",
+			"toolsHeader": "Outils personnalisés disponibles",
+			"noTools": "Aucun outil personnalisé chargé. Ajoutez des fichiers .ts ou .js au répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux.",
+			"refreshButton": "Actualiser",
+			"refreshing": "Actualisation...",
+			"refreshSuccess": "Outils actualisés avec succès",
+			"refreshError": "Échec de l'actualisation des outils",
+			"toolParameters": "Paramètres"
 		}
 	},
 	"promptCaching": {

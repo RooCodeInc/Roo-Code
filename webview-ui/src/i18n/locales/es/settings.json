@@ -250,6 +250,7 @@
 		"configProfile": "Perfil de configuración",
 		"description": "Guarde diferentes configuraciones de API para cambiar rápidamente entre proveedores y ajustes.",
 		"apiProvider": "Proveedor de API",
+		"apiProviderDocs": "Documentación del Proveedor",
 		"model": "Modelo",
 		"nameEmpty": "El nombre no puede estar vacío",
 		"nameExists": "Ya existe un perfil con este nombre",
@@ -293,7 +294,6 @@
 		"getRequestyApiKey": "Obtener clave API de Requesty",
 		"getRequestyBaseUrl": "URL base",
 		"requestyUseCustomBaseUrl": "Utilice una URL base personalizada",
-		"openRouterTransformsText": "Comprimir prompts y cadenas de mensajes al tamaño del contexto (<a>Transformaciones de OpenRouter</a>)",
 		"anthropicApiKey": "Clave API de Anthropic",
 		"getAnthropicApiKey": "Obtener clave API de Anthropic",
 		"anthropicUseAuthToken": "Pasar la clave API de Anthropic como encabezado de autorización en lugar de X-Api-Key",
@@ -433,10 +433,6 @@
 		"getUnboundApiKey": "Obtener clave API de Unbound",
 		"unboundRefreshModelsSuccess": "¡Lista de modelos actualizada! Ahora puede seleccionar entre los últimos modelos.",
 		"unboundInvalidApiKey": "Clave API inválida. Por favor, verifique su clave API e inténtelo de nuevo.",
-		"humanRelay": {
-			"description": "No se requiere clave API, pero el usuario necesita ayudar a copiar y pegar la información en el chat web de IA.",
-			"instructions": "Durante el uso, aparecerá un cuadro de diálogo y el mensaje actual se copiará automáticamente al portapapeles. Debe pegarlo en las versiones web de IA (como ChatGPT o Claude), luego copiar la respuesta de la IA de vuelta al cuadro de diálogo y hacer clic en el botón de confirmar."
-		},
 		"roo": {
 			"authenticatedMessage": "Autenticado de forma segura a través de tu cuenta de Roo Code Cloud.",
 			"connectButton": "Conectar a Roo Code Cloud"
@@ -665,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status máx. archivos",
 			"description": "Número máximo de entradas de archivo para incluir en el contexto de estado de git. Establézcalo en 0 para deshabilitar. La información de la rama y los commits siempre se muestran cuando es > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activar reglas de subcarpetas",
+			"description": "Descubrir y cargar recursivamente archivos .roo/rules y AGENTS.md desde subdirectorios. Útil para monorepos con reglas por paquete."
 		}
 	},
 	"terminal": {
@@ -824,6 +824,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Llamadas paralelas a herramientas",
 			"description": "Cuando está habilitado, el protocolo nativo puede ejecutar múltiples herramientas en un solo turno de mensaje del asistente."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Habilitar herramientas personalizadas",
+			"description": "Cuando está habilitado, Roo puede cargar y usar herramientas TypeScript/JavaScript personalizadas desde el directorio .roo/tools de tu proyecto o ~/.roo/tools para herramientas globales. Nota: estas herramientas se aprobarán automáticamente.",
+			"toolsHeader": "Herramientas personalizadas disponibles",
+			"noTools": "No hay herramientas personalizadas cargadas. Añade archivos .ts o .js al directorio .roo/tools de tu proyecto o ~/.roo/tools para herramientas globales.",
+			"refreshButton": "Actualizar",
+			"refreshing": "Actualizando...",
+			"refreshSuccess": "Herramientas actualizadas correctamente",
+			"refreshError": "Error al actualizar las herramientas",
+			"toolParameters": "Parámetros"
 		}
 	},
 	"promptCaching": {

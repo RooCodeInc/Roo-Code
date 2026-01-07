@@ -250,6 +250,7 @@
 		"configProfile": "कॉन्फिगरेशन प्रोफाइल",
 		"description": "विभिन्न API कॉन्फ़िगरेशन सहेजें ताकि प्रदाताओं और सेटिंग्स के बीच त्वरित रूप से स्विच कर सकें।",
 		"apiProvider": "API प्रदाता",
+		"apiProviderDocs": "प्रदाता डॉक्स",
 		"model": "मॉडल",
 		"nameEmpty": "नाम खाली नहीं हो सकता",
 		"nameExists": "इस नाम वाला प्रोफ़ाइल पहले से मौजूद है",
@@ -293,7 +294,6 @@
 		"getRequestyApiKey": "Requesty API कुंजी प्राप्त करें",
 		"getRequestyBaseUrl": "बेस URL",
 		"requestyUseCustomBaseUrl": "कस्टम बेस URL का उपयोग करें",
-		"openRouterTransformsText": "संदर्भ आकार के लिए प्रॉम्प्ट और संदेश श्रृंखलाओं को संपीड़ित करें (<a>OpenRouter ट्रांसफॉर्म</a>)",
 		"anthropicApiKey": "Anthropic API कुंजी",
 		"getAnthropicApiKey": "Anthropic API कुंजी प्राप्त करें",
 		"anthropicUseAuthToken": "X-Api-Key के बजाय Anthropic API कुंजी को Authorization हेडर के रूप में पास करें",
@@ -433,10 +433,6 @@
 		"getUnboundApiKey": "Unbound API कुंजी प्राप्त करें",
 		"unboundRefreshModelsSuccess": "मॉडल सूची अपडेट हो गई है! अब आप नवीनतम मॉडलों में से चुन सकते हैं।",
 		"unboundInvalidApiKey": "अमान्य API कुंजी। कृपया अपनी API कुंजी की जांच करें और पुनः प्रयास करें।",
-		"humanRelay": {
-			"description": "कोई API कुंजी आवश्यक नहीं है, लेकिन उपयोगकर्ता को वेब चैट AI में जानकारी कॉपी और पेस्ट करने में मदद करनी होगी।",
-			"instructions": "उपयोग के दौरान, एक डायलॉग बॉक्स पॉप अप होगा और वर्तमान संदेश स्वचालित रूप से क्लिपबोर्ड पर कॉपी हो जाएगा। आपको इन्हें AI के वेब संस्करणों (जैसे ChatGPT या Claude) में पेस्ट करना होगा, फिर AI की प्रतिक्रिया को डायलॉग बॉक्स में वापस कॉपी करें और पुष्टि बटन पर क्लिक करें।"
-		},
 		"roo": {
 			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
 			"connectButton": "Roo Code Cloud से कनेक्ट करें"
@@ -666,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "गिट स्थिति अधिकतम फ़ाइलें",
 			"description": "गिट स्थिति संदर्भ में शामिल करने के लिए फ़ाइल प्रविष्टियों की अधिकतम संख्या। अक्षम करने के लिए 0 पर सेट करें। शाखा जानकारी और कमिट हमेशा दिखाए जाते हैं जब > 0 होता है।"
+		},
+		"enableSubfolderRules": {
+			"label": "सबफ़ोल्डर नियम सक्षम करें",
+			"description": "उपनिर्देशिकाओं से .roo/rules और AGENTS.md फ़ाइलों को पुनरावर्ती रूप से खोजें और लोड करें। प्रति-पैकेज नियमों वाले मोनोरेपो के लिए उपयोगी।"
 		}
 	},
 	"terminal": {
@@ -825,6 +825,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "समानांतर टूल कॉल",
 			"description": "सक्षम होने पर, नेटिव प्रोटोकॉल एकल सहायक संदेश टर्न में एकाधिक टूल निष्पादित कर सकता है।"
+		},
+		"CUSTOM_TOOLS": {
+			"name": "कस्टम टूल्स सक्षम करें",
+			"description": "सक्षम होने पर, Roo आपके प्रोजेक्ट की .roo/tools निर्देशिका या वैश्विक टूल्स के लिए ~/.roo/tools से कस्टम TypeScript/JavaScript टूल्स लोड और उपयोग कर सकता है। नोट: ये टूल्स स्वचालित रूप से स्वत:-अनुमोदित होंगे।",
+			"toolsHeader": "उपलब्ध कस्टम टूल्स",
+			"noTools": "कोई कस्टम टूल लोड नहीं हुआ। अपने प्रोजेक्ट की .roo/tools निर्देशिका या वैश्विक टूल्स के लिए ~/.roo/tools में .ts या .js फ़ाइलें जोड़ें।",
+			"refreshButton": "रिफ्रेश करें",
+			"refreshing": "रिफ्रेश हो रहा है...",
+			"refreshSuccess": "टूल्स सफलतापूर्वक रिफ्रेश हुए",
+			"refreshError": "टूल्स रिफ्रेश करने में विफल",
+			"toolParameters": "पैरामीटर्स"
 		}
 	},
 	"promptCaching": {

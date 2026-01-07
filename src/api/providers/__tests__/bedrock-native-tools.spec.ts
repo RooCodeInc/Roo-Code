@@ -168,12 +168,13 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(executeCommandSchema.properties.cwd.description).toBe("Working directory (optional)")
 
 			// Second tool: line_ranges should be transformed from type: ["array", "null"] to anyOf
+			// with items moved inside the array variant (required by GPT-5-mini strict schema validation)
 			const readFileSchema = bedrockTools[1].toolSpec.inputSchema.json as any
 			const lineRanges = readFileSchema.properties.files.items.properties.line_ranges
-			expect(lineRanges.anyOf).toEqual([{ type: "array" }, { type: "null" }])
+			expect(lineRanges.anyOf).toEqual([{ type: "array", items: { type: "integer" } }, { type: "null" }])
 			expect(lineRanges.type).toBeUndefined()
-			// items also gets additionalProperties: false from normalization
-			expect(lineRanges.items.type).toBe("integer")
+			// items should now be inside the array variant, not at root
+			expect(lineRanges.items).toBeUndefined()
 			expect(lineRanges.description).toBe("Optional line ranges")
 		})
 

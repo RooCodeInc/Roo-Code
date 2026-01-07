@@ -7,15 +7,26 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { X, Rocket, Check, ChevronsUpDown, SlidersHorizontal, Info, Plus, Minus } from "lucide-react"
+import {
+	X,
+	Rocket,
+	Check,
+	ChevronsUpDown,
+	SlidersHorizontal,
+	Info,
+	Plus,
+	Minus,
+	Terminal,
+	MonitorPlay,
+} from "lucide-react"
 
 import {
-	globalSettingsSchema,
-	providerSettingsSchema,
-	EVALS_SETTINGS,
-	getModelId,
 	type ProviderSettings,
 	type GlobalSettings,
+	globalSettingsSchema,
+	providerSettingsSchema,
+	getModelId,
+	EVALS_SETTINGS,
 } from "@roo-code/types"
 
 import { createRun } from "@/actions/runs"
@@ -23,6 +34,7 @@ import { getExercises } from "@/actions/exercises"
 
 import {
 	type CreateRun,
+	type ExecutionMethod,
 	createRunSchema,
 	CONCURRENCY_MIN,
 	CONCURRENCY_MAX,
@@ -77,14 +89,12 @@ type ImportedSettings = {
 	currentApiConfigName: string
 }
 
-// Type for a model selection entry
 type ModelSelection = {
 	id: string
 	model: string
 	popoverOpen: boolean
 }
 
-// Type for a config selection entry (for import mode)
 type ConfigSelection = {
 	id: string
 	configName: string
@@ -95,16 +105,15 @@ export function NewRun() {
 	const router = useRouter()
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
+	const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>("vscode")
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
 	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
 	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
 
-	// State for multiple model selections
 	const [modelSelections, setModelSelections] = useState<ModelSelection[]>([
 		{ id: crypto.randomUUID(), model: "", popoverOpen: false },
 	])
 
-	// State for imported settings with multiple config selections
 	const [importedSettings, setImportedSettings] = useState<ImportedSettings | null>(null)
 	const [configSelections, setConfigSelections] = useState<ConfigSelection[]>([
 		{ id: crypto.randomUUID(), configName: "", popoverOpen: false },
@@ -119,7 +128,6 @@ export function NewRun() {
 
 	const exercises = useQuery({ queryKey: ["getExercises"], queryFn: () => getExercises() })
 
-	// State for selected exercises (needed for language toggle buttons)
 	const [selectedExercises, setSelectedExercises] = useState<string[]>([])
 
 	const form = useForm<CreateRun>({
@@ -134,6 +142,7 @@ export function NewRun() {
 			timeout: TIMEOUT_DEFAULT,
 			iterations: ITERATIONS_DEFAULT,
 			jobToken: "",
+			executionMethod: "vscode",
 		},
 	})
 
@@ -146,38 +155,49 @@ export function NewRun() {
 
 	const [suite, settings] = watch(["suite", "settings", "concurrency"])
 
-	// Load settings from localStorage on mount
 	useEffect(() => {
 		const savedConcurrency = localStorage.getItem("evals-concurrency")
+
 		if (savedConcurrency) {
 			const parsed = parseInt(savedConcurrency, 10)
+
 			if (!isNaN(parsed) && parsed >= CONCURRENCY_MIN && parsed <= CONCURRENCY_MAX) {
 				setValue("concurrency", parsed)
 			}
 		}
+
 		const savedTimeout = localStorage.getItem("evals-timeout")
+
 		if (savedTimeout) {
 			const parsed = parseInt(savedTimeout, 10)
+
 			if (!isNaN(parsed) && parsed >= TIMEOUT_MIN && parsed <= TIMEOUT_MAX) {
 				setValue("timeout", parsed)
 			}
 		}
+
 		const savedCommandTimeout = localStorage.getItem("evals-command-execution-timeout")
+
 		if (savedCommandTimeout) {
 			const parsed = parseInt(savedCommandTimeout, 10)
+
 			if (!isNaN(parsed) && parsed >= 20 && parsed <= 60) {
 				setCommandExecutionTimeout(parsed)
 			}
 		}
+
 		const savedShellTimeout = localStorage.getItem("evals-shell-integration-timeout")
+
 		if (savedShellTimeout) {
 			const parsed = parseInt(savedShellTimeout, 10)
+
 			if (!isNaN(parsed) && parsed >= 30 && parsed <= 60) {
 				setTerminalShellIntegrationTimeout(parsed)
 			}
 		}
-		// Load saved exercises selection
+
 		const savedSuite = localStorage.getItem("evals-suite")
+
 		if (savedSuite === "partial") {
 			setValue("suite", "partial")
 			const savedExercises = localStorage.getItem("evals-exercises")
@@ -189,48 +209,57 @@ export function NewRun() {
 						setValue("exercises", parsed)
 					}
 				} catch {
-					// Invalid JSON, ignore
+					// Invalid JSON, ignore.
 				}
 			}
 		}
 	}, [setValue])
 
-	// Extract unique languages from exercises
 	const languages = useMemo(() => {
-		if (!exercises.data) return []
+		if (!exercises.data) {
+			return []
+		}
+
 		const langs = new Set<string>()
+
 		for (const path of exercises.data) {
 			const lang = path.split("/")[0]
-			if (lang) langs.add(lang)
+
+			if (lang) {
+				langs.add(lang)
+			}
 		}
+
 		return Array.from(langs).sort()
 	}, [exercises.data])
 
-	// Get exercises for a specific language
 	const getExercisesForLanguage = useCallback(
 		(lang: string) => {
-			if (!exercises.data) return []
+			if (!exercises.data) {
+				return []
+			}
+
 			return exercises.data.filter((path) => path.startsWith(`${lang}/`))
 		},
 		[exercises.data],
 	)
 
-	// Toggle all exercises for a language
 	const toggleLanguage = useCallback(
 		(lang: string) => {
 			const langExercises = getExercisesForLanguage(lang)
 			const allSelected = langExercises.every((ex) => selectedExercises.includes(ex))
 
 			let newSelected: string[]
+
 			if (allSelected) {
-				// Remove all exercises for this language
 				newSelected = selectedExercises.filter((ex) => !ex.startsWith(`${lang}/`))
 			} else {
-				// Add all exercises for this language (avoiding duplicates)
 				const existing = new Set(selectedExercises)
+
 				for (const ex of langExercises) {
 					existing.add(ex)
 				}
+
 				newSelected = Array.from(existing)
 			}
 
@@ -241,7 +270,6 @@ export function NewRun() {
 		[getExercisesForLanguage, selectedExercises, setValue],
 	)
 
-	// Check if all exercises for a language are selected
 	const isLanguageSelected = useCallback(
 		(lang: string) => {
 			const langExercises = getExercisesForLanguage(lang)
@@ -250,7 +278,6 @@ export function NewRun() {
 		[getExercisesForLanguage, selectedExercises],
 	)
 
-	// Check if some (but not all) exercises for a language are selected
 	const isLanguagePartiallySelected = useCallback(
 		(lang: string) => {
 			const langExercises = getExercisesForLanguage(lang)
@@ -260,46 +287,40 @@ export function NewRun() {
 		[getExercisesForLanguage, selectedExercises],
 	)
 
-	// Add a new model selection
 	const addModelSelection = useCallback(() => {
 		setModelSelections((prev) => [...prev, { id: crypto.randomUUID(), model: "", popoverOpen: false }])
 	}, [])
 
-	// Remove a model selection
 	const removeModelSelection = useCallback((id: string) => {
 		setModelSelections((prev) => prev.filter((s) => s.id !== id))
 	}, [])
 
-	// Update a model selection
 	const updateModelSelection = useCallback(
 		(id: string, model: string) => {
 			setModelSelections((prev) => prev.map((s) => (s.id === id ? { ...s, model, popoverOpen: false } : s)))
-			// Also set the form model field for validation (use first non-empty model)
+			// Also set the form model field for validation (use first non-empty model).
 			setValue("model", model)
 		},
 		[setValue],
 	)
 
-	// Toggle popover for a model selection
 	const toggleModelPopover = useCallback((id: string, open: boolean) => {
 		setModelSelections((prev) => prev.map((s) => (s.id === id ? { ...s, popoverOpen: open } : s)))
 	}, [])
 
-	// Add a new config selection
 	const addConfigSelection = useCallback(() => {
 		setConfigSelections((prev) => [...prev, { id: crypto.randomUUID(), configName: "", popoverOpen: false }])
 	}, [])
 
-	// Remove a config selection
 	const removeConfigSelection = useCallback((id: string) => {
 		setConfigSelections((prev) => prev.filter((s) => s.id !== id))
 	}, [])
 
-	// Update a config selection
 	const updateConfigSelection = useCallback(
 		(id: string, configName: string) => {
 			setConfigSelections((prev) => prev.map((s) => (s.id === id ? { ...s, configName, popoverOpen: false } : s)))
-			// Also update the form settings for the first config (for validation)
+
+			// Also update the form settings for the first config (for validation).
 			if (importedSettings) {
 				const providerSettings = importedSettings.apiConfigs[configName] ?? {}
 				setValue("model", getModelId(providerSettings) ?? "")
@@ -309,7 +330,6 @@ export function NewRun() {
 		[importedSettings, setValue],
 	)
 
-	// Toggle popover for a config selection
 	const toggleConfigPopover = useCallback((id: string, open: boolean) => {
 		setConfigSelections((prev) => prev.map((s) => (s.id === id ? { ...s, popoverOpen: open } : s)))
 	}, [])
@@ -317,24 +337,20 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
-				// Validate jobToken for Roo Code Cloud provider
 				if (provider === "roo" && !values.jobToken?.trim()) {
 					toast.error("Roo Code Cloud Token is required")
 					return
 				}
 
-				// Determine which selections to use based on provider
 				const selectionsToLaunch: { model: string; configName?: string }[] = []
 
 				if (provider === "other") {
-					// For import mode, use config selections
 					for (const config of configSelections) {
 						if (config.configName) {
 							selectionsToLaunch.push({ model: "", configName: config.configName })
 						}
 					}
 				} else {
-					// For openrouter/roo, use model selections
 					for (const selection of modelSelections) {
 						if (selection.model) {
 							selectionsToLaunch.push({ model: selection.model })
@@ -347,20 +363,19 @@ export function NewRun() {
 					return
 				}
 
-				// Show launching toast
 				const totalRuns = selectionsToLaunch.length
 				toast.info(totalRuns > 1 ? `Launching ${totalRuns} runs (every 20 seconds)...` : "Launching run...")
 
-				// Launch runs with 20-second delay between each
 				for (let i = 0; i < selectionsToLaunch.length; i++) {
 					const selection = selectionsToLaunch[i]!
 
-					// Wait 20 seconds between runs (except for the first one)
+					// Wait 20 seconds between runs (except for the first one).
 					if (i > 0) {
-						await new Promise((resolve) => setTimeout(resolve, 20000))
+						await new Promise((resolve) => setTimeout(resolve, 20_000))
 					}
 
 					const runValues = { ...values }
+					runValues.executionMethod = executionMethod
 
 					if (provider === "openrouter") {
 						runValues.model = selection.model
@@ -403,7 +418,6 @@ export function NewRun() {
 					}
 				}
 
-				// Navigate back to main evals UI
 				router.push("/")
 			} catch (e) {
 				toast.error(e instanceof Error ? e.message : "An unknown error occurred.")
@@ -411,6 +425,7 @@ export function NewRun() {
 		},
 		[
 			provider,
+			executionMethod,
 			modelSelections,
 			configSelections,
 			importedSettings,
@@ -442,18 +457,15 @@ export function NewRun() {
 					})
 					.parse(JSON.parse(await file.text()))
 
-				// Store all imported configs for user selection
 				setImportedSettings({
 					apiConfigs: providerProfiles.apiConfigs,
 					globalSettings,
 					currentApiConfigName: providerProfiles.currentApiConfigName,
 				})
 
-				// Default to the current config for the first selection
 				const defaultConfigName = providerProfiles.currentApiConfigName
 				setConfigSelections([{ id: crypto.randomUUID(), configName: defaultConfigName, popoverOpen: false }])
 
-				// Apply the default config
 				const providerSettings = providerProfiles.apiConfigs[defaultConfigName] ?? {}
 				setValue("model", getModelId(providerSettings) ?? "")
 				setValue("settings", { ...EVALS_SETTINGS, ...providerSettings, ...globalSettings })
@@ -970,6 +982,36 @@ export function NewRun() {
 							</div>
 						</FormItem>
 					</div>
+
+					{/* Execution Method */}
+					<FormField
+						control={form.control}
+						name="executionMethod"
+						render={() => (
+							<FormItem>
+								<FormLabel>Execution Method</FormLabel>
+								<Tabs
+									value={executionMethod}
+									onValueChange={(value) => {
+										const newExecutionMethod = value as ExecutionMethod
+										setExecutionMethod(newExecutionMethod)
+										setValue("executionMethod", newExecutionMethod)
+									}}>
+									<TabsList>
+										<TabsTrigger value="vscode" className="flex items-center gap-2">
+											<MonitorPlay className="size-4" />
+											VSCode
+										</TabsTrigger>
+										<TabsTrigger value="cli" className="flex items-center gap-2">
+											<Terminal className="size-4" />
+											CLI
+										</TabsTrigger>
+									</TabsList>
+								</Tabs>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
 					<FormField
 						control={form.control}
