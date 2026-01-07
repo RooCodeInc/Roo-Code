@@ -3540,6 +3540,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						type: "text",
 						text: formatResponse.noAssistantMessage(this._taskToolProtocol ?? "xml"),
 					})
+
+					// Push to stack and continue to retry with the noAssistantMessage prompt
+					stack.push({
+						userContent: [...this.userMessageContent],
+						includeFileDetails: false,
+					})
+
+					continue
 				}
 
 				// If we reach here without continuing, return false (will always be false for now)
