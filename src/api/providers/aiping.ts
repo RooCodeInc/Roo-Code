@@ -15,13 +15,13 @@ export class AipingHandler extends BaseOpenAiCompatibleProvider<AipingModelId> i
 	constructor(options: ApiHandlerOptions) {
 		const baseURL = options.aipingBaseUrl || "https://aiping.cn/api/v1"
 		super({
+			...options,
 			providerName: "AiPing",
 			baseURL,
+			apiKey: options.aipingApiKey,
 			defaultProviderModelId: aipingDefaultModelId,
 			providerModels: aipingModels,
 			defaultTemperature: 1.0,
-			apiKey: options.aipingApiKey,
-			...options,
 		})
 	}
 
