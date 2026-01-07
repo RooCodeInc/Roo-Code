@@ -70,12 +70,24 @@ export function CliPreviewContent() {
 			{/* Hero Section */}
 			<section className="mx-auto max-w-7xl px-6 py-12 sm:py-20 lg:px-8">
 				<div className="mx-auto max-w-3xl text-center">
+					<div className="mx-auto inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1 text-sm font-medium text-blue-700 shadow-sm ring-1 ring-inset ring-blue-100 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-200 dark:ring-blue-900/30">
+						<span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" aria-hidden="true" />
+						<span>Invite-only early preview</span>
+						<span className="text-blue-600/70 dark:text-blue-200/70" aria-hidden="true">
+							•
+						</span>
+						<span>Limited batches</span>
+					</div>
+
 					<h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
 						Get an early preview of the Roo Code CLI
 					</h1>
 					<p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-						Bring Roo Code&apos;s iterative agent capabilities to your terminal. Pipe context directly to
-						the agent, automate repetitive refactors across files, and run tasks without the IDE overhead.
+						Bring Roo Code&apos;s iterative agent capabilities to your terminal. Access rolls out in small
+						batches, so join the queue now to be considered for an invite.
+					</p>
+					<p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+						If selected, we&apos;ll email you a private invite link with next steps.
 					</p>
 				</div>
 			</section>
@@ -83,6 +95,20 @@ export function CliPreviewContent() {
 			{/* Benefits Section */}
 			<section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 				<div className="mx-auto max-w-3xl">
+					<div className="mb-6 flex items-end justify-between gap-4">
+						<div>
+							<p className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+								Why the CLI
+							</p>
+							<h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+								High-leverage workflows, without the IDE overhead
+							</h2>
+						</div>
+						<div className="hidden rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:block">
+							Early access queue
+						</div>
+					</div>
+
 					<ul className="space-y-4">
 						<li className="flex items-start gap-4">
 							<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
@@ -183,6 +209,11 @@ export function CliPreviewContent() {
 				<div className="mx-auto max-w-2xl">
 					{!isSubmitted ? (
 						<>
+							<div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+								<span className="font-semibold">Heads up:</span> we&apos;re granting access in batches.
+								If the current batch is full, we&apos;ll keep you in the queue for the next one.
+							</div>
+
 							<div className="mb-8 text-center">
 								<h2 className="text-3xl font-bold text-gray-900 dark:text-white">
 									Join the Early Preview
@@ -220,11 +251,11 @@ export function CliPreviewContent() {
 								</div>
 							</div>
 							<h3 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
-								Thank You for Your Interest!
+								You&apos;re in the queue
 							</h3>
 							<p className="mb-8 text-gray-600 dark:text-gray-400">
-								We&apos;ve received your request. Our team will review your submission and reach out
-								with next steps shortly.
+								We&apos;ve received your request. If you&apos;re selected for a batch, we&apos;ll reach
+								out with an invite and next steps.
 							</p>
 							<div className="mb-6 border-t border-gray-200 pt-6 dark:border-gray-700">
 								<p className="mb-4 text-sm font-medium text-gray-900 dark:text-white">
