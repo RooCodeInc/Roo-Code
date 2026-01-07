@@ -26,16 +26,19 @@ vi.mock("vscode", () => ({
 describe("webviewMessageHandler - searchFiles with RooIgnore filtering", () => {
 	let mockClineProvider: ClineProvider
 	let mockFilterPaths: Mock
+	let mockDispose: Mock
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 
 		// Spy on the mock RooIgnoreController prototype methods
 		mockFilterPaths = vi.fn()
+		mockDispose = vi.fn()
 
 		// Override the filterPaths method on the prototype
 		;(RooIgnoreController.prototype as any).filterPaths = mockFilterPaths
 		;(RooIgnoreController.prototype as any).initialize = vi.fn().mockResolvedValue(undefined)
+		;(RooIgnoreController.prototype as any).dispose = mockDispose
 
 		// Create mock ClineProvider
 		mockClineProvider = {
@@ -229,5 +232,66 @@ describe("webviewMessageHandler - searchFiles with RooIgnore filtering", () => {
 
 		// Verify filterPaths was called (showRooIgnoredFiles defaults to false)
 		expect(mockFilterPaths).toHaveBeenCalled()
+	})
+
+	it("should dispose temporary RooIgnoreController after use", async () => {
+		// Setup mock results from file search
+		const mockResults = [{ path: "src/index.ts", type: "file" as const, label: "index.ts" }]
+		mockSearchWorkspaceFiles.mockResolvedValue(mockResults)
+
+		// Setup state
+		;(mockClineProvider.getState as Mock).mockResolvedValue({
+			showRooIgnoredFiles: false,
+		})
+
+		// Setup filter
+		mockFilterPaths.mockReturnValue(["src/index.ts"])
+
+		// No current task, so temporary controller will be created and should be disposed
+		;(mockClineProvider.getCurrentTask as Mock).mockReturnValue(null)
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "searchFiles",
+			query: "index",
+			requestId: "test-request-dispose",
+		})
+
+		// Verify dispose was called on the temporary controller
+		expect(mockDispose).toHaveBeenCalled()
+	})
+
+	it("should not dispose controller from current task", async () => {
+		// Setup mock results from file search
+		const mockResults = [{ path: "src/index.ts", type: "file" as const, label: "index.ts" }]
+		mockSearchWorkspaceFiles.mockResolvedValue(mockResults)
+
+		// Setup state
+		;(mockClineProvider.getState as Mock).mockResolvedValue({
+			showRooIgnoredFiles: false,
+		})
+
+		// Create a mock task with its own RooIgnoreController
+		const taskFilterPaths = vi.fn().mockReturnValue(["src/index.ts"])
+		const taskDispose = vi.fn()
+		const taskRooIgnoreController = {
+			filterPaths: taskFilterPaths,
+			initialize: vi.fn(),
+			dispose: taskDispose,
+		}
+		;(mockClineProvider.getCurrentTask as Mock).mockReturnValue({
+			taskId: "test-task-id",
+			rooIgnoreController: taskRooIgnoreController,
+		})
+
+		await webviewMessageHandler(mockClineProvider, {
+			type: "searchFiles",
+			query: "index",
+			requestId: "test-request-no-dispose",
+		})
+
+		// Verify dispose was NOT called on the task's controller
+		expect(taskDispose).not.toHaveBeenCalled()
+		// Verify the prototype dispose was also not called
+		expect(mockDispose).not.toHaveBeenCalled()
 	})
 })
