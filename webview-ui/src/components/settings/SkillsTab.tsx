@@ -20,10 +20,12 @@ import { SkillItem, type SkillForUI } from "./SkillItem"
 
 // Validation function for skill names
 // Must be 1-64 lowercase characters with optional hyphens
+// No leading/trailing hyphens, no consecutive hyphens
 const validateSkillName = (name: string): boolean => {
 	const trimmed = name.trim()
 	if (trimmed.length === 0 || trimmed.length > 64) return false
-	return /^[a-z][a-z0-9-]*$/.test(trimmed)
+	// Must match backend validation: lowercase letters/numbers, hyphens allowed but no leading/trailing/consecutive
+	return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trimmed)
 }
 
 export const SkillsTab: React.FC = () => {
