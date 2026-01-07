@@ -12,6 +12,52 @@ import { modes, getAllModes } from "../../shared/modes"
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
 
+/**
+ * Skill interface for UI display
+ */
+export interface SkillForUI {
+	name: string
+	description: string
+	source: "global" | "project"
+	filePath: string
+	mode?: string // Optional: if skill is mode-specific
+}
+
+/**
+ * Validation result for skill names
+ */
+interface ValidationResult {
+	valid: boolean
+	error?: string
+}
+
+/**
+ * Validate skill name according to agentskills.io specification
+ * @param name - Skill name to validate
+ * @returns Validation result with error message if invalid
+ */
+function isValidSkillName(name: string): ValidationResult {
+	// Length: 1-64 characters
+	if (name.length < 1 || name.length > 64) {
+		return {
+			valid: false,
+			error: `Skill name must be 1-64 characters (got ${name.length})`,
+		}
+	}
+
+	// Pattern: lowercase letters, numbers, hyphens only
+	// No leading/trailing hyphens, no consecutive hyphens
+	const nameFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+	if (!nameFormat.test(name)) {
+		return {
+			valid: false,
+			error: "Skill name must contain only lowercase letters, numbers, and hyphens (no leading/trailing hyphens, no consecutive hyphens)",
+		}
+	}
+
+	return { valid: true }
+}
+
 export class SkillsManager {
 	private skills: Map<string, SkillMetadata> = new Map()
 	private providerRef: WeakRef<ClineProvider>
@@ -237,6 +283,131 @@ export class SkillsManager {
 			...skill,
 			instructions: body.trim(),
 		}
+	}
+
+	/**
+	 * Create a new skill with the given name in the specified location.
+	 * Creates the directory structure and SKILL.md file with template content.
+	 *
+	 * @param name - Skill name (must be valid: 1-64 chars, lowercase, hyphens only)
+	 * @param source - Where to create: "global" or "project"
+	 * @returns Path to created SKILL.md file
+	 * @throws Error if validation fails or skill already exists
+	 */
+	async createSkill(name: string, source: "global" | "project"): Promise<string> {
+		// Validate skill name
+		const validation = isValidSkillName(name)
+		if (!validation.valid) {
+			throw new Error(validation.error)
+		}
+
+		// Check if skill already exists
+		const existingKey = this.getSkillKey(name, source)
+		if (this.skills.has(existingKey)) {
+			throw new Error(`Skill "${name}" already exists in ${source}`)
+		}
+
+		// Determine base directory
+		const baseDir =
+			source === "global"
+				? getGlobalRooDirectory()
+				: this.providerRef.deref()?.cwd
+					? path.join(this.providerRef.deref()!.cwd, ".roo")
+					: null
+
+		if (!baseDir) {
+			throw new Error("Cannot create project skill: no project directory available")
+		}
+
+		// Create skill directory and SKILL.md
+		const skillsDir = path.join(baseDir, "skills")
+		const skillDir = path.join(skillsDir, name)
+		const skillMdPath = path.join(skillDir, "SKILL.md")
+
+		// Create directory structure
+		await fs.mkdir(skillDir, { recursive: true })
+
+		// Create title case name for template
+		const titleCaseName = name
+			.split("-")
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ")
+
+		// Create SKILL.md with template
+		const template = `---
+name: "${name}"
+description: "Description of what this skill does"
+---
+
+# ${titleCaseName}
+
+## Instructions
+
+Add your skill instructions here...
+`
+
+		await fs.writeFile(skillMdPath, template, "utf-8")
+
+		// Re-discover skills to update the internal cache
+		await this.discoverSkills()
+
+		return skillMdPath
+	}
+
+	/**
+	 * Delete an existing skill directory.
+	 *
+	 * @param name - Skill name to delete
+	 * @param source - Where the skill is located
+	 * @throws Error if skill doesn't exist
+	 */
+	async deleteSkill(name: string, source: "global" | "project"): Promise<void> {
+		// Check if skill exists
+		const skillKey = this.getSkillKey(name, source)
+		const skill = this.skills.get(skillKey)
+
+		if (!skill) {
+			throw new Error(`Skill "${name}" not found in ${source}`)
+		}
+
+		// Get the skill directory (parent of SKILL.md)
+		const skillDir = path.dirname(skill.path)
+
+		// Delete the entire skill directory
+		await fs.rm(skillDir, { recursive: true, force: true })
+
+		// Re-discover skills to update the internal cache
+		await this.discoverSkills()
+	}
+
+	/**
+	 * Get all skills formatted for UI display.
+	 * Converts internal SkillMetadata to SkillForUI interface.
+	 *
+	 * @returns Array of skills formatted for UI
+	 */
+	getSkillsForUI(): SkillForUI[] {
+		return Array.from(this.skills.values()).map((skill) => ({
+			name: skill.name,
+			description: skill.description,
+			source: skill.source,
+			filePath: skill.path,
+			mode: skill.mode,
+		}))
+	}
+
+	/**
+	 * Get the file path for a skill's SKILL.md file.
+	 * Used for opening in editor.
+	 *
+	 * @param name - Skill name
+	 * @param source - Where the skill is located
+	 * @returns Full path to SKILL.md or undefined if not found
+	 */
+	getSkillFilePath(name: string, source: "global" | "project"): string | undefined {
+		const skillKey = this.getSkillKey(name, source)
+		const skill = this.skills.get(skillKey)
+		return skill?.path
 	}
 
 	/**

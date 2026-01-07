@@ -3158,6 +3158,110 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestSkills": {
+			try {
+				const skills = provider.getSkillsManager()?.getSkillsForUI() ?? []
+
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: skills,
+				})
+			} catch (error) {
+				provider.log(`Error fetching skills: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				// Send empty array on error
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: [],
+				})
+			}
+			break
+		}
+		case "createSkill": {
+			try {
+				const skillName = message.text
+				const skillSource = message.values?.source as "global" | "project"
+
+				if (!skillName || !skillSource) {
+					provider.log("Missing skill name or source for createSkill")
+					break
+				}
+
+				// Create the skill
+				const filePath = await provider.getSkillsManager()?.createSkill(skillName, skillSource)
+
+				if (filePath) {
+					// Open the file in editor
+					const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath))
+					await vscode.window.showTextDocument(doc)
+				}
+
+				// Refresh skills list
+				const skills = provider.getSkillsManager()?.getSkillsForUI() ?? []
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: skills,
+				})
+			} catch (error) {
+				provider.log(`Error creating skill: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				vscode.window.showErrorMessage(
+					`Failed to create skill: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "deleteSkill": {
+			try {
+				const skillName = message.text
+				const skillSource = message.values?.source as "global" | "project"
+
+				if (!skillName || !skillSource) {
+					provider.log("Missing skill name or source for deleteSkill")
+					break
+				}
+
+				// Delete the skill
+				await provider.getSkillsManager()?.deleteSkill(skillName, skillSource)
+
+				// Refresh skills list
+				const skills = provider.getSkillsManager()?.getSkillsForUI() ?? []
+				await provider.postMessageToWebview({
+					type: "skills",
+					skills: skills,
+				})
+			} catch (error) {
+				provider.log(`Error deleting skill: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				vscode.window.showErrorMessage(
+					`Failed to delete skill: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
+		case "openSkillFile": {
+			try {
+				const skillName = message.text
+				const skillSource = message.values?.source as "global" | "project"
+
+				if (!skillName || !skillSource) {
+					provider.log("Missing skill name or source for openSkillFile")
+					break
+				}
+
+				const filePath = provider.getSkillsManager()?.getSkillFilePath(skillName, skillSource)
+
+				if (filePath) {
+					const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath))
+					await vscode.window.showTextDocument(doc)
+				} else {
+					vscode.window.showErrorMessage(`Skill file not found: ${skillName}`)
+				}
+			} catch (error) {
+				provider.log(`Error opening skill file: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				vscode.window.showErrorMessage(
+					`Failed to open skill file: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+			break
+		}
 
 		case "insertTextIntoTextarea": {
 			const text = message.text

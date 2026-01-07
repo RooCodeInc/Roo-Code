@@ -2217,6 +2217,7 @@ export class ClineProvider
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
+			skills: this.skillsManager?.getSkillsForUI() ?? [],
 		}
 	}
 
