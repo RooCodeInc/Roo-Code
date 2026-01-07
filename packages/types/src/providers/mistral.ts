@@ -16,15 +16,57 @@ export const mistralModels = {
 		inputPrice: 2.0,
 		outputPrice: 5.0,
 	},
-	"devstral-medium-latest": {
+	// Devstral 2 models - https://docs.mistral.ai/models/devstral-2-25-12
+	"devstral-latest": {
 		maxTokens: 8192,
-		contextWindow: 131_000,
+		contextWindow: 256_000,
 		supportsImages: true,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		inputPrice: 0.4,
 		outputPrice: 2.0,
+	},
+	"devstral-medium-latest": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		inputPrice: 0.4,
+		outputPrice: 2.0,
+	},
+	"devstral-2512": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		inputPrice: 0.4,
+		outputPrice: 2.0,
+	},
+	// Devstral Small 2 models - https://docs.mistral.ai/models/devstral-small-2-25-12
+	"devstral-small-latest": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		inputPrice: 0.1,
+		outputPrice: 0.3,
+	},
+	"labs-devstral-small-2512": {
+		maxTokens: 8192,
+		contextWindow: 256_000,
+		supportsImages: true,
+		supportsPromptCache: false,
+		supportsNativeTools: true,
+		defaultToolProtocol: "native",
+		inputPrice: 0.1,
+		outputPrice: 0.3,
 	},
 	"mistral-medium-latest": {
 		maxTokens: 8192,
@@ -98,4 +140,6 @@ export const mistralModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
-export const MISTRAL_DEFAULT_TEMPERATURE = 1
+// Recommended temperature for Devstral 2 models per Mistral Vibe CLI
+// https://github.com/mistralai/mistral-vibe/blob/main/vibe/core/config.py
+export const MISTRAL_DEFAULT_TEMPERATURE = 0.2
