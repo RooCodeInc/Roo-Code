@@ -248,6 +248,7 @@ describe("TaskHeader", () => {
 				currentTaskItem: { id: "test-task-id" },
 				clineMessages: [],
 				taskTitlesEnabled: true,
+				isBrowserSessionActive: false,
 			}
 		})
 
