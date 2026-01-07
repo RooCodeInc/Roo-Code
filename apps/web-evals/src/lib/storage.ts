@@ -10,7 +10,13 @@ export function deserializeNumber(raw: string): number | undefined {
 	const parsed = tryParseJson(raw)
 	if (typeof parsed === "number" && Number.isFinite(parsed)) return parsed
 
-	const asNumber = Number(raw)
+	const trimmed = raw.trim()
+	if (trimmed === "" || trimmed === "null") return undefined
+
+	// Legacy raw-string storage: accept only plain decimal numbers.
+	if (!/^-?\d+(\.\d+)?$/.test(trimmed)) return undefined
+
+	const asNumber = Number(trimmed)
 	return Number.isFinite(asNumber) ? asNumber : undefined
 }
 
