@@ -50,6 +50,7 @@ let mockExtensionState: {
 	currentTaskItem: { id: string } | null
 	clineMessages: any[]
 	taskTitlesEnabled: boolean
+	isBrowserSessionActive: boolean
 } = {
 	apiConfiguration: {
 		apiProvider: "anthropic",
@@ -59,6 +60,7 @@ let mockExtensionState: {
 	currentTaskItem: { id: "test-task-id" },
 	clineMessages: [],
 	taskTitlesEnabled: true,
+	isBrowserSessionActive: false,
 }
 
 // Mock the ExtensionStateContext
@@ -114,6 +116,7 @@ describe("TaskHeader", () => {
 			currentTaskItem: { id: "test-task-id" },
 			clineMessages: [],
 			taskTitlesEnabled: true,
+			isBrowserSessionActive: false,
 		}
 	})
 	const defaultProps: TaskHeaderProps = {
@@ -229,7 +232,7 @@ describe("TaskHeader", () => {
 		renderTaskHeader()
 
 		expect(screen.queryByTestId("task-title-edit-button")).not.toBeInTheDocument()
-		expect(screen.queryByTestId("task-title-display")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("task-title-input")).not.toBeInTheDocument()
 	})
 
 	describe("DismissibleUpsell behavior", () => {
