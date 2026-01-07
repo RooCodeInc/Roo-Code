@@ -1,4 +1,5 @@
 export * from "./anthropic.js"
+export * from "./aiping.js"
 export * from "./baseten.js"
 export * from "./bedrock.js"
 export * from "./cerebras.js"
@@ -33,6 +34,7 @@ export * from "./deepinfra.js"
 export * from "./minimax.js"
 
 import { anthropicDefaultModelId } from "./anthropic.js"
+import { aipingDefaultModelId } from "./aiping.js"
 import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { cerebrasDefaultModelId } from "./cerebras.js"
@@ -107,6 +109,8 @@ export function getProviderDefaultModelId(
 			return moonshotDefaultModelId
 		case "minimax":
 			return minimaxDefaultModelId
+		case "aiping":
+			return aipingDefaultModelId
 		case "zai":
 			return options?.isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
 		case "openai-native":

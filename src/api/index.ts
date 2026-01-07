@@ -6,6 +6,7 @@ import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
 import { ApiStream } from "./transform/stream"
 
 import {
+	AipingHandler,
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
@@ -120,6 +121,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
 
 	switch (apiProvider) {
+		case "aiping":
+			return new AipingHandler(options)
 		case "anthropic":
 			return new AnthropicHandler(options)
 		case "claude-code":

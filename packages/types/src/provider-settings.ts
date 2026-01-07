@@ -4,6 +4,7 @@ import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, s
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
 	anthropicModels,
+	aipingModels,
 	basetenModels,
 	bedrockModels,
 	cerebrasModels,
@@ -118,6 +119,7 @@ export const providerNames = [
 	...internalProviders,
 	...customProviders,
 	...fauxProviders,
+	"aiping",
 	"anthropic",
 	"bedrock",
 	"baseten",
@@ -326,6 +328,11 @@ const moonshotSchema = apiModelIdProviderModelSchema.extend({
 	moonshotApiKey: z.string().optional(),
 })
 
+const aipingSchema = apiModelIdProviderModelSchema.extend({
+	aipingBaseUrl: z.string().optional(),
+	aipingApiKey: z.string().optional(),
+})
+
 const minimaxSchema = apiModelIdProviderModelSchema.extend({
 	minimaxBaseUrl: z
 		.union([z.literal("https://api.minimax.io/v1"), z.literal("https://api.minimaxi.com/v1")])
@@ -425,6 +432,7 @@ const defaultSchema = z.object({
 })
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
+	aipingSchema.merge(z.object({ apiProvider: z.literal("aiping") })),
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
@@ -466,6 +474,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
+	...aipingSchema.shape,
 	...anthropicSchema.shape,
 	...claudeCodeSchema.shape,
 	...openRouterSchema.shape,
@@ -554,6 +563,7 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 	isProviderName(key) && !isInternalProvider(key) && !isCustomProvider(key) && !isFauxProvider(key)
 
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
+	aiping: "apiModelId",
 	anthropic: "apiModelId",
 	"claude-code": "apiModelId",
 	openrouter: "openRouterModelId",
@@ -626,6 +636,11 @@ export const MODELS_BY_PROVIDER: Record<
 	Exclude<ProviderName, "fake-ai" | "gemini-cli" | "openai">,
 	{ id: ProviderName; label: string; models: string[] }
 > = {
+	aiping: {
+		id: "aiping",
+		label: "AiPing",
+		models: Object.keys(aipingModels),
+	},
 	anthropic: {
 		id: "anthropic",
 		label: "Anthropic",
