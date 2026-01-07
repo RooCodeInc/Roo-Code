@@ -22,7 +22,7 @@ export interface CodeSnippet {
  * Creates a unique ID for a code snippet
  */
 export function createCodeSnippetId(): string {
-	return `snippet-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+	return `snippet-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
 }
 
 /**

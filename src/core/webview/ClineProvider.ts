@@ -688,8 +688,8 @@ export class ClineProvider
 			const codeSnippet: CodeSnippet = {
 				id: createCodeSnippetId(),
 				filePath: params.filePath as string,
-				startLine: params.startLine as unknown as number,
-				endLine: params.endLine as unknown as number,
+				startLine: Number(params.startLine),
+				endLine: Number(params.endLine),
 				content: params.selectedText as string,
 				timestamp: Date.now(),
 			}
