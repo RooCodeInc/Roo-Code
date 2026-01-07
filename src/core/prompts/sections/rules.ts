@@ -20,7 +20,7 @@ export function getCommandChainOperator(): string {
 
 	// Check for cmd.exe
 	if (shell.includes("cmd.exe")) {
-		return "&"
+	return "&&"
 	}
 
 	// Default to Unix-style && for bash, zsh, sh, and other shells
