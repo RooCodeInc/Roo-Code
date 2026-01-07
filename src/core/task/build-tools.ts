@@ -22,7 +22,6 @@ interface BuildToolsOptions {
 	maxConcurrentFileReads: number
 	browserToolEnabled: boolean
 	modelInfo?: ModelInfo
-	diffEnabled: boolean
 }
 
 /**
@@ -44,7 +43,6 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		maxConcurrentFileReads,
 		browserToolEnabled,
 		modelInfo,
-		diffEnabled,
 	} = options
 
 	const mcpHub = provider.getMcpHub()
@@ -58,7 +56,6 @@ export async function buildNativeToolsArray(options: BuildToolsOptions): Promise
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		browserToolEnabled: browserToolEnabled ?? true,
 		modelInfo,
-		diffEnabled,
 	}
 
 	// Determine if partial reads are enabled based on maxReadFileLine setting.

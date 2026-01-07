@@ -304,31 +304,15 @@ describe("Cline", () => {
 	})
 
 	describe("constructor", () => {
-		it("should respect provided settings", async () => {
+		it("should always have diff strategy defined", async () => {
 			const cline = new Task({
 				provider: mockProvider,
 				apiConfiguration: mockApiConfig,
-				fuzzyMatchThreshold: 0.95,
 				task: "test task",
 				startTask: false,
 			})
 
-			expect(cline.diffEnabled).toBe(false)
-		})
-
-		it("should use default fuzzy match threshold when not provided", async () => {
-			const cline = new Task({
-				provider: mockProvider,
-				apiConfiguration: mockApiConfig,
-				enableDiff: true,
-				fuzzyMatchThreshold: 0.95,
-				task: "test task",
-				startTask: false,
-			})
-
-			expect(cline.diffEnabled).toBe(true)
-
-			// The diff strategy should be created with default threshold (1.0).
+			// Diff is always enabled - diffStrategy should be defined
 			expect(cline.diffStrategy).toBeDefined()
 		})
 
@@ -1345,7 +1329,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})
@@ -1365,7 +1348,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})
@@ -1387,7 +1369,6 @@ describe("Cline", () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
-					enableDiff: true,
 					task: "test task",
 					startTask: false,
 				})
@@ -1401,19 +1382,6 @@ describe("Cline", () => {
 				// Should still be MultiSearchReplaceDiffStrategy
 				expect(task.diffStrategy).toBeInstanceOf(MultiSearchReplaceDiffStrategy)
 				expect(task.diffStrategy?.getName()).toBe("MultiSearchReplace")
-			})
-
-			it("should not create diff strategy when enableDiff is false", async () => {
-				const task = new Task({
-					provider: mockProvider,
-					apiConfiguration: mockApiConfig,
-					enableDiff: false,
-					task: "test task",
-					startTask: false,
-				})
-
-				expect(task.diffEnabled).toBe(false)
-				expect(task.diffStrategy).toBeUndefined()
 			})
 		})
 

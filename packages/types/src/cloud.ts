@@ -94,7 +94,6 @@ export type OrganizationAllowList = z.infer<typeof organizationAllowListSchema>
 export const organizationDefaultSettingsSchema = globalSettingsSchema
 	.pick({
 		enableCheckpoints: true,
-		fuzzyMatchThreshold: true,
 		maxOpenTabsContext: true,
 		maxReadFileLine: true,
 		maxWorkspaceFiles: true,

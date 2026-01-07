@@ -267,8 +267,6 @@ export type ExtensionState = Pick<
 	| "terminalZdotdir"
 	| "terminalCompressProgressBar"
 	| "diagnosticsEnabled"
-	| "diffEnabled"
-	| "fuzzyMatchThreshold"
 	| "language"
 	| "modeApiConfigs"
 	| "customModePrompts"
@@ -320,7 +318,7 @@ export type ExtensionState = Pick<
 
 	mode: Mode
 	customModes: ModeConfig[]
-	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true} if diffEnabled)
+	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements
 
 	cwd?: string // Current working directory
 	telemetrySetting: TelemetrySetting

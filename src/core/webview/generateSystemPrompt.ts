@@ -18,9 +18,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		customModePrompts,
 		customInstructions,
 		browserViewportSize,
-		diffEnabled,
 		mcpEnabled,
-		fuzzyMatchThreshold,
 		experiments,
 		enableMcpServerCreation,
 		browserToolEnabled,
@@ -37,8 +35,8 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	)
 
 	const diffStrategy = isMultiFileApplyDiffEnabled
-		? new MultiFileSearchReplaceDiffStrategy(fuzzyMatchThreshold)
-		: new MultiSearchReplaceDiffStrategy(fuzzyMatchThreshold)
+		? new MultiFileSearchReplaceDiffStrategy()
+		: new MultiSearchReplaceDiffStrategy()
 
 	const cwd = provider.cwd
 
@@ -84,7 +82,6 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		customModePrompts,
 		customModes,
 		customInstructions,
-		diffEnabled,
 		experiments,
 		enableMcpServerCreation,
 		language,
