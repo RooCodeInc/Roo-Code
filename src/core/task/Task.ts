@@ -1441,6 +1441,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// to ensure tool_use/tool_result pairs are complete in history
 		await this.flushPendingToolResultsToHistory()
 
+		// Create a visible checkpoint before context compression
+		// so users can revert if needed (see issue #9334)
+		await this.checkpointSave(true, false)
+
 		const systemPrompt = await this.getSystemPrompt()
 
 		// Get condensing configuration
@@ -3623,6 +3627,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 
+		// Create a visible checkpoint before context compression (context window exceeded)
+		// so users can revert if needed (see issue #9334)
+		await this.checkpointSave(true, false)
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await manageContext({
 			messages: this.apiConversationHistory,
@@ -3819,6 +3827,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				await this.providerRef
 					.deref()
 					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
+
+				// Create a visible checkpoint before automatic context compression
+				// so users can revert if needed (see issue #9334)
+				await this.checkpointSave(true, false)
 			}
 
 			const truncateResult = await manageContext({
