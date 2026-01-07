@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
-		"about": "关于 Roo Code"
+		"about": "关于 Roo Code",
+		"commandsAndSkills": "命令和技能"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "需要 {{primaryMod}}+Enter 发送消息",
 			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Slash 命令",
+		"tabSkills": "技能"
+	},
+	"skills": {
+		"global": "全局技能",
+		"workspace": "工作区技能",
+		"empty": "未配置技能",
+		"newGlobalPlaceholder": "输入技能名称（例如 refactor-code）",
+		"newWorkspacePlaceholder": "输入技能名称（例如 update-tests）",
+		"invalidName": "名称必须是 1-64 个小写字母、数字和连字符，以字母开头",
+		"edit": "编辑技能",
+		"delete": "删除技能",
+		"deleteDialog": {
+			"title": "删除技能",
+			"description": "确定要删除技能 \"{{name}}\" 吗？此操作不可撤销。",
+			"cancel": "取消",
+			"confirm": "删除"
 		}
 	}
 }

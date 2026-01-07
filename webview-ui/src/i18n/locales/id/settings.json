@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
-		"about": "Tentang Roo Code"
+		"about": "Tentang Roo Code",
+		"commandsAndSkills": "Perintah & Keterampilan"
 	},
 	"about": {
 		"bugReport": {
@@ -1039,6 +1040,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Perintah Garis Miring",
+		"tabSkills": "Keterampilan"
+	},
+	"skills": {
+		"global": "Keterampilan Global",
+		"workspace": "Keterampilan Workspace",
+		"empty": "Tidak ada keterampilan yang dikonfigurasi",
+		"newGlobalPlaceholder": "Masukkan nama keterampilan (mis. refactor-code)",
+		"newWorkspacePlaceholder": "Masukkan nama keterampilan (mis. update-tests)",
+		"invalidName": "Nama harus terdiri dari 1-64 huruf kecil, angka, dan tanda hubung, dimulai dengan huruf",
+		"edit": "Edit Keterampilan",
+		"delete": "Hapus Keterampilan",
+		"deleteDialog": {
+			"title": "Hapus Keterampilan",
+			"description": "Apakah kamu yakin ingin menghapus keterampilan \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"cancel": "Batal",
+			"confirm": "Hapus"
 		}
 	}
 }

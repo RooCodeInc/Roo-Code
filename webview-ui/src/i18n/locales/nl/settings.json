@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
-		"about": "Over Roo Code"
+		"about": "Over Roo Code",
+		"commandsAndSkills": "Commando's & Vaardigheden"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
 			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Slash-commando's",
+		"tabSkills": "Vaardigheden"
+	},
+	"skills": {
+		"global": "Globale vaardigheden",
+		"workspace": "Workspace-vaardigheden",
+		"empty": "Geen vaardigheden geconfigureerd",
+		"newGlobalPlaceholder": "Voer vaardigheidsnaam in (bijv. refactor-code)",
+		"newWorkspacePlaceholder": "Voer vaardigheidsnaam in (bijv. update-tests)",
+		"invalidName": "Naam moet 1-64 kleine letters, cijfers en streepjes zijn, beginnend met een letter",
+		"edit": "Vaardigheid bewerken",
+		"delete": "Vaardigheid verwijderen",
+		"deleteDialog": {
+			"title": "Vaardigheid verwijderen",
+			"description": "Weet je zeker dat je de vaardigheid \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+			"cancel": "Annuleren",
+			"confirm": "Verwijderen"
 		}
 	}
 }

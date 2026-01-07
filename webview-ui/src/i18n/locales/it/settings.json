@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code"
+		"about": "Informazioni su Roo Code",
+		"commandsAndSkills": "Comandi e Competenze"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Comandi slash",
+		"tabSkills": "Competenze"
+	},
+	"skills": {
+		"global": "Competenze globali",
+		"workspace": "Competenze dell'area di lavoro",
+		"empty": "Nessuna competenza configurata",
+		"newGlobalPlaceholder": "Inserisci il nome della competenza (es. refactor-code)",
+		"newWorkspacePlaceholder": "Inserisci il nome della competenza (es. update-tests)",
+		"invalidName": "Il nome deve essere di 1-64 lettere minuscole, numeri e trattini, iniziando con una lettera",
+		"edit": "Modifica competenza",
+		"delete": "Elimina competenza",
+		"deleteDialog": {
+			"title": "Elimina competenza",
+			"description": "Sei sicuro di voler eliminare la competenza \"{{name}}\"? Questa azione non può essere annullata.",
+			"cancel": "Annulla",
+			"confirm": "Elimina"
 		}
 	}
 }

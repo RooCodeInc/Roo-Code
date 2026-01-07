@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
-		"about": "Giới thiệu"
+		"about": "Giới thiệu",
+		"commandsAndSkills": "Lệnh và Kỹ năng"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
 			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Lệnh gạch chéo",
+		"tabSkills": "Kỹ năng"
+	},
+	"skills": {
+		"global": "Kỹ năng toàn cục",
+		"workspace": "Kỹ năng workspace",
+		"empty": "Không có kỹ năng được cấu hình",
+		"newGlobalPlaceholder": "Nhập tên kỹ năng (vd: refactor-code)",
+		"newWorkspacePlaceholder": "Nhập tên kỹ năng (vd: update-tests)",
+		"invalidName": "Tên phải có 1-64 chữ cái thường, số và dấu gạch ngang, bắt đầu bằng chữ cái",
+		"edit": "Chỉnh sửa kỹ năng",
+		"delete": "Xóa kỹ năng",
+		"deleteDialog": {
+			"title": "Xóa kỹ năng",
+			"description": "Bạn có chắc chắn muốn xóa kỹ năng \"{{name}}\" không? Hành động này không thể hoàn tác.",
+			"cancel": "Hủy",
+			"confirm": "Xóa"
 		}
 	}
 }

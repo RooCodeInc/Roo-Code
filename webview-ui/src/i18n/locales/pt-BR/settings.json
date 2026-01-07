@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre"
+		"about": "Sobre",
+		"commandsAndSkills": "Comandos e Habilidades"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requer {{primaryMod}}+Enter para enviar mensagens",
 			"description": "Quando ativado, você deve pressionar {{primaryMod}}+Enter para enviar mensagens em vez de apenas Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Comandos de barra",
+		"tabSkills": "Habilidades"
+	},
+	"skills": {
+		"global": "Habilidades globais",
+		"workspace": "Habilidades do workspace",
+		"empty": "Nenhuma habilidade configurada",
+		"newGlobalPlaceholder": "Digite o nome da habilidade (ex. refactor-code)",
+		"newWorkspacePlaceholder": "Digite o nome da habilidade (ex. update-tests)",
+		"invalidName": "O nome deve ter de 1 a 64 letras minúsculas, números e hífens, começando com uma letra",
+		"edit": "Editar habilidade",
+		"delete": "Excluir habilidade",
+		"deleteDialog": {
+			"title": "Excluir habilidade",
+			"description": "Tem certeza de que deseja excluir a habilidade \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"cancel": "Cancelar",
+			"confirm": "Excluir"
 		}
 	}
 }

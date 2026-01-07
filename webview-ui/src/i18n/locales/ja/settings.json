@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて"
+		"about": "Roo Codeについて",
+		"commandsAndSkills": "コマンドとスキル"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "スラッシュコマンド",
+		"tabSkills": "スキル"
+	},
+	"skills": {
+		"global": "グローバルスキル",
+		"workspace": "ワークスペーススキル",
+		"empty": "スキルが設定されていません",
+		"newGlobalPlaceholder": "スキル名を入力 (例: refactor-code)",
+		"newWorkspacePlaceholder": "スキル名を入力 (例: update-tests)",
+		"invalidName": "名前は1〜64文字の小文字、数字、ハイフンで、文字で始まる必要があります",
+		"edit": "スキルを編集",
+		"delete": "スキルを削除",
+		"deleteDialog": {
+			"title": "スキルを削除",
+			"description": "スキル \"{{name}}\" を削除してもよろしいですか？この操作は元に戻せません。",
+			"cancel": "キャンセル",
+			"confirm": "削除"
 		}
 	}
 }

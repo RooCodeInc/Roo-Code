@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında"
+		"about": "Roo Code Hakkında",
+		"commandsAndSkills": "Komutlar ve Yetenekler"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Slash komutları",
+		"tabSkills": "Yetenekler"
+	},
+	"skills": {
+		"global": "Global yetenekler",
+		"workspace": "Workspace yetenekleri",
+		"empty": "Yapılandırılmış yetenek yok",
+		"newGlobalPlaceholder": "Yetenek adını gir (örn. refactor-code)",
+		"newWorkspacePlaceholder": "Yetenek adını gir (örn. update-tests)",
+		"invalidName": "Ad, bir harfle başlayan 1-64 küçük harf, sayı ve tire olmalıdır",
+		"edit": "Yeteneği düzenle",
+		"delete": "Yeteneği sil",
+		"deleteDialog": {
+			"title": "Yeteneği sil",
+			"description": "\"{{name}}\" yeteneğini silmek istediğinden emin misin? Bu işlem geri alınamaz.",
+			"cancel": "İptal",
+			"confirm": "Sil"
 		}
 	}
 }

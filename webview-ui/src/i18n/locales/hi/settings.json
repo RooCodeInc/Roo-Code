@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "प्रायोगिक",
 		"language": "भाषा",
-		"about": "परिचय"
+		"about": "परिचय",
+		"commandsAndSkills": "कमांड और स्किल"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "संदेश भेजने के लिए {{primaryMod}}+Enter की आवश्यकता है",
 			"description": "जब सक्षम हो, तो आपको केवल Enter के बजाय संदेश भेजने के लिए {{primaryMod}}+Enter दबाना होगा"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "स्लैश कमांड",
+		"tabSkills": "स्किल"
+	},
+	"skills": {
+		"global": "ग्लोबल स्किल",
+		"workspace": "वर्कस्पेस स्किल",
+		"empty": "कोई स्किल कॉन्फ़िगर नहीं की गई",
+		"newGlobalPlaceholder": "स्किल का नाम दर्ज करें (जैसे refactor-code)",
+		"newWorkspacePlaceholder": "स्किल का नाम दर्ज करें (जैसे update-tests)",
+		"invalidName": "नाम 1-64 लोअरकेस अक्षर, संख्या और हाइफ़न होना चाहिए, अक्षर से शुरू होना चाहिए",
+		"edit": "स्किल संपादित करें",
+		"delete": "स्किल हटाएं",
+		"deleteDialog": {
+			"title": "स्किल हटाएं",
+			"description": "क्या आप वाकई \"{{name}}\" स्किल को हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।",
+			"cancel": "रद्द करें",
+			"confirm": "हटाएं"
 		}
 	}
 }

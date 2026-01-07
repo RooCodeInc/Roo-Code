@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Экспериментальное",
 		"language": "Язык",
-		"about": "О Roo Code"
+		"about": "О Roo Code",
+		"commandsAndSkills": "Команды и Навыки"
 	},
 	"about": {
 		"bugReport": {
@@ -1010,6 +1011,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Требовать {{primaryMod}}+Enter для отправки сообщений",
 			"description": "Если включено, необходимо нажать {{primaryMod}}+Enter для отправки сообщений вместо простого Enter"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Slash-команды",
+		"tabSkills": "Навыки"
+	},
+	"skills": {
+		"global": "Глобальные навыки",
+		"workspace": "Навыки рабочего пространства",
+		"empty": "Навыки не настроены",
+		"newGlobalPlaceholder": "Введите название навыка (например, refactor-code)",
+		"newWorkspacePlaceholder": "Введите название навыка (например, update-tests)",
+		"invalidName": "Имя должно состоять из 1-64 строчных букв, цифр и дефисов, начиная с буквы",
+		"edit": "Редактировать навык",
+		"delete": "Удалить навык",
+		"deleteDialog": {
+			"title": "Удалить навык",
+			"description": "Вы уверены, что хотите удалить навык \"{{name}}\"? Это действие нельзя отменить.",
+			"cancel": "Отмена",
+			"confirm": "Удалить"
 		}
 	}
 }

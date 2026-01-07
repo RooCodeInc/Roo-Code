@@ -40,7 +40,8 @@
 		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
-		"about": "À propos de Roo Code"
+		"about": "À propos de Roo Code",
+		"commandsAndSkills": "Commandes et Compétences"
 	},
 	"about": {
 		"bugReport": {
@@ -1009,6 +1010,26 @@
 		"requireCtrlEnterToSend": {
 			"label": "Exiger {{primaryMod}}+Entrée pour envoyer les messages",
 			"description": "Lorsqu'activé, tu dois appuyer sur {{primaryMod}}+Entrée pour envoyer des messages au lieu de simplement Entrée"
+		}
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Commandes slash",
+		"tabSkills": "Compétences"
+	},
+	"skills": {
+		"global": "Compétences globales",
+		"workspace": "Compétences de l'espace de travail",
+		"empty": "Aucune compétence configurée",
+		"newGlobalPlaceholder": "Entrer le nom de la compétence (ex. refactoriser-code)",
+		"newWorkspacePlaceholder": "Entrer le nom de la compétence (ex. mettre-a-jour-tests)",
+		"invalidName": "Le nom doit contenir 1 à 64 lettres minuscules, chiffres et tirets, en commençant par une lettre",
+		"edit": "Modifier la compétence",
+		"delete": "Supprimer la compétence",
+		"deleteDialog": {
+			"title": "Supprimer la compétence",
+			"description": "Es-tu sûr de vouloir supprimer la compétence \"{{name}}\" ? Cette action ne peut pas être annulée.",
+			"cancel": "Annuler",
+			"confirm": "Supprimer"
 		}
 	}
 }
