@@ -123,6 +123,7 @@ export const fireworksModels = {
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
+		supportsReasoningBinary: true,
 		defaultToolProtocol: "native",
 		inputPrice: 0.56,
 		outputPrice: 1.68,
