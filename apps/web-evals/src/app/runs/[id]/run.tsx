@@ -9,6 +9,7 @@ import type { Run, TaskMetrics as _TaskMetrics, Task } from "@roo-code/evals"
 import type { ToolName } from "@roo-code/types"
 
 import { formatCurrency, formatDuration, formatTokens, formatToolUsageSuccessRate } from "@/lib/formatters"
+import { deserializeBoolean } from "@/lib/storage"
 import { useRunStatus } from "@/hooks/use-run-status"
 import { killRun } from "@/actions/runs"
 import {
@@ -254,18 +255,6 @@ export function Run({ run }: { run: Run }) {
 	const [copied, setCopied] = useState(false)
 	const [showKillDialog, setShowKillDialog] = useState(false)
 	const [isKilling, setIsKilling] = useState(false)
-
-	function deserializeBoolean(value: string): boolean {
-		// Support both raw-string storage and default `useLocalStorage` JSON serialization.
-		if (value === "true") return true
-		if (value === "false") return false
-		try {
-			const parsed: unknown = JSON.parse(value)
-			return typeof parsed === "boolean" ? parsed : false
-		} catch {
-			return false
-		}
-	}
 
 	const [groupByStatus, setGroupByStatus] = useLocalStorage<boolean>("evals-group-by-status", false, {
 		serializer: (value: boolean) => String(value),

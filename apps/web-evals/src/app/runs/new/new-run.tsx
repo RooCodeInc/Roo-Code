@@ -48,7 +48,7 @@ import {
 	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
-import { deserializeNumber, deserializeString, deserializeStringArray } from "@/lib/storage"
+import { deserializeEnum, deserializeNumber, deserializeStringArray } from "@/lib/storage"
 
 import { loadRooLastModelSelection, saveRooLastModelSelection } from "@/lib/roo-last-model-selection"
 import { normalizeCreateRunForSubmit } from "@/lib/normalize-create-run"
@@ -106,6 +106,8 @@ type ConfigSelection = {
 	popoverOpen: boolean
 }
 
+const SUITE_VALUES: ReadonlySet<"full" | "partial"> = new Set(["full", "partial"])
+
 export function NewRun() {
 	const router = useRouter()
 	const modelSelectionsByProviderRef = useRef<Record<string, ModelSelection[]>>({})
@@ -143,7 +145,7 @@ export function NewRun() {
 	})
 	const [savedSuite, setSavedSuite] = useLocalStorage<"full" | "partial">("evals-suite", "full", {
 		serializer: (value: "full" | "partial") => value,
-		deserializer: (raw: string) => (deserializeString(raw) === "partial" ? "partial" : "full"),
+		deserializer: (raw: string) => deserializeEnum(raw, SUITE_VALUES, "full"),
 		initializeWithValue: false,
 	})
 	const [savedExercises, setSavedExercises] = useLocalStorage<string[]>("evals-exercises", [], {
