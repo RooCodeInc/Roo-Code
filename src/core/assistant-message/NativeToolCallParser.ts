@@ -301,7 +301,9 @@ export class NativeToolCallParser {
 	 * Convert raw file entries from API to FileEntry objects.
 	 * Supports the new slice/indentation API:
 	 *
-	 * { path: string, offset?: number, limit?: number, mode?: "slice" | "indentation", indentation?: {...} }
+	 * { path: string, offset?: number, mode?: "slice" | "indentation", indentation?: {...} }
+	 *
+	 * Note: limit is intentionally not exposed to models - it's controlled by the maxReadFileLine setting.
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
