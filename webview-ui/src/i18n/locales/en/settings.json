@@ -285,6 +285,7 @@
 		"getVercelAiGatewayApiKey": "Get Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API keys are stored securely in VSCode's Secret Storage",
 		"useCustomBaseUrl": "Use custom base URL",
+		"openAiBaseUrlHint": "Both formats are supported: https://my-host.example or https://my-host.example/v1",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
 		"useLegacyFormat": "Use legacy OpenAI API format",
