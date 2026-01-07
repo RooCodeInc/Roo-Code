@@ -2,20 +2,6 @@ import * as path from "path"
 
 import { resolveImageMentions } from "../resolveImageMentions"
 
-const SUPPORTED_IMAGE_FORMATS = [
-	".png",
-	".jpg",
-	".jpeg",
-	".gif",
-	".webp",
-	".svg",
-	".bmp",
-	".ico",
-	".tiff",
-	".tif",
-	".avif",
-] as const
-
 vi.mock("../../tools/helpers/imageHelpers", () => ({
 	isSupportedImageFormat: vi.fn((ext: string) =>
 		[".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico", ".tiff", ".tif", ".avif"].includes(
