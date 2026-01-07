@@ -100,10 +100,11 @@ export function CliPreviewContent() {
 							</div>
 							<div>
 								<h3 className="font-semibold text-gray-900 dark:text-white">
-									Run Roo Code workflows from the terminal
+									Run the agent in your terminal
 								</h3>
 								<p className="mt-1 text-gray-600 dark:text-gray-400">
-									Execute powerful AI-driven coding tasks directly from your command line
+									Trigger the &quot;close the loop&quot; workflow to run edits, commands, and
+									iterations without opening VS Code.
 								</p>
 							</div>
 						</li>
@@ -122,11 +123,10 @@ export function CliPreviewContent() {
 								</svg>
 							</div>
 							<div>
-								<h3 className="font-semibold text-gray-900 dark:text-white">
-									Bring your own model keys and configs
-								</h3>
+								<h3 className="font-semibold text-gray-900 dark:text-white">Reuse your profiles</h3>
 								<p className="mt-1 text-gray-600 dark:text-gray-400">
-									Full control over your AI models and configuration settings
+									Your existing BYOK keys, models, and custom instructions work out of the box. No new
+									configuration required.
 								</p>
 							</div>
 						</li>
@@ -145,11 +145,10 @@ export function CliPreviewContent() {
 								</svg>
 							</div>
 							<div>
-								<h3 className="font-semibold text-gray-900 dark:text-white">
-									Designed for automation and repeatability
-								</h3>
+								<h3 className="font-semibold text-gray-900 dark:text-white">Script the repetition</h3>
 								<p className="mt-1 text-gray-600 dark:text-gray-400">
-									Perfect for CI/CD pipelines and scripted workflows
+									Pipe context directly to the agent to automate batch refactors, migrations, or
+									test-fix loops.
 								</p>
 							</div>
 						</li>
@@ -168,11 +167,10 @@ export function CliPreviewContent() {
 								</svg>
 							</div>
 							<div>
-								<h3 className="font-semibold text-gray-900 dark:text-white">
-									Help us prioritize features that matter
-								</h3>
+								<h3 className="font-semibold text-gray-900 dark:text-white">Define the spec</h3>
 								<p className="mt-1 text-gray-600 dark:text-gray-400">
-									Your feedback shapes the future of the Roo Code CLI
+									This is an early preview. Help us decide which flags, outputs, and safeguards belong
+									in v1.
 								</p>
 							</div>
 						</li>
