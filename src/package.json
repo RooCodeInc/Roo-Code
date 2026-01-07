@@ -415,16 +415,19 @@
 				"roo-cline.debugProxy.enabled": {
 					"type": "boolean",
 					"default": false,
+					"description": "%settings.debugProxy.enabled.description%",
 					"markdownDescription": "%settings.debugProxy.enabled.description%"
 				},
 				"roo-cline.debugProxy.serverUrl": {
 					"type": "string",
 					"default": "http://127.0.0.1:8888",
+					"description": "%settings.debugProxy.serverUrl.description%",
 					"markdownDescription": "%settings.debugProxy.serverUrl.description%"
 				},
 				"roo-cline.debugProxy.tlsInsecure": {
 					"type": "boolean",
 					"default": false,
+					"description": "%settings.debugProxy.tlsInsecure.description%",
 					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
 				}
 			}
