@@ -96,6 +96,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		isBrowserSessionActive,
+		experiments,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -803,7 +804,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "action":
 					switch (message.action!) {
 						case "didBecomeVisible":
-							if (!isHidden && !sendingDisabled && !enableButtons) {
+							if (
+								!isHidden &&
+								!sendingDisabled &&
+								!enableButtons &&
+								!experiments?.preventFocusDisruption
+							) {
 								textAreaRef.current?.focus()
 							}
 							break
@@ -877,6 +883,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isHidden,
 			sendingDisabled,
 			enableButtons,
+			experiments?.preventFocusDisruption,
 			handleChatReset,
 			handleSendMessage,
 			handleSetChatBoxMessage,
@@ -1003,12 +1010,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useDebounceEffect(
 		() => {
-			if (!isHidden && !sendingDisabled && !enableButtons) {
+			if (!isHidden && !sendingDisabled && !enableButtons && !experiments?.preventFocusDisruption) {
 				textAreaRef.current?.focus()
 			}
 		},
 		50,
-		[isHidden, sendingDisabled, enableButtons],
+		[isHidden, sendingDisabled, enableButtons, experiments?.preventFocusDisruption],
 	)
 
 	useEffect(() => {
