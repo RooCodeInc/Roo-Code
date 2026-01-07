@@ -116,6 +116,10 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			)
 
 			if (isPreventFocusDisruptionEnabled) {
+				// Show progress indicator in UI while preparing the file
+				const partialMessage = JSON.stringify(sharedMessageProps)
+				await task.ask("tool", partialMessage, true).catch(() => {})
+	
 				task.diffViewProvider.editType = fileExists ? "modify" : "create"
 				if (fileExists) {
 					const absolutePath = path.resolve(task.cwd, relPath)
