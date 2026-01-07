@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback, useEffect, Fragment } from "react"
 import { toast } from "sonner"
 import { LoaderCircle, FileText, Copy, Check, StopCircle, List, Layers } from "lucide-react"
+import { useLocalStorage } from "usehooks-ts"
 
 import type { Run, TaskMetrics as _TaskMetrics, Task } from "@roo-code/evals"
 import type { ToolName } from "@roo-code/types"
@@ -253,19 +254,24 @@ export function Run({ run }: { run: Run }) {
 	const [copied, setCopied] = useState(false)
 	const [showKillDialog, setShowKillDialog] = useState(false)
 	const [isKilling, setIsKilling] = useState(false)
-	const [groupByStatus, setGroupByStatus] = useState(() => {
-		// Initialize from localStorage if available (client-side only)
-		if (typeof window !== "undefined") {
-			const stored = localStorage.getItem("evals-group-by-status")
-			return stored === "true"
-		}
-		return false
-	})
 
-	// Persist groupByStatus to localStorage
-	useEffect(() => {
-		localStorage.setItem("evals-group-by-status", String(groupByStatus))
-	}, [groupByStatus])
+	function deserializeBoolean(value: string): boolean {
+		// Support both raw-string storage and default `useLocalStorage` JSON serialization.
+		if (value === "true") return true
+		if (value === "false") return false
+		try {
+			const parsed: unknown = JSON.parse(value)
+			return typeof parsed === "boolean" ? parsed : false
+		} catch {
+			return false
+		}
+	}
+
+	const [groupByStatus, setGroupByStatus] = useLocalStorage<boolean>("evals-group-by-status", false, {
+		serializer: (value: boolean) => String(value),
+		deserializer: deserializeBoolean,
+		initializeWithValue: false,
+	})
 
 	// Determine if run is still active (has heartbeat or runners)
 	const isRunActive = !run.taskMetricsId && (!!heartbeat || (runners && runners.length > 0))

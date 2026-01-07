@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
+import { useLocalStorage } from "usehooks-ts"
 import {
 	X,
 	Rocket,
@@ -47,6 +48,7 @@ import {
 	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
+import { deserializeNumber, deserializeString, deserializeStringArray } from "@/lib/storage"
 
 import { loadRooLastModelSelection, saveRooLastModelSelection } from "@/lib/roo-last-model-selection"
 import { normalizeCreateRunForSubmit } from "@/lib/normalize-create-run"
@@ -114,6 +116,40 @@ export function NewRun() {
 	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
 	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
 	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
+
+	const [savedConcurrency, setSavedConcurrency] = useLocalStorage<number>("evals-concurrency", CONCURRENCY_DEFAULT, {
+		serializer: (value: number) => String(value),
+		deserializer: (raw: string) => deserializeNumber(raw) ?? CONCURRENCY_DEFAULT,
+		initializeWithValue: false,
+	})
+	const [savedTimeout, setSavedTimeout] = useLocalStorage<number>("evals-timeout", TIMEOUT_DEFAULT, {
+		serializer: (value: number) => String(value),
+		deserializer: (raw: string) => deserializeNumber(raw) ?? TIMEOUT_DEFAULT,
+		initializeWithValue: false,
+	})
+	const [savedCommandTimeout, setSavedCommandTimeout] = useLocalStorage<number>(
+		"evals-command-execution-timeout",
+		20,
+		{
+			serializer: (value: number) => String(value),
+			deserializer: (raw: string) => deserializeNumber(raw) ?? 20,
+			initializeWithValue: false,
+		},
+	)
+	const [savedShellTimeout, setSavedShellTimeout] = useLocalStorage<number>("evals-shell-integration-timeout", 30, {
+		serializer: (value: number) => String(value),
+		deserializer: (raw: string) => deserializeNumber(raw) ?? 30,
+		initializeWithValue: false,
+	})
+	const [savedSuite, setSavedSuite] = useLocalStorage<"full" | "partial">("evals-suite", "full", {
+		serializer: (value: "full" | "partial") => value,
+		deserializer: (raw: string) => (deserializeString(raw) === "partial" ? "partial" : "full"),
+		initializeWithValue: false,
+	})
+	const [savedExercises, setSavedExercises] = useLocalStorage<string[]>("evals-exercises", [], {
+		deserializer: deserializeStringArray,
+		initializeWithValue: false,
+	})
 
 	const [modelSelections, setModelSelections] = useState<ModelSelection[]>([
 		{ id: crypto.randomUUID(), model: "", popoverOpen: false },
@@ -188,66 +224,30 @@ export function NewRun() {
 		register("exercises")
 	}, [register])
 
-	// Load settings from localStorage on mount
+	// Sync persisted settings into the form/state (SSR-safe)
 	useEffect(() => {
-		const savedConcurrency = localStorage.getItem("evals-concurrency")
-
-		if (savedConcurrency) {
-			const parsed = parseInt(savedConcurrency, 10)
-
-			if (!isNaN(parsed) && parsed >= CONCURRENCY_MIN && parsed <= CONCURRENCY_MAX) {
-				setValue("concurrency", parsed)
-			}
+		if (savedConcurrency >= CONCURRENCY_MIN && savedConcurrency <= CONCURRENCY_MAX) {
+			setValue("concurrency", savedConcurrency)
+		}
+		if (savedTimeout >= TIMEOUT_MIN && savedTimeout <= TIMEOUT_MAX) {
+			setValue("timeout", savedTimeout)
+		}
+		if (savedCommandTimeout >= 20 && savedCommandTimeout <= 60) {
+			setCommandExecutionTimeout(savedCommandTimeout)
+		}
+		if (savedShellTimeout >= 30 && savedShellTimeout <= 60) {
+			setTerminalShellIntegrationTimeout(savedShellTimeout)
 		}
 
-		const savedTimeout = localStorage.getItem("evals-timeout")
-
-		if (savedTimeout) {
-			const parsed = parseInt(savedTimeout, 10)
-
-			if (!isNaN(parsed) && parsed >= TIMEOUT_MIN && parsed <= TIMEOUT_MAX) {
-				setValue("timeout", parsed)
-			}
-		}
-
-		const savedCommandTimeout = localStorage.getItem("evals-command-execution-timeout")
-
-		if (savedCommandTimeout) {
-			const parsed = parseInt(savedCommandTimeout, 10)
-
-			if (!isNaN(parsed) && parsed >= 20 && parsed <= 60) {
-				setCommandExecutionTimeout(parsed)
-			}
-		}
-
-		const savedShellTimeout = localStorage.getItem("evals-shell-integration-timeout")
-
-		if (savedShellTimeout) {
-			const parsed = parseInt(savedShellTimeout, 10)
-
-			if (!isNaN(parsed) && parsed >= 30 && parsed <= 60) {
-				setTerminalShellIntegrationTimeout(parsed)
-			}
-		}
-
-		const savedSuite = localStorage.getItem("evals-suite")
-
+		setValue("suite", savedSuite)
 		if (savedSuite === "partial") {
-			setValue("suite", "partial")
-			const savedExercises = localStorage.getItem("evals-exercises")
-			if (savedExercises) {
-				try {
-					const parsed = JSON.parse(savedExercises) as string[]
-					if (Array.isArray(parsed)) {
-						setSelectedExercises(parsed)
-						setValue("exercises", parsed)
-					}
-				} catch {
-					// Invalid JSON, ignore.
-				}
-			}
+			setSelectedExercises(savedExercises)
+			setValue("exercises", savedExercises)
+		} else {
+			setSelectedExercises([])
+			setValue("exercises", [])
 		}
-	}, [setValue])
+	}, [savedConcurrency, savedTimeout, savedCommandTimeout, savedShellTimeout, savedSuite, savedExercises, setValue])
 
 	// Track previous provider to detect switches
 	const [prevProvider, setPrevProvider] = useState(provider)
@@ -344,9 +344,9 @@ export function NewRun() {
 
 			setSelectedExercises(newSelected)
 			setValue("exercises", newSelected)
-			localStorage.setItem("evals-exercises", JSON.stringify(newSelected))
+			setSavedExercises(newSelected)
 		},
-		[getExercisesForLanguage, selectedExercises, setValue],
+		[getExercisesForLanguage, selectedExercises, setSavedExercises, setValue],
 	)
 
 	const isLanguageSelected = useCallback(
@@ -863,12 +863,13 @@ export function NewRun() {
 									<Tabs
 										value={suite}
 										onValueChange={(value) => {
-											setValue("suite", value as "full" | "partial")
-											localStorage.setItem("evals-suite", value)
-											if (value === "full") {
+											const next = value === "partial" ? "partial" : "full"
+											setValue("suite", next)
+											setSavedSuite(next)
+											if (next === "full") {
 												setSelectedExercises([])
 												setValue("exercises", [])
-												localStorage.removeItem("evals-exercises")
+												setSavedExercises([])
 											}
 										}}>
 										<TabsList>
@@ -905,7 +906,7 @@ export function NewRun() {
 										onValueChange={(value) => {
 											setSelectedExercises(value)
 											setValue("exercises", value)
-											localStorage.setItem("evals-exercises", JSON.stringify(value))
+											setSavedExercises(value)
 										}}
 										placeholder="Select"
 										variant="inverted"
@@ -934,7 +935,7 @@ export function NewRun() {
 												step={1}
 												onValueChange={(value) => {
 													field.onChange(value[0])
-													localStorage.setItem("evals-concurrency", String(value[0]))
+													setSavedConcurrency(value[0] ?? CONCURRENCY_DEFAULT)
 												}}
 											/>
 											<div className="w-6 text-right">{field.value}</div>
@@ -960,7 +961,7 @@ export function NewRun() {
 												step={1}
 												onValueChange={(value) => {
 													field.onChange(value[0])
-													localStorage.setItem("evals-timeout", String(value[0]))
+													setSavedTimeout(value[0] ?? TIMEOUT_DEFAULT)
 												}}
 											/>
 											<div className="w-6 text-right">{field.value}</div>
@@ -1024,7 +1025,7 @@ export function NewRun() {
 									onValueChange={([value]) => {
 										if (value !== undefined) {
 											setCommandExecutionTimeout(value)
-											localStorage.setItem("evals-command-execution-timeout", String(value))
+											setSavedCommandTimeout(value)
 										}
 									}}
 								/>
@@ -1056,7 +1057,7 @@ export function NewRun() {
 									onValueChange={([value]) => {
 										if (value !== undefined) {
 											setTerminalShellIntegrationTimeout(value)
-											localStorage.setItem("evals-shell-integration-timeout", String(value))
+											setSavedShellTimeout(value)
 										}
 									}}
 								/>
