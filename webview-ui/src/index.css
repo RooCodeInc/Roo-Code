@@ -88,6 +88,7 @@
 		--vscode-input-border,
 		transparent
 	); /* Some themes don't have a border color, so we can fallback to transparent */
+	--color-vscode-input-placeholderForeground: var(--vscode-input-placeholderForeground);
 
 	--color-vscode-focusBorder: var(--vscode-focusBorder);
 

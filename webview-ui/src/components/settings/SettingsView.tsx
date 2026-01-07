@@ -75,7 +75,7 @@ import { LanguageSettings } from "./LanguageSettings"
 import { About } from "./About"
 import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
-import { SlashCommandsSettings } from "./SlashCommandsSettings"
+import { CommandsAndSkillsSettings } from "./CommandsAndSkillsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
@@ -729,8 +729,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						/>
 					)}
 
-					{/* Slash Commands Section */}
-					{activeTab === "slashCommands" && <SlashCommandsSettings />}
+					{/* Commands & Skills Section */}
+					{activeTab === "slashCommands" && <CommandsAndSkillsSettings />}
 
 					{/* Browser Section */}
 					{activeTab === "browser" && (

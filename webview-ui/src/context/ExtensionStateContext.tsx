@@ -15,6 +15,7 @@ import {
 } from "@roo-code/types"
 
 import { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata, Command } from "@roo/ExtensionMessage"
+import type { SkillForUI } from "@src/components/settings/SkillItem"
 import { findLastIndex } from "@roo/array"
 import { McpServer } from "@roo/mcp"
 import { checkExistKey } from "@roo/checkExistApiConfig"
@@ -38,6 +39,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	filePaths: string[]
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
 	commands: Command[]
+	skills: SkillForUI[]
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion: number
 	cloudIsAuthenticated: boolean
@@ -283,6 +285,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [filePaths, setFilePaths] = useState<string[]>([])
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
 	const [commands, setCommands] = useState<Command[]>([])
+	const [skills, setSkills] = useState<SkillForUI[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
@@ -381,6 +384,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					setCommands(message.commands ?? [])
 					break
 				}
+				case "skills": {
+					setSkills(message.skills ?? [])
+					break
+				}
 				case "messageUpdated": {
 					const clineMessage = message.clineMessage!
 					setState((prevState) => {
@@ -458,6 +465,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		filePaths,
 		openedTabs,
 		commands,
+		skills,
 		soundVolume: state.soundVolume,
 		ttsSpeed: state.ttsSpeed,
 		fuzzyMatchThreshold: state.fuzzyMatchThreshold,

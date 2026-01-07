@@ -22,6 +22,7 @@ import { GitCommit } from "../utils/git"
 import { McpServer } from "./mcp"
 import { Mode } from "./modes"
 import { ModelRecord, RouterModels } from "./api"
+import type { SkillForUI } from "../services/skills/SkillsManager"
 
 // Command interface for frontend/backend communication
 export interface Command {
@@ -124,6 +125,7 @@ export interface ExtensionMessage {
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
 		| "commands"
+		| "skills"
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
@@ -211,6 +213,7 @@ export interface ExtensionMessage {
 	hasCheckpoint?: boolean
 	context?: string
 	commands?: Command[]
+	skills?: SkillForUI[]
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
@@ -361,6 +364,7 @@ export type ExtensionState = Pick<
 	featureRoomoteControlEnabled: boolean
 	claudeCodeIsAuthenticated?: boolean
 	debug?: boolean
+	skills?: SkillForUI[]
 }
 
 export interface ClineSayTool {

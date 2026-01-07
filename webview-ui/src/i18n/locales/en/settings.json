@@ -30,7 +30,8 @@
 		"notifications": "Notifications",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
-		"slashCommands": "Slash Commands",
+		"slashCommands": "Commands & Skills",
+		"commandsAndSkills": "Commands & Skills",
 		"prompts": "Prompts",
 		"ui": "UI",
 		"experimental": "Experimental",
@@ -59,6 +60,26 @@
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Slash Commands",
+		"tabSkills": "Skills"
+	},
+	"skills": {
+		"global": "Global Skills",
+		"workspace": "Workspace Skills",
+		"empty": "No skills configured",
+		"newGlobalPlaceholder": "Enter skill name (e.g., refactor-code)",
+		"newWorkspacePlaceholder": "Enter skill name (e.g., update-tests)",
+		"invalidName": "Name must be 1-64 lowercase letters, numbers, and hyphens, starting with a letter",
+		"edit": "Edit Skill",
+		"delete": "Delete Skill",
+		"deleteDialog": {
+			"title": "Delete Skill",
+			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
+			"cancel": "Cancel",
+			"confirm": "Delete"
+		}
 	},
 	"ui": {
 		"collapseThinking": {
