@@ -21,6 +21,15 @@ import type { McpServer } from "./mcp.js"
 import type { ModelRecord, RouterModels } from "./model.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
 
+// Skill interface for frontend/backend communication
+export interface SkillForUI {
+	name: string
+	description: string
+	source: "global" | "project"
+	filePath: string
+	mode?: string
+}
+
 /**
  * ExtensionMessage
  * Extension -> Webview | CLI

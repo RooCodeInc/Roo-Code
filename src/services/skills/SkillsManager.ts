@@ -8,20 +8,10 @@ import { getGlobalRooDirectory } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
+import type { SkillForUI } from "../../shared/ExtensionMessage"
 
 // Re-export for convenience
-export type { SkillMetadata, SkillContent }
-
-/**
- * Skill interface for UI display
- */
-export interface SkillForUI {
-	name: string
-	description: string
-	source: "global" | "project"
-	filePath: string
-	mode?: string // Optional: if skill is mode-specific
-}
+export type { SkillMetadata, SkillContent, SkillForUI }
 
 /**
  * Validation result for skill names
