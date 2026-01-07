@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useQuery } from "@tanstack/react-query"
@@ -47,6 +47,9 @@ import {
 	ITERATIONS_DEFAULT,
 } from "@/lib/schemas"
 import { cn } from "@/lib/utils"
+
+import { loadRooLastModelSelection, saveRooLastModelSelection } from "@/lib/roo-last-model-selection"
+import { normalizeCreateRunForSubmit } from "@/lib/normalize-create-run"
 
 import { useOpenRouterModels } from "@/hooks/use-open-router-models"
 import { useRooCodeCloudModels } from "@/hooks/use-roo-code-cloud-models"
@@ -103,6 +106,8 @@ type ConfigSelection = {
 
 export function NewRun() {
 	const router = useRouter()
+	const modelSelectionsByProviderRef = useRef<Record<string, ModelSelection[]>>({})
+	const modelValueByProviderRef = useRef<Record<string, string>>({})
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
 	const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>("vscode")
@@ -147,14 +152,43 @@ export function NewRun() {
 	})
 
 	const {
+		register,
 		setValue,
 		clearErrors,
 		watch,
+		getValues,
 		formState: { isSubmitting },
 	} = form
 
 	const [suite, settings] = watch(["suite", "settings", "concurrency"])
 
+	const selectedModelIds = useMemo(
+		() => modelSelections.map((s) => s.model).filter((m) => m.length > 0),
+		[modelSelections],
+	)
+
+	const applyModelIds = useCallback(
+		(modelIds: string[]) => {
+			const unique = Array.from(new Set(modelIds.map((m) => m.trim()).filter((m) => m.length > 0)))
+
+			if (unique.length === 0) {
+				setModelSelections([{ id: crypto.randomUUID(), model: "", popoverOpen: false }])
+				setValue("model", "")
+				return
+			}
+
+			setModelSelections(unique.map((model) => ({ id: crypto.randomUUID(), model, popoverOpen: false })))
+			setValue("model", unique[0] ?? "")
+		},
+		[setValue],
+	)
+
+	// Ensure the `exercises` field is registered so RHF always includes it in submit values.
+	useEffect(() => {
+		register("exercises")
+	}, [register])
+
+	// Load settings from localStorage on mount
 	useEffect(() => {
 		const savedConcurrency = localStorage.getItem("evals-concurrency")
 
@@ -215,6 +249,51 @@ export function NewRun() {
 		}
 	}, [setValue])
 
+	// Track previous provider to detect switches
+	const [prevProvider, setPrevProvider] = useState(provider)
+
+	// Preserve selections per provider; avoids cross-contamination while keeping UX stable.
+	useEffect(() => {
+		if (provider === prevProvider) return
+
+		modelSelectionsByProviderRef.current[prevProvider] = modelSelections
+		modelValueByProviderRef.current[prevProvider] = getValues("model")
+
+		const nextModelSelections =
+			modelSelectionsByProviderRef.current[provider] ??
+			([{ id: crypto.randomUUID(), model: "", popoverOpen: false }] satisfies ModelSelection[])
+
+		setModelSelections(nextModelSelections)
+
+		const nextModelValue =
+			modelValueByProviderRef.current[provider] ??
+			nextModelSelections.find((s) => s.model.trim().length > 0)?.model ??
+			(provider === "other" && importedSettings && configSelections[0]?.configName
+				? (getModelId(importedSettings.apiConfigs[configSelections[0].configName] ?? {}) ?? "")
+				: "")
+
+		setValue("model", nextModelValue)
+		setPrevProvider(provider)
+	}, [provider, prevProvider, modelSelections, setValue, getValues, importedSettings, configSelections])
+
+	// When switching to Roo provider, restore last-used selection if current selection is empty
+	useEffect(() => {
+		if (provider !== "roo") return
+		if (selectedModelIds.length > 0) return
+
+		const last = loadRooLastModelSelection()
+		if (last.length > 0) {
+			applyModelIds(last)
+		}
+	}, [applyModelIds, provider, selectedModelIds.length])
+
+	// Persist last-used Roo provider model selection
+	useEffect(() => {
+		if (provider !== "roo") return
+		saveRooLastModelSelection(selectedModelIds)
+	}, [provider, selectedModelIds])
+
+	// Extract unique languages from exercises
 	const languages = useMemo(() => {
 		if (!exercises.data) {
 			return []
@@ -337,7 +416,10 @@ export function NewRun() {
 	const onSubmit = useCallback(
 		async (values: CreateRun) => {
 			try {
-				if (provider === "roo" && !values.jobToken?.trim()) {
+				const baseValues = normalizeCreateRunForSubmit(values, selectedExercises, suite)
+
+				// Validate jobToken for Roo Code Cloud provider
+				if (provider === "roo" && !baseValues.jobToken?.trim()) {
 					toast.error("Roo Code Cloud Token is required")
 					return
 				}
@@ -374,8 +456,7 @@ export function NewRun() {
 						await new Promise((resolve) => setTimeout(resolve, 20_000))
 					}
 
-					const runValues = { ...values }
-					runValues.executionMethod = executionMethod
+					const runValues = { ...baseValues }
 
 					if (provider === "openrouter") {
 						runValues.model = selection.model
@@ -424,8 +505,9 @@ export function NewRun() {
 			}
 		},
 		[
+			suite,
+			selectedExercises,
 			provider,
-			executionMethod,
 			modelSelections,
 			configSelections,
 			importedSettings,

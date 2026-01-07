@@ -293,7 +293,7 @@
 		"triggerLabel_zero": "0 авто-утвержденных",
 		"triggerLabel_one": "1 авто-утвержден",
 		"triggerLabel_other": "{{count}} авто-утвержденных",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Выпущен Roo Code {{version}}",
